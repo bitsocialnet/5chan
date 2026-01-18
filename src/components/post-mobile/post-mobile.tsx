@@ -192,7 +192,7 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
               </span>
             ) : (
               <>
-                <span>CID:</span>
+                <span>No.</span>
                 <span className={styles.pendingCid}>
                   {state === 'failed' || stateString === 'Failed' ? _.capitalize(t('failed')) : state === 'pending' ? _.capitalize(t('pending')) : ''}
                 </span>

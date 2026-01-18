@@ -187,7 +187,7 @@ const PostInfo = ({ post, postReplyCount = 0, roles, isHidden, threadNumber }: P
             </span>
           ) : (
             <>
-              <span>CID:</span>
+              <span>No.</span>
               <span className={styles.pendingCid}>
                 {state === 'failed' || stateString === 'Failed' ? _.capitalize(t('failed')) : state === 'pending' ? _.capitalize(t('pending')) : ''}
               </span>
