@@ -79,6 +79,13 @@
   clear: both;
 }
 
+/* clearfix for OP content to contain floated thumbnail before replies */
+.opContainer::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
 .postDesktop .hideThread {
   background-image: var(--post-hide-button-background-image);
 }

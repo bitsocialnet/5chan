@@ -452,7 +452,12 @@ const PostDesktop = ({ post, roles, showAllReplies, showReplies = true }: PostPr
             <span className={`${styles.hideButton} ${hidden ? styles.unhideThread : styles.hideThread}`} onClick={hidden ? unhide : hide} />
           </span>
         )}
-        <div data-cid={cid} data-author-address={author?.shortAddress} data-post-cid={postCid} className={shouldShowSnow() && hasThumbnail ? styles.xmasHatWrapper : ''}>
+        <div
+          data-cid={cid}
+          data-author-address={author?.shortAddress}
+          data-post-cid={postCid}
+          className={`${styles.opContainer} ${shouldShowSnow() && hasThumbnail ? styles.xmasHatWrapper : ''}`}
+        >
           {shouldShowSnow() && hasThumbnail && <img src='assets/xmashat.gif' className={styles.xmasHat} alt='' />}
           {link && !isHidden && !(deleted || removed) && isValidURL(link) && (
             <PostMedia
