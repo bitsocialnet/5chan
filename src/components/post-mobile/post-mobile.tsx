@@ -18,6 +18,7 @@ import { useCommentMediaInfo } from '../../hooks/use-comment-media-info';
 import useCountLinksInReplies from '../../hooks/use-count-links-in-replies';
 import useHide from '../../hooks/use-hide';
 import useStateString from '../../hooks/use-state-string';
+import useScrollToReply from '../../hooks/use-scroll-to-reply';
 import CommentContent from '../comment-content';
 import CommentMedia from '../comment-media';
 import LoadingEllipsis from '../loading-ellipsis';
@@ -282,7 +283,7 @@ const Reply = ({ postReplyCount, reply, roles, threadNumber }: PostProps) => {
   );
 };
 
-const PostMobile = ({ post, roles, showAllReplies, showReplies = true }: PostProps) => {
+const PostMobile = ({ post, roles, showAllReplies, showReplies = true, targetReplyCid }: PostProps) => {
   const { t } = useTranslation();
   const { author, cid, pinned, postCid, replyCount, state, subplebbitAddress } = post || {};
   const params = useParams();
@@ -323,6 +324,16 @@ const PostMobile = ({ post, roles, showAllReplies, showReplies = true }: PostPro
   }, [virtuosoStateKey, showAllReplies, isInPostPageView]);
 
   const lastVirtuosoState = navigationType === 'POP' ? lastVirtuosoStates?.[virtuosoStateKey] : undefined;
+
+  const shouldScrollToReply = showAllReplies && showReplies && !isInPendingPostView && !!targetReplyCid;
+  useScrollToReply({
+    targetReplyCid,
+    replies: filteredReplies,
+    hasMore,
+    loadMore,
+    virtuosoRef,
+    enabled: shouldScrollToReply,
+  });
 
   // Footer component for Virtuoso showing loading state
   const RepliesFooter = () =>

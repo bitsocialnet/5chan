@@ -23,10 +23,11 @@ export interface PostProps {
   roles?: Role[];
   showAllReplies?: boolean;
   showReplies?: boolean;
+  targetReplyCid?: string;
   threadNumber?: number;
 }
 
-export const Post = ({ post, showAllReplies = false, showReplies = true }: PostProps) => {
+export const Post = ({ post, showAllReplies = false, showReplies = true, targetReplyCid }: PostProps) => {
   // Only subscribe to roles field to avoid rerenders from updatingState changes
   const roles = useSubplebbitField(post?.subplebbitAddress, (subplebbit) => subplebbit?.roles);
   const isMobile = useIsMobile();
@@ -43,9 +44,9 @@ export const Post = ({ post, showAllReplies = false, showReplies = true }: PostP
     <div className={styles.thread}>
       <div className={styles.postContainer}>
         {isMobile ? (
-          <PostMobile post={comment} roles={roles} showAllReplies={showAllReplies} showReplies={showReplies} />
+          <PostMobile post={comment} roles={roles} showAllReplies={showAllReplies} showReplies={showReplies} targetReplyCid={targetReplyCid} />
         ) : (
-          <PostDesktop post={comment} roles={roles} showAllReplies={showAllReplies} showReplies={showReplies} />
+          <PostDesktop post={comment} roles={roles} showAllReplies={showAllReplies} showReplies={showReplies} targetReplyCid={targetReplyCid} />
         )}
       </div>
     </div>
@@ -85,8 +86,9 @@ const PostPage = () => {
   const { error } = post || {};
 
   useEffect(() => {
+    if (!comment?.cid || comment.parentCid) return;
     window.scrollTo(0, 0);
-  }, []);
+  }, [comment?.cid, comment?.parentCid]);
 
   useEffect(() => {
     const boardIdentifier = params.boardIdentifier;
@@ -110,6 +112,8 @@ const PostPage = () => {
   const shouldShowPostError = post?.error && post?.replyCount > 0 && post?.replies?.length === 0;
   const shouldShowSubplebbitError = subplebbitError?.message && !post?.cid;
 
+  const targetReplyCid = comment?.parentCid ? comment?.cid : undefined;
+
   return (
     <div className={styles.content}>
       {shouldShowPostError && (
@@ -117,7 +121,7 @@ const PostPage = () => {
           <ErrorDisplay error={error} />
         </div>
       )}
-      <Post post={post} showAllReplies={true} />
+      <Post post={post} showAllReplies={true} targetReplyCid={targetReplyCid} />
       {shouldShowSubplebbitError && (
         <div className={styles.error}>
           <ErrorDisplay error={subplebbitError} />

@@ -19,6 +19,7 @@ import useCountLinksInReplies from '../../hooks/use-count-links-in-replies';
 import useFetchGifFirstFrame from '../../hooks/use-fetch-gif-first-frame';
 import useHide from '../../hooks/use-hide';
 import useStateString from '../../hooks/use-state-string';
+import useScrollToReply from '../../hooks/use-scroll-to-reply';
 import CommentContent from '../comment-content';
 import CommentMedia from '../comment-media';
 import EditMenu from '../edit-menu/edit-menu';
@@ -375,7 +376,7 @@ const Reply = ({ postReplyCount, reply, roles, threadNumber }: PostProps) => {
   );
 };
 
-const PostDesktop = ({ post, roles, showAllReplies, showReplies = true }: PostProps) => {
+const PostDesktop = ({ post, roles, showAllReplies, showReplies = true, targetReplyCid }: PostProps) => {
   const { t } = useTranslation();
   const { author, cid, content, deleted, link, linkHeight, linkWidth, pinned, postCid, removed, spoiler, state, subplebbitAddress, thumbnailUrl, parentCid } = post || {};
   const params = useParams();
@@ -428,6 +429,16 @@ const PostDesktop = ({ post, roles, showAllReplies, showReplies = true }: PostPr
   }, [virtuosoStateKey, showAllReplies, isInPostPageView]);
 
   const lastVirtuosoState = navigationType === 'POP' ? lastVirtuosoStates?.[virtuosoStateKey] : undefined;
+
+  const shouldScrollToReply = showAllReplies && showReplies && !isInPendingPostView && !!targetReplyCid;
+  useScrollToReply({
+    targetReplyCid,
+    replies: filteredReplies,
+    hasMore,
+    loadMore,
+    virtuosoRef,
+    enabled: shouldScrollToReply,
+  });
 
   // Footer component for Virtuoso showing loading state
   const RepliesFooter = () =>
