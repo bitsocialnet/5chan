@@ -27,12 +27,12 @@ export async function copyShareLinkToClipboard(boardIdentifier: string, linkType
     if (!cid) {
       throw new Error('copyShareLinkToClipboard: thread links require a cid');
     }
-    const shareLink = `https://5chan.app/${boardIdentifier}/thread/${cid}`;
+    const shareLink = `https://5chan.app/#/${boardIdentifier}/thread/${cid}`;
     await copyToClipboard(shareLink);
     return;
   }
 
-  const shareLink = `https://5chan.app/${boardIdentifier}/${linkType}`;
+  const shareLink = `https://5chan.app/#/${boardIdentifier}/${linkType}`;
   await copyToClipboard(shareLink);
 }
 
