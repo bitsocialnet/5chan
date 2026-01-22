@@ -1,7 +1,7 @@
 import { Fragment, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import { Trans, useTranslation } from 'react-i18next';
-import { Comment } from '@plebbit/plebbit-react-hooks';
+import { Comment, useComment } from '@plebbit/plebbit-react-hooks';
 import useSubplebbitsPagesStore from '@plebbit/plebbit-react-hooks/dist/stores/subplebbits-pages';
 import Plebbit from '@plebbit/plebbit-js';
 import { getFormattedDate, getFormattedTimeAgo } from '../../lib/utils/time-utils';
@@ -35,7 +35,10 @@ const CommentContent = ({ comment: post }: { comment: Comment }) => {
         ? content.slice(0, 2000)
         : content);
 
-  const quotelinkReply = useSubplebbitsPagesStore((state) => state.comments[parentCid]);
+  const quotelinkReplyFromStore = useSubplebbitsPagesStore((state) => state.comments[parentCid]);
+  const quotelinkReplyFromHook = useComment({ commentCid: parentCid, onlyIfCached: true });
+  // Prefer hook version to ensure 'number' property is populated for deeper nested replies in Virtuoso
+  const quotelinkReply = quotelinkReplyFromHook?.number !== undefined ? quotelinkReplyFromHook : quotelinkReplyFromStore;
 
   const isReply = !!parentCid;
   const isReplyingToReply = isReply && parentCid !== postCid;

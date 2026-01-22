@@ -1,6 +1,6 @@
 {
   "name": "5chan",
-  "version": "0.5.3",
+  "version": "0.6.0",
   "description": "A bitsocial client with a 4chan UI",
   "type": "module",
   "author": "Bitsocial Labs",
@@ -17,6 +17,7 @@
     "@types/react": "18.2.25",
     "@types/react-dom": "18.2.10",
     "@use-gesture/react": "10.3.1",
+    "@vercel/analytics": "^1.6.1",
     "cross-env": "7.0.3",
     "electron-context-menu": "3.3.0",
     "electron-is-dev": "2.0.0",

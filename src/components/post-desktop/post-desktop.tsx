@@ -19,6 +19,7 @@ import useCountLinksInReplies from '../../hooks/use-count-links-in-replies';
 import useFetchGifFirstFrame from '../../hooks/use-fetch-gif-first-frame';
 import useHide from '../../hooks/use-hide';
 import useStateString from '../../hooks/use-state-string';
+import useScrollToReply from '../../hooks/use-scroll-to-reply';
 import CommentContent from '../comment-content';
 import CommentMedia from '../comment-media';
 import EditMenu from '../edit-menu/edit-menu';
@@ -187,7 +188,7 @@ const PostInfo = ({ post, postReplyCount = 0, roles, isHidden, threadNumber }: P
             </span>
           ) : (
             <>
-              <span>CID:</span>
+              <span>No.</span>
               <span className={styles.pendingCid}>
                 {state === 'failed' || stateString === 'Failed' ? _.capitalize(t('failed')) : state === 'pending' ? _.capitalize(t('pending')) : ''}
               </span>
@@ -375,7 +376,7 @@ const Reply = ({ postReplyCount, reply, roles, threadNumber }: PostProps) => {
   );
 };
 
-const PostDesktop = ({ post, roles, showAllReplies, showReplies = true }: PostProps) => {
+const PostDesktop = ({ post, roles, showAllReplies, showReplies = true, targetReplyCid }: PostProps) => {
   const { t } = useTranslation();
   const { author, cid, content, deleted, link, linkHeight, linkWidth, pinned, postCid, removed, spoiler, state, subplebbitAddress, thumbnailUrl, parentCid } = post || {};
   const params = useParams();
@@ -429,6 +430,16 @@ const PostDesktop = ({ post, roles, showAllReplies, showReplies = true }: PostPr
 
   const lastVirtuosoState = navigationType === 'POP' ? lastVirtuosoStates?.[virtuosoStateKey] : undefined;
 
+  const shouldScrollToReply = showAllReplies && showReplies && !isInPendingPostView && !!targetReplyCid;
+  useScrollToReply({
+    targetReplyCid,
+    replies: filteredReplies,
+    hasMore,
+    loadMore,
+    virtuosoRef,
+    enabled: shouldScrollToReply,
+  });
+
   // Footer component for Virtuoso showing loading state
   const RepliesFooter = () =>
     hasMore ? (
@@ -452,7 +463,12 @@ const PostDesktop = ({ post, roles, showAllReplies, showReplies = true }: PostPr
             <span className={`${styles.hideButton} ${hidden ? styles.unhideThread : styles.hideThread}`} onClick={hidden ? unhide : hide} />
           </span>
         )}
-        <div data-cid={cid} data-author-address={author?.shortAddress} data-post-cid={postCid} className={shouldShowSnow() && hasThumbnail ? styles.xmasHatWrapper : ''}>
+        <div
+          data-cid={cid}
+          data-author-address={author?.shortAddress}
+          data-post-cid={postCid}
+          className={`${styles.opContainer} ${shouldShowSnow() && hasThumbnail ? styles.xmasHatWrapper : ''}`}
+        >
           {shouldShowSnow() && hasThumbnail && <img src='assets/xmashat.gif' className={styles.xmasHat} alt='' />}
           {link && !isHidden && !(deleted || removed) && isValidURL(link) && (
             <PostMedia
