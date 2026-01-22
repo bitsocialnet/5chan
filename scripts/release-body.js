@@ -17,7 +17,7 @@ let releaseChangelog =
 // format
 releaseChangelog = releaseChangelog.trim().replace(/\n\n+/g, '\n\n')
 
-const releaseBody = `This version fixes a bug that prevented publishing.
+const releaseBody = `This version rebrands the app to 5chan, introducing a set of new features and several performance improvements.
 
 - Web app: https://5chan.app
 - Decentralized web app: https://5chan.eth (only works on [Brave Browser](https://brave.com/) or via [IPFS Companion](https://docs.ipfs.tech/install/ipfs-companion/#prerequisites))
