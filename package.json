@@ -90,9 +90,9 @@
     ]
   },
   "devDependencies": {
-    "@capacitor/android": "7.4.4",
-    "@capacitor/cli": "7.4.4",
-    "@capacitor/core": "7.4.4",
+    "@capacitor/android": "7.4.5",
+    "@capacitor/cli": "7.4.5",
+    "@capacitor/core": "7.4.5",
     "@electron/rebuild": "4.0.0",
     "@react-scan/vite-plugin-react-scan": "0.1.8",
     "@types/memoizee": "0.4.9",
@@ -142,7 +142,6 @@
     "cacache": "19.0.1",
     "preact": "10.27.3",
     "@remix-run/router": "1.23.2",
-    "tar": "^7.5.3",
     "undici": "^7.18.2",
     "diff": "^8.0.3"
   },
