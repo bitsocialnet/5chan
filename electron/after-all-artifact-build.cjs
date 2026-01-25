@@ -23,10 +23,13 @@ function createHtmlArchive() {
   const zipBinPath = path.resolve(rootPath, 'node_modules', '7zip-bin', 'linux', 'x64', '7za');
   const fivechanHtmlFolderName = `5chan-html-${packageJson.version}`;
   const outputFile = path.resolve(distFolderPath, `${fivechanHtmlFolderName}.zip`);
-  const inputFolder = path.resolve(rootPath, 'build');
+  // Vite outputs to 'dist', not 'build' (CRA default)
+  const inputFolder = path.resolve(rootPath, 'dist');
   try {
-    execSync(`${zipBinPath} a ${outputFile} ${inputFolder}`);
-    execSync(`${zipBinPath} rn -r ${outputFile} build ${fivechanHtmlFolderName}`);
+    // Exclude Electron builder artifacts from HTML archive
+    const excludes = '-xr!*.AppImage -xr!*.exe -xr!*.dmg -xr!*.blockmap -xr!*.yml -xr!*.yaml -xr!win-unpacked -xr!mac -xr!mac-arm64 -xr!linux-unpacked -xr!builder-*';
+    execSync(`${zipBinPath} a ${outputFile} ${inputFolder} ${excludes}`);
+    execSync(`${zipBinPath} rn -r ${outputFile} dist ${fivechanHtmlFolderName}`);
   } catch (e) {
     console.error('electron build createHtmlArchive error:', e);
   }
