@@ -269,5 +269,8 @@
   "submitted": "Isinumite",
   "hours": "oras",
   "minutes": "minuto",
-  "alert_threshold": "Alert threshold"
+  "alert_threshold": "Alert threshold",
+  "modQueue.viewLabel": "View",
+  "modQueue.compact": "Compact",
+  "modQueue.feed": "Feed"
 }

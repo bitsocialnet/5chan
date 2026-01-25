@@ -269,5 +269,8 @@
   "submitted": "已提交",
   "hours": "小时",
   "minutes": "分钟",
-  "alert_threshold": "警报阈值"
+  "alert_threshold": "警报阈值",
+  "modQueue.viewLabel": "View",
+  "modQueue.compact": "Compact",
+  "modQueue.feed": "Feed"
 }

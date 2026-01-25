@@ -269,5 +269,8 @@
   "submitted": "送信済み",
   "hours": "時間",
   "minutes": "分",
-  "alert_threshold": "アラート閾値"
+  "alert_threshold": "アラート閾値",
+  "modQueue.viewLabel": "View",
+  "modQueue.compact": "Compact",
+  "modQueue.feed": "Feed"
 }

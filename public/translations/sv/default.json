@@ -269,5 +269,8 @@
   "submitted": "Inskickat",
   "hours": "timmar",
   "minutes": "minuter",
-  "alert_threshold": "Tröskelvärde för varning"
+  "alert_threshold": "Tröskelvärde för varning",
+  "modQueue.viewLabel": "View",
+  "modQueue.compact": "Compact",
+  "modQueue.feed": "Feed"
 }

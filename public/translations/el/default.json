@@ -269,5 +269,8 @@
   "submitted": "Υποβλήθηκε",
   "hours": "ώρες",
   "minutes": "λεπτά",
-  "alert_threshold": "Όριο ειδοποίησης"
+  "alert_threshold": "Όριο ειδοποίησης",
+  "modQueue.viewLabel": "View",
+  "modQueue.compact": "Compact",
+  "modQueue.feed": "Feed"
 }

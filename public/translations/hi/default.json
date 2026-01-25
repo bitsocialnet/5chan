@@ -269,5 +269,8 @@
   "submitted": "सबमिट किया गया",
   "hours": "घंटे",
   "minutes": "मिनट",
-  "alert_threshold": "सतर्कता सीमा"
+  "alert_threshold": "सतर्कता सीमा",
+  "modQueue.viewLabel": "View",
+  "modQueue.compact": "Compact",
+  "modQueue.feed": "Feed"
 }

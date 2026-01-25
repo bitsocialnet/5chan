@@ -269,5 +269,8 @@
   "submitted": "جمع کرایا گیا",
   "hours": "گھنٹے",
   "minutes": "منٹ",
-  "alert_threshold": "انتباہ کی حد"
+  "alert_threshold": "انتباہ کی حد",
+  "modQueue.viewLabel": "View",
+  "modQueue.compact": "Compact",
+  "modQueue.feed": "Feed"
 }

@@ -269,5 +269,8 @@
   "submitted": "Dikirim",
   "hours": "jam",
   "minutes": "menit",
-  "alert_threshold": "Ambang peringatan"
+  "alert_threshold": "Ambang peringatan",
+  "modQueue.viewLabel": "View",
+  "modQueue.compact": "Compact",
+  "modQueue.feed": "Feed"
 }

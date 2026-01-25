@@ -269,5 +269,8 @@
   "submitted": "Soumis",
   "hours": "heures",
   "minutes": "minutes",
-  "alert_threshold": "Seuil d'alerte"
+  "alert_threshold": "Seuil d'alerte",
+  "modQueue.viewLabel": "View",
+  "modQueue.compact": "Compact",
+  "modQueue.feed": "Feed"
 }

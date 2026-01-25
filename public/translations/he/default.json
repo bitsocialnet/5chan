@@ -269,5 +269,8 @@
   "submitted": "נשלח",
   "hours": "שעות",
   "minutes": "דקות",
-  "alert_threshold": "סף התרעה"
+  "alert_threshold": "סף התרעה",
+  "modQueue.viewLabel": "View",
+  "modQueue.compact": "Compact",
+  "modQueue.feed": "Feed"
 }

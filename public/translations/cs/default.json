@@ -269,5 +269,8 @@
   "submitted": "Odesláno",
   "hours": "hodin",
   "minutes": "minut",
-  "alert_threshold": "Práh upozornění"
+  "alert_threshold": "Práh upozornění",
+  "modQueue.viewLabel": "View",
+  "modQueue.compact": "Compact",
+  "modQueue.feed": "Feed"
 }

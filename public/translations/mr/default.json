@@ -269,5 +269,8 @@
   "submitted": "सबमिट केले",
   "hours": "तास",
   "minutes": "मिनिटे",
-  "alert_threshold": "सतर्कता मर्यादा"
+  "alert_threshold": "सतर्कता मर्यादा",
+  "modQueue.viewLabel": "View",
+  "modQueue.compact": "Compact",
+  "modQueue.feed": "Feed"
 }

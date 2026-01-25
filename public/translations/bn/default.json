@@ -269,5 +269,8 @@
   "submitted": "জমা দেওয়া হয়েছে",
   "hours": "ঘণ্টা",
   "minutes": "মিনিট",
-  "alert_threshold": "সতর্কতা থ্রেশহোল্ড"
+  "alert_threshold": "সতর্কতা থ্রেশহোল্ড",
+  "modQueue.viewLabel": "View",
+  "modQueue.compact": "Compact",
+  "modQueue.feed": "Feed"
 }

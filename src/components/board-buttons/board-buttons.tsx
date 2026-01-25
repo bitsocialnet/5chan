@@ -230,9 +230,46 @@ const ImageSizeOptions = () => {
   );
 };
 
+const MAX_ALERT_THRESHOLD = 10000; // Maximum threshold value in minutes (~166 hours)
+
 const ModQueueAlertThreshold = () => {
   const { t } = useTranslation();
   const { alertThresholdValue, alertThresholdUnit, setAlertThreshold } = useModQueueStore();
+
+  const handleThresholdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const inputValue = e.target.value.trim();
+
+    // Handle empty input - allow it temporarily for better UX
+    if (inputValue === '') {
+      return;
+    }
+
+    // Parse safely
+    const parsedValue = parseInt(inputValue, 10);
+
+    // Default to 1 if invalid or NaN
+    if (isNaN(parsedValue) || parsedValue < 1) {
+      setAlertThreshold(1, alertThresholdUnit);
+      return;
+    }
+
+    // Convert to minutes for clamping, then convert back to current unit
+    const valueInMinutes = alertThresholdUnit === 'hours' ? parsedValue * 60 : parsedValue;
+    const clampedMinutes = Math.min(valueInMinutes, MAX_ALERT_THRESHOLD);
+    const finalValue = alertThresholdUnit === 'hours' ? Math.round(clampedMinutes / 60) : clampedMinutes;
+
+    setAlertThreshold(finalValue, alertThresholdUnit);
+  };
+
+  const handleThresholdBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const inputValue = e.target.value.trim();
+
+    // If empty or invalid, restore to current value or default to 1
+    if (inputValue === '' || isNaN(parseInt(inputValue, 10))) {
+      const safeValue = alertThresholdValue >= 1 ? alertThresholdValue : 1;
+      setAlertThreshold(safeValue, alertThresholdUnit);
+    }
+  };
 
   return (
     <div className={styles.modQueueControls}>
@@ -243,7 +280,8 @@ const ModQueueAlertThreshold = () => {
           min='1'
           step='1'
           value={alertThresholdValue}
-          onChange={(e) => setAlertThreshold(Number(e.target.value), alertThresholdUnit)}
+          onChange={handleThresholdChange}
+          onBlur={handleThresholdBlur}
           className={styles.alertThresholdInput}
         />
         <select
@@ -268,14 +306,15 @@ const ModQueueAlertThreshold = () => {
 };
 
 const ModQueueViewSelector = () => {
+  const { t } = useTranslation();
   const { viewMode, setViewMode } = useModQueueStore();
   return (
     <div className={styles.modQueueControls}>
       <label>
-        View:
+        {t('modQueue.viewLabel')}:
         <select value={viewMode} onChange={(e) => setViewMode(e.target.value as 'compact' | 'feed')}>
-          <option value='compact'>Compact</option>
-          <option value='feed'>Feed</option>
+          <option value='compact'>{t('modQueue.compact')}</option>
+          <option value='feed'>{t('modQueue.feed')}</option>
         </select>
       </label>
     </div>

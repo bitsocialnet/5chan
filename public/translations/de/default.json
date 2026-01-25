@@ -269,5 +269,8 @@
   "submitted": "Eingereicht",
   "hours": "Stunden",
   "minutes": "Minuten",
-  "alert_threshold": "Alarmschwellenwert"
+  "alert_threshold": "Alarmschwellenwert",
+  "modQueue.viewLabel": "View",
+  "modQueue.compact": "Compact",
+  "modQueue.feed": "Feed"
 }

@@ -269,5 +269,8 @@
   "submitted": "Відправлено",
   "hours": "годин",
   "minutes": "хвилин",
-  "alert_threshold": "Поріг попередження"
+  "alert_threshold": "Поріг попередження",
+  "modQueue.viewLabel": "View",
+  "modQueue.compact": "Compact",
+  "modQueue.feed": "Feed"
 }

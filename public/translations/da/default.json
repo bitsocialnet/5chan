@@ -269,5 +269,8 @@
   "submitted": "Indsendt",
   "hours": "timer",
   "minutes": "minutter",
-  "alert_threshold": "Alarmtærskel"
+  "alert_threshold": "Alarmtærskel",
+  "modQueue.viewLabel": "View",
+  "modQueue.compact": "Compact",
+  "modQueue.feed": "Feed"
 }

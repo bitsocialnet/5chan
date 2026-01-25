@@ -269,5 +269,8 @@
   "submitted": "제출됨",
   "hours": "시간",
   "minutes": "분",
-  "alert_threshold": "알림 임계값"
+  "alert_threshold": "알림 임계값",
+  "modQueue.viewLabel": "View",
+  "modQueue.compact": "Compact",
+  "modQueue.feed": "Feed"
 }

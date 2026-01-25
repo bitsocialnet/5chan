@@ -269,5 +269,8 @@
   "submitted": "Ingediend",
   "hours": "uur",
   "minutes": "minuten",
-  "alert_threshold": "Drempelwaarde voor waarschuwing"
+  "alert_threshold": "Drempelwaarde voor waarschuwing",
+  "modQueue.viewLabel": "View",
+  "modQueue.compact": "Compact",
+  "modQueue.feed": "Feed"
 }

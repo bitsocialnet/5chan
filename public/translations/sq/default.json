@@ -269,5 +269,8 @@
   "submitted": "Dërguar",
   "hours": "orë",
   "minutes": "minuta",
-  "alert_threshold": "Pragu i alarmit"
+  "alert_threshold": "Pragu i alarmit",
+  "modQueue.viewLabel": "View",
+  "modQueue.compact": "Compact",
+  "modQueue.feed": "Feed"
 }

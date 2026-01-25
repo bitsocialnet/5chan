@@ -269,5 +269,8 @@
   "submitted": "Beküldve",
   "hours": "óra",
   "minutes": "perc",
-  "alert_threshold": "Riasztási küszöb"
+  "alert_threshold": "Riasztási küszöb",
+  "modQueue.viewLabel": "View",
+  "modQueue.compact": "Compact",
+  "modQueue.feed": "Feed"
 }

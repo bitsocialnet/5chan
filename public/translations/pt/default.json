@@ -269,5 +269,8 @@
   "submitted": "Enviado",
   "hours": "horas",
   "minutes": "minutos",
-  "alert_threshold": "Limite de alerta"
+  "alert_threshold": "Limite de alerta",
+  "modQueue.viewLabel": "View",
+  "modQueue.compact": "Compact",
+  "modQueue.feed": "Feed"
 }
