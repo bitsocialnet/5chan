@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, Link } from 'react-router-dom';
 import { useFeed, Comment, usePublishCommentModeration, useEditedComment, useSubplebbit } from '@plebbit/plebbit-react-hooks';
@@ -21,6 +21,7 @@ import useChallengesStore from '../../stores/use-challenges-store';
 import { alertChallengeVerificationFailed } from '../../lib/utils/challenge-utils';
 import Tooltip from '../../components/tooltip';
 import useIsMobile from '../../hooks/use-is-mobile';
+import { Post } from '../post/post';
 
 const { addChallenge } = useChallengesStore.getState();
 
@@ -55,29 +56,21 @@ interface ModQueueRowProps {
 // Track which action was initiated to show appropriate completion message
 type ModerationAction = 'approve' | 'reject' | null;
 
-const ModQueueRow = ({ comment, isOdd = false }: ModQueueRowProps) => {
+interface ModQueueActionState {
+  status: 'approved' | 'rejected' | 'failed' | null;
+  errorMessage?: string;
+  isPublishing: boolean;
+  handleApprove: () => Promise<void>;
+  handleReject: () => Promise<void>;
+}
+
+const useModQueueActions = (comment: Comment): ModQueueActionState => {
   const { t } = useTranslation();
-  const { getAlertThresholdSeconds } = useModQueueStore();
+  const { cid, subplebbitAddress, approved, removed } = comment || {};
   const [initiatedAction, setInitiatedAction] = useState<ModerationAction>(null);
-  const isMobile = useIsMobile();
 
-  const { editedComment } = useEditedComment({ comment });
-  const displayComment = editedComment || comment;
-
-  const { content, title, timestamp, subplebbitAddress, cid, shortCid, threadCid, link, thumbnailUrl, linkWidth, linkHeight, removed, approved, number } = displayComment;
-
-  // Check if already moderated (from previous session or API update)
-  // Note: `approved` and `removed` are direct fields on the comment from CommentUpdate,
-  // not nested under commentModeration (which is the options object for publishing moderation actions)
   const alreadyApproved = approved === true;
   const alreadyRejected = removed === true;
-
-  const timeWaiting = Date.now() / 1000 - timestamp;
-  const alertThresholdSeconds = getAlertThresholdSeconds();
-  const isOverThreshold = timeWaiting > alertThresholdSeconds;
-
-  // Only show alert animation for comments awaiting approval (not approved or rejected)
-  const isAwaitingApproval = !alreadyApproved && !alreadyRejected;
 
   const {
     publishCommentModeration: approve,
@@ -117,8 +110,7 @@ const ModQueueRow = ({ comment, isOdd = false }: ModQueueRowProps) => {
     },
   });
 
-  const handleApprove = async () => {
-    // Double confirmation for approve action
+  const handleApprove = useCallback(async () => {
     const confirm = window.confirm(t('double_confirm'));
     if (!confirm) {
       return;
@@ -130,10 +122,9 @@ const ModQueueRow = ({ comment, isOdd = false }: ModQueueRowProps) => {
     } catch (e) {
       console.error(e);
     }
-  };
+  }, [approve, t]);
 
-  const handleReject = async () => {
-    // Double confirmation for reject action
+  const handleReject = useCallback(async () => {
     const confirm = window.confirm(t('double_confirm'));
     if (!confirm) {
       return;
@@ -145,9 +136,8 @@ const ModQueueRow = ({ comment, isOdd = false }: ModQueueRowProps) => {
     } catch (e) {
       console.error(e);
     }
-  };
+  }, [reject, t]);
 
-  // Determine the current moderation state based on which action was initiated
   const isApproving = initiatedAction === 'approve' && approveState !== 'initializing' && approveState !== 'succeeded' && approveState !== 'failed';
   const isRejecting = initiatedAction === 'reject' && rejectState !== 'initializing' && rejectState !== 'succeeded' && rejectState !== 'failed';
   const isPublishing = isApproving || isRejecting;
@@ -157,6 +147,37 @@ const ModQueueRow = ({ comment, isOdd = false }: ModQueueRowProps) => {
 
   const approveFailed = initiatedAction === 'approve' && approveState === 'failed';
   const rejectFailed = initiatedAction === 'reject' && rejectState === 'failed';
+
+  const status = alreadyApproved || approveSucceeded ? 'approved' : alreadyRejected || rejectSucceeded ? 'rejected' : approveFailed || rejectFailed ? 'failed' : null;
+  const errorMessage = approveFailed ? approveError?.message : rejectFailed ? rejectError?.message : undefined;
+
+  return { status, errorMessage, isPublishing, handleApprove, handleReject };
+};
+
+const ModQueueRow = ({ comment, isOdd = false }: ModQueueRowProps) => {
+  const { t } = useTranslation();
+  const { getAlertThresholdSeconds } = useModQueueStore();
+  const isMobile = useIsMobile();
+
+  const { editedComment } = useEditedComment({ comment });
+  const displayComment = editedComment || comment;
+
+  const { content, title, timestamp, subplebbitAddress, cid, threadCid, link, thumbnailUrl, linkWidth, linkHeight, removed, approved, number } = displayComment;
+
+  // Check if already moderated (from previous session or API update)
+  // Note: `approved` and `removed` are direct fields on the comment from CommentUpdate,
+  // not nested under commentModeration (which is the options object for publishing moderation actions)
+  const alreadyApproved = approved === true;
+  const alreadyRejected = removed === true;
+
+  const timeWaiting = Date.now() / 1000 - timestamp;
+  const alertThresholdSeconds = getAlertThresholdSeconds();
+  const isOverThreshold = timeWaiting > alertThresholdSeconds;
+
+  // Only show alert animation for comments awaiting approval (not approved or rejected)
+  const isAwaitingApproval = !alreadyApproved && !alreadyRejected;
+
+  const { status, errorMessage, isPublishing, handleApprove, handleReject } = useModQueueActions(displayComment);
 
   const boardPath = useBoardPath(subplebbitAddress);
   const hasTitle = title && title.trim().length > 0;
@@ -176,23 +197,17 @@ const ModQueueRow = ({ comment, isOdd = false }: ModQueueRowProps) => {
   // Render the status or action buttons
   const renderActions = () => {
     // Check existing moderation state first (from API/previous sessions)
-    if (alreadyApproved || approveSucceeded) {
+    if (status === 'approved') {
       return <span className={`${styles.button} ${styles.approve}`}>{t('approved')}</span>;
     }
-    if (alreadyRejected || rejectSucceeded) {
+    if (status === 'rejected') {
       return <span className={`${styles.button} ${styles.reject}`}>{t('rejected')}</span>;
     }
-    if (approveFailed) {
+    if (status === 'failed') {
       return (
         <span className={`${styles.button} ${styles.reject}`}>
-          {t('failed')}: {approveError?.message}
-        </span>
-      );
-    }
-    if (rejectFailed) {
-      return (
-        <span className={`${styles.button} ${styles.reject}`}>
-          {t('failed')}: {rejectError?.message}
+          {t('failed')}
+          {errorMessage ? `: ${errorMessage}` : ''}
         </span>
       );
     }
@@ -255,6 +270,137 @@ const ModQueueRow = ({ comment, isOdd = false }: ModQueueRowProps) => {
       </div>
       <div className={styles.actions}>{renderActions()}</div>
     </div>
+  );
+};
+
+interface ModQueueCardProps {
+  comment: Comment;
+}
+
+const ModQueueCard = ({ comment }: ModQueueCardProps) => {
+  const { t } = useTranslation();
+  const { getAlertThresholdSeconds } = useModQueueStore();
+
+  const { editedComment } = useEditedComment({ comment });
+  const displayComment = editedComment || comment;
+
+  const { content, title, timestamp, subplebbitAddress, cid, threadCid, link, thumbnailUrl, linkWidth, linkHeight, removed, approved, number } = displayComment;
+
+  const alreadyApproved = approved === true;
+  const alreadyRejected = removed === true;
+
+  const timeWaiting = Date.now() / 1000 - timestamp;
+  const alertThresholdSeconds = getAlertThresholdSeconds();
+  const isOverThreshold = timeWaiting > alertThresholdSeconds;
+  const isAwaitingApproval = !alreadyApproved && !alreadyRejected;
+
+  const { status, errorMessage, isPublishing, handleApprove, handleReject } = useModQueueActions(displayComment);
+
+  const boardPath = useBoardPath(subplebbitAddress);
+  const hasTitle = title && title.trim().length > 0;
+  const hasContent = content && content.trim().length > 0;
+  const hasLink = link && link.length > 0;
+  const rawExcerpt =
+    (hasTitle ? title : null) ||
+    (hasContent ? content : null) ||
+    (hasLink ? link : null) ||
+    (getHasThumbnail(getCommentMediaInfo(link, thumbnailUrl, linkWidth, linkHeight), link) ? t('image') : null) ||
+    t('no_content');
+  const excerpt = rawExcerpt.length > 140 ? rawExcerpt.slice(0, 137) + '...' : rawExcerpt;
+  const threadTargetCid = threadCid || cid;
+  const postUrl = boardPath && threadTargetCid ? `/${boardPath}/thread/${threadTargetCid}` : undefined;
+
+  const renderActions = () => {
+    if (status === 'approved') {
+      return (
+        <div className={styles.cardActions}>
+          <span className={`${styles.button} ${styles.approve}`}>{t('approved')}</span>
+        </div>
+      );
+    }
+    if (status === 'rejected') {
+      return (
+        <div className={styles.cardActions}>
+          <span className={`${styles.button} ${styles.reject}`}>{t('rejected')}</span>
+        </div>
+      );
+    }
+    if (status === 'failed') {
+      return (
+        <div className={styles.cardActions}>
+          <span className={`${styles.button} ${styles.reject}`}>
+            {t('failed')}
+            {errorMessage ? `: ${errorMessage}` : ''}
+          </span>
+        </div>
+      );
+    }
+    if (isPublishing) {
+      return (
+        <div className={styles.cardActions}>
+          <LoadingEllipsis string={t('publishing')} />
+        </div>
+      );
+    }
+
+    return (
+      <div className={styles.cardActions}>
+        <button className={styles.button} onClick={handleApprove} disabled={isPublishing}>
+          {t('approve')}
+        </button>
+        <button className={styles.button} onClick={handleReject} disabled={isPublishing}>
+          {t('reject')}
+        </button>
+      </div>
+    );
+  };
+
+  return (
+    <div className={styles.mobileCard}>
+      <div className={styles.cardHeader}>
+        <span className={styles.cardNumber}>No. {number ?? 'N/A'}</span>
+        <span className={styles.cardTime}>
+          {isAwaitingApproval && isOverThreshold ? (
+            <>
+              {getFormattedDate(timestamp)} (<span className={styles.alert}>{getFormattedTimeAgo(timestamp)}</span>)
+            </>
+          ) : (
+            getFormattedDate(timestamp)
+          )}
+        </span>
+      </div>
+      <div className={styles.cardContent}>
+        {t('excerpt')}:{' '}
+        {postUrl ? (
+          <Link to={postUrl} title={excerpt}>
+            {excerpt}
+          </Link>
+        ) : (
+          <span title={excerpt}>{excerpt}</span>
+        )}
+      </div>
+      {renderActions()}
+    </div>
+  );
+};
+
+const ModQueueFeedPost = ({ comment }: { comment: Comment }) => {
+  const { editedComment } = useEditedComment({ comment });
+  const displayComment = editedComment || comment;
+  const { status, errorMessage, isPublishing, handleApprove, handleReject } = useModQueueActions(displayComment);
+
+  return (
+    <Post
+      post={displayComment}
+      showAllReplies={false}
+      showReplies={false}
+      isModQueue={true}
+      modQueueStatus={status}
+      modQueueError={errorMessage}
+      isPublishing={isPublishing}
+      onApprove={handleApprove}
+      onReject={handleReject}
+    />
   );
 };
 
@@ -474,7 +620,8 @@ export const ModQueueButton = ({ boardIdentifier, isMobile }: ModQueueButtonProp
 export const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProps) => {
   const { t } = useTranslation();
   const params = useParams();
-  const { selectedBoardFilter, alertThresholdValue, alertThresholdUnit, setAlertThreshold } = useModQueueStore();
+  const { selectedBoardFilter, viewMode } = useModQueueStore();
+  const isMobile = useIsMobile();
 
   const accountSubplebbitAddresses = useAccountsStore(
     (state) => {
@@ -563,97 +710,108 @@ export const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueV
     [hasMore, subplebbitAddresses, subplebbitError, feed.length],
   );
 
-  const alertThresholdControl = (
-    <div className={styles.alertThresholdSetting}>
-      <label>
-        {t('alert_threshold')}:
-        <input
-          type='number'
-          min='1'
-          step={alertThresholdUnit === 'minutes' ? '1' : '1'}
-          value={alertThresholdValue}
-          onChange={(e) => setAlertThreshold(Number(e.target.value), alertThresholdUnit)}
-          className={styles.alertThresholdInput}
-        />
-        <select
-          value={alertThresholdUnit}
-          onChange={(e) => {
-            const newUnit = e.target.value as 'hours' | 'minutes';
-            const newValue =
-              alertThresholdUnit === 'hours' && newUnit === 'minutes'
-                ? alertThresholdValue * 60
-                : alertThresholdUnit === 'minutes' && newUnit === 'hours'
-                  ? Math.round(alertThresholdValue / 60)
-                  : alertThresholdValue;
-            setAlertThreshold(Math.max(1, newValue), newUnit);
-          }}
-        >
-          <option value='minutes'>{t('minutes')}</option>
-          <option value='hours'>{t('hours')}</option>
-        </select>
-      </label>
-    </div>
-  );
-
   return (
     <div className={styles.container}>
       {!resolvedAddress && (
-        <div className={styles.header}>
-          <div className={styles.title}>{t('moderation_queue')}</div>
+        <div className={styles.controls}>
+          <div className={styles.controlsLeft}>
+            <ModQueueBoardFilter subplebbits={subplebbitsWithMetadata} />
+          </div>
         </div>
       )}
-
-      <div className={styles.controls}>
-        {!resolvedAddress ? (
-          <>
-            <div className={styles.controlsLeft}>
-              <ModQueueBoardFilter subplebbits={subplebbitsWithMetadata} />
-            </div>
-            <div className={styles.controlsRight}>{alertThresholdControl}</div>
-          </>
-        ) : (
-          <>
-            <div className={styles.controlsLeft}>
-              <div className={styles.title}>{t('moderation_queue')}</div>
-            </div>
-            <div className={styles.controlsRight}>{alertThresholdControl}</div>
-          </>
-        )}
-      </div>
 
       {feed.length === 0 && !hasMore ? (
         <div className={styles.empty}>{t('queue_is_empty')}</div>
       ) : (
         <>
-          <div className={styles.tableHeader}>
-            <div className={styles.numberHeader}>No.</div>
-            <div className={styles.excerptHeader}>{t('excerpt')}</div>
-            <div className={styles.timeHeader}>{t('submitted')}</div>
-            <div className={styles.actionsHeader}>{t('actions')}</div>
-          </div>
-
-          {/* Use Virtuoso for infinite scroll only when there's more content to paginate */}
-          {hasMore ? (
-            <Virtuoso
-              useWindowScroll
-              data={feed}
-              totalCount={feed.length}
-              endReached={loadMore}
-              increaseViewportBy={{ bottom: 1200, top: 1200 }}
-              itemContent={(index, comment) => <ModQueueRow key={comment.cid} comment={comment} isOdd={index % 2 === 0} />}
-              components={footerComponents}
-            />
-          ) : (
+          {viewMode === 'compact' && !isMobile && (
             <>
-              {feed.map((comment, index) => (
-                <ModQueueRow key={comment.cid} comment={comment} isOdd={index % 2 === 0} />
-              ))}
-              {subplebbitError?.message && feed.length === 0 && (
-                <div className={styles.error}>
-                  <ErrorDisplay error={subplebbitError} />
-                </div>
+              <div className={styles.tableHeader}>
+                <div className={styles.numberHeader}>No.</div>
+                <div className={styles.excerptHeader}>{t('excerpt')}</div>
+                <div className={styles.timeHeader}>{t('submitted')}</div>
+                <div className={styles.actionsHeader}>{t('actions')}</div>
+              </div>
+
+              {hasMore ? (
+                <Virtuoso
+                  useWindowScroll
+                  data={feed}
+                  totalCount={feed.length}
+                  endReached={loadMore}
+                  increaseViewportBy={{ bottom: 1200, top: 1200 }}
+                  itemContent={(index, comment) => <ModQueueRow key={comment.cid} comment={comment} isOdd={index % 2 === 0} />}
+                  components={footerComponents}
+                />
+              ) : (
+                <>
+                  {feed.map((comment, index) => (
+                    <ModQueueRow key={comment.cid} comment={comment} isOdd={index % 2 === 0} />
+                  ))}
+                  {subplebbitError?.message && feed.length === 0 && (
+                    <div className={styles.error}>
+                      <ErrorDisplay error={subplebbitError} />
+                    </div>
+                  )}
+                  <ModQueueFooter hasMore={hasMore} subplebbitAddresses={subplebbitAddresses} />
+                </>
               )}
-              <ModQueueFooter hasMore={hasMore} subplebbitAddresses={subplebbitAddresses} />
+            </>
+          )}
+
+          {viewMode === 'compact' && isMobile && (
+            <>
+              {hasMore ? (
+                <Virtuoso
+                  useWindowScroll
+                  data={feed}
+                  totalCount={feed.length}
+                  endReached={loadMore}
+                  increaseViewportBy={{ bottom: 1200, top: 1200 }}
+                  itemContent={(_index, comment) => <ModQueueCard key={comment.cid} comment={comment} />}
+                  components={footerComponents}
+                />
+              ) : (
+                <>
+                  {feed.map((comment) => (
+                    <ModQueueCard key={comment.cid} comment={comment} />
+                  ))}
+                  {subplebbitError?.message && feed.length === 0 && (
+                    <div className={styles.error}>
+                      <ErrorDisplay error={subplebbitError} />
+                    </div>
+                  )}
+                  <ModQueueFooter hasMore={hasMore} subplebbitAddresses={subplebbitAddresses} />
+                </>
+              )}
+            </>
+          )}
+
+          {viewMode === 'feed' && (
+            <>
+              {hasMore ? (
+                <Virtuoso
+                  useWindowScroll
+                  data={feed}
+                  totalCount={feed.length}
+                  endReached={loadMore}
+                  increaseViewportBy={{ bottom: 1200, top: 1200 }}
+                  itemContent={(_index, comment) => <ModQueueFeedPost key={comment.cid} comment={comment} />}
+                  components={footerComponents}
+                />
+              ) : (
+                <>
+                  {feed.map((comment) => (
+                    <ModQueueFeedPost key={comment.cid} comment={comment} />
+                  ))}
+                  {subplebbitError?.message && feed.length === 0 && (
+                    <div className={styles.error}>
+                      <ErrorDisplay error={subplebbitError} />
+                    </div>
+                  )}
+                  <ModQueueFooter hasMore={hasMore} subplebbitAddresses={subplebbitAddresses} />
+                </>
+              )}
             </>
           )}
         </>

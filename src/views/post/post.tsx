@@ -25,9 +25,26 @@ export interface PostProps {
   showReplies?: boolean;
   targetReplyCid?: string;
   threadNumber?: number;
+  isModQueue?: boolean;
+  modQueueStatus?: 'approved' | 'rejected' | 'failed' | null;
+  modQueueError?: string;
+  isPublishing?: boolean;
+  onApprove?: () => void;
+  onReject?: () => void;
 }
 
-export const Post = ({ post, showAllReplies = false, showReplies = true, targetReplyCid }: PostProps) => {
+export const Post = ({
+  post,
+  showAllReplies = false,
+  showReplies = true,
+  targetReplyCid,
+  isModQueue,
+  modQueueStatus,
+  modQueueError,
+  isPublishing,
+  onApprove,
+  onReject,
+}: PostProps) => {
   // Only subscribe to roles field to avoid rerenders from updatingState changes
   const roles = useSubplebbitField(post?.subplebbitAddress, (subplebbit) => subplebbit?.roles);
   const isMobile = useIsMobile();
@@ -44,9 +61,33 @@ export const Post = ({ post, showAllReplies = false, showReplies = true, targetR
     <div className={styles.thread}>
       <div className={styles.postContainer}>
         {isMobile ? (
-          <PostMobile post={comment} roles={roles} showAllReplies={showAllReplies} showReplies={showReplies} targetReplyCid={targetReplyCid} />
+          <PostMobile
+            post={comment}
+            roles={roles}
+            showAllReplies={showAllReplies}
+            showReplies={showReplies}
+            targetReplyCid={targetReplyCid}
+            isModQueue={isModQueue}
+            modQueueStatus={modQueueStatus}
+            modQueueError={modQueueError}
+            isPublishing={isPublishing}
+            onApprove={onApprove}
+            onReject={onReject}
+          />
         ) : (
-          <PostDesktop post={comment} roles={roles} showAllReplies={showAllReplies} showReplies={showReplies} targetReplyCid={targetReplyCid} />
+          <PostDesktop
+            post={comment}
+            roles={roles}
+            showAllReplies={showAllReplies}
+            showReplies={showReplies}
+            targetReplyCid={targetReplyCid}
+            isModQueue={isModQueue}
+            modQueueStatus={modQueueStatus}
+            modQueueError={modQueueError}
+            isPublishing={isPublishing}
+            onApprove={onApprove}
+            onReject={onReject}
+          />
         )}
       </div>
     </div>

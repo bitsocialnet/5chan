@@ -233,6 +233,52 @@
   display: inline;
 }
 
+.mobileCard {
+  border: var(--mod-queue-table-border);
+  background: var(--post-mobile-background-color, transparent);
+  padding: 8px;
+  margin: 6px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  font-size: 9pt;
+  font-weight: bold;
+}
+
+.cardNumber {
+  color: var(--body-font-color);
+}
+
+.cardTime {
+  white-space: nowrap;
+}
+
+.cardContent {
+  font-size: 9pt;
+  color: var(--body-font-color);
+}
+
+.cardContent a {
+  text-decoration: var(--post-link-text-decoration);
+  color: var(--post-link-text-color);
+}
+
+.cardContent a:hover {
+  text-decoration: var(--post-link-text-decoration-hover);
+  color: var(--post-link-text-color-hover);
+}
+
+.cardActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 /* Desktop: buttons styled as text links (same as board buttons) */
 @media (min-width: 640px) {
   .actions {

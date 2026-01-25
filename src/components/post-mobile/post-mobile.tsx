@@ -9,7 +9,8 @@ import { shouldShowSnow } from '../../lib/snow';
 import { getHasThumbnail } from '../../lib/utils/media-utils';
 import { getTextColorForBackground, hashStringToColor } from '../../lib/utils/post-utils';
 import { getFormattedDate, getFormattedTimeAgo } from '../../lib/utils/time-utils';
-import { isAllView, isPendingPostView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
+import { isAllView, isModQueueView, isPendingPostView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
+import useModQueueStore from '../../stores/use-mod-queue-store';
 import { useDefaultSubplebbits } from '../../hooks/use-default-subplebbits';
 import { getBoardPath } from '../../lib/utils/route-utils';
 import useAvatarVisibilityStore from '../../stores/use-avatar-visibility-store';
@@ -52,9 +53,20 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
   const isInAllView = isAllView(location.pathname);
   const isInPostPageView = isPostPageView(location.pathname, params);
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, params);
+  const isInModQueueView = isModQueueView(location.pathname);
+  const { getAlertThresholdSeconds } = useModQueueStore();
 
   const commentMediaInfo = useCommentMediaInfo(link, thumbnailUrl, linkWidth, linkHeight);
   const hasThumbnail = getHasThumbnail(commentMediaInfo, link);
+
+  // Check if post is awaiting approval and over threshold (for mod queue view)
+  const approved = post?.approved;
+  const alreadyApproved = approved === true;
+  const alreadyRejected = removed === true;
+  const isAwaitingApproval = isInModQueueView && !alreadyApproved && !alreadyRejected;
+  const timeWaiting = timestamp ? Date.now() / 1000 - timestamp : 0;
+  const alertThresholdSeconds = getAlertThresholdSeconds();
+  const isOverThreshold = isAwaitingApproval && timeWaiting > alertThresholdSeconds;
 
   const stateString = useStateString(post);
   const postMenuProps = useMemo(() => selectPostMenuProps(post), [post]);
@@ -176,7 +188,14 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
                 <Link to={`/${boardPath}`}>Board: {boardPath}</Link>
               </div>
             )}
-            <Tooltip children={<span>{getFormattedDate(timestamp)}</span>} content={getFormattedTimeAgo(timestamp)} />{' '}
+            {isInModQueueView && isOverThreshold ? (
+              <>
+                <Tooltip children={<span>{getFormattedDate(timestamp)}</span>} content={getFormattedTimeAgo(timestamp)} /> (
+                <span className={styles.alert}>{getFormattedTimeAgo(timestamp)}</span>)
+              </>
+            ) : (
+              <Tooltip children={<span>{getFormattedDate(timestamp)}</span>} content={getFormattedTimeAgo(timestamp)} />
+            )}{' '}
             {cid ? (
               <span className={styles.postNumLink}>
                 <Link
@@ -283,7 +302,19 @@ const Reply = ({ postReplyCount, reply, roles, threadNumber }: PostProps) => {
   );
 };
 
-const PostMobile = ({ post, roles, showAllReplies, showReplies = true, targetReplyCid }: PostProps) => {
+const PostMobile = ({
+  post,
+  roles,
+  showAllReplies,
+  showReplies = true,
+  targetReplyCid,
+  isModQueue,
+  modQueueStatus,
+  modQueueError,
+  isPublishing,
+  onApprove,
+  onReject,
+}: PostProps) => {
   const { t } = useTranslation();
   const { author, cid, pinned, postCid, replyCount, state, subplebbitAddress } = post || {};
   const params = useParams();
@@ -356,12 +387,12 @@ const PostMobile = ({ post, roles, showAllReplies, showReplies = true, targetRep
         </>
       ) : (
         <div className={styles.postMobile}>
-          {showReplies && (
+          {(showReplies || isModQueue) && (
             <div className={styles.hrWrapper}>
               <hr />
             </div>
           )}
-          <div className={showReplies ? styles.thread : styles.quotePreview}>
+          <div className={showReplies || isModQueue ? styles.thread : styles.quotePreview}>
             <div className={styles.postContainer}>
               <div
                 className={`${styles.postOp} ${shouldShowSnow() ? styles.xmasHatWrapper : ''}`}
@@ -373,15 +404,41 @@ const PostMobile = ({ post, roles, showAllReplies, showReplies = true, targetRep
                 <PostInfoAndMedia post={post} postReplyCount={replyCount} roles={roles} threadNumber={post?.number} />
                 <CommentContent comment={post} />
               </div>
-              {!isInPostView && !isInPendingPostView && showReplies && (
+              {!isInPostView && !isInPendingPostView && (showReplies || isModQueue) && (
                 <div className={styles.postLink}>
                   <span className={styles.info}>
                     {replyCount > 0 && `${replyCount} Replies`}
                     {linksCount > 0 && ` / ${linksCount} Links`}
                   </span>
-                  <Link to={boardPath ? `/${boardPath}/thread/${cid}` : `/thread/${cid}`} className='button'>
-                    {t('view_thread')}
-                  </Link>
+                  {isModQueue ? (
+                    <div className={styles.modQueueActions}>
+                      {modQueueStatus === 'approved' ? (
+                        <span className={styles.modQueueStatusApproved}>{t('approved')}</span>
+                      ) : modQueueStatus === 'rejected' ? (
+                        <span className={styles.modQueueStatusRejected}>{t('rejected')}</span>
+                      ) : modQueueStatus === 'failed' ? (
+                        <span className={styles.modQueueStatusRejected}>
+                          {t('failed')}
+                          {modQueueError ? `: ${modQueueError}` : ''}
+                        </span>
+                      ) : isPublishing ? (
+                        <LoadingEllipsis string={t('publishing')} />
+                      ) : (
+                        <>
+                          <button className={`button ${styles.approveButton}`} onClick={onApprove} disabled={isPublishing}>
+                            {t('approve')}
+                          </button>
+                          <button className={`button ${styles.rejectButton}`} onClick={onReject} disabled={isPublishing}>
+                            {t('reject')}
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  ) : (
+                    <Link to={boardPath ? `/${boardPath}/thread/${cid}` : `/thread/${cid}`} className='button'>
+                      {t('view_thread')}
+                    </Link>
+                  )}
                 </div>
               )}
             </div>

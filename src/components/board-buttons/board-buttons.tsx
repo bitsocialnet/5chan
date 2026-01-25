@@ -11,6 +11,7 @@ import useCatalogStyleStore from '../../stores/use-catalog-style-store';
 import useFeedResetStore from '../../stores/use-feed-reset-store';
 import useSortingStore from '../../stores/use-sorting-store';
 import useAllFeedFilterStore from '../../stores/use-all-feed-filter-store';
+import useModQueueStore from '../../stores/use-mod-queue-store';
 import useCountLinksInReplies from '../../hooks/use-count-links-in-replies';
 import useIsMobile from '../../hooks/use-is-mobile';
 import useTimeFilter from '../../hooks/use-time-filter';
@@ -229,6 +230,58 @@ const ImageSizeOptions = () => {
   );
 };
 
+const ModQueueAlertThreshold = () => {
+  const { t } = useTranslation();
+  const { alertThresholdValue, alertThresholdUnit, setAlertThreshold } = useModQueueStore();
+
+  return (
+    <div className={styles.modQueueControls}>
+      <label>
+        {t('alert_threshold')}:
+        <input
+          type='number'
+          min='1'
+          step='1'
+          value={alertThresholdValue}
+          onChange={(e) => setAlertThreshold(Number(e.target.value), alertThresholdUnit)}
+          className={styles.alertThresholdInput}
+        />
+        <select
+          value={alertThresholdUnit}
+          onChange={(e) => {
+            const newUnit = e.target.value as 'hours' | 'minutes';
+            const newValue =
+              alertThresholdUnit === 'hours' && newUnit === 'minutes'
+                ? alertThresholdValue * 60
+                : alertThresholdUnit === 'minutes' && newUnit === 'hours'
+                  ? Math.round(alertThresholdValue / 60)
+                  : alertThresholdValue;
+            setAlertThreshold(Math.max(1, newValue), newUnit);
+          }}
+        >
+          <option value='minutes'>{t('minutes')}</option>
+          <option value='hours'>{t('hours')}</option>
+        </select>
+      </label>
+    </div>
+  );
+};
+
+const ModQueueViewSelector = () => {
+  const { viewMode, setViewMode } = useModQueueStore();
+  return (
+    <div className={styles.modQueueControls}>
+      <label>
+        View:
+        <select value={viewMode} onChange={(e) => setViewMode(e.target.value as 'compact' | 'feed')}>
+          <option value='compact'>Compact</option>
+          <option value='feed'>Feed</option>
+        </select>
+      </label>
+    </div>
+  );
+};
+
 const ShowOPCommentOption = () => {
   const { t } = useTranslation();
   const { showOPComment, setShowOPComment } = useCatalogStyleStore();
@@ -353,6 +406,8 @@ export const MobileBoardButtons = () => {
             isInModQueueView={isInModQueueView}
           />
           <RefreshButton />
+          <ModQueueAlertThreshold />
+          <ModQueueViewSelector />
         </>
       ) : (
         <>
@@ -476,6 +531,10 @@ export const DesktopBoardButtons = () => {
             />
             ] [
             <RefreshButton />]
+            <span className={styles.rightSideButtons}>
+              <ModQueueAlertThreshold />
+              <ModQueueViewSelector />
+            </span>
           </>
         ) : (
           <>
