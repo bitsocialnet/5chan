@@ -53,7 +53,7 @@ jobs:
           allowUpdates: true
 
   mac:
-    runs-on: macOS-13
+    runs-on: macos-15
     permissions:
       contents: write
     steps:
