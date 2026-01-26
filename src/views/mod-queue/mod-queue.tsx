@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, Link } from 'react-router-dom';
-import { useFeed, Comment, usePublishCommentModeration, useEditedComment, useSubplebbit } from '@plebbit/plebbit-react-hooks';
+import { useFeed, Comment, usePublishCommentModeration, useEditedComment, useSubplebbit, useComment } from '@plebbit/plebbit-react-hooks';
 import useAccountsStore from '@plebbit/plebbit-react-hooks/dist/stores/accounts';
 import { Virtuoso } from 'react-virtuoso';
 import { formatDistanceToNow } from 'date-fns';
@@ -22,6 +22,7 @@ import { alertChallengeVerificationFailed } from '../../lib/utils/challenge-util
 import Tooltip from '../../components/tooltip';
 import useIsMobile from '../../hooks/use-is-mobile';
 import { Post } from '../post/post';
+import _ from 'lodash';
 
 const { addChallenge } = useChallengesStore.getState();
 
@@ -162,7 +163,8 @@ const ModQueueRow = ({ comment, isOdd = false }: ModQueueRowProps) => {
   const { editedComment } = useEditedComment({ comment });
   const displayComment = editedComment || comment;
 
-  const { content, title, timestamp, subplebbitAddress, cid, threadCid, link, thumbnailUrl, linkWidth, linkHeight, removed, approved, number } = displayComment;
+  const { content, title, timestamp, subplebbitAddress, cid, threadCid, link, thumbnailUrl, linkWidth, linkHeight, removed, approved, number, parentCid } =
+    displayComment;
 
   // Check if already moderated (from previous session or API update)
   // Note: `approved` and `removed` are direct fields on the comment from CommentUpdate,
@@ -183,11 +185,15 @@ const ModQueueRow = ({ comment, isOdd = false }: ModQueueRowProps) => {
   const hasTitle = title && title.trim().length > 0;
   const hasContent = content && content.trim().length > 0;
   const hasLink = link && link.length > 0;
+  const isReply = !!parentCid;
+  const commentMediaInfo = getCommentMediaInfo(link, thumbnailUrl, linkWidth, linkHeight);
+  const hasThumbnail = getHasThumbnail(commentMediaInfo, link);
   const rawExcerpt =
+    (hasTitle && hasContent ? `${title}: ${content}` : null) ||
     (hasTitle ? title : null) ||
     (hasContent ? content : null) ||
     (hasLink ? link : null) ||
-    (getHasThumbnail(getCommentMediaInfo(link, thumbnailUrl, linkWidth, linkHeight), link) ? t('image') : null) ||
+    (hasThumbnail ? t('image') : null) ||
     t('no_content');
   // Only truncate excerpt on desktop, allow wrapping on mobile
   const excerpt = !isMobile && rawExcerpt.length > 101 ? rawExcerpt.slice(0, 98) + '...' : rawExcerpt;
@@ -268,6 +274,8 @@ const ModQueueRow = ({ comment, isOdd = false }: ModQueueRowProps) => {
           <Tooltip children={<span>{getFormattedDate(timestamp)}</span>} content={getFormattedTimeAgo(timestamp)} />
         )}
       </div>
+      <div className={styles.type}>{isReply ? _.capitalize(t('reply')) : _.capitalize(t('post'))}</div>
+      <div className={styles.image}>{hasThumbnail ? t('yes') : t('no')}</div>
       <div className={styles.actions}>{renderActions()}</div>
     </div>
   );
@@ -284,7 +292,8 @@ const ModQueueCard = ({ comment }: ModQueueCardProps) => {
   const { editedComment } = useEditedComment({ comment });
   const displayComment = editedComment || comment;
 
-  const { content, title, timestamp, subplebbitAddress, cid, threadCid, link, thumbnailUrl, linkWidth, linkHeight, removed, approved, number } = displayComment;
+  const { content, title, timestamp, subplebbitAddress, cid, threadCid, link, thumbnailUrl, linkWidth, linkHeight, removed, approved, number, parentCid } =
+    displayComment;
 
   const alreadyApproved = approved === true;
   const alreadyRejected = removed === true;
@@ -300,11 +309,15 @@ const ModQueueCard = ({ comment }: ModQueueCardProps) => {
   const hasTitle = title && title.trim().length > 0;
   const hasContent = content && content.trim().length > 0;
   const hasLink = link && link.length > 0;
+  const isReply = !!parentCid;
+  const commentMediaInfo = getCommentMediaInfo(link, thumbnailUrl, linkWidth, linkHeight);
+  const hasThumbnail = getHasThumbnail(commentMediaInfo, link);
   const rawExcerpt =
+    (hasTitle && hasContent ? `${title}: ${content}` : null) ||
     (hasTitle ? title : null) ||
     (hasContent ? content : null) ||
     (hasLink ? link : null) ||
-    (getHasThumbnail(getCommentMediaInfo(link, thumbnailUrl, linkWidth, linkHeight), link) ? t('image') : null) ||
+    (hasThumbnail ? t('image') : null) ||
     t('no_content');
   const excerpt = rawExcerpt.length > 140 ? rawExcerpt.slice(0, 137) + '...' : rawExcerpt;
   const threadTargetCid = threadCid || cid;
@@ -377,7 +390,8 @@ const ModQueueCard = ({ comment }: ModQueueCardProps) => {
           </Link>
         ) : (
           <span title={excerpt}>{excerpt}</span>
-        )}
+        )}{' '}
+        / {t('type')}: {isReply ? t('reply') : t('post')} / {_.capitalize(t('image'))}: {hasThumbnail ? _.lowerCase(t('yes')) : _.lowerCase(t('no'))}
       </div>
       {renderActions()}
     </div>
@@ -388,19 +402,30 @@ const ModQueueFeedPost = ({ comment }: { comment: Comment }) => {
   const { editedComment } = useEditedComment({ comment });
   const displayComment = editedComment || comment;
   const { status, errorMessage, isPublishing, handleApprove, handleReject } = useModQueueActions(displayComment);
+  const { parentCid } = displayComment;
+
+  // Fetch parent comment if this is a reply
+  const parentComment = useComment({ commentCid: parentCid });
 
   return (
-    <Post
-      post={displayComment}
-      showAllReplies={false}
-      showReplies={false}
-      isModQueue={true}
-      modQueueStatus={status}
-      modQueueError={errorMessage}
-      isPublishing={isPublishing}
-      onApprove={handleApprove}
-      onReject={handleReject}
-    />
+    <>
+      {parentCid && parentComment && (
+        <div style={{ marginBottom: '10px', paddingLeft: '20px', borderLeft: '2px solid var(--mod-queue-alert-color, #ccc)' }}>
+          <Post post={parentComment} showAllReplies={false} showReplies={false} isModQueue={false} />
+        </div>
+      )}
+      <Post
+        post={displayComment}
+        showAllReplies={false}
+        showReplies={false}
+        isModQueue={true}
+        modQueueStatus={status}
+        modQueueError={errorMessage}
+        isPublishing={isPublishing}
+        onApprove={handleApprove}
+        onReject={handleReject}
+      />
+    </>
   );
 };
 
@@ -730,6 +755,8 @@ export const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueV
                 <div className={styles.numberHeader}>No.</div>
                 <div className={styles.excerptHeader}>{t('excerpt')}</div>
                 <div className={styles.timeHeader}>{t('submitted')}</div>
+                <div className={styles.typeHeader}>{t('type')}</div>
+                <div className={styles.imageHeader}>{t('image')}</div>
                 <div className={styles.actionsHeader}>{t('actions')}</div>
               </div>
 

@@ -66,6 +66,8 @@
 .numberHeader,
 .excerptHeader,
 .timeHeader,
+.typeHeader,
+.imageHeader,
 .actionsHeader {
   background: var(--mod-queue-header-background-color);
   padding: 5px;
@@ -78,6 +80,18 @@
 
 .excerptHeader {
   flex-grow: 1;
+}
+
+.typeHeader {
+  width: 70px;
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.imageHeader {
+  width: 60px;
+  flex-shrink: 0;
+  text-align: right;
 }
 
 .timeHeader {
@@ -124,6 +138,8 @@
 .number,
 .excerpt,
 .time,
+.type,
+.image,
 .actions {
   padding: 2px 5px;
 }
@@ -135,6 +151,8 @@
 :global(body.yotsuba) .rowOdd .number,
 :global(body.yotsuba) .rowOdd .excerpt,
 :global(body.yotsuba) .rowOdd .time,
+:global(body.yotsuba) .rowOdd .type,
+:global(body.yotsuba) .rowOdd .image,
 :global(body.yotsuba) .rowOdd .actions {
   background-color: #ede2d4;
 }
@@ -142,6 +160,8 @@
 :global(body.yotsuba-b) .rowOdd .number,
 :global(body.yotsuba-b) .rowOdd .excerpt,
 :global(body.yotsuba-b) .rowOdd .time,
+:global(body.yotsuba-b) .rowOdd .type,
+:global(body.yotsuba-b) .rowOdd .image,
 :global(body.yotsuba-b) .rowOdd .actions {
   background-color: #e0e5f6;
 }
@@ -149,6 +169,8 @@
 :global(body.futaba) .rowOdd .number,
 :global(body.futaba) .rowOdd .excerpt,
 :global(body.futaba) .rowOdd .time,
+:global(body.futaba) .rowOdd .type,
+:global(body.futaba) .rowOdd .image,
 :global(body.futaba) .rowOdd .actions {
   background-color: #ede2d4;
 }
@@ -156,6 +178,8 @@
 :global(body.burichan) .rowOdd .number,
 :global(body.burichan) .rowOdd .excerpt,
 :global(body.burichan) .rowOdd .time,
+:global(body.burichan) .rowOdd .type,
+:global(body.burichan) .rowOdd .image,
 :global(body.burichan) .rowOdd .actions {
   background-color: #e0e5f6;
 }
@@ -163,6 +187,8 @@
 :global(body.tomorrow) .rowOdd .number,
 :global(body.tomorrow) .rowOdd .excerpt,
 :global(body.tomorrow) .rowOdd .time,
+:global(body.tomorrow) .rowOdd .type,
+:global(body.tomorrow) .rowOdd .image,
 :global(body.tomorrow) .rowOdd .actions {
   background-color: rgba(255, 255, 255, 0.1);
 }
@@ -170,6 +196,8 @@
 :global(body.photon) .rowOdd .number,
 :global(body.photon) .rowOdd .excerpt,
 :global(body.photon) .rowOdd .time,
+:global(body.photon) .rowOdd .type,
+:global(body.photon) .rowOdd .image,
 :global(body.photon) .rowOdd .actions {
   background-color: #888;
 }
@@ -185,6 +213,18 @@
   overflow: hidden;
   text-overflow: ellipsis;
   min-width: 0;
+}
+
+.type {
+  width: 70px;
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.image {
+  width: 60px;
+  flex-shrink: 0;
+  text-align: right;
 }
 
 .excerpt a {
@@ -397,26 +437,38 @@ span.reject:hover {
   :global(body.yotsuba) .rowOdd .number,
   :global(body.yotsuba) .rowOdd .excerpt,
   :global(body.yotsuba) .rowOdd .time,
+  :global(body.yotsuba) .rowOdd .type,
+  :global(body.yotsuba) .rowOdd .image,
   :global(body.yotsuba) .rowOdd .actions,
   :global(body.yotsuba-b) .rowOdd .number,
   :global(body.yotsuba-b) .rowOdd .excerpt,
   :global(body.yotsuba-b) .rowOdd .time,
+  :global(body.yotsuba-b) .rowOdd .type,
+  :global(body.yotsuba-b) .rowOdd .image,
   :global(body.yotsuba-b) .rowOdd .actions,
   :global(body.futaba) .rowOdd .number,
   :global(body.futaba) .rowOdd .excerpt,
   :global(body.futaba) .rowOdd .time,
+  :global(body.futaba) .rowOdd .type,
+  :global(body.futaba) .rowOdd .image,
   :global(body.futaba) .rowOdd .actions,
   :global(body.burichan) .rowOdd .number,
   :global(body.burichan) .rowOdd .excerpt,
   :global(body.burichan) .rowOdd .time,
+  :global(body.burichan) .rowOdd .type,
+  :global(body.burichan) .rowOdd .image,
   :global(body.burichan) .rowOdd .actions,
   :global(body.tomorrow) .rowOdd .number,
   :global(body.tomorrow) .rowOdd .excerpt,
   :global(body.tomorrow) .rowOdd .time,
+  :global(body.tomorrow) .rowOdd .type,
+  :global(body.tomorrow) .rowOdd .image,
   :global(body.tomorrow) .rowOdd .actions,
   :global(body.photon) .rowOdd .number,
   :global(body.photon) .rowOdd .excerpt,
   :global(body.photon) .rowOdd .time,
+  :global(body.photon) .rowOdd .type,
+  :global(body.photon) .rowOdd .image,
   :global(body.photon) .rowOdd .actions {
     background-color: transparent;
   }

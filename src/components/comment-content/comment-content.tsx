@@ -76,7 +76,7 @@ const CommentContent = ({ comment: post }: { comment: Comment }) => {
           {pendingApproval && (
             <>
               <br />
-              <span className={styles.pendingApproval}>(Pending mod approval, not visible to users)</span>
+              <span className={styles.pendingApproval}>({t('pending_mod_approval')})</span>
             </>
           )}
           {((!isInPostView && content?.length > 1000 && !showFullComment) || (isInPostView && content?.length > 2000 && !showFullComment)) && (
