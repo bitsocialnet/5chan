@@ -2,13 +2,16 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 export type AlertThresholdUnit = 'hours' | 'minutes';
+export type ModQueueViewMode = 'compact' | 'feed';
 
 interface ModQueueState {
   alertThresholdValue: number;
   alertThresholdUnit: AlertThresholdUnit;
   selectedBoardFilter: string | null;
+  viewMode: ModQueueViewMode;
   setAlertThreshold: (value: number, unit: AlertThresholdUnit) => void;
   setSelectedBoardFilter: (boardAddress: string | null) => void;
+  setViewMode: (viewMode: ModQueueViewMode) => void;
   // Helper to get threshold in seconds for calculations
   getAlertThresholdSeconds: () => number;
 }
@@ -19,10 +22,11 @@ interface OldPersistedState {
   alertThresholdValue?: number;
   alertThresholdUnit?: AlertThresholdUnit;
   selectedBoardFilter?: string | null;
+  viewMode?: ModQueueViewMode;
 }
 
 // Type for persisted data (without methods)
-type PersistedModQueueData = Pick<ModQueueState, 'alertThresholdValue' | 'alertThresholdUnit' | 'selectedBoardFilter'>;
+type PersistedModQueueData = Pick<ModQueueState, 'alertThresholdValue' | 'alertThresholdUnit' | 'selectedBoardFilter' | 'viewMode'>;
 
 const useModQueueStore = create<ModQueueState>()(
   persist(
@@ -30,8 +34,10 @@ const useModQueueStore = create<ModQueueState>()(
       alertThresholdValue: 6,
       alertThresholdUnit: 'hours' as AlertThresholdUnit,
       selectedBoardFilter: null,
+      viewMode: 'compact',
       setAlertThreshold: (value, unit) => set({ alertThresholdValue: value, alertThresholdUnit: unit }),
       setSelectedBoardFilter: (boardAddress) => set({ selectedBoardFilter: boardAddress }),
+      setViewMode: (viewMode) => set({ viewMode }),
       getAlertThresholdSeconds: () => {
         const { alertThresholdValue, alertThresholdUnit } = get();
         return alertThresholdUnit === 'hours' ? alertThresholdValue * 3600 : alertThresholdValue * 60;
@@ -39,7 +45,7 @@ const useModQueueStore = create<ModQueueState>()(
     }),
     {
       name: 'mod-queue-storage',
-      version: 1,
+      version: 2,
       // Migrate old alertThresholdHours format to new alertThresholdValue/alertThresholdUnit format
       migrate: (persistedState, version): ModQueueState => {
         const state = persistedState as OldPersistedState;
@@ -48,6 +54,7 @@ const useModQueueStore = create<ModQueueState>()(
             alertThresholdValue: state.alertThresholdHours,
             alertThresholdUnit: 'hours' as AlertThresholdUnit,
             selectedBoardFilter: state.selectedBoardFilter ?? null,
+            viewMode: state.viewMode ?? 'compact',
           };
           // Zustand will merge this with the store definition (which includes methods)
           return migrated as ModQueueState;
@@ -57,6 +64,7 @@ const useModQueueStore = create<ModQueueState>()(
           alertThresholdValue: state.alertThresholdValue ?? 6,
           alertThresholdUnit: state.alertThresholdUnit ?? 'hours',
           selectedBoardFilter: state.selectedBoardFilter ?? null,
+          viewMode: state.viewMode ?? 'compact',
         };
         return current as ModQueueState;
       },

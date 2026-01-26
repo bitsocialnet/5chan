@@ -269,5 +269,8 @@
   "submitted": "Lähetetty",
   "hours": "tuntia",
   "minutes": "minuuttia",
-  "alert_threshold": "Hälytyskynnys"
+  "alert_threshold": "Hälytyskynnys",
+  "modQueue.viewLabel": "View",
+  "modQueue.compact": "Compact",
+  "modQueue.feed": "Feed"
 }

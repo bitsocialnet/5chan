@@ -269,5 +269,8 @@
   "submitted": "సమర్పించబడింది",
   "hours": "గంటలు",
   "minutes": "నిమిషాలు",
-  "alert_threshold": "హెచ్చరిక థ్రెషోల్డ్"
+  "alert_threshold": "హెచ్చరిక థ్రెషోల్డ్",
+  "modQueue.viewLabel": "View",
+  "modQueue.compact": "Compact",
+  "modQueue.feed": "Feed"
 }

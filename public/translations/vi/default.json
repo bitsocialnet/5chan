@@ -269,5 +269,8 @@
   "submitted": "Đã gửi",
   "hours": "giờ",
   "minutes": "phút",
-  "alert_threshold": "Ngưỡng cảnh báo"
+  "alert_threshold": "Ngưỡng cảnh báo",
+  "modQueue.viewLabel": "View",
+  "modQueue.compact": "Compact",
+  "modQueue.feed": "Feed"
 }

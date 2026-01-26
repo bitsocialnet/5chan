@@ -11,6 +11,7 @@ import useCatalogStyleStore from '../../stores/use-catalog-style-store';
 import useFeedResetStore from '../../stores/use-feed-reset-store';
 import useSortingStore from '../../stores/use-sorting-store';
 import useAllFeedFilterStore from '../../stores/use-all-feed-filter-store';
+import useModQueueStore from '../../stores/use-mod-queue-store';
 import useCountLinksInReplies from '../../hooks/use-count-links-in-replies';
 import useIsMobile from '../../hooks/use-is-mobile';
 import useTimeFilter from '../../hooks/use-time-filter';
@@ -229,6 +230,97 @@ const ImageSizeOptions = () => {
   );
 };
 
+const MAX_ALERT_THRESHOLD = 10000; // Maximum threshold value in minutes (~166 hours)
+
+const ModQueueAlertThreshold = () => {
+  const { t } = useTranslation();
+  const { alertThresholdValue, alertThresholdUnit, setAlertThreshold } = useModQueueStore();
+
+  const handleThresholdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const inputValue = e.target.value.trim();
+
+    // Handle empty input - allow it temporarily for better UX
+    if (inputValue === '') {
+      return;
+    }
+
+    // Parse safely
+    const parsedValue = parseInt(inputValue, 10);
+
+    // Default to 1 if invalid or NaN
+    if (isNaN(parsedValue) || parsedValue < 1) {
+      setAlertThreshold(1, alertThresholdUnit);
+      return;
+    }
+
+    // Convert to minutes for clamping, then convert back to current unit
+    const valueInMinutes = alertThresholdUnit === 'hours' ? parsedValue * 60 : parsedValue;
+    const clampedMinutes = Math.min(valueInMinutes, MAX_ALERT_THRESHOLD);
+    const finalValue = alertThresholdUnit === 'hours' ? Math.round(clampedMinutes / 60) : clampedMinutes;
+
+    setAlertThreshold(finalValue, alertThresholdUnit);
+  };
+
+  const handleThresholdBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const inputValue = e.target.value.trim();
+
+    // If empty or invalid, restore to current value or default to 1
+    if (inputValue === '' || isNaN(parseInt(inputValue, 10))) {
+      const safeValue = alertThresholdValue >= 1 ? alertThresholdValue : 1;
+      setAlertThreshold(safeValue, alertThresholdUnit);
+    }
+  };
+
+  return (
+    <div className={styles.modQueueControls}>
+      <label>
+        {t('alert_threshold')}:
+        <input
+          type='number'
+          min='1'
+          step='1'
+          value={alertThresholdValue}
+          onChange={handleThresholdChange}
+          onBlur={handleThresholdBlur}
+          className={styles.alertThresholdInput}
+        />
+        <select
+          value={alertThresholdUnit}
+          onChange={(e) => {
+            const newUnit = e.target.value as 'hours' | 'minutes';
+            const newValue =
+              alertThresholdUnit === 'hours' && newUnit === 'minutes'
+                ? alertThresholdValue * 60
+                : alertThresholdUnit === 'minutes' && newUnit === 'hours'
+                  ? Math.round(alertThresholdValue / 60)
+                  : alertThresholdValue;
+            setAlertThreshold(Math.max(1, newValue), newUnit);
+          }}
+        >
+          <option value='minutes'>{t('minutes')}</option>
+          <option value='hours'>{t('hours')}</option>
+        </select>
+      </label>
+    </div>
+  );
+};
+
+const ModQueueViewSelector = () => {
+  const { t } = useTranslation();
+  const { viewMode, setViewMode } = useModQueueStore();
+  return (
+    <div className={styles.modQueueControls}>
+      <label>
+        {t('modQueue.viewLabel')}:
+        <select value={viewMode} onChange={(e) => setViewMode(e.target.value as 'compact' | 'feed')}>
+          <option value='compact'>{t('modQueue.compact')}</option>
+          <option value='feed'>{t('modQueue.feed')}</option>
+        </select>
+      </label>
+    </div>
+  );
+};
+
 const ShowOPCommentOption = () => {
   const { t } = useTranslation();
   const { showOPComment, setShowOPComment } = useCatalogStyleStore();
@@ -353,6 +445,8 @@ export const MobileBoardButtons = () => {
             isInModQueueView={isInModQueueView}
           />
           <RefreshButton />
+          <ModQueueAlertThreshold />
+          <ModQueueViewSelector />
         </>
       ) : (
         <>
@@ -476,6 +570,10 @@ export const DesktopBoardButtons = () => {
             />
             ] [
             <RefreshButton />]
+            <span className={styles.rightSideButtons}>
+              <ModQueueAlertThreshold />
+              <ModQueueViewSelector />
+            </span>
           </>
         ) : (
           <>

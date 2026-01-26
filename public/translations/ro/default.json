@@ -269,5 +269,8 @@
   "submitted": "Trimis",
   "hours": "ore",
   "minutes": "minute",
-  "alert_threshold": "Prag de alertă"
+  "alert_threshold": "Prag de alertă",
+  "modQueue.viewLabel": "View",
+  "modQueue.compact": "Compact",
+  "modQueue.feed": "Feed"
 }

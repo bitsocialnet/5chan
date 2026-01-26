@@ -269,5 +269,8 @@
   "submitted": "تم الإرسال",
   "hours": "ساعات",
   "minutes": "دقائق",
-  "alert_threshold": "عتبة التنبيه"
+  "alert_threshold": "عتبة التنبيه",
+  "modQueue.viewLabel": "View",
+  "modQueue.compact": "Compact",
+  "modQueue.feed": "Feed"
 }

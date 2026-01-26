@@ -105,6 +105,49 @@ Each MCP server injects its tool definitions into the context window, consuming 
 
 If you notice many MCP tools in your context, or if the user reports degraded responses, warn them that they may have too many MCP servers enabled and suggest disabling unused ones to free up context space.
 
+## Translations
+
+This project uses i18next with translation files in `public/translations/{lang}/default.json`.
+
+### Adding/Updating Translations
+
+Use `scripts/update-translations.js` to update translations across all languages. **Do not manually edit each language file.**
+
+**Workflow:**
+
+1. Create a temporary dictionary file (e.g., `translations-temp.json`) with translations for each language:
+   ```json
+   {
+     "en": "English text",
+     "es": "Spanish text",
+     "fr": "French text",
+     "de": "German text",
+     ...
+   }
+   ```
+
+2. Run the script with the `--map` flag:
+   ```bash
+   node scripts/update-translations.js --key my_new_key --map translations-temp.json --include-en --write
+   ```
+
+3. Delete the temporary dictionary file after the script completes.
+
+**Other useful commands:**
+
+```bash
+# Copy a key's value from English to all languages (dry run first)
+node scripts/update-translations.js --key some_key --from en --dry
+node scripts/update-translations.js --key some_key --from en --write
+
+# Delete a key from all languages
+node scripts/update-translations.js --key obsolete_key --delete --write
+
+# Audit for unused translation keys
+node scripts/update-translations.js --audit --dry
+node scripts/update-translations.js --audit --write
+```
+
 ## Boundaries
 
 - Never commit secrets or API keys

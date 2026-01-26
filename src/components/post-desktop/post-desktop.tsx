@@ -9,7 +9,8 @@ import { CommentMediaInfo, getDisplayMediaInfoType, getHasThumbnail, getMediaDim
 import { hashStringToColor, getTextColorForBackground } from '../../lib/utils/post-utils';
 import { getFormattedDate, getFormattedTimeAgo } from '../../lib/utils/time-utils';
 import { isValidURL } from '../../lib/utils/url-utils';
-import { isAllView, isPendingPostView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
+import { isAllView, isModQueueView, isPendingPostView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
+import useModQueueStore from '../../stores/use-mod-queue-store';
 import { useDefaultSubplebbits } from '../../hooks/use-default-subplebbits';
 import { getBoardPath } from '../../lib/utils/route-utils';
 import useAvatarVisibilityStore from '../../stores/use-avatar-visibility-store';
@@ -54,7 +55,19 @@ const useShowOmittedReplies = create<ShowOmittedRepliesState>((set) => ({
     })),
 }));
 
-const PostInfo = ({ post, postReplyCount = 0, roles, isHidden, threadNumber }: PostProps) => {
+const PostInfo = ({
+  post,
+  postReplyCount = 0,
+  roles,
+  isHidden,
+  threadNumber,
+  isModQueue,
+  modQueueStatus,
+  modQueueError,
+  isPublishing,
+  onApprove,
+  onReject,
+}: PostProps) => {
   const { t } = useTranslation();
   const { author, cid, deleted, locked, pinned, parentCid, postCid, reason, removed, state, subplebbitAddress, timestamp } = post || {};
   const title = post?.title?.trim();
@@ -74,6 +87,17 @@ const PostInfo = ({ post, postReplyCount = 0, roles, isHidden, threadNumber }: P
   const params = useParams();
   const location = useLocation();
   const isInPostPageView = isPostPageView(location.pathname, params);
+  const isInModQueueView = isModQueueView(location.pathname);
+  const { getAlertThresholdSeconds } = useModQueueStore();
+
+  // Check if post is awaiting approval and over threshold (for mod queue view)
+  const approved = post?.approved;
+  const alreadyApproved = approved === true;
+  const alreadyRejected = removed === true;
+  const isAwaitingApproval = isInModQueueView && !alreadyApproved && !alreadyRejected;
+  const timeWaiting = timestamp ? Date.now() / 1000 - timestamp : 0;
+  const alertThresholdSeconds = getAlertThresholdSeconds();
+  const isOverThreshold = isAwaitingApproval && timeWaiting > alertThresholdSeconds;
 
   const userID = address && Plebbit.getShortAddress({ address }); // should not be shortened to less than 12 characters, because users can create unlimited addresses/IDs before authenticating or passing challenges, so if the ID is short enough they can spoof it to troll users with the same ID
   const userIDBackgroundColor = hashStringToColor(userID);
@@ -169,7 +193,14 @@ const PostInfo = ({ post, postReplyCount = 0, roles, isHidden, threadNumber }: P
           ){' '}
         </span>
         <span className={styles.dateTime}>
-          <Tooltip children={<span>{getFormattedDate(timestamp)}</span>} content={getFormattedTimeAgo(timestamp)} />{' '}
+          {isInModQueueView && isOverThreshold ? (
+            <>
+              <Tooltip children={<span>{getFormattedDate(timestamp)}</span>} content={getFormattedTimeAgo(timestamp)} /> (
+              <span className={styles.alert}>{getFormattedTimeAgo(timestamp)}</span>)
+            </>
+          ) : (
+            <Tooltip children={<span>{getFormattedDate(timestamp)}</span>} content={getFormattedTimeAgo(timestamp)} />
+          )}{' '}
         </span>
         <span className={styles.postNum}>
           {cid ? (
@@ -204,7 +235,7 @@ const PostInfo = ({ post, postReplyCount = 0, roles, isHidden, threadNumber }: P
               <img src='assets/icons/closed.gif' alt='' className={styles.closedIcon} title={t('closed')} />
             </span>
           )}
-          {!isInPostPageView && !isReply && !isHidden && (
+          {!isInPostPageView && !isReply && !isHidden && !isModQueue && (
             <span className={styles.replyButton}>
               [
               <Link to={boardPath ? `/${boardPath}/thread/${postCid}` : `/thread/${postCid}`} onClick={(e) => !cid && e.preventDefault()}>
@@ -213,8 +244,41 @@ const PostInfo = ({ post, postReplyCount = 0, roles, isHidden, threadNumber }: P
               ]
             </span>
           )}
+          {isModQueue && (
+            <span className={styles.modQueueActions}>
+              {modQueueStatus === 'approved' ? (
+                <span className={styles.modQueueStatusApproved}>{t('approved')}</span>
+              ) : modQueueStatus === 'rejected' ? (
+                <span className={styles.modQueueStatusRejected}>{t('rejected')}</span>
+              ) : modQueueStatus === 'failed' ? (
+                <span className={styles.modQueueStatusRejected}>
+                  {t('failed')}
+                  {modQueueError ? `: ${modQueueError}` : ''}
+                </span>
+              ) : isPublishing ? (
+                <LoadingEllipsis string={t('publishing')} />
+              ) : (
+                <>
+                  <span className={styles.modQueueButtonWrapper}>
+                    [
+                    <button className={styles.modQueueActionButton} onClick={onApprove} disabled={isPublishing}>
+                      {t('approve')}
+                    </button>
+                    ]
+                  </span>
+                  <span className={styles.modQueueButtonWrapper}>
+                    [
+                    <button className={styles.modQueueActionButton} onClick={onReject} disabled={isPublishing}>
+                      {t('reject')}
+                    </button>
+                    ]
+                  </span>
+                </>
+              )}
+            </span>
+          )}
         </span>
-        {!(removed || deleted) && <PostMenuDesktop postMenu={postMenuProps} />}
+        {!(removed || deleted) && !isModQueue && <PostMenuDesktop postMenu={postMenuProps} />}
         {cid &&
           parentCid &&
           replies &&
@@ -376,7 +440,19 @@ const Reply = ({ postReplyCount, reply, roles, threadNumber }: PostProps) => {
   );
 };
 
-const PostDesktop = ({ post, roles, showAllReplies, showReplies = true, targetReplyCid }: PostProps) => {
+const PostDesktop = ({
+  post,
+  roles,
+  showAllReplies,
+  showReplies = true,
+  targetReplyCid,
+  isModQueue,
+  modQueueStatus,
+  modQueueError,
+  isPublishing,
+  onApprove,
+  onReject,
+}: PostProps) => {
   const { t } = useTranslation();
   const { author, cid, content, deleted, link, linkHeight, linkWidth, pinned, postCid, removed, spoiler, state, subplebbitAddress, thumbnailUrl, parentCid } = post || {};
   const params = useParams();
@@ -450,7 +526,7 @@ const PostDesktop = ({ post, roles, showAllReplies, showReplies = true, targetRe
 
   return (
     <div className={styles.postDesktop}>
-      {showReplies ? (
+      {showReplies || isModQueue ? (
         <div className={styles.hrWrapper}>
           <hr />
         </div>
@@ -485,7 +561,19 @@ const PostDesktop = ({ post, roles, showAllReplies, showReplies = true, targetRe
               isInSubscriptionsView={isInSubscriptionsView}
             />
           )}
-          <PostInfo isHidden={hidden} post={post} postReplyCount={replyCount} roles={roles} threadNumber={post?.number} />
+          <PostInfo
+            isHidden={hidden}
+            post={post}
+            postReplyCount={replyCount}
+            roles={roles}
+            threadNumber={post?.number}
+            isModQueue={isModQueue}
+            modQueueStatus={modQueueStatus}
+            modQueueError={modQueueError}
+            isPublishing={isPublishing}
+            onApprove={onApprove}
+            onReject={onReject}
+          />
           {!isHidden && !content && !(deleted || removed) && <div className={styles.spacer} />}
           {!isHidden && <CommentContent comment={post} />}
         </div>

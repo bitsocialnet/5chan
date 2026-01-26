@@ -1,10 +1,11 @@
-# [0.6.0](https://github.com/plebbit/plebchan/compare/v0.5.3...v0.6.0) (2026-01-22)
+## [0.6.1](https://github.com/plebbit/plebchan/compare/v0.6.0...v0.6.1) (2026-01-25)
 
 
 ### Bug Fixes
 
 * align asset-manifest generator output with prettier config ([4fd9a9c](https://github.com/plebbit/plebchan/commit/4fd9a9c1a98838dd9bbd05240905564fb6b6c85e))
 * **android:** capacitor config was pointing to build instead of dist (legacy from CRA) ([436988e](https://github.com/plebbit/plebchan/commit/436988ee26f83c3c32c82a1a436006facec302de))
+* **android:** release build fails due to tar v7 incompatibility with Capacitor CLI ([eda8b5e](https://github.com/plebbit/plebchan/commit/eda8b5ed86d5376c3fac92ca90901d8c83d1edf2))
 * **board buttons:** guard against undefined address ([2a521ad](https://github.com/plebbit/plebchan/commit/2a521ad8f82160b83f2d400c5a75f41bcb61f6d1))
 * **board header:** limit clickable area of subscriptions counter to text only ([4f49ec6](https://github.com/plebbit/plebchan/commit/4f49ec666626b7711d9166fdb9933b83b2bec186))
 * **boards-list:** hide Multiboards section when filtering for worksafe boards ([594be88](https://github.com/plebbit/plebchan/commit/594be882101cf849e172b90c0944b98a3629bad2))
@@ -17,6 +18,7 @@
 * **ci:** macOS test builds fail with hdiutil "Resource busy" error ([46f0f49](https://github.com/plebbit/plebchan/commit/46f0f494e99a5fe113f0e27f46e97dcc0be6a2eb))
 * **ci:** remove redundant electron-rebuild from build scripts ([96a3068](https://github.com/plebbit/plebchan/commit/96a306892868993f000af9c1f8928acbd928e3b3))
 * **ci:** update deprecated intel mac runner ([2d23f44](https://github.com/plebbit/plebchan/commit/2d23f44bd80df5db75677b829c3484878d7f8d7c))
+* **ci:** update macos runner image ([5f85a0a](https://github.com/plebbit/plebchan/commit/5f85a0ac1548b18566425ec76569647fe8ae4805))
 * **comment-content:** ensure parent comment number is populated for nested replies ([c2bbe2d](https://github.com/plebbit/plebchan/commit/c2bbe2dd0b95d7e4b1fb1e3b988df0039d5e1684))
 * **comment-content:** use correct banExpiresAt path for ban visibility ([476681c](https://github.com/plebbit/plebchan/commit/476681c689edba6fe0dbc052c9908649188cca60))
 * correct horizontal centering of create board modal ([e863ddb](https://github.com/plebbit/plebchan/commit/e863ddb8b901191e7b5bb4f9527b0af994895a42))
@@ -35,6 +37,7 @@
 * **hooks:** fix usePopularPosts loading state and change detection ([a7614db](https://github.com/plebbit/plebchan/commit/a7614db743c3eff052b48a1401f427b38dbd03d2))
 * **hooks:** remove postCid requirement from isAccountCommentAuthor check ([6175744](https://github.com/plebbit/plebchan/commit/6175744e7b4f9f56e562265751ac3bf5bcad6f2b))
 * **hooks:** use structural equality for roles comparison in useStableSubplebbit ([647139c](https://github.com/plebbit/plebchan/commit/647139c0ec4a23f21fb4d7830285cc5123f9202a))
+* HTML zip archive is empty in releases ([2f0fae8](https://github.com/plebbit/plebchan/commit/2f0fae846a49d8d5e949bf58e33381e2f08ebf81))
 * limit vite-plugin-eslint to src/ files only ([f65635b](https://github.com/plebbit/plebchan/commit/f65635b549a7c73f31b52c7f5656fc20b6f02a1c))
 * **lint:** use correct oxlint rule names and enable react plugin in config ([9fd41f2](https://github.com/plebbit/plebchan/commit/9fd41f2f9f8099fd23d2341371d6168b204c97fe))
 * **markdown:** embedded media in comment.content shouldn't be expandable and should be already expanded ([fcd8838](https://github.com/plebbit/plebchan/commit/fcd8838045a8ba66852b2f69904f939d3a8c6153))
@@ -50,6 +53,7 @@
 * **mod-queue:** alert animation and counter only for pending items ([a23f5bc](https://github.com/plebbit/plebchan/commit/a23f5bc2388f3ceae6d9bdbe9b7f24247c094d4b))
 * **mod-queue:** button counter includes already approved/rejected items ([02fc6a3](https://github.com/plebbit/plebchan/commit/02fc6a3171517e06012138ad9f3ac6aa620d69dc))
 * **mod-queue:** close CSS breakpoint gap and remove duplicate time-ago rendering ([ab98bd0](https://github.com/plebbit/plebchan/commit/ab98bd0a87f92af5ba70b88a360fd1132e0668bb))
+* **mod-queue:** improve alert threshold input validation and add i18n for view selector ([d866372](https://github.com/plebbit/plebchan/commit/d86637200bc74f41e095023bfe58a5fb4e58ec35))
 * **mod-queue:** style action buttons to match board buttons and make status indicators bold/colored ([fbdfadc](https://github.com/plebbit/plebchan/commit/fbdfadc65cd0ad24eff28552570ef91fa89fcddf))
 * **mod-queue:** use link as excerpt when post has no title/content and prevent empty strings ([410fd54](https://github.com/plebbit/plebchan/commit/410fd541b33655d2668f85c25d52a1392703e3d5))
 * **p2p-options:** correct Solana chainId from 1 to 101 ([52fea38](https://github.com/plebbit/plebchan/commit/52fea3851e0fe3bccadd8cae8b02e2204c45e397))
@@ -123,6 +127,7 @@
 * implement post numbers ([7684541](https://github.com/plebbit/plebchan/commit/76845412e8b34c11fb70bf993a0aeaeda54a3ee4))
 * **mod-queue:** add minutes support to alert threshold ([ab353b5](https://github.com/plebbit/plebchan/commit/ab353b59f62e94edd76e97e5c18cab1f3cfb2115))
 * **mod-queue:** add number column, improve time display, and use edited comments ([a33b2e5](https://github.com/plebbit/plebchan/commit/a33b2e5a9aa04d3ae5daf418b51b13ce6d23d579))
+* **mod-queue:** add view mode selection and integrate with post components ([14e8c92](https://github.com/plebbit/plebchan/commit/14e8c92fa0fd2cc6eb9d5bad7646020207389373))
 * **modals:** use icon-close-red.png for close buttons on home view ([21d9c0c](https://github.com/plebbit/plebchan/commit/21d9c0c6163dcd3947d26bcf3bdc5e5d0aae52dc))
 * **moderation:** add purge action to edit menu ([1abc841](https://github.com/plebbit/plebchan/commit/1abc8410cd09e8d1b79df6809a9fea0241a3ae4c))
 * **p2p options:** add http routers field ([3d67606](https://github.com/plebbit/plebchan/commit/3d676062af3ed54942a5f92b0958ce3501616c8b))

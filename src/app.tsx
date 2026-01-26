@@ -83,14 +83,13 @@ const BoardLayout = () => {
       <DisclaimerModal />
       <BoardHeader />
       {isMobile
-        ? (subplebbitAddress || isInAllView || isInModView || isInSubscriptionsView || pendingPost?.subplebbitAddress) &&
-          !isOnModQueueRoute && (
+        ? (subplebbitAddress || isInAllView || isInModView || isInSubscriptionsView || pendingPost?.subplebbitAddress || isOnModQueueRoute) && (
             <>
               <PostForm key={key} />
               <MobileBoardButtons />
             </>
           )
-        : (subplebbitAddress || isInAllView || isInModView || isInSubscriptionsView || pendingPost?.subplebbitAddress) && (
+        : (subplebbitAddress || isInAllView || isInModView || isInSubscriptionsView || pendingPost?.subplebbitAddress || isOnModQueueRoute) && (
             <>
               <PostForm key={key} />
               {!(isInAllView || isInSubscriptionsView || isInModView) && !isOnModQueueRoute && <SubplebbitStats />}

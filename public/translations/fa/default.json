@@ -269,5 +269,8 @@
   "submitted": "ارسال شده",
   "hours": "ساعت",
   "minutes": "دقیقه",
-  "alert_threshold": "آستانه هشدار"
+  "alert_threshold": "آستانه هشدار",
+  "modQueue.viewLabel": "View",
+  "modQueue.compact": "Compact",
+  "modQueue.feed": "Feed"
 }

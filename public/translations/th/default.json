@@ -269,5 +269,8 @@
   "submitted": "ส่งแล้ว",
   "hours": "ชั่วโมง",
   "minutes": "นาที",
-  "alert_threshold": "เกณฑ์การแจ้งเตือน"
+  "alert_threshold": "เกณฑ์การแจ้งเตือน",
+  "modQueue.viewLabel": "View",
+  "modQueue.compact": "Compact",
+  "modQueue.feed": "Feed"
 }

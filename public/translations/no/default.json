@@ -269,5 +269,8 @@
   "submitted": "Sendt inn",
   "hours": "timer",
   "minutes": "minutter",
-  "alert_threshold": "Terskel for varsel"
+  "alert_threshold": "Terskel for varsel",
+  "modQueue.viewLabel": "View",
+  "modQueue.compact": "Compact",
+  "modQueue.feed": "Feed"
 }

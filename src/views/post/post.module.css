@@ -189,6 +189,55 @@
   color: var(--button-desktop-text-color-hover);
 }
 
+.modQueueActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 8px;
+}
+
+.modQueueButtonWrapper {
+  display: inline-flex;
+}
+
+.modQueueActionButton {
+  all: unset;
+  cursor: pointer;
+  text-transform: capitalize;
+  color: var(--button-desktop-text-color);
+  text-decoration: var(--button-text-decoration);
+  font-family: inherit;
+}
+
+.modQueueActionButton:hover {
+  color: var(--button-desktop-text-color-hover);
+}
+
+.modQueueActionButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.modQueueStatusApproved {
+  color: green;
+  font-weight: 700;
+}
+
+.modQueueStatusRejected {
+  color: red;
+  font-weight: 700;
+}
+
+.approveButton {
+  background-color: #3fa96b;
+  color: #fff;
+}
+
+.rejectButton {
+  background-color: #d9534f;
+  color: #fff;
+}
+
 .postDesktop .spacer {
   width: 100%;
   padding: 5px;
@@ -668,4 +717,16 @@
   color: red;
   font-weight: 700;
   text-transform: uppercase;
+}
+
+.alert {
+  color: var(--mod-queue-alert-color, red);
+  font-weight: bold;
+  animation: blink 2s infinite;
+}
+
+@keyframes blink {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
 }

@@ -8,7 +8,7 @@ import useSubplebbitsPagesStore from '@plebbit/plebbit-react-hooks/dist/stores/s
 import { getHasThumbnail, getLinkMediaInfo } from '../../lib/utils/media-utils';
 import { formatMarkdown } from '../../lib/utils/post-utils';
 import { isValidURL } from '../../lib/utils/url-utils';
-import { isAllView, isCatalogView, isModView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
+import { isAllView, isCatalogView, isModQueueView, isModView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import { useDefaultSubplebbits } from '../../hooks/use-default-subplebbits';
 import { useResolvedSubplebbitAddress } from '../../hooks/use-resolved-subplebbit-address';
 import useFetchGifFirstFrame from '../../hooks/use-fetch-gif-first-frame';
@@ -373,6 +373,7 @@ const PostForm = () => {
   const isInPostView = isPostPageView(location.pathname, params);
   const isInAllView = isAllView(location.pathname);
   const isInModView = isModView(location.pathname);
+  const isInModQueueView = isModQueueView(location.pathname);
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, params);
   const isInCatalogView = isCatalogView(location.pathname, params);
 
@@ -398,7 +399,9 @@ const PostForm = () => {
     <>
       <div className={styles.postFormDesktop}>
         {!(isInAllView || isInSubscriptionsView || isInModView) && showForm && <OfflineAlert subplebbitAddress={subplebbitAddress} />}
-        {isThreadClosed ? (
+        {isInModQueueView ? (
+          <div className={styles.modQueueTitle}>{t('moderation_queue')}</div>
+        ) : isThreadClosed ? (
           <div className={styles.closed}>
             {t('thread_closed')}
             <br />
@@ -418,7 +421,9 @@ const PostForm = () => {
       </div>
       <div className={styles.postFormMobile}>
         {!(isInAllView || isInSubscriptionsView || isInModView) && showForm && <OfflineAlert subplebbitAddress={subplebbitAddress} />}
-        {isThreadClosed ? (
+        {isInModQueueView ? (
+          <div className={styles.modQueueTitle}>{t('moderation_queue')}</div>
+        ) : isThreadClosed ? (
           <div className={styles.closed}>
             {t('thread_closed')}
             <br />

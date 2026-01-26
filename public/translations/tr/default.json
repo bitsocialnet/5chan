@@ -269,5 +269,8 @@
   "submitted": "Gönderildi",
   "hours": "saat",
   "minutes": "dakika",
-  "alert_threshold": "Uyarı eşiği"
+  "alert_threshold": "Uyarı eşiği",
+  "modQueue.viewLabel": "View",
+  "modQueue.compact": "Compact",
+  "modQueue.feed": "Feed"
 }

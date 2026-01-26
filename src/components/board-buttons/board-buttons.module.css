@@ -66,6 +66,30 @@
   align-items: center;
 }
 
+.modQueueControls {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 8px;
+  font-size: 12px;
+}
+
+.modQueueControls label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.alertThresholdInput {
+  width: 50px;
+}
+
+.mobileBoardButtons .modQueueControls {
+  display: flex;
+  justify-content: center;
+  margin: 6px 0;
+}
+
 .desktopBoardButtons .rightSideButtons select {
   margin-right: 5px;
 }

@@ -269,5 +269,8 @@
   "submitted": "Przesłane",
   "hours": "godzin",
   "minutes": "minut",
-  "alert_threshold": "Próg alertu"
+  "alert_threshold": "Próg alertu",
+  "modQueue.viewLabel": "View",
+  "modQueue.compact": "Compact",
+  "modQueue.feed": "Feed"
 }
