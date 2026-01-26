@@ -251,7 +251,7 @@ const PostMediaContent = ({ post, link }: { post: any; link: string }) => {
 
 const ReplyBacklinks = ({ post }: PostProps) => {
   const { cid, parentCid } = post || {};
-  const { replies } = useReplies({ comment: post, flat: true });
+  const { replies } = useReplies({ comment: post, flat: true, accountComments: { newerThan: Infinity } });
 
   return (
     cid &&
@@ -325,7 +325,7 @@ const PostMobile = ({
   const defaultSubplebbits = useDefaultSubplebbits();
   const boardPath = subplebbitAddress ? getBoardPath(subplebbitAddress, defaultSubplebbits) : undefined;
   const linksCount = useCountLinksInReplies(post);
-  const { replies, hasMore, loadMore } = useReplies({ comment: post });
+  const { replies, hasMore, loadMore } = useReplies({ comment: post, accountComments: { newerThan: Infinity } });
 
   const isInPostPageView = isPostPageView(location.pathname, params);
   const { hidden, unhide } = useHide({ cid });

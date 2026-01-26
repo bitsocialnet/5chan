@@ -71,7 +71,7 @@ const PostInfo = ({
   const { t } = useTranslation();
   const { author, cid, deleted, locked, pinned, parentCid, postCid, reason, removed, state, subplebbitAddress, timestamp } = post || {};
   const title = post?.title?.trim();
-  const { replies } = useReplies({ comment: post });
+  const { replies } = useReplies({ comment: post, accountComments: { newerThan: Infinity } });
   const { address, shortAddress } = author || {};
   const displayName = author?.displayName?.trim();
   const authorRole = roles?.[address]?.role?.replace('moderator', 'mod');
@@ -468,7 +468,7 @@ const PostDesktop = ({
   const { hidden, unhide, hide } = useHide({ cid });
   const isHidden = hidden && !isInPostPageView;
 
-  const { replies, hasMore, loadMore } = useReplies({ comment: post, flat: true });
+  const { replies, hasMore, loadMore } = useReplies({ comment: post, flat: true, accountComments: { newerThan: Infinity } });
   const visiblelinksCount = useCountLinksInReplies(post, 5);
   const totalLinksCount = useCountLinksInReplies(post);
   const replyCount = replies?.length;
