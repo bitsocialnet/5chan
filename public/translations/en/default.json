@@ -272,5 +272,9 @@
   "approved": "Approved",
   "rejected": "Rejected",
   "submitted": "Submitted",
-  "downloading_board": "Downloading board"
+  "downloading_board": "Downloading board",
+  "type": "Type",
+  "yes": "Yes",
+  "no": "No",
+  "pending_mod_approval": "Pending mod approval, not visible to users"
 }

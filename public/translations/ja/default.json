@@ -272,5 +272,9 @@
   "alert_threshold": "アラート閾値",
   "modQueue.viewLabel": "View",
   "modQueue.compact": "Compact",
-  "modQueue.feed": "Feed"
+  "modQueue.feed": "Feed",
+  "type": "タイプ",
+  "yes": "はい",
+  "no": "いいえ",
+  "pending_mod_approval": "モデレーターの承認待ち、ユーザーには表示されません"
 }

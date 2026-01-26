@@ -272,5 +272,9 @@
   "alert_threshold": "Umbral de alerta",
   "modQueue.viewLabel": "View",
   "modQueue.compact": "Compact",
-  "modQueue.feed": "Feed"
+  "modQueue.feed": "Feed",
+  "type": "Tipo",
+  "yes": "Sí",
+  "no": "No",
+  "pending_mod_approval": "Pendiente de aprobación del moderador, no visible para los usuarios"
 }

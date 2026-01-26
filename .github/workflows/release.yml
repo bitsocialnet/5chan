@@ -67,8 +67,10 @@ jobs:
         with:
           node-version: 20
 
-      # install missing dep for sqlite
-      - run: python3 -m ensurepip
+      # install missing dep for sqlite (use setup-python to avoid PEP 668 externally-managed-environment error)
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
       - run: pip install setuptools
 
       - name: Install dependencies (with Node v20)

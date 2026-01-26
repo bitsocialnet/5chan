@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigationType, useParams } from 'react-router-dom';
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
-import { Comment, useAuthorAvatar, useEditedComment, useReplies } from '@plebbit/plebbit-react-hooks';
+import { Comment, useAuthorAvatar, useEditedComment, useReplies, useAccount } from '@plebbit/plebbit-react-hooks';
 import Plebbit from '@plebbit/plebbit-js';
 import styles from '../../views/post/post.module.css';
 import { CommentMediaInfo, getDisplayMediaInfoType, getHasThumbnail, getMediaDimensions } from '../../lib/utils/media-utils';
@@ -35,6 +35,11 @@ import _ from 'lodash';
 import { shouldShowSnow } from '../../lib/snow';
 import useReplyModalStore from '../../stores/use-reply-modal-store';
 import { selectPostMenuProps } from '../../lib/utils/post-menu-props';
+import useChallengesStore from '../../stores/use-challenges-store';
+import { alertChallengeVerificationFailed } from '../../lib/utils/challenge-utils';
+import { usePublishCommentModeration } from '@plebbit/plebbit-react-hooks';
+
+const { addChallenge } = useChallengesStore.getState();
 
 // Store scroll position for replies virtuoso across navigations
 const lastVirtuosoStates: { [key: string]: StateSnapshot } = {};
@@ -71,7 +76,7 @@ const PostInfo = ({
   const { t } = useTranslation();
   const { author, cid, deleted, locked, pinned, parentCid, postCid, reason, removed, state, subplebbitAddress, timestamp } = post || {};
   const title = post?.title?.trim();
-  const { replies } = useReplies({ comment: post });
+  const { replies } = useReplies({ comment: post, accountComments: { newerThan: Infinity } });
   const { address, shortAddress } = author || {};
   const displayName = author?.displayName?.trim();
   const authorRole = roles?.[address]?.role?.replace('moderator', 'mod');
@@ -89,6 +94,97 @@ const PostInfo = ({
   const isInPostPageView = isPostPageView(location.pathname, params);
   const isInModQueueView = isModQueueView(location.pathname);
   const { getAlertThresholdSeconds } = useModQueueStore();
+  const account = useAccount();
+  const accountAddress = account?.author?.address;
+
+  // Check if user is mod of this board
+  const accountRole = roles?.[accountAddress]?.role;
+  const isAccountMod = accountRole === 'admin' || accountRole === 'owner' || accountRole === 'moderator';
+
+  // Check if post is pending approval and user is mod (for post page view)
+  const pendingApproval = post?.pendingApproval;
+  const shouldShowPendingApprovalButtons = isInPostPageView && !isInModQueueView && pendingApproval && isAccountMod && subplebbitAddress;
+
+  // Moderation actions for pending approval posts
+  const {
+    publishCommentModeration: approvePending,
+    state: approvePendingState,
+    error: approvePendingError,
+  } = usePublishCommentModeration({
+    commentCid: cid,
+    subplebbitAddress: shouldShowPendingApprovalButtons ? subplebbitAddress : undefined,
+    commentModeration: { approved: true },
+    onChallenge: async (...args: any) => {
+      addChallenge([...args, post]);
+    },
+    onChallengeVerification: async (challengeVerification, comment) => {
+      alertChallengeVerificationFailed(challengeVerification, comment);
+    },
+    onError: (error: Error) => {
+      console.error('Approve failed:', error);
+    },
+  });
+
+  const {
+    publishCommentModeration: rejectPending,
+    state: rejectPendingState,
+    error: rejectPendingError,
+  } = usePublishCommentModeration({
+    commentCid: cid,
+    subplebbitAddress: shouldShowPendingApprovalButtons ? subplebbitAddress : undefined,
+    commentModeration: { removed: true },
+    onChallenge: async (...args: any) => {
+      addChallenge([...args, post]);
+    },
+    onChallengeVerification: async (challengeVerification, comment) => {
+      alertChallengeVerificationFailed(challengeVerification, comment);
+    },
+    onError: (error: Error) => {
+      console.error('Reject failed:', error);
+    },
+  });
+
+  const [initiatedPendingAction, setInitiatedPendingAction] = useState<'approve' | 'reject' | null>(null);
+
+  const handlePendingApprove = useCallback(async () => {
+    const confirm = window.confirm(t('double_confirm'));
+    if (!confirm) {
+      return;
+    }
+    setInitiatedPendingAction('approve');
+    try {
+      await approvePending();
+    } catch (e) {
+      console.error(e);
+    }
+  }, [approvePending, t]);
+
+  const handlePendingReject = useCallback(async () => {
+    const confirm = window.confirm(t('double_confirm'));
+    if (!confirm) {
+      return;
+    }
+    setInitiatedPendingAction('reject');
+    try {
+      await rejectPending();
+    } catch (e) {
+      console.error(e);
+    }
+  }, [rejectPending, t]);
+
+  const isApprovingPending =
+    initiatedPendingAction === 'approve' && approvePendingState !== 'initializing' && approvePendingState !== 'succeeded' && approvePendingState !== 'failed';
+  const isRejectingPending =
+    initiatedPendingAction === 'reject' && rejectPendingState !== 'initializing' && rejectPendingState !== 'succeeded' && rejectPendingState !== 'failed';
+  const isPublishingPending = isApprovingPending || isRejectingPending;
+
+  const approvePendingSucceeded = initiatedPendingAction === 'approve' && approvePendingState === 'succeeded';
+  const rejectPendingSucceeded = initiatedPendingAction === 'reject' && rejectPendingState === 'succeeded';
+  const approvePendingFailed = initiatedPendingAction === 'approve' && approvePendingState === 'failed';
+  const rejectPendingFailed = initiatedPendingAction === 'reject' && rejectPendingState === 'failed';
+
+  const pendingStatus = approvePendingSucceeded ? 'approved' : rejectPendingSucceeded ? 'rejected' : approvePendingFailed || rejectPendingFailed ? 'failed' : null;
+  const pendingErrorMessage = approvePendingFailed ? approvePendingError?.message : rejectPendingFailed ? rejectPendingError?.message : undefined;
 
   // Check if post is awaiting approval and over threshold (for mod queue view)
   const approved = post?.approved;
@@ -269,6 +365,39 @@ const PostInfo = ({
                   <span className={styles.modQueueButtonWrapper}>
                     [
                     <button className={styles.modQueueActionButton} onClick={onReject} disabled={isPublishing}>
+                      {t('reject')}
+                    </button>
+                    ]
+                  </span>
+                </>
+              )}
+            </span>
+          )}
+          {shouldShowPendingApprovalButtons && (
+            <span className={styles.modQueueActions}>
+              {pendingStatus === 'approved' ? (
+                <span className={styles.modQueueStatusApproved}>{t('approved')}</span>
+              ) : pendingStatus === 'rejected' ? (
+                <span className={styles.modQueueStatusRejected}>{t('rejected')}</span>
+              ) : pendingStatus === 'failed' ? (
+                <span className={styles.modQueueStatusRejected}>
+                  {t('failed')}
+                  {pendingErrorMessage ? `: ${pendingErrorMessage}` : ''}
+                </span>
+              ) : isPublishingPending ? (
+                <LoadingEllipsis string={t('publishing')} />
+              ) : (
+                <>
+                  <span className={styles.modQueueButtonWrapper}>
+                    [
+                    <button className={styles.modQueueActionButton} onClick={handlePendingApprove} disabled={isPublishingPending}>
+                      {t('approve')}
+                    </button>
+                    ]
+                  </span>
+                  <span className={styles.modQueueButtonWrapper}>
+                    [
+                    <button className={styles.modQueueActionButton} onClick={handlePendingReject} disabled={isPublishingPending}>
                       {t('reject')}
                     </button>
                     ]
@@ -468,7 +597,7 @@ const PostDesktop = ({
   const { hidden, unhide, hide } = useHide({ cid });
   const isHidden = hidden && !isInPostPageView;
 
-  const { replies, hasMore, loadMore } = useReplies({ comment: post, flat: true });
+  const { replies, hasMore, loadMore } = useReplies({ comment: post, flat: true, accountComments: { newerThan: Infinity } });
   const visiblelinksCount = useCountLinksInReplies(post, 5);
   const totalLinksCount = useCountLinksInReplies(post);
   const replyCount = replies?.length;

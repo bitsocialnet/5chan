@@ -272,5 +272,9 @@
   "alert_threshold": "Поріг попередження",
   "modQueue.viewLabel": "View",
   "modQueue.compact": "Compact",
-  "modQueue.feed": "Feed"
+  "modQueue.feed": "Feed",
+  "type": "Type",
+  "yes": "Yes",
+  "no": "No",
+  "pending_mod_approval": "Pending mod approval, not visible to users"
 }

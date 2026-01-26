@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigationType, useParams } from 'react-router-dom';
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
-import { Comment, useAuthorAvatar, useEditedComment, useReplies } from '@plebbit/plebbit-react-hooks';
+import { Comment, useAuthorAvatar, useEditedComment, useReplies, useAccount, usePublishCommentModeration } from '@plebbit/plebbit-react-hooks';
 import Plebbit from '@plebbit/plebbit-js';
 import styles from '../../views/post/post.module.css';
 import { shouldShowSnow } from '../../lib/snow';
@@ -30,6 +30,10 @@ import { PostProps } from '../../views/post/post';
 import _ from 'lodash';
 import useReplyModalStore from '../../stores/use-reply-modal-store';
 import { selectPostMenuProps } from '../../lib/utils/post-menu-props';
+import useChallengesStore from '../../stores/use-challenges-store';
+import { alertChallengeVerificationFailed } from '../../lib/utils/challenge-utils';
+
+const { addChallenge } = useChallengesStore.getState();
 
 // Store scroll position for replies virtuoso across navigations
 const lastVirtuosoStates: { [key: string]: StateSnapshot } = {};
@@ -55,6 +59,97 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, params);
   const isInModQueueView = isModQueueView(location.pathname);
   const { getAlertThresholdSeconds } = useModQueueStore();
+  const account = useAccount();
+  const accountAddress = account?.author?.address;
+
+  // Check if user is mod of this board
+  const accountRole = roles?.[accountAddress]?.role;
+  const isAccountMod = accountRole === 'admin' || accountRole === 'owner' || accountRole === 'moderator';
+
+  // Check if post is pending approval and user is mod (for post page view)
+  const pendingApproval = post?.pendingApproval;
+  const shouldShowPendingApprovalButtons = isInPostPageView && !isInModQueueView && pendingApproval && isAccountMod && subplebbitAddress;
+
+  // Moderation actions for pending approval posts
+  const {
+    publishCommentModeration: approvePending,
+    state: approvePendingState,
+    error: approvePendingError,
+  } = usePublishCommentModeration({
+    commentCid: cid,
+    subplebbitAddress: shouldShowPendingApprovalButtons ? subplebbitAddress : undefined,
+    commentModeration: { approved: true },
+    onChallenge: async (...args: any) => {
+      addChallenge([...args, post]);
+    },
+    onChallengeVerification: async (challengeVerification, comment) => {
+      alertChallengeVerificationFailed(challengeVerification, comment);
+    },
+    onError: (error: Error) => {
+      console.error('Approve failed:', error);
+    },
+  });
+
+  const {
+    publishCommentModeration: rejectPending,
+    state: rejectPendingState,
+    error: rejectPendingError,
+  } = usePublishCommentModeration({
+    commentCid: cid,
+    subplebbitAddress: shouldShowPendingApprovalButtons ? subplebbitAddress : undefined,
+    commentModeration: { removed: true },
+    onChallenge: async (...args: any) => {
+      addChallenge([...args, post]);
+    },
+    onChallengeVerification: async (challengeVerification, comment) => {
+      alertChallengeVerificationFailed(challengeVerification, comment);
+    },
+    onError: (error: Error) => {
+      console.error('Reject failed:', error);
+    },
+  });
+
+  const [initiatedPendingAction, setInitiatedPendingAction] = useState<'approve' | 'reject' | null>(null);
+
+  const handlePendingApprove = useCallback(async () => {
+    const confirm = window.confirm(t('double_confirm'));
+    if (!confirm) {
+      return;
+    }
+    setInitiatedPendingAction('approve');
+    try {
+      await approvePending();
+    } catch (e) {
+      console.error(e);
+    }
+  }, [approvePending, t]);
+
+  const handlePendingReject = useCallback(async () => {
+    const confirm = window.confirm(t('double_confirm'));
+    if (!confirm) {
+      return;
+    }
+    setInitiatedPendingAction('reject');
+    try {
+      await rejectPending();
+    } catch (e) {
+      console.error(e);
+    }
+  }, [rejectPending, t]);
+
+  const isApprovingPending =
+    initiatedPendingAction === 'approve' && approvePendingState !== 'initializing' && approvePendingState !== 'succeeded' && approvePendingState !== 'failed';
+  const isRejectingPending =
+    initiatedPendingAction === 'reject' && rejectPendingState !== 'initializing' && rejectPendingState !== 'succeeded' && rejectPendingState !== 'failed';
+  const isPublishingPending = isApprovingPending || isRejectingPending;
+
+  const approvePendingSucceeded = initiatedPendingAction === 'approve' && approvePendingState === 'succeeded';
+  const rejectPendingSucceeded = initiatedPendingAction === 'reject' && rejectPendingState === 'succeeded';
+  const approvePendingFailed = initiatedPendingAction === 'approve' && approvePendingState === 'failed';
+  const rejectPendingFailed = initiatedPendingAction === 'reject' && rejectPendingState === 'failed';
+
+  const pendingStatus = approvePendingSucceeded ? 'approved' : rejectPendingSucceeded ? 'rejected' : approvePendingFailed || rejectPendingFailed ? 'failed' : null;
+  const pendingErrorMessage = approvePendingFailed ? approvePendingError?.message : rejectPendingFailed ? rejectPendingError?.message : undefined;
 
   const commentMediaInfo = useCommentMediaInfo(link, thumbnailUrl, linkWidth, linkHeight);
   const hasThumbnail = getHasThumbnail(commentMediaInfo, link);
@@ -218,6 +313,31 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
                 </span>
               </>
             )}
+            {shouldShowPendingApprovalButtons && (
+              <div className={styles.modQueueActions}>
+                {pendingStatus === 'approved' ? (
+                  <span className={styles.modQueueStatusApproved}>{t('approved')}</span>
+                ) : pendingStatus === 'rejected' ? (
+                  <span className={styles.modQueueStatusRejected}>{t('rejected')}</span>
+                ) : pendingStatus === 'failed' ? (
+                  <span className={styles.modQueueStatusRejected}>
+                    {t('failed')}
+                    {pendingErrorMessage ? `: ${pendingErrorMessage}` : ''}
+                  </span>
+                ) : isPublishingPending ? (
+                  <LoadingEllipsis string={t('publishing')} />
+                ) : (
+                  <>
+                    <button className={`button ${styles.approveButton}`} onClick={handlePendingApprove} disabled={isPublishingPending}>
+                      {t('approve')}
+                    </button>
+                    <button className={`button ${styles.rejectButton}`} onClick={handlePendingReject} disabled={isPublishingPending}>
+                      {t('reject')}
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
           </span>
         </span>
       </div>
@@ -251,7 +371,7 @@ const PostMediaContent = ({ post, link }: { post: any; link: string }) => {
 
 const ReplyBacklinks = ({ post }: PostProps) => {
   const { cid, parentCid } = post || {};
-  const { replies } = useReplies({ comment: post, flat: true });
+  const { replies } = useReplies({ comment: post, flat: true, accountComments: { newerThan: Infinity } });
 
   return (
     cid &&
@@ -325,7 +445,7 @@ const PostMobile = ({
   const defaultSubplebbits = useDefaultSubplebbits();
   const boardPath = subplebbitAddress ? getBoardPath(subplebbitAddress, defaultSubplebbits) : undefined;
   const linksCount = useCountLinksInReplies(post);
-  const { replies, hasMore, loadMore } = useReplies({ comment: post });
+  const { replies, hasMore, loadMore } = useReplies({ comment: post, accountComments: { newerThan: Infinity } });
 
   const isInPostPageView = isPostPageView(location.pathname, params);
   const { hidden, unhide } = useHide({ cid });

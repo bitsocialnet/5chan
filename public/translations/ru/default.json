@@ -272,5 +272,9 @@
   "alert_threshold": "Порог предупреждения",
   "modQueue.viewLabel": "View",
   "modQueue.compact": "Compact",
-  "modQueue.feed": "Feed"
+  "modQueue.feed": "Feed",
+  "type": "Тип",
+  "yes": "Да",
+  "no": "Нет",
+  "pending_mod_approval": "Ожидает одобрения модератора, не видно пользователям"
 }
