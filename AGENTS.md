@@ -32,7 +32,7 @@ yarn electron     # Run Electron app
 
 - TypeScript strict mode
 - Prettier for formatting (runs on pre-commit)
-- Follow DRY principle—extract reusable components
+- **DRY principle**: Never repeat UI elements across views—extract them into reusable components in `src/components/`. Same applies to logic—extract into custom hooks in `src/hooks/`
 
 ## React Patterns (Critical)
 
@@ -78,22 +78,41 @@ src/
 └── data/          # Static data (default subplebbits, etc.)
 ```
 
-## Documentation
+## Recommended Skills
 
-The following docs exist for deeper guidance. **Do not read them automatically**—they are large and will bloat the context window. Instead:
-- Be aware they exist
-- Consult them when relevant to the task or when the user asks
-- Offer to read them if the user seems to need React pattern guidance
+Skills are more efficient than docs—they inject targeted guidance without bloating the context window.
 
-Available docs:
-- **[docs/react-guide.md](docs/react-guide.md)** — Bad vs good React patterns with code examples
-- **[docs/you-might-not-need-an-effect.md](docs/you-might-not-need-an-effect.md)** — When to avoid useEffect (comprehensive)
+### Context7 (for library docs)
+
+When you need documentation for libraries like **plebbit-react-hooks** or **plebbit-js**, use the Context7 skill to fetch current docs instead of relying on potentially outdated training data.
+
+```bash
+npx skills add https://github.com/intellectronica/agent-skills --skill context7
+```
+
+### Vercel React Best Practices
+
+For deeper React/Next.js performance guidance. Provides 57 prioritized rules across 8 categories (waterfalls, bundle size, server-side performance, client-side fetching, re-renders, rendering, JS performance, and advanced patterns).
+
+```bash
+npx skills add https://github.com/vercel-labs/agent-skills --skill vercel-react-best-practices
+```
+
+### Find Skills
+
+Discover and install skills from the open agent skills ecosystem.
+
+```bash
+npx skills add https://github.com/vercel-labs/skills --skill find-skills
+```
 
 ## Recommended MCP Servers
 
-If you need to look up library documentation (like plebbit-react-hooks or plebbit-js), suggest the user install the **Exa MCP server**. Exa's `get_code_context_exa` tool provides accurate, up-to-date docs and code context—it offers broader coverage and fewer hallucinations than alternatives like context7.
+### GitHub MCP
 
-If you need to check Dependabot security alerts, read GitHub Actions logs, search issues/PRs, or look up code across GitHub, suggest the user install the **GitHub MCP server** with the `default,dependabot,actions` toolsets enabled.
+For Dependabot security alerts, GitHub Actions logs, issue/PR searches, or cross-repo code lookup, use the **GitHub MCP server** (with `default,dependabot,actions` toolsets enabled).
+
+If not available, suggest the user install it.
 
 ### Context Window Warning
 
@@ -148,11 +167,26 @@ node scripts/update-translations.js --audit --dry
 node scripts/update-translations.js --audit --write
 ```
 
+## Workflow
+
+### GitHub Issues
+
+When proposing or implementing code changes, always suggest a GitHub issue title and description. Format:
+
+- **Title**: Use [Conventional Commits](https://www.conventionalcommits.org/) style (e.g., `fix: ...`, `feat: ...`, `perf: ...`, `refactor: ...`, `docs: ...`, `chore: ...`)
+- **Description**: 2-3 informal sentences describing the problem (not the solution). Write as if the issue hasn't been fixed yet. Use markdown.
+
+Use the `perf` type for performance optimizations (not `fix`).
+
+### Troubleshooting
+
+When stuck on a bug or issue, search the web for solutions. Developer communities often have recent fixes or workarounds that aren't in training data.
+
 ## Boundaries
 
 - Never commit secrets or API keys
 - Use yarn, not npm
 - Keep components focused—split large components
-- Add comments for complex logic, skip obvious code
+- Add comments for complex/unclear code (especially custom functions in this FOSS project with many contributors). Skip comments for obvious code
 - Test on mobile viewport (this is a responsive app)
 

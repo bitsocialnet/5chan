@@ -1,3 +1,18 @@
+## [0.6.2](https://github.com/plebbit/plebchan/compare/v0.6.1...v0.6.2) (2026-01-26)
+
+
+### Bug Fixes
+
+* **ci:** use setup-python action for macos release build ([3335f6f](https://github.com/plebbit/plebchan/commit/3335f6ff7675d93bd592b7390ba575fe7358eda3))
+* **post:** include pending replies in useReplies calls ([2887347](https://github.com/plebbit/plebchan/commit/28873478a29c54b7c1ec22f02ca7300d545b20a1))
+
+
+### Features
+
+* **mod-queue:** improve compact view and add pending approval features ([fa4ec6d](https://github.com/plebbit/plebchan/commit/fa4ec6da40b42b7041774d747531c64dc10b26f6))
+
+
+
 ## [0.6.1](https://github.com/plebbit/plebchan/compare/v0.6.0...v0.6.1) (2026-01-25)
 
 

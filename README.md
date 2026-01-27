@@ -9,12 +9,12 @@ _Telegram group for this repo https://t.me/fivechandev_
 
 # 5chan
 
-5chan is a serverless, adminless, decentralized and open-source 4chan alternative built on the [Plebbit protocol](https://plebbit.com). It features the same directory structure as 4chan, but with a crucial difference: **anyone can create and own boards, and multiple boards can compete for each directory slot**.
+5chan is a serverless, adminless, decentralized and open-source 4chan alternative built on the [Bitsocial protocol](https://bitsocial.net). It features the same directory structure as 4chan, but with a crucial difference: **anyone can create and own boards, and multiple boards can compete for each directory slot**.
 
 ## Key Features
 
 ### Decentralized Board Ownership
-Unlike traditional imageboards, 5chan has no global admins or central authority. Anyone can create unlimited boards using their own [plebbit node](https://github.com/plebbit/plebbit-cli). Each board owner runs their own P2P node that users connect to peer-to-peer, giving them complete control over their board's content, moderation, and rules.
+Unlike traditional imageboards, 5chan has no global admins or central authority. Anyone can create unlimited boards using their own [bitsocial node](https://github.com/bitsocialhq/bitsocial-cli). Each board owner runs their own P2P node that users connect to peer-to-peer, giving them complete control over their board's content, moderation, and rules.
 
 ### Competitive Directory System
 5chan maintains the familiar 4chan directory structure (Japanese Culture, Video Games, Interests, Creative, etc.), but introduces competition: **multiple boards can compete for each directory slot**. For example, there can be unlimited "Business & Finance" boards, but only the highest-voted one appears in the directory on the homepage.
@@ -23,7 +23,7 @@ Currently, directory assignments are temporarily handpicked by developers throug
 
 ### How It Works
 
-- **Current System**: Developers manually curate directory assignments by reviewing pull requests to the [5chan-multisub.json](https://github.com/plebbit/lists/blob/master/5chan-multisub.json) file. This is temporary until DAO curation is implemented.
+- **Current System**: Developers manually curate directory assignments by reviewing pull requests to the [5chan-multisub.json](https://github.com/bitsocialhq/lists/blob/master/5chan-multisub.json) file.
 
 - **Future System**: Directory board assignments will be determined through gasless voting using pubsub. Community members will vote on which board should be assigned to each directory, and the highest-voted board will automatically become the directory board. This creates a competitive marketplace where board quality and community engagement determine directory placement.
 
@@ -33,33 +33,33 @@ Currently, directory assignments are temporarily handpicked by developers throug
 
 #### In-App Board Creation
 
-Creating boards directly from the 5chan web app (5chan.app) is planned. This requires connecting via RPC to a plebbit node—technically already possible, but there's no default connection configured. A default connection would require a public RPC service (similar to what Infura provides for crypto wallets, but for plebbit nodes). This would allow all users to be connected to a P2P node by default using a free tier subscription in the background, potentially monetized via ads injected in the RPC service-owned boards.
+Creating boards directly from the 5chan web app (5chan.app) is planned. This requires connecting via RPC to a bitsocial node—technically already possible, but there's no default connection configured. A default connection would require a public RPC service (similar to what Infura provides for crypto wallets, but for bitsocial nodes). This would allow all users to be connected to a P2P node by default using a free tier subscription in the background, potentially monetized via ads injected in the RPC service-owned boards.
 
 #### Pubsub Voting
 
-The protocol design for pubsub voting is already drafted in [plebbit-js issue #25](https://github.com/plebbit/plebbit-js/issues/25). This will enable:
+The protocol design for pubsub voting is already drafted in [pkc-js issue #25](https://github.com/pkcprotocol/pkc-js/issues/25). This will enable:
 - Gasless voting using pubsub topics
 - Weighted voting based on token balances
 - Automatic directory resolution based on vote tallies
 - Full decentralization without any intermediaries
 
-This feature is on the plebbit-js roadmap but hasn't been implemented yet.
+This feature is on the pkc-js roadmap but hasn't been implemented yet.
 
 ## Downloads
 
 - **Web version**: https://5chan.app (also available using Brave/IPFS Companion on https://5chan.eth)
-- **Desktop version** (full P2P plebbit node, seeds automatically): Available for Mac/Windows/Linux, [download from the release page](https://github.com/plebbit/5chan/releases/latest)
-- **Mobile version**: Available for Android, [download from the release page](https://github.com/plebbit/5chan/releases/latest)
+- **Desktop version** (full P2P bitsocial node, seeds automatically): Available for Mac/Windows/Linux, [download from the release page](https://github.com/bitsocialhq/5chan/releases/latest)
+- **Mobile version**: Available for Android, [download from the release page](https://github.com/bitsocialhq/5chan/releases/latest)
 
 ## Creating a Board
 
-In the plebbit protocol, a 5chan board is called a _subplebbit_. To create and run a subplebbit:
+In the bitsocial protocol, a 5chan board is called a _community_. To create and run a community:
 
-1. Install plebbit-cli, available for Windows, macOS, and Linux: [latest release](https://github.com/plebbit/plebbit-cli/releases/latest)
-2. Follow the instructions in the repo's README
-3. When running the daemon for the first time, it will output WebUI links you can use to manage your subplebbit with a GUI
+1. Install bitsocial-cli, available for Windows, macOS, and Linux: [latest release](https://github.com/bitsocialhq/bitsocial-cli/releases/latest);
+2. Follow the instructions in the repo's README;
+3. When running the daemon for the first time, it will output WebUI links you can use to manage your bitsocial community with a GUI.
 
-Once created, anyone can connect to your subplebbit using any plebbit client (such as 5chan) by using the subplebbit's address. The address is not stored in any central database—plebbit is a pure peer-to-peer protocol.
+Once created, anyone can connect to your community using any bitsocial client (such as 5chan) by using the community address. The address is not stored in any central database—bitsocial is a pure peer-to-peer protocol.
 
 **Note**: Creating boards directly from the 5chan web app is planned for the future (see [Future Roadmap](#future-roadmap)).
 
@@ -72,16 +72,16 @@ To have your board appear in a directory on the 5chan homepage:
    - Relevant to the directory category
    - **99% uptime** (since a board acts like its own server—it's a P2P node)
 
-2. Open a pull request on GitHub by editing the [5chan-multisub.json](https://github.com/plebbit/lists/blob/master/5chan-multisub.json) file
+2. Open a pull request on GitHub by editing the [5chan-multisub.json](https://github.com/bitsocialhq/lists/blob/master/5chan-multisub.json) file
 
 3. Add your board's entry with:
-   - Title
-   - Address
-   - NSFW status (if applicable)
+   - Title: in the format `/directoryCode/ - Title`, e.g. "/biz/ - Business & Finance";
+   - Address: the bitsocial community address, whether IPNS key (`12KooW...`) or readable crypto address (`mydomain.eth`);
+   - NSFW status: `true` or `false`, must be the same as 4chan.
 
 4. The developers will review your PR and merge it if approved
 
-**Note**: Even if your board isn't assigned to a directory, users can still access it at any time using its address. Directory assignment only affects visibility on the homepage.
+**Note**: Even if your board isn't assigned to a directory, users can still access it at any time using its bitsocial community address. Directory assignment only affects visibility on the homepage.
 
 ## Development
 
@@ -106,7 +106,7 @@ To have your board appear in a directory on the 5chan homepage:
 
 ### Challenge Types
 
-Subplebbits can require challengers to solve one or more prompts before a publication is accepted. 5chan already supported text and image prompts, and now also handles `url/iframe` challenges so Mintpass communities can run their iframe flow directly inside the modal. The modal first shows a hostname confirmation (showing only the host for mintpass.org, full URL otherwise), then opens the HTTPS iframe with the current theme, replaces `{userAddress}` tokens with the signed-in address, and submits automatically when the user finishes.
+Bitsocial communities can require users to solve one or more anti-spam challenges before a publication is accepted. 5chan already supports multiple challenge types, including `url/iframe` challenges so [Mintpass](https://github.com/bitsocialhq/mintpass) communities can run their iframe flow directly inside a modal. The modal first shows a hostname confirmation (showing only the host for mintpass.org, full URL otherwise), then opens the HTTPS iframe with the current theme, replaces `{userAddress}` tokens with the signed-in address, and submits automatically when the user finishes.
 
 ### Build
 
