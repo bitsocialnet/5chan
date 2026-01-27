@@ -32,7 +32,7 @@ yarn electron     # Run Electron app
 
 - TypeScript strict mode
 - Prettier for formatting (runs on pre-commit)
-- **DRY principle**: Never repeat UI elements across views—extract them into reusable components in `src/components/`. Same applies to logic—extract into custom hooks in `src/hooks/`
+- **DRY principle**: Always follow the DRY principle when possible. Never repeat UI elements across views—extract them into reusable components in `src/components/`. Same applies to logic—extract into custom hooks in `src/hooks/`.
 
 ## React Patterns (Critical)
 
@@ -169,14 +169,19 @@ node scripts/update-translations.js --audit --write
 
 ## Workflow
 
-### GitHub Issues
+### GitHub Commits
 
-When proposing or implementing code changes, always suggest a GitHub issue title and description. Format:
+When proposing or implementing code changes, always suggest a short GitHub commit title, and if the commit title isn't exhaustive enough, then provide also a commit description. Format:
 
-- **Title**: Use [Conventional Commits](https://www.conventionalcommits.org/) style (e.g., `fix: ...`, `feat: ...`, `perf: ...`, `refactor: ...`, `docs: ...`, `chore: ...`)
-- **Description**: 2-3 informal sentences describing the problem (not the solution). Write as if the issue hasn't been fixed yet. Use markdown.
+- **Title**: Use [Conventional Commits](https://www.conventionalcommits.org/) style (e.g., `fix: ...`, `feat: ...`, `perf: ...`, `refactor: ...`, `docs: ...`, `chore: ...`). Use the `perf` type for performance optimizations (not `fix`). Keep it short. Use markdown.
+- **Description**: If the title is missing important information, also provide a description, consisting of 2-3 informal sentences describing the solution (not the problem) that is being committed. Concise, technical, no bullet points. Use markdown.
 
-Use the `perf` type for performance optimizations (not `fix`).
+### Github Issues
+
+When proposing or implementing code changes, always suggest a GitHub issue title and description to keep track of the problem that was fixed. Format:
+
+- **Title**: As short as possible, may use commas to list related commits that resolve the same Github issue. Use markdown.
+- **Description**: 2-3 informal sentences describing the problem (not the solution). Write as if the issue hasn't been fixed yet. Bullet points are encouranged but may not always be necessary. Use markdown.
 
 ### Troubleshooting
 
