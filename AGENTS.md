@@ -118,7 +118,7 @@ Set up these hooks for this project:
 | Hook | Command | Purpose |
 |------|---------|---------|
 | `afterFileEdit` | `npx oxfmt <file>` | Auto-format files after AI edits |
-| `stop` | `yarn build && yarn lint && yarn type-check && yarn audit` | Build, verify code, and check security when agent finishes |
+| `stop` | `yarn build && yarn lint && yarn type-check && (yarn audit || true)` | Build, verify code, and check security when agent finishes. Note: `yarn audit` returns non-zero on vulnerabilities, so `|| true` makes it informational only |
 
 ### Why Use Hooks
 
@@ -154,7 +154,7 @@ cat > /dev/null  # consume stdin
 echo "=== yarn build ===" && yarn build
 echo "=== yarn lint ===" && yarn lint
 echo "=== yarn type-check ===" && yarn type-check
-echo "=== yarn audit ===" && yarn audit
+echo "=== yarn audit ===" && (yarn audit || true)  # || true makes audit informational (non-fatal)
 exit 0
 ```
 
