@@ -118,13 +118,14 @@ Set up these hooks for this project:
 | Hook | Command | Purpose |
 |------|---------|---------|
 | `afterFileEdit` | `npx oxfmt <file>` | Auto-format files after AI edits |
-| `stop` | `yarn lint && yarn type-check` | Verify code when agent finishes |
+| `stop` | `yarn lint && yarn type-check && yarn audit` | Verify code and security when agent finishes |
 
 ### Why Use Hooks
 
 - **Consistent formatting** — Every file follows the same style
 - **Catch issues early** — Lint and type errors are caught before commit/CI
-- **Less manual work** — No need to run `yarn prettier`, `yarn lint`, `yarn type-check` manually
+- **Security awareness** — `yarn audit` flags known vulnerabilities in dependencies
+- **Less manual work** — No need to run `yarn prettier`, `yarn lint`, `yarn type-check`, `yarn audit` manually
 
 ### Example Hook Scripts
 
@@ -146,11 +147,12 @@ exit 0
 **Verify hook** (runs when agent finishes):
 ```bash
 #!/bin/bash
-# Run lint and type-check when agent finishes
+# Run lint, type-check, and security audit when agent finishes
 
 cat > /dev/null  # consume stdin
 echo "=== yarn lint ===" && yarn lint
 echo "=== yarn type-check ===" && yarn type-check
+echo "=== yarn audit ===" && yarn audit
 exit 0
 ```
 
@@ -248,6 +250,34 @@ Example output:
 ### Troubleshooting
 
 When stuck on a bug or issue, search the web for solutions. Developer communities often have recent fixes or workarounds that aren't in training data.
+
+## Dependency Management
+
+### Pin All Package Versions (No Carets)
+
+When adding or updating npm packages, **always use exact version numbers**—never use carets (`^`) or tildes (`~`).
+
+```bash
+# ✅ Correct
+yarn add lodash@4.17.21
+
+# ❌ Wrong (will add caret by default)
+yarn add lodash
+```
+
+**Why pin versions:**
+
+- **Supply chain security**: A compromised package could push a malicious minor/patch update. With carets, running `yarn upgrade` or regenerating `yarn.lock` would auto-install it.
+- **Reproducibility**: Guarantees identical dependencies across all environments.
+- **Defense in depth**: While `yarn.lock` pins versions in practice, explicit pinning in `package.json` protects against lockfile regeneration and makes the intended version auditable.
+
+**When upgrading packages:**
+
+1. Specify the exact version: `yarn add package@1.2.3`
+2. Review the changelog for breaking changes or security notes
+3. Test the upgrade before committing
+
+**Note:** This applies to both `dependencies` and `devDependencies`. There are no exceptions—the convenience of auto-updates doesn't justify the security risk.
 
 ## Boundaries
 
