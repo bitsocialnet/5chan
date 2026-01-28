@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useAccountComment, useSubscribe } from '@plebbit/plebbit-react-hooks';
 import useSubplebbitsPagesStore from '@plebbit/plebbit-react-hooks/dist/stores/subplebbits-pages';
 import { isAllView, isCatalogView, isModView, isModQueueView, isPendingPostView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
-import { useDefaultSubplebbits } from '../../hooks/use-default-subplebbits';
+import { useDirectories } from '../../hooks/use-directories';
 import { getBoardPath, isDirectoryBoard } from '../../lib/utils/route-utils';
 import { useResolvedSubplebbitAddress } from '../../hooks/use-resolved-subplebbit-address';
 import useCatalogFiltersStore from '../../stores/use-catalog-filters-store';
@@ -35,7 +35,7 @@ interface BoardButtonsProps {
 const CatalogButton = ({ address, isInAllView, isInSubscriptionsView, isInModView }: BoardButtonsProps) => {
   const { t } = useTranslation();
   const params = useParams();
-  const defaultSubplebbits = useDefaultSubplebbits();
+  const directories = useDirectories();
 
   const createCatalogLink = () => {
     if (isInAllView) {
@@ -50,9 +50,9 @@ const CatalogButton = ({ address, isInAllView, isInSubscriptionsView, isInModVie
     }
     let boardPath = '';
     if (address) {
-      boardPath = getBoardPath(address, defaultSubplebbits);
-    } else if (Array.isArray(defaultSubplebbits) && defaultSubplebbits.length > 0 && defaultSubplebbits[0]?.address) {
-      boardPath = getBoardPath(defaultSubplebbits[0].address, defaultSubplebbits);
+      boardPath = getBoardPath(address, directories);
+    } else if (Array.isArray(directories) && directories.length > 0 && directories[0]?.address) {
+      boardPath = getBoardPath(directories[0].address, directories);
     }
     return `/${boardPath}/catalog`;
   };
@@ -78,7 +78,7 @@ const SubscribeButton = ({ address }: BoardButtonsProps) => {
 const ReturnButton = ({ address, isInAllView, isInSubscriptionsView, isInModView, isInModQueueView }: BoardButtonsProps) => {
   const { t } = useTranslation();
   const params = useParams();
-  const defaultSubplebbits = useDefaultSubplebbits();
+  const directories = useDirectories();
 
   const createReturnLink = () => {
     if (isInAllView) {
@@ -99,9 +99,9 @@ const ReturnButton = ({ address, isInAllView, isInSubscriptionsView, isInModView
     }
     let boardPath = '';
     if (address) {
-      boardPath = getBoardPath(address, defaultSubplebbits);
-    } else if (Array.isArray(defaultSubplebbits) && defaultSubplebbits.length > 0 && defaultSubplebbits[0]?.address) {
-      boardPath = getBoardPath(defaultSubplebbits[0].address, defaultSubplebbits);
+      boardPath = getBoardPath(address, directories);
+    } else if (Array.isArray(directories) && directories.length > 0 && directories[0]?.address) {
+      boardPath = getBoardPath(directories[0].address, directories);
     }
     return `/${boardPath}`;
   };
@@ -116,13 +116,13 @@ const ReturnButton = ({ address, isInAllView, isInSubscriptionsView, isInModView
 const VoteButton = () => {
   const { t } = useTranslation();
   const params = useParams();
-  const defaultSubplebbits = useDefaultSubplebbits();
+  const directories = useDirectories();
 
   // Get the boardIdentifier from params (try boardIdentifier first, then subplebbitAddress for backward compatibility)
   const boardIdentifier = params.boardIdentifier || params.subplebbitAddress;
 
   // Only render the vote button if we're on a directory board route
-  if (!boardIdentifier || !isDirectoryBoard(boardIdentifier, defaultSubplebbits)) {
+  if (!boardIdentifier || !isDirectoryBoard(boardIdentifier, directories)) {
     return null;
   }
 
@@ -418,9 +418,9 @@ export const MobileBoardButtons = () => {
   const { filteredCount, searchText } = useCatalogFiltersStore();
 
   // Check if we should show the vote button (only for directory boards)
-  const defaultSubplebbits = useDefaultSubplebbits();
+  const directories = useDirectories();
   const boardIdentifier = params.boardIdentifier || params.subplebbitAddress;
-  const showVoteButton = boardIdentifier && isDirectoryBoard(boardIdentifier, defaultSubplebbits);
+  const showVoteButton = boardIdentifier && isDirectoryBoard(boardIdentifier, directories);
 
   return (
     <div className={`${styles.mobileBoardButtons} ${!isInCatalogView ? styles.addMargin : ''}`}>
@@ -539,9 +539,9 @@ export const DesktopBoardButtons = () => {
   const { filteredCount, searchText } = useCatalogFiltersStore();
 
   // Check if we should show the vote button (only for directory boards)
-  const defaultSubplebbits = useDefaultSubplebbits();
+  const directories = useDirectories();
   const boardIdentifier = params.boardIdentifier || params.subplebbitAddress;
-  const showVoteButton = boardIdentifier && isDirectoryBoard(boardIdentifier, defaultSubplebbits);
+  const showVoteButton = boardIdentifier && isDirectoryBoard(boardIdentifier, directories);
 
   return (
     <>
@@ -655,9 +655,9 @@ const SearchOPsBar = () => {
   const isInAllView = isAllView(location.pathname);
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, useParams());
   const isInModView = isModView(location.pathname);
-  const defaultSubplebbits = useDefaultSubplebbits();
+  const directories = useDirectories();
   const resolvedAddress = useResolvedSubplebbitAddress();
-  const boardPath = resolvedAddress ? getBoardPath(resolvedAddress, defaultSubplebbits) : params?.boardIdentifier || params?.subplebbitAddress;
+  const boardPath = resolvedAddress ? getBoardPath(resolvedAddress, directories) : params?.boardIdentifier || params?.subplebbitAddress;
 
   const handleSearch = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter') {

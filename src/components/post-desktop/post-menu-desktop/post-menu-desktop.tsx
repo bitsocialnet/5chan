@@ -9,7 +9,7 @@ import { getCommentMediaInfo } from '../../../lib/utils/media-utils';
 import { copyShareLinkToClipboard, isValidURL, type ShareLinkType } from '../../../lib/utils/url-utils';
 import { copyToClipboard } from '../../../lib/utils/clipboard-utils';
 import { getBoardPath } from '../../../lib/utils/route-utils';
-import { useDefaultSubplebbits } from '../../../hooks/use-default-subplebbits';
+import { useDirectories } from '../../../hooks/use-directories';
 import { isAllView, isCatalogView, isPostPageView, isSubscriptionsView } from '../../../lib/utils/view-utils';
 import useHide from '../../../hooks/use-hide';
 import _ from 'lodash';
@@ -21,8 +21,8 @@ type CopyLinkButtonProps =
 
 const CopyLinkButton = ({ cid, subplebbitAddress, linkType, onClose }: CopyLinkButtonProps) => {
   const { t } = useTranslation();
-  const defaultSubplebbits = useDefaultSubplebbits();
-  const boardIdentifier = getBoardPath(subplebbitAddress, defaultSubplebbits);
+  const directories = useDirectories();
+  const boardIdentifier = getBoardPath(subplebbitAddress, directories);
   return (
     <div
       onClick={async () => {

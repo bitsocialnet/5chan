@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Trans, useTranslation } from 'react-i18next';
 import { useSubplebbits } from '@plebbit/plebbit-react-hooks';
 import styles from './home.module.css';
-import { useDefaultSubplebbits, useDefaultSubplebbitAddresses } from '../../hooks/use-default-subplebbits';
+import { useDirectories, useDirectoryAddresses } from '../../hooks/use-directories';
 import { SubplebbitStatsCollector, useSubplebbitsStatsStore } from '../../hooks/use-subplebbits-stats';
 import PopularThreadsBox from './popular-threads-box';
 import BoardsList from './boards-list';
@@ -14,19 +14,19 @@ import DirectoryModal from '../../components/directory-modal';
 import { getBoardPath } from '../../lib/utils/route-utils';
 import _ from 'lodash';
 
-// https://github.com/plebbit/lists/blob/master/5chan-multisub.json
+// https://github.com/plebbit/lists/blob/master/5chan-directories.json
 
 const SearchBar = () => {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const defaultSubplebbits = useDefaultSubplebbits();
+  const directories = useDirectories();
 
   const handleSearchSubmit = (e: FormEvent) => {
     e.preventDefault();
     const searchInput = searchInputRef.current?.value;
     if (searchInput) {
-      const boardPath = getBoardPath(searchInput, defaultSubplebbits);
+      const boardPath = getBoardPath(searchInput, directories);
       navigate(`/${boardPath}`);
     }
   };
@@ -73,7 +73,7 @@ const InfoBox = () => {
   );
 };
 
-const Stats = ({ subplebbitAddresses }: { subplebbitAddresses: string[] }) => {
+const Stats = ({ directoryAddresses }: { directoryAddresses: string[] }) => {
   const { t } = useTranslation();
   const subplebbitsStats = useSubplebbitsStatsStore((state) => state.subplebbitsStats);
 
@@ -82,7 +82,7 @@ const Stats = ({ subplebbitAddresses }: { subplebbitAddresses: string[] }) => {
     let currentUsers = 0;
     let boardsTracked = 0;
 
-    subplebbitAddresses.forEach((address) => {
+    directoryAddresses.forEach((address) => {
       const stat = subplebbitsStats[address];
       if (stat) {
         totalPosts += stat.allPostCount || 0;
@@ -92,12 +92,12 @@ const Stats = ({ subplebbitAddresses }: { subplebbitAddresses: string[] }) => {
     });
 
     return { totalPosts, currentUsers, boardsTracked };
-  }, [subplebbitsStats, subplebbitAddresses]);
+  }, [subplebbitsStats, directoryAddresses]);
 
   return (
     <>
       {/* Render collectors to fetch stats for each subplebbit */}
-      {subplebbitAddresses.map((address) => (
+      {directoryAddresses.map((address) => (
         <SubplebbitStatsCollector key={address} subplebbitAddress={address} />
       ))}
       <div className={styles.box}>
@@ -192,9 +192,9 @@ export const HomeLogo = () => {
 };
 
 const Home = () => {
-  const defaultSubplebbits = useDefaultSubplebbits();
-  const subplebbitAddresses = useDefaultSubplebbitAddresses();
-  const { subplebbits } = useSubplebbits({ subplebbitAddresses });
+  const directories = useDirectories();
+  const directoryAddresses = useDirectoryAddresses();
+  const { subplebbits } = useSubplebbits({ subplebbitAddresses: directoryAddresses });
   const { closeDirectoryModal } = useDirectoryModalStore();
 
   useEffect(() => {
@@ -216,9 +216,9 @@ const Home = () => {
         <HomeLogo />
         <SearchBar />
         <InfoBox />
-        <BoardsList multisub={defaultSubplebbits} />
-        <PopularThreadsBox multisub={defaultSubplebbits} subplebbits={subplebbits} />
-        <Stats subplebbitAddresses={subplebbitAddresses} />
+        <BoardsList multisub={directories} />
+        <PopularThreadsBox directories={directories} subplebbits={subplebbits} />
+        <Stats directoryAddresses={directoryAddresses} />
         <Footer />
       </div>
     </>

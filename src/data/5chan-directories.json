@@ -3,7 +3,7 @@
   "description": "Each 5chan directory is assigned to a board (subplebbit) handpicked by the team, until DAO curation is implemented.\n\nhttps://github.com/plebbit/temporary-default-subplebbits",
   "createdAt": 1762179811,
   "updatedAt": 1762179811,
-  "subplebbits": [
+  "communities": [
     {
       "title": "/pol/ - Politically Incorrect",
       "address": "politically-incorrect.eth",

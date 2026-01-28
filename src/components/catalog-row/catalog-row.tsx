@@ -9,7 +9,7 @@ import { shouldShowSnow } from '../../lib/snow';
 import { getHasThumbnail } from '../../lib/utils/media-utils';
 import { getFormattedTimeAgo } from '../../lib/utils/time-utils';
 import { isAllView, isSubscriptionsView } from '../../lib/utils/view-utils';
-import { useDefaultSubplebbits } from '../../hooks/use-default-subplebbits';
+import { useDirectories } from '../../hooks/use-directories';
 import { getBoardPath } from '../../lib/utils/route-utils';
 import useCatalogFiltersStore from '../../stores/use-catalog-filters-store';
 import useCatalogStyleStore from '../../stores/use-catalog-style-store';
@@ -125,8 +125,8 @@ const CatalogPost = memo(
     const params = useParams();
     const isInAllView = isAllView(location.pathname);
     const isInSubscriptionsView = isSubscriptionsView(location.pathname, params);
-    const defaultSubplebbits = useDefaultSubplebbits();
-    const boardPath = subplebbitAddress ? getBoardPath(subplebbitAddress, defaultSubplebbits) : '';
+    const directories = useDirectories();
+    const boardPath = subplebbitAddress ? getBoardPath(subplebbitAddress, directories) : '';
     const postMenuProps = useMemo(() => selectPostMenuProps(post), [post]);
 
     const postLink = boardPath ? `/${boardPath}/thread/${cid}` : `/thread/${cid}`;

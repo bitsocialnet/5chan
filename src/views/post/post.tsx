@@ -5,7 +5,7 @@ import { useSubplebbitField } from '../../hooks/use-stable-subplebbit';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { isAllView } from '../../lib/utils/view-utils';
 import { useResolvedSubplebbitAddress } from '../../hooks/use-resolved-subplebbit-address';
-import { useDefaultSubplebbits } from '../../hooks/use-default-subplebbits';
+import { useDirectories } from '../../hooks/use-directories';
 import { isDirectoryBoard } from '../../lib/utils/route-utils';
 import useIsMobile from '../../hooks/use-is-mobile';
 import ErrorDisplay from '../../components/error-display/error-display';
@@ -113,7 +113,7 @@ const PostPage = () => {
 
   const subplebbit = useSubplebbit({ subplebbitAddress });
   const { error: subplebbitError, shortAddress, title } = subplebbit || {};
-  const defaultSubplebbits = useDefaultSubplebbits();
+  const directories = useDirectories();
 
   // if the comment is a reply, return the post comment instead, then the reply will be highlighted in the thread
   const postComment = useComment({ commentCid: comment?.postCid });
@@ -133,7 +133,7 @@ const PostPage = () => {
 
   useEffect(() => {
     const boardIdentifier = params.boardIdentifier;
-    const isDirectory = boardIdentifier ? isDirectoryBoard(boardIdentifier, defaultSubplebbits) : false;
+    const isDirectory = boardIdentifier ? isDirectoryBoard(boardIdentifier, directories) : false;
 
     let boardTitle: string;
     if (isInAllView) {
@@ -147,7 +147,7 @@ const PostPage = () => {
     const postTitle = post?.title?.slice(0, 30) || post?.content?.slice(0, 30);
     const postTitlePart = postTitle ? ` - ${postTitle.trim()}...` : '';
     document.title = `${boardTitle}${postTitlePart} - 5chan`;
-  }, [title, shortAddress, subplebbitAddress, post?.title, post?.content, isInAllView, t, params.boardIdentifier, defaultSubplebbits]);
+  }, [title, shortAddress, subplebbitAddress, post?.title, post?.content, isInAllView, t, params.boardIdentifier, directories]);
 
   const shouldShowCommentError = comment?.error?.message && !comment?.cid;
   const shouldShowPostError = post?.error && post?.replyCount > 0 && post?.replies?.length === 0;

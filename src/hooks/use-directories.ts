@@ -1,42 +1,42 @@
 import { useEffect, useMemo, useState } from 'react';
-import defaultSubplebbitsData from '../data/default-subplebbits.json';
+import directoriesData from '../data/5chan-directories.json';
 
-export interface MultisubMetadata {
+export interface DirectoriesMetadata {
   title: string;
   description: string;
   createdAt: number;
   updatedAt: number;
 }
 
-export interface MultisubSubplebbit {
+export interface DirectoryCommunity {
   title?: string;
   address: string;
   nsfw?: boolean;
 }
 
-export interface MultisubData {
+export interface DirectoriesData {
   title: string;
   description: string;
   createdAt: number;
   updatedAt: number;
-  subplebbits: MultisubSubplebbit[];
+  communities: DirectoryCommunity[];
 }
 
-export interface DefaultSubplebbitsState {
-  subplebbits: MultisubSubplebbit[];
+export interface DirectoriesState {
+  communities: DirectoryCommunity[];
   loading: boolean;
   error: Error | null;
 }
 
-const GITHUB_URL = 'https://raw.githubusercontent.com/plebbit/lists/master/5chan-multisub.json';
-const LOCALSTORAGE_KEY = '5chan-subplebbits-cache';
-const LOCALSTORAGE_TIMESTAMP_KEY = '5chan-subplebbits-cache-timestamp';
+const GITHUB_URL = 'https://raw.githubusercontent.com/plebbit/lists/master/5chan-directories.json';
+const LOCALSTORAGE_KEY = '5chan-directories-cache';
+const LOCALSTORAGE_TIMESTAMP_KEY = '5chan-directories-cache-timestamp';
 const CACHE_MAX_AGE_MS = 60 * 60 * 1000; // 1 hour
 
-let cacheSubplebbits: MultisubSubplebbit[] | null = null;
-let cacheMetadata: MultisubMetadata | null = null;
+let cacheCommunities: DirectoryCommunity[] | null = null;
+let cacheMetadata: DirectoriesMetadata | null = null;
 
-const getFromLocalStorage = (): MultisubData | null => {
+const getFromLocalStorage = (): DirectoriesData | null => {
   try {
     const cached = localStorage.getItem(LOCALSTORAGE_KEY);
     const timestamp = localStorage.getItem(LOCALSTORAGE_TIMESTAMP_KEY);
@@ -52,7 +52,7 @@ const getFromLocalStorage = (): MultisubData | null => {
   return null;
 };
 
-const saveToLocalStorage = (data: MultisubData) => {
+const saveToLocalStorage = (data: DirectoriesData) => {
   try {
     localStorage.setItem(LOCALSTORAGE_KEY, JSON.stringify(data));
     localStorage.setItem(LOCALSTORAGE_TIMESTAMP_KEY, Date.now().toString());
@@ -61,7 +61,7 @@ const saveToLocalStorage = (data: MultisubData) => {
   }
 };
 
-const fetchMultisubData = async (): Promise<MultisubData> => {
+const fetchDirectoriesData = async (): Promise<DirectoriesData> => {
   try {
     const response = await fetch(GITHUB_URL);
     if (!response.ok) {
@@ -72,25 +72,25 @@ const fetchMultisubData = async (): Promise<MultisubData> => {
     saveToLocalStorage(data);
     return data;
   } catch (e) {
-    console.warn('Failed to fetch subplebbits from GitHub, using vendored fallback:', e);
+    console.warn('Failed to fetch directories from GitHub, using vendored fallback:', e);
     // Fall back to vendored file
-    return defaultSubplebbitsData as MultisubData;
+    return directoriesData as DirectoriesData;
   }
 };
 
-export const useDefaultSubplebbits = () => {
+export const useDirectories = () => {
   // Use vendored data as initial state to prevent theme flash on first load
   // This ensures NSFW status is known synchronously before first render
-  const [state, setState] = useState<DefaultSubplebbitsState>({
-    subplebbits: (defaultSubplebbitsData as MultisubData).subplebbits,
+  const [state, setState] = useState<DirectoriesState>({
+    communities: (directoriesData as DirectoriesData).communities,
     loading: true,
     error: null,
   });
 
   useEffect(() => {
-    if (cacheSubplebbits) {
+    if (cacheCommunities) {
       setState({
-        subplebbits: cacheSubplebbits,
+        communities: cacheCommunities,
         loading: false,
         error: null,
       });
@@ -104,21 +104,21 @@ export const useDefaultSubplebbits = () => {
         // Check localStorage first
         const cachedData = getFromLocalStorage();
         if (cachedData) {
-          cacheSubplebbits = cachedData.subplebbits;
+          cacheCommunities = cachedData.communities;
           if (isMounted) {
             setState({
-              subplebbits: cachedData.subplebbits,
+              communities: cachedData.communities,
               loading: false,
               error: null,
             });
           }
           // Still try to fetch fresh data in background (don't await)
-          fetchMultisubData()
+          fetchDirectoriesData()
             .then((data) => {
               if (isMounted) {
-                cacheSubplebbits = data.subplebbits;
+                cacheCommunities = data.communities;
                 setState({
-                  subplebbits: data.subplebbits,
+                  communities: data.communities,
                   loading: false,
                   error: null,
                 });
@@ -131,23 +131,23 @@ export const useDefaultSubplebbits = () => {
         }
 
         // No cache, fetch fresh data
-        const multisub = await fetchMultisubData();
+        const directories = await fetchDirectoriesData();
         if (isMounted) {
-          cacheSubplebbits = multisub.subplebbits;
+          cacheCommunities = directories.communities;
           setState({
-            subplebbits: multisub.subplebbits,
+            communities: directories.communities,
             loading: false,
             error: null,
           });
         }
       } catch (e) {
-        console.warn('Failed to load subplebbits:', e);
+        console.warn('Failed to load directories:', e);
         // Fallback to vendored data
-        const fallbackData = defaultSubplebbitsData as MultisubData;
+        const fallbackData = directoriesData as DirectoriesData;
         if (isMounted) {
-          cacheSubplebbits = fallbackData.subplebbits;
+          cacheCommunities = fallbackData.communities;
           setState({
-            subplebbits: fallbackData.subplebbits,
+            communities: fallbackData.communities,
             loading: false,
             error: null,
           });
@@ -160,24 +160,24 @@ export const useDefaultSubplebbits = () => {
     };
   }, []);
 
-  // Always prefer cacheSubplebbits (module-level, stable reference) when available
-  // Only use state.subplebbits during initial load before cache is populated
+  // Always prefer cacheCommunities (module-level, stable reference) when available
+  // Only use state.communities during initial load before cache is populated
   // This ensures a stable reference for memoization in consuming hooks
-  return cacheSubplebbits || state.subplebbits;
+  return cacheCommunities || state.communities;
 };
 
-export const useDefaultSubplebbitsState = () => {
+export const useDirectoriesState = () => {
   // Use vendored data as fallback to prevent theme flash on first load
-  const [state, setState] = useState<DefaultSubplebbitsState>({
-    subplebbits: cacheSubplebbits || (defaultSubplebbitsData as MultisubData).subplebbits,
-    loading: !cacheSubplebbits,
+  const [state, setState] = useState<DirectoriesState>({
+    communities: cacheCommunities || (directoriesData as DirectoriesData).communities,
+    loading: !cacheCommunities,
     error: null,
   });
 
   useEffect(() => {
-    if (cacheSubplebbits) {
+    if (cacheCommunities) {
       setState({
-        subplebbits: cacheSubplebbits,
+        communities: cacheCommunities,
         loading: false,
         error: null,
       });
@@ -191,21 +191,21 @@ export const useDefaultSubplebbitsState = () => {
         // Check localStorage first
         const cachedData = getFromLocalStorage();
         if (cachedData) {
-          cacheSubplebbits = cachedData.subplebbits;
+          cacheCommunities = cachedData.communities;
           if (isMounted) {
             setState({
-              subplebbits: cachedData.subplebbits,
+              communities: cachedData.communities,
               loading: false,
               error: null,
             });
           }
           // Still try to fetch fresh data in background (don't await)
-          fetchMultisubData()
+          fetchDirectoriesData()
             .then((data) => {
               if (isMounted) {
-                cacheSubplebbits = data.subplebbits;
+                cacheCommunities = data.communities;
                 setState({
-                  subplebbits: data.subplebbits,
+                  communities: data.communities,
                   loading: false,
                   error: null,
                 });
@@ -218,23 +218,23 @@ export const useDefaultSubplebbitsState = () => {
         }
 
         // No cache, fetch fresh data
-        const multisub = await fetchMultisubData();
+        const directories = await fetchDirectoriesData();
         if (isMounted) {
-          cacheSubplebbits = multisub.subplebbits;
+          cacheCommunities = directories.communities;
           setState({
-            subplebbits: multisub.subplebbits,
+            communities: directories.communities,
             loading: false,
             error: null,
           });
         }
       } catch (e) {
-        console.warn('Failed to load subplebbits:', e);
+        console.warn('Failed to load directories:', e);
         // Fallback to vendored data
-        const fallbackData = defaultSubplebbitsData as MultisubData;
+        const fallbackData = directoriesData as DirectoriesData;
         if (isMounted) {
-          cacheSubplebbits = fallbackData.subplebbits;
+          cacheCommunities = fallbackData.communities;
           setState({
-            subplebbits: fallbackData.subplebbits,
+            communities: fallbackData.communities,
             loading: false,
             error: null,
           });
@@ -250,13 +250,13 @@ export const useDefaultSubplebbitsState = () => {
   return state;
 };
 
-export const useDefaultSubplebbitAddresses = () => {
-  const defaultSubplebbits = useDefaultSubplebbits();
-  return useMemo(() => defaultSubplebbits.map((subplebbit) => subplebbit.address), [defaultSubplebbits]);
+export const useDirectoryAddresses = () => {
+  const directories = useDirectories();
+  return useMemo(() => directories.map((community) => community.address), [directories]);
 };
 
-export const useMultisubMetadata = () => {
-  const [metadata, setMetadata] = useState<MultisubMetadata | null>(null);
+export const useDirectoriesMetadata = () => {
+  const [metadata, setMetadata] = useState<DirectoriesMetadata | null>(null);
 
   useEffect(() => {
     if (cacheMetadata) {
@@ -270,7 +270,7 @@ export const useMultisubMetadata = () => {
         // Check localStorage first
         const cachedData = getFromLocalStorage();
         if (cachedData) {
-          const metadata: MultisubMetadata = {
+          const metadata: DirectoriesMetadata = {
             title: cachedData.title,
             description: cachedData.description,
             createdAt: cachedData.createdAt,
@@ -281,10 +281,10 @@ export const useMultisubMetadata = () => {
             setMetadata(metadata);
           }
           // Still try to fetch fresh data in background (don't await)
-          fetchMultisubData()
+          fetchDirectoriesData()
             .then((data) => {
               if (isMounted) {
-                const freshMetadata: MultisubMetadata = {
+                const freshMetadata: DirectoriesMetadata = {
                   title: data.title,
                   description: data.description,
                   createdAt: data.createdAt,
@@ -301,13 +301,13 @@ export const useMultisubMetadata = () => {
         }
 
         // No cache, fetch fresh data
-        const multisub = await fetchMultisubData();
+        const directories = await fetchDirectoriesData();
         if (isMounted) {
-          const metadata: MultisubMetadata = {
-            title: multisub.title,
-            description: multisub.description,
-            createdAt: multisub.createdAt,
-            updatedAt: multisub.updatedAt,
+          const metadata: DirectoriesMetadata = {
+            title: directories.title,
+            description: directories.description,
+            createdAt: directories.createdAt,
+            updatedAt: directories.updatedAt,
           };
           cacheMetadata = metadata;
           setMetadata(metadata);
@@ -315,9 +315,9 @@ export const useMultisubMetadata = () => {
       } catch (e) {
         console.warn('Failed to load metadata, using vendored fallback:', e);
         // Fallback to vendored data
-        const fallbackData = defaultSubplebbitsData as MultisubData;
+        const fallbackData = directoriesData as DirectoriesData;
         if (isMounted) {
-          const metadata: MultisubMetadata = {
+          const metadata: DirectoriesMetadata = {
             title: fallbackData.title,
             description: fallbackData.description,
             createdAt: fallbackData.createdAt,

@@ -1,18 +1,18 @@
 import { useMemo } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import useThemeStore from '../stores/use-theme-store';
-import { useDefaultSubplebbits } from './use-default-subplebbits';
+import { useDirectories } from './use-directories';
 import { isAllView, isHomeView, isNotFoundView, isPendingPostView, isSubscriptionsView, isModView } from '../lib/utils/view-utils';
 import { useAccountComment } from '@plebbit/plebbit-react-hooks';
 
 const useInitialTheme = (pendingPostSubplebbitAddress?: string) => {
   const location = useLocation();
-  const { subplebbitAddress: paramsSubplebbitAddress, accountCommentIndex } = useParams<{ subplebbitAddress: string; accountCommentIndex?: string }>();
+  const { communityAddress: paramsSubplebbitAddress, accountCommentIndex } = useParams<{ communityAddress: string; accountCommentIndex?: string }>();
   const commentIndex = accountCommentIndex ? parseInt(accountCommentIndex) : undefined;
   const pendingPost = useAccountComment({ commentIndex });
   // Subscribe to the actual themes data, not just functions
   const themes = useThemeStore((state) => state.themes);
-  const subplebbits = useDefaultSubplebbits();
+  const directories = useDirectories();
   const params = useParams();
   const isInHomeView = isHomeView(location.pathname);
   const isInNotFoundView = isNotFoundView(location.pathname, params);
@@ -25,10 +25,10 @@ const useInitialTheme = (pendingPostSubplebbitAddress?: string) => {
     let theme = 'yotsuba';
 
     if (isInPendingPostView) {
-      const subplebbitAddress = pendingPostSubplebbitAddress || pendingPost?.subplebbitAddress;
-      if (subplebbitAddress) {
-        const subplebbit = subplebbits.find((s) => s.address === subplebbitAddress);
-        if (subplebbit?.nsfw) {
+      const communityAddress = pendingPostSubplebbitAddress || pendingPost?.communityAddress;
+      if (communityAddress) {
+        const community = directories.find((s) => s.address === communityAddress);
+        if (community?.nsfw) {
           theme = themes.nsfw || 'yotsuba';
         } else {
           theme = themes.sfw || 'yotsuba-b';
@@ -41,8 +41,8 @@ const useInitialTheme = (pendingPostSubplebbitAddress?: string) => {
     } else if (isInHomeView || isInNotFoundView) {
       theme = 'yotsuba';
     } else if (paramsSubplebbitAddress) {
-      const subplebbit = subplebbits.find((s) => s.address === paramsSubplebbitAddress);
-      if (subplebbit?.nsfw) {
+      const community = directories.find((s) => s.address === paramsSubplebbitAddress);
+      if (community?.nsfw) {
         theme = themes.nsfw || 'yotsuba';
       } else {
         theme = themes.sfw || 'yotsuba-b';
@@ -59,7 +59,7 @@ const useInitialTheme = (pendingPostSubplebbitAddress?: string) => {
     isInNotFoundView,
     paramsSubplebbitAddress,
     themes,
-    subplebbits,
+    directories,
     pendingPostSubplebbitAddress,
     pendingPost,
   ]);

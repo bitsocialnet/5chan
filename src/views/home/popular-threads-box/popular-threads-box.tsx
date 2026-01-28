@@ -9,13 +9,13 @@ import { getCommentMediaInfo } from '../../../lib/utils/media-utils';
 import { CatalogPostMedia } from '../../../components/catalog-row';
 import LoadingEllipsis from '../../../components/loading-ellipsis';
 import BoxModal from '../box-modal';
-import { MultisubSubplebbit, useDefaultSubplebbits } from '../../../hooks/use-default-subplebbits';
+import { DirectoryCommunity } from '../../../hooks/use-directories';
 import { getBoardPath } from '../../../lib/utils/route-utils';
 import { removeMarkdown } from '../../../lib/utils/post-utils';
 
 interface PopularThreadProps {
   post: Comment;
-  multisub: MultisubSubplebbit[];
+  directories: DirectoryCommunity[];
 }
 
 export const ContentPreview = ({ content, maxLength = 99 }: { content: string; maxLength?: number }) => {
@@ -27,15 +27,14 @@ export const ContentPreview = ({ content, maxLength = 99 }: { content: string; m
 
 // Memoize to prevent rerenders when parent rerenders due to updatingState
 const PopularThreadCard = memo(
-  ({ post, multisub }: PopularThreadProps) => {
+  ({ post, directories }: PopularThreadProps) => {
     const { cid, content, link, linkHeight, linkWidth, subplebbitAddress, thumbnailUrl, title } = post || {};
     const commentMediaInfo = getCommentMediaInfo(link, thumbnailUrl, linkWidth, linkHeight);
-    const defaultSubplebbits = useDefaultSubplebbits();
 
-    // Find the matching MultisubSubplebbit entry and get its title
-    const multisubEntry = multisub.find((ms) => ms?.address === subplebbitAddress);
-    const boardTitle = multisubEntry?.title?.replace(/^\/[^/]+\/\s*-\s*/, '') || '';
-    const boardPath = subplebbitAddress ? getBoardPath(subplebbitAddress, defaultSubplebbits) : '';
+    // Find the matching DirectoryCommunity entry and get its title
+    const directoriesEntry = directories.find((ms) => ms?.address === subplebbitAddress);
+    const boardTitle = directoriesEntry?.title?.replace(/^\/[^/]+\/\s*-\s*/, '') || '';
+    const boardPath = subplebbitAddress ? getBoardPath(subplebbitAddress, directories) : '';
 
     return (
       <div className={styles.popularThread} key={cid}>
@@ -57,37 +56,37 @@ const PopularThreadCard = memo(
       </div>
     );
   },
-  // Custom equality: rerender if post.cid or multisub entry title changes
+  // Custom equality: rerender if post.cid or directories entry title changes
   (prevProps, nextProps) => {
     if (prevProps.post?.cid !== nextProps.post?.cid) return false;
-    // Compare the relevant multisub entry for this post's subplebbitAddress
-    const prevEntry = prevProps.multisub.find((ms) => ms?.address === prevProps.post?.subplebbitAddress);
-    const nextEntry = nextProps.multisub.find((ms) => ms?.address === nextProps.post?.subplebbitAddress);
+    // Compare the relevant directories entry for this post's subplebbitAddress
+    const prevEntry = prevProps.directories.find((ms) => ms?.address === prevProps.post?.subplebbitAddress);
+    const nextEntry = nextProps.directories.find((ms) => ms?.address === nextProps.post?.subplebbitAddress);
     return prevEntry?.title === nextEntry?.title;
   },
 );
 
-const PopularThreadsBox = ({ multisub, subplebbits }: { multisub: MultisubSubplebbit[]; subplebbits: any }) => {
+const PopularThreadsBox = ({ directories, subplebbits }: { directories: DirectoryCommunity[]; subplebbits: any }) => {
   const { t } = useTranslation();
   const { showWorksafeContentOnly, showNsfwContentOnly } = usePopularThreadsOptionsStore();
 
   const getFilteredSubplebbits = () => {
     if (showWorksafeContentOnly) {
       return subplebbits.filter((sub: Subplebbit) => {
-        const multisubEntry = multisub.find((ms) => ms?.address === sub?.address);
-        return multisubEntry ? !multisubEntry.nsfw : true;
+        const directoriesEntry = directories.find((ms) => ms?.address === sub?.address);
+        return directoriesEntry ? !directoriesEntry.nsfw : true;
       });
     }
     if (showNsfwContentOnly) {
       return subplebbits.filter((sub: Subplebbit) => {
-        const multisubEntry = multisub.find((ms) => ms?.address === sub?.address);
-        return multisubEntry ? multisubEntry.nsfw : false;
+        const directoriesEntry = directories.find((ms) => ms?.address === sub?.address);
+        return directoriesEntry ? directoriesEntry.nsfw : false;
       });
     }
     return subplebbits;
   };
 
-  const filteredSubplebbits = useMemo(getFilteredSubplebbits, [subplebbits, showWorksafeContentOnly, showNsfwContentOnly, multisub]);
+  const filteredSubplebbits = useMemo(getFilteredSubplebbits, [subplebbits, showWorksafeContentOnly, showNsfwContentOnly, directories]);
   const { popularPosts } = usePopularPosts(filteredSubplebbits);
   const isLoading = popularPosts.length === 0;
 
@@ -98,7 +97,11 @@ const PopularThreadsBox = ({ multisub, subplebbits }: { multisub: MultisubSubple
         <BoxModal />
       </div>
       <div className={`${styles.boxContent} ${styles.popularThreads} ${isLoading ? styles.popularThreadsLoading : ''}`}>
-        {isLoading ? <LoadingEllipsis string={t('loading')} /> : popularPosts.map((post: any) => <PopularThreadCard key={post.cid} post={post} multisub={multisub} />)}
+        {isLoading ? (
+          <LoadingEllipsis string={t('loading')} />
+        ) : (
+          popularPosts.map((post: any) => <PopularThreadCard key={post.cid} post={post} directories={directories} />)
+        )}
       </div>
     </div>
   );

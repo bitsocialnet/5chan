@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAccountComment, useAccountComments } from '@plebbit/plebbit-react-hooks';
-import { useDefaultSubplebbits } from '../../hooks/use-default-subplebbits';
+import { useDirectories } from '../../hooks/use-directories';
 import { getBoardPath } from '../../lib/utils/route-utils';
 import { Post } from '../post';
 
@@ -11,7 +11,7 @@ const PendingPost = () => {
   const commentIndex = accountCommentIndex ? parseInt(accountCommentIndex) : undefined;
   const post = useAccountComment({ commentIndex });
   const navigate = useNavigate();
-  const defaultSubplebbits = useDefaultSubplebbits();
+  const directories = useDirectories();
 
   useEffect(() => window.scrollTo(0, 0), []);
 
@@ -31,10 +31,10 @@ const PendingPost = () => {
 
   useEffect(() => {
     if (post?.cid && post?.subplebbitAddress) {
-      const boardPath = getBoardPath(post.subplebbitAddress, defaultSubplebbits);
+      const boardPath = getBoardPath(post.subplebbitAddress, directories);
       navigate(`/${boardPath}/thread/${post.cid}`, { replace: true });
     }
-  }, [post, navigate, defaultSubplebbits]);
+  }, [post, navigate, directories]);
 
   return <Post post={post} />;
 };

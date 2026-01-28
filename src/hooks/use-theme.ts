@@ -2,7 +2,7 @@ import { useEffect, useCallback, useMemo } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import { isAllView, isSubscriptionsView, isModView } from '../lib/utils/view-utils';
 import useThemeStore from '../stores/use-theme-store';
-import { useDefaultSubplebbits } from './use-default-subplebbits';
+import { useDirectories } from './use-directories';
 import { useResolvedSubplebbitAddress } from './use-resolved-subplebbit-address';
 import { useAccountComment } from '@plebbit/plebbit-react-hooks';
 import useSpecialThemeStore from '../stores/use-special-theme-store';
@@ -29,7 +29,7 @@ const useTheme = (): [string, (theme: string) => void] => {
   const setThemeStore = useThemeStore((state) => state.setTheme);
   // Subscribe to the actual themes data, not just the getter function
   const themes = useThemeStore((state) => state.themes);
-  const subplebbits = useDefaultSubplebbits();
+  const directories = useDirectories();
 
   const isInAllView = isAllView(location.pathname);
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, params);
@@ -64,7 +64,7 @@ const useTheme = (): [string, (theme: string) => void] => {
     if (isInAllView || isInSubscriptionsView || isInModView) {
       storedTheme = themes.nsfw;
     } else if (subplebbitAddress) {
-      const subplebbit = subplebbits.find((s) => s.address === subplebbitAddress);
+      const subplebbit = directories.find((s) => s.address === subplebbitAddress);
       if (subplebbit?.nsfw) {
         storedTheme = themes.nsfw;
       } else {
@@ -73,7 +73,7 @@ const useTheme = (): [string, (theme: string) => void] => {
     }
 
     return storedTheme || 'yotsuba';
-  }, [location.pathname, isEnabled, isInAllView, isInSubscriptionsView, isInModView, subplebbitAddress, subplebbits, themes]);
+  }, [location.pathname, isEnabled, isInAllView, isInSubscriptionsView, isInModView, subplebbitAddress, directories, themes]);
 
   // Update DOM class when theme changes
   useEffect(() => {
@@ -85,7 +85,7 @@ const useTheme = (): [string, (theme: string) => void] => {
       if (isInAllView || isInSubscriptionsView || isInModView) {
         await setThemeStore('nsfw', newTheme);
       } else if (subplebbitAddress) {
-        const subplebbit = subplebbits.find((s) => s.address === subplebbitAddress);
+        const subplebbit = directories.find((s) => s.address === subplebbitAddress);
         if (subplebbit?.nsfw) {
           await setThemeStore('nsfw', newTheme);
         } else {
@@ -93,7 +93,7 @@ const useTheme = (): [string, (theme: string) => void] => {
         }
       }
     },
-    [isInAllView, isInSubscriptionsView, isInModView, subplebbitAddress, subplebbits, setThemeStore],
+    [isInAllView, isInSubscriptionsView, isInModView, subplebbitAddress, directories, setThemeStore],
   );
 
   return [currentTheme, setSubplebbitTheme];

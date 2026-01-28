@@ -11,7 +11,7 @@ import { getFormattedDate, getFormattedTimeAgo } from '../../lib/utils/time-util
 import { isValidURL } from '../../lib/utils/url-utils';
 import { isAllView, isModQueueView, isPendingPostView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import useModQueueStore from '../../stores/use-mod-queue-store';
-import { useDefaultSubplebbits } from '../../hooks/use-default-subplebbits';
+import { useDirectories } from '../../hooks/use-directories';
 import { getBoardPath } from '../../lib/utils/route-utils';
 import useAvatarVisibilityStore from '../../stores/use-avatar-visibility-store';
 import useAuthorAddressClick from '../../hooks/use-author-address-click';
@@ -85,8 +85,8 @@ const PostInfo = ({
   const { showOmittedReplies } = useShowOmittedReplies();
   const { imageUrl: avatarImageUrl } = useAuthorAvatar({ author });
   const { hideAvatars } = useAvatarVisibilityStore();
-  const defaultSubplebbits = useDefaultSubplebbits();
-  const boardPath = subplebbitAddress ? getBoardPath(subplebbitAddress, defaultSubplebbits) : undefined;
+  const directories = useDirectories();
+  const boardPath = subplebbitAddress ? getBoardPath(subplebbitAddress, directories) : undefined;
   const postMenuProps = useMemo(() => selectPostMenuProps(post), [post]);
 
   const params = useParams();
@@ -453,7 +453,7 @@ const PostMedia = ({
   const { url } = commentMediaInfo || {};
   let type = commentMediaInfo?.type;
   const gifFrameUrl = useFetchGifFirstFrame(url);
-  const defaultSubplebbits = useDefaultSubplebbits();
+  const directories = useDirectories();
 
   if (type === 'gif' && gifFrameUrl !== null) {
     type = 'animated gif';
@@ -465,7 +465,7 @@ const PostMedia = ({
   const [showThumbnail, setShowThumbnail] = useState(true);
 
   const mediaDimensions = getMediaDimensions(commentMediaInfo);
-  const boardPath = getBoardPath(subplebbitAddress, defaultSubplebbits);
+  const boardPath = getBoardPath(subplebbitAddress, directories);
 
   return (
     <div className={styles.file}>
@@ -528,8 +528,8 @@ const Reply = ({ postReplyCount, reply, roles, threadNumber }: PostProps) => {
   }
 
   const { author, cid, deleted, link, linkHeight, linkWidth, postCid, reason, removed, spoiler, subplebbitAddress, thumbnailUrl, parentCid } = post || {};
-  const defaultSubplebbits = useDefaultSubplebbits();
-  const boardPath = subplebbitAddress ? getBoardPath(subplebbitAddress, defaultSubplebbits) : undefined;
+  const directories = useDirectories();
+  const boardPath = subplebbitAddress ? getBoardPath(subplebbitAddress, directories) : undefined;
 
   const location = useLocation();
   const route = boardPath ? `/${boardPath}/thread/${cid}` : `/thread/${cid}`;
@@ -591,8 +591,8 @@ const PostDesktop = ({
   const isInPostPageView = isPostPageView(location.pathname, params);
   const isInAllView = isAllView(location.pathname);
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, params);
-  const defaultSubplebbits = useDefaultSubplebbits();
-  const boardPath = subplebbitAddress ? getBoardPath(subplebbitAddress, defaultSubplebbits) : undefined;
+  const directories = useDirectories();
+  const boardPath = subplebbitAddress ? getBoardPath(subplebbitAddress, directories) : undefined;
 
   const { hidden, unhide, hide } = useHide({ cid });
   const isHidden = hidden && !isInPostPageView;

@@ -9,7 +9,7 @@ import { getHasThumbnail, getLinkMediaInfo } from '../../lib/utils/media-utils';
 import { formatMarkdown } from '../../lib/utils/post-utils';
 import { isValidURL } from '../../lib/utils/url-utils';
 import { isAllView, isCatalogView, isModQueueView, isModView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
-import { useDefaultSubplebbits } from '../../hooks/use-default-subplebbits';
+import { useDirectories } from '../../hooks/use-directories';
 import { useResolvedSubplebbitAddress } from '../../hooks/use-resolved-subplebbit-address';
 import useFetchGifFirstFrame from '../../hooks/use-fetch-gif-first-frame';
 import useIsSubplebbitOffline from '../../hooks/use-is-subplebbit-offline';
@@ -71,7 +71,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
   const isInModView = isModView(location.pathname);
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, useParams());
   const subscriptions = account?.subscriptions || [];
-  const defaultSubplebbits = useDefaultSubplebbits();
+  const directories = useDirectories();
 
   const { accountSubplebbits } = useAccountSubplebbits();
   const accountSubplebbitAddresses = Object.keys(accountSubplebbits);
@@ -338,7 +338,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
               <select onChange={(e) => setPublishPostOptions({ subplebbitAddress: e.target.value })} value={subplebbitAddress}>
                 <option value=''>{t('choose_one')}</option>
                 {isInAllView &&
-                  defaultSubplebbits
+                  directories
                     .filter((subplebbit) => subplebbit.title && subplebbit.address)
                     .map((subplebbit) => (
                       <option key={subplebbit.address} value={subplebbit.address}>

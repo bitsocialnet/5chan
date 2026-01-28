@@ -7,8 +7,8 @@ import { Trans, useTranslation } from 'react-i18next';
 import styles from './board.module.css';
 import { shouldShowSnow } from '../../lib/snow';
 import { getCommentMediaInfo, getHasThumbnail } from '../../lib/utils/media-utils';
-import { useDefaultSubplebbitAddresses, useDefaultSubplebbits } from '../../hooks/use-default-subplebbits';
-import { useFilteredDefaultSubplebbitAddresses } from '../../hooks/use-filtered-default-subplebbit-addresses';
+import { useDirectoryAddresses, useDirectories } from '../../hooks/use-directories';
+import { useFilteredDirectoryAddresses } from '../../hooks/use-filtered-directory-addresses';
 import { useResolvedSubplebbitAddress, useBoardPath } from '../../hooks/use-resolved-subplebbit-address';
 import { useFeedStateString } from '../../hooks/use-state-string';
 import useTimeFilter, { timeFilterNameToSeconds } from '../../hooks/use-time-filter';
@@ -194,18 +194,18 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
   const isInSubscriptionsView = viewType ? viewType === 'subs' : false;
   const isInModView = viewType ? viewType === 'mod' : false;
 
-  const defaultSubplebbits = useDefaultSubplebbits();
+  const directories = useDirectories();
   const resolvedAddressFromUrl = useResolvedSubplebbitAddress();
   const subplebbitAddress = useMemo(() => {
     if (boardIdentifierProp) {
-      return getSubplebbitAddress(boardIdentifierProp, defaultSubplebbits);
+      return getSubplebbitAddress(boardIdentifierProp, directories);
     }
     return resolvedAddressFromUrl;
-  }, [boardIdentifierProp, defaultSubplebbits, resolvedAddressFromUrl]);
+  }, [boardIdentifierProp, directories, resolvedAddressFromUrl]);
 
   const boardPath = useBoardPath(subplebbitAddress);
-  const defaultSubplebbitAddresses = useDefaultSubplebbitAddresses();
-  const filteredDefaultSubplebbitAddresses = useFilteredDefaultSubplebbitAddresses();
+  const directoryAddresses = useDirectoryAddresses();
+  const filteredDirectoryAddresses = useFilteredDirectoryAddresses();
 
   const account = useAccount();
   const subscriptions = account?.subscriptions;
@@ -215,7 +215,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
 
   const subplebbitAddresses = useMemo(() => {
     if (isInAllView) {
-      return filteredDefaultSubplebbitAddresses;
+      return filteredDirectoryAddresses;
     }
     if (isInSubscriptionsView) {
       return subscriptions || [];
@@ -224,16 +224,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
       return accountSubplebbitAddresses;
     }
     return [subplebbitAddress];
-  }, [
-    isInAllView,
-    isInSubscriptionsView,
-    isInModView,
-    subplebbitAddress,
-    defaultSubplebbitAddresses,
-    filteredDefaultSubplebbitAddresses,
-    subscriptions,
-    accountSubplebbitAddresses,
-  ]);
+  }, [isInAllView, isInSubscriptionsView, isInModView, subplebbitAddress, directoryAddresses, filteredDirectoryAddresses, subscriptions, accountSubplebbitAddresses]);
 
   const { sortType } = useSortingStore();
   const { timeFilterSeconds: timeFilterSecondsFromHook, timeFilterName: timeFilterNameFromHook } = useTimeFilter();
@@ -442,7 +433,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
   useEffect(() => {
     if (!isVisible) return;
     const boardIdentifier = params.boardIdentifier || boardIdentifierProp;
-    const isDirectory = boardIdentifier ? isDirectoryBoard(boardIdentifier, defaultSubplebbits) : false;
+    const isDirectory = boardIdentifier ? isDirectoryBoard(boardIdentifier, directories) : false;
 
     let boardTitle: string;
     if (isInAllView) {
@@ -457,19 +448,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
       boardTitle = title ? title : shortAddress || subplebbitAddress || '';
     }
     document.title = boardTitle + ' - 5chan';
-  }, [
-    title,
-    shortAddress,
-    subplebbitAddress,
-    isVisible,
-    params.boardIdentifier,
-    boardIdentifierProp,
-    defaultSubplebbits,
-    isInAllView,
-    isInSubscriptionsView,
-    isInModView,
-    t,
-  ]);
+  }, [title, shortAddress, subplebbitAddress, isVisible, params.boardIdentifier, boardIdentifierProp, directories, isInAllView, isInSubscriptionsView, isInModView, t]);
 
   const shouldShowErrorToUser = subplebbitError?.message && feed.length === 0;
 

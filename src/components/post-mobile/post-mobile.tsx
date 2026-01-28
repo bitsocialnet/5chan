@@ -11,7 +11,7 @@ import { getTextColorForBackground, hashStringToColor } from '../../lib/utils/po
 import { getFormattedDate, getFormattedTimeAgo } from '../../lib/utils/time-utils';
 import { isAllView, isModQueueView, isPendingPostView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import useModQueueStore from '../../stores/use-mod-queue-store';
-import { useDefaultSubplebbits } from '../../hooks/use-default-subplebbits';
+import { useDirectories } from '../../hooks/use-directories';
 import { getBoardPath } from '../../lib/utils/route-utils';
 import useAvatarVisibilityStore from '../../stores/use-avatar-visibility-store';
 import useAuthorAddressClick from '../../hooks/use-author-address-click';
@@ -40,10 +40,10 @@ const lastVirtuosoStates: { [key: string]: StateSnapshot } = {};
 
 const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: PostProps) => {
   const { t } = useTranslation();
-  const defaultSubplebbits = useDefaultSubplebbits();
+  const directories = useDirectories();
   const { author, cid, deleted, link, linkHeight, linkWidth, locked, parentCid, pinned, postCid, reason, removed, state, subplebbitAddress, timestamp, thumbnailUrl } =
     post || {};
-  const boardPath = subplebbitAddress ? getBoardPath(subplebbitAddress, defaultSubplebbits) : undefined;
+  const boardPath = subplebbitAddress ? getBoardPath(subplebbitAddress, directories) : undefined;
   const isReply = parentCid;
   const title = post?.title?.trim();
   const { address, shortAddress } = author || {};
@@ -397,8 +397,8 @@ const Reply = ({ postReplyCount, reply, roles, threadNumber }: PostProps) => {
     post = editedComment;
   }
   const { author, cid, deleted, postCid, reason, removed, subplebbitAddress } = post || {};
-  const defaultSubplebbits = useDefaultSubplebbits();
-  const boardPath = subplebbitAddress ? getBoardPath(subplebbitAddress, defaultSubplebbits) : undefined;
+  const directories = useDirectories();
+  const boardPath = subplebbitAddress ? getBoardPath(subplebbitAddress, directories) : undefined;
   const location = useLocation();
   const route = boardPath ? `/${boardPath}/thread/${cid}` : `/thread/${cid}`;
   const isRouteLinkToReply = cid ? location.pathname.startsWith(route) : false;
@@ -442,8 +442,8 @@ const PostMobile = ({
   const navigationType = useNavigationType();
   const isInPendingPostView = isPendingPostView(location.pathname, params);
   const isInPostView = isPostPageView(location.pathname, params);
-  const defaultSubplebbits = useDefaultSubplebbits();
-  const boardPath = subplebbitAddress ? getBoardPath(subplebbitAddress, defaultSubplebbits) : undefined;
+  const directories = useDirectories();
+  const boardPath = subplebbitAddress ? getBoardPath(subplebbitAddress, directories) : undefined;
   const linksCount = useCountLinksInReplies(post);
   const { replies, hasMore, loadMore } = useReplies({ comment: post, accountComments: { newerThan: Infinity } });
 
