@@ -152,8 +152,13 @@
   "build": {
     "appId": "5chan.desktop",
     "productName": "5chan",
+    "icon": "public/icon.png",
     "beforePack": "electron/before-pack.js",
     "afterAllArtifactBuild": "electron/after-all-artifact-build.cjs",
+    "asarUnpack": [
+      "node_modules/@bonfida/**/*",
+      "node_modules/@solana/**/*"
+    ],
     "extraResources": [
       {
         "from": "bin/${os}",
