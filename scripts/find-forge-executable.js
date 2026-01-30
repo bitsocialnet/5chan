@@ -35,6 +35,7 @@ const skipDirs = new Set(['node_modules', '.git', 'bin', 'app', 'resources']);
 
 function findExecutable(dir, platform) {
   const entries = readdirSync(dir, { withFileTypes: true });
+  let fallback = null; // Track a valid candidate that doesn't match appName
 
   for (const entry of entries) {
     const fullPath = join(dir, entry.name);
@@ -46,21 +47,31 @@ function findExecutable(dir, platform) {
         const appPath = fullPath;
         const exePath = join(appPath, 'Contents', 'MacOS', entry.name.replace('.app', ''));
         if (existsSync(exePath)) {
-          return exePath;
+          const lowerAppName = entry.name.toLowerCase();
+          if (lowerAppName.includes(appName)) {
+            return exePath; // Exact match, return immediately
+          }
+          fallback = fallback || exePath; // Store as fallback, continue searching
         }
       }
 
       const result = findExecutable(fullPath, platform);
-      if (result) return result;
+      if (result) {
+        const resultName = result.split('/').pop().toLowerCase();
+        if (resultName.includes(appName)) {
+          return result; // Exact match from recursion
+        }
+        fallback = fallback || result; // Store as fallback
+      }
     } else if (entry.isFile()) {
       // Check if it's an executable
       if (platform === 'win32') {
         const lowerName = entry.name.toLowerCase();
         if (lowerName.endsWith('.exe') && !lowerName.includes('electron') && !lowerName.includes('crashpad')) {
           if (lowerName.includes(appName)) {
-            return fullPath;
+            return fullPath; // Exact match, return immediately
           }
-          return fullPath;
+          fallback = fallback || fullPath; // Store as fallback, continue searching
         }
       } else if (platform === 'darwin') {
         const stat = statSync(fullPath);
@@ -68,15 +79,19 @@ function findExecutable(dir, platform) {
           const lowerName = entry.name.toLowerCase();
           if (!lowerName.includes('helper') && !lowerName.includes('crashpad')) {
             if (lowerName.includes(appName)) {
-              return fullPath;
+              return fullPath; // Exact match, return immediately
             }
-            return fullPath;
+            fallback = fallback || fullPath; // Store as fallback, continue searching
           }
         }
       } else if (platform === 'linux') {
         // Linux executables (AppImage or unpacked)
         if (entry.name.endsWith('.AppImage')) {
-          return fullPath;
+          const lowerName = entry.name.toLowerCase();
+          if (lowerName.includes(appName)) {
+            return fullPath; // Exact match, return immediately
+          }
+          fallback = fallback || fullPath; // Store as fallback, continue searching
         }
         // Check for executable files (not .so libraries)
         const stat = statSync(fullPath);
@@ -85,16 +100,16 @@ function findExecutable(dir, platform) {
           const lowerName = entry.name.toLowerCase();
           if (!lowerName.includes('chrome') && !lowerName.includes('crashpad')) {
             if (lowerName.includes(appName)) {
-              return fullPath;
+              return fullPath; // Exact match, return immediately
             }
-            return fullPath;
+            fallback = fallback || fullPath; // Store as fallback, continue searching
           }
         }
       }
     }
   }
 
-  return null;
+  return fallback; // Return fallback candidate if no exact appName match found
 }
 
 let executable = null;
