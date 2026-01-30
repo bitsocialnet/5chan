@@ -42,14 +42,23 @@ jobs:
         if: ${{ matrix.arch == 'x64' }}
         run: yarn electron:build:linux:x64
       - name: List out directory
-        run: ls -la out/make
+        run: ls -laR out/make
+      # Rename AppImage to include architecture
+      - name: Rename artifacts with architecture suffix
+        run: |
+          for f in out/make/AppImage/**/*.AppImage; do
+            [ -f "$f" ] || continue
+            dir=$(dirname "$f")
+            base=$(basename "$f" .AppImage)
+            mv "$f" "$dir/${base}-${{ matrix.arch }}.AppImage"
+          done
 
       # publish version release
       - name: Generate release body
         run: node scripts/release-body > release-body.txt
       - uses: ncipollo/release-action@v1
         with:
-          artifacts: 'out/make/*.AppImage'
+          artifacts: 'out/make/AppImage/**/*.AppImage'
           token: ${{ secrets.GITHUB_TOKEN }}
           replacesArtifacts: true
           omitBody: true
@@ -110,14 +119,30 @@ jobs:
             yarn electron:build:mac:x64
           fi
       - name: List out directory
-        run: ls -la out/make
+        run: ls -laR out/make
+      # Rename artifacts to include architecture
+      - name: Rename artifacts with architecture suffix
+        run: |
+          # Rename DMG
+          for f in out/make/*.dmg; do
+            [ -f "$f" ] || continue
+            base=$(basename "$f" .dmg)
+            mv "$f" "out/make/${base}-${{ matrix.arch }}.dmg"
+          done
+          # Rename ZIP
+          for f in out/make/zip/**/*.zip; do
+            [ -f "$f" ] || continue
+            dir=$(dirname "$f")
+            base=$(basename "$f" .zip)
+            mv "$f" "$dir/${base}-${{ matrix.arch }}.zip"
+          done
 
       # publish version release
       - name: Generate release body
         run: node scripts/release-body > release-body.txt
       - uses: ncipollo/release-action@v1
         with:
-          artifacts: 'out/make/*.dmg,out/make/*.zip'
+          artifacts: 'out/make/*.dmg,out/make/zip/**/*.zip'
           token: ${{ secrets.GITHUB_TOKEN }}
           replacesArtifacts: true
           omitBody: true
@@ -213,6 +238,8 @@ jobs:
   finalize-release:
     runs-on: ubuntu-22.04
     needs: [linux, mac, windows, android]
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v2
         with:
