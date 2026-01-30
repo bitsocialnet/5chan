@@ -89,7 +89,12 @@ jobs:
       - run: pip install setuptools
 
       - name: Install dependencies (with Node v22)
-        run: yarn install --frozen-lockfile --ignore-engines
+        run: |
+          for i in 1 2 3; do
+            yarn install --frozen-lockfile --ignore-engines && break
+            echo "Retry $i..."
+            sleep 10
+          done
       # make sure the ipfs executable is executable
       - name: Download IPFS and set permissions (with Node v22)
         run: node electron/download-ipfs && sudo chmod +x bin/mac/ipfs
