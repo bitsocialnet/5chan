@@ -1,3 +1,16 @@
+## [0.6.3](https://github.com/plebbit/plebchan/compare/v0.6.2...v0.6.3) (2026-01-30)
+
+
+### Bug Fixes
+
+* **electron-forge:** add app icon configuration for all platforms ([a2d0869](https://github.com/plebbit/plebchan/commit/a2d086990484ea4cf823282d997c89719f5c7bc9))
+* **electron:** fix production build crashes ([388a120](https://github.com/plebbit/plebchan/commit/388a120c8ea387a48fa24152caac5c55a4c33734))
+* **find-forge-executable:** make appName preference effective ([16012b4](https://github.com/plebbit/plebchan/commit/16012b42395523b8770411c65d82767da41fdb81))
+* **forge.config.js:** remove malformed iconUrl from Squirrel config ([c4e2f75](https://github.com/plebbit/plebchan/commit/c4e2f753e38a0d69198e7aba83c0b4968671e180))
+* **package.json:** remove unneeded var ([0c6e03d](https://github.com/plebbit/plebchan/commit/0c6e03d039d0303b3d7e896ff5e9ad169527db80))
+
+
+
 ## [0.6.2](https://github.com/plebbit/plebchan/compare/v0.6.1...v0.6.2) (2026-01-26)
 
 
