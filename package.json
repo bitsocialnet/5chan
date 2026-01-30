@@ -47,7 +47,6 @@
     "kubo": "0.39.0"
   },
   "scripts": {
-    "postinstall": "node scripts/fix-bonfida-imports.js",
     "generate:assets": "node scripts/generate-asset-manifest.js",
     "prebuild": "yarn generate:assets",
     "prestart": "yarn generate:assets",
@@ -139,8 +138,6 @@
     "wait-on": "9.0.3"
   },
   "resolutions": {
-    "@bonfida/spl-name-service": "3.0.16",
-    "@bonfida/sns-records": "0.0.1",
     "js-yaml": "4.1.1",
     "baseline-browser-mapping": "^2.9.11",
     "vite": "npm:rolldown-vite@7.3.1",
