@@ -118,15 +118,17 @@ Set up these hooks for this project:
 | Hook | Command | Purpose |
 |------|---------|---------|
 | `afterFileEdit` | `npx oxfmt <file>` | Auto-format files after AI edits |
+| `afterFileEdit` | `.cursor/hooks/yarn-install.sh` | Run `yarn install` when `package.json` changes to keep `yarn.lock` in sync |
 | `stop` | `yarn build && yarn lint && yarn type-check && (yarn audit || true)` | Build, verify code, and check security when agent finishes. Note: `yarn audit` returns non-zero on vulnerabilities, so `|| true` makes it informational only |
 
 ### Why Use Hooks
 
 - **Consistent formatting** — Every file follows the same style
+- **Keep lockfile in sync** — `yarn install` runs automatically when `package.json` changes, preventing stale `yarn.lock` files
 - **Catch build errors** — `yarn build` catches compilation errors that would break production
 - **Catch issues early** — Lint and type errors are caught before commit/CI
 - **Security awareness** — `yarn audit` flags known vulnerabilities in dependencies
-- **Less manual work** — No need to run `yarn build`, `yarn lint`, `yarn type-check`, `yarn audit` manually
+- **Less manual work** — No need to run `yarn install`, `yarn build`, `yarn lint`, `yarn type-check`, `yarn audit` manually
 
 ### Example Hook Scripts
 
@@ -155,6 +157,28 @@ echo "=== yarn build ===" && yarn build
 echo "=== yarn lint ===" && yarn lint
 echo "=== yarn type-check ===" && yarn type-check
 echo "=== yarn audit ===" && (yarn audit || true)  # || true makes audit informational (non-fatal)
+exit 0
+```
+
+**Yarn install hook** (runs when `package.json` is edited):
+```bash
+#!/bin/bash
+# Run yarn install when package.json is changed
+# Hook receives JSON via stdin with file_path
+
+input=$(cat)
+file_path=$(echo "$input" | grep -o '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/.*:.*"\([^"]*\)"/\1/')
+
+if [ -z "$file_path" ]; then
+  exit 0
+fi
+
+if [ "$file_path" = "package.json" ]; then
+  cd "$(dirname "$0")/../.." || exit 0
+  echo "package.json changed - running yarn install to update yarn.lock..."
+  yarn install
+fi
+
 exit 0
 ```
 
