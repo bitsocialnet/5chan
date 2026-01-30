@@ -32,7 +32,7 @@ jobs:
         run: yarn install --frozen-lockfile --ignore-engines
       # make sure the ipfs executable is executable
       - name: Download IPFS and set permissions (with Node v22)
-        run: node electron/download-ipfs && sudo chmod +x bin/linux/ipfs
+        run: BUILD_ARCH=${{ matrix.arch }} node electron/download-ipfs && sudo chmod +x bin/linux/ipfs
       - name: Build React app (with Node v22)
         run: CI='' NODE_ENV=production yarn build
       - name: Build Electron app for Linux (arm64)
@@ -41,15 +41,15 @@ jobs:
       - name: Build Electron app for Linux (x64)
         if: ${{ matrix.arch == 'x64' }}
         run: yarn electron:build:linux:x64
-      - name: List dist directory
-        run: ls dist
+      - name: List out directory
+        run: ls -la out/make
 
       # publish version release
       - name: Generate release body
         run: node scripts/release-body > release-body.txt
       - uses: ncipollo/release-action@v1
         with:
-          artifacts: 'dist/5chan*.AppImage,dist/5chan*-arm64.AppImage,dist/5chan-html*.zip'
+          artifacts: 'out/make/*.AppImage'
           token: ${{ secrets.GITHUB_TOKEN }}
           replacesArtifacts: true
           omitBody: true
@@ -104,15 +104,15 @@ jobs:
           else
             yarn electron:build:mac:x64
           fi
-      - name: List dist directory
-        run: ls dist
+      - name: List out directory
+        run: ls -la out/make
 
       # publish version release
       - name: Generate release body
         run: node scripts/release-body > release-body.txt
       - uses: ncipollo/release-action@v1
         with:
-          artifacts: 'dist/5chan*.dmg,dist/5chan*-arm64.dmg'
+          artifacts: 'out/make/*.dmg,out/make/*.zip'
           token: ${{ secrets.GITHUB_TOKEN }}
           replacesArtifacts: true
           omitBody: true
@@ -138,15 +138,15 @@ jobs:
         run: npx cross-env NODE_ENV=production yarn build
       - name: Build Electron app for Windows (x64)
         run: yarn electron:build:windows
-      - name: List dist directory
-        run: dir dist
+      - name: List out directory
+        run: dir out\make\squirrel.windows\x64
 
       # publish version release
       - name: Generate release body
         run: node scripts/release-body > release-body.txt
       - uses: ncipollo/release-action@v1
         with:
-          artifacts: 'dist/5chan*.exe'
+          artifacts: 'out/make/squirrel.windows/x64/*.exe'
           token: ${{ secrets.GITHUB_TOKEN }}
           replacesArtifacts: true
           omitBody: true

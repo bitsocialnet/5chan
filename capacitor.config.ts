@@ -3,13 +3,13 @@ import { CapacitorConfig } from '@capacitor/cli';
 const config: CapacitorConfig = {
   appId: 'fivechan.android',
   appName: '5chan',
-  webDir: 'dist',
+  webDir: 'build',
   plugins: {
     CapacitorHttp: {
       enabled: true,
     },
     FileUploader: {
-      enabled: true
+      enabled: true,
     },
     StatusBar: {
       style: 'Dark',
@@ -21,8 +21,8 @@ const config: CapacitorConfig = {
     },
   },
   server: {
-    androidScheme: 'https'
-  }
+    androidScheme: 'https',
+  },
 };
 
 export default config;
