@@ -5,6 +5,7 @@ const config = {
     name: '5chan',
     executableName: '5chan',
     appBundleId: '5chan.desktop',
+    icon: './public/icon', // electron-forge adds the correct extension per platform
 
     // NOTE: asar is disabled because of a bug where electron-packager silently fails
     // during asar creation with 5chan's large node_modules. The app works fine without it.
@@ -67,6 +68,7 @@ const config = {
       platforms: ['darwin'],
       config: {
         name: '5chan',
+        icon: './public/icon.png',
         format: 'UDZO',
       },
     },
@@ -80,6 +82,8 @@ const config = {
       platforms: ['win32'],
       config: {
         name: '5chan',
+        setupIcon: './public/favicon.ico',
+        iconUrl: 'file://public/favicon.ico',
       },
     },
     // Linux
@@ -88,6 +92,8 @@ const config = {
       platforms: ['linux'],
       config: {
         options: {
+          name: '5chan',
+          icon: './public/icon.png',
           categories: ['Network'],
         },
       },
