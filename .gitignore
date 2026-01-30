@@ -54,9 +54,6 @@ web_modules/
 # TypeScript cache
 *.tsbuildinfo
 
-# Generated files
-src/generated/asset-manifest.ts
-
 # Optional npm cache directory
 .npm
 
@@ -99,7 +96,9 @@ out
 # Nuxt.js build / generate output
 .nuxt
 dist
-dev-dist
+
+# Electron Forge output
+squashfs-root
 
 # Gatsby files
 .cache/
@@ -149,7 +148,7 @@ dev-dist
 /coverage
 
 # production
-# (using dist, already ignored above)
+/build
 
 # misc
 .DS_Store
@@ -164,7 +163,3 @@ yarn-error.log*
 
 .vscode
 .cursor
-.playwright-mcp
-
-.specstory
-.cursorindexingignore
