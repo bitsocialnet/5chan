@@ -35,7 +35,7 @@ RUN yarn build
 
 # build electron-forge docker image
 # temporary .dockerignore to save build time
-echo $'node_modules\nbuild\nout' > .dockerignore
+echo $'node_modules\ndist' > .dockerignore
 echo "$dockerfile" | sudo docker build \
   . \
   --tag 5chan-electron-forge \
@@ -45,7 +45,7 @@ rm .dockerignore
 # build linux binary
 sudo docker run \
   --name 5chan-electron-forge \
-  --volume "$root_path"/out:/usr/src/5chan/out \
+  --volume "$root_path"/dist:/usr/src/5chan/dist \
   --rm \
   5chan-electron-forge \
   yarn electron:build:linux
@@ -53,7 +53,7 @@ sudo docker run \
 # build windows binary
 sudo docker run \
   --name 5chan-electron-forge \
-  --volume "$root_path"/out:/usr/src/5chan/out \
+  --volume "$root_path"/dist:/usr/src/5chan/dist \
   --rm \
   5chan-electron-forge \
   yarn electron:build:windows
