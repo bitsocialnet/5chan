@@ -11,7 +11,7 @@ fi
 node electron/download-ipfs || { echo "Error: failed script 'node electron/download-ipfs'" ; exit 1; }
 
 dockerfile='
-FROM electronuserland/builder:16
+FROM node:22
 
 # install node_modules
 WORKDIR /usr/src/5chan
@@ -19,44 +19,41 @@ COPY ./package.json .
 COPY ./yarn.lock .
 RUN yarn
 
-# build native dependencies like sqlite3
-RUN electron-builder install-app-deps
-
-# copy source files
+# copy source files and configs
 COPY ./bin ./bin
 COPY ./electron ./electron
 COPY ./src ./src
 COPY ./public ./public
-
-# required or yarn build fails
-COPY ./.eslintrc.json ./.eslintrc.json
-COPY ./.prettierrc ./.prettierrc
+COPY ./forge.config.js ./forge.config.js
+COPY ./vite.config.js ./vite.config.js
+COPY ./tsconfig.json ./tsconfig.json
+COPY ./index.html ./index.html
 
 # react build
 RUN yarn build
 '
 
-# build electron-builder docker image
+# build electron-forge docker image
 # temporary .dockerignore to save build time
-echo $'node_modules\ndist' > .dockerignore
+echo $'node_modules\nbuild\nout' > .dockerignore
 echo "$dockerfile" | sudo docker build \
   . \
-  --tag 5chan-electron-builder \
+  --tag 5chan-electron-forge \
   --file -
 rm .dockerignore
 
 # build linux binary
 sudo docker run \
-  --name 5chan-electron-builder \
-  --volume "$root_path"/dist:/usr/src/5chan/dist \
+  --name 5chan-electron-forge \
+  --volume "$root_path"/out:/usr/src/5chan/out \
   --rm \
-  5chan-electron-builder \
+  5chan-electron-forge \
   yarn electron:build:linux
 
 # build windows binary
 sudo docker run \
-  --name 5chan-electron-builder \
-  --volume "$root_path"/dist:/usr/src/5chan/dist \
+  --name 5chan-electron-forge \
+  --volume "$root_path"/out:/usr/src/5chan/out \
   --rm \
-  5chan-electron-builder \
+  5chan-electron-forge \
   yarn electron:build:windows

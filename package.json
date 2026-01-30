@@ -43,7 +43,8 @@
     "remark-supersub": "1.0.0",
     "tcp-port-used": "1.0.2",
     "typescript": "5.1.6",
-    "zustand": "4.4.3"
+    "zustand": "4.4.3",
+    "kubo": "0.39.0"
   },
   "scripts": {
     "postinstall": "node scripts/fix-bonfida-imports.js",
@@ -61,15 +62,12 @@
     "electron:no-delete-data": "yarn electron:before:download-ipfs && electron .",
     "electron:start": "concurrently \"cross-env BROWSER=none yarn start\" \"wait-on http://localhost:3000 && yarn electron\"",
     "electron:start:no-delete-data": "concurrently \"cross-env BROWSER=none yarn start\" \"wait-on http://localhost:3000 && yarn electron:no-delete-data\"",
-    "electron:build:linux": "yarn build && yarn build:preload && electron-builder build --publish never -l",
-    "electron:build:linux:x64": "yarn build:preload && electron-builder build --publish never -l --x64",
-    "electron:build:linux:arm64": "yarn build:preload && electron-builder build --publish never -l --arm64",
-    "electron:build:windows": "yarn build && yarn build:preload && electron-builder build --publish never -w",
-    "electron:build:mac": "yarn build && yarn build:preload && electron-builder build --publish never -m",
-    "electron:build:mac:x64": "yarn build:preload && electron-builder build --publish never -m --x64",
-    "electron:build:mac:arm64": "yarn build:preload && electron-builder build --publish never -m --arm64",
-    "electron:before": "yarn electron-rebuild && yarn electron:before:download-ipfs && yarn electron:before:delete-data",
-    "electron:before:download-ipfs": "node electron/download-ipfs",
+    "electron:package": "yarn build && yarn build:preload && electron-forge package",
+    "electron:build": "yarn build && yarn build:preload && electron-forge make",
+    "electron:build:linux": "yarn build && yarn build:preload && electron-forge make --platform=linux",
+    "electron:build:mac": "yarn build && yarn build:preload && electron-forge make --platform=darwin",
+    "electron:build:windows": "yarn build && yarn build:preload && electron-forge make --platform=win32",
+    "electron:before": "yarn electron-rebuild && yarn electron:before:delete-data",
     "electron:before:delete-data": "rimraf .plebbit",
     "android:build:icons": "cordova-res android --skip-config --copy --resources /tmp/plebbit-react-android-icons --icon-source ./android/icons/icon.png --splash-source ./android/icons/splash.png --icon-foreground-source ./android/icons/icon-foreground.png --icon-background-source '#ffffee'",
     "lint": "oxlint src/**/*.{js,ts,tsx}",
@@ -114,7 +112,12 @@
     "cz-conventional-changelog": "3.3.0",
     "decompress": "4.2.1",
     "electron": "36.9.5",
-    "electron-builder": "24.13.2",
+    "@electron-forge/cli": "7.6.0",
+    "@electron-forge/maker-dmg": "7.6.0",
+    "@electron-forge/maker-squirrel": "7.6.0",
+    "@electron-forge/maker-zip": "7.6.0",
+    "@electron-forge/plugin-auto-unpack-natives": "7.6.0",
+    "@reforged/maker-appimage": "5.1.1",
     "husky": "4.3.8",
     "isomorphic-fetch": "3.0.0",
     "jsdom": "27.3.0",
@@ -157,47 +160,6 @@
     "tar": "7.5.4"
   },
   "main": "electron/main.js",
-  "build": {
-    "appId": "5chan.desktop",
-    "productName": "5chan",
-    "icon": "public/icon.png",
-    "asarUnpack": [
-      "**/*.node"
-    ],
-    "beforePack": "electron/before-pack.js",
-    "afterAllArtifactBuild": "electron/after-all-artifact-build.cjs",
-    "extraResources": [
-      {
-        "from": "bin/${os}",
-        "to": "bin",
-        "filter": [
-          "**/*"
-        ]
-      }
-    ],
-    "files": [
-      "dist/**/*",
-      "electron/**/*",
-      "package.json",
-      "node_modules/**/*"
-    ],
-    "extends": null,
-    "mac": {
-      "target": "dmg",
-      "category": "public.app-category.social-networking",
-      "type": "distribution"
-    },
-    "win": {
-      "target": [
-        "portable",
-        "nsis"
-      ]
-    },
-    "linux": {
-      "target": "AppImage",
-      "category": "Network"
-    }
-  },
   "lint-staged": {
     "src/**/*.{js,ts,tsx}": [
       "oxfmt --write"

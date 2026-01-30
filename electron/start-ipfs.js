@@ -6,43 +6,92 @@ import ps from 'node:process';
 import proxyServer from './proxy-server.js';
 import tcpPortUsed from 'tcp-port-used';
 import EnvPaths from 'env-paths';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 const dirname = path.join(path.dirname(fileURLToPath(import.meta.url)));
 const envPaths = EnvPaths('plebbit', { suffix: false });
+
+// Get platform-specific binary name
+const getIpfsBinaryName = () => (process.platform === 'win32' ? 'ipfs.exe' : 'ipfs');
+
+// Get platform subdirectory name for bin/ folder
+const getPlatformDir = () => {
+  if (process.platform === 'win32') return 'win';
+  if (process.platform === 'darwin') return 'mac';
+  return 'linux';
+};
+
+// Resolve kubo binary path
+const getKuboPath = async () => {
+  if (isDev) {
+    // In dev, use kubo from node_modules
+    const { path: getKuboBinaryPath } = await import('kubo');
+    return getKuboBinaryPath();
+  } else {
+    // In production, the binary is downloaded to bin/<platform>/ipfs by generateAssets hook
+    // With asar: false, files are at resources/app/ instead of resources/app.asar.unpacked
+    const appPath = process.resourcesPath;
+    const binaryName = getIpfsBinaryName();
+    const platformDir = getPlatformDir();
+
+    // Try the bin/ directory first (where generateAssets downloads binaries)
+    const binDirPath = path.join(appPath, 'app', 'bin', platformDir, binaryName);
+    if (fs.existsSync(binDirPath)) {
+      return binDirPath;
+    }
+
+    // Fallback: try app.asar.unpacked for ASAR builds (if we ever re-enable ASAR)
+    const unpackedPath = path.join(appPath, 'app.asar.unpacked');
+    const kuboModulePath = path.join(unpackedPath, 'node_modules', 'kubo');
+
+    // Try to import kubo from unpacked location
+    try {
+      const kuboUrl = pathToFileURL(path.resolve(kuboModulePath)).href;
+      const kuboModule = await import(kuboUrl);
+      const { path: getKuboBinaryPath } = kuboModule;
+      return getKuboBinaryPath();
+    } catch (err) {
+      // Fallback: try to find the binary directly in kubo module
+      const kuboBinPath = path.join(kuboModulePath, 'kubo', binaryName);
+      if (fs.existsSync(kuboBinPath)) {
+        return kuboBinPath;
+      }
+
+      // Last resort: check in resources/app/node_modules/kubo for non-ASAR builds
+      const appModulePath = path.join(appPath, 'app', 'node_modules', 'kubo');
+      const appKuboBinPath = path.join(appModulePath, 'kubo', binaryName);
+      if (fs.existsSync(appKuboBinPath)) {
+        return appKuboBinPath;
+      }
+
+      throw new Error(`Could not find kubo binary. Checked: ${binDirPath}, ${kuboBinPath}, ${appKuboBinPath}`);
+    }
+  }
+};
 
 // use this custom function instead of spawnSync for better logging
 // also spawnSync might have been causing crash on start on windows
 const spawnAsync = (...args) =>
   new Promise((resolve, reject) => {
-    const spawedProcess = spawn(...args);
-    spawedProcess.on('exit', (exitCode, signal) => {
+    const spawnedProcess = spawn(...args);
+    spawnedProcess.on('exit', (exitCode, signal) => {
       if (exitCode === 0) resolve();
-      else reject(Error(`spawnAsync process '${spawedProcess.pid}' exited with code '${exitCode}' signal '${signal}'`));
+      else reject(Error(`spawnAsync process '${spawnedProcess.pid}' exited with code '${exitCode}' signal '${signal}'`));
     });
-    spawedProcess.stderr.on('data', (data) => console.error(data.toString()));
-    spawedProcess.stdin.on('data', (data) => console.log(data.toString()));
-    spawedProcess.stdout.on('data', (data) => console.log(data.toString()));
-    spawedProcess.on('error', (data) => console.error(data.toString()));
+    // Always surface errors from short-lived commands
+    spawnedProcess.stderr.on('data', (data) => console.error(data.toString()));
+    // Short-lived command stdout can be useful in dev, but is noisy in prod
+    if (isDev) {
+      spawnedProcess.stdout.on('data', (data) => console.log(data.toString()));
+    } else {
+      // Drain to avoid backpressure without logging
+      spawnedProcess.stdout.on('data', () => {});
+    }
+    spawnedProcess.on('error', (data) => console.error(data.toString?.() || String(data)));
   });
 
 const startIpfs = async () => {
-  const ipfsFileName = process.platform == 'win32' ? 'ipfs.exe' : 'ipfs';
-  let ipfsPath = path.join(process.resourcesPath, 'bin', ipfsFileName);
-  let ipfsDataPath = path.join(envPaths.data, 'ipfs');
-
-  // test launching the ipfs binary in dev mode
-  // they must be downloaded first using `yarn electron:build`
-  if (isDev) {
-    let binFolderName = 'win';
-    if (process.platform === 'linux') {
-      binFolderName = 'linux';
-    }
-    if (process.platform === 'darwin') {
-      binFolderName = 'mac';
-    }
-    ipfsPath = path.join(dirname, '..', 'bin', binFolderName, ipfsFileName);
-    ipfsDataPath = path.join(dirname, '..', '.plebbit', 'ipfs');
-  }
+  const ipfsPath = await getKuboPath();
+  const ipfsDataPath = isDev ? path.join(dirname, '..', '.plebbit', 'ipfs') : path.join(envPaths.data, 'ipfs');
 
   if (!fs.existsSync(ipfsPath)) {
     throw Error(`ipfs binary '${ipfsPath}' doesn't exist`);
@@ -51,16 +100,17 @@ const startIpfs = async () => {
   console.log({ ipfsPath, ipfsDataPath });
 
   fs.ensureDirSync(ipfsDataPath);
-  const env = { IPFS_PATH: ipfsDataPath };
+  // Reduce IPFS daemon log verbosity in production to avoid UI lag from excessive logging
+  const env = { ...process.env, IPFS_PATH: ipfsDataPath, ...(isDev ? {} : { GOLOG_LOG_LEVEL: 'error' }) };
   // init ipfs client on first launch
   try {
     await spawnAsync(ipfsPath, ['init'], { env, hideWindows: true });
-  } catch (e) {}
+  } catch {}
 
   // make sure repo is migrated
   try {
     await spawnAsync(ipfsPath, ['repo', 'migrate'], { env, hideWindows: true });
-  } catch (e) {}
+  } catch {}
 
   // dont use 8080 port because it's too common
   await spawnAsync(ipfsPath, ['config', '--json', 'Addresses.Gateway', '"/ip4/127.0.0.1/tcp/6473"'], {
@@ -83,17 +133,16 @@ const startIpfs = async () => {
       let lastError;
       ipfsProcess.stderr.on('data', (data) => {
         lastError = data.toString();
-        console.error(data.toString());
+        if (isDev) console.error(lastError);
       });
-      ipfsProcess.stdin.on('data', (data) => console.log(data.toString()));
-      ipfsProcess.stdout.on('data', (data) => {
-        data = data.toString();
-        console.log(data);
-        if (data.includes('Daemon is ready')) {
+      ipfsProcess.stdout.on('data', (chunk) => {
+        const text = chunk.toString();
+        if (isDev) console.log(text);
+        if (text.includes('Daemon is ready')) {
           resolve();
         }
       });
-      ipfsProcess.on('error', (data) => console.error(data.toString()));
+      ipfsProcess.on('error', (err) => console.error(err?.toString?.() || String(err)));
       ipfsProcess.on('exit', () => {
         console.error(`ipfs process with pid ${ipfsProcess.pid} exited`);
         reject(Error(lastError));
@@ -135,7 +184,7 @@ const startIpfsAutoRestart = async () => {
       try {
         // try to run exported onError callback, can be undefined
         DefaultExport.onError(e)?.catch?.(console.log);
-      } catch (e) {}
+      } catch {}
     }
     pendingStart = false;
   };

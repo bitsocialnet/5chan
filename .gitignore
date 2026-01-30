@@ -100,6 +100,9 @@ dist
 # Electron Forge output
 squashfs-root
 
+# Vite PWA dev output
+dev-dist
+
 # Gatsby files
 .cache/
 # Comment in the public line in if your project uses Gatsby and not Next.js

@@ -94,7 +94,7 @@ const createMainWindow = () => {
       nodeIntegration: false,
       contextIsolation: true,
       devTools: true, // TODO: change to isDev when no bugs left
-      preload: path.join(dirname, '../dist/electron/preload.cjs'),
+      preload: path.join(dirname, '../build/electron/preload.cjs'),
     },
   });
 
@@ -140,7 +140,7 @@ const createMainWindow = () => {
     callback({ responseHeaders: details.responseHeaders });
   });
 
-  const startURL = isDev ? 'http://localhost:3000' : `file://${path.join(dirname, '../dist/index.html')}`;
+  const startURL = isDev ? 'http://localhost:3000' : `file://${path.join(dirname, '../build/index.html')}`;
 
   mainWindow.loadURL(startURL);
 
@@ -244,7 +244,7 @@ const createMainWindow = () => {
 
   if (process.platform !== 'darwin') {
     // tray
-    const trayIconPath = path.join(dirname, '..', isDev ? 'public' : 'dist', 'electron-tray-icon.png');
+    const trayIconPath = path.join(dirname, '..', isDev ? 'public' : 'build', 'electron-tray-icon.png');
     const tray = new Tray(trayIconPath);
     tray.setToolTip('5chan');
     const trayMenu = Menu.buildFromTemplate([
