@@ -16,7 +16,7 @@ export default defineConfig({
       fileName: () => 'preload.cjs',
       formats: ['cjs'],
     },
-    outDir: resolve(__dirname, '../dist/electron'),
+    outDir: resolve(__dirname, '../build/electron'),
     emptyOutDir: true,
     rollupOptions: {
       external: ['electron'],

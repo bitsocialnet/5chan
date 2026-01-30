@@ -1,7 +1,7 @@
 import useAccountsStore from '@plebbit/plebbit-react-hooks/dist/stores/accounts';
-import { MultisubSubplebbit } from './use-default-subplebbits';
+import { DirectoryCommunity } from './use-directories';
 
-export const useAccountSubplebbitsWithMetadata = (): MultisubSubplebbit[] => {
+export const useAccountSubplebbitsWithMetadata = (): DirectoryCommunity[] => {
   const subplebbitsWithMetadata = useAccountsStore(
     (state) => {
       const activeAccountId = state.activeAccountId;

@@ -4,7 +4,6 @@ import { useParams, Link } from 'react-router-dom';
 import { useFeed, Comment, usePublishCommentModeration, useEditedComment, useSubplebbit, useComment } from '@plebbit/plebbit-react-hooks';
 import useAccountsStore from '@plebbit/plebbit-react-hooks/dist/stores/accounts';
 import { Virtuoso } from 'react-virtuoso';
-import { formatDistanceToNow } from 'date-fns';
 import styles from './mod-queue.module.css';
 import useModQueueStore from '../../stores/use-mod-queue-store';
 import { useAccountSubplebbitsWithMetadata } from '../../hooks/use-account-subplebbits-with-metadata';
@@ -12,7 +11,7 @@ import LoadingEllipsis from '../../components/loading-ellipsis';
 import ErrorDisplay from '../../components/error-display/error-display';
 import { useFeedStateString } from '../../hooks/use-state-string';
 import { getSubplebbitAddress, getBoardPath } from '../../lib/utils/route-utils';
-import { useDefaultSubplebbits, MultisubSubplebbit } from '../../hooks/use-default-subplebbits';
+import { useDirectories, DirectoryCommunity } from '../../hooks/use-directories';
 import { useBoardPath } from '../../hooks/use-resolved-subplebbit-address';
 import { getHasThumbnail, getCommentMediaInfo } from '../../lib/utils/media-utils';
 import { getFormattedDate, getFormattedTimeAgo } from '../../lib/utils/time-utils';
@@ -430,10 +429,10 @@ const ModQueueFeedPost = ({ comment }: { comment: Comment }) => {
 };
 
 interface ModQueueBoardFilterProps {
-  subplebbits: MultisubSubplebbit[];
+  communities: DirectoryCommunity[];
 }
 
-const ModQueueBoardFilter = ({ subplebbits }: ModQueueBoardFilterProps) => {
+const ModQueueBoardFilter = ({ communities }: ModQueueBoardFilterProps) => {
   const { t } = useTranslation();
   const { selectedBoardFilter, setSelectedBoardFilter } = useModQueueStore();
 
@@ -442,12 +441,12 @@ const ModQueueBoardFilter = ({ subplebbits }: ModQueueBoardFilterProps) => {
     setSelectedBoardFilter(value);
   };
 
-  if (!subplebbits || subplebbits.length === 0) {
+  if (!communities || communities.length === 0) {
     return null;
   }
 
   // Default to first board if none selected
-  const firstBoardAddress = subplebbits.find((sub) => sub.address)?.address;
+  const firstBoardAddress = communities.find((sub) => sub.address)?.address;
   const currentFilter = selectedBoardFilter || firstBoardAddress || '';
 
   // Auto-select first board if none is selected
@@ -461,12 +460,12 @@ const ModQueueBoardFilter = ({ subplebbits }: ModQueueBoardFilterProps) => {
     <div className={styles.filterContainer}>
       <label>{t('filter_by_board')}:</label>
       <select value={currentFilter} onChange={handleChange}>
-        {subplebbits.map((sub) => {
+        {communities.map((sub) => {
           const address = sub.address;
           if (!address) return null;
           return (
             <option key={address} value={address}>
-              /{getBoardPath(address, subplebbits)}/
+              /{getBoardPath(address, communities)}/
             </option>
           );
         })}
@@ -594,7 +593,7 @@ export const ModQueueButton = ({ boardIdentifier, isMobile }: ModQueueButtonProp
     (state) => {
       const activeAccountId = state.activeAccountId;
       const activeAccount = activeAccountId ? state.accounts[activeAccountId] : undefined;
-      const accountSubplebbits = activeAccount?.subplebbits || {};
+      const accountSubplebbits = activeAccount?.communities || {};
       return Object.keys(accountSubplebbits);
     },
     (prev, next) => {
@@ -603,14 +602,14 @@ export const ModQueueButton = ({ boardIdentifier, isMobile }: ModQueueButtonProp
     },
   );
 
-  const defaultSubplebbits = useDefaultSubplebbits();
+  const directories = useDirectories();
 
   const resolvedAddress = useMemo(() => {
     if (boardIdentifier) {
-      return getSubplebbitAddress(boardIdentifier, defaultSubplebbits);
+      return getSubplebbitAddress(boardIdentifier, directories);
     }
     return undefined;
-  }, [boardIdentifier, defaultSubplebbits]);
+  }, [boardIdentifier, directories]);
 
   const subplebbitAddresses = useMemo(() => {
     if (resolvedAddress) {
@@ -652,7 +651,7 @@ export const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueV
     (state) => {
       const activeAccountId = state.activeAccountId;
       const activeAccount = activeAccountId ? state.accounts[activeAccountId] : undefined;
-      const accountSubplebbits = activeAccount?.subplebbits || {};
+      const accountSubplebbits = activeAccount?.communities || {};
       return Object.keys(accountSubplebbits);
     },
     (prev, next) => {
@@ -661,18 +660,18 @@ export const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueV
     },
   );
 
-  const defaultSubplebbits = useDefaultSubplebbits();
+  const directories = useDirectories();
 
   const boardIdentifier = propBoardIdentifier || params.boardIdentifier;
 
   const resolvedAddress = useMemo(() => {
     if (boardIdentifier) {
-      return getSubplebbitAddress(boardIdentifier, defaultSubplebbits);
+      return getSubplebbitAddress(boardIdentifier, directories);
     }
     return undefined;
-  }, [boardIdentifier, defaultSubplebbits]);
+  }, [boardIdentifier, directories]);
 
-  const subplebbitsWithMetadata = useAccountSubplebbitsWithMetadata();
+  const communitiesWithMetadata = useAccountSubplebbitsWithMetadata();
 
   const subplebbitAddresses = useMemo(() => {
     if (resolvedAddress) {
@@ -740,7 +739,7 @@ export const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueV
       {!resolvedAddress && (
         <div className={styles.controls}>
           <div className={styles.controlsLeft}>
-            <ModQueueBoardFilter subplebbits={subplebbitsWithMetadata} />
+            <ModQueueBoardFilter communities={communitiesWithMetadata} />
           </div>
         </div>
       )}

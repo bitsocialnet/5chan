@@ -23,7 +23,7 @@ Currently, directory assignments are temporarily handpicked by developers throug
 
 ### How It Works
 
-- **Current System**: Developers manually curate directory assignments by reviewing pull requests to the [5chan-multisub.json](https://github.com/bitsocialhq/lists/blob/master/5chan-multisub.json) file.
+- **Current System**: Developers manually curate directory assignments by reviewing pull requests to the [5chan-directories.json](https://github.com/bitsocialhq/lists/blob/master/5chan-directories.json) file.
 
 - **Future System**: Directory board assignments will be determined through gasless voting using pubsub. Community members will vote on which board should be assigned to each directory, and the highest-voted board will automatically become the directory board. This creates a competitive marketplace where board quality and community engagement determine directory placement.
 
@@ -72,7 +72,7 @@ To have your board appear in a directory on the 5chan homepage:
    - Relevant to the directory category
    - **99% uptime** (since a board acts like its own server—it's a P2P node)
 
-2. Open a pull request on GitHub by editing the [5chan-multisub.json](https://github.com/bitsocialhq/lists/blob/master/5chan-multisub.json) file
+2. Open a pull request on GitHub by editing the [5chan-directories.json](https://github.com/bitsocialhq/lists/blob/master/5chan-directories.json) file
 
 3. Add your board's entry with:
    - Title: in the format `/directoryCode/ - Title`, e.g. "/biz/ - Business & Finance";

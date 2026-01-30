@@ -5,8 +5,8 @@ import { Comment, useAccount, useFeed, useSubplebbit, useBlock, useAccountCommen
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
 import { getCommentMediaInfo, getHasThumbnail } from '../../lib/utils/media-utils';
 import useCatalogFeedRows from '../../hooks/use-catalog-feed-rows';
-import { useDefaultSubplebbits } from '../../hooks/use-default-subplebbits';
-import { useFilteredDefaultSubplebbitAddresses } from '../../hooks/use-filtered-default-subplebbit-addresses';
+import { useDirectories } from '../../hooks/use-directories';
+import { useFilteredDirectoryAddresses } from '../../hooks/use-filtered-directory-addresses';
 import { useResolvedSubplebbitAddress, useBoardPath } from '../../hooks/use-resolved-subplebbit-address';
 import { useFeedStateString } from '../../hooks/use-state-string';
 import useTimeFilter, { timeFilterNameToSeconds } from '../../hooks/use-time-filter';
@@ -302,32 +302,32 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   const isInAllView = viewType ? viewType === 'all' : false;
   const isInSubscriptionsView = viewType ? viewType === 'subs' : false;
 
-  const defaultSubplebbits = useDefaultSubplebbits();
+  const directories = useDirectories();
   const resolvedAddressFromUrl = useResolvedSubplebbitAddress();
   const subplebbitAddress = useMemo(() => {
     if (boardIdentifierProp) {
-      return getSubplebbitAddress(boardIdentifierProp, defaultSubplebbits);
+      return getSubplebbitAddress(boardIdentifierProp, directories);
     }
     return resolvedAddressFromUrl;
-  }, [boardIdentifierProp, defaultSubplebbits, resolvedAddressFromUrl]);
+  }, [boardIdentifierProp, directories, resolvedAddressFromUrl]);
 
   const boardPath = useBoardPath(subplebbitAddress);
   const { showTextOnlyThreads, filterItems, searchText, clearMatchedFilters } = useCatalogFiltersStore();
 
   const account = useAccount();
   const subscriptions = account?.subscriptions;
-  const filteredDefaultSubplebbitAddresses = useFilteredDefaultSubplebbitAddresses();
+  const filteredDirectoryAddresses = useFilteredDirectoryAddresses();
 
   const subplebbitAddresses = useMemo(() => {
     if (isInAllView) {
-      return filteredDefaultSubplebbitAddresses;
+      return filteredDirectoryAddresses;
     }
     if (isInSubscriptionsView) {
       return (subscriptions || []).filter(Boolean); // Filter out any undefined/null values
     }
     // Only include subplebbitAddress if it's defined
     return subplebbitAddress ? [subplebbitAddress] : [];
-  }, [isInAllView, isInSubscriptionsView, subplebbitAddress, filteredDefaultSubplebbitAddresses, subscriptions]);
+  }, [isInAllView, isInSubscriptionsView, subplebbitAddress, filteredDirectoryAddresses, subscriptions]);
 
   const { imageSize } = useCatalogStyleStore();
   const columnWidth = imageSize === 'Large' ? 270 : 180;
@@ -601,7 +601,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   useEffect(() => {
     if (!isVisible) return;
     const boardIdentifier = params.boardIdentifier || boardIdentifierProp;
-    const isDirectory = boardIdentifier ? isDirectoryBoard(boardIdentifier, defaultSubplebbits) : false;
+    const isDirectory = boardIdentifier ? isDirectoryBoard(boardIdentifier, directories) : false;
 
     let documentTitle: string;
     if (isInAllView) {
@@ -614,7 +614,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
       documentTitle = title ? title : shortAddress || subplebbitAddress || '';
     }
     document.title = documentTitle + ` - ${t('catalog')} - 5chan`;
-  }, [title, shortAddress, subplebbitAddress, isInAllView, isInSubscriptionsView, t, isVisible, params.boardIdentifier, boardIdentifierProp, defaultSubplebbits]);
+  }, [title, shortAddress, subplebbitAddress, isInAllView, isInSubscriptionsView, t, isVisible, params.boardIdentifier, boardIdentifierProp, directories]);
 
   // Clear matched filters when component mounts or when subplebbit changes
   useEffect(() => {

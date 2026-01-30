@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useSubplebbitField } from '../../hooks/use-stable-subplebbit';
-import { useDefaultSubplebbits } from '../../hooks/use-default-subplebbits';
+import { useDirectories } from '../../hooks/use-directories';
 import { getSubplebbitAddress } from '../../lib/utils/route-utils';
 import { HomeLogo } from '../home';
 import styles from './not-found.module.css';
@@ -18,8 +18,8 @@ const NotFound = () => {
   // Extract boardIdentifier from pathname (could be directory code or address)
   const pathParts = location.pathname.split('/').filter(Boolean);
   const boardIdentifier = pathParts[0] && pathParts[0] !== 'not-found' && pathParts[0] !== 'faq' ? pathParts[0] : '';
-  const defaultSubplebbits = useDefaultSubplebbits();
-  const subplebbitAddress = boardIdentifier ? getSubplebbitAddress(boardIdentifier, defaultSubplebbits) : '';
+  const directories = useDirectories();
+  const subplebbitAddress = boardIdentifier ? getSubplebbitAddress(boardIdentifier, directories) : '';
   // Only subscribe to address and shortAddress to avoid rerenders from updatingState changes
   const address = useSubplebbitField(subplebbitAddress, (subplebbit) => subplebbit?.address);
   const shortAddress = useSubplebbitField(subplebbitAddress, (subplebbit) => subplebbit?.shortAddress);

@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
 import { Comment, useAccount } from '@plebbit/plebbit-react-hooks';
 import { useFloating, offset, shift, size, autoUpdate, Placement } from '@floating-ui/react';
-import { useDefaultSubplebbits } from '../../hooks/use-default-subplebbits';
+import { useDirectories } from '../../hooks/use-directories';
 import { getBoardPath } from '../../lib/utils/route-utils';
 import useIsMobile from '../../hooks/use-is-mobile';
 import styles from '../../views/post/post.module.css';
@@ -59,7 +59,7 @@ const DesktopQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, i
   const [outOfViewCid, setOutOfViewCid] = useState<string | null>(null);
   const placementRef = useRef<Placement>('right');
   const availableWidthRef = useRef<number>(0);
-  const defaultSubplebbits = useDefaultSubplebbits();
+  const directories = useDirectories();
 
   const { refs, floatingStyles, update } = useFloating({
     placement: placementRef.current,
@@ -102,7 +102,7 @@ const DesktopQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, i
   const handleClick = (e: React.MouseEvent, cid: string | undefined, subplebbitAddress: string | undefined) => {
     e.preventDefault();
     if (cid && subplebbitAddress) {
-      const boardPath = getBoardPath(subplebbitAddress, defaultSubplebbits);
+      const boardPath = getBoardPath(subplebbitAddress, directories);
       navigate(`/${boardPath}/thread/${cid}`);
       setTimeout(() => {
         const element = document.querySelector(`[data-cid="${cid}"]`);
@@ -130,7 +130,7 @@ const DesktopQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, i
     setOutOfViewCid(null);
   };
 
-  const backlinkBoardPath = backlinkReply?.subplebbitAddress ? getBoardPath(backlinkReply.subplebbitAddress, defaultSubplebbits) : undefined;
+  const backlinkBoardPath = backlinkReply?.subplebbitAddress ? getBoardPath(backlinkReply.subplebbitAddress, directories) : undefined;
   const backlinkRoute = backlinkReply?.cid ? (backlinkBoardPath ? `/${backlinkBoardPath}/thread/${backlinkReply.cid}` : `/thread/${backlinkReply.cid}`) : '#';
 
   const replyBacklink = (
@@ -159,7 +159,7 @@ const DesktopQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, i
 
   const account = useAccount();
 
-  const quotelinkBoardPath = quotelinkReply?.subplebbitAddress ? getBoardPath(quotelinkReply.subplebbitAddress, defaultSubplebbits) : undefined;
+  const quotelinkBoardPath = quotelinkReply?.subplebbitAddress ? getBoardPath(quotelinkReply.subplebbitAddress, directories) : undefined;
   const quotelinkRoute = quotelinkReply?.cid ? (quotelinkBoardPath ? `/${quotelinkBoardPath}/thread/${quotelinkReply.cid}` : `/thread/${quotelinkReply.cid}`) : '#';
 
   const replyQuotelink = (
@@ -193,7 +193,7 @@ const DesktopQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, i
 const MobileQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, isQuotelinkReply }: ReplyQuotePreviewProps) => {
   const [hoveredCid, setHoveredCid] = useState<string | null>(null);
   const [outOfViewCid, setOutOfViewCid] = useState<string | null>(null);
-  const defaultSubplebbits = useDefaultSubplebbits();
+  const directories = useDirectories();
 
   const { refs, floatingStyles, update } = useFloating({
     placement: 'bottom',
@@ -215,7 +215,7 @@ const MobileQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, is
   const handleClick = (e: React.MouseEvent, cid: string | undefined, subplebbitAddress: string | undefined) => {
     e.preventDefault();
     if (cid && subplebbitAddress) {
-      const boardPath = getBoardPath(subplebbitAddress, defaultSubplebbits);
+      const boardPath = getBoardPath(subplebbitAddress, directories);
       navigate(`/${boardPath}/thread/${cid}`);
       setTimeout(() => {
         const element = document.querySelector(`[data-cid="${cid}"]`);
@@ -255,7 +255,7 @@ const MobileQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, is
       </span>
       {backlinkReply?.number &&
         (() => {
-          const backlinkBoardPath = backlinkReply?.subplebbitAddress ? getBoardPath(backlinkReply.subplebbitAddress, defaultSubplebbits) : undefined;
+          const backlinkBoardPath = backlinkReply?.subplebbitAddress ? getBoardPath(backlinkReply.subplebbitAddress, directories) : undefined;
           const backlinkRoute = backlinkReply?.cid ? (backlinkBoardPath ? `/${backlinkBoardPath}/thread/${backlinkReply.cid}` : `/thread/${backlinkReply.cid}`) : '#';
           return (
             <Link to={backlinkRoute} className={styles.backlinkHash} onClick={(e) => handleClick(e, backlinkReply?.cid, backlinkReply?.subplebbitAddress)}>
@@ -290,7 +290,7 @@ const MobileQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, is
       </span>
       {quotelinkReply?.number &&
         (() => {
-          const quotelinkBoardPath = quotelinkReply?.subplebbitAddress ? getBoardPath(quotelinkReply.subplebbitAddress, defaultSubplebbits) : undefined;
+          const quotelinkBoardPath = quotelinkReply?.subplebbitAddress ? getBoardPath(quotelinkReply.subplebbitAddress, directories) : undefined;
           const quotelinkRoute = quotelinkReply?.cid
             ? quotelinkBoardPath
               ? `/${quotelinkBoardPath}/thread/${quotelinkReply.cid}`

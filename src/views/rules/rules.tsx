@@ -1,7 +1,7 @@
 import { useEffect, useState, FormEvent } from 'react';
 import { useSubplebbit } from '@plebbit/plebbit-react-hooks';
 import { Footer, HomeLogo } from '../home';
-import { useDefaultSubplebbits, MultisubSubplebbit } from '../../hooks/use-default-subplebbits';
+import { useDirectories, DirectoryCommunity } from '../../hooks/use-directories';
 import styles from './rules.module.css';
 
 const getBoardShortCode = (title?: string): string => {
@@ -16,7 +16,7 @@ const getBoardName = (title?: string): string => {
   return match ? match[1] : title;
 };
 
-const BoardRulesDisplay = ({ subplebbitAddress, defaultSubplebbits }: { subplebbitAddress: string; defaultSubplebbits: MultisubSubplebbit[] }) => {
+const BoardRulesDisplay = ({ subplebbitAddress, directories }: { subplebbitAddress: string; directories: DirectoryCommunity[] }) => {
   const subplebbit = useSubplebbit({ subplebbitAddress });
   const { rules, state, title, shortAddress } = subplebbit || {};
 
@@ -42,7 +42,7 @@ const BoardRulesDisplay = ({ subplebbitAddress, defaultSubplebbits }: { subplebb
 
   const isLoaded = state === 'succeeded';
 
-  const defaultSub = defaultSubplebbits.find((sub) => sub.address === subplebbitAddress);
+  const defaultSub = directories.find((sub) => sub.address === subplebbitAddress);
   let displayTitle: string;
   if (defaultSub?.title) {
     const shortCode = getBoardShortCode(defaultSub.title);
@@ -87,11 +87,11 @@ const BoardRulesDisplay = ({ subplebbitAddress, defaultSubplebbits }: { subplebb
 };
 
 const BoardSelector = ({
-  defaultSubplebbits,
+  directories,
   selectedAddress,
   onSelect,
 }: {
-  defaultSubplebbits: MultisubSubplebbit[];
+  directories: DirectoryCommunity[];
   selectedAddress: string;
   onSelect: (address: string) => void;
 }) => {
@@ -121,7 +121,7 @@ const BoardSelector = ({
         <div className={styles.selectorRow}>
           <select value={selectedAddress} onChange={handleSelectChange} className={styles.boardSelect}>
             <option value=''>Select board...</option>
-            {defaultSubplebbits.map((sub) => {
+            {directories.map((sub) => {
               const shortCode = getBoardShortCode(sub.title);
               const boardName = getBoardName(sub.title);
               return (
@@ -151,7 +151,7 @@ const BoardSelector = ({
 };
 
 const Rules = () => {
-  const defaultSubplebbits = useDefaultSubplebbits();
+  const directories = useDirectories();
   const [selectedAddress, setSelectedAddress] = useState('');
 
   useEffect(() => {
@@ -175,8 +175,8 @@ const Rules = () => {
             Please read and respect the rules of whatever board you decide to post to.
           </div>
         </div>
-        <BoardSelector defaultSubplebbits={defaultSubplebbits} selectedAddress={selectedAddress} onSelect={setSelectedAddress} />
-        {selectedAddress && <BoardRulesDisplay subplebbitAddress={selectedAddress} defaultSubplebbits={defaultSubplebbits} />}
+        <BoardSelector directories={directories} selectedAddress={selectedAddress} onSelect={setSelectedAddress} />
+        {selectedAddress && <BoardRulesDisplay subplebbitAddress={selectedAddress} directories={directories} />}
         <Footer />
       </div>
     </div>

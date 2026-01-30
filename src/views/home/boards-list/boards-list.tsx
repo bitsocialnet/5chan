@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useDefaultSubplebbitsState, useDefaultSubplebbits, MultisubSubplebbit } from '../../../hooks/use-default-subplebbits';
+import { useDirectoriesState, useDirectories, DirectoryCommunity } from '../../../hooks/use-directories';
 import { getBoardPath } from '../../../lib/utils/route-utils';
 import useDisclaimerModalStore from '../../../stores/use-disclaimer-modal-store';
 import useDirectoryModalStore from '../../../stores/use-directory-modal-store';
@@ -9,7 +9,7 @@ import BoardsFilterModal from './boards-filter-modal';
 import styles from '../home.module.css';
 
 // Helper function to find board address by matching title pattern
-const findBoardAddress = (multisub: MultisubSubplebbit[], titlePattern: string): string | null => {
+const findBoardAddress = (multisub: DirectoryCommunity[], titlePattern: string): string | null => {
   const entry = multisub.find((ms) => ms.title === titlePattern);
   return entry?.address || null;
 };
@@ -27,25 +27,25 @@ const NSFWBadge = () => {
   );
 };
 
-const BoardsList = ({ multisub }: { multisub: MultisubSubplebbit[] }) => {
+const BoardsList = ({ multisub }: { multisub: DirectoryCommunity[] }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { error } = useDefaultSubplebbitsState();
+  const { error } = useDirectoriesState();
   const { showDisclaimerModal } = useDisclaimerModalStore();
   const { openDirectoryModal } = useDirectoryModalStore();
   const { useCatalogLinks, boardFilter } = useBoardsFilterStore();
-  const defaultSubplebbits = useDefaultSubplebbits();
+  const directories = useDirectories();
 
   const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, address: string) => {
     e.preventDefault();
-    const boardPath = getBoardPath(address, defaultSubplebbits);
+    const boardPath = getBoardPath(address, directories);
     showDisclaimerModal(address, navigate, boardPath);
   };
 
   // Helper to generate link URL with optional catalog suffix
   const getBoardLink = (address: string | null): string => {
     if (!address) return '#';
-    const boardPath = getBoardPath(address, defaultSubplebbits);
+    const boardPath = getBoardPath(address, directories);
     return `/${boardPath}${useCatalogLinks ? '/catalog' : ''}`;
   };
 

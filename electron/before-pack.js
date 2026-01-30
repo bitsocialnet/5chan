@@ -17,11 +17,28 @@ const ipfsClientLinuxPath = path.join(ipfsClientsPath, 'linux');
 // const ipfsClientMacUrl = `https://github.com/plebbit/kubo/releases/download/v${ipfsClientVersion}/ipfs-darwin-amd64`
 // const ipfsClientLinuxUrl = `https://github.com/plebbit/kubo/releases/download/v${ipfsClientVersion}/ipfs-linux-amd64`
 
-// official kubo download links https://docs.ipfs.tech/install/command-line/#install-official-binary-distributions
-const ipfsClientVersion = '0.32.1';
-const ipfsClientWindowsUrl = `https://dist.ipfs.io/kubo/v${ipfsClientVersion}/kubo_v${ipfsClientVersion}_windows-amd64.zip`;
-const ipfsClientMacUrl = `https://dist.ipfs.io/kubo/v${ipfsClientVersion}/kubo_v${ipfsClientVersion}_darwin-amd64.tar.gz`;
-const ipfsClientLinuxUrl = `https://dist.ipfs.io/kubo/v${ipfsClientVersion}/kubo_v${ipfsClientVersion}_linux-amd64.tar.gz`;
+// NOTE: Keep this version in sync with the kubo version in package.json to avoid repo version mismatches
+const ipfsClientVersion = '0.39.0';
+
+// Resolve desired build arch: allow overriding via env (so cross-arch builds pick correct binary)
+const resolveBuildArch = () => {
+  const envArch = process.env.BUILD_ARCH;
+  if (envArch === 'arm64' || envArch === 'x64') return envArch;
+  // fallback to host arch
+  if (process.arch === 'arm64') return 'arm64';
+  return 'x64';
+};
+
+const toKuboArch = (arch) => (arch === 'arm64' ? 'arm64' : 'amd64');
+
+const getKuboUrl = (platform) => {
+  const arch = toKuboArch(resolveBuildArch());
+  if (platform === 'win32') return `https://dist.ipfs.io/kubo/v${ipfsClientVersion}/kubo_v${ipfsClientVersion}_windows-${arch}.zip`;
+  if (platform === 'darwin') return `https://dist.ipfs.io/kubo/v${ipfsClientVersion}/kubo_v${ipfsClientVersion}_darwin-${arch}.tar.gz`;
+  if (platform === 'linux') return `https://dist.ipfs.io/kubo/v${ipfsClientVersion}/kubo_v${ipfsClientVersion}_linux-${arch}.tar.gz`;
+  // default to linux
+  return `https://dist.ipfs.io/kubo/v${ipfsClientVersion}/kubo_v${ipfsClientVersion}_linux-${arch}.tar.gz`;
+};
 
 const downloadWithProgress = (url) =>
   new Promise((resolve, reject) => {
@@ -79,25 +96,6 @@ const downloadWithRetry = async (url, retries = 3) => {
   }
 };
 
-// plebbit kubo downloads dont need to be extracted
-const download = async (url, destinationPath) => {
-  let binName = 'ipfs';
-  if (destinationPath.endsWith('win')) {
-    binName += '.exe';
-  }
-  const binPath = path.join(destinationPath, binName);
-  // already downloaded, don't download again
-  if (fs.pathExistsSync(binPath)) {
-    return;
-  }
-  const split = url.split('/');
-  const fileName = split[split.length - 1];
-  const downloadPath = path.join(destinationPath, fileName);
-  const file = await downloadWithRetry(url);
-  fs.ensureDirSync(destinationPath);
-  await fs.writeFile(binPath, file);
-};
-
 // official kubo downloads need to be extracted
 const downloadAndExtract = async (url, destinationPath) => {
   let binName = 'ipfs';
@@ -111,14 +109,14 @@ const downloadAndExtract = async (url, destinationPath) => {
   console.log(`Downloading IPFS client from ${url} to ${destinationPath}`);
   const split = url.split('/');
   const fileName = split[split.length - 1];
-  const downloadPath = path.join(destinationPath, fileName);
+  const archivePath = path.join(destinationPath, fileName);
   const file = await downloadWithRetry(url);
   fs.ensureDirSync(destinationPath);
-  await fs.writeFile(downloadPath, file);
-  console.log(`Downloaded archive to ${downloadPath}`);
-  console.log(`Extracting ${downloadPath} to ${destinationPath}`);
+  await fs.writeFile(archivePath, file);
+  console.log(`Downloaded archive to ${archivePath}`);
+  console.log(`Extracting ${archivePath} to ${destinationPath}`);
   try {
-    await decompress(downloadPath, destinationPath);
+    await decompress(archivePath, destinationPath);
     console.log('Decompression complete');
   } catch (err) {
     console.error('Error during decompression:', err);
@@ -130,31 +128,26 @@ const downloadAndExtract = async (url, destinationPath) => {
   fs.moveSync(extractedBinPath, binPath);
   console.log('Binary moved');
   console.log('Cleaning up temporary files');
-  fs.removeSync(downloadPath);
+  fs.removeSync(archivePath);
   console.log('Cleanup complete');
 };
 
 export const downloadIpfsClients = async () => {
   const platform = process.platform;
-  console.log(`Starting IPFS client download for platform: ${platform}`);
-  switch (platform) {
-    case 'win32':
-      await downloadAndExtract(ipfsClientWindowsUrl, ipfsClientWindowsPath);
-      break;
-    case 'darwin':
-      await downloadAndExtract(ipfsClientMacUrl, ipfsClientMacPath);
-      break;
-    case 'linux':
-      await downloadAndExtract(ipfsClientLinuxUrl, ipfsClientLinuxPath);
-      break;
-    default:
-      console.warn(`Unknown platform: ${platform}, downloading all IPFS clients`);
-      await downloadAndExtract(ipfsClientWindowsUrl, ipfsClientWindowsPath);
-      await downloadAndExtract(ipfsClientMacUrl, ipfsClientMacPath);
-      await downloadAndExtract(ipfsClientLinuxUrl, ipfsClientLinuxPath);
+  console.log(`Starting IPFS client download for platform: ${platform}, targetArch: ${resolveBuildArch()}`);
+  const url = getKuboUrl(platform);
+  if (platform === 'win32') {
+    await downloadAndExtract(url, ipfsClientWindowsPath);
+  } else if (platform === 'darwin') {
+    await downloadAndExtract(url, ipfsClientMacPath);
+  } else if (platform === 'linux') {
+    await downloadAndExtract(url, ipfsClientLinuxPath);
+  } else {
+    console.warn(`Unknown platform: ${platform}, defaulting to linux path`);
+    await downloadAndExtract(url, ipfsClientLinuxPath);
   }
 };
 
-export default async (context) => {
+export default async (_context) => {
   await downloadIpfsClients();
 };

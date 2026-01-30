@@ -11,7 +11,7 @@
     "@capacitor/status-bar": "7.0.1",
     "@capawesome/capacitor-android-edge-to-edge-support": "7.2.2",
     "@floating-ui/react": "0.26.1",
-    "@plebbit/plebbit-react-hooks": "https://github.com/plebbit/plebbit-react-hooks.git#60b9d18ebc647f76cdda8f36e2143192d7378658",
+    "@plebbit/plebbit-react-hooks": "https://github.com/plebbit/plebbit-react-hooks.git#df3cb6901f63054870dc127cd7565c98617c2a4f",
     "@react-spring/web": "9.7.5",
     "@types/node": "20.8.2",
     "@types/react": "18.2.25",
@@ -28,7 +28,7 @@
     "i18next-browser-languagedetector": "7.1.0",
     "i18next-http-backend": "2.2.2",
     "json-stringify-pretty-compact": "4.0.0",
-    "lodash": "4.17.21",
+    "lodash": "4.17.23",
     "memoizee": "0.4.15",
     "react": "19.1.2",
     "react-dom": "19.1.2",
@@ -43,7 +43,8 @@
     "remark-supersub": "1.0.0",
     "tcp-port-used": "1.0.2",
     "typescript": "5.1.6",
-    "zustand": "4.4.3"
+    "zustand": "4.4.3",
+    "kubo": "0.39.0"
   },
   "scripts": {
     "generate:assets": "node scripts/generate-asset-manifest.js",
@@ -56,15 +57,20 @@
     "test": "vitest",
     "preview": "vite preview",
     "analyze-bundle": "cross-env PUBLIC_URL=./ GENERATE_SOURCEMAP=true vite build && npx source-map-explorer 'dist/assets/*.js'",
-    "electron": "yarn build:preload && cross-env ELECTRON_IS_DEV=1 yarn electron:before && cross-env ELECTRON_IS_DEV=1 electron .",
-    "electron:no-delete-data": "yarn electron:before:download-ipfs && electron .",
+    "electron": "yarn build:preload && yarn electron:before && electron .",
+    "electron:no-delete-data": "yarn build:preload && electron .",
     "electron:start": "concurrently \"cross-env BROWSER=none yarn start\" \"wait-on http://localhost:3000 && yarn electron\"",
     "electron:start:no-delete-data": "concurrently \"cross-env BROWSER=none yarn start\" \"wait-on http://localhost:3000 && yarn electron:no-delete-data\"",
-    "electron:build:linux": "yarn build && yarn build:preload && electron-builder build --publish never -l",
-    "electron:build:windows": "yarn build && yarn build:preload && electron-builder build --publish never -w",
-    "electron:build:mac": "yarn build && yarn build:preload && electron-builder build --publish never -m",
-    "electron:before": "yarn electron-rebuild && yarn electron:before:download-ipfs && yarn electron:before:delete-data",
-    "electron:before:download-ipfs": "node electron/download-ipfs",
+    "electron:package": "yarn build && yarn build:preload && electron-forge package",
+    "electron:build": "yarn build && yarn build:preload && electron-forge make",
+    "electron:build:linux": "yarn build && yarn build:preload && electron-forge make --platform=linux",
+    "electron:build:mac": "yarn build && yarn build:preload && electron-forge make --platform=darwin",
+    "electron:build:windows": "yarn build && yarn build:preload && electron-forge make --platform=win32",
+    "electron:build:linux:x64": "yarn build && yarn build:preload && electron-forge make --platform=linux --arch=x64",
+    "electron:build:linux:arm64": "yarn build && yarn build:preload && electron-forge make --platform=linux --arch=arm64",
+    "electron:build:mac:x64": "yarn build && yarn build:preload && electron-forge make --platform=darwin --arch=x64",
+    "electron:build:mac:arm64": "yarn build && yarn build:preload && electron-forge make --platform=darwin --arch=arm64",
+    "electron:before": "yarn electron:before:delete-data",
     "electron:before:delete-data": "rimraf .plebbit",
     "android:build:icons": "cordova-res android --skip-config --copy --resources /tmp/plebbit-react-android-icons --icon-source ./android/icons/icon.png --splash-source ./android/icons/splash.png --icon-foreground-source ./android/icons/icon-foreground.png --icon-background-source '#ffffee'",
     "lint": "oxlint src/**/*.{js,ts,tsx}",
@@ -93,7 +99,6 @@
     "@capacitor/android": "7.4.5",
     "@capacitor/cli": "7.4.5",
     "@capacitor/core": "7.4.5",
-    "@electron/rebuild": "4.0.0",
     "@react-scan/vite-plugin-react-scan": "0.1.8",
     "@types/memoizee": "0.4.9",
     "@typescript/native-preview": "^7.0.0-dev.20251226.1",
@@ -109,11 +114,17 @@
     "cz-conventional-changelog": "3.3.0",
     "decompress": "4.2.1",
     "electron": "36.9.5",
-    "electron-builder": "24.13.2",
+    "@electron-forge/cli": "7.6.0",
+    "@electron-forge/maker-dmg": "7.6.0",
+    "@electron-forge/maker-squirrel": "7.6.0",
+    "@electron-forge/maker-zip": "7.6.0",
+    "@electron-forge/plugin-auto-unpack-natives": "7.6.0",
+    "@reforged/maker-appimage": "5.1.1",
     "husky": "4.3.8",
     "isomorphic-fetch": "3.0.0",
     "jsdom": "27.3.0",
     "lint-staged": "12.3.8",
+    "node-fetch": "3.3.2",
     "oxfmt": "0.20.0",
     "oxlint": "1.35.0",
     "progress": "2.0.3",
@@ -143,46 +154,12 @@
     "preact": "10.27.3",
     "@remix-run/router": "1.23.2",
     "undici": "^7.18.2",
-    "diff": "^8.0.3"
+    "diff": "^8.0.3",
+    "lodash": "4.17.23",
+    "seroval": "1.4.1",
+    "tar": "7.5.4"
   },
   "main": "electron/main.js",
-  "build": {
-    "appId": "5chan.desktop",
-    "productName": "5chan",
-    "beforePack": "electron/before-pack.js",
-    "afterAllArtifactBuild": "electron/after-all-artifact-build.cjs",
-    "extraResources": [
-      {
-        "from": "bin/${os}",
-        "to": "bin",
-        "filter": [
-          "**/*"
-        ]
-      }
-    ],
-    "files": [
-      "dist/**/*",
-      "electron/**/*",
-      "package.json",
-      "node_modules/**/*"
-    ],
-    "extends": null,
-    "mac": {
-      "target": "dmg",
-      "category": "public.app-category.social-networking",
-      "type": "distribution"
-    },
-    "win": {
-      "target": [
-        "portable",
-        "nsis"
-      ]
-    },
-    "linux": {
-      "target": "AppImage",
-      "category": "Network"
-    }
-  },
   "lint-staged": {
     "src/**/*.{js,ts,tsx}": [
       "oxfmt --write"

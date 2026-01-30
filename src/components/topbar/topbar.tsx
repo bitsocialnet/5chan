@@ -5,7 +5,7 @@ import Plebbit from '@plebbit/plebbit-js';
 import { useAccountComment } from '@plebbit/plebbit-react-hooks';
 import useAccountsStore from '@plebbit/plebbit-react-hooks/dist/stores/accounts';
 import { isAllView, isCatalogView, isSubscriptionsView } from '../../lib/utils/view-utils';
-import { useDefaultSubplebbits, MultisubSubplebbit } from '../../hooks/use-default-subplebbits';
+import { useDirectories, DirectoryCommunity } from '../../hooks/use-directories';
 import { useBoardPath, useResolvedSubplebbitAddress } from '../../hooks/use-resolved-subplebbit-address';
 import { getBoardPath, extractDirectoryFromTitle } from '../../lib/utils/route-utils';
 import { TimeFilter } from '../board-buttons';
@@ -77,8 +77,8 @@ const SearchBar = ({ setShowSearchBar }: { setShowSearchBar: (show: boolean) => 
 };
 
 // Helper function to find board address by directory code
-const findBoardAddressByCode = (code: string, defaultSubplebbits: MultisubSubplebbit[]): string | null => {
-  const entry = defaultSubplebbits.find((subplebbit) => {
+const findBoardAddressByCode = (code: string, directories: DirectoryCommunity[]): string | null => {
+  const entry = directories.find((subplebbit) => {
     if (!subplebbit.title) return false;
     const directory = extractDirectoryFromTitle(subplebbit.title);
     return directory === code;
@@ -97,7 +97,7 @@ const TopBarDesktop = () => {
   const { openTopbarEditModal } = useTopbarEditModalStore();
   const { openDirectoryModal } = useDirectoryModalStore();
   const { visibleDirectories, visibleSubscriptions } = useTopbarVisibilityStore();
-  const defaultSubplebbits = useDefaultSubplebbits();
+  const directories = useDirectories();
 
   // Memoize allBoardCodes since it's derived from a constant
   const allBoardCodes = useMemo(() => getAllBoardCodes(), []);
@@ -150,7 +150,7 @@ const TopBarDesktop = () => {
 
   // Render a board code link or placeholder
   const renderBoardCode = (code: string, isLastInGroup: boolean) => {
-    const address = findBoardAddressByCode(code, defaultSubplebbits);
+    const address = findBoardAddressByCode(code, directories);
     const isPlaceholder = !address;
 
     const handleClick = (e: React.MouseEvent) => {
@@ -186,7 +186,7 @@ const TopBarDesktop = () => {
 
   // Render a subscription link
   const renderSubscription = (address: string, index: number, total: number) => {
-    const boardPath = getBoardPath(address, defaultSubplebbits);
+    const boardPath = getBoardPath(address, directories);
     const displayText = address.endsWith('.eth') || address.endsWith('.sol') ? address : Plebbit.getShortAddress({ address });
 
     return (
@@ -249,12 +249,12 @@ const TopBarDesktop = () => {
 const TopBarMobile = ({ subplebbitAddress }: { subplebbitAddress: string }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const defaultSubplebbits = useDefaultSubplebbits();
+  const directories = useDirectories();
   const displaySubplebbitAddress = subplebbitAddress && subplebbitAddress.length > 30 ? subplebbitAddress.slice(0, 30).concat('...') : subplebbitAddress;
   const [showSearchBar, setShowSearchBar] = useState(false);
 
   // Filter to only show directory boards (those with titles)
-  const directoryBoards = useMemo(() => defaultSubplebbits.filter((sub) => sub.title && extractDirectoryFromTitle(sub.title)), [defaultSubplebbits]);
+  const directoryBoards = useMemo(() => directories.filter((sub) => sub.title && extractDirectoryFromTitle(sub.title)), [directories]);
 
   const location = useLocation();
   const params = useParams();

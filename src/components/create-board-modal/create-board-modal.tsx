@@ -42,8 +42,8 @@ const CreateBoardModal = () => {
             <h3>Submitting to a Directory</h3>
             <p>
               Open a PR editing{' '}
-              <a href='https://github.com/plebbit/lists/blob/master/5chan-multisub.json' target='_blank' rel='noopener noreferrer'>
-                5chan-multisub.json
+              <a href='https://github.com/plebbit/lists/blob/master/5chan-directories.json' target='_blank' rel='noopener noreferrer'>
+                5chan-directories.json
               </a>{' '}
               with your board&apos;s title, address, and NSFW status. Devs will review and merge if approved. 99% uptime is required.
             </p>

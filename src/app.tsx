@@ -9,7 +9,7 @@ import useCreateBoardModalStore from './stores/use-create-board-modal-store';
 import useSpecialThemeStore from './stores/use-special-theme-store';
 import useIsMobile from './hooks/use-is-mobile';
 import useTheme from './hooks/use-theme';
-import { useDefaultSubplebbits } from './hooks/use-default-subplebbits';
+import { useDirectories } from './hooks/use-directories';
 import { getSubplebbitAddress, isPostRoute, isPendingPostRoute, isModQueueRoute } from './lib/utils/route-utils';
 import styles from './app.module.css';
 import FAQ from './views/faq';
@@ -44,8 +44,8 @@ const BoardLayout = () => {
   const isInAllView = isAllView(location.pathname);
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, useParams());
   const isInModView = isModView(location.pathname);
-  const defaultSubplebbits = useDefaultSubplebbits();
-  const subplebbitAddress = boardIdentifier ? getSubplebbitAddress(boardIdentifier, defaultSubplebbits) : undefined;
+  const directories = useDirectories();
+  const subplebbitAddress = boardIdentifier ? getSubplebbitAddress(boardIdentifier, directories) : undefined;
   const pendingPost = useAccountComment({ commentIndex: accountCommentIndex ? parseInt(accountCommentIndex) : undefined });
   const { closeCreateBoardModal } = useCreateBoardModalStore();
 

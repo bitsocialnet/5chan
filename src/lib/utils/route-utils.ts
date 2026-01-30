@@ -1,4 +1,4 @@
-import { MultisubSubplebbit } from '../../hooks/use-default-subplebbits';
+import { DirectoryCommunity } from '../../hooks/use-directories';
 
 /**
  * Extract directory short code from title (e.g., "/biz/ - Business & Finance" -> "biz")
@@ -9,79 +9,79 @@ export const extractDirectoryFromTitle = (title: string): string | null => {
 };
 
 // Cache for directory-to-address map
-let cachedSubplebbitsForDirectory: MultisubSubplebbit[] | null = null;
+let cachedCommunitiesForDirectory: DirectoryCommunity[] | null = null;
 let cachedDirectoryToAddressMap: Map<string, string> | null = null;
 
 // Cache for address-to-directory map
-let cachedSubplebbitsForAddress: MultisubSubplebbit[] | null = null;
+let cachedCommunitiesForAddress: DirectoryCommunity[] | null = null;
 let cachedAddressToDirectoryMap: Map<string, string> | null = null;
 
 /**
- * Create a map from directory codes to subplebbit addresses
- * Uses caching to avoid recreating the map when subplebbits array hasn't changed
+ * Create a map from directory codes to community addresses
+ * Uses caching to avoid recreating the map when communities array hasn't changed
  */
-export const getDirectoryToAddressMap = (subplebbits: MultisubSubplebbit[]): Map<string, string> => {
+export const getDirectoryToAddressMap = (communities: DirectoryCommunity[]): Map<string, string> => {
   // Check if we can use cached map (same array reference)
-  if (cachedDirectoryToAddressMap && cachedSubplebbitsForDirectory === subplebbits) {
+  if (cachedDirectoryToAddressMap && cachedCommunitiesForDirectory === communities) {
     return cachedDirectoryToAddressMap;
   }
 
   const map = new Map<string, string>();
-  for (const subplebbit of subplebbits) {
-    if (subplebbit.title) {
-      const directory = extractDirectoryFromTitle(subplebbit.title);
-      if (directory && subplebbit.address) {
-        map.set(directory, subplebbit.address);
+  for (const community of communities) {
+    if (community.title) {
+      const directory = extractDirectoryFromTitle(community.title);
+      if (directory && community.address) {
+        map.set(directory, community.address);
       }
     }
   }
 
   // Cache the map and array reference
   cachedDirectoryToAddressMap = map;
-  cachedSubplebbitsForDirectory = subplebbits;
+  cachedCommunitiesForDirectory = communities;
   return map;
 };
 
 /**
- * Create a map from subplebbit addresses to directory codes
- * Uses caching to avoid recreating the map when subplebbits array hasn't changed
+ * Create a map from community addresses to directory codes
+ * Uses caching to avoid recreating the map when communities array hasn't changed
  */
-export const getAddressToDirectoryMap = (subplebbits: MultisubSubplebbit[]): Map<string, string> => {
+export const getAddressToDirectoryMap = (communities: DirectoryCommunity[]): Map<string, string> => {
   // Check if we can use cached map (same array reference)
-  if (cachedAddressToDirectoryMap && cachedSubplebbitsForAddress === subplebbits) {
+  if (cachedAddressToDirectoryMap && cachedCommunitiesForAddress === communities) {
     return cachedAddressToDirectoryMap;
   }
 
   const map = new Map<string, string>();
-  for (const subplebbit of subplebbits) {
-    if (subplebbit.title && subplebbit.address) {
-      const directory = extractDirectoryFromTitle(subplebbit.title);
+  for (const community of communities) {
+    if (community.title && community.address) {
+      const directory = extractDirectoryFromTitle(community.title);
       if (directory) {
-        map.set(subplebbit.address, directory);
+        map.set(community.address, directory);
       }
     }
   }
 
   // Cache the map and array reference
   cachedAddressToDirectoryMap = map;
-  cachedSubplebbitsForAddress = subplebbits;
+  cachedCommunitiesForAddress = communities;
   return map;
 };
 
 /**
- * Convert subplebbit address to URL path (directory code if available, otherwise full address)
+ * Convert community address to URL path (directory code if available, otherwise full address)
  */
-export const getBoardPath = (subplebbitAddress: string, subplebbits: MultisubSubplebbit[]): string => {
-  const addressToDirectory = getAddressToDirectoryMap(subplebbits);
-  const directory = addressToDirectory.get(subplebbitAddress);
-  return directory || subplebbitAddress;
+export const getBoardPath = (communityAddress: string, communities: DirectoryCommunity[]): string => {
+  const addressToDirectory = getAddressToDirectoryMap(communities);
+  const directory = addressToDirectory.get(communityAddress);
+  return directory || communityAddress;
 };
 
 /**
- * Convert URL path (directory code or address) to subplebbit address
+ * Convert URL path (directory code or address) to community address
  */
-export const getSubplebbitAddress = (boardIdentifier: string, subplebbits: MultisubSubplebbit[]): string => {
-  const directoryToAddress = getDirectoryToAddressMap(subplebbits);
+export const getSubplebbitAddress = (boardIdentifier: string, communities: DirectoryCommunity[]): string => {
+  const directoryToAddress = getDirectoryToAddressMap(communities);
 
   // Check if it's a directory code
   const address = directoryToAddress.get(boardIdentifier);
@@ -96,8 +96,8 @@ export const getSubplebbitAddress = (boardIdentifier: string, subplebbits: Multi
 /**
  * Check if an identifier is a directory short code
  */
-export const isDirectoryBoard = (identifier: string, subplebbits: MultisubSubplebbit[]): boolean => {
-  const directoryToAddress = getDirectoryToAddressMap(subplebbits);
+export const isDirectoryBoard = (identifier: string, communities: DirectoryCommunity[]): boolean => {
+  const directoryToAddress = getDirectoryToAddressMap(communities);
   return directoryToAddress.has(identifier);
 };
 

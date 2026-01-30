@@ -8,7 +8,7 @@ import Plebbit from '@plebbit/plebbit-js';
 import { useStableSubplebbit } from '../../hooks/use-stable-subplebbit';
 import { isAllView, isSubscriptionsView, isModView } from '../../lib/utils/view-utils';
 import styles from './board-header.module.css';
-import { useMultisubMetadata, useDefaultSubplebbits } from '../../hooks/use-default-subplebbits';
+import { useDirectoriesMetadata, useDirectories } from '../../hooks/use-directories';
 import { useResolvedSubplebbitAddress } from '../../hooks/use-resolved-subplebbit-address';
 import useIsMobile from '../../hooks/use-is-mobile';
 import useIsSubplebbitOffline from '../../hooks/use-is-subplebbit-offline';
@@ -59,11 +59,11 @@ const BoardHeader = () => {
   const stableSubplebbit = useStableSubplebbit(subplebbitAddress);
   const { address, shortAddress } = stableSubplebbit || {};
 
-  const multisubMetadata = useMultisubMetadata();
-  const defaultSubplebbits = useDefaultSubplebbits();
+  const directoriesMetadata = useDirectoriesMetadata();
+  const directories = useDirectories();
 
   // Find matching subplebbit from default list to get its title
-  const defaultSubplebbit = subplebbitAddress ? defaultSubplebbits.find((s) => s.address === subplebbitAddress) : null;
+  const defaultSubplebbit = subplebbitAddress ? directories.find((s) => s.address === subplebbitAddress) : null;
 
   // Use accounts store with selector to only subscribe to subscriptions count
   const subscriptionsCount = useAccountsStore((state) => {
@@ -74,7 +74,7 @@ const BoardHeader = () => {
   const subscriptionsSubtitle = t('subscriptions_subtitle', { count: subscriptionsCount });
 
   const title = isInAllView
-    ? multisubMetadata?.title || '/all/ - 5chan Directories'
+    ? directoriesMetadata?.title || '/all/ - 5chan Directories'
     : isInSubscriptionsView
       ? '/subs/ - Subscriptions'
       : isInModView
