@@ -46,6 +46,7 @@
     "zustand": "4.4.3"
   },
   "scripts": {
+    "postinstall": "node scripts/fix-bonfida-imports.js",
     "generate:assets": "node scripts/generate-asset-manifest.js",
     "prebuild": "yarn generate:assets",
     "prestart": "yarn generate:assets",
@@ -61,8 +62,12 @@
     "electron:start": "concurrently \"cross-env BROWSER=none yarn start\" \"wait-on http://localhost:3000 && yarn electron\"",
     "electron:start:no-delete-data": "concurrently \"cross-env BROWSER=none yarn start\" \"wait-on http://localhost:3000 && yarn electron:no-delete-data\"",
     "electron:build:linux": "yarn build && yarn build:preload && electron-builder build --publish never -l",
+    "electron:build:linux:x64": "yarn build:preload && electron-builder build --publish never -l --x64",
+    "electron:build:linux:arm64": "yarn build:preload && electron-builder build --publish never -l --arm64",
     "electron:build:windows": "yarn build && yarn build:preload && electron-builder build --publish never -w",
     "electron:build:mac": "yarn build && yarn build:preload && electron-builder build --publish never -m",
+    "electron:build:mac:x64": "yarn build:preload && electron-builder build --publish never -m --x64",
+    "electron:build:mac:arm64": "yarn build:preload && electron-builder build --publish never -m --arm64",
     "electron:before": "yarn electron-rebuild && yarn electron:before:download-ipfs && yarn electron:before:delete-data",
     "electron:before:download-ipfs": "node electron/download-ipfs",
     "electron:before:delete-data": "rimraf .plebbit",
@@ -114,6 +119,7 @@
     "isomorphic-fetch": "3.0.0",
     "jsdom": "27.3.0",
     "lint-staged": "12.3.8",
+    "node-fetch": "3.3.2",
     "oxfmt": "0.20.0",
     "oxlint": "1.35.0",
     "progress": "2.0.3",
@@ -127,6 +133,8 @@
     "wait-on": "9.0.3"
   },
   "resolutions": {
+    "@bonfida/spl-name-service": "3.0.16",
+    "@bonfida/sns-records": "0.0.1",
     "js-yaml": "4.1.1",
     "baseline-browser-mapping": "^2.9.11",
     "vite": "npm:rolldown-vite@7.3.1",
@@ -153,12 +161,11 @@
     "appId": "5chan.desktop",
     "productName": "5chan",
     "icon": "public/icon.png",
+    "asarUnpack": [
+      "**/*.node"
+    ],
     "beforePack": "electron/before-pack.js",
     "afterAllArtifactBuild": "electron/after-all-artifact-build.cjs",
-    "asarUnpack": [
-      "node_modules/@bonfida/**/*",
-      "node_modules/@solana/**/*"
-    ],
     "extraResources": [
       {
         "from": "bin/${os}",
