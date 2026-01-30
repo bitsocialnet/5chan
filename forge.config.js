@@ -83,7 +83,6 @@ const config = {
       config: {
         name: '5chan',
         setupIcon: './public/favicon.ico',
-        iconUrl: 'file://public/favicon.ico',
       },
     },
     // Linux
