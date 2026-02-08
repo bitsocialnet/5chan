@@ -1,6 +1,7 @@
 import { readdirSync, writeFileSync, mkdirSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { execSync } from 'child_process';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -55,6 +56,13 @@ mkdirSync(generatedDir, { recursive: true });
 
 const outputPath = join(generatedDir, 'asset-manifest.ts');
 writeFileSync(outputPath, output, 'utf8');
+
+// Format with oxfmt so output matches committed (formatted) version
+try {
+  execSync(`npx oxfmt ${outputPath}`, { stdio: 'ignore' });
+} catch {
+  // oxfmt not available (e.g. CI without devDependencies), skip formatting
+}
 
 console.log(
   `✅ Generated asset manifest with ${banners.length} banners, ${notFoundImages.length} not-found images, ${buttonImages.length} button images, and ${themeBackgrounds.length} background images`,
