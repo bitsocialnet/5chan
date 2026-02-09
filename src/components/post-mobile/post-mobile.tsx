@@ -377,14 +377,14 @@ const PostMediaContent = ({ post, link }: { post: any; link: string }) => {
   );
 };
 
-const ReplyBacklinks = ({ post }: PostProps) => {
+const ReplyBacklinks = ({ post, quotedByMap }: PostProps) => {
   const { cid, parentCid } = post || {};
   const { replies } = useReplies({ comment: post, flat: true, accountComments: { newerThan: Infinity } });
 
   return (
     cid &&
     parentCid &&
-    replies.length > 0 && (
+    (replies.length > 0 || quotedByMap?.get(cid)?.length) && (
       <div className={styles.mobileReplyBacklinks}>
         {replies.map(
           (reply: Comment, index: number) =>
@@ -392,12 +392,20 @@ const ReplyBacklinks = ({ post }: PostProps) => {
             reply?.cid &&
             !(reply?.deleted || reply?.removed) && <ReplyQuotePreview key={index} isBacklinkReply={true} backlinkReply={reply} />,
         )}
+        {quotedByMap
+          ?.get(cid)
+          ?.map(
+            (reply: Comment, index: number) =>
+              reply?.parentCid !== cid &&
+              reply?.cid &&
+              !(reply?.deleted || reply?.removed) && <ReplyQuotePreview key={`qb-${index}`} isBacklinkReply={true} backlinkReply={reply} />,
+          )}
       </div>
     )
   );
 };
 
-const Reply = ({ postReplyCount, reply, roles, threadNumber }: PostProps) => {
+const Reply = ({ postReplyCount, reply, roles, threadNumber, quotedByMap }: PostProps) => {
   let post = reply;
   // handle pending mod or author edit
   const { editedComment } = useEditedComment({ comment: reply });
@@ -423,7 +431,7 @@ const Reply = ({ postReplyCount, reply, roles, threadNumber }: PostProps) => {
         >
           <PostInfoAndMedia post={post} postReplyCount={postReplyCount} roles={roles} threadNumber={threadNumber} />
           {!hidden && (!(removed || deleted) || ((removed || deleted) && reason)) && <CommentContent comment={post} />}
-          <ReplyBacklinks post={reply} />
+          <ReplyBacklinks post={reply} quotedByMap={quotedByMap} />
         </div>
       </div>
     </div>
@@ -462,6 +470,22 @@ const PostMobile = ({
 
   // Filter out deleted replies with no children for both virtuoso and non-virtuoso rendering
   const filteredReplies = useMemo(() => (replies || []).filter((reply) => !(reply.deleted && (reply.replyCount === 0 || !reply.replyCount))), [replies]);
+
+  // Compute quotedByMap: map each quoted CID to array of replies that quote it
+  const quotedByMap = useMemo(() => {
+    const map = new Map<string, Comment[]>();
+    for (const reply of filteredReplies) {
+      const quotedCids = reply.quotedCids;
+      if (quotedCids?.length) {
+        for (const quotedCid of quotedCids) {
+          const arr = map.get(quotedCid);
+          if (arr) arr.push(reply);
+          else map.set(quotedCid, [reply]);
+        }
+      }
+    }
+    return map;
+  }, [filteredReplies]);
 
   // Virtuoso scroll position management for infinite replies
   const virtuosoRef = useRef<VirtuosoHandle | null>(null);
@@ -578,7 +602,7 @@ const PostMobile = ({
                 data={filteredReplies}
                 itemContent={(index, reply) => (
                   <div className={styles.replyContainer}>
-                    <Reply postReplyCount={replyCount} reply={reply} roles={roles} threadNumber={post?.number} />
+                    <Reply postReplyCount={replyCount} reply={reply} roles={roles} threadNumber={post?.number} quotedByMap={quotedByMap} />
                   </div>
                 )}
                 useWindowScroll={true}
@@ -597,7 +621,7 @@ const PostMobile = ({
               !hasMore &&
               filteredReplies.map((reply, index) => (
                 <div key={index} className={styles.replyContainer}>
-                  <Reply postReplyCount={replyCount} reply={reply} roles={roles} threadNumber={post?.number} />
+                  <Reply postReplyCount={replyCount} reply={reply} roles={roles} threadNumber={post?.number} quotedByMap={quotedByMap} />
                 </div>
               ))}
             {/* Non-virtualized rendering for board view (last 5 replies) */}
@@ -608,7 +632,7 @@ const PostMobile = ({
               showReplies &&
               filteredReplies.slice(-5).map((reply, index) => (
                 <div key={index} className={styles.replyContainer}>
-                  <Reply postReplyCount={replyCount} reply={reply} roles={roles} threadNumber={post?.number} />
+                  <Reply postReplyCount={replyCount} reply={reply} roles={roles} threadNumber={post?.number} quotedByMap={quotedByMap} />
                 </div>
               ))}
           </div>

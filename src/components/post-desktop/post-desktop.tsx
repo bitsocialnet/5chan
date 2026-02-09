@@ -73,6 +73,7 @@ const PostInfo = ({
   isPublishing,
   onApprove,
   onReject,
+  quotedByMap,
 }: PostProps) => {
   const { t } = useTranslation();
   const { author, cid, deleted, locked, pinned, parentCid, postCid, reason, removed, state, subplebbitAddress, timestamp } = post || {};
@@ -425,6 +426,16 @@ const PostInfo = ({
               reply?.cid &&
               !(reply?.deleted || reply?.removed) && <ReplyQuotePreview key={index} isBacklinkReply={true} backlinkReply={reply} />,
           )}
+        {cid &&
+          parentCid &&
+          quotedByMap
+            ?.get(cid)
+            ?.map(
+              (reply: Comment, index: number) =>
+                reply?.parentCid !== cid &&
+                reply?.cid &&
+                !(reply?.deleted || reply?.removed) && <ReplyQuotePreview key={`qb-${index}`} isBacklinkReply={true} backlinkReply={reply} />,
+            )}
       </span>
     </div>
   );
@@ -527,7 +538,7 @@ const PostMedia = ({
   );
 };
 
-const Reply = ({ postReplyCount, reply, roles, threadNumber }: PostProps) => {
+const Reply = ({ postReplyCount, reply, roles, threadNumber, quotedByMap }: PostProps) => {
   let post = reply;
   // handle pending mod or author edit
   const { editedComment } = useEditedComment({ comment: reply });
@@ -555,7 +566,7 @@ const Reply = ({ postReplyCount, reply, roles, threadNumber }: PostProps) => {
     <div className={styles.replyDesktop}>
       <div className={styles.sideArrows}>{'>>'}</div>
       <div className={`${styles.reply} ${isRouteLinkToReply && styles.highlight}`} data-cid={cid} data-author-address={author?.shortAddress} data-post-cid={postCid}>
-        <PostInfo post={post} postReplyCount={postReplyCount} roles={roles} isHidden={hidden} threadNumber={threadNumber} />
+        <PostInfo post={post} postReplyCount={postReplyCount} roles={roles} isHidden={hidden} threadNumber={threadNumber} quotedByMap={quotedByMap} />
         {link && !hidden && !(deleted || removed) && isValidURL(link) && (
           <PostMedia
             commentMediaInfo={commentMediaInfo}
@@ -621,6 +632,22 @@ const PostDesktop = ({
 
   // Filter out deleted replies with no children for both virtuoso and non-virtuoso rendering
   const filteredReplies = useMemo(() => (replies || []).filter((reply) => !(reply.deleted && (reply.replyCount === 0 || !reply.replyCount))), [replies]);
+
+  // Compute quotedByMap: map each quoted CID to array of replies that quote it
+  const quotedByMap = useMemo(() => {
+    const map = new Map<string, Comment[]>();
+    for (const reply of filteredReplies) {
+      const quotedCids = reply.quotedCids;
+      if (quotedCids?.length) {
+        for (const quotedCid of quotedCids) {
+          const arr = map.get(quotedCid);
+          if (arr) arr.push(reply);
+          else map.set(quotedCid, [reply]);
+        }
+      }
+    }
+    return map;
+  }, [filteredReplies]);
 
   // Virtuoso scroll position management for infinite replies
   const virtuosoRef = useRef<VirtuosoHandle | null>(null);
@@ -747,7 +774,7 @@ const PostDesktop = ({
             data={filteredReplies}
             itemContent={(index, reply) => (
               <div className={styles.replyContainer}>
-                <Reply reply={reply} roles={roles} postReplyCount={replyCount} threadNumber={post?.number} />
+                <Reply reply={reply} roles={roles} postReplyCount={replyCount} threadNumber={post?.number} quotedByMap={quotedByMap} />
               </div>
             )}
             useWindowScroll={true}
@@ -766,7 +793,7 @@ const PostDesktop = ({
           !hasMore &&
           filteredReplies.map((reply, index) => (
             <div key={index} className={styles.replyContainer}>
-              <Reply reply={reply} roles={roles} postReplyCount={replyCount} threadNumber={post?.number} />
+              <Reply reply={reply} roles={roles} postReplyCount={replyCount} threadNumber={post?.number} quotedByMap={quotedByMap} />
             </div>
           ))}
         {/* Non-virtualized rendering for board view (last 5 replies or show omitted) */}
@@ -778,7 +805,7 @@ const PostDesktop = ({
           showReplies &&
           (showOmittedReplies[cid] ? filteredReplies : filteredReplies.slice(-5)).map((reply, index) => (
             <div key={index} className={styles.replyContainer}>
-              <Reply reply={reply} roles={roles} postReplyCount={replyCount} threadNumber={post?.number} />
+              <Reply reply={reply} roles={roles} postReplyCount={replyCount} threadNumber={post?.number} quotedByMap={quotedByMap} />
             </div>
           ))}
       </div>

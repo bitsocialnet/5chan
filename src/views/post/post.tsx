@@ -31,6 +31,7 @@ export interface PostProps {
   isPublishing?: boolean;
   onApprove?: () => void;
   onReject?: () => void;
+  quotedByMap?: Map<string, Comment[]>;
 }
 
 export const Post = ({
