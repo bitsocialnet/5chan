@@ -15,6 +15,15 @@ import Tooltip from '../../components/tooltip';
 import styles from '../../views/post/post.module.css';
 import _ from 'lodash';
 
+const QuotedCidLink = ({ cid, postCid }: { cid: string; postCid: string }) => {
+  const commentFromStore = useSubplebbitsPagesStore((state) => state.comments[cid]);
+  const commentFromHook = useComment({ commentCid: cid, onlyIfCached: true });
+  // Prefer hook version to ensure 'number' property is populated for deeper nested replies in Virtuoso
+  const quotedComment = commentFromHook?.number !== undefined ? commentFromHook : commentFromStore;
+  const isOP = cid === postCid;
+  return <ReplyQuotePreview isQuotelinkReply={true} quotelinkReply={quotedComment} isOP={isOP} />;
+};
+
 const CommentContent = ({ comment: post }: { comment: Comment }) => {
   const { t } = useTranslation();
   const params = useParams();
@@ -23,7 +32,7 @@ const CommentContent = ({ comment: post }: { comment: Comment }) => {
   const [showOriginal, setShowOriginal] = useState(false);
   const isMobile = useIsMobile();
 
-  const { cid, content, deleted, edit, original, parentCid, postCid, pendingApproval, reason, removed, state, subplebbitAddress } = post || {};
+  const { cid, content, deleted, edit, original, parentCid, postCid, pendingApproval, quotedCids, reason, removed, state, subplebbitAddress } = post || {};
   const banned = !!post?.author?.subplebbit?.banExpiresAt;
 
   const [showFullComment, setShowFullComment] = useState(false);
@@ -49,7 +58,12 @@ const CommentContent = ({ comment: post }: { comment: Comment }) => {
 
   return (
     <blockquote className={`${styles.postMessage} ${!isReply && isMobile && styles.clampLines}`}>
-      {isReply && state !== 'failed' && isReplyingToReply && !(deleted || removed) && <ReplyQuotePreview isQuotelinkReply={true} quotelinkReply={quotelinkReply} />}
+      {isReply &&
+        state !== 'failed' &&
+        !(deleted || removed) &&
+        (quotedCids?.length > 0
+          ? quotedCids.map((cid: string) => <QuotedCidLink key={cid} cid={cid} postCid={postCid} />)
+          : isReplyingToReply && <ReplyQuotePreview isQuotelinkReply={true} quotelinkReply={quotelinkReply} />)}
       {removed ? (
         reason ? (
           <>

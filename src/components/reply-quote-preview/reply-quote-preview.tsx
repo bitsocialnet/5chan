@@ -14,6 +14,7 @@ interface ReplyQuotePreviewProps {
   backlinkReply?: Comment;
   isQuotelinkReply?: boolean;
   quotelinkReply?: Comment;
+  isOP?: boolean;
 }
 
 const handleQuoteHover = (cid: string, onElementOutOfView: () => void) => {
@@ -54,7 +55,7 @@ const handleQuoteHover = (cid: string, onElementOutOfView: () => void) => {
   }
 };
 
-const DesktopQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, isQuotelinkReply }: ReplyQuotePreviewProps) => {
+const DesktopQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, isQuotelinkReply, isOP }: ReplyQuotePreviewProps) => {
   const [hoveredCid, setHoveredCid] = useState<string | null>(null);
   const [outOfViewCid, setOutOfViewCid] = useState<string | null>(null);
   const placementRef = useRef<Placement>('right');
@@ -173,6 +174,7 @@ const DesktopQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, i
         onClick={(e) => handleClick(e, quotelinkReply?.cid, quotelinkReply?.subplebbitAddress)}
       >
         {`>>${quotelinkReply?.number ?? '?'}`}
+        {isOP && ' (OP)'}
         {quotelinkReply?.author?.address === account?.author?.address && ' (You)'}
       </Link>
       <br />
@@ -190,7 +192,7 @@ const DesktopQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, i
   return isBacklinkReply ? replyBacklink : isQuotelinkReply && replyQuotelink;
 };
 
-const MobileQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, isQuotelinkReply }: ReplyQuotePreviewProps) => {
+const MobileQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, isQuotelinkReply, isOP }: ReplyQuotePreviewProps) => {
   const [hoveredCid, setHoveredCid] = useState<string | null>(null);
   const [outOfViewCid, setOutOfViewCid] = useState<string | null>(null);
   const directories = useDirectories();
@@ -286,6 +288,7 @@ const MobileQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, is
         onMouseLeave={() => handleMouseLeave(quotelinkReply?.cid)}
       >
         {`>>${quotelinkReply?.number ?? '?'}`}
+        {isOP && ' (OP)'}
         {quotelinkReply?.author?.address === account?.author?.address && ' (You)'}
       </span>
       {quotelinkReply?.number &&
@@ -317,13 +320,19 @@ const MobileQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, is
   return isBacklinkReply ? replyBacklink : isQuotelinkReply && replyQuotelink;
 };
 
-const ReplyQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, isQuotelinkReply }: ReplyQuotePreviewProps) => {
+const ReplyQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, isQuotelinkReply, isOP }: ReplyQuotePreviewProps) => {
   const isMobile = useIsMobile();
 
   return isMobile ? (
-    <MobileQuotePreview backlinkReply={backlinkReply} quotelinkReply={quotelinkReply} isBacklinkReply={isBacklinkReply} isQuotelinkReply={isQuotelinkReply} />
+    <MobileQuotePreview backlinkReply={backlinkReply} quotelinkReply={quotelinkReply} isBacklinkReply={isBacklinkReply} isQuotelinkReply={isQuotelinkReply} isOP={isOP} />
   ) : (
-    <DesktopQuotePreview backlinkReply={backlinkReply} quotelinkReply={quotelinkReply} isBacklinkReply={isBacklinkReply} isQuotelinkReply={isQuotelinkReply} />
+    <DesktopQuotePreview
+      backlinkReply={backlinkReply}
+      quotelinkReply={quotelinkReply}
+      isBacklinkReply={isBacklinkReply}
+      isQuotelinkReply={isQuotelinkReply}
+      isOP={isOP}
+    />
   );
 };
 
