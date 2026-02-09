@@ -20,6 +20,7 @@ import useCountLinksInReplies from '../../hooks/use-count-links-in-replies';
 import useHide from '../../hooks/use-hide';
 import useStateString from '../../hooks/use-state-string';
 import useScrollToReply from '../../hooks/use-scroll-to-reply';
+import { useSubplebbitField } from '../../hooks/use-stable-subplebbit';
 import CommentContent from '../comment-content';
 import CommentMedia from '../comment-media';
 import LoadingEllipsis from '../loading-ellipsis';
@@ -169,6 +170,9 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
   const handleUserAddressClick = useAuthorAddressClick();
   const numberOfPostsByAuthor = document.querySelectorAll(`[data-author-address="${shortAddress}"][data-post-cid="${postCid}"]`).length;
 
+  const pseudonymityMode = useSubplebbitField(subplebbitAddress, (sub) => sub?.features?.pseudonymityMode);
+  const showUserID = pseudonymityMode !== 'per-reply';
+
   const userID = address && Plebbit.getShortAddress({ address }); // should not be shortened to less than 12 characters, because users can create unlimited addresses/IDs before authenticating or passing challenges, so if the ID is short enough they can spoof it to troll users with the same ID
   const userIDBackgroundColor = hashStringToColor(userID);
   const userIDTextColor = getTextColorForBackground(userIDBackgroundColor);
@@ -231,28 +235,32 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
                 <img src={avatarImageUrl} alt='' />
               </span>
             ) : null}
-            (ID: {''}
-            {removed ? (
-              _.lowerCase(t('removed'))
-            ) : deleted ? (
-              _.lowerCase(t('deleted'))
-            ) : (
-              <Tooltip
-                children={
-                  <span
-                    title={t('highlight_posts')}
-                    className={styles.userAddress}
-                    onClick={() => handleUserAddressClick(userID, postCid)}
-                    style={{ backgroundColor: userIDBackgroundColor, color: userIDTextColor }}
-                  >
-                    {userID}
-                  </span>
-                }
-                content={`${numberOfPostsByAuthor === 1 ? t('1_post_by_this_id') : t('x_posts_by_this_id', { number: numberOfPostsByAuthor })}`}
-                showTooltip={isInPostPageView || postReplyCount < 6}
-              />
+            {showUserID && (
+              <>
+                (ID: {''}
+                {removed ? (
+                  _.lowerCase(t('removed'))
+                ) : deleted ? (
+                  _.lowerCase(t('deleted'))
+                ) : (
+                  <Tooltip
+                    children={
+                      <span
+                        title={t('highlight_posts')}
+                        className={styles.userAddress}
+                        onClick={() => handleUserAddressClick(userID, postCid)}
+                        style={{ backgroundColor: userIDBackgroundColor, color: userIDTextColor }}
+                      >
+                        {userID}
+                      </span>
+                    }
+                    content={`${numberOfPostsByAuthor === 1 ? t('1_post_by_this_id') : t('x_posts_by_this_id', { number: numberOfPostsByAuthor })}`}
+                    showTooltip={isInPostPageView || postReplyCount < 6}
+                  />
+                )}
+                ){' '}
+              </>
             )}
-            ){' '}
             {pinned && (
               <span className={styles.stickyIconWrapper}>
                 <img src='assets/icons/sticky.gif' alt='' className={styles.stickyIcon} title={t('sticky')} />

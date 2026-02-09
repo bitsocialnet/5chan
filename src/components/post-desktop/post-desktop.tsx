@@ -21,6 +21,7 @@ import useFetchGifFirstFrame from '../../hooks/use-fetch-gif-first-frame';
 import useHide from '../../hooks/use-hide';
 import useStateString from '../../hooks/use-state-string';
 import useScrollToReply from '../../hooks/use-scroll-to-reply';
+import { useSubplebbitField } from '../../hooks/use-stable-subplebbit';
 import CommentContent from '../comment-content';
 import CommentMedia from '../comment-media';
 import EditMenu from '../edit-menu/edit-menu';
@@ -202,6 +203,9 @@ const PostInfo = ({
   const handleUserAddressClick = useAuthorAddressClick();
   const numberOfPostsByAuthor = document.querySelectorAll(`[data-author-address="${shortAddress}"][data-post-cid="${postCid}"]`).length;
 
+  const pseudonymityMode = useSubplebbitField(subplebbitAddress, (sub) => sub?.features?.pseudonymityMode);
+  const showUserID = pseudonymityMode !== 'per-reply';
+
   const { hidden } = useHide(post);
 
   const { openReplyModal } = useReplyModalStore();
@@ -265,28 +269,32 @@ const PostInfo = ({
               <img src={avatarImageUrl} alt='' />
             </span>
           ) : null}
-          (ID:{' '}
-          {deleted ? (
-            t('deleted')
-          ) : removed ? (
-            t('removed')
-          ) : (
-            <Tooltip
-              children={
-                <span
-                  title={t('highlight_posts')}
-                  className={styles.userAddress}
-                  onClick={() => handleUserAddressClick(userID, postCid)}
-                  style={{ backgroundColor: userIDBackgroundColor, color: userIDTextColor }}
-                >
-                  {userID}
-                </span>
-              }
-              content={`${numberOfPostsByAuthor === 1 ? t('1_post_by_this_id') : t('x_posts_by_this_id', { number: numberOfPostsByAuthor })}`}
-              showTooltip={isInPostPageView || showOmittedReplies[postCid] || (postReplyCount < 6 && !pinned)}
-            />
+          {showUserID && (
+            <>
+              (ID:{' '}
+              {deleted ? (
+                t('deleted')
+              ) : removed ? (
+                t('removed')
+              ) : (
+                <Tooltip
+                  children={
+                    <span
+                      title={t('highlight_posts')}
+                      className={styles.userAddress}
+                      onClick={() => handleUserAddressClick(userID, postCid)}
+                      style={{ backgroundColor: userIDBackgroundColor, color: userIDTextColor }}
+                    >
+                      {userID}
+                    </span>
+                  }
+                  content={`${numberOfPostsByAuthor === 1 ? t('1_post_by_this_id') : t('x_posts_by_this_id', { number: numberOfPostsByAuthor })}`}
+                  showTooltip={isInPostPageView || showOmittedReplies[postCid] || (postReplyCount < 6 && !pinned)}
+                />
+              )}
+              ){' '}
+            </>
           )}
-          ){' '}
         </span>
         <span className={styles.dateTime}>
           {isInModQueueView && isOverThreshold ? (
