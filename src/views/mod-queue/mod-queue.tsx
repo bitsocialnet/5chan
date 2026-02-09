@@ -593,7 +593,7 @@ export const ModQueueButton = ({ boardIdentifier, isMobile }: ModQueueButtonProp
     (state) => {
       const activeAccountId = state.activeAccountId;
       const activeAccount = activeAccountId ? state.accounts[activeAccountId] : undefined;
-      const accountSubplebbits = activeAccount?.communities || {};
+      const accountSubplebbits = activeAccount?.subplebbits || {};
       return Object.keys(accountSubplebbits);
     },
     (prev, next) => {
@@ -651,7 +651,7 @@ export const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueV
     (state) => {
       const activeAccountId = state.activeAccountId;
       const activeAccount = activeAccountId ? state.accounts[activeAccountId] : undefined;
-      const accountSubplebbits = activeAccount?.communities || {};
+      const accountSubplebbits = activeAccount?.subplebbits || {};
       return Object.keys(accountSubplebbits);
     },
     (prev, next) => {
