@@ -247,7 +247,7 @@
   "delete_avatar": "Avatar löschen",
   "updates": "Aktualisierungen",
   "downloading_board": "Forum wird heruntergeladen",
-  "subscriptions_subtitle": "Sie haben {{count}} Board abonniert",
+  "subscriptions_subtitle": "Sie sind {{count}} Board abonniert",
   "all_boards": "Alle Boards",
   "nsfw_boards_only": "Nur NSFW-Boards",
   "worksafe_boards_only": "Nur arbeitsplatzsichere Boards",

@@ -247,7 +247,7 @@
   "delete_avatar": "अवतार हटवा",
   "updates": "अपडेट्स",
   "downloading_board": "फोरम डाउनलोड करत आहे",
-  "subscriptions_subtitle": "तुम्ही {{count}} board ला सदस्यता घेतली आहे",
+  "subscriptions_subtitle": "तुम्ही {{count}} boards ला सदस्यता घेतली आहे",
   "all_boards": "सर्व बोर्ड",
   "nsfw_boards_only": "फक्त NSFW बोर्ड",
   "worksafe_boards_only": "फक्त कामासाठी सुरक्षित बोर्ड",

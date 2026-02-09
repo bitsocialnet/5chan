@@ -247,7 +247,7 @@
   "delete_avatar": "Slett avatar",
   "updates": "Oppdateringer",
   "downloading_board": "laster ned forum",
-  "subscriptions_subtitle": "Du har abonnert på {{count}} board",
+  "subscriptions_subtitle": "Du er abonnent på {{count}} boards",
   "all_boards": "Alle tavler",
   "nsfw_boards_only": "Kun NSFW-tavler",
   "worksafe_boards_only": "Kun arbeidssikre tavler",

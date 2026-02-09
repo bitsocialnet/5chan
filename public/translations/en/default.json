@@ -249,7 +249,7 @@
   "moderator_of_this_board": "This user is a moderator of this board",
   "administrator_of_this_board": "This user is an administrator of this board",
   "copy_content_id": "Copy content ID",
-  "subscriptions_subtitle": "You have subscribed to {{count}} boards",
+  "subscriptions_subtitle": "You are subscribed to {{count}} boards",
   "bitsocial_account": "Bitsocial Account",
   "p2p_options": "P2P options",
   "purge": "purge",

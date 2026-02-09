@@ -247,7 +247,7 @@
   "delete_avatar": "Tanggalin ang avatar",
   "updates": "Mga Update",
   "downloading_board": "nagda-download ng board",
-  "subscriptions_subtitle": "Nag-subscribe ka sa {{count}} na board",
+  "subscriptions_subtitle": "Naka-subscribe ka sa {{count}} na boards",
   "all_boards": "Lahat ng boards",
   "nsfw_boards_only": "NSFW boards lang",
   "worksafe_boards_only": "Worksafe boards lang",

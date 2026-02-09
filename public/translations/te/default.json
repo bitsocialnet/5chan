@@ -247,7 +247,7 @@
   "delete_avatar": "అవతార్ను తొలగించు",
   "updates": "నవీకరణలు",
   "downloading_board": "ఫోరం డౌన్‌లోడ్ చేయడం",
-  "subscriptions_subtitle": "మీరు {{count}} boardకు సభ్యత్వం పొందారు",
+  "subscriptions_subtitle": "మీరు {{count}} boardsకు సభ్యత్వం పొందారు",
   "all_boards": "అన్ని బోర్డులు",
   "nsfw_boards_only": "NSFW బోర్డులు మాత్రమే",
   "worksafe_boards_only": "పని కోసం సురక్షితమైన బోర్డులు మాత్రమే",

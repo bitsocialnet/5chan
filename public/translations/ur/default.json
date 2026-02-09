@@ -247,7 +247,7 @@
   "delete_avatar": "اوتار حذف کریں",
   "updates": "اپڈیٹس",
   "downloading_board": "فورم ڈاؤن لوڈ ہو رہا ہے",
-  "subscriptions_subtitle": "آپ نے {{count}} board کی سبسکرپشن لی ہے",
+  "subscriptions_subtitle": "آپ {{count}} boards کی سبسکرپشن لے رہے ہیں",
   "all_boards": "تمام بورڈز",
   "nsfw_boards_only": "صرف NSFW بورڈز",
   "worksafe_boards_only": "صرف کام کے لیے محفوظ بورڈز",

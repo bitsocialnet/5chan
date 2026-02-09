@@ -247,7 +247,7 @@
   "delete_avatar": "Poista avatar",
   "updates": "Päivitykset",
   "downloading_board": "ladataan foorumia",
-  "subscriptions_subtitle": "Olet tilannut {{count}} boardia",
+  "subscriptions_subtitle": "Olet tilannut {{count}} boards",
   "all_boards": "Kaikki taulut",
   "nsfw_boards_only": "Vain NSFW-taulut",
   "worksafe_boards_only": "Vain työturvalliset taulut",

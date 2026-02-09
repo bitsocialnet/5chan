@@ -247,7 +247,7 @@
   "delete_avatar": "Avatar törlése",
   "updates": "Frissítések",
   "downloading_board": "fórum letöltése",
-  "subscriptions_subtitle": "Feliratkoztál {{count}} boardra",
+  "subscriptions_subtitle": "Fel vagy iratkozva {{count}} boardra",
   "all_boards": "Minden tábla",
   "nsfw_boards_only": "Csak NSFW táblák",
   "worksafe_boards_only": "Csak munkavédelmi táblák",

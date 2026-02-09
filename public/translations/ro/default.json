@@ -247,7 +247,7 @@
   "delete_avatar": "Șterge avatar",
   "updates": "Actualizări",
   "downloading_board": "se descarcă forumul",
-  "subscriptions_subtitle": "Te-ai abonat la {{count}} board",
+  "subscriptions_subtitle": "Ești abonat la {{count}} boards",
   "all_boards": "Toate panourile",
   "nsfw_boards_only": "Doar panouri NSFW",
   "worksafe_boards_only": "Doar panouri sigure pentru muncă",

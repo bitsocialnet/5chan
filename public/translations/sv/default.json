@@ -247,7 +247,7 @@
   "delete_avatar": "Ta bort avatar",
   "updates": "Uppdateringar",
   "downloading_board": "laddar ner forum",
-  "subscriptions_subtitle": "Du har prenumererat på {{count}} board",
+  "subscriptions_subtitle": "Du är prenumerant på {{count}} boards",
   "all_boards": "Alla tavlor",
   "nsfw_boards_only": "Endast NSFW-tavlor",
   "worksafe_boards_only": "Endast arbetsplats-säkra tavlor",

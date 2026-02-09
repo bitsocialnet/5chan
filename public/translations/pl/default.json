@@ -247,7 +247,7 @@
   "delete_avatar": "Usuń avatar",
   "updates": "Aktualizacje",
   "downloading_board": "pobieranie forum",
-  "subscriptions_subtitle": "Subskrybujesz {{count}} board",
+  "subscriptions_subtitle": "Subskrybujesz {{count}} boards",
   "all_boards": "Wszystkie tablice",
   "nsfw_boards_only": "Tylko tablice NSFW",
   "worksafe_boards_only": "Tylko bezpieczne tablice",

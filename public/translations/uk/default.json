@@ -247,7 +247,7 @@
   "delete_avatar": "Видалити аватар",
   "updates": "Оновлення",
   "downloading_board": "завантаження форуму",
-  "subscriptions_subtitle": "Ви підписались на {{count}} board",
+  "subscriptions_subtitle": "Ви підписані на {{count}} boards",
   "all_boards": "Всі дошки",
   "nsfw_boards_only": "Тільки дошки NSFW",
   "worksafe_boards_only": "Тільки безпечні для роботи дошки",

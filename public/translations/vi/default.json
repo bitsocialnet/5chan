@@ -247,7 +247,7 @@
   "delete_avatar": "Xóa avatar",
   "updates": "Cập nhật",
   "downloading_board": "đang tải diễn đàn",
-  "subscriptions_subtitle": "Bạn đã đăng ký {{count}} board",
+  "subscriptions_subtitle": "Bạn đang đăng ký {{count}} boards",
   "all_boards": "Tất cả bảng",
   "nsfw_boards_only": "Chỉ bảng NSFW",
   "worksafe_boards_only": "Chỉ bảng an toàn cho công việc",

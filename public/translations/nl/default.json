@@ -247,7 +247,7 @@
   "delete_avatar": "Avatar verwijderen",
   "updates": "Updates",
   "downloading_board": "board downloaden",
-  "subscriptions_subtitle": "Je bent geabonneerd op {{count}} board",
+  "subscriptions_subtitle": "Je bent geabonneerd op {{count}} boards",
   "all_boards": "Alle borden",
   "nsfw_boards_only": "Alleen NSFW-borden",
   "worksafe_boards_only": "Alleen werkveilige borden",

@@ -247,7 +247,7 @@
   "delete_avatar": "حذف آواتار",
   "updates": "به‌روزرسانی‌ها",
   "downloading_board": "در حال دانلود تالار",
-  "subscriptions_subtitle": "شما به {{count}} board مشترک شده‌اید",
+  "subscriptions_subtitle": "شما به {{count}} board مشترک هستید",
   "all_boards": "همه تابلوها",
   "nsfw_boards_only": "فقط تابلوهای NSFW",
   "worksafe_boards_only": "فقط تابلوهای ایمن برای کار",

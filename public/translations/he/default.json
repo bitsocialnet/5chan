@@ -247,7 +247,7 @@
   "delete_avatar": "מחק אווטר",
   "updates": "עדכונים",
   "downloading_board": "מוריד פורום",
-  "subscriptions_subtitle": "נרשמת ל-{{count}} board",
+  "subscriptions_subtitle": "נרשמת ל-{{count}} boards",
   "all_boards": "כל הלוחות",
   "nsfw_boards_only": "לוחות NSFW בלבד",
   "worksafe_boards_only": "לוחות בטוחים לעבודה בלבד",

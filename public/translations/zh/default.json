@@ -247,7 +247,7 @@
   "delete_avatar": "删除头像",
   "updates": "更新",
   "downloading_board": "正在下载论坛",
-  "subscriptions_subtitle": "您已订阅 {{count}} 个 board",
+  "subscriptions_subtitle": "您已订阅 {{count}} 个 boards",
   "all_boards": "所有板块",
   "nsfw_boards_only": "仅NSFW板块",
   "worksafe_boards_only": "仅工作安全板块",

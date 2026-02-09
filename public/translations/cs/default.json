@@ -247,7 +247,7 @@
   "delete_avatar": "Smazat avatar",
   "updates": "Aktualizace",
   "downloading_board": "stahování fóra",
-  "subscriptions_subtitle": "Přihlásili jste se k {{count}} boardu",
+  "subscriptions_subtitle": "Jste přihlášeni k {{count}} boards",
   "all_boards": "Všechny desky",
   "nsfw_boards_only": "Pouze NSFW desky",
   "worksafe_boards_only": "Pouze bezpečné desky",
