@@ -105,10 +105,6 @@ const DesktopQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, i
     if (cid && subplebbitAddress) {
       const boardPath = getBoardPath(subplebbitAddress, directories);
       navigate(`/${boardPath}/thread/${cid}`);
-      setTimeout(() => {
-        const element = document.querySelector(`[data-cid="${cid}"]`);
-        element?.scrollIntoView();
-      }, 100);
     }
   };
 
@@ -219,10 +215,6 @@ const MobileQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, is
     if (cid && subplebbitAddress) {
       const boardPath = getBoardPath(subplebbitAddress, directories);
       navigate(`/${boardPath}/thread/${cid}`);
-      setTimeout(() => {
-        const element = document.querySelector(`[data-cid="${cid}"]`);
-        element?.scrollIntoView();
-      }, 100);
     }
   };
 
