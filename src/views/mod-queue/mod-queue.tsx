@@ -547,7 +547,7 @@ const ModQueueButtonContent = ({ feed, alertThresholdSeconds, boardIdentifier, i
   }, [statusMap]);
 
   const totalCount = normalCount + urgentCount;
-  const to = boardIdentifier ? `/${boardIdentifier}/queue` : '/mod/queue';
+  const to = boardIdentifier ? `/${boardIdentifier}/modqueue` : '/mod/modqueue';
 
   const buttonContent = (
     <button className='button'>
@@ -678,7 +678,7 @@ export const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueV
       return [resolvedAddress];
     }
 
-    // Always require a board filter when viewing /mod/queue (no boardIdentifier)
+    // Always require a board filter when viewing /mod/modqueue (no boardIdentifier)
     if (selectedBoardFilter) {
       return [selectedBoardFilter];
     }
@@ -708,7 +708,7 @@ export const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueV
     setResetFunction(reset);
   }, [reset, setResetFunction]);
 
-  // Auto-select first board if viewing /mod/queue without a boardIdentifier and no filter is set
+  // Auto-select first board if viewing /mod/modqueue without a boardIdentifier and no filter is set
   useEffect(() => {
     if (!resolvedAddress && !selectedBoardFilter && accountSubplebbitAddresses.length > 0) {
       const { setSelectedBoardFilter } = useModQueueStore.getState();

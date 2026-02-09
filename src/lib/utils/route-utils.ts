@@ -106,7 +106,7 @@ export const isFeedRoute = (pathname: string): boolean => {
 
   if (normalizedPath.includes('/thread/')) return false;
   if (normalizedPath.startsWith('/pending/')) return false;
-  if (normalizedPath.includes('/queue')) return false;
+  if (normalizedPath.includes('/modqueue')) return false;
 
   const pathWithoutSettings = normalizedPath.replace(/\/settings$/, '');
 
@@ -140,7 +140,7 @@ export const isPendingPostRoute = (pathname: string): boolean => {
 
 export const isModQueueRoute = (pathname: string): boolean => {
   const normalizedPath = pathname.replace(/\/settings$/, '');
-  return normalizedPath.includes('/queue');
+  return normalizedPath.includes('/modqueue');
 };
 
 export const getFeedCacheKey = (pathname: string): string | null => {
@@ -156,7 +156,7 @@ export const getFeedCacheKey = (pathname: string): string | null => {
     return null;
   }
 
-  if (normalizedPath.includes('/queue')) {
+  if (normalizedPath.includes('/modqueue')) {
     return null;
   }
 

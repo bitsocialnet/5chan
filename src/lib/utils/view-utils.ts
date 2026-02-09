@@ -60,7 +60,7 @@ export const isModView = (pathname: string): boolean => {
 };
 
 export const isModQueueView = (pathname: string): boolean => {
-  return pathname.includes('/queue');
+  return pathname.includes('/modqueue');
 };
 
 export const isPendingPostView = (pathname: string, params: ParamsType): boolean => {
