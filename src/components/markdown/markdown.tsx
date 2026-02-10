@@ -14,6 +14,10 @@ import styles from './markdown.module.css';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import { canEmbed } from '../embed';
 import { is5chanLink, transform5chanLinkToInternal, preprocess5chanPatterns } from '../../lib/utils/url-utils';
+import usePostNumberStore from '../../stores/use-post-number-store';
+import useSubplebbitsPagesStore from '@plebbit/plebbit-react-hooks/dist/stores/subplebbits-pages';
+import { useComment } from '@plebbit/plebbit-react-hooks';
+import ReplyQuotePreview from '../reply-quote-preview';
 
 interface ContentLinkEmbedProps {
   children: any;
@@ -159,11 +163,34 @@ const spoilerTransform = () => (tree: any) => {
 interface MarkdownProps {
   content: string;
   title?: string;
+  postCid?: string;
 }
 
-const renderAnchorLink = (children: React.ReactNode, href: string) => {
+const NUMBER_QUOTE_HREF_REGEX = /^#q-(\d+)$/;
+
+const NumberQuoteLink = ({ number, threadPostCid }: { number: number; threadPostCid?: string }) => {
+  const cid = usePostNumberStore((state) => state.numberToCid[number]);
+  const commentFromStore = useSubplebbitsPagesStore((state) => (cid ? state.comments[cid] : undefined));
+  const commentFromHook = useComment({ commentCid: cid, onlyIfCached: true });
+  const comment = commentFromHook?.number !== undefined ? commentFromHook : commentFromStore;
+  const isOP = Boolean(threadPostCid && cid === threadPostCid);
+
+  if (!comment) {
+    return <span>{`>>${number}`}</span>;
+  }
+
+  return <ReplyQuotePreview isQuotelinkReply={true} quotelinkReply={comment} isOP={isOP} />;
+};
+
+const renderAnchorLink = (children: React.ReactNode, href: string, threadPostCid?: string) => {
   if (!href) {
     return <span>{children}</span>;
+  }
+
+  const numberQuoteMatch = href.match(NUMBER_QUOTE_HREF_REGEX);
+  if (numberQuoteMatch) {
+    const number = parseInt(numberQuoteMatch[1], 10);
+    return <NumberQuoteLink number={number} threadPostCid={threadPostCid} />;
   }
 
   // Check if this is a valid 5chan link that should be handled internally
@@ -215,7 +242,7 @@ const renderAnchorLink = (children: React.ReactNode, href: string) => {
   );
 };
 
-const Markdown = ({ content, title }: MarkdownProps) => {
+const Markdown = ({ content, title, postCid }: MarkdownProps) => {
   const remarkPlugins: any[] = [[supersub]];
 
   if (content && content.length <= MAX_LENGTH_FOR_GFM) {
@@ -285,10 +312,10 @@ const Markdown = ({ content, title }: MarkdownProps) => {
                   console.debug('Invalid URL:', href);
                 }
 
-                return renderAnchorLink(children, href);
+                return renderAnchorLink(children, href, postCid);
               }
 
-              return renderAnchorLink(children, href || '');
+              return renderAnchorLink(children, href || '', postCid);
             },
           } as ExtendedComponents
         }
