@@ -251,7 +251,7 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
                         onClick={() => handleUserAddressClick(userID, postCid)}
                         style={{ backgroundColor: userIDBackgroundColor, color: userIDTextColor }}
                       >
-                        {userID}
+                        {userID?.slice(0, 8)}
                       </span>
                     }
                     content={`${numberOfPostsByAuthor === 1 ? t('1_post_by_this_id') : t('x_posts_by_this_id', { number: numberOfPostsByAuthor })}`}
