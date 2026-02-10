@@ -101,7 +101,10 @@ const htmlSection = section('Static HTML build', [htmlZip && `- 5chan-html (zip)
 
 const downloads = [macSection, winSection, linuxSection, androidSection, htmlSection].filter(Boolean).join('\n\n');
 
-const releaseBody = `This version rebrands the app to 5chan, introducing a set of new features and several performance improvements.
+// One-liner summary of what changed in this release. Update before each release.
+const oneLinerDescription = 'This version rebrands the app to 5chan, introducing a set of new features and several performance improvements.';
+
+const releaseBody = `${oneLinerDescription}
 
 - Web app: https://5chan.app
 - Decentralized web app via IPFS/IPNS gateways (works on any browser): [5chan.eth.limo](https://5chan.eth.limo), [5chan.eth.link](https://5chan.eth.link), [dweb.link/ipfs.io](https://dweb.link/ipns/5chan.eth)
