@@ -190,7 +190,11 @@ const renderAnchorLink = (children: React.ReactNode, href: string, threadPostCid
   const numberQuoteMatch = href.match(NUMBER_QUOTE_HREF_REGEX);
   if (numberQuoteMatch) {
     const number = parseInt(numberQuoteMatch[1], 10);
-    return <NumberQuoteLink number={number} threadPostCid={threadPostCid} />;
+    return (
+      <span className={styles.inlineQuoteLink}>
+        <NumberQuoteLink number={number} threadPostCid={threadPostCid} />
+      </span>
+    );
   }
 
   // Check if this is a valid 5chan link that should be handled internally
