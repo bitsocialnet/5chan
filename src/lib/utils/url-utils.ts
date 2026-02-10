@@ -1,5 +1,7 @@
 import { copyToClipboard } from './clipboard-utils';
 
+export const QUOTE_NUMBER_REGEX = /(?<![>/\w])>>(\d+)/g;
+
 export const getHostname = (url: string) => {
   try {
     return new URL(url).hostname.replace(/^www\./, '');
@@ -183,8 +185,7 @@ export const isValidCrossboardPattern = (pattern: string): boolean => {
 // Transform >>{number} post number patterns to markdown links with special anchor
 const preprocessPostNumberPatterns = (content: string): string => {
   // Match >> followed by digits, avoid overlap with greentext (>>>), cross-board (>>>/), URLs, CID-like patterns
-  const pattern = /(?<![>/\w])>>(\d+)(?![\d/])/g;
-  return content.replace(pattern, (_, num) => `[>>${num}](#q-${num})`);
+  return content.replace(QUOTE_NUMBER_REGEX, (_, num) => `[>>${num}](#q-${num})`);
 };
 
 // Preprocess content to convert plain text 5chan cross-board patterns to markdown links

@@ -9,6 +9,7 @@ import { shouldShowSnow } from '../../lib/snow';
 import { getHasThumbnail } from '../../lib/utils/media-utils';
 import { getTextColorForBackground, hashStringToColor } from '../../lib/utils/post-utils';
 import { getFormattedDate, getFormattedTimeAgo } from '../../lib/utils/time-utils';
+import { QUOTE_NUMBER_REGEX } from '../../lib/utils/url-utils';
 import { isAllView, isModQueueView, isPendingPostView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import { formatUserIDForDisplay } from '../../lib/utils/string-utils';
 import useModQueueStore from '../../stores/use-mod-queue-store';
@@ -465,6 +466,7 @@ const PostMobile = ({
   const linksCount = useCountLinksInReplies(post);
   const { replies, hasMore, loadMore } = useReplies({ comment: post, accountComments: { newerThan: Infinity } });
   const registerComments = usePostNumberStore((s) => s.registerComments);
+  const numberToCid = usePostNumberStore((s) => s.numberToCid);
   const prevCidsRef = useRef<string>('');
   useEffect(() => {
     const all = post ? [post, ...(replies || [])] : replies || [];
@@ -491,17 +493,32 @@ const PostMobile = ({
   const quotedByMap = useMemo(() => {
     const map = new Map<string, Comment[]>();
     for (const reply of filteredReplies) {
-      const quotedCids = reply.quotedCids;
-      if (quotedCids?.length) {
-        for (const quotedCid of quotedCids) {
-          const arr = map.get(quotedCid);
-          if (arr) arr.push(reply);
-          else map.set(quotedCid, [reply]);
+      const cidSet = new Set<string>();
+
+      if (reply.quotedCids?.length) {
+        for (const quotedCid of reply.quotedCids) {
+          cidSet.add(quotedCid);
         }
+      }
+
+      if (reply.content) {
+        for (const match of reply.content.matchAll(QUOTE_NUMBER_REGEX)) {
+          const postNumber = parseInt(match[1], 10);
+          const quotedCid = numberToCid[postNumber];
+          if (quotedCid) {
+            cidSet.add(quotedCid);
+          }
+        }
+      }
+
+      for (const quotedCid of cidSet) {
+        const arr = map.get(quotedCid);
+        if (arr) arr.push(reply);
+        else map.set(quotedCid, [reply]);
       }
     }
     return map;
-  }, [filteredReplies]);
+  }, [filteredReplies, numberToCid]);
 
   // Virtuoso scroll position management for infinite replies
   const virtuosoRef = useRef<VirtuosoHandle | null>(null);
