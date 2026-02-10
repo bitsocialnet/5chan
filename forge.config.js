@@ -69,7 +69,7 @@ const config = {
       config: {
         name: '5chan',
         icon: './public/icon.png',
-        format: 'UDZO',
+        format: 'ULFO',
       },
     },
     {
@@ -82,7 +82,7 @@ const config = {
       platforms: ['win32'],
       config: {
         name: '5chan',
-        setupIcon: './public/favicon.ico',
+        setupIcon: './public/windows-icon.ico',
       },
     },
     // Linux

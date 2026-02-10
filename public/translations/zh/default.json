@@ -99,7 +99,6 @@
   "interface": "界面",
   "invalid_url": "无效的网址",
   "image_search": "图像搜索",
-  "copy_link": "复制链接",
   "hide_post": "隐藏帖子",
   "hide_thread": "隐藏主题",
   "unhide_post": "显示帖子",
@@ -247,7 +246,7 @@
   "delete_avatar": "删除头像",
   "updates": "更新",
   "downloading_board": "正在下载论坛",
-  "subscriptions_subtitle": "您已订阅 {{count}} 个 board",
+  "subscriptions_subtitle": "您已订阅 {{count}} 个 boards",
   "all_boards": "所有板块",
   "nsfw_boards_only": "仅NSFW板块",
   "worksafe_boards_only": "仅工作安全板块",
@@ -276,5 +275,7 @@
   "type": "类型",
   "yes": "是",
   "no": "否",
-  "pending_mod_approval": "等待版主批准，用户不可见"
+  "pending_mod_approval": "等待版主批准，用户不可见",
+  "copy_user_id": "复制用户ID",
+  "copy_direct_link": "复制直接链接"
 }

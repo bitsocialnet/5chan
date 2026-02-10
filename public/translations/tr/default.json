@@ -99,7 +99,6 @@
   "interface": "arayüz",
   "invalid_url": "Geçersiz URL",
   "image_search": "resim arama",
-  "copy_link": "bağlantıyı kopyala",
   "hide_post": "gönderiyi gizle",
   "hide_thread": "konuyu gizle",
   "unhide_post": "gönderiyi göster",
@@ -247,7 +246,7 @@
   "delete_avatar": "Avatarı sil",
   "updates": "Güncellemeler",
   "downloading_board": "forum indiriliyor",
-  "subscriptions_subtitle": "{{count}} board'a abone oldunuz",
+  "subscriptions_subtitle": "{{count}} board'a abonesiniz",
   "all_boards": "Tüm panolar",
   "nsfw_boards_only": "Sadece NSFW panoları",
   "worksafe_boards_only": "Sadece iş için güvenli panolar",
@@ -276,5 +275,7 @@
   "type": "Type",
   "yes": "Yes",
   "no": "No",
-  "pending_mod_approval": "Pending mod approval, not visible to users"
+  "pending_mod_approval": "Moderatör onayı beklemede, kullanıcılara görünmüyor",
+  "copy_user_id": "kullanıcı ID'sini kopyala",
+  "copy_direct_link": "doğrudan bağlantıyı kopyala"
 }

@@ -99,7 +99,6 @@
   "interface": "giao diện",
   "invalid_url": "URL không hợp lệ",
   "image_search": "tìm kiếm hình ảnh",
-  "copy_link": "sao chép liên kết",
   "hide_post": "Ẩn bài viết",
   "hide_thread": "Ẩn chủ đề",
   "unhide_post": "Hiện bài viết",
@@ -247,7 +246,7 @@
   "delete_avatar": "Xóa avatar",
   "updates": "Cập nhật",
   "downloading_board": "đang tải diễn đàn",
-  "subscriptions_subtitle": "Bạn đã đăng ký {{count}} board",
+  "subscriptions_subtitle": "Bạn đang đăng ký {{count}} boards",
   "all_boards": "Tất cả bảng",
   "nsfw_boards_only": "Chỉ bảng NSFW",
   "worksafe_boards_only": "Chỉ bảng an toàn cho công việc",
@@ -276,5 +275,7 @@
   "type": "Type",
   "yes": "Yes",
   "no": "No",
-  "pending_mod_approval": "Pending mod approval, not visible to users"
+  "pending_mod_approval": "Chờ duyệt của người điều hành, không hiển thị cho người dùng",
+  "copy_user_id": "sao chép ID người dùng",
+  "copy_direct_link": "sao chép liên kết trực tiếp"
 }

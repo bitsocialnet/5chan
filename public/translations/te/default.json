@@ -99,7 +99,6 @@
   "interface": "అంతరాఫ్సు",
   "invalid_url": "చెల్లని URL",
   "image_search": "చిత్రాల శోధన",
-  "copy_link": "లింక్ ను కాపీ చేయండి",
   "hide_post": "పోస్ట్ దాచు",
   "hide_thread": "థ్రెడ్ దాచు",
   "unhide_post": "పోస్ట్ చూపించు",
@@ -247,7 +246,7 @@
   "delete_avatar": "అవతార్ను తొలగించు",
   "updates": "నవీకరణలు",
   "downloading_board": "ఫోరం డౌన్‌లోడ్ చేయడం",
-  "subscriptions_subtitle": "మీరు {{count}} boardకు సభ్యత్వం పొందారు",
+  "subscriptions_subtitle": "మీరు {{count}} boardsకు సభ్యత్వం పొందారు",
   "all_boards": "అన్ని బోర్డులు",
   "nsfw_boards_only": "NSFW బోర్డులు మాత్రమే",
   "worksafe_boards_only": "పని కోసం సురక్షితమైన బోర్డులు మాత్రమే",
@@ -276,5 +275,7 @@
   "type": "Type",
   "yes": "Yes",
   "no": "No",
-  "pending_mod_approval": "Pending mod approval, not visible to users"
+  "pending_mod_approval": "మాడరేటర్ ఆమోదం కోసం చేతనిస్తోంది, వినియోగదారులకు కనిపించవు",
+  "copy_user_id": "యూజర్ ID కాపీ చేయండి",
+  "copy_direct_link": "డైరెక్ట్ లింక్ కాపీ చేయండి"
 }

@@ -99,7 +99,6 @@
   "interface": "رابط",
   "invalid_url": "آدرس اینترنتی نامعتبر است",
   "image_search": "جستجوی تصویر",
-  "copy_link": "رونوشت لینک",
   "hide_post": "پنهان کردن پست",
   "hide_thread": "پنهان کردن موضوع",
   "unhide_post": "نمایش پست",
@@ -247,7 +246,7 @@
   "delete_avatar": "حذف آواتار",
   "updates": "به‌روزرسانی‌ها",
   "downloading_board": "در حال دانلود تالار",
-  "subscriptions_subtitle": "شما به {{count}} board مشترک شده‌اید",
+  "subscriptions_subtitle": "شما به {{count}} board مشترک هستید",
   "all_boards": "همه تابلوها",
   "nsfw_boards_only": "فقط تابلوهای NSFW",
   "worksafe_boards_only": "فقط تابلوهای ایمن برای کار",
@@ -276,5 +275,7 @@
   "type": "Type",
   "yes": "Yes",
   "no": "No",
-  "pending_mod_approval": "Pending mod approval, not visible to users"
+  "pending_mod_approval": "در انتظار تایید مدیر، برای کاربران قابل مشاهده نیست",
+  "copy_user_id": "کپی شناسه کاربر",
+  "copy_direct_link": "رونوشت لینک مستقیم"
 }

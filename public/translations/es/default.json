@@ -99,7 +99,6 @@
   "interface": "interfaz",
   "invalid_url": "URL no válida",
   "image_search": "búsqueda de imágenes",
-  "copy_link": "Copiar enlace",
   "hide_post": "Ocultar publicación",
   "hide_thread": "Ocultar hilo",
   "unhide_post": "Mostrar publicación",
@@ -247,7 +246,7 @@
   "delete_avatar": "Eliminar avatar",
   "updates": "Actualizaciones",
   "downloading_board": "descargando foro",
-  "subscriptions_subtitle": "Te has suscrito a {{count}} board",
+  "subscriptions_subtitle": "Estás suscrito a {{count}} boards",
   "all_boards": "Todas las tablas",
   "nsfw_boards_only": "Solo tablas NSFW",
   "worksafe_boards_only": "Solo tablas seguras para el trabajo",
@@ -276,5 +275,7 @@
   "type": "Tipo",
   "yes": "Sí",
   "no": "No",
-  "pending_mod_approval": "Pendiente de aprobación del moderador, no visible para los usuarios"
+  "pending_mod_approval": "Pendiente de aprobación del moderador, no visible para los usuarios",
+  "copy_user_id": "Copiar ID de usuario",
+  "copy_direct_link": "Copiar enlace directo"
 }

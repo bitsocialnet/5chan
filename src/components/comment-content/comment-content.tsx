@@ -1,8 +1,9 @@
-import { Fragment, useState } from 'react';
+import { Fragment, useMemo, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import { Trans, useTranslation } from 'react-i18next';
 import { Comment, useComment } from '@plebbit/plebbit-react-hooks';
 import useSubplebbitsPagesStore from '@plebbit/plebbit-react-hooks/dist/stores/subplebbits-pages';
+import usePostNumberStore from '../../stores/use-post-number-store';
 import Plebbit from '@plebbit/plebbit-js';
 import { getFormattedDate, getFormattedTimeAgo } from '../../lib/utils/time-utils';
 import { isPostPageView } from '../../lib/utils/view-utils';
@@ -15,6 +16,15 @@ import Tooltip from '../../components/tooltip';
 import styles from '../../views/post/post.module.css';
 import _ from 'lodash';
 
+const QuotedCidLink = ({ cid, postCid }: { cid: string; postCid: string }) => {
+  const commentFromStore = useSubplebbitsPagesStore((state) => state.comments[cid]);
+  const commentFromHook = useComment({ commentCid: cid, onlyIfCached: true });
+  // Prefer hook version to ensure 'number' property is populated for deeper nested replies in Virtuoso
+  const quotedComment = commentFromHook?.number !== undefined ? commentFromHook : commentFromStore;
+  const isOP = cid === postCid;
+  return <ReplyQuotePreview isQuotelinkReply={true} quotelinkReply={quotedComment} isOP={isOP} />;
+};
+
 const CommentContent = ({ comment: post }: { comment: Comment }) => {
   const { t } = useTranslation();
   const params = useParams();
@@ -23,7 +33,7 @@ const CommentContent = ({ comment: post }: { comment: Comment }) => {
   const [showOriginal, setShowOriginal] = useState(false);
   const isMobile = useIsMobile();
 
-  const { cid, content, deleted, edit, original, parentCid, postCid, pendingApproval, reason, removed, state, subplebbitAddress } = post || {};
+  const { cid, content, deleted, edit, original, parentCid, postCid, pendingApproval, quotedCids, reason, removed, state, subplebbitAddress } = post || {};
   const banned = !!post?.author?.subplebbit?.banExpiresAt;
 
   const [showFullComment, setShowFullComment] = useState(false);
@@ -43,13 +53,35 @@ const CommentContent = ({ comment: post }: { comment: Comment }) => {
   const isReply = !!parentCid;
   const isReplyingToReply = isReply && parentCid !== postCid;
 
+  const contentNumbers = useMemo(() => {
+    if (!content) return new Set<number>();
+    const matches = content.matchAll(/(?<![>/\w])>>(\d+)(?![\d/])/g);
+    return new Set([...matches].map((m) => parseInt(m[1], 10)));
+  }, [content]);
+
+  const cidToNumber = usePostNumberStore((state) => state.cidToNumber);
+  const filteredQuotedCids = useMemo(() => {
+    if (!quotedCids?.length) return [];
+    return quotedCids.filter((cid: string) => {
+      const num = cidToNumber[cid];
+      return num === undefined || !contentNumbers.has(num);
+    });
+  }, [quotedCids, cidToNumber, contentNumbers]);
+
+  const shouldShowReplyingToReply = isReplyingToReply && (parentCid ? !contentNumbers.has(cidToNumber[parentCid] ?? -1) : true);
+
   const stateString = useStateString(post);
 
   const loadingString = <div className={styles.stateString}>{stateString !== 'Failed' ? <LoadingEllipsis string={stateString || t('loading')} /> : stateString}</div>;
 
   return (
     <blockquote className={`${styles.postMessage} ${!isReply && isMobile && styles.clampLines}`}>
-      {isReply && state !== 'failed' && isReplyingToReply && !(deleted || removed) && <ReplyQuotePreview isQuotelinkReply={true} quotelinkReply={quotelinkReply} />}
+      {isReply &&
+        state !== 'failed' &&
+        !(deleted || removed) &&
+        (filteredQuotedCids.length > 0
+          ? filteredQuotedCids.map((cid: string) => <QuotedCidLink key={cid} cid={cid} postCid={postCid} />)
+          : shouldShowReplyingToReply && <ReplyQuotePreview isQuotelinkReply={true} quotelinkReply={quotelinkReply} />)}
       {removed ? (
         reason ? (
           <>
@@ -72,7 +104,7 @@ const CommentContent = ({ comment: post }: { comment: Comment }) => {
         )
       ) : (
         <>
-          {!showOriginal && <Markdown content={displayContent} />}
+          {!showOriginal && <Markdown content={displayContent} postCid={postCid} />}
           {pendingApproval && (
             <>
               <br />
@@ -88,7 +120,7 @@ const CommentContent = ({ comment: post }: { comment: Comment }) => {
           )}
           {edit && original?.content !== content && (
             <span className={styles.editedInfo}>
-              {showOriginal && <Markdown content={original?.content} />}
+              {showOriginal && <Markdown content={original?.content} postCid={postCid} />}
               <br />
               <br />
               <Trans

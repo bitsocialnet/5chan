@@ -99,7 +99,6 @@
   "interface": "इंटरफेस",
   "invalid_url": "अवैध URL",
   "image_search": "प्रतिमा शोध",
-  "copy_link": "लिंक कॉपी करा",
   "hide_post": "पोस्ट लपवा",
   "hide_thread": "थ्रेड लपवा",
   "unhide_post": "पोस्ट दाखवा",
@@ -247,7 +246,7 @@
   "delete_avatar": "अवतार हटवा",
   "updates": "अपडेट्स",
   "downloading_board": "फोरम डाउनलोड करत आहे",
-  "subscriptions_subtitle": "तुम्ही {{count}} board ला सदस्यता घेतली आहे",
+  "subscriptions_subtitle": "तुम्ही {{count}} boards ला सदस्यता घेतली आहे",
   "all_boards": "सर्व बोर्ड",
   "nsfw_boards_only": "फक्त NSFW बोर्ड",
   "worksafe_boards_only": "फक्त कामासाठी सुरक्षित बोर्ड",
@@ -276,5 +275,7 @@
   "type": "Type",
   "yes": "Yes",
   "no": "No",
-  "pending_mod_approval": "Pending mod approval, not visible to users"
+  "pending_mod_approval": "संचालकाच्या मंजुरीची प्रतीक्षा, वापरकर्त्यांना दिसत नाही",
+  "copy_user_id": "यूजर ID कॉपी करा",
+  "copy_direct_link": "डायरेक्ट लिंक कॉपी करा"
 }

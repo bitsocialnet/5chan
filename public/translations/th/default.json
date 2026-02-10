@@ -99,7 +99,6 @@
   "interface": "อินเทอร์เฟซ",
   "invalid_url": "URL ไม่ถูกต้อง",
   "image_search": "ค้นหารูปภาพ",
-  "copy_link": "คัดลอกลิงก์",
   "hide_post": "ซ่อนโพสต์",
   "hide_thread": "ซ่อนเธรด",
   "unhide_post": "แสดงโพสต์",
@@ -247,7 +246,7 @@
   "delete_avatar": "ลบอวตาร",
   "updates": "อัปเดต",
   "downloading_board": "กำลังดาวน์โหลดกระดาน",
-  "subscriptions_subtitle": "คุณได้สมัครสมาชิก {{count}} board แล้ว",
+  "subscriptions_subtitle": "คุณกำลังสมัครสมาชิก {{count}} boards",
   "all_boards": "บอร์ดทั้งหมด",
   "nsfw_boards_only": "บอร์ด NSFW เท่านั้น",
   "worksafe_boards_only": "บอร์ดที่ปลอดภัยสำหรับงานเท่านั้น",
@@ -276,5 +275,7 @@
   "type": "Type",
   "yes": "Yes",
   "no": "No",
-  "pending_mod_approval": "Pending mod approval, not visible to users"
+  "pending_mod_approval": "รอการอนุมัติจากผู้ดูแล ไม่มองเห็นสำหรับผู้ใช้",
+  "copy_user_id": "คัดลอก ID ผู้ใช้",
+  "copy_direct_link": "คัดลอกลิงก์โดยตรง"
 }

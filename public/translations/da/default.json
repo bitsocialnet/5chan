@@ -99,7 +99,6 @@
   "interface": "interface",
   "invalid_url": "Ugyldig webadresse",
   "image_search": "billedsøgning",
-  "copy_link": "kopier link",
   "hide_post": "skjul post",
   "hide_thread": "skjul tråd",
   "unhide_post": "vis indlæg",
@@ -247,7 +246,7 @@
   "delete_avatar": "Slet avatar",
   "updates": "Opdateringer",
   "downloading_board": "downloader forum",
-  "subscriptions_subtitle": "Du har abonneret på {{count}} board",
+  "subscriptions_subtitle": "Du er abonneret på {{count}} boards",
   "all_boards": "Alle tavler",
   "nsfw_boards_only": "Kun NSFW-tavler",
   "worksafe_boards_only": "Kun arbejdssikre tavler",
@@ -276,5 +275,7 @@
   "type": "Type",
   "yes": "Yes",
   "no": "No",
-  "pending_mod_approval": "Pending mod approval, not visible to users"
+  "pending_mod_approval": "Afventer moderatorgodkendelse, ikke synlig for brugere",
+  "copy_user_id": "kopier bruger-ID",
+  "copy_direct_link": "kopier direkte link"
 }

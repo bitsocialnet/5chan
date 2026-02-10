@@ -99,7 +99,6 @@
   "interface": "انٹرفیس",
   "invalid_url": "غیر درست یو آر ایل",
   "image_search": "تصویر کی تلاش",
-  "copy_link": "لنک کاپی کریں",
   "hide_post": "پوسٹ چھپائیں",
   "hide_thread": "دھاگہ چھپائیں",
   "unhide_post": "پوسٹ دکھائیں",
@@ -247,7 +246,7 @@
   "delete_avatar": "اوتار حذف کریں",
   "updates": "اپڈیٹس",
   "downloading_board": "فورم ڈاؤن لوڈ ہو رہا ہے",
-  "subscriptions_subtitle": "آپ نے {{count}} board کی سبسکرپشن لی ہے",
+  "subscriptions_subtitle": "آپ {{count}} boards کی سبسکرپشن لے رہے ہیں",
   "all_boards": "تمام بورڈز",
   "nsfw_boards_only": "صرف NSFW بورڈز",
   "worksafe_boards_only": "صرف کام کے لیے محفوظ بورڈز",
@@ -276,5 +275,7 @@
   "type": "Type",
   "yes": "Yes",
   "no": "No",
-  "pending_mod_approval": "Pending mod approval, not visible to users"
+  "pending_mod_approval": "ماڈریٹر کی منظوری کا انتظار، صارفین کے لیے نظر نہیں آتا",
+  "copy_user_id": "صارف کی شناخت کاپی کریں",
+  "copy_direct_link": "براہ راست لنک کاپی کریں"
 }

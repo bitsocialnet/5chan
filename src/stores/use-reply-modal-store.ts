@@ -9,9 +9,27 @@ interface ReplyModalState {
   threadCid: string | null;
   subplebbitAddress: string | null;
   scrollY: number;
+  quoteInsertRequestId: number;
+  quoteInsertNumber: number | null;
+  quoteInsertSelectedText: string | null;
   closeModal: () => void;
   openReplyModal: (parentCid: string, parentNumber: number | undefined, postCid: string, threadNumber: number | undefined, subplebbitAddress: string) => void;
 }
+
+const getQuotedSelection = () => {
+  const text = document.getSelection()?.toString();
+  if (!text) return '';
+
+  // Keep each selected line as 5chan greentext and normalize newlines.
+  const normalizedText = text.replace(/\r\n/g, '\n').replace(/\n+$/g, '');
+
+  if (!normalizedText) return '';
+
+  return normalizedText
+    .split('\n')
+    .map((line) => `>${line}`)
+    .join('\n');
+};
 
 const useReplyModalStore = create<ReplyModalState>((set, get) => ({
   showReplyModal: false,
@@ -21,6 +39,9 @@ const useReplyModalStore = create<ReplyModalState>((set, get) => ({
   threadCid: null,
   subplebbitAddress: null,
   scrollY: 0,
+  quoteInsertRequestId: 0,
+  quoteInsertNumber: null,
+  quoteInsertSelectedText: null,
 
   closeModal: () => {
     // Reset selected text if you're using that store
@@ -30,20 +51,26 @@ const useReplyModalStore = create<ReplyModalState>((set, get) => ({
       activeCid: null,
       parentNumber: null,
       threadNumber: null,
+      quoteInsertNumber: null,
+      quoteInsertSelectedText: null,
     });
   },
 
   openReplyModal: (parentCid, parentNumber, postCid, threadNumber, subplebbitAddress) => {
-    // Don't update if already open with different parent
-    if (get().activeCid && get().activeCid !== parentCid) {
-      window.alert('Multiple quotes are not possible on 5chan for the time being, because of a protocol limitation. Please reply to one post at a time.');
+    const quotedSelection = getQuotedSelection();
+
+    // If the reply modal is already open, insert this quote in the current textarea at caret.
+    if (get().showReplyModal) {
+      set((state) => ({
+        quoteInsertRequestId: state.quoteInsertRequestId + 1,
+        quoteInsertNumber: parentNumber ?? null,
+        quoteInsertSelectedText: quotedSelection || null,
+      }));
       return;
     }
 
-    // Get selected text
-    const text = document.getSelection()?.toString();
-    if (text) {
-      useSelectedTextStore.getState().setSelectedText(`>${text}\n`);
+    if (quotedSelection) {
+      useSelectedTextStore.getState().setSelectedText(`${quotedSelection}\n`);
     }
 
     // Handle mobile scrollY

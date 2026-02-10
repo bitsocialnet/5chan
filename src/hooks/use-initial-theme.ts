@@ -3,11 +3,12 @@ import { useLocation, useParams } from 'react-router-dom';
 import useThemeStore from '../stores/use-theme-store';
 import { useDirectories } from './use-directories';
 import { isAllView, isHomeView, isNotFoundView, isPendingPostView, isSubscriptionsView, isModView } from '../lib/utils/view-utils';
+import { getSubplebbitAddress } from '../lib/utils/route-utils';
 import { useAccountComment } from '@plebbit/plebbit-react-hooks';
 
 const useInitialTheme = (pendingPostSubplebbitAddress?: string) => {
   const location = useLocation();
-  const { communityAddress: paramsSubplebbitAddress, accountCommentIndex } = useParams<{ communityAddress: string; accountCommentIndex?: string }>();
+  const { boardIdentifier, accountCommentIndex } = useParams<{ boardIdentifier: string; accountCommentIndex?: string }>();
   const commentIndex = accountCommentIndex ? parseInt(accountCommentIndex) : undefined;
   const pendingPost = useAccountComment({ commentIndex });
   // Subscribe to the actual themes data, not just functions
@@ -21,13 +22,15 @@ const useInitialTheme = (pendingPostSubplebbitAddress?: string) => {
   const isInModView = isModView(location.pathname);
   const isInPendingPostView = isPendingPostView(location.pathname, params);
 
+  const paramsSubplebbitAddress = boardIdentifier ? getSubplebbitAddress(boardIdentifier, directories) : undefined;
+
   const initialTheme = useMemo(() => {
     let theme = 'yotsuba';
 
     if (isInPendingPostView) {
-      const communityAddress = pendingPostSubplebbitAddress || pendingPost?.communityAddress;
-      if (communityAddress) {
-        const community = directories.find((s) => s.address === communityAddress);
+      const subplebbitAddress = pendingPostSubplebbitAddress || pendingPost?.subplebbitAddress;
+      if (subplebbitAddress) {
+        const community = directories.find((s) => s.address === subplebbitAddress);
         if (community?.nsfw) {
           theme = themes.nsfw || 'yotsuba';
         } else {

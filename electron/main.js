@@ -319,7 +319,7 @@ const createMainWindow = () => {
 
 app.whenReady().then(() => {
   // Set app name and dock icon for development mode on macOS
-  if (process.platform === 'darwin') {
+  if (process.platform === 'darwin' && isDev) {
     app.setName('seedit');
     if (app.dock) {
       const iconPath = path.join(dirname, '..', isDev ? 'public' : 'build', 'icon.png');

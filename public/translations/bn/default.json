@@ -99,7 +99,6 @@
   "interface": "ইন্টারফেস",
   "invalid_url": "অবৈধ ইউআরএল",
   "image_search": "চিত্র অনুসন্ধান",
-  "copy_link": "লিংক অনুলিপি করুন",
   "hide_post": "পোস্ট লুকাও",
   "hide_thread": "থ্রেড লুকাও",
   "unhide_post": "পোস্ট প্রদর্শন করুন",
@@ -247,7 +246,7 @@
   "delete_avatar": "অবতার মুছুন",
   "updates": "আপডেট",
   "downloading_board": "বোর্ড ডাউনলোড করা হচ্ছে",
-  "subscriptions_subtitle": "আপনি {{count}}টি board-এ সাবস্ক্রাইব করেছেন",
+  "subscriptions_subtitle": "আপনি {{count}}টি board-এ সাবস্ক্রাইব করছেন",
   "all_boards": "সব বোর্ড",
   "nsfw_boards_only": "NSFW বোর্ড শুধুমাত্র",
   "worksafe_boards_only": "কাজের জন্য নিরাপদ বোর্ড শুধুমাত্র",
@@ -276,5 +275,7 @@
   "type": "Type",
   "yes": "Yes",
   "no": "No",
-  "pending_mod_approval": "Pending mod approval, not visible to users"
+  "pending_mod_approval": "মডারেটর অনুমোদনের জন্য অপেক্ষা করছে, ব্যবহারকারীদের কাছে দৃশ্যমান নয়",
+  "copy_user_id": "ইউজার আইডি কপি করুন",
+  "copy_direct_link": "সরাসরি লিংক অনুলিপি করুন"
 }

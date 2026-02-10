@@ -1,6 +1,6 @@
 {
   "name": "5chan",
-  "version": "0.6.2",
+  "version": "0.6.4",
   "description": "A bitsocial client with a 4chan UI",
   "type": "module",
   "author": "Bitsocial Labs",
@@ -114,11 +114,11 @@
     "cz-conventional-changelog": "3.3.0",
     "decompress": "4.2.1",
     "electron": "36.9.5",
-    "@electron-forge/cli": "7.6.0",
-    "@electron-forge/maker-dmg": "7.6.0",
-    "@electron-forge/maker-squirrel": "7.6.0",
-    "@electron-forge/maker-zip": "7.6.0",
-    "@electron-forge/plugin-auto-unpack-natives": "7.6.0",
+    "@electron-forge/cli": "7.8.0",
+    "@electron-forge/maker-dmg": "7.8.0",
+    "@electron-forge/maker-squirrel": "7.8.0",
+    "@electron-forge/maker-zip": "7.8.0",
+    "@electron-forge/plugin-auto-unpack-natives": "7.8.0",
     "@reforged/maker-appimage": "5.1.1",
     "husky": "4.3.8",
     "isomorphic-fetch": "3.0.0",
@@ -157,7 +157,7 @@
     "diff": "^8.0.3",
     "lodash": "4.17.23",
     "seroval": "1.4.1",
-    "tar": "7.5.4"
+    "tar": "6.2.1"
   },
   "main": "electron/main.js",
   "lint-staged": {

@@ -14,10 +14,12 @@ interface ReplyQuotePreviewProps {
   backlinkReply?: Comment;
   isQuotelinkReply?: boolean;
   quotelinkReply?: Comment;
+  isOP?: boolean;
 }
 
 const handleQuoteHover = (cid: string, onElementOutOfView: () => void) => {
   const targetElements = document.querySelectorAll(`[data-cid="${cid}"]`);
+  const isOpElement = (element: HTMLElement) => element.getAttribute('data-post-cid') === cid;
 
   const isInViewport = (element: HTMLElement) => {
     const bounding = element.getBoundingClientRect();
@@ -34,6 +36,13 @@ const handleQuoteHover = (cid: string, onElementOutOfView: () => void) => {
   targetElements.forEach((element) => {
     const htmlElement = element as HTMLElement;
     if (isInViewport(htmlElement)) {
+      // Never apply quote-hover highlight styles to OP cards.
+      if (isOpElement(htmlElement)) {
+        htmlElement.classList.remove('highlight', 'double-highlight');
+        anyInView = true;
+        return;
+      }
+
       const hasHighlight = Array.from(htmlElement.classList).some((className) => className.includes('highlight') && !className.includes('double-highlight'));
       if (hasHighlight) {
         htmlElement.classList.remove('highlight');
@@ -54,7 +63,7 @@ const handleQuoteHover = (cid: string, onElementOutOfView: () => void) => {
   }
 };
 
-const DesktopQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, isQuotelinkReply }: ReplyQuotePreviewProps) => {
+const DesktopQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, isQuotelinkReply, isOP }: ReplyQuotePreviewProps) => {
   const [hoveredCid, setHoveredCid] = useState<string | null>(null);
   const [outOfViewCid, setOutOfViewCid] = useState<string | null>(null);
   const placementRef = useRef<Placement>('right');
@@ -104,10 +113,6 @@ const DesktopQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, i
     if (cid && subplebbitAddress) {
       const boardPath = getBoardPath(subplebbitAddress, directories);
       navigate(`/${boardPath}/thread/${cid}`);
-      setTimeout(() => {
-        const element = document.querySelector(`[data-cid="${cid}"]`);
-        element?.scrollIntoView();
-      }, 100);
     }
   };
 
@@ -173,6 +178,7 @@ const DesktopQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, i
         onClick={(e) => handleClick(e, quotelinkReply?.cid, quotelinkReply?.subplebbitAddress)}
       >
         {`>>${quotelinkReply?.number ?? '?'}`}
+        {isOP && ' (OP)'}
         {quotelinkReply?.author?.address === account?.author?.address && ' (You)'}
       </Link>
       <br />
@@ -190,7 +196,7 @@ const DesktopQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, i
   return isBacklinkReply ? replyBacklink : isQuotelinkReply && replyQuotelink;
 };
 
-const MobileQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, isQuotelinkReply }: ReplyQuotePreviewProps) => {
+const MobileQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, isQuotelinkReply, isOP }: ReplyQuotePreviewProps) => {
   const [hoveredCid, setHoveredCid] = useState<string | null>(null);
   const [outOfViewCid, setOutOfViewCid] = useState<string | null>(null);
   const directories = useDirectories();
@@ -217,10 +223,6 @@ const MobileQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, is
     if (cid && subplebbitAddress) {
       const boardPath = getBoardPath(subplebbitAddress, directories);
       navigate(`/${boardPath}/thread/${cid}`);
-      setTimeout(() => {
-        const element = document.querySelector(`[data-cid="${cid}"]`);
-        element?.scrollIntoView();
-      }, 100);
     }
   };
 
@@ -286,6 +288,7 @@ const MobileQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, is
         onMouseLeave={() => handleMouseLeave(quotelinkReply?.cid)}
       >
         {`>>${quotelinkReply?.number ?? '?'}`}
+        {isOP && ' (OP)'}
         {quotelinkReply?.author?.address === account?.author?.address && ' (You)'}
       </span>
       {quotelinkReply?.number &&
@@ -317,13 +320,19 @@ const MobileQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, is
   return isBacklinkReply ? replyBacklink : isQuotelinkReply && replyQuotelink;
 };
 
-const ReplyQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, isQuotelinkReply }: ReplyQuotePreviewProps) => {
+const ReplyQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, isQuotelinkReply, isOP }: ReplyQuotePreviewProps) => {
   const isMobile = useIsMobile();
 
   return isMobile ? (
-    <MobileQuotePreview backlinkReply={backlinkReply} quotelinkReply={quotelinkReply} isBacklinkReply={isBacklinkReply} isQuotelinkReply={isQuotelinkReply} />
+    <MobileQuotePreview backlinkReply={backlinkReply} quotelinkReply={quotelinkReply} isBacklinkReply={isBacklinkReply} isQuotelinkReply={isQuotelinkReply} isOP={isOP} />
   ) : (
-    <DesktopQuotePreview backlinkReply={backlinkReply} quotelinkReply={quotelinkReply} isBacklinkReply={isBacklinkReply} isQuotelinkReply={isQuotelinkReply} />
+    <DesktopQuotePreview
+      backlinkReply={backlinkReply}
+      quotelinkReply={quotelinkReply}
+      isBacklinkReply={isBacklinkReply}
+      isQuotelinkReply={isQuotelinkReply}
+      isOP={isOP}
+    />
   );
 };
 

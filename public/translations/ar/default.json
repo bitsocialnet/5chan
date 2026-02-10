@@ -99,7 +99,6 @@
   "interface": "واجهة",
   "invalid_url": "رابط غير صالح",
   "image_search": "البحث عن صورة",
-  "copy_link": "نسخ الرابط",
   "hide_post": "إخفاء المنشور",
   "hide_thread": "إخفاء الموضوع",
   "unhide_post": "إظهار المنشور",
@@ -247,7 +246,7 @@
   "delete_avatar": "حذف الصورة الرمزية",
   "updates": "التحديثات",
   "downloading_board": "جارٍ تنزيل المنتدى",
-  "subscriptions_subtitle": "لقد اشتركت في {{count}} لوحة",
+  "subscriptions_subtitle": "أنت مشترك في {{count}} لوحة",
   "all_boards": "جميع اللوحات",
   "nsfw_boards_only": "لوحات NSFW فقط",
   "worksafe_boards_only": "لوحات آمنة للعمل فقط",
@@ -276,5 +275,7 @@
   "type": "Type",
   "yes": "Yes",
   "no": "No",
-  "pending_mod_approval": "Pending mod approval, not visible to users"
+  "pending_mod_approval": "في انتظار موافقة المشرف، غير مرئي للمستخدمين",
+  "copy_user_id": "نسخ معرف المستخدم",
+  "copy_direct_link": "نسخ الرابط المباشر"
 }

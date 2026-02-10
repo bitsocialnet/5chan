@@ -170,16 +170,16 @@ const App = () => (
           <Route path='/mod/catalog/:timeFilterName?' element={null} />
           <Route path='/mod/catalog/:timeFilterName?/settings' element={null} />
 
-          <Route path='/mod/queue' element={<ModQueueView />} />
-          <Route path='/mod/queue/settings' element={<ModQueueView />} />
+          <Route path='/mod/modqueue' element={<ModQueueView />} />
+          <Route path='/mod/modqueue/settings' element={<ModQueueView />} />
 
           <Route path='/:boardIdentifier' element={null} />
           <Route path='/:boardIdentifier/settings' element={null} />
           <Route path='/:boardIdentifier/catalog' element={null} />
           <Route path='/:boardIdentifier/catalog/settings' element={null} />
 
-          <Route path='/:boardIdentifier/queue' element={<ModQueueView />} />
-          <Route path='/:boardIdentifier/queue/settings' element={<ModQueueView />} />
+          <Route path='/:boardIdentifier/modqueue' element={<ModQueueView />} />
+          <Route path='/:boardIdentifier/modqueue/settings' element={<ModQueueView />} />
 
           <Route path='/:boardIdentifier/thread/:commentCid' element={<Post />} />
           <Route path='/:boardIdentifier/thread/:commentCid/settings' element={<Post />} />

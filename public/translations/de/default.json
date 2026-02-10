@@ -99,7 +99,6 @@
   "interface": "Schnittstelle",
   "invalid_url": "Ungültige URL",
   "image_search": "Bildersuche",
-  "copy_link": "Link kopieren",
   "hide_post": "Beitrag ausblenden",
   "hide_thread": "Thread ausblenden",
   "unhide_post": "Beitrag anzeigen",
@@ -247,7 +246,7 @@
   "delete_avatar": "Avatar löschen",
   "updates": "Aktualisierungen",
   "downloading_board": "Forum wird heruntergeladen",
-  "subscriptions_subtitle": "Sie haben {{count}} Board abonniert",
+  "subscriptions_subtitle": "Sie sind {{count}} Board abonniert",
   "all_boards": "Alle Boards",
   "nsfw_boards_only": "Nur NSFW-Boards",
   "worksafe_boards_only": "Nur arbeitsplatzsichere Boards",
@@ -276,5 +275,7 @@
   "type": "Typ",
   "yes": "Ja",
   "no": "Nein",
-  "pending_mod_approval": "Ausstehende Moderatorgenehmigung, für Benutzer nicht sichtbar"
+  "pending_mod_approval": "Ausstehende Moderatorgenehmigung, für Benutzer nicht sichtbar",
+  "copy_user_id": "Benutzer-ID kopieren",
+  "copy_direct_link": "Direktlink kopieren"
 }

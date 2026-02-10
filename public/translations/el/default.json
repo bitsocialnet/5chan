@@ -99,7 +99,6 @@
   "interface": "διεπαφή",
   "invalid_url": "Μη έγκυρη διεύθυνση URL",
   "image_search": "αναζήτηση εικόνων",
-  "copy_link": "αντιγραφή συνδέσμου",
   "hide_post": "απόκρυψη ανάρτησης",
   "hide_thread": "απόκρυψη νήματος",
   "unhide_post": "εμφάνιση ανάρτησης",
@@ -247,7 +246,7 @@
   "delete_avatar": "Διαγραφή avatar",
   "updates": "Ενημερώσεις",
   "downloading_board": "λήψη φόρουμ",
-  "subscriptions_subtitle": "Έχετε εγγραφεί σε {{count}} board",
+  "subscriptions_subtitle": "Είστε εγγεγραμμένοι σε {{count}} boards",
   "all_boards": "Όλες οι σανίδες",
   "nsfw_boards_only": "Μόνο σανίδες NSFW",
   "worksafe_boards_only": "Μόνο ασφαλείς σανίδες",
@@ -276,5 +275,7 @@
   "type": "Type",
   "yes": "Yes",
   "no": "No",
-  "pending_mod_approval": "Pending mod approval, not visible to users"
+  "pending_mod_approval": "Σε αναμονή έγκρισης διαχειριστή, δεν είναι ορατό στους χρήστες",
+  "copy_user_id": "αντιγραφή ID χρήστη",
+  "copy_direct_link": "αντιγραφή άμεσου συνδέσμου"
 }

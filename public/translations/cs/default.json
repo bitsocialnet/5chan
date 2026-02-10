@@ -99,7 +99,6 @@
   "interface": "rozhraní",
   "invalid_url": "Neplatná adresa URL",
   "image_search": "hledání obrázku",
-  "copy_link": "kopírovat odkaz",
   "hide_post": "skrýt příspěvek",
   "hide_thread": "skrýt vlákno",
   "unhide_post": "zobrazit příspěvek",
@@ -247,7 +246,7 @@
   "delete_avatar": "Smazat avatar",
   "updates": "Aktualizace",
   "downloading_board": "stahování fóra",
-  "subscriptions_subtitle": "Přihlásili jste se k {{count}} boardu",
+  "subscriptions_subtitle": "Jste přihlášeni k {{count}} boards",
   "all_boards": "Všechny desky",
   "nsfw_boards_only": "Pouze NSFW desky",
   "worksafe_boards_only": "Pouze bezpečné desky",
@@ -276,5 +275,7 @@
   "type": "Type",
   "yes": "Yes",
   "no": "No",
-  "pending_mod_approval": "Pending mod approval, not visible to users"
+  "pending_mod_approval": "Čekání na schválení moderatorem, není viditelné uživatelům",
+  "copy_user_id": "kopírovat ID uživatele",
+  "copy_direct_link": "kopírovat přímý odkaz"
 }

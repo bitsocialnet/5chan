@@ -99,7 +99,6 @@
   "interface": "интерфейс",
   "invalid_url": "Недействительный URL",
   "image_search": "поиск изображений",
-  "copy_link": "копировать ссылку",
   "hide_post": "скрыть пост",
   "hide_thread": "скрыть ветку",
   "unhide_post": "показать пост",
@@ -247,7 +246,7 @@
   "delete_avatar": "Удалить аватар",
   "updates": "Обновления",
   "downloading_board": "загрузка форума",
-  "subscriptions_subtitle": "Вы подписались на {{count}} board",
+  "subscriptions_subtitle": "Вы подписаны на {{count}} boards",
   "all_boards": "Все доски",
   "nsfw_boards_only": "Только доски NSFW",
   "worksafe_boards_only": "Только безопасные для работы доски",
@@ -276,5 +275,7 @@
   "type": "Тип",
   "yes": "Да",
   "no": "Нет",
-  "pending_mod_approval": "Ожидает одобрения модератора, не видно пользователям"
+  "pending_mod_approval": "Ожидает одобрения модератора, не видно пользователям",
+  "copy_user_id": "копировать ID пользователя",
+  "copy_direct_link": "копировать прямую ссылку"
 }

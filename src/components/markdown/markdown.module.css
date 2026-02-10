@@ -8,6 +8,16 @@
   text-decoration: var(--post-content-link-text-decoration-hover);
 }
 
+.markdown .inlineQuoteLink a {
+  color: var(--post-quotelink-text-color);
+  text-decoration: var(--post-quotelink-text-decoration);
+}
+
+.markdown .inlineQuoteLink a:hover {
+  color: var(--post-quotelink-text-color-hover);
+  text-decoration: var(--post-quotelink-text-decoration-hover);
+}
+
 .hrWrapper {
   padding: 0.5em 0;
 }

@@ -99,7 +99,6 @@
   "interface": "interface",
   "invalid_url": "Hindi wastong URL",
   "image_search": "paghahanap ng larawan",
-  "copy_link": "kopyahin ang link",
   "hide_post": "itago ang post",
   "hide_thread": "itago ang thread",
   "unhide_post": "ipakita ang post",
@@ -247,7 +246,7 @@
   "delete_avatar": "Tanggalin ang avatar",
   "updates": "Mga Update",
   "downloading_board": "nagda-download ng board",
-  "subscriptions_subtitle": "Nag-subscribe ka sa {{count}} na board",
+  "subscriptions_subtitle": "Naka-subscribe ka sa {{count}} na boards",
   "all_boards": "Lahat ng boards",
   "nsfw_boards_only": "NSFW boards lang",
   "worksafe_boards_only": "Worksafe boards lang",
@@ -276,5 +275,7 @@
   "type": "Type",
   "yes": "Yes",
   "no": "No",
-  "pending_mod_approval": "Pending mod approval, not visible to users"
+  "pending_mod_approval": "Naghihintay ng pag-apruba ng moderator, hindi nakikita ng mga gumagamit",
+  "copy_user_id": "kopyahin ang user ID",
+  "copy_direct_link": "kopyahin ang direct link"
 }

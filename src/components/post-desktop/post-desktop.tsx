@@ -8,8 +8,9 @@ import styles from '../../views/post/post.module.css';
 import { CommentMediaInfo, getDisplayMediaInfoType, getHasThumbnail, getMediaDimensions } from '../../lib/utils/media-utils';
 import { hashStringToColor, getTextColorForBackground } from '../../lib/utils/post-utils';
 import { getFormattedDate, getFormattedTimeAgo } from '../../lib/utils/time-utils';
-import { isValidURL } from '../../lib/utils/url-utils';
+import { isValidURL, QUOTE_NUMBER_REGEX } from '../../lib/utils/url-utils';
 import { isAllView, isModQueueView, isPendingPostView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
+import { formatUserIDForDisplay } from '../../lib/utils/string-utils';
 import useModQueueStore from '../../stores/use-mod-queue-store';
 import { useDirectories } from '../../hooks/use-directories';
 import { getBoardPath } from '../../lib/utils/route-utils';
@@ -21,6 +22,7 @@ import useFetchGifFirstFrame from '../../hooks/use-fetch-gif-first-frame';
 import useHide from '../../hooks/use-hide';
 import useStateString from '../../hooks/use-state-string';
 import useScrollToReply from '../../hooks/use-scroll-to-reply';
+import { useSubplebbitField } from '../../hooks/use-stable-subplebbit';
 import CommentContent from '../comment-content';
 import CommentMedia from '../comment-media';
 import EditMenu from '../edit-menu/edit-menu';
@@ -36,6 +38,7 @@ import { shouldShowSnow } from '../../lib/snow';
 import useReplyModalStore from '../../stores/use-reply-modal-store';
 import { selectPostMenuProps } from '../../lib/utils/post-menu-props';
 import useChallengesStore from '../../stores/use-challenges-store';
+import usePostNumberStore from '../../stores/use-post-number-store';
 import { alertChallengeVerificationFailed } from '../../lib/utils/challenge-utils';
 import { usePublishCommentModeration } from '@plebbit/plebbit-react-hooks';
 
@@ -72,6 +75,7 @@ const PostInfo = ({
   isPublishing,
   onApprove,
   onReject,
+  quotedByMap,
 }: PostProps) => {
   const { t } = useTranslation();
   const { author, cid, deleted, locked, pinned, parentCid, postCid, reason, removed, state, subplebbitAddress, timestamp } = post || {};
@@ -195,12 +199,15 @@ const PostInfo = ({
   const alertThresholdSeconds = getAlertThresholdSeconds();
   const isOverThreshold = isAwaitingApproval && timeWaiting > alertThresholdSeconds;
 
-  const userID = address && Plebbit.getShortAddress({ address }); // should not be shortened to less than 12 characters, because users can create unlimited addresses/IDs before authenticating or passing challenges, so if the ID is short enough they can spoof it to troll users with the same ID
+  const userID = address && Plebbit.getShortAddress({ address }); // shortened to 8 chars for display; users can verify the full user ID via "Copy user ID" in the post menu to guard against spoofing
   const userIDBackgroundColor = hashStringToColor(userID);
   const userIDTextColor = getTextColorForBackground(userIDBackgroundColor);
 
   const handleUserAddressClick = useAuthorAddressClick();
   const numberOfPostsByAuthor = document.querySelectorAll(`[data-author-address="${shortAddress}"][data-post-cid="${postCid}"]`).length;
+
+  const pseudonymityMode = useSubplebbitField(subplebbitAddress, (sub) => sub?.features?.pseudonymityMode);
+  const showUserID = pseudonymityMode !== 'per-reply';
 
   const { hidden } = useHide(post);
 
@@ -265,28 +272,32 @@ const PostInfo = ({
               <img src={avatarImageUrl} alt='' />
             </span>
           ) : null}
-          (ID:{' '}
-          {deleted ? (
-            t('deleted')
-          ) : removed ? (
-            t('removed')
-          ) : (
-            <Tooltip
-              children={
-                <span
-                  title={t('highlight_posts')}
-                  className={styles.userAddress}
-                  onClick={() => handleUserAddressClick(userID, postCid)}
-                  style={{ backgroundColor: userIDBackgroundColor, color: userIDTextColor }}
-                >
-                  {userID}
-                </span>
-              }
-              content={`${numberOfPostsByAuthor === 1 ? t('1_post_by_this_id') : t('x_posts_by_this_id', { number: numberOfPostsByAuthor })}`}
-              showTooltip={isInPostPageView || showOmittedReplies[postCid] || (postReplyCount < 6 && !pinned)}
-            />
+          {showUserID && (
+            <>
+              (ID:{' '}
+              {deleted ? (
+                t('deleted')
+              ) : removed ? (
+                t('removed')
+              ) : (
+                <Tooltip
+                  children={
+                    <span
+                      title={t('highlight_posts')}
+                      className={styles.userAddress}
+                      onClick={() => handleUserAddressClick(userID, postCid)}
+                      style={{ backgroundColor: userIDBackgroundColor, color: userIDTextColor }}
+                    >
+                      {formatUserIDForDisplay(userID)}
+                    </span>
+                  }
+                  content={`${numberOfPostsByAuthor === 1 ? t('1_post_by_this_id') : t('x_posts_by_this_id', { number: numberOfPostsByAuthor })}`}
+                  showTooltip={isInPostPageView || showOmittedReplies[postCid] || (postReplyCount < 6 && !pinned)}
+                />
+              )}
+              ){' '}
+            </>
           )}
-          ){' '}
         </span>
         <span className={styles.dateTime}>
           {isInModQueueView && isOverThreshold ? (
@@ -417,6 +428,16 @@ const PostInfo = ({
               reply?.cid &&
               !(reply?.deleted || reply?.removed) && <ReplyQuotePreview key={index} isBacklinkReply={true} backlinkReply={reply} />,
           )}
+        {cid &&
+          parentCid &&
+          quotedByMap
+            ?.get(cid)
+            ?.map(
+              (reply: Comment, index: number) =>
+                reply?.parentCid !== cid &&
+                reply?.cid &&
+                !(reply?.deleted || reply?.removed) && <ReplyQuotePreview key={`qb-${index}`} isBacklinkReply={true} backlinkReply={reply} />,
+            )}
       </span>
     </div>
   );
@@ -519,7 +540,7 @@ const PostMedia = ({
   );
 };
 
-const Reply = ({ postReplyCount, reply, roles, threadNumber }: PostProps) => {
+const Reply = ({ postReplyCount, reply, roles, threadNumber, quotedByMap }: PostProps) => {
   let post = reply;
   // handle pending mod or author edit
   const { editedComment } = useEditedComment({ comment: reply });
@@ -547,7 +568,7 @@ const Reply = ({ postReplyCount, reply, roles, threadNumber }: PostProps) => {
     <div className={styles.replyDesktop}>
       <div className={styles.sideArrows}>{'>>'}</div>
       <div className={`${styles.reply} ${isRouteLinkToReply && styles.highlight}`} data-cid={cid} data-author-address={author?.shortAddress} data-post-cid={postCid}>
-        <PostInfo post={post} postReplyCount={postReplyCount} roles={roles} isHidden={hidden} threadNumber={threadNumber} />
+        <PostInfo post={post} postReplyCount={postReplyCount} roles={roles} isHidden={hidden} threadNumber={threadNumber} quotedByMap={quotedByMap} />
         {link && !hidden && !(deleted || removed) && isValidURL(link) && (
           <PostMedia
             commentMediaInfo={commentMediaInfo}
@@ -598,6 +619,21 @@ const PostDesktop = ({
   const isHidden = hidden && !isInPostPageView;
 
   const { replies, hasMore, loadMore } = useReplies({ comment: post, flat: true, accountComments: { newerThan: Infinity } });
+  const registerComments = usePostNumberStore((s) => s.registerComments);
+  const numberToCid = usePostNumberStore((s) => s.numberToCid);
+  const prevCidsRef = useRef<string>('');
+  useEffect(() => {
+    const all = post ? [post, ...(replies || [])] : replies || [];
+    if (!all.length) return;
+    const cidsKey = all
+      .map((c) => c?.cid)
+      .filter(Boolean)
+      .sort()
+      .join(',');
+    if (cidsKey === prevCidsRef.current) return;
+    prevCidsRef.current = cidsKey;
+    registerComments(all);
+  }, [post, replies, registerComments]);
   const visiblelinksCount = useCountLinksInReplies(post, 5);
   const totalLinksCount = useCountLinksInReplies(post);
   const replyCount = replies?.length;
@@ -613,6 +649,37 @@ const PostDesktop = ({
 
   // Filter out deleted replies with no children for both virtuoso and non-virtuoso rendering
   const filteredReplies = useMemo(() => (replies || []).filter((reply) => !(reply.deleted && (reply.replyCount === 0 || !reply.replyCount))), [replies]);
+
+  // Compute quotedByMap: map each quoted CID to array of replies that quote it
+  const quotedByMap = useMemo(() => {
+    const map = new Map<string, Comment[]>();
+    for (const reply of filteredReplies) {
+      const cidSet = new Set<string>();
+
+      if (reply.quotedCids?.length) {
+        for (const quotedCid of reply.quotedCids) {
+          cidSet.add(quotedCid);
+        }
+      }
+
+      if (reply.content) {
+        for (const match of reply.content.matchAll(QUOTE_NUMBER_REGEX)) {
+          const postNumber = parseInt(match[1], 10);
+          const quotedCid = numberToCid[postNumber];
+          if (quotedCid) {
+            cidSet.add(quotedCid);
+          }
+        }
+      }
+
+      for (const quotedCid of cidSet) {
+        const arr = map.get(quotedCid);
+        if (arr) arr.push(reply);
+        else map.set(quotedCid, [reply]);
+      }
+    }
+    return map;
+  }, [filteredReplies, numberToCid]);
 
   // Virtuoso scroll position management for infinite replies
   const virtuosoRef = useRef<VirtuosoHandle | null>(null);
@@ -739,7 +806,7 @@ const PostDesktop = ({
             data={filteredReplies}
             itemContent={(index, reply) => (
               <div className={styles.replyContainer}>
-                <Reply reply={reply} roles={roles} postReplyCount={replyCount} threadNumber={post?.number} />
+                <Reply reply={reply} roles={roles} postReplyCount={replyCount} threadNumber={post?.number} quotedByMap={quotedByMap} />
               </div>
             )}
             useWindowScroll={true}
@@ -758,7 +825,7 @@ const PostDesktop = ({
           !hasMore &&
           filteredReplies.map((reply, index) => (
             <div key={index} className={styles.replyContainer}>
-              <Reply reply={reply} roles={roles} postReplyCount={replyCount} threadNumber={post?.number} />
+              <Reply reply={reply} roles={roles} postReplyCount={replyCount} threadNumber={post?.number} quotedByMap={quotedByMap} />
             </div>
           ))}
         {/* Non-virtualized rendering for board view (last 5 replies or show omitted) */}
@@ -770,7 +837,7 @@ const PostDesktop = ({
           showReplies &&
           (showOmittedReplies[cid] ? filteredReplies : filteredReplies.slice(-5)).map((reply, index) => (
             <div key={index} className={styles.replyContainer}>
-              <Reply reply={reply} roles={roles} postReplyCount={replyCount} threadNumber={post?.number} />
+              <Reply reply={reply} roles={roles} postReplyCount={replyCount} threadNumber={post?.number} quotedByMap={quotedByMap} />
             </div>
           ))}
       </div>

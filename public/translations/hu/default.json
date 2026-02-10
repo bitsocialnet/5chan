@@ -99,7 +99,6 @@
   "interface": "felület",
   "invalid_url": "Érvénytelen URL-cím",
   "image_search": "képkeresés",
-  "copy_link": "link másolása",
   "hide_post": "bejegyzés elrejtése",
   "hide_thread": "szál elrejtése",
   "unhide_post": "bejegyzés megjelenítése",
@@ -247,7 +246,7 @@
   "delete_avatar": "Avatar törlése",
   "updates": "Frissítések",
   "downloading_board": "fórum letöltése",
-  "subscriptions_subtitle": "Feliratkoztál {{count}} boardra",
+  "subscriptions_subtitle": "Fel vagy iratkozva {{count}} boardra",
   "all_boards": "Minden tábla",
   "nsfw_boards_only": "Csak NSFW táblák",
   "worksafe_boards_only": "Csak munkavédelmi táblák",
@@ -276,5 +275,7 @@
   "type": "Type",
   "yes": "Yes",
   "no": "No",
-  "pending_mod_approval": "Pending mod approval, not visible to users"
+  "pending_mod_approval": "Moderátor jóváhagyása alatt áll, a felhasználók számára nem látható",
+  "copy_user_id": "felhasználói ID másolása",
+  "copy_direct_link": "közvetlen link másolása"
 }
