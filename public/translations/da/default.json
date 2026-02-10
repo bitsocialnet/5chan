@@ -275,7 +275,7 @@
   "type": "Type",
   "yes": "Yes",
   "no": "No",
-  "pending_mod_approval": "Pending mod approval, not visible to users",
+  "pending_mod_approval": "Afventer moderatorgodkendelse, ikke synlig for brugere",
   "copy_user_id": "kopier bruger-ID",
   "copy_direct_link": "kopier direkte link"
 }

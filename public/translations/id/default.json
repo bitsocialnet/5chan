@@ -275,7 +275,7 @@
   "type": "Type",
   "yes": "Yes",
   "no": "No",
-  "pending_mod_approval": "Pending mod approval, not visible to users",
+  "pending_mod_approval": "Menunggu persetujuan moderator, tidak terlihat oleh pengguna",
   "copy_user_id": "salin ID pengguna",
   "copy_direct_link": "salin tautan langsung"
 }

@@ -275,7 +275,7 @@
   "type": "Type",
   "yes": "Yes",
   "no": "No",
-  "pending_mod_approval": "Pending mod approval, not visible to users",
+  "pending_mod_approval": "মডারেটর অনুমোদনের জন্য অপেক্ষা করছে, ব্যবহারকারীদের কাছে দৃশ্যমান নয়",
   "copy_user_id": "ইউজার আইডি কপি করুন",
   "copy_direct_link": "সরাসরি লিংক অনুলিপি করুন"
 }

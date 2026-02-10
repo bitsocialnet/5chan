@@ -275,7 +275,7 @@
   "type": "Type",
   "yes": "Yes",
   "no": "No",
-  "pending_mod_approval": "Pending mod approval, not visible to users",
+  "pending_mod_approval": "Chờ duyệt của người điều hành, không hiển thị cho người dùng",
   "copy_user_id": "sao chép ID người dùng",
   "copy_direct_link": "sao chép liên kết trực tiếp"
 }

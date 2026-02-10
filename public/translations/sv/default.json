@@ -275,7 +275,7 @@
   "type": "Type",
   "yes": "Yes",
   "no": "No",
-  "pending_mod_approval": "Pending mod approval, not visible to users",
+  "pending_mod_approval": "Väntar på moderatorgodkännande, inte synligt för användare",
   "copy_user_id": "kopiera användar-ID",
   "copy_direct_link": "kopiera direktlänk"
 }

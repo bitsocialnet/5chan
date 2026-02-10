@@ -275,7 +275,7 @@
   "type": "Type",
   "yes": "Yes",
   "no": "No",
-  "pending_mod_approval": "Pending mod approval, not visible to users",
+  "pending_mod_approval": "ממתין לאישור מנהל, לא ניתן לראות למשתמשים",
   "copy_user_id": "העתק מזהה משתמש",
   "copy_direct_link": "העתק קישור ישיר"
 }

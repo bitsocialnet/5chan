@@ -275,7 +275,7 @@
   "type": "Type",
   "yes": "Yes",
   "no": "No",
-  "pending_mod_approval": "Pending mod approval, not visible to users",
+  "pending_mod_approval": "Moderátor jóváhagyása alatt áll, a felhasználók számára nem látható",
   "copy_user_id": "felhasználói ID másolása",
   "copy_direct_link": "közvetlen link másolása"
 }

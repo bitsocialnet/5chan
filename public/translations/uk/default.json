@@ -275,7 +275,7 @@
   "type": "Type",
   "yes": "Yes",
   "no": "No",
-  "pending_mod_approval": "Pending mod approval, not visible to users",
+  "pending_mod_approval": "Очікує затвердження модератора, не видно користувачам",
   "copy_user_id": "копіювати ID користувача",
   "copy_direct_link": "копіювати пряме посилання"
 }

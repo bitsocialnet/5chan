@@ -275,7 +275,7 @@
   "type": "Type",
   "yes": "Yes",
   "no": "No",
-  "pending_mod_approval": "Pending mod approval, not visible to users",
+  "pending_mod_approval": "รอการอนุมัติจากผู้ดูแล ไม่มองเห็นสำหรับผู้ใช้",
   "copy_user_id": "คัดลอก ID ผู้ใช้",
   "copy_direct_link": "คัดลอกลิงก์โดยตรง"
 }

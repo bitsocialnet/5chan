@@ -275,7 +275,7 @@
   "type": "Type",
   "yes": "Yes",
   "no": "No",
-  "pending_mod_approval": "Pending mod approval, not visible to users",
+  "pending_mod_approval": "Σε αναμονή έγκρισης διαχειριστή, δεν είναι ορατό στους χρήστες",
   "copy_user_id": "αντιγραφή ID χρήστη",
   "copy_direct_link": "αντιγραφή άμεσου συνδέσμου"
 }
