@@ -43,13 +43,24 @@ jobs:
         run: yarn electron:build:linux:x64
       - name: List out directory
         run: ls -laR out/make
+      - name: Create static HTML release archive
+        run: |
+          VERSION=$(node -e "console.log(require('./package.json').version)")
+          HTML_ARCHIVE_DIR="5chan-html-$VERSION"
+          mkdir -p dist
+          rm -rf "$HTML_ARCHIVE_DIR"
+          cp -R build "$HTML_ARCHIVE_DIR"
+          zip -r "dist/${HTML_ARCHIVE_DIR}.zip" "$HTML_ARCHIVE_DIR"
+          rm -rf "$HTML_ARCHIVE_DIR"
+      - name: List dist directory
+        run: ls -la dist
 
       # publish version release
       - name: Generate release body
         run: node scripts/release-body > release-body.txt
       - uses: ncipollo/release-action@v1
         with:
-          artifacts: 'out/make/AppImage/**/*.AppImage'
+          artifacts: 'out/make/AppImage/**/*.AppImage,dist/5chan-html*.zip'
           token: ${{ secrets.GITHUB_TOKEN }}
           replacesArtifacts: true
           omitBody: true
