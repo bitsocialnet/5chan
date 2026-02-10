@@ -38,6 +38,7 @@ import { shouldShowSnow } from '../../lib/snow';
 import useReplyModalStore from '../../stores/use-reply-modal-store';
 import { selectPostMenuProps } from '../../lib/utils/post-menu-props';
 import useChallengesStore from '../../stores/use-challenges-store';
+import usePostNumberStore from '../../stores/use-post-number-store';
 import { alertChallengeVerificationFailed } from '../../lib/utils/challenge-utils';
 import { usePublishCommentModeration } from '@plebbit/plebbit-react-hooks';
 
@@ -618,6 +619,20 @@ const PostDesktop = ({
   const isHidden = hidden && !isInPostPageView;
 
   const { replies, hasMore, loadMore } = useReplies({ comment: post, flat: true, accountComments: { newerThan: Infinity } });
+  const registerComments = usePostNumberStore((s) => s.registerComments);
+  const prevCidsRef = useRef<string>('');
+  useEffect(() => {
+    const all = post ? [post, ...(replies || [])] : replies || [];
+    if (!all.length) return;
+    const cidsKey = all
+      .map((c) => c?.cid)
+      .filter(Boolean)
+      .sort()
+      .join(',');
+    if (cidsKey === prevCidsRef.current) return;
+    prevCidsRef.current = cidsKey;
+    registerComments(all);
+  }, [post, replies, registerComments]);
   const visiblelinksCount = useCountLinksInReplies(post, 5);
   const totalLinksCount = useCountLinksInReplies(post);
   const replyCount = replies?.length;

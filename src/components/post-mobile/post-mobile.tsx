@@ -33,6 +33,7 @@ import _ from 'lodash';
 import useReplyModalStore from '../../stores/use-reply-modal-store';
 import { selectPostMenuProps } from '../../lib/utils/post-menu-props';
 import useChallengesStore from '../../stores/use-challenges-store';
+import usePostNumberStore from '../../stores/use-post-number-store';
 import { alertChallengeVerificationFailed } from '../../lib/utils/challenge-utils';
 
 const { addChallenge } = useChallengesStore.getState();
@@ -463,6 +464,20 @@ const PostMobile = ({
   const boardPath = subplebbitAddress ? getBoardPath(subplebbitAddress, directories) : undefined;
   const linksCount = useCountLinksInReplies(post);
   const { replies, hasMore, loadMore } = useReplies({ comment: post, accountComments: { newerThan: Infinity } });
+  const registerComments = usePostNumberStore((s) => s.registerComments);
+  const prevCidsRef = useRef<string>('');
+  useEffect(() => {
+    const all = post ? [post, ...(replies || [])] : replies || [];
+    if (!all.length) return;
+    const cidsKey = all
+      .map((c) => c?.cid)
+      .filter(Boolean)
+      .sort()
+      .join(',');
+    if (cidsKey === prevCidsRef.current) return;
+    prevCidsRef.current = cidsKey;
+    registerComments(all);
+  }, [post, replies, registerComments]);
 
   const isInPostPageView = isPostPageView(location.pathname, params);
   const { hidden, unhide } = useHide({ cid });

@@ -180,14 +180,22 @@ export const isValidCrossboardPattern = (pattern: string): boolean => {
   return isValidDomain(pathPart) || isValidIPNSKey(pathPart);
 };
 
+// Transform >>{number} post number patterns to markdown links with special anchor
+const preprocessPostNumberPatterns = (content: string): string => {
+  // Match >> followed by digits, avoid overlap with greentext (>>>), cross-board (>>>/), URLs, CID-like patterns
+  const pattern = /(?<![>/\w])>>(\d+)(?![\d/])/g;
+  return content.replace(pattern, (_, num) => `[>>${num}](#q-${num})`);
+};
+
 // Preprocess content to convert plain text 5chan cross-board patterns to markdown links
 export const preprocess5chanPatterns = (content: string): string => {
+  const withPostNumbers = preprocessPostNumberPatterns(content);
   // Pattern to match ">>>/something" or ">>>/something/cid"
   // Negative lookbehind prevents matching patterns that are already part of URLs
   // Matches: >>>/directory/, >>>/directory/cid (46 chars), >>>/address, >>>/address/cid (46 chars)
   const pattern = /(?<!https?:\/\/[^\s]*)>>>\/([a-zA-Z0-9]{1,10}\/(?:[a-zA-Z0-9]{46})?|[a-zA-Z0-9\-.]+(?:\/[a-zA-Z0-9]{46})?)[.,:;!?]*/g;
 
-  return content.replace(pattern, (match, capturedPath) => {
+  return withPostNumbers.replace(pattern, (match, capturedPath) => {
     // Remove any trailing punctuation from the captured path
     const cleanPath = capturedPath.replace(/[.,:;!?]+$/, '');
     const fullPattern = `>>>/${cleanPath}`;
