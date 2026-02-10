@@ -19,6 +19,7 @@ interface ReplyQuotePreviewProps {
 
 const handleQuoteHover = (cid: string, onElementOutOfView: () => void) => {
   const targetElements = document.querySelectorAll(`[data-cid="${cid}"]`);
+  const isOpElement = (element: HTMLElement) => element.getAttribute('data-post-cid') === cid;
 
   const isInViewport = (element: HTMLElement) => {
     const bounding = element.getBoundingClientRect();
@@ -35,6 +36,13 @@ const handleQuoteHover = (cid: string, onElementOutOfView: () => void) => {
   targetElements.forEach((element) => {
     const htmlElement = element as HTMLElement;
     if (isInViewport(htmlElement)) {
+      // Never apply quote-hover highlight styles to OP cards.
+      if (isOpElement(htmlElement)) {
+        htmlElement.classList.remove('highlight', 'double-highlight');
+        anyInView = true;
+        return;
+      }
+
       const hasHighlight = Array.from(htmlElement.classList).some((className) => className.includes('highlight') && !className.includes('double-highlight'));
       if (hasHighlight) {
         htmlElement.classList.remove('highlight');
