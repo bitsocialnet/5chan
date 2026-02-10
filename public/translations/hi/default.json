@@ -99,7 +99,6 @@
   "interface": "इंटरफेस",
   "invalid_url": "अमान्य URL",
   "image_search": "चित्र खोज",
-  "copy_link": "लिंक कॉपी करें",
   "hide_post": "पोस्ट छुपाएं",
   "hide_thread": "धागा छुपाएं",
   "unhide_post": "पोस्ट प्रदर्शित करें",
@@ -276,5 +275,7 @@
   "type": "Type",
   "yes": "Yes",
   "no": "No",
-  "pending_mod_approval": "Pending mod approval, not visible to users"
+  "pending_mod_approval": "Pending mod approval, not visible to users",
+  "copy_user_id": "यूज़र ID कॉपी करें",
+  "copy_direct_link": "डायरेक्ट लिंक कॉपी करें"
 }

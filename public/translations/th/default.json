@@ -99,7 +99,6 @@
   "interface": "อินเทอร์เฟซ",
   "invalid_url": "URL ไม่ถูกต้อง",
   "image_search": "ค้นหารูปภาพ",
-  "copy_link": "คัดลอกลิงก์",
   "hide_post": "ซ่อนโพสต์",
   "hide_thread": "ซ่อนเธรด",
   "unhide_post": "แสดงโพสต์",
@@ -276,5 +275,7 @@
   "type": "Type",
   "yes": "Yes",
   "no": "No",
-  "pending_mod_approval": "Pending mod approval, not visible to users"
+  "pending_mod_approval": "Pending mod approval, not visible to users",
+  "copy_user_id": "คัดลอก ID ผู้ใช้",
+  "copy_direct_link": "คัดลอกลิงก์โดยตรง"
 }

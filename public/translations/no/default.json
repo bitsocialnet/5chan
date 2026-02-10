@@ -99,7 +99,6 @@
   "interface": "grensesnitt",
   "invalid_url": "Ugyldig URL",
   "image_search": "bilde søk",
-  "copy_link": "kopier lenke",
   "hide_post": "skjul innlegg",
   "hide_thread": "skjul tråd",
   "unhide_post": "vis innlegg",
@@ -276,5 +275,7 @@
   "type": "Type",
   "yes": "Yes",
   "no": "No",
-  "pending_mod_approval": "Pending mod approval, not visible to users"
+  "pending_mod_approval": "Pending mod approval, not visible to users",
+  "copy_user_id": "kopier bruker-ID",
+  "copy_direct_link": "kopier direkte lenke"
 }

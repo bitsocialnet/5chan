@@ -99,7 +99,6 @@
   "interface": "gränssnitt",
   "invalid_url": "Ogiltig URL",
   "image_search": "bildsökning",
-  "copy_link": "kopiera länk",
   "hide_post": "dölj inlägg",
   "hide_thread": "dölj tråd",
   "unhide_post": "visa inlägg",
@@ -276,5 +275,7 @@
   "type": "Type",
   "yes": "Yes",
   "no": "No",
-  "pending_mod_approval": "Pending mod approval, not visible to users"
+  "pending_mod_approval": "Pending mod approval, not visible to users",
+  "copy_user_id": "kopiera användar-ID",
+  "copy_direct_link": "kopiera direktlänk"
 }

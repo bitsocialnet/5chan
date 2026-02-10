@@ -99,7 +99,6 @@
   "interface": "ndërfaqe",
   "invalid_url": "URL jo e vlefshëm",
   "image_search": "kërkim imazhesh",
-  "copy_link": "kopjo linkun",
   "hide_post": "fsheh postën",
   "hide_thread": "fsheh fijen",
   "unhide_post": "shfaq postën",
@@ -276,5 +275,7 @@
   "type": "Type",
   "yes": "Yes",
   "no": "No",
-  "pending_mod_approval": "Pending mod approval, not visible to users"
+  "pending_mod_approval": "Pending mod approval, not visible to users",
+  "copy_user_id": "kopjo ID e përdoruesit",
+  "copy_direct_link": "kopjo lidhjen e drejtpërdrejtë"
 }

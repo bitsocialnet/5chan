@@ -99,7 +99,6 @@
   "interface": "인터페이스",
   "invalid_url": "잘못된 URL",
   "image_search": "이미지 검색",
-  "copy_link": "링크 복사",
   "hide_post": "게시물 숨기기",
   "hide_thread": "스레드 숨기기",
   "unhide_post": "게시물 숨기기 해제",
@@ -276,5 +275,7 @@
   "type": "Type",
   "yes": "Yes",
   "no": "No",
-  "pending_mod_approval": "Pending mod approval, not visible to users"
+  "pending_mod_approval": "Pending mod approval, not visible to users",
+  "copy_user_id": "사용자 ID 복사",
+  "copy_direct_link": "직접 링크 복사"
 }

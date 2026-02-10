@@ -99,7 +99,6 @@
   "interface": "giao diện",
   "invalid_url": "URL không hợp lệ",
   "image_search": "tìm kiếm hình ảnh",
-  "copy_link": "sao chép liên kết",
   "hide_post": "Ẩn bài viết",
   "hide_thread": "Ẩn chủ đề",
   "unhide_post": "Hiện bài viết",
@@ -276,5 +275,7 @@
   "type": "Type",
   "yes": "Yes",
   "no": "No",
-  "pending_mod_approval": "Pending mod approval, not visible to users"
+  "pending_mod_approval": "Pending mod approval, not visible to users",
+  "copy_user_id": "sao chép ID người dùng",
+  "copy_direct_link": "sao chép liên kết trực tiếp"
 }

@@ -99,7 +99,6 @@
   "interface": "インターフェース",
   "invalid_url": "無効なURL",
   "image_search": "画像検索",
-  "copy_link": "リンクをコピー",
   "hide_post": "投稿を非表示",
   "hide_thread": "スレッドを非表示",
   "unhide_post": "投稿を表示",
@@ -276,5 +275,7 @@
   "type": "タイプ",
   "yes": "はい",
   "no": "いいえ",
-  "pending_mod_approval": "モデレーターの承認待ち、ユーザーには表示されません"
+  "pending_mod_approval": "モデレーターの承認待ち、ユーザーには表示されません",
+  "copy_user_id": "ユーザーIDをコピー",
+  "copy_direct_link": "直接リンクをコピー"
 }

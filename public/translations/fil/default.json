@@ -99,7 +99,6 @@
   "interface": "interface",
   "invalid_url": "Hindi wastong URL",
   "image_search": "paghahanap ng larawan",
-  "copy_link": "kopyahin ang link",
   "hide_post": "itago ang post",
   "hide_thread": "itago ang thread",
   "unhide_post": "ipakita ang post",
@@ -276,5 +275,7 @@
   "type": "Type",
   "yes": "Yes",
   "no": "No",
-  "pending_mod_approval": "Pending mod approval, not visible to users"
+  "pending_mod_approval": "Pending mod approval, not visible to users",
+  "copy_user_id": "kopyahin ang user ID",
+  "copy_direct_link": "kopyahin ang direct link"
 }

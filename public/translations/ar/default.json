@@ -99,7 +99,6 @@
   "interface": "واجهة",
   "invalid_url": "رابط غير صالح",
   "image_search": "البحث عن صورة",
-  "copy_link": "نسخ الرابط",
   "hide_post": "إخفاء المنشور",
   "hide_thread": "إخفاء الموضوع",
   "unhide_post": "إظهار المنشور",
@@ -276,5 +275,7 @@
   "type": "Type",
   "yes": "Yes",
   "no": "No",
-  "pending_mod_approval": "Pending mod approval, not visible to users"
+  "pending_mod_approval": "Pending mod approval, not visible to users",
+  "copy_user_id": "نسخ معرف المستخدم",
+  "copy_direct_link": "نسخ الرابط المباشر"
 }

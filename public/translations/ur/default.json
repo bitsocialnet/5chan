@@ -99,7 +99,6 @@
   "interface": "انٹرفیس",
   "invalid_url": "غیر درست یو آر ایل",
   "image_search": "تصویر کی تلاش",
-  "copy_link": "لنک کاپی کریں",
   "hide_post": "پوسٹ چھپائیں",
   "hide_thread": "دھاگہ چھپائیں",
   "unhide_post": "پوسٹ دکھائیں",
@@ -276,5 +275,7 @@
   "type": "Type",
   "yes": "Yes",
   "no": "No",
-  "pending_mod_approval": "Pending mod approval, not visible to users"
+  "pending_mod_approval": "Pending mod approval, not visible to users",
+  "copy_user_id": "صارف کی شناخت کاپی کریں",
+  "copy_direct_link": "براہ راست لنک کاپی کریں"
 }

@@ -99,7 +99,6 @@
   "interface": "felület",
   "invalid_url": "Érvénytelen URL-cím",
   "image_search": "képkeresés",
-  "copy_link": "link másolása",
   "hide_post": "bejegyzés elrejtése",
   "hide_thread": "szál elrejtése",
   "unhide_post": "bejegyzés megjelenítése",
@@ -276,5 +275,7 @@
   "type": "Type",
   "yes": "Yes",
   "no": "No",
-  "pending_mod_approval": "Pending mod approval, not visible to users"
+  "pending_mod_approval": "Pending mod approval, not visible to users",
+  "copy_user_id": "felhasználói ID másolása",
+  "copy_direct_link": "közvetlen link másolása"
 }

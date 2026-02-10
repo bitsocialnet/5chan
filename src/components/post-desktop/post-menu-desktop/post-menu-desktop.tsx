@@ -39,7 +39,7 @@ const CopyLinkButton = ({ cid, subplebbitAddress, linkType, onClose }: CopyLinkB
         }
       }}
     >
-      <div className={styles.postMenuItem}>{t('copy_link')}</div>
+      <div className={styles.postMenuItem}>{t('copy_direct_link')}</div>
     </div>
   );
 };
@@ -59,6 +59,25 @@ const CopyContentIdButton = ({ cid, onClose }: { cid: string; onClose: () => voi
       }}
     >
       <div className={styles.postMenuItem}>{t('copy_content_id')}</div>
+    </div>
+  );
+};
+
+const CopyUserIdButton = ({ address, onClose }: { address: string; onClose: () => void }) => {
+  const { t } = useTranslation();
+  return (
+    <div
+      onClick={async () => {
+        try {
+          await copyToClipboard(address);
+        } catch (error) {
+          console.error('Failed to copy user id', error);
+        } finally {
+          onClose();
+        }
+      }}
+    >
+      <div className={styles.postMenuItem}>{t('copy_user_id')}</div>
     </div>
   );
 };
@@ -178,6 +197,7 @@ const PostMenuDesktop = ({ postMenu }: PostMenuDesktopProps) => {
             <div className={styles.postMenu} ref={refs.setFloating} style={floatingStyles} aria-labelledby={headingId} {...getFloatingProps()}>
               {cid && subplebbitAddress && <CopyLinkButton cid={cid} subplebbitAddress={subplebbitAddress} linkType='thread' onClose={handleClose} />}
               {cid && <CopyContentIdButton cid={cid} onClose={handleClose} />}
+              {authorAddress && <CopyUserIdButton address={authorAddress} onClose={handleClose} />}
               {!(isInPostPageView && postCid === cid) && (
                 <div
                   className={styles.postMenuItem}

@@ -173,7 +173,7 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
   const pseudonymityMode = useSubplebbitField(subplebbitAddress, (sub) => sub?.features?.pseudonymityMode);
   const showUserID = pseudonymityMode !== 'per-reply';
 
-  const userID = address && Plebbit.getShortAddress({ address }); // should not be shortened to less than 12 characters, because users can create unlimited addresses/IDs before authenticating or passing challenges, so if the ID is short enough they can spoof it to troll users with the same ID
+  const userID = address && Plebbit.getShortAddress({ address }); // shortened to 8 chars for display; users can verify the full user ID via "Copy user ID" in the post menu to guard against spoofing
   const userIDBackgroundColor = hashStringToColor(userID);
   const userIDTextColor = getTextColorForBackground(userIDBackgroundColor);
 

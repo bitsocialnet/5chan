@@ -99,7 +99,6 @@
   "interface": "інтерфейс",
   "invalid_url": "Недійсний URL",
   "image_search": "пошук зображень",
-  "copy_link": "копіювати посилання",
   "hide_post": "сховати допис",
   "hide_thread": "сховати нитку",
   "unhide_post": "показати допис",
@@ -276,5 +275,7 @@
   "type": "Type",
   "yes": "Yes",
   "no": "No",
-  "pending_mod_approval": "Pending mod approval, not visible to users"
+  "pending_mod_approval": "Pending mod approval, not visible to users",
+  "copy_user_id": "копіювати ID користувача",
+  "copy_direct_link": "копіювати пряме посилання"
 }

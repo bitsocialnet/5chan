@@ -99,7 +99,6 @@
   "interface": "interface",
   "invalid_url": "URL inválida",
   "image_search": "pesquisa de imagens",
-  "copy_link": "Copiar link",
   "hide_post": "Ocultar postagem",
   "hide_thread": "Ocultar tópico",
   "unhide_post": "Mostrar postagem",
@@ -276,5 +275,7 @@
   "type": "Tipo",
   "yes": "Sim",
   "no": "Não",
-  "pending_mod_approval": "Aguardando aprovação do moderador, não visível para os usuários"
+  "pending_mod_approval": "Aguardando aprovação do moderador, não visível para os usuários",
+  "copy_user_id": "Copiar ID do usuário",
+  "copy_direct_link": "Copiar link direto"
 }

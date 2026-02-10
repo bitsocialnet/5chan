@@ -99,7 +99,6 @@
   "interface": "ইন্টারফেস",
   "invalid_url": "অবৈধ ইউআরএল",
   "image_search": "চিত্র অনুসন্ধান",
-  "copy_link": "লিংক অনুলিপি করুন",
   "hide_post": "পোস্ট লুকাও",
   "hide_thread": "থ্রেড লুকাও",
   "unhide_post": "পোস্ট প্রদর্শন করুন",
@@ -276,5 +275,7 @@
   "type": "Type",
   "yes": "Yes",
   "no": "No",
-  "pending_mod_approval": "Pending mod approval, not visible to users"
+  "pending_mod_approval": "Pending mod approval, not visible to users",
+  "copy_user_id": "ইউজার আইডি কপি করুন",
+  "copy_direct_link": "সরাসরি লিংক অনুলিপি করুন"
 }
