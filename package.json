@@ -1,6 +1,6 @@
 {
   "name": "5chan",
-  "version": "0.6.3",
+  "version": "0.6.4",
   "description": "A bitsocial client with a 4chan UI",
   "type": "module",
   "author": "Bitsocial Labs",

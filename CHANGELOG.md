@@ -1,3 +1,31 @@
+## [0.6.4](https://github.com/plebbit/plebchan/compare/v0.6.3...v0.6.4) (2026-02-10)
+
+
+### Bug Fixes
+
+* **components:** remove redundant instant scroll from quote links ([1bd1d34](https://github.com/plebbit/plebchan/commit/1bd1d34feebe39cdb319cefc4c67cf681e886032))
+* include manual post-number quotes in reply backlinks ([702816f](https://github.com/plebbit/plebchan/commit/702816f99b0e31d4d9b59e11831a519caf1c9e97))
+* **post:** improve user ID display with domain detection and length limits ([9d17213](https://github.com/plebbit/plebchan/commit/9d17213e6606fe42908131cf26cb64e1ed4061b1))
+* **post:** prevent quote hover highlight on op cards ([b8546a8](https://github.com/plebbit/plebchan/commit/b8546a86c55d25746b0a119e0519d77e36ae25e7))
+* **release:** remove duplicate architecture suffixes from artifact names ([b30eb15](https://github.com/plebbit/plebchan/commit/b30eb150d05707daee48b0599053c9fee15c1aac))
+* **release:** restore 5chan html zip artifact in tag releases ([cdd6be9](https://github.com/plebbit/plebchan/commit/cdd6be915ed98ef696b8efe04c2472654c457253))
+* **reply modal:** restore multiline quote insertion ([db70a91](https://github.com/plebbit/plebchan/commit/db70a9148b6a9d34d93ef8246cd7c062a285e29f))
+* shorten rendered user ID display from 12 to 8 characters ([24d329a](https://github.com/plebbit/plebchan/commit/24d329a3294cd49045410257472421d79359e990))
+* show OP badge for number-based quote links ([223ec4c](https://github.com/plebbit/plebchan/commit/223ec4c4943fba789a9e65b38fcbea08764ebfde))
+* update subscriptions subtitle to present tense ([8636005](https://github.com/plebbit/plebchan/commit/8636005f12eca2273aa8194e1293c80e9eff1888))
+
+
+### Features
+
+* add copy user ID menu item and rename copy link to copy direct link ([4a96f88](https://github.com/plebbit/plebchan/commit/4a96f88efd2b21578cfc823b822a7286956bd9a1))
+* **post:** add backlinks for quotedCids ([c7c8c46](https://github.com/plebbit/plebchan/commit/c7c8c46557f09decee5aadaf0e65a087bd7c725b))
+* **posts:** support pseudonymityMode per-reply hiding ([c1b0d13](https://github.com/plebbit/plebchan/commit/c1b0d13bb7f26d94513e74b67e79c50cca997783))
+* **release:** extract one-liner release description ([3be7839](https://github.com/plebbit/plebchan/commit/3be78393d1af103ae6323d8e1615f742d4211a27))
+* render >>{number} as interactive quote links with hover preview ([c4b6c77](https://github.com/plebbit/plebchan/commit/c4b6c77d4cb49357065fa21b51fbf3209895c58a))
+* **reply-modal:** insert quoted post numbers at textarea caret ([8a192b4](https://github.com/plebbit/plebchan/commit/8a192b41b465995ce3421503f6811281c1aca3cc))
+
+
+
 ## [0.6.3](https://github.com/plebbit/plebchan/compare/v0.6.2...v0.6.3) (2026-01-30)
 
 
@@ -8,6 +36,8 @@
 * **find-forge-executable:** make appName preference effective ([16012b4](https://github.com/plebbit/plebchan/commit/16012b42395523b8770411c65d82767da41fdb81))
 * **forge.config.js:** remove malformed iconUrl from Squirrel config ([c4e2f75](https://github.com/plebbit/plebchan/commit/c4e2f753e38a0d69198e7aba83c0b4968671e180))
 * **package.json:** remove unneeded var ([0c6e03d](https://github.com/plebbit/plebchan/commit/0c6e03d039d0303b3d7e896ff5e9ad169527db80))
+* **release:** resolve build failures for v0.6.3 ([01bda3b](https://github.com/plebbit/plebchan/commit/01bda3bffb3ba423a4fda447668dc3682263e945))
+* resolve PR 877 issues - route params, artifact paths, and build configs ([50ee10c](https://github.com/plebbit/plebchan/commit/50ee10cbc9055d9e2aa0e67df66b325b8f355b96))
 
 
 
