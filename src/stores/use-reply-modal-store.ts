@@ -9,6 +9,8 @@ interface ReplyModalState {
   threadCid: string | null;
   subplebbitAddress: string | null;
   scrollY: number;
+  quoteInsertRequestId: number;
+  quoteInsertNumber: number | null;
   closeModal: () => void;
   openReplyModal: (parentCid: string, parentNumber: number | undefined, postCid: string, threadNumber: number | undefined, subplebbitAddress: string) => void;
 }
@@ -21,6 +23,8 @@ const useReplyModalStore = create<ReplyModalState>((set, get) => ({
   threadCid: null,
   subplebbitAddress: null,
   scrollY: 0,
+  quoteInsertRequestId: 0,
+  quoteInsertNumber: null,
 
   closeModal: () => {
     // Reset selected text if you're using that store
@@ -30,13 +34,17 @@ const useReplyModalStore = create<ReplyModalState>((set, get) => ({
       activeCid: null,
       parentNumber: null,
       threadNumber: null,
+      quoteInsertNumber: null,
     });
   },
 
   openReplyModal: (parentCid, parentNumber, postCid, threadNumber, subplebbitAddress) => {
-    // Don't update if already open with different parent
-    if (get().activeCid && get().activeCid !== parentCid) {
-      window.alert('Multiple quotes are not possible on 5chan for the time being, because of a protocol limitation. Please reply to one post at a time.');
+    // If the reply modal is already open, insert this quote in the current textarea at caret.
+    if (get().showReplyModal) {
+      set((state) => ({
+        quoteInsertRequestId: state.quoteInsertRequestId + 1,
+        quoteInsertNumber: parentNumber ?? null,
+      }));
       return;
     }
 

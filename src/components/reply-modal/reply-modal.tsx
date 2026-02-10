@@ -8,6 +8,7 @@ import { getFormattedTimeAgo } from '../../lib/utils/time-utils';
 import { isValidURL } from '../../lib/utils/url-utils';
 import { isAllView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import useSelectedTextStore from '../../stores/use-selected-text-store';
+import useReplyModalStore from '../../stores/use-reply-modal-store';
 import usePublishReply from '../../hooks/use-publish-reply';
 import useIsMobile from '../../hooks/use-is-mobile';
 import styles from './reply-modal.module.css';
@@ -43,7 +44,12 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
   const [url, setUrl] = useState('');
   const textRef = useRef<HTMLTextAreaElement | null>(null);
   const urlRef = useRef<HTMLInputElement>(null);
+  const lastSelectionStartRef = useRef(0);
+  const lastSelectionEndRef = useRef(0);
+  const lastProcessedQuoteInsertRequestIdRef = useRef(0);
   const { selectedText } = useSelectedTextStore();
+  const quoteInsertRequestId = useReplyModalStore((state) => state.quoteInsertRequestId);
+  const quoteInsertNumber = useReplyModalStore((state) => state.quoteInsertNumber);
 
   const [error, setError] = useState<string | null>(null);
   const [lengthError, setLengthError] = useState<string | null>(null);
@@ -186,6 +192,9 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
     if (showReplyModal && textRef.current) {
       textRef.current.spellcheck = false;
       textRef.current.value = contentPrefix + (selectedText || '');
+      const len = textRef.current.value.length;
+      lastSelectionStartRef.current = len;
+      lastSelectionEndRef.current = len;
 
       setTimeout(() => {
         if (textRef.current) {
@@ -200,6 +209,8 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
     if (!value.startsWith(contentPrefix)) {
       e.target.value = contentPrefix + value.slice(contentPrefix.length);
     }
+    lastSelectionStartRef.current = e.target.selectionStart ?? e.target.value.length;
+    lastSelectionEndRef.current = e.target.selectionEnd ?? lastSelectionStartRef.current;
   };
 
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -210,6 +221,44 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
       checkContentLength(formattedContent, t);
     }
   };
+
+  useEffect(() => {
+    const canInsertQuote = showReplyModal && quoteInsertRequestId !== 0 && !!textRef.current;
+
+    const textarea = textRef.current;
+    if (!canInsertQuote || !textarea) {
+      return;
+    }
+
+    // Guard: skip if we already processed this exact request id.
+    // setPublishReplyOptions identity changes after each call (store update -> new content -> new useCallback),
+    // which re-triggers this effect. Without this guard, that creates an infinite update loop.
+    if (quoteInsertRequestId === lastProcessedQuoteInsertRequestIdRef.current) {
+      return;
+    }
+    lastProcessedQuoteInsertRequestIdRef.current = quoteInsertRequestId;
+
+    const quote = `>>${quoteInsertNumber ?? '?'}`;
+    const isFocused = document.activeElement === textarea;
+    const rawStart = isFocused ? (textarea.selectionStart ?? textarea.value.length) : lastSelectionStartRef.current;
+    const selectionEnd = isFocused ? (textarea.selectionEnd ?? rawStart) : lastSelectionEndRef.current;
+    const minStart = contentPrefix.length;
+    const start = Math.max(rawStart, minStart);
+    const end = Math.max(selectionEnd, minStart);
+    const nextValue = `${textarea.value.slice(0, start)}${quote}${textarea.value.slice(end)}`;
+
+    textarea.value = nextValue;
+    const nextCursor = start + quote.length;
+    textarea.focus();
+    textarea.setSelectionRange(nextCursor, nextCursor);
+    lastSelectionStartRef.current = nextCursor;
+    lastSelectionEndRef.current = nextCursor;
+
+    const contentWithoutPrefix = nextValue.slice(contentPrefix.length);
+    const formattedContent = formatMarkdown(contentWithoutPrefix);
+    setPublishReplyOptions({ content: formattedContent });
+    checkContentLength(formattedContent, t);
+  }, [showReplyModal, quoteInsertRequestId, quoteInsertNumber, contentPrefix, setPublishReplyOptions, checkContentLength, t]);
 
   // on android, auto upload file to image hosting sites with open api
   const [isUploading, setIsUploading] = useState(false);
@@ -294,7 +343,23 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
           />
         </div>
         <div className={styles.content}>
-          <textarea cols={48} rows={4} wrap='soft' ref={textRef} spellCheck={true} onInput={handleContentInput} onChange={handleContentChange} />
+          <textarea
+            cols={48}
+            rows={4}
+            wrap='soft'
+            ref={textRef}
+            spellCheck={true}
+            onInput={handleContentInput}
+            onChange={handleContentChange}
+            onSelect={(e) => {
+              lastSelectionStartRef.current = e.currentTarget.selectionStart ?? e.currentTarget.value.length;
+              lastSelectionEndRef.current = e.currentTarget.selectionEnd ?? lastSelectionStartRef.current;
+            }}
+            onBlur={(e) => {
+              lastSelectionStartRef.current = e.currentTarget.selectionStart ?? e.currentTarget.value.length;
+              lastSelectionEndRef.current = e.currentTarget.selectionEnd ?? lastSelectionStartRef.current;
+            }}
+          />
         </div>
         <div className={styles.footer}>
           {url && !isAndroid && (
