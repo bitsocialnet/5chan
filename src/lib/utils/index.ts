@@ -12,6 +12,7 @@ import {
   isNotFoundView,
   ParamsType,
 } from './view-utils';
+import { formatUserIDForDisplay } from './string-utils';
 
 export {
   isAllView,
@@ -25,5 +26,6 @@ export {
   isSettingsView,
   isSubscriptionsView,
   isNotFoundView,
+  formatUserIDForDisplay,
 };
 export type { ParamsType };

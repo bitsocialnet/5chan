@@ -10,6 +10,7 @@ import { hashStringToColor, getTextColorForBackground } from '../../lib/utils/po
 import { getFormattedDate, getFormattedTimeAgo } from '../../lib/utils/time-utils';
 import { isValidURL } from '../../lib/utils/url-utils';
 import { isAllView, isModQueueView, isPendingPostView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
+import { formatUserIDForDisplay } from '../../lib/utils/string-utils';
 import useModQueueStore from '../../stores/use-mod-queue-store';
 import { useDirectories } from '../../hooks/use-directories';
 import { getBoardPath } from '../../lib/utils/route-utils';
@@ -286,7 +287,7 @@ const PostInfo = ({
                       onClick={() => handleUserAddressClick(userID, postCid)}
                       style={{ backgroundColor: userIDBackgroundColor, color: userIDTextColor }}
                     >
-                      {userID?.slice(0, 8)}
+                      {formatUserIDForDisplay(userID)}
                     </span>
                   }
                   content={`${numberOfPostsByAuthor === 1 ? t('1_post_by_this_id') : t('x_posts_by_this_id', { number: numberOfPostsByAuthor })}`}
