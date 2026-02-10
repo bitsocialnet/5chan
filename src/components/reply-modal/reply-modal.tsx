@@ -50,6 +50,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
   const { selectedText } = useSelectedTextStore();
   const quoteInsertRequestId = useReplyModalStore((state) => state.quoteInsertRequestId);
   const quoteInsertNumber = useReplyModalStore((state) => state.quoteInsertNumber);
+  const quoteInsertSelectedText = useReplyModalStore((state) => state.quoteInsertSelectedText);
 
   const [error, setError] = useState<string | null>(null);
   const [lengthError, setLengthError] = useState<string | null>(null);
@@ -239,16 +240,24 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
     lastProcessedQuoteInsertRequestIdRef.current = quoteInsertRequestId;
 
     const quote = `>>${quoteInsertNumber ?? '?'}`;
+    const selectedQuote = quoteInsertSelectedText?.trimEnd() || '';
     const isFocused = document.activeElement === textarea;
     const rawStart = isFocused ? (textarea.selectionStart ?? textarea.value.length) : lastSelectionStartRef.current;
     const selectionEnd = isFocused ? (textarea.selectionEnd ?? rawStart) : lastSelectionEndRef.current;
     const minStart = contentPrefix.length;
     const start = Math.max(rawStart, minStart);
     const end = Math.max(selectionEnd, minStart);
-    const nextValue = `${textarea.value.slice(0, start)}${quote}${textarea.value.slice(end)}`;
+    const before = textarea.value.slice(0, start);
+    const after = textarea.value.slice(end);
+    const needsLeadingNewline = before.length > minStart && !before.endsWith('\n');
+    let insertion = `${needsLeadingNewline ? '\n' : ''}${quote}\n`;
+    if (selectedQuote) {
+      insertion += `${selectedQuote}\n`;
+    }
+    const nextValue = `${before}${insertion}${after}`;
 
     textarea.value = nextValue;
-    const nextCursor = start + quote.length;
+    const nextCursor = before.length + insertion.length;
     textarea.focus();
     textarea.setSelectionRange(nextCursor, nextCursor);
     lastSelectionStartRef.current = nextCursor;
@@ -258,7 +267,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
     const formattedContent = formatMarkdown(contentWithoutPrefix);
     setPublishReplyOptions({ content: formattedContent });
     checkContentLength(formattedContent, t);
-  }, [showReplyModal, quoteInsertRequestId, quoteInsertNumber, contentPrefix, setPublishReplyOptions, checkContentLength, t]);
+  }, [showReplyModal, quoteInsertRequestId, quoteInsertNumber, quoteInsertSelectedText, contentPrefix, setPublishReplyOptions, checkContentLength, t]);
 
   // on android, auto upload file to image hosting sites with open api
   const [isUploading, setIsUploading] = useState(false);
