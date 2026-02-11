@@ -110,7 +110,7 @@ Bitsocial communities can require users to solve one or more anti-spam challenge
 
 ### Build
 
-The Linux/Windows/macOS/Android build scripts are in [.github/workflows/release.yml](https://github.com/plebbit/5chan/blob/master/.github/workflows/release.yml)
+The Linux/Windows/macOS/Android build scripts are in [.github/workflows/release.yml](https://github.com/bitsocialhq/5chan/blob/master/.github/workflows/release.yml)
 
 ## License
 
