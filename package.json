@@ -138,6 +138,7 @@
     "wait-on": "9.0.3"
   },
   "resolutions": {
+    "axios": "1.13.5",
     "js-yaml": "4.1.1",
     "baseline-browser-mapping": "^2.9.11",
     "vite": "npm:rolldown-vite@7.3.1",
