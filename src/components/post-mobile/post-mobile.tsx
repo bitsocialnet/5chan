@@ -30,7 +30,7 @@ import PostMenuMobile from './post-menu-mobile';
 import ReplyQuotePreview from '../reply-quote-preview';
 import Tooltip from '../tooltip';
 import { PostProps } from '../../views/post/post';
-import _ from 'lodash';
+import { capitalize, lowerCase } from 'lodash';
 import useReplyModalStore from '../../stores/use-reply-modal-store';
 import { selectPostMenuProps } from '../../lib/utils/post-menu-props';
 import useChallengesStore from '../../stores/use-challenges-store';
@@ -204,9 +204,9 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
           <span className={styles.nameBlock}>
             <span className={`${styles.name} ${authorRole && !(deleted || removed) && (authorRole === 'mod' ? styles.capcodeMod : styles.capcodeAdmin)}`}>
               {removed ? (
-                _.capitalize(t('removed'))
+                capitalize(t('removed'))
               ) : deleted ? (
-                _.capitalize(t('deleted'))
+                capitalize(t('deleted'))
               ) : displayName ? (
                 displayName.length <= 20 ? (
                   displayName
@@ -217,7 +217,7 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
                   />
                 )
               ) : (
-                _.capitalize(t('anonymous'))
+                capitalize(t('anonymous'))
               )}{' '}
               {!(deleted || removed) && authorRole && (
                 <span className='capitalize'>
@@ -242,9 +242,9 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
               <>
                 (ID: {''}
                 {removed ? (
-                  _.lowerCase(t('removed'))
+                  lowerCase(t('removed'))
                 ) : deleted ? (
-                  _.lowerCase(t('deleted'))
+                  lowerCase(t('deleted'))
                 ) : (
                   <Tooltip
                     children={
@@ -320,7 +320,7 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
               <>
                 <span>No.</span>
                 <span className={styles.pendingCid}>
-                  {state === 'failed' || stateString === 'Failed' ? _.capitalize(t('failed')) : state === 'pending' ? _.capitalize(t('pending')) : ''}
+                  {state === 'failed' || stateString === 'Failed' ? capitalize(t('failed')) : state === 'pending' ? capitalize(t('pending')) : ''}
                 </span>
               </>
             )}
@@ -384,28 +384,40 @@ const ReplyBacklinks = ({ post, quotedByMap }: PostProps) => {
   const { cid, parentCid } = post || {};
   const { replies } = useReplies({ comment: post, flat: true, accountComments: { newerThan: Infinity } });
 
-  return (
+  const opBacklinks =
     cid &&
-    parentCid &&
-    (replies.length > 0 || quotedByMap?.get(cid)?.length) && (
-      <div className={styles.mobileReplyBacklinks}>
-        {replies.map(
+    !parentCid &&
+    quotedByMap
+      ?.get(cid)
+      ?.map(
+        (reply: Comment) =>
+          reply?.cid && !(reply?.deleted || reply?.removed) && <ReplyQuotePreview key={`op-bl-${reply.cid}`} isBacklinkReply={true} backlinkReply={reply} />,
+      )
+      .filter(Boolean);
+
+  const replyBacklinks = cid && parentCid && ((replies?.length || 0) > 0 || quotedByMap?.get(cid)?.length) && (
+    <>
+      {replies?.map(
+        (reply: Comment, index: number) =>
+          reply?.parentCid === cid && reply?.cid && !(reply?.deleted || reply?.removed) && <ReplyQuotePreview key={index} isBacklinkReply={true} backlinkReply={reply} />,
+      )}
+      {quotedByMap
+        ?.get(cid)
+        ?.map(
           (reply: Comment, index: number) =>
-            reply?.parentCid === cid &&
+            reply?.parentCid !== cid &&
             reply?.cid &&
-            !(reply?.deleted || reply?.removed) && <ReplyQuotePreview key={index} isBacklinkReply={true} backlinkReply={reply} />,
+            !(reply?.deleted || reply?.removed) && <ReplyQuotePreview key={`qb-${index}`} isBacklinkReply={true} backlinkReply={reply} />,
         )}
-        {quotedByMap
-          ?.get(cid)
-          ?.map(
-            (reply: Comment, index: number) =>
-              reply?.parentCid !== cid &&
-              reply?.cid &&
-              !(reply?.deleted || reply?.removed) && <ReplyQuotePreview key={`qb-${index}`} isBacklinkReply={true} backlinkReply={reply} />,
-          )}
-      </div>
-    )
+    </>
   );
+
+  return opBacklinks?.length > 0 || replyBacklinks ? (
+    <div className={styles.mobileReplyBacklinks}>
+      {opBacklinks}
+      {replyBacklinks}
+    </div>
+  ) : null;
 };
 
 const Reply = ({ postReplyCount, reply, roles, threadNumber, quotedByMap }: PostProps) => {
@@ -434,7 +446,7 @@ const Reply = ({ postReplyCount, reply, roles, threadNumber, quotedByMap }: Post
         >
           <PostInfoAndMedia post={post} postReplyCount={postReplyCount} roles={roles} threadNumber={threadNumber} />
           {!hidden && (!(removed || deleted) || ((removed || deleted) && reason)) && <CommentContent comment={post} />}
-          <ReplyBacklinks post={reply} quotedByMap={quotedByMap} />
+          <ReplyBacklinks post={post} quotedByMap={quotedByMap} />
         </div>
       </div>
     </div>
@@ -588,6 +600,7 @@ const PostMobile = ({
                 {shouldShowSnow() && <img src='assets/xmashat.gif' className={styles.xmasHat} alt='' />}
                 <PostInfoAndMedia post={post} postReplyCount={replyCount} roles={roles} threadNumber={post?.number} />
                 <CommentContent comment={post} />
+                <ReplyBacklinks post={post} quotedByMap={quotedByMap} />
               </div>
               {!isInPostView && !isInPendingPostView && (showReplies || isModQueue) && (
                 <div className={styles.postLink}>

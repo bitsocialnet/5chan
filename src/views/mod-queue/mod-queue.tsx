@@ -21,7 +21,7 @@ import { alertChallengeVerificationFailed } from '../../lib/utils/challenge-util
 import Tooltip from '../../components/tooltip';
 import useIsMobile from '../../hooks/use-is-mobile';
 import { Post } from '../post/post';
-import _ from 'lodash';
+import { capitalize, lowerCase } from 'lodash';
 
 const { addChallenge } = useChallengesStore.getState();
 
@@ -273,7 +273,7 @@ const ModQueueRow = ({ comment, isOdd = false }: ModQueueRowProps) => {
           <Tooltip children={<span>{getFormattedDate(timestamp)}</span>} content={getFormattedTimeAgo(timestamp)} />
         )}
       </div>
-      <div className={styles.type}>{isReply ? _.capitalize(t('reply')) : _.capitalize(t('post'))}</div>
+      <div className={styles.type}>{isReply ? capitalize(t('reply')) : capitalize(t('post'))}</div>
       <div className={styles.image}>{hasThumbnail ? t('yes') : t('no')}</div>
       <div className={styles.actions}>{renderActions()}</div>
     </div>
@@ -390,7 +390,7 @@ const ModQueueCard = ({ comment }: ModQueueCardProps) => {
         ) : (
           <span title={excerpt}>{excerpt}</span>
         )}{' '}
-        / {t('type')}: {isReply ? t('reply') : t('post')} / {_.capitalize(t('image'))}: {hasThumbnail ? _.lowerCase(t('yes')) : _.lowerCase(t('no'))}
+        / {t('type')}: {isReply ? t('reply') : t('post')} / {capitalize(t('image'))}: {hasThumbnail ? lowerCase(t('yes')) : lowerCase(t('no'))}
       </div>
       {renderActions()}
     </div>

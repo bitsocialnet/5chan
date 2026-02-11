@@ -12,7 +12,7 @@ import {
 import styles from './edit-menu.module.css';
 import { alertChallengeVerificationFailed } from '../../lib/utils/challenge-utils';
 import useChallengesStore from '../../stores/use-challenges-store';
-import _ from 'lodash';
+import { capitalize } from 'lodash';
 import useIsMobile from '../../hooks/use-is-mobile';
 import useAuthorPrivileges from '../../hooks/use-author-privileges';
 
@@ -277,14 +277,14 @@ const EditMenu = ({ post }: { post: Comment }) => {
                     <label>
                       [
                       <input onChange={onCheckbox} checked={publishCommentEditOptions.deleted ?? false} type='checkbox' id='deleted' />
-                      {_.capitalize(t('delete'))}?]
+                      {capitalize(t('delete'))}?]
                     </label>
                   </div>
                   <div className={styles.menuItem}>
                     <label>
                       [
                       <input type='checkbox' onChange={() => setIsContentEditorOpen(!isContentEditorOpen)} checked={isContentEditorOpen} />
-                      {_.capitalize(t('edit'))}?]
+                      {capitalize(t('edit'))}?]
                     </label>
                   </div>
                   {isContentEditorOpen && (
@@ -307,13 +307,13 @@ const EditMenu = ({ post }: { post: Comment }) => {
                     <label>
                       [
                       <input onChange={onCheckbox} checked={publishCommentEditOptions.commentModeration?.removed ?? false} type='checkbox' id='removed' />
-                      {_.capitalize(t('remove'))}?]
+                      {capitalize(t('remove'))}?]
                     </label>{' '}
                     <span className={styles.purgeItem}>
                       <label>
                         [
                         <input onChange={onPurgeCheckbox} checked={publishCommentEditOptions.commentModeration?.purged ?? false} type='checkbox' id='purged' />
-                        {_.capitalize(t('purge'))}?]
+                        {capitalize(t('purge'))}?]
                       </label>
                     </span>
                   </div>
@@ -322,7 +322,7 @@ const EditMenu = ({ post }: { post: Comment }) => {
                       [
                       <label>
                         <input onChange={onCheckbox} checked={publishCommentEditOptions.commentModeration?.locked ?? false} type='checkbox' id='locked' />
-                        {_.capitalize(t('close_thread'))}?
+                        {capitalize(t('close_thread'))}?
                       </label>
                       ]
                     </div>
@@ -331,7 +331,7 @@ const EditMenu = ({ post }: { post: Comment }) => {
                     [
                     <label>
                       <input onChange={onCheckbox} checked={publishCommentEditOptions.commentModeration?.spoiler ?? false} type='checkbox' id='spoiler' />
-                      {_.capitalize(t('spoiler'))}?
+                      {capitalize(t('spoiler'))}?
                     </label>
                     ]
                   </div>
@@ -339,7 +339,7 @@ const EditMenu = ({ post }: { post: Comment }) => {
                     [
                     <label>
                       <input onChange={onCheckbox} checked={publishCommentEditOptions.commentModeration?.pinned ?? false} type='checkbox' id='pinned' />
-                      {_.capitalize(t('sticky'))}?
+                      {capitalize(t('sticky'))}?
                     </label>
                     ]
                   </div>
@@ -378,7 +378,7 @@ const EditMenu = ({ post }: { post: Comment }) => {
                 </>
               )}
               <div className={`${styles.menuItem} ${styles.menuReason}`}>
-                {_.capitalize(t('reason'))}? ({t('optional')})
+                {capitalize(t('reason'))}? ({t('optional')})
                 <input
                   type='text'
                   value={publishCommentEditOptions.reason || ''}

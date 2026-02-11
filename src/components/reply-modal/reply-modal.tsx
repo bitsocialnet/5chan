@@ -13,7 +13,7 @@ import usePublishReply from '../../hooks/use-publish-reply';
 import useIsMobile from '../../hooks/use-is-mobile';
 import styles from './reply-modal.module.css';
 import { LinkTypePreviewer } from '../post-form';
-import _ from 'lodash';
+import { capitalize, debounce } from 'lodash';
 import FileUploader from '../../plugins/file-uploader';
 import { Capacitor } from '@capacitor/core';
 import { useSpring, animated } from '@react-spring/web';
@@ -56,7 +56,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
   const [lengthError, setLengthError] = useState<string | null>(null);
 
   const checkContentLength = useRef(
-    _.debounce((content: string, t: Function) => {
+    debounce((content: string, t: Function) => {
       const length = content.trim().length;
       if (length > 2000) {
         setError(null);
@@ -68,7 +68,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
   ).current;
 
   const onPublishReply = () => {
-    const currentContent = textRef.current?.value.slice(contentPrefix.length).trim() || '';
+    const currentContent = textRef.current?.value.trim() || '';
     const currentUrl = urlRef.current?.value.trim() || '';
 
     if (!currentContent && !currentUrl) {
@@ -186,16 +186,19 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
     }
   }, []);
 
-  const contentPrefix = `>>${parentNumber ?? '?'}\n`;
+  const defaultParentQuote = `>>${parentNumber ?? '?'}\n`;
 
-  // enable spellcheck after the prefix is set
+  // Enable spellcheck after initial content is injected into the textarea.
   useEffect(() => {
     if (showReplyModal && textRef.current) {
       textRef.current.spellcheck = false;
-      textRef.current.value = contentPrefix + (selectedText || '');
+      textRef.current.value = `${defaultParentQuote}${selectedText || ''}`;
       const len = textRef.current.value.length;
       lastSelectionStartRef.current = len;
       lastSelectionEndRef.current = len;
+      const formattedContent = formatMarkdown(textRef.current.value);
+      setPublishReplyOptions({ content: formattedContent });
+      checkContentLength(formattedContent, t);
 
       setTimeout(() => {
         if (textRef.current) {
@@ -203,24 +206,17 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
         }
       }, 100);
     }
-  }, [showReplyModal, contentPrefix, selectedText]);
+  }, [showReplyModal, defaultParentQuote, selectedText]);
 
   const handleContentInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const { value } = e.target;
-    if (!value.startsWith(contentPrefix)) {
-      e.target.value = contentPrefix + value.slice(contentPrefix.length);
-    }
     lastSelectionStartRef.current = e.target.selectionStart ?? e.target.value.length;
     lastSelectionEndRef.current = e.target.selectionEnd ?? lastSelectionStartRef.current;
   };
 
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const contentWithoutPrefix = e.target.value.slice(contentPrefix.length);
-    const formattedContent = formatMarkdown(contentWithoutPrefix);
-    if (textRef.current && textRef.current.value !== formattedContent) {
-      setPublishReplyOptions({ content: formattedContent });
-      checkContentLength(formattedContent, t);
-    }
+    const formattedContent = formatMarkdown(e.target.value);
+    setPublishReplyOptions({ content: formattedContent });
+    checkContentLength(formattedContent, t);
   };
 
   useEffect(() => {
@@ -244,12 +240,11 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
     const isFocused = document.activeElement === textarea;
     const rawStart = isFocused ? (textarea.selectionStart ?? textarea.value.length) : lastSelectionStartRef.current;
     const selectionEnd = isFocused ? (textarea.selectionEnd ?? rawStart) : lastSelectionEndRef.current;
-    const minStart = contentPrefix.length;
-    const start = Math.max(rawStart, minStart);
-    const end = Math.max(selectionEnd, minStart);
+    const start = Math.max(rawStart, 0);
+    const end = Math.max(selectionEnd, 0);
     const before = textarea.value.slice(0, start);
     const after = textarea.value.slice(end);
-    const needsLeadingNewline = before.length > minStart && !before.endsWith('\n');
+    const needsLeadingNewline = before.length > 0 && !before.endsWith('\n');
     let insertion = `${needsLeadingNewline ? '\n' : ''}${quote}\n`;
     if (selectedQuote) {
       insertion += `${selectedQuote}\n`;
@@ -263,11 +258,10 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
     lastSelectionStartRef.current = nextCursor;
     lastSelectionEndRef.current = nextCursor;
 
-    const contentWithoutPrefix = nextValue.slice(contentPrefix.length);
-    const formattedContent = formatMarkdown(contentWithoutPrefix);
+    const formattedContent = formatMarkdown(nextValue);
     setPublishReplyOptions({ content: formattedContent });
     checkContentLength(formattedContent, t);
-  }, [showReplyModal, quoteInsertRequestId, quoteInsertNumber, quoteInsertSelectedText, contentPrefix, setPublishReplyOptions, checkContentLength, t]);
+  }, [showReplyModal, quoteInsertRequestId, quoteInsertNumber, quoteInsertSelectedText, setPublishReplyOptions, checkContentLength, t]);
 
   // on android, auto upload file to image hosting sites with open api
   const [isUploading, setIsUploading] = useState(false);
@@ -333,7 +327,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
           <input
             type='text'
             defaultValue={displayName}
-            placeholder={displayName ? undefined : _.capitalize(t('name'))}
+            placeholder={displayName ? undefined : capitalize(t('name'))}
             onChange={(e) => {
               setAccount({ ...account, author: { ...account?.author, displayName: e.target.value } });
               setPublishReplyOptions({ displayName: e.target.value });
@@ -344,7 +338,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
           <input
             type='text'
             ref={urlRef}
-            placeholder={_.capitalize(t('link'))}
+            placeholder={capitalize(t('link'))}
             onChange={(e) => {
               setUrl(e.target.value);
               setPublishReplyOptions({ link: e.target.value });
@@ -392,7 +386,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
             [
             <label>
               <input type='checkbox' onChange={(e) => setPublishReplyOptions({ spoiler: e.target.checked })} />
-              {_.capitalize(t('spoiler'))}?
+              {capitalize(t('spoiler'))}?
             </label>
             ]
           </span>

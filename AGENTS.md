@@ -107,6 +107,26 @@ Discover and install skills from the open agent skills ecosystem.
 npx skills add https://github.com/vercel-labs/skills --skill find-skills
 ```
 
+### playwright-cli (browser automation)
+
+Use **playwright-cli** for browser automation—navigation, form filling, screenshots, testing, and data extraction. The CLI + skill approach is token-efficient: it avoids loading large MCP tool schemas and verbose accessibility trees into context.
+
+**Do NOT use browser MCPs** (cursor-ide-browser, playwright-mcp, chrome MCP, etc.) for this project. MCP servers inject heavy tool definitions and page snapshots into the context window, degrading quality and response speed.
+
+**Install** (globally, once per machine). Agents working on this project without playwright-cli should run:
+
+```bash
+npm install -g @playwright/cli@latest
+```
+
+Then from the project root, install the skill so the agent can use it:
+
+```bash
+playwright-cli install --skills
+```
+
+The skill installs to `.cursor/skills/playwright-cli/` (or `.claude/skills/` for Claude Code). Agents invoke commands via Bash (e.g. `playwright-cli open`, `playwright-cli snapshot`, `playwright-cli click e1`).
+
 ## AI Agent Hooks (Recommended)
 
 If you're using an AI coding assistant (Cursor, Claude Code, Codex, etc.), set up hooks to automatically enforce code quality. Most modern AI agents support lifecycle hooks.
@@ -191,6 +211,10 @@ Consult your AI tool's documentation for how to configure hooks (e.g., `hooks.js
 For Dependabot security alerts, GitHub Actions logs, issue/PR searches, or cross-repo code lookup, use the **GitHub MCP server** (with `default,dependabot,actions` toolsets enabled).
 
 If not available, suggest the user install it.
+
+### Browser MCPs — Do NOT Use
+
+**Avoid browser-related MCP servers** for this project (cursor-ide-browser, playwright-mcp, chrome MCP, etc.). Use **playwright-cli** (skill) instead—see [playwright-cli (browser automation)](#playwright-cli-browser-automation) above. Browser MCPs bloat the context window with tool schemas and page snapshots; the CLI + skill workflow is more token-efficient for coding agents.
 
 ### Context Window Warning
 

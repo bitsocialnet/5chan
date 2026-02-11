@@ -22,7 +22,7 @@ import useWindowWidth from '../../hooks/use-window-width';
 import { ContentPreview } from '../../views/home/popular-threads-box';
 import PostMenuDesktop from '../post-desktop/post-menu-desktop';
 import styles from './catalog-row.module.css';
-import _ from 'lodash';
+import { capitalize } from 'lodash';
 import { selectPostMenuProps } from '../../lib/utils/post-menu-props';
 
 interface CatalogPostMediaProps {
@@ -286,7 +286,7 @@ const CatalogPost = memo(
                 t('posted_by')
               )}{' '}
               <span className={`${styles.postAuthor} ${isCatalogPostAuthorMod && styles.capcode}`}>
-                {author?.displayName || _.capitalize(t('anonymous'))}
+                {author?.displayName || capitalize(t('anonymous'))}
                 {isCatalogPostAuthorMod && <span className='capitalize'>{` ## Board ${catalogPostAuthorRole}`}</span>}
               </span>
               {(isInAllView || isInSubscriptionsView) && subplebbitAddress && ` to p/${Plebbit.getShortAddress({ address: subplebbitAddress })}`}
@@ -295,7 +295,7 @@ const CatalogPost = memo(
                 <div className={styles.postLast}>
                   {t('last_reply_by')}{' '}
                   <span className={`${styles.postAuthor} ${isLastReplyAuthorMod && styles.capcode}`}>
-                    {lastReply?.author?.displayName || _.capitalize(t('anonymous'))}
+                    {lastReply?.author?.displayName || capitalize(t('anonymous'))}
                     {isLastReplyAuthorMod && ` ## Board ${lastReplyAuthorRole}`}
                   </span>
                   <span className={styles.postAgo}> {getFormattedTimeAgo(lastReply?.timestamp)}</span>

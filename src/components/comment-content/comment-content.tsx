@@ -14,7 +14,7 @@ import ReplyQuotePreview from '../../components/reply-quote-preview';
 import Markdown from '../../components/markdown';
 import Tooltip from '../../components/tooltip';
 import styles from '../../views/post/post.module.css';
-import _ from 'lodash';
+import { capitalize } from 'lodash';
 
 const QuotedCidLink = ({ cid, postCid }: { cid: string; postCid: string }) => {
   const commentFromStore = useSubplebbitsPagesStore((state) => state.comments[cid]);
@@ -88,16 +88,16 @@ const CommentContent = ({ comment: post }: { comment: Comment }) => {
             <span className={styles.redEditMessage}>({t('this_post_was_removed')})</span>
             <br />
             <br />
-            <span className={styles.grayEditMessage}>{`${_.capitalize(t('reason'))}: "${reason}"`}</span>
+            <span className={styles.grayEditMessage}>{`${capitalize(t('reason'))}: "${reason}"`}</span>
           </>
         ) : (
-          <span className={styles.grayEditMessage}>{_.capitalize(t('this_post_was_removed'))}.</span>
+          <span className={styles.grayEditMessage}>{capitalize(t('this_post_was_removed'))}.</span>
         )
       ) : deleted ? (
         reason ? (
           <>
             <span className={styles.grayEditMessage}>{t('user_deleted_this_post')}</span>{' '}
-            <span className={styles.grayEditMessage}>{`${_.capitalize(t('reason'))}: "${reason}"`}</span>
+            <span className={styles.grayEditMessage}>{`${capitalize(t('reason'))}: "${reason}"`}</span>
           </>
         ) : (
           <span className={styles.grayEditMessage}>{t('user_deleted_this_post')}</span>
@@ -159,7 +159,7 @@ const CommentContent = ({ comment: post }: { comment: Comment }) => {
               address: subplebbitAddress && Plebbit.getShortAddress({ address: subplebbitAddress }),
               timestamp: getFormattedDate(post?.author?.subplebbit?.banExpiresAt),
               interpolation: { escapeValue: false },
-            })}${reason ? `. ${_.capitalize(t('reason'))}: "${reason}"` : ''}`}
+            })}${reason ? `. ${capitalize(t('reason'))}: "${reason}"` : ''}`}
           />
         </span>
       )}

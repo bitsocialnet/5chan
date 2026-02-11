@@ -15,14 +15,14 @@ import useTopbarVisibilityStore from '../../stores/use-topbar-visibility-store';
 import useDirectoryModalStore from '../../stores/use-directory-modal-store';
 import { BOARD_CODE_GROUPS, getAllBoardCodes } from '../../constants/board-codes';
 import styles from './topbar.module.css';
-import _, { debounce } from 'lodash';
+import { capitalize, debounce, lowerCase } from 'lodash';
 
 const SearchBar = ({ setShowSearchBar }: { setShowSearchBar: (show: boolean) => void }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const searchBarRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const placeholder = _.lowerCase(t('enter_board_address'));
+  const placeholder = lowerCase(t('enter_board_address'));
 
   useEffect(() => {
     searchInputRef.current?.focus();
@@ -229,7 +229,7 @@ const TopBarDesktop = () => {
         )}
         [
         <span className={styles.temporaryButton} onClick={() => openTopbarEditModal()} style={{ cursor: 'pointer' }}>
-          {_.capitalize(t('edit'))}
+          {capitalize(t('edit'))}
         </span>
         ] [
         <span className={styles.temporaryButton} onClick={() => openCreateBoardModal()} style={{ cursor: 'pointer' }}>
@@ -338,7 +338,7 @@ const TopBarMobile = ({ subplebbitAddress }: { subplebbitAddress: string }) => {
       </div>
       <div className={styles.pageJump}>
         <Link to={useLocation().pathname.replace(/\/$/, '') + '/settings'}>{t('settings')}</Link>
-        <span onClick={() => setShowSearchBar(!showSearchBar)}>{_.capitalize(t('search'))}</span>
+        <span onClick={() => setShowSearchBar(!showSearchBar)}>{capitalize(t('search'))}</span>
         <Link to='/'>{t('home')}</Link>
         {showSearchBar && <SearchBar setShowSearchBar={setShowSearchBar} />}
       </div>

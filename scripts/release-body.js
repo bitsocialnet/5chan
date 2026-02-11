@@ -102,8 +102,7 @@ const htmlSection = section('Static HTML build', [htmlZip && `- 5chan-html (zip)
 const downloads = [macSection, winSection, linuxSection, androidSection, htmlSection].filter(Boolean).join('\n\n');
 
 // One-liner summary of what changed in this release. Update before each release.
-const oneLinerDescription =
-  'This version adds multiple-replying support, 4chan-like user anonymity with or without user IDs depending on the board, and several bug fixes.';
+const oneLinerDescription = 'This version adds backlinks for quoted posts, improves reply functionality with proper quote references, and includes several bug fixes.';
 
 const releaseBody = `${oneLinerDescription}
 

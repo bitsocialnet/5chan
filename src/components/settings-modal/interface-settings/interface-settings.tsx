@@ -4,7 +4,7 @@ import useAvatarVisibilityStore from '../../../stores/use-avatar-visibility-stor
 import useTheme from '../../../hooks/use-theme';
 import packageJson from '../../../../package.json';
 import styles from './interface-settings.module.css';
-import _ from 'lodash';
+import { capitalize } from 'lodash';
 import useInterfaceSettingsStore from '../../../stores/use-interface-settings-store';
 import useCatalogFiltersStore from '../../../stores/use-catalog-filters-store';
 import useExpandedMediaStore from '../../../stores/use-expanded-media-store';
@@ -138,16 +138,16 @@ const InterfaceSettings = () => {
   return (
     <div className={styles.interfaceSettings}>
       <div className={styles.version}>
-        {_.capitalize(t('version'))}: <Version />
+        {capitalize(t('version'))}: <Version />
       </div>
       <div className={styles.setting}>
-        {_.capitalize(t('update'))}: <CheckForUpdates />
+        {capitalize(t('update'))}: <CheckForUpdates />
       </div>
       <div className={styles.setting}>
-        {_.capitalize(t('style'))}: <Style />
+        {capitalize(t('style'))}: <Style />
       </div>
       <div className={styles.setting}>
-        {_.capitalize(t('interface_language'))}: <InterfaceLanguage />
+        {capitalize(t('interface_language'))}: <InterfaceLanguage />
       </div>
       <div className={styles.setting}>
         <label>
@@ -159,22 +159,22 @@ const InterfaceSettings = () => {
               setShowTextOnlyThreads(!e.target.checked);
             }}
           />
-          {_.capitalize(t('hide_threads_without_images'))}
+          {capitalize(t('hide_threads_without_images'))}
         </label>
-        <div className={styles.settingTip}>{_.capitalize(t('threads_without_images_tip'))}</div>
+        <div className={styles.settingTip}>{capitalize(t('threads_without_images_tip'))}</div>
       </div>
       <div className={styles.setting}>
         <label>
           <input type='checkbox' checked={fitExpandedImagesToScreen} onChange={(e) => setFitExpandedImagesToScreen(e.target.checked)} />
-          {_.capitalize(t('fit_expanded_images_to_screen'))}
+          {capitalize(t('fit_expanded_images_to_screen'))}
         </label>
-        <div className={styles.settingTip}>{_.capitalize(t('fit_expanded_images_to_screen_tip'))}</div>
+        <div className={styles.settingTip}>{capitalize(t('fit_expanded_images_to_screen_tip'))}</div>
       </div>
       <div className={styles.setting}>
         <label>
-          <input type='checkbox' checked={hideAvatars} onChange={handleHideAvatarsChange} /> {_.capitalize(t('hide_avatars'))}
+          <input type='checkbox' checked={hideAvatars} onChange={handleHideAvatarsChange} /> {capitalize(t('hide_avatars'))}
         </label>
-        <div className={styles.settingTip}>{_.capitalize(t('hide_avatars_tip'))}</div>
+        <div className={styles.settingTip}>{capitalize(t('hide_avatars_tip'))}</div>
       </div>
     </div>
   );

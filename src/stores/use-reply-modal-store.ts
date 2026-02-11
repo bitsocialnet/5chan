@@ -78,7 +78,7 @@ const useReplyModalStore = create<ReplyModalState>((set, get) => ({
     const scrollY = isMobile ? window.scrollY : 0;
 
     set({
-      activeCid: parentCid,
+      activeCid: postCid,
       parentNumber: parentNumber ?? null,
       threadNumber: threadNumber ?? null,
       threadCid: postCid,
