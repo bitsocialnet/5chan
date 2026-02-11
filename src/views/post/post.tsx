@@ -32,7 +32,6 @@ export interface PostProps {
   onApprove?: () => void;
   onReject?: () => void;
   quotedByMap?: Map<string, Comment[]>;
-  isInPostPageView?: boolean;
 }
 
 export const Post = ({

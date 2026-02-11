@@ -380,14 +380,13 @@ const PostMediaContent = ({ post, link }: { post: any; link: string }) => {
   );
 };
 
-const ReplyBacklinks = ({ post, quotedByMap, isInPostPageView }: PostProps) => {
+const ReplyBacklinks = ({ post, quotedByMap }: PostProps) => {
   const { cid, parentCid } = post || {};
   const { replies } = useReplies({ comment: post, flat: true, accountComments: { newerThan: Infinity } });
 
   const opBacklinks =
     cid &&
     !parentCid &&
-    isInPostPageView &&
     quotedByMap
       ?.get(cid)
       ?.map(
@@ -601,7 +600,7 @@ const PostMobile = ({
                 {shouldShowSnow() && <img src='assets/xmashat.gif' className={styles.xmasHat} alt='' />}
                 <PostInfoAndMedia post={post} postReplyCount={replyCount} roles={roles} threadNumber={post?.number} />
                 <CommentContent comment={post} />
-                <ReplyBacklinks post={post} quotedByMap={quotedByMap} isInPostPageView={isInPostView} />
+                <ReplyBacklinks post={post} quotedByMap={quotedByMap} />
               </div>
               {!isInPostView && !isInPendingPostView && (showReplies || isModQueue) && (
                 <div className={styles.postLink}>

@@ -440,7 +440,6 @@ const PostInfo = ({
             )}
         {cid &&
           !parentCid &&
-          isInPostPageView &&
           quotedByMap
             ?.get(cid)
             ?.map(
