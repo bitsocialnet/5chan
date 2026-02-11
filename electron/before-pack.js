@@ -11,7 +11,7 @@ const ipfsClientWindowsPath = path.join(ipfsClientsPath, 'win');
 const ipfsClientMacPath = path.join(ipfsClientsPath, 'mac');
 const ipfsClientLinuxPath = path.join(ipfsClientsPath, 'linux');
 
-// plebbit kubu download links https://github.com/plebbit/kubo/releases
+// plebbit kubo download links https://github.com/plebbit/kubo/releases
 // const ipfsClientVersion = '0.20.0'
 // const ipfsClientWindowsUrl = `https://github.com/plebbit/kubo/releases/download/v${ipfsClientVersion}/ipfs-windows-amd64`
 // const ipfsClientMacUrl = `https://github.com/plebbit/kubo/releases/download/v${ipfsClientVersion}/ipfs-darwin-amd64`
