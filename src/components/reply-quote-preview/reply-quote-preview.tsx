@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Comment, useAccount } from '@plebbit/plebbit-react-hooks';
 import { useFloating, offset, shift, size, autoUpdate, Placement } from '@floating-ui/react';
 import { useDirectories } from '../../hooks/use-directories';
@@ -63,6 +63,13 @@ const handleQuoteHover = (cid: string, onElementOutOfView: () => void) => {
   }
 };
 
+const scrollToThreadCardTop = (threadCid: string) => {
+  const threadCard = document.querySelector<HTMLElement>(`[data-cid="${threadCid}"][data-post-cid="${threadCid}"]`);
+  if (!threadCard) return false;
+  threadCard.scrollIntoView({ behavior: 'auto', block: 'start' });
+  return true;
+};
+
 const DesktopQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, isQuotelinkReply, isOP }: ReplyQuotePreviewProps) => {
   const [hoveredCid, setHoveredCid] = useState<string | null>(null);
   const [outOfViewCid, setOutOfViewCid] = useState<string | null>(null);
@@ -107,12 +114,18 @@ const DesktopQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, i
   }, [update]);
 
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const handleClick = (e: React.MouseEvent, cid: string | undefined, subplebbitAddress: string | undefined) => {
+  const handleClick = (e: React.MouseEvent, cid: string | undefined, subplebbitAddress: string | undefined, isOpQuote = false) => {
     e.preventDefault();
     if (cid && subplebbitAddress) {
       const boardPath = getBoardPath(subplebbitAddress, directories);
-      navigate(`/${boardPath}/thread/${cid}`);
+      const threadRoute = `/${boardPath}/thread/${cid}`;
+      if (isOpQuote && location.pathname === threadRoute) {
+        scrollToThreadCardTop(cid);
+        return;
+      }
+      navigate(threadRoute);
     }
   };
 
@@ -175,7 +188,7 @@ const DesktopQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, i
         className={styles.quoteLink}
         onMouseOver={() => handleMouseOver(quotelinkReply?.cid)}
         onMouseLeave={() => handleMouseLeave(quotelinkReply?.cid)}
-        onClick={(e) => handleClick(e, quotelinkReply?.cid, quotelinkReply?.subplebbitAddress)}
+        onClick={(e) => handleClick(e, quotelinkReply?.cid, quotelinkReply?.subplebbitAddress, !!isOP)}
       >
         {`>>${quotelinkReply?.number ?? '?'}`}
         {isOP && ' (OP)'}
@@ -217,12 +230,18 @@ const MobileQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, is
   }, [update]);
 
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const handleClick = (e: React.MouseEvent, cid: string | undefined, subplebbitAddress: string | undefined) => {
+  const handleClick = (e: React.MouseEvent, cid: string | undefined, subplebbitAddress: string | undefined, isOpQuote = false) => {
     e.preventDefault();
     if (cid && subplebbitAddress) {
       const boardPath = getBoardPath(subplebbitAddress, directories);
-      navigate(`/${boardPath}/thread/${cid}`);
+      const threadRoute = `/${boardPath}/thread/${cid}`;
+      if (isOpQuote && location.pathname === threadRoute) {
+        scrollToThreadCardTop(cid);
+        return;
+      }
+      navigate(threadRoute);
     }
   };
 
@@ -300,7 +319,7 @@ const MobileQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, is
               : `/thread/${quotelinkReply.cid}`
             : '#';
           return (
-            <Link className={styles.quoteLink} to={quotelinkRoute} onClick={(e) => handleClick(e, quotelinkReply?.cid, quotelinkReply?.subplebbitAddress)}>
+            <Link className={styles.quoteLink} to={quotelinkRoute} onClick={(e) => handleClick(e, quotelinkReply?.cid, quotelinkReply?.subplebbitAddress, !!isOP)}>
               {' '}
               #
             </Link>

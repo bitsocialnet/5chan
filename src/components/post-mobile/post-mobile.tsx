@@ -380,32 +380,46 @@ const PostMediaContent = ({ post, link }: { post: any; link: string }) => {
   );
 };
 
-const ReplyBacklinks = ({ post, quotedByMap }: PostProps) => {
+const ReplyBacklinks = ({ post, quotedByMap, cidToReply, isInPostPageView }: PostProps) => {
   const { cid, parentCid } = post || {};
   const { replies } = useReplies({ comment: post, flat: true, accountComments: { newerThan: Infinity } });
 
-  return (
+  const opBacklinks =
     cid &&
-    parentCid &&
-    (replies.length > 0 || quotedByMap?.get(cid)?.length) && (
-      <div className={styles.mobileReplyBacklinks}>
-        {replies.map(
+    !parentCid &&
+    isInPostPageView &&
+    cidToReply &&
+    post?.quotedCids?.length &&
+    [...new Set<string>(post.quotedCids as string[])]
+      .map((quotedCid) => {
+        const reply = cidToReply.get(quotedCid);
+        return reply?.cid && !(reply.deleted || reply.removed) && <ReplyQuotePreview key={`op-bl-${reply.cid}`} isBacklinkReply={true} backlinkReply={reply} />;
+      })
+      .filter(Boolean);
+
+  const replyBacklinks = cid && parentCid && ((replies?.length || 0) > 0 || quotedByMap?.get(cid)?.length) && (
+    <>
+      {replies?.map(
+        (reply: Comment, index: number) =>
+          reply?.parentCid === cid && reply?.cid && !(reply?.deleted || reply?.removed) && <ReplyQuotePreview key={index} isBacklinkReply={true} backlinkReply={reply} />,
+      )}
+      {quotedByMap
+        ?.get(cid)
+        ?.map(
           (reply: Comment, index: number) =>
-            reply?.parentCid === cid &&
+            reply?.parentCid !== cid &&
             reply?.cid &&
-            !(reply?.deleted || reply?.removed) && <ReplyQuotePreview key={index} isBacklinkReply={true} backlinkReply={reply} />,
+            !(reply?.deleted || reply?.removed) && <ReplyQuotePreview key={`qb-${index}`} isBacklinkReply={true} backlinkReply={reply} />,
         )}
-        {quotedByMap
-          ?.get(cid)
-          ?.map(
-            (reply: Comment, index: number) =>
-              reply?.parentCid !== cid &&
-              reply?.cid &&
-              !(reply?.deleted || reply?.removed) && <ReplyQuotePreview key={`qb-${index}`} isBacklinkReply={true} backlinkReply={reply} />,
-          )}
-      </div>
-    )
+    </>
   );
+
+  return opBacklinks?.length > 0 || replyBacklinks ? (
+    <div className={styles.mobileReplyBacklinks}>
+      {opBacklinks}
+      {replyBacklinks}
+    </div>
+  ) : null;
 };
 
 const Reply = ({ postReplyCount, reply, roles, threadNumber, quotedByMap }: PostProps) => {
@@ -434,7 +448,7 @@ const Reply = ({ postReplyCount, reply, roles, threadNumber, quotedByMap }: Post
         >
           <PostInfoAndMedia post={post} postReplyCount={postReplyCount} roles={roles} threadNumber={threadNumber} />
           {!hidden && (!(removed || deleted) || ((removed || deleted) && reason)) && <CommentContent comment={post} />}
-          <ReplyBacklinks post={reply} quotedByMap={quotedByMap} />
+          <ReplyBacklinks post={post} quotedByMap={quotedByMap} />
         </div>
       </div>
     </div>
@@ -520,6 +534,14 @@ const PostMobile = ({
     return map;
   }, [filteredReplies, numberToCid]);
 
+  const cidToReply = useMemo(() => {
+    const map = new Map<string, Comment>();
+    for (const reply of filteredReplies) {
+      if (reply.cid) map.set(reply.cid, reply);
+    }
+    return map;
+  }, [filteredReplies]);
+
   // Virtuoso scroll position management for infinite replies
   const virtuosoRef = useRef<VirtuosoHandle | null>(null);
   const virtuosoStateKey = `replies-mobile-${cid}`;
@@ -588,6 +610,7 @@ const PostMobile = ({
                 {shouldShowSnow() && <img src='assets/xmashat.gif' className={styles.xmasHat} alt='' />}
                 <PostInfoAndMedia post={post} postReplyCount={replyCount} roles={roles} threadNumber={post?.number} />
                 <CommentContent comment={post} />
+                <ReplyBacklinks post={post} quotedByMap={quotedByMap} cidToReply={cidToReply} isInPostPageView={isInPostView} />
               </div>
               {!isInPostView && !isInPendingPostView && (showReplies || isModQueue) && (
                 <div className={styles.postLink}>

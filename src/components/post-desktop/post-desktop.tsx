@@ -76,6 +76,7 @@ const PostInfo = ({
   onApprove,
   onReject,
   quotedByMap,
+  cidToReply,
 }: PostProps) => {
   const { t } = useTranslation();
   const { author, cid, deleted, locked, pinned, parentCid, postCid, reason, removed, state, subplebbitAddress, timestamp } = post || {};
@@ -438,6 +439,14 @@ const PostInfo = ({
                 reply?.cid &&
                 !(reply?.deleted || reply?.removed) && <ReplyQuotePreview key={`qb-${index}`} isBacklinkReply={true} backlinkReply={reply} />,
             )}
+        {cid &&
+          !parentCid &&
+          isInPostPageView &&
+          cidToReply &&
+          [...new Set<string>((post?.quotedCids || []) as string[])].map((quotedCid) => {
+            const reply = cidToReply.get(quotedCid);
+            return reply?.cid && !(reply.deleted || reply.removed) && <ReplyQuotePreview key={`op-bl-${reply.cid}`} isBacklinkReply={true} backlinkReply={reply} />;
+          })}
       </span>
     </div>
   );
@@ -681,6 +690,14 @@ const PostDesktop = ({
     return map;
   }, [filteredReplies, numberToCid]);
 
+  const cidToReply = useMemo(() => {
+    const map = new Map<string, Comment>();
+    for (const reply of filteredReplies) {
+      if (reply.cid) map.set(reply.cid, reply);
+    }
+    return map;
+  }, [filteredReplies]);
+
   // Virtuoso scroll position management for infinite replies
   const virtuosoRef = useRef<VirtuosoHandle | null>(null);
   const virtuosoStateKey = `replies-desktop-${cid}`;
@@ -769,6 +786,7 @@ const PostDesktop = ({
             isPublishing={isPublishing}
             onApprove={onApprove}
             onReject={onReject}
+            cidToReply={cidToReply}
           />
           {!isHidden && !content && !(deleted || removed) && <div className={styles.spacer} />}
           {!isHidden && <CommentContent comment={post} />}
