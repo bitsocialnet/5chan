@@ -380,7 +380,7 @@ const PostMediaContent = ({ post, link }: { post: any; link: string }) => {
   );
 };
 
-const ReplyBacklinks = ({ post, quotedByMap, cidToReply, isInPostPageView }: PostProps) => {
+const ReplyBacklinks = ({ post, quotedByMap, isInPostPageView }: PostProps) => {
   const { cid, parentCid } = post || {};
   const { replies } = useReplies({ comment: post, flat: true, accountComments: { newerThan: Infinity } });
 
@@ -388,13 +388,12 @@ const ReplyBacklinks = ({ post, quotedByMap, cidToReply, isInPostPageView }: Pos
     cid &&
     !parentCid &&
     isInPostPageView &&
-    cidToReply &&
-    post?.quotedCids?.length &&
-    [...new Set<string>(post.quotedCids as string[])]
-      .map((quotedCid) => {
-        const reply = cidToReply.get(quotedCid);
-        return reply?.cid && !(reply.deleted || reply.removed) && <ReplyQuotePreview key={`op-bl-${reply.cid}`} isBacklinkReply={true} backlinkReply={reply} />;
-      })
+    quotedByMap
+      ?.get(cid)
+      ?.map(
+        (reply: Comment) =>
+          reply?.cid && !(reply?.deleted || reply?.removed) && <ReplyQuotePreview key={`op-bl-${reply.cid}`} isBacklinkReply={true} backlinkReply={reply} />,
+      )
       .filter(Boolean);
 
   const replyBacklinks = cid && parentCid && ((replies?.length || 0) > 0 || quotedByMap?.get(cid)?.length) && (
@@ -534,14 +533,6 @@ const PostMobile = ({
     return map;
   }, [filteredReplies, numberToCid]);
 
-  const cidToReply = useMemo(() => {
-    const map = new Map<string, Comment>();
-    for (const reply of filteredReplies) {
-      if (reply.cid) map.set(reply.cid, reply);
-    }
-    return map;
-  }, [filteredReplies]);
-
   // Virtuoso scroll position management for infinite replies
   const virtuosoRef = useRef<VirtuosoHandle | null>(null);
   const virtuosoStateKey = `replies-mobile-${cid}`;
@@ -610,7 +601,7 @@ const PostMobile = ({
                 {shouldShowSnow() && <img src='assets/xmashat.gif' className={styles.xmasHat} alt='' />}
                 <PostInfoAndMedia post={post} postReplyCount={replyCount} roles={roles} threadNumber={post?.number} />
                 <CommentContent comment={post} />
-                <ReplyBacklinks post={post} quotedByMap={quotedByMap} cidToReply={cidToReply} isInPostPageView={isInPostView} />
+                <ReplyBacklinks post={post} quotedByMap={quotedByMap} isInPostPageView={isInPostView} />
               </div>
               {!isInPostView && !isInPendingPostView && (showReplies || isModQueue) && (
                 <div className={styles.postLink}>

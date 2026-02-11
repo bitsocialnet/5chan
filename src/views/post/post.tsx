@@ -32,7 +32,6 @@ export interface PostProps {
   onApprove?: () => void;
   onReject?: () => void;
   quotedByMap?: Map<string, Comment[]>;
-  cidToReply?: Map<string, Comment>;
   isInPostPageView?: boolean;
 }
 
