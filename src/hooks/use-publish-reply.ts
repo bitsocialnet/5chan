@@ -1,6 +1,8 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { Comment, useAccount, usePublishComment } from '@plebbit/plebbit-react-hooks';
 import usePublishReplyStore from '../stores/use-publish-reply-store';
+import usePostNumberStore from '../stores/use-post-number-store';
+import { getQuotedCidsFromContent, mergeQuotedCids } from '../lib/utils/reply-quote-utils';
 
 const usePublishReply = ({ cid, subplebbitAddress, postCid }: { cid: string; subplebbitAddress: string; postCid?: string }) => {
   const parentCid = cid;
@@ -54,7 +56,12 @@ const usePublishReply = ({ cid, subplebbitAddress, postCid }: { cid: string; sub
 
   const resetPublishReplyOptions = useCallback(() => resetPublishReplyStore(parentCid), [parentCid, resetPublishReplyStore]);
 
-  const { index, publishComment } = usePublishComment(publishCommentOptions);
+  const numberToCid = usePostNumberStore((state) => state.numberToCid);
+  const quotedCids = useMemo(() => getQuotedCidsFromContent(content, numberToCid), [content, numberToCid]);
+
+  const publishOptions = useMemo(() => mergeQuotedCids(publishCommentOptions, quotedCids), [publishCommentOptions, quotedCids]);
+
+  const { index, publishComment } = usePublishComment(publishOptions);
 
   return {
     setPublishReplyOptions,
