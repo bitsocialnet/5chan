@@ -6,7 +6,7 @@ import useIsMobile from '../../hooks/use-is-mobile';
 import useChallengesStore from '../../stores/use-challenges-store';
 import useTheme from '../../hooks/use-theme';
 import styles from './challenge-modal.module.css';
-import _ from 'lodash';
+import { capitalize } from 'lodash';
 import { useSpring, animated } from '@react-spring/web';
 import { useDrag } from '@use-gesture/react';
 
@@ -269,7 +269,7 @@ const Challenge = ({ challenge, closeModal }: ChallengeProps) => {
         {isIframeChallenge && !showIframeConfirmation ? null : (
           <>
             <div className={styles.name}>
-              <input type='text' value={displayName || _.capitalize(t('anonymous'))} disabled />
+              <input type='text' value={displayName || capitalize(t('anonymous'))} disabled />
             </div>
             {title && (
               <div className={styles.subject}>

@@ -12,7 +12,7 @@ import useDirectoryModalStore from '../../stores/use-directory-modal-store';
 import DisclaimerModal from '../../components/disclaimer-modal';
 import DirectoryModal from '../../components/directory-modal';
 import { getBoardPath } from '../../lib/utils/route-utils';
-import _ from 'lodash';
+import { lowerCase } from 'lodash';
 
 // https://github.com/plebbit/lists/blob/master/5chan-directories.json
 
@@ -40,7 +40,7 @@ const SearchBar = () => {
           spellCheck='false'
           autoCapitalize='off'
           type='text'
-          placeholder={_.lowerCase(t('enter_board_address'))}
+          placeholder={lowerCase(t('enter_board_address'))}
           ref={searchInputRef}
         />
         <button className={styles.searchButton}>{t('go')}</button>

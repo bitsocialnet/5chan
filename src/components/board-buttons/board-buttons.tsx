@@ -20,7 +20,7 @@ import CatalogSearch from '../catalog-search';
 import Tooltip from '../tooltip';
 import { ModQueueButton } from '../../views/mod-queue/mod-queue';
 import styles from './board-buttons.module.css';
-import _ from 'lodash';
+import { capitalize } from 'lodash';
 
 interface BoardButtonsProps {
   address?: string | undefined;
@@ -510,13 +510,13 @@ const PostPageStats = () => {
   const linkCount = useCountLinksInReplies(comment);
 
   const displayReplyCount = replyCount !== undefined ? replyCount.toString() : '?';
-  const replyCountTooltip = replyCount !== undefined ? _.capitalize(t('replies')) : t('loading');
+  const replyCountTooltip = replyCount !== undefined ? capitalize(t('replies')) : t('loading');
 
   return (
     <span>
-      {pinned && `${_.capitalize(t('sticky'))} / `}
-      {closed && `${_.capitalize(t('closed'))} / `}
-      <Tooltip children={displayReplyCount} content={replyCountTooltip} /> / <Tooltip children={linkCount?.toString()} content={_.capitalize(t('links'))} />
+      {pinned && `${capitalize(t('sticky'))} / `}
+      {closed && `${capitalize(t('closed'))} / `}
+      <Tooltip children={displayReplyCount} content={replyCountTooltip} /> / <Tooltip children={linkCount?.toString()} content={capitalize(t('links'))} />
     </span>
   );
 };

@@ -14,7 +14,7 @@ import useIsMobile from '../../hooks/use-is-mobile';
 import useIsSubplebbitOffline from '../../hooks/use-is-subplebbit-offline';
 import { shouldShowSnow } from '../../lib/snow';
 import Tooltip from '../tooltip';
-import _ from 'lodash';
+import { startCase } from 'lodash';
 import { BANNERS } from '../../generated/asset-manifest';
 
 const ImageBanner = () => {
@@ -78,7 +78,7 @@ const BoardHeader = () => {
     : isInSubscriptionsView
       ? '/subs/ - Subscriptions'
       : isInModView
-        ? _.startCase(t('boards_you_moderate'))
+        ? startCase(t('boards_you_moderate'))
         : defaultSubplebbit?.title || stableSubplebbit?.title;
   const subtitle = isInAllView ? '' : isInSubscriptionsView ? subscriptionsSubtitle : isInModView ? '/mod/' : `${address || subplebbitAddress || ''}`;
 

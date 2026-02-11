@@ -5,7 +5,7 @@ import styles from './avatar-settings.module.css';
 import { Trans, useTranslation } from 'react-i18next';
 import LoadingEllipsis from '../../loading-ellipsis';
 import ErrorDisplay from '../../error-display/error-display';
-import _ from 'lodash';
+import { capitalize } from 'lodash';
 
 const AvatarPreview = ({ avatar }: any) => {
   const { t } = useTranslation();
@@ -132,7 +132,7 @@ const AvatarSettings = () => {
       <AvatarPreview avatar={avatar} />
       <div className={styles.avatarSettingsForm}>
         <div className={`${styles.settingField} ${styles.step1}`}>
-          <span className={styles.settingTitle}>{_.capitalize(t('chain_ticker'))}: </span>
+          <span className={styles.settingTitle}>{capitalize(t('chain_ticker'))}: </span>
           <input
             type='text'
             placeholder='eth/sol/matic'
@@ -197,7 +197,7 @@ const AvatarSettings = () => {
           </span>
         </div>
         <div className={styles.settingField}>
-          <span className={`${styles.settingTitle} ${styles.timestampfield}`}>{_.capitalize(t('timestamp'))}: </span>
+          <span className={`${styles.settingTitle} ${styles.timestampfield}`}>{capitalize(t('timestamp'))}: </span>
           <input
             type='text'
             placeholder='1234567890'
@@ -209,7 +209,7 @@ const AvatarSettings = () => {
           />
         </div>
         <div className={`${styles.settingField} ${styles.step5}`}>
-          <span className={styles.settingTitle}>{_.capitalize(t('paste_signature'))}: </span>
+          <span className={styles.settingTitle}>{capitalize(t('paste_signature'))}: </span>
           <input
             type='text'
             placeholder='0x...'

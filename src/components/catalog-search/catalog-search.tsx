@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import styles from './catalog-search.module.css';
 import useIsMobile from '../../hooks/use-is-mobile';
 import useCatalogFiltersStore from '../../stores/use-catalog-filters-store';
-import _ from 'lodash';
+import { debounce } from 'lodash';
 
 const CatalogSearch = () => {
   const { t } = useTranslation();
@@ -44,7 +44,7 @@ const CatalogSearch = () => {
   // Create a debounced version of setSearchFilter and URL update
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const debouncedSetSearchFilter = useCallback(
-    _.debounce((text: string) => {
+    debounce((text: string) => {
       if (text.trim()) {
         setSearchFilter(text);
         updateURL(text);

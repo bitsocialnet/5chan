@@ -12,7 +12,7 @@ import { getBoardPath } from '../../../lib/utils/route-utils';
 import { useDirectories } from '../../../hooks/use-directories';
 import { isAllView, isCatalogView, isPostPageView, isSubscriptionsView } from '../../../lib/utils/view-utils';
 import useHide from '../../../hooks/use-hide';
-import _ from 'lodash';
+import { capitalize } from 'lodash';
 import { PostMenuProps } from '../../../lib/utils/post-menu-props';
 
 type CopyLinkButtonProps =
@@ -99,7 +99,7 @@ const ImageSearchButton = ({ url, onClose }: { url: string; onClose: () => void 
       ref={refs.setReference}
       onClick={onClose}
     >
-      {_.capitalize(t('image_search'))} »
+      {capitalize(t('image_search'))} »
       {isImageSearchMenuOpen && (
         <div ref={refs.setFloating} style={floatingStyles} className={styles.dropdownMenu}>
           <a href={`https://lens.google.com/uploadbyurl?url=${url}`} target='_blank' rel='noreferrer'>

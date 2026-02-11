@@ -13,7 +13,7 @@ import usePublishReply from '../../hooks/use-publish-reply';
 import useIsMobile from '../../hooks/use-is-mobile';
 import styles from './reply-modal.module.css';
 import { LinkTypePreviewer } from '../post-form';
-import _ from 'lodash';
+import { capitalize, debounce } from 'lodash';
 import FileUploader from '../../plugins/file-uploader';
 import { Capacitor } from '@capacitor/core';
 import { useSpring, animated } from '@react-spring/web';
@@ -56,7 +56,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
   const [lengthError, setLengthError] = useState<string | null>(null);
 
   const checkContentLength = useRef(
-    _.debounce((content: string, t: Function) => {
+    debounce((content: string, t: Function) => {
       const length = content.trim().length;
       if (length > 2000) {
         setError(null);
@@ -327,7 +327,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
           <input
             type='text'
             defaultValue={displayName}
-            placeholder={displayName ? undefined : _.capitalize(t('name'))}
+            placeholder={displayName ? undefined : capitalize(t('name'))}
             onChange={(e) => {
               setAccount({ ...account, author: { ...account?.author, displayName: e.target.value } });
               setPublishReplyOptions({ displayName: e.target.value });
@@ -338,7 +338,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
           <input
             type='text'
             ref={urlRef}
-            placeholder={_.capitalize(t('link'))}
+            placeholder={capitalize(t('link'))}
             onChange={(e) => {
               setUrl(e.target.value);
               setPublishReplyOptions({ link: e.target.value });
@@ -386,7 +386,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
             [
             <label>
               <input type='checkbox' onChange={(e) => setPublishReplyOptions({ spoiler: e.target.checked })} />
-              {_.capitalize(t('spoiler'))}?
+              {capitalize(t('spoiler'))}?
             </label>
             ]
           </span>

@@ -33,7 +33,7 @@ import ReplyQuotePreview from '../reply-quote-preview';
 import Tooltip from '../tooltip';
 import { PostProps } from '../../views/post/post';
 import { create } from 'zustand';
-import _ from 'lodash';
+import { capitalize, lowerCase } from 'lodash';
 import { shouldShowSnow } from '../../lib/snow';
 import useReplyModalStore from '../../stores/use-reply-modal-store';
 import { selectPostMenuProps } from '../../lib/utils/post-menu-props';
@@ -241,9 +241,9 @@ const PostInfo = ({
         <span className={styles.nameBlock}>
           <span className={`${styles.name} ${authorRole && !(deleted || removed) && (authorRole === 'mod' ? styles.capcodeMod : styles.capcodeAdmin)}`}>
             {deleted ? (
-              _.capitalize(t('deleted'))
+              capitalize(t('deleted'))
             ) : removed ? (
-              _.capitalize(t('removed'))
+              capitalize(t('removed'))
             ) : displayName ? (
               displayName.length <= 20 ? (
                 displayName
@@ -254,7 +254,7 @@ const PostInfo = ({
                 />
               )
             ) : (
-              _.capitalize(t('anonymous'))
+              capitalize(t('anonymous'))
             )}
             {!(deleted || removed) && authorRole && (
               <span className='capitalize'>
@@ -328,7 +328,7 @@ const PostInfo = ({
             <>
               <span>No.</span>
               <span className={styles.pendingCid}>
-                {state === 'failed' || stateString === 'Failed' ? _.capitalize(t('failed')) : state === 'pending' ? _.capitalize(t('pending')) : ''}
+                {state === 'failed' || stateString === 'Failed' ? capitalize(t('failed')) : state === 'pending' ? capitalize(t('pending')) : ''}
               </span>
             </>
           )}
@@ -346,7 +346,7 @@ const PostInfo = ({
             <span className={styles.replyButton}>
               [
               <Link to={boardPath ? `/${boardPath}/thread/${postCid}` : `/thread/${postCid}`} onClick={(e) => !cid && e.preventDefault()}>
-                {_.capitalize(t('reply'))}
+                {capitalize(t('reply'))}
               </Link>
               ]
             </span>
@@ -507,9 +507,9 @@ const PostMedia = ({
         )}
         {t('link')}:{' '}
         <a href={url} target='_blank' rel='noopener noreferrer'>
-          {spoiler ? _.capitalize(t('spoiler')) : url && url.length > 30 ? url.slice(0, 30) + '...' : url}
+          {spoiler ? capitalize(t('spoiler')) : url && url.length > 30 ? url.slice(0, 30) + '...' : url}
         </a>{' '}
-        ({type && _.lowerCase(getDisplayMediaInfoType(type, t))}
+        ({type && lowerCase(getDisplayMediaInfoType(type, t))}
         {mediaDimensions && `, ${mediaDimensions}`})
         {!showThumbnail && (type === 'iframe' || type === 'video' || type === 'audio') && (
           <span>

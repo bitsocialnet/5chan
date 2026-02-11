@@ -18,7 +18,7 @@ import usePublishReply from '../../hooks/use-publish-reply';
 import FileUploader from '../../plugins/file-uploader';
 import styles from './post-form.module.css';
 import { Capacitor } from '@capacitor/core';
-import _ from 'lodash';
+import { capitalize, debounce } from 'lodash';
 
 const isAndroid = Capacitor.getPlatform() === 'android';
 
@@ -79,7 +79,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
   const [lengthError, setLengthError] = useState<string | null>(null);
 
   const checkContentLength = useRef(
-    _.debounce((content: string, t: Function) => {
+    debounce((content: string, t: Function) => {
       const length = content.trim().length;
       if (length > 2000) {
         setLengthError(`${t('error')}: ${t('comment_field_too_long', { length })}`);
@@ -247,7 +247,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
           <td>
             <input
               type='text'
-              placeholder={!displayName ? _.capitalize(t('anonymous')) : undefined}
+              placeholder={!displayName ? capitalize(t('anonymous')) : undefined}
               defaultValue={displayName || undefined}
               onChange={(e) => {
                 const newDisplayName = e.target.value.trim() || undefined;
@@ -326,7 +326,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
                 type='checkbox'
                 onChange={(e) => (isInPostView ? setPublishReplyOptions({ spoiler: e.target.checked }) : setPublishPostOptions({ spoiler: e.target.checked }))}
               />
-              {_.capitalize(t('spoiler'))}?
+              {capitalize(t('spoiler'))}?
             </label>
             ]
           </td>

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Account, setAccount, useAccount } from '@plebbit/plebbit-react-hooks';
 import styles from './crypto-wallets-setting.module.css';
 import { Trans, useTranslation } from 'react-i18next';
-import _ from 'lodash';
+import { capitalize } from 'lodash';
 
 interface Wallet {
   chainTicker: string;
@@ -102,7 +102,7 @@ const CryptoWalletsForm = ({ account }: { account: Account | undefined }) => {
     walletsArray.length > 0 ? (
       <div key={selectedWallet} className={styles.walletBox}>
         <div className={`${styles.walletField} ${styles.step1}`}>
-          <span className={styles.walletFieldTitle}>{_.capitalize(t('chain_ticker'))}: </span>
+          <span className={styles.walletFieldTitle}>{capitalize(t('chain_ticker'))}: </span>
           <input
             type='text'
             onChange={(e) => setWalletsArrayProperty(selectedWallet, 'chainTicker', e.target.value)}
@@ -111,7 +111,7 @@ const CryptoWalletsForm = ({ account }: { account: Account | undefined }) => {
           />
         </div>
         <div className={`${styles.walletField} ${styles.step2}`}>
-          <span className={styles.walletFieldTitle}>{_.capitalize(t('wallet_address'))}: </span>
+          <span className={styles.walletFieldTitle}>{capitalize(t('wallet_address'))}: </span>
           <input
             type='text'
             onChange={(e) => setWalletsArrayProperty(selectedWallet, 'address', e.target.value)}
@@ -133,7 +133,7 @@ const CryptoWalletsForm = ({ account }: { account: Account | undefined }) => {
           </span>
         </div>
         <div className={styles.walletField}>
-          <span className={`${styles.walletFieldTitle} ${styles.timestampfield}`}>{_.capitalize(t('timestamp'))}: </span>
+          <span className={`${styles.walletFieldTitle} ${styles.timestampfield}`}>{capitalize(t('timestamp'))}: </span>
           <input
             type='text'
             onChange={(e) => setWalletsArrayProperty(selectedWallet, 'timestamp', Number(e.target.value))}
@@ -142,7 +142,7 @@ const CryptoWalletsForm = ({ account }: { account: Account | undefined }) => {
           />
         </div>
         <div className={`${styles.walletField} ${styles.step4}`}>
-          <span className={styles.walletFieldTitle}>{_.capitalize(t('paste_signature'))}: </span>
+          <span className={styles.walletFieldTitle}>{capitalize(t('paste_signature'))}: </span>
           <input
             type='text'
             onChange={(e) => setWalletsArrayProperty(selectedWallet, 'signature', e.target.value)}

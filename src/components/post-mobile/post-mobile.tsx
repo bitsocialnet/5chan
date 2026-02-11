@@ -30,7 +30,7 @@ import PostMenuMobile from './post-menu-mobile';
 import ReplyQuotePreview from '../reply-quote-preview';
 import Tooltip from '../tooltip';
 import { PostProps } from '../../views/post/post';
-import _ from 'lodash';
+import { capitalize, lowerCase } from 'lodash';
 import useReplyModalStore from '../../stores/use-reply-modal-store';
 import { selectPostMenuProps } from '../../lib/utils/post-menu-props';
 import useChallengesStore from '../../stores/use-challenges-store';
@@ -204,9 +204,9 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
           <span className={styles.nameBlock}>
             <span className={`${styles.name} ${authorRole && !(deleted || removed) && (authorRole === 'mod' ? styles.capcodeMod : styles.capcodeAdmin)}`}>
               {removed ? (
-                _.capitalize(t('removed'))
+                capitalize(t('removed'))
               ) : deleted ? (
-                _.capitalize(t('deleted'))
+                capitalize(t('deleted'))
               ) : displayName ? (
                 displayName.length <= 20 ? (
                   displayName
@@ -217,7 +217,7 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
                   />
                 )
               ) : (
-                _.capitalize(t('anonymous'))
+                capitalize(t('anonymous'))
               )}{' '}
               {!(deleted || removed) && authorRole && (
                 <span className='capitalize'>
@@ -242,9 +242,9 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
               <>
                 (ID: {''}
                 {removed ? (
-                  _.lowerCase(t('removed'))
+                  lowerCase(t('removed'))
                 ) : deleted ? (
-                  _.lowerCase(t('deleted'))
+                  lowerCase(t('deleted'))
                 ) : (
                   <Tooltip
                     children={
@@ -320,7 +320,7 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
               <>
                 <span>No.</span>
                 <span className={styles.pendingCid}>
-                  {state === 'failed' || stateString === 'Failed' ? _.capitalize(t('failed')) : state === 'pending' ? _.capitalize(t('pending')) : ''}
+                  {state === 'failed' || stateString === 'Failed' ? capitalize(t('failed')) : state === 'pending' ? capitalize(t('pending')) : ''}
                 </span>
               </>
             )}
