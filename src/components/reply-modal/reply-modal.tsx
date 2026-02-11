@@ -68,7 +68,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
   ).current;
 
   const onPublishReply = () => {
-    const currentContent = textRef.current?.value.slice(contentPrefix.length).trim() || '';
+    const currentContent = textRef.current?.value.trim() || '';
     const currentUrl = urlRef.current?.value.trim() || '';
 
     if (!currentContent && !currentUrl) {
@@ -186,16 +186,19 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
     }
   }, []);
 
-  const contentPrefix = `>>${parentNumber ?? '?'}\n`;
+  const defaultParentQuote = `>>${parentNumber ?? '?'}\n`;
 
-  // enable spellcheck after the prefix is set
+  // Enable spellcheck after initial content is injected into the textarea.
   useEffect(() => {
     if (showReplyModal && textRef.current) {
       textRef.current.spellcheck = false;
-      textRef.current.value = contentPrefix + (selectedText || '');
+      textRef.current.value = `${defaultParentQuote}${selectedText || ''}`;
       const len = textRef.current.value.length;
       lastSelectionStartRef.current = len;
       lastSelectionEndRef.current = len;
+      const formattedContent = formatMarkdown(textRef.current.value);
+      setPublishReplyOptions({ content: formattedContent });
+      checkContentLength(formattedContent, t);
 
       setTimeout(() => {
         if (textRef.current) {
@@ -203,24 +206,17 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
         }
       }, 100);
     }
-  }, [showReplyModal, contentPrefix, selectedText]);
+  }, [showReplyModal, defaultParentQuote, selectedText]);
 
   const handleContentInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const { value } = e.target;
-    if (!value.startsWith(contentPrefix)) {
-      e.target.value = contentPrefix + value.slice(contentPrefix.length);
-    }
     lastSelectionStartRef.current = e.target.selectionStart ?? e.target.value.length;
     lastSelectionEndRef.current = e.target.selectionEnd ?? lastSelectionStartRef.current;
   };
 
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const contentWithoutPrefix = e.target.value.slice(contentPrefix.length);
-    const formattedContent = formatMarkdown(contentWithoutPrefix);
-    if (textRef.current && textRef.current.value !== formattedContent) {
-      setPublishReplyOptions({ content: formattedContent });
-      checkContentLength(formattedContent, t);
-    }
+    const formattedContent = formatMarkdown(e.target.value);
+    setPublishReplyOptions({ content: formattedContent });
+    checkContentLength(formattedContent, t);
   };
 
   useEffect(() => {
@@ -244,12 +240,11 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
     const isFocused = document.activeElement === textarea;
     const rawStart = isFocused ? (textarea.selectionStart ?? textarea.value.length) : lastSelectionStartRef.current;
     const selectionEnd = isFocused ? (textarea.selectionEnd ?? rawStart) : lastSelectionEndRef.current;
-    const minStart = contentPrefix.length;
-    const start = Math.max(rawStart, minStart);
-    const end = Math.max(selectionEnd, minStart);
+    const start = Math.max(rawStart, 0);
+    const end = Math.max(selectionEnd, 0);
     const before = textarea.value.slice(0, start);
     const after = textarea.value.slice(end);
-    const needsLeadingNewline = before.length > minStart && !before.endsWith('\n');
+    const needsLeadingNewline = before.length > 0 && !before.endsWith('\n');
     let insertion = `${needsLeadingNewline ? '\n' : ''}${quote}\n`;
     if (selectedQuote) {
       insertion += `${selectedQuote}\n`;
@@ -263,11 +258,10 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
     lastSelectionStartRef.current = nextCursor;
     lastSelectionEndRef.current = nextCursor;
 
-    const contentWithoutPrefix = nextValue.slice(contentPrefix.length);
-    const formattedContent = formatMarkdown(contentWithoutPrefix);
+    const formattedContent = formatMarkdown(nextValue);
     setPublishReplyOptions({ content: formattedContent });
     checkContentLength(formattedContent, t);
-  }, [showReplyModal, quoteInsertRequestId, quoteInsertNumber, quoteInsertSelectedText, contentPrefix, setPublishReplyOptions, checkContentLength, t]);
+  }, [showReplyModal, quoteInsertRequestId, quoteInsertNumber, quoteInsertSelectedText, setPublishReplyOptions, checkContentLength, t]);
 
   // on android, auto upload file to image hosting sites with open api
   const [isUploading, setIsUploading] = useState(false);
