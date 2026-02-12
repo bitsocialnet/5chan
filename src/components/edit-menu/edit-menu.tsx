@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { autoUpdate, FloatingFocusManager, offset, shift, useClick, useDismiss, useFloating, useId, useInteractions, useRole } from '@floating-ui/react';
 import {
@@ -33,30 +33,22 @@ const EditMenu = ({ post }: { post: Comment }) => {
   const { t } = useTranslation();
   const isMobile = useIsMobile();
   const { author, cid, content, deleted, locked, parentCid, pinned, postCid, reason, removed, spoiler, subplebbitAddress } = post || {};
+  const authorDisplayName = post?.author?.displayName;
+  const modBanExpiresAt = post?.commentModeration?.author?.banExpiresAt;
   const purged = post?.commentModeration?.purged ?? false;
   const [isEditMenuOpen, setIsEditMenuOpen] = useState(false);
   const [isContentEditorOpen, setIsContentEditorOpen] = useState(false);
 
   const account = useAccount();
-  const [signer, setSigner] = useState<any>(account?.signer);
-
   const { isCommentAuthorMod, isAccountMod, isAccountCommentAuthor } = useAuthorPrivileges({
     commentAuthorAddress: author?.address,
     subplebbitAddress,
     postCid,
   });
-
-  const checkSigner = useCallback(() => {
-    if (isAccountCommentAuthor) {
-      setSigner(account?.signer);
-    } else {
-      setSigner(null);
-    }
-  }, [isAccountCommentAuthor, account?.signer]);
-
-  useEffect(() => {
-    checkSigner();
-  }, [checkSigner]);
+  const signer = isAccountCommentAuthor ? account?.signer : null;
+  const latestPostRef = useRef(post);
+  latestPostRef.current = post;
+  const onChallenge = useCallback((...args: any) => addChallenge([...args, latestPostRef.current]), []);
 
   const defaultPublishEditOptions = useMemo(() => {
     return {
@@ -75,17 +67,17 @@ const EditMenu = ({ post }: { post: Comment }) => {
             purged: purged ?? false,
             spoiler: spoiler ?? false,
             reason,
-            author: post?.commentModeration?.author?.banExpiresAt ? { banExpiresAt: post.commentModeration.author.banExpiresAt } : undefined,
+            author: modBanExpiresAt ? { banExpiresAt: modBanExpiresAt } : undefined,
           }
         : undefined,
-      onChallenge: (...args: any) => addChallenge([...args, post]),
+      onChallenge,
       onChallengeVerification: alertChallengeVerificationFailed,
       onError: (error: Error) => {
         console.warn(error);
         alert('Comment edit failed. ' + error.message);
       },
     };
-  }, [isAccountMod, isAccountCommentAuthor, cid, content, deleted, locked, pinned, reason, removed, purged, spoiler, subplebbitAddress, post]);
+  }, [isAccountMod, isAccountCommentAuthor, cid, content, deleted, locked, pinned, reason, removed, purged, spoiler, subplebbitAddress, modBanExpiresAt, onChallenge]);
 
   const [publishCommentEditOptions, setPublishCommentEditOptions] = useState<PublishCommentEditOptions>(defaultPublishEditOptions);
 
@@ -94,19 +86,19 @@ const EditMenu = ({ post }: { post: Comment }) => {
       commentCid: cid,
       subplebbitAddress,
       signer,
-      author: signer?.address === author?.address ? { address: signer?.address, displayName: post?.author?.displayName } : account?.author,
+      author: signer?.address === author?.address ? { address: signer?.address, displayName: authorDisplayName } : account?.author,
       content: publishCommentEditOptions.content,
       deleted: publishCommentEditOptions.deleted,
       reason: publishCommentEditOptions.reason,
       spoiler: publishCommentEditOptions.spoiler,
-      onChallenge: (...args: any) => addChallenge([...args, post]),
+      onChallenge,
       onChallengeVerification: alertChallengeVerificationFailed,
       onError: (error: Error) => {
         console.warn(error);
         alert('Comment edit failed. ' + error.message);
       },
     }),
-    [publishCommentEditOptions, cid, subplebbitAddress, signer, post, account?.author, author?.address],
+    [publishCommentEditOptions, cid, subplebbitAddress, signer, account?.author, author?.address, authorDisplayName, onChallenge],
   );
 
   const modEditOptions = useMemo<PublishCommentModerationOptions>(
@@ -123,26 +115,30 @@ const EditMenu = ({ post }: { post: Comment }) => {
         author: publishCommentEditOptions.commentModeration?.author,
       },
       author: account?.author,
-      onChallenge: (...args: any) => addChallenge([...args, post]),
+      onChallenge,
       onChallengeVerification: alertChallengeVerificationFailed,
       onError: (error: Error) => {
         console.warn(error);
         alert('Comment moderation failed. ' + error.message);
       },
     }),
-    [publishCommentEditOptions, cid, subplebbitAddress, post, account?.author, parentCid],
+    [publishCommentEditOptions, cid, subplebbitAddress, account?.author, parentCid, onChallenge],
   );
 
   const { publishCommentEdit: publishAuthorEdit } = usePublishCommentEdit(authorEditOptions);
   const { publishCommentModeration } = usePublishCommentModeration(modEditOptions);
 
-  useEffect(() => {
-    setPublishCommentEditOptions(defaultPublishEditOptions);
-  }, [defaultPublishEditOptions]);
-
   const [banDuration, setBanDuration] = useState(() =>
-    publishCommentEditOptions.commentModeration?.author?.banExpiresAt ? timestampToDays(publishCommentEditOptions.commentModeration.author.banExpiresAt) : 1,
+    defaultPublishEditOptions.commentModeration?.author?.banExpiresAt ? timestampToDays(defaultPublishEditOptions.commentModeration.author.banExpiresAt) : 1,
   );
+
+  const resetMenuState = () => {
+    setPublishCommentEditOptions(defaultPublishEditOptions);
+    setBanDuration(
+      defaultPublishEditOptions.commentModeration?.author?.banExpiresAt ? timestampToDays(defaultPublishEditOptions.commentModeration.author.banExpiresAt) : 1,
+    );
+    setIsContentEditorOpen(false);
+  };
 
   const onCheckbox = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, checked } = e.target;
@@ -258,7 +254,12 @@ const EditMenu = ({ post }: { post: Comment }) => {
           type='checkbox'
           onChange={() => {
             if (cid && (isAccountCommentAuthor || isAccountMod)) {
-              setIsEditMenuOpen(!isEditMenuOpen);
+              if (!isEditMenuOpen) {
+                resetMenuState();
+                setIsEditMenuOpen(true);
+              } else {
+                setIsEditMenuOpen(false);
+              }
             } else {
               setIsEditMenuOpen(false);
               alert(parentCid ? t('cannot_edit_reply') : t('cannot_edit_thread'));

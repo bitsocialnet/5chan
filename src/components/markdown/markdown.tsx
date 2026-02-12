@@ -247,14 +247,18 @@ const renderAnchorLink = (children: React.ReactNode, href: string, threadPostCid
 };
 
 const Markdown = ({ content, title, postCid }: MarkdownProps) => {
-  const remarkPlugins: any[] = [[supersub]];
+  const remarkPlugins = useMemo(() => {
+    const plugins: any[] = [[supersub]];
 
-  if (content && content.length <= MAX_LENGTH_FOR_GFM) {
-    remarkPlugins.push([remarkGfm, { singleTilde: false }]);
-  }
+    if (content && content.length <= MAX_LENGTH_FOR_GFM) {
+      plugins.push([remarkGfm, { singleTilde: false }]);
+    }
 
-  remarkPlugins.push([blockquoteToGreentext]);
-  remarkPlugins.push([spoilerTransform]);
+    plugins.push([blockquoteToGreentext]);
+    plugins.push([spoilerTransform]);
+
+    return plugins;
+  }, [content]);
 
   const customSchema = useMemo(
     () => ({
@@ -270,10 +274,53 @@ const Markdown = ({ content, title, postCid }: MarkdownProps) => {
     [],
   );
 
-  const isInCatalogView = isCatalogView(useLocation().pathname, useParams());
+  const location = useLocation();
+  const params = useParams();
+  const isInCatalogView = isCatalogView(location.pathname, params);
+
+  const rehypePlugins = useMemo(() => [[rehypeRaw as any], [rehypeSanitize, customSchema]] as any[], [customSchema]);
 
   // Preprocess content to convert plain text 5chan patterns to markdown links
-  const processedContent = preprocess5chanPatterns(content || '');
+  const processedContent = useMemo(() => preprocess5chanPatterns(content || ''), [content]);
+
+  const components = useMemo(
+    () =>
+      ({
+        p: ({ children }) => <p className={isInCatalogView ? styles.inline : ''}>{children}</p>,
+        h1: ({ children }) => <p className={styles.header}>{children}</p>,
+        h2: ({ children }) => <p className={styles.header}>{children}</p>,
+        h3: ({ children }) => <p className={styles.header}>{children}</p>,
+        h4: ({ children }) => <p className={styles.header}>{children}</p>,
+        h5: ({ children }) => <p className={styles.header}>{children}</p>,
+        h6: ({ children }) => <p className={styles.header}>{children}</p>,
+        img: ({ src, alt }) => {
+          const displayText = src || alt || 'image';
+          return <span>{displayText}</span>;
+        },
+        video: ({ src }) => <span>{src}</span>,
+        iframe: ({ src }) => <span>{src}</span>,
+        source: ({ src }) => <span>{src}</span>,
+        spoiler: ({ children }) => <span className='spoilertext'>{children}</span>,
+        a: ({ href, children }) => {
+          if (href && !isInCatalogView) {
+            try {
+              const linkMediaInfo = getLinkMediaInfo(href);
+              const embedUrl = href.startsWith('http') ? new URL(href) : null;
+              if ((embedUrl && canEmbed(embedUrl)) || getHasThumbnail(linkMediaInfo, href)) {
+                return <ContentLinkEmbed children={children} href={href} linkMediaInfo={linkMediaInfo} />;
+              }
+            } catch (e) {
+              console.debug('Invalid URL:', href);
+            }
+
+            return renderAnchorLink(children, href, postCid);
+          }
+
+          return renderAnchorLink(children, href || '', postCid);
+        },
+      }) as ExtendedComponents,
+    [isInCatalogView, postCid],
+  );
 
   return (
     <span className={styles.markdown}>
@@ -283,47 +330,7 @@ const Markdown = ({ content, title, postCid }: MarkdownProps) => {
           {content ? ': ' : ''}
         </span>
       )}
-      <ReactMarkdown
-        children={processedContent}
-        remarkPlugins={remarkPlugins}
-        rehypePlugins={[[rehypeRaw as any], [rehypeSanitize, customSchema]]}
-        components={
-          {
-            p: ({ children }) => <p className={isInCatalogView ? styles.inline : ''}>{children}</p>,
-            h1: ({ children }) => <p className={styles.header}>{children}</p>,
-            h2: ({ children }) => <p className={styles.header}>{children}</p>,
-            h3: ({ children }) => <p className={styles.header}>{children}</p>,
-            h4: ({ children }) => <p className={styles.header}>{children}</p>,
-            h5: ({ children }) => <p className={styles.header}>{children}</p>,
-            h6: ({ children }) => <p className={styles.header}>{children}</p>,
-            img: ({ src, alt }) => {
-              const displayText = src || alt || 'image';
-              return <span>{displayText}</span>;
-            },
-            video: ({ src }) => <span>{src}</span>,
-            iframe: ({ src }) => <span>{src}</span>,
-            source: ({ src }) => <span>{src}</span>,
-            spoiler: ({ children }) => <span className='spoilertext'>{children}</span>,
-            a: ({ href, children }) => {
-              if (href && !isInCatalogView) {
-                try {
-                  const linkMediaInfo = getLinkMediaInfo(href);
-                  const embedUrl = href.startsWith('http') ? new URL(href) : null;
-                  if ((embedUrl && canEmbed(embedUrl)) || getHasThumbnail(linkMediaInfo, href)) {
-                    return <ContentLinkEmbed children={children} href={href} linkMediaInfo={linkMediaInfo} />;
-                  }
-                } catch (e) {
-                  console.debug('Invalid URL:', href);
-                }
-
-                return renderAnchorLink(children, href, postCid);
-              }
-
-              return renderAnchorLink(children, href || '', postCid);
-            },
-          } as ExtendedComponents
-        }
-      />
+      <ReactMarkdown children={processedContent} remarkPlugins={remarkPlugins} rehypePlugins={rehypePlugins} components={components} />
     </span>
   );
 };

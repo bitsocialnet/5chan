@@ -1,4 +1,4 @@
-import { Fragment, useMemo, useState } from 'react';
+import { Fragment, useCallback, useMemo, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import { Trans, useTranslation } from 'react-i18next';
 import { Comment, useComment } from '@plebbit/plebbit-react-hooks';
@@ -23,6 +23,41 @@ const QuotedCidLink = ({ cid, postCid }: { cid: string; postCid: string }) => {
   const quotedComment = commentFromHook?.number !== undefined ? commentFromHook : commentFromStore;
   const isOP = cid === postCid;
   return <ReplyQuotePreview isQuotelinkReply={true} quotelinkReply={quotedComment} isOP={isOP} />;
+};
+
+const useScopedCidToNumber = (cids: string[]) => {
+  const sortedUniqueCids = useMemo(() => {
+    const uniqueCids = new Set<string>();
+    for (const cid of cids) {
+      if (cid) {
+        uniqueCids.add(cid);
+      }
+    }
+    return [...uniqueCids].sort();
+  }, [cids]);
+
+  // Subscribe only to CIDs this comment needs so unrelated thread updates do not rerender content.
+  const cidNumbersSignature = usePostNumberStore(
+    useCallback((state) => sortedUniqueCids.map((cid) => `${cid}:${state.cidToNumber[cid] ?? ''}`).join('|'), [sortedUniqueCids]),
+  );
+
+  return useMemo(() => {
+    if (sortedUniqueCids.length === 0) {
+      return {} as Record<string, number>;
+    }
+
+    const { cidToNumber } = usePostNumberStore.getState();
+    const nextCidToNumber: Record<string, number> = {};
+
+    for (const cid of sortedUniqueCids) {
+      const number = cidToNumber[cid];
+      if (typeof number === 'number') {
+        nextCidToNumber[cid] = number;
+      }
+    }
+
+    return nextCidToNumber;
+  }, [sortedUniqueCids, cidNumbersSignature]);
 };
 
 const CommentContent = ({ comment: post }: { comment: Comment }) => {
@@ -59,7 +94,15 @@ const CommentContent = ({ comment: post }: { comment: Comment }) => {
     return new Set([...matches].map((m) => parseInt(m[1], 10)));
   }, [content]);
 
-  const cidToNumber = usePostNumberStore((state) => state.cidToNumber);
+  const relevantQuotedCids = useMemo(() => {
+    const cids = quotedCids ? [...quotedCids] : [];
+    if (parentCid) {
+      cids.push(parentCid);
+    }
+    return cids;
+  }, [quotedCids, parentCid]);
+
+  const cidToNumber = useScopedCidToNumber(relevantQuotedCids);
   const filteredQuotedCids = useMemo(() => {
     if (!quotedCids?.length) return [];
     return quotedCids.filter((cid: string) => {

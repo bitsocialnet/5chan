@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import { Comment } from '@plebbit/plebbit-react-hooks';
 import { QUOTE_NUMBER_REGEX } from '../lib/utils/url-utils';
 import usePostNumberStore from '../stores/use-post-number-store';
@@ -7,6 +7,30 @@ interface ReplyQuoteTargets {
   reply: Comment;
   quotedPostNumbers: number[];
 }
+
+const getReplyFingerprint = (reply: Comment) =>
+  `${reply?.cid ?? ''}|${reply?.deleted ? '1' : '0'}|${reply?.removed ? '1' : '0'}|${reply?.edit?.timestamp ?? ''}|${reply?.state ?? ''}`;
+
+const areQuotedByMapsEquivalent = (previousMap: Map<string, Comment[]>, nextMap: Map<string, Comment[]>) => {
+  if (previousMap.size !== nextMap.size) {
+    return false;
+  }
+
+  for (const [quotedCid, nextReplies] of nextMap) {
+    const previousReplies = previousMap.get(quotedCid);
+    if (!previousReplies || previousReplies.length !== nextReplies.length) {
+      return false;
+    }
+
+    for (let i = 0; i < nextReplies.length; i++) {
+      if (getReplyFingerprint(previousReplies[i]) !== getReplyFingerprint(nextReplies[i])) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+};
 
 const extractReplyQuoteTargets = (replies: Comment[]) => {
   const quotedPostNumbers = new Set<number>();
@@ -38,6 +62,7 @@ const extractReplyQuoteTargets = (replies: Comment[]) => {
 };
 
 const useQuotedByMap = (replies: Comment[] = []) => {
+  const stableQuotedByMapRef = useRef<Map<string, Comment[]>>(new Map());
   const { replyQuoteTargets, quotedPostNumbers } = useMemo(() => extractReplyQuoteTargets(replies), [replies]);
 
   // Subscribe only to post numbers referenced in this thread to avoid unrelated global store churn.
@@ -92,6 +117,11 @@ const useQuotedByMap = (replies: Comment[] = []) => {
       }
     }
 
+    if (areQuotedByMapsEquivalent(stableQuotedByMapRef.current, map)) {
+      return stableQuotedByMapRef.current;
+    }
+
+    stableQuotedByMapRef.current = map;
     return map;
   }, [replyQuoteTargets, quotedNumberToCid]);
 };

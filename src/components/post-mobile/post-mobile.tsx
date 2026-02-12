@@ -171,11 +171,17 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
   const stateString = useStateString(post);
   const postMenuProps = useMemo(() => selectPostMenuProps(post), [post]);
 
-  const handleUserAddressClick = useAuthorAddressClick();
-  const numberOfPostsByAuthor = document.querySelectorAll(`[data-author-address="${shortAddress}"][data-post-cid="${postCid}"]`).length;
-
   const pseudonymityMode = useSubplebbitField(subplebbitAddress, (sub) => sub?.features?.pseudonymityMode);
   const showUserID = pseudonymityMode !== 'per-reply';
+
+  const handleUserAddressClick = useAuthorAddressClick();
+  const numberOfPostsByAuthor = useMemo(() => {
+    if (!showUserID || deleted || removed || !shortAddress || !postCid || typeof document === 'undefined') {
+      return 0;
+    }
+
+    return document.querySelectorAll(`[data-author-address="${shortAddress}"][data-post-cid="${postCid}"]`).length;
+  }, [showUserID, deleted, removed, shortAddress, postCid]);
 
   const userID = address && Plebbit.getShortAddress({ address }); // shortened to 8 chars for display; users can verify the full user ID via "Copy user ID" in the post menu to guard against spoofing
   const userIDBackgroundColor = hashStringToColor(userID);

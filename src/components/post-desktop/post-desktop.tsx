@@ -78,11 +78,11 @@ const PostInfo = ({
   onApprove,
   onReject,
   quotedByMap,
-}: PostProps) => {
+  directRepliesByParentCid,
+}: PostProps & { directRepliesByParentCid?: Map<string, Comment[]> }) => {
   const { t } = useTranslation();
   const { author, cid, deleted, locked, pinned, parentCid, postCid, reason, removed, state, subplebbitAddress, timestamp } = post || {};
   const title = post?.title?.trim();
-  const { replies } = useReplies({ comment: post, accountComments: { newerThan: Infinity } });
   const { address, shortAddress } = author || {};
   const displayName = author?.displayName?.trim();
   const authorRole = roles?.[address]?.role?.replace('moderator', 'mod');
@@ -205,11 +205,17 @@ const PostInfo = ({
   const userIDBackgroundColor = hashStringToColor(userID);
   const userIDTextColor = getTextColorForBackground(userIDBackgroundColor);
 
-  const handleUserAddressClick = useAuthorAddressClick();
-  const numberOfPostsByAuthor = document.querySelectorAll(`[data-author-address="${shortAddress}"][data-post-cid="${postCid}"]`).length;
-
   const pseudonymityMode = useSubplebbitField(subplebbitAddress, (sub) => sub?.features?.pseudonymityMode);
   const showUserID = pseudonymityMode !== 'per-reply';
+
+  const handleUserAddressClick = useAuthorAddressClick();
+  const numberOfPostsByAuthor = useMemo(() => {
+    if (!showUserID || deleted || removed || !shortAddress || !postCid || typeof document === 'undefined') {
+      return 0;
+    }
+
+    return document.querySelectorAll(`[data-author-address="${shortAddress}"][data-post-cid="${postCid}"]`).length;
+  }, [showUserID, deleted, removed, shortAddress, postCid]);
 
   const { hidden } = useHide(post);
 
@@ -421,37 +427,56 @@ const PostInfo = ({
           )}
         </span>
         {!(removed || deleted) && !isModQueue && <PostMenuDesktop postMenu={postMenuProps} />}
-        {cid &&
-          parentCid &&
-          replies &&
-          replies.map(
-            (reply: Comment, index: number) =>
-              reply?.parentCid === cid &&
-              reply?.cid &&
-              !(reply?.deleted || reply?.removed) && <ReplyQuotePreview key={index} isBacklinkReply={true} backlinkReply={reply} />,
-          )}
-        {cid &&
-          parentCid &&
-          quotedByMap
-            ?.get(cid)
-            ?.map(
-              (reply: Comment, index: number) =>
-                reply?.parentCid !== cid &&
-                reply?.cid &&
-                !(reply?.deleted || reply?.removed) && <ReplyQuotePreview key={`qb-${index}`} isBacklinkReply={true} backlinkReply={reply} />,
-            )}
-        {cid &&
-          !parentCid &&
-          quotedByMap
-            ?.get(cid)
-            ?.map(
-              (reply: Comment) =>
-                reply?.cid && !(reply?.deleted || reply?.removed) && <ReplyQuotePreview key={`op-bl-${reply.cid}`} isBacklinkReply={true} backlinkReply={reply} />,
-            )}
+        {cid && parentCid && <ReplyBacklinks post={post} quotedByMap={quotedByMap} directRepliesByParentCid={directRepliesByParentCid} />}
+        {cid && !parentCid && <OpBacklinks cid={cid} quotedByMap={quotedByMap} />}
       </span>
     </div>
   );
 };
+
+const ReplyBacklinks = ({
+  post,
+  quotedByMap,
+  directRepliesByParentCid,
+}: {
+  post: Comment;
+  quotedByMap?: Map<string, Comment[]>;
+  directRepliesByParentCid?: Map<string, Comment[]>;
+}) => {
+  const { cid, parentCid } = post || {};
+  if (!cid || !parentCid) {
+    return null;
+  }
+  const directReplies = directRepliesByParentCid?.get(cid) || [];
+
+  return (
+    <>
+      {directReplies.map(
+        (reply: Comment, index: number) =>
+          reply?.parentCid === cid && reply?.cid && !(reply?.deleted || reply?.removed) && <ReplyQuotePreview key={index} isBacklinkReply={true} backlinkReply={reply} />,
+      )}
+      {quotedByMap
+        ?.get(cid)
+        ?.map(
+          (reply: Comment, index: number) =>
+            reply?.parentCid !== cid &&
+            reply?.cid &&
+            !(reply?.deleted || reply?.removed) && <ReplyQuotePreview key={`qb-${index}`} isBacklinkReply={true} backlinkReply={reply} />,
+        )}
+    </>
+  );
+};
+
+const OpBacklinks = ({ cid, quotedByMap }: { cid: string; quotedByMap?: Map<string, Comment[]> }) => (
+  <>
+    {quotedByMap
+      ?.get(cid)
+      ?.map(
+        (reply: Comment) =>
+          reply?.cid && !(reply?.deleted || reply?.removed) && <ReplyQuotePreview key={`op-bl-${reply.cid}`} isBacklinkReply={true} backlinkReply={reply} />,
+      )}
+  </>
+);
 
 interface PostMediaProps {
   commentMediaInfo: CommentMediaInfo | undefined;
@@ -550,7 +575,14 @@ const PostMedia = ({
   );
 };
 
-const Reply = ({ postReplyCount, reply, roles, threadNumber, quotedByMap }: PostProps) => {
+const Reply = ({
+  postReplyCount,
+  reply,
+  roles,
+  threadNumber,
+  quotedByMap,
+  directRepliesByParentCid,
+}: PostProps & { directRepliesByParentCid?: Map<string, Comment[]> }) => {
   let post = reply;
   // handle pending mod or author edit
   const { editedComment } = useEditedComment({ comment: reply });
@@ -578,7 +610,15 @@ const Reply = ({ postReplyCount, reply, roles, threadNumber, quotedByMap }: Post
     <div className={styles.replyDesktop}>
       <div className={styles.sideArrows}>{'>>'}</div>
       <div className={`${styles.reply} ${isRouteLinkToReply && styles.highlight}`} data-cid={cid} data-author-address={author?.shortAddress} data-post-cid={postCid}>
-        <PostInfo post={post} postReplyCount={postReplyCount} roles={roles} isHidden={hidden} threadNumber={threadNumber} quotedByMap={quotedByMap} />
+        <PostInfo
+          post={post}
+          postReplyCount={postReplyCount}
+          roles={roles}
+          isHidden={hidden}
+          threadNumber={threadNumber}
+          quotedByMap={quotedByMap}
+          directRepliesByParentCid={directRepliesByParentCid}
+        />
         {link && !hidden && !(deleted || removed) && isValidURL(link) && (
           <PostMedia
             commentMediaInfo={commentMediaInfo}
@@ -668,6 +708,22 @@ const PostDesktop = ({
 
   // Filter out deleted replies with no children for both virtuoso and non-virtuoso rendering
   const filteredReplies = useMemo(() => (replies || []).filter((reply) => !(reply.deleted && (reply.replyCount === 0 || !reply.replyCount))), [replies]);
+  const directRepliesByParentCid = useMemo(() => {
+    const map = new Map<string, Comment[]>();
+    for (const reply of filteredReplies) {
+      const directParentCid = reply?.parentCid;
+      if (!directParentCid || !reply?.cid) {
+        continue;
+      }
+      const existingReplies = map.get(directParentCid);
+      if (existingReplies) {
+        existingReplies.push(reply);
+      } else {
+        map.set(directParentCid, [reply]);
+      }
+    }
+    return map;
+  }, [filteredReplies]);
 
   const quotedByMap = useQuotedByMap(filteredReplies);
 
@@ -760,6 +816,7 @@ const PostDesktop = ({
             onApprove={onApprove}
             onReject={onReject}
             quotedByMap={quotedByMap}
+            directRepliesByParentCid={directRepliesByParentCid}
           />
           {!isHidden && !content && !(deleted || removed) && <div className={styles.spacer} />}
           {!isHidden && <CommentContent comment={post} />}
@@ -797,7 +854,14 @@ const PostDesktop = ({
             data={filteredReplies}
             itemContent={(index, reply) => (
               <div className={styles.replyContainer}>
-                <Reply reply={reply} roles={roles} postReplyCount={replyCount} threadNumber={post?.number} quotedByMap={quotedByMap} />
+                <Reply
+                  reply={reply}
+                  roles={roles}
+                  postReplyCount={replyCount}
+                  threadNumber={post?.number}
+                  quotedByMap={quotedByMap}
+                  directRepliesByParentCid={directRepliesByParentCid}
+                />
               </div>
             )}
             useWindowScroll={true}
@@ -816,7 +880,14 @@ const PostDesktop = ({
           !hasMore &&
           filteredReplies.map((reply, index) => (
             <div key={index} className={styles.replyContainer}>
-              <Reply reply={reply} roles={roles} postReplyCount={replyCount} threadNumber={post?.number} quotedByMap={quotedByMap} />
+              <Reply
+                reply={reply}
+                roles={roles}
+                postReplyCount={replyCount}
+                threadNumber={post?.number}
+                quotedByMap={quotedByMap}
+                directRepliesByParentCid={directRepliesByParentCid}
+              />
             </div>
           ))}
         {/* Non-virtualized rendering for board view (last 5 replies or show omitted) */}
@@ -828,7 +899,14 @@ const PostDesktop = ({
           showReplies &&
           (showOmittedReplies[cid] ? filteredReplies : filteredReplies.slice(-5)).map((reply, index) => (
             <div key={index} className={styles.replyContainer}>
-              <Reply reply={reply} roles={roles} postReplyCount={replyCount} threadNumber={post?.number} quotedByMap={quotedByMap} />
+              <Reply
+                reply={reply}
+                roles={roles}
+                postReplyCount={replyCount}
+                threadNumber={post?.number}
+                quotedByMap={quotedByMap}
+                directRepliesByParentCid={directRepliesByParentCid}
+              />
             </div>
           ))}
       </div>
