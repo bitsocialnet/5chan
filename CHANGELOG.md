@@ -1,3 +1,22 @@
+## [0.6.5](https://github.com/plebbit/plebchan/compare/v0.6.4...v0.6.5) (2026-02-11)
+
+
+### Bug Fixes
+
+* **deps:** resolve dependabot alert ([50f373e](https://github.com/plebbit/plebchan/commit/50f373eb83eb5266895396a3266433751502a281))
+* **post:** render OP backlinks from replies quoting OP ([d862550](https://github.com/plebbit/plebchan/commit/d862550132d10131f3cb157a6997547df1832e45))
+* **post:** show OP backlinks in board feed cards ([2537561](https://github.com/plebbit/plebchan/commit/25375612a9d601aeefd3c543b67d39c2bf3e3e21))
+* **reply modal:** make parent reply quote editable ([af259ad](https://github.com/plebbit/plebchan/commit/af259ad032c401625401a40cd1ec89f4e6968332))
+* **reply:** replies should always target the OP, not other replies ([6c4c12c](https://github.com/plebbit/plebchan/commit/6c4c12c136ea7edf1397330eb0dc5515a7d8490b))
+* scroll OP quote to thread card on same-route click ([716c782](https://github.com/plebbit/plebchan/commit/716c782d1a00514e60d56b065d7faa0389296244))
+
+
+### Features
+
+* populate quotedCids when publishing replies with quote references ([9f14a63](https://github.com/plebbit/plebchan/commit/9f14a63268a81b2a79fd2a9a9a665f4247f8d654))
+
+
+
 ## [0.6.4](https://github.com/plebbit/plebchan/compare/v0.6.3...v0.6.4) (2026-02-10)
 
 
