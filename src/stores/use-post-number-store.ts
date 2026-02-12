@@ -14,16 +14,26 @@ const usePostNumberStore = create<PostNumberState>((set) => ({
     if (!comments?.length) return;
 
     set((state) => {
-      const nextNumberToCid = { ...state.numberToCid };
-      const nextCidToNumber = { ...state.cidToNumber };
+      let nextNumberToCid = state.numberToCid;
+      let nextCidToNumber = state.cidToNumber;
+      let hasUpdates = false;
 
       for (const c of comments) {
         const num = c?.number;
         const cid = c?.cid;
-        if (typeof num === 'number' && cid) {
+        if (typeof num === 'number' && cid && (nextNumberToCid[num] !== cid || nextCidToNumber[cid] !== num)) {
+          if (!hasUpdates) {
+            nextNumberToCid = { ...state.numberToCid };
+            nextCidToNumber = { ...state.cidToNumber };
+            hasUpdates = true;
+          }
           nextNumberToCid[num] = cid;
           nextCidToNumber[cid] = num;
         }
+      }
+
+      if (!hasUpdates) {
+        return state;
       }
 
       return { numberToCid: nextNumberToCid, cidToNumber: nextCidToNumber };

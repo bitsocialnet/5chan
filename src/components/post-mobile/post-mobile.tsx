@@ -9,7 +9,6 @@ import { shouldShowSnow } from '../../lib/snow';
 import { getHasThumbnail } from '../../lib/utils/media-utils';
 import { getTextColorForBackground, hashStringToColor } from '../../lib/utils/post-utils';
 import { getFormattedDate, getFormattedTimeAgo } from '../../lib/utils/time-utils';
-import { QUOTE_NUMBER_REGEX } from '../../lib/utils/url-utils';
 import { isAllView, isModQueueView, isPendingPostView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import { formatUserIDForDisplay } from '../../lib/utils/string-utils';
 import useModQueueStore from '../../stores/use-mod-queue-store';
@@ -37,6 +36,7 @@ import useChallengesStore from '../../stores/use-challenges-store';
 import useFeedResetStore from '../../stores/use-feed-reset-store';
 import usePostNumberStore from '../../stores/use-post-number-store';
 import { alertChallengeVerificationFailed } from '../../lib/utils/challenge-utils';
+import useQuotedByMap from '../../hooks/use-quoted-by-map';
 
 const { addChallenge } = useChallengesStore.getState();
 
@@ -489,7 +489,6 @@ const PostMobile = ({
     }
   }, [isInPostView, isInPendingPostView, reset, setResetFunction]);
   const registerComments = usePostNumberStore((s) => s.registerComments);
-  const numberToCid = usePostNumberStore((s) => s.numberToCid);
   const prevCidsRef = useRef<string>('');
   useEffect(() => {
     const all = post ? [post, ...(replies || [])] : replies || [];
@@ -512,36 +511,7 @@ const PostMobile = ({
   // Filter out deleted replies with no children for both virtuoso and non-virtuoso rendering
   const filteredReplies = useMemo(() => (replies || []).filter((reply) => !(reply.deleted && (reply.replyCount === 0 || !reply.replyCount))), [replies]);
 
-  // Compute quotedByMap: map each quoted CID to array of replies that quote it
-  const quotedByMap = useMemo(() => {
-    const map = new Map<string, Comment[]>();
-    for (const reply of filteredReplies) {
-      const cidSet = new Set<string>();
-
-      if (reply.quotedCids?.length) {
-        for (const quotedCid of reply.quotedCids) {
-          cidSet.add(quotedCid);
-        }
-      }
-
-      if (reply.content) {
-        for (const match of reply.content.matchAll(QUOTE_NUMBER_REGEX)) {
-          const postNumber = parseInt(match[1], 10);
-          const quotedCid = numberToCid[postNumber];
-          if (quotedCid) {
-            cidSet.add(quotedCid);
-          }
-        }
-      }
-
-      for (const quotedCid of cidSet) {
-        const arr = map.get(quotedCid);
-        if (arr) arr.push(reply);
-        else map.set(quotedCid, [reply]);
-      }
-    }
-    return map;
-  }, [filteredReplies, numberToCid]);
+  const quotedByMap = useQuotedByMap(filteredReplies);
 
   // Virtuoso scroll position management for infinite replies
   const virtuosoRef = useRef<VirtuosoHandle | null>(null);
