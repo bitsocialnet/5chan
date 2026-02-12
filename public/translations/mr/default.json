@@ -277,5 +277,6 @@
   "no": "No",
   "pending_mod_approval": "संचालकाच्या मंजुरीची प्रतीक्षा, वापरकर्त्यांना दिसत नाही",
   "copy_user_id": "यूजर ID कॉपी करा",
-  "copy_direct_link": "डायरेक्ट लिंक कॉपी करा"
+  "copy_direct_link": "डायरेक्ट लिंक कॉपी करा",
+  "posts_auto_update_info": "Posts update automatically every ~2 minutes. It's not possible to disable this at the moment."
 }

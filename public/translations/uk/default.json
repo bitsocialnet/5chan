@@ -277,5 +277,6 @@
   "no": "No",
   "pending_mod_approval": "Очікує затвердження модератора, не видно користувачам",
   "copy_user_id": "копіювати ID користувача",
-  "copy_direct_link": "копіювати пряме посилання"
+  "copy_direct_link": "копіювати пряме посилання",
+  "posts_auto_update_info": "Posts update automatically every ~2 minutes. It's not possible to disable this at the moment."
 }

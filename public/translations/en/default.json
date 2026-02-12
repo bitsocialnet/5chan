@@ -70,6 +70,7 @@
   "latest_stable_version": "You are on the latest stable version, 5chan v{{version}}.",
   "check": "check",
   "update": "Update",
+  "posts_auto_update_info": "Posts update automatically every ~2 minutes. It's not possible to disable this at the moment.",
   "style": "Style",
   "interface_language": "interface language",
   "delete_confirm": "Are you sure you want to delete {{value}}?",

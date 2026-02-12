@@ -277,5 +277,6 @@
   "no": "Non",
   "pending_mod_approval": "En attente d'approbation du modérateur, non visible pour les utilisateurs",
   "copy_user_id": "Copier l'ID utilisateur",
-  "copy_direct_link": "Copier le lien direct"
+  "copy_direct_link": "Copier le lien direct",
+  "posts_auto_update_info": "Posts update automatically every ~2 minutes. It's not possible to disable this at the moment."
 }

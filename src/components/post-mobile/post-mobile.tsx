@@ -34,6 +34,7 @@ import { capitalize, lowerCase } from 'lodash';
 import useReplyModalStore from '../../stores/use-reply-modal-store';
 import { selectPostMenuProps } from '../../lib/utils/post-menu-props';
 import useChallengesStore from '../../stores/use-challenges-store';
+import useFeedResetStore from '../../stores/use-feed-reset-store';
 import usePostNumberStore from '../../stores/use-post-number-store';
 import { alertChallengeVerificationFailed } from '../../lib/utils/challenge-utils';
 
@@ -476,7 +477,17 @@ const PostMobile = ({
   const directories = useDirectories();
   const boardPath = subplebbitAddress ? getBoardPath(subplebbitAddress, directories) : undefined;
   const linksCount = useCountLinksInReplies(post);
-  const { replies, hasMore, loadMore } = useReplies({ comment: post, accountComments: { newerThan: Infinity } });
+  const repliesResult = useReplies({ comment: post, accountComments: { newerThan: Infinity } });
+  const { replies, hasMore, loadMore } = repliesResult;
+  const reset = (repliesResult as { reset?: () => Promise<void> }).reset;
+  const setResetFunction = useFeedResetStore((s) => s.setResetFunction);
+  useEffect(() => {
+    if ((isInPostView || isInPendingPostView) && reset) {
+      setResetFunction(() => {
+        reset();
+      });
+    }
+  }, [isInPostView, isInPendingPostView, reset, setResetFunction]);
   const registerComments = usePostNumberStore((s) => s.registerComments);
   const numberToCid = usePostNumberStore((s) => s.numberToCid);
   const prevCidsRef = useRef<string>('');

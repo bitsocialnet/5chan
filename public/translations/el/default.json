@@ -277,5 +277,6 @@
   "no": "No",
   "pending_mod_approval": "Σε αναμονή έγκρισης διαχειριστή, δεν είναι ορατό στους χρήστες",
   "copy_user_id": "αντιγραφή ID χρήστη",
-  "copy_direct_link": "αντιγραφή άμεσου συνδέσμου"
+  "copy_direct_link": "αντιγραφή άμεσου συνδέσμου",
+  "posts_auto_update_info": "Posts update automatically every ~2 minutes. It's not possible to disable this at the moment."
 }

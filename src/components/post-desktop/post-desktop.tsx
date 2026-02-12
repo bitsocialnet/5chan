@@ -38,6 +38,7 @@ import { shouldShowSnow } from '../../lib/snow';
 import useReplyModalStore from '../../stores/use-reply-modal-store';
 import { selectPostMenuProps } from '../../lib/utils/post-menu-props';
 import useChallengesStore from '../../stores/use-challenges-store';
+import useFeedResetStore from '../../stores/use-feed-reset-store';
 import usePostNumberStore from '../../stores/use-post-number-store';
 import { alertChallengeVerificationFailed } from '../../lib/utils/challenge-utils';
 import { usePublishCommentModeration } from '@plebbit/plebbit-react-hooks';
@@ -626,7 +627,17 @@ const PostDesktop = ({
   const { hidden, unhide, hide } = useHide({ cid });
   const isHidden = hidden && !isInPostPageView;
 
-  const { replies, hasMore, loadMore } = useReplies({ comment: post, flat: true, accountComments: { newerThan: Infinity } });
+  const repliesResult = useReplies({ comment: post, flat: true, accountComments: { newerThan: Infinity } });
+  const { replies, hasMore, loadMore } = repliesResult;
+  const reset = (repliesResult as { reset?: () => Promise<void> }).reset;
+  const setResetFunction = useFeedResetStore((s) => s.setResetFunction);
+  useEffect(() => {
+    if ((isInPostPageView || isInPendingPostView) && reset) {
+      setResetFunction(() => {
+        reset();
+      });
+    }
+  }, [isInPostPageView, isInPendingPostView, reset, setResetFunction]);
   const registerComments = usePostNumberStore((s) => s.registerComments);
   const numberToCid = usePostNumberStore((s) => s.numberToCid);
   const prevCidsRef = useRef<string>('');

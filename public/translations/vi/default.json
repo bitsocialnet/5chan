@@ -277,5 +277,6 @@
   "no": "No",
   "pending_mod_approval": "Chờ duyệt của người điều hành, không hiển thị cho người dùng",
   "copy_user_id": "sao chép ID người dùng",
-  "copy_direct_link": "sao chép liên kết trực tiếp"
+  "copy_direct_link": "sao chép liên kết trực tiếp",
+  "posts_auto_update_info": "Posts update automatically every ~2 minutes. It's not possible to disable this at the moment."
 }

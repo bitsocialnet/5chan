@@ -277,5 +277,6 @@
   "no": "No",
   "pending_mod_approval": "في انتظار موافقة المشرف، غير مرئي للمستخدمين",
   "copy_user_id": "نسخ معرف المستخدم",
-  "copy_direct_link": "نسخ الرابط المباشر"
+  "copy_direct_link": "نسخ الرابط المباشر",
+  "posts_auto_update_info": "Posts update automatically every ~2 minutes. It's not possible to disable this at the moment."
 }

@@ -147,47 +147,32 @@ const RefreshButton = () => {
 
 const UpdateButton = () => {
   const { t } = useTranslation();
-  const isMobile = useIsMobile();
-
-  const handleManualUpdate = () => {
-    window.alert('Manual updates are not available yet. Posts update automatically every ~2 minutes.');
-  };
-
+  const reset = useFeedResetStore((state) => state.reset);
   return (
-    <>
-      {/* TODO: Implement update button once available in API  */}
-      {isMobile ? (
-        <button className={`button ${styles.disabledButton}`} onClick={handleManualUpdate}>
-          {t('update')}
-        </button>
-      ) : (
-        <button className={`button ${styles.disabledButton}`} onClick={handleManualUpdate}>
-          {t('update')}
-        </button>
-      )}
-    </>
+    <button className='button' onClick={() => reset?.()}>
+      {t('update')}
+    </button>
   );
 };
 
 const AutoButton = () => {
   const { t } = useTranslation();
   const isMobile = useIsMobile();
-
-  const handleManualUpdate = () => {
-    window.alert('Manual updates are not available yet. Posts update automatically every ~2 minutes.');
+  const handleAutoClick = () => {
+    window.alert(t('posts_auto_update_info'));
   };
 
   return (
     <>
       {isMobile ? (
-        <button className='button' onClick={handleManualUpdate}>
+        <button className='button' onClick={handleAutoClick}>
           <label>
             <input type='checkbox' className={styles.autoCheckbox} checked disabled />
             {t('Auto')}
           </label>
         </button>
       ) : (
-        <label onClick={handleManualUpdate}>
+        <label onClick={handleAutoClick}>
           {' '}
           <input type='checkbox' className={styles.autoCheckbox} checked disabled /> {t('Auto')}
         </label>

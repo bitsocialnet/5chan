@@ -277,5 +277,6 @@
   "no": "No",
   "pending_mod_approval": "در انتظار تایید مدیر، برای کاربران قابل مشاهده نیست",
   "copy_user_id": "کپی شناسه کاربر",
-  "copy_direct_link": "رونوشت لینک مستقیم"
+  "copy_direct_link": "رونوشت لینک مستقیم",
+  "posts_auto_update_info": "Posts update automatically every ~2 minutes. It's not possible to disable this at the moment."
 }

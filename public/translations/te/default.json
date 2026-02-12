@@ -277,5 +277,6 @@
   "no": "No",
   "pending_mod_approval": "మాడరేటర్ ఆమోదం కోసం చేతనిస్తోంది, వినియోగదారులకు కనిపించవు",
   "copy_user_id": "యూజర్ ID కాపీ చేయండి",
-  "copy_direct_link": "డైరెక్ట్ లింక్ కాపీ చేయండి"
+  "copy_direct_link": "డైరెక్ట్ లింక్ కాపీ చేయండి",
+  "posts_auto_update_info": "Posts update automatically every ~2 minutes. It's not possible to disable this at the moment."
 }

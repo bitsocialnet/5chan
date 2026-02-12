@@ -277,5 +277,6 @@
   "no": "No",
   "pending_mod_approval": "Afventer moderatorgodkendelse, ikke synlig for brugere",
   "copy_user_id": "kopier bruger-ID",
-  "copy_direct_link": "kopier direkte link"
+  "copy_direct_link": "kopier direkte link",
+  "posts_auto_update_info": "Posts update automatically every ~2 minutes. It's not possible to disable this at the moment."
 }

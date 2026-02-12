@@ -277,5 +277,6 @@
   "no": "否",
   "pending_mod_approval": "等待版主批准，用户不可见",
   "copy_user_id": "复制用户ID",
-  "copy_direct_link": "复制直接链接"
+  "copy_direct_link": "复制直接链接",
+  "posts_auto_update_info": "Posts update automatically every ~2 minutes. It's not possible to disable this at the moment."
 }
