@@ -179,7 +179,7 @@ const NumberQuoteLink = ({ number, threadPostCid }: { number: number; threadPost
     return <span>{`>>${number}`}</span>;
   }
 
-  return <ReplyQuotePreview isQuotelinkReply={true} quotelinkReply={comment} isOP={isOP} />;
+  return <ReplyQuotePreview isQuotelinkReply={true} quotelinkReply={comment} isOP={isOP} showTrailingBreak={false} />;
 };
 
 const renderAnchorLink = (children: React.ReactNode, href: string, threadPostCid?: string) => {
