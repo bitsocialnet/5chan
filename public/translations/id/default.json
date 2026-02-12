@@ -278,5 +278,6 @@
   "pending_mod_approval": "Menunggu persetujuan moderator, tidak terlihat oleh pengguna",
   "copy_user_id": "salin ID pengguna",
   "copy_direct_link": "salin tautan langsung",
-  "posts_auto_update_info": "Posts update automatically every ~2 minutes. It's not possible to disable this at the moment."
+  "posts_auto_update_info": "Posts update automatically every ~2 minutes. It's not possible to disable this at the moment.",
+  "board_address_tooltip": "Alamat node peer-to-peer papan ini"
 }

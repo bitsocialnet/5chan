@@ -278,5 +278,6 @@
   "no": "No",
   "pending_mod_approval": "Pending mod approval, not visible to users",
   "copy_user_id": "Copy user ID",
-  "copy_direct_link": "Copy direct link"
+  "copy_direct_link": "Copy direct link",
+  "board_address_tooltip": "The address of this board's peer-to-peer node"
 }

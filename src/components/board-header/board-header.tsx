@@ -103,6 +103,8 @@ const BoardHeader = () => {
           <span className={styles.clickableSubtitle} onClick={() => navigate('/subs/settings#subscriptions-settings')}>
             {subtitle}
           </span>
+        ) : !isInAllView && !isInModView && subtitle ? (
+          <span title={t('board_address_tooltip')}>{subtitle}</span>
         ) : (
           subtitle
         )}

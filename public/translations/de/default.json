@@ -278,5 +278,6 @@
   "pending_mod_approval": "Ausstehende Moderatorgenehmigung, für Benutzer nicht sichtbar",
   "copy_user_id": "Benutzer-ID kopieren",
   "copy_direct_link": "Direktlink kopieren",
-  "posts_auto_update_info": "Posts update automatically every ~2 minutes. It's not possible to disable this at the moment."
+  "posts_auto_update_info": "Posts update automatically every ~2 minutes. It's not possible to disable this at the moment.",
+  "board_address_tooltip": "Die Adresse des Peer-to-Peer-Knotens dieses Boards"
 }

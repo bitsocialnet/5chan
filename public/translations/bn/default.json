@@ -278,5 +278,6 @@
   "pending_mod_approval": "মডারেটর অনুমোদনের জন্য অপেক্ষা করছে, ব্যবহারকারীদের কাছে দৃশ্যমান নয়",
   "copy_user_id": "ইউজার আইডি কপি করুন",
   "copy_direct_link": "সরাসরি লিংক অনুলিপি করুন",
-  "posts_auto_update_info": "Posts update automatically every ~2 minutes. It's not possible to disable this at the moment."
+  "posts_auto_update_info": "Posts update automatically every ~2 minutes. It's not possible to disable this at the moment.",
+  "board_address_tooltip": "এই বোর্ডের পিয়ার-টু-পিয়ার নোডের ঠিকানা"
 }

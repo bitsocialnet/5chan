@@ -278,5 +278,6 @@
   "pending_mod_approval": "รอการอนุมัติจากผู้ดูแล ไม่มองเห็นสำหรับผู้ใช้",
   "copy_user_id": "คัดลอก ID ผู้ใช้",
   "copy_direct_link": "คัดลอกลิงก์โดยตรง",
-  "posts_auto_update_info": "Posts update automatically every ~2 minutes. It's not possible to disable this at the moment."
+  "posts_auto_update_info": "Posts update automatically every ~2 minutes. It's not possible to disable this at the moment.",
+  "board_address_tooltip": "ที่อยู่โหนด P2P ของบอร์ดนี้"
 }

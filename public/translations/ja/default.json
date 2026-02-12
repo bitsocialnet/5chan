@@ -278,5 +278,6 @@
   "pending_mod_approval": "モデレーターの承認待ち、ユーザーには表示されません",
   "copy_user_id": "ユーザーIDをコピー",
   "copy_direct_link": "直接リンクをコピー",
-  "posts_auto_update_info": "Posts update automatically every ~2 minutes. It's not possible to disable this at the moment."
+  "posts_auto_update_info": "Posts update automatically every ~2 minutes. It's not possible to disable this at the moment.",
+  "board_address_tooltip": "この板のピアツーピアノードのアドレス"
 }

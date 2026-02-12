@@ -278,5 +278,6 @@
   "pending_mod_approval": "Moderátor jóváhagyása alatt áll, a felhasználók számára nem látható",
   "copy_user_id": "felhasználói ID másolása",
   "copy_direct_link": "közvetlen link másolása",
-  "posts_auto_update_info": "Posts update automatically every ~2 minutes. It's not possible to disable this at the moment."
+  "posts_auto_update_info": "Posts update automatically every ~2 minutes. It's not possible to disable this at the moment.",
+  "board_address_tooltip": "Ennek a táblának a peer-to-peer csomópontja címe"
 }

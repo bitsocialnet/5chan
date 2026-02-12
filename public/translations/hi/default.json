@@ -278,5 +278,6 @@
   "pending_mod_approval": "मॉडरेटर की मंजूरी के लिए प्रतीक्षा में, उपयोगकर्ताओं को दिखाई नहीं देता",
   "copy_user_id": "यूज़र ID कॉपी करें",
   "copy_direct_link": "डायरेक्ट लिंक कॉपी करें",
-  "posts_auto_update_info": "Posts update automatically every ~2 minutes. It's not possible to disable this at the moment."
+  "posts_auto_update_info": "Posts update automatically every ~2 minutes. It's not possible to disable this at the moment.",
+  "board_address_tooltip": "इस बोर्ड के पीयर-टू-पीयर नोड का पता"
 }

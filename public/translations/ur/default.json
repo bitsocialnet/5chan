@@ -278,5 +278,6 @@
   "pending_mod_approval": "ماڈریٹر کی منظوری کا انتظار، صارفین کے لیے نظر نہیں آتا",
   "copy_user_id": "صارف کی شناخت کاپی کریں",
   "copy_direct_link": "براہ راست لنک کاپی کریں",
-  "posts_auto_update_info": "Posts update automatically every ~2 minutes. It's not possible to disable this at the moment."
+  "posts_auto_update_info": "Posts update automatically every ~2 minutes. It's not possible to disable this at the moment.",
+  "board_address_tooltip": "اس بورڈ کے پیر ٹو پیر نوڈ کا پتہ"
 }

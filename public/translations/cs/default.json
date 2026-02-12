@@ -278,5 +278,6 @@
   "pending_mod_approval": "Čekání na schválení moderatorem, není viditelné uživatelům",
   "copy_user_id": "kopírovat ID uživatele",
   "copy_direct_link": "kopírovat přímý odkaz",
-  "posts_auto_update_info": "Posts update automatically every ~2 minutes. It's not possible to disable this at the moment."
+  "posts_auto_update_info": "Posts update automatically every ~2 minutes. It's not possible to disable this at the moment.",
+  "board_address_tooltip": "Adresa uzlu peer-to-peer této desky"
 }

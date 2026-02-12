@@ -278,5 +278,6 @@
   "pending_mod_approval": "중재자 승인 대기 중, 사용자에게 표시되지 않음",
   "copy_user_id": "사용자 ID 복사",
   "copy_direct_link": "직접 링크 복사",
-  "posts_auto_update_info": "Posts update automatically every ~2 minutes. It's not possible to disable this at the moment."
+  "posts_auto_update_info": "Posts update automatically every ~2 minutes. It's not possible to disable this at the moment.",
+  "board_address_tooltip": "이 게시판의 P2P 노드 주소"
 }

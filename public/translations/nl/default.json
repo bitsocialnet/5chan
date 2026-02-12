@@ -278,5 +278,6 @@
   "pending_mod_approval": "In afwachting van moderatorgoedkeuring, niet zichtbaar voor gebruikers",
   "copy_user_id": "gebruikers-ID kopiëren",
   "copy_direct_link": "directe link kopiëren",
-  "posts_auto_update_info": "Posts update automatically every ~2 minutes. It's not possible to disable this at the moment."
+  "posts_auto_update_info": "Posts update automatically every ~2 minutes. It's not possible to disable this at the moment.",
+  "board_address_tooltip": "Het adres van de peer-to-peer-node van dit bord"
 }
