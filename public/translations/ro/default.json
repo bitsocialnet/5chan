@@ -278,6 +278,6 @@
   "pending_mod_approval": "În așteptarea aprobării moderatorului, nu este vizibil pentru utilizatori",
   "copy_user_id": "copiați ID-ul utilizatorului",
   "copy_direct_link": "copiați linkul direct",
-  "posts_auto_update_info": "Posts update automatically every ~2 minutes. It's not possible to disable this at the moment.",
+  "posts_auto_update_info": "Postările se actualizează automat la fiecare ~2 minute. În prezent, nu este posibil să dezactivezi aceasta.",
   "board_address_tooltip": "Adresa nodului peer-to-peer al acestei plăci"
 }

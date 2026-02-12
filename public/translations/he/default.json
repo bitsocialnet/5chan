@@ -278,6 +278,6 @@
   "pending_mod_approval": "ממתין לאישור מנהל, לא ניתן לראות למשתמשים",
   "copy_user_id": "העתק מזהה משתמש",
   "copy_direct_link": "העתק קישור ישיר",
-  "posts_auto_update_info": "Posts update automatically every ~2 minutes. It's not possible to disable this at the moment.",
+  "posts_auto_update_info": "הפוסטים מתעדכנים באופן אוטומטי בערך כל ~2 דקות. כרגע לא ניתן להשבית זאת.",
   "board_address_tooltip": "כתובת צומת ה-P2P של הלוח הזה"
 }

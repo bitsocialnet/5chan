@@ -278,6 +278,6 @@
   "pending_mod_approval": "Väntar på moderatorgodkännande, inte synligt för användare",
   "copy_user_id": "kopiera användar-ID",
   "copy_direct_link": "kopiera direktlänk",
-  "posts_auto_update_info": "Posts update automatically every ~2 minutes. It's not possible to disable this at the moment.",
+  "posts_auto_update_info": "Inlägg uppdateras automatiskt ungefär var ~2:e minut. Det är för närvarande inte möjligt att inaktivera detta.",
   "board_address_tooltip": "Adressen till denna tavlas peer-to-peer-nod"
 }

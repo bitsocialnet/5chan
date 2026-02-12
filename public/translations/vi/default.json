@@ -278,6 +278,6 @@
   "pending_mod_approval": "Chờ duyệt của người điều hành, không hiển thị cho người dùng",
   "copy_user_id": "sao chép ID người dùng",
   "copy_direct_link": "sao chép liên kết trực tiếp",
-  "posts_auto_update_info": "Posts update automatically every ~2 minutes. It's not possible to disable this at the moment.",
+  "posts_auto_update_info": "Bài đăng được cập nhật tự động cứ ~2 phút một lần. Hiện tại không thể tắt tính năng này.",
   "board_address_tooltip": "Địa chỉ nút peer-to-peer của bảng này"
 }

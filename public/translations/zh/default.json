@@ -278,6 +278,6 @@
   "pending_mod_approval": "等待版主批准，用户不可见",
   "copy_user_id": "复制用户ID",
   "copy_direct_link": "复制直接链接",
-  "posts_auto_update_info": "Posts update automatically every ~2 minutes. It's not possible to disable this at the moment.",
+  "posts_auto_update_info": "帖子每约2分钟自动更新一次。目前无法禁用此功能。",
   "board_address_tooltip": "此板块的点对点节点地址"
 }

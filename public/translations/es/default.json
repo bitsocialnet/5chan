@@ -278,6 +278,6 @@
   "pending_mod_approval": "Pendiente de aprobación del moderador, no visible para los usuarios",
   "copy_user_id": "Copiar ID de usuario",
   "copy_direct_link": "Copiar enlace directo",
-  "posts_auto_update_info": "Posts update automatically every ~2 minutes. It's not possible to disable this at the moment.",
+  "posts_auto_update_info": "Los posts se actualizan automáticamente cada ~2 minutos. Por el momento, no es posible desactivar esto.",
   "board_address_tooltip": "La dirección del nodo peer-to-peer de este tablón"
 }
