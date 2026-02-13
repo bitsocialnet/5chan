@@ -25,13 +25,9 @@ const CreateBoardModal = () => {
           <div className={styles.section}>
             <h3>Creating Your Board</h3>
             <p>
-              Create a board using the{' '}
-              <a href='https://plebbit.github.io/docs/learn/clients/5chan/create-a-board' target='_blank' rel='noopener noreferrer'>
-                Seedit GUI client
-              </a>{' '}
-              or{' '}
+              Create a board using the CLI:
               <a href='https://github.com/bitsocialhq/bitsocial-cli' target='_blank' rel='noopener noreferrer'>
-                plebbit-cli
+                bitsocial-cli
               </a>
               . <strong>Build a following:</strong> Users can subscribe to your board via the &quot;[Subscribe]&quot; button, which adds it to their top bar. You can gain
               subscribers through direct links, word of mouth, or search—no directory assignment or dev approval needed.

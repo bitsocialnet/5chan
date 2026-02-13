@@ -32,13 +32,9 @@ const DirectoryModal = () => {
           <div className={styles.section}>
             <h3>Creating Your Board</h3>
             <p>
-              <strong>Anyone can create a board</strong> using the{' '}
-              <a href='https://plebbit.github.io/docs/learn/clients/5chan/create-a-board' target='_blank' rel='noopener noreferrer'>
-                Seedit GUI client
-              </a>{' '}
-              or{' '}
+              <strong>Anyone can create a board</strong> using the official CLI:{' '}
               <a href='https://github.com/bitsocialhq/bitsocial-cli' target='_blank' rel='noopener noreferrer'>
-                plebbit-cli
+                bitsocial-cli
               </a>
               . Users can access it anytime via the search bar, direct links, or by subscribing with the &quot;[Subscribe]&quot; button—
               <strong>no directory assignment or dev approval needed</strong>. Directory boards are simply featured in homepage categories (like &quot;Anime &
