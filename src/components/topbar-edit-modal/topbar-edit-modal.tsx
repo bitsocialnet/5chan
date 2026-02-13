@@ -100,8 +100,9 @@ const TopbarEditModal = () => {
             <div className={styles.section}>
               <div className={styles.checkboxItem}>
                 <input type='checkbox' id='show-subscriptions' checked={showSubscriptions} onChange={(e) => setShowSubscriptions(e.target.checked)} />
-                <label htmlFor='show-subscriptions'>
-                  show subscriptions (
+                <label htmlFor='show-subscriptions'>show subscriptions</label>
+                <span className={styles.editSubscriptionsWrapper}>
+                  (
                   <Link
                     to={location.pathname.replace(/\/$/, '') + '/settings#subscriptions-settings'}
                     className={styles.editSubscriptionsLink}
@@ -113,7 +114,7 @@ const TopbarEditModal = () => {
                     edit subscriptions
                   </Link>
                   )
-                </label>
+                </span>
               </div>
             </div>
           )}

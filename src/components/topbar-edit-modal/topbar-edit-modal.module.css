@@ -138,13 +138,20 @@
 
 .editSubscriptionsLink {
   font-size: var(--body-font-size);
-  color: var(--link-color, #0000ee);
-  text-decoration: underline;
+  color: var(--post-link-text-color);
+  text-decoration: var(--post-content-link-text-decoration);
   cursor: pointer;
 }
 
+.editSubscriptionsWrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+}
+
 .editSubscriptionsLink:hover {
-  color: var(--link-hover-color, #551a8b);
+  color: var(--post-link-text-color-hover);
+  text-decoration: var(--post-content-link-text-decoration-hover);
 }
 
 .topbarEditFooter {
