@@ -168,7 +168,7 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
   const alertThresholdSeconds = getAlertThresholdSeconds();
   const isOverThreshold = isAwaitingApproval && timeWaiting > alertThresholdSeconds;
 
-  const stateString = useStateString(post);
+  const hasFailedState = state === 'failed';
   const postMenuProps = useMemo(() => selectPostMenuProps(post), [post]);
 
   const pseudonymityMode = useSubplebbitField(subplebbitAddress, (sub) => sub?.features?.pseudonymityMode);
@@ -326,9 +326,7 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
             ) : (
               <>
                 <span>No.</span>
-                <span className={styles.pendingCid}>
-                  {state === 'failed' || stateString === 'Failed' ? capitalize(t('failed')) : state === 'pending' ? capitalize(t('pending')) : ''}
-                </span>
+                <span className={styles.pendingCid}>{hasFailedState ? capitalize(t('failed')) : capitalize(t('pending'))}</span>
               </>
             )}
             {shouldShowPendingApprovalButtons && (
@@ -513,6 +511,7 @@ const PostMobile = ({
   const { hidden, unhide } = useHide({ cid });
 
   const stateString = useStateString(post) || t('loading_post');
+  const hasFailedState = state === 'failed';
 
   // Filter out deleted replies with no children for both virtuoso and non-virtuoso rendering
   const filteredReplies = useMemo(() => (replies || []).filter((reply) => !(reply.deleted && (reply.replyCount === 0 || !reply.replyCount))), [replies]);
@@ -669,12 +668,12 @@ const PostMobile = ({
                 </div>
               ))}
           </div>
-          {!isInPendingPostView && stateString && stateString !== 'Failed' && state !== 'succeeded' && isInPostPageView && !(!showReplies && !showAllReplies) ? (
+          {!isInPendingPostView && stateString && !hasFailedState && state !== 'succeeded' && isInPostPageView && !(!showReplies && !showAllReplies) ? (
             <div className={styles.stateString}>
               <LoadingEllipsis string={stateString} />
             </div>
           ) : (
-            state === 'failed' && <span className={styles.error}>{t('failed')}</span>
+            hasFailedState && <span className={styles.error}>{t('failed')}</span>
           )}
         </div>
       )}

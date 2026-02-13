@@ -86,7 +86,7 @@ const PostInfo = ({
   const { address, shortAddress } = author || {};
   const displayName = author?.displayName?.trim();
   const authorRole = roles?.[address]?.role?.replace('moderator', 'mod');
-  const stateString = useStateString(post);
+  const hasFailedState = state === 'failed';
   const isReply = parentCid;
   const { showOmittedReplies } = useShowOmittedReplies();
   const { imageUrl: avatarImageUrl } = useAuthorAvatar({ author });
@@ -335,9 +335,7 @@ const PostInfo = ({
           ) : (
             <>
               <span>No.</span>
-              <span className={styles.pendingCid}>
-                {state === 'failed' || stateString === 'Failed' ? capitalize(t('failed')) : state === 'pending' ? capitalize(t('pending')) : ''}
-              </span>
+              <span className={styles.pendingCid}>{hasFailedState ? capitalize(t('failed')) : capitalize(t('pending'))}</span>
             </>
           )}
           {pinned && (
@@ -702,6 +700,7 @@ const PostDesktop = ({
   const { showOmittedReplies, setShowOmittedReplies } = useShowOmittedReplies();
 
   const stateString = useStateString(post) || t('downloading_board');
+  const hasFailedState = state === 'failed';
 
   const commentMediaInfo = useCommentMediaInfo(link, thumbnailUrl, linkWidth, linkHeight);
   const hasThumbnail = getHasThumbnail(commentMediaInfo, link);
@@ -910,13 +909,13 @@ const PostDesktop = ({
             </div>
           ))}
       </div>
-      {!isInPendingPostView && stateString && stateString !== 'Failed' && state !== 'succeeded' && isInPostPageView && !(!showReplies && !showAllReplies) ? (
+      {!isInPendingPostView && stateString && !hasFailedState && state !== 'succeeded' && isInPostPageView && !(!showReplies && !showAllReplies) ? (
         <div className={styles.stateString}>
           <br />
           <LoadingEllipsis string={stateString} />
         </div>
       ) : (
-        state === 'failed' && <span className={styles.error}>{t('failed')}</span>
+        hasFailedState && <span className={styles.error}>{t('failed')}</span>
       )}
     </div>
   );

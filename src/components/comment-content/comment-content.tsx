@@ -114,13 +114,16 @@ const CommentContent = ({ comment: post }: { comment: Comment }) => {
   const shouldShowReplyingToReply = isReplyingToReply && (parentCid ? !contentNumbers.has(cidToNumber[parentCid] ?? -1) : true);
 
   const stateString = useStateString(post);
+  const hasFailedState = state === 'failed';
 
-  const loadingString = <div className={styles.stateString}>{stateString !== 'Failed' ? <LoadingEllipsis string={stateString || t('loading')} /> : stateString}</div>;
+  const loadingString = (
+    <div className={styles.stateString}>{!hasFailedState ? <LoadingEllipsis string={stateString || t('loading')} /> : stateString || capitalize(t('failed'))}</div>
+  );
 
   return (
     <blockquote className={`${styles.postMessage} ${!isReply && isMobile && styles.clampLines}`}>
       {isReply &&
-        state !== 'failed' &&
+        !hasFailedState &&
         !(deleted || removed) &&
         (filteredQuotedCids.length > 0
           ? filteredQuotedCids.map((cid: string) => <QuotedCidLink key={cid} cid={cid} postCid={postCid} />)
@@ -206,7 +209,7 @@ const CommentContent = ({ comment: post }: { comment: Comment }) => {
           />
         </span>
       )}
-      {!cid && state === 'pending' && stateString !== 'Failed' && (
+      {!cid && !hasFailedState && (
         <>
           <br />
           <br />
