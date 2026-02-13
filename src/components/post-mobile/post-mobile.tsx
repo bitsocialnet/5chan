@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigationType, useParams } from 'react-router-dom';
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
-import { Comment, useAuthorAvatar, useEditedComment, useReplies, useAccount, usePublishCommentModeration } from '@plebbit/plebbit-react-hooks';
+import { Comment, useAuthorAvatar, useEditedComment, useReplies, useAccount, usePublishCommentModeration, useAccountComment } from '@plebbit/plebbit-react-hooks';
 import Plebbit from '@plebbit/plebbit-js';
 import styles from '../../views/post/post.module.css';
 import { shouldShowSnow } from '../../lib/snow';
@@ -387,7 +387,15 @@ const PostMediaContent = ({ post, link }: { post: any; link: string }) => {
 
 const ReplyBacklinks = ({ post, quotedByMap }: PostProps) => {
   const { cid, parentCid } = post || {};
-  const { replies } = useReplies({ comment: post, flat: true, accountComments: { newerThan: Infinity } });
+  const repliesResult = useReplies({
+    comment: post,
+    sortType: 'old',
+    flat: true,
+    accountComments: { newerThan: Infinity, append: true },
+  });
+  const { replies } = repliesResult;
+  const updatedReplies = (repliesResult as { updatedReplies?: Comment[] }).updatedReplies;
+  const repliesForRender = updatedReplies?.length ? updatedReplies : replies || [];
 
   const opBacklinks =
     cid &&
@@ -400,9 +408,9 @@ const ReplyBacklinks = ({ post, quotedByMap }: PostProps) => {
       )
       .filter(Boolean);
 
-  const replyBacklinks = cid && parentCid && ((replies?.length || 0) > 0 || quotedByMap?.get(cid)?.length) && (
+  const replyBacklinks = cid && parentCid && ((repliesForRender?.length || 0) > 0 || quotedByMap?.get(cid)?.length) && (
     <>
-      {replies?.map(
+      {repliesForRender?.map(
         (reply: Comment, index: number) =>
           reply?.parentCid === cid && reply?.cid && !(reply?.deleted || reply?.removed) && <ReplyQuotePreview key={index} isBacklinkReply={true} backlinkReply={reply} />,
       )}
@@ -426,9 +434,13 @@ const ReplyBacklinks = ({ post, quotedByMap }: PostProps) => {
 };
 
 const Reply = ({ postReplyCount, reply, roles, threadNumber, quotedByMap }: PostProps) => {
-  let post = reply;
+  const accountReply = useAccountComment({
+    commentIndex: typeof reply?.index === 'number' ? reply.index : undefined,
+  });
+  const hasReplyIndex = typeof reply?.index === 'number';
+  let post = hasReplyIndex && accountReply?.index === reply.index ? accountReply : reply;
   // handle pending mod or author edit
-  const { editedComment } = useEditedComment({ comment: reply });
+  const { editedComment } = useEditedComment({ comment: post });
   if (editedComment) {
     post = editedComment;
   }
@@ -481,8 +493,15 @@ const PostMobile = ({
   const directories = useDirectories();
   const boardPath = subplebbitAddress ? getBoardPath(subplebbitAddress, directories) : undefined;
   const linksCount = useCountLinksInReplies(post);
-  const repliesResult = useReplies({ comment: post, accountComments: { newerThan: Infinity } });
+  const repliesResult = useReplies({
+    comment: post,
+    sortType: 'old',
+    flat: true,
+    accountComments: { newerThan: Infinity, append: true },
+  });
   const { replies, hasMore, loadMore } = repliesResult;
+  const updatedReplies = (repliesResult as { updatedReplies?: Comment[] }).updatedReplies;
+  const repliesForRender = updatedReplies?.length ? updatedReplies : replies || [];
   const reset = (repliesResult as { reset?: () => Promise<void> }).reset;
   const setResetFunction = useFeedResetStore((s) => s.setResetFunction);
   useEffect(() => {
@@ -495,7 +514,7 @@ const PostMobile = ({
   const registerComments = usePostNumberStore((s) => s.registerComments);
   const prevCidsRef = useRef<string>('');
   useEffect(() => {
-    const all = post ? [post, ...(replies || [])] : replies || [];
+    const all = post ? [post, ...repliesForRender] : repliesForRender;
     if (!all.length) return;
     const cidsKey = all
       .map((c) => c?.cid)
@@ -505,7 +524,7 @@ const PostMobile = ({
     if (cidsKey === prevCidsRef.current) return;
     prevCidsRef.current = cidsKey;
     registerComments(all);
-  }, [post, replies, registerComments]);
+  }, [post, repliesForRender, registerComments]);
 
   const isInPostPageView = isPostPageView(location.pathname, params);
   const { hidden, unhide } = useHide({ cid });
@@ -514,7 +533,7 @@ const PostMobile = ({
   const hasFailedState = state === 'failed';
 
   // Filter out deleted replies with no children for both virtuoso and non-virtuoso rendering
-  const filteredReplies = useMemo(() => (replies || []).filter((reply) => !(reply.deleted && (reply.replyCount === 0 || !reply.replyCount))), [replies]);
+  const filteredReplies = useMemo(() => repliesForRender.filter((reply) => !(reply.deleted && (reply.replyCount === 0 || !reply.replyCount))), [repliesForRender]);
 
   const quotedByMap = useQuotedByMap(filteredReplies);
 
@@ -660,7 +679,7 @@ const PostMobile = ({
             {!(pinned && !isInPostView) &&
               !showAllReplies &&
               !isInPendingPostView &&
-              replies &&
+              repliesForRender &&
               showReplies &&
               filteredReplies.slice(-5).map((reply, index) => (
                 <div key={index} className={styles.replyContainer}>

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigationType, useParams } from 'react-router-dom';
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
-import { Comment, useAuthorAvatar, useEditedComment, useReplies, useAccount } from '@plebbit/plebbit-react-hooks';
+import { Comment, useAuthorAvatar, useEditedComment, useReplies, useAccount, useAccountComment } from '@plebbit/plebbit-react-hooks';
 import Plebbit from '@plebbit/plebbit-js';
 import styles from '../../views/post/post.module.css';
 import { CommentMediaInfo, getDisplayMediaInfoType, getHasThumbnail, getMediaDimensions } from '../../lib/utils/media-utils';
@@ -581,9 +581,13 @@ const Reply = ({
   quotedByMap,
   directRepliesByParentCid,
 }: PostProps & { directRepliesByParentCid?: Map<string, Comment[]> }) => {
-  let post = reply;
+  const accountReply = useAccountComment({
+    commentIndex: typeof reply?.index === 'number' ? reply.index : undefined,
+  });
+  const hasReplyIndex = typeof reply?.index === 'number';
+  let post = hasReplyIndex && accountReply?.index === reply.index ? accountReply : reply;
   // handle pending mod or author edit
-  const { editedComment } = useEditedComment({ comment: reply });
+  const { editedComment } = useEditedComment({ comment: post });
   if (editedComment) {
     post = editedComment;
   }
@@ -666,8 +670,15 @@ const PostDesktop = ({
   const { hidden, unhide, hide } = useHide({ cid });
   const isHidden = hidden && !isInPostPageView;
 
-  const repliesResult = useReplies({ comment: post, flat: true, accountComments: { newerThan: Infinity } });
+  const repliesResult = useReplies({
+    comment: post,
+    sortType: 'old',
+    flat: true,
+    accountComments: { newerThan: Infinity, append: true },
+  });
   const { replies, hasMore, loadMore } = repliesResult;
+  const updatedReplies = (repliesResult as { updatedReplies?: Comment[] }).updatedReplies;
+  const repliesForRender = updatedReplies?.length ? updatedReplies : replies || [];
   const reset = (repliesResult as { reset?: () => Promise<void> }).reset;
   const setResetFunction = useFeedResetStore((s) => s.setResetFunction);
   useEffect(() => {
@@ -680,7 +691,7 @@ const PostDesktop = ({
   const registerComments = usePostNumberStore((s) => s.registerComments);
   const prevCidsRef = useRef<string>('');
   useEffect(() => {
-    const all = post ? [post, ...(replies || [])] : replies || [];
+    const all = post ? [post, ...repliesForRender] : repliesForRender;
     if (!all.length) return;
     const cidsKey = all
       .map((c) => c?.cid)
@@ -690,10 +701,10 @@ const PostDesktop = ({
     if (cidsKey === prevCidsRef.current) return;
     prevCidsRef.current = cidsKey;
     registerComments(all);
-  }, [post, replies, registerComments]);
+  }, [post, repliesForRender, registerComments]);
   const visiblelinksCount = useCountLinksInReplies(post, 5);
   const totalLinksCount = useCountLinksInReplies(post);
-  const replyCount = replies?.length;
+  const replyCount = repliesForRender.length;
 
   const repliesCount = pinned ? replyCount : replyCount - 5;
   const linksCount = pinned ? totalLinksCount : totalLinksCount - visiblelinksCount;
@@ -706,7 +717,7 @@ const PostDesktop = ({
   const hasThumbnail = getHasThumbnail(commentMediaInfo, link);
 
   // Filter out deleted replies with no children for both virtuoso and non-virtuoso rendering
-  const filteredReplies = useMemo(() => (replies || []).filter((reply) => !(reply.deleted && (reply.replyCount === 0 || !reply.replyCount))), [replies]);
+  const filteredReplies = useMemo(() => repliesForRender.filter((reply) => !(reply.deleted && (reply.replyCount === 0 || !reply.replyCount))), [repliesForRender]);
   const directRepliesByParentCid = useMemo(() => {
     const map = new Map<string, Comment[]>();
     for (const reply of filteredReplies) {
@@ -894,7 +905,7 @@ const PostDesktop = ({
           !showAllReplies &&
           !(pinned && !isInPostPageView && !showOmittedReplies[cid]) &&
           !isInPendingPostView &&
-          replies &&
+          repliesForRender &&
           showReplies &&
           (showOmittedReplies[cid] ? filteredReplies : filteredReplies.slice(-5)).map((reply, index) => (
             <div key={index} className={styles.replyContainer}>
