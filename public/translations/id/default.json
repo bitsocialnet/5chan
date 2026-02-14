@@ -277,5 +277,7 @@
   "no": "No",
   "pending_mod_approval": "Menunggu persetujuan moderator, tidak terlihat oleh pengguna",
   "copy_user_id": "salin ID pengguna",
-  "copy_direct_link": "salin tautan langsung"
+  "copy_direct_link": "salin tautan langsung",
+  "posts_auto_update_info": "Posting diperbarui secara otomatis setiap ~2 menit. Saat ini tidak mungkin untuk menonaktifkan ini.",
+  "board_address_tooltip": "Alamat node peer-to-peer papan ini"
 }

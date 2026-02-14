@@ -277,5 +277,7 @@
   "no": "No",
   "pending_mod_approval": "Moderatör onayı beklemede, kullanıcılara görünmüyor",
   "copy_user_id": "kullanıcı ID'sini kopyala",
-  "copy_direct_link": "doğrudan bağlantıyı kopyala"
+  "copy_direct_link": "doğrudan bağlantıyı kopyala",
+  "posts_auto_update_info": "Gönderiler her ~2 dakikada otomatik olarak güncellenir. Şu anda bunu devre dışı bırakmak mümkün değildir.",
+  "board_address_tooltip": "Bu panonun eşler arası düğüm adresi"
 }

@@ -25,13 +25,9 @@ const CreateBoardModal = () => {
           <div className={styles.section}>
             <h3>Creating Your Board</h3>
             <p>
-              Create a board using the{' '}
-              <a href='https://plebbit.github.io/docs/learn/clients/5chan/create-a-board' target='_blank' rel='noopener noreferrer'>
-                Seedit GUI client
-              </a>{' '}
-              or{' '}
-              <a href='https://github.com/plebbit/plebbit-cli' target='_blank' rel='noopener noreferrer'>
-                plebbit-cli
+              Create a board using the CLI:
+              <a href='https://github.com/bitsocialhq/bitsocial-cli' target='_blank' rel='noopener noreferrer'>
+                bitsocial-cli
               </a>
               . <strong>Build a following:</strong> Users can subscribe to your board via the &quot;[Subscribe]&quot; button, which adds it to their top bar. You can gain
               subscribers through direct links, word of mouth, or search—no directory assignment or dev approval needed.
@@ -42,7 +38,7 @@ const CreateBoardModal = () => {
             <h3>Submitting to a Directory</h3>
             <p>
               Open a PR editing{' '}
-              <a href='https://github.com/plebbit/lists/blob/master/5chan-directories.json' target='_blank' rel='noopener noreferrer'>
+              <a href='https://github.com/bitsocialhq/lists/blob/master/5chan-directories.json' target='_blank' rel='noopener noreferrer'>
                 5chan-directories.json
               </a>{' '}
               with your board&apos;s title, address, and NSFW status. Devs will review and merge if approved. 99% uptime is required.

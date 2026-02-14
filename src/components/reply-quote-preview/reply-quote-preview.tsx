@@ -15,6 +15,7 @@ interface ReplyQuotePreviewProps {
   isQuotelinkReply?: boolean;
   quotelinkReply?: Comment;
   isOP?: boolean;
+  showTrailingBreak?: boolean;
 }
 
 const handleQuoteHover = (cid: string, onElementOutOfView: () => void) => {
@@ -70,7 +71,7 @@ const scrollToThreadCardTop = (threadCid: string) => {
   return true;
 };
 
-const DesktopQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, isQuotelinkReply, isOP }: ReplyQuotePreviewProps) => {
+const DesktopQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, isQuotelinkReply, isOP, showTrailingBreak = true }: ReplyQuotePreviewProps) => {
   const [hoveredCid, setHoveredCid] = useState<string | null>(null);
   const [outOfViewCid, setOutOfViewCid] = useState<string | null>(null);
   const placementRef = useRef<Placement>('right');
@@ -194,7 +195,7 @@ const DesktopQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, i
         {isOP && ' (OP)'}
         {quotelinkReply?.author?.address === account?.author?.address && ' (You)'}
       </Link>
-      <br />
+      {showTrailingBreak && <br />}
       {hoveredCid === quotelinkReply?.cid &&
         outOfViewCid === quotelinkReply?.cid &&
         createPortal(
@@ -339,7 +340,7 @@ const MobileQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, is
   return isBacklinkReply ? replyBacklink : isQuotelinkReply && replyQuotelink;
 };
 
-const ReplyQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, isQuotelinkReply, isOP }: ReplyQuotePreviewProps) => {
+const ReplyQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, isQuotelinkReply, isOP, showTrailingBreak }: ReplyQuotePreviewProps) => {
   const isMobile = useIsMobile();
 
   return isMobile ? (
@@ -351,6 +352,7 @@ const ReplyQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, isQ
       isBacklinkReply={isBacklinkReply}
       isQuotelinkReply={isQuotelinkReply}
       isOP={isOP}
+      showTrailingBreak={showTrailingBreak}
     />
   );
 };

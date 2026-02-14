@@ -49,7 +49,7 @@ if (remoteFiles.length) {
   files = remoteFiles;
 }
 
-const linkTo = (file) => `https://github.com/plebbit/5chan/releases/download/v${version}/${file}`;
+const linkTo = (file) => `https://github.com/bitsocialhq/5chan/releases/download/v${version}/${file}`;
 const has = (s, sub) => s.toLowerCase().includes(sub);
 const isArm = (s) => has(s, 'arm64') || has(s, 'aarch64');
 const isX64 = (s) => has(s, 'x64') || has(s, 'x86_64') || !isArm(s);
@@ -102,7 +102,7 @@ const htmlSection = section('Static HTML build', [htmlZip && `- 5chan-html (zip)
 const downloads = [macSection, winSection, linuxSection, androidSection, htmlSection].filter(Boolean).join('\n\n');
 
 // One-liner summary of what changed in this release. Update before each release.
-const oneLinerDescription = 'This version adds backlinks for quoted posts, improves reply functionality with proper quote references, and includes several bug fixes.';
+const oneLinerDescription = 'This version enables the Update button on the post page to refresh replies, adds an informational alert for the Auto checkbox, fixes inline quote link layout, and includes several bug fixes.';
 
 const releaseBody = `${oneLinerDescription}
 

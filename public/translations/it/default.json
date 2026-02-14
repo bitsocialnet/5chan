@@ -277,5 +277,7 @@
   "no": "No",
   "pending_mod_approval": "In attesa di approvazione del moderatore, non visibile agli utenti",
   "copy_user_id": "Copia ID utente",
-  "copy_direct_link": "Copia link diretto"
+  "copy_direct_link": "Copia link diretto",
+  "posts_auto_update_info": "I post si aggiornano automaticamente ogni ~2 minuti. Non è possibile disabilitare questa funzione al momento.",
+  "board_address_tooltip": "L'indirizzo del nodo peer-to-peer di questa bacheca"
 }

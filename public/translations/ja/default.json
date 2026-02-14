@@ -277,5 +277,7 @@
   "no": "いいえ",
   "pending_mod_approval": "モデレーターの承認待ち、ユーザーには表示されません",
   "copy_user_id": "ユーザーIDをコピー",
-  "copy_direct_link": "直接リンクをコピー"
+  "copy_direct_link": "直接リンクをコピー",
+  "posts_auto_update_info": "投稿は約2分ごとに自動更新されます。現在、これを無効にすることはできません。",
+  "board_address_tooltip": "この板のピアツーピアノードのアドレス"
 }

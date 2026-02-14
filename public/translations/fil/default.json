@@ -277,5 +277,7 @@
   "no": "No",
   "pending_mod_approval": "Naghihintay ng pag-apruba ng moderator, hindi nakikita ng mga gumagamit",
   "copy_user_id": "kopyahin ang user ID",
-  "copy_direct_link": "kopyahin ang direct link"
+  "copy_direct_link": "kopyahin ang direct link",
+  "posts_auto_update_info": "Ang mga post ay awtomatikong nag-update bawat ~2 minuto. Kasalukuyang hindi posible na i-disable ito.",
+  "board_address_tooltip": "Ang address ng peer-to-peer node ng board na ito"
 }

@@ -2,14 +2,13 @@ import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigationType, useParams } from 'react-router-dom';
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
-import { Comment, useAuthorAvatar, useEditedComment, useReplies, useAccount, usePublishCommentModeration } from '@plebbit/plebbit-react-hooks';
+import { Comment, useAuthorAvatar, useEditedComment, useReplies, useAccount, usePublishCommentModeration, useAccountComment } from '@plebbit/plebbit-react-hooks';
 import Plebbit from '@plebbit/plebbit-js';
 import styles from '../../views/post/post.module.css';
 import { shouldShowSnow } from '../../lib/snow';
 import { getHasThumbnail } from '../../lib/utils/media-utils';
 import { getTextColorForBackground, hashStringToColor } from '../../lib/utils/post-utils';
 import { getFormattedDate, getFormattedTimeAgo } from '../../lib/utils/time-utils';
-import { QUOTE_NUMBER_REGEX } from '../../lib/utils/url-utils';
 import { isAllView, isModQueueView, isPendingPostView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import { formatUserIDForDisplay } from '../../lib/utils/string-utils';
 import useModQueueStore from '../../stores/use-mod-queue-store';
@@ -34,8 +33,10 @@ import { capitalize, lowerCase } from 'lodash';
 import useReplyModalStore from '../../stores/use-reply-modal-store';
 import { selectPostMenuProps } from '../../lib/utils/post-menu-props';
 import useChallengesStore from '../../stores/use-challenges-store';
+import useFeedResetStore from '../../stores/use-feed-reset-store';
 import usePostNumberStore from '../../stores/use-post-number-store';
 import { alertChallengeVerificationFailed } from '../../lib/utils/challenge-utils';
+import useQuotedByMap from '../../hooks/use-quoted-by-map';
 
 const { addChallenge } = useChallengesStore.getState();
 
@@ -167,14 +168,20 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
   const alertThresholdSeconds = getAlertThresholdSeconds();
   const isOverThreshold = isAwaitingApproval && timeWaiting > alertThresholdSeconds;
 
-  const stateString = useStateString(post);
+  const hasFailedState = state === 'failed';
   const postMenuProps = useMemo(() => selectPostMenuProps(post), [post]);
-
-  const handleUserAddressClick = useAuthorAddressClick();
-  const numberOfPostsByAuthor = document.querySelectorAll(`[data-author-address="${shortAddress}"][data-post-cid="${postCid}"]`).length;
 
   const pseudonymityMode = useSubplebbitField(subplebbitAddress, (sub) => sub?.features?.pseudonymityMode);
   const showUserID = pseudonymityMode !== 'per-reply';
+
+  const handleUserAddressClick = useAuthorAddressClick();
+  const numberOfPostsByAuthor = useMemo(() => {
+    if (!showUserID || deleted || removed || !shortAddress || !postCid || typeof document === 'undefined') {
+      return 0;
+    }
+
+    return document.querySelectorAll(`[data-author-address="${shortAddress}"][data-post-cid="${postCid}"]`).length;
+  }, [showUserID, deleted, removed, shortAddress, postCid]);
 
   const userID = address && Plebbit.getShortAddress({ address }); // shortened to 8 chars for display; users can verify the full user ID via "Copy user ID" in the post menu to guard against spoofing
   const userIDBackgroundColor = hashStringToColor(userID);
@@ -319,9 +326,7 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
             ) : (
               <>
                 <span>No.</span>
-                <span className={styles.pendingCid}>
-                  {state === 'failed' || stateString === 'Failed' ? capitalize(t('failed')) : state === 'pending' ? capitalize(t('pending')) : ''}
-                </span>
+                <span className={styles.pendingCid}>{hasFailedState ? capitalize(t('failed')) : capitalize(t('pending'))}</span>
               </>
             )}
             {shouldShowPendingApprovalButtons && (
@@ -382,7 +387,15 @@ const PostMediaContent = ({ post, link }: { post: any; link: string }) => {
 
 const ReplyBacklinks = ({ post, quotedByMap }: PostProps) => {
   const { cid, parentCid } = post || {};
-  const { replies } = useReplies({ comment: post, flat: true, accountComments: { newerThan: Infinity } });
+  const repliesResult = useReplies({
+    comment: post,
+    sortType: 'old',
+    flat: true,
+    accountComments: { newerThan: Infinity, append: true },
+  });
+  const { replies } = repliesResult;
+  const updatedReplies = (repliesResult as { updatedReplies?: Comment[] }).updatedReplies;
+  const repliesForRender = updatedReplies?.length ? updatedReplies : replies || [];
 
   const opBacklinks =
     cid &&
@@ -395,9 +408,9 @@ const ReplyBacklinks = ({ post, quotedByMap }: PostProps) => {
       )
       .filter(Boolean);
 
-  const replyBacklinks = cid && parentCid && ((replies?.length || 0) > 0 || quotedByMap?.get(cid)?.length) && (
+  const replyBacklinks = cid && parentCid && ((repliesForRender?.length || 0) > 0 || quotedByMap?.get(cid)?.length) && (
     <>
-      {replies?.map(
+      {repliesForRender?.map(
         (reply: Comment, index: number) =>
           reply?.parentCid === cid && reply?.cid && !(reply?.deleted || reply?.removed) && <ReplyQuotePreview key={index} isBacklinkReply={true} backlinkReply={reply} />,
       )}
@@ -421,9 +434,13 @@ const ReplyBacklinks = ({ post, quotedByMap }: PostProps) => {
 };
 
 const Reply = ({ postReplyCount, reply, roles, threadNumber, quotedByMap }: PostProps) => {
-  let post = reply;
+  const accountReply = useAccountComment({
+    commentIndex: typeof reply?.index === 'number' ? reply.index : undefined,
+  });
+  const hasReplyIndex = typeof reply?.index === 'number';
+  let post = hasReplyIndex && accountReply?.index === reply.index ? accountReply : reply;
   // handle pending mod or author edit
-  const { editedComment } = useEditedComment({ comment: reply });
+  const { editedComment } = useEditedComment({ comment: post });
   if (editedComment) {
     post = editedComment;
   }
@@ -476,12 +493,28 @@ const PostMobile = ({
   const directories = useDirectories();
   const boardPath = subplebbitAddress ? getBoardPath(subplebbitAddress, directories) : undefined;
   const linksCount = useCountLinksInReplies(post);
-  const { replies, hasMore, loadMore } = useReplies({ comment: post, accountComments: { newerThan: Infinity } });
+  const repliesResult = useReplies({
+    comment: post,
+    sortType: 'old',
+    flat: true,
+    accountComments: { newerThan: Infinity, append: true },
+  });
+  const { replies, hasMore, loadMore } = repliesResult;
+  const updatedReplies = (repliesResult as { updatedReplies?: Comment[] }).updatedReplies;
+  const repliesForRender = updatedReplies?.length ? updatedReplies : replies || [];
+  const reset = (repliesResult as { reset?: () => Promise<void> }).reset;
+  const setResetFunction = useFeedResetStore((s) => s.setResetFunction);
+  useEffect(() => {
+    if ((isInPostView || isInPendingPostView) && reset) {
+      setResetFunction(() => {
+        reset();
+      });
+    }
+  }, [isInPostView, isInPendingPostView, reset, setResetFunction]);
   const registerComments = usePostNumberStore((s) => s.registerComments);
-  const numberToCid = usePostNumberStore((s) => s.numberToCid);
   const prevCidsRef = useRef<string>('');
   useEffect(() => {
-    const all = post ? [post, ...(replies || [])] : replies || [];
+    const all = post ? [post, ...repliesForRender] : repliesForRender;
     if (!all.length) return;
     const cidsKey = all
       .map((c) => c?.cid)
@@ -491,46 +524,18 @@ const PostMobile = ({
     if (cidsKey === prevCidsRef.current) return;
     prevCidsRef.current = cidsKey;
     registerComments(all);
-  }, [post, replies, registerComments]);
+  }, [post, repliesForRender, registerComments]);
 
   const isInPostPageView = isPostPageView(location.pathname, params);
   const { hidden, unhide } = useHide({ cid });
 
   const stateString = useStateString(post) || t('loading_post');
+  const hasFailedState = state === 'failed';
 
   // Filter out deleted replies with no children for both virtuoso and non-virtuoso rendering
-  const filteredReplies = useMemo(() => (replies || []).filter((reply) => !(reply.deleted && (reply.replyCount === 0 || !reply.replyCount))), [replies]);
+  const filteredReplies = useMemo(() => repliesForRender.filter((reply) => !(reply.deleted && (reply.replyCount === 0 || !reply.replyCount))), [repliesForRender]);
 
-  // Compute quotedByMap: map each quoted CID to array of replies that quote it
-  const quotedByMap = useMemo(() => {
-    const map = new Map<string, Comment[]>();
-    for (const reply of filteredReplies) {
-      const cidSet = new Set<string>();
-
-      if (reply.quotedCids?.length) {
-        for (const quotedCid of reply.quotedCids) {
-          cidSet.add(quotedCid);
-        }
-      }
-
-      if (reply.content) {
-        for (const match of reply.content.matchAll(QUOTE_NUMBER_REGEX)) {
-          const postNumber = parseInt(match[1], 10);
-          const quotedCid = numberToCid[postNumber];
-          if (quotedCid) {
-            cidSet.add(quotedCid);
-          }
-        }
-      }
-
-      for (const quotedCid of cidSet) {
-        const arr = map.get(quotedCid);
-        if (arr) arr.push(reply);
-        else map.set(quotedCid, [reply]);
-      }
-    }
-    return map;
-  }, [filteredReplies, numberToCid]);
+  const quotedByMap = useQuotedByMap(filteredReplies);
 
   // Virtuoso scroll position management for infinite replies
   const virtuosoRef = useRef<VirtuosoHandle | null>(null);
@@ -674,7 +679,7 @@ const PostMobile = ({
             {!(pinned && !isInPostView) &&
               !showAllReplies &&
               !isInPendingPostView &&
-              replies &&
+              repliesForRender &&
               showReplies &&
               filteredReplies.slice(-5).map((reply, index) => (
                 <div key={index} className={styles.replyContainer}>
@@ -682,12 +687,12 @@ const PostMobile = ({
                 </div>
               ))}
           </div>
-          {!isInPendingPostView && stateString && stateString !== 'Failed' && state !== 'succeeded' && isInPostPageView && !(!showReplies && !showAllReplies) ? (
+          {!isInPendingPostView && stateString && !hasFailedState && state !== 'succeeded' && isInPostPageView && !(!showReplies && !showAllReplies) ? (
             <div className={styles.stateString}>
               <LoadingEllipsis string={stateString} />
             </div>
           ) : (
-            state === 'failed' && <span className={styles.error}>{t('failed')}</span>
+            hasFailedState && <span className={styles.error}>{t('failed')}</span>
           )}
         </div>
       )}

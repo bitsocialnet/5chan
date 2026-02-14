@@ -96,7 +96,7 @@ const TopBarDesktop = () => {
   const { openCreateBoardModal } = useCreateBoardModalStore();
   const { openTopbarEditModal } = useTopbarEditModalStore();
   const { openDirectoryModal } = useDirectoryModalStore();
-  const { visibleDirectories, visibleSubscriptions } = useTopbarVisibilityStore();
+  const { visibleDirectories, showSubscriptionsInTopbar } = useTopbarVisibilityStore();
   const directories = useDirectories();
 
   // Memoize allBoardCodes since it's derived from a constant
@@ -127,8 +127,8 @@ const TopBarDesktop = () => {
     },
   );
 
-  // Filter subscriptions to only show visible ones
-  const visibleSubscriptionAddresses = subscriptions.filter((address: string) => visibleSubscriptions.has(address));
+  // Show all subscriptions when enabled; no separate per-address tracking (avoids drift when subscribing from board-buttons)
+  const visibleSubscriptionAddresses = showSubscriptionsInTopbar ? subscriptions : [];
 
   // Check if any directories are hidden
   const hasHiddenDirectories = useMemo(() => {

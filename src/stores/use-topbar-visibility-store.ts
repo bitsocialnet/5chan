@@ -7,13 +7,12 @@ const LOCALSTORAGE_KEY_SUBSCRIPTIONS = '5chan-topbar-subscriptions-visible';
 interface TopbarVisibilityState {
   // Directory codes that are visible (all visible by default)
   visibleDirectories: Set<string>;
-  // Subscription addresses that are visible in topbar (all hidden by default)
-  visibleSubscriptions: Set<string>;
+  // If true, show all account subscriptions in topbar (default: false)
+  showSubscriptionsInTopbar: boolean;
   // Actions
   toggleDirectory: (code: string) => void;
-  toggleSubscription: (address: string) => void;
   setDirectoryVisibility: (code: string, visible: boolean) => void;
-  setSubscriptionVisibility: (address: string, visible: boolean) => void;
+  setShowSubscriptionsInTopbar: (show: boolean) => void;
   // Initialize from localStorage
   initialize: () => void;
 }
@@ -40,15 +39,36 @@ const saveToLocalStorage = (key: string, set: Set<string>) => {
   }
 };
 
+const loadShowSubscriptionsFromStorage = (): boolean => {
+  try {
+    const stored = localStorage.getItem(LOCALSTORAGE_KEY_SUBSCRIPTIONS);
+    if (!stored) return false;
+    const parsed = JSON.parse(stored);
+    // Migrate from old format (array of addresses)
+    if (Array.isArray(parsed)) return parsed.length > 0;
+    if (typeof parsed === 'boolean') return parsed;
+  } catch (e) {
+    console.warn('Failed to load subscriptions visibility from localStorage:', e);
+  }
+  return false;
+};
+
+const saveShowSubscriptionsToStorage = (show: boolean) => {
+  try {
+    localStorage.setItem(LOCALSTORAGE_KEY_SUBSCRIPTIONS, JSON.stringify(show));
+  } catch (e) {
+    console.warn('Failed to save subscriptions visibility to localStorage:', e);
+  }
+};
+
 const useTopbarVisibilityStore = create<TopbarVisibilityState>((set, _get) => {
   // Initialize with all directories visible by default
   const allBoardCodes = getAllBoardCodes();
   const defaultVisibleDirectories = new Set(allBoardCodes);
-  const defaultVisibleSubscriptions = new Set<string>();
 
   return {
     visibleDirectories: loadFromLocalStorage(LOCALSTORAGE_KEY_DIRECTORIES, defaultVisibleDirectories),
-    visibleSubscriptions: loadFromLocalStorage(LOCALSTORAGE_KEY_SUBSCRIPTIONS, defaultVisibleSubscriptions),
+    showSubscriptionsInTopbar: loadShowSubscriptionsFromStorage(),
 
     toggleDirectory: (code: string) => {
       set((state) => {
@@ -60,19 +80,6 @@ const useTopbarVisibilityStore = create<TopbarVisibilityState>((set, _get) => {
         }
         saveToLocalStorage(LOCALSTORAGE_KEY_DIRECTORIES, newSet);
         return { visibleDirectories: newSet };
-      });
-    },
-
-    toggleSubscription: (address: string) => {
-      set((state) => {
-        const newSet = new Set(state.visibleSubscriptions);
-        if (newSet.has(address)) {
-          newSet.delete(address);
-        } else {
-          newSet.add(address);
-        }
-        saveToLocalStorage(LOCALSTORAGE_KEY_SUBSCRIPTIONS, newSet);
-        return { visibleSubscriptions: newSet };
       });
     },
 
@@ -89,26 +96,17 @@ const useTopbarVisibilityStore = create<TopbarVisibilityState>((set, _get) => {
       });
     },
 
-    setSubscriptionVisibility: (address: string, visible: boolean) => {
-      set((state) => {
-        const newSet = new Set(state.visibleSubscriptions);
-        if (visible) {
-          newSet.add(address);
-        } else {
-          newSet.delete(address);
-        }
-        saveToLocalStorage(LOCALSTORAGE_KEY_SUBSCRIPTIONS, newSet);
-        return { visibleSubscriptions: newSet };
-      });
+    setShowSubscriptionsInTopbar: (show: boolean) => {
+      saveShowSubscriptionsToStorage(show);
+      set({ showSubscriptionsInTopbar: show });
     },
 
     initialize: () => {
-      // Load from localStorage on initialization
       const directories = loadFromLocalStorage(LOCALSTORAGE_KEY_DIRECTORIES, defaultVisibleDirectories);
-      const subscriptions = loadFromLocalStorage(LOCALSTORAGE_KEY_SUBSCRIPTIONS, defaultVisibleSubscriptions);
+      const showSubscriptions = loadShowSubscriptionsFromStorage();
       set({
         visibleDirectories: directories,
-        visibleSubscriptions: subscriptions,
+        showSubscriptionsInTopbar: showSubscriptions,
       });
     },
   };

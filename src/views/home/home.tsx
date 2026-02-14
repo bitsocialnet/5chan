@@ -14,7 +14,7 @@ import DirectoryModal from '../../components/directory-modal';
 import { getBoardPath } from '../../lib/utils/route-utils';
 import { lowerCase } from 'lodash';
 
-// https://github.com/plebbit/lists/blob/master/5chan-directories.json
+// https://github.com/bitsocialhq/lists/blob/master/5chan-directories.json
 
 const SearchBar = () => {
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -126,7 +126,7 @@ export const Footer = () => {
     <>
       <ul className={styles.footer}>
         <li>
-          <a href='https://github.com/plebbit/5chan/blob/master/README.md' target='_blank' rel='noopener noreferrer'>
+          <a href='https://github.com/bitsocialhq/5chan/blob/master/README.md' target='_blank' rel='noopener noreferrer'>
             {t('about')}
           </a>
         </li>
@@ -147,7 +147,7 @@ export const Footer = () => {
           </a>
         </li>
         <li>
-          <a href='https://github.com/plebbit/5chan' target='_blank' rel='noopener noreferrer'>
+          <a href='https://github.com/bitsocialhq/5chan' target='_blank' rel='noopener noreferrer'>
             GitHub
           </a>
         </li>
@@ -165,11 +165,11 @@ export const Footer = () => {
       <div className={styles.footerInfo}>
         <br />
         <Version /> •{' '}
-        <a href='https://github.com/plebbit/5chan/issues/new' target='_blank' rel='noopener noreferrer'>
+        <a href='https://github.com/bitsocialhq/5chan/issues/new' target='_blank' rel='noopener noreferrer'>
           Feedback
         </a>{' '}
         •{' '}
-        <a href='https://github.com/plebbit/5chan/graphs/contributors' target='_blank' rel='noopener noreferrer'>
+        <a href='https://github.com/bitsocialhq/5chan/graphs/contributors' target='_blank' rel='noopener noreferrer'>
           Contact
         </a>
         <br />

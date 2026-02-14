@@ -8,7 +8,7 @@ import styles from './topbar-edit-modal.module.css';
 
 const TopbarEditModal = () => {
   const { showModal, closeTopbarEditModal } = useTopbarEditModalStore();
-  const { visibleDirectories, visibleSubscriptions, setDirectoryVisibility, setSubscriptionVisibility } = useTopbarVisibilityStore();
+  const { visibleDirectories, showSubscriptionsInTopbar, setDirectoryVisibility, setShowSubscriptionsInTopbar } = useTopbarVisibilityStore();
   const account = useAccount();
   const subscriptions = useMemo(() => account?.subscriptions || [], [account?.subscriptions]);
   const location = useLocation();
@@ -37,17 +37,16 @@ const TopbarEditModal = () => {
   // Local state for text input (will be saved on Save click)
   // Empty string means all directories visible (default), otherwise show only the specified codes
   const [localDirectoryInput, setLocalDirectoryInput] = useState<string>(allDirectoriesVisible ? '' : directoriesToString(visibleDirectories));
-  // Check if all subscriptions are visible (if any subscription is visible, show subscriptions is checked)
-  const [showSubscriptions, setShowSubscriptions] = useState<boolean>(subscriptions.length > 0 && subscriptions.some((addr: string) => visibleSubscriptions.has(addr)));
+  const [showSubscriptions, setShowSubscriptions] = useState<boolean>(showSubscriptionsInTopbar);
 
-  // Update local state when modal opens or store changes
+  // Sync local state when modal opens or store changes
   useEffect(() => {
     if (showModal) {
       const allVisible = allBoardCodes.every((code) => visibleDirectories.has(code));
       setLocalDirectoryInput(allVisible ? '' : directoriesToString(visibleDirectories));
-      setShowSubscriptions(subscriptions.length > 0 && subscriptions.some((addr: string) => visibleSubscriptions.has(addr)));
+      setShowSubscriptions(showSubscriptionsInTopbar);
     }
-  }, [showModal, visibleDirectories, visibleSubscriptions, allBoardCodes, subscriptions]);
+  }, [showModal, visibleDirectories, showSubscriptionsInTopbar, allBoardCodes]);
 
   if (!showModal) {
     return null;
@@ -75,13 +74,7 @@ const TopbarEditModal = () => {
       });
     }
 
-    // Apply subscription visibility changes
-    // If showSubscriptions is checked, make all subscriptions visible
-    // Otherwise, hide all subscriptions
-    subscriptions.forEach((address: string) => {
-      setSubscriptionVisibility(address, showSubscriptions);
-    });
-
+    setShowSubscriptionsInTopbar(showSubscriptions);
     closeTopbarEditModal();
   };
 
@@ -107,8 +100,9 @@ const TopbarEditModal = () => {
             <div className={styles.section}>
               <div className={styles.checkboxItem}>
                 <input type='checkbox' id='show-subscriptions' checked={showSubscriptions} onChange={(e) => setShowSubscriptions(e.target.checked)} />
-                <label htmlFor='show-subscriptions'>
-                  show subscriptions (
+                <label htmlFor='show-subscriptions'>show subscriptions</label>
+                <span className={styles.editSubscriptionsWrapper}>
+                  (
                   <Link
                     to={location.pathname.replace(/\/$/, '') + '/settings#subscriptions-settings'}
                     className={styles.editSubscriptionsLink}
@@ -120,7 +114,7 @@ const TopbarEditModal = () => {
                     edit subscriptions
                   </Link>
                   )
-                </label>
+                </span>
               </div>
             </div>
           )}

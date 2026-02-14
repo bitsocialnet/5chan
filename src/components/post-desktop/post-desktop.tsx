@@ -2,13 +2,13 @@ import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigationType, useParams } from 'react-router-dom';
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
-import { Comment, useAuthorAvatar, useEditedComment, useReplies, useAccount } from '@plebbit/plebbit-react-hooks';
+import { Comment, useAuthorAvatar, useEditedComment, useReplies, useAccount, useAccountComment } from '@plebbit/plebbit-react-hooks';
 import Plebbit from '@plebbit/plebbit-js';
 import styles from '../../views/post/post.module.css';
 import { CommentMediaInfo, getDisplayMediaInfoType, getHasThumbnail, getMediaDimensions } from '../../lib/utils/media-utils';
 import { hashStringToColor, getTextColorForBackground } from '../../lib/utils/post-utils';
 import { getFormattedDate, getFormattedTimeAgo } from '../../lib/utils/time-utils';
-import { isValidURL, QUOTE_NUMBER_REGEX } from '../../lib/utils/url-utils';
+import { isValidURL } from '../../lib/utils/url-utils';
 import { isAllView, isModQueueView, isPendingPostView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import { formatUserIDForDisplay } from '../../lib/utils/string-utils';
 import useModQueueStore from '../../stores/use-mod-queue-store';
@@ -38,9 +38,11 @@ import { shouldShowSnow } from '../../lib/snow';
 import useReplyModalStore from '../../stores/use-reply-modal-store';
 import { selectPostMenuProps } from '../../lib/utils/post-menu-props';
 import useChallengesStore from '../../stores/use-challenges-store';
+import useFeedResetStore from '../../stores/use-feed-reset-store';
 import usePostNumberStore from '../../stores/use-post-number-store';
 import { alertChallengeVerificationFailed } from '../../lib/utils/challenge-utils';
 import { usePublishCommentModeration } from '@plebbit/plebbit-react-hooks';
+import useQuotedByMap from '../../hooks/use-quoted-by-map';
 
 const { addChallenge } = useChallengesStore.getState();
 
@@ -76,15 +78,15 @@ const PostInfo = ({
   onApprove,
   onReject,
   quotedByMap,
-}: PostProps) => {
+  directRepliesByParentCid,
+}: PostProps & { directRepliesByParentCid?: Map<string, Comment[]> }) => {
   const { t } = useTranslation();
   const { author, cid, deleted, locked, pinned, parentCid, postCid, reason, removed, state, subplebbitAddress, timestamp } = post || {};
   const title = post?.title?.trim();
-  const { replies } = useReplies({ comment: post, accountComments: { newerThan: Infinity } });
   const { address, shortAddress } = author || {};
   const displayName = author?.displayName?.trim();
   const authorRole = roles?.[address]?.role?.replace('moderator', 'mod');
-  const stateString = useStateString(post);
+  const hasFailedState = state === 'failed';
   const isReply = parentCid;
   const { showOmittedReplies } = useShowOmittedReplies();
   const { imageUrl: avatarImageUrl } = useAuthorAvatar({ author });
@@ -203,11 +205,17 @@ const PostInfo = ({
   const userIDBackgroundColor = hashStringToColor(userID);
   const userIDTextColor = getTextColorForBackground(userIDBackgroundColor);
 
-  const handleUserAddressClick = useAuthorAddressClick();
-  const numberOfPostsByAuthor = document.querySelectorAll(`[data-author-address="${shortAddress}"][data-post-cid="${postCid}"]`).length;
-
   const pseudonymityMode = useSubplebbitField(subplebbitAddress, (sub) => sub?.features?.pseudonymityMode);
   const showUserID = pseudonymityMode !== 'per-reply';
+
+  const handleUserAddressClick = useAuthorAddressClick();
+  const numberOfPostsByAuthor = useMemo(() => {
+    if (!showUserID || deleted || removed || !shortAddress || !postCid || typeof document === 'undefined') {
+      return 0;
+    }
+
+    return document.querySelectorAll(`[data-author-address="${shortAddress}"][data-post-cid="${postCid}"]`).length;
+  }, [showUserID, deleted, removed, shortAddress, postCid]);
 
   const { hidden } = useHide(post);
 
@@ -327,9 +335,7 @@ const PostInfo = ({
           ) : (
             <>
               <span>No.</span>
-              <span className={styles.pendingCid}>
-                {state === 'failed' || stateString === 'Failed' ? capitalize(t('failed')) : state === 'pending' ? capitalize(t('pending')) : ''}
-              </span>
+              <span className={styles.pendingCid}>{hasFailedState ? capitalize(t('failed')) : capitalize(t('pending'))}</span>
             </>
           )}
           {pinned && (
@@ -419,37 +425,56 @@ const PostInfo = ({
           )}
         </span>
         {!(removed || deleted) && !isModQueue && <PostMenuDesktop postMenu={postMenuProps} />}
-        {cid &&
-          parentCid &&
-          replies &&
-          replies.map(
-            (reply: Comment, index: number) =>
-              reply?.parentCid === cid &&
-              reply?.cid &&
-              !(reply?.deleted || reply?.removed) && <ReplyQuotePreview key={index} isBacklinkReply={true} backlinkReply={reply} />,
-          )}
-        {cid &&
-          parentCid &&
-          quotedByMap
-            ?.get(cid)
-            ?.map(
-              (reply: Comment, index: number) =>
-                reply?.parentCid !== cid &&
-                reply?.cid &&
-                !(reply?.deleted || reply?.removed) && <ReplyQuotePreview key={`qb-${index}`} isBacklinkReply={true} backlinkReply={reply} />,
-            )}
-        {cid &&
-          !parentCid &&
-          quotedByMap
-            ?.get(cid)
-            ?.map(
-              (reply: Comment) =>
-                reply?.cid && !(reply?.deleted || reply?.removed) && <ReplyQuotePreview key={`op-bl-${reply.cid}`} isBacklinkReply={true} backlinkReply={reply} />,
-            )}
+        {cid && parentCid && <ReplyBacklinks post={post} quotedByMap={quotedByMap} directRepliesByParentCid={directRepliesByParentCid} />}
+        {cid && !parentCid && <OpBacklinks cid={cid} quotedByMap={quotedByMap} />}
       </span>
     </div>
   );
 };
+
+const ReplyBacklinks = ({
+  post,
+  quotedByMap,
+  directRepliesByParentCid,
+}: {
+  post: Comment;
+  quotedByMap?: Map<string, Comment[]>;
+  directRepliesByParentCid?: Map<string, Comment[]>;
+}) => {
+  const { cid, parentCid } = post || {};
+  if (!cid || !parentCid) {
+    return null;
+  }
+  const directReplies = directRepliesByParentCid?.get(cid) || [];
+
+  return (
+    <>
+      {directReplies.map(
+        (reply: Comment, index: number) =>
+          reply?.parentCid === cid && reply?.cid && !(reply?.deleted || reply?.removed) && <ReplyQuotePreview key={index} isBacklinkReply={true} backlinkReply={reply} />,
+      )}
+      {quotedByMap
+        ?.get(cid)
+        ?.map(
+          (reply: Comment, index: number) =>
+            reply?.parentCid !== cid &&
+            reply?.cid &&
+            !(reply?.deleted || reply?.removed) && <ReplyQuotePreview key={`qb-${index}`} isBacklinkReply={true} backlinkReply={reply} />,
+        )}
+    </>
+  );
+};
+
+const OpBacklinks = ({ cid, quotedByMap }: { cid: string; quotedByMap?: Map<string, Comment[]> }) => (
+  <>
+    {quotedByMap
+      ?.get(cid)
+      ?.map(
+        (reply: Comment) =>
+          reply?.cid && !(reply?.deleted || reply?.removed) && <ReplyQuotePreview key={`op-bl-${reply.cid}`} isBacklinkReply={true} backlinkReply={reply} />,
+      )}
+  </>
+);
 
 interface PostMediaProps {
   commentMediaInfo: CommentMediaInfo | undefined;
@@ -548,10 +573,21 @@ const PostMedia = ({
   );
 };
 
-const Reply = ({ postReplyCount, reply, roles, threadNumber, quotedByMap }: PostProps) => {
-  let post = reply;
+const Reply = ({
+  postReplyCount,
+  reply,
+  roles,
+  threadNumber,
+  quotedByMap,
+  directRepliesByParentCid,
+}: PostProps & { directRepliesByParentCid?: Map<string, Comment[]> }) => {
+  const accountReply = useAccountComment({
+    commentIndex: typeof reply?.index === 'number' ? reply.index : undefined,
+  });
+  const hasReplyIndex = typeof reply?.index === 'number';
+  let post = hasReplyIndex && accountReply?.index === reply.index ? accountReply : reply;
   // handle pending mod or author edit
-  const { editedComment } = useEditedComment({ comment: reply });
+  const { editedComment } = useEditedComment({ comment: post });
   if (editedComment) {
     post = editedComment;
   }
@@ -576,7 +612,15 @@ const Reply = ({ postReplyCount, reply, roles, threadNumber, quotedByMap }: Post
     <div className={styles.replyDesktop}>
       <div className={styles.sideArrows}>{'>>'}</div>
       <div className={`${styles.reply} ${isRouteLinkToReply && styles.highlight}`} data-cid={cid} data-author-address={author?.shortAddress} data-post-cid={postCid}>
-        <PostInfo post={post} postReplyCount={postReplyCount} roles={roles} isHidden={hidden} threadNumber={threadNumber} quotedByMap={quotedByMap} />
+        <PostInfo
+          post={post}
+          postReplyCount={postReplyCount}
+          roles={roles}
+          isHidden={hidden}
+          threadNumber={threadNumber}
+          quotedByMap={quotedByMap}
+          directRepliesByParentCid={directRepliesByParentCid}
+        />
         {link && !hidden && !(deleted || removed) && isValidURL(link) && (
           <PostMedia
             commentMediaInfo={commentMediaInfo}
@@ -626,12 +670,28 @@ const PostDesktop = ({
   const { hidden, unhide, hide } = useHide({ cid });
   const isHidden = hidden && !isInPostPageView;
 
-  const { replies, hasMore, loadMore } = useReplies({ comment: post, flat: true, accountComments: { newerThan: Infinity } });
+  const repliesResult = useReplies({
+    comment: post,
+    sortType: 'old',
+    flat: true,
+    accountComments: { newerThan: Infinity, append: true },
+  });
+  const { replies, hasMore, loadMore } = repliesResult;
+  const updatedReplies = (repliesResult as { updatedReplies?: Comment[] }).updatedReplies;
+  const repliesForRender = updatedReplies?.length ? updatedReplies : replies || [];
+  const reset = (repliesResult as { reset?: () => Promise<void> }).reset;
+  const setResetFunction = useFeedResetStore((s) => s.setResetFunction);
+  useEffect(() => {
+    if ((isInPostPageView || isInPendingPostView) && reset) {
+      setResetFunction(() => {
+        reset();
+      });
+    }
+  }, [isInPostPageView, isInPendingPostView, reset, setResetFunction]);
   const registerComments = usePostNumberStore((s) => s.registerComments);
-  const numberToCid = usePostNumberStore((s) => s.numberToCid);
   const prevCidsRef = useRef<string>('');
   useEffect(() => {
-    const all = post ? [post, ...(replies || [])] : replies || [];
+    const all = post ? [post, ...repliesForRender] : repliesForRender;
     if (!all.length) return;
     const cidsKey = all
       .map((c) => c?.cid)
@@ -641,53 +701,41 @@ const PostDesktop = ({
     if (cidsKey === prevCidsRef.current) return;
     prevCidsRef.current = cidsKey;
     registerComments(all);
-  }, [post, replies, registerComments]);
+  }, [post, repliesForRender, registerComments]);
   const visiblelinksCount = useCountLinksInReplies(post, 5);
   const totalLinksCount = useCountLinksInReplies(post);
-  const replyCount = replies?.length;
+  const replyCount = repliesForRender.length;
 
   const repliesCount = pinned ? replyCount : replyCount - 5;
   const linksCount = pinned ? totalLinksCount : totalLinksCount - visiblelinksCount;
   const { showOmittedReplies, setShowOmittedReplies } = useShowOmittedReplies();
 
   const stateString = useStateString(post) || t('downloading_board');
+  const hasFailedState = state === 'failed';
 
   const commentMediaInfo = useCommentMediaInfo(link, thumbnailUrl, linkWidth, linkHeight);
   const hasThumbnail = getHasThumbnail(commentMediaInfo, link);
 
   // Filter out deleted replies with no children for both virtuoso and non-virtuoso rendering
-  const filteredReplies = useMemo(() => (replies || []).filter((reply) => !(reply.deleted && (reply.replyCount === 0 || !reply.replyCount))), [replies]);
-
-  // Compute quotedByMap: map each quoted CID to array of replies that quote it
-  const quotedByMap = useMemo(() => {
+  const filteredReplies = useMemo(() => repliesForRender.filter((reply) => !(reply.deleted && (reply.replyCount === 0 || !reply.replyCount))), [repliesForRender]);
+  const directRepliesByParentCid = useMemo(() => {
     const map = new Map<string, Comment[]>();
     for (const reply of filteredReplies) {
-      const cidSet = new Set<string>();
-
-      if (reply.quotedCids?.length) {
-        for (const quotedCid of reply.quotedCids) {
-          cidSet.add(quotedCid);
-        }
+      const directParentCid = reply?.parentCid;
+      if (!directParentCid || !reply?.cid) {
+        continue;
       }
-
-      if (reply.content) {
-        for (const match of reply.content.matchAll(QUOTE_NUMBER_REGEX)) {
-          const postNumber = parseInt(match[1], 10);
-          const quotedCid = numberToCid[postNumber];
-          if (quotedCid) {
-            cidSet.add(quotedCid);
-          }
-        }
-      }
-
-      for (const quotedCid of cidSet) {
-        const arr = map.get(quotedCid);
-        if (arr) arr.push(reply);
-        else map.set(quotedCid, [reply]);
+      const existingReplies = map.get(directParentCid);
+      if (existingReplies) {
+        existingReplies.push(reply);
+      } else {
+        map.set(directParentCid, [reply]);
       }
     }
     return map;
-  }, [filteredReplies, numberToCid]);
+  }, [filteredReplies]);
+
+  const quotedByMap = useQuotedByMap(filteredReplies);
 
   // Virtuoso scroll position management for infinite replies
   const virtuosoRef = useRef<VirtuosoHandle | null>(null);
@@ -778,6 +826,7 @@ const PostDesktop = ({
             onApprove={onApprove}
             onReject={onReject}
             quotedByMap={quotedByMap}
+            directRepliesByParentCid={directRepliesByParentCid}
           />
           {!isHidden && !content && !(deleted || removed) && <div className={styles.spacer} />}
           {!isHidden && <CommentContent comment={post} />}
@@ -815,7 +864,14 @@ const PostDesktop = ({
             data={filteredReplies}
             itemContent={(index, reply) => (
               <div className={styles.replyContainer}>
-                <Reply reply={reply} roles={roles} postReplyCount={replyCount} threadNumber={post?.number} quotedByMap={quotedByMap} />
+                <Reply
+                  reply={reply}
+                  roles={roles}
+                  postReplyCount={replyCount}
+                  threadNumber={post?.number}
+                  quotedByMap={quotedByMap}
+                  directRepliesByParentCid={directRepliesByParentCid}
+                />
               </div>
             )}
             useWindowScroll={true}
@@ -834,7 +890,14 @@ const PostDesktop = ({
           !hasMore &&
           filteredReplies.map((reply, index) => (
             <div key={index} className={styles.replyContainer}>
-              <Reply reply={reply} roles={roles} postReplyCount={replyCount} threadNumber={post?.number} quotedByMap={quotedByMap} />
+              <Reply
+                reply={reply}
+                roles={roles}
+                postReplyCount={replyCount}
+                threadNumber={post?.number}
+                quotedByMap={quotedByMap}
+                directRepliesByParentCid={directRepliesByParentCid}
+              />
             </div>
           ))}
         {/* Non-virtualized rendering for board view (last 5 replies or show omitted) */}
@@ -842,21 +905,28 @@ const PostDesktop = ({
           !showAllReplies &&
           !(pinned && !isInPostPageView && !showOmittedReplies[cid]) &&
           !isInPendingPostView &&
-          replies &&
+          repliesForRender &&
           showReplies &&
           (showOmittedReplies[cid] ? filteredReplies : filteredReplies.slice(-5)).map((reply, index) => (
             <div key={index} className={styles.replyContainer}>
-              <Reply reply={reply} roles={roles} postReplyCount={replyCount} threadNumber={post?.number} quotedByMap={quotedByMap} />
+              <Reply
+                reply={reply}
+                roles={roles}
+                postReplyCount={replyCount}
+                threadNumber={post?.number}
+                quotedByMap={quotedByMap}
+                directRepliesByParentCid={directRepliesByParentCid}
+              />
             </div>
           ))}
       </div>
-      {!isInPendingPostView && stateString && stateString !== 'Failed' && state !== 'succeeded' && isInPostPageView && !(!showReplies && !showAllReplies) ? (
+      {!isInPendingPostView && stateString && !hasFailedState && state !== 'succeeded' && isInPostPageView && !(!showReplies && !showAllReplies) ? (
         <div className={styles.stateString}>
           <br />
           <LoadingEllipsis string={stateString} />
         </div>
       ) : (
-        state === 'failed' && <span className={styles.error}>{t('failed')}</span>
+        hasFailedState && <span className={styles.error}>{t('failed')}</span>
       )}
     </div>
   );

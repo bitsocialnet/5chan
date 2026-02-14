@@ -277,5 +277,7 @@
   "no": "No",
   "pending_mod_approval": "Duke pritur miratimin e moderatorit, jo i dukshëm për përdoruesit",
   "copy_user_id": "kopjo ID e përdoruesit",
-  "copy_direct_link": "kopjo lidhjen e drejtpërdrejtë"
+  "copy_direct_link": "kopjo lidhjen e drejtpërdrejtë",
+  "posts_auto_update_info": "Postimet përditësohen automatikisht çdo ~2 minuta. Nuk është e mundur ta çaktivizoni këtë për momentin.",
+  "board_address_tooltip": "Adresa e nyjës peer-to-peer të kësaj tabele"
 }

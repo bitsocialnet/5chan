@@ -277,5 +277,7 @@
   "no": "No",
   "pending_mod_approval": "Afventer moderatorgodkendelse, ikke synlig for brugere",
   "copy_user_id": "kopier bruger-ID",
-  "copy_direct_link": "kopier direkte link"
+  "copy_direct_link": "kopier direkte link",
+  "posts_auto_update_info": "Indlæg opdateres automatisk hver ~2 minut. Det er ikke muligt at deaktivere dette i øjeblikket.",
+  "board_address_tooltip": "Adressen til dette boards peer-to-peer-node"
 }

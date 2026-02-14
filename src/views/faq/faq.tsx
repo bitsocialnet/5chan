@@ -132,8 +132,8 @@ const FAQ = () => {
                 </dd>
                 <dt id='uploadimage'>Can I upload an image?</dt>
                 <dd>
-                  Yes, but only in the Android app, which you can download on <a href='https://github.com/plebbit/5chan/releases/latest'>GitHub</a>. The app is able to
-                  automatically upload media to image hosting services, like Imgur or catbox.moe, sharing your IP address with the image hosting service. This is not
+                  Yes, but only in the Android app, which you can download on <a href='https://github.com/bitsocialhq/5chan/releases/latest'>GitHub</a>. The app is able
+                  to automatically upload media to image hosting services, like Imgur or catbox.moe, sharing your IP address with the image hosting service. This is not
                   possible in the browser, which can't make backend requests.
                   <br />
                   <br />

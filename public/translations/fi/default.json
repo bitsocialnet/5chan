@@ -277,5 +277,7 @@
   "no": "No",
   "pending_mod_approval": "Odottaa moderaattorin hyväksyntää, ei näkyvissä käyttäjille",
   "copy_user_id": "kopioi käyttäjätunnus",
-  "copy_direct_link": "kopioi suora linkki"
+  "copy_direct_link": "kopioi suora linkki",
+  "posts_auto_update_info": "Viestit päivittyvät automaattisesti noin 2 minuutin välein. Tätä ei ole mahdollista poistaa käytöstä tällä hetkellä.",
+  "board_address_tooltip": "Tämän laudan vertaisverkko-solmun osoite"
 }
