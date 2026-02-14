@@ -297,6 +297,34 @@ Example output:
 > - **Title:** `Date formatting displays incorrect timezone`
 > - **Description:** Comment timestamps show incorrect timezones when users view posts from different regions. The `formatDate()` function doesn't account for user's local timezone settings.
 
+### Bug Investigation (Critical — First Step)
+
+When the user reports a bug in a specific file, or asks you to verify a possible issue in a specific file/code block/line, **always start by checking the git history for that code before making any changes**. This is the mandatory first step of any bug investigation.
+
+**Why:** A previous contributor may have intentionally written the code that way to fix a different bug, handle an edge case, or work around a library limitation. Blindly "fixing" it without this context risks reintroducing old bugs.
+
+**Workflow:**
+
+1. **Scan recent commit titles (titles only).** Use `git log --oneline` scoped to the relevant file or line range to get a quick overview without wasting tokens on full diffs:
+   ```bash
+   # Recent commit titles for a specific file
+   git log --oneline -10 -- src/components/post-desktop/post-desktop.tsx
+
+   # Recent commit titles for a specific line range
+   git blame -L 120,135 src/components/post-desktop/post-desktop.tsx
+   ```
+
+2. **Dig into relevant commits only.** If any commit title looks related to the bug being investigated (e.g., mentions the same feature, component, or behavior), then read its full message and diff — but **only for that file**, to keep token usage minimal:
+   ```bash
+   # Show commit message + diff scoped to the specific file only
+   git show <commit-hash> -- path/to/file.tsx
+   ```
+   Skip this step for commits whose titles are clearly unrelated.
+
+3. **Proceed with the rest of the investigation.** Only after understanding the git context, move on to reading the code, reproducing the bug, checking related files, etc.
+
+**Do NOT skip step 1.** Even if the fix seems obvious, the git history may reveal constraints you're not aware of.
+
 ### Troubleshooting
 
 When stuck on a bug or issue, search the web for solutions. Developer communities often have recent fixes or workarounds that aren't in training data.
