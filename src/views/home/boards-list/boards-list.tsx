@@ -65,10 +65,11 @@ const BoardsList = ({ multisub }: { multisub: DirectoryCommunity[] }) => {
 
   const renderBoardLink = (boardName: string) => {
     const address = boardAddressesByName[boardName];
+    const key = address ?? boardName;
 
     if (address) {
       return (
-        <li>
+        <li key={key}>
           <Link to={getBoardLink(address)} onClick={(e) => handleLinkClick(e, address)}>
             {boardName}
           </Link>
@@ -77,7 +78,7 @@ const BoardsList = ({ multisub }: { multisub: DirectoryCommunity[] }) => {
     }
 
     return (
-      <li>
+      <li key={key}>
         <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
           {boardName}
         </Link>
