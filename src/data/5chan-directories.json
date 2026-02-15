@@ -1,6 +1,6 @@
 {
-  "title": "5chan directories",
-  "description": "Each 5chan directory is assigned to a board (subplebbit) handpicked by the team, until DAO curation is implemented.\n\nhttps://github.com/plebbit/temporary-default-subplebbits",
+  "title": "/all/ - All 5chan Directories",
+  "description": "Each 5chan directory is assigned to a board handpicked by the team, until DAO curation is implemented.\n\nhttps://github.com/bitsocialhq/lists/blob/master/5chan-directories.json",
   "createdAt": 1762179811,
   "updatedAt": 1762179811,
   "communities": [
@@ -13,7 +13,91 @@
       "title": "/biz/ - Business & Finance",
       "address": "business-and-finance.eth",
       "nsfw": false
+    },
+    {
+      "title": "/sci/ - Science & Math",
+      "address": "science-and-math.eth",
+      "nsfw": false
+    },
+    {
+      "title": "/g/ - Technology",
+      "address": "technology-posting.eth",
+      "nsfw": false
+    },
+    {
+      "title": "/vg/ - Video Game Generals",
+      "address": "videogame-generals.eth",
+      "nsfw": false
+    },
+    {
+      "title": "/fit/ - Fitness",
+      "address": "fitness-posting.eth",
+      "nsfw": false
+    },
+    {
+      "title": "/adv/ - Advice",
+      "address": "advice-posting.eth",
+      "nsfw": false
+    },
+    {
+      "title": "/wsg/ - Worksafe GIF",
+      "address": "worksafe-gif.eth",
+      "nsfw": false
+    },
+    {
+      "title": "/diy/ - Do It Yourself",
+      "address": "do-it-yourself.eth",
+      "nsfw": false
+    },
+    {
+      "title": "/out/ - Outdoors",
+      "address": "outdoors-posting.eth",
+      "nsfw": false
+    },
+    {
+      "title": "/ic/ - Artwork/Critique",
+      "address": "artwork-critique.eth",
+      "nsfw": false
+    },
+    {
+      "title": "/mu/ - Music",
+      "address": "music-posting.eth",
+      "nsfw": false
+    },
+    {
+      "title": "/int/ - International",
+      "address": "international-sfw.eth",
+      "nsfw": false
+    },
+    {
+      "title": "/lit/ - Literature",
+      "address": "literature-posting.eth",
+      "nsfw": false
+    },
+    {
+      "title": "/tv/ - Television & Film",
+      "address": "television-and-film.eth",
+      "nsfw": false
+    },
+    {
+      "title": "/vip/ - Very Important Posts",
+      "address": "very-important-posts.eth",
+      "nsfw": false
+    },
+    {
+      "title": "/gif/ - Adult GIF",
+      "address": "adult-gif.eth",
+      "nsfw": true
+    },
+    {
+      "title": "/bant/ - International/Random",
+      "address": "international-nsfw.eth",
+      "nsfw": true
+    },
+    {
+      "title": "/b/ - Random",
+      "address": "random-nsfw.eth",
+      "nsfw": true
     }
   ]
 }
-
