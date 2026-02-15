@@ -279,5 +279,7 @@
   "copy_user_id": "kullanıcı ID'sini kopyala",
   "copy_direct_link": "doğrudan bağlantıyı kopyala",
   "posts_auto_update_info": "Gönderiler her ~2 dakikada otomatik olarak güncellenir. Şu anda bunu devre dışı bırakmak mümkün değildir.",
-  "board_address_tooltip": "Bu panonun eşler arası düğüm adresi"
+  "board_address_tooltip": "Bu panonun eşler arası düğüm adresi",
+  "vote_button_unavailable_intro": "Henüz mevcut değil. Kullanıcılar kendi panolarını gönderebilecek ve /{{boardIdentifier}}/ gibi dizin yuvaları için rekabet etmek üzere oy verebilecekler.",
+  "vote_button_unavailable_outro": "En çok oy alan /{{boardIdentifier}}/ resmi /{{boardIdentifier}}/ olur."
 }

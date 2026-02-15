@@ -279,5 +279,7 @@
   "copy_user_id": "ユーザーIDをコピー",
   "copy_direct_link": "直接リンクをコピー",
   "posts_auto_update_info": "投稿は約2分ごとに自動更新されます。現在、これを無効にすることはできません。",
-  "board_address_tooltip": "この板のピアツーピアノードのアドレス"
+  "board_address_tooltip": "この板のピアツーピアノードのアドレス",
+  "vote_button_unavailable_intro": "まだ利用できません。ユーザーは独自のボードを送信し、投票してディレクトリスロットを競うことができます。例えば /{{boardIdentifier}}/ のように。",
+  "vote_button_unavailable_outro": "最も投票された /{{boardIdentifier}}/ が公式の /{{boardIdentifier}}/ になります。"
 }

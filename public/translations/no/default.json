@@ -279,5 +279,7 @@
   "copy_user_id": "kopier bruker-ID",
   "copy_direct_link": "kopier direkte lenke",
   "posts_auto_update_info": "Innlegg oppdateres automatisk omtrent hver ~2 minutt. Det er ikke mulig å deaktivere dette for øyeblikket.",
-  "board_address_tooltip": "Adressen til denne tavlens peer-to-peer-node"
+  "board_address_tooltip": "Adressen til denne tavlens peer-to-peer-node",
+  "vote_button_unavailable_intro": "Ikke tilgjengelig ennå. Brukere vil kunne sende sine egne brett og stemme for dem for å konkurrere om katalogplasser, som /{{boardIdentifier}}/.",
+  "vote_button_unavailable_outro": "Det /{{boardIdentifier}}/ med flest stemmer blir det offisielle /{{boardIdentifier}}/."
 }

@@ -279,5 +279,7 @@
   "copy_user_id": "คัดลอก ID ผู้ใช้",
   "copy_direct_link": "คัดลอกลิงก์โดยตรง",
   "posts_auto_update_info": "โพสต์จะอัปเดตโดยอัตโนมัติทุก ~2 นาที ไม่สามารถปิดการใช้งานนี้ได้ในขณะนี้",
-  "board_address_tooltip": "ที่อยู่โหนด P2P ของบอร์ดนี้"
+  "board_address_tooltip": "ที่อยู่โหนด P2P ของบอร์ดนี้",
+  "vote_button_unavailable_intro": "ยังไม่พร้อมใช้งาน ผู้ใช้จะสามารถส่งบอร์ดของตนเองและโหวตเพื่อแข่งขันเพื่อช่องในไดเรกทอรี เช่น /{{boardIdentifier}}/ ได้",
+  "vote_button_unavailable_outro": "/{{boardIdentifier}}/ ที่ได้โหวตมากที่สุดจะกลายเป็น /{{boardIdentifier}}/ อย่างเป็นทางการ"
 }

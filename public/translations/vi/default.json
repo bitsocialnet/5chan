@@ -279,5 +279,7 @@
   "copy_user_id": "sao chép ID người dùng",
   "copy_direct_link": "sao chép liên kết trực tiếp",
   "posts_auto_update_info": "Bài đăng được cập nhật tự động cứ ~2 phút một lần. Hiện tại không thể tắt tính năng này.",
-  "board_address_tooltip": "Địa chỉ nút peer-to-peer của bảng này"
+  "board_address_tooltip": "Địa chỉ nút peer-to-peer của bảng này",
+  "vote_button_unavailable_intro": "Chưa có sẵn. Người dùng sẽ có thể gửi các bảng của riêng họ và bình chọn cho chúng để cạnh tranh các vị trí thư mục, như /{{boardIdentifier}}/.",
+  "vote_button_unavailable_outro": "/{{boardIdentifier}}/ được bình chọn nhiều nhất trở thành /{{boardIdentifier}}/ chính thức."
 }

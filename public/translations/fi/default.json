@@ -279,5 +279,7 @@
   "copy_user_id": "kopioi käyttäjätunnus",
   "copy_direct_link": "kopioi suora linkki",
   "posts_auto_update_info": "Viestit päivittyvät automaattisesti noin 2 minuutin välein. Tätä ei ole mahdollista poistaa käytöstä tällä hetkellä.",
-  "board_address_tooltip": "Tämän laudan vertaisverkko-solmun osoite"
+  "board_address_tooltip": "Tämän laudan vertaisverkko-solmun osoite",
+  "vote_button_unavailable_intro": "Ei vielä käytettävissä. Käyttäjät voivat lähettää omia lautojaan ja äänestää niitä kilpaillakseen hakemistopaikoista, kuten /{{boardIdentifier}}/.",
+  "vote_button_unavailable_outro": "Eniten ääniä saanut /{{boardIdentifier}}/ tulee viralliseksi /{{boardIdentifier}}/."
 }

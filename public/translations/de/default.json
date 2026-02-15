@@ -279,5 +279,7 @@
   "copy_user_id": "Benutzer-ID kopieren",
   "copy_direct_link": "Direktlink kopieren",
   "posts_auto_update_info": "Beiträge werden automatisch etwa alle ~2 Minuten aktualisiert. Es ist derzeit nicht möglich, dies zu deaktivieren.",
-  "board_address_tooltip": "Die Adresse des Peer-to-Peer-Knotens dieses Boards"
+  "board_address_tooltip": "Die Adresse des Peer-to-Peer-Knotens dieses Boards",
+  "vote_button_unavailable_intro": "Noch nicht verfügbar. Benutzer können ihre eigenen Boards einreichen und dafür abstimmen, um um Verzeichnisplätze zu konkurrieren, wie /{{boardIdentifier}}/.",
+  "vote_button_unavailable_outro": "Das am meisten abgestimmte /{{boardIdentifier}}/ wird zum offiziellen /{{boardIdentifier}}/."
 }
