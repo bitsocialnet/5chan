@@ -35,6 +35,7 @@ const CACHE_MAX_AGE_MS = 60 * 60 * 1000; // 1 hour
 
 let cacheCommunities: DirectoryCommunity[] | null = null;
 let cacheMetadata: DirectoriesMetadata | null = null;
+let inFlightGitHubFetch: Promise<DirectoriesData> | null = null;
 
 const getFromLocalStorage = (): DirectoriesData | null => {
   try {
@@ -61,21 +62,24 @@ const saveToLocalStorage = (data: DirectoriesData) => {
   }
 };
 
-const fetchDirectoriesData = async (): Promise<DirectoriesData> => {
-  try {
-    const response = await fetch(GITHUB_URL);
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
-    // Save successful fetch to localStorage
-    saveToLocalStorage(data);
-    return data;
-  } catch (e) {
-    console.warn('Failed to fetch directories from GitHub, using vendored fallback:', e);
-    // Fall back to vendored file
-    return directoriesData as DirectoriesData;
+const fetchDirectoriesFromGitHub = async (): Promise<DirectoriesData> => {
+  const response = await fetch(GITHUB_URL, { cache: 'no-cache' });
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
   }
+  const data = await response.json();
+  // Save successful fetch to localStorage
+  saveToLocalStorage(data);
+  return data;
+};
+
+const fetchDirectoriesFromGitHubDeduped = async (): Promise<DirectoriesData> => {
+  if (!inFlightGitHubFetch) {
+    inFlightGitHubFetch = fetchDirectoriesFromGitHub().finally(() => {
+      inFlightGitHubFetch = null;
+    });
+  }
+  return inFlightGitHubFetch;
 };
 
 export const useDirectories = () => {
@@ -88,69 +92,42 @@ export const useDirectories = () => {
   });
 
   useEffect(() => {
-    if (cacheCommunities) {
-      setState({
-        communities: cacheCommunities,
-        loading: false,
-        error: null,
-      });
-      return;
-    }
-
     let isMounted = true;
+    const hydrateCommunities = (data: DirectoriesData) => {
+      cacheCommunities = data.communities;
+      if (isMounted) {
+        setState({
+          communities: data.communities,
+          loading: false,
+          error: null,
+        });
+      }
+    };
 
     (async () => {
-      try {
+      if (cacheCommunities) {
+        setState({
+          communities: cacheCommunities,
+          loading: false,
+          error: null,
+        });
+      } else {
         // Check localStorage first
         const cachedData = getFromLocalStorage();
         if (cachedData) {
-          cacheCommunities = cachedData.communities;
-          if (isMounted) {
-            setState({
-              communities: cachedData.communities,
-              loading: false,
-              error: null,
-            });
-          }
-          // Still try to fetch fresh data in background (don't await)
-          fetchDirectoriesData()
-            .then((data) => {
-              if (isMounted) {
-                cacheCommunities = data.communities;
-                setState({
-                  communities: data.communities,
-                  loading: false,
-                  error: null,
-                });
-              }
-            })
-            .catch((e) => {
-              console.warn('Background fetch failed:', e);
-            });
-          return;
+          hydrateCommunities(cachedData);
         }
+      }
 
-        // No cache, fetch fresh data
-        const directories = await fetchDirectoriesData();
-        if (isMounted) {
-          cacheCommunities = directories.communities;
-          setState({
-            communities: directories.communities,
-            loading: false,
-            error: null,
-          });
-        }
+      try {
+        // Always attempt a background refresh from GitHub to pick up list updates
+        const directories = await fetchDirectoriesFromGitHubDeduped();
+        hydrateCommunities(directories);
       } catch (e) {
-        console.warn('Failed to load directories:', e);
-        // Fallback to vendored data
-        const fallbackData = directoriesData as DirectoriesData;
-        if (isMounted) {
-          cacheCommunities = fallbackData.communities;
-          setState({
-            communities: fallbackData.communities,
-            loading: false,
-            error: null,
-          });
+        console.warn('Failed to fetch directories from GitHub:', e);
+        // Only fall back if we don't already have memory/localStorage data
+        if (!cacheCommunities) {
+          hydrateCommunities(directoriesData as DirectoriesData);
         }
       }
     })();
@@ -175,69 +152,42 @@ export const useDirectoriesState = () => {
   });
 
   useEffect(() => {
-    if (cacheCommunities) {
-      setState({
-        communities: cacheCommunities,
-        loading: false,
-        error: null,
-      });
-      return;
-    }
-
     let isMounted = true;
+    const hydrateCommunities = (data: DirectoriesData) => {
+      cacheCommunities = data.communities;
+      if (isMounted) {
+        setState({
+          communities: data.communities,
+          loading: false,
+          error: null,
+        });
+      }
+    };
 
     (async () => {
-      try {
+      if (cacheCommunities) {
+        setState({
+          communities: cacheCommunities,
+          loading: false,
+          error: null,
+        });
+      } else {
         // Check localStorage first
         const cachedData = getFromLocalStorage();
         if (cachedData) {
-          cacheCommunities = cachedData.communities;
-          if (isMounted) {
-            setState({
-              communities: cachedData.communities,
-              loading: false,
-              error: null,
-            });
-          }
-          // Still try to fetch fresh data in background (don't await)
-          fetchDirectoriesData()
-            .then((data) => {
-              if (isMounted) {
-                cacheCommunities = data.communities;
-                setState({
-                  communities: data.communities,
-                  loading: false,
-                  error: null,
-                });
-              }
-            })
-            .catch((e) => {
-              console.warn('Background fetch failed:', e);
-            });
-          return;
+          hydrateCommunities(cachedData);
         }
+      }
 
-        // No cache, fetch fresh data
-        const directories = await fetchDirectoriesData();
-        if (isMounted) {
-          cacheCommunities = directories.communities;
-          setState({
-            communities: directories.communities,
-            loading: false,
-            error: null,
-          });
-        }
+      try {
+        // Always attempt a background refresh from GitHub to pick up list updates
+        const directories = await fetchDirectoriesFromGitHubDeduped();
+        hydrateCommunities(directories);
       } catch (e) {
-        console.warn('Failed to load directories:', e);
-        // Fallback to vendored data
-        const fallbackData = directoriesData as DirectoriesData;
-        if (isMounted) {
-          cacheCommunities = fallbackData.communities;
-          setState({
-            communities: fallbackData.communities,
-            loading: false,
-            error: null,
-          });
+        console.warn('Failed to fetch directories from GitHub:', e);
+        // Only fall back if we don't already have memory/localStorage data
+        if (!cacheCommunities) {
+          hydrateCommunities(directoriesData as DirectoriesData);
         }
       }
     })();
@@ -259,72 +209,40 @@ export const useDirectoriesMetadata = () => {
   const [metadata, setMetadata] = useState<DirectoriesMetadata | null>(null);
 
   useEffect(() => {
-    if (cacheMetadata) {
-      return;
-    }
-
     let isMounted = true;
+    const hydrateMetadata = (data: DirectoriesData) => {
+      const nextMetadata: DirectoriesMetadata = {
+        title: data.title,
+        description: data.description,
+        createdAt: data.createdAt,
+        updatedAt: data.updatedAt,
+      };
+      cacheMetadata = nextMetadata;
+      if (isMounted) {
+        setMetadata(nextMetadata);
+      }
+    };
 
     (async () => {
-      try {
+      if (cacheMetadata) {
+        setMetadata(cacheMetadata);
+      } else {
         // Check localStorage first
         const cachedData = getFromLocalStorage();
         if (cachedData) {
-          const metadata: DirectoriesMetadata = {
-            title: cachedData.title,
-            description: cachedData.description,
-            createdAt: cachedData.createdAt,
-            updatedAt: cachedData.updatedAt,
-          };
-          cacheMetadata = metadata;
-          if (isMounted) {
-            setMetadata(metadata);
-          }
-          // Still try to fetch fresh data in background (don't await)
-          fetchDirectoriesData()
-            .then((data) => {
-              if (isMounted) {
-                const freshMetadata: DirectoriesMetadata = {
-                  title: data.title,
-                  description: data.description,
-                  createdAt: data.createdAt,
-                  updatedAt: data.updatedAt,
-                };
-                cacheMetadata = freshMetadata;
-                setMetadata(freshMetadata);
-              }
-            })
-            .catch((e) => {
-              console.warn('Background metadata fetch failed:', e);
-            });
-          return;
+          hydrateMetadata(cachedData);
         }
+      }
 
-        // No cache, fetch fresh data
-        const directories = await fetchDirectoriesData();
-        if (isMounted) {
-          const metadata: DirectoriesMetadata = {
-            title: directories.title,
-            description: directories.description,
-            createdAt: directories.createdAt,
-            updatedAt: directories.updatedAt,
-          };
-          cacheMetadata = metadata;
-          setMetadata(metadata);
-        }
+      try {
+        // Always attempt a background refresh from GitHub to pick up metadata updates
+        const directories = await fetchDirectoriesFromGitHubDeduped();
+        hydrateMetadata(directories);
       } catch (e) {
-        console.warn('Failed to load metadata, using vendored fallback:', e);
-        // Fallback to vendored data
-        const fallbackData = directoriesData as DirectoriesData;
-        if (isMounted) {
-          const metadata: DirectoriesMetadata = {
-            title: fallbackData.title,
-            description: fallbackData.description,
-            createdAt: fallbackData.createdAt,
-            updatedAt: fallbackData.updatedAt,
-          };
-          cacheMetadata = metadata;
-          setMetadata(metadata);
+        console.warn('Failed to fetch directory metadata from GitHub:', e);
+        // Only fall back if we don't already have memory/localStorage data
+        if (!cacheMetadata) {
+          hydrateMetadata(directoriesData as DirectoriesData);
         }
       }
     })();
