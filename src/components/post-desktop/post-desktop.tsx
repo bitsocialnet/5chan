@@ -215,7 +215,7 @@ const PostInfo = ({
     }
 
     return document.querySelectorAll(`[data-author-address="${shortAddress}"][data-post-cid="${postCid}"]`).length;
-  }, [showUserID, deleted, removed, shortAddress, postCid]);
+  }, [showUserID, deleted, removed, shortAddress, postCid, postReplyCount]);
 
   const { hidden } = useHide(post);
 
