@@ -205,7 +205,7 @@ const BoardsList = ({ multisub }: { multisub: DirectoryCommunity[] }) => {
                   {renderBoardLink('Fashion')}
                   {renderBoardLink('3DCG')}
                   {renderBoardLink('Graphic Design')}
-                  {renderBoardLink('Do-It-Yourself')}
+                  {renderBoardLink('Do It Yourself')}
                   {renderBoardLink('Worksafe GIF')}
                   {renderBoardLink('Quests')}
                 </>
