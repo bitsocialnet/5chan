@@ -1,17 +1,10 @@
-import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useSubplebbitField } from '../../hooks/use-stable-subplebbit';
 import { useDirectories } from '../../hooks/use-directories';
 import { getSubplebbitAddress } from '../../lib/utils/route-utils';
 import { HomeLogo } from '../home';
+import NotFoundImage from '../../components/not-found-image';
 import styles from './not-found.module.css';
-import { NOT_FOUND_IMAGES } from '../../generated/asset-manifest';
-
-const NotFoundImage = () => {
-  const [imagePath] = useState(() => NOT_FOUND_IMAGES[Math.floor(Math.random() * NOT_FOUND_IMAGES.length)]);
-
-  return <img src={imagePath} alt='' />;
-};
 
 const NotFound = () => {
   const location = useLocation();
@@ -31,7 +24,7 @@ const NotFound = () => {
         <div className={styles.boxOuter}>
           <div className={styles.boxInner}>
             <div className={styles.boxBar}>
-              <h2>404 Not Found</h2>
+              <h2>Not Found</h2>
             </div>
             <div className={styles.boxContent}>
               <NotFoundImage />
