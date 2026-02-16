@@ -320,9 +320,9 @@ const createMainWindow = () => {
 app.whenReady().then(() => {
   // Set app name and dock icon for development mode on macOS
   if (process.platform === 'darwin' && isDev) {
-    app.setName('seedit');
+    app.setName('5chan');
     if (app.dock) {
-      const iconPath = path.join(dirname, '..', isDev ? 'public' : 'build', 'icon.png');
+      const iconPath = path.join(dirname, '..', 'public', 'icon.icns');
       app.dock.setIcon(iconPath);
     }
   }

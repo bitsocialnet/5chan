@@ -68,7 +68,7 @@ const config = {
       platforms: ['darwin'],
       config: {
         name: '5chan',
-        icon: './public/icon.png',
+        icon: './public/icon.icns',
         format: 'ULFO',
       },
     },
