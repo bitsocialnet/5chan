@@ -279,5 +279,7 @@
   "copy_user_id": "gebruikers-ID kopiëren",
   "copy_direct_link": "directe link kopiëren",
   "posts_auto_update_info": "Berichten worden automatisch ongeveer elke ~2 minuten bijgewerkt. Het is momenteel niet mogelijk dit uit te schakelen.",
-  "board_address_tooltip": "Het adres van de peer-to-peer-node van dit bord"
+  "board_address_tooltip": "Het adres van de peer-to-peer-node van dit bord",
+  "vote_button_unavailable_intro": "Nog niet beschikbaar. Gebruikers kunnen hun eigen borden indienen en erop stemmen om te concurreren voor directorysleuven, zoals /{{boardIdentifier}}/.",
+  "vote_button_unavailable_outro": "Het /{{boardIdentifier}}/ met de meeste stemmen wordt het officiële /{{boardIdentifier}}/."
 }

@@ -279,5 +279,7 @@
   "copy_user_id": "kopyahin ang user ID",
   "copy_direct_link": "kopyahin ang direct link",
   "posts_auto_update_info": "Ang mga post ay awtomatikong nag-update bawat ~2 minuto. Kasalukuyang hindi posible na i-disable ito.",
-  "board_address_tooltip": "Ang address ng peer-to-peer node ng board na ito"
+  "board_address_tooltip": "Ang address ng peer-to-peer node ng board na ito",
+  "vote_button_unavailable_intro": "Hindi pa available. Ang mga user ay makakagawa ng kanilang sariling mga board at mag-boto para sa kanila upang makipagkompetensya para sa mga slot sa directory, tulad ng /{{boardIdentifier}}/.",
+  "vote_button_unavailable_outro": "Ang /{{boardIdentifier}}/ na may pinakamataas na boto ay nagiging ang opisyal na /{{boardIdentifier}}/."
 }

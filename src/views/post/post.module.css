@@ -456,6 +456,8 @@
 
 .replyDesktop {
   padding-top: 4px;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 120px;
 }
 
 .replyDesktop .sideArrows {
@@ -490,6 +492,8 @@
 
 .replyMobile {
   padding-top: 7px;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 120px;
 }
 
 .replyMobile .replyContainer {

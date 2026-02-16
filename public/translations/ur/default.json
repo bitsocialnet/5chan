@@ -279,5 +279,7 @@
   "copy_user_id": "صارف کی شناخت کاپی کریں",
   "copy_direct_link": "براہ راست لنک کاپی کریں",
   "posts_auto_update_info": "پوسٹس ہر ~2 منٹ میں خود بخود اپ ڈیٹ ہوتے ہیں۔ فی الوقت اس کو غیر فعال کرنا ممکن نہیں ہے۔",
-  "board_address_tooltip": "اس بورڈ کے پیر ٹو پیر نوڈ کا پتہ"
+  "board_address_tooltip": "اس بورڈ کے پیر ٹو پیر نوڈ کا پتہ",
+  "vote_button_unavailable_intro": "ابھی دستیاب نہیں۔ صارفین اپنے خود کے بورڈز جمع کر سکیں گے اور ان کے لیے ووٹ دے سکیں گے، جیسے /{{boardIdentifier}}/ کے لیے ڈائریکٹری سلاٹس کے لیے مقابلہ کرنے کے لیے۔",
+  "vote_button_unavailable_outro": "سب سے زیادہ ووٹ والا /{{boardIdentifier}}/ سرکاری /{{boardIdentifier}}/ بن جاتا ہے۔"
 }

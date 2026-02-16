@@ -279,5 +279,7 @@
   "copy_user_id": "kopiera användar-ID",
   "copy_direct_link": "kopiera direktlänk",
   "posts_auto_update_info": "Inlägg uppdateras automatiskt ungefär var ~2:e minut. Det är för närvarande inte möjligt att inaktivera detta.",
-  "board_address_tooltip": "Adressen till denna tavlas peer-to-peer-nod"
+  "board_address_tooltip": "Adressen till denna tavlas peer-to-peer-nod",
+  "vote_button_unavailable_intro": "Inte tillgänglig ännu. Användare kommer att kunna skicka in sina egna kort och rösta för dem för att konkurrera om katalogplatser, som /{{boardIdentifier}}/.",
+  "vote_button_unavailable_outro": "Det /{{boardIdentifier}}/ med flest röster blir det officiella /{{boardIdentifier}}/."
 }

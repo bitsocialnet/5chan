@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Outlet, Route, Routes, useLocation, useParams } from 'react-router-dom';
-import { useAccountComment } from '@plebbit/plebbit-react-hooks';
+import { Navigate, Outlet, Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { useAccount, useAccountComment, useSubplebbit } from '@plebbit/plebbit-react-hooks';
+import useAccountsStore from '@plebbit/plebbit-react-hooks/dist/stores/accounts';
 import { initSnow, removeSnow } from './lib/snow';
 import { isAllView, isModView, isSubscriptionsView } from './lib/utils/view-utils';
 import { preloadThemeAssets } from './lib/utils/preload-utils';
@@ -10,12 +11,14 @@ import useSpecialThemeStore from './stores/use-special-theme-store';
 import useIsMobile from './hooks/use-is-mobile';
 import useTheme from './hooks/use-theme';
 import { useDirectories } from './hooks/use-directories';
+import { useResolvedSubplebbitAddress } from './hooks/use-resolved-subplebbit-address';
 import { getSubplebbitAddress, isPostRoute, isPendingPostRoute, isModQueueRoute } from './lib/utils/route-utils';
 import styles from './app.module.css';
 import FAQ from './views/faq';
 import Home from './views/home';
 import Rules from './views/rules';
 import NotFound from './views/not-found';
+import NotAllowed from './views/not-allowed';
 import PendingPost from './views/pending-post';
 import Post from './views/post';
 import ModQueueView from './views/mod-queue';
@@ -36,6 +39,8 @@ import SettingsModal from './components/settings-modal';
 // Preload all theme assets (buttons, backgrounds) immediately on app load
 // to prevent visible loading delays when switching themes
 preloadThemeAssets();
+
+const hasModQueueAccessRole = (role?: string): boolean => role === 'admin' || role === 'owner' || role === 'moderator';
 
 const BoardLayout = () => {
   const { accountCommentIndex, boardIdentifier } = useParams();
@@ -147,6 +152,49 @@ const GlobalLayout = () => {
   );
 };
 
+const ModQueueRoute = () => {
+  const { boardIdentifier } = useParams();
+  const account = useAccount();
+  const accountAddress = account?.author?.address;
+  const subplebbitAddress = useResolvedSubplebbitAddress();
+  const subplebbit = useSubplebbit({ subplebbitAddress });
+
+  const accountSubplebbitAddresses = useAccountsStore(
+    (state) => {
+      const activeAccountId = state.activeAccountId;
+      const activeAccount = activeAccountId ? state.accounts[activeAccountId] : undefined;
+      const accountSubplebbits = activeAccount?.subplebbits || {};
+      return Object.keys(accountSubplebbits);
+    },
+    (prev, next) => {
+      if (prev.length !== next.length) return false;
+      return prev.every((val, idx) => val === next[idx]);
+    },
+  );
+
+  if (!account) {
+    return null;
+  }
+
+  if (!accountAddress) {
+    return <Navigate to='/not-allowed' replace />;
+  }
+
+  if (!boardIdentifier) {
+    return accountSubplebbitAddresses.length > 0 ? <ModQueueView /> : <Navigate to='/not-allowed' replace />;
+  }
+
+  // Wait for board role metadata before enforcing access to avoid false redirects during initial load.
+  const boardState = subplebbit?.state;
+  const isBoardLoading = !subplebbit || !boardState || (boardState !== 'succeeded' && boardState !== 'failed');
+  if (isBoardLoading) {
+    return null;
+  }
+
+  const accountRole = subplebbit?.roles?.[accountAddress]?.role;
+  return hasModQueueAccessRole(accountRole) ? <ModQueueView /> : <Navigate to='/not-allowed' replace />;
+};
+
 const App = () => (
   <div className={styles.app}>
     <Routes>
@@ -170,16 +218,16 @@ const App = () => (
           <Route path='/mod/catalog/:timeFilterName?' element={null} />
           <Route path='/mod/catalog/:timeFilterName?/settings' element={null} />
 
-          <Route path='/mod/modqueue' element={<ModQueueView />} />
-          <Route path='/mod/modqueue/settings' element={<ModQueueView />} />
+          <Route path='/mod/modqueue' element={<ModQueueRoute />} />
+          <Route path='/mod/modqueue/settings' element={<ModQueueRoute />} />
 
           <Route path='/:boardIdentifier' element={null} />
           <Route path='/:boardIdentifier/settings' element={null} />
           <Route path='/:boardIdentifier/catalog' element={null} />
           <Route path='/:boardIdentifier/catalog/settings' element={null} />
 
-          <Route path='/:boardIdentifier/modqueue' element={<ModQueueView />} />
-          <Route path='/:boardIdentifier/modqueue/settings' element={<ModQueueView />} />
+          <Route path='/:boardIdentifier/modqueue' element={<ModQueueRoute />} />
+          <Route path='/:boardIdentifier/modqueue/settings' element={<ModQueueRoute />} />
 
           <Route path='/:boardIdentifier/thread/:commentCid' element={<Post />} />
           <Route path='/:boardIdentifier/thread/:commentCid/settings' element={<Post />} />
@@ -187,6 +235,7 @@ const App = () => (
           <Route path='/pending/:accountCommentIndex' element={<PendingPost />} />
           <Route path='/pending/:accountCommentIndex/settings' element={<PendingPost />} />
         </Route>
+        <Route path='/not-allowed' element={<NotAllowed />} />
         <Route path='/not-found' element={<NotFound />} />
         <Route path='*' element={<NotFound />} />
       </Route>

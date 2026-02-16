@@ -279,5 +279,7 @@
   "copy_user_id": "copiați ID-ul utilizatorului",
   "copy_direct_link": "copiați linkul direct",
   "posts_auto_update_info": "Postările se actualizează automat la fiecare ~2 minute. În prezent, nu este posibil să dezactivezi aceasta.",
-  "board_address_tooltip": "Adresa nodului peer-to-peer al acestei plăci"
+  "board_address_tooltip": "Adresa nodului peer-to-peer al acestei plăci",
+  "vote_button_unavailable_intro": "Nu este disponibil deocamdată. Utilizatorii vor putea trimite propriile tablouri și vota pentru ele pentru a concura pentru locuri în director, cum ar fi /{{boardIdentifier}}/.",
+  "vote_button_unavailable_outro": "Tabloul /{{boardIdentifier}}/ cu cele mai multe voturi devine /{{boardIdentifier}}/ oficial."
 }

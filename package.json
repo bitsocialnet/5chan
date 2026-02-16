@@ -48,8 +48,9 @@
   },
   "scripts": {
     "generate:assets": "node scripts/generate-asset-manifest.js",
-    "prebuild": "yarn generate:assets",
-    "prestart": "yarn generate:assets",
+    "sync:directories": "node scripts/sync-directories.js",
+    "prebuild": "yarn sync:directories && yarn generate:assets",
+    "prestart": "yarn sync:directories && yarn generate:assets",
     "start": "vite",
     "build": "cross-env PUBLIC_URL=./ GENERATE_SOURCEMAP=false vite build",
     "build:preload": "vite build --config electron/vite.preload.config.js",

@@ -279,5 +279,7 @@
   "pending_mod_approval": "Pending mod approval, not visible to users",
   "copy_user_id": "Copy user ID",
   "copy_direct_link": "Copy direct link",
-  "board_address_tooltip": "The address of this board's peer-to-peer node"
+  "board_address_tooltip": "The address of this board's peer-to-peer node",
+  "vote_button_unavailable_intro": "Not available yet. Users will be able to submit their own boards, and vote for them, to compete for directory slots, like /{{boardIdentifier}}/.",
+  "vote_button_unavailable_outro": "The highest-voted /{{boardIdentifier}}/ becomes the official /{{boardIdentifier}}/."
 }

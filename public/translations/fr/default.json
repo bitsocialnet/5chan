@@ -279,5 +279,7 @@
   "copy_user_id": "Copier l'ID utilisateur",
   "copy_direct_link": "Copier le lien direct",
   "posts_auto_update_info": "Les messages se mettent à jour automatiquement toutes les ~2 minutes. Il n'est pas possible de désactiver cela pour le moment.",
-  "board_address_tooltip": "L'adresse du nœud pair-à-pair de ce tableau"
+  "board_address_tooltip": "L'adresse du nœud pair-à-pair de ce tableau",
+  "vote_button_unavailable_intro": "Pas encore disponible. Les utilisateurs pourront soumettre leurs propres tableaux et voter pour eux pour rivaliser pour les emplacements du répertoire, comme /{{boardIdentifier}}/.",
+  "vote_button_unavailable_outro": "Le tableau /{{boardIdentifier}}/ le plus voté devient le tableau officiel /{{boardIdentifier}}/."
 }

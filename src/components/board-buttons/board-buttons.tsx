@@ -126,10 +126,11 @@ const VoteButton = () => {
     return null;
   }
 
-  const message = `Not available yet. Users will be able to submit and vote for boards competing for directory slots (like /${boardIdentifier}). The highest-voted board becomes the directory board.`;
+  const values = { boardIdentifier };
+  const message = `${t('vote_button_unavailable_intro', values)}\n\n${t('vote_button_unavailable_outro', values)}`;
 
   return (
-    <button className={`button ${styles.disabledButton}`} title={message} onClick={() => window.alert(message)}>
+    <button className={`button ${styles.disabledButton}`} onClick={() => window.alert(message)}>
       {t('vote')}
     </button>
   );

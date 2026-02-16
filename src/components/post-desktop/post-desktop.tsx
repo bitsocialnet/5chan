@@ -43,6 +43,8 @@ import usePostNumberStore from '../../stores/use-post-number-store';
 import { alertChallengeVerificationFailed } from '../../lib/utils/challenge-utils';
 import { usePublishCommentModeration } from '@plebbit/plebbit-react-hooks';
 import useQuotedByMap from '../../hooks/use-quoted-by-map';
+import useProgressiveRender from '../../hooks/use-progressive-render';
+import { REPLIES_PER_PAGE } from '../../lib/constants';
 
 const { addChallenge } = useChallengesStore.getState();
 
@@ -215,7 +217,7 @@ const PostInfo = ({
     }
 
     return document.querySelectorAll(`[data-author-address="${shortAddress}"][data-post-cid="${postCid}"]`).length;
-  }, [showUserID, deleted, removed, shortAddress, postCid]);
+  }, [showUserID, deleted, removed, shortAddress, postCid, postReplyCount]);
 
   const { hidden } = useHide(post);
 
@@ -674,6 +676,7 @@ const PostDesktop = ({
     comment: post,
     sortType: 'old',
     flat: true,
+    repliesPerPage: REPLIES_PER_PAGE,
     accountComments: { newerThan: Infinity, append: true },
   });
   const { replies, hasMore, loadMore } = repliesResult;
@@ -736,6 +739,13 @@ const PostDesktop = ({
   }, [filteredReplies]);
 
   const quotedByMap = useQuotedByMap(filteredReplies);
+
+  const visibleReplies = useProgressiveRender(filteredReplies, {
+    batchSize: 50,
+    intervalMs: 100,
+    resetKey: cid,
+    disabled: hasMore || !!targetReplyCid || !showAllReplies,
+  });
 
   // Virtuoso scroll position management for infinite replies
   const virtuosoRef = useRef<VirtuosoHandle | null>(null);
@@ -888,7 +898,7 @@ const PostDesktop = ({
           !isInPendingPostView &&
           showReplies &&
           !hasMore &&
-          filteredReplies.map((reply, index) => (
+          visibleReplies.map((reply, index) => (
             <div key={index} className={styles.replyContainer}>
               <Reply
                 reply={reply}

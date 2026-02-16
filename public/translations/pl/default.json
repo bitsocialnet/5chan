@@ -279,5 +279,7 @@
   "copy_user_id": "skopiuj ID użytkownika",
   "copy_direct_link": "skopiuj bezpośredni link",
   "posts_auto_update_info": "Posty aktualizują się automatycznie co ~2 minuty. Chwilowo nie jest możliwe wyłączenie tej funkcji.",
-  "board_address_tooltip": "Adres węzła peer-to-peer tej tablicy"
+  "board_address_tooltip": "Adres węzła peer-to-peer tej tablicy",
+  "vote_button_unavailable_intro": "Niedostępne. Użytkownicy będą mogli przesyłać własne tablice i głosować na nie, aby konkurować o miejsca w katalogu, takie jak /{{boardIdentifier}}/.",
+  "vote_button_unavailable_outro": "Tablica /{{boardIdentifier}}/ z największą liczbą głosów staje się oficjalną /{{boardIdentifier}}/."
 }

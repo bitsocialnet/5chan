@@ -279,5 +279,7 @@
   "copy_user_id": "felhasználói ID másolása",
   "copy_direct_link": "közvetlen link másolása",
   "posts_auto_update_info": "A bejegyzések kb. 2 percenként automatikusan frissülnek. Jelenleg nem lehetséges ezt letiltani.",
-  "board_address_tooltip": "Ennek a táblának a peer-to-peer csomópontja címe"
+  "board_address_tooltip": "Ennek a táblának a peer-to-peer csomópontja címe",
+  "vote_button_unavailable_intro": "Még nem érhető el. A felhasználók majd küldhetnek saját táblákat és szavazhatnak rájuk, hogy versenyezzenek a könyvtári helyekért, például /{{boardIdentifier}}/ esetén.",
+  "vote_button_unavailable_outro": "A legtöbb szavazatot kapott /{{boardIdentifier}}/ lesz a hivatalos /{{boardIdentifier}}/."
 }

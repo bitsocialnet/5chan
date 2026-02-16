@@ -279,5 +279,7 @@
   "copy_user_id": "Copiar ID do usuário",
   "copy_direct_link": "Copiar link direto",
   "posts_auto_update_info": "Posts são atualizados automaticamente a cada ~2 minutos. Não é possível desabilitar isso no momento.",
-  "board_address_tooltip": "O endereço do nó peer-to-peer desta placa"
+  "board_address_tooltip": "O endereço do nó peer-to-peer desta placa",
+  "vote_button_unavailable_intro": "Ainda não disponível. Os usuários poderão enviar seus próprios boards e votar neles para competir por slots de diretório, como /{{boardIdentifier}}/.",
+  "vote_button_unavailable_outro": "O /{{boardIdentifier}}/ mais votado se torna o /{{boardIdentifier}}/ oficial."
 }

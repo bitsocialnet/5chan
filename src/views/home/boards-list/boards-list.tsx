@@ -8,10 +8,9 @@ import useBoardsFilterStore from '../../../stores/use-boards-filter-store';
 import BoardsFilterModal from './boards-filter-modal';
 import styles from '../home.module.css';
 
-// Helper function to find board address by matching title pattern
-const findBoardAddress = (multisub: DirectoryCommunity[], titlePattern: string): string | null => {
-  const entry = multisub.find((ms) => ms.title === titlePattern);
-  return entry?.address || null;
+const getBoardNameFromDirectoryTitle = (title: string): string => {
+  const match = title.match(/^\/[^/]+\/\s*-\s*(.+)$/);
+  return match?.[1]?.trim() || title.trim();
 };
 
 const NSFWBadge = () => {
@@ -55,9 +54,38 @@ const BoardsList = ({ multisub }: { multisub: DirectoryCommunity[] }) => {
     openDirectoryModal();
   };
 
-  // Find active boards
-  const bizAddress = findBoardAddress(multisub, '/biz/ - Business & Finance');
-  const polAddress = findBoardAddress(multisub, '/pol/ - Politically Incorrect');
+  const boardAddressesByName = multisub.reduce<Record<string, string>>((acc, community) => {
+    if (!community.title) return acc;
+    const boardName = getBoardNameFromDirectoryTitle(community.title);
+    if (!acc[boardName]) {
+      acc[boardName] = community.address;
+    }
+    return acc;
+  }, {});
+
+  const renderBoardLink = (boardName: string) => {
+    const address = boardAddressesByName[boardName];
+    const key = address ?? boardName;
+
+    if (address) {
+      return (
+        <li key={key}>
+          <Link to={getBoardLink(address)} onClick={(e) => handleLinkClick(e, address)}>
+            {boardName}
+          </Link>
+        </li>
+      );
+    }
+
+    return (
+      <li key={key}>
+        <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
+          {boardName}
+        </Link>
+      </li>
+    );
+  };
+
   const errorMessage = error?.message;
 
   // Filtering logic: determine which categories to show
@@ -93,62 +121,20 @@ const BoardsList = ({ multisub }: { multisub: DirectoryCommunity[] }) => {
                 <ul>
                   {(showAll || showWorksafeOnly) && (
                     <>
-                      <li>
-                        <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                          Anime & Manga
-                        </Link>
-                      </li>
-                      <li>
-                        <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                          Anime/Cute
-                        </Link>
-                      </li>
-                      <li>
-                        <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                          Anime/Wallpapers
-                        </Link>
-                      </li>
-                      <li>
-                        <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                          Mecha
-                        </Link>
-                      </li>
-                      <li>
-                        <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                          Cosplay & EGL
-                        </Link>
-                      </li>
-                      <li>
-                        <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                          Cute/Male
-                        </Link>
-                      </li>
+                      {renderBoardLink('Anime & Manga')}
+                      {renderBoardLink('Anime/Cute')}
+                      {renderBoardLink('Anime/Wallpapers')}
+                      {renderBoardLink('Mecha')}
+                      {renderBoardLink('Cosplay & EGL')}
+                      {renderBoardLink('Cute/Male')}
                     </>
                   )}
-                  {(showAll || showNsfwOnly) && (
-                    <li>
-                      <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                        Flash
-                      </Link>
-                    </li>
-                  )}
+                  {(showAll || showNsfwOnly) && renderBoardLink('Flash')}
                   {(showAll || showWorksafeOnly) && (
                     <>
-                      <li>
-                        <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                          Transportation
-                        </Link>
-                      </li>
-                      <li>
-                        <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                          Otaku Culture
-                        </Link>
-                      </li>
-                      <li>
-                        <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                          Virtual YouTubers
-                        </Link>
-                      </li>
+                      {renderBoardLink('Transportation')}
+                      {renderBoardLink('Otaku Culture')}
+                      {renderBoardLink('Virtual YouTubers')}
                     </>
                   )}
                 </ul>
@@ -160,46 +146,14 @@ const BoardsList = ({ multisub }: { multisub: DirectoryCommunity[] }) => {
               <>
                 <h3>Video Games</h3>
                 <ul>
-                  <li>
-                    <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                      Video Games
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                      Video Game Generals
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                      Video Games/Multiplayer
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                      Video Games/Mobile
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                      Pokémon
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                      Retro Games
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                      Video Games/RPG
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                      Video Games/Strategy
-                    </Link>
-                  </li>
+                  {renderBoardLink('Video Games')}
+                  {renderBoardLink('Video Game Generals')}
+                  {renderBoardLink('Video Games/Multiplayer')}
+                  {renderBoardLink('Video Games/Mobile')}
+                  {renderBoardLink('Pokémon')}
+                  {renderBoardLink('Retro Games')}
+                  {renderBoardLink('Video Games/RPG')}
+                  {renderBoardLink('Video Games/Strategy')}
                 </ul>
               </>
             )}
@@ -211,81 +165,21 @@ const BoardsList = ({ multisub }: { multisub: DirectoryCommunity[] }) => {
           <div className={styles.boardsColumn}>
             <h3>Interests</h3>
             <ul>
-              <li>
-                <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                  Comics & Cartoons
-                </Link>
-              </li>
-              <li>
-                <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                  Technology
-                </Link>
-              </li>
-              <li>
-                <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                  Television & Film
-                </Link>
-              </li>
-              <li>
-                <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                  Weapons
-                </Link>
-              </li>
-              <li>
-                <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                  Auto
-                </Link>
-              </li>
-              <li>
-                <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                  Animals & Nature
-                </Link>
-              </li>
-              <li>
-                <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                  Traditional Games
-                </Link>
-              </li>
-              <li>
-                <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                  Sports
-                </Link>
-              </li>
-              <li>
-                <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                  Extreme Sports
-                </Link>
-              </li>
-              <li>
-                <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                  Professional Wrestling
-                </Link>
-              </li>
-              <li>
-                <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                  Science & Math
-                </Link>
-              </li>
-              <li>
-                <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                  History & Humanities
-                </Link>
-              </li>
-              <li>
-                <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                  International
-                </Link>
-              </li>
-              <li>
-                <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                  Outdoors
-                </Link>
-              </li>
-              <li>
-                <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                  Toys
-                </Link>
-              </li>
+              {renderBoardLink('Comics & Cartoons')}
+              {renderBoardLink('Technology')}
+              {renderBoardLink('Television & Film')}
+              {renderBoardLink('Weapons')}
+              {renderBoardLink('Auto')}
+              {renderBoardLink('Animals & Nature')}
+              {renderBoardLink('Traditional Games')}
+              {renderBoardLink('Sports')}
+              {renderBoardLink('Extreme Sports')}
+              {renderBoardLink('Professional Wrestling')}
+              {renderBoardLink('Science & Math')}
+              {renderBoardLink('History & Humanities')}
+              {renderBoardLink('International')}
+              {renderBoardLink('Outdoors')}
+              {renderBoardLink('Toys')}
             </ul>
           </div>
         )}
@@ -295,88 +189,26 @@ const BoardsList = ({ multisub }: { multisub: DirectoryCommunity[] }) => {
           <div className={styles.boardsColumn}>
             <h3>Creative</h3>
             <ul>
-              {(showAll || showNsfwOnly) && (
-                <li>
-                  <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                    Oekaki
-                  </Link>
-                </li>
-              )}
+              {(showAll || showNsfwOnly) && renderBoardLink('Oekaki')}
               {(showAll || showWorksafeOnly) && (
                 <>
-                  <li>
-                    <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                      Papercraft & Origami
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                      Photography
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                      Food & Cooking
-                    </Link>
-                  </li>
+                  {renderBoardLink('Papercraft & Origami')}
+                  {renderBoardLink('Photography')}
+                  {renderBoardLink('Food & Cooking')}
                 </>
               )}
-              {(showAll || showNsfwOnly) && (
-                <li>
-                  <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                    Artwork/Critique
-                  </Link>
-                </li>
-              )}
-              {(showAll || showNsfwOnly) && (
-                <li>
-                  <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                    Wallpapers/General
-                  </Link>
-                </li>
-              )}
+              {(showAll || showNsfwOnly) && renderBoardLink('Artwork/Critique')}
+              {(showAll || showNsfwOnly) && renderBoardLink('Wallpapers/General')}
               {(showAll || showWorksafeOnly) && (
                 <>
-                  <li>
-                    <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                      Literature
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                      Music
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                      Fashion
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                      3DCG
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                      Graphic Design
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                      Do-It-Yourself
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                      Worksafe GIF
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                      Quests
-                    </Link>
-                  </li>
+                  {renderBoardLink('Literature')}
+                  {renderBoardLink('Music')}
+                  {renderBoardLink('Fashion')}
+                  {renderBoardLink('3DCG')}
+                  {renderBoardLink('Graphic Design')}
+                  {renderBoardLink('Do It Yourself')}
+                  {renderBoardLink('Worksafe GIF')}
+                  {renderBoardLink('Quests')}
                 </>
               )}
             </ul>
@@ -391,64 +223,16 @@ const BoardsList = ({ multisub }: { multisub: DirectoryCommunity[] }) => {
               <>
                 <h3>Other</h3>
                 <ul>
-                  {bizAddress ? (
-                    <li>
-                      <Link to={getBoardLink(bizAddress)} onClick={(e) => handleLinkClick(e, bizAddress)}>
-                        Business & Finance
-                      </Link>
-                    </li>
-                  ) : (
-                    <li>
-                      <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                        Business & Finance
-                      </Link>
-                    </li>
-                  )}
-                  <li>
-                    <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                      Travel
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                      Fitness
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                      Paranormal
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                      Advice
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                      LGBT
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                      Pony
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                      Current News
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                      Worksafe Requests
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                      Very Important Posts
-                    </Link>
-                  </li>
+                  {renderBoardLink('Business & Finance')}
+                  {renderBoardLink('Travel')}
+                  {renderBoardLink('Fitness')}
+                  {renderBoardLink('Paranormal')}
+                  {renderBoardLink('Advice')}
+                  {renderBoardLink('LGBT')}
+                  {renderBoardLink('Pony')}
+                  {renderBoardLink('Current News')}
+                  {renderBoardLink('Worksafe Requests')}
+                  {renderBoardLink('Very Important Posts')}
                 </ul>
               </>
             )}
@@ -459,44 +243,12 @@ const BoardsList = ({ multisub }: { multisub: DirectoryCommunity[] }) => {
                 <h3>Misc.</h3>
                 <NSFWBadge />
                 <ul>
-                  <li>
-                    <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                      Random
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                      ROBOT9001
-                    </Link>
-                  </li>
-                  {polAddress ? (
-                    <li>
-                      <Link to={getBoardLink(polAddress)} onClick={(e) => handleLinkClick(e, polAddress)}>
-                        Politically Incorrect
-                      </Link>
-                    </li>
-                  ) : (
-                    <li>
-                      <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                        Politically Incorrect
-                      </Link>
-                    </li>
-                  )}
-                  <li>
-                    <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                      International/Random
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                      Cams & Meetups
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                      Shit 5chan Says
-                    </Link>
-                  </li>
+                  {renderBoardLink('Random')}
+                  {renderBoardLink('ROBOT9001')}
+                  {renderBoardLink('Politically Incorrect')}
+                  {renderBoardLink('International/Random')}
+                  {renderBoardLink('Cams & Meetups')}
+                  {renderBoardLink('Shit 5chan Says')}
                 </ul>
               </>
             )}
@@ -509,71 +261,19 @@ const BoardsList = ({ multisub }: { multisub: DirectoryCommunity[] }) => {
             <h3>Adult</h3>
             <NSFWBadge />
             <ul>
-              <li>
-                <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                  Sexy Beautiful Women
-                </Link>
-              </li>
-              <li>
-                <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                  Hardcore
-                </Link>
-              </li>
-              <li>
-                <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                  Handsome Men
-                </Link>
-              </li>
-              <li>
-                <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                  Hentai
-                </Link>
-              </li>
-              <li>
-                <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                  Ecchi
-                </Link>
-              </li>
-              <li>
-                <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                  Yuri
-                </Link>
-              </li>
-              <li>
-                <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                  Hentai/Alternative
-                </Link>
-              </li>
-              <li>
-                <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                  Yaoi
-                </Link>
-              </li>
-              <li>
-                <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                  Torrents
-                </Link>
-              </li>
-              <li>
-                <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                  High Resolution
-                </Link>
-              </li>
-              <li>
-                <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                  Adult GIF
-                </Link>
-              </li>
-              <li>
-                <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                  Adult Cartoons
-                </Link>
-              </li>
-              <li>
-                <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-                  Adult Requests
-                </Link>
-              </li>
+              {renderBoardLink('Sexy Beautiful Women')}
+              {renderBoardLink('Hardcore')}
+              {renderBoardLink('Handsome Men')}
+              {renderBoardLink('Hentai')}
+              {renderBoardLink('Ecchi')}
+              {renderBoardLink('Yuri')}
+              {renderBoardLink('Hentai/Alternative')}
+              {renderBoardLink('Yaoi')}
+              {renderBoardLink('Torrents')}
+              {renderBoardLink('High Resolution')}
+              {renderBoardLink('Adult GIF')}
+              {renderBoardLink('Adult Cartoons')}
+              {renderBoardLink('Adult Requests')}
             </ul>
           </div>
         )}

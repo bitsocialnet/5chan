@@ -37,6 +37,8 @@ import useFeedResetStore from '../../stores/use-feed-reset-store';
 import usePostNumberStore from '../../stores/use-post-number-store';
 import { alertChallengeVerificationFailed } from '../../lib/utils/challenge-utils';
 import useQuotedByMap from '../../hooks/use-quoted-by-map';
+import useProgressiveRender from '../../hooks/use-progressive-render';
+import { REPLIES_PER_PAGE } from '../../lib/constants';
 
 const { addChallenge } = useChallengesStore.getState();
 
@@ -181,7 +183,7 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
     }
 
     return document.querySelectorAll(`[data-author-address="${shortAddress}"][data-post-cid="${postCid}"]`).length;
-  }, [showUserID, deleted, removed, shortAddress, postCid]);
+  }, [showUserID, deleted, removed, shortAddress, postCid, postReplyCount]);
 
   const userID = address && Plebbit.getShortAddress({ address }); // shortened to 8 chars for display; users can verify the full user ID via "Copy user ID" in the post menu to guard against spoofing
   const userIDBackgroundColor = hashStringToColor(userID);
@@ -497,6 +499,7 @@ const PostMobile = ({
     comment: post,
     sortType: 'old',
     flat: true,
+    repliesPerPage: REPLIES_PER_PAGE,
     accountComments: { newerThan: Infinity, append: true },
   });
   const { replies, hasMore, loadMore } = repliesResult;
@@ -536,6 +539,13 @@ const PostMobile = ({
   const filteredReplies = useMemo(() => repliesForRender.filter((reply) => !(reply.deleted && (reply.replyCount === 0 || !reply.replyCount))), [repliesForRender]);
 
   const quotedByMap = useQuotedByMap(filteredReplies);
+
+  const visibleReplies = useProgressiveRender(filteredReplies, {
+    batchSize: 50,
+    intervalMs: 100,
+    resetKey: cid,
+    disabled: hasMore || !!targetReplyCid || !showAllReplies,
+  });
 
   // Virtuoso scroll position management for infinite replies
   const virtuosoRef = useRef<VirtuosoHandle | null>(null);
@@ -670,7 +680,7 @@ const PostMobile = ({
               !isInPendingPostView &&
               showReplies &&
               !hasMore &&
-              filteredReplies.map((reply, index) => (
+              visibleReplies.map((reply, index) => (
                 <div key={index} className={styles.replyContainer}>
                   <Reply postReplyCount={replyCount} reply={reply} roles={roles} threadNumber={post?.number} quotedByMap={quotedByMap} />
                 </div>

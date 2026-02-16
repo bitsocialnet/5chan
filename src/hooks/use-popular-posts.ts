@@ -15,13 +15,17 @@ const usePopularPosts = (subplebbits: Subplebbit[]) => {
       const uniqueLinks: Set<string> = new Set();
       const allPosts: Comment[] = [];
 
-      const postsPerSub = [0, 8, 4, 3, 2, 2, 2, 2, 1][Math.min(subplebbits.length, 8)];
+      // Base quota on boards that currently have loaded hot comments.
+      // Using total directory count can underfill the list when many boards are empty/unavailable.
+      const loadedSubplebbitsCount = subplebbits.filter((sub) => sub?.posts?.pages?.hot?.comments).length;
+      const postsPerSub = [0, 8, 4, 3, 2, 2, 2, 2, 1][Math.min(loadedSubplebbitsCount, 8)];
 
       subplebbits.forEach((subplebbit: any) => {
         let subplebbitPosts: Comment[] = [];
 
         if (subplebbit?.posts?.pages?.hot?.comments) {
-          for (const post of Object.values(subplebbit.posts.pages.hot.comments as Comment)) {
+          const rawPosts = Object.values(subplebbit.posts.pages.hot.comments as Comment);
+          for (const post of rawPosts) {
             const { deleted, link, linkHeight, linkWidth, locked, pinned, removed, replyCount, thumbnailUrl } = post;
 
             try {
@@ -38,7 +42,8 @@ const usePopularPosts = (subplebbits: Subplebbit[]) => {
           }
 
           subplebbitPosts.sort((a: any, b: any) => b.timestamp - a.timestamp);
-          allPosts.push(...subplebbitPosts.slice(0, postsPerSub));
+          const selectedPosts = subplebbitPosts.slice(0, postsPerSub);
+          allPosts.push(...selectedPosts);
         }
       });
 
@@ -55,8 +60,9 @@ const usePopularPosts = (subplebbits: Subplebbit[]) => {
   // Build a key from relevant mutable fields, not just CIDs
   const currentKey = popularPosts.map((p) => `${p.cid}:${p.replyCount}:${p.timestamp}:${p.locked}:${p.pinned}`).join(',');
   const stablePostsRef = useRef<Comment[]>(popularPosts);
+  const keyChanged = currentKey !== prevCidsRef.current;
 
-  if (currentKey !== prevCidsRef.current) {
+  if (keyChanged) {
     prevCidsRef.current = currentKey;
     stablePostsRef.current = popularPosts;
   }

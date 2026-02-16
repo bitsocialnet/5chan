@@ -1,4 +1,15 @@
 import { ChallengeVerification } from '@plebbit/plebbit-react-hooks';
+import directoriesData from '../../data/5chan-directories.json';
+import { getBoardPath } from './route-utils';
+
+const resolveBoardIdentifier = (subplebbitAddress: unknown): string => {
+  if (typeof subplebbitAddress !== 'string' || !subplebbitAddress) {
+    return 'unknown board';
+  }
+
+  const boardPath = getBoardPath(subplebbitAddress, directoriesData.communities);
+  return boardPath === subplebbitAddress ? subplebbitAddress : `/${boardPath}/`;
+};
 
 export const alertChallengeVerificationFailed = (challengeVerification: ChallengeVerification, publication: any) => {
   if (challengeVerification?.challengeSuccess === false) {
@@ -25,7 +36,7 @@ export const alertChallengeVerificationFailed = (challengeVerification: Challeng
 
     const finalMessage = errorMessages.filter(Boolean).join(' ');
 
-    alert(`p/${publication?.subplebbitAddress} error: ${finalMessage || 'unknown error'}`);
+    alert(`Error from ${resolveBoardIdentifier(publication?.subplebbitAddress)}: ${finalMessage || 'unknown error'}`);
   } else {
     console.warn('Challenge verification succeeded but no action taken:', challengeVerification);
   }
