@@ -204,27 +204,18 @@ exit 0
 
 Consult your AI tool's documentation for how to configure hooks (e.g., `hooks.json` for Cursor/Claude Code).
 
-## Recommended MCP Servers
+## GitHub — Use `gh` CLI (Not MCP)
 
-### GitHub MCP
+Use the **`gh` CLI** for all GitHub operations (issues, PRs, actions, dependabot, projects, search, etc.). For anything without a dedicated subcommand, `gh api` can call any GitHub REST endpoint directly. Use `--json` + `--jq` to keep output minimal.
 
-For Dependabot security alerts, GitHub Actions logs, issue/PR searches, or cross-repo code lookup, use the **GitHub MCP server** (with `default,dependabot,actions` toolsets enabled).
+**Do NOT use the GitHub MCP server.** It injects ~40 tool definitions into the context window on every message, wasting tokens even when you're not doing GitHub operations.
 
-If not available, suggest the user install it.
+## MCP Servers — Avoid
 
-### Browser MCPs — Do NOT Use
+Each MCP server injects its tool definitions into the context window, consuming tokens even when the tools aren't being used. Too many servers degrade response quality, cause the agent to "forget" earlier context, and slow down responses. If you notice many MCP tools in your context, warn the user and suggest disabling unused ones.
 
-**Avoid browser-related MCP servers** for this project (cursor-ide-browser, playwright-mcp, chrome MCP, etc.). Use **playwright-cli** (skill) instead—see [playwright-cli (browser automation)](#playwright-cli-browser-automation) above. Browser MCPs bloat the context window with tool schemas and page snapshots; the CLI + skill workflow is more token-efficient for coding agents.
-
-### Context Window Warning
-
-Each MCP server injects its tool definitions into the context window, consuming tokens even when the tools aren't being used. Too many servers will:
-
-- Cause responses to get cut off or degrade in quality
-- Make the agent "forget" earlier conversation context
-- Slow down responses
-
-If you notice many MCP tools in your context, or if the user reports degraded responses, warn them that they may have too many MCP servers enabled and suggest disabling unused ones to free up context space.
+- **GitHub MCP** — Do NOT use. Use `gh` CLI instead (see above).
+- **Browser MCPs** (cursor-ide-browser, playwright-mcp, chrome MCP, etc.) — Do NOT use. Use **playwright-cli** (skill) instead—see [playwright-cli (browser automation)](#playwright-cli-browser-automation) above.
 
 ## Translations
 
