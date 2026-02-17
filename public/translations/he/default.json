@@ -281,5 +281,8 @@
   "posts_auto_update_info": "הפוסטים מתעדכנים באופן אוטומטי בערך כל ~2 דקות. כרגע לא ניתן להשבית זאת.",
   "board_address_tooltip": "כתובת צומת ה-P2P של הלוח הזה",
   "vote_button_unavailable_intro": "עדיין לא זמין. משתמשים יוכלו להגיש לוחות משלהם ולהצביע עליהם כדי להתחרות על משבצות בספרייה, כגון /{{boardIdentifier}}/.",
-  "vote_button_unavailable_outro": "/{{boardIdentifier}}/ בעל ההצבעות הרבות ביותר הופך ל- /{{boardIdentifier}}/ הרשמי."
+  "vote_button_unavailable_outro": "/{{boardIdentifier}}/ בעל ההצבעות הרבות ביותר הופך ל- /{{boardIdentifier}}/ הרשמי.",
+  "upload_failed": "Upload failed",
+  "upload_not_supported_web": "Uploading media isn't supported by your browser due to technical limitations (CORS). It is supported in the 5chan Android app and Mac/Linux/Windows desktop app. Download from the official release page: https://github.com/bitsocialhq/5chan/releases/latest",
+  "file": "File"
 }

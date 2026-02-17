@@ -281,5 +281,8 @@
   "posts_auto_update_info": "Posty aktualizują się automatycznie co ~2 minuty. Chwilowo nie jest możliwe wyłączenie tej funkcji.",
   "board_address_tooltip": "Adres węzła peer-to-peer tej tablicy",
   "vote_button_unavailable_intro": "Niedostępne. Użytkownicy będą mogli przesyłać własne tablice i głosować na nie, aby konkurować o miejsca w katalogu, takie jak /{{boardIdentifier}}/.",
-  "vote_button_unavailable_outro": "Tablica /{{boardIdentifier}}/ z największą liczbą głosów staje się oficjalną /{{boardIdentifier}}/."
+  "vote_button_unavailable_outro": "Tablica /{{boardIdentifier}}/ z największą liczbą głosów staje się oficjalną /{{boardIdentifier}}/.",
+  "upload_failed": "Upload failed",
+  "upload_not_supported_web": "Uploading media isn't supported by your browser due to technical limitations (CORS). It is supported in the 5chan Android app and Mac/Linux/Windows desktop app. Download from the official release page: https://github.com/bitsocialhq/5chan/releases/latest",
+  "file": "File"
 }

@@ -281,5 +281,8 @@
   "posts_auto_update_info": "Beiträge werden automatisch etwa alle ~2 Minuten aktualisiert. Es ist derzeit nicht möglich, dies zu deaktivieren.",
   "board_address_tooltip": "Die Adresse des Peer-to-Peer-Knotens dieses Boards",
   "vote_button_unavailable_intro": "Noch nicht verfügbar. Benutzer können ihre eigenen Boards einreichen und dafür abstimmen, um um Verzeichnisplätze zu konkurrieren, wie /{{boardIdentifier}}/.",
-  "vote_button_unavailable_outro": "Das am meisten abgestimmte /{{boardIdentifier}}/ wird zum offiziellen /{{boardIdentifier}}/."
+  "vote_button_unavailable_outro": "Das am meisten abgestimmte /{{boardIdentifier}}/ wird zum offiziellen /{{boardIdentifier}}/.",
+  "upload_failed": "Upload failed",
+  "upload_not_supported_web": "Uploading media isn't supported by your browser due to technical limitations (CORS). It is supported in the 5chan Android app and Mac/Linux/Windows desktop app. Download from the official release page: https://github.com/bitsocialhq/5chan/releases/latest",
+  "file": "File"
 }

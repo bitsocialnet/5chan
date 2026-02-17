@@ -11,15 +11,12 @@ import useSelectedTextStore from '../../stores/use-selected-text-store';
 import useReplyModalStore from '../../stores/use-reply-modal-store';
 import usePublishReply from '../../hooks/use-publish-reply';
 import useIsMobile from '../../hooks/use-is-mobile';
+import { useFileUpload } from '../../hooks/use-file-upload';
 import styles from './reply-modal.module.css';
 import { LinkTypePreviewer } from '../post-form';
 import { capitalize, debounce } from 'lodash';
-import FileUploader from '../../plugins/file-uploader';
-import { Capacitor } from '@capacitor/core';
 import { useSpring, animated } from '@react-spring/web';
 import { useDrag } from '@use-gesture/react';
-
-const isAndroid = Capacitor.getPlatform() === 'android';
 
 interface ReplyModalProps {
   closeModal: () => void;
@@ -263,35 +260,17 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
     checkContentLength(formattedContent, t);
   }, [showReplyModal, quoteInsertRequestId, quoteInsertNumber, quoteInsertSelectedText, setPublishReplyOptions, checkContentLength, t]);
 
-  // on android, auto upload file to image hosting sites with open api
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
-  const handleUpload = async () => {
-    try {
-      setIsUploading(true);
-      const result = await FileUploader.pickAndUploadMedia();
-      console.log('Upload result:', result);
-      if (result.url) {
-        setUrl(result.url);
+  const { isUploading, uploadedFileName, handleUpload } = useFileUpload({
+    onUploadComplete: (uploadedUrl: string) => {
+      if (uploadedUrl) {
+        setUrl(uploadedUrl);
         if (urlRef.current) {
-          urlRef.current.value = result.url;
+          urlRef.current.value = uploadedUrl;
         }
-        setPublishReplyOptions({ link: result.url || undefined });
-        if (result.fileName) {
-          setUploadedFileName(result.fileName);
-        }
+        setPublishReplyOptions({ link: uploadedUrl });
       }
-    } catch (error) {
-      console.error('Upload failed, ', error);
-      if (error instanceof Error && error.message !== 'File selection cancelled') {
-        setError(`${t('upload_failed')}, ${error.message}`);
-      } else if (typeof error === 'string' && error !== 'File selection cancelled') {
-        setError(`${t('upload_failed')}, ${error}`);
-      }
-    } finally {
-      setIsUploading(false);
-    }
-  };
+    },
+  });
 
   const hasInitializedDisplayName = useRef(false);
   useEffect(() => {
@@ -339,6 +318,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
             type='text'
             ref={urlRef}
             placeholder={capitalize(t('link'))}
+            disabled={isUploading}
             onChange={(e) => {
               setUrl(e.target.value);
               setPublishReplyOptions({ link: e.target.value });
@@ -365,23 +345,21 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
           />
         </div>
         <div className={styles.footer}>
-          {url && !isAndroid && (
+          {url && (
             <>
               {t('link_type')}: <LinkTypePreviewer link={url} />
             </>
           )}
-          {isAndroid && (
-            <span className={styles.uploadContainer}>
-              <span className={styles.uploadButton}>
-                <button onClick={handleUpload} disabled={isUploading}>
-                  {isUploading ? t('uploading') : t('choose_file')}
-                </button>
-              </span>
-              <span className={styles.uploadFileName} title={uploadedFileName ? uploadedFileName : t('no_file_chosen')}>
-                {uploadedFileName ? uploadedFileName : t('no_file_chosen')}
-              </span>
+          <span className={styles.uploadContainer}>
+            <span className={styles.uploadButton}>
+              <button onClick={handleUpload} disabled={isUploading}>
+                {t('choose_file')}
+              </button>
             </span>
-          )}
+            <span className={styles.uploadFileName} title={uploadedFileName || t('no_file_chosen')}>
+              {isUploading ? t('uploading') : uploadedFileName || t('no_file_chosen')}
+            </span>
+          </span>
           <span className={styles.spoilerButton}>
             [
             <label>

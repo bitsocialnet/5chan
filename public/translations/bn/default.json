@@ -281,5 +281,8 @@
   "posts_auto_update_info": "পোস্টগুলি প্রতি ~2 মিনিটে স্বয়ংক্রিয়ভাবে আপডেট হয়। বর্তমানে এটি অক্ষম করা সম্ভব নয়।",
   "board_address_tooltip": "এই বোর্ডের পিয়ার-টু-পিয়ার নোডের ঠিকানা",
   "vote_button_unavailable_intro": "এখনও উপলব্ধ নয়। ব্যবহারকারীরা তাদের নিজস্ব বোর্ড জমা দিতে এবং সেগুলির জন্য ভোট দিতে সক্ষম হবে, যেমন /{{boardIdentifier}}/ এর জন্য ডিরেক্টরি স্লটের জন্য প্রতিযোগিতা করতে।",
-  "vote_button_unavailable_outro": "সর্বাধিক ভোটপ্রাপ্ত /{{boardIdentifier}}/ আনুষ্ঠানিক /{{boardIdentifier}}/ হয়ে ওঠে।"
+  "vote_button_unavailable_outro": "সর্বাধিক ভোটপ্রাপ্ত /{{boardIdentifier}}/ আনুষ্ঠানিক /{{boardIdentifier}}/ হয়ে ওঠে।",
+  "upload_failed": "Upload failed",
+  "upload_not_supported_web": "Uploading media isn't supported by your browser due to technical limitations (CORS). It is supported in the 5chan Android app and Mac/Linux/Windows desktop app. Download from the official release page: https://github.com/bitsocialhq/5chan/releases/latest",
+  "file": "File"
 }

@@ -281,5 +281,8 @@
   "posts_auto_update_info": "게시물은 약 2분마다 자동으로 업데이트됩니다. 현재 이를 비활성화할 수 없습니다.",
   "board_address_tooltip": "이 게시판의 P2P 노드 주소",
   "vote_button_unavailable_intro": "아직 사용할 수 없습니다. 사용자는 자신의 보드를 제출하고 투표하여 /{{boardIdentifier}}/와 같은 디렉토리 슬롯을 놓고 경쟁할 수 있습니다.",
-  "vote_button_unavailable_outro": "가장 많은 투표를 받은 /{{boardIdentifier}}/이 공식 /{{boardIdentifier}}/이 됩니다."
+  "vote_button_unavailable_outro": "가장 많은 투표를 받은 /{{boardIdentifier}}/이 공식 /{{boardIdentifier}}/이 됩니다.",
+  "upload_failed": "Upload failed",
+  "upload_not_supported_web": "Uploading media isn't supported by your browser due to technical limitations (CORS). It is supported in the 5chan Android app and Mac/Linux/Windows desktop app. Download from the official release page: https://github.com/bitsocialhq/5chan/releases/latest",
+  "file": "File"
 }

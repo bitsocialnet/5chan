@@ -15,12 +15,9 @@ import useFetchGifFirstFrame from '../../hooks/use-fetch-gif-first-frame';
 import useIsSubplebbitOffline from '../../hooks/use-is-subplebbit-offline';
 import usePublishPost from '../../hooks/use-publish-post';
 import usePublishReply from '../../hooks/use-publish-reply';
-import FileUploader from '../../plugins/file-uploader';
+import { useFileUpload } from '../../hooks/use-file-upload';
 import styles from './post-form.module.css';
-import { Capacitor } from '@capacitor/core';
 import { capitalize, debounce } from 'lodash';
-
-const isAndroid = Capacitor.getPlatform() === 'android';
 
 // Separate component for offline alert to isolate rerenders from updatingState
 // Only this component will rerender when updatingState changes, not the whole PostForm
@@ -197,35 +194,17 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
     }
   }, [replyIndex, resetPublishReplyOptions, closeForm]);
 
-  // on android, auto upload file to image hosting sites with open api
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
-  const handleUpload = async () => {
-    try {
-      setIsUploading(true);
-      const result = await FileUploader.pickAndUploadMedia();
-      console.log('Upload result:', result);
-      if (result.url) {
-        setUrl(result.url);
+  const { isUploading, uploadedFileName, handleUpload } = useFileUpload({
+    onUploadComplete: (uploadedUrl: string) => {
+      if (uploadedUrl) {
+        setUrl(uploadedUrl);
         if (urlRef.current) {
-          urlRef.current.value = result.url;
+          urlRef.current.value = uploadedUrl;
         }
-        isInPostView ? setPublishReplyOptions({ link: result.url || undefined }) : setPublishPostOptions({ link: result.url || undefined });
-        if (result.fileName) {
-          setUploadedFileName(result.fileName);
-        }
+        isInPostView ? setPublishReplyOptions({ link: uploadedUrl }) : setPublishPostOptions({ link: uploadedUrl });
       }
-    } catch (error) {
-      console.error('Upload failed:', error);
-      if (error instanceof Error && error.message !== 'File selection cancelled') {
-        alert(`${t('upload_failed')}: ${error.message}`);
-      } else if (typeof error === 'string' && error !== 'File selection cancelled') {
-        alert(`${t('upload_failed')}: ${error}`);
-      }
-    } finally {
-      setIsUploading(false);
-    }
-  };
+    },
+  });
 
   const hasInitializedDisplayName = useRef(false);
   useEffect(() => {
@@ -306,17 +285,15 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
             <span className={styles.linkType}> {url && <LinkTypePreviewer link={url} />}</span>
           </td>
         </tr>
-        {isAndroid && (
-          <tr className={styles.uploadButton}>
-            <td>{t('file')}</td>
-            <td>
-              <button onClick={handleUpload} disabled={isUploading}>
-                {isUploading ? t('uploading') : t('choose_file')}
-              </button>
-              <span>{uploadedFileName ? uploadedFileName : t('no_file_chosen')}</span>
-            </td>
-          </tr>
-        )}
+        <tr className={styles.uploadButton}>
+          <td>{t('file')}</td>
+          <td>
+            <button onClick={handleUpload} disabled={isUploading}>
+              {t('choose_file')}
+            </button>
+            <span>{isUploading ? t('uploading') : uploadedFileName || t('no_file_chosen')}</span>
+          </td>
+        </tr>
         <tr className={styles.spoilerButton}>
           <td>{t('options')}</td>
           <td>
