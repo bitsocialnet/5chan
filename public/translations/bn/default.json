@@ -282,7 +282,7 @@
   "board_address_tooltip": "এই বোর্ডের পিয়ার-টু-পিয়ার নোডের ঠিকানা",
   "vote_button_unavailable_intro": "এখনও উপলব্ধ নয়। ব্যবহারকারীরা তাদের নিজস্ব বোর্ড জমা দিতে এবং সেগুলির জন্য ভোট দিতে সক্ষম হবে, যেমন /{{boardIdentifier}}/ এর জন্য ডিরেক্টরি স্লটের জন্য প্রতিযোগিতা করতে।",
   "vote_button_unavailable_outro": "সর্বাধিক ভোটপ্রাপ্ত /{{boardIdentifier}}/ আনুষ্ঠানিক /{{boardIdentifier}}/ হয়ে ওঠে।",
-  "upload_failed": "Upload failed",
-  "upload_not_supported_web": "Uploading media isn't supported by your browser due to technical limitations (CORS). It is supported in the 5chan Android app and Mac/Linux/Windows desktop app. Download from the official release page: https://github.com/bitsocialhq/5chan/releases/latest",
-  "file": "File"
+  "upload_failed": "আপলোড ব্যর্থ",
+  "upload_not_supported_web": "প্রযুক্তিগত সীমাবদ্ধতার কারণে (CORS) আপনার ব্রাউজার মিডিয়া আপলোড সমর্থন করে না। এটি 5chan অ্যান্ড্রয়েড অ্যাপ এবং Mac/Linux/Windows ডেস্কটপ অ্যাপে সমর্থিত। অফিসিয়াল রিলিজ পৃষ্ঠা থেকে ডাউনলোড করুন: https://github.com/bitsocialhq/5chan/releases/latest",
+  "file": "ফাইল"
 }

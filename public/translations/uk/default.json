@@ -282,7 +282,7 @@
   "board_address_tooltip": "Адреса пірінгового вузла цієї дошки",
   "vote_button_unavailable_intro": "Поки недоступно. Користувачі зможуть подавати власні дошки та голосувати за них, щоб змагатися за місця в каталозі, як-от /{{boardIdentifier}}/.",
   "vote_button_unavailable_outro": "Найбільш проголосована /{{boardIdentifier}}/ стає офіційною /{{boardIdentifier}}/.",
-  "upload_failed": "Upload failed",
-  "upload_not_supported_web": "Uploading media isn't supported by your browser due to technical limitations (CORS). It is supported in the 5chan Android app and Mac/Linux/Windows desktop app. Download from the official release page: https://github.com/bitsocialhq/5chan/releases/latest",
-  "file": "File"
+  "upload_failed": "Помилка завантаження",
+  "upload_not_supported_web": "Завантаження медіа не підтримується вашим браузером через технічні обмеження (CORS). Підтримується в додатку 5chan для Android та десктопному додатку для Mac/Linux/Windows. Завантажте з офіційної сторінки релізів: https://github.com/bitsocialhq/5chan/releases/latest",
+  "file": "Файл"
 }

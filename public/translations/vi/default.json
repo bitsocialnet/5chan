@@ -282,7 +282,7 @@
   "board_address_tooltip": "Địa chỉ nút peer-to-peer của bảng này",
   "vote_button_unavailable_intro": "Chưa có sẵn. Người dùng sẽ có thể gửi các bảng của riêng họ và bình chọn cho chúng để cạnh tranh các vị trí thư mục, như /{{boardIdentifier}}/.",
   "vote_button_unavailable_outro": "/{{boardIdentifier}}/ được bình chọn nhiều nhất trở thành /{{boardIdentifier}}/ chính thức.",
-  "upload_failed": "Upload failed",
-  "upload_not_supported_web": "Uploading media isn't supported by your browser due to technical limitations (CORS). It is supported in the 5chan Android app and Mac/Linux/Windows desktop app. Download from the official release page: https://github.com/bitsocialhq/5chan/releases/latest",
-  "file": "File"
+  "upload_failed": "Tải lên thất bại",
+  "upload_not_supported_web": "Trình duyệt của bạn không hỗ trợ tải lên media do giới hạn kỹ thuật (CORS). Tính năng này được hỗ trợ trong ứng dụng 5chan cho Android và ứng dụng desktop cho Mac/Linux/Windows. Tải xuống từ trang phát hành chính thức: https://github.com/bitsocialhq/5chan/releases/latest",
+  "file": "Tệp"
 }

@@ -282,7 +282,7 @@
   "board_address_tooltip": "آدرس گره هم‌تا-همتای این تخته",
   "vote_button_unavailable_intro": "هنوز در دسترس نیست. کاربران می‌توانند بوردهای خود را ارسال کنند و برای آنها رای دهند تا برای شکاف‌های دایرکتوری رقابت کنند، مانند /{{boardIdentifier}}/.",
   "vote_button_unavailable_outro": "بیشترین رای‌شده /{{boardIdentifier}}/ به /{{boardIdentifier}}/ رسمی تبدیل می‌شود.",
-  "upload_failed": "Upload failed",
-  "upload_not_supported_web": "Uploading media isn't supported by your browser due to technical limitations (CORS). It is supported in the 5chan Android app and Mac/Linux/Windows desktop app. Download from the official release page: https://github.com/bitsocialhq/5chan/releases/latest",
-  "file": "File"
+  "upload_failed": "آپلود ناموفق بود",
+  "upload_not_supported_web": "آپلود رسانه توسط مرورگر شما به دلیل محدودیت‌های فنی (CORS) پشتیبانی نمی‌شود. در اپلیکیشن 5chan اندروید و اپلیکیشن دسکتاپ Mac/Linux/Windows پشتیبانی می‌شود. از صفحه انتشار رسمی دانلود کنید: https://github.com/bitsocialhq/5chan/releases/latest",
+  "file": "فایل"
 }

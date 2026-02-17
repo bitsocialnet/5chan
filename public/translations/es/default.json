@@ -282,7 +282,7 @@
   "board_address_tooltip": "La dirección del nodo peer-to-peer de este tablón",
   "vote_button_unavailable_intro": "Aún no disponible. Los usuarios podrán enviar sus propios tableros y votar por ellos para competir por espacios de directorio, como /{{boardIdentifier}}/.",
   "vote_button_unavailable_outro": "El tablero /{{boardIdentifier}}/ más votado se convierte en el oficial /{{boardIdentifier}}/.",
-  "upload_failed": "Upload failed",
-  "upload_not_supported_web": "Uploading media isn't supported by your browser due to technical limitations (CORS). It is supported in the 5chan Android app and Mac/Linux/Windows desktop app. Download from the official release page: https://github.com/bitsocialhq/5chan/releases/latest",
-  "file": "File"
+  "upload_failed": "Error al subir",
+  "upload_not_supported_web": "La subida de medios no está soportada por tu navegador debido a limitaciones técnicas (CORS). Sí está soportada en la app 5chan para Android y en la app de escritorio para Mac/Linux/Windows. Descarga desde la página oficial de releases: https://github.com/bitsocialhq/5chan/releases/latest",
+  "file": "Archivo"
 }

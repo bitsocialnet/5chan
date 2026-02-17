@@ -282,7 +282,7 @@
   "board_address_tooltip": "Tämän laudan vertaisverkko-solmun osoite",
   "vote_button_unavailable_intro": "Ei vielä käytettävissä. Käyttäjät voivat lähettää omia lautojaan ja äänestää niitä kilpaillakseen hakemistopaikoista, kuten /{{boardIdentifier}}/.",
   "vote_button_unavailable_outro": "Eniten ääniä saanut /{{boardIdentifier}}/ tulee viralliseksi /{{boardIdentifier}}/.",
-  "upload_failed": "Upload failed",
-  "upload_not_supported_web": "Uploading media isn't supported by your browser due to technical limitations (CORS). It is supported in the 5chan Android app and Mac/Linux/Windows desktop app. Download from the official release page: https://github.com/bitsocialhq/5chan/releases/latest",
-  "file": "File"
+  "upload_failed": "Lataus epäonnistui",
+  "upload_not_supported_web": "Medioiden latausta ei tueta selaimessasi teknisistä rajoituksista (CORS) johtuen. Se on tuettu 5chan-sovelluksessa Androidille ja Mac/Linux/Windows-työpöytäsovelluksessa. Lataa viralliselta julkaisusivulta: https://github.com/bitsocialhq/5chan/releases/latest",
+  "file": "Tiedosto"
 }
