@@ -285,7 +285,7 @@
   "upload_failed": "আপলোড ব্যর্থ",
   "upload_not_supported_web": "প্রযুক্তিগত সীমাবদ্ধতার কারণে (CORS) আপনার ব্রাউজার মিডিয়া আপলোড সমর্থন করে না। এটি 5chan অ্যান্ড্রয়েড অ্যাপ এবং Mac/Linux/Windows ডেস্কটপ অ্যাপে সমর্থিত। অফিসিয়াল রিলিজ পৃষ্ঠা থেকে ডাউনলোড করুন: https://github.com/bitsocialhq/5chan/releases/latest",
   "file": "ফাইল",
-  "media_hosting_none": "None",
-  "media_hosting_none_tip": "Hides the file upload button from post and reply forms",
-  "media_hosting": "Media Hosting"
+  "media_hosting_none": "কোনো নয়",
+  "media_hosting_none_tip": "পোস্ট এবং রিপ্লাই ফর্ম থেকে ফাইল আপলোড বাটন লুকায়",
+  "media_hosting": "মিডিয়া হোস্টিং"
 }

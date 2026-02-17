@@ -285,7 +285,7 @@
   "upload_failed": "Error al subir",
   "upload_not_supported_web": "La subida de medios no está soportada por tu navegador debido a limitaciones técnicas (CORS). Sí está soportada en la app 5chan para Android y en la app de escritorio para Mac/Linux/Windows. Descarga desde la página oficial de releases: https://github.com/bitsocialhq/5chan/releases/latest",
   "file": "Archivo",
-  "media_hosting_none": "None",
-  "media_hosting_none_tip": "Hides the file upload button from post and reply forms",
-  "media_hosting": "Media Hosting"
+  "media_hosting_none": "Ninguno",
+  "media_hosting_none_tip": "Oculta el botón de carga de archivos de los formularios de publicación y respuesta",
+  "media_hosting": "Alojamiento de Medios"
 }

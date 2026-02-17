@@ -285,7 +285,7 @@
   "upload_failed": "Помилка завантаження",
   "upload_not_supported_web": "Завантаження медіа не підтримується вашим браузером через технічні обмеження (CORS). Підтримується в додатку 5chan для Android та десктопному додатку для Mac/Linux/Windows. Завантажте з офіційної сторінки релізів: https://github.com/bitsocialhq/5chan/releases/latest",
   "file": "Файл",
-  "media_hosting_none": "None",
-  "media_hosting_none_tip": "Hides the file upload button from post and reply forms",
-  "media_hosting": "Media Hosting"
+  "media_hosting_none": "Немає",
+  "media_hosting_none_tip": "Приховує кнопку завантаження файлу з форм постів та відповідей",
+  "media_hosting": "Хостинг медіа"
 }

@@ -285,7 +285,7 @@
   "upload_failed": "آپلود ناموفق بود",
   "upload_not_supported_web": "آپلود رسانه توسط مرورگر شما به دلیل محدودیت‌های فنی (CORS) پشتیبانی نمی‌شود. در اپلیکیشن 5chan اندروید و اپلیکیشن دسکتاپ Mac/Linux/Windows پشتیبانی می‌شود. از صفحه انتشار رسمی دانلود کنید: https://github.com/bitsocialhq/5chan/releases/latest",
   "file": "فایل",
-  "media_hosting_none": "None",
-  "media_hosting_none_tip": "Hides the file upload button from post and reply forms",
-  "media_hosting": "Media Hosting"
+  "media_hosting_none": "هیچ کدام",
+  "media_hosting_none_tip": "دکمه بارگذاری فایل را از فرم‌های پست و پاسخ مخفی می‌کند",
+  "media_hosting": "میزبانی رسانه"
 }

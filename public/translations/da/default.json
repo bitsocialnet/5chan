@@ -285,7 +285,7 @@
   "upload_failed": "Upload mislykkedes",
   "upload_not_supported_web": "Upload af medier understøttes ikke af din browser på grund af tekniske begrænsninger (CORS). Det understøttes i 5chan Android-appen og Mac/Linux/Windows desktop-appen. Download fra den officielle udgivelsesside: https://github.com/bitsocialhq/5chan/releases/latest",
   "file": "Fil",
-  "media_hosting_none": "None",
-  "media_hosting_none_tip": "Hides the file upload button from post and reply forms",
-  "media_hosting": "Media Hosting"
+  "media_hosting_none": "Ingen",
+  "media_hosting_none_tip": "Skjuler filoverføringsknappen fra post- og svarformularer",
+  "media_hosting": "Mediahosting"
 }

@@ -285,7 +285,7 @@
   "upload_failed": "अपलोड अयशस्वी",
   "upload_not_supported_web": "तांत्रिक मर्यादांमुळे (CORS) तुमचा ब्राउझर मीडिया अपलोडला समर्थन देत नाही. 5chan Android अॅप आणि Mac/Linux/Windows डेस्कटॉप अॅपमध्ये ते समर्थित आहे. अधिकृत रिलीझ पेजवरून डाउनलोड करा: https://github.com/bitsocialhq/5chan/releases/latest",
   "file": "फाइल",
-  "media_hosting_none": "None",
-  "media_hosting_none_tip": "Hides the file upload button from post and reply forms",
-  "media_hosting": "Media Hosting"
+  "media_hosting_none": "काहीही नाही",
+  "media_hosting_none_tip": "पोस्ट आणि उत्तर फॉर्मवरून फाइल अपलोड बटन लपवते",
+  "media_hosting": "मीडिया होस्टिंग"
 }

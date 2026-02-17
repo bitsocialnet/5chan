@@ -285,7 +285,7 @@
   "upload_failed": "Échec du téléchargement",
   "upload_not_supported_web": "Le téléchargement de médias n'est pas pris en charge par votre navigateur en raison de limitations techniques (CORS). Il est pris en charge dans l'application 5chan pour Android et l'application de bureau Mac/Linux/Windows. Téléchargez depuis la page officielle des versions : https://github.com/bitsocialhq/5chan/releases/latest",
   "file": "Fichier",
-  "media_hosting_none": "None",
-  "media_hosting_none_tip": "Hides the file upload button from post and reply forms",
-  "media_hosting": "Media Hosting"
+  "media_hosting_none": "Aucun",
+  "media_hosting_none_tip": "Masque le bouton de téléchargement de fichiers des formulaires de publication et de réponse",
+  "media_hosting": "Hébergement Multimédia"
 }

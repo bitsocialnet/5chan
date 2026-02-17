@@ -285,7 +285,7 @@
   "upload_failed": "上传失败",
   "upload_not_supported_web": "由于技术限制（CORS），您的浏览器不支持上传媒体。5chan Android 应用和 Mac/Linux/Windows 桌面应用支持此功能。请从官方发布页面下载：https://github.com/bitsocialhq/5chan/releases/latest",
   "file": "文件",
-  "media_hosting_none": "None",
-  "media_hosting_none_tip": "Hides the file upload button from post and reply forms",
-  "media_hosting": "Media Hosting"
+  "media_hosting_none": "无",
+  "media_hosting_none_tip": "隐藏帖子和回复表单中的文件上传按钮",
+  "media_hosting": "媒体托管"
 }

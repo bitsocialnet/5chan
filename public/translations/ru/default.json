@@ -285,7 +285,7 @@
   "upload_failed": "Ошибка загрузки",
   "upload_not_supported_web": "Загрузка медиафайлов не поддерживается вашим браузером из-за технических ограничений (CORS). Поддерживается в приложении 5chan для Android и в десктопном приложении для Mac/Linux/Windows. Скачайте с официальной страницы релизов: https://github.com/bitsocialhq/5chan/releases/latest",
   "file": "Файл",
-  "media_hosting_none": "None",
-  "media_hosting_none_tip": "Hides the file upload button from post and reply forms",
-  "media_hosting": "Media Hosting"
+  "media_hosting_none": "Нет",
+  "media_hosting_none_tip": "Скрывает кнопку загрузки файла из форм постов и ответов",
+  "media_hosting": "Хостинг медиа"
 }
