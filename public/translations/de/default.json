@@ -284,5 +284,8 @@
   "vote_button_unavailable_outro": "Das am meisten abgestimmte /{{boardIdentifier}}/ wird zum offiziellen /{{boardIdentifier}}/.",
   "upload_failed": "Upload fehlgeschlagen",
   "upload_not_supported_web": "Das Hochladen von Medien wird von Ihrem Browser aufgrund technischer Einschränkungen (CORS) nicht unterstützt. Es wird in der 5chan-Android-App und der Mac/Linux/Windows-Desktop-App unterstützt. Download von der offiziellen Release-Seite: https://github.com/bitsocialhq/5chan/releases/latest",
-  "file": "Datei"
+  "file": "Datei",
+  "media_hosting_none": "None",
+  "media_hosting_none_tip": "Hides the file upload button from post and reply forms",
+  "media_hosting": "Media Hosting"
 }

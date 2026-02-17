@@ -284,5 +284,8 @@
   "vote_button_unavailable_outro": "/{{boardIdentifier}}/ me më shumë vota bëhet /{{boardIdentifier}}/ zyrtare.",
   "upload_failed": "Ngarkimi dështoi",
   "upload_not_supported_web": "Ngarkimi i mediave nuk mbështetet nga shfletuesi juaj për shkak të kufizimeve teknike (CORS). Mbështetet në aplikacionin 5chan për Android dhe aplikacionin desktop për Mac/Linux/Windows. Shkarkoni nga faqja zyrtare e publikimeve: https://github.com/bitsocialhq/5chan/releases/latest",
-  "file": "Skedar"
+  "file": "Skedar",
+  "media_hosting_none": "None",
+  "media_hosting_none_tip": "Hides the file upload button from post and reply forms",
+  "media_hosting": "Media Hosting"
 }

@@ -16,6 +16,7 @@ import useIsSubplebbitOffline from '../../hooks/use-is-subplebbit-offline';
 import usePublishPost from '../../hooks/use-publish-post';
 import usePublishReply from '../../hooks/use-publish-reply';
 import { useFileUpload } from '../../hooks/use-file-upload';
+import useMediaHostingStore from '../../stores/use-media-hosting-store';
 import styles from './post-form.module.css';
 import { capitalize, debounce } from 'lodash';
 
@@ -209,6 +210,8 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
       }
     },
   });
+  const selectedProvider = useMediaHostingStore((state) => state.selectedProvider);
+  const showUploadControls = selectedProvider !== 'none';
 
   const hasInitializedDisplayName = useRef(false);
   useEffect(() => {
@@ -289,15 +292,17 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
             <span className={styles.linkType}> {url && <LinkTypePreviewer link={url} />}</span>
           </td>
         </tr>
-        <tr className={styles.uploadButton}>
-          <td>{t('file')}</td>
-          <td>
-            <button onClick={handleUpload} disabled={isUploading}>
-              {t('choose_file')}
-            </button>
-            <span>{isUploading ? t('uploading') : uploadedFileName || t('no_file_chosen')}</span>
-          </td>
-        </tr>
+        {showUploadControls && (
+          <tr className={styles.uploadButton}>
+            <td>{t('file')}</td>
+            <td>
+              <button onClick={handleUpload} disabled={isUploading}>
+                {t('choose_file')}
+              </button>
+              <span>{isUploading ? t('uploading') : uploadedFileName || t('no_file_chosen')}</span>
+            </td>
+          </tr>
+        )}
         {((isInPostView && showSpoilerForReply) || (!isInPostView && showSpoilerForPost)) && (
           <tr className={styles.spoilerButton}>
             <td>{t('options')}</td>

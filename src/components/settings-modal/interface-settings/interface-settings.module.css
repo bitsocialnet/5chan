@@ -22,12 +22,27 @@
   text-decoration: var(--post-content-link-text-decoration-hover);
 }
 
+.setting a {
+  color: var(--post-link-text-color);
+  text-decoration: var(--post-content-link-text-decoration);
+  text-transform: lowercase;
+}
+
+.setting a:hover {
+  color: var(--post-link-text-color-hover);
+  text-decoration: var(--post-content-link-text-decoration-hover);
+}
+
 .interfaceSettings {
   margin-bottom: 10px;
 }
 
 .setting input[type="checkbox"] {
   margin-right: 2px;
+}
+
+.setting input[type="radio"] {
+  margin-right: 5px;
 }
 
 .settingTip {

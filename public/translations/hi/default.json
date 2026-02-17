@@ -284,5 +284,8 @@
   "vote_button_unavailable_outro": "सर्वाधिक मतदान प्राप्त /{{boardIdentifier}}/ आधिकारिक /{{boardIdentifier}}/ बन जाता है।",
   "upload_failed": "अपलोड विफल",
   "upload_not_supported_web": "तकनीकी सीमाओं (CORS) के कारण आपका ब्राउज़र मीडिया अपलोड का समर्थन नहीं करता। यह 5chan एंड्रॉइड ऐप और Mac/Linux/Windows डेस्कटॉप ऐप में समर्थित है। आधिकारिक रिलीज़ पेज से डाउनलोड करें: https://github.com/bitsocialhq/5chan/releases/latest",
-  "file": "फ़ाइल"
+  "file": "फ़ाइल",
+  "media_hosting_none": "None",
+  "media_hosting_none_tip": "Hides the file upload button from post and reply forms",
+  "media_hosting": "Media Hosting"
 }

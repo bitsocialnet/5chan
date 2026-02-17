@@ -284,5 +284,8 @@
   "vote_button_unavailable_outro": "/{{boardIdentifier}}/ được bình chọn nhiều nhất trở thành /{{boardIdentifier}}/ chính thức.",
   "upload_failed": "Tải lên thất bại",
   "upload_not_supported_web": "Trình duyệt của bạn không hỗ trợ tải lên media do giới hạn kỹ thuật (CORS). Tính năng này được hỗ trợ trong ứng dụng 5chan cho Android và ứng dụng desktop cho Mac/Linux/Windows. Tải xuống từ trang phát hành chính thức: https://github.com/bitsocialhq/5chan/releases/latest",
-  "file": "Tệp"
+  "file": "Tệp",
+  "media_hosting_none": "None",
+  "media_hosting_none_tip": "Hides the file upload button from post and reply forms",
+  "media_hosting": "Media Hosting"
 }

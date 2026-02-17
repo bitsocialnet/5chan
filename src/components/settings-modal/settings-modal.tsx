@@ -8,6 +8,7 @@ import BlockedAddressesSetting from './blocked-addresses-setting';
 import CryptoAddressSetting from './crypto-address-setting';
 import CryptoWalletsSetting from './crypto-wallets-setting';
 import InterfaceSettings from './interface-settings';
+import MediaHostingSettings from './media-hosting-settings';
 import P2pOptions from './p2p-options';
 import SubscriptionsSetting from './subscriptions-setting';
 
@@ -36,6 +37,7 @@ const SettingsModal = () => {
   }, [closeModal]);
 
   const [showInterfaceSettings, setShowInterfaceSettings] = useState(false);
+  const [showMediaHostingSettings, setShowMediaHostingSettings] = useState(false);
   const [showAccountSettings, setShowAccountSettings] = useState(false);
   const [showAvatarSettings, setShowAvatarSettings] = useState(false);
   const [showCryptoAddressSetting, setShowCryptoAddressSetting] = useState(false);
@@ -48,6 +50,7 @@ const SettingsModal = () => {
   const getExpandedCount = () => {
     return (
       Number(showInterfaceSettings) +
+      Number(showMediaHostingSettings) +
       Number(showAccountSettings) +
       Number(showAvatarSettings) +
       Number(showCryptoAddressSetting) +
@@ -60,6 +63,7 @@ const SettingsModal = () => {
 
   const getExpandedCategoryId = (excludeCategoryId?: string) => {
     if (showInterfaceSettings && 'interface-settings' !== excludeCategoryId) return 'interface-settings';
+    if (showMediaHostingSettings && 'media-hosting-settings' !== excludeCategoryId) return 'media-hosting-settings';
     if (showAccountSettings && 'account-settings' !== excludeCategoryId) return 'account-settings';
     if (showAvatarSettings && 'avatar-settings' !== excludeCategoryId) return 'avatar-settings';
     if (showCryptoAddressSetting && 'crypto-address-settings' !== excludeCategoryId) return 'crypto-address-settings';
@@ -100,6 +104,7 @@ const SettingsModal = () => {
   useEffect(() => {
     if (hash) {
       setShowInterfaceSettings(hash === 'interface-settings');
+      setShowMediaHostingSettings(hash === 'media-hosting-settings');
       setShowAccountSettings(hash === 'account-settings');
       setShowAvatarSettings(hash === 'avatar-settings');
       setShowCryptoAddressSetting(hash === 'crypto-address-settings');
@@ -114,6 +119,7 @@ const SettingsModal = () => {
     const newExpandState = !expandAll;
     setExpandAll(newExpandState);
     setShowInterfaceSettings(newExpandState);
+    setShowMediaHostingSettings(newExpandState);
     setShowAccountSettings(newExpandState);
     setShowAvatarSettings(newExpandState);
     setShowCryptoAddressSetting(newExpandState);
@@ -144,6 +150,13 @@ const SettingsModal = () => {
           </label>
         </div>
         {showInterfaceSettings && <InterfaceSettings />}
+        <div id='media-hosting-settings' className={`${styles.setting} ${styles.category}`}>
+          <label onClick={() => handleCategoryClick('media-hosting-settings', showMediaHostingSettings, setShowMediaHostingSettings)}>
+            <span className={showMediaHostingSettings ? styles.hideButton : styles.showButton} />
+            {t('media_hosting')}
+          </label>
+        </div>
+        {showMediaHostingSettings && <MediaHostingSettings />}
         <div id='account-settings' className={`${styles.setting} ${styles.category}`}>
           <label onClick={() => handleCategoryClick('account-settings', showAccountSettings, setShowAccountSettings)}>
             <span className={showAccountSettings ? styles.hideButton : styles.showButton} />

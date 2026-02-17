@@ -3,8 +3,14 @@ import { Capacitor } from '@capacitor/core';
 import { useTranslation } from 'react-i18next';
 import FileUploader from '../plugins/file-uploader';
 import { uploadToCatbox } from '../lib/utils/catbox-utils';
+import useMediaHostingStore from '../stores/use-media-hosting-store';
 
 const FILE_SELECTION_CANCELLED_ERROR = 'File selection cancelled';
+
+async function uploadByProvider(provider: string, file: File): Promise<string> {
+  if (provider === 'catbox') return uploadToCatbox(file);
+  throw new Error(`Unsupported media provider: ${provider}`);
+}
 
 export interface UseFileUploadOptions {
   onUploadComplete: (url: string, fileName: string) => void;
@@ -54,10 +60,14 @@ function selectFileViaInput(): Promise<File | null> {
 export function useFileUpload(options: UseFileUploadOptions) {
   const { t } = useTranslation();
   const { onUploadComplete } = options;
+  const selectedProvider = useMediaHostingStore((s) => s.selectedProvider);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
 
   const handleUpload = useCallback(async () => {
+    if (selectedProvider === 'none') return;
+    if (selectedProvider !== 'catbox') return;
+
     try {
       setIsUploading(true);
       setUploadedFileName(null);
@@ -79,7 +89,7 @@ export function useFileUpload(options: UseFileUploadOptions) {
           throw new Error(FILE_SELECTION_CANCELLED_ERROR);
         }
 
-        const url = await uploadToCatbox(file);
+        const url = await uploadByProvider(selectedProvider, file);
         setUploadedFileName(file.name);
         onUploadComplete(url, file.name);
         return;
@@ -94,7 +104,7 @@ export function useFileUpload(options: UseFileUploadOptions) {
     } finally {
       setIsUploading(false);
     }
-  }, [onUploadComplete, t]);
+  }, [onUploadComplete, t, selectedProvider]);
 
   return {
     isUploading,

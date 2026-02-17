@@ -27,6 +27,11 @@ vi.mock('../../lib/utils/catbox-utils', () => ({
   uploadToCatbox: vi.fn(),
 }));
 
+const selectedProviderRef = vi.hoisted(() => ({ value: 'catbox' as string }));
+vi.mock('../../stores/use-media-hosting-store', () => ({
+  default: (selector: (s: { selectedProvider: string }) => unknown) => selector({ selectedProvider: selectedProviderRef.value }),
+}));
+
 type HookSnapshot = ReturnType<typeof useFileUpload>;
 
 let latestHook: HookSnapshot | null = null;
@@ -68,6 +73,7 @@ const selectFileFromHiddenInput = async (file: File | null) => {
 describe('useFileUpload', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    selectedProviderRef.value = 'catbox';
     latestHook = null;
     container = document.createElement('div');
     document.body.append(container);
@@ -174,6 +180,41 @@ describe('useFileUpload', () => {
     });
 
     expect(window.alert).toHaveBeenCalledWith('upload_failed: boom');
+    expect(onUploadComplete).not.toHaveBeenCalled();
+    expect(hook().isUploading).toBe(false);
+  });
+
+  it('returns early when selectedProvider is none (no upload, no alert)', async () => {
+    selectedProviderRef.value = 'none';
+    vi.mocked(Capacitor.getPlatform).mockReturnValue('android');
+    vi.mocked(FileUploader.pickAndUploadMedia).mockResolvedValue({
+      url: 'https://files.catbox.moe/skip.jpg',
+      fileName: 'skip.jpg',
+    });
+    const { onUploadComplete, hook } = mountHook();
+
+    await act(async () => {
+      await hook().handleUpload();
+    });
+
+    expect(FileUploader.pickAndUploadMedia).not.toHaveBeenCalled();
+    expect(window.alert).not.toHaveBeenCalled();
+    expect(onUploadComplete).not.toHaveBeenCalled();
+    expect(hook().isUploading).toBe(false);
+  });
+
+  it('returns early when selectedProvider is unknown (no crash, no upload)', async () => {
+    selectedProviderRef.value = 'unknown-provider';
+    vi.mocked(Capacitor.getPlatform).mockReturnValue('ios');
+    window.electronApi = { isElectron: true } as any;
+    const { onUploadComplete, hook } = mountHook();
+
+    await act(async () => {
+      await hook().handleUpload();
+    });
+
+    expect(uploadToCatbox).not.toHaveBeenCalled();
+    expect(window.alert).not.toHaveBeenCalled();
     expect(onUploadComplete).not.toHaveBeenCalled();
     expect(hook().isUploading).toBe(false);
   });

@@ -284,5 +284,8 @@
   "vote_button_unavailable_outro": "Nejvíce hlasovaná /{{boardIdentifier}}/ se stane oficiální /{{boardIdentifier}}/.",
   "upload_failed": "Nahrávání se nezdařilo",
   "upload_not_supported_web": "Nahrávání médií není vaším prohlížečem podporováno z důvodu technických omezení (CORS). Je podporováno v aplikaci 5chan pro Android a desktopové aplikaci pro Mac/Linux/Windows. Stáhněte si z oficiální stránky vydání: https://github.com/bitsocialhq/5chan/releases/latest",
-  "file": "Soubor"
+  "file": "Soubor",
+  "media_hosting_none": "None",
+  "media_hosting_none_tip": "Hides the file upload button from post and reply forms",
+  "media_hosting": "Media Hosting"
 }

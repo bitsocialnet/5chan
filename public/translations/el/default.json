@@ -284,5 +284,8 @@
   "vote_button_unavailable_outro": "Η /{{boardIdentifier}}/ με τους περισσότερους ψήφους γίνεται η επίσημη /{{boardIdentifier}}/.",
   "upload_failed": "Αποτυχία μεταφόρτωσης",
   "upload_not_supported_web": "Η μεταφόρτωση πολυμέσων δεν υποστηρίζεται από το πρόγραμμα περιήγησής σας λόγω τεχνικών περιορισμών (CORS). Υποστηρίζεται στην εφαρμογή 5chan για Android και την εφαρμογή επιφάνειας εργασίας Mac/Linux/Windows. Λήψη από τη σελίδα επίσημης έκδοσης: https://github.com/bitsocialhq/5chan/releases/latest",
-  "file": "Αρχείο"
+  "file": "Αρχείο",
+  "media_hosting_none": "None",
+  "media_hosting_none_tip": "Hides the file upload button from post and reply forms",
+  "media_hosting": "Media Hosting"
 }

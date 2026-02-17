@@ -284,5 +284,8 @@
   "vote_button_unavailable_outro": "సర్వాధిక ఓట్లను పొందిన /{{boardIdentifier}}/ అధికారిక /{{boardIdentifier}}/ అవుతుంది.",
   "upload_failed": "అప్‌లోడ్ విఫలమైంది",
   "upload_not_supported_web": "సాంకేతిక పరిమితుల (CORS) కారణంగా మీ బ్రౌజర్ మీడియా అప్‌లోడ్‌కు మద్దతు ఇవ్వదు. ఇది 5chan Android అనువర్తనం మరియు Mac/Linux/Windows డెస్క్‌టాప్ అనువర్తనంలో మద్దతివ్వబడుతుంది. అధికారిక రిలీజ్ పేజీ నుండి డౌన్‌లోడ్ చేయండి: https://github.com/bitsocialhq/5chan/releases/latest",
-  "file": "ఫైల్"
+  "file": "ఫైల్",
+  "media_hosting_none": "None",
+  "media_hosting_none_tip": "Hides the file upload button from post and reply forms",
+  "media_hosting": "Media Hosting"
 }

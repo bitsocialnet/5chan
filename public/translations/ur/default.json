@@ -284,5 +284,8 @@
   "vote_button_unavailable_outro": "سب سے زیادہ ووٹ والا /{{boardIdentifier}}/ سرکاری /{{boardIdentifier}}/ بن جاتا ہے۔",
   "upload_failed": "اپ لوڈ ناکام",
   "upload_not_supported_web": "تکنیکی حدود (CORS) کی وجہ سے آپ کے براؤزر میں میڈیا اپ لوڈ کی حمایت نہیں ہے۔ یہ 5chan Android ایپ اور Mac/Linux/Windows ڈیسک ٹاپ ایپ میں دستیاب ہے۔ سرکاری ریلیز صفحہ سے ڈاؤن لوڈ کریں: https://github.com/bitsocialhq/5chan/releases/latest",
-  "file": "فائل"
+  "file": "فائل",
+  "media_hosting_none": "None",
+  "media_hosting_none_tip": "Hides the file upload button from post and reply forms",
+  "media_hosting": "Media Hosting"
 }

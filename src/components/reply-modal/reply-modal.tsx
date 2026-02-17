@@ -9,6 +9,7 @@ import { isValidURL } from '../../lib/utils/url-utils';
 import { isAllView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import useSelectedTextStore from '../../stores/use-selected-text-store';
 import useReplyModalStore from '../../stores/use-reply-modal-store';
+import useMediaHostingStore from '../../stores/use-media-hosting-store';
 import { useDirectoryByAddress } from '../../hooks/use-directories';
 import usePublishReply from '../../hooks/use-publish-reply';
 import useIsMobile from '../../hooks/use-is-mobile';
@@ -271,6 +272,8 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
       }
     },
   });
+  const selectedProvider = useMediaHostingStore((state) => state.selectedProvider);
+  const showUploadControls = selectedProvider !== 'none';
 
   const hasInitializedDisplayName = useRef(false);
   useEffect(() => {
@@ -336,16 +339,18 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
           />
         </div>
         <div className={styles.footer}>
-          <span className={styles.uploadContainer}>
-            <span className={styles.uploadButton}>
-              <button onClick={handleUpload} disabled={isUploading}>
-                {t('choose_file')}
-              </button>
+          {showUploadControls && (
+            <span className={styles.uploadContainer}>
+              <span className={styles.uploadButton}>
+                <button onClick={handleUpload} disabled={isUploading}>
+                  {t('choose_file')}
+                </button>
+              </span>
+              <span className={styles.uploadFileName} title={uploadedFileName || t('no_file_chosen')}>
+                {isUploading ? t('uploading') : uploadedFileName || t('no_file_chosen')}
+              </span>
             </span>
-            <span className={styles.uploadFileName} title={uploadedFileName || t('no_file_chosen')}>
-              {isUploading ? t('uploading') : uploadedFileName || t('no_file_chosen')}
-            </span>
-          </span>
+          )}
           {showSpoilerForReply && (
             <span className={styles.spoilerButton}>
               [

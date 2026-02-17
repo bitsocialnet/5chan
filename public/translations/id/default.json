@@ -284,5 +284,8 @@
   "vote_button_unavailable_outro": "/{{boardIdentifier}}/ dengan suara terbanyak menjadi /{{boardIdentifier}}/ resmi.",
   "upload_failed": "Unggahan gagal",
   "upload_not_supported_web": "Mengunggah media tidak didukung oleh browser Anda karena batasan teknis (CORS). Ini didukung di aplikasi 5chan Android dan aplikasi desktop Mac/Linux/Windows. Unduh dari halaman rilis resmi: https://github.com/bitsocialhq/5chan/releases/latest",
-  "file": "Berkas"
+  "file": "Berkas",
+  "media_hosting_none": "None",
+  "media_hosting_none_tip": "Hides the file upload button from post and reply forms",
+  "media_hosting": "Media Hosting"
 }

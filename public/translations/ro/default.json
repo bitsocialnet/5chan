@@ -284,5 +284,8 @@
   "vote_button_unavailable_outro": "Tabloul /{{boardIdentifier}}/ cu cele mai multe voturi devine /{{boardIdentifier}}/ oficial.",
   "upload_failed": "Încărcarea a eșuat",
   "upload_not_supported_web": "Încărcarea mediilor nu este suportată de browserul tău din cauza limitărilor tehnice (CORS). Este suportată în aplicația 5chan pentru Android și aplicația de desktop pentru Mac/Linux/Windows. Descarcă de pe pagina oficială de release: https://github.com/bitsocialhq/5chan/releases/latest",
-  "file": "Fișier"
+  "file": "Fișier",
+  "media_hosting_none": "None",
+  "media_hosting_none_tip": "Hides the file upload button from post and reply forms",
+  "media_hosting": "Media Hosting"
 }

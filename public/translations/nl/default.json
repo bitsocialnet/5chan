@@ -284,5 +284,8 @@
   "vote_button_unavailable_outro": "Het /{{boardIdentifier}}/ met de meeste stemmen wordt het officiële /{{boardIdentifier}}/.",
   "upload_failed": "Upload mislukt",
   "upload_not_supported_web": "Het uploaden van media wordt niet ondersteund door je browser vanwege technische beperkingen (CORS). Het wordt wel ondersteund in de 5chan Android-app en de Mac/Linux/Windows desktop-app. Download van de officiële releasespagina: https://github.com/bitsocialhq/5chan/releases/latest",
-  "file": "Bestand"
+  "file": "Bestand",
+  "media_hosting_none": "None",
+  "media_hosting_none_tip": "Hides the file upload button from post and reply forms",
+  "media_hosting": "Media Hosting"
 }

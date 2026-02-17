@@ -284,5 +284,8 @@
   "vote_button_unavailable_outro": "En çok oy alan /{{boardIdentifier}}/ resmi /{{boardIdentifier}}/ olur.",
   "upload_failed": "Yükleme başarısız",
   "upload_not_supported_web": "Teknik kısıtlamalar (CORS) nedeniyle tarayıcınız medya yüklemeyi desteklemiyor. 5chan Android uygulamasında ve Mac/Linux/Windows masaüstü uygulamasında destekleniyor. Resmi sürüm sayfasından indirin: https://github.com/bitsocialhq/5chan/releases/latest",
-  "file": "Dosya"
+  "file": "Dosya",
+  "media_hosting_none": "None",
+  "media_hosting_none_tip": "Hides the file upload button from post and reply forms",
+  "media_hosting": "Media Hosting"
 }

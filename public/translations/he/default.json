@@ -284,5 +284,8 @@
   "vote_button_unavailable_outro": "/{{boardIdentifier}}/ בעל ההצבעות הרבות ביותר הופך ל- /{{boardIdentifier}}/ הרשמי.",
   "upload_failed": "ההעלאה נכשלה",
   "upload_not_supported_web": "העלאת מדיה אינה נתמכת בדפדפן שלך בשל מגבלות טכניות (CORS). היא נתמכת באפליקציית 5chan ל-Android ובאפליקציית הדסקטופ ל-Mac/Linux/Windows. הורד מדף השחרור הרשמי: https://github.com/bitsocialhq/5chan/releases/latest",
-  "file": "קובץ"
+  "file": "קובץ",
+  "media_hosting_none": "None",
+  "media_hosting_none_tip": "Hides the file upload button from post and reply forms",
+  "media_hosting": "Media Hosting"
 }
