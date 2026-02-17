@@ -13,7 +13,6 @@ import usePublishReply from '../../hooks/use-publish-reply';
 import useIsMobile from '../../hooks/use-is-mobile';
 import { useFileUpload } from '../../hooks/use-file-upload';
 import styles from './reply-modal.module.css';
-import { LinkTypePreviewer } from '../post-form';
 import { capitalize, debounce } from 'lodash';
 import { useSpring, animated } from '@react-spring/web';
 import { useDrag } from '@use-gesture/react';
@@ -38,7 +37,6 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
   });
   const account = useAccount();
   const { displayName } = account?.author || {};
-  const [url, setUrl] = useState('');
   const textRef = useRef<HTMLTextAreaElement | null>(null);
   const urlRef = useRef<HTMLInputElement>(null);
   const lastSelectionStartRef = useRef(0);
@@ -263,7 +261,6 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
   const { isUploading, uploadedFileName, handleUpload } = useFileUpload({
     onUploadComplete: (uploadedUrl: string) => {
       if (uploadedUrl) {
-        setUrl(uploadedUrl);
         if (urlRef.current) {
           urlRef.current.value = uploadedUrl;
         }
@@ -314,16 +311,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
           />
         </div>
         <div className={styles.link}>
-          <input
-            type='text'
-            ref={urlRef}
-            placeholder={capitalize(t('link'))}
-            disabled={isUploading}
-            onChange={(e) => {
-              setUrl(e.target.value);
-              setPublishReplyOptions({ link: e.target.value });
-            }}
-          />
+          <input type='text' ref={urlRef} placeholder={capitalize(t('link'))} disabled={isUploading} onChange={(e) => setPublishReplyOptions({ link: e.target.value })} />
         </div>
         <div className={styles.content}>
           <textarea
@@ -345,11 +333,6 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
           />
         </div>
         <div className={styles.footer}>
-          {url && (
-            <>
-              {t('link_type')}: <LinkTypePreviewer link={url} />
-            </>
-          )}
           <span className={styles.uploadContainer}>
             <span className={styles.uploadButton}>
               <button onClick={handleUpload} disabled={isUploading}>
