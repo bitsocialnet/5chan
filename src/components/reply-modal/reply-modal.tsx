@@ -9,6 +9,7 @@ import { isValidURL } from '../../lib/utils/url-utils';
 import { isAllView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import useSelectedTextStore from '../../stores/use-selected-text-store';
 import useReplyModalStore from '../../stores/use-reply-modal-store';
+import { useDirectoryByAddress } from '../../hooks/use-directories';
 import usePublishReply from '../../hooks/use-publish-reply';
 import useIsMobile from '../../hooks/use-is-mobile';
 import { useFileUpload } from '../../hooks/use-file-upload';
@@ -30,6 +31,8 @@ interface ReplyModalProps {
 
 const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threadNumber, postCid, scrollY, subplebbitAddress }: ReplyModalProps) => {
   const { t } = useTranslation();
+  const directoryEntry = useDirectoryByAddress(subplebbitAddress);
+  const showSpoilerForReply = directoryEntry?.features?.noSpoilerReplies !== true;
   const { setPublishReplyOptions, publishReply, resetPublishReplyOptions, replyIndex } = usePublishReply({
     cid: parentCid,
     subplebbitAddress,
@@ -343,14 +346,16 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
               {isUploading ? t('uploading') : uploadedFileName || t('no_file_chosen')}
             </span>
           </span>
-          <span className={styles.spoilerButton}>
-            [
-            <label>
-              <input type='checkbox' onChange={(e) => setPublishReplyOptions({ spoiler: e.target.checked })} />
-              {capitalize(t('spoiler'))}?
-            </label>
-            ]
-          </span>
+          {showSpoilerForReply && (
+            <span className={styles.spoilerButton}>
+              [
+              <label>
+                <input type='checkbox' onChange={(e) => setPublishReplyOptions({ spoiler: e.target.checked })} />
+                {capitalize(t('spoiler'))}?
+              </label>
+              ]
+            </span>
+          )}
           <button className={styles.publishButton} onClick={onPublishReply}>
             {t('post')}
           </button>

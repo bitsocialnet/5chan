@@ -9,7 +9,7 @@ import { getHasThumbnail, getLinkMediaInfo } from '../../lib/utils/media-utils';
 import { formatMarkdown } from '../../lib/utils/post-utils';
 import { isValidURL } from '../../lib/utils/url-utils';
 import { isAllView, isCatalogView, isModQueueView, isModView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
-import { useDirectories } from '../../hooks/use-directories';
+import { useDirectories, useDirectoryByAddress } from '../../hooks/use-directories';
 import { useResolvedSubplebbitAddress } from '../../hooks/use-resolved-subplebbit-address';
 import useFetchGifFirstFrame from '../../hooks/use-fetch-gif-first-frame';
 import useIsSubplebbitOffline from '../../hooks/use-is-subplebbit-offline';
@@ -58,6 +58,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
   const resolvedAddress = useResolvedSubplebbitAddress();
   const subplebbitAddress = resolvedAddress || accountComment?.subplebbitAddress;
   const { setPublishPostOptions, postIndex, publishPost, publishPostOptions, resetPublishPostOptions } = usePublishPost({ subplebbitAddress });
+  const effectiveBoardAddress = subplebbitAddress || publishPostOptions.subplebbitAddress;
 
   const textRef = useRef<HTMLTextAreaElement>(null);
   const urlRef = useRef<HTMLInputElement>(null);
@@ -69,6 +70,9 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, useParams());
   const subscriptions = account?.subscriptions || [];
   const directories = useDirectories();
+  const directoryEntry = useDirectoryByAddress(effectiveBoardAddress);
+  const showSpoilerForPost = directoryEntry?.features?.noSpoilers !== true;
+  const showSpoilerForReply = directoryEntry?.features?.noSpoilerReplies !== true;
 
   const { accountSubplebbits } = useAccountSubplebbits();
   const accountSubplebbitAddresses = Object.keys(accountSubplebbits);
@@ -294,20 +298,22 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
             <span>{isUploading ? t('uploading') : uploadedFileName || t('no_file_chosen')}</span>
           </td>
         </tr>
-        <tr className={styles.spoilerButton}>
-          <td>{t('options')}</td>
-          <td>
-            [
-            <label>
-              <input
-                type='checkbox'
-                onChange={(e) => (isInPostView ? setPublishReplyOptions({ spoiler: e.target.checked }) : setPublishPostOptions({ spoiler: e.target.checked }))}
-              />
-              {capitalize(t('spoiler'))}?
-            </label>
-            ]
-          </td>
-        </tr>
+        {((isInPostView && showSpoilerForReply) || (!isInPostView && showSpoilerForPost)) && (
+          <tr className={styles.spoilerButton}>
+            <td>{t('options')}</td>
+            <td>
+              [
+              <label>
+                <input
+                  type='checkbox'
+                  onChange={(e) => (isInPostView ? setPublishReplyOptions({ spoiler: e.target.checked }) : setPublishPostOptions({ spoiler: e.target.checked }))}
+                />
+                {capitalize(t('spoiler'))}?
+              </label>
+              ]
+            </td>
+          </tr>
+        )}
         {(isInAllView || isInSubscriptionsView || isInModView) && (
           <tr>
             <td>{t('board')}</td>
