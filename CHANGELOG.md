@@ -1,3 +1,36 @@
+## [0.6.6](https://github.com/plebbit/plebchan/compare/v0.6.5...v0.6.6) (2026-02-16)
+
+
+### Bug Fixes
+
+* **challenge-utils:** format challenge errors with board identifier ([bb4be3f](https://github.com/plebbit/plebchan/commit/bb4be3ff6b8d5cb6e91ef16ce83a0e238ac573a6))
+* **electron:** add macOS app icon via icon.icns ([6befc6b](https://github.com/plebbit/plebchan/commit/6befc6bacdecdd08db633e35edc74bbd26fae5ab))
+* **home:** derive board link state from directory availability ([e47727c](https://github.com/plebbit/plebchan/commit/e47727c074bf5a60024b5c04f64e8bd33218fced))
+* **modqueue:** enforce role-gated access with not-allowed view ([9c558d2](https://github.com/plebbit/plebchan/commit/9c558d21c1e930775871deaac66fe8524ea814a3))
+* **popular-posts:** base quota on loaded boards instead of total directories ([2f563b4](https://github.com/plebbit/plebchan/commit/2f563b441adc39676a4c784cb7cafc19af6808d4))
+* **post-status:** base pending and failed labels on cid and state ([98f7a52](https://github.com/plebbit/plebchan/commit/98f7a52e9b077096edc84a86e646f785f25c55c3))
+* **post:** refresh author ID tooltip count when replies change ([44847b7](https://github.com/plebbit/plebchan/commit/44847b7e9558ca2a093858226bb48cd5702eb07d))
+* **replies:** make thread replies update instantly for pending and confirmed states ([14c6bf8](https://github.com/plebbit/plebchan/commit/14c6bf8f3acc5f9fdc623602028db8e8fe671477))
+* **replies:** prevent inline quote links from forcing line breaks ([378242c](https://github.com/plebbit/plebchan/commit/378242cdde4e417c3bd0d3a936c79fc2a347cf2a))
+* **topbar:** sync subscription visibility with account subscriptions ([61eb1e8](https://github.com/plebbit/plebchan/commit/61eb1e80f5514382c2a2ebf403710ab116b9d679))
+
+
+### Features
+
+* **board-header:** add hover tooltip for address subtitle ([901f40f](https://github.com/plebbit/plebchan/commit/901f40f6b8e08c9c95f2d2effc87526037d0294b))
+* **build:** sync vendored directories from GitHub on start and build ([8645f73](https://github.com/plebbit/plebchan/commit/8645f7365afc59ca7bccdbb6b6665bb61749b3ad))
+* **directories:** add schema adapters and preserve v2 metadata ([ec62023](https://github.com/plebbit/plebchan/commit/ec620238e352bd632749cb751c85a9a9f7fc6e2b))
+* **post-page:** enable Update button to refresh replies, add Auto alert translation ([ad41a78](https://github.com/plebbit/plebchan/commit/ad41a78974a0500352319261bff9a4e57eb3629e))
+
+
+### Performance Improvements
+
+* **post-rendering:** reduce quoted backlink rerenders via scoped store subscription ([7821f9c](https://github.com/plebbit/plebchan/commit/7821f9cd821e47b2c64de9d894f553600bd64493))
+* remove reply backlink subscription churn ([3d2dbbf](https://github.com/plebbit/plebchan/commit/3d2dbbf75ca4962c8d069ea7c9c4c9cc1f7862bc))
+* **replies:** progressive render, 500 replies/page, content-visibility ([dedf18e](https://github.com/plebbit/plebchan/commit/dedf18e1993f4732d085d025849a5b5ee88e2cfb))
+
+
+
 ## [0.6.5](https://github.com/plebbit/plebchan/compare/v0.6.4...v0.6.5) (2026-02-11)
 
 
