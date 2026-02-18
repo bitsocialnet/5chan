@@ -168,3 +168,4 @@ yarn-error.log*
 .cursor
 .claude
 .codex
+.playwright-cli
