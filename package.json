@@ -33,7 +33,7 @@
     "memoizee": "0.4.15",
     "react": "19.1.2",
     "react-dom": "19.1.2",
-    "react-i18next": "13.2.2",
+    "react-i18next": "15.7.4",
     "react-markdown": "8.0.6",
     "react-router-dom": "6.30.2",
     "react-router-hash-link": "2.4.3",
