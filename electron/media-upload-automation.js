@@ -126,9 +126,10 @@ export async function automateUploadMedia(options) {
     const clickNode = async (nodeId) => {
       const { model } = await sendCommand('DOM.getBoxModel', { nodeId });
       if (!model?.content) return;
-      const [x1, y1, x2, y2] = model.content;
-      const x = (x1 + x2) / 2;
-      const y = (y1 + y2) / 2;
+      const content = model.content;
+      if (content.length < 8) return;
+      const x = (content[0] + content[2] + content[4] + content[6]) / 4;
+      const y = (content[1] + content[3] + content[5] + content[7]) / 4;
       await sendCommand('Input.dispatchMouseEvent', {
         type: 'mousePressed',
         x,
