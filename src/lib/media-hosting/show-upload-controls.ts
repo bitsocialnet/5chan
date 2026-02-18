@@ -1,9 +1,13 @@
 import { Capacitor } from '@capacitor/core';
 import type { UploadMode } from './types';
 
+function isElectronRuntime(): boolean {
+  return window.electronApi?.isElectron === true || window.isElectron === true;
+}
+
 /** Web runtime = web browser, not Electron */
 export function isWebRuntime(): boolean {
-  return Capacitor.getPlatform() === 'web' && !window.electronApi?.isElectron;
+  return Capacitor.getPlatform() === 'web' && !isElectronRuntime();
 }
 
 /**

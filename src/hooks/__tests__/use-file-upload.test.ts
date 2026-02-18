@@ -96,6 +96,7 @@ describe('useFileUpload', () => {
 
     vi.mocked(Capacitor.getPlatform).mockReturnValue('web');
     window.electronApi = undefined;
+    window.isElectron = false;
     vi.spyOn(window, 'alert').mockImplementation(() => undefined);
   });
 
@@ -152,6 +153,31 @@ describe('useFileUpload', () => {
     expect(onUploadComplete).toHaveBeenCalledWith('https://files.catbox.moe/electron.png', 'electron.png');
     expect(hook().uploadedFileName).toBe('electron.png');
     expect(hook().isUploading).toBe(false);
+  });
+
+  it('treats runtime as Electron when window.isElectron is true even if electronApi is unavailable', async () => {
+    uploadModeRef.value = 'preferred';
+    preferredProviderRef.value = 'catbox';
+    vi.mocked(Capacitor.getPlatform).mockReturnValue('web');
+    window.electronApi = undefined;
+    window.isElectron = true;
+    vi.mocked(orchestrateElectronUpload).mockResolvedValue('https://files.catbox.moe/electron-fallback.png');
+
+    const selectedFile = new File(['abc'], 'electron-fallback.png', { type: 'image/png' });
+    const { onUploadComplete, hook } = mountHook();
+
+    let uploadPromise: Promise<void> | undefined;
+    await act(async () => {
+      uploadPromise = hook().handleUpload();
+    });
+    await selectFileFromHiddenInput(selectedFile);
+    await act(async () => {
+      await uploadPromise;
+    });
+
+    expect(orchestrateElectronUpload).toHaveBeenCalledWith(selectedFile, ['catbox']);
+    expect(window.alert).not.toHaveBeenCalledWith('upload_not_supported_web');
+    expect(onUploadComplete).toHaveBeenCalledWith('https://files.catbox.moe/electron-fallback.png', 'electron-fallback.png');
   });
 
   it('shows web fallback alert and does not upload', async () => {

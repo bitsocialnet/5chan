@@ -9,9 +9,13 @@ import useMediaHostingStore from '../stores/use-media-hosting-store';
 
 const FILE_SELECTION_CANCELLED_ERROR = 'File selection cancelled';
 
+function isElectronRuntime(): boolean {
+  return window.electronApi?.isElectron === true || window.isElectron === true;
+}
+
 function getRuntime(): 'web' | 'electron' | 'android' {
   if (Capacitor.getPlatform() === 'android') return 'android';
-  if (window.electronApi?.isElectron) return 'electron';
+  if (isElectronRuntime()) return 'electron';
   return 'web';
 }
 
@@ -25,36 +29,50 @@ function selectFileViaInput(): Promise<File | null> {
     input.type = 'file';
     input.accept = 'image/jpeg,image/png,video/mp4,video/webm';
     input.style.display = 'none';
+    let resolved = false;
+    let focusTimeoutId: number | null = null;
 
     const cleanup = () => {
-      input.remove();
-      window.removeEventListener('focus', onFocus);
-    };
-
-    const onFocus = () => {
-      window.removeEventListener('focus', onFocus);
-      setTimeout(() => {
-        if (input.files && input.files.length > 0) {
-          return;
-        }
-        cleanup();
-        resolve(null);
-      }, 100);
-    };
-
-    input.addEventListener('change', () => {
-      window.removeEventListener('focus', onFocus);
-      if (input.files && input.files.length > 0) {
-        const file = input.files[0];
-        cleanup();
-        resolve(file);
-      } else {
-        cleanup();
-        resolve(null);
+      if (focusTimeoutId !== null) {
+        window.clearTimeout(focusTimeoutId);
+        focusTimeoutId = null;
       }
-    });
+      input.remove();
+      window.removeEventListener('focus', onFocusFallback);
+      input.removeEventListener('change', onChange);
+      input.removeEventListener('cancel', onCancel);
+    };
 
-    window.addEventListener('focus', onFocus);
+    const finalize = (file: File | null) => {
+      if (resolved) return;
+      resolved = true;
+      cleanup();
+      resolve(file);
+    };
+
+    const onChange = () => {
+      const file = input.files && input.files.length > 0 ? input.files[0] : null;
+      finalize(file);
+    };
+
+    const onCancel = () => finalize(null);
+
+    // Fallback: some environments don't reliably emit `cancel`.
+    const onFocusFallback = () => {
+      if (resolved) return;
+      if (focusTimeoutId !== null) {
+        window.clearTimeout(focusTimeoutId);
+      }
+      focusTimeoutId = window.setTimeout(() => {
+        if (resolved) return;
+        const file = input.files && input.files.length > 0 ? input.files[0] : null;
+        finalize(file);
+      }, 800);
+    };
+
+    input.addEventListener('change', onChange);
+    input.addEventListener('cancel', onCancel);
+    window.addEventListener('focus', onFocusFallback);
     document.body.appendChild(input);
     input.click();
   });
@@ -87,7 +105,7 @@ export function useFileUpload(options: UseFileUploadOptions) {
         return;
       }
 
-      if (window.electronApi?.isElectron) {
+      if (isElectronRuntime()) {
         const file = await selectFileViaInput();
         if (!file) {
           throw new Error(FILE_SELECTION_CANCELLED_ERROR);
