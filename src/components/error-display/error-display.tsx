@@ -13,7 +13,10 @@ const ErrorDisplay = ({ error }: { error: any }) => {
   useEffect(() => {
     if (!hasError) return;
     const timer = setTimeout(() => setShowAfterDelay(true), 1000);
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      setShowAfterDelay(false);
+    };
   }, [hasError]);
 
   if (!hasError || !showAfterDelay) {
