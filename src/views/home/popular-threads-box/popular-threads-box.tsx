@@ -70,7 +70,7 @@ const PopularThreadsBox = ({ directories, subplebbits }: { directories: Director
   const { t } = useTranslation();
   const { showWorksafeContentOnly, showNsfwContentOnly } = usePopularThreadsOptionsStore();
 
-  const getFilteredSubplebbits = () => {
+  const filteredSubplebbits = useMemo(() => {
     if (showWorksafeContentOnly) {
       return subplebbits.filter((sub: Subplebbit) => {
         const directoriesEntry = directories.find((ms) => ms?.address === sub?.address);
@@ -84,9 +84,7 @@ const PopularThreadsBox = ({ directories, subplebbits }: { directories: Director
       });
     }
     return subplebbits;
-  };
-
-  const filteredSubplebbits = useMemo(getFilteredSubplebbits, [subplebbits, showWorksafeContentOnly, showNsfwContentOnly, directories]);
+  }, [subplebbits, showWorksafeContentOnly, showNsfwContentOnly, directories]);
   const { popularPosts } = usePopularPosts(filteredSubplebbits);
   const isLoading = popularPosts.length === 0;
 

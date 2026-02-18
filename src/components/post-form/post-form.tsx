@@ -18,7 +18,8 @@ import usePublishReply from '../../hooks/use-publish-reply';
 import { useFileUpload } from '../../hooks/use-file-upload';
 import useMediaHostingStore from '../../stores/use-media-hosting-store';
 import styles from './post-form.module.css';
-import { capitalize, debounce } from 'lodash';
+import capitalize from 'lodash/capitalize';
+import debounce from 'lodash/debounce';
 
 // Separate component for offline alert to isolate rerenders from updatingState
 // Only this component will rerender when updatingState changes, not the whole PostForm

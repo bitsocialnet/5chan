@@ -22,7 +22,7 @@ import useWindowWidth from '../../hooks/use-window-width';
 import { ContentPreview } from '../../views/home/popular-threads-box';
 import PostMenuDesktop from '../post-desktop/post-menu-desktop';
 import styles from './catalog-row.module.css';
-import { capitalize } from 'lodash';
+import capitalize from 'lodash/capitalize';
 import { selectPostMenuProps } from '../../lib/utils/post-menu-props';
 
 interface CatalogPostMediaProps {

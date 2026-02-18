@@ -21,6 +21,7 @@ import useCountLinksInReplies from '../../hooks/use-count-links-in-replies';
 import useHide from '../../hooks/use-hide';
 import useStateString from '../../hooks/use-state-string';
 import useScrollToReply from '../../hooks/use-scroll-to-reply';
+import { useCurrentTime } from '../../hooks/use-current-time';
 import { useSubplebbitField } from '../../hooks/use-stable-subplebbit';
 import CommentContent from '../comment-content';
 import CommentMedia from '../comment-media';
@@ -29,7 +30,8 @@ import PostMenuMobile from './post-menu-mobile';
 import ReplyQuotePreview from '../reply-quote-preview';
 import Tooltip from '../tooltip';
 import { PostProps } from '../../views/post/post';
-import { capitalize, lowerCase } from 'lodash';
+import capitalize from 'lodash/capitalize';
+import lowerCase from 'lodash/lowerCase';
 import useReplyModalStore from '../../stores/use-reply-modal-store';
 import { selectPostMenuProps } from '../../lib/utils/post-menu-props';
 import useChallengesStore from '../../stores/use-challenges-store';
@@ -41,6 +43,13 @@ import useProgressiveRender from '../../hooks/use-progressive-render';
 import { REPLIES_PER_PAGE } from '../../lib/constants';
 
 const { addChallenge } = useChallengesStore.getState();
+
+const RepliesFooter = ({ hasMore, loadingString }: { hasMore: boolean; loadingString: string }) =>
+  hasMore ? (
+    <div className={styles.stateString}>
+      <LoadingEllipsis string={loadingString} />
+    </div>
+  ) : null;
 
 // Store scroll position for replies virtuoso across navigations
 const lastVirtuosoStates: { [key: string]: StateSnapshot } = {};
@@ -66,6 +75,7 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, params);
   const isInModQueueView = isModQueueView(location.pathname);
   const { getAlertThresholdSeconds } = useModQueueStore();
+  const currentTime = useCurrentTime();
   const account = useAccount();
   const accountAddress = account?.author?.address;
 
@@ -166,7 +176,7 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
   const alreadyApproved = approved === true;
   const alreadyRejected = removed === true;
   const isAwaitingApproval = isInModQueueView && !alreadyApproved && !alreadyRejected;
-  const timeWaiting = timestamp ? Date.now() / 1000 - timestamp : 0;
+  const timeWaiting = timestamp ? currentTime - timestamp : 0;
   const alertThresholdSeconds = getAlertThresholdSeconds();
   const isOverThreshold = isAwaitingApproval && timeWaiting > alertThresholdSeconds;
 
@@ -562,7 +572,7 @@ const PostMobile = ({
         }
       });
     };
-    window.addEventListener('scroll', setLastVirtuosoState);
+    window.addEventListener('scroll', setLastVirtuosoState, { passive: true });
     return () => window.removeEventListener('scroll', setLastVirtuosoState);
   }, [virtuosoStateKey, showAllReplies, isInPostPageView]);
 
@@ -578,13 +588,7 @@ const PostMobile = ({
     enabled: shouldScrollToReply,
   });
 
-  // Footer component for Virtuoso showing loading state
-  const RepliesFooter = () =>
-    hasMore ? (
-      <div className={styles.stateString}>
-        <LoadingEllipsis string={t('loading')} />
-      </div>
-    ) : null;
+  const virtuosoFooter = useCallback(() => <RepliesFooter hasMore={hasMore} loadingString={t('loading')} />, [hasMore, t]);
 
   return (
     <>
@@ -667,7 +671,7 @@ const PostMobile = ({
                   </div>
                 )}
                 useWindowScroll={true}
-                components={{ Footer: RepliesFooter }}
+                components={{ Footer: virtuosoFooter }}
                 endReached={loadMore}
                 ref={virtuosoRef}
                 restoreStateFrom={lastVirtuosoState}

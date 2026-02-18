@@ -5,7 +5,7 @@ import styles from './avatar-settings.module.css';
 import { Trans, useTranslation } from 'react-i18next';
 import LoadingEllipsis from '../../loading-ellipsis';
 import ErrorDisplay from '../../error-display/error-display';
-import { capitalize } from 'lodash';
+import capitalize from 'lodash/capitalize';
 
 const AvatarPreview = ({ avatar }: any) => {
   const { t } = useTranslation();

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Navigate, Outlet, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { useAccount, useAccountComment, useSubplebbit } from '@plebbit/plebbit-react-hooks';
 import useAccountsStore from '@plebbit/plebbit-react-hooks/dist/stores/accounts';
@@ -108,23 +108,16 @@ const BoardLayout = () => {
 };
 
 const GlobalLayout = () => {
-  const [theme, setTheme] = useState('');
   const [currentTheme] = useTheme();
 
   useEffect(() => {
-    if (currentTheme !== theme) {
-      setTheme(currentTheme);
-    }
-  }, [currentTheme, theme]);
-
-  useEffect(() => {
-    if (theme) {
-      document.body.classList.add(theme);
+    if (currentTheme) {
+      document.body.classList.add(currentTheme);
       return () => {
-        document.body.classList.remove(theme);
+        document.body.classList.remove(currentTheme);
       };
     }
-  }, [theme]);
+  }, [currentTheme]);
 
   const { activeCid, parentNumber, threadNumber, threadCid, subplebbitAddress, closeModal, showReplyModal, scrollY } = useReplyModalStore();
 

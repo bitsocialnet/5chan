@@ -4,7 +4,7 @@ import useAvatarVisibilityStore from '../../../stores/use-avatar-visibility-stor
 import useTheme from '../../../hooks/use-theme';
 import packageJson from '../../../../package.json';
 import styles from './interface-settings.module.css';
-import { capitalize } from 'lodash';
+import capitalize from 'lodash/capitalize';
 import useInterfaceSettingsStore from '../../../stores/use-interface-settings-store';
 import useCatalogFiltersStore from '../../../stores/use-catalog-filters-store';
 import useExpandedMediaStore from '../../../stores/use-expanded-media-store';

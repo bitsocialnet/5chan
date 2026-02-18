@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Account, setAccount, useAccount } from '@plebbit/plebbit-react-hooks';
 import styles from './crypto-wallets-setting.module.css';
 import { Trans, useTranslation } from 'react-i18next';
-import { capitalize } from 'lodash';
+import capitalize from 'lodash/capitalize';
 
 interface Wallet {
   chainTicker: string;

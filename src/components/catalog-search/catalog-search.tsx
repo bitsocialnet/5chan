@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import styles from './catalog-search.module.css';
 import useIsMobile from '../../hooks/use-is-mobile';
 import useCatalogFiltersStore from '../../stores/use-catalog-filters-store';
-import { debounce } from 'lodash';
+import debounce from 'lodash/debounce';
 
 const CatalogSearch = () => {
   const { t } = useTranslation();

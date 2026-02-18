@@ -13,9 +13,11 @@ import useMediaHostingStore from '../../stores/use-media-hosting-store';
 import { useDirectoryByAddress } from '../../hooks/use-directories';
 import usePublishReply from '../../hooks/use-publish-reply';
 import useIsMobile from '../../hooks/use-is-mobile';
+import { useCurrentTime } from '../../hooks/use-current-time';
 import { useFileUpload } from '../../hooks/use-file-upload';
 import styles from './reply-modal.module.css';
-import { capitalize, debounce } from 'lodash';
+import capitalize from 'lodash/capitalize';
+import debounce from 'lodash/debounce';
 import { useSpring, animated } from '@react-spring/web';
 import { useDrag } from '@use-gesture/react';
 
@@ -146,9 +148,10 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
   const location = useLocation();
   const isInAllView = isAllView(location.pathname);
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, useParams());
+  const currentTime = useCurrentTime();
   // Only subscribe to updatedAt to avoid rerenders from updatingState changes
   const updatedAt = useSubplebbitField(subplebbitAddress, (subplebbit) => subplebbit?.updatedAt);
-  const isBoardOffline = updatedAt && updatedAt < Date.now() / 1000 - 60 * 60;
+  const isBoardOffline = updatedAt && updatedAt < currentTime - 60 * 60;
   const offlineAlert = updatedAt
     ? isBoardOffline && (
         <div className={styles.offlineBoard}>

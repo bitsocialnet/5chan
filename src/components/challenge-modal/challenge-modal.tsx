@@ -6,7 +6,7 @@ import useIsMobile from '../../hooks/use-is-mobile';
 import useChallengesStore from '../../stores/use-challenges-store';
 import useTheme from '../../hooks/use-theme';
 import styles from './challenge-modal.module.css';
-import { capitalize } from 'lodash';
+import capitalize from 'lodash/capitalize';
 import { useSpring, animated } from '@react-spring/web';
 import { useDrag } from '@use-gesture/react';
 

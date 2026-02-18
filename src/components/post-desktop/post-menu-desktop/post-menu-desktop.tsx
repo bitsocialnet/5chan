@@ -12,7 +12,7 @@ import { getBoardPath } from '../../../lib/utils/route-utils';
 import { useDirectories } from '../../../hooks/use-directories';
 import { isAllView, isCatalogView, isPostPageView, isSubscriptionsView } from '../../../lib/utils/view-utils';
 import useHide from '../../../hooks/use-hide';
-import { capitalize } from 'lodash';
+import capitalize from 'lodash/capitalize';
 import { PostMenuProps } from '../../../lib/utils/post-menu-props';
 
 type CopyLinkButtonProps =

@@ -6,23 +6,17 @@ import styles from './error-display.module.css';
 const ErrorDisplay = ({ error }: { error: any }) => {
   const { t } = useTranslation();
   const [feedbackMessageKey, setFeedbackMessageKey] = useState<string | null>(null);
-  const [shouldShow, setShouldShow] = useState(false);
+  const [showAfterDelay, setShowAfterDelay] = useState(false);
+
+  const hasError = !!(error?.message || error?.stack || error?.details || error);
 
   useEffect(() => {
-    const hasError = !!(error?.message || error?.stack || error?.details || error);
-    if (!hasError) {
-      setShouldShow(false);
-      return;
-    }
-
-    const timer = setTimeout(() => {
-      setShouldShow(true);
-    }, 1000); // delay to avoid false positives, for example when accessing cached feeds that may appear offline for a second or so
-
+    if (!hasError) return;
+    const timer = setTimeout(() => setShowAfterDelay(true), 1000);
     return () => clearTimeout(timer);
-  }, [error]);
+  }, [hasError]);
 
-  if (!shouldShow) {
+  if (!hasError || !showAfterDelay) {
     return null;
   }
 
