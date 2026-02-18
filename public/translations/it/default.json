@@ -251,7 +251,6 @@
   "nsfw_boards_only": "Solo bacheche NSFW",
   "worksafe_boards_only": "Solo bacheche sicure per il lavoro",
   "bitsocial_account": "Account Bitsocial",
-  "p2p_options": "Opzioni P2P",
   "purge": "elimina",
   "purge_confirm": "L'eliminazione rimuoverà permanentemente questo contenuto e tutte le sue risposte dal database. Continuare?",
   "mod_queue": "Coda Moderazione",
@@ -287,5 +286,6 @@
   "file": "File",
   "media_hosting_none": "Nessuno",
   "media_hosting_none_tip": "Nasconde il pulsante di caricamento del file dai moduli di post e risposta",
-  "media_hosting": "Hosting Media"
+  "media_hosting": "Hosting Media",
+  "advanced_settings": "Impostazioni avanzate"
 }

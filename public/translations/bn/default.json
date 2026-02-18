@@ -251,7 +251,6 @@
   "nsfw_boards_only": "NSFW বোর্ড শুধুমাত্র",
   "worksafe_boards_only": "কাজের জন্য নিরাপদ বোর্ড শুধুমাত্র",
   "bitsocial_account": "Bitsocial অ্যাকাউন্ট",
-  "p2p_options": "P2P বিকল্প",
   "purge": "সর্বনাশ",
   "purge_confirm": "পার্জ করা এই সামগ্রী এবং এর সমস্ত উত্তরকে ডাটাবেস থেকে স্থায়ীভাবে সরিয়ে দেবে। চালিয়ে যান?",
   "mod_queue": "মডারেশন সারি",
@@ -287,5 +286,6 @@
   "file": "ফাইল",
   "media_hosting_none": "কোনো নয়",
   "media_hosting_none_tip": "পোস্ট এবং রিপ্লাই ফর্ম থেকে ফাইল আপলোড বাটন লুকায়",
-  "media_hosting": "মিডিয়া হোস্টিং"
+  "media_hosting": "মিডিয়া হোস্টিং",
+  "advanced_settings": "উন্নত সেটিংস"
 }

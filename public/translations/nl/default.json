@@ -251,7 +251,6 @@
   "nsfw_boards_only": "Alleen NSFW-borden",
   "worksafe_boards_only": "Alleen werkveilige borden",
   "bitsocial_account": "Bitsocial-account",
-  "p2p_options": "P2P-opties",
   "purge": "verwijderen",
   "purge_confirm": "Verwijderen verwijdert deze inhoud en alle antwoorden ervan permanent uit de database. Doorgaan?",
   "mod_queue": "Moderatie Wachtrij",
@@ -287,5 +286,6 @@
   "file": "Bestand",
   "media_hosting_none": "Geen",
   "media_hosting_none_tip": "Verbergt de knop voor bestandsupload uit post- en antwoordformulieren",
-  "media_hosting": "Mediahosting"
+  "media_hosting": "Mediahosting",
+  "advanced_settings": "Geavanceerde instellingen"
 }

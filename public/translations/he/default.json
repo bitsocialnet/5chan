@@ -251,7 +251,6 @@
   "nsfw_boards_only": "לוחות NSFW בלבד",
   "worksafe_boards_only": "לוחות בטוחים לעבודה בלבד",
   "bitsocial_account": "חשבון Bitsocial",
-  "p2p_options": "אפשרויות P2P",
   "purge": "למחוק",
   "purge_confirm": "מחיקה תסיר לצמיתות את התוכן הזה ואת כל התגובות שלו מהמסד הנתונים. להמשיך?",
   "mod_queue": "תור ניהול",
@@ -287,5 +286,6 @@
   "file": "קובץ",
   "media_hosting_none": "ללא",
   "media_hosting_none_tip": "מסתיר את כפתור העלאת הקבצים מטפסי פוסט ותשובה",
-  "media_hosting": "אירוח מדיה"
+  "media_hosting": "אירוח מדיה",
+  "advanced_settings": "הגדרות מתקדמות"
 }

@@ -251,7 +251,6 @@
   "nsfw_boards_only": "صرف NSFW بورڈز",
   "worksafe_boards_only": "صرف کام کے لیے محفوظ بورڈز",
   "bitsocial_account": "Bitsocial اکاؤنٹ",
-  "p2p_options": "P2P اختیارات",
   "purge": "ختم کرنا",
   "purge_confirm": "پرج کرنا اس مواد اور اس کی تمام جوابات کو ڈیٹا بیس سے مستقل طور پر ہٹا دے گا۔ جاری رکھیں؟",
   "mod_queue": "نگرانی کی قطار",
@@ -287,5 +286,6 @@
   "file": "فائل",
   "media_hosting_none": "کوئی نہیں",
   "media_hosting_none_tip": "پوسٹ اور جواب کی فارمز سے فائل اپ لوڈ بٹن کو چھپاتا ہے",
-  "media_hosting": "میڈیا ہوسٹنگ"
+  "media_hosting": "میڈیا ہوسٹنگ",
+  "advanced_settings": "جدید ترتیبات"
 }

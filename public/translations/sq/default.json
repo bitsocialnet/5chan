@@ -251,7 +251,6 @@
   "nsfw_boards_only": "Vetëm tabelat NSFW",
   "worksafe_boards_only": "Vetëm tabelat e sigurta për punë",
   "bitsocial_account": "Llogaria Bitsocial",
-  "p2p_options": "Opsionet P2P",
   "purge": "fshi",
   "purge_confirm": "Fshirja do të heqë përgjithmonë këtë përmbajtje dhe të gjitha përgjigjet e saj nga baza e të dhënave. Vazhdo?",
   "mod_queue": "Radha e Moderimit",
@@ -287,5 +286,6 @@
   "file": "Skedar",
   "media_hosting_none": "Asnjë",
   "media_hosting_none_tip": "Fsheh butonin e ngarkimit të skedarit nga formularët e postimit dhe përgjigjes",
-  "media_hosting": "Hostimi i Mediave"
+  "media_hosting": "Hostimi i Mediave",
+  "advanced_settings": "Cilësimet e avancuara"
 }

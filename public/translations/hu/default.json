@@ -251,7 +251,6 @@
   "nsfw_boards_only": "Csak NSFW táblák",
   "worksafe_boards_only": "Csak munkavédelmi táblák",
   "bitsocial_account": "Bitsocial fiók",
-  "p2p_options": "P2P beállítások",
   "purge": "törlés",
   "purge_confirm": "A törlés véglegesen eltávolítja ezt a tartalmat és az összes válaszát az adatbázisból. Folytatás?",
   "mod_queue": "Moderációs Sor",
@@ -287,5 +286,6 @@
   "file": "Fájl",
   "media_hosting_none": "Nincs",
   "media_hosting_none_tip": "Elrejti a fájlfeltöltés gombot a poszt- és válaszűrlapokból",
-  "media_hosting": "Médiahosting"
+  "media_hosting": "Médiahosting",
+  "advanced_settings": "Haladó beállítások"
 }

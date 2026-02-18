@@ -9,7 +9,7 @@ import CryptoAddressSetting from './crypto-address-setting';
 import CryptoWalletsSetting from './crypto-wallets-setting';
 import InterfaceSettings from './interface-settings';
 import MediaHostingSettings from './media-hosting-settings';
-import P2pOptions from './p2p-options';
+import AdvancedSettings from './advanced-settings';
 import SubscriptionsSetting from './subscriptions-setting';
 
 const SettingsModal = () => {
@@ -44,7 +44,7 @@ const SettingsModal = () => {
   const [showCryptoWalletSettings, setShowCryptoWalletSettings] = useState(false);
   const [showSubscriptionsSettings, setShowSubscriptionsSettings] = useState(false);
   const [showBlockedAddressesSetting, setShowBlockedAddressesSetting] = useState(false);
-  const [showP2pOptionsSettings, setShowP2pOptionsSettings] = useState(false);
+  const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
   const [expandAll, setExpandAll] = useState(false);
 
   const getExpandedCount = () => {
@@ -57,7 +57,7 @@ const SettingsModal = () => {
       Number(showCryptoWalletSettings) +
       Number(showSubscriptionsSettings) +
       Number(showBlockedAddressesSetting) +
-      Number(showP2pOptionsSettings)
+      Number(showAdvancedSettings)
     );
   };
 
@@ -70,7 +70,7 @@ const SettingsModal = () => {
     if (showCryptoWalletSettings && 'crypto-wallet-settings' !== excludeCategoryId) return 'crypto-wallet-settings';
     if (showSubscriptionsSettings && 'subscriptions-settings' !== excludeCategoryId) return 'subscriptions-settings';
     if (showBlockedAddressesSetting && 'blocked-addresses-settings' !== excludeCategoryId) return 'blocked-addresses-settings';
-    if (showP2pOptionsSettings && 'p2p-options-settings' !== excludeCategoryId) return 'p2p-options-settings';
+    if (showAdvancedSettings && 'advanced-settings' !== excludeCategoryId) return 'advanced-settings';
     return null;
   };
 
@@ -111,7 +111,7 @@ const SettingsModal = () => {
       setShowCryptoWalletSettings(hash === 'crypto-wallet-settings');
       setShowSubscriptionsSettings(hash === 'subscriptions-settings');
       setShowBlockedAddressesSetting(hash === 'blocked-addresses-settings');
-      setShowP2pOptionsSettings(hash === 'p2p-options-settings');
+      setShowAdvancedSettings(hash === 'advanced-settings');
     }
   }, [hash]);
 
@@ -126,7 +126,7 @@ const SettingsModal = () => {
     setShowCryptoWalletSettings(newExpandState);
     setShowSubscriptionsSettings(newExpandState);
     setShowBlockedAddressesSetting(newExpandState);
-    setShowP2pOptionsSettings(newExpandState);
+    setShowAdvancedSettings(newExpandState);
 
     const baseSettingsPath = location.pathname.split('#')[0];
     navigate(baseSettingsPath, { replace: true });
@@ -199,13 +199,13 @@ const SettingsModal = () => {
           </label>
         </div>
         {showBlockedAddressesSetting && <BlockedAddressesSetting />}
-        <div id='p2p-options-settings' className={`${styles.setting} ${styles.category}`}>
-          <label onClick={() => handleCategoryClick('p2p-options-settings', showP2pOptionsSettings, setShowP2pOptionsSettings)}>
-            <span className={showP2pOptionsSettings ? styles.hideButton : styles.showButton} />
-            {t('p2p_options')}
+        <div id='advanced-settings' className={`${styles.setting} ${styles.category}`}>
+          <label onClick={() => handleCategoryClick('advanced-settings', showAdvancedSettings, setShowAdvancedSettings)}>
+            <span className={showAdvancedSettings ? styles.hideButton : styles.showButton} />
+            {t('advanced_settings')}
           </label>
         </div>
-        {showP2pOptionsSettings && <P2pOptions />}
+        {showAdvancedSettings && <AdvancedSettings />}
       </div>
     </>
   );

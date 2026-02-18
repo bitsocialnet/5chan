@@ -251,7 +251,6 @@
   "nsfw_boards_only": "Tylko tablice NSFW",
   "worksafe_boards_only": "Tylko bezpieczne tablice",
   "bitsocial_account": "Konto Bitsocial",
-  "p2p_options": "Opcje P2P",
   "purge": "usuń",
   "purge_confirm": "Usunięcie trwale usunie tę zawartość i wszystkie odpowiedzi z bazy danych. Kontynuować?",
   "mod_queue": "Kolejka Moderacji",
@@ -287,5 +286,6 @@
   "file": "Plik",
   "media_hosting_none": "Brak",
   "media_hosting_none_tip": "Ukrywa przycisk przesyłania pliku z formularzy postów i odpowiedzi",
-  "media_hosting": "Hosting mediów"
+  "media_hosting": "Hosting mediów",
+  "advanced_settings": "Ustawienia zaawansowane"
 }

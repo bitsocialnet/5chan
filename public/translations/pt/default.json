@@ -251,7 +251,6 @@
   "nsfw_boards_only": "Apenas quadros NSFW",
   "worksafe_boards_only": "Apenas quadros seguros para o trabalho",
   "bitsocial_account": "Conta Bitsocial",
-  "p2p_options": "Opções P2P",
   "purge": "purgar",
   "purge_confirm": "Purgar removerá permanentemente este conteúdo e todas as suas respostas do banco de dados. Continuar?",
   "mod_queue": "Fila de Moderação",
@@ -287,5 +286,6 @@
   "file": "Arquivo",
   "media_hosting_none": "Nenhum",
   "media_hosting_none_tip": "Oculta o botão de envio de arquivo dos formulários de postagem e resposta",
-  "media_hosting": "Hospedagem de Mídia"
+  "media_hosting": "Hospedagem de Mídia",
+  "advanced_settings": "Configurações avançadas"
 }

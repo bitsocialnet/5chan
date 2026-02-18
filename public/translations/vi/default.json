@@ -251,7 +251,6 @@
   "nsfw_boards_only": "Chỉ bảng NSFW",
   "worksafe_boards_only": "Chỉ bảng an toàn cho công việc",
   "bitsocial_account": "Tài khoản Bitsocial",
-  "p2p_options": "Tùy chọn P2P",
   "purge": "xóa",
   "purge_confirm": "Xóa sẽ loại bỏ vĩnh viễn nội dung này và tất cả các phản hồi của nó khỏi cơ sở dữ liệu. Tiếp tục?",
   "mod_queue": "Hàng Đợi Kiểm Duyệt",
@@ -287,5 +286,6 @@
   "file": "Tệp",
   "media_hosting_none": "Không có",
   "media_hosting_none_tip": "Ẩn nút tải tệp từ các biểu mẫu bài viết và trả lời",
-  "media_hosting": "Lưu trữ Phương tiện"
+  "media_hosting": "Lưu trữ Phương tiện",
+  "advanced_settings": "Cài đặt nâng cao"
 }

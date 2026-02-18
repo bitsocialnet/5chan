@@ -251,7 +251,6 @@
   "nsfw_boards_only": "บอร์ด NSFW เท่านั้น",
   "worksafe_boards_only": "บอร์ดที่ปลอดภัยสำหรับงานเท่านั้น",
   "bitsocial_account": "บัญชี Bitsocial",
-  "p2p_options": "ตัวเลือก P2P",
   "purge": "ลบ",
   "purge_confirm": "การลบจะลบเนื้อหานี้และคำตอบทั้งหมดออกจากฐานข้อมูลอย่างถาวร ดำเนินการต่อหรือไม่?",
   "mod_queue": "คิวผู้ดูแล",
@@ -287,5 +286,6 @@
   "file": "ไฟล์",
   "media_hosting_none": "ไม่มี",
   "media_hosting_none_tip": "ซ่อนปุ่มอัปโหลดไฟล์จากแบบฟอร์มโพสต์และตอบกลับ",
-  "media_hosting": "การโฮสต์สื่อ"
+  "media_hosting": "การโฮสต์สื่อ",
+  "advanced_settings": "การตั้งค่าขั้นสูง"
 }

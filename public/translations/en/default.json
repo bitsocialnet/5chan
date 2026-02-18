@@ -251,7 +251,6 @@
   "copy_content_id": "Copy content ID",
   "subscriptions_subtitle": "You are subscribed to {{count}} boards",
   "bitsocial_account": "Bitsocial Account",
-  "p2p_options": "P2P options",
   "purge": "purge",
   "purge_confirm": "Purging permanently removes this content and all its replies from the database. Continue?",
   "mod_queue": "Mod Queue",
@@ -287,5 +286,6 @@
   "file": "File",
   "media_hosting_none": "None",
   "media_hosting_none_tip": "Hides the file upload button from post and reply forms",
-  "media_hosting": "Media Hosting"
+  "media_hosting": "Media Hosting",
+  "advanced_settings": "Advanced settings"
 }

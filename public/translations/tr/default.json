@@ -251,7 +251,6 @@
   "nsfw_boards_only": "Sadece NSFW panoları",
   "worksafe_boards_only": "Sadece iş için güvenli panolar",
   "bitsocial_account": "Bitsocial Hesabı",
-  "p2p_options": "P2P Seçenekleri",
   "purge": "temizle",
   "purge_confirm": "Temizleme, bu içeriği ve tüm yanıtlarını veritabanından kalıcı olarak kaldıracaktır. Devam edilsin mi?",
   "mod_queue": "Moderasyon Kuyruğu",
@@ -287,5 +286,6 @@
   "file": "Dosya",
   "media_hosting_none": "Yok",
   "media_hosting_none_tip": "Yazı ve yanıt formlarından dosya yükleme düğmesini gizler",
-  "media_hosting": "Ortam Barındırma"
+  "media_hosting": "Ortam Barındırma",
+  "advanced_settings": "Gelişmiş ayarlar"
 }

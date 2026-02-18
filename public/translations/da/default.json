@@ -251,7 +251,6 @@
   "nsfw_boards_only": "Kun NSFW-tavler",
   "worksafe_boards_only": "Kun arbejdssikre tavler",
   "bitsocial_account": "Bitsocial-konto",
-  "p2p_options": "P2P-indstillinger",
   "purge": "slet",
   "purge_confirm": "Sletning fjerner permanent dette indhold og alle dets svar fra databasen. Fortsætte?",
   "mod_queue": "Moderationskø",
@@ -287,5 +286,6 @@
   "file": "Fil",
   "media_hosting_none": "Ingen",
   "media_hosting_none_tip": "Skjuler filoverføringsknappen fra post- og svarformularer",
-  "media_hosting": "Mediahosting"
+  "media_hosting": "Mediahosting",
+  "advanced_settings": "Avancerede indstillinger"
 }

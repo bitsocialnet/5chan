@@ -251,7 +251,6 @@
   "nsfw_boards_only": "Pouze NSFW desky",
   "worksafe_boards_only": "Pouze bezpečné desky",
   "bitsocial_account": "Účet Bitsocial",
-  "p2p_options": "Možnosti P2P",
   "purge": "vymazat",
   "purge_confirm": "Vymazání trvale odstraní tento obsah a všechny jeho odpovědi z databáze. Pokračovat?",
   "mod_queue": "Fronta moderování",
@@ -287,5 +286,6 @@
   "file": "Soubor",
   "media_hosting_none": "Žádné",
   "media_hosting_none_tip": "Skrývá tlačítko pro nahrávání souborů z formulářů příspěvků a odpovědí",
-  "media_hosting": "Hostování médií"
+  "media_hosting": "Hostování médií",
+  "advanced_settings": "Pokročilé nastavení"
 }

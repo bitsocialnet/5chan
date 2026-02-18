@@ -251,7 +251,6 @@
   "nsfw_boards_only": "Hanya papan NSFW",
   "worksafe_boards_only": "Hanya papan aman untuk kerja",
   "bitsocial_account": "Akun Bitsocial",
-  "p2p_options": "Opsi P2P",
   "purge": "hapus",
   "purge_confirm": "Menghapus akan menghapus konten ini dan semua balasannya secara permanen dari database. Lanjutkan?",
   "mod_queue": "Antrian Moderasi",
@@ -287,5 +286,6 @@
   "file": "Berkas",
   "media_hosting_none": "Tidak ada",
   "media_hosting_none_tip": "Menyembunyikan tombol unggah file dari formulir posting dan balasan",
-  "media_hosting": "Hosting Media"
+  "media_hosting": "Hosting Media",
+  "advanced_settings": "Pengaturan lanjutan"
 }

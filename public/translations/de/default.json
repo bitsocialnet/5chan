@@ -251,7 +251,6 @@
   "nsfw_boards_only": "Nur NSFW-Boards",
   "worksafe_boards_only": "Nur arbeitsplatzsichere Boards",
   "bitsocial_account": "Bitsocial-Konto",
-  "p2p_options": "P2P-Optionen",
   "purge": "löschen",
   "purge_confirm": "Das Löschen entfernt diesen Inhalt und alle Antworten dauerhaft aus der Datenbank. Fortfahren?",
   "mod_queue": "Moderations-Warteschlange",
@@ -287,5 +286,6 @@
   "file": "Datei",
   "media_hosting_none": "Keine",
   "media_hosting_none_tip": "Verbirgt die Datei-Upload-Schaltfläche aus Post- und Antwortformularen",
-  "media_hosting": "Medienhosting"
+  "media_hosting": "Medienhosting",
+  "advanced_settings": "Erweiterte Einstellungen"
 }

@@ -251,7 +251,6 @@
   "nsfw_boards_only": "Vain NSFW-taulut",
   "worksafe_boards_only": "Vain työturvalliset taulut",
   "bitsocial_account": "Bitsocial-tili",
-  "p2p_options": "P2P-asetukset",
   "purge": "poistaa",
   "purge_confirm": "Poistaminen poistaa pysyvästi tämän sisällön ja kaikki sen vastaukset tietokannasta. Jatketaanko?",
   "mod_queue": "Moderaatiojono",
@@ -287,5 +286,6 @@
   "file": "Tiedosto",
   "media_hosting_none": "Ei mikään",
   "media_hosting_none_tip": "Piilottaa tiedostonlatausnapin post- ja vastauslomakkeista",
-  "media_hosting": "Mediahosting"
+  "media_hosting": "Mediahosting",
+  "advanced_settings": "Lisäasetukset"
 }

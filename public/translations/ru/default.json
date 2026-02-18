@@ -251,7 +251,6 @@
   "nsfw_boards_only": "Только доски NSFW",
   "worksafe_boards_only": "Только безопасные для работы доски",
   "bitsocial_account": "Аккаунт Bitsocial",
-  "p2p_options": "Опции P2P",
   "purge": "удалить",
   "purge_confirm": "Удаление навсегда удалит этот контент и все ответы на него из базы данных. Продолжить?",
   "mod_queue": "Очередь Модерации",
@@ -287,5 +286,6 @@
   "file": "Файл",
   "media_hosting_none": "Нет",
   "media_hosting_none_tip": "Скрывает кнопку загрузки файла из форм постов и ответов",
-  "media_hosting": "Хостинг медиа"
+  "media_hosting": "Хостинг медиа",
+  "advanced_settings": "Расширенные настройки"
 }

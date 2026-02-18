@@ -251,7 +251,6 @@
   "nsfw_boards_only": "केवल NSFW बोर्ड",
   "worksafe_boards_only": "केवल कार्य-सुरक्षित बोर्ड",
   "bitsocial_account": "Bitsocial खाता",
-  "p2p_options": "P2P विकल्प",
   "purge": "स्थायी रूप से हटाएं",
   "purge_confirm": "स्थायी रूप से हटाने से यह सामग्री और इसकी सभी प्रतिक्रियाएं डेटाबेस से स्थायी रूप से हट जाएंगी। जारी रखें?",
   "mod_queue": "मॉडरेटर कतार",
@@ -287,5 +286,6 @@
   "file": "फ़ाइल",
   "media_hosting_none": "कोई नहीं",
   "media_hosting_none_tip": "पोस्ट और रिप्लाई फॉर्म से फ़ाइल अपलोड बटन को छिपाता है",
-  "media_hosting": "मीडिया होस्टिंग"
+  "media_hosting": "मीडिया होस्टिंग",
+  "advanced_settings": "उन्नत सेटिंग्स"
 }

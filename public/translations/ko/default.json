@@ -251,7 +251,6 @@
   "nsfw_boards_only": "NSFW 게시판만",
   "worksafe_boards_only": "직장 안전 게시판만",
   "bitsocial_account": "Bitsocial 계정",
-  "p2p_options": "P2P 옵션",
   "purge": "삭제",
   "purge_confirm": "삭제하면 이 콘텐츠와 모든 답글이 데이터베이스에서 영구적으로 제거됩니다. 계속하시겠습니까?",
   "mod_queue": "관리자 대기열",
@@ -287,5 +286,6 @@
   "file": "파일",
   "media_hosting_none": "없음",
   "media_hosting_none_tip": "게시물 및 댓글 양식에서 파일 업로드 버튼을 숨깁니다",
-  "media_hosting": "미디어 호스팅"
+  "media_hosting": "미디어 호스팅",
+  "advanced_settings": "고급 설정"
 }

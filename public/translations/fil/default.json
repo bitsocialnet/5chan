@@ -251,7 +251,6 @@
   "nsfw_boards_only": "NSFW boards lang",
   "worksafe_boards_only": "Worksafe boards lang",
   "bitsocial_account": "Account ng Bitsocial",
-  "p2p_options": "Mga Opsyon ng P2P",
   "purge": "purga",
   "purge_confirm": "Ang pag-purge ay permanenteng mag-aalis ng nilalamang ito at lahat ng mga tugon nito mula sa database. Magpatuloy?",
   "mod_queue": "Moderasyon Queue",
@@ -287,5 +286,6 @@
   "file": "Talaksan",
   "media_hosting_none": "Wala",
   "media_hosting_none_tip": "Nagsasagawa ng pindot sa pag-upload ng file mula sa mga form ng post at reply",
-  "media_hosting": "Media Hosting"
+  "media_hosting": "Media Hosting",
+  "advanced_settings": "Mga advanced na setting"
 }

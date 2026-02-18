@@ -251,7 +251,6 @@
   "nsfw_boards_only": "NSFWボードのみ",
   "worksafe_boards_only": "職場安全ボードのみ",
   "bitsocial_account": "Bitsocialアカウント",
-  "p2p_options": "P2Pオプション",
   "purge": "削除",
   "purge_confirm": "削除すると、このコンテンツとそのすべての返信がデータベースから永続的に削除されます。続行しますか？",
   "mod_queue": "モデレーションキュー",
@@ -287,5 +286,6 @@
   "file": "ファイル",
   "media_hosting_none": "なし",
   "media_hosting_none_tip": "投稿とコメントフォームのファイルアップロードボタンを非表示にします",
-  "media_hosting": "メディアホスティング"
+  "media_hosting": "メディアホスティング",
+  "advanced_settings": "詳細設定"
 }

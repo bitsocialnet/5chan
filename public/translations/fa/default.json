@@ -251,7 +251,6 @@
   "nsfw_boards_only": "فقط تابلوهای NSFW",
   "worksafe_boards_only": "فقط تابلوهای ایمن برای کار",
   "bitsocial_account": "حساب Bitsocial",
-  "p2p_options": "گزینه‌های P2P",
   "purge": "پاکسازی",
   "purge_confirm": "پاکسازی این محتوا و تمام پاسخ‌های آن را به طور دائم از پایگاه داده حذف می‌کند. ادامه دهید؟",
   "mod_queue": "صف انتظار نظارت",
@@ -287,5 +286,6 @@
   "file": "فایل",
   "media_hosting_none": "هیچ کدام",
   "media_hosting_none_tip": "دکمه بارگذاری فایل را از فرم‌های پست و پاسخ مخفی می‌کند",
-  "media_hosting": "میزبانی رسانه"
+  "media_hosting": "میزبانی رسانه",
+  "advanced_settings": "تنظیمات پیشرفته"
 }

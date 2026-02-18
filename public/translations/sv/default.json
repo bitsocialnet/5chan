@@ -251,7 +251,6 @@
   "nsfw_boards_only": "Endast NSFW-tavlor",
   "worksafe_boards_only": "Endast arbetsplats-säkra tavlor",
   "bitsocial_account": "Bitsocial-konto",
-  "p2p_options": "P2P-alternativ",
   "purge": "radera",
   "purge_confirm": "Raderande tar permanent bort detta innehåll och alla dess svar från databasen. Fortsätta?",
   "mod_queue": "Modereringskö",
@@ -287,5 +286,6 @@
   "file": "Fil",
   "media_hosting_none": "Ingen",
   "media_hosting_none_tip": "Döljer knappen för filöverföring från inläggs- och svarsformulär",
-  "media_hosting": "Mediahosting"
+  "media_hosting": "Mediahosting",
+  "advanced_settings": "Avancerade inställningar"
 }

@@ -251,7 +251,6 @@
   "nsfw_boards_only": "Doar panouri NSFW",
   "worksafe_boards_only": "Doar panouri sigure pentru muncă",
   "bitsocial_account": "Cont Bitsocial",
-  "p2p_options": "Opțiuni P2P",
   "purge": "șterge",
   "purge_confirm": "Ștergerea va elimina permanent acest conținut și toate răspunsurile sale din baza de date. Continuați?",
   "mod_queue": "Coadă de Moderare",
@@ -287,5 +286,6 @@
   "file": "Fișier",
   "media_hosting_none": "Niciunul",
   "media_hosting_none_tip": "Ascunde butonul de încărcare a fișierelor din formularele de postare și răspuns",
-  "media_hosting": "Găzduire Media"
+  "media_hosting": "Găzduire Media",
+  "advanced_settings": "Setări avansate"
 }

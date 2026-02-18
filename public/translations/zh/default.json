@@ -251,7 +251,6 @@
   "nsfw_boards_only": "仅NSFW板块",
   "worksafe_boards_only": "仅工作安全板块",
   "bitsocial_account": "Bitsocial账户",
-  "p2p_options": "P2P选项",
   "purge": "清除",
   "purge_confirm": "清除将永久删除此内容及其所有回复。继续吗？",
   "mod_queue": "审核队列",
@@ -287,5 +286,6 @@
   "file": "文件",
   "media_hosting_none": "无",
   "media_hosting_none_tip": "隐藏帖子和回复表单中的文件上传按钮",
-  "media_hosting": "媒体托管"
+  "media_hosting": "媒体托管",
+  "advanced_settings": "高级设置"
 }
