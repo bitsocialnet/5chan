@@ -287,5 +287,14 @@
   "media_hosting_none": "Brak",
   "media_hosting_none_tip": "Ukrywa przycisk przesyłania pliku z formularzy postów i odpowiedzi",
   "media_hosting": "Hosting mediów",
-  "advanced_settings": "Ustawienia zaawansowane"
+  "advanced_settings": "Ustawienia zaawansowane",
+  "upload_failed_all_providers": "Wszyscy dostawcy zawiedli",
+  "upload_failed_preferred_guidance": "Wybierz innego dostawcę lub ustaw na losowy.",
+  "media_hosting_random": "Losowy",
+  "media_hosting_preferred": "Preferowany dostawca",
+  "media_hosting_preferred_provider_label": "Wybierz dostawcę",
+  "media_hosting_preferred_failure_guidance": "Jeśli preferowany dostawca zawiedzie, aplikacja spróbuje innych dostawców (tryb losowy) lub wyświetli błąd (tryb preferowany).",
+  "media_hosting_all_providers_failed_guidance": "Wszyscy dostawcy przesyłania zawiedli. Spróbuj ponownie lub wklej link ręcznie.",
+  "upload_not_supported_web_before_link": "Przesyłanie multimediów nie jest obsługiwane przez Twoją przeglądarkę z powodu ograniczeń technicznych (CORS). Jest obsługiwane w aplikacji 5chan na Androida i aplikacji komputerowej Mac/Linux/Windows.",
+  "upload_not_supported_web_link_text": "Pobierz ze strony oficjalnego wydania"
 }

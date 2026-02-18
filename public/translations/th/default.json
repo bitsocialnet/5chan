@@ -287,5 +287,14 @@
   "media_hosting_none": "ไม่มี",
   "media_hosting_none_tip": "ซ่อนปุ่มอัปโหลดไฟล์จากแบบฟอร์มโพสต์และตอบกลับ",
   "media_hosting": "การโฮสต์สื่อ",
-  "advanced_settings": "การตั้งค่าขั้นสูง"
+  "advanced_settings": "การตั้งค่าขั้นสูง",
+  "upload_failed_all_providers": "ผู้ให้บริการทั้งหมดล้มเหลว",
+  "upload_failed_preferred_guidance": "เลือกผู้ให้บริการอื่นหรือตั้งเป็นแบบสุ่ม",
+  "media_hosting_random": "สุ่ม",
+  "media_hosting_preferred": "ผู้ให้บริการที่ต้องการ",
+  "media_hosting_preferred_provider_label": "เลือกผู้ให้บริการ",
+  "media_hosting_preferred_failure_guidance": "หากผู้ให้บริการที่คุณต้องการล้มเหลว แอปจะลองผู้ให้บริการอื่น (โหมดสุ่ม) หรือแสดงข้อผิดพลาด (โหมดที่ต้องการ)",
+  "media_hosting_all_providers_failed_guidance": "ผู้ให้บริการอัปโหลดทั้งหมดล้มเหลว ลองอีกครั้งหรือวางลิงก์ด้วยตนเอง",
+  "upload_not_supported_web_before_link": "การอัปโหลดสื่อไม่รองรับโดยเบราว์เซอร์ของคุณเนื่องจากข้อจำกัดทางเทคนิค (CORS) รองรับในแอป 5chan สำหรับ Android และแอปเดสก์ท็อป Mac/Linux/Windows",
+  "upload_not_supported_web_link_text": "ดาวน์โหลดจากหน้าปล่อยรุ่นอย่างเป็นทางการ"
 }

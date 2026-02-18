@@ -287,5 +287,14 @@
   "media_hosting_none": "无",
   "media_hosting_none_tip": "隐藏帖子和回复表单中的文件上传按钮",
   "media_hosting": "媒体托管",
-  "advanced_settings": "高级设置"
+  "advanced_settings": "高级设置",
+  "upload_failed_all_providers": "所有提供商均失败",
+  "upload_failed_preferred_guidance": "选择其他提供商或设置为随机。",
+  "media_hosting_random": "随机",
+  "media_hosting_preferred": "首选提供商",
+  "media_hosting_preferred_provider_label": "选择提供商",
+  "media_hosting_preferred_failure_guidance": "如果首选提供商失败，应用将尝试其他提供商（随机模式）或显示错误（首选模式）。",
+  "media_hosting_all_providers_failed_guidance": "所有上传提供商均失败。请重试或手动粘贴链接。",
+  "upload_not_supported_web_before_link": "由于技术限制（CORS），您的浏览器不支持上传媒体。在 5chan Android 应用和 Mac/Linux/Windows 桌面应用中支持。",
+  "upload_not_supported_web_link_text": "从官方发布页面下载"
 }

@@ -287,5 +287,14 @@
   "media_hosting_none": "Geen",
   "media_hosting_none_tip": "Verbergt de knop voor bestandsupload uit post- en antwoordformulieren",
   "media_hosting": "Mediahosting",
-  "advanced_settings": "Geavanceerde instellingen"
+  "advanced_settings": "Geavanceerde instellingen",
+  "upload_failed_all_providers": "Alle providers zijn mislukt",
+  "upload_failed_preferred_guidance": "Kies een andere provider of zet op willekeurig.",
+  "media_hosting_random": "Willekeurig",
+  "media_hosting_preferred": "Voorkeursprovider",
+  "media_hosting_preferred_provider_label": "Provider kiezen",
+  "media_hosting_preferred_failure_guidance": "Als uw voorkeursprovider faalt, probeert de app andere providers (willekeurige modus) of toont een fout (geprefereerde modus).",
+  "media_hosting_all_providers_failed_guidance": "Alle upload-providers zijn mislukt. Probeer opnieuw of plak een link handmatig.",
+  "upload_not_supported_web_before_link": "Mediabestanden uploaden wordt niet ondersteund door uw browser vanwege technische beperkingen (CORS). Het wordt ondersteund in de 5chan Android-app en de Mac/Linux/Windows desktop-app.",
+  "upload_not_supported_web_link_text": "Downloaden van de officiële releasepagina"
 }

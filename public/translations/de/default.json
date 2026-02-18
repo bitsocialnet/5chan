@@ -287,5 +287,14 @@
   "media_hosting_none": "Keine",
   "media_hosting_none_tip": "Verbirgt die Datei-Upload-Schaltfläche aus Post- und Antwortformularen",
   "media_hosting": "Medienhosting",
-  "advanced_settings": "Erweiterte Einstellungen"
+  "advanced_settings": "Erweiterte Einstellungen",
+  "upload_failed_all_providers": "Alle Anbieter sind fehlgeschlagen",
+  "upload_failed_preferred_guidance": "Wählen Sie einen anderen Anbieter oder setzen Sie auf Zufall.",
+  "media_hosting_random": "Zufällig",
+  "media_hosting_preferred": "Bevorzugter Anbieter",
+  "media_hosting_preferred_provider_label": "Anbieter wählen",
+  "media_hosting_preferred_failure_guidance": "Wenn Ihr bevorzugter Anbieter fehlschlägt, versucht die App andere Anbieter (Zufallsmodus) oder zeigt einen Fehler an (Bevorzugter Modus).",
+  "media_hosting_all_providers_failed_guidance": "Alle Upload-Anbieter sind fehlgeschlagen. Versuchen Sie es erneut oder fügen Sie einen Link manuell ein.",
+  "upload_not_supported_web_before_link": "Das Hochladen von Medien wird von Ihrem Browser aufgrund technischer Einschränkungen (CORS) nicht unterstützt. Es wird in der 5chan-Android-App und der Mac/Linux/Windows-Desktop-App unterstützt.",
+  "upload_not_supported_web_link_text": "Von der offiziellen Release-Seite herunterladen"
 }

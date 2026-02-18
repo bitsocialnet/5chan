@@ -287,5 +287,14 @@
   "media_hosting_none": "Nessuno",
   "media_hosting_none_tip": "Nasconde il pulsante di caricamento del file dai moduli di post e risposta",
   "media_hosting": "Hosting Media",
-  "advanced_settings": "Impostazioni avanzate"
+  "advanced_settings": "Impostazioni avanzate",
+  "upload_failed_all_providers": "Tutti i provider sono falliti",
+  "upload_failed_preferred_guidance": "Scegli un provider diverso o imposta su casuale.",
+  "media_hosting_random": "Casuale",
+  "media_hosting_preferred": "Provider preferito",
+  "media_hosting_preferred_provider_label": "Scegli provider",
+  "media_hosting_preferred_failure_guidance": "Se il provider preferito fallisce, l'app proverà altri provider (modalità casuale) o mostrerà un errore (modalità preferita).",
+  "media_hosting_all_providers_failed_guidance": "Tutti i provider di caricamento sono falliti. Riprova o incolla un link manualmente.",
+  "upload_not_supported_web_before_link": "Il caricamento di file multimediali non è supportato dal tuo browser a causa di limitazioni tecniche (CORS). È supportato nell'app 5chan per Android e nell'app desktop per Mac/Linux/Windows.",
+  "upload_not_supported_web_link_text": "Scarica dalla pagina di release ufficiale"
 }

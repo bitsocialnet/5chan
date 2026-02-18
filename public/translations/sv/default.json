@@ -287,5 +287,14 @@
   "media_hosting_none": "Ingen",
   "media_hosting_none_tip": "Döljer knappen för filöverföring från inläggs- och svarsformulär",
   "media_hosting": "Mediahosting",
-  "advanced_settings": "Avancerade inställningar"
+  "advanced_settings": "Avancerade inställningar",
+  "upload_failed_all_providers": "Alla leverantörer misslyckades",
+  "upload_failed_preferred_guidance": "Välj en annan leverantör eller sätt till slumpmässig.",
+  "media_hosting_random": "Slumpmässig",
+  "media_hosting_preferred": "Föredragen leverantör",
+  "media_hosting_preferred_provider_label": "Välj leverantör",
+  "media_hosting_preferred_failure_guidance": "Om din föredragna leverantör misslyckas kommer appen att prova andra leverantörer (slumpmässigt läge) eller visa ett fel (föredraget läge).",
+  "media_hosting_all_providers_failed_guidance": "Alla uppladdningsleverantörer misslyckades. Försök igen eller klistra in en länk manuellt.",
+  "upload_not_supported_web_before_link": "Uppladdning av media stöds inte av din webbläsare på grund av tekniska begränsningar (CORS). Det stöds i 5chan Android-appen och Mac/Linux/Windows skrivbordsappen.",
+  "upload_not_supported_web_link_text": "Ladda ner från den officiella utgivningssidan"
 }

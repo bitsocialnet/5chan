@@ -287,5 +287,14 @@
   "media_hosting_none": "Niciunul",
   "media_hosting_none_tip": "Ascunde butonul de încărcare a fișierelor din formularele de postare și răspuns",
   "media_hosting": "Găzduire Media",
-  "advanced_settings": "Setări avansate"
+  "advanced_settings": "Setări avansate",
+  "upload_failed_all_providers": "Toți furnizorii au eșuat",
+  "upload_failed_preferred_guidance": "Alegeți un furnizor diferit sau setați la aleatoriu.",
+  "media_hosting_random": "Aleatoriu",
+  "media_hosting_preferred": "Furnizor preferat",
+  "media_hosting_preferred_provider_label": "Alegeți furnizorul",
+  "media_hosting_preferred_failure_guidance": "Dacă furnizorul preferat eșuează, aplicația va încerca alți furnizori (mod aleatoriu) sau va afișa o eroare (mod preferat).",
+  "media_hosting_all_providers_failed_guidance": "Toți furnizorii de încărcare au eșuat. Încercați din nou sau lipiți un link manual.",
+  "upload_not_supported_web_before_link": "Încărcarea mediilor nu este acceptată de browserul dvs. din cauza limitărilor tehnice (CORS). Este acceptată în aplicația 5chan pentru Android și aplicația de desktop Mac/Linux/Windows.",
+  "upload_not_supported_web_link_text": "Descărcare de pe pagina de lansare oficială"
 }

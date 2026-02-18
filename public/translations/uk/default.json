@@ -287,5 +287,14 @@
   "media_hosting_none": "Немає",
   "media_hosting_none_tip": "Приховує кнопку завантаження файлу з форм постів та відповідей",
   "media_hosting": "Хостинг медіа",
-  "advanced_settings": "Розширені налаштування"
+  "advanced_settings": "Розширені налаштування",
+  "upload_failed_all_providers": "Усі провайдери не справились",
+  "upload_failed_preferred_guidance": "Оберіть іншого провайдера або встановіть випадковий.",
+  "media_hosting_random": "Випадковий",
+  "media_hosting_preferred": "Уподобаний провайдер",
+  "media_hosting_preferred_provider_label": "Оберіть провайдера",
+  "media_hosting_preferred_failure_guidance": "Якщо ваш уподобаний провайдер не спрацює, застосунок спробує інших провайдерів (випадковий режим) або покаже помилку (режим уподобання).",
+  "media_hosting_all_providers_failed_guidance": "Усі провайдери завантаження не справились. Спробуйте знову або вставте посилання вручну.",
+  "upload_not_supported_web_before_link": "Завантаження медіа не підтримується вашим браузером через технічні обмеження (CORS). Підтримується в додатку 5chan для Android та десктопному додатку для Mac/Linux/Windows.",
+  "upload_not_supported_web_link_text": "Завантажити з офіційної сторінки випуску"
 }

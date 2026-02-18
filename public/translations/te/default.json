@@ -287,5 +287,14 @@
   "media_hosting_none": "ఏదీ లేదు",
   "media_hosting_none_tip": "పోస్ట్ మరియు ప్రతిస్పందన ఫారమ్‌ల నుండి ఫైల్ అప్‌లోడ్ బటన్‌ను దాచిపెడుతుంది",
   "media_hosting": "మీడియా హోస్టింగ్",
-  "advanced_settings": "అధునాతన సెట్టింగ్‌లు"
+  "advanced_settings": "అధునాతన సెట్టింగ్‌లు",
+  "upload_failed_all_providers": "అన్ని ప్రొవైడర్లు విఫలమయ్యాయి",
+  "upload_failed_preferred_guidance": "వేరే ప్రొవైడర్ ఎంచుకోండి లేదా యాదృచ్ఛికంగా సెట్ చేయండి.",
+  "media_hosting_random": "యాదృచ్ఛికం",
+  "media_hosting_preferred": "ఇష్టప్రదమైన ప్రొవైడర్",
+  "media_hosting_preferred_provider_label": "ప్రొవైడర్ ఎంచుకోండి",
+  "media_hosting_preferred_failure_guidance": "మీ ఇష్టప్రదమైన ప్రొవైడర్ విఫలమైతే, యాప్ ఇతర ప్రొవైడర్లను ప్రయత్నిస్తుంది (యాదృచ్ఛిక మోడ్) లేదా లోపం చూపిస్తుంది (ఇష్టప్రదమైన మోడ్).",
+  "media_hosting_all_providers_failed_guidance": "అన్ని అప్‌లోడ్ ప్రొవైడర్లు విఫలమయ్యాయి. మళ్ళీ ప్రయత్నించండి లేదా లింక్‌ను మాన్యువల్‌గా అతికించండి.",
+  "upload_not_supported_web_before_link": "సాంకేతిక పరిమితుల కారణంగా (CORS) మీ బ్రౌజర్ మీడియా అప్‌లోడ్‌ను మద్దతు ఇవ్వదు. ఇది 5chan Android యాప్ మరియు Mac/Linux/Windows డెస్క్‌టాప్ యాప్‌లో మద్దతు ఇస్తుంది.",
+  "upload_not_supported_web_link_text": "అధికారిక రిలీజ్ పేజీ నుండి డౌన్‌లోడ్ చేయండి"
 }

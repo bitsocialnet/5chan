@@ -287,5 +287,14 @@
   "media_hosting_none": "Нет",
   "media_hosting_none_tip": "Скрывает кнопку загрузки файла из форм постов и ответов",
   "media_hosting": "Хостинг медиа",
-  "advanced_settings": "Расширенные настройки"
+  "advanced_settings": "Расширенные настройки",
+  "upload_failed_all_providers": "Все провайдеры не справились",
+  "upload_failed_preferred_guidance": "Выберите другого провайдера или установите случайный.",
+  "media_hosting_random": "Случайный",
+  "media_hosting_preferred": "Предпочтительный провайдер",
+  "media_hosting_preferred_provider_label": "Выбрать провайдера",
+  "media_hosting_preferred_failure_guidance": "Если предпочтительный провайдер не сработает, приложение попробует других провайдеров (случайный режим) или покажет ошибку (режим предпочтительный).",
+  "media_hosting_all_providers_failed_guidance": "Все провайдеры загрузки не справились. Попробуйте снова или вставьте ссылку вручную.",
+  "upload_not_supported_web_before_link": "Загрузка медиа не поддерживается вашим браузером из-за технических ограничений (CORS). Поддерживается в приложении 5chan для Android и десктопном приложении для Mac/Linux/Windows.",
+  "upload_not_supported_web_link_text": "Скачать со страницы официального релиза"
 }

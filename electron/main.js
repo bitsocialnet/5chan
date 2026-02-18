@@ -1,5 +1,6 @@
 import './log.js';
 import { app, BrowserWindow, Menu, MenuItem, Tray, shell, dialog, nativeTheme, ipcMain, clipboard } from 'electron';
+import { automateUploadMedia } from './media-upload-automation.js';
 import isDev from 'electron-is-dev';
 import fs from 'fs';
 import path from 'path';
@@ -360,4 +361,13 @@ ipcMain.handle('get-platform', async () => {
     arch: process.arch,
     version: process.version,
   };
+});
+
+// Handle automated media upload (hidden BrowserWindow + CDP). Strict cleanup enforced in automation module.
+ipcMain.handle('automate-upload-media', async (event, options) => {
+  const { provider, filePath } = options || {};
+  if (!provider || typeof filePath !== 'string') {
+    throw new Error('automate-upload-media requires { provider, filePath }');
+  }
+  return automateUploadMedia({ provider, filePath });
 });

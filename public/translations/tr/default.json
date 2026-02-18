@@ -287,5 +287,14 @@
   "media_hosting_none": "Yok",
   "media_hosting_none_tip": "Yazı ve yanıt formlarından dosya yükleme düğmesini gizler",
   "media_hosting": "Ortam Barındırma",
-  "advanced_settings": "Gelişmiş ayarlar"
+  "advanced_settings": "Gelişmiş ayarlar",
+  "upload_failed_all_providers": "Tüm sağlayıcılar başarısız oldu",
+  "upload_failed_preferred_guidance": "Farklı bir sağlayıcı seçin veya rastgeleye ayarlayın.",
+  "media_hosting_random": "Rastgele",
+  "media_hosting_preferred": "Tercih edilen sağlayıcı",
+  "media_hosting_preferred_provider_label": "Sağlayıcı seç",
+  "media_hosting_preferred_failure_guidance": "Tercih edilen sağlayıcı başarısız olursa, uygulama diğer sağlayıcıları dener (Rastgele mod) veya hata gösterir (Tercih modu).",
+  "media_hosting_all_providers_failed_guidance": "Tüm yükleme sağlayıcıları başarısız oldu. Tekrar deneyin veya bir bağlantıyı manuel olarak yapıştırın.",
+  "upload_not_supported_web_before_link": "Teknik kısıtlamalar (CORS) nedeniyle medya yükleme tarayıcınız tarafından desteklenmiyor. 5chan Android uygulaması ve Mac/Linux/Windows masaüstü uygulamasında desteklenmektedir.",
+  "upload_not_supported_web_link_text": "Resmi sürüm sayfasından indir"
 }

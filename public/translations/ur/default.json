@@ -287,5 +287,14 @@
   "media_hosting_none": "کوئی نہیں",
   "media_hosting_none_tip": "پوسٹ اور جواب کی فارمز سے فائل اپ لوڈ بٹن کو چھپاتا ہے",
   "media_hosting": "میڈیا ہوسٹنگ",
-  "advanced_settings": "جدید ترتیبات"
+  "advanced_settings": "جدید ترتیبات",
+  "upload_failed_all_providers": "تمام فراہم کنندہ ناکام ہو گئے",
+  "upload_failed_preferred_guidance": "مختلف فراہم کنندہ منتخب کریں یا بے ترتیب پر سیٹ کریں۔",
+  "media_hosting_random": "بے ترتیب",
+  "media_hosting_preferred": "پسندیدہ فراہم کنندہ",
+  "media_hosting_preferred_provider_label": "فراہم کنندہ منتخب کریں",
+  "media_hosting_preferred_failure_guidance": "اگر آپ کا پسندیدہ فراہم کنندہ ناکام ہو جاتا ہے، ایپ دیگر فراہم کنندوں کو آزماے گی (بے ترتیب موڈ) یا خرابی دکھائے گی (پسندیدہ موڈ)۔",
+  "media_hosting_all_providers_failed_guidance": "تمام اپ لوڈ فراہم کنندہ ناکام ہو گئے۔ دوبارہ کوشش کریں یا لنک دستی طور پر پیسٹ کریں۔",
+  "upload_not_supported_web_before_link": "تکنیکی پابندیوں (CORS) کی وجہ سے آپ کے براؤزر میڈیا اپ لوڈ کی حمایت نہیں کرتا۔ یہ 5chan Android ایپ اور Mac/Linux/Windows ڈیسک ٹاپ ایپ میں تعاون یافتہ ہے۔",
+  "upload_not_supported_web_link_text": "سرکاری ریلیز صفحے سے ڈاؤن لوڈ کریں"
 }

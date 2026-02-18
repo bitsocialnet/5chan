@@ -4,14 +4,15 @@ declare global {
   }
 }
 
+import type { ProviderId } from './lib/media-hosting/types';
+
 declare global {
   interface Window {
     electronApi?: {
       isElectron: boolean;
-      invoke: (channel: string, ...args: any[]) => Promise<any>;
-      getNotificationStatus: () => Promise<'granted' | 'denied' | 'not-determined' | 'not-supported'>;
-      getPlatform: () => Promise<NodeJS.Platform>;
-      testNotification: () => Promise<{ success: boolean; reason?: string }>;
+      copyToClipboard: (text: string) => Promise<{ success: boolean; error?: string }>;
+      getPlatform: () => Promise<{ platform: NodeJS.Platform; arch: string; version: string }>;
+      automateUploadMedia: (options: { provider: ProviderId; filePath: string }) => Promise<{ url: string; provider: ProviderId }>;
     };
   }
 }

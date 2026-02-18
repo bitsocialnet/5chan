@@ -287,5 +287,14 @@
   "media_hosting_none": "Ingen",
   "media_hosting_none_tip": "Skjuler filoverføringknappen fra post- og svarskjemaer",
   "media_hosting": "Mediahosting",
-  "advanced_settings": "Avanserte innstillinger"
+  "advanced_settings": "Avanserte innstillinger",
+  "upload_failed_all_providers": "Alle leverandører mislyktes",
+  "upload_failed_preferred_guidance": "Velg en annen leverandør eller sett til tilfeldig.",
+  "media_hosting_random": "Tilfeldig",
+  "media_hosting_preferred": "Foretrukket leverandør",
+  "media_hosting_preferred_provider_label": "Velg leverandør",
+  "media_hosting_preferred_failure_guidance": "Hvis din foretrukne leverandør feiler, vil appen prøve andre leverandører (tilfeldig modus) eller vise en feil (foretrukket modus).",
+  "media_hosting_all_providers_failed_guidance": "Alle opplastingsleverandører mislyktes. Prøv igjen eller lim inn en lenke manuelt.",
+  "upload_not_supported_web_before_link": "Opplasting av medier støttes ikke av nettleseren din på grunn av tekniske begrensninger (CORS). Det støttes i 5chan Android-appen og Mac/Linux/Windows desktop-appen.",
+  "upload_not_supported_web_link_text": "Last ned fra den offisielle utgivelsessiden"
 }

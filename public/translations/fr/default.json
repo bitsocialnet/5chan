@@ -287,5 +287,14 @@
   "media_hosting_none": "Aucun",
   "media_hosting_none_tip": "Masque le bouton de téléchargement de fichiers des formulaires de publication et de réponse",
   "media_hosting": "Hébergement Multimédia",
-  "advanced_settings": "Paramètres avancés"
+  "advanced_settings": "Paramètres avancés",
+  "upload_failed_all_providers": "Tous les fournisseurs ont échoué",
+  "upload_failed_preferred_guidance": "Choisissez un autre fournisseur ou réglez sur aléatoire.",
+  "media_hosting_random": "Aléatoire",
+  "media_hosting_preferred": "Fournisseur préféré",
+  "media_hosting_preferred_provider_label": "Choisir le fournisseur",
+  "media_hosting_preferred_failure_guidance": "Si votre fournisseur préféré échoue, l'app essaiera d'autres fournisseurs (mode aléatoire) ou affichera une erreur (mode préféré).",
+  "media_hosting_all_providers_failed_guidance": "Tous les fournisseurs de téléchargement ont échoué. Réessayez ou collez un lien manuellement.",
+  "upload_not_supported_web_before_link": "Le téléchargement de médias n'est pas pris en charge par votre navigateur en raison de limitations techniques (CORS). Il est pris en charge dans l'application 5chan Android et l'application de bureau Mac/Linux/Windows.",
+  "upload_not_supported_web_link_text": "Télécharger depuis la page de version officielle"
 }

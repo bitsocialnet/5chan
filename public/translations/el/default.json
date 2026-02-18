@@ -287,5 +287,14 @@
   "media_hosting_none": "Κανένα",
   "media_hosting_none_tip": "Αποκρύπτει το κουμπί μεταφόρτωσης αρχείου από τις φόρμες δημοσίευσης και απάντησης",
   "media_hosting": "Φιλοξενία Πολυμέσων",
-  "advanced_settings": "Προηγμένες ρυθμίσεις"
+  "advanced_settings": "Προηγμένες ρυθμίσεις",
+  "upload_failed_all_providers": "Όλοι οι πάροχοι απέτυχαν",
+  "upload_failed_preferred_guidance": "Επιλέξτε διαφορετικό πάροχο ή ορίστε τυχαιότητα.",
+  "media_hosting_random": "Τυχαίο",
+  "media_hosting_preferred": "Προτιμώμενος πάροχος",
+  "media_hosting_preferred_provider_label": "Επιλέξτε πάροχο",
+  "media_hosting_preferred_failure_guidance": "Αν ο προτιμώμενος πάροχος σας αποτύχει, η εφαρμογή θα δοκιμάσει άλλους πάροχους (τυχαία λειτουργία) ή θα εμφανίσει σφάλμα (προτιμώμενη λειτουργία).",
+  "media_hosting_all_providers_failed_guidance": "Όλοι οι πάροχοι μεταφόρτωσης απέτυχαν. Δοκιμάστε ξανά ή επικολλήστε έναν σύνδεσμο χειροκίνητα.",
+  "upload_not_supported_web_before_link": "Η μεταφόρτωση πολυμέσων δεν υποστηρίζεται από το πρόγραμμα περιήγησής σας λόγω τεχνικών περιορισμών (CORS). Υποστηρίζεται στην εφαρμογή 5chan για Android και την εφαρμογή επιφάνειας εργασίας Mac/Linux/Windows.",
+  "upload_not_supported_web_link_text": "Λήψη από τη σελίδα επίσημης έκδοσης"
 }

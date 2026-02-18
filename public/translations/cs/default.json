@@ -287,5 +287,14 @@
   "media_hosting_none": "Žádné",
   "media_hosting_none_tip": "Skrývá tlačítko pro nahrávání souborů z formulářů příspěvků a odpovědí",
   "media_hosting": "Hostování médií",
-  "advanced_settings": "Pokročilé nastavení"
+  "advanced_settings": "Pokročilé nastavení",
+  "upload_failed_all_providers": "Všichni poskytovatelé selhali",
+  "upload_failed_preferred_guidance": "Zvolte jiného poskytovatele nebo nastavte náhodné.",
+  "media_hosting_random": "Náhodné",
+  "media_hosting_preferred": "Upřednostňovaný poskytovatel",
+  "media_hosting_preferred_provider_label": "Zvolit poskytovatele",
+  "media_hosting_preferred_failure_guidance": "Pokud váš preferovaný poskytovatel selže, aplikace vyzkouší další poskytovatele (režim náhodný) nebo zobrazí chybu (režim preferovaný).",
+  "media_hosting_all_providers_failed_guidance": "Všichni poskytovatelé nahrávání selhali. Zkuste to znovu nebo vložte odkaz ručně.",
+  "upload_not_supported_web_before_link": "Váš prohlížeč z důvodu technických omezení (CORS) nepodporuje nahrávání médií. Je podporováno v aplikaci 5chan pro Android a desktopové aplikaci pro Mac/Linux/Windows.",
+  "upload_not_supported_web_link_text": "Stáhnout z oficiální stránky vydání"
 }

@@ -16,6 +16,7 @@ import useIsSubplebbitOffline from '../../hooks/use-is-subplebbit-offline';
 import usePublishPost from '../../hooks/use-publish-post';
 import usePublishReply from '../../hooks/use-publish-reply';
 import { useFileUpload } from '../../hooks/use-file-upload';
+import { getShowUploadControls, isWebRuntime } from '../../lib/media-hosting/show-upload-controls';
 import useMediaHostingStore from '../../stores/use-media-hosting-store';
 import styles from './post-form.module.css';
 import capitalize from 'lodash/capitalize';
@@ -211,8 +212,8 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
       }
     },
   });
-  const selectedProvider = useMediaHostingStore((state) => state.selectedProvider);
-  const showUploadControls = selectedProvider !== 'none';
+  const uploadMode = useMediaHostingStore((state) => state.uploadMode);
+  const showUploadControls = getShowUploadControls(uploadMode, isWebRuntime());
 
   const hasInitializedDisplayName = useRef(false);
   useEffect(() => {

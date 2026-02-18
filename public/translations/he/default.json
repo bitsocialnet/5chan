@@ -287,5 +287,14 @@
   "media_hosting_none": "ללא",
   "media_hosting_none_tip": "מסתיר את כפתור העלאת הקבצים מטפסי פוסט ותשובה",
   "media_hosting": "אירוח מדיה",
-  "advanced_settings": "הגדרות מתקדמות"
+  "advanced_settings": "הגדרות מתקדמות",
+  "upload_failed_all_providers": "כל הספקים נכשלו",
+  "upload_failed_preferred_guidance": "בחר ספק אחר או הגדר לאקראי.",
+  "media_hosting_random": "אקראי",
+  "media_hosting_preferred": "ספק מועדף",
+  "media_hosting_preferred_provider_label": "בחר ספק",
+  "media_hosting_preferred_failure_guidance": "אם הספק המועדף שלך נכשל, האפליקציה תנסה ספקים אחרים (מצב אקראי) או תציג שגיאה (מצב מועדף).",
+  "media_hosting_all_providers_failed_guidance": "כל ספקי ההעלאה נכשלו. נסה שוב או הדבק קישור ידנית.",
+  "upload_not_supported_web_before_link": "העלאת מדיה אינה נתמכת על ידי הדפדפן שלך בשל מגבלות טכניות (CORS). זה נתמך באפליקציית 5chan לאנדרואיד ובאפליקציית הדסקטופ ל-Mac/Linux/Windows.",
+  "upload_not_supported_web_link_text": "הורד מהדף השחרור הרשמי"
 }

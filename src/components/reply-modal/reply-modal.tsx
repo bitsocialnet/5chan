@@ -9,6 +9,7 @@ import { isValidURL } from '../../lib/utils/url-utils';
 import { isAllView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import useSelectedTextStore from '../../stores/use-selected-text-store';
 import useReplyModalStore from '../../stores/use-reply-modal-store';
+import { getShowUploadControls, isWebRuntime } from '../../lib/media-hosting/show-upload-controls';
 import useMediaHostingStore from '../../stores/use-media-hosting-store';
 import { useDirectoryByAddress } from '../../hooks/use-directories';
 import usePublishReply from '../../hooks/use-publish-reply';
@@ -275,8 +276,8 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
       }
     },
   });
-  const selectedProvider = useMediaHostingStore((state) => state.selectedProvider);
-  const showUploadControls = selectedProvider !== 'none';
+  const uploadMode = useMediaHostingStore((state) => state.uploadMode);
+  const showUploadControls = getShowUploadControls(uploadMode, isWebRuntime());
 
   const hasInitializedDisplayName = useRef(false);
   useEffect(() => {

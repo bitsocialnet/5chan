@@ -287,5 +287,14 @@
   "media_hosting_none": "Ninguno",
   "media_hosting_none_tip": "Oculta el botón de carga de archivos de los formularios de publicación y respuesta",
   "media_hosting": "Alojamiento de Medios",
-  "advanced_settings": "Configuración avanzada"
+  "advanced_settings": "Configuración avanzada",
+  "upload_failed_all_providers": "Todos los proveedores fallaron",
+  "upload_failed_preferred_guidance": "Elige un proveedor diferente o configura en aleatorio.",
+  "media_hosting_random": "Aleatorio",
+  "media_hosting_preferred": "Proveedor preferido",
+  "media_hosting_preferred_provider_label": "Elegir proveedor",
+  "media_hosting_preferred_failure_guidance": "Si tu proveedor preferido falla, la app intentará otros proveedores (modo aleatorio) o mostrará un error (modo preferido).",
+  "media_hosting_all_providers_failed_guidance": "Todos los proveedores de subida fallaron. Inténtalo de nuevo o pega un enlace manualmente.",
+  "upload_not_supported_web_before_link": "La subida de medios no está soportada por tu navegador debido a limitaciones técnicas (CORS). Sí está soportada en la app 5chan para Android y la app de escritorio para Mac/Linux/Windows.",
+  "upload_not_supported_web_link_text": "Descargar desde la página de release oficial"
 }

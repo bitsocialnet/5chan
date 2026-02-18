@@ -287,5 +287,14 @@
   "media_hosting_none": "Tidak ada",
   "media_hosting_none_tip": "Menyembunyikan tombol unggah file dari formulir posting dan balasan",
   "media_hosting": "Hosting Media",
-  "advanced_settings": "Pengaturan lanjutan"
+  "advanced_settings": "Pengaturan lanjutan",
+  "upload_failed_all_providers": "Semua penyedia gagal",
+  "upload_failed_preferred_guidance": "Pilih penyedia lain atau atur ke acak.",
+  "media_hosting_random": "Acak",
+  "media_hosting_preferred": "Penyedia pilihan",
+  "media_hosting_preferred_provider_label": "Pilih penyedia",
+  "media_hosting_preferred_failure_guidance": "Jika penyedia pilihan Anda gagal, aplikasi akan mencoba penyedia lain (mode acak) atau menampilkan error (mode preferensi).",
+  "media_hosting_all_providers_failed_guidance": "Semua penyedia unggahan gagal. Coba lagi atau tempel link secara manual.",
+  "upload_not_supported_web_before_link": "Upload media tidak didukung oleh browser Anda karena batasan teknis (CORS). Didukung di aplikasi 5chan Android dan aplikasi desktop Mac/Linux/Windows.",
+  "upload_not_supported_web_link_text": "Unduh dari halaman rilis resmi"
 }

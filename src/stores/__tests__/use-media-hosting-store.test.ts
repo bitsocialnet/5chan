@@ -13,30 +13,54 @@ describe('useMediaHostingStore', () => {
 
   afterEach(() => {
     setItemSpy.mockRestore();
-    useMediaHostingStore.getState().setSelectedProvider('catbox');
+    useMediaHostingStore.getState().setUploadMode('random');
+    useMediaHostingStore.getState().setPreferredProvider('catbox');
   });
 
-  it('exports MEDIA_HOSTING_PROVIDERS with at least Catbox provider', () => {
+  it('exports MEDIA_HOSTING_PROVIDERS with ids, labels, homepage URLs, runtime metadata', () => {
     expect(MEDIA_HOSTING_PROVIDERS).toBeDefined();
-    expect(MEDIA_HOSTING_PROVIDERS.length).toBeGreaterThanOrEqual(1);
+    expect(MEDIA_HOSTING_PROVIDERS.length).toBe(3);
     const catbox = MEDIA_HOSTING_PROVIDERS.find((p) => p.id === 'catbox');
-    expect(catbox).toEqual({ id: 'catbox', name: 'Catbox', url: 'https://catbox.moe' });
+    expect(catbox).toEqual({
+      id: 'catbox',
+      label: 'Catbox',
+      homepageUrl: 'https://catbox.moe',
+      supportedRuntimes: ['web', 'electron', 'android'],
+    });
   });
 
-  it('defaults selectedProvider to catbox', () => {
-    const { selectedProvider } = useMediaHostingStore.getState();
-    expect(selectedProvider).toBe('catbox');
+  it('defaults uploadMode to random and preferredProvider to catbox', () => {
+    const { uploadMode, preferredProvider } = useMediaHostingStore.getState();
+    expect(uploadMode).toBe('random');
+    expect(preferredProvider).toBe('catbox');
   });
 
-  it('sets selectedProvider to none when setSelectedProvider is called with none', () => {
-    useMediaHostingStore.getState().setSelectedProvider('none');
-    const { selectedProvider } = useMediaHostingStore.getState();
-    expect(selectedProvider).toBe('none');
+  it('sets uploadMode to none when setUploadMode is called with none', () => {
+    useMediaHostingStore.getState().setUploadMode('none');
+    const { uploadMode } = useMediaHostingStore.getState();
+    expect(uploadMode).toBe('none');
   });
 
-  it('persists state to localStorage when setSelectedProvider is called', () => {
-    useMediaHostingStore.getState().setSelectedProvider('none');
+  it('persists state to localStorage when setUploadMode is called', () => {
+    useMediaHostingStore.getState().setUploadMode('none');
 
-    expect(setItemSpy).toHaveBeenCalledWith(STORAGE_KEY, expect.stringContaining('"selectedProvider":"none"'));
+    expect(setItemSpy).toHaveBeenCalledWith(STORAGE_KEY, expect.stringContaining('"uploadMode":"none"'));
+  });
+
+  it('persists preferredProvider when setPreferredProvider is called', () => {
+    useMediaHostingStore.getState().setPreferredProvider('imgur');
+
+    expect(setItemSpy).toHaveBeenCalledWith(STORAGE_KEY, expect.stringContaining('"preferredProvider":"imgur"'));
+  });
+
+  it('migrates legacy selectedProvider state to random + catbox', async () => {
+    const legacyState = { state: { selectedProvider: 'imgur' }, version: 0 };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(legacyState));
+
+    await useMediaHostingStore.persist.rehydrate();
+
+    const { uploadMode, preferredProvider } = useMediaHostingStore.getState();
+    expect(uploadMode).toBe('random');
+    expect(preferredProvider).toBe('catbox');
   });
 });

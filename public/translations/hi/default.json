@@ -287,5 +287,14 @@
   "media_hosting_none": "कोई नहीं",
   "media_hosting_none_tip": "पोस्ट और रिप्लाई फॉर्म से फ़ाइल अपलोड बटन को छिपाता है",
   "media_hosting": "मीडिया होस्टिंग",
-  "advanced_settings": "उन्नत सेटिंग्स"
+  "advanced_settings": "उन्नत सेटिंग्स",
+  "upload_failed_all_providers": "सभी प्रदाता विफल हो गए",
+  "upload_failed_preferred_guidance": "कोई अलग प्रदाता चुनें या यादृच्छिक पर सेट करें।",
+  "media_hosting_random": "यादृच्छिक",
+  "media_hosting_preferred": "पसंदीदा प्रदाता",
+  "media_hosting_preferred_provider_label": "प्रदाता चुनें",
+  "media_hosting_preferred_failure_guidance": "यदि आपका पसंदीदा प्रदाता विफल होता है, ऐप अन्य प्रदाताओं को आज़माएगा (यादृच्छिक मोड) या त्रुटि दिखाएगा (पसंदीदा मोड)।",
+  "media_hosting_all_providers_failed_guidance": "सभी अपलोड प्रदाता विफल हो गए। पुनः प्रयास करें या लिंक मैन्युअल रूप से पेस्ट करें।",
+  "upload_not_supported_web_before_link": "तकनीकी सीमाओं (CORS) के कारण आपका ब्राउज़र मीडिया अपलोड का समर्थन नहीं करता। यह 5chan एंड्रॉइड ऐप और Mac/Linux/Windows डेस्कटॉप ऐप में समर्थित है।",
+  "upload_not_supported_web_link_text": "आधिकारिक रिलीज़ पेज से डाउनलोड करें"
 }
