@@ -370,19 +370,21 @@ React Doctor is advisory quality tooling for React architecture/perf/correctness
 
 Never mark a task complete without proving it works. Agents tend to stop too early.
 
-- After code changes, **delegate verification to subagents**: run `yarn build`, `yarn lint`, `yarn type-check` and check the output
-- For UI changes, use a subagent to check the browser with playwright-cli
+- After code changes, run `yarn build`, `yarn lint`, `yarn type-check` and check the output
+- For UI/visual changes, check the browser with playwright-cli to verify rendering
+- After touching React components/hooks, run `yarn doctor` and fix any diagnostics
 - If verification fails, fix the issue and re-verify — **loop until it passes**, don't leave broken code
 - Ask yourself: "Would a staff engineer approve this?"
 
-### Subagent Strategy
+### Keep Context Lean
 
-Use subagents to keep the main context window lean.
+Delegate heavy work to subprocesses (subagents, background tasks, etc.) to avoid filling the main context window with build logs, test output, and browser snapshots.
 
-- Offload research, exploration, verification, and parallel analysis to subagents
-- One focused task per subagent — don't overload a single subagent
-- The main agent orchestrates; subagents do the heavy lifting (build logs, test output, browser checks stay out of main context)
-- For complex problems, launch multiple subagents in parallel
+- One focused task per subprocess — don't overload a single one
+- The main agent orchestrates; subprocesses do the heavy lifting
+- For complex problems, run multiple subprocesses in parallel
+
+**Note:** These guidelines are universal and tool-agnostic. This is a FOSS project — contributors use different AI tools (Cursor, Claude Code, Codex, etc.) each with their own subprocess/subagent systems. AGENTS.md describes *what* to do (verify, delegate, loop), not *how* your specific tool implements it. If your tool supports custom subagent definitions (e.g. `.cursor/agents/`, `.claude/agents/`), configure them locally — they're gitignored and won't be shared.
 
 ### Self-Improvement
 
