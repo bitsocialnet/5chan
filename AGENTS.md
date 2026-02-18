@@ -364,6 +364,34 @@ React Doctor is advisory quality tooling for React architecture/perf/correctness
 - Prioritize `error` diagnostics first, then `warning`.
 - Score is informative only; no merge blocking based on score yet.
 
+## Agent Workflow
+
+### Verify Before Done
+
+Never mark a task complete without proving it works. Agents tend to stop too early.
+
+- After code changes, **delegate verification to subagents**: run `yarn build`, `yarn lint`, `yarn type-check` and check the output
+- For UI changes, use a subagent to check the browser with playwright-cli
+- If verification fails, fix the issue and re-verify — **loop until it passes**, don't leave broken code
+- Ask yourself: "Would a staff engineer approve this?"
+
+### Subagent Strategy
+
+Use subagents to keep the main context window lean.
+
+- Offload research, exploration, verification, and parallel analysis to subagents
+- One focused task per subagent — don't overload a single subagent
+- The main agent orchestrates; subagents do the heavy lifting (build logs, test output, browser checks stay out of main context)
+- For complex problems, launch multiple subagents in parallel
+
+### Self-Improvement
+
+After ANY correction from the user, internalize it to prevent the same mistake.
+
+- Identify the root cause of the mistake, not just the symptom
+- Apply the lesson immediately to remaining work in the session
+- If the correction reveals a missing guideline, suggest adding it to AGENTS.md
+
 ## Boundaries
 
 - Never commit secrets or API keys
