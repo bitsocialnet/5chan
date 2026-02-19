@@ -184,7 +184,7 @@
   "more_threads_last_week": "{{count}} थ्रेड {{currentTimeFilterName}} से — [<1>पिछले सप्ताह के और थ्रेड दिखाएं</1>]",
   "more_threads_last_month": "{{count}} थ्रेड्स {{currentTimeFilterName}} से — [<1>अगले महीने के अधिक थ्रेड्स दिखाएं</1>]",
   "newer_threads_available": "नए थ्रेड्स उपलब्ध हैं — [<1>रिफ्रेश करें</1>]",
-  "stored_locally": "स्थानीय रूप से संग्रहीत ({{location}}), उपकरणों के बीच समन्वयित नहीं",
+  "stored_locally": "स्थानीय रूप से संग्रहीत ({{location}} डेटा में), डिवाइस पर सिंक नहीं",
   "choose_one": "एक चुनें:",
   "create": "बनाएं",
   "save_changes": "परिवर्तन सहेजें",

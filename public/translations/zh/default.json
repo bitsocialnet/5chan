@@ -184,7 +184,7 @@
   "more_threads_last_week": "{{count}} 主题自 {{currentTimeFilterName}} — [<1>显示更多来自上周的主题</1>]",
   "more_threads_last_month": "{{count}} 主题自 {{currentTimeFilterName}} — [<1>显示更多上个月的主题</1>]",
   "newer_threads_available": "有新的帖子可用 — [<1>刷新</1>]",
-  "stored_locally": "本地存储 ({{location}})，未在设备之间同步",
+  "stored_locally": "本地存储（位于 {{location}} 数据中），不会在设备间同步",
   "choose_one": "选择一个：",
   "create": "创建",
   "save_changes": "保存更改",

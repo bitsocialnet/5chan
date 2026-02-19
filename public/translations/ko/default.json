@@ -184,7 +184,7 @@
   "more_threads_last_week": "{{count}} 스레드 {{currentTimeFilterName}} 이후 — [<1>지난 주의 더 많은 스레드 보기</1>]",
   "more_threads_last_month": "{{count}} 스레드 {{currentTimeFilterName}} 이후 — [<1>지난 달의 스레드 더 보기</1>]",
   "newer_threads_available": "새로운 스레드 사용 가능 — [<1>새로 고침</1>]",
-  "stored_locally": "로컬에 저장됨 ({{location}}), 장치 간에 동기화되지 않음",
+  "stored_locally": "로컬에 저장됨 ({{location}} 데이터 내), 기기 간 동기화되지 않음",
   "choose_one": "하나를 선택하세요:",
   "create": "생성",
   "save_changes": "변경 사항 저장",

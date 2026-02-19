@@ -184,7 +184,7 @@
   "more_threads_last_week": "{{count}} スレッド {{currentTimeFilterName}} から — [<1>先週のスレッドをさらに表示</1>]",
   "more_threads_last_month": "{{count}} スレッド {{currentTimeFilterName}} から — [<1>先月のスレッドをさらに表示</1>]",
   "newer_threads_available": "新しいスレッドが利用可能 — [<1>更新</1>]",
-  "stored_locally": "ローカルに保存されています ({{location}})、デバイス間で同期されていません",
+  "stored_locally": "ローカルに保存（{{location}}のデータ内）、デバイス間で同期されません",
   "choose_one": "いずれかを選択してください:",
   "create": "作成",
   "save_changes": "変更を保存",

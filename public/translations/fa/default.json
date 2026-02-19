@@ -184,7 +184,7 @@
   "more_threads_last_week": "{{count}} موضوع از {{currentTimeFilterName}} — [<1>نمایش موضوعات بیشتر از هفته گذشته</1>]",
   "more_threads_last_month": "{{count}} پست از {{currentTimeFilterName}} — [<1>نمایش بیشتر پست‌های ماه گذشته</1>]",
   "newer_threads_available": "موضوعات جدیدتر در دسترس است — [<1>بروزرسانی</1>]",
-  "stored_locally": "محلی ذخیره شده ({{location}})، با دستگاه‌ها همگام‌سازی نشده است",
+  "stored_locally": "ذخیرهٔ محلی (در دادهٔ {{location}})، هم‌گام‌سازی نشده در دستگاه‌ها",
   "choose_one": "یکی را انتخاب کنید:",
   "create": "ایجاد",
   "save_changes": "ذخیره تغییرات",

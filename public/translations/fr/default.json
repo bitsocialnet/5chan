@@ -184,7 +184,7 @@
   "more_threads_last_week": "{{count}} fils depuis {{currentTimeFilterName}} — [<1>Afficher plus de fils de la semaine dernière</1>]",
   "more_threads_last_month": "{{count}} fils depuis {{currentTimeFilterName}} — [<1>Afficher plus de fils du mois dernier</1>]",
   "newer_threads_available": "Nouveaux fils disponibles — [<1>Rafraîchir</1>]",
-  "stored_locally": "Stocké localement ({{location}}), non synchronisé entre les appareils",
+  "stored_locally": "Stocké localement (dans les données {{location}}), non synchronisé entre les appareils",
   "choose_one": "Choisissez-en un :",
   "create": "Créer",
   "save_changes": "Enregistrer les modifications",

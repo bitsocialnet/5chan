@@ -184,7 +184,7 @@
   "more_threads_last_week": "{{count}} אשכולות מאז {{currentTimeFilterName}} — [<1>הצג עוד אשכולות מהשבוע שעבר</1>]",
   "more_threads_last_month": "{{count}} חוטים מאז {{currentTimeFilterName}} — [<1>הצג עוד חוטים מהחודש שעבר</1>]",
   "newer_threads_available": "נושאים חדשים זמינים — [<1>רענן</1>]",
-  "stored_locally": "מאוחסן מקומית ({{location}}), לא מסונכרן בין מכשירים",
+  "stored_locally": "נשמר מקומית (בנתוני {{location}}), לא מסונכרן בין מכשירים",
   "choose_one": "בחר אחת:",
   "create": "צור",
   "save_changes": "שמור שינויים",

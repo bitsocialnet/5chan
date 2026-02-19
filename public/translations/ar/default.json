@@ -184,7 +184,7 @@
   "more_threads_last_week": "{{count}} مواضيع منذ {{currentTimeFilterName}} — [<1>عرض المزيد من المواضيع من الأسبوع الماضي</1>]",
   "more_threads_last_month": "{{count}} مواضيع منذ {{currentTimeFilterName}} — [<1>عرض المزيد من المواضيع من الشهر الماضي</1>]",
   "newer_threads_available": "مواضيع أحدث متاحة — [<1>تحديث</1>]",
-  "stored_locally": "مخزنة محليًا ({{location}})، ليست متزامنة عبر الأجهزة",
+  "stored_locally": "مُخزّن محليًا (في بيانات {{location}})، غير مُزامَن بين الأجهزة",
   "choose_one": "اختر واحدة:",
   "create": "إنشاء",
   "save_changes": "حفظ التغييرات",

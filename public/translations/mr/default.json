@@ -184,7 +184,7 @@
   "more_threads_last_week": "{{count}} थ्रेड {{currentTimeFilterName}} पासून — [<1>गेल्या आठवड्यातील अधिक थ्रेड्स पहा</1>]",
   "more_threads_last_month": "{{count}} ध糀ं {{currentTimeFilterName}} पासून — [<1>गेल्या महिन्यातील आणखी थ्रेड्स दाखवा</1>]",
   "newer_threads_available": "नवीन थ्रेड्स उपलब्ध आहेत — [<1>रिफ्रेश करा</1>]",
-  "stored_locally": "स्थानिकपणे संग्रहित ({{location}}), उपकरणांमध्ये समन्वयित केलेले नाही",
+  "stored_locally": "स्थानिकरित्या संग्रहित ({{location}} डेटामध्ये), उपकरणांमध्ये समक्रमित नाही",
   "choose_one": "एक निवडा:",
   "create": "तयार करा",
   "save_changes": "बदलांना जतन करा",

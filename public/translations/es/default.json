@@ -184,7 +184,7 @@
   "more_threads_last_week": "{{count}} hilos desde {{currentTimeFilterName}} — [<1>Mostrar más hilos de la semana pasada</1>]",
   "more_threads_last_month": "{{count}} hilos desde {{currentTimeFilterName}} — [<1>Ver más hilos del mes pasado</1>]",
   "newer_threads_available": "Nuevos hilos disponibles — [<1>Actualizar</1>]",
-  "stored_locally": "Almacenado localmente ({{location}}), no sincronizado entre dispositivos",
+  "stored_locally": "Almacenado localmente (en datos de {{location}}), no sincronizado entre dispositivos",
   "choose_one": "Elige uno:",
   "create": "Crear",
   "save_changes": "Guardar cambios",

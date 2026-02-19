@@ -184,7 +184,7 @@
   "more_threads_last_week": "{{count}} fire de discuție de la {{currentTimeFilterName}} — [<1>Arată mai multe fire din săptămâna trecută</1>]",
   "more_threads_last_month": "{{count}} subiecte din {{currentTimeFilterName}} — [<1>Afișați mai multe subiecte de luna trecută</1>]",
   "newer_threads_available": "Subiecte mai noi disponibile — [<1>Actualizaţi</1>]",
-  "stored_locally": "Stocat local ({{location}}), nu este sincronizat între dispozitive",
+  "stored_locally": "Stocat local (în datele {{location}}), nesincronizat între dispozitive",
   "choose_one": "Alege una:",
   "create": "Creează",
   "save_changes": "Salvează modificările",

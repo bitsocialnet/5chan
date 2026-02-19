@@ -184,7 +184,7 @@
   "more_threads_last_week": "{{count}} threads sinds {{currentTimeFilterName}} — [<1>Toon meer threads van vorige week</1>]",
   "more_threads_last_month": "{{count}} threads sinds {{currentTimeFilterName}} — [<1>Meer threads van afgelopen maand tonen</1>]",
   "newer_threads_available": "Nieuwere threads beschikbaar — [<1>Vernieuwen</1>]",
-  "stored_locally": "Lokaal opgeslagen ({{location}}), niet gesynchroniseerd tussen apparaten",
+  "stored_locally": "Lokaal opgeslagen (in {{location}} gegevens), niet gesynchroniseerd tussen apparaten",
   "choose_one": "Kies er een:",
   "create": "Maak aan",
   "save_changes": "Wijzigingen opslaan",

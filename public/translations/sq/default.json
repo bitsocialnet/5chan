@@ -184,7 +184,7 @@
   "more_threads_last_week": "{{count}} tema nga {{currentTimeFilterName}} — [<1>Shfaq më shumë tema nga java e kaluar</1>]",
   "more_threads_last_month": "{{count}} tema nga {{currentTimeFilterName}} — [<1>Shfaq më shumë tema nga muaji i kaluar</1>]",
   "newer_threads_available": "Temat më të reja të disponueshme — [<1>Rifresko</1>]",
-  "stored_locally": "Ruajtur lokalmente ({{location}}), nuk është sinkronizuar ndërmjet pajisjeve",
+  "stored_locally": "Ruhet lokalisht (në të dhënat {{location}}), nuk sinkronizohet ndër pajisjet",
   "choose_one": "Zgjidhni një:",
   "create": "Krijo",
   "save_changes": "Ruaj ndryshimet",

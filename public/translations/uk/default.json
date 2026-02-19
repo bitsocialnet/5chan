@@ -184,7 +184,7 @@
   "more_threads_last_week": "{{count}} тем з {{currentTimeFilterName}} — [<1>Показати більше тем з минулого тижня</1>]",
   "more_threads_last_month": "{{count}} тем з {{currentTimeFilterName}} — [<1>Показати більше тем з минулого місяця</1>]",
   "newer_threads_available": "Доступні нові теми — [<1>Оновити</1>]",
-  "stored_locally": "Збережено локально ({{location}}), не синхронізується між пристроями",
+  "stored_locally": "Збережено локально (у даних {{location}}), не синхронізується між пристроями",
   "choose_one": "Виберіть один:",
   "create": "Створити",
   "save_changes": "Зберегти зміни",

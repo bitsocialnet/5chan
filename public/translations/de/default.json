@@ -184,7 +184,7 @@
   "more_threads_last_week": "{{count}} Threads seit {{currentTimeFilterName}} — [<1>Mehr Threads aus der letzten Woche anzeigen</1>]",
   "more_threads_last_month": "{{count}} Threads seit {{currentTimeFilterName}} — [<1>Mehr Threads vom letzten Monat anzeigen</1>]",
   "newer_threads_available": "Neuere Threads verfügbar — [<1>Aktualisieren</1>]",
-  "stored_locally": "Lokal gespeichert ({{location}}), nicht geräteübergreifend synchronisiert",
+  "stored_locally": "Lokal gespeichert (in {{location}}-Daten), nicht zwischen Geräten synchronisiert",
   "choose_one": "Wählen Sie eine:",
   "create": "Erstellen",
   "save_changes": "Änderungen speichern",

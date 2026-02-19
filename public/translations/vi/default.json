@@ -184,7 +184,7 @@
   "more_threads_last_week": "{{count}} chủ đề từ {{currentTimeFilterName}} — [<1>Xem thêm chủ đề từ tuần trước</1>]",
   "more_threads_last_month": "{{count}} chủ đề từ {{currentTimeFilterName}} — [<1>Hiển thị thêm các chủ đề từ tháng trước</1>]",
   "newer_threads_available": "Có các chủ đề mới — [<1>Làm mới</1>]",
-  "stored_locally": "Lưu trữ cục bộ ({{location}}), không được đồng bộ qua các thiết bị",
+  "stored_locally": "Lưu cục bộ (trong dữ liệu {{location}}), không đồng bộ giữa thiết bị",
   "choose_one": "Chọn một:",
   "create": "Tạo",
   "save_changes": "Lưu thay đổi",

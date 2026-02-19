@@ -184,7 +184,7 @@
   "more_threads_last_week": "{{count}} tråder siden {{currentTimeFilterName}} — [<1>Vis flere tråder fra forrige uke</1>]",
   "more_threads_last_month": "{{count}} tråder siden {{currentTimeFilterName}} — [<1>Vis flere tråder fra forrige måned</1>]",
   "newer_threads_available": "Nyere tråder tilgjengelig — [<1>Oppdater</1>]",
-  "stored_locally": "Lagring lokalt ({{location}}), ikke synkronisert på tvers av enheter",
+  "stored_locally": "Lagres lokalt (i {{location}} data), ikke synkronisert på tvers av enheter",
   "choose_one": "Velg en:",
   "create": "Opprett",
   "save_changes": "Lagre endringer",

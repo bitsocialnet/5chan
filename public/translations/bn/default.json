@@ -184,7 +184,7 @@
   "more_threads_last_week": "{{count}} থ্রেড {{currentTimeFilterName}} থেকে — [<1>গত সপ্তাহের আরও থ্রেড দেখান</1>]",
   "more_threads_last_month": "{{count}} থ্রেড {{currentTimeFilterName}} থেকে — [<1>গত মাসের আরও থ্রেড দেখান</1>]",
   "newer_threads_available": "নতুন থ্রেড উপলব্ধ — [<1>রিফ্রেশ করুন</1>]",
-  "stored_locally": "স্থানীয়ভাবে সংরক্ষিত ({{location}}), ডিভাইসের মধ্যে সিঙ্ক করা হয়নি",
+  "stored_locally": "স্থানীয়ভাবে সংরক্ষিত ({{location}} ডেটাতে), ডিভাইস জুড়ে সিঙ্ক হয় না",
   "choose_one": "একটি নির্বাচন করুন:",
   "create": "তৈরি করুন",
   "save_changes": "পরিবর্তনগুলি সংরক্ষণ করুন",

@@ -184,7 +184,7 @@
   "more_threads_last_week": "{{count}} trådar sedan {{currentTimeFilterName}} — [<1>Visa fler trådar från förra veckan</1>]",
   "more_threads_last_month": "{{count}} trådar sedan {{currentTimeFilterName}} — [<1>Visa fler trådar från förra månaden</1>]",
   "newer_threads_available": "Nyare trådar tillgängliga — [<1>Uppdatera</1>]",
-  "stored_locally": "Lagrad lokalt ({{location}}), inte synkroniserad mellan enheter",
+  "stored_locally": "Lagrat lokalt (i {{location}} data), inte synkroniserat mellan enheter",
   "choose_one": "Välj en:",
   "create": "Skapa",
   "save_changes": "Spara ändringar",

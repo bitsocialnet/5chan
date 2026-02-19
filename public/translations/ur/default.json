@@ -184,7 +184,7 @@
   "more_threads_last_week": "{{count}} تھریڈ {{currentTimeFilterName}} سے — [<1>گزشتہ ہفتے کے مزید تھریڈ دیکھیں</1>]",
   "more_threads_last_month": "{{count}} تھریڈز {{currentTimeFilterName}} سے — [<1>پچھلے ماہ کے مزید تھریڈز دکھائیں</1>]",
   "newer_threads_available": "نئے تھریڈ دستیاب ہیں — [<1>ریف्रش کریں</1>]",
-  "stored_locally": "مقامی طور پر محفوظ ({{location}})، آلات کے درمیان ہم وقت سازی نہیں کی گئی",
+  "stored_locally": "مقامی طور پر محفوظ ({{location}} ڈیٹا میں)، آلات میں مطابقت پذیری نہیں",
   "choose_one": "ایک کا انتخاب کریں:",
   "create": "تخلیق کریں",
   "save_changes": "تبدیلیاں محفوظ کریں",

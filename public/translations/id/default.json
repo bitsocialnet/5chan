@@ -184,7 +184,7 @@
   "more_threads_last_week": "{{count}} thread sejak {{currentTimeFilterName}} — [<1>Show lebih banyak thread dari minggu lalu</1>]",
   "more_threads_last_month": "{{count}} thread sejak {{currentTimeFilterName}} — [<1>Tampilkan lebih banyak thread dari bulan lalu</1>]",
   "newer_threads_available": "Thread terbaru tersedia — [<1>Segarkan</1>]",
-  "stored_locally": "Disimpan secara lokal ({{location}}), tidak disinkronkan antar perangkat",
+  "stored_locally": "Disimpan secara lokal (dalam data {{location}}), tidak disinkronkan antar perangkat",
   "choose_one": "Pilih satu:",
   "create": "Buat",
   "save_changes": "Simpan Perubahan",

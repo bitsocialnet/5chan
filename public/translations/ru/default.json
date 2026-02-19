@@ -184,7 +184,7 @@
   "more_threads_last_week": "{{count}} тредов с {{currentTimeFilterName}} — [<1>Показать больше тредов за прошлую неделю</1>]",
   "more_threads_last_month": "{{count}} темы с {{currentTimeFilterName}} — [<1>Показать больше тем с прошлого месяца</1>]",
   "newer_threads_available": "Доступны новые темы — [<1>Обновить</1>]",
-  "stored_locally": "Сохранено локально ({{location}}), не синхронизировано между устройствами",
+  "stored_locally": "Сохранено локально (в данных {{location}}), не синхронизируется между устройствами",
   "choose_one": "Выберите один:",
   "create": "Создать",
   "save_changes": "Сохранить изменения",

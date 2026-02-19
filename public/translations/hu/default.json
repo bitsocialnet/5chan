@@ -184,7 +184,7 @@
   "more_threads_last_week": "{{count}} szál a {{currentTimeFilterName}} óta — [<1>Mutass több szálat a múlt héten</1>]",
   "more_threads_last_month": "{{count}} szál {{currentTimeFilterName}} óta — [<1>Több szál megjelenítése a múlt hónapból</1>]",
   "newer_threads_available": "Újabb szálak elérhetők — [<1>Frissíteni</1>]",
-  "stored_locally": "Helyben tárolva ({{location}}), nem szinkronizálva eszközök között",
+  "stored_locally": "Helyileg tárolva (a {{location}} adatában), nem szinkronizálva az eszközök között",
   "choose_one": "Válasszon egyet:",
   "create": "Létrehozás",
   "save_changes": "Változások mentése",

@@ -184,7 +184,7 @@
   "more_threads_last_week": "{{count}} กระทู้ตั้งแต่ {{currentTimeFilterName}} — [<1>แสดงกระทู้เพิ่มเติมจากสัปดาห์ที่แล้ว</1>]",
   "more_threads_last_month": "{{count}} กระทู้ตั้งแต่ {{currentTimeFilterName}} — [<1>แสดงกระทู้จากเดือนที่แล้วเพิ่มเติม</1>]",
   "newer_threads_available": "มีกระทู้ใหม่ที่พร้อมใช้งาน — [<1>รีเฟรช</1>]",
-  "stored_locally": "จัดเก็บในเครื่อง ({{location}}) ไม่ได้ซิงค์ข้ามอุปกรณ์",
+  "stored_locally": "เก็บไว้ในเครื่อง (ในข้อมูล {{location}}), ไม่ซิงค์ระหว่างอุปกรณ์",
   "choose_one": "เลือกหนึ่ง:",
   "create": "สร้าง",
   "save_changes": "บันทึกการเปลี่ยนแปลง",
