@@ -296,5 +296,6 @@
   "media_hosting_preferred_failure_guidance": "যদি আপনার পছন্দের প্রদানকারী ব্যর্থ হয়, অ্যাপটি অন্যান্য প্রদানকারীদের চেষ্টা করবে (এলোমেলো মোড) বা একটি ত্রুটি দেখাবে (পছন্দের মোড)।",
   "media_hosting_all_providers_failed_guidance": "সমস্ত আপলোড প্রদানকারী ব্যর্থ। আবার চেষ্টা করুন বা লিঙ্ক ম্যানুয়ালি পেস্ট করুন।",
   "upload_not_supported_web_before_link": "প্রযুক্তিগত সীমাবদ্ধতার কারণে (CORS) আপনার ব্রাউজার মিডিয়া আপলোড সমর্থন করে না। এটি 5chan অ্যান্ড্রয়েড অ্যাপ এবং Mac/Linux/Windows ডেস্কটপ অ্যাপে সমর্থিত।",
-  "upload_not_supported_web_link_text": "অফিসিয়াল রিলিজ পৃষ্ঠা থেকে ডাউনলোড করুন"
+  "upload_not_supported_web_link_text": "অফিসিয়াল রিলিজ পৃষ্ঠা থেকে ডাউনলোড করুন",
+  "board_subscriptions": "বোর্ড সাবস্ক্রিপশন"
 }

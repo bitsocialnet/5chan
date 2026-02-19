@@ -296,5 +296,6 @@
   "media_hosting_preferred_failure_guidance": "אם הספק המועדף שלך נכשל, האפליקציה תנסה ספקים אחרים (מצב אקראי) או תציג שגיאה (מצב מועדף).",
   "media_hosting_all_providers_failed_guidance": "כל ספקי ההעלאה נכשלו. נסה שוב או הדבק קישור ידנית.",
   "upload_not_supported_web_before_link": "העלאת מדיה אינה נתמכת על ידי הדפדפן שלך בשל מגבלות טכניות (CORS). זה נתמך באפליקציית 5chan לאנדרואיד ובאפליקציית הדסקטופ ל-Mac/Linux/Windows.",
-  "upload_not_supported_web_link_text": "הורד מהדף השחרור הרשמי"
+  "upload_not_supported_web_link_text": "הורד מהדף השחרור הרשמי",
+  "board_subscriptions": "מנויים ללוחות"
 }

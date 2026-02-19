@@ -188,7 +188,7 @@ const SettingsModal = () => {
         <div id='subscriptions-settings' className={`${styles.setting} ${styles.category}`}>
           <label onClick={() => handleCategoryClick('subscriptions-settings', showSubscriptionsSettings, setShowSubscriptionsSettings)}>
             <span className={showSubscriptionsSettings ? styles.hideButton : styles.showButton} />
-            {t('subscriptions')}
+            {t('board_subscriptions')}
           </label>
         </div>
         {showSubscriptionsSettings && <SubscriptionsSetting />}

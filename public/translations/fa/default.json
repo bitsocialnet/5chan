@@ -296,5 +296,6 @@
   "media_hosting_preferred_failure_guidance": "اگر ارائه‌دهنده ترجیحی شما ناموفق باشد، برنامه ارائه‌دهندگان دیگر را امتحان می‌کند (حالت تصادفی) یا خطا نمایش می‌دهد (حالت ترجیحی).",
   "media_hosting_all_providers_failed_guidance": "همه ارائه‌دهندگان آپلود ناموفق بودند. دوباره تلاش کنید یا لینک را دستی جایگذاری کنید.",
   "upload_not_supported_web_before_link": "آپلود رسانه به دلیل محدودیت‌های فنی (CORS) توسط مرورگر شما پشتیبانی نمی‌شود. در اپلیکیشن 5chan اندروید و اپلیکیشن دسکتاپ Mac/Linux/Windows پشتیبانی می‌شود.",
-  "upload_not_supported_web_link_text": "دانلود از صفحه انتشار رسمی"
+  "upload_not_supported_web_link_text": "دانلود از صفحه انتشار رسمی",
+  "board_subscriptions": "اشتراک‌های تابلو"
 }

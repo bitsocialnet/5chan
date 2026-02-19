@@ -296,5 +296,6 @@
   "media_hosting_preferred_failure_guidance": "Kung nabigo ang iyong gustong provider, susubukan ng app ang iba pang provider (Random mode) o magpapakita ng error (Preferred mode).",
   "media_hosting_all_providers_failed_guidance": "Lahat ng mga upload provider ay nabigo. Subukan muli o i-paste ang link nang manu-mano.",
   "upload_not_supported_web_before_link": "Ang pag-upload ng media ay hindi sinusuportahan ng iyong browser dahil sa mga teknikal na limitasyon (CORS). Ito ay sinusuportahan sa 5chan Android app at Mac/Linux/Windows desktop app.",
-  "upload_not_supported_web_link_text": "I-download mula sa opisyal na release page"
+  "upload_not_supported_web_link_text": "I-download mula sa opisyal na release page",
+  "board_subscriptions": "Mga subscription sa board"
 }

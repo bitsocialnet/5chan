@@ -296,5 +296,6 @@
   "media_hosting_preferred_failure_guidance": "Nếu nhà cung cấp ưu tiên của bạn thất bại, ứng dụng sẽ thử các nhà cung cấp khác (chế độ ngẫu nhiên) hoặc hiển thị lỗi (chế độ ưu tiên).",
   "media_hosting_all_providers_failed_guidance": "Tất cả nhà cung cấp tải lên đều thất bại. Thử lại hoặc dán liên kết thủ công.",
   "upload_not_supported_web_before_link": "Tải lên phương tiện không được trình duyệt của bạn hỗ trợ do hạn chế kỹ thuật (CORS). Được hỗ trợ trong ứng dụng 5chan Android và ứng dụng desktop Mac/Linux/Windows.",
-  "upload_not_supported_web_link_text": "Tải xuống từ trang phát hành chính thức"
+  "upload_not_supported_web_link_text": "Tải xuống từ trang phát hành chính thức",
+  "board_subscriptions": "Đăng ký bảng"
 }

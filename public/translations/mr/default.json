@@ -296,5 +296,6 @@
   "media_hosting_preferred_failure_guidance": "जर तुमचा पसंतीचा प्रदाता अयशस्वी झाला, तर अॅप इतर प्रदात्यांना वापरेल (यादृच्छिक मोड) किंवा त्रुटी दर्शवेल (पसंतीचा मोड).",
   "media_hosting_all_providers_failed_guidance": "सर्व अपलोड प्रदाते अयशस्वी झाले. पुन्हा प्रयत्न करा किंवा लिंक स्वहस्ते पेस्ट करा.",
   "upload_not_supported_web_before_link": "तांत्रिक मर्यादांमुळे (CORS) तुमचा ब्राउझर मीडिया अपलोड समर्थित नाही. ते 5chan Android अॅप आणि Mac/Linux/Windows डेस्कटॉप अॅपमध्ये समर्थित आहे.",
-  "upload_not_supported_web_link_text": "अधिकृत रिलीझ पेजवरून डाउनलोड करा"
+  "upload_not_supported_web_link_text": "अधिकृत रिलीझ पेजवरून डाउनलोड करा",
+  "board_subscriptions": "बोर्ड सदस्यता"
 }

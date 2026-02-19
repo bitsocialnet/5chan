@@ -296,5 +296,6 @@
   "media_hosting_preferred_failure_guidance": "선호하는 제공업체가 실패하면 앱이 다른 제공업체를 시도합니다(무작위 모드) 또는 오류를 표시합니다(선호 모드).",
   "media_hosting_all_providers_failed_guidance": "모든 업로드 제공업체가 실패했습니다. 다시 시도하거나 링크를 수동으로 붙여넣으세요.",
   "upload_not_supported_web_before_link": "기술적 제한(CORS)으로 인해 브라우저에서는 미디어 업로드를 지원하지 않습니다. 5chan Android 앱과 Mac/Linux/Windows 데스크톱 앱에서는 지원됩니다.",
-  "upload_not_supported_web_link_text": "공식 출시 페이지에서 다운로드"
+  "upload_not_supported_web_link_text": "공식 출시 페이지에서 다운로드",
+  "board_subscriptions": "보드 구독"
 }

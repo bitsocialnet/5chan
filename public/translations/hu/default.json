@@ -296,5 +296,6 @@
   "media_hosting_preferred_failure_guidance": "Ha az előnyben részesített szolgáltató sikertelen, az alkalmazás más szolgáltatókat próbál (véletlenszerű mód) vagy hibát jelenít meg (előnyben részesített mód).",
   "media_hosting_all_providers_failed_guidance": "Minden feltöltési szolgáltató sikertelen volt. Próbálja újra vagy illessze be a linket manuálisan.",
   "upload_not_supported_web_before_link": "A böngésző nem támogatja a média feltöltését technikai korlátozások miatt (CORS). A 5chan Android alkalmazásban és a Mac/Linux/Windows asztali alkalmazásban támogatott.",
-  "upload_not_supported_web_link_text": "Letöltés a hivatalos kiadási oldalról"
+  "upload_not_supported_web_link_text": "Letöltés a hivatalos kiadási oldalról",
+  "board_subscriptions": "Fórum feliratkozások"
 }

@@ -296,5 +296,6 @@
   "media_hosting_preferred_failure_guidance": "Se o provedor preferido falhar, o app tentará outros provedores (modo aleatório) ou mostrará um erro (modo preferido).",
   "media_hosting_all_providers_failed_guidance": "Todos os provedores de envio falharam. Tente novamente ou cole um link manualmente.",
   "upload_not_supported_web_before_link": "O envio de mídia não é suportado pelo seu navegador devido a limitações técnicas (CORS). É suportado no aplicativo 5chan para Android e no aplicativo de desktop Mac/Linux/Windows.",
-  "upload_not_supported_web_link_text": "Baixar da página de lançamento oficial"
+  "upload_not_supported_web_link_text": "Baixar da página de lançamento oficial",
+  "board_subscriptions": "Assinaturas de quadros"
 }

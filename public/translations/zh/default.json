@@ -296,5 +296,6 @@
   "media_hosting_preferred_failure_guidance": "如果首选提供商失败，应用将尝试其他提供商（随机模式）或显示错误（首选模式）。",
   "media_hosting_all_providers_failed_guidance": "所有上传提供商均失败。请重试或手动粘贴链接。",
   "upload_not_supported_web_before_link": "由于技术限制（CORS），您的浏览器不支持上传媒体。在 5chan Android 应用和 Mac/Linux/Windows 桌面应用中支持。",
-  "upload_not_supported_web_link_text": "从官方发布页面下载"
+  "upload_not_supported_web_link_text": "从官方发布页面下载",
+  "board_subscriptions": "板块订阅"
 }

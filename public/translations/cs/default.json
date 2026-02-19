@@ -296,5 +296,6 @@
   "media_hosting_preferred_failure_guidance": "Pokud váš preferovaný poskytovatel selže, aplikace vyzkouší další poskytovatele (režim náhodný) nebo zobrazí chybu (režim preferovaný).",
   "media_hosting_all_providers_failed_guidance": "Všichni poskytovatelé nahrávání selhali. Zkuste to znovu nebo vložte odkaz ručně.",
   "upload_not_supported_web_before_link": "Váš prohlížeč z důvodu technických omezení (CORS) nepodporuje nahrávání médií. Je podporováno v aplikaci 5chan pro Android a desktopové aplikaci pro Mac/Linux/Windows.",
-  "upload_not_supported_web_link_text": "Stáhnout z oficiální stránky vydání"
+  "upload_not_supported_web_link_text": "Stáhnout z oficiální stránky vydání",
+  "board_subscriptions": "Odběry desek"
 }
