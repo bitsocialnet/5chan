@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigationType, useParams } from 'react-router-dom';
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
-import { Comment, useAuthorAvatar, useEditedComment, useReplies, useAccount, usePublishCommentModeration, useAccountComment } from '@plebbit/plebbit-react-hooks';
+import { Comment, useEditedComment, useReplies, useAccount, usePublishCommentModeration, useAccountComment } from '@plebbit/plebbit-react-hooks';
 import Plebbit from '@plebbit/plebbit-js';
 import styles from '../../views/post/post.module.css';
 import { shouldShowSnow } from '../../lib/snow';
@@ -14,7 +14,6 @@ import { formatUserIDForDisplay } from '../../lib/utils/string-utils';
 import useModQueueStore from '../../stores/use-mod-queue-store';
 import { useDirectories } from '../../hooks/use-directories';
 import { getBoardPath } from '../../lib/utils/route-utils';
-import useAvatarVisibilityStore from '../../stores/use-avatar-visibility-store';
 import useAuthorAddressClick from '../../hooks/use-author-address-click';
 import { useCommentMediaInfo } from '../../hooks/use-comment-media-info';
 import useCountLinksInReplies from '../../hooks/use-count-links-in-replies';
@@ -65,8 +64,6 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
   const { address, shortAddress } = author || {};
   const displayName = author?.displayName?.trim();
   const authorRole = roles?.[address]?.role?.replace('moderator', 'mod');
-  const { imageUrl: avatarImageUrl } = useAuthorAvatar({ author });
-  const { hideAvatars } = useAvatarVisibilityStore();
 
   const params = useParams();
   const location = useLocation();
@@ -252,11 +249,6 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
                 </span>
               )}
             </span>
-            {author?.avatar && !(deleted || removed) && !hideAvatars && avatarImageUrl ? (
-              <span className={styles.authorAvatar}>
-                <img src={avatarImageUrl} alt='' />
-              </span>
-            ) : null}
             {showUserID && (
               <>
                 (ID: {''}

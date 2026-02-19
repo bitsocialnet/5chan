@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import useAvatarVisibilityStore from '../../../stores/use-avatar-visibility-store';
 import useTheme from '../../../hooks/use-theme';
 import packageJson from '../../../../package.json';
 import styles from './interface-settings.module.css';
@@ -124,12 +123,7 @@ const InterfaceLanguage = () => {
 
 const InterfaceSettings = () => {
   const { t } = useTranslation();
-  const { hideAvatars, setHideAvatars } = useAvatarVisibilityStore();
   const { fitExpandedImagesToScreen, setFitExpandedImagesToScreen } = useExpandedMediaStore();
-
-  const handleHideAvatarsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setHideAvatars(e.target.checked);
-  };
 
   return (
     <div className={styles.interfaceSettings}>
@@ -151,12 +145,6 @@ const InterfaceSettings = () => {
           {capitalize(t('fit_expanded_images_to_screen'))}
         </label>
         <div className={styles.settingTip}>{capitalize(t('fit_expanded_images_to_screen_tip'))}</div>
-      </div>
-      <div className={styles.setting}>
-        <label>
-          <input type='checkbox' checked={hideAvatars} onChange={handleHideAvatarsChange} /> {capitalize(t('hide_avatars'))}
-        </label>
-        <div className={styles.settingTip}>{capitalize(t('hide_avatars_tip'))}</div>
       </div>
     </div>
   );

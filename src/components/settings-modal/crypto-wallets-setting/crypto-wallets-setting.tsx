@@ -102,7 +102,7 @@ const CryptoWalletsForm = ({ account }: { account: Account | undefined }) => {
     walletsArray.length > 0 ? (
       <div key={selectedWallet} className={styles.walletBox}>
         <div className={`${styles.walletField} ${styles.step1}`}>
-          <span className={styles.walletFieldTitle}>{capitalize(t('chain_ticker'))}: </span>
+          <span className={styles.walletFieldTitle}>Chain ticker: </span>
           <input
             type='text'
             onChange={(e) => setWalletsArrayProperty(selectedWallet, 'chainTicker', e.target.value)}

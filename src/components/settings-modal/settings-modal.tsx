@@ -3,7 +3,6 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import styles from './settings-modal.module.css';
 import AccountSettings from './account-settings';
-import AvatarSettings from './avatar-settings';
 import CryptoAddressSetting from './crypto-address-setting';
 import CryptoWalletsSetting from './crypto-wallets-setting';
 import InterfaceSettings from './interface-settings';
@@ -38,7 +37,6 @@ const SettingsModal = () => {
   const [showInterfaceSettings, setShowInterfaceSettings] = useState(false);
   const [showMediaHostingSettings, setShowMediaHostingSettings] = useState(false);
   const [showAccountSettings, setShowAccountSettings] = useState(false);
-  const [showAvatarSettings, setShowAvatarSettings] = useState(false);
   const [showCryptoAddressSetting, setShowCryptoAddressSetting] = useState(false);
   const [showCryptoWalletSettings, setShowCryptoWalletSettings] = useState(false);
   const [showSubscriptionsSettings, setShowSubscriptionsSettings] = useState(false);
@@ -50,7 +48,6 @@ const SettingsModal = () => {
       Number(showInterfaceSettings) +
       Number(showMediaHostingSettings) +
       Number(showAccountSettings) +
-      Number(showAvatarSettings) +
       Number(showCryptoAddressSetting) +
       Number(showCryptoWalletSettings) +
       Number(showSubscriptionsSettings) +
@@ -62,7 +59,6 @@ const SettingsModal = () => {
     if (showInterfaceSettings && 'interface-settings' !== excludeCategoryId) return 'interface-settings';
     if (showMediaHostingSettings && 'media-hosting-settings' !== excludeCategoryId) return 'media-hosting-settings';
     if (showAccountSettings && 'account-settings' !== excludeCategoryId) return 'account-settings';
-    if (showAvatarSettings && 'avatar-settings' !== excludeCategoryId) return 'avatar-settings';
     if (showCryptoAddressSetting && 'crypto-address-settings' !== excludeCategoryId) return 'crypto-address-settings';
     if (showCryptoWalletSettings && 'crypto-wallet-settings' !== excludeCategoryId) return 'crypto-wallet-settings';
     if (showSubscriptionsSettings && 'subscriptions-settings' !== excludeCategoryId) return 'subscriptions-settings';
@@ -102,7 +98,6 @@ const SettingsModal = () => {
       setShowInterfaceSettings(hash === 'interface-settings');
       setShowMediaHostingSettings(hash === 'media-hosting-settings');
       setShowAccountSettings(hash === 'account-settings');
-      setShowAvatarSettings(hash === 'avatar-settings');
       setShowCryptoAddressSetting(hash === 'crypto-address-settings');
       setShowCryptoWalletSettings(hash === 'crypto-wallet-settings');
       setShowSubscriptionsSettings(hash === 'subscriptions-settings');
@@ -116,7 +111,6 @@ const SettingsModal = () => {
     setShowInterfaceSettings(newExpandState);
     setShowMediaHostingSettings(newExpandState);
     setShowAccountSettings(newExpandState);
-    setShowAvatarSettings(newExpandState);
     setShowCryptoAddressSetting(newExpandState);
     setShowCryptoWalletSettings(newExpandState);
     setShowSubscriptionsSettings(newExpandState);
@@ -158,13 +152,6 @@ const SettingsModal = () => {
           </label>
         </div>
         {showAccountSettings && <AccountSettings />}
-        <div id='avatar-settings' className={`${styles.setting} ${styles.category}`}>
-          <label onClick={() => handleCategoryClick('avatar-settings', showAvatarSettings, setShowAvatarSettings)}>
-            <span className={showAvatarSettings ? styles.hideButton : styles.showButton} />
-            {t('avatar')}
-          </label>
-        </div>
-        {showAvatarSettings && <AvatarSettings />}
         <div id='crypto-address-settings' className={`${styles.setting} ${styles.category}`}>
           <label onClick={() => handleCategoryClick('crypto-address-settings', showCryptoAddressSetting, setShowCryptoAddressSetting)}>
             <span className={showCryptoAddressSetting ? styles.hideButton : styles.showButton} />
