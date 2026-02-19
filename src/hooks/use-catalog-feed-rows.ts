@@ -1,11 +1,7 @@
 import { useMemo } from 'react';
 import { useAccountComments, Subplebbit } from '@plebbit/plebbit-react-hooks';
-import useInterfaceSettingsStore from '../stores/use-interface-settings-store';
-import { getCommentMediaInfo, getHasThumbnail } from '../lib/utils/media-utils';
-
 const useCatalogFeedRows = (columnCount: number, feed: any, isFeedLoaded: boolean, subplebbit: Subplebbit) => {
   const { address } = subplebbit || {};
-  const { hideThreadsWithoutImages } = useInterfaceSettingsStore();
 
   const { accountComments } = useAccountComments();
 
@@ -18,16 +14,13 @@ const useCatalogFeedRows = (columnCount: number, feed: any, isFeedLoaded: boolea
 
     // show account comments instantly in the feed once published (cid defined), instead of waiting for the feed to update
     const filteredComments = accountComments.filter((comment) => {
-      const { cid, deleted, link, postCid, removed, state, subplebbitAddress, timestamp, thumbnailUrl, linkWidth, linkHeight } = comment || {};
-      const commentMediaInfo = getCommentMediaInfo(link, thumbnailUrl, linkWidth, linkHeight);
-      const isMediaShowed = getHasThumbnail(commentMediaInfo, link);
+      const { cid, deleted, postCid, removed, state, subplebbitAddress, timestamp } = comment || {};
 
       return (
         !deleted &&
         !removed &&
         timestamp > Date.now() - 60 * 60 * 1000 &&
         state === 'succeeded' &&
-        (!hideThreadsWithoutImages || (hideThreadsWithoutImages && isMediaShowed)) &&
         cid &&
         cid === postCid &&
         subplebbitAddress === address &&
@@ -49,7 +42,7 @@ const useCatalogFeedRows = (columnCount: number, feed: any, isFeedLoaded: boolea
     }
 
     return _feed;
-  }, [accountComments, feed, address, isFeedLoaded, hideThreadsWithoutImages]);
+  }, [accountComments, feed, address, isFeedLoaded]);
 
   const rows = useMemo(() => {
     const rows = [];

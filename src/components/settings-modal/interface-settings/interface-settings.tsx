@@ -5,8 +5,6 @@ import useTheme from '../../../hooks/use-theme';
 import packageJson from '../../../../package.json';
 import styles from './interface-settings.module.css';
 import capitalize from 'lodash/capitalize';
-import useInterfaceSettingsStore from '../../../stores/use-interface-settings-store';
-import useCatalogFiltersStore from '../../../stores/use-catalog-filters-store';
 import useExpandedMediaStore from '../../../stores/use-expanded-media-store';
 import useSpecialThemeStore from '../../../stores/use-special-theme-store';
 import { isChristmas } from '../../../lib/utils/time-utils';
@@ -127,8 +125,6 @@ const InterfaceLanguage = () => {
 const InterfaceSettings = () => {
   const { t } = useTranslation();
   const { hideAvatars, setHideAvatars } = useAvatarVisibilityStore();
-  const { hideThreadsWithoutImages, setHideThreadsWithoutImages } = useInterfaceSettingsStore();
-  const { setShowTextOnlyThreads } = useCatalogFiltersStore();
   const { fitExpandedImagesToScreen, setFitExpandedImagesToScreen } = useExpandedMediaStore();
 
   const handleHideAvatarsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -148,20 +144,6 @@ const InterfaceSettings = () => {
       </div>
       <div className={styles.setting}>
         {capitalize(t('interface_language'))}: <InterfaceLanguage />
-      </div>
-      <div className={styles.setting}>
-        <label>
-          <input
-            type='checkbox'
-            checked={hideThreadsWithoutImages}
-            onChange={(e) => {
-              setHideThreadsWithoutImages(e.target.checked);
-              setShowTextOnlyThreads(!e.target.checked);
-            }}
-          />
-          {capitalize(t('hide_threads_without_images'))}
-        </label>
-        <div className={styles.settingTip}>{capitalize(t('threads_without_images_tip'))}</div>
       </div>
       <div className={styles.setting}>
         <label>

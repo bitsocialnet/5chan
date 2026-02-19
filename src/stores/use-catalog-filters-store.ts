@@ -16,8 +16,6 @@ interface FilterItem {
 }
 
 interface CatalogFiltersStore {
-  showTextOnlyThreads: boolean;
-  setShowTextOnlyThreads: (value: boolean) => void;
   filterText: string;
   setFilterText: (value: string) => void;
   filterItems: FilterItem[];
@@ -45,11 +43,6 @@ interface CatalogFiltersStore {
 const useCatalogFiltersStore = create(
   persist<CatalogFiltersStore>(
     (set, get) => ({
-      showTextOnlyThreads: false,
-      setShowTextOnlyThreads: (value: boolean) => {
-        set({ showTextOnlyThreads: value });
-        get().updateFilter();
-      },
       filterText: '',
       setFilterText: (value: string) => set({ filterText: value }),
       filterItems: [],
@@ -358,7 +351,6 @@ const useCatalogFiltersStore = create(
       name: 'catalog-filters-storage',
       partialize: (state) => {
         return {
-          showTextOnlyThreads: state.showTextOnlyThreads,
           filterItems: state.filterItems.map((item) => ({
             text: item.text,
             enabled: item.enabled,

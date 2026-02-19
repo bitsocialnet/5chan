@@ -6,13 +6,11 @@ import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
 import { Trans, useTranslation } from 'react-i18next';
 import styles from './board.module.css';
 import { shouldShowSnow } from '../../lib/snow';
-import { getCommentMediaInfo, getHasThumbnail } from '../../lib/utils/media-utils';
 import { useDirectoryAddresses, useDirectories } from '../../hooks/use-directories';
 import { useFilteredDirectoryAddresses } from '../../hooks/use-filtered-directory-addresses';
 import { useResolvedSubplebbitAddress, useBoardPath } from '../../hooks/use-resolved-subplebbit-address';
 import { useFeedStateString } from '../../hooks/use-state-string';
 import useTimeFilter, { timeFilterNameToSeconds } from '../../hooks/use-time-filter';
-import useInterfaceSettingsStore from '../../stores/use-interface-settings-store';
 import useFeedResetStore from '../../stores/use-feed-reset-store';
 import useSortingStore from '../../stores/use-sorting-store';
 import { getSubplebbitAddress, isDirectoryBoard } from '../../lib/utils/route-utils';
@@ -150,17 +148,6 @@ const BoardFooter = ({
   );
 };
 
-const createThreadsWithoutImagesFilter = () => ({
-  filter: (comment: Comment) => {
-    const { link, linkHeight, linkWidth, thumbnailUrl } = comment || {};
-    if (!getHasThumbnail(getCommentMediaInfo(link, thumbnailUrl, linkWidth, linkHeight), link)) {
-      return false;
-    }
-    return true;
-  },
-  key: 'threads-with-images-only',
-});
-
 export interface BoardProps {
   feedCacheKey?: string;
   viewType?: 'all' | 'subs' | 'mod' | 'board';
@@ -173,8 +160,6 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
   const { t } = useTranslation();
   const location = useLocation();
   const params = useParams();
-  const { hideThreadsWithoutImages } = useInterfaceSettingsStore();
-
   const isInAllView = viewType ? viewType === 'all' : false;
   const isInSubscriptionsView = viewType ? viewType === 'subs' : false;
   const isInModView = viewType ? viewType === 'mod' : false;
@@ -221,7 +206,6 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
     sortType,
     postsPerPage: isInAllView || isInSubscriptionsView || isInModView ? 5 : 25,
     ...(isInAllView || isInSubscriptionsView || isInModView ? { newerThan: timeFilterSeconds } : {}),
-    filter: hideThreadsWithoutImages ? createThreadsWithoutImagesFilter() : undefined,
   };
 
   const { feed, hasMore, loadMore, reset, subplebbitAddressesWithNewerPosts } = useFeed(feedOptions);
@@ -247,13 +231,12 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
           timestamp > Date.now() / 1000 - 60 * 60 &&
           state === 'succeeded' &&
           cid &&
-          (hideThreadsWithoutImages ? getHasThumbnail(getCommentMediaInfo(link, thumbnailUrl, linkWidth, linkHeight), comment?.link) : true) &&
           cid === postCid &&
           comment?.subplebbitAddress === subplebbitAddress &&
           !feed.some((post) => post.cid === cid)
         );
       }),
-    [accountComments, subplebbitAddress, feed, hideThreadsWithoutImages],
+    [accountComments, subplebbitAddress, feed],
   );
 
   // show newest account comment at the top of the feed but after pinned posts
@@ -293,19 +276,16 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
     subplebbitAddresses,
     sortType,
     newerThan: 60 * 60 * 24 * 7,
-    filter: hideThreadsWithoutImages ? createThreadsWithoutImagesFilter() : undefined,
   });
   const { feed: monthlyFeed } = useFeed({
     subplebbitAddresses,
     sortType,
     newerThan: 60 * 60 * 24 * 30,
-    filter: hideThreadsWithoutImages ? createThreadsWithoutImagesFilter() : undefined,
   });
   const { feed: yearlyFeed } = useFeed({
     subplebbitAddresses,
     sortType,
     newerThan: 60 * 60 * 24 * 365,
-    filter: hideThreadsWithoutImages ? createThreadsWithoutImagesFilter() : undefined,
   });
 
   const feedLength = feed.length;
