@@ -147,6 +147,10 @@ public class FileUploaderPlugin extends Plugin {
                     return;
                 }
                 attempt.put("error", res.error);
+                attempt.put("stage", res.stage != null ? res.stage : "");
+                attempt.put("elapsedMs", res.elapsedMs);
+                attempt.put("matchedSelectors", res.matchedSelectors != null ? res.matchedSelectors : "");
+                if (res.triggerRetryCount != null) attempt.put("triggerRetryCount", res.triggerRetryCount);
                 errorSummary.append(provider).append(": ").append(res.error).append("; ");
             }
             attempts.add(attempt);

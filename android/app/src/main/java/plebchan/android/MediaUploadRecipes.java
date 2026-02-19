@@ -2,9 +2,14 @@ package fivechan.android;
 
 /**
  * Provider-specific recipes for automated media upload via WebView.
- * Mirrors electron/media-upload-recipes.js for imgur/postimages.
- * Non-interactive automation; detects blocked states (captcha/login/challenge);
- * extracts direct media URL candidates via selector candidate arrays.
+ * Reconciled with electron/media-upload-recipes.js for imgur/postimages.
+ *
+ * Android vs Electron (prevent drift):
+ * - Android: imgur/postimages only; no catbox (uses OkHttp). Uses WebChromeClient file chooser;
+ *   trigger JS clicks file input, optional submit click after chooser.
+ * - Electron: catbox/imgur/postimages. CDP DOM.setFileInputFiles + submit click. Catbox Electron-only.
+ * - Selectors: file input, submit, success extractor, blocked indicators kept in sync for imgur/postimages.
+ * - Success extractor attribute: imgur href, postimages value (Electron parity).
  */
 public final class MediaUploadRecipes {
 
@@ -17,6 +22,10 @@ public final class MediaUploadRecipes {
     public static final long FILE_INPUT_TIMEOUT_MS = 8_000;
     /** Poll interval for success/blocked checks (ms). */
     public static final long POLL_INTERVAL_MS = 500;
+    /** Initial delay before first file-input trigger attempt (ms). SPAs may need settle time. */
+    public static final long TRIGGER_INITIAL_DELAY_MS = 400;
+    /** Delay between retry attempts when input not yet found (ms). */
+    public static final long TRIGGER_RETRY_INTERVAL_MS = 400;
 
     private MediaUploadRecipes() {}
 
@@ -31,8 +40,47 @@ public final class MediaUploadRecipes {
     }
 
     /**
+     * JS to click submit/upload button after file is selected. Optional; some providers auto-upload.
+     * Returns true if a submit button was found and clicked, false otherwise. Aligns with Electron.
+     */
+    public static String getSubmitClickJs(String provider) {
+        String[] candidates;
+        if (PROVIDER_IMGUR.equals(provider)) {
+            candidates =
+                    new String[] {
+                        "button[type=\"submit\"]",
+                        "[data-action=\"upload\"]",
+                        ".upload-btn",
+                        "[type=\"submit\"]",
+                    };
+        } else if (PROVIDER_POSTIMAGES.equals(provider)) {
+            candidates =
+                    new String[] {
+                        "button[type=\"submit\"]",
+                        "[type=\"submit\"]",
+                        ".btn-upload",
+                    };
+        } else {
+            return null;
+        }
+        return buildSubmitClickJs(candidates);
+    }
+
+    private static String buildSubmitClickJs(String[] selectors) {
+        StringBuilder sb = new StringBuilder("(function(){var s=[");
+        for (int i = 0; i < selectors.length; i++) {
+            if (i > 0) sb.append(",");
+            sb.append("\"").append(escapeJs(selectors[i])).append("\"");
+        }
+        sb.append(
+                "];for(var i=0;i<s.length;i++){var el=document.querySelector(s[i]);if(el){el.click();return"
+                        + " true;}}return false;})()");
+        return sb.toString();
+    }
+
+    /**
      * JS to trigger file input click so WebChromeClient.onShowFileChooser fires.
-     * Uses candidate selectors; first match wins.
+     * Uses candidate selectors; first match wins. Returns matched selector or false.
      */
     public static String getTriggerFileInputJs(String provider) {
         String[] candidates;
@@ -54,16 +102,30 @@ public final class MediaUploadRecipes {
         } else {
             return null;
         }
-        return buildTriggerFileInputJs(candidates);
+        boolean strictInputOnly = PROVIDER_POSTIMAGES.equals(provider);
+        return buildTriggerFileInputJs(candidates, strictInputOnly);
     }
 
-    private static String buildTriggerFileInputJs(String[] selectors) {
+    /**
+     * Returns matched selector string when found, false otherwise.
+     * When strictInputOnly is true (postimages), only elements that are actual input[type=file]
+     * are accepted, so non-input selectors do not mask delayed real inputs.
+     */
+    private static String buildTriggerFileInputJs(String[] selectors, boolean strictInputOnly) {
         StringBuilder sb = new StringBuilder("(function(){var s=[");
         for (int i = 0; i < selectors.length; i++) {
             if (i > 0) sb.append(",");
             sb.append("\"").append(escapeJs(selectors[i])).append("\"");
         }
-        sb.append("];for(var i=0;i<s.length;i++){var el=document.querySelector(s[i]);if(el){el.click();return true;}}return false;})()");
+        String guard =
+                strictInputOnly
+                        ? "el&&(el.tagName==='INPUT'||el.tagName==='input')&&el.type==='file'"
+                        : "el";
+        sb.append(
+                "];for(var i=0;i<s.length;i++){var el=document.querySelector(s[i]);if("
+                        + guard
+                        + "){el.click();return"
+                        + " JSON.stringify(s[i]);}}return false;})()");
         return sb.toString();
     }
 

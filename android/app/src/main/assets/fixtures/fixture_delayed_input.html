@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>Delayed DOM</title></head>
+<body>
+<div id="container">File input will appear shortly...</div>
+<a id="result" href="https://i.imgur.com/delayed123.png">Link</a>
+<script>
+setTimeout(function() {
+  var inp = document.createElement('input');
+  inp.type = 'file';
+  inp.id = 'uploadFile';
+  document.getElementById('container').appendChild(inp);
+}, 600);
+</script>
+<p>Input appears after 600ms; retries find it; success URL present for extraction.</p>
+</body>
+</html>
