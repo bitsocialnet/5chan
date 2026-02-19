@@ -6,8 +6,65 @@ import { formatAggregatedError, formatPreferredModeError, type ProviderAttempt }
 import { getProviderOrder } from '../lib/media-hosting/provider-order';
 import { orchestrateElectronUpload } from '../lib/media-hosting/upload-orchestrator';
 import useMediaHostingStore from '../stores/use-media-hosting-store';
+import type { ProviderId } from '../lib/media-hosting/types';
 
 const FILE_SELECTION_CANCELLED_ERROR = 'File selection cancelled';
+
+const VALID_PROVIDERS: ProviderId[] = ['catbox', 'imgur', 'postimages'];
+
+/** Raw attempt shape from Android plugin rejection payload */
+interface RawAttempt {
+  provider?: unknown;
+  success?: unknown;
+  error?: unknown;
+  stage?: unknown;
+  elapsedMs?: unknown;
+  matchedSelectors?: unknown;
+}
+
+/**
+ * Normalizes Android Capacitor rejection payload. The plugin may reject with
+ * `{ message, code, data: { attempts: [...] } }` where attempts contain
+ * provider, error, stage, elapsedMs, matchedSelectors. We extract and attach
+ * attempts to the error so formatAggregatedError can surface them.
+ */
+function normalizeAndroidRejection(error: unknown): Error & { attempts?: ProviderAttempt[] } {
+  const err = error as Error & { data?: { attempts?: unknown[] } };
+  const raw = err?.data?.attempts;
+  if (!Array.isArray(raw) || raw.length === 0) return err;
+
+  const attempts: ProviderAttempt[] = raw
+    .map((a: unknown): ProviderAttempt | null => {
+      const item = a as RawAttempt;
+      const provider = item?.provider;
+      if (typeof provider !== 'string' || !VALID_PROVIDERS.includes(provider as ProviderId)) return null;
+      const ms = typeof item?.elapsedMs === 'number' ? item.elapsedMs : undefined;
+      let sel: string[] | undefined;
+      if (Array.isArray(item?.matchedSelectors)) {
+        sel = (item.matchedSelectors as unknown[]).filter((s): s is string => typeof s === 'string');
+      } else if (typeof item?.matchedSelectors === 'string' && item.matchedSelectors.trim()) {
+        sel = item.matchedSelectors
+          .split(',')
+          .map((s: string) => s.trim())
+          .filter(Boolean);
+      }
+      const attempt: ProviderAttempt = {
+        provider: provider as ProviderId,
+        success: Boolean(item?.success),
+        error: typeof item?.error === 'string' ? item.error : undefined,
+        stage: typeof item?.stage === 'string' && item.stage ? (item.stage as ProviderAttempt['stage']) : undefined,
+        elapsedMs: ms,
+        matchedSelectors: sel?.length ? sel : undefined,
+      };
+      return attempt;
+    })
+    .filter((a): a is ProviderAttempt => a !== null);
+
+  if (attempts.length > 0) {
+    (err as Error & { attempts?: ProviderAttempt[] }).attempts = attempts;
+  }
+  return err as Error & { attempts?: ProviderAttempt[] };
+}
 
 function isElectronRuntime(): boolean {
   return window.electronApi?.isElectron === true || window.isElectron === true;
@@ -122,7 +179,7 @@ export function useFileUpload(options: UseFileUploadOptions) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       if (errorMessage === FILE_SELECTION_CANCELLED_ERROR) return;
 
-      const err = error as Error & { attempts?: ProviderAttempt[] };
+      const err = normalizeAndroidRejection(error) as Error & { attempts?: ProviderAttempt[] };
       if (err.attempts && err.attempts.length > 0) {
         window.alert(formatAggregatedError(err.attempts, t));
       } else if (uploadMode === 'preferred') {

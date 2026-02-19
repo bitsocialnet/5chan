@@ -236,6 +236,53 @@ describe('useFileUpload', () => {
     expect(hook().isUploading).toBe(false);
   });
 
+  it('surfaces Android Capacitor rejection attempts in user-visible alert (preferred mode)', async () => {
+    uploadModeRef.value = 'preferred';
+    preferredProviderRef.value = 'catbox';
+    vi.mocked(Capacitor.getPlatform).mockReturnValue('android');
+    const capacitorRejection = new Error('All providers failed: catbox: timeout') as Error & {
+      data?: { attempts?: { provider: string; error: string; stage?: string; elapsedMs?: number }[] };
+    };
+    capacitorRejection.data = {
+      attempts: [{ provider: 'catbox', error: 'timeout', stage: 'timeout', elapsedMs: 5000 }],
+    };
+    vi.mocked(FileUploader.pickAndUploadMedia).mockRejectedValue(capacitorRejection);
+    const { onUploadComplete, hook } = mountHook();
+
+    await act(async () => {
+      await hook().handleUpload();
+    });
+
+    expect(window.alert).toHaveBeenCalledWith('upload_failed. upload_failed_all_providers: catbox: timeout (stage=timeout, 5000ms)');
+    expect(onUploadComplete).not.toHaveBeenCalled();
+    expect(hook().isUploading).toBe(false);
+  });
+
+  it('surfaces Android rejection with multiple provider attempts in alert', async () => {
+    uploadModeRef.value = 'random';
+    preferredProviderRef.value = 'catbox';
+    vi.mocked(Capacitor.getPlatform).mockReturnValue('android');
+    const capacitorRejection = new Error('All providers failed') as Error & {
+      data?: { attempts?: { provider: string; error: string }[] };
+    };
+    capacitorRejection.data = {
+      attempts: [
+        { provider: 'catbox', error: 'timeout' },
+        { provider: 'imgur', error: 'rate limit' },
+      ],
+    };
+    vi.mocked(FileUploader.pickAndUploadMedia).mockRejectedValue(capacitorRejection);
+    const { onUploadComplete, hook } = mountHook();
+
+    await act(async () => {
+      await hook().handleUpload();
+    });
+
+    expect(window.alert).toHaveBeenCalledWith('upload_failed. upload_failed_all_providers: catbox: timeout; imgur: rate limit');
+    expect(onUploadComplete).not.toHaveBeenCalled();
+    expect(hook().isUploading).toBe(false);
+  });
+
   it('returns early when uploadMode is none (no upload, no alert)', async () => {
     uploadModeRef.value = 'none';
     vi.mocked(Capacitor.getPlatform).mockReturnValue('android');
