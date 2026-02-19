@@ -13,6 +13,7 @@ declare global {
       copyToClipboard: (text: string) => Promise<{ success: boolean; error?: string }>;
       getPlatform: () => Promise<{ platform: NodeJS.Platform; arch: string; version: string }>;
       automateUploadMedia: (options: { provider: ProviderId; filePath: string }) => Promise<{ url: string; provider: ProviderId }>;
+      getPathForFile?: (file: File) => string | null;
     };
   }
 }

@@ -13,6 +13,8 @@ public final class MediaUploadRecipes {
 
     /** Max time to wait for upload completion (ms). */
     public static final long UPLOAD_TIMEOUT_MS = 45_000;
+    /** Max time to wait for provider file input to be found/triggered (ms). */
+    public static final long FILE_INPUT_TIMEOUT_MS = 8_000;
     /** Poll interval for success/blocked checks (ms). */
     public static final long POLL_INTERVAL_MS = 500;
 
@@ -61,7 +63,7 @@ public final class MediaUploadRecipes {
             if (i > 0) sb.append(",");
             sb.append("\"").append(escapeJs(selectors[i])).append("\"");
         }
-        sb.append("];for(var i=0;i<s.length;i++){var el=document.querySelector(s[i]);if(el){el.click();return;}}})();");
+        sb.append("];for(var i=0;i<s.length;i++){var el=document.querySelector(s[i]);if(el){el.click();return true;}}return false;})()");
         return sb.toString();
     }
 

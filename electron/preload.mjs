@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer } from 'electron';
+import { contextBridge, ipcRenderer, webUtils } from 'electron';
 
 // dev uses http://localhost, prod uses file://...index.html
 const isDev = window.location.protocol === 'http:';
@@ -21,4 +21,11 @@ contextBridge.exposeInMainWorld('electronApi', {
   copyToClipboard: (text) => ipcRenderer.invoke('copy-to-clipboard', text),
   getPlatform: () => ipcRenderer.invoke('get-platform'),
   automateUploadMedia: (options) => ipcRenderer.invoke('automate-upload-media', options),
+  getPathForFile: (file) => {
+    try {
+      return webUtils.getPathForFile(file);
+    } catch {
+      return null;
+    }
+  },
 });

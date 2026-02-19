@@ -49,6 +49,8 @@ public class MediaUploadAutomationRunner {
     private final Handler mainHandler;
     private final Runnable pollRunnable;
     private boolean finished;
+    private boolean fileChooserHandled;
+    private boolean fileInputTriggerAttempted;
     private long startTime;
 
     public MediaUploadAutomationRunner(
@@ -86,6 +88,7 @@ public class MediaUploadAutomationRunner {
                             WebView webView,
                             ValueCallback<Uri[]> filePathCallback,
                             FileChooserParams fileChooserParams) {
+                        fileChooserHandled = true;
                         MediaUploadAutomationRunner.this.filePathCallback = filePathCallback;
                         if (fileUri != null) {
                             filePathCallback.onReceiveValue(new Uri[] {fileUri});
@@ -120,7 +123,21 @@ public class MediaUploadAutomationRunner {
             finish(new MediaUploadResult(false, null, "No trigger JS for " + provider));
             return;
         }
-        webView.evaluateJavascript(js, value -> schedulePoll());
+        fileInputTriggerAttempted = true;
+        webView.evaluateJavascript(
+                js,
+                value -> {
+                    String normalized = value == null ? "" : value.replace("\"", "").trim();
+                    if ("true".equals(normalized)) {
+                        schedulePoll();
+                    } else {
+                        finish(
+                                new MediaUploadResult(
+                                        false,
+                                        null,
+                                        "Could not find upload file input for provider " + provider));
+                    }
+                });
     }
 
     private void schedulePoll() {
@@ -134,6 +151,14 @@ public class MediaUploadAutomationRunner {
         long elapsed = System.currentTimeMillis() - startTime;
         if (elapsed >= MediaUploadRecipes.UPLOAD_TIMEOUT_MS) {
             finish(new MediaUploadResult(false, null, "Upload timeout"));
+            return;
+        }
+        if (fileInputTriggerAttempted
+                && !fileChooserHandled
+                && elapsed >= MediaUploadRecipes.FILE_INPUT_TIMEOUT_MS) {
+            finish(
+                    new MediaUploadResult(
+                            false, null, "Provider file chooser was not triggered for " + provider));
             return;
         }
 
