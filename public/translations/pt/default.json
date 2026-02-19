@@ -71,7 +71,7 @@
   "check": "verificar",
   "update": "Atualizar",
   "style": "Estilo",
-  "interface_language": "idioma da interface",
+  "interface_language": "Idioma",
   "delete_confirm": "Tem certeza de que deseja excluir {{value}}?",
   "double_confirm": "Tem certeza? Esta ação é irreversível.",
   "save": "salvar",

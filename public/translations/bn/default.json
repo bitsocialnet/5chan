@@ -71,7 +71,7 @@
   "check": "চেক",
   "update": "আপডেট",
   "style": "স্টাইল",
-  "interface_language": "ইন্টারফেস ভাষা",
+  "interface_language": "ভাষা",
   "delete_confirm": "আপনি কি নিশ্চিত যে আপনি {{value}} মুছতে চান?",
   "double_confirm": "আপনি কি সত্যিই নিশ্চিত? এই অ্যাকশন বিপর্যস্ত করা যাবে না।",
   "save": "সংরক্ষণ",

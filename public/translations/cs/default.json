@@ -71,7 +71,7 @@
   "check": "kontrolovat",
   "update": "Aktualizovat",
   "style": "Styl",
-  "interface_language": "jazyk rozhraní",
+  "interface_language": "Jazyk",
   "delete_confirm": "Opravdu chcete smazat {{value}}?",
   "double_confirm": "Opravdu jste si jisti? Tato akce je nevratná.",
   "save": "Uložit",

@@ -71,7 +71,7 @@
   "check": "检查",
   "update": "更新",
   "style": "风格",
-  "interface_language": "界面语言",
+  "interface_language": "语言",
   "delete_confirm": "您确定要删除 {{value}} 吗？",
   "double_confirm": "您真的确定吗？此操作不可逆转。",
   "save": "保存",

@@ -71,7 +71,7 @@
   "check": "بررسی کنید",
   "update": "به‌روزرسانی",
   "style": "سبک",
-  "interface_language": "زبان رابط",
+  "interface_language": "زبان",
   "delete_confirm": "آیا مطمئن هستید که می‌خواهید {{value}} را حذف کنید؟",
   "double_confirm": "آیا مطمئن هستید؟ این عمل غیرقابل برگشت است.",
   "save": "ذخیره",

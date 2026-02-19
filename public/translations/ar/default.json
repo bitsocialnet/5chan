@@ -71,7 +71,7 @@
   "check": "تحقق",
   "update": "تحديث",
   "style": "الأسلوب",
-  "interface_language": "لغة الواجهة",
+  "interface_language": "اللغة",
   "delete_confirm": "هل أنت متأكد أنك تريد حذف {{value}}؟",
   "double_confirm": "هل أنت متأكد حقًا؟ هذا الإجراء لا يمكن التراجع عنه.",
   "save": "حفظ",

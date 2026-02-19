@@ -71,7 +71,7 @@
   "check": "controleren",
   "update": "Bijwerken",
   "style": "Stijl",
-  "interface_language": "interface taal",
+  "interface_language": "Taal",
   "delete_confirm": "Weet je zeker dat je {{value}} wilt verwijderen?",
   "double_confirm": "Weet u het zeker? Deze actie is onomkeerbaar.",
   "save": "Opslaan",

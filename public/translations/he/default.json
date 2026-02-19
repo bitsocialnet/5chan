@@ -71,7 +71,7 @@
   "check": "בדוק",
   "update": "עדכן",
   "style": "סגנון",
-  "interface_language": "שפת ממשק",
+  "interface_language": "שפה",
   "delete_confirm": "האם אתה בטוח שברצונך למחוק את {{value}}?",
   "double_confirm": "האם אתה באמת בטוח? הפעולה הזו היא לא הפיכה.",
   "save": "שמור",

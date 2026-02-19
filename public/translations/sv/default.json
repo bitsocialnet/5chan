@@ -71,7 +71,7 @@
   "check": "kontrollera",
   "update": "Uppdatera",
   "style": "Stil",
-  "interface_language": "gränssnittsspråk",
+  "interface_language": "Språk",
   "delete_confirm": "Är du säker på att du vill ta bort {{value}}?",
   "double_confirm": "Är du verkligen säker? Denna åtgärd är oåterkallelig.",
   "save": "Spara",

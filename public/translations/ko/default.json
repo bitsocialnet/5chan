@@ -71,7 +71,7 @@
   "check": "확인",
   "update": "업데이트",
   "style": "스타일",
-  "interface_language": "인터페이스 언어",
+  "interface_language": "언어",
   "delete_confirm": "{{value}}를 삭제하시겠습니까?",
   "double_confirm": "정말로 확실합니까? 이 작업은 되돌릴 수 없습니다.",
   "save": "저장",

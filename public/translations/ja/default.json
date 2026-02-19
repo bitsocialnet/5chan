@@ -71,7 +71,7 @@
   "check": "チェック",
   "update": "更新",
   "style": "スタイル",
-  "interface_language": "インターフェース言語",
+  "interface_language": "言語",
   "delete_confirm": "{{value}} を削除してもよろしいですか？",
   "double_confirm": "本当によろしいですか？このアクションは取り消せません。",
   "save": "保存",

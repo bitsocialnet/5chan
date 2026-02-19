@@ -71,7 +71,7 @@
   "check": "तपासा",
   "update": "अद्यतनित करा",
   "style": "शैली",
-  "interface_language": "इंटरफेस भाषा",
+  "interface_language": "भाषा",
   "delete_confirm": "तुम्हाला खात्री आहे का की तुम्ही {{value}} काढून टाकणार आहात?",
   "double_confirm": "खात्री आहात का? हा क्रियेचा परत न लागणारा आहे.",
   "save": "जतन करा",

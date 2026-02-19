@@ -71,7 +71,7 @@
   "check": "తనిఖీ",
   "update": "నవీకరణ",
   "style": "శైలి",
-  "interface_language": "ఇంటర్ఫేస్ భాష",
+  "interface_language": "భాష",
   "delete_confirm": "మీరు {{value}} ను తొలగించడానికి ఖచ్చితంగా ఉన్నారా?",
   "double_confirm": "మీరు నిజంగా ఖచ్చితముగా ఉన్నారా? ఈ చర్య రద్దు చేయలేదు.",
   "save": "సేవ్",

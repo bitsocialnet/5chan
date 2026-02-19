@@ -71,7 +71,7 @@
   "check": "kiểm tra",
   "update": "Cập nhật",
   "style": "Phong cách",
-  "interface_language": "ngôn ngữ giao diện",
+  "interface_language": "Ngôn ngữ",
   "delete_confirm": "Bạn có chắc chắn muốn xóa {{value}} không?",
   "double_confirm": "Bạn có chắc chắn không? Hành động này không thể hoàn tác.",
   "save": "Lưu",

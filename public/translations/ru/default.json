@@ -71,7 +71,7 @@
   "check": "проверьте",
   "update": "Обновить",
   "style": "Стиль",
-  "interface_language": "язык интерфейса",
+  "interface_language": "Язык",
   "delete_confirm": "Вы уверены, что хотите удалить {{value}}?",
   "double_confirm": "Вы действительно уверены? Это действие необратимо.",
   "save": "Сохранить",

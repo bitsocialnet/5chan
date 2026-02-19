@@ -71,7 +71,7 @@
   "check": "sjekk",
   "update": "Oppdater",
   "style": "Stil",
-  "interface_language": "grensesnittspråk",
+  "interface_language": "Språk",
   "delete_confirm": "Er du sikker på at du vil slette {{value}}?",
   "double_confirm": "Er du virkelig sikker? Denne handlingen er ugjenkallelig.",
   "save": "Lagre",

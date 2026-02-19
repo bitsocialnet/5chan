@@ -71,7 +71,7 @@
   "check": "überprüfen",
   "update": "Aktualisieren",
   "style": "Stil",
-  "interface_language": "Sprache der Benutzeroberfläche",
+  "interface_language": "Sprache",
   "delete_confirm": "Möchten Sie {{value}} wirklich löschen?",
   "double_confirm": "Sind Sie wirklich sicher? Diese Aktion ist nicht rückgängig zu machen.",
   "save": "Speichern",
