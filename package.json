@@ -83,7 +83,12 @@
     "i18n:update:dry": "node scripts/update-translations.js --dry",
     "doctor": "react-doctor . -y",
     "doctor:score": "react-doctor . --score -y",
-    "doctor:verbose": "react-doctor . --verbose -y"
+    "doctor:verbose": "react-doctor . --verbose -y",
+    "contract:postimages": "cd android && ./gradlew :app:connectedDebugAndroidTest -Pandroid.experimental.androidTest.useUnifiedTestPlatform=false -Pandroid.testInstrumentationRunnerArguments.class=fivechan.android.MediaUploadAutomationRunnerTest",
+    "live:postimages:auto": "bash scripts/run-postimages-live-emulator-test.sh",
+    "smoke:upload-selectors": "node scripts/smoke-upload-selectors.js",
+    "retest:quality": "yarn test && yarn build && yarn lint && yarn type-check && yarn doctor",
+    "android:connectedTest": "cd android && ./gradlew :app:connectedDebugAndroidTest -Pandroid.experimental.androidTest.useUnifiedTestPlatform=false"
   },
   "browserslist": {
     "production": [
@@ -131,6 +136,7 @@
     "lint-staged": "12.3.8",
     "node-fetch": "3.3.2",
     "oxfmt": "0.20.0",
+    "playwright": "1.56.1",
     "oxlint": "1.35.0",
     "progress": "2.0.3",
     "react-doctor": "0.0.17",

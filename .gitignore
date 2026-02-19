@@ -169,3 +169,7 @@ yarn-error.log*
 .claude
 .codex
 .playwright-cli
+
+# Upload selector smoke probe (report-only, local/CI triage)
+scripts/upload-selectors-smoke-report.json
+scripts/upload-selectors-smoke-snapshots/
