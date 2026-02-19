@@ -648,20 +648,6 @@
   text-decoration: var(--post-content-link-text-decoration-hover);
 }
 
-.authorAvatar {
-  width: 24px;
-  display: inline-block;
-  position: relative;
-  padding-right: 2px;
-}
-
-.authorAvatar img {
-  width: 24px;
-  max-height: 24px;
-  position: absolute;
-  bottom: -7px;
-}
-
 @media (max-width: 640px) {
   .replyQuotePreview {
     margin-right: 10px;
@@ -678,16 +664,6 @@
   .loadingString {
     margin-top: 10px;
     margin-left: 5px;
-  }
-
-  .authorAvatar {
-    width: 20px;
-  }
-
-  .authorAvatar img {
-    width: 20px;
-    max-height: 20px;
-    bottom: -3px;
   }
 }
 

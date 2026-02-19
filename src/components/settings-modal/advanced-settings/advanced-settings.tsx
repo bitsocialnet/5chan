@@ -10,7 +10,6 @@ interface SettingsProps {
   httpRoutersRef?: RefObject<HTMLTextAreaElement>;
   ethRpcRef?: RefObject<HTMLTextAreaElement>;
   solRpcRef?: RefObject<HTMLTextAreaElement>;
-  maticRpcRef?: RefObject<HTMLTextAreaElement>;
   p2pRpcRef?: RefObject<HTMLInputElement>;
   p2pDataPathRef?: RefObject<HTMLInputElement>;
 }
@@ -36,7 +35,7 @@ const IPFSGatewaysSettings = ({ ipfsGatewayUrlsRef, mediaIpfsGatewayUrlRef }: Se
           rows={ipfsGatewayUrls?.length || 1}
         />
       </div>
-      <span className={styles.settingTip}>NFT profile pics gateway</span>
+      <span className={styles.settingTip}>media IPFS gateway</span>
       <div>
         <input
           type='text'
@@ -100,13 +99,12 @@ const HttpRoutersSettings = ({ httpRoutersRef }: SettingsProps) => {
   );
 };
 
-const BlockchainProvidersSettings = ({ ethRpcRef, solRpcRef, maticRpcRef }: SettingsProps) => {
+const BlockchainProvidersSettings = ({ ethRpcRef, solRpcRef }: SettingsProps) => {
   const account = useAccount();
   const { plebbitOptions } = account || {};
   const { chainProviders } = plebbitOptions || {};
   const ethRpcDefaultValue = chainProviders?.['eth']?.urls.join('\n');
   const solRpcDefaultValue = chainProviders?.['sol']?.urls.join('\n');
-  const maticRpcDefaultValue = chainProviders?.['matic']?.urls.join('\n');
 
   return (
     <div className={styles.blockchainProvidersSettings}>
@@ -130,17 +128,6 @@ const BlockchainProvidersSettings = ({ ethRpcRef, solRpcRef, maticRpcRef }: Sett
           autoComplete='off'
           spellCheck='false'
           rows={chainProviders?.['sol']?.urls?.length || 1}
-        />
-      </div>
-      <span className={styles.settingTip}>Polygon RPC, for avatar NFTs</span>
-      <div>
-        <textarea
-          defaultValue={maticRpcDefaultValue}
-          ref={maticRpcRef}
-          autoCorrect='off'
-          autoComplete='off'
-          spellCheck='false'
-          rows={chainProviders?.['matic']?.urls?.length || 1}
         />
       </div>
     </div>
@@ -204,7 +191,6 @@ const AdvancedSettings = () => {
   const pubsubProvidersRef = useRef<HTMLTextAreaElement>(null);
   const ethRpcRef = useRef<HTMLTextAreaElement>(null);
   const solRpcRef = useRef<HTMLTextAreaElement>(null);
-  const maticRpcRef = useRef<HTMLTextAreaElement>(null);
   const httpRoutersRef = useRef<HTMLTextAreaElement>(null);
   const p2pRpcRef = useRef<HTMLInputElement>(null);
   const p2pDataPathRef = useRef<HTMLInputElement>(null);
@@ -232,11 +218,6 @@ const AdvancedSettings = () => {
       .map((url) => url.trim())
       .filter((url) => url !== '');
 
-    const maticRpcUrls = maticRpcRef.current?.value
-      .split('\n')
-      .map((url) => url.trim())
-      .filter((url) => url !== '');
-
     const httpRoutersOptions = httpRoutersRef.current?.value
       .split('\n')
       .map((url) => url.trim())
@@ -253,10 +234,6 @@ const AdvancedSettings = () => {
       sol: {
         urls: solRpcUrls,
         chainId: 101,
-      },
-      matic: {
-        urls: maticRpcUrls,
-        chainId: 137,
       },
     };
 
@@ -314,7 +291,7 @@ const AdvancedSettings = () => {
           blockchain providers:
         </span>
         <span className={styles.categorySettings}>
-          <BlockchainProvidersSettings ethRpcRef={ethRpcRef} solRpcRef={solRpcRef} maticRpcRef={maticRpcRef} />
+          <BlockchainProvidersSettings ethRpcRef={ethRpcRef} solRpcRef={solRpcRef} />
         </span>
       </div>
       <div className={styles.category}>

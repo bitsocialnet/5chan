@@ -18,7 +18,17 @@ const AccountSettingsEditor = ({
   const location = useLocation();
 
   const accountJson = useMemo(
-    () => stringify({ account: { ...account, plebbit: undefined, karma: undefined, plebbitReactOptions: undefined, unreadNotificationCount: undefined } }),
+    () =>
+      stringify({
+        account: {
+          ...account,
+          author: { ...account?.author, avatar: undefined },
+          plebbit: undefined,
+          karma: undefined,
+          plebbitReactOptions: undefined,
+          unreadNotificationCount: undefined,
+        },
+      }),
     [account],
   );
 
