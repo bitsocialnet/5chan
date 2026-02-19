@@ -2,14 +2,22 @@
  * Main-process automation for media upload via provider web UIs.
  * Uses a hidden BrowserWindow + CDP (DOM.setFileInputFiles) for non-interactive uploads.
  * Fail-fast on blocked indicators (captcha/login). No interactive fallback.
+ *
+ * Diagnostics (parity with Android): selector match/timeout info included in errors
+ * for debugging. Poll interval 500ms, timeout per recipe matches Android where
+ * providers overlap (imgur/postimages: 45s).
  */
 import { BrowserWindow } from 'electron';
 import { MEDIA_UPLOAD_RECIPES } from './media-upload-recipes.js';
 
+/** Poll interval (ms) – parity with Android MediaUploadRecipes.POLL_INTERVAL_MS */
+const POLL_INTERVAL_MS = 500;
+
 /** File extensions that denote direct media URLs (mirrors src/lib/media-hosting/direct-url.ts) */
 const DIRECT_MEDIA_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.webm', '.mp4', '.mov', '.avi', '.mkv', '.gifv'];
 
-function isDirectMediaUrl(url) {
+/** Returns true if the URL appears to point to a direct media file. Exported for tests. */
+export function isDirectMediaUrl(url) {
   try {
     const normalized = url.split('?')[0].toLowerCase();
     return DIRECT_MEDIA_EXTENSIONS.some((ext) => normalized.endsWith(ext));
@@ -89,15 +97,14 @@ export async function automateUploadMedia(options) {
     const checkBlocked = async () => {
       for (const sel of recipe.blockedIndicators) {
         const nodeId = await queryOne(sel);
-        if (nodeId) {
-          return true;
-        }
+        if (nodeId) return sel;
       }
-      return false;
+      return null;
     };
 
-    if (await checkBlocked()) {
-      throw new Error(`Provider blocked: captcha, login, or challenge detected (${provider})`);
+    const blockedSel = await checkBlocked();
+    if (blockedSel) {
+      throw new Error(`Provider blocked: captcha, login, or challenge detected (${provider}), selector: ${blockedSel}`);
     }
 
     let fileInputNodeId = null;
@@ -181,23 +188,24 @@ export async function automateUploadMedia(options) {
       return result?.value ?? null;
     };
 
-    const pollIntervalMs = 500;
     const start = Date.now();
     let url = null;
     while (Date.now() - start < recipe.timeoutMs) {
-      if (await checkBlocked()) {
-        throw new Error(`Provider blocked during upload: captcha or challenge (${provider})`);
+      const blockedDuring = await checkBlocked();
+      if (blockedDuring) {
+        throw new Error(`Provider blocked during upload: captcha or challenge (${provider}), selector: ${blockedDuring}`);
       }
       url = await extractUrl();
       if (url && isDirectMediaUrl(url)) {
         break;
       }
       url = null;
-      await new Promise((r) => setTimeout(r, pollIntervalMs));
+      await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
     }
 
+    const elapsed = Date.now() - start;
     if (!url || !isDirectMediaUrl(url)) {
-      throw new Error(`Upload timeout or no direct URL extracted for ${provider} (${recipe.timeoutMs}ms)`);
+      throw new Error(`Upload timeout or no direct URL extracted for ${provider} (elapsed: ${elapsed}ms, timeout: ${recipe.timeoutMs}ms)`);
     }
 
     return { url, provider };
