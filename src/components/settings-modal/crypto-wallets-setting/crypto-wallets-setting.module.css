@@ -16,6 +16,7 @@
 .save {
   margin-top: 10px;
   margin-right: 5px;
+  margin-left: -5px;
 }
 
 .walletField {
@@ -100,8 +101,8 @@
 }
 
 .deleteWalletContainer {
-  margin-top: 20px;
-  margin-left: 5px;
+  margin-top: 15px;
+
 }
 
 .removeWallet {
