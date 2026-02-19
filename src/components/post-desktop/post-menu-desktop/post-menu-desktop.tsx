@@ -3,7 +3,6 @@ import { createPortal } from 'react-dom';
 import { useLocation, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { autoUpdate, flip, FloatingFocusManager, offset, shift, useClick, useDismiss, useFloating, useId, useInteractions, useRole } from '@floating-ui/react';
-import { useBlock } from '@plebbit/plebbit-react-hooks';
 import styles from './post-menu-desktop.module.css';
 import { getCommentMediaInfo } from '../../../lib/utils/media-utils';
 import { copyShareLinkToClipboard, isValidURL, type ShareLinkType } from '../../../lib/utils/url-utils';
@@ -117,26 +116,6 @@ const ImageSearchButton = ({ url, onClose }: { url: string; onClose: () => void 
   );
 };
 
-const BlockUserButton = ({ address }: { address: string }) => {
-  const { t } = useTranslation();
-  const { blocked, unblock, block } = useBlock({ address });
-  return (
-    <div className={styles.postMenuItem} onClick={blocked ? unblock : block}>
-      {blocked ? t('unblock_user') : t('block_user')}
-    </div>
-  );
-};
-
-const BlockBoardButton = ({ address }: { address: string }) => {
-  const { t } = useTranslation();
-  const { blocked, unblock, block } = useBlock({ address });
-  return (
-    <div className={styles.postMenuItem} onClick={blocked ? unblock : block}>
-      {blocked ? t('unblock_board') : t('block_board')}
-    </div>
-  );
-};
-
 type PostMenuDesktopProps = {
   postMenu: PostMenuProps;
 };
@@ -210,8 +189,6 @@ const PostMenuDesktop = ({ postMenu }: PostMenuDesktopProps) => {
                 </div>
               )}
               {link && isValidURL(link) && (type === 'image' || type === 'gif' || thumbnail) && url && <ImageSearchButton url={url} onClose={handleClose} />}
-              {authorAddress && <BlockUserButton address={authorAddress} />}
-              {(isInAllView || isInSubscriptionsView) && subplebbitAddress && <BlockBoardButton address={subplebbitAddress} />}
             </div>
           </FloatingFocusManager>,
           document.body,

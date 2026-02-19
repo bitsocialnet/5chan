@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { Link, useLocation, useNavigationType, useParams } from 'react-router-dom';
 import { Trans, useTranslation } from 'react-i18next';
-import { Comment, useAccount, useFeed, useSubplebbit, useBlock, useAccountComments } from '@plebbit/plebbit-react-hooks';
+import { Comment, useAccount, useFeed, useSubplebbit, useAccountComments } from '@plebbit/plebbit-react-hooks';
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
 import { getCommentMediaInfo, getHasThumbnail } from '../../lib/utils/media-utils';
 import useCatalogFeedRows from '../../hooks/use-catalog-feed-rows';
@@ -142,7 +142,6 @@ interface CatalogLoadingProps {
   yearlyFeedLength: number;
   state: string | undefined;
   subscriptionsLength: number;
-  blocked: boolean;
   combinedFeedLength: number;
   error: Error | undefined;
 }
@@ -156,7 +155,6 @@ const CatalogLoading = ({
   yearlyFeedLength,
   state,
   subscriptionsLength,
-  blocked,
   combinedFeedLength,
   error,
 }: CatalogLoadingProps) => {
@@ -174,8 +172,6 @@ const CatalogLoading = ({
         <span className='red'>{state}</span>
       ) : subscriptionsLength === 0 ? (
         <span className='red'>{t('not_subscribed_to_any_board')}</span>
-      ) : blocked ? (
-        t('you_have_blocked_this_board')
       ) : !hasMore && combinedFeedLength === 0 ? (
         t('no_threads')
       ) : (
@@ -481,8 +477,6 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
 
   const subplebbit = useSubplebbit({ subplebbitAddress });
   const { error, shortAddress, state, title } = subplebbit || {};
-  const { blocked, unblock } = useBlock({ address: subplebbitAddress });
-
   const feedLength = feed.length;
   const weeklyFeedLength = weeklyFeed.length;
   const monthlyFeedLength = monthlyFeed.length;
@@ -702,25 +696,9 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
               yearlyFeedLength={yearlyFeedLength}
               state={state}
               subscriptionsLength={isInSubscriptionsView ? subscriptions?.length || 0 : 1}
-              blocked={blocked || false}
               combinedFeedLength={combinedFeed.length}
               error={error}
             />
-            {blocked && (
-              <>
-                &nbsp;&nbsp;[
-                <span
-                  className={styles.button}
-                  onClick={() => {
-                    unblock();
-                    reset();
-                  }}
-                >
-                  {t('unblock')}
-                </span>
-                ]
-              </>
-            )}
           </div>
         )}
       </div>

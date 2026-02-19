@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigationType, useParams } from 'react-router-dom';
-import { Comment, useAccount, useAccountComments, useAccountSubplebbits, useBlock, useFeed, useSubplebbit } from '@plebbit/plebbit-react-hooks';
+import { Comment, useAccount, useAccountComments, useAccountSubplebbits, useFeed, useSubplebbit } from '@plebbit/plebbit-react-hooks';
 import { useSubplebbitField } from '../../hooks/use-stable-subplebbit';
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
 import { Trans, useTranslation } from 'react-i18next';
@@ -41,8 +41,6 @@ interface BoardFooterProps {
   subplebbitState: string | undefined;
   subscriptionsLength: number;
   accountSubplebbitAddressesLength: number;
-  blocked: boolean;
-  onUnblock: () => void;
 }
 
 // Defined outside Board to preserve component identity across renders (Virtuoso optimization)
@@ -67,8 +65,6 @@ const BoardFooter = ({
   subplebbitState,
   subscriptionsLength,
   accountSubplebbitAddressesLength,
-  blocked,
-  onUnblock,
 }: BoardFooterProps) => {
   const { t } = useTranslation();
 
@@ -146,19 +142,8 @@ const BoardFooter = ({
           <span className='red'>{t('not_subscribed_to_any_board')}</span>
         ) : isInModView && accountSubplebbitAddressesLength === 0 ? (
           <span className='red'>{t('not_mod_of_any_board')}</span>
-        ) : blocked ? (
-          <span className='red'>{t('you_have_blocked_this_board')}</span>
         ) : (
           hasMore && <LoadingEllipsis string={loadingStateString} />
-        )}
-        {blocked && (
-          <>
-            &nbsp;&nbsp;[
-            <span className={styles.button} onClick={onUnblock}>
-              {t('unblock')}
-            </span>
-            ]
-          </>
         )}
       </div>
     </div>
@@ -296,8 +281,6 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
   const { error: subplebbitError, state: subplebbitState } = subplebbit || {};
   const title = isInAllView ? t('all') : isInSubscriptionsView ? t('subscriptions') : isInModView ? t('mod') : subplebbitTitle;
 
-  const { blocked, unblock } = useBlock({ address: subplebbitAddress });
-
   const handleNewerPostsButtonClick = () => {
     window.scrollTo({ top: 0, left: 0 });
     setTimeout(() => {
@@ -341,11 +324,6 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
 
   const currentTimeFilterName = timeFilterName || params?.timeFilterName;
 
-  const handleUnblock = () => {
-    unblock();
-    reset();
-  };
-
   // Memoize footer component to preserve identity across renders (Virtuoso optimization)
   // Note: useFeedStateString is called inside BoardFooter to isolate re-renders from backend state changes
   const footerComponents = useMemo(
@@ -370,8 +348,6 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
           subplebbitState={subplebbitState}
           subscriptionsLength={subscriptions?.length || 0}
           accountSubplebbitAddressesLength={accountSubplebbitAddresses?.length || 0}
-          blocked={blocked || false}
-          onUnblock={handleUnblock}
         />
       ),
     }),
@@ -394,8 +370,6 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
       subplebbitState,
       subscriptions?.length,
       accountSubplebbitAddresses?.length,
-      blocked,
-      handleUnblock,
     ],
   );
 
@@ -499,8 +473,6 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
               subplebbitState={subplebbitState}
               subscriptionsLength={subscriptions?.length || 0}
               accountSubplebbitAddressesLength={accountSubplebbitAddresses?.length || 0}
-              blocked={blocked || false}
-              onUnblock={handleUnblock}
             />
           </>
         )}

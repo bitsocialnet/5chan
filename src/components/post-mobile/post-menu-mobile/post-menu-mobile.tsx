@@ -1,7 +1,7 @@
 import { memo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
-import { Comment, useBlock } from '@plebbit/plebbit-react-hooks';
+import { Comment } from '@plebbit/plebbit-react-hooks';
 import { autoUpdate, flip, FloatingFocusManager, offset, shift, useClick, useDismiss, useFloating, useId, useInteractions, useRole } from '@floating-ui/react';
 import styles from './post-menu-mobile.module.css';
 import { getCommentMediaInfo } from '../../../lib/utils/media-utils';
@@ -128,26 +128,6 @@ const HidePostButton = ({ cid, isReply, onClose, postCid }: HideButtonProps) => 
   );
 };
 
-const BlockUserButton = ({ address }: { address: string }) => {
-  const { t } = useTranslation();
-  const { blocked, unblock, block } = useBlock({ address });
-  return (
-    <div className={styles.postMenuItem} onClick={blocked ? unblock : block}>
-      {blocked ? t('unblock_user') : t('block_user')}
-    </div>
-  );
-};
-
-const BlockBoardButton = ({ address }: { address: string }) => {
-  const { t } = useTranslation();
-  const { blocked, unblock, block } = useBlock({ address });
-  return (
-    <div className={styles.postMenuItem} onClick={blocked ? unblock : block}>
-      {blocked ? t('unblock_board') : t('block_board')}
-    </div>
-  );
-};
-
 type PostMenuMobileProps = {
   postMenu: PostMenuProps;
   editMenuPost: Comment;
@@ -201,8 +181,6 @@ const PostMenuMobile = ({ postMenu, editMenuPost }: PostMenuMobileProps) => {
                   {cid && <CopyContentIdButton cid={cid} onClose={handleClose} />}
                   {authorAddress && <CopyUserIdButton address={authorAddress} onClose={handleClose} />}
                   {cid && subplebbitAddress && <HidePostButton cid={cid} isReply={!!parentCid} postCid={postCid} onClose={handleClose} />}
-                  {cid && subplebbitAddress && authorAddress && <BlockUserButton address={authorAddress} />}
-                  {cid && subplebbitAddress && !isInBoardView && <BlockBoardButton address={subplebbitAddress} />}
                   {link && isValidURL(link) && (type === 'image' || type === 'gif' || thumbnail) && url && <ImageSearchButtons url={url} onClose={handleClose} />}
                 </div>
               </FloatingFocusManager>,

@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import styles from './settings-modal.module.css';
 import AccountSettings from './account-settings';
 import AvatarSettings from './avatar-settings';
-import BlockedAddressesSetting from './blocked-addresses-setting';
 import CryptoAddressSetting from './crypto-address-setting';
 import CryptoWalletsSetting from './crypto-wallets-setting';
 import InterfaceSettings from './interface-settings';
@@ -43,7 +42,6 @@ const SettingsModal = () => {
   const [showCryptoAddressSetting, setShowCryptoAddressSetting] = useState(false);
   const [showCryptoWalletSettings, setShowCryptoWalletSettings] = useState(false);
   const [showSubscriptionsSettings, setShowSubscriptionsSettings] = useState(false);
-  const [showBlockedAddressesSetting, setShowBlockedAddressesSetting] = useState(false);
   const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
   const [expandAll, setExpandAll] = useState(false);
 
@@ -56,7 +54,6 @@ const SettingsModal = () => {
       Number(showCryptoAddressSetting) +
       Number(showCryptoWalletSettings) +
       Number(showSubscriptionsSettings) +
-      Number(showBlockedAddressesSetting) +
       Number(showAdvancedSettings)
     );
   };
@@ -69,7 +66,6 @@ const SettingsModal = () => {
     if (showCryptoAddressSetting && 'crypto-address-settings' !== excludeCategoryId) return 'crypto-address-settings';
     if (showCryptoWalletSettings && 'crypto-wallet-settings' !== excludeCategoryId) return 'crypto-wallet-settings';
     if (showSubscriptionsSettings && 'subscriptions-settings' !== excludeCategoryId) return 'subscriptions-settings';
-    if (showBlockedAddressesSetting && 'blocked-addresses-settings' !== excludeCategoryId) return 'blocked-addresses-settings';
     if (showAdvancedSettings && 'advanced-settings' !== excludeCategoryId) return 'advanced-settings';
     return null;
   };
@@ -110,7 +106,6 @@ const SettingsModal = () => {
       setShowCryptoAddressSetting(hash === 'crypto-address-settings');
       setShowCryptoWalletSettings(hash === 'crypto-wallet-settings');
       setShowSubscriptionsSettings(hash === 'subscriptions-settings');
-      setShowBlockedAddressesSetting(hash === 'blocked-addresses-settings');
       setShowAdvancedSettings(hash === 'advanced-settings');
     }
   }, [hash]);
@@ -125,7 +120,6 @@ const SettingsModal = () => {
     setShowCryptoAddressSetting(newExpandState);
     setShowCryptoWalletSettings(newExpandState);
     setShowSubscriptionsSettings(newExpandState);
-    setShowBlockedAddressesSetting(newExpandState);
     setShowAdvancedSettings(newExpandState);
 
     const baseSettingsPath = location.pathname.split('#')[0];
@@ -192,13 +186,6 @@ const SettingsModal = () => {
           </label>
         </div>
         {showSubscriptionsSettings && <SubscriptionsSetting />}
-        <div id='blocked-addresses-settings' className={`${styles.setting} ${styles.category}`}>
-          <label onClick={() => handleCategoryClick('blocked-addresses-settings', showBlockedAddressesSetting, setShowBlockedAddressesSetting)}>
-            <span className={showBlockedAddressesSetting ? styles.hideButton : styles.showButton} />
-            {t('blocked_addresses')}
-          </label>
-        </div>
-        {showBlockedAddressesSetting && <BlockedAddressesSetting />}
         <div id='advanced-settings' className={`${styles.setting} ${styles.category}`}>
           <label onClick={() => handleCategoryClick('advanced-settings', showAdvancedSettings, setShowAdvancedSettings)}>
             <span className={showAdvancedSettings ? styles.hideButton : styles.showButton} />
