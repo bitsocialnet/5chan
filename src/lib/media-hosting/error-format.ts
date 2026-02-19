@@ -1,18 +1,24 @@
-import type { ProviderId } from './types';
+import type { ProviderAttempt } from './types';
 
-export interface ProviderAttempt {
-  provider: ProviderId;
-  success: boolean;
-  error?: string;
-}
+export type { ProviderAttempt } from './types';
 
 export type TranslateFn = (key: string) => string;
 
+function formatSingleAttempt(a: ProviderAttempt): string {
+  const base = `${a.provider}: ${a.error ?? 'unknown'}`;
+  const parts: string[] = [base];
+  if (a.stage) parts.push(`stage=${a.stage}`);
+  if (a.elapsedMs != null) parts.push(`${a.elapsedMs}ms`);
+  if (a.matchedSelectors?.length) parts.push(`tried=[${a.matchedSelectors.join(', ')}]`);
+  return parts.length > 1 ? `${base} (${parts.slice(1).join(', ')})` : base;
+}
+
 /**
  * Formats aggregated error message when all providers fail (random mode).
+ * Includes stage, elapsed time, and matched selectors when available for actionable UI logs.
  */
 export function formatAggregatedError(attempts: ProviderAttempt[], t: TranslateFn): string {
-  const details = attempts.map((a) => `${a.provider}: ${a.error ?? 'unknown'}`).join('; ');
+  const details = attempts.map(formatSingleAttempt).join('; ');
   return `${t('upload_failed')}. ${t('upload_failed_all_providers')}: ${details}`;
 }
 

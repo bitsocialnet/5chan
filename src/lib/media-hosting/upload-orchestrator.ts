@@ -1,11 +1,42 @@
-import type { ProviderId } from './types';
+import type { ProviderAttempt, ProviderId, UploadAttemptStage } from './types';
 import { uploadToCatbox } from '../utils/catbox-utils';
 
-export interface OrchestratorAttempt {
-  provider: ProviderId;
-  success: boolean;
-  url?: string;
-  error?: string;
+/** Attempt metadata inferred or parsed from plugin rejection. Used when plugins throw plain errors. */
+function parseAttemptMetadata(errorMessage: string): {
+  stage: UploadAttemptStage;
+  matchedSelectors?: string[];
+} {
+  const msg = errorMessage.toLowerCase();
+  if (msg.includes('blocked') || msg.includes('captcha') || msg.includes('challenge')) {
+    return { stage: 'blocked' };
+  }
+  if (msg.includes('no file input') || msg.includes('file input')) {
+    const tried = errorMessage.match(/Tried:\s*(.+)$/)?.[1];
+    const selectors = tried
+      ? tried
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean)
+      : undefined;
+    return { stage: 'file_input', matchedSelectors: selectors };
+  }
+  if (msg.includes('no submit') || msg.includes('submit button')) {
+    const tried = errorMessage.match(/Tried:\s*(.+)$/)?.[1];
+    const selectors = tried
+      ? tried
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean)
+      : undefined;
+    return { stage: 'submit', matchedSelectors: selectors };
+  }
+  if (msg.includes('timeout') || msg.includes('upload timeout')) {
+    return { stage: 'timeout' };
+  }
+  if (msg.includes('page load failed')) {
+    return { stage: 'page_load' };
+  }
+  return { stage: 'unknown' };
 }
 
 function resolveElectronFilePath(file: File): string | null {
@@ -44,24 +75,42 @@ async function uploadViaProvider(provider: ProviderId, file: File): Promise<stri
   throw new Error(`Unsupported provider: ${provider}`);
 }
 
+/** Rejection shape for plugin errors that include structured metadata (future Electron/Android) */
+interface PluginRejectionMeta {
+  stage?: UploadAttemptStage;
+  matchedSelectors?: string[];
+}
+
 /**
  * Orchestrates Electron upload: tries each provider in order, returns URL on first success.
- * Collects attempt errors. Throws with attempts if all fail.
+ * Collects attempt errors with deterministic metadata (provider, stage, elapsedMs, matchedSelectors).
+ * Throws with attempts if all fail.
  */
 export async function orchestrateElectronUpload(file: File, providerOrder: ProviderId[]): Promise<string> {
-  const attempts: OrchestratorAttempt[] = [];
+  const attempts: ProviderAttempt[] = [];
 
   for (const provider of providerOrder) {
+    const start = Date.now();
     try {
       const url = await uploadViaProvider(provider, file);
       return url;
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      attempts.push({ provider, success: false, error: msg });
+      const elapsedMs = Date.now() - start;
+      const meta = err && typeof err === 'object' && 'stage' in err ? (err as PluginRejectionMeta) : null;
+      const parsed = parseAttemptMetadata(msg);
+      attempts.push({
+        provider,
+        success: false,
+        error: msg,
+        stage: meta?.stage ?? parsed.stage,
+        elapsedMs,
+        matchedSelectors: meta?.matchedSelectors ?? parsed.matchedSelectors,
+      });
     }
   }
 
-  const err = new Error('All providers failed') as Error & { attempts: OrchestratorAttempt[] };
+  const err = new Error('All providers failed') as Error & { attempts: ProviderAttempt[] };
   err.attempts = attempts;
   throw err;
 }
