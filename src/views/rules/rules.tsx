@@ -2,6 +2,7 @@ import { useEffect, useState, FormEvent } from 'react';
 import { useSubplebbit } from '@plebbit/plebbit-react-hooks';
 import { Footer, HomeLogo } from '../home';
 import { useDirectories, DirectoryCommunity } from '../../hooks/use-directories';
+import Markdown from '../../components/markdown';
 import styles from './rules.module.css';
 
 const getBoardShortCode = (title?: string): string => {
@@ -73,7 +74,9 @@ const BoardRulesDisplay = ({ subplebbitAddress, directories }: { subplebbitAddre
         ) : rules && rules.length > 0 ? (
           <ol>
             {rules.map((rule: string, index: number) => (
-              <li key={index}>{rule}</li>
+              <li key={index}>
+                <Markdown content={rule} />
+              </li>
             ))}
           </ol>
         ) : (
