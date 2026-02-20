@@ -280,5 +280,8 @@
   "media_hosting_preferred": "Preferred provider",
   "media_hosting_preferred_provider_label": "Choose provider",
   "media_hosting_preferred_failure_guidance": "If your preferred provider fails, the app will try other providers (Random mode) or show an error (Preferred mode).",
-  "media_hosting_all_providers_failed_guidance": "All upload providers failed. Try again or paste a link manually."
+  "media_hosting_all_providers_failed_guidance": "All upload providers failed. Try again or paste a link manually.",
+  "enable_infinite_scroll": "Enable infinite scroll",
+  "prev": "Prev",
+  "next": "Next"
 }

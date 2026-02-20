@@ -280,5 +280,8 @@
   "upload_not_supported_web_before_link": "Medioiden lataus ei ole tuettu selaimessasi teknisten rajoitusten vuoksi (CORS). Se on tuettu 5chan Android-sovelluksessa ja Mac/Linux/Windows-työpöytäsovelluksessa.",
   "upload_not_supported_web_link_text": "Lataa viralliselta julkaisusivulta",
   "board_subscriptions": "Alustojen tilaukset",
-  "chain_ticker": "ketjumerkki"
+  "chain_ticker": "ketjumerkki",
+  "enable_infinite_scroll": "Enable infinite scroll",
+  "prev": "Prev",
+  "next": "Next"
 }

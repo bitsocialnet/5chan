@@ -280,5 +280,8 @@
   "upload_not_supported_web_before_link": "প্রযুক্তিগত সীমাবদ্ধতার কারণে (CORS) আপনার ব্রাউজার মিডিয়া আপলোড সমর্থন করে না। এটি 5chan অ্যান্ড্রয়েড অ্যাপ এবং Mac/Linux/Windows ডেস্কটপ অ্যাপে সমর্থিত।",
   "upload_not_supported_web_link_text": "অফিসিয়াল রিলিজ পৃষ্ঠা থেকে ডাউনলোড করুন",
   "board_subscriptions": "বোর্ড সাবস্ক্রিপশন",
-  "chain_ticker": "চেইন টিকার"
+  "chain_ticker": "চেইন টিকার",
+  "enable_infinite_scroll": "Enable infinite scroll",
+  "prev": "Prev",
+  "next": "Next"
 }

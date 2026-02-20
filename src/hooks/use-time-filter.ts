@@ -1,5 +1,6 @@
 import assert from 'assert';
 import { useParams } from 'react-router-dom';
+import { isBoardFeedPageNumber } from '../lib/utils/route-utils';
 
 // the timestamp the last time the user visited
 const lastVisitTimestamp = localStorage.getItem('5chanLastVisitTimestamp');
@@ -109,6 +110,11 @@ function convertTimeStringToSeconds(timeString: string): number {
 const useTimeFilter = () => {
   const params = useParams();
   let timeFilterName = params.timeFilterName;
+
+  // Ignore when param is a board feed page number (e.g. /all/3, /biz/2)
+  if (timeFilterName && isBoardFeedPageNumber(timeFilterName)) {
+    timeFilterName = undefined;
+  }
 
   // the default time filter is the last visit time filter
   if (!timeFilterName) {

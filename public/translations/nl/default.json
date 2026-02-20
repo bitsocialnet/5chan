@@ -280,5 +280,8 @@
   "upload_not_supported_web_before_link": "Mediabestanden uploaden wordt niet ondersteund door uw browser vanwege technische beperkingen (CORS). Het wordt ondersteund in de 5chan Android-app en de Mac/Linux/Windows desktop-app.",
   "upload_not_supported_web_link_text": "Downloaden van de officiële releasepagina",
   "board_subscriptions": "Boardabonnementen",
-  "chain_ticker": "kettingticker"
+  "chain_ticker": "kettingticker",
+  "enable_infinite_scroll": "Enable infinite scroll",
+  "prev": "Prev",
+  "next": "Next"
 }

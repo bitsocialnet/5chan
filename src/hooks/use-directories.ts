@@ -9,6 +9,7 @@ export interface DirectoriesMetadata {
 }
 
 export interface DirectoryFeatures {
+  postsPerPage?: number;
   pseudonymityMode?: string;
   nsfw?: boolean;
   noSpoilers?: boolean;

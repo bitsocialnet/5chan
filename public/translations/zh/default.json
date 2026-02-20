@@ -280,5 +280,8 @@
   "upload_not_supported_web_before_link": "由于技术限制（CORS），您的浏览器不支持上传媒体。在 5chan Android 应用和 Mac/Linux/Windows 桌面应用中支持。",
   "upload_not_supported_web_link_text": "从官方发布页面下载",
   "board_subscriptions": "板块订阅",
-  "chain_ticker": "链代币符号"
+  "chain_ticker": "链代币符号",
+  "enable_infinite_scroll": "Enable infinite scroll",
+  "prev": "Prev",
+  "next": "Next"
 }

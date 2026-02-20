@@ -280,5 +280,8 @@
   "upload_not_supported_web_before_link": "Ngarkimi i mediave nuk mbështetet nga shfletuesi juaj për shkak të kufizimeve teknike (CORS). Mbështetet në aplikacionin 5chan për Android dhe aplikacionin e desktopit Mac/Linux/Windows.",
   "upload_not_supported_web_link_text": "Shkarkoni nga faqja e zyrës së publikimit",
   "board_subscriptions": "Abonime në tabela",
-  "chain_ticker": "simboli i zinxhirit"
+  "chain_ticker": "simboli i zinxhirit",
+  "enable_infinite_scroll": "Enable infinite scroll",
+  "prev": "Prev",
+  "next": "Next"
 }

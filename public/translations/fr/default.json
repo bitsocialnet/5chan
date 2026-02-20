@@ -280,5 +280,8 @@
   "upload_not_supported_web_before_link": "Le téléchargement de médias n'est pas pris en charge par votre navigateur en raison de limitations techniques (CORS). Il est pris en charge dans l'application 5chan Android et l'application de bureau Mac/Linux/Windows.",
   "upload_not_supported_web_link_text": "Télécharger depuis la page de version officielle",
   "board_subscriptions": "Abonnements aux tableaux",
-  "chain_ticker": "ticker de chaîne"
+  "chain_ticker": "ticker de chaîne",
+  "enable_infinite_scroll": "Enable infinite scroll",
+  "prev": "Prev",
+  "next": "Next"
 }

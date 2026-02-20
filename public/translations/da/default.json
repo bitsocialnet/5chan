@@ -280,5 +280,8 @@
   "upload_not_supported_web_before_link": "Din browser understøtter ikke upload af medier på grund af tekniske begrænsninger (CORS). Det understøttes i 5chan Android-appen og Mac/Linux/Windows desktop-appen.",
   "upload_not_supported_web_link_text": "Download fra den officielle udgivelsesside",
   "board_subscriptions": "Bordabonnementer",
-  "chain_ticker": "kæde-ticker"
+  "chain_ticker": "kæde-ticker",
+  "enable_infinite_scroll": "Enable infinite scroll",
+  "prev": "Prev",
+  "next": "Next"
 }

@@ -196,16 +196,19 @@ const App = () => (
         <Route path='/faq' element={<FAQ />} />
         <Route path='/rules/:boardIdentifier?' element={<Rules />} />
         <Route element={<BoardLayout />}>
+          <Route path='/all/:timeFilterName/:pageNumber' element={null} />
           <Route path='/all/:timeFilterName?' element={null} />
           <Route path='/all/:timeFilterName?/settings' element={null} />
           <Route path='/all/catalog/:timeFilterName?' element={null} />
           <Route path='/all/catalog/:timeFilterName?/settings' element={null} />
 
+          <Route path='/subs/:timeFilterName/:pageNumber' element={null} />
           <Route path='/subs/:timeFilterName?' element={null} />
           <Route path='/subs/:timeFilterName?/settings' element={null} />
           <Route path='/subs/catalog/:timeFilterName?' element={null} />
           <Route path='/subs/catalog/:timeFilterName?/settings' element={null} />
 
+          <Route path='/mod/:timeFilterName/:pageNumber' element={null} />
           <Route path='/mod/:timeFilterName?' element={null} />
           <Route path='/mod/:timeFilterName?/settings' element={null} />
           <Route path='/mod/catalog/:timeFilterName?' element={null} />
@@ -214,6 +217,7 @@ const App = () => (
           <Route path='/mod/modqueue' element={<ModQueueRoute />} />
           <Route path='/mod/modqueue/settings' element={<ModQueueRoute />} />
 
+          <Route path='/:boardIdentifier/:pageNumber' element={null} />
           <Route path='/:boardIdentifier' element={null} />
           <Route path='/:boardIdentifier/settings' element={null} />
           <Route path='/:boardIdentifier/catalog' element={null} />

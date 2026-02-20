@@ -280,5 +280,8 @@
   "upload_not_supported_web_before_link": "기술적 제한(CORS)으로 인해 브라우저에서는 미디어 업로드를 지원하지 않습니다. 5chan Android 앱과 Mac/Linux/Windows 데스크톱 앱에서는 지원됩니다.",
   "upload_not_supported_web_link_text": "공식 출시 페이지에서 다운로드",
   "board_subscriptions": "보드 구독",
-  "chain_ticker": "체인 티커"
+  "chain_ticker": "체인 티커",
+  "enable_infinite_scroll": "Enable infinite scroll",
+  "prev": "Prev",
+  "next": "Next"
 }

@@ -280,5 +280,8 @@
   "upload_not_supported_web_before_link": "تکنیکی پابندیوں (CORS) کی وجہ سے آپ کے براؤزر میڈیا اپ لوڈ کی حمایت نہیں کرتا۔ یہ 5chan Android ایپ اور Mac/Linux/Windows ڈیسک ٹاپ ایپ میں تعاون یافتہ ہے۔",
   "upload_not_supported_web_link_text": "سرکاری ریلیز صفحے سے ڈاؤن لوڈ کریں",
   "board_subscriptions": "بورڈ سبسکرپشنز",
-  "chain_ticker": "چین ٹکر"
+  "chain_ticker": "چین ٹکر",
+  "enable_infinite_scroll": "Enable infinite scroll",
+  "prev": "Prev",
+  "next": "Next"
 }

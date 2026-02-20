@@ -280,5 +280,8 @@
   "upload_not_supported_web_before_link": "رفع الوسائط غير مدعوم من متصفحك بسبب قيود تقنية (CORS). إنه مدعوم في تطبيق 5chan لـ Android وتطبيق سطح المكتب لـ Mac/Linux/Windows.",
   "upload_not_supported_web_link_text": "تحميل من صفحة الإصدار الرسمية",
   "board_subscriptions": "اشتراكات اللوحات",
-  "chain_ticker": "رمز السلسلة"
+  "chain_ticker": "رمز السلسلة",
+  "enable_infinite_scroll": "Enable infinite scroll",
+  "prev": "Prev",
+  "next": "Next"
 }

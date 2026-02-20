@@ -280,5 +280,8 @@
   "upload_not_supported_web_before_link": "तांत्रिक मर्यादांमुळे (CORS) तुमचा ब्राउझर मीडिया अपलोड समर्थित नाही. ते 5chan Android अॅप आणि Mac/Linux/Windows डेस्कटॉप अॅपमध्ये समर्थित आहे.",
   "upload_not_supported_web_link_text": "अधिकृत रिलीझ पेजवरून डाउनलोड करा",
   "board_subscriptions": "बोर्ड सदस्यता",
-  "chain_ticker": "चेन टिकर"
+  "chain_ticker": "चेन टिकर",
+  "enable_infinite_scroll": "Enable infinite scroll",
+  "prev": "Prev",
+  "next": "Next"
 }

@@ -280,5 +280,8 @@
   "upload_not_supported_web_before_link": "O envio de mídia não é suportado pelo seu navegador devido a limitações técnicas (CORS). É suportado no aplicativo 5chan para Android e no aplicativo de desktop Mac/Linux/Windows.",
   "upload_not_supported_web_link_text": "Baixar da página de lançamento oficial",
   "board_subscriptions": "Assinaturas de quadros",
-  "chain_ticker": "ticker da cadeia"
+  "chain_ticker": "ticker da cadeia",
+  "enable_infinite_scroll": "Enable infinite scroll",
+  "prev": "Prev",
+  "next": "Next"
 }

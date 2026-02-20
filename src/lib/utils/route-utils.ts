@@ -118,8 +118,10 @@ export const isFeedRoute = (pathname: string): boolean => {
   if (segments.length >= 1) {
     if (segments.length === 1) return true;
     if (segments.length === 2 && segments[1] === 'catalog') return true;
-    if (segments.length === 2 && /^(?:\d+(?:h|d|w|m|y)|all)$/.test(segments[1])) return true;
+    if (segments.length === 2 && (/^(?:\d+(?:h|d|w|m|y)|all)$/.test(segments[1]) || /^([1-9]|10)$/.test(segments[1]))) return true;
     if (segments.length === 3 && segments[1] === 'catalog' && /^(?:\d+(?:h|d|w|m|y)|all)$/.test(segments[2])) return true;
+    if (segments.length === 3 && /^(?:\d+(?:h|d|w|m|y)|all)$/.test(segments[1]) && /^([1-9]|10)$/.test(segments[2])) return true;
+    if (segments.length === 2 && segments[0] !== 'all' && segments[0] !== 'subs' && segments[0] !== 'mod' && /^([1-9]|10)$/.test(segments[1])) return true;
   }
 
   return false;
@@ -143,6 +145,32 @@ export const isModQueueRoute = (pathname: string): boolean => {
   return normalizedPath.includes('/modqueue');
 };
 
+/** Page numbers 1–10 for board feed pagination */
+export const BOARD_PAGE_REGEX = /^([1-9]|10)$/;
+
+export const isBoardFeedPageNumber = (segment: string): boolean => BOARD_PAGE_REGEX.test(segment);
+
+/** Strip trailing page number (1–10) from path for feed cache key */
+export const stripPageFromFeedPath = (path: string): string => {
+  const segments = path.split('/').filter(Boolean);
+  if (segments.length > 1 && isBoardFeedPageNumber(segments[segments.length - 1])) {
+    return '/' + segments.slice(0, -1).join('/');
+  }
+  return path;
+};
+
+/** Parse current page number (1–10) from feed pathname; returns 1 if none */
+export const getPageFromFeedPath = (pathname: string): number => {
+  const normalized = pathname.replace(/\/settings$/, '').replace(/\/$/, '');
+  const segments = normalized.split('/').filter(Boolean);
+  const last = segments[segments.length - 1];
+  if (last && isBoardFeedPageNumber(last)) {
+    const n = parseInt(last, 10);
+    return Math.min(10, Math.max(1, n));
+  }
+  return 1;
+};
+
 export const getFeedCacheKey = (pathname: string): string | null => {
   let normalizedPath = pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
   normalizedPath = normalizedPath.replace(/\/settings$/, '');
@@ -161,7 +189,7 @@ export const getFeedCacheKey = (pathname: string): string | null => {
   }
 
   if (isFeedRoute(pathname)) {
-    return normalizedPath;
+    return stripPageFromFeedPath(normalizedPath);
   }
 
   return null;

@@ -1,21 +1,25 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useLocation, useNavigationType, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useNavigationType, useParams } from 'react-router-dom';
 import { Comment, useAccount, useAccountComments, useAccountSubplebbits, useFeed, useSubplebbit } from '@plebbit/plebbit-react-hooks';
 import { useSubplebbitField } from '../../hooks/use-stable-subplebbit';
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
 import { Trans, useTranslation } from 'react-i18next';
 import styles from './board.module.css';
 import { shouldShowSnow } from '../../lib/snow';
-import { useDirectoryAddresses, useDirectories } from '../../hooks/use-directories';
+import { useDirectoryAddresses, useDirectories, useDirectoryByAddress } from '../../hooks/use-directories';
 import { useFilteredDirectoryAddresses } from '../../hooks/use-filtered-directory-addresses';
 import { useResolvedSubplebbitAddress, useBoardPath } from '../../hooks/use-resolved-subplebbit-address';
 import { useFeedStateString } from '../../hooks/use-state-string';
 import useTimeFilter, { timeFilterNameToSeconds } from '../../hooks/use-time-filter';
 import useFeedResetStore from '../../stores/use-feed-reset-store';
 import useSortingStore from '../../stores/use-sorting-store';
-import { getSubplebbitAddress, isDirectoryBoard } from '../../lib/utils/route-utils';
+import useFeedViewSettingsStore from '../../stores/use-feed-view-settings-store';
+import { useBoardFeedPageSize } from '../../hooks/use-board-feed-page-size';
+import { getPageSlice } from '../../lib/utils/board-feed-pagination';
+import { getPageFromFeedPath, getSubplebbitAddress, isDirectoryBoard, stripPageFromFeedPath } from '../../lib/utils/route-utils';
 import ErrorDisplay from '../../components/error-display/error-display';
 import LoadingEllipsis from '../../components/loading-ellipsis';
+import BoardPagination from '../../components/board-pagination';
 import { Post } from '../post';
 
 const lastVirtuosoStates: { [key: string]: StateSnapshot } = {};
@@ -39,6 +43,8 @@ interface BoardFooterProps {
   subplebbitState: string | undefined;
   subscriptionsLength: number;
   accountSubplebbitAddressesLength: number;
+  /** In pagination mode, suppress infinite-scroll loading cues */
+  showLoadingEllipsis?: boolean;
 }
 
 // Defined outside Board to preserve component identity across renders (Virtuoso optimization)
@@ -63,6 +69,7 @@ const BoardFooter = ({
   subplebbitState,
   subscriptionsLength,
   accountSubplebbitAddressesLength,
+  showLoadingEllipsis = true,
 }: BoardFooterProps) => {
   const { t } = useTranslation();
 
@@ -141,7 +148,7 @@ const BoardFooter = ({
         ) : isInModView && accountSubplebbitAddressesLength === 0 ? (
           <span className='red'>{t('not_mod_of_any_board')}</span>
         ) : (
-          hasMore && <LoadingEllipsis string={loadingStateString} />
+          showLoadingEllipsis && hasMore && <LoadingEllipsis string={loadingStateString} />
         )}
       </div>
     </div>
@@ -201,15 +208,37 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
   const timeFilterName = timeFilterNameFromCache || timeFilterNameFromHook;
   const timeFilterSeconds = timeFilterNameFromCache ? timeFilterNameToSeconds(timeFilterNameFromCache) : timeFilterSecondsFromHook;
 
-  const feedOptions = {
-    subplebbitAddresses,
-    sortType,
-    postsPerPage: isInAllView || isInSubscriptionsView || isInModView ? 5 : 25,
-    ...(isInAllView || isInSubscriptionsView || isInModView ? { newerThan: timeFilterSeconds } : {}),
-  };
+  const enableInfiniteScroll = useFeedViewSettingsStore((state) => state.enableInfiniteScroll);
+  const community = useDirectoryByAddress(isInAllView || isInSubscriptionsView || isInModView ? undefined : subplebbitAddress);
+  const { guiPostsPerPage, maxGuiPages, paginationFeedPostsPerPage, infiniteFeedPostsPerPage } = useBoardFeedPageSize(community);
+
+  const feedOptions = useMemo(
+    () => ({
+      subplebbitAddresses,
+      sortType,
+      postsPerPage: enableInfiniteScroll ? infiniteFeedPostsPerPage : paginationFeedPostsPerPage,
+      ...(isInAllView || isInSubscriptionsView || isInModView ? { newerThan: timeFilterSeconds } : {}),
+    }),
+    [
+      subplebbitAddresses,
+      sortType,
+      enableInfiniteScroll,
+      infiniteFeedPostsPerPage,
+      paginationFeedPostsPerPage,
+      isInAllView,
+      isInSubscriptionsView,
+      isInModView,
+      timeFilterSeconds,
+    ],
+  );
 
   const { feed, hasMore, loadMore, reset, subplebbitAddressesWithNewerPosts } = useFeed(feedOptions);
   const { accountComments } = useAccountComments();
+
+  const feedContextKey = `${isInAllView ? 'all' : isInSubscriptionsView ? 'subs' : isInModView ? 'mod' : (subplebbitAddress ?? 'board')}-${sortType}-${timeFilterSeconds}-${viewType ?? 'board'}-${enableInfiniteScroll}`;
+  const pathWithoutSettings = location.pathname.replace(/\/settings$/, '');
+  const currentPage = getPageFromFeedPath(pathWithoutSettings);
+  const paginationBasePath = stripPageFromFeedPath(pathWithoutSettings);
 
   const resetTriggeredRef = useRef(false);
 
@@ -248,6 +277,32 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
     }
     return newFeed;
   }, [feed, filteredComments]);
+
+  const cappedFeed = useMemo(
+    () => (enableInfiniteScroll ? combinedFeed : combinedFeed.slice(0, guiPostsPerPage * maxGuiPages)),
+    [enableInfiniteScroll, combinedFeed, guiPostsPerPage, maxGuiPages],
+  );
+  const totalPages = useMemo(() => Math.min(maxGuiPages, Math.ceil(cappedFeed.length / guiPostsPerPage) || 1), [cappedFeed.length, guiPostsPerPage, maxGuiPages]);
+  const currentPageFeed = useMemo(
+    () => (enableInfiniteScroll ? [] : getPageSlice(cappedFeed, currentPage, guiPostsPerPage, maxGuiPages)),
+    [enableInfiniteScroll, cappedFeed, currentPage, guiPostsPerPage, maxGuiPages],
+  );
+
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (!enableInfiniteScroll && currentPage > totalPages && totalPages > 0) {
+      const targetPage = totalPages;
+      const targetPath = targetPage === 1 ? paginationBasePath : `${paginationBasePath}/${targetPage}`;
+      navigate(targetPage === 1 ? paginationBasePath : `${paginationBasePath}/${targetPage}`, { replace: true });
+    }
+  }, [enableInfiniteScroll, currentPage, totalPages, paginationBasePath, navigate]);
+
+  // Scroll to top instantly when page changes in pagination mode
+  useEffect(() => {
+    if (!enableInfiniteScroll) {
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    }
+  }, [enableInfiniteScroll, currentPage]);
 
   useEffect(() => {
     if (filteredComments.length > 0 && !resetTriggeredRef.current) {
@@ -328,6 +383,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
           subplebbitState={subplebbitState}
           subscriptionsLength={subscriptions?.length || 0}
           accountSubplebbitAddressesLength={accountSubplebbitAddresses?.length || 0}
+          showLoadingEllipsis={enableInfiniteScroll}
         />
       ),
     }),
@@ -350,6 +406,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
       subplebbitState,
       subscriptions?.length,
       accountSubplebbitAddresses?.length,
+      enableInfiniteScroll,
     ],
   );
 
@@ -415,25 +472,56 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
             <ErrorDisplay error={subplebbitError} />
           </div>
         )}
-        {/* Use Virtuoso for infinite scroll only when there's more content to paginate */}
-        {hasMore ? (
-          <Virtuoso
-            increaseViewportBy={{ bottom: 1200, top: 1200 }}
-            totalCount={combinedFeed.length}
-            data={combinedFeed}
-            itemContent={(index, post) => <Post index={index} post={post} />}
-            useWindowScroll={true}
-            components={footerComponents}
-            endReached={loadMore}
-            ref={virtuosoRef}
-            restoreStateFrom={lastVirtuosoState}
-            initialScrollTop={lastVirtuosoState?.scrollTop}
-          />
+        {/* Infinite mode: Virtuoso when hasMore, else plain list */}
+        {enableInfiniteScroll ? (
+          hasMore ? (
+            <Virtuoso
+              increaseViewportBy={{ bottom: 1200, top: 1200 }}
+              totalCount={combinedFeed.length}
+              data={combinedFeed}
+              itemContent={(index, post) => <Post index={index} post={post} />}
+              useWindowScroll={true}
+              components={footerComponents}
+              endReached={loadMore}
+              ref={virtuosoRef}
+              restoreStateFrom={lastVirtuosoState}
+              initialScrollTop={lastVirtuosoState?.scrollTop}
+            />
+          ) : (
+            <>
+              {combinedFeed.map((post, index) => (
+                <Post key={post.cid} index={index} post={post} />
+              ))}
+              <BoardFooter
+                subplebbitAddresses={subplebbitAddresses}
+                hasMore={hasMore}
+                combinedFeedLength={combinedFeed.length}
+                subplebbitAddressesWithNewerPosts={subplebbitAddressesWithNewerPosts}
+                onNewerPostsClick={handleNewerPostsButtonClick}
+                isInAllView={isInAllView}
+                isInSubscriptionsView={isInSubscriptionsView}
+                isInModView={isInModView}
+                showMorePostsSuggestion={showMorePostsSuggestion}
+                feedLength={feedLength}
+                weeklyFeedLength={weeklyFeedLength}
+                monthlyFeedLength={monthlyFeedLength}
+                yearlyFeedLength={yearlyFeedLength}
+                boardPath={boardPath}
+                currentTimeFilterName={currentTimeFilterName}
+                subplebbitState={subplebbitState}
+                subscriptionsLength={subscriptions?.length || 0}
+                accountSubplebbitAddressesLength={accountSubplebbitAddresses?.length || 0}
+                showLoadingEllipsis={true}
+              />
+            </>
+          )
         ) : (
+          /* Pagination mode: plain list, no Virtuoso, no loadMore */
           <>
-            {combinedFeed.map((post, index) => (
+            {currentPageFeed.map((post, index) => (
               <Post key={post.cid} index={index} post={post} />
             ))}
+            <BoardPagination basePath={paginationBasePath} currentPage={currentPage} totalPages={totalPages} />
             <BoardFooter
               subplebbitAddresses={subplebbitAddresses}
               hasMore={hasMore}
@@ -453,6 +541,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
               subplebbitState={subplebbitState}
               subscriptionsLength={subscriptions?.length || 0}
               accountSubplebbitAddressesLength={accountSubplebbitAddresses?.length || 0}
+              showLoadingEllipsis={false}
             />
           </>
         )}

@@ -16,7 +16,8 @@
         "requirePostLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": false,
-        "noSpoilerReplies": false
+        "noSpoilerReplies": false,
+        "postsPerPage": 15
       }
     },
     {
@@ -31,7 +32,8 @@
         "requirePostLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
-        "noSpoilerReplies": true
+        "noSpoilerReplies": true,
+        "postsPerPage": 20
       }
     },
     {
@@ -46,7 +48,8 @@
         "requirePostLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
-        "noSpoilerReplies": true
+        "noSpoilerReplies": true,
+        "postsPerPage": 20
       }
     },
     {
@@ -61,7 +64,8 @@
         "requirePostLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
-        "noSpoilerReplies": true
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
       }
     },
     {
@@ -76,7 +80,8 @@
         "requirePostLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
-        "noSpoilerReplies": true
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
       }
     },
     {
@@ -91,7 +96,8 @@
         "requirePostLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": false,
-        "noSpoilerReplies": false
+        "noSpoilerReplies": false,
+        "postsPerPage": 20
       }
     },
     {
@@ -106,7 +112,8 @@
         "requirePostLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
-        "noSpoilerReplies": true
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
       }
     },
     {
@@ -121,7 +128,8 @@
         "requirePostLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
-        "noSpoilerReplies": true
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
       }
     },
     {
@@ -136,7 +144,8 @@
         "requirePostLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
-        "noSpoilerReplies": true
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
       }
     },
     {
@@ -151,7 +160,8 @@
         "requirePostLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
-        "noSpoilerReplies": true
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
       }
     },
     {
@@ -166,7 +176,8 @@
         "requirePostLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
-        "noSpoilerReplies": true
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
       }
     },
     {
@@ -181,7 +192,8 @@
         "requirePostLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
-        "noSpoilerReplies": true
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
       }
     },
     {
@@ -196,7 +208,8 @@
         "requirePostLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
-        "noSpoilerReplies": true
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
       }
     },
     {
@@ -211,7 +224,8 @@
         "requirePostLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
-        "noSpoilerReplies": true
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
       }
     },
     {
@@ -226,7 +240,8 @@
         "requirePostLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": false,
-        "noSpoilerReplies": false
+        "noSpoilerReplies": false,
+        "postsPerPage": 15
       }
     },
     {
@@ -241,7 +256,8 @@
         "requirePostLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": false,
-        "noSpoilerReplies": false
+        "noSpoilerReplies": false,
+        "postsPerPage": 15
       }
     },
     {
@@ -256,7 +272,8 @@
         "requirePostLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
-        "noSpoilerReplies": true
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
       }
     },
     {
@@ -271,7 +288,8 @@
         "requirePostLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
-        "noSpoilerReplies": true
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
       }
     },
     {
@@ -286,7 +304,8 @@
         "requirePostLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
-        "noSpoilerReplies": true
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
       }
     },
     {
@@ -301,7 +320,8 @@
         "requirePostLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
-        "noSpoilerReplies": true
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
       }
     }
   ]

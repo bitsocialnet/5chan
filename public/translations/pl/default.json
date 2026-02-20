@@ -280,5 +280,8 @@
   "upload_not_supported_web_before_link": "Przesyłanie multimediów nie jest obsługiwane przez Twoją przeglądarkę z powodu ograniczeń technicznych (CORS). Jest obsługiwane w aplikacji 5chan na Androida i aplikacji komputerowej Mac/Linux/Windows.",
   "upload_not_supported_web_link_text": "Pobierz ze strony oficjalnego wydania",
   "board_subscriptions": "Subskrypcje tablic",
-  "chain_ticker": "ticker łańcucha"
+  "chain_ticker": "ticker łańcucha",
+  "enable_infinite_scroll": "Enable infinite scroll",
+  "prev": "Prev",
+  "next": "Next"
 }

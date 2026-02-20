@@ -280,5 +280,8 @@
   "upload_not_supported_web_before_link": "Váš prohlížeč z důvodu technických omezení (CORS) nepodporuje nahrávání médií. Je podporováno v aplikaci 5chan pro Android a desktopové aplikaci pro Mac/Linux/Windows.",
   "upload_not_supported_web_link_text": "Stáhnout z oficiální stránky vydání",
   "board_subscriptions": "Odběry desek",
-  "chain_ticker": "ticker řetězce"
+  "chain_ticker": "ticker řetězce",
+  "enable_infinite_scroll": "Enable infinite scroll",
+  "prev": "Prev",
+  "next": "Next"
 }

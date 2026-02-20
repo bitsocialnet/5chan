@@ -280,5 +280,8 @@
   "upload_not_supported_web_before_link": "Încărcarea mediilor nu este acceptată de browserul dvs. din cauza limitărilor tehnice (CORS). Este acceptată în aplicația 5chan pentru Android și aplicația de desktop Mac/Linux/Windows.",
   "upload_not_supported_web_link_text": "Descărcare de pe pagina de lansare oficială",
   "board_subscriptions": "Abonamente la panouri",
-  "chain_ticker": "ticker lanț"
+  "chain_ticker": "ticker lanț",
+  "enable_infinite_scroll": "Enable infinite scroll",
+  "prev": "Prev",
+  "next": "Next"
 }

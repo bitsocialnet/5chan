@@ -280,5 +280,8 @@
   "upload_not_supported_web_before_link": "Ang pag-upload ng media ay hindi sinusuportahan ng iyong browser dahil sa mga teknikal na limitasyon (CORS). Ito ay sinusuportahan sa 5chan Android app at Mac/Linux/Windows desktop app.",
   "upload_not_supported_web_link_text": "I-download mula sa opisyal na release page",
   "board_subscriptions": "Mga subscription sa board",
-  "chain_ticker": "chain ticker"
+  "chain_ticker": "chain ticker",
+  "enable_infinite_scroll": "Enable infinite scroll",
+  "prev": "Prev",
+  "next": "Next"
 }

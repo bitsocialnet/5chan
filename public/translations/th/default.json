@@ -280,5 +280,8 @@
   "upload_not_supported_web_before_link": "การอัปโหลดสื่อไม่รองรับโดยเบราว์เซอร์ของคุณเนื่องจากข้อจำกัดทางเทคนิค (CORS) รองรับในแอป 5chan สำหรับ Android และแอปเดสก์ท็อป Mac/Linux/Windows",
   "upload_not_supported_web_link_text": "ดาวน์โหลดจากหน้าปล่อยรุ่นอย่างเป็นทางการ",
   "board_subscriptions": "การสมัครสมาชิกบอร์ด",
-  "chain_ticker": "ไทเกอร์เชน"
+  "chain_ticker": "ไทเกอร์เชน",
+  "enable_infinite_scroll": "Enable infinite scroll",
+  "prev": "Prev",
+  "next": "Next"
 }

@@ -280,5 +280,8 @@
   "upload_not_supported_web_before_link": "Tải lên phương tiện không được trình duyệt của bạn hỗ trợ do hạn chế kỹ thuật (CORS). Được hỗ trợ trong ứng dụng 5chan Android và ứng dụng desktop Mac/Linux/Windows.",
   "upload_not_supported_web_link_text": "Tải xuống từ trang phát hành chính thức",
   "board_subscriptions": "Đăng ký bảng",
-  "chain_ticker": "mã chuỗi"
+  "chain_ticker": "mã chuỗi",
+  "enable_infinite_scroll": "Enable infinite scroll",
+  "prev": "Prev",
+  "next": "Next"
 }

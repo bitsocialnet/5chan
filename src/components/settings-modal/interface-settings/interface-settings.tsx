@@ -5,6 +5,7 @@ import packageJson from '../../../../package.json';
 import styles from './interface-settings.module.css';
 import capitalize from 'lodash/capitalize';
 import useExpandedMediaStore from '../../../stores/use-expanded-media-store';
+import useFeedViewSettingsStore from '../../../stores/use-feed-view-settings-store';
 import useSpecialThemeStore from '../../../stores/use-special-theme-store';
 import { isChristmas } from '../../../lib/utils/time-utils';
 import Version from '../../version';
@@ -124,6 +125,7 @@ const InterfaceLanguage = () => {
 const InterfaceSettings = () => {
   const { t } = useTranslation();
   const { fitExpandedImagesToScreen, setFitExpandedImagesToScreen } = useExpandedMediaStore();
+  const { enableInfiniteScroll, setEnableInfiniteScroll } = useFeedViewSettingsStore();
 
   return (
     <div className={styles.interfaceSettings}>
@@ -145,6 +147,12 @@ const InterfaceSettings = () => {
           {capitalize(t('fit_expanded_images_to_screen'))}
         </label>
         <div className={styles.settingTip}>{capitalize(t('fit_expanded_images_to_screen_tip'))}</div>
+      </div>
+      <div className={styles.setting}>
+        <label>
+          <input type='checkbox' checked={enableInfiniteScroll} onChange={(e) => setEnableInfiniteScroll(e.target.checked)} />
+          {capitalize(t('enable_infinite_scroll'))}
+        </label>
       </div>
     </div>
   );
