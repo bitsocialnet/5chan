@@ -49,6 +49,7 @@
   "scripts": {
     "generate:assets": "node scripts/generate-asset-manifest.js",
     "sync:directories": "node scripts/sync-directories.js",
+    "postinstall": "node scripts/patch-capacitor-cli-tar.cjs",
     "prebuild": "yarn sync:directories && yarn generate:assets",
     "prestart": "yarn sync:directories && yarn generate:assets",
     "start": "vite",
