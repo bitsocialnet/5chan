@@ -256,6 +256,8 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
                   lowerCase(t('removed'))
                 ) : deleted ? (
                   lowerCase(t('deleted'))
+                ) : !cid && pseudonymityMode ? (
+                  <span className={styles.pendingCid}>{hasFailedState ? capitalize(t('failed')) : capitalize(t('pending'))}</span>
                 ) : (
                   <Tooltip
                     children={

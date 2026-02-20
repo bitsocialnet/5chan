@@ -291,6 +291,8 @@ const PostInfo = ({
                 t('deleted')
               ) : removed ? (
                 t('removed')
+              ) : !cid && pseudonymityMode ? (
+                <span className={styles.pendingCid}>{hasFailedState ? capitalize(t('failed')) : capitalize(t('pending'))}</span>
               ) : (
                 <Tooltip
                   children={
