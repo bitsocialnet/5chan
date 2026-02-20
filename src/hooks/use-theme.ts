@@ -55,6 +55,11 @@ const useTheme = (): [string, (theme: string) => void] => {
       return 'yotsuba';
     }
 
+    // Always use yotsuba for rules page (boardIdentifier in URL is for loading rules, not theming)
+    if (location.pathname.startsWith('/rules')) {
+      return 'yotsuba';
+    }
+
     // If special theme is enabled, use tomorrow
     if (isEnabled) {
       return 'tomorrow';

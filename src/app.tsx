@@ -194,7 +194,7 @@ const App = () => (
       <Route element={<GlobalLayout />}>
         <Route path='/' element={<Home />} />
         <Route path='/faq' element={<FAQ />} />
-        <Route path='/rules' element={<Rules />} />
+        <Route path='/rules/:boardIdentifier?' element={<Rules />} />
         <Route element={<BoardLayout />}>
           <Route path='/all/:timeFilterName?' element={null} />
           <Route path='/all/:timeFilterName?/settings' element={null} />
