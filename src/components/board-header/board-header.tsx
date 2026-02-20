@@ -14,7 +14,7 @@ import useIsMobile from '../../hooks/use-is-mobile';
 import useIsSubplebbitOffline from '../../hooks/use-is-subplebbit-offline';
 import { shouldShowSnow } from '../../lib/snow';
 import Tooltip from '../tooltip';
-import { startCase } from 'lodash';
+import startCase from 'lodash/startCase';
 import { BANNERS } from '../../generated/asset-manifest';
 
 const ImageBanner = () => {

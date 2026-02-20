@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { Link, useLocation, useNavigationType, useParams } from 'react-router-dom';
 import { Trans, useTranslation } from 'react-i18next';
-import { Comment, useAccount, useFeed, useSubplebbit, useBlock, useAccountComments } from '@plebbit/plebbit-react-hooks';
+import { Comment, useAccount, useFeed, useSubplebbit, useAccountComments } from '@plebbit/plebbit-react-hooks';
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
-import { getCommentMediaInfo, getHasThumbnail } from '../../lib/utils/media-utils';
 import useCatalogFeedRows from '../../hooks/use-catalog-feed-rows';
 import { useDirectories } from '../../hooks/use-directories';
 import { useFilteredDirectoryAddresses } from '../../hooks/use-filtered-directory-addresses';
@@ -142,7 +141,6 @@ interface CatalogLoadingProps {
   yearlyFeedLength: number;
   state: string | undefined;
   subscriptionsLength: number;
-  blocked: boolean;
   combinedFeedLength: number;
   error: Error | undefined;
 }
@@ -156,7 +154,6 @@ const CatalogLoading = ({
   yearlyFeedLength,
   state,
   subscriptionsLength,
-  blocked,
   combinedFeedLength,
   error,
 }: CatalogLoadingProps) => {
@@ -174,8 +171,6 @@ const CatalogLoading = ({
         <span className='red'>{state}</span>
       ) : subscriptionsLength === 0 ? (
         <span className='red'>{t('not_subscribed_to_any_board')}</span>
-      ) : blocked ? (
-        t('you_have_blocked_this_board')
       ) : !hasMore && combinedFeedLength === 0 ? (
         t('no_threads')
       ) : (
@@ -242,28 +237,12 @@ const createContentFilter = (
   };
 };
 
-const createImageFilter = (showTextOnlyThreads: boolean) => {
-  return {
-    filter: (comment: Comment) => {
-      if (showTextOnlyThreads) return true;
-
-      const { link, linkHeight, linkWidth, thumbnailUrl } = comment || {};
-      const hasThumbnail = getHasThumbnail(getCommentMediaInfo(link, thumbnailUrl, linkWidth, linkHeight), link);
-
-      return hasThumbnail;
-    },
-    key: showTextOnlyThreads ? 'no-image-filter' : 'threads-with-images-only',
-  };
-};
-
 const createCombinedFilter = (
-  showTextOnlyThreads: boolean,
   filterItems: { text: string; enabled: boolean; count: number; filteredCids: Set<string>; hide: boolean; top: boolean; color?: string }[],
   searchText: string,
   subplebbitAddress: string,
   onFilterMatch?: (filterIndex: number, cid: string, subplebbitAddress: string) => void,
 ) => {
-  const imageFilter = createImageFilter(showTextOnlyThreads);
   const contentFilter = createContentFilter(filterItems, subplebbitAddress, onFilterMatch);
 
   const searchFilter = {
@@ -276,13 +255,12 @@ const createCombinedFilter = (
 
   return {
     filter: (comment: Comment) => {
-      if (!imageFilter.filter(comment)) return false;
       if (!contentFilter.filter(comment)) return false;
       if (!searchFilter.filter(comment)) return false;
 
       return true;
     },
-    key: `${imageFilter.key}-${contentFilter.key}-${searchFilter.key}`,
+    key: `${contentFilter.key}-${searchFilter.key}`,
   };
 };
 
@@ -312,7 +290,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   }, [boardIdentifierProp, directories, resolvedAddressFromUrl]);
 
   const boardPath = useBoardPath(subplebbitAddress);
-  const { showTextOnlyThreads, filterItems, searchText, clearMatchedFilters } = useCatalogFiltersStore();
+  const { filterItems, searchText, clearMatchedFilters } = useCatalogFiltersStore();
 
   const account = useAccount();
   const subscriptions = account?.subscriptions;
@@ -358,7 +336,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
       subplebbitAddresses,
       sortType,
       postsPerPage: isInAllView || isInSubscriptionsView ? 10 : postsPerPage,
-      filter: createCombinedFilter(showTextOnlyThreads, filterItems, searchText, subplebbitAddress || 'all', handleFilterMatch),
+      filter: createCombinedFilter(filterItems, searchText, subplebbitAddress || 'all', handleFilterMatch),
     };
 
     if (isInAllView || isInSubscriptionsView) {
@@ -366,19 +344,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
     }
 
     return options;
-  }, [
-    subplebbitAddresses,
-    sortType,
-    isInAllView,
-    isInSubscriptionsView,
-    postsPerPage,
-    timeFilterSeconds,
-    showTextOnlyThreads,
-    filterItems,
-    searchText,
-    subplebbitAddress,
-    handleFilterMatch,
-  ]);
+  }, [subplebbitAddresses, sortType, isInAllView, isInSubscriptionsView, postsPerPage, timeFilterSeconds, filterItems, searchText, subplebbitAddress, handleFilterMatch]);
 
   const { feed, hasMore, loadMore, reset, subplebbitAddressesWithNewerPosts } = useFeed(feedOptions);
   const { accountComments } = useAccountComments();
@@ -389,7 +355,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   const filteredComments = useMemo(
     () =>
       accountComments.filter((comment) => {
-        const { cid, deleted, link, linkHeight, linkWidth, postCid, removed, state, thumbnailUrl, timestamp } = comment || {};
+        const { cid, deleted, postCid, removed, state, timestamp } = comment || {};
 
         // Basic filtering conditions
         const basicConditions =
@@ -398,7 +364,6 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
           timestamp > Date.now() / 1000 - 60 * 60 &&
           state === 'succeeded' &&
           cid &&
-          (showTextOnlyThreads ? getHasThumbnail(getCommentMediaInfo(link, thumbnailUrl, linkWidth, linkHeight), comment?.link) : true) &&
           cid === postCid &&
           comment?.subplebbitAddress === subplebbitAddress &&
           !feed.some((post) => post.cid === cid);
@@ -414,7 +379,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
 
         return basicConditions;
       }),
-    [accountComments, subplebbitAddress, feed, showTextOnlyThreads, searchText],
+    [accountComments, subplebbitAddress, feed, searchText],
   );
 
   // show newest account comment at the top of the feed but after pinned posts
@@ -446,21 +411,21 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
     subplebbitAddresses,
     sortType,
     newerThan: 60 * 60 * 24 * 7,
-    filter: createCombinedFilter(showTextOnlyThreads, filterItems, searchText, subplebbitAddress || 'all', handleFilterMatch),
+    filter: createCombinedFilter(filterItems, searchText, subplebbitAddress || 'all', handleFilterMatch),
   });
 
   const { feed: monthlyFeed } = useFeed({
     subplebbitAddresses,
     sortType,
     newerThan: 60 * 60 * 24 * 30,
-    filter: createCombinedFilter(showTextOnlyThreads, filterItems, searchText, subplebbitAddress || 'all', handleFilterMatch),
+    filter: createCombinedFilter(filterItems, searchText, subplebbitAddress || 'all', handleFilterMatch),
   });
 
   const { feed: yearlyFeed } = useFeed({
     subplebbitAddresses,
     sortType,
     newerThan: 60 * 60 * 24 * 365,
-    filter: createCombinedFilter(showTextOnlyThreads, filterItems, searchText, subplebbitAddress || 'all', handleFilterMatch),
+    filter: createCombinedFilter(filterItems, searchText, subplebbitAddress || 'all', handleFilterMatch),
   });
 
   const [showMorePostsSuggestion, setShowMorePostsSuggestion] = useState(false);
@@ -481,8 +446,6 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
 
   const subplebbit = useSubplebbit({ subplebbitAddress });
   const { error, shortAddress, state, title } = subplebbit || {};
-  const { blocked, unblock } = useBlock({ address: subplebbitAddress });
-
   const feedLength = feed.length;
   const weeklyFeedLength = weeklyFeed.length;
   const monthlyFeedLength = monthlyFeed.length;
@@ -702,25 +665,9 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
               yearlyFeedLength={yearlyFeedLength}
               state={state}
               subscriptionsLength={isInSubscriptionsView ? subscriptions?.length || 0 : 1}
-              blocked={blocked || false}
               combinedFeedLength={combinedFeed.length}
               error={error}
             />
-            {blocked && (
-              <>
-                &nbsp;&nbsp;[
-                <span
-                  className={styles.button}
-                  onClick={() => {
-                    unblock();
-                    reset();
-                  }}
-                >
-                  {t('unblock')}
-                </span>
-                ]
-              </>
-            )}
           </div>
         )}
       </div>

@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>Postimages Selector Trap</title></head>
+<body>
+<!-- Selector trap: elements matching postimages selectors (#uploadFile, .fileinput) but NOT actual file inputs.
+     Without strictInputOnly guard, we would match, click, chooser would never fire -> chooser_not_triggered.
+     With guard, we skip these; no real input on page -> input_not_found. -->
+<div id="uploadFile" class="fileinput">Fake upload button (not input)</div>
+<span class="fileinput">Another non-input trap</span>
+<p>No real input[type=file]. Guard prevents matching non-inputs; expect input_not_found.</p>
+</body>
+</html>

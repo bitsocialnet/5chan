@@ -11,6 +11,8 @@ export interface DirectoriesMetadata {
 export interface DirectoryFeatures {
   pseudonymityMode?: string;
   nsfw?: boolean;
+  noSpoilers?: boolean;
+  noSpoilerReplies?: boolean;
   hasFlags?: boolean;
   requirePostLink?: boolean;
   requirePostLinkIsMedia?: boolean;
@@ -43,7 +45,6 @@ const GITHUB_URL = 'https://raw.githubusercontent.com/bitsocialhq/lists/master/5
 const LOCALSTORAGE_KEY = '5chan-directories-cache';
 const LOCALSTORAGE_TIMESTAMP_KEY = '5chan-directories-cache-timestamp';
 const CACHE_MAX_AGE_MS = 60 * 60 * 1000; // 1 hour
-const FALLBACK_DIRECTORIES_DATA = directoriesData as DirectoriesData;
 
 let cacheCommunities: DirectoryCommunity[] | null = null;
 let cacheMetadata: DirectoriesMetadata | null = null;
@@ -66,21 +67,31 @@ const normalizeFeatures = (value: unknown): DirectoryFeatures | undefined => {
   return Object.keys(normalizedFeatures).length > 0 ? normalizedFeatures : undefined;
 };
 
-const toCanonicalCommunity = (value: { address: unknown; title: unknown; nsfw: unknown; directoryCode?: unknown; features?: unknown }): DirectoryCommunity | null => {
+const deriveNsfw = (value: { nsfw?: unknown; features?: { nsfw?: boolean; safeForWork?: boolean } }): boolean | undefined => {
+  const features = value.features;
+  const safeForWork = typeof features?.safeForWork === 'boolean' ? features.safeForWork : undefined;
+  if (safeForWork !== undefined) {
+    return !safeForWork;
+  }
+  const featuresNsfw = typeof features?.nsfw === 'boolean' ? features.nsfw : undefined;
+  const topLevelNsfw = typeof (value as { nsfw?: boolean }).nsfw === 'boolean' ? (value as { nsfw: boolean }).nsfw : undefined;
+  return topLevelNsfw ?? featuresNsfw;
+};
+
+const toCanonicalCommunity = (value: { address: unknown; title?: unknown; nsfw?: unknown; directoryCode?: unknown; features?: unknown }): DirectoryCommunity | null => {
   if (typeof value.address !== 'string') {
     return null;
   }
 
   const features = normalizeFeatures(value.features);
-  const topLevelNsfw = typeof value.nsfw === 'boolean' ? value.nsfw : undefined;
-  const featuresNsfw = typeof features?.nsfw === 'boolean' ? features.nsfw : undefined;
+  const nsfw = deriveNsfw({ ...value, features });
 
   return {
     address: value.address,
     ...(typeof value.title === 'string' ? { title: value.title } : {}),
     ...(typeof value.directoryCode === 'string' ? { directoryCode: value.directoryCode } : {}),
     ...(features ? { features } : {}),
-    ...((topLevelNsfw ?? featuresNsfw) !== undefined ? { nsfw: topLevelNsfw ?? featuresNsfw } : {}),
+    ...(nsfw !== undefined ? { nsfw } : {}),
   };
 };
 
@@ -113,7 +124,6 @@ const adaptV2Directories = (value: Record<string, unknown>): DirectoryCommunity[
       return toCanonicalCommunity({
         address: directory.communityAddress,
         title: directory.title,
-        nsfw: features?.nsfw,
         directoryCode: directory.directoryCode,
         features,
       });
@@ -158,13 +168,31 @@ const normalizeDirectoriesData = (value: unknown): DirectoriesData | null => {
     return null;
   }
 
+  const raw = directoriesData as DirectoriesData;
   return {
-    title: typeof value.title === 'string' ? value.title : FALLBACK_DIRECTORIES_DATA.title,
-    description: typeof value.description === 'string' ? value.description : FALLBACK_DIRECTORIES_DATA.description,
-    createdAt: typeof value.createdAt === 'number' ? value.createdAt : FALLBACK_DIRECTORIES_DATA.createdAt,
-    updatedAt: typeof value.updatedAt === 'number' ? value.updatedAt : FALLBACK_DIRECTORIES_DATA.updatedAt,
+    title: typeof value.title === 'string' ? value.title : (raw.title ?? ''),
+    description: typeof value.description === 'string' ? value.description : (raw.description ?? ''),
+    createdAt: typeof value.createdAt === 'number' ? value.createdAt : (raw.createdAt ?? 0),
+    updatedAt: typeof value.updatedAt === 'number' ? value.updatedAt : (raw.updatedAt ?? 0),
     communities,
   };
+};
+
+let fallbackDirectoriesData: DirectoriesData | null = null;
+
+const getFallbackDirectoriesData = (): DirectoriesData => {
+  if (fallbackDirectoriesData) return fallbackDirectoriesData;
+  const normalized = normalizeDirectoriesData(directoriesData as unknown);
+  fallbackDirectoriesData =
+    normalized ??
+    ({
+      title: (directoriesData as DirectoriesData).title ?? '',
+      description: (directoriesData as DirectoriesData).description ?? '',
+      createdAt: (directoriesData as DirectoriesData).createdAt ?? 0,
+      updatedAt: (directoriesData as DirectoriesData).updatedAt ?? 0,
+      communities: (directoriesData as DirectoriesData).communities ?? [],
+    } as DirectoriesData);
+  return fallbackDirectoriesData;
 };
 
 const getFromLocalStorage = (): DirectoriesData | null => {
@@ -226,7 +254,7 @@ export const useDirectories = () => {
   // Use vendored data as initial state to prevent theme flash on first load
   // This ensures NSFW status is known synchronously before first render
   const [state, setState] = useState<DirectoriesState>({
-    communities: FALLBACK_DIRECTORIES_DATA.communities,
+    communities: getFallbackDirectoriesData().communities,
     loading: true,
     error: null,
   });
@@ -267,7 +295,7 @@ export const useDirectories = () => {
         console.warn('Failed to fetch directories from GitHub:', e);
         // Only fall back if we don't already have memory/localStorage data
         if (!cacheCommunities) {
-          hydrateCommunities(FALLBACK_DIRECTORIES_DATA);
+          hydrateCommunities(getFallbackDirectoriesData());
         }
       }
     })();
@@ -280,13 +308,13 @@ export const useDirectories = () => {
   // Always prefer cacheCommunities (module-level, stable reference) when available
   // Only use state.communities during initial load before cache is populated
   // This ensures a stable reference for memoization in consuming hooks
-  return cacheCommunities || state.communities || FALLBACK_DIRECTORIES_DATA.communities;
+  return cacheCommunities || state.communities || getFallbackDirectoriesData().communities;
 };
 
 export const useDirectoriesState = () => {
   // Use vendored data as fallback to prevent theme flash on first load
   const [state, setState] = useState<DirectoriesState>({
-    communities: cacheCommunities || FALLBACK_DIRECTORIES_DATA.communities,
+    communities: cacheCommunities || getFallbackDirectoriesData().communities,
     loading: !cacheCommunities,
     error: null,
   });
@@ -327,7 +355,7 @@ export const useDirectoriesState = () => {
         console.warn('Failed to fetch directories from GitHub:', e);
         // Only fall back if we don't already have memory/localStorage data
         if (!cacheCommunities) {
-          hydrateCommunities(FALLBACK_DIRECTORIES_DATA);
+          hydrateCommunities(getFallbackDirectoriesData());
         }
       }
     })();
@@ -343,6 +371,11 @@ export const useDirectoriesState = () => {
 export const useDirectoryAddresses = () => {
   const directories = useDirectories();
   return useMemo(() => (Array.isArray(directories) ? directories.map((community) => community.address) : []), [directories]);
+};
+
+export const useDirectoryByAddress = (address: string | undefined) => {
+  const directories = useDirectories();
+  return useMemo(() => (address ? directories.find((c) => c.address === address) : undefined), [directories, address]);
 };
 
 export const useDirectoriesMetadata = () => {
@@ -382,7 +415,7 @@ export const useDirectoriesMetadata = () => {
         console.warn('Failed to fetch directory metadata from GitHub:', e);
         // Only fall back if we don't already have memory/localStorage data
         if (!cacheMetadata) {
-          hydrateMetadata(FALLBACK_DIRECTORIES_DATA);
+          hydrateMetadata(getFallbackDirectoriesData());
         }
       }
     })();

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Account, setAccount, useAccount } from '@plebbit/plebbit-react-hooks';
 import styles from './crypto-wallets-setting.module.css';
 import { Trans, useTranslation } from 'react-i18next';
-import { capitalize } from 'lodash';
+import capitalize from 'lodash/capitalize';
 
 interface Wallet {
   chainTicker: string;
@@ -102,7 +102,7 @@ const CryptoWalletsForm = ({ account }: { account: Account | undefined }) => {
     walletsArray.length > 0 ? (
       <div key={selectedWallet} className={styles.walletBox}>
         <div className={`${styles.walletField} ${styles.step1}`}>
-          <span className={styles.walletFieldTitle}>{capitalize(t('chain_ticker'))}: </span>
+          <span className={styles.walletFieldTitle}>Chain ticker: </span>
           <input
             type='text'
             onChange={(e) => setWalletsArrayProperty(selectedWallet, 'chainTicker', e.target.value)}

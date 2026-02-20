@@ -8,20 +8,31 @@ import { useLocation, useNavigate } from 'react-router-dom';
 
 const isAndroid = Capacitor.getPlatform() === 'android';
 
-const AccountSettings = () => {
+// Inner component keyed by account id so state resets when user switches account
+const AccountSettingsEditor = ({
+  account,
+}: {
+  account?: { id?: string; name?: string; author?: { address?: string; shortAddress?: string }; [key: string]: unknown };
+}) => {
   const { t } = useTranslation();
   const location = useLocation();
-  const account = useAccount();
-  const [text, setText] = useState('');
 
   const accountJson = useMemo(
-    () => stringify({ account: { ...account, plebbit: undefined, karma: undefined, plebbitReactOptions: undefined, unreadNotificationCount: undefined } }),
+    () =>
+      stringify({
+        account: {
+          ...account,
+          author: { ...account?.author, avatar: undefined },
+          plebbit: undefined,
+          karma: undefined,
+          plebbitReactOptions: undefined,
+          unreadNotificationCount: undefined,
+        },
+      }),
     [account],
   );
 
-  useEffect(() => {
-    setText(accountJson);
-  }, [accountJson]);
+  const [text, setText] = useState(() => accountJson);
 
   const { accounts } = useAccounts();
   const switchToNewAccountRef = useRef(false);
@@ -92,7 +103,7 @@ const AccountSettings = () => {
       // Create a temporary download link
       const link = document.createElement('a');
       link.href = fileUrl;
-      link.download = `${account.name}.json`;
+      link.download = `${account?.name ?? 'account'}.json`;
 
       // Append the link, trigger the download, then remove the link
       document.body.appendChild(link);
@@ -221,12 +232,17 @@ const AccountSettings = () => {
       <textarea value={text} onChange={(e) => setText(e.target.value)} autoCorrect='off' autoComplete='off' spellCheck='false' />
       <div>
         <button onClick={saveAccount}>{t('save_changes')}</button> <button onClick={() => setText(accountJson)}>{t('reset_changes')}</button>
-        <button className={styles.deleteAccount} onClick={() => _deleteAccount(account?.name)}>
+        <button className={styles.deleteAccount} onClick={() => _deleteAccount(account?.name ?? '')}>
           {t('delete_account')}
         </button>
       </div>
     </div>
   );
+};
+
+const AccountSettings = () => {
+  const account = useAccount();
+  return <AccountSettingsEditor key={account?.id} account={account} />;
 };
 
 export default AccountSettings;

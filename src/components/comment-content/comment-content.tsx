@@ -14,7 +14,7 @@ import ReplyQuotePreview from '../../components/reply-quote-preview';
 import Markdown from '../../components/markdown';
 import Tooltip from '../../components/tooltip';
 import styles from '../../views/post/post.module.css';
-import { capitalize } from 'lodash';
+import capitalize from 'lodash/capitalize';
 
 const QuotedCidLink = ({ cid, postCid }: { cid: string; postCid: string }) => {
   const commentFromStore = useSubplebbitsPagesStore((state) => state.comments[cid]);

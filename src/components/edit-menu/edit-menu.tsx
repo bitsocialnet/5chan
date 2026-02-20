@@ -12,7 +12,7 @@ import {
 import styles from './edit-menu.module.css';
 import { alertChallengeVerificationFailed } from '../../lib/utils/challenge-utils';
 import useChallengesStore from '../../stores/use-challenges-store';
-import { capitalize } from 'lodash';
+import capitalize from 'lodash/capitalize';
 import useIsMobile from '../../hooks/use-is-mobile';
 import useAuthorPrivileges from '../../hooks/use-author-privileges';
 

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigationType, useParams } from 'react-router-dom';
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
-import { Comment, useAuthorAvatar, useEditedComment, useReplies, useAccount, useAccountComment } from '@plebbit/plebbit-react-hooks';
+import { Comment, useEditedComment, useReplies, useAccount, useAccountComment } from '@plebbit/plebbit-react-hooks';
 import Plebbit from '@plebbit/plebbit-js';
 import styles from '../../views/post/post.module.css';
 import { CommentMediaInfo, getDisplayMediaInfoType, getHasThumbnail, getMediaDimensions } from '../../lib/utils/media-utils';
@@ -14,7 +14,6 @@ import { formatUserIDForDisplay } from '../../lib/utils/string-utils';
 import useModQueueStore from '../../stores/use-mod-queue-store';
 import { useDirectories } from '../../hooks/use-directories';
 import { getBoardPath } from '../../lib/utils/route-utils';
-import useAvatarVisibilityStore from '../../stores/use-avatar-visibility-store';
 import useAuthorAddressClick from '../../hooks/use-author-address-click';
 import { useCommentMediaInfo } from '../../hooks/use-comment-media-info';
 import useCountLinksInReplies from '../../hooks/use-count-links-in-replies';
@@ -22,6 +21,7 @@ import useFetchGifFirstFrame from '../../hooks/use-fetch-gif-first-frame';
 import useHide from '../../hooks/use-hide';
 import useStateString from '../../hooks/use-state-string';
 import useScrollToReply from '../../hooks/use-scroll-to-reply';
+import { useCurrentTime } from '../../hooks/use-current-time';
 import { useSubplebbitField } from '../../hooks/use-stable-subplebbit';
 import CommentContent from '../comment-content';
 import CommentMedia from '../comment-media';
@@ -33,7 +33,8 @@ import ReplyQuotePreview from '../reply-quote-preview';
 import Tooltip from '../tooltip';
 import { PostProps } from '../../views/post/post';
 import { create } from 'zustand';
-import { capitalize, lowerCase } from 'lodash';
+import capitalize from 'lodash/capitalize';
+import lowerCase from 'lodash/lowerCase';
 import { shouldShowSnow } from '../../lib/snow';
 import useReplyModalStore from '../../stores/use-reply-modal-store';
 import { selectPostMenuProps } from '../../lib/utils/post-menu-props';
@@ -47,6 +48,13 @@ import useProgressiveRender from '../../hooks/use-progressive-render';
 import { REPLIES_PER_PAGE } from '../../lib/constants';
 
 const { addChallenge } = useChallengesStore.getState();
+
+const RepliesFooter = ({ hasMore, loadingString }: { hasMore: boolean; loadingString: string }) =>
+  hasMore ? (
+    <div className={styles.stateString}>
+      <LoadingEllipsis string={loadingString} />
+    </div>
+  ) : null;
 
 // Store scroll position for replies virtuoso across navigations
 const lastVirtuosoStates: { [key: string]: StateSnapshot } = {};
@@ -91,8 +99,6 @@ const PostInfo = ({
   const hasFailedState = state === 'failed';
   const isReply = parentCid;
   const { showOmittedReplies } = useShowOmittedReplies();
-  const { imageUrl: avatarImageUrl } = useAuthorAvatar({ author });
-  const { hideAvatars } = useAvatarVisibilityStore();
   const directories = useDirectories();
   const boardPath = subplebbitAddress ? getBoardPath(subplebbitAddress, directories) : undefined;
   const postMenuProps = useMemo(() => selectPostMenuProps(post), [post]);
@@ -102,6 +108,7 @@ const PostInfo = ({
   const isInPostPageView = isPostPageView(location.pathname, params);
   const isInModQueueView = isModQueueView(location.pathname);
   const { getAlertThresholdSeconds } = useModQueueStore();
+  const currentTime = useCurrentTime();
   const account = useAccount();
   const accountAddress = account?.author?.address;
 
@@ -199,7 +206,7 @@ const PostInfo = ({
   const alreadyApproved = approved === true;
   const alreadyRejected = removed === true;
   const isAwaitingApproval = isInModQueueView && !alreadyApproved && !alreadyRejected;
-  const timeWaiting = timestamp ? Date.now() / 1000 - timestamp : 0;
+  const timeWaiting = timestamp ? currentTime - timestamp : 0;
   const alertThresholdSeconds = getAlertThresholdSeconds();
   const isOverThreshold = isAwaitingApproval && timeWaiting > alertThresholdSeconds;
 
@@ -277,11 +284,6 @@ const PostInfo = ({
               </span>
             )}{' '}
           </span>
-          {author?.avatar && !(deleted || removed) && !hideAvatars && avatarImageUrl ? (
-            <span className={styles.authorAvatar}>
-              <img src={avatarImageUrl} alt='' />
-            </span>
-          ) : null}
           {showUserID && (
             <>
               (ID:{' '}
@@ -762,7 +764,7 @@ const PostDesktop = ({
         }
       });
     };
-    window.addEventListener('scroll', setLastVirtuosoState);
+    window.addEventListener('scroll', setLastVirtuosoState, { passive: true });
     return () => window.removeEventListener('scroll', setLastVirtuosoState);
   }, [virtuosoStateKey, showAllReplies, isInPostPageView]);
 
@@ -778,13 +780,7 @@ const PostDesktop = ({
     enabled: shouldScrollToReply,
   });
 
-  // Footer component for Virtuoso showing loading state
-  const RepliesFooter = () =>
-    hasMore ? (
-      <div className={styles.stateString}>
-        <LoadingEllipsis string={t('loading')} />
-      </div>
-    ) : null;
+  const virtuosoFooter = useCallback(() => <RepliesFooter hasMore={hasMore} loadingString={t('loading')} />, [hasMore, t]);
 
   return (
     <div className={styles.postDesktop}>
@@ -885,7 +881,7 @@ const PostDesktop = ({
               </div>
             )}
             useWindowScroll={true}
-            components={{ Footer: RepliesFooter }}
+            components={{ Footer: virtuosoFooter }}
             endReached={loadMore}
             ref={virtuosoRef}
             restoreStateFrom={lastVirtuosoState}

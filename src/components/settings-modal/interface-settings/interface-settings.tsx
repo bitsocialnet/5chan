@@ -1,12 +1,9 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import useAvatarVisibilityStore from '../../../stores/use-avatar-visibility-store';
 import useTheme from '../../../hooks/use-theme';
 import packageJson from '../../../../package.json';
 import styles from './interface-settings.module.css';
-import { capitalize } from 'lodash';
-import useInterfaceSettingsStore from '../../../stores/use-interface-settings-store';
-import useCatalogFiltersStore from '../../../stores/use-catalog-filters-store';
+import capitalize from 'lodash/capitalize';
 import useExpandedMediaStore from '../../../stores/use-expanded-media-store';
 import useSpecialThemeStore from '../../../stores/use-special-theme-store';
 import { isChristmas } from '../../../lib/utils/time-utils';
@@ -126,14 +123,7 @@ const InterfaceLanguage = () => {
 
 const InterfaceSettings = () => {
   const { t } = useTranslation();
-  const { hideAvatars, setHideAvatars } = useAvatarVisibilityStore();
-  const { hideThreadsWithoutImages, setHideThreadsWithoutImages } = useInterfaceSettingsStore();
-  const { setShowTextOnlyThreads } = useCatalogFiltersStore();
   const { fitExpandedImagesToScreen, setFitExpandedImagesToScreen } = useExpandedMediaStore();
-
-  const handleHideAvatarsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setHideAvatars(e.target.checked);
-  };
 
   return (
     <div className={styles.interfaceSettings}>
@@ -151,30 +141,10 @@ const InterfaceSettings = () => {
       </div>
       <div className={styles.setting}>
         <label>
-          <input
-            type='checkbox'
-            checked={hideThreadsWithoutImages}
-            onChange={(e) => {
-              setHideThreadsWithoutImages(e.target.checked);
-              setShowTextOnlyThreads(!e.target.checked);
-            }}
-          />
-          {capitalize(t('hide_threads_without_images'))}
-        </label>
-        <div className={styles.settingTip}>{capitalize(t('threads_without_images_tip'))}</div>
-      </div>
-      <div className={styles.setting}>
-        <label>
           <input type='checkbox' checked={fitExpandedImagesToScreen} onChange={(e) => setFitExpandedImagesToScreen(e.target.checked)} />
           {capitalize(t('fit_expanded_images_to_screen'))}
         </label>
         <div className={styles.settingTip}>{capitalize(t('fit_expanded_images_to_screen_tip'))}</div>
-      </div>
-      <div className={styles.setting}>
-        <label>
-          <input type='checkbox' checked={hideAvatars} onChange={handleHideAvatarsChange} /> {capitalize(t('hide_avatars'))}
-        </label>
-        <div className={styles.settingTip}>{capitalize(t('hide_avatars_tip'))}</div>
       </div>
     </div>
   );

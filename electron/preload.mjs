@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer } from 'electron';
+import { contextBridge, ipcRenderer, webUtils } from 'electron';
 
 // dev uses http://localhost, prod uses file://...index.html
 const isDev = window.location.protocol === 'http:';
@@ -16,8 +16,16 @@ contextBridge.exposeInMainWorld('defaultMediaIpfsGatewayUrl', 'http://localhost:
 ipcRenderer.on('plebbit-rpc-auth-key', (event, plebbitRpcAuthKey) => contextBridge.exposeInMainWorld('plebbitRpcAuthKey', plebbitRpcAuthKey));
 ipcRenderer.send('get-plebbit-rpc-auth-key');
 
-contextBridge.exposeInMainWorld('electronApi', { 
+contextBridge.exposeInMainWorld('electronApi', {
   isElectron: true,
   copyToClipboard: (text) => ipcRenderer.invoke('copy-to-clipboard', text),
   getPlatform: () => ipcRenderer.invoke('get-platform'),
+  automateUploadMedia: (options) => ipcRenderer.invoke('automate-upload-media', options),
+  getPathForFile: (file) => {
+    try {
+      return webUtils.getPathForFile(file);
+    } catch {
+      return null;
+    }
+  },
 });

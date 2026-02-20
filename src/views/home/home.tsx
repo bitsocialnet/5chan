@@ -12,7 +12,7 @@ import useDirectoryModalStore from '../../stores/use-directory-modal-store';
 import DisclaimerModal from '../../components/disclaimer-modal';
 import DirectoryModal from '../../components/directory-modal';
 import { getBoardPath } from '../../lib/utils/route-utils';
-import { lowerCase } from 'lodash';
+import lowerCase from 'lodash/lowerCase';
 
 // https://github.com/bitsocialhq/lists/blob/master/5chan-directories.json
 

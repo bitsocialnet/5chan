@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useClientsStates, useSubplebbit, useSubplebbitsStates } from '@plebbit/plebbit-react-hooks';
-import { debounce } from 'lodash';
+import debounce from 'lodash/debounce';
 
 interface CommentOrSubplebbit {
   state?: string;

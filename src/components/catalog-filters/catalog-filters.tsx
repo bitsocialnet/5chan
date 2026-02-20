@@ -11,7 +11,7 @@ const FiltersTable = ({ onSave }: { onSave: () => void }) => {
   const { filterItems, saveAndApplyFilters, currentSubplebbitAddress } = useCatalogFiltersStore();
   const resetFeed = useFeedResetStore((state) => state.reset);
 
-  const [localFilterItems, setLocalFilterItems] = useState(
+  const [localFilterItems, setLocalFilterItems] = useState(() =>
     filterItems.map((item) => ({
       ...item,
       hide: item.hide ?? true,
@@ -21,18 +21,6 @@ const FiltersTable = ({ onSave }: { onSave: () => void }) => {
   );
 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-
-  // Update local items when store changes
-  useEffect(() => {
-    setLocalFilterItems(
-      filterItems.map((item) => ({
-        ...item,
-        hide: item.hide ?? true,
-        top: item.top ?? false,
-        color: item.color ?? '',
-      })),
-    );
-  }, [filterItems]);
 
   const handleAddFilter = useCallback(() => {
     setLocalFilterItems((prev) => {
@@ -181,6 +169,7 @@ const FiltersTable = ({ onSave }: { onSave: () => void }) => {
 const FiltersModal = ({ closeModal }: { closeModal: () => void }) => {
   const { t } = useTranslation();
   const [showHelp, setShowHelp] = useState(false);
+  const currentSubplebbitAddress = useCatalogFiltersStore((state) => state.currentSubplebbitAddress);
   const openHelp = () => setShowHelp(true);
   const closeHelp = () => setShowHelp(false);
 
@@ -207,7 +196,7 @@ const FiltersModal = ({ closeModal }: { closeModal: () => void }) => {
           {!showHelp && <span className={styles.openHelpButton} title={t('help')} onClick={openHelp} />}
           <span className={styles.closeButton} title={t('close')} onClick={closeModal} />
         </div>
-        {showHelp ? <FiltersProtip /> : <FiltersTable onSave={closeModal} />}
+        {showHelp ? <FiltersProtip /> : <FiltersTable key={currentSubplebbitAddress ?? 'none'} onSave={closeModal} />}
       </div>
     </>
   );

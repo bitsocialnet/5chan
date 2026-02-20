@@ -20,8 +20,10 @@ import useChallengesStore from '../../stores/use-challenges-store';
 import { alertChallengeVerificationFailed } from '../../lib/utils/challenge-utils';
 import Tooltip from '../../components/tooltip';
 import useIsMobile from '../../hooks/use-is-mobile';
+import { useCurrentTime } from '../../hooks/use-current-time';
 import { Post } from '../post/post';
-import { capitalize, lowerCase } from 'lodash';
+import capitalize from 'lodash/capitalize';
+import lowerCase from 'lodash/lowerCase';
 
 const { addChallenge } = useChallengesStore.getState();
 
@@ -158,6 +160,7 @@ const ModQueueRow = ({ comment, isOdd = false }: ModQueueRowProps) => {
   const { t } = useTranslation();
   const { getAlertThresholdSeconds } = useModQueueStore();
   const isMobile = useIsMobile();
+  const currentTime = useCurrentTime();
 
   const { editedComment } = useEditedComment({ comment });
   const displayComment = editedComment || comment;
@@ -171,7 +174,7 @@ const ModQueueRow = ({ comment, isOdd = false }: ModQueueRowProps) => {
   const alreadyApproved = approved === true;
   const alreadyRejected = removed === true;
 
-  const timeWaiting = Date.now() / 1000 - timestamp;
+  const timeWaiting = currentTime - timestamp;
   const alertThresholdSeconds = getAlertThresholdSeconds();
   const isOverThreshold = timeWaiting > alertThresholdSeconds;
 
@@ -287,6 +290,7 @@ interface ModQueueCardProps {
 const ModQueueCard = ({ comment }: ModQueueCardProps) => {
   const { t } = useTranslation();
   const { getAlertThresholdSeconds } = useModQueueStore();
+  const currentTime = useCurrentTime();
 
   const { editedComment } = useEditedComment({ comment });
   const displayComment = editedComment || comment;
@@ -297,7 +301,7 @@ const ModQueueCard = ({ comment }: ModQueueCardProps) => {
   const alreadyApproved = approved === true;
   const alreadyRejected = removed === true;
 
-  const timeWaiting = Date.now() / 1000 - timestamp;
+  const timeWaiting = currentTime - timestamp;
   const alertThresholdSeconds = getAlertThresholdSeconds();
   const isOverThreshold = timeWaiting > alertThresholdSeconds;
   const isAwaitingApproval = !alreadyApproved && !alreadyRejected;
@@ -441,20 +445,20 @@ const ModQueueBoardFilter = ({ communities }: ModQueueBoardFilterProps) => {
     setSelectedBoardFilter(value);
   };
 
-  if (!communities || communities.length === 0) {
-    return null;
-  }
-
-  // Default to first board if none selected
-  const firstBoardAddress = communities.find((sub) => sub.address)?.address;
+  // Compute derived values before any early return so hooks run unconditionally
+  const firstBoardAddress = communities?.find((sub) => sub.address)?.address;
   const currentFilter = selectedBoardFilter || firstBoardAddress || '';
 
-  // Auto-select first board if none is selected
+  // Auto-select first board if none is selected (must run before early return)
   useEffect(() => {
     if (!selectedBoardFilter && firstBoardAddress) {
       setSelectedBoardFilter(firstBoardAddress);
     }
   }, [selectedBoardFilter, firstBoardAddress, setSelectedBoardFilter]);
+
+  if (!communities || communities.length === 0) {
+    return null;
+  }
 
   return (
     <div className={styles.filterContainer}>
@@ -488,10 +492,11 @@ interface ModQueueCountItemProps {
 const ModQueueCountItem = ({ comment, alertThresholdSeconds, onStatusChange }: ModQueueCountItemProps) => {
   const { editedComment } = useEditedComment({ comment });
   const displayComment = editedComment || comment;
+  const currentTime = useCurrentTime();
 
   const { cid, approved, removed, timestamp } = displayComment;
   const isAwaiting = approved !== true && removed !== true;
-  const timeWaiting = Date.now() / 1000 - timestamp;
+  const timeWaiting = currentTime - timestamp;
   const isUrgent = isAwaiting && timeWaiting > alertThresholdSeconds;
 
   useEffect(() => {

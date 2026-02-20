@@ -20,7 +20,7 @@ import CatalogSearch from '../catalog-search';
 import Tooltip from '../tooltip';
 import { ModQueueButton } from '../../views/mod-queue/mod-queue';
 import styles from './board-buttons.module.css';
-import { capitalize } from 'lodash';
+import capitalize from 'lodash/capitalize';
 
 interface BoardButtonsProps {
   address?: string | undefined;

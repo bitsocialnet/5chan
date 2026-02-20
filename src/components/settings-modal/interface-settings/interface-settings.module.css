@@ -22,6 +22,17 @@
   text-decoration: var(--post-content-link-text-decoration-hover);
 }
 
+.setting a {
+  color: var(--post-link-text-color);
+  text-decoration: var(--post-content-link-text-decoration);
+  text-transform: lowercase;
+}
+
+.setting a:hover {
+  color: var(--post-link-text-color-hover);
+  text-decoration: var(--post-content-link-text-decoration-hover);
+}
+
 .interfaceSettings {
   margin-bottom: 10px;
 }
@@ -30,8 +41,29 @@
   margin-right: 2px;
 }
 
+.setting input[type="radio"] {
+  margin-right: 5px;
+}
+
 .settingTip {
   font-size: 0.85em;
   margin: 2px 0 5px 0;
   padding-left: 19px;
+}
+
+.webUploadWarning {
+  font-size: 0.8em;
+  padding: 5px 0;
+  margin-left: 10px;
+}
+
+.webUploadWarning a {
+  color: var(--post-link-text-color);
+  text-decoration: var(--post-content-link-text-decoration);
+  text-transform: lowercase;
+}
+
+.webUploadWarning a:hover {
+  color: var(--post-link-text-color-hover);
+  text-decoration: var(--post-content-link-text-decoration-hover);
 }

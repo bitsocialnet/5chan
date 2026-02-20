@@ -3,12 +3,11 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import styles from './settings-modal.module.css';
 import AccountSettings from './account-settings';
-import AvatarSettings from './avatar-settings';
-import BlockedAddressesSetting from './blocked-addresses-setting';
 import CryptoAddressSetting from './crypto-address-setting';
 import CryptoWalletsSetting from './crypto-wallets-setting';
 import InterfaceSettings from './interface-settings';
-import P2pOptions from './p2p-options';
+import MediaHostingSettings from './media-hosting-settings';
+import AdvancedSettings from './advanced-settings';
 import SubscriptionsSetting from './subscriptions-setting';
 
 const SettingsModal = () => {
@@ -36,37 +35,24 @@ const SettingsModal = () => {
   }, [closeModal]);
 
   const [showInterfaceSettings, setShowInterfaceSettings] = useState(false);
+  const [showMediaHostingSettings, setShowMediaHostingSettings] = useState(false);
   const [showAccountSettings, setShowAccountSettings] = useState(false);
-  const [showAvatarSettings, setShowAvatarSettings] = useState(false);
-  const [showCryptoAddressSetting, setShowCryptoAddressSetting] = useState(false);
-  const [showCryptoWalletSettings, setShowCryptoWalletSettings] = useState(false);
   const [showSubscriptionsSettings, setShowSubscriptionsSettings] = useState(false);
-  const [showBlockedAddressesSetting, setShowBlockedAddressesSetting] = useState(false);
-  const [showP2pOptionsSettings, setShowP2pOptionsSettings] = useState(false);
+  const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
   const [expandAll, setExpandAll] = useState(false);
 
   const getExpandedCount = () => {
     return (
-      Number(showInterfaceSettings) +
-      Number(showAccountSettings) +
-      Number(showAvatarSettings) +
-      Number(showCryptoAddressSetting) +
-      Number(showCryptoWalletSettings) +
-      Number(showSubscriptionsSettings) +
-      Number(showBlockedAddressesSetting) +
-      Number(showP2pOptionsSettings)
+      Number(showInterfaceSettings) + Number(showMediaHostingSettings) + Number(showAccountSettings) + Number(showSubscriptionsSettings) + Number(showAdvancedSettings)
     );
   };
 
   const getExpandedCategoryId = (excludeCategoryId?: string) => {
     if (showInterfaceSettings && 'interface-settings' !== excludeCategoryId) return 'interface-settings';
+    if (showMediaHostingSettings && 'media-hosting-settings' !== excludeCategoryId) return 'media-hosting-settings';
     if (showAccountSettings && 'account-settings' !== excludeCategoryId) return 'account-settings';
-    if (showAvatarSettings && 'avatar-settings' !== excludeCategoryId) return 'avatar-settings';
-    if (showCryptoAddressSetting && 'crypto-address-settings' !== excludeCategoryId) return 'crypto-address-settings';
-    if (showCryptoWalletSettings && 'crypto-wallet-settings' !== excludeCategoryId) return 'crypto-wallet-settings';
     if (showSubscriptionsSettings && 'subscriptions-settings' !== excludeCategoryId) return 'subscriptions-settings';
-    if (showBlockedAddressesSetting && 'blocked-addresses-settings' !== excludeCategoryId) return 'blocked-addresses-settings';
-    if (showP2pOptionsSettings && 'p2p-options-settings' !== excludeCategoryId) return 'p2p-options-settings';
+    if (showAdvancedSettings && 'advanced-settings' !== excludeCategoryId) return 'advanced-settings';
     return null;
   };
 
@@ -99,14 +85,12 @@ const SettingsModal = () => {
 
   useEffect(() => {
     if (hash) {
+      const expandAccount = hash === 'account-settings' || hash === 'crypto-address-settings' || hash === 'crypto-wallet-settings';
       setShowInterfaceSettings(hash === 'interface-settings');
-      setShowAccountSettings(hash === 'account-settings');
-      setShowAvatarSettings(hash === 'avatar-settings');
-      setShowCryptoAddressSetting(hash === 'crypto-address-settings');
-      setShowCryptoWalletSettings(hash === 'crypto-wallet-settings');
+      setShowMediaHostingSettings(hash === 'media-hosting-settings');
+      setShowAccountSettings(expandAccount);
       setShowSubscriptionsSettings(hash === 'subscriptions-settings');
-      setShowBlockedAddressesSetting(hash === 'blocked-addresses-settings');
-      setShowP2pOptionsSettings(hash === 'p2p-options-settings');
+      setShowAdvancedSettings(hash === 'advanced-settings');
     }
   }, [hash]);
 
@@ -114,13 +98,10 @@ const SettingsModal = () => {
     const newExpandState = !expandAll;
     setExpandAll(newExpandState);
     setShowInterfaceSettings(newExpandState);
+    setShowMediaHostingSettings(newExpandState);
     setShowAccountSettings(newExpandState);
-    setShowAvatarSettings(newExpandState);
-    setShowCryptoAddressSetting(newExpandState);
-    setShowCryptoWalletSettings(newExpandState);
     setShowSubscriptionsSettings(newExpandState);
-    setShowBlockedAddressesSetting(newExpandState);
-    setShowP2pOptionsSettings(newExpandState);
+    setShowAdvancedSettings(newExpandState);
 
     const baseSettingsPath = location.pathname.split('#')[0];
     navigate(baseSettingsPath, { replace: true });
@@ -144,55 +125,42 @@ const SettingsModal = () => {
           </label>
         </div>
         {showInterfaceSettings && <InterfaceSettings />}
+        <div id='media-hosting-settings' className={`${styles.setting} ${styles.category}`}>
+          <label onClick={() => handleCategoryClick('media-hosting-settings', showMediaHostingSettings, setShowMediaHostingSettings)}>
+            <span className={showMediaHostingSettings ? styles.hideButton : styles.showButton} />
+            {t('media_hosting')}
+          </label>
+        </div>
+        {showMediaHostingSettings && <MediaHostingSettings />}
         <div id='account-settings' className={`${styles.setting} ${styles.category}`}>
           <label onClick={() => handleCategoryClick('account-settings', showAccountSettings, setShowAccountSettings)}>
             <span className={showAccountSettings ? styles.hideButton : styles.showButton} />
             {t('bitsocial_account')}
           </label>
         </div>
-        {showAccountSettings && <AccountSettings />}
-        <div id='avatar-settings' className={`${styles.setting} ${styles.category}`}>
-          <label onClick={() => handleCategoryClick('avatar-settings', showAvatarSettings, setShowAvatarSettings)}>
-            <span className={showAvatarSettings ? styles.hideButton : styles.showButton} />
-            {t('avatar')}
-          </label>
-        </div>
-        {showAvatarSettings && <AvatarSettings />}
-        <div id='crypto-address-settings' className={`${styles.setting} ${styles.category}`}>
-          <label onClick={() => handleCategoryClick('crypto-address-settings', showCryptoAddressSetting, setShowCryptoAddressSetting)}>
-            <span className={showCryptoAddressSetting ? styles.hideButton : styles.showButton} />
-            {t('crypto_address')}
-          </label>
-        </div>
-        {showCryptoAddressSetting && <CryptoAddressSetting />}
-        <div id='crypto-wallet-settings' className={`${styles.setting} ${styles.category}`}>
-          <label onClick={() => handleCategoryClick('crypto-wallet-settings', showCryptoWalletSettings, setShowCryptoWalletSettings)}>
-            <span className={showCryptoWalletSettings ? styles.hideButton : styles.showButton} />
-            {t('crypto_wallets')}
-          </label>
-        </div>
-        {showCryptoWalletSettings && <CryptoWalletsSetting />}
+        {showAccountSettings && (
+          <>
+            <AccountSettings />
+            <div className={styles.subSectionHeader}>{t('crypto_address')}</div>
+            <CryptoAddressSetting />
+            <div className={styles.subSectionHeader}>{t('crypto_wallets')}</div>
+            <CryptoWalletsSetting />
+          </>
+        )}
         <div id='subscriptions-settings' className={`${styles.setting} ${styles.category}`}>
           <label onClick={() => handleCategoryClick('subscriptions-settings', showSubscriptionsSettings, setShowSubscriptionsSettings)}>
             <span className={showSubscriptionsSettings ? styles.hideButton : styles.showButton} />
-            {t('subscriptions')}
+            {t('board_subscriptions')}
           </label>
         </div>
         {showSubscriptionsSettings && <SubscriptionsSetting />}
-        <div id='blocked-addresses-settings' className={`${styles.setting} ${styles.category}`}>
-          <label onClick={() => handleCategoryClick('blocked-addresses-settings', showBlockedAddressesSetting, setShowBlockedAddressesSetting)}>
-            <span className={showBlockedAddressesSetting ? styles.hideButton : styles.showButton} />
-            {t('blocked_addresses')}
+        <div id='advanced-settings' className={`${styles.setting} ${styles.category}`}>
+          <label onClick={() => handleCategoryClick('advanced-settings', showAdvancedSettings, setShowAdvancedSettings)}>
+            <span className={showAdvancedSettings ? styles.hideButton : styles.showButton} />
+            {t('advanced_settings')}
           </label>
         </div>
-        {showBlockedAddressesSetting && <BlockedAddressesSetting />}
-        <div id='p2p-options-settings' className={`${styles.setting} ${styles.category}`}>
-          <label onClick={() => handleCategoryClick('p2p-options-settings', showP2pOptionsSettings, setShowP2pOptionsSettings)}>
-            <span className={showP2pOptionsSettings ? styles.hideButton : styles.showButton} />
-            {t('p2p_options')}
-          </label>
-        </div>
-        {showP2pOptionsSettings && <P2pOptions />}
+        {showAdvancedSettings && <AdvancedSettings />}
       </div>
     </>
   );

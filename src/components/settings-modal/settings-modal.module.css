@@ -131,6 +131,16 @@
   font-weight: 700;
 }
 
+.subSectionHeader {
+  text-align: left;
+  font-weight: 700;
+  font-size: 14px;
+  margin: 15px 10px 10px;
+  padding-top: 10px;
+  border-top: var(--settings-modal-header-border-bottom);
+  text-transform: capitalize;
+}
+
 .checkForUpdatesButton {
   text-transform: capitalize;
 }

@@ -15,7 +15,9 @@ import useTopbarVisibilityStore from '../../stores/use-topbar-visibility-store';
 import useDirectoryModalStore from '../../stores/use-directory-modal-store';
 import { BOARD_CODE_GROUPS, getAllBoardCodes } from '../../constants/board-codes';
 import styles from './topbar.module.css';
-import { capitalize, debounce, lowerCase } from 'lodash';
+import capitalize from 'lodash/capitalize';
+import debounce from 'lodash/debounce';
+import lowerCase from 'lodash/lowerCase';
 
 const SearchBar = ({ setShowSearchBar }: { setShowSearchBar: (show: boolean) => void }) => {
   const { t } = useTranslation();
@@ -322,7 +324,7 @@ const TopBarMobile = ({ subplebbitAddress }: { subplebbitAddress: string }) => {
       prevScrollPosRef.current = currentScrollPos;
     }, 50);
 
-    window.addEventListener('scroll', debouncedHandleScroll);
+    window.addEventListener('scroll', debouncedHandleScroll, { passive: true });
 
     return () => window.removeEventListener('scroll', debouncedHandleScroll);
   }, []);

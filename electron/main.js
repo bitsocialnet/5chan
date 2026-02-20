@@ -1,5 +1,6 @@
 import './log.js';
-import { app, BrowserWindow, Menu, MenuItem, Tray, shell, dialog, nativeTheme, ipcMain, clipboard } from 'electron';
+import { app, BrowserWindow, Menu, MenuItem, Tray, shell, dialog, nativeTheme, nativeImage, ipcMain, clipboard } from 'electron';
+import { automateUploadMedia } from './media-upload-automation.js';
 import isDev from 'electron-is-dev';
 import fs from 'fs';
 import path from 'path';
@@ -317,14 +318,33 @@ const createMainWindow = () => {
   }
 };
 
+const setDevDockIcon = () => {
+  if (process.platform !== 'darwin' || !isDev || !app.dock) {
+    return;
+  }
+
+  const iconCandidates = [path.join(dirname, '..', 'public', 'icon.icns'), path.join(dirname, '..', 'public', 'icon.png')];
+  for (const iconPath of iconCandidates) {
+    try {
+      const icon = nativeImage.createFromPath(iconPath);
+      if (icon.isEmpty()) {
+        continue;
+      }
+      app.dock.setIcon(icon);
+      return;
+    } catch (error) {
+      console.warn(`[Electron Main] Failed to set dock icon from ${iconPath}`, error);
+    }
+  }
+
+  console.warn(`[Electron Main] Could not load any dock icon (${iconCandidates.join(', ')})`);
+};
+
 app.whenReady().then(() => {
   // Set app name and dock icon for development mode on macOS
   if (process.platform === 'darwin' && isDev) {
     app.setName('5chan');
-    if (app.dock) {
-      const iconPath = path.join(dirname, '..', 'public', 'icon.icns');
-      app.dock.setIcon(iconPath);
-    }
+    setDevDockIcon();
   }
 
   createMainWindow();
@@ -360,4 +380,13 @@ ipcMain.handle('get-platform', async () => {
     arch: process.arch,
     version: process.version,
   };
+});
+
+// Handle automated media upload (hidden BrowserWindow + CDP). Strict cleanup enforced in automation module.
+ipcMain.handle('automate-upload-media', async (event, options) => {
+  const { provider, filePath } = options || {};
+  if (!provider || typeof filePath !== 'string') {
+    throw new Error('automate-upload-media requires { provider, filePath }');
+  }
+  return automateUploadMedia({ provider, filePath });
 });

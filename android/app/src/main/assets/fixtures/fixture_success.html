@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>Success</title></head>
+<body>
+<!-- Real file input - triggers onShowFileChooser -->
+<input type="file" id="uploadFile" />
+<!-- Success extractor: imgur looks for a[href*="i.imgur.com"] or similar. Use generic http link. -->
+<a id="result" href="https://i.imgur.com/abc123.png">Link</a>
+<p>Full flow: chooser fires, success URL extracted.</p>
+</body>
+</html>
