@@ -59,6 +59,7 @@ const TopbarEditModalForm = ({
           type='text'
           className={styles.directoryInput}
           placeholder='Example: jp tg mu'
+          aria-label='Directory codes'
           value={localDirectoryInput}
           onChange={(e) => setLocalDirectoryInput(e.target.value)}
         />

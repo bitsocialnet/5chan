@@ -226,16 +226,13 @@ const AdvancedSettings = () => {
     const plebbitRpcClientsOptions = p2pRpcRef.current?.value.trim() ? [p2pRpcRef.current.value.trim()] : undefined;
     const dataPath = p2pDataPathRef.current?.value.trim() || undefined;
 
-    const chainProviders = {
-      eth: {
-        urls: ethRpcUrls,
-        chainId: 1,
-      },
-      sol: {
-        urls: solRpcUrls,
-        chainId: 101,
-      },
-    };
+    const chainProviders: Record<string, { urls: string[] | undefined; chainId: number }> = {};
+    if (ethRpcUrls && ethRpcUrls.length > 0) {
+      chainProviders.eth = { urls: ethRpcUrls, chainId: 1 };
+    }
+    if (solRpcUrls && solRpcUrls.length > 0) {
+      chainProviders.sol = { urls: solRpcUrls, chainId: 101 };
+    }
 
     try {
       await setAccount({

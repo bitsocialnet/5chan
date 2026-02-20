@@ -279,5 +279,6 @@
   "media_hosting_all_providers_failed_guidance": "すべてのアップロードプロバイダーが失敗しました。もう一度お試しいただくか、リンクを手動で貼り付けてください。",
   "upload_not_supported_web_before_link": "技術的な制限（CORS）のため、お使いのブラウザではメディアのアップロードがサポートされていません。5chan AndroidアプリとMac/Linux/Windowsデスクトップアプリではサポートされています。",
   "upload_not_supported_web_link_text": "公式リリースページからダウンロード",
-  "board_subscriptions": "掲示板の購読"
+  "board_subscriptions": "掲示板の購読",
+  "chain_ticker": "チェーンチッカー"
 }

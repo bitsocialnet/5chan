@@ -279,5 +279,6 @@
   "media_hosting_all_providers_failed_guidance": "ผู้ให้บริการอัปโหลดทั้งหมดล้มเหลว ลองอีกครั้งหรือวางลิงก์ด้วยตนเอง",
   "upload_not_supported_web_before_link": "การอัปโหลดสื่อไม่รองรับโดยเบราว์เซอร์ของคุณเนื่องจากข้อจำกัดทางเทคนิค (CORS) รองรับในแอป 5chan สำหรับ Android และแอปเดสก์ท็อป Mac/Linux/Windows",
   "upload_not_supported_web_link_text": "ดาวน์โหลดจากหน้าปล่อยรุ่นอย่างเป็นทางการ",
-  "board_subscriptions": "การสมัครสมาชิกบอร์ด"
+  "board_subscriptions": "การสมัครสมาชิกบอร์ด",
+  "chain_ticker": "ไทเกอร์เชน"
 }

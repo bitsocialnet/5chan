@@ -279,5 +279,6 @@
   "media_hosting_all_providers_failed_guidance": "فشل جميع مزودي التحميل. حاول مرة أخرى أو ألصق رابطًا يدويًا.",
   "upload_not_supported_web_before_link": "رفع الوسائط غير مدعوم من متصفحك بسبب قيود تقنية (CORS). إنه مدعوم في تطبيق 5chan لـ Android وتطبيق سطح المكتب لـ Mac/Linux/Windows.",
   "upload_not_supported_web_link_text": "تحميل من صفحة الإصدار الرسمية",
-  "board_subscriptions": "اشتراكات اللوحات"
+  "board_subscriptions": "اشتراكات اللوحات",
+  "chain_ticker": "رمز السلسلة"
 }

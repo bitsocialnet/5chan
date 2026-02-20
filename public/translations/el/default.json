@@ -279,5 +279,6 @@
   "media_hosting_all_providers_failed_guidance": "Όλοι οι πάροχοι μεταφόρτωσης απέτυχαν. Δοκιμάστε ξανά ή επικολλήστε έναν σύνδεσμο χειροκίνητα.",
   "upload_not_supported_web_before_link": "Η μεταφόρτωση πολυμέσων δεν υποστηρίζεται από το πρόγραμμα περιήγησής σας λόγω τεχνικών περιορισμών (CORS). Υποστηρίζεται στην εφαρμογή 5chan για Android και την εφαρμογή επιφάνειας εργασίας Mac/Linux/Windows.",
   "upload_not_supported_web_link_text": "Λήψη από τη σελίδα επίσημης έκδοσης",
-  "board_subscriptions": "Συνδρομές σε πίνακες"
+  "board_subscriptions": "Συνδρομές σε πίνακες",
+  "chain_ticker": "σύμβολο αλυσίδας"
 }

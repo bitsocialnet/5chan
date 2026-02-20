@@ -279,5 +279,6 @@
   "media_hosting_all_providers_failed_guidance": "Alla uppladdningsleverantörer misslyckades. Försök igen eller klistra in en länk manuellt.",
   "upload_not_supported_web_before_link": "Uppladdning av media stöds inte av din webbläsare på grund av tekniska begränsningar (CORS). Det stöds i 5chan Android-appen och Mac/Linux/Windows skrivbordsappen.",
   "upload_not_supported_web_link_text": "Ladda ner från den officiella utgivningssidan",
-  "board_subscriptions": "Brädeabonnemang"
+  "board_subscriptions": "Brädeabonnemang",
+  "chain_ticker": "kedjeticker"
 }

@@ -279,5 +279,6 @@
   "media_hosting_all_providers_failed_guidance": "Kaikki latauspalveluntarjoajat epäonnistuivat. Yritä uudelleen tai liitä linkki manuaalisesti.",
   "upload_not_supported_web_before_link": "Medioiden lataus ei ole tuettu selaimessasi teknisten rajoitusten vuoksi (CORS). Se on tuettu 5chan Android-sovelluksessa ja Mac/Linux/Windows-työpöytäsovelluksessa.",
   "upload_not_supported_web_link_text": "Lataa viralliselta julkaisusivulta",
-  "board_subscriptions": "Alustojen tilaukset"
+  "board_subscriptions": "Alustojen tilaukset",
+  "chain_ticker": "ketjumerkki"
 }

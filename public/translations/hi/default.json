@@ -279,5 +279,6 @@
   "media_hosting_all_providers_failed_guidance": "सभी अपलोड प्रदाता विफल हो गए। पुनः प्रयास करें या लिंक मैन्युअल रूप से पेस्ट करें।",
   "upload_not_supported_web_before_link": "तकनीकी सीमाओं (CORS) के कारण आपका ब्राउज़र मीडिया अपलोड का समर्थन नहीं करता। यह 5chan एंड्रॉइड ऐप और Mac/Linux/Windows डेस्कटॉप ऐप में समर्थित है।",
   "upload_not_supported_web_link_text": "आधिकारिक रिलीज़ पेज से डाउनलोड करें",
-  "board_subscriptions": "बोर्ड सदस्यता"
+  "board_subscriptions": "बोर्ड सदस्यता",
+  "chain_ticker": "श्रृंखला टिकर"
 }

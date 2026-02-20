@@ -279,5 +279,6 @@
   "media_hosting_all_providers_failed_guidance": "Alle opplastingsleverandører mislyktes. Prøv igjen eller lim inn en lenke manuelt.",
   "upload_not_supported_web_before_link": "Opplasting av medier støttes ikke av nettleseren din på grunn av tekniske begrensninger (CORS). Det støttes i 5chan Android-appen og Mac/Linux/Windows desktop-appen.",
   "upload_not_supported_web_link_text": "Last ned fra den offisielle utgivelsessiden",
-  "board_subscriptions": "Brettabonnementer"
+  "board_subscriptions": "Brettabonnementer",
+  "chain_ticker": "kjede-ticker"
 }

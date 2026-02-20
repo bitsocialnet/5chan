@@ -1,15 +1,11 @@
-import { Capacitor } from '@capacitor/core';
 import { useTranslation } from 'react-i18next';
 import useMediaHostingStore, { MEDIA_HOSTING_PROVIDERS } from '../../../stores/use-media-hosting-store';
 import type { ProviderId } from '../../../lib/media-hosting/types';
+import { isWebRuntime } from '../../../lib/media-hosting/show-upload-controls';
 import styles from '../interface-settings/interface-settings.module.css';
 
 const RADIO_NAME = 'media-hosting-provider';
 const RELEASES_URL = 'https://github.com/bitsocialhq/5chan/releases/latest';
-
-function isWebRuntime(): boolean {
-  return Capacitor.getPlatform() === 'web' && !window.electronApi?.isElectron;
-}
 
 const MediaHostingSettings = () => {
   const { t } = useTranslation();

@@ -279,5 +279,6 @@
   "media_hosting_all_providers_failed_guidance": "Të gjithë ofruesit e ngarkimit dështuan. Provoni përsëri ose ngjisni një lidhje manualisht.",
   "upload_not_supported_web_before_link": "Ngarkimi i mediave nuk mbështetet nga shfletuesi juaj për shkak të kufizimeve teknike (CORS). Mbështetet në aplikacionin 5chan për Android dhe aplikacionin e desktopit Mac/Linux/Windows.",
   "upload_not_supported_web_link_text": "Shkarkoni nga faqja e zyrës së publikimit",
-  "board_subscriptions": "Abonime në tabela"
+  "board_subscriptions": "Abonime në tabela",
+  "chain_ticker": "simboli i zinxhirit"
 }

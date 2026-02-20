@@ -279,5 +279,6 @@
   "media_hosting_all_providers_failed_guidance": "Tüm yükleme sağlayıcıları başarısız oldu. Tekrar deneyin veya bir bağlantıyı manuel olarak yapıştırın.",
   "upload_not_supported_web_before_link": "Teknik kısıtlamalar (CORS) nedeniyle medya yükleme tarayıcınız tarafından desteklenmiyor. 5chan Android uygulaması ve Mac/Linux/Windows masaüstü uygulamasında desteklenmektedir.",
   "upload_not_supported_web_link_text": "Resmi sürüm sayfasından indir",
-  "board_subscriptions": "Pano abonelikleri"
+  "board_subscriptions": "Pano abonelikleri",
+  "chain_ticker": "zincir ticker'ı"
 }

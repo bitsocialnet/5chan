@@ -279,5 +279,6 @@
   "media_hosting_all_providers_failed_guidance": "అన్ని అప్‌లోడ్ ప్రొవైడర్లు విఫలమయ్యాయి. మళ్ళీ ప్రయత్నించండి లేదా లింక్‌ను మాన్యువల్‌గా అతికించండి.",
   "upload_not_supported_web_before_link": "సాంకేతిక పరిమితుల కారణంగా (CORS) మీ బ్రౌజర్ మీడియా అప్‌లోడ్‌ను మద్దతు ఇవ్వదు. ఇది 5chan Android యాప్ మరియు Mac/Linux/Windows డెస్క్‌టాప్ యాప్‌లో మద్దతు ఇస్తుంది.",
   "upload_not_supported_web_link_text": "అధికారిక రిలీజ్ పేజీ నుండి డౌన్‌లోడ్ చేయండి",
-  "board_subscriptions": "బోర్డ్ సబ్‌స్క్రిప్షన్లు"
+  "board_subscriptions": "బోర్డ్ సబ్‌స్క్రిప్షన్లు",
+  "chain_ticker": "చైన్ టికర్"
 }
