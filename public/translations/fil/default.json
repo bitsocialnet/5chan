@@ -267,7 +267,7 @@
   "upload_not_supported_web": "Ang pag-upload ng media ay hindi sinusuportahan ng iyong browser dahil sa mga limitasyong teknikal (CORS). Sinusuportahan ito sa 5chan Android app at Mac/Linux/Windows desktop app. I-download mula sa opisyal na release page: https://github.com/bitsocialhq/5chan/releases/latest",
   "file": "Talaksan",
   "media_hosting_none": "Wala",
-  "media_hosting_none_tip": "Nagsasagawa ng pindot sa pag-upload ng file mula sa mga form ng post at reply",
+  "media_hosting_none_tip": "Itinatago ang button ng pag-upload ng file mula sa mga form ng post at reply",
   "media_hosting": "Media Hosting",
   "advanced_settings": "Mga advanced na setting",
   "upload_failed_all_providers": "Lahat ng mga provider ay nabigo",
