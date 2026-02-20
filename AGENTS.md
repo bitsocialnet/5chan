@@ -20,12 +20,15 @@
 ## Commands
 
 ```bash
-yarn install      # Install dependencies
-yarn start        # Start dev server (port 3000)
-yarn build        # Production build
-yarn test         # Run tests
-yarn prettier     # Format code
-yarn electron     # Run Electron app
+yarn install         # Install dependencies
+yarn start           # Start dev server (port 3000)
+yarn build           # Production build
+yarn test            # Run tests
+yarn prettier        # Format code
+yarn electron        # Run Electron app
+yarn doctor          # Run React Doctor checks (architecture/perf/correctness)
+yarn doctor:score    # Output numeric React Doctor score
+yarn doctor:verbose  # Output verbose React Doctor diagnostic details
 ```
 
 ## Code Style
