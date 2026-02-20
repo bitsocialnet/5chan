@@ -189,7 +189,10 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
       return 0;
     }
 
-    return document.querySelectorAll(`[data-author-address="${shortAddress}"][data-post-cid="${postCid}"]`).length;
+    const domCount = document.querySelectorAll(`[data-author-address="${shortAddress}"][data-post-cid="${postCid}"]`).length;
+    // DOM-based count can be 0 on initial mount (before commit) or when parent isn't in DOM yet (e.g. Virtuoso board feed).
+    // The current post is always at least 1 when we're displaying it.
+    return Math.max(domCount, 1);
   }, [showUserID, deleted, removed, shortAddress, postCid, postReplyCount]);
 
   const userID = address && Plebbit.getShortAddress({ address }); // shortened to 8 chars for display; users can verify the full user ID via "Copy user ID" in the post menu to guard against spoofing
