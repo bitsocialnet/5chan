@@ -6,7 +6,23 @@ import { formatAggregatedError, formatPreferredModeError, type ProviderAttempt }
 import { getProviderOrder } from '../lib/media-hosting/provider-order';
 import { orchestrateElectronUpload } from '../lib/media-hosting/upload-orchestrator';
 import useMediaHostingStore from '../stores/use-media-hosting-store';
-import type { ProviderId } from '../lib/media-hosting/types';
+import type { ProviderId, UploadAttemptStage } from '../lib/media-hosting/types';
+
+/** Maps Android plugin stage strings to UploadAttemptStage (avoids unsafe cast). Includes pass-through for valid stages. */
+const ANDROID_STAGE_MAP: Record<string, UploadAttemptStage> = {
+  input_not_found: 'file_input',
+  chooser_not_triggered: 'file_input',
+  upload_timed_out: 'timeout',
+  blocked_detected: 'blocked',
+  no_recipe: 'unknown',
+  page_loaded: 'page_load',
+  blocked: 'blocked',
+  file_input: 'file_input',
+  submit: 'submit',
+  timeout: 'timeout',
+  page_load: 'page_load',
+  unknown: 'unknown',
+};
 
 const FILE_SELECTION_CANCELLED_ERROR = 'File selection cancelled';
 
@@ -52,7 +68,7 @@ function normalizeAndroidRejection(error: unknown): Error & { attempts?: Provide
         provider: provider as ProviderId,
         success: Boolean(item?.success),
         error: typeof item?.error === 'string' ? item.error : undefined,
-        stage: typeof item?.stage === 'string' && item.stage ? (item.stage as ProviderAttempt['stage']) : undefined,
+        stage: typeof item?.stage === 'string' && item.stage ? (ANDROID_STAGE_MAP[item.stage] ?? 'unknown') : undefined,
         elapsedMs: ms,
         matchedSelectors: sel?.length ? sel : undefined,
       };

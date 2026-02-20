@@ -73,6 +73,9 @@ public class MediaUploadAutomationRunner {
     static final String STAGE_SUBMIT_CLICKED = "submit_clicked";
     static final String STAGE_SUCCESS_SELECTOR_MATCHED = "success_selector_matched";
     static final String STAGE_BLOCKED_DETECTED = "blocked_detected";
+    static final String STAGE_INPUT_NOT_FOUND = "input_not_found";
+    static final String STAGE_CHOOSER_NOT_TRIGGERED = "chooser_not_triggered";
+    static final String STAGE_UPLOAD_TIMED_OUT = "upload_timed_out";
 
     private final Context context;
     private final Uri fileUri;
@@ -202,7 +205,7 @@ public class MediaUploadAutomationRunner {
         if (finished || fileChooserHandled) return;
         long elapsed = elapsedMs();
         if (elapsed >= MediaUploadRecipes.FILE_INPUT_TIMEOUT_MS) {
-            String stage = lastMatchedSelector != null ? "chooser_not_triggered" : "input_not_found";
+            String stage = lastMatchedSelector != null ? STAGE_CHOOSER_NOT_TRIGGERED : STAGE_INPUT_NOT_FOUND;
             String error =
                     lastMatchedSelector != null
                             ? "File chooser not triggered"
@@ -289,7 +292,7 @@ public class MediaUploadAutomationRunner {
                             false,
                             null,
                             "Upload timeout",
-                            "upload_timed_out",
+                            STAGE_UPLOAD_TIMED_OUT,
                             elapsed,
                             lastMatchedSelector));
             return;
@@ -302,7 +305,7 @@ public class MediaUploadAutomationRunner {
                             false,
                             null,
                             "File chooser not triggered",
-                            "chooser_not_triggered",
+                            STAGE_CHOOSER_NOT_TRIGGERED,
                             elapsed,
                             lastMatchedSelector,
                             triggerAttemptCount));

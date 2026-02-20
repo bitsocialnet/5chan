@@ -19,9 +19,11 @@ describe('media-upload-automation', () => {
       expect(isDirectMediaUrl('https://example.com/video.mp4')).toBe(true);
     });
 
-    it('strips query strings before checking', () => {
+    it('strips query strings and fragments before checking', () => {
       expect(isDirectMediaUrl('https://i.imgur.com/abc.png?size=large')).toBe(true);
       expect(isDirectMediaUrl('https://imgur.com/page.html?img=photo.jpg')).toBe(false);
+      expect(isDirectMediaUrl('https://i.imgur.com/abc.png#fragment')).toBe(true);
+      expect(isDirectMediaUrl('https://i.postimg.cc/xyz.webp#')).toBe(true);
     });
 
     it('returns false for non-direct URLs (guards against non-media pages)', () => {

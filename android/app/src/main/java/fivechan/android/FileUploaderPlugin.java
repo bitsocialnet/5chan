@@ -111,8 +111,9 @@ public class FileUploaderPlugin extends Plugin {
                                 tryProvidersSequentially(uri, providerOrder, call);
                             } catch (Exception e) {
                                 Log.e(TAG, "Upload failed", e);
-                                if (!call.getData().has("_resolved")) {
+                                try {
                                     call.reject("Upload failed: " + e.getMessage());
+                                } catch (Exception ignored) {
                                 }
                             }
                         })

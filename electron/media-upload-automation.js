@@ -19,7 +19,7 @@ const DIRECT_MEDIA_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.web
 /** Returns true if the URL appears to point to a direct media file. Exported for tests. */
 export function isDirectMediaUrl(url) {
   try {
-    const normalized = url.split('?')[0].toLowerCase();
+    const normalized = url.split('?')[0].split('#')[0].toLowerCase();
     return DIRECT_MEDIA_EXTENSIONS.some((ext) => normalized.endsWith(ext));
   } catch {
     return false;
@@ -67,14 +67,23 @@ export async function automateUploadMedia(options) {
     await sendCommand('DOM.enable');
     await sendCommand('Page.enable');
 
+    const PAGE_LOAD_TIMEOUT_MS = 30_000;
     await new Promise((resolve, reject) => {
+      let settled = false;
+      const settle = (fn, arg) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        win.webContents.removeListener('did-finish-load', onLoad);
+        win.webContents.removeListener('did-fail-load', onFail);
+        fn(arg);
+      };
+      const onLoad = () => settle(resolve);
+      const onFail = (_, code, desc) => settle(reject, new Error(`Page load failed: ${code} ${desc}`));
+      const timer = setTimeout(() => settle(reject, new Error(`Page load timed out after ${PAGE_LOAD_TIMEOUT_MS}ms for ${recipe.uploadUrl}`)), PAGE_LOAD_TIMEOUT_MS);
+      win.webContents.once('did-finish-load', onLoad);
+      win.webContents.once('did-fail-load', onFail);
       win.loadURL(recipe.uploadUrl);
-      win.webContents.once('did-finish-load', () => {
-        resolve();
-      });
-      win.webContents.once('did-fail-load', (_, code, desc) => {
-        reject(new Error(`Page load failed: ${code} ${desc}`));
-      });
     });
 
     // Small delay for SPA/JS to settle
@@ -132,9 +141,10 @@ export async function automateUploadMedia(options) {
 
     const clickNode = async (nodeId) => {
       const { model } = await sendCommand('DOM.getBoxModel', { nodeId });
-      if (!model?.content) return;
+      if (!model?.content || model.content.length < 8) {
+        throw new Error('Cannot click node: box model unavailable (element may be hidden or zero-size)');
+      }
       const content = model.content;
-      if (content.length < 8) return;
       const x = (content[0] + content[2] + content[4] + content[6]) / 4;
       const y = (content[1] + content[3] + content[5] + content[7]) / 4;
       await sendCommand('Input.dispatchMouseEvent', {

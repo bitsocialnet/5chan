@@ -113,12 +113,12 @@ public class MediaUploadRecipesTest {
 
     @Test
     public void failureClassification_inputNotFound_stageConstant() {
-        assertEquals("input_not_found", "input_not_found");
+        assertEquals(MediaUploadAutomationRunner.STAGE_INPUT_NOT_FOUND, "input_not_found");
     }
 
     @Test
     public void failureClassification_chooserNotTriggered_stageConstant() {
-        assertEquals("chooser_not_triggered", "chooser_not_triggered");
+        assertEquals(MediaUploadAutomationRunner.STAGE_CHOOSER_NOT_TRIGGERED, "chooser_not_triggered");
     }
 
     @Test
@@ -128,7 +128,7 @@ public class MediaUploadRecipesTest {
 
     @Test
     public void failureClassification_uploadTimedOut_stageConstant() {
-        assertEquals("upload_timed_out", "upload_timed_out");
+        assertEquals(MediaUploadAutomationRunner.STAGE_UPLOAD_TIMED_OUT, "upload_timed_out");
     }
 
     @Test
