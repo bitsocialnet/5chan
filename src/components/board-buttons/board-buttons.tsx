@@ -12,6 +12,7 @@ import useFeedResetStore from '../../stores/use-feed-reset-store';
 import useSortingStore from '../../stores/use-sorting-store';
 import useAllFeedFilterStore from '../../stores/use-all-feed-filter-store';
 import useModQueueStore from '../../stores/use-mod-queue-store';
+import useFeedViewSettingsStore from '../../stores/use-feed-view-settings-store';
 import useCountLinksInReplies from '../../hooks/use-count-links-in-replies';
 import useIsMobile from '../../hooks/use-is-mobile';
 import useTimeFilter from '../../hooks/use-time-filter';
@@ -179,6 +180,18 @@ const AutoButton = () => {
         </label>
       )}
     </>
+  );
+};
+
+const BottomButton = () => {
+  const { t } = useTranslation();
+  const handleClick = () => {
+    window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' });
+  };
+  return (
+    <button className='button' onClick={handleClick}>
+      {t('bottom')}
+    </button>
   );
 };
 
@@ -402,6 +415,8 @@ export const MobileBoardButtons = () => {
   const subplebbitAddress = resolvedAddress || accountComment?.subplebbitAddress;
 
   const { filteredCount, searchText } = useCatalogFiltersStore();
+  const enableInfiniteScroll = useFeedViewSettingsStore((state) => state.enableInfiniteScroll);
+  const showBottomButton = (isInCatalogView || isInPostView || isInPendingPostPage) && !enableInfiniteScroll;
 
   // Check if we should show the vote button (only for directory boards)
   const directories = useDirectories();
@@ -413,9 +428,8 @@ export const MobileBoardButtons = () => {
       {isInPostView || isInPendingPostPage ? (
         <>
           <ReturnButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
-          {showVoteButton && <VoteButton />}
           <CatalogButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
-          <SubscribeButton address={subplebbitAddress} />
+          {showBottomButton && <BottomButton />}
           <div className={styles.secondRow}>
             <UpdateButton />
             <AutoButton />
@@ -444,6 +458,7 @@ export const MobileBoardButtons = () => {
           {showVoteButton && <VoteButton />}
           {!(isInAllView || isInSubscriptionsView || isInModView) && <SubscribeButton address={subplebbitAddress} />}
           {!(isInAllView || isInSubscriptionsView) && <ModQueueButton boardIdentifier={boardIdentifier} isMobile={true} />}
+          {showBottomButton && <BottomButton />}
           <RefreshButton />
           {isInCatalogView && searchText ? (
             <span className={styles.filteredThreadsCount}>
@@ -523,6 +538,8 @@ export const DesktopBoardButtons = () => {
   const isInModQueueView = isModQueueView(location.pathname);
 
   const { filteredCount, searchText } = useCatalogFiltersStore();
+  const enableInfiniteScroll = useFeedViewSettingsStore((state) => state.enableInfiniteScroll);
+  const showBottomButton = (isInCatalogView || isInPostView || isInPendingPostPage) && !enableInfiniteScroll;
 
   // Check if we should show the vote button (only for directory boards)
   const directories = useDirectories();
@@ -537,9 +554,14 @@ export const DesktopBoardButtons = () => {
           <>
             [
             <ReturnButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />] [
-            <CatalogButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />] [
-            <UpdateButton />] [
-            <AutoButton />]
+            <CatalogButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />]
+            {showBottomButton && (
+              <>
+                {' '}
+                [<BottomButton />]
+              </>
+            )}{' '}
+            [<UpdateButton />] [<AutoButton />]
             <span className={styles.rightSideButtons}>
               <PostPageStats />
             </span>
@@ -575,13 +597,19 @@ export const DesktopBoardButtons = () => {
                 <CatalogButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />]{' '}
               </>
             )}
-            [<RefreshButton />]
             {showVoteButton && (
               <>
                 {' '}
                 [<VoteButton />]
               </>
             )}
+            {showBottomButton && (
+              <>
+                {' '}
+                [<BottomButton />]
+              </>
+            )}{' '}
+            [<RefreshButton />]
             {!(isInAllView || isInSubscriptionsView) && (
               <>
                 {' '}
