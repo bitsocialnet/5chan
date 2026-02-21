@@ -140,7 +140,7 @@
     "playwright": "1.56.1",
     "oxlint": "1.35.0",
     "progress": "2.0.3",
-    "react-doctor": "0.0.17",
+    "react-doctor": "0.0.28",
     "react-grab": "0.0.98",
     "react-scan": "0.4.3",
     "stream-browserify": "3.0.0",
