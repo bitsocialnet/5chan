@@ -281,7 +281,8 @@
   "upload_not_supported_web_link_text": "Descărcare de pe pagina de lansare oficială",
   "board_subscriptions": "Abonamente la panouri",
   "chain_ticker": "ticker lanț",
-  "enable_infinite_scroll": "Enable infinite scroll",
-  "prev": "Prev",
-  "next": "Next"
+  "enable_infinite_scroll": "Activează derularea infinită",
+  "prev": "Anterior",
+  "next": "Următorul",
+  "bottom": "Jos"
 }

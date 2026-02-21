@@ -281,7 +281,8 @@
   "upload_not_supported_web_link_text": "دانلود از صفحه انتشار رسمی",
   "board_subscriptions": "اشتراک‌های تابلو",
   "chain_ticker": "نماد زنجیره",
-  "enable_infinite_scroll": "Enable infinite scroll",
-  "prev": "Prev",
-  "next": "Next"
+  "enable_infinite_scroll": "فعال کردن اسکرول بی‌نهایت",
+  "prev": "قبلی",
+  "next": "بعدی",
+  "bottom": "پایین"
 }

@@ -281,7 +281,8 @@
   "upload_not_supported_web_link_text": "Tải xuống từ trang phát hành chính thức",
   "board_subscriptions": "Đăng ký bảng",
   "chain_ticker": "mã chuỗi",
-  "enable_infinite_scroll": "Enable infinite scroll",
-  "prev": "Prev",
-  "next": "Next"
+  "enable_infinite_scroll": "Bật cuộn vô hạn",
+  "prev": "Trước",
+  "next": "Tiếp theo",
+  "bottom": "Dưới cùng"
 }

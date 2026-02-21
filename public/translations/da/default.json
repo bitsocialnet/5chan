@@ -281,7 +281,8 @@
   "upload_not_supported_web_link_text": "Download fra den officielle udgivelsesside",
   "board_subscriptions": "Bordabonnementer",
   "chain_ticker": "kæde-ticker",
-  "enable_infinite_scroll": "Enable infinite scroll",
-  "prev": "Prev",
-  "next": "Next"
+  "enable_infinite_scroll": "Aktiver uendelig rulning",
+  "prev": "Forrige",
+  "next": "Næste",
+  "bottom": "Bund"
 }

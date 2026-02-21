@@ -281,7 +281,8 @@
   "upload_not_supported_web_link_text": "تحميل من صفحة الإصدار الرسمية",
   "board_subscriptions": "اشتراكات اللوحات",
   "chain_ticker": "رمز السلسلة",
-  "enable_infinite_scroll": "Enable infinite scroll",
-  "prev": "Prev",
-  "next": "Next"
+  "enable_infinite_scroll": "تفعيل التمرير اللانهائي",
+  "prev": "السابق",
+  "next": "التالي",
+  "bottom": "أسفل"
 }

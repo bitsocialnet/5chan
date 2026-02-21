@@ -281,7 +281,8 @@
   "upload_not_supported_web_link_text": "공식 출시 페이지에서 다운로드",
   "board_subscriptions": "보드 구독",
   "chain_ticker": "체인 티커",
-  "enable_infinite_scroll": "Enable infinite scroll",
-  "prev": "Prev",
-  "next": "Next"
+  "enable_infinite_scroll": "무한 스크롤 활성화",
+  "prev": "이전",
+  "next": "다음",
+  "bottom": "아래"
 }

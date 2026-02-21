@@ -281,7 +281,8 @@
   "upload_not_supported_web_link_text": "అధికారిక రిలీజ్ పేజీ నుండి డౌన్‌లోడ్ చేయండి",
   "board_subscriptions": "బోర్డ్ సబ్‌స్క్రిప్షన్లు",
   "chain_ticker": "చైన్ టికర్",
-  "enable_infinite_scroll": "Enable infinite scroll",
-  "prev": "Prev",
-  "next": "Next"
+  "enable_infinite_scroll": "అనంత స్క్రోల్ చేతనం చేయండి",
+  "prev": "మునుపటి",
+  "next": "తదుపరి",
+  "bottom": "క్రింద"
 }

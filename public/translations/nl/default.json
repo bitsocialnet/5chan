@@ -281,7 +281,8 @@
   "upload_not_supported_web_link_text": "Downloaden van de officiële releasepagina",
   "board_subscriptions": "Boardabonnementen",
   "chain_ticker": "kettingticker",
-  "enable_infinite_scroll": "Enable infinite scroll",
-  "prev": "Prev",
-  "next": "Next"
+  "enable_infinite_scroll": "Oneindig scrollen inschakelen",
+  "prev": "Vorige",
+  "next": "Volgende",
+  "bottom": "Onder"
 }

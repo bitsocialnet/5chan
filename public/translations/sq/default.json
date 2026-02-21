@@ -281,7 +281,8 @@
   "upload_not_supported_web_link_text": "Shkarkoni nga faqja e zyrës së publikimit",
   "board_subscriptions": "Abonime në tabela",
   "chain_ticker": "simboli i zinxhirit",
-  "enable_infinite_scroll": "Enable infinite scroll",
-  "prev": "Prev",
-  "next": "Next"
+  "enable_infinite_scroll": "Aktivizo rrëshqitjen e pafundme",
+  "prev": "Paraprake",
+  "next": "Tjetra",
+  "bottom": "Poshtë"
 }

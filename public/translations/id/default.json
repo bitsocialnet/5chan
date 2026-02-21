@@ -281,7 +281,8 @@
   "upload_not_supported_web_link_text": "Unduh dari halaman rilis resmi",
   "board_subscriptions": "Langganan papan",
   "chain_ticker": "ticker rantai",
-  "enable_infinite_scroll": "Enable infinite scroll",
-  "prev": "Prev",
-  "next": "Next"
+  "enable_infinite_scroll": "Aktifkan scroll tak terbatas",
+  "prev": "Sebelumnya",
+  "next": "Berikutnya",
+  "bottom": "Bawah"
 }

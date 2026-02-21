@@ -281,7 +281,8 @@
   "upload_not_supported_web_link_text": "Λήψη από τη σελίδα επίσημης έκδοσης",
   "board_subscriptions": "Συνδρομές σε πίνακες",
   "chain_ticker": "σύμβολο αλυσίδας",
-  "enable_infinite_scroll": "Enable infinite scroll",
-  "prev": "Prev",
-  "next": "Next"
+  "enable_infinite_scroll": "Ενεργοποίηση άπειρου κύλισης",
+  "prev": "Προηγ",
+  "next": "Επόμενο",
+  "bottom": "Κάτω"
 }

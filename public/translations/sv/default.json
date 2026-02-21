@@ -281,7 +281,8 @@
   "upload_not_supported_web_link_text": "Ladda ner från den officiella utgivningssidan",
   "board_subscriptions": "Brädeabonnemang",
   "chain_ticker": "kedjeticker",
-  "enable_infinite_scroll": "Enable infinite scroll",
-  "prev": "Prev",
-  "next": "Next"
+  "enable_infinite_scroll": "Aktivera oändlig scrollning",
+  "prev": "Föreg.",
+  "next": "Nästa",
+  "bottom": "Botten"
 }

@@ -281,7 +281,8 @@
   "upload_not_supported_web_link_text": "הורד מהדף השחרור הרשמי",
   "board_subscriptions": "מנויים ללוחות",
   "chain_ticker": "טיקר שרשרת",
-  "enable_infinite_scroll": "Enable infinite scroll",
-  "prev": "Prev",
-  "next": "Next"
+  "enable_infinite_scroll": "הפעל גלילה אינסופית",
+  "prev": "הקודם",
+  "next": "הבא",
+  "bottom": "תחתית"
 }

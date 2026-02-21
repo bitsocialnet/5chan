@@ -281,7 +281,8 @@
   "upload_not_supported_web_link_text": "Descargar desde la página de release oficial",
   "board_subscriptions": "Suscripciones a tableros",
   "chain_ticker": "ticker de cadena",
-  "enable_infinite_scroll": "Enable infinite scroll",
-  "prev": "Prev",
-  "next": "Next"
+  "enable_infinite_scroll": "Activar desplazamiento infinito",
+  "prev": "Anterior",
+  "next": "Siguiente",
+  "bottom": "Abajo"
 }

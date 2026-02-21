@@ -281,7 +281,8 @@
   "upload_not_supported_web_link_text": "Last ned fra den offisielle utgivelsessiden",
   "board_subscriptions": "Brettabonnementer",
   "chain_ticker": "kjede-ticker",
-  "enable_infinite_scroll": "Enable infinite scroll",
-  "prev": "Prev",
-  "next": "Next"
+  "enable_infinite_scroll": "Aktiver uendelig rulling",
+  "prev": "Forrige",
+  "next": "Neste",
+  "bottom": "Bunn"
 }

@@ -281,7 +281,8 @@
   "upload_not_supported_web_link_text": "Завантажити з офіційної сторінки випуску",
   "board_subscriptions": "Підписки на дошки",
   "chain_ticker": "тикер ланцюга",
-  "enable_infinite_scroll": "Enable infinite scroll",
-  "prev": "Prev",
-  "next": "Next"
+  "enable_infinite_scroll": "Увімкнути нескінченну прокрутку",
+  "prev": "Попередн.",
+  "next": "Далі",
+  "bottom": "Вниз"
 }

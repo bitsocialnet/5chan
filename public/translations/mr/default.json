@@ -281,7 +281,8 @@
   "upload_not_supported_web_link_text": "अधिकृत रिलीझ पेजवरून डाउनलोड करा",
   "board_subscriptions": "बोर्ड सदस्यता",
   "chain_ticker": "चेन टिकर",
-  "enable_infinite_scroll": "Enable infinite scroll",
-  "prev": "Prev",
-  "next": "Next"
+  "enable_infinite_scroll": "अनंत स्क्रोल सक्षम करा",
+  "prev": "मागील",
+  "next": "पुढे",
+  "bottom": "तळ"
 }
