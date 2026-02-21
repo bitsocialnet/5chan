@@ -43,7 +43,7 @@ interface BoardFooterProps {
   subplebbitState: string | undefined;
   subscriptionsLength: number;
   accountSubplebbitAddressesLength: number;
-  /** In pagination mode, suppress infinite-scroll loading cues */
+  /** Show loading ellipsis. True when infinite scroll, or when pagination + empty feed (initial load). */
   showLoadingEllipsis?: boolean;
 }
 
@@ -383,7 +383,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
           subplebbitState={subplebbitState}
           subscriptionsLength={subscriptions?.length || 0}
           accountSubplebbitAddressesLength={accountSubplebbitAddresses?.length || 0}
-          showLoadingEllipsis={enableInfiniteScroll}
+          showLoadingEllipsis={enableInfiniteScroll || combinedFeed.length === 0}
         />
       ),
     }),
@@ -407,6 +407,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
       subscriptions?.length,
       accountSubplebbitAddresses?.length,
       enableInfiniteScroll,
+      combinedFeed.length,
     ],
   );
 
@@ -541,7 +542,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
               subplebbitState={subplebbitState}
               subscriptionsLength={subscriptions?.length || 0}
               accountSubplebbitAddressesLength={accountSubplebbitAddresses?.length || 0}
-              showLoadingEllipsis={false}
+              showLoadingEllipsis={combinedFeed.length === 0}
             />
           </>
         )}
