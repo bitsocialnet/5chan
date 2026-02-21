@@ -8,6 +8,8 @@ import { preloadThemeAssets } from './lib/utils/preload-utils';
 import useReplyModalStore from './stores/use-reply-modal-store';
 import useCreateBoardModalStore from './stores/use-create-board-modal-store';
 import useSpecialThemeStore from './stores/use-special-theme-store';
+import useFeedViewSettingsStore from './stores/use-feed-view-settings-store';
+import useFeedCacheStore from './stores/use-feed-cache-store';
 import useIsMobile from './hooks/use-is-mobile';
 import useTheme from './hooks/use-theme';
 import { useDirectories } from './hooks/use-directories';
@@ -21,6 +23,8 @@ import NotFound from './views/not-found';
 import NotAllowed from './views/not-allowed';
 import PendingPost from './views/pending-post';
 import Post from './views/post';
+import Board from './views/board';
+import Catalog from './views/catalog';
 import ModQueueView from './views/mod-queue';
 import { DesktopBoardButtons, MobileBoardButtons } from './components/board-buttons';
 import BoardHeader from './components/board-header';
@@ -53,10 +57,20 @@ const BoardLayout = () => {
   const subplebbitAddress = boardIdentifier ? getSubplebbitAddress(boardIdentifier, directories) : undefined;
   const pendingPost = useAccountComment({ commentIndex: accountCommentIndex ? parseInt(accountCommentIndex) : undefined });
   const { closeCreateBoardModal } = useCreateBoardModalStore();
+  const enableInfiniteScroll = useFeedViewSettingsStore((state) => state.enableInfiniteScroll);
+  const clearFeeds = useFeedCacheStore((state) => state.clearFeeds);
 
   const isOnPostRoute = isPostRoute(location.pathname);
   const isOnPendingPostRoute = isPendingPostRoute(location.pathname);
   const isOnModQueueRoute = isModQueueRoute(location.pathname);
+  const shouldRenderOutlet = !enableInfiniteScroll || isOnPostRoute || isOnPendingPostRoute || isOnModQueueRoute;
+
+  // Clear feed cache when switching from infinite scroll to pagination
+  useEffect(() => {
+    if (!enableInfiniteScroll) {
+      clearFeeds();
+    }
+  }, [enableInfiniteScroll, clearFeeds]);
 
   // Christmas theme
   const { isEnabled: isSpecialEnabled } = useSpecialThemeStore();
@@ -101,8 +115,8 @@ const BoardLayout = () => {
               <DesktopBoardButtons />
             </>
           )}
-      <FeedCacheContainer />
-      {(isOnPostRoute || isOnPendingPostRoute || isOnModQueueRoute) && <Outlet />}
+      {enableInfiniteScroll && <FeedCacheContainer />}
+      {shouldRenderOutlet && <Outlet />}
     </div>
   );
 };
@@ -143,6 +157,34 @@ const GlobalLayout = () => {
       <Outlet />
     </>
   );
+};
+
+/** Wraps Board with viewType/boardIdentifier derived from current route. Used when infinite scroll is OFF. */
+const BoardFeedRoute = () => {
+  const location = useLocation();
+  const params = useParams();
+  const viewType: 'all' | 'subs' | 'mod' | 'board' = isAllView(location.pathname)
+    ? 'all'
+    : isSubscriptionsView(location.pathname, params)
+      ? 'subs'
+      : isModView(location.pathname)
+        ? 'mod'
+        : 'board';
+  return <Board viewType={viewType} boardIdentifier={params.boardIdentifier} />;
+};
+
+/** Wraps Catalog with viewType/boardIdentifier derived from current route. Used when infinite scroll is OFF. */
+const CatalogFeedRoute = () => {
+  const location = useLocation();
+  const params = useParams();
+  const viewType: 'all' | 'subs' | 'mod' | 'board' = isAllView(location.pathname)
+    ? 'all'
+    : isSubscriptionsView(location.pathname, params)
+      ? 'subs'
+      : isModView(location.pathname)
+        ? 'mod'
+        : 'board';
+  return <Catalog viewType={viewType} boardIdentifier={params.boardIdentifier} />;
 };
 
 const ModQueueRoute = () => {
@@ -188,56 +230,62 @@ const ModQueueRoute = () => {
   return hasModQueueAccessRole(accountRole) ? <ModQueueView /> : <Navigate to='/not-allowed' replace />;
 };
 
-const App = () => (
-  <div className={styles.app}>
-    <Routes>
-      <Route element={<GlobalLayout />}>
-        <Route path='/' element={<Home />} />
-        <Route path='/faq' element={<FAQ />} />
-        <Route path='/rules/:boardIdentifier?' element={<Rules />} />
-        <Route element={<BoardLayout />}>
-          <Route path='/all/:timeFilterName/:pageNumber' element={null} />
-          <Route path='/all/:timeFilterName?' element={null} />
-          <Route path='/all/:timeFilterName?/settings' element={null} />
-          <Route path='/all/catalog/:timeFilterName?' element={null} />
-          <Route path='/all/catalog/:timeFilterName?/settings' element={null} />
+const App = () => {
+  const enableInfiniteScroll = useFeedViewSettingsStore((state) => state.enableInfiniteScroll);
+  const boardFeedElement = enableInfiniteScroll ? null : <BoardFeedRoute />;
+  const catalogFeedElement = enableInfiniteScroll ? null : <CatalogFeedRoute />;
 
-          <Route path='/subs/:timeFilterName/:pageNumber' element={null} />
-          <Route path='/subs/:timeFilterName?' element={null} />
-          <Route path='/subs/:timeFilterName?/settings' element={null} />
-          <Route path='/subs/catalog/:timeFilterName?' element={null} />
-          <Route path='/subs/catalog/:timeFilterName?/settings' element={null} />
+  return (
+    <div className={styles.app}>
+      <Routes>
+        <Route element={<GlobalLayout />}>
+          <Route path='/' element={<Home />} />
+          <Route path='/faq' element={<FAQ />} />
+          <Route path='/rules/:boardIdentifier?' element={<Rules />} />
+          <Route element={<BoardLayout />}>
+            <Route path='/all/:timeFilterName/:pageNumber' element={boardFeedElement} />
+            <Route path='/all/:timeFilterName?' element={boardFeedElement} />
+            <Route path='/all/:timeFilterName?/settings' element={boardFeedElement} />
+            <Route path='/all/catalog/:timeFilterName?' element={catalogFeedElement} />
+            <Route path='/all/catalog/:timeFilterName?/settings' element={catalogFeedElement} />
 
-          <Route path='/mod/:timeFilterName/:pageNumber' element={null} />
-          <Route path='/mod/:timeFilterName?' element={null} />
-          <Route path='/mod/:timeFilterName?/settings' element={null} />
-          <Route path='/mod/catalog/:timeFilterName?' element={null} />
-          <Route path='/mod/catalog/:timeFilterName?/settings' element={null} />
+            <Route path='/subs/:timeFilterName/:pageNumber' element={boardFeedElement} />
+            <Route path='/subs/:timeFilterName?' element={boardFeedElement} />
+            <Route path='/subs/:timeFilterName?/settings' element={boardFeedElement} />
+            <Route path='/subs/catalog/:timeFilterName?' element={catalogFeedElement} />
+            <Route path='/subs/catalog/:timeFilterName?/settings' element={catalogFeedElement} />
 
-          <Route path='/mod/modqueue' element={<ModQueueRoute />} />
-          <Route path='/mod/modqueue/settings' element={<ModQueueRoute />} />
+            <Route path='/mod/:timeFilterName/:pageNumber' element={boardFeedElement} />
+            <Route path='/mod/:timeFilterName?' element={boardFeedElement} />
+            <Route path='/mod/:timeFilterName?/settings' element={boardFeedElement} />
+            <Route path='/mod/catalog/:timeFilterName?' element={catalogFeedElement} />
+            <Route path='/mod/catalog/:timeFilterName?/settings' element={catalogFeedElement} />
 
-          <Route path='/:boardIdentifier/:pageNumber' element={null} />
-          <Route path='/:boardIdentifier' element={null} />
-          <Route path='/:boardIdentifier/settings' element={null} />
-          <Route path='/:boardIdentifier/catalog' element={null} />
-          <Route path='/:boardIdentifier/catalog/settings' element={null} />
+            <Route path='/mod/modqueue' element={<ModQueueRoute />} />
+            <Route path='/mod/modqueue/settings' element={<ModQueueRoute />} />
 
-          <Route path='/:boardIdentifier/modqueue' element={<ModQueueRoute />} />
-          <Route path='/:boardIdentifier/modqueue/settings' element={<ModQueueRoute />} />
+            <Route path='/:boardIdentifier/:pageNumber' element={boardFeedElement} />
+            <Route path='/:boardIdentifier' element={boardFeedElement} />
+            <Route path='/:boardIdentifier/settings' element={boardFeedElement} />
+            <Route path='/:boardIdentifier/catalog' element={catalogFeedElement} />
+            <Route path='/:boardIdentifier/catalog/settings' element={catalogFeedElement} />
 
-          <Route path='/:boardIdentifier/thread/:commentCid' element={<Post />} />
-          <Route path='/:boardIdentifier/thread/:commentCid/settings' element={<Post />} />
+            <Route path='/:boardIdentifier/modqueue' element={<ModQueueRoute />} />
+            <Route path='/:boardIdentifier/modqueue/settings' element={<ModQueueRoute />} />
 
-          <Route path='/pending/:accountCommentIndex' element={<PendingPost />} />
-          <Route path='/pending/:accountCommentIndex/settings' element={<PendingPost />} />
+            <Route path='/:boardIdentifier/thread/:commentCid' element={<Post />} />
+            <Route path='/:boardIdentifier/thread/:commentCid/settings' element={<Post />} />
+
+            <Route path='/pending/:accountCommentIndex' element={<PendingPost />} />
+            <Route path='/pending/:accountCommentIndex/settings' element={<PendingPost />} />
+          </Route>
+          <Route path='/not-allowed' element={<NotAllowed />} />
+          <Route path='/not-found' element={<NotFound />} />
+          <Route path='*' element={<NotFound />} />
         </Route>
-        <Route path='/not-allowed' element={<NotAllowed />} />
-        <Route path='/not-found' element={<NotFound />} />
-        <Route path='*' element={<NotFound />} />
-      </Route>
-    </Routes>
-  </div>
-);
+      </Routes>
+    </div>
+  );
+};
 
 export default App;

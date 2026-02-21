@@ -11,6 +11,7 @@ interface FeedCacheState {
   maxCacheSize: number;
   accessFeed: (key: string, type: 'board' | 'catalog') => void;
   removeFeed: (key: string) => void;
+  clearFeeds: () => void;
   isFeedCached: (key: string) => boolean;
 }
 
@@ -43,6 +44,12 @@ const useFeedCacheStore = create<FeedCacheState>((set, get) => ({
   removeFeed: (key: string) => {
     const { cachedFeeds } = get();
     set({ cachedFeeds: cachedFeeds.filter((feed) => feed.key !== key) });
+  },
+
+  clearFeeds: () => {
+    const { cachedFeeds } = get();
+    if (cachedFeeds.length === 0) return;
+    set({ cachedFeeds: [] });
   },
 
   isFeedCached: (key: string) => {
