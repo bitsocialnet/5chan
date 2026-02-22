@@ -28,7 +28,7 @@ const BoardPagination = ({ basePath, currentPage, totalPages }: BoardPaginationP
           {t('prev')}
         </Link>
       ) : (
-        <span className={`${styles.paginationButton} ${styles.disabled}`} aria-disabled>
+        <span className={`${styles.paginationButton} ${styles.disabled}`} aria-disabled='true'>
           {t('prev')}
         </span>
       )}
@@ -50,7 +50,7 @@ const BoardPagination = ({ basePath, currentPage, totalPages }: BoardPaginationP
           {t('next')}
         </Link>
       ) : (
-        <span className={`${styles.paginationButton} ${styles.disabled}`} aria-disabled>
+        <span className={`${styles.paginationButton} ${styles.disabled}`} aria-disabled='true'>
           {t('next')}
         </span>
       )}
