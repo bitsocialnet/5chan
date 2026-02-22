@@ -8,7 +8,6 @@ import { isAllView, isCatalogView, isSubscriptionsView } from '../../lib/utils/v
 import { useDirectories, DirectoryCommunity } from '../../hooks/use-directories';
 import { useBoardPath, useResolvedSubplebbitAddress } from '../../hooks/use-resolved-subplebbit-address';
 import { getBoardPath, extractDirectoryFromTitle } from '../../lib/utils/route-utils';
-import { TimeFilter } from '../board-buttons';
 import useCreateBoardModalStore from '../../stores/use-create-board-modal-store';
 import useTopbarEditModalStore from '../../stores/use-topbar-edit-modal-store';
 import useTopbarVisibilityStore from '../../stores/use-topbar-visibility-store';
@@ -334,9 +333,6 @@ const TopBarMobile = ({ subplebbitAddress }: { subplebbitAddress: string }) => {
       <div className={styles.boardSelect}>
         <strong>{t('board')}</strong>
         {boardSelect}
-        {(isInAllView || isInSubscriptionsView) && (
-          <TimeFilter isTopbar={true} isInAllView={isInAllView} isInCatalogView={isInCatalogView} isInSubscriptionsView={isInSubscriptionsView} />
-        )}
       </div>
       <div className={styles.pageJump}>
         <Link to={useLocation().pathname.replace(/\/$/, '') + '/settings'}>{t('settings')}</Link>

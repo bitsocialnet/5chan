@@ -1,1 +1,1 @@
-export { TimeFilter, MobileBoardButtons, DesktopBoardButtons } from './board-buttons';
+export { MobileBoardButtons, DesktopBoardButtons } from './board-buttons';

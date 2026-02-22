@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useLocation, useNavigate, useNavigationType, useParams } from 'react-router-dom';
+import { useEffect, useMemo, useRef } from 'react';
+import { useLocation, useNavigate, useNavigationType, useParams } from 'react-router-dom';
 import { Comment, useAccount, useAccountComments, useAccountSubplebbits, useFeed, useSubplebbit } from '@plebbit/plebbit-react-hooks';
 import { useSubplebbitField } from '../../hooks/use-stable-subplebbit';
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
@@ -8,9 +8,8 @@ import styles from './board.module.css';
 import { shouldShowSnow } from '../../lib/snow';
 import { useDirectoryAddresses, useDirectories, useDirectoryByAddress } from '../../hooks/use-directories';
 import { useFilteredDirectoryAddresses } from '../../hooks/use-filtered-directory-addresses';
-import { useResolvedSubplebbitAddress, useBoardPath } from '../../hooks/use-resolved-subplebbit-address';
+import { useResolvedSubplebbitAddress } from '../../hooks/use-resolved-subplebbit-address';
 import { useFeedStateString } from '../../hooks/use-state-string';
-import useTimeFilter, { timeFilterNameToSeconds } from '../../hooks/use-time-filter';
 import useFeedResetStore from '../../stores/use-feed-reset-store';
 import useSortingStore from '../../stores/use-sorting-store';
 import useFeedViewSettingsStore from '../../stores/use-feed-view-settings-store';
@@ -33,13 +32,6 @@ interface BoardFooterProps {
   isInAllView: boolean;
   isInSubscriptionsView: boolean;
   isInModView: boolean;
-  showMorePostsSuggestion: boolean;
-  feedLength: number;
-  weeklyFeedLength: number;
-  monthlyFeedLength: number;
-  yearlyFeedLength: number;
-  boardPath: string | undefined;
-  currentTimeFilterName: string | undefined;
   subplebbitState: string | undefined;
   subscriptionsLength: number;
   accountSubplebbitAddressesLength: number;
@@ -59,13 +51,6 @@ const BoardFooter = ({
   isInAllView,
   isInSubscriptionsView,
   isInModView,
-  showMorePostsSuggestion,
-  feedLength,
-  weeklyFeedLength,
-  monthlyFeedLength,
-  yearlyFeedLength,
-  boardPath,
-  currentTimeFilterName,
   subplebbitState,
   subscriptionsLength,
   accountSubplebbitAddressesLength,
@@ -73,11 +58,7 @@ const BoardFooter = ({
 }: BoardFooterProps) => {
   const { t } = useTranslation();
 
-  const loadingStateString =
-    useFeedStateString(subplebbitAddresses) ||
-    (feedLength === 0 && !(weeklyFeedLength > feedLength || monthlyFeedLength > feedLength || yearlyFeedLength > monthlyFeedLength)
-      ? t('loading_feed')
-      : t('looking_for_more_posts'));
+  const loadingStateString = useFeedStateString(subplebbitAddresses) || (combinedFeedLength === 0 ? t('loading_feed') : t('looking_for_more_posts'));
 
   let footerContent;
   if (combinedFeedLength === 0) {
@@ -86,7 +67,7 @@ const BoardFooter = ({
   if (hasMore || (subplebbitAddresses && subplebbitAddresses.length === 0)) {
     footerContent = (
       <>
-        {subplebbitAddressesWithNewerPosts.length > 0 ? (
+        {subplebbitAddressesWithNewerPosts.length > 0 && (
           <div className={styles.morePostsSuggestion}>
             <Trans
               i18nKey='newer_threads_available'
@@ -95,44 +76,6 @@ const BoardFooter = ({
               }}
             />
           </div>
-        ) : (
-          (isInAllView || isInSubscriptionsView || isInModView) &&
-          showMorePostsSuggestion &&
-          (monthlyFeedLength > feedLength || yearlyFeedLength > monthlyFeedLength) &&
-          (() => {
-            const basePath = isInAllView ? '/all' : isInSubscriptionsView ? '/subs' : isInModView ? '/mod' : boardPath ? `/${boardPath}` : '';
-            return weeklyFeedLength > feedLength ? (
-              <div className={styles.morePostsSuggestion}>
-                <Trans
-                  i18nKey='more_threads_last_week'
-                  values={{ currentTimeFilterName, count: feedLength }}
-                  components={{
-                    1: <Link to={`${basePath}/1w`} />,
-                  }}
-                />
-              </div>
-            ) : monthlyFeedLength > feedLength ? (
-              <div className={styles.morePostsSuggestion}>
-                <Trans
-                  i18nKey='more_threads_last_month'
-                  values={{ currentTimeFilterName, count: feedLength }}
-                  components={{
-                    1: <Link to={`${basePath}/1m`} />,
-                  }}
-                />
-              </div>
-            ) : (
-              <div className={styles.morePostsSuggestion}>
-                <Trans
-                  i18nKey='more_threads_last_year'
-                  values={{ currentTimeFilterName, count: feedLength }}
-                  components={{
-                    1: <Link to={`${basePath}/1y`} />,
-                  }}
-                />
-              </div>
-            );
-          })()
         )}
       </>
     );
@@ -159,11 +102,10 @@ export interface BoardProps {
   feedCacheKey?: string;
   viewType?: 'all' | 'subs' | 'mod' | 'board';
   boardIdentifier?: string;
-  timeFilterNameFromCache?: string;
   isVisible?: boolean;
 }
 
-const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, timeFilterNameFromCache, isVisible = true }: BoardProps) => {
+const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, isVisible = true }: BoardProps) => {
   const { t } = useTranslation();
   const location = useLocation();
   const params = useParams();
@@ -180,7 +122,6 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
     return resolvedAddressFromUrl;
   }, [boardIdentifierProp, directories, resolvedAddressFromUrl]);
 
-  const boardPath = useBoardPath(subplebbitAddress);
   const directoryAddresses = useDirectoryAddresses();
   const filteredDirectoryAddresses = useFilteredDirectoryAddresses();
 
@@ -204,9 +145,6 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
   }, [isInAllView, isInSubscriptionsView, isInModView, subplebbitAddress, directoryAddresses, filteredDirectoryAddresses, subscriptions, accountSubplebbitAddresses]);
 
   const { sortType } = useSortingStore();
-  const { timeFilterSeconds: timeFilterSecondsFromHook, timeFilterName: timeFilterNameFromHook } = useTimeFilter();
-  const timeFilterName = timeFilterNameFromCache || timeFilterNameFromHook;
-  const timeFilterSeconds = timeFilterNameFromCache ? timeFilterNameToSeconds(timeFilterNameFromCache) : timeFilterSecondsFromHook;
 
   const enableInfiniteScroll = useFeedViewSettingsStore((state) => state.enableInfiniteScroll);
   const isForcedInfiniteScroll = isInAllView || isInSubscriptionsView || isInModView;
@@ -219,25 +157,14 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
       subplebbitAddresses,
       sortType,
       postsPerPage: effectiveInfiniteScroll ? infiniteFeedPostsPerPage : paginationFeedPostsPerPage,
-      ...(isInAllView || isInSubscriptionsView || isInModView ? { newerThan: timeFilterSeconds } : {}),
     }),
-    [
-      subplebbitAddresses,
-      sortType,
-      effectiveInfiniteScroll,
-      infiniteFeedPostsPerPage,
-      paginationFeedPostsPerPage,
-      isInAllView,
-      isInSubscriptionsView,
-      isInModView,
-      timeFilterSeconds,
-    ],
+    [subplebbitAddresses, sortType, effectiveInfiniteScroll, infiniteFeedPostsPerPage, paginationFeedPostsPerPage],
   );
 
   const { feed, hasMore, loadMore, reset, subplebbitAddressesWithNewerPosts } = useFeed(feedOptions);
   const { accountComments } = useAccountComments();
 
-  const feedContextKey = `${isInAllView ? 'all' : isInSubscriptionsView ? 'subs' : isInModView ? 'mod' : (subplebbitAddress ?? 'board')}-${sortType}-${timeFilterSeconds}-${viewType ?? 'board'}-${effectiveInfiniteScroll}`;
+  const feedContextKey = `${isInAllView ? 'all' : isInSubscriptionsView ? 'subs' : isInModView ? 'mod' : (subplebbitAddress ?? 'board')}-${sortType}-${viewType ?? 'board'}-${effectiveInfiniteScroll}`;
   const pathWithoutSettings = location.pathname.replace(/\/settings$/, '');
   const currentPage = getPageFromFeedPath(pathWithoutSettings);
   const paginationBasePath = stripPageFromFeedPath(pathWithoutSettings);
@@ -338,39 +265,6 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
     }, 300);
   };
 
-  // suggest the user to change time filter if there aren't enough posts
-  const { feed: weeklyFeed } = useFeed({
-    subplebbitAddresses,
-    sortType,
-    newerThan: 60 * 60 * 24 * 7,
-  });
-  const { feed: monthlyFeed } = useFeed({
-    subplebbitAddresses,
-    sortType,
-    newerThan: 60 * 60 * 24 * 30,
-  });
-  const { feed: yearlyFeed } = useFeed({
-    subplebbitAddresses,
-    sortType,
-    newerThan: 60 * 60 * 24 * 365,
-  });
-
-  const feedLength = feed.length;
-  const weeklyFeedLength = weeklyFeed.length;
-  const monthlyFeedLength = monthlyFeed.length;
-  const yearlyFeedLength = yearlyFeed.length;
-
-  const [showMorePostsSuggestion, setShowMorePostsSuggestion] = useState(false);
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowMorePostsSuggestion(true);
-    }, 5000);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  const currentTimeFilterName = timeFilterName || params?.timeFilterName;
-
   // Memoize footer component to preserve identity across renders (Virtuoso optimization)
   // Note: useFeedStateString is called inside BoardFooter to isolate re-renders from backend state changes
   const footerComponents = useMemo(
@@ -385,13 +279,6 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
           isInAllView={isInAllView}
           isInSubscriptionsView={isInSubscriptionsView}
           isInModView={isInModView}
-          showMorePostsSuggestion={showMorePostsSuggestion}
-          feedLength={feedLength}
-          weeklyFeedLength={weeklyFeedLength}
-          monthlyFeedLength={monthlyFeedLength}
-          yearlyFeedLength={yearlyFeedLength}
-          boardPath={boardPath}
-          currentTimeFilterName={currentTimeFilterName}
           subplebbitState={subplebbitState}
           subscriptionsLength={subscriptions?.length || 0}
           accountSubplebbitAddressesLength={accountSubplebbitAddresses?.length || 0}
@@ -408,13 +295,6 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
       isInAllView,
       isInSubscriptionsView,
       isInModView,
-      showMorePostsSuggestion,
-      feedLength,
-      weeklyFeedLength,
-      monthlyFeedLength,
-      yearlyFeedLength,
-      boardPath,
-      currentTimeFilterName,
       subplebbitState,
       subscriptions?.length,
       accountSubplebbitAddresses?.length,
@@ -424,7 +304,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
   );
 
   const virtuosoRef = useRef<VirtuosoHandle | null>(null);
-  const virtuosoStateKey = feedCacheKey ? `${feedCacheKey}-${sortType}-${timeFilterSeconds}` : `${location.pathname}-${sortType}-${timeFilterSeconds}`;
+  const virtuosoStateKey = feedCacheKey ? `${feedCacheKey}-${sortType}` : `${location.pathname}-${sortType}`;
   const navigationType = useNavigationType();
 
   const hasBeenVisibleRef = useRef(false);
@@ -514,13 +394,6 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
                 isInAllView={isInAllView}
                 isInSubscriptionsView={isInSubscriptionsView}
                 isInModView={isInModView}
-                showMorePostsSuggestion={showMorePostsSuggestion}
-                feedLength={feedLength}
-                weeklyFeedLength={weeklyFeedLength}
-                monthlyFeedLength={monthlyFeedLength}
-                yearlyFeedLength={yearlyFeedLength}
-                boardPath={boardPath}
-                currentTimeFilterName={currentTimeFilterName}
                 subplebbitState={subplebbitState}
                 subscriptionsLength={subscriptions?.length || 0}
                 accountSubplebbitAddressesLength={accountSubplebbitAddresses?.length || 0}
@@ -544,13 +417,6 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
               isInAllView={isInAllView}
               isInSubscriptionsView={isInSubscriptionsView}
               isInModView={isInModView}
-              showMorePostsSuggestion={showMorePostsSuggestion}
-              feedLength={feedLength}
-              weeklyFeedLength={weeklyFeedLength}
-              monthlyFeedLength={monthlyFeedLength}
-              yearlyFeedLength={yearlyFeedLength}
-              boardPath={boardPath}
-              currentTimeFilterName={currentTimeFilterName}
               subplebbitState={subplebbitState}
               subscriptionsLength={subscriptions?.length || 0}
               accountSubplebbitAddressesLength={accountSubplebbitAddresses?.length || 0}

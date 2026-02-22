@@ -109,19 +109,12 @@ export const isFeedRoute = (pathname: string): boolean => {
   if (normalizedPath.includes('/modqueue')) return false;
 
   const pathWithoutSettings = normalizedPath.replace(/\/settings$/, '');
-
-  if (pathWithoutSettings.startsWith('/all')) return true;
-  if (pathWithoutSettings.startsWith('/subs')) return true;
-  if (pathWithoutSettings.startsWith('/mod')) return true;
-
   const segments = pathWithoutSettings.split('/').filter(Boolean);
   if (segments.length >= 1) {
     if (segments.length === 1) return true;
     if (segments.length === 2 && segments[1] === 'catalog') return true;
-    if (segments.length === 2 && (/^(?:\d+(?:h|d|w|m|y)|all)$/.test(segments[1]) || /^([1-9]|10)$/.test(segments[1]))) return true;
-    if (segments.length === 3 && segments[1] === 'catalog' && /^(?:\d+(?:h|d|w|m|y)|all)$/.test(segments[2])) return true;
-    if (segments.length === 3 && /^(?:\d+(?:h|d|w|m|y)|all)$/.test(segments[1]) && /^([1-9]|10)$/.test(segments[2])) return true;
-    if (segments.length === 2 && segments[0] !== 'all' && segments[0] !== 'subs' && segments[0] !== 'mod' && /^([1-9]|10)$/.test(segments[1])) return true;
+    if (segments.length === 2 && /^([1-9]|10)$/.test(segments[1])) return true;
+    if (segments.length === 3 && segments[1] === 'catalog' && /^([1-9]|10)$/.test(segments[2])) return true;
   }
 
   return false;
@@ -163,8 +156,8 @@ function isMultiboardFeedPath(pathname: string): boolean {
 }
 
 /**
- * Normalize multiboard feed paths by removing trailing page-number segments (1–10),
- * while preserving /settings and valid time-filter segments.
+ * Normalize multiboard feed paths by removing trailing page-number segments (1–10)
+ * and preserving /settings.
  * Non-multiboard paths are returned unchanged.
  */
 export const normalizeMultiboardFeedPath = (pathname: string): string => {

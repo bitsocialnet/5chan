@@ -243,26 +243,29 @@ const App = () => {
           <Route path='/faq' element={<FAQ />} />
           <Route path='/rules/:boardIdentifier?' element={<Rules />} />
           <Route element={<BoardLayout />}>
-            <Route path='/all/:timeFilterName/:pageNumber' element={boardFeedElement} />
-            <Route path='/all/:timeFilterName?' element={boardFeedElement} />
-            <Route path='/all/:timeFilterName?/settings' element={boardFeedElement} />
-            <Route path='/all/catalog/:timeFilterName?' element={catalogFeedElement} />
-            <Route path='/all/catalog/:timeFilterName?/settings' element={catalogFeedElement} />
+            {/* Canonical multiboard routes (no time filter) */}
+            <Route path='/all' element={boardFeedElement} />
+            <Route path='/all/settings' element={boardFeedElement} />
+            <Route path='/all/catalog' element={catalogFeedElement} />
+            <Route path='/all/catalog/settings' element={catalogFeedElement} />
 
-            <Route path='/subs/:timeFilterName/:pageNumber' element={boardFeedElement} />
-            <Route path='/subs/:timeFilterName?' element={boardFeedElement} />
-            <Route path='/subs/:timeFilterName?/settings' element={boardFeedElement} />
-            <Route path='/subs/catalog/:timeFilterName?' element={catalogFeedElement} />
-            <Route path='/subs/catalog/:timeFilterName?/settings' element={catalogFeedElement} />
+            <Route path='/subs' element={boardFeedElement} />
+            <Route path='/subs/settings' element={boardFeedElement} />
+            <Route path='/subs/catalog' element={catalogFeedElement} />
+            <Route path='/subs/catalog/settings' element={catalogFeedElement} />
 
-            <Route path='/mod/:timeFilterName/:pageNumber' element={boardFeedElement} />
-            <Route path='/mod/:timeFilterName?' element={boardFeedElement} />
-            <Route path='/mod/:timeFilterName?/settings' element={boardFeedElement} />
-            <Route path='/mod/catalog/:timeFilterName?' element={catalogFeedElement} />
-            <Route path='/mod/catalog/:timeFilterName?/settings' element={catalogFeedElement} />
+            <Route path='/mod' element={boardFeedElement} />
+            <Route path='/mod/settings' element={boardFeedElement} />
+            <Route path='/mod/catalog' element={catalogFeedElement} />
+            <Route path='/mod/catalog/settings' element={catalogFeedElement} />
 
             <Route path='/mod/modqueue' element={<ModQueueRoute />} />
             <Route path='/mod/modqueue/settings' element={<ModQueueRoute />} />
+
+            {/* Invalid subpaths: old time-filter URLs (e.g. /all/24h) -> not-found */}
+            <Route path='/all/*' element={<Navigate to='/not-found' replace />} />
+            <Route path='/subs/*' element={<Navigate to='/not-found' replace />} />
+            <Route path='/mod/*' element={<Navigate to='/not-found' replace />} />
 
             <Route path='/:boardIdentifier/:pageNumber' element={boardFeedElement} />
             <Route path='/:boardIdentifier' element={boardFeedElement} />

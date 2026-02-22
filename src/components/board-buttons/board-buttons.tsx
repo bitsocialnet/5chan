@@ -15,7 +15,6 @@ import useModQueueStore from '../../stores/use-mod-queue-store';
 import useFeedViewSettingsStore from '../../stores/use-feed-view-settings-store';
 import useCountLinksInReplies from '../../hooks/use-count-links-in-replies';
 import useIsMobile from '../../hooks/use-is-mobile';
-import useTimeFilter from '../../hooks/use-time-filter';
 import CatalogFilters from '../catalog-filters';
 import CatalogSearch from '../catalog-search';
 import Tooltip from '../tooltip';
@@ -39,16 +38,9 @@ const CatalogButton = ({ address, isInAllView, isInSubscriptionsView, isInModVie
   const directories = useDirectories();
 
   const createCatalogLink = () => {
-    if (isInAllView) {
-      if (params?.timeFilterName) return `/all/catalog/${params.timeFilterName}`;
-      return `/all/catalog`;
-    } else if (isInSubscriptionsView) {
-      if (params?.timeFilterName) return `/subs/catalog/${params.timeFilterName}`;
-      return `/subs/catalog`;
-    } else if (isInModView) {
-      if (params?.timeFilterName) return `/mod/catalog/${params.timeFilterName}`;
-      return `/mod/catalog`;
-    }
+    if (isInAllView) return `/all/catalog`;
+    if (isInSubscriptionsView) return `/subs/catalog`;
+    if (isInModView) return `/mod/catalog`;
     let boardPath = '';
     if (address) {
       boardPath = getBoardPath(address, directories);
@@ -82,22 +74,16 @@ const ReturnButton = ({ address, isInAllView, isInSubscriptionsView, isInModView
   const directories = useDirectories();
 
   const createReturnLink = () => {
-    if (isInAllView) {
-      if (params?.timeFilterName) return `/all/${params.timeFilterName}`;
-      return `/all`;
-    } else if (isInSubscriptionsView) {
-      if (params?.timeFilterName) return `/subs/${params.timeFilterName}`;
-      return `/subs`;
-    } else if (isInModQueueView) {
+    if (isInAllView) return `/all`;
+    if (isInSubscriptionsView) return `/subs`;
+    if (isInModQueueView) {
       // If in mod queue view, return to /mod or /:boardIdentifier
       if (params?.boardIdentifier) {
         return `/${params.boardIdentifier}`;
       }
       return `/mod`;
-    } else if (isInModView) {
-      if (params?.timeFilterName) return `/mod/${params.timeFilterName}`;
-      return `/mod`;
     }
+    if (isInModView) return `/mod`;
     let boardPath = '';
     if (address) {
       boardPath = getBoardPath(address, directories);
@@ -330,53 +316,6 @@ const ShowOPCommentOption = () => {
       <select className='capitalize' value={showOPComment ? 'On' : 'Off'} onChange={(e) => setShowOPComment(e.target.value === 'On')}>
         <option value='Off'>{t('off')}</option>
         <option value='On'>{t('on')}</option>
-      </select>
-    </>
-  );
-};
-
-export const TimeFilter = ({ isInAllView, isInCatalogView, isInSubscriptionsView, isInModView, isTopbar = false }: BoardButtonsProps) => {
-  const { t } = useTranslation();
-  const navigate = useNavigate();
-  const { timeFilterName, timeFilterNames } = useTimeFilter();
-
-  const changeTimeFilter = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const timeFilterName = event.target.value;
-    const link = isInAllView
-      ? isInCatalogView
-        ? `/all/catalog/${timeFilterName}`
-        : `/all/${timeFilterName}`
-      : isInSubscriptionsView
-        ? isInCatalogView
-          ? `/subs/catalog/${timeFilterName}`
-          : `/subs/${timeFilterName}`
-        : isInModView
-          ? isInCatalogView
-            ? `/mod/catalog/${timeFilterName}`
-            : `/mod/${timeFilterName}`
-          : null;
-    link && navigate(link);
-  };
-
-  const { sortType } = useSortingStore();
-
-  const allTimeFilterNames = timeFilterName ? Array.from(new Set([timeFilterName, ...timeFilterNames])) : timeFilterNames;
-
-  return (
-    <>
-      {!isTopbar ? (
-        <>
-          <span>{isInCatalogView ? (sortType === 'active' ? t('last_bumped') : t('newer_than')) : t('last_bumped')}</span>:&nbsp;
-        </>
-      ) : (
-        <> </>
-      )}
-      <select onChange={changeTimeFilter} className={[styles.feedName, styles.menuItem, 'capitalize'].join(' ')} value={timeFilterName}>
-        {allTimeFilterNames.map((name, i) => (
-          <option key={name + i} value={name}>
-            {name}
-          </option>
-        ))}
       </select>
     </>
   );
@@ -643,9 +582,6 @@ export const DesktopBoardButtons = () => {
                 </>
               )}
               {isInAllView && <AllFeedFilter />}
-              {(isInAllView || isInSubscriptionsView || isInModView) && (
-                <TimeFilter isInAllView={isInAllView} isInCatalogView={isInCatalogView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
-              )}
               {!(isInAllView || isInSubscriptionsView || isInModView) && (
                 <>
                   [
@@ -684,17 +620,11 @@ const SearchOPsBar = () => {
         let catalogUrl = '';
 
         if (isInAllView) {
-          catalogUrl = params?.timeFilterName
-            ? `/all/catalog/${params.timeFilterName}?q=${encodeURIComponent(searchQuery)}`
-            : `/all/catalog?q=${encodeURIComponent(searchQuery)}`;
+          catalogUrl = `/all/catalog?q=${encodeURIComponent(searchQuery)}`;
         } else if (isInSubscriptionsView) {
-          catalogUrl = params?.timeFilterName
-            ? `/subs/catalog/${params.timeFilterName}?q=${encodeURIComponent(searchQuery)}`
-            : `/subs/catalog?q=${encodeURIComponent(searchQuery)}`;
+          catalogUrl = `/subs/catalog?q=${encodeURIComponent(searchQuery)}`;
         } else if (isInModView) {
-          catalogUrl = params?.timeFilterName
-            ? `/mod/catalog/${params.timeFilterName}?q=${encodeURIComponent(searchQuery)}`
-            : `/mod/catalog?q=${encodeURIComponent(searchQuery)}`;
+          catalogUrl = `/mod/catalog?q=${encodeURIComponent(searchQuery)}`;
         } else {
           catalogUrl = `/${boardPath}/catalog?q=${encodeURIComponent(searchQuery)}`;
         }

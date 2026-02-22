@@ -3,7 +3,6 @@ export type ParamsType = {
   boardIdentifier?: string;
   commentCid?: string;
   subplebbitAddress?: string; // deprecated, kept for backward compatibility
-  timeFilterName?: string;
 };
 
 export const isAllView = (pathname: string): boolean => {
@@ -30,7 +29,7 @@ export const isBoardView = (pathname: string, params: ParamsType): boolean => {
 };
 
 export const isCatalogView = (pathname: string, params: ParamsType): boolean => {
-  const { boardIdentifier, subplebbitAddress, timeFilterName } = params;
+  const { boardIdentifier, subplebbitAddress } = params;
   const identifier = boardIdentifier || subplebbitAddress;
   const decodedPathname = decodeURIComponent(pathname);
 
@@ -38,16 +37,10 @@ export const isCatalogView = (pathname: string, params: ParamsType): boolean => 
     (identifier && (decodedPathname === `/${identifier}/catalog` || decodedPathname === `/${identifier}/catalog/settings`)) ||
     decodedPathname === `/all/catalog` ||
     decodedPathname === `/all/catalog/settings` ||
-    decodedPathname === `/all/catalog/${timeFilterName}` ||
-    decodedPathname === `/all/catalog/${timeFilterName}/settings` ||
     decodedPathname === `/subs/catalog` ||
     decodedPathname === `/subs/catalog/settings` ||
-    decodedPathname === `/subs/catalog/${timeFilterName}` ||
-    decodedPathname === `/subs/catalog/${timeFilterName}/settings` ||
     decodedPathname === `/mod/catalog` ||
-    decodedPathname === `/mod/catalog/settings` ||
-    decodedPathname === `/mod/catalog/${timeFilterName}` ||
-    decodedPathname === `/mod/catalog/${timeFilterName}/settings`
+    decodedPathname === `/mod/catalog/settings`
   );
 };
 
@@ -83,17 +76,7 @@ export const isSettingsView = (pathname: string, params: ParamsType): boolean =>
 };
 
 export const isSubscriptionsView = (pathname: string, params: ParamsType): boolean => {
-  const { timeFilterName } = params;
-  return (
-    pathname === '/subs' ||
-    pathname === '/subs/settings' ||
-    pathname === `/subs/${timeFilterName}` ||
-    pathname === `/subs/${timeFilterName}/settings` ||
-    pathname === '/subs/catalog' ||
-    pathname === '/subs/catalog/settings' ||
-    pathname === `/subs/catalog/${timeFilterName}` ||
-    pathname === `/subs/catalog/${timeFilterName}/settings`
-  );
+  return pathname === '/subs' || pathname === '/subs/settings' || pathname === '/subs/catalog' || pathname === '/subs/catalog/settings';
 };
 
 export const isNotFoundView = (pathname: string, params: ParamsType): boolean => {

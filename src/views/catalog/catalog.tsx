@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
-import { Link, useLocation, useNavigate, useNavigationType, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useNavigationType, useParams } from 'react-router-dom';
 import { Trans, useTranslation } from 'react-i18next';
 import { Comment, useAccount, useFeed, useSubplebbit, useAccountComments } from '@plebbit/plebbit-react-hooks';
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
@@ -7,9 +7,8 @@ import useCatalogFeedRows from '../../hooks/use-catalog-feed-rows';
 import { useDirectories, useDirectoryByAddress } from '../../hooks/use-directories';
 import { useBoardFeedPageSize } from '../../hooks/use-board-feed-page-size';
 import { useFilteredDirectoryAddresses } from '../../hooks/use-filtered-directory-addresses';
-import { useResolvedSubplebbitAddress, useBoardPath } from '../../hooks/use-resolved-subplebbit-address';
+import { useResolvedSubplebbitAddress } from '../../hooks/use-resolved-subplebbit-address';
 import { useFeedStateString } from '../../hooks/use-state-string';
-import useTimeFilter, { timeFilterNameToSeconds } from '../../hooks/use-time-filter';
 import useWindowWidth from '../../hooks/use-window-width';
 import useCatalogStyleStore from '../../stores/use-catalog-style-store';
 import useFeedResetStore from '../../stores/use-feed-reset-store';
@@ -28,19 +27,12 @@ const lastVirtuosoStates: { [key: string]: StateSnapshot } = {};
 interface CatalogFooterProps {
   subplebbitAddresses: string[];
   hasMore: boolean;
-  feedLength: number;
   combinedFeedLength: number;
   subplebbitAddressesWithNewerPosts: string[];
   onNewerPostsClick: () => void;
   isInAllView: boolean;
   isInSubscriptionsView: boolean;
   isInModView: boolean;
-  showMorePostsSuggestion: boolean;
-  weeklyFeedLength: number;
-  monthlyFeedLength: number;
-  yearlyFeedLength: number;
-  boardPath: string | undefined;
-  currentTimeFilterName: string | undefined;
   /** When false, suppress the loading ellipsis (e.g. non-infinite mode) */
   showLoadingEllipsis?: boolean;
 }
@@ -51,39 +43,26 @@ interface CatalogFooterProps {
 const CatalogFooter = ({
   subplebbitAddresses,
   hasMore,
-  feedLength,
   combinedFeedLength,
   subplebbitAddressesWithNewerPosts,
   onNewerPostsClick,
   isInAllView,
   isInSubscriptionsView,
   isInModView,
-  showMorePostsSuggestion,
-  weeklyFeedLength,
-  monthlyFeedLength,
-  yearlyFeedLength,
-  boardPath,
-  currentTimeFilterName,
   showLoadingEllipsis = true,
 }: CatalogFooterProps) => {
   const { t } = useTranslation();
 
-  const loadingStateString =
-    useFeedStateString(subplebbitAddresses) ||
-    (feedLength === 0 && !(weeklyFeedLength > feedLength || monthlyFeedLength > feedLength || yearlyFeedLength > monthlyFeedLength))
-      ? t('loading_feed')
-      : t('looking_for_more_posts');
+  const loadingStateString = useFeedStateString(subplebbitAddresses) || (combinedFeedLength === 0 ? t('loading_feed') : t('looking_for_more_posts'));
 
   let footerContent;
-  if (feedLength === 0) {
-    if (combinedFeedLength === 0) {
-      footerContent = t('no_threads');
-    }
+  if (combinedFeedLength === 0) {
+    footerContent = t('no_threads');
   }
   if (hasMore || (subplebbitAddresses && subplebbitAddresses.length === 0)) {
     footerContent = (
       <>
-        {subplebbitAddressesWithNewerPosts.length > 0 ? (
+        {subplebbitAddressesWithNewerPosts.length > 0 && (
           <div className={styles.stateString}>
             <Trans
               i18nKey='newer_threads_available'
@@ -92,53 +71,6 @@ const CatalogFooter = ({
               }}
             />
           </div>
-        ) : (
-          (isInAllView || isInSubscriptionsView || isInModView) &&
-          showMorePostsSuggestion &&
-          (monthlyFeedLength > feedLength || yearlyFeedLength > monthlyFeedLength) &&
-          (weeklyFeedLength > feedLength ? (
-            <div className={styles.stateString}>
-              <Trans
-                i18nKey='more_threads_last_week'
-                values={{ currentTimeFilterName, count: feedLength }}
-                components={{
-                  1: (
-                    <Link
-                      to={(isInAllView ? '/all/catalog' : isInSubscriptionsView ? '/subs/catalog' : isInModView ? '/mod/catalog' : `/${boardPath}/catalog`) + '/1w'}
-                    />
-                  ),
-                }}
-              />
-            </div>
-          ) : monthlyFeedLength > feedLength ? (
-            <div className={styles.stateString}>
-              <Trans
-                i18nKey='more_threads_last_month'
-                values={{ currentTimeFilterName, count: feedLength }}
-                components={{
-                  1: (
-                    <Link
-                      to={(isInAllView ? '/all/catalog' : isInSubscriptionsView ? '/subs/catalog' : isInModView ? '/mod/catalog' : `/${boardPath}/catalog`) + '/1m'}
-                    />
-                  ),
-                }}
-              />
-            </div>
-          ) : (
-            <div className={styles.stateString}>
-              <Trans
-                i18nKey='more_threads_last_year'
-                values={{ currentTimeFilterName, count: feedLength }}
-                components={{
-                  1: (
-                    <Link
-                      to={(isInAllView ? '/all/catalog' : isInSubscriptionsView ? '/subs/catalog' : isInModView ? '/mod/catalog' : `/${boardPath}/catalog`) + '/1y'}
-                    />
-                  ),
-                }}
-              />
-            </div>
-          ))
         )}
         {showLoadingEllipsis && (
           <div className={styles.stateString}>
@@ -156,35 +88,17 @@ const CatalogFooter = ({
 interface CatalogLoadingProps {
   subplebbitAddresses: string[];
   hasMore: boolean;
-  feedLength: number;
-  weeklyFeedLength: number;
-  monthlyFeedLength: number;
-  yearlyFeedLength: number;
+  combinedFeedLength: number;
   state: string | undefined;
   subscriptionsLength: number;
-  combinedFeedLength: number;
   error: Error | undefined;
 }
 
-const CatalogLoading = ({
-  subplebbitAddresses,
-  hasMore,
-  feedLength,
-  weeklyFeedLength,
-  monthlyFeedLength,
-  yearlyFeedLength,
-  state,
-  subscriptionsLength,
-  combinedFeedLength,
-  error,
-}: CatalogLoadingProps) => {
+const CatalogLoading = ({ subplebbitAddresses, hasMore, combinedFeedLength, state, subscriptionsLength, error }: CatalogLoadingProps) => {
   const { t } = useTranslation();
 
   const rawFeedStateString = useFeedStateString(subplebbitAddresses);
-  const loadingStateString =
-    rawFeedStateString || (feedLength === 0 && !(weeklyFeedLength > feedLength || monthlyFeedLength > feedLength || yearlyFeedLength > monthlyFeedLength))
-      ? t('loading_feed')
-      : t('looking_for_more_posts');
+  const loadingStateString = rawFeedStateString || (combinedFeedLength === 0 ? t('loading_feed') : t('looking_for_more_posts'));
 
   return (
     <div className={styles.stateString}>
@@ -289,11 +203,10 @@ export interface CatalogProps {
   feedCacheKey?: string;
   viewType?: 'all' | 'subs' | 'mod' | 'board';
   boardIdentifier?: string;
-  timeFilterNameFromCache?: string;
   isVisible?: boolean;
 }
 
-const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, timeFilterNameFromCache, isVisible = true }: CatalogProps) => {
+const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, isVisible = true }: CatalogProps) => {
   const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
@@ -316,7 +229,6 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
     return resolvedAddressFromUrl;
   }, [boardIdentifierProp, directories, resolvedAddressFromUrl]);
 
-  const boardPath = useBoardPath(subplebbitAddress);
   const { filterItems, searchText, clearMatchedFilters } = useCatalogFiltersStore();
 
   const account = useAccount();
@@ -352,10 +264,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
     }
   }, [isInAllView, isInSubscriptionsView, isInModView, location.pathname, navigate]);
 
-  const { timeFilterSeconds: timeFilterSecondsFromHook, timeFilterName: timeFilterNameFromHook } = useTimeFilter();
   const { sortType } = useSortingStore();
-  const timeFilterName = timeFilterNameFromCache || timeFilterNameFromHook;
-  const timeFilterSeconds = timeFilterNameFromCache ? timeFilterNameToSeconds(timeFilterNameFromCache) : timeFilterSecondsFromHook;
 
   // Create a stable callback for filter matching
   const handleFilterMatch = useCallback((filterIndex: number, cid: string, subplebbitAddress: string) => {
@@ -380,18 +289,12 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
           ? infiniteFeedPostsPerPage
           : paginationFeedPostsPerPage;
 
-    const options: any = {
+    return {
       subplebbitAddresses,
       sortType,
       postsPerPage: catalogPostsPerPage,
       filter: createCombinedFilter(filterItems, searchText, subplebbitAddress || 'all', handleFilterMatch),
     };
-
-    if (isInAllView || isInSubscriptionsView || isInModView) {
-      options.newerThan = timeFilterSeconds;
-    }
-
-    return options;
   }, [
     subplebbitAddresses,
     sortType,
@@ -401,7 +304,6 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
     effectiveInfiniteScroll,
     infiniteFeedPostsPerPage,
     paginationFeedPostsPerPage,
-    timeFilterSeconds,
     filterItems,
     searchText,
     subplebbitAddress,
@@ -474,36 +376,6 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   };
 
   // suggest the user to change time filter if there aren't enough posts
-  const { feed: weeklyFeed } = useFeed({
-    subplebbitAddresses,
-    sortType,
-    newerThan: 60 * 60 * 24 * 7,
-    filter: createCombinedFilter(filterItems, searchText, subplebbitAddress || 'all', handleFilterMatch),
-  });
-
-  const { feed: monthlyFeed } = useFeed({
-    subplebbitAddresses,
-    sortType,
-    newerThan: 60 * 60 * 24 * 30,
-    filter: createCombinedFilter(filterItems, searchText, subplebbitAddress || 'all', handleFilterMatch),
-  });
-
-  const { feed: yearlyFeed } = useFeed({
-    subplebbitAddresses,
-    sortType,
-    newerThan: 60 * 60 * 24 * 365,
-    filter: createCombinedFilter(filterItems, searchText, subplebbitAddress || 'all', handleFilterMatch),
-  });
-
-  const [showMorePostsSuggestion, setShowMorePostsSuggestion] = useState(false);
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowMorePostsSuggestion(true);
-    }, 5000);
-
-    return () => clearTimeout(timer);
-  }, []);
-
   const setResetFunction = useFeedResetStore((state) => state.setResetFunction);
   useEffect(() => {
     if (isVisible) {
@@ -513,12 +385,6 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
 
   const subplebbit = useSubplebbit({ subplebbitAddress });
   const { error, shortAddress, state, title } = subplebbit || {};
-  const feedLength = feed.length;
-  const weeklyFeedLength = weeklyFeed.length;
-  const monthlyFeedLength = monthlyFeed.length;
-  const yearlyFeedLength = yearlyFeed.length;
-
-  const currentTimeFilterName = timeFilterName || params?.timeFilterName;
 
   // Memoize footer component to preserve identity across renders (Virtuoso optimization)
   // Note: useFeedStateString is called inside CatalogFooter to isolate re-renders from backend state changes
@@ -528,19 +394,12 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
         <CatalogFooter
           subplebbitAddresses={subplebbitAddresses}
           hasMore={hasMore}
-          feedLength={feedLength}
           combinedFeedLength={cappedFeed.length}
           subplebbitAddressesWithNewerPosts={subplebbitAddressesWithNewerPosts}
           onNewerPostsClick={handleNewerPostsButtonClick}
           isInAllView={isInAllView}
           isInSubscriptionsView={isInSubscriptionsView}
           isInModView={isInModView}
-          showMorePostsSuggestion={showMorePostsSuggestion}
-          weeklyFeedLength={weeklyFeedLength}
-          monthlyFeedLength={monthlyFeedLength}
-          yearlyFeedLength={yearlyFeedLength}
-          boardPath={boardPath}
-          currentTimeFilterName={currentTimeFilterName}
           showLoadingEllipsis={effectiveInfiniteScroll}
         />
       ),
@@ -548,19 +407,12 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
     [
       subplebbitAddresses,
       hasMore,
-      feedLength,
       cappedFeed.length,
       subplebbitAddressesWithNewerPosts,
       handleNewerPostsButtonClick,
       isInAllView,
       isInSubscriptionsView,
       isInModView,
-      showMorePostsSuggestion,
-      weeklyFeedLength,
-      monthlyFeedLength,
-      yearlyFeedLength,
-      boardPath,
-      currentTimeFilterName,
       effectiveInfiniteScroll,
     ],
   );
@@ -603,7 +455,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   const rows = useCatalogFeedRows(columnCount, processedFeed, isFeedLoaded, subplebbit);
 
   const virtuosoRef = useRef<VirtuosoHandle | null>(null);
-  const virtuosoStateKey = feedCacheKey ? `${feedCacheKey}-${sortType}-${timeFilterSeconds}` : `${location.pathname}-${sortType}-${timeFilterSeconds}-catalog`;
+  const virtuosoStateKey = feedCacheKey ? `${feedCacheKey}-${sortType}` : `${location.pathname}-${sortType}-catalog`;
   const navigationType = useNavigationType();
 
   const hasBeenVisibleRef = useRef(false);
@@ -709,19 +561,12 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
                   <CatalogFooter
                     subplebbitAddresses={subplebbitAddresses}
                     hasMore={hasMore}
-                    feedLength={feedLength}
                     combinedFeedLength={cappedFeed.length}
                     subplebbitAddressesWithNewerPosts={subplebbitAddressesWithNewerPosts}
                     onNewerPostsClick={handleNewerPostsButtonClick}
                     isInAllView={isInAllView}
                     isInSubscriptionsView={isInSubscriptionsView}
                     isInModView={isInModView}
-                    showMorePostsSuggestion={showMorePostsSuggestion}
-                    weeklyFeedLength={weeklyFeedLength}
-                    monthlyFeedLength={monthlyFeedLength}
-                    yearlyFeedLength={yearlyFeedLength}
-                    boardPath={boardPath}
-                    currentTimeFilterName={currentTimeFilterName}
                     showLoadingEllipsis={true}
                   />
                 </>
@@ -734,19 +579,12 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
                 <CatalogFooter
                   subplebbitAddresses={subplebbitAddresses}
                   hasMore={hasMore}
-                  feedLength={feedLength}
                   combinedFeedLength={cappedFeed.length}
                   subplebbitAddressesWithNewerPosts={subplebbitAddressesWithNewerPosts}
                   onNewerPostsClick={handleNewerPostsButtonClick}
                   isInAllView={isInAllView}
                   isInSubscriptionsView={isInSubscriptionsView}
                   isInModView={isInModView}
-                  showMorePostsSuggestion={showMorePostsSuggestion}
-                  weeklyFeedLength={weeklyFeedLength}
-                  monthlyFeedLength={monthlyFeedLength}
-                  yearlyFeedLength={yearlyFeedLength}
-                  boardPath={boardPath}
-                  currentTimeFilterName={currentTimeFilterName}
                   showLoadingEllipsis={false}
                 />
               </>
@@ -757,13 +595,9 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
             <CatalogLoading
               subplebbitAddresses={subplebbitAddresses}
               hasMore={hasMore}
-              feedLength={feedLength}
-              weeklyFeedLength={weeklyFeedLength}
-              monthlyFeedLength={monthlyFeedLength}
-              yearlyFeedLength={yearlyFeedLength}
+              combinedFeedLength={cappedFeed.length}
               state={state}
               subscriptionsLength={isInSubscriptionsView ? subscriptions?.length || 0 : 1}
-              combinedFeedLength={cappedFeed.length}
               error={error}
             />
           </div>
