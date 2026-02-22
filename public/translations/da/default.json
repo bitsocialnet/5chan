@@ -274,7 +274,7 @@
   "media_hosting_all_providers_failed_guidance": "Alle upload-udbydere mislykkedes. Prøv igen eller indsæt et link manuelt.",
   "upload_not_supported_web_before_link": "Din browser understøtter ikke upload af medier på grund af tekniske begrænsninger (CORS). Det understøttes i 5chan Android-appen og Mac/Linux/Windows desktop-appen.",
   "upload_not_supported_web_link_text": "Download fra den officielle udgivelsesside",
-  "board_subscriptions": "Bordabonnementer",
+  "board_subscriptions": "opslagstavleabonnementer",
   "chain_ticker": "kæde-ticker",
   "enable_infinite_scroll": "Aktiver uendelig rulning",
   "prev": "Forrige",
