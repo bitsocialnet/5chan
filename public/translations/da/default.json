@@ -11,14 +11,7 @@
   "whitepaper": "Whitepaper",
   "token": "Token",
   "start_new_thread": "Start en ny tråd",
-  "show_stats": "Vis statistikker",
   "hide": "Skjul",
-  "board_stats_hour": "I den sidste time har <1>{{userCount}}</1> brugere sendt <1>{{postCount}}</1> indlæg",
-  "board_stats_day": "I går har <1>{{userCount}}</1> brugere sendt <1>{{postCount}}</1> indlæg",
-  "board_stats_week": "I den sidste uge har <1>{{userCount}}</1> brugere sendt <1>{{postCount}}</1> indlæg",
-  "board_stats_month": "I den sidste måned har <1>{{userCount}}</1> brugere sendt <1>{{postCount}}</1> indlæg",
-  "board_stats_all": "Siden da har <1>{{userCount}}</1> brugere sendt <1>{{postCount}}</1> indlæg",
-  "board_created": "Forum oprettet",
   "settings": "Indstillinger",
   "home": "Hjem",
   "subscribe": "Abonner",
@@ -280,5 +273,11 @@
   "prev": "Forrige",
   "next": "Næste",
   "bottom": "Bund",
-  "enable_infinite_scroll_tip": "Gælder ikke for multiboard, som altid bruger uendelig scroll."
+  "enable_infinite_scroll_tip": "Gælder ikke for multiboard, som altid bruger uendelig scroll.",
+  "blotter": "Meddelelser",
+  "date": "Dato",
+  "hide_blotter": "Skjul Blotter",
+  "message": "Besked",
+  "show_all": "Vis alle",
+  "show_blotter": "Vis Blotter"
 }

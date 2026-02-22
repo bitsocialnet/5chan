@@ -89,6 +89,10 @@
     "live:postimages:auto": "bash scripts/run-postimages-live-emulator-test.sh",
     "smoke:upload-selectors": "node scripts/smoke-upload-selectors.js",
     "retest:quality": "yarn test && yarn build && yarn lint && yarn type-check && yarn doctor",
+    "blotter": "node scripts/update-blotter.js",
+    "blotter:check": "node scripts/update-blotter.js check",
+    "blotter:release": "node scripts/update-blotter.js release",
+    "blotter:manual": "node scripts/update-blotter.js manual",
     "android:connectedTest": "cd android && ./gradlew :app:connectedDebugAndroidTest -Pandroid.experimental.androidTest.useUnifiedTestPlatform=false"
   },
   "browserslist": {

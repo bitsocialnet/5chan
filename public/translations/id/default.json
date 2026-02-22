@@ -11,14 +11,7 @@
   "whitepaper": "Whitepaper",
   "token": "Token",
   "start_new_thread": "Mulai Thread Baru",
-  "show_stats": "Tampilkan Statistik",
   "hide": "Sembunyikan",
-  "board_stats_hour": "Dalam satu jam terakhir, <1>{{userCount}}</1> pengguna telah membuat <1>{{postCount}}</1> postingan",
-  "board_stats_day": "Dalam satu hari terakhir, <1>{{userCount}}</1> pengguna telah membuat <1>{{postCount}}</1> postingan",
-  "board_stats_week": "Dalam seminggu terakhir, <1>{{userCount}}</1> pengguna telah membuat <1>{{postCount}}</1> postingan",
-  "board_stats_month": "Dalam sebulan terakhir, <1>{{userCount}}</1> pengguna telah membuat <1>{{postCount}}</1> postingan",
-  "board_stats_all": "Sejak saat itu, <1>{{userCount}}</1> pengguna telah membuat <1>{{postCount}}</1> postingan",
-  "board_created": "Papan pesan dibuat",
   "settings": "Pengaturan",
   "home": "Beranda",
   "subscribe": "Berlangganan",
@@ -280,5 +273,11 @@
   "prev": "Sebelumnya",
   "next": "Berikutnya",
   "bottom": "Bawah",
-  "enable_infinite_scroll_tip": "Tidak berlaku untuk papan ganda, yang selalu menggunakan scroll tak terbatas."
+  "enable_infinite_scroll_tip": "Tidak berlaku untuk papan ganda, yang selalu menggunakan scroll tak terbatas.",
+  "blotter": "Pengumuman",
+  "date": "Tanggal",
+  "hide_blotter": "Sembunyikan Blotter",
+  "message": "Pesan",
+  "show_all": "Tampilkan Semua",
+  "show_blotter": "Tampilkan Blotter"
 }

@@ -11,14 +11,7 @@
   "whitepaper": "Libro blanco",
   "token": "Token",
   "start_new_thread": "Iniciar un Nuevo Hilo",
-  "show_stats": "Mostrar Estadísticas",
   "hide": "ocultar",
-  "board_stats_hour": "En la última hora, <1>{{userCount}}</1> usuarios han enviado <1>{{postCount}}</1> publicaciones",
-  "board_stats_day": "En el último día, <1>{{userCount}}</1> usuarios han enviado <1>{{postCount}}</1> publicaciones",
-  "board_stats_week": "En la última semana, <1>{{userCount}}</1> usuarios han enviado <1>{{postCount}}</1> publicaciones",
-  "board_stats_month": "En el último mes, <1>{{userCount}}</1> usuarios han enviado <1>{{postCount}}</1> publicaciones",
-  "board_stats_all": "Desde entonces, <1>{{userCount}}</1> usuarios han enviado <1>{{postCount}}</1> publicaciones",
-  "board_created": "Foro creado",
   "settings": "Configuración",
   "home": "Inicio",
   "subscribe": "Suscribirse",
@@ -280,5 +273,11 @@
   "prev": "Anterior",
   "next": "Siguiente",
   "bottom": "Abajo",
-  "enable_infinite_scroll_tip": "No aplica a los multiboard, que siempre usan scroll infinito."
+  "enable_infinite_scroll_tip": "No aplica a los multiboard, que siempre usan scroll infinito.",
+  "blotter": "Anuncios",
+  "date": "Fecha",
+  "hide_blotter": "Ocultar Blotter",
+  "message": "Mensaje",
+  "show_all": "Mostrar todo",
+  "show_blotter": "Mostrar Blotter"
 }

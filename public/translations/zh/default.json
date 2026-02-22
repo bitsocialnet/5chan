@@ -11,14 +11,7 @@
   "whitepaper": "白皮书",
   "token": "代币",
   "start_new_thread": "开始新主题",
-  "show_stats": "显示统计",
   "hide": "隐藏",
-  "board_stats_hour": "在过去的一小时内，<1>{{userCount}}</1> 用户发布了<1>{{postCount}}</1>个帖子",
-  "board_stats_day": "在过去的一天内，<1>{{userCount}}</1> 用户发布了<1>{{postCount}}</1>个帖子",
-  "board_stats_week": "在过去的一周内，<1>{{userCount}}</1> 用户发布了<1>{{postCount}}</1>个帖子",
-  "board_stats_month": "在过去的一个月内，<1>{{userCount}}</1> 用户发布了<1>{{postCount}}</1>个帖子",
-  "board_stats_all": "从那时起，<1>{{userCount}}</1> 用户发布了<1>{{postCount}}</1>个帖子",
-  "board_created": "论坛已创建",
   "settings": "设置",
   "home": "首页",
   "subscribe": "订阅",
@@ -280,5 +273,11 @@
   "prev": "上一页",
   "next": "下一步",
   "bottom": "底部",
-  "enable_infinite_scroll_tip": "不适用于多板视图，后者始终使用无限滚动。"
+  "enable_infinite_scroll_tip": "不适用于多板视图，后者始终使用无限滚动。",
+  "blotter": "公告",
+  "date": "日期",
+  "hide_blotter": "隐藏 Blotter",
+  "message": "消息",
+  "show_all": "显示全部",
+  "show_blotter": "显示公告"
 }

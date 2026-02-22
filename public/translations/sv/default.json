@@ -11,14 +11,7 @@
   "whitepaper": "Whitepaper",
   "token": "Token",
   "start_new_thread": "Starta en ny tråd",
-  "show_stats": "Visa statistik",
   "hide": "Dölj",
-  "board_stats_hour": "Under den senaste timmen har <1>{{userCount}}</1> användare gjort <1>{{postCount}}</1> inlägg",
-  "board_stats_day": "Under den senaste dagen har <1>{{userCount}}</1> användare gjort <1>{{postCount}}</1> inlägg",
-  "board_stats_week": "Under den senaste veckan har <1>{{userCount}}</1> användare gjort <1>{{postCount}}</1> inlägg",
-  "board_stats_month": "Under den senaste månaden har <1>{{userCount}}</1> användare gjort <1>{{postCount}}</1> inlägg",
-  "board_stats_all": "Sedan dess har <1>{{userCount}}</1> användare gjort <1>{{postCount}}</1> inlägg",
-  "board_created": "Forum skapat",
   "settings": "Inställningar",
   "home": "Hem",
   "subscribe": "Prenumerera",
@@ -280,5 +273,11 @@
   "prev": "Föreg.",
   "next": "Nästa",
   "bottom": "Botten",
-  "enable_infinite_scroll_tip": "Gäller inte multiboard, som alltid använder oändlig scroll."
+  "enable_infinite_scroll_tip": "Gäller inte multiboard, som alltid använder oändlig scroll.",
+  "blotter": "Meddelanden",
+  "date": "Datum",
+  "hide_blotter": "Dölj Blotter",
+  "message": "Meddelande",
+  "show_all": "Visa alla",
+  "show_blotter": "Visa Blotter"
 }

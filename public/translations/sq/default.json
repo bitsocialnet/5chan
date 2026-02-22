@@ -11,14 +11,7 @@
   "whitepaper": "Whitepaper",
   "token": "Token",
   "start_new_thread": "Filloni një temë të re",
-  "show_stats": "Shfaq Statistikat",
   "hide": "Fshih",
-  "board_stats_hour": "Në orën e fundit, <1>{{userCount}}</1> përdorues ka bërë <1>{{postCount}}</1> postime",
-  "board_stats_day": "Në ditën e fundit, <1>{{userCount}}</1> përdorues ka bërë <1>{{postCount}}</1> postime",
-  "board_stats_week": "Në javën e kaluar, <1>{{userCount}}</1> përdorues ka bërë <1>{{postCount}}</1> postime",
-  "board_stats_month": "Në muajin e kaluar, <1>{{userCount}}</1> përdorues ka bërë <1>{{postCount}}</1> postime",
-  "board_stats_all": "Që atëherë, <1>{{userCount}}</1> përdorues ka bërë <1>{{postCount}}</1> postime",
-  "board_created": "Forumi është krijuar",
   "settings": "Parametrat",
   "home": "Faqja kryesore",
   "subscribe": "Pajtohu",
@@ -280,5 +273,11 @@
   "prev": "Paraprake",
   "next": "Tjetra",
   "bottom": "Poshtë",
-  "enable_infinite_scroll_tip": "Nuk aplikohet për multiboard-et, që gjithmonë përdorin rrëshqitje të pafundme."
+  "enable_infinite_scroll_tip": "Nuk aplikohet për multiboard-et, që gjithmonë përdorin rrëshqitje të pafundme.",
+  "blotter": "Njoftimet",
+  "date": "Data",
+  "hide_blotter": "Fsheh Blotterin",
+  "message": "Mesazh",
+  "show_all": "Shfaq të gjitha",
+  "show_blotter": "Shfaq Blotterin"
 }

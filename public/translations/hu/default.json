@@ -11,14 +11,7 @@
   "whitepaper": "Whitepaper",
   "token": "Token",
   "start_new_thread": "Új téma indítása",
-  "show_stats": "Statisztikák megjelenítése",
   "hide": "Elrejtés",
-  "board_stats_hour": "Az elmúlt órában <1>{{userCount}}</1> felhasználó <1>{{postCount}}</1> hozzászólást küldött",
-  "board_stats_day": "Az elmúlt napon <1>{{userCount}}</1> felhasználó <1>{{postCount}}</1> hozzászólást küldött",
-  "board_stats_week": "Az elmúlt héten <1>{{userCount}}</1> felhasználó <1>{{postCount}}</1> hozzászólást küldött",
-  "board_stats_month": "Az elmúlt hónapban <1>{{userCount}}</1> felhasználó <1>{{postCount}}</1> hozzászólást küldött",
-  "board_stats_all": "Azóta <1>{{userCount}}</1> felhasználó <1>{{postCount}}</1> hozzászólást küldött",
-  "board_created": "Fórum létrehozva",
   "settings": "Beállítások",
   "home": "Kezdőlap",
   "subscribe": "Feliratkozás",
@@ -280,5 +273,11 @@
   "prev": "Előző",
   "next": "Következő",
   "bottom": "Alul",
-  "enable_infinite_scroll_tip": "A többtáblás nézetekre nem vonatkozik, amelyek mindig végtelen görgetést használnak."
+  "enable_infinite_scroll_tip": "A többtáblás nézetekre nem vonatkozik, amelyek mindig végtelen görgetést használnak.",
+  "blotter": "Közlemények",
+  "date": "Dátum",
+  "hide_blotter": "Blotter elrejtése",
+  "message": "Üzenet",
+  "show_all": "Összes megjelenítése",
+  "show_blotter": "Blotter megjelenítése"
 }

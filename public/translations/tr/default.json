@@ -11,14 +11,7 @@
   "whitepaper": "Beyaz kağıt",
   "token": "Jeton",
   "start_new_thread": "Yeni bir Konu Başlat",
-  "show_stats": "İstatistikleri Göster",
   "hide": "Gizle",
-  "board_stats_hour": "Son saatte <1>{{userCount}}</1> kullanıcı <1>{{postCount}}</1> gönderi yaptı",
-  "board_stats_day": "Son gün içinde <1>{{userCount}}</1> kullanıcı <1>{{postCount}}</1> gönderi yaptı",
-  "board_stats_week": "Geçen hafta <1>{{userCount}}</1> kullanıcı <1>{{postCount}}</1> gönderi yaptı",
-  "board_stats_month": "Geçen ay <1>{{userCount}}</1> kullanıcı <1>{{postCount}}</1> gönderi yaptı",
-  "board_stats_all": "O zamandan beri <1>{{userCount}}</1> kullanıcı <1>{{postCount}}</1> gönderi yaptı",
-  "board_created": "Forum oluşturuldu",
   "settings": "Ayarlar",
   "home": "Anasayfa",
   "subscribe": "Abone Ol",
@@ -280,5 +273,11 @@
   "prev": "Önceki",
   "next": "İleri",
   "bottom": "Alt",
-  "enable_infinite_scroll_tip": "Her zaman sonsuz kaydırma kullanan çoklu panolar için geçerli değildir."
+  "enable_infinite_scroll_tip": "Her zaman sonsuz kaydırma kullanan çoklu panolar için geçerli değildir.",
+  "blotter": "Duyurular",
+  "date": "Tarih",
+  "hide_blotter": "Blotter'ı Gizle",
+  "message": "Mesaj",
+  "show_all": "Tümünü göster",
+  "show_blotter": "Blotter'ı Göster"
 }

@@ -16,6 +16,7 @@ import { useDirectories } from './hooks/use-directories';
 import { useResolvedSubplebbitAddress } from './hooks/use-resolved-subplebbit-address';
 import { getSubplebbitAddress, isPostRoute, isPendingPostRoute, isModQueueRoute } from './lib/utils/route-utils';
 import styles from './app.module.css';
+import Blotter from './views/blotter';
 import FAQ from './views/faq';
 import Home from './views/home';
 import Rules from './views/rules';
@@ -33,7 +34,7 @@ import CreateBoardModal from './components/create-board-modal';
 import FeedCacheContainer from './components/feed-cache-container';
 import ReplyModal from './components/reply-modal';
 import PostForm from './components/post-form';
-import SubplebbitStats from './components/subplebbit-stats';
+import BoardBlotter from './components/board-blotter';
 import TopBar from './components/topbar';
 import TopbarEditModal from './components/topbar-edit-modal';
 import DirectoryModal from './components/directory-modal';
@@ -111,7 +112,7 @@ const BoardLayout = () => {
         : (subplebbitAddress || isInAllView || isInModView || isInSubscriptionsView || pendingPost?.subplebbitAddress || isOnModQueueRoute) && (
             <>
               <PostForm key={key} />
-              {!(isInAllView || isInSubscriptionsView || isInModView) && !isOnModQueueRoute && <SubplebbitStats />}
+              {!(isInAllView || isInSubscriptionsView || isInModView) && !isOnModQueueRoute && <BoardBlotter />}
               <DesktopBoardButtons />
             </>
           )}
@@ -242,6 +243,7 @@ const App = () => {
           <Route path='/' element={<Home />} />
           <Route path='/faq' element={<FAQ />} />
           <Route path='/rules/:boardIdentifier?' element={<Rules />} />
+          <Route path='/blotter' element={<Blotter />} />
           <Route element={<BoardLayout />}>
             {/* Canonical multiboard routes (no time filter) */}
             <Route path='/all' element={boardFeedElement} />

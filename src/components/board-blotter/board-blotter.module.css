@@ -27,25 +27,18 @@
   text-align: right;
 }
 
-.hideButton {
+.hideButton,
+.actionLink {
   color: var(--button-desktop-text-color);
   text-decoration: var(--button-text-decoration);
   text-transform: capitalize;
 }
 
-.hideButton:hover {
+.hideButton:hover,
+.actionLink:hover {
   cursor: pointer;
   color: var(--button-desktop-text-color-hover);
 }
-
-.statValue {
-  color: var(--button-desktop-text-color);
-}
-
-.lowercase {
-  text-transform: lowercase;
-}
-
 
 @media (max-width: 640px) {
   .content {

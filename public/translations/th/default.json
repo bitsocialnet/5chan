@@ -11,14 +11,7 @@
   "whitepaper": "เอกสารขาว",
   "token": "โทเค็น",
   "start_new_thread": "เริ่มต้นสร้างกระทู้ใหม่",
-  "show_stats": "แสดงสถิติ",
   "hide": "ซ่อน",
-  "board_stats_hour": "ในชั่วโมงที่ผ่านมา <1>{{userCount}}</1> ผู้ใช้งานได้สร้าง <1>{{postCount}}</1> โพสต์",
-  "board_stats_day": "ในวันที่ผ่านมา <1>{{userCount}}</1> ผู้ใช้งานได้สร้าง <1>{{postCount}}</1> โพสต์",
-  "board_stats_week": "ในช่วงสัปดาห์ที่ผ่านมา <1>{{userCount}}</1> ผู้ใช้งานได้สร้าง <1>{{postCount}}</1> โพสต์",
-  "board_stats_month": "ในช่วงเดือนที่ผ่านมา <1>{{userCount}}</1> ผู้ใช้งานได้สร้าง <1>{{postCount}}</1> โพสต์",
-  "board_stats_all": "ตั้งแต่นั้นมา <1>{{userCount}}</1> ผู้ใช้งานได้สร้าง <1>{{postCount}}</1> โพสต์",
-  "board_created": "สร้างกระดานข่าวแล้ว",
   "settings": "การตั้งค่า",
   "home": "หน้าแรก",
   "subscribe": "สมัครสมาชิก",
@@ -280,5 +273,11 @@
   "prev": "ก่อนหน้า",
   "next": "ถัดไป",
   "bottom": "ล่าง",
-  "enable_infinite_scroll_tip": "ไม่ใช้กับมัลติบอร์ด ซึ่งใช้การเลื่อนแบบไม่สิ้นสุดเสมอ"
+  "enable_infinite_scroll_tip": "ไม่ใช้กับมัลติบอร์ด ซึ่งใช้การเลื่อนแบบไม่สิ้นสุดเสมอ",
+  "blotter": "ประกาศ",
+  "date": "วันที่",
+  "hide_blotter": "ซ่อน Blotter",
+  "message": "ข้อความ",
+  "show_all": "แสดงทั้งหมด",
+  "show_blotter": "แสดง Blotter"
 }

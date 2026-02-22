@@ -11,14 +11,7 @@
   "whitepaper": "হোয়াইট পেপার",
   "token": "টোকেন",
   "start_new_thread": "নতুন থ্রেড শুরু করুন",
-  "show_stats": "প্রদর্শন পরিসংখ্যান",
   "hide": "লুকান",
-  "board_stats_hour": "গত এক ঘণ্টায়, <1>{{userCount}}</1> ব্যবহারকারী <1>{{postCount}}</1> পোস্ট করেছেন",
-  "board_stats_day": "গত দিনে, <1>{{userCount}}</1> ব্যবহারকারী <1>{{postCount}}</1> পোস্ট করেছেন",
-  "board_stats_week": "গত সপ্তাহে, <1>{{userCount}}</1> ব্যবহারকারী <1>{{postCount}}</1> পোস্ট করেছেন",
-  "board_stats_month": "গত মাসে, <1>{{userCount}}</1> ব্যবহারকারী <1>{{postCount}}</1> পোস্ট করেছেন",
-  "board_stats_all": "তারপর থেকে, <1>{{userCount}}</1> ব্যবহারকারী <1>{{postCount}}</1> পোস্ট করেছেন",
-  "board_created": "বোর্ড তৈরি হয়েছে",
   "settings": "সেটিংস",
   "home": "হোম",
   "subscribe": "সাবস্ক্রাইব",
@@ -280,5 +273,11 @@
   "prev": "পূর্ববর্তী",
   "next": "পরবর্তী",
   "bottom": "নিচ",
-  "enable_infinite_scroll_tip": "মাল্টিবোর্ডে প্রযোজ্য নয়, যা সবসময় অসীম স্ক্রল ব্যবহার করে।"
+  "enable_infinite_scroll_tip": "মাল্টিবোর্ডে প্রযোজ্য নয়, যা সবসময় অসীম স্ক্রল ব্যবহার করে।",
+  "blotter": "ঘোষণা",
+  "date": "তারিখ",
+  "hide_blotter": "ব্লটার লুকিয়ে রাখুন",
+  "message": "বার্তা",
+  "show_all": "সব দেখুন",
+  "show_blotter": "ব্লটার দেখান"
 }

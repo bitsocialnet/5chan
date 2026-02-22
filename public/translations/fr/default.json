@@ -11,14 +11,7 @@
   "whitepaper": "Livre blanc",
   "token": "Jeton",
   "start_new_thread": "Démarrer un nouveau fil",
-  "show_stats": "Afficher les statistiques",
   "hide": "masquer",
-  "board_stats_hour": "Au cours de la dernière heure, <1>{{userCount}}</1> utilisateurs ont publié <1>{{postCount}}</1> messages",
-  "board_stats_day": "Au cours de la dernière journée, <1>{{userCount}}</1> utilisateurs ont publié <1>{{postCount}}</1> messages",
-  "board_stats_week": "Au cours de la dernière semaine, <1>{{userCount}}</1> utilisateurs ont publié <1>{{postCount}}</1> messages",
-  "board_stats_month": "Au cours du dernier mois, <1>{{userCount}}</1> utilisateurs ont publié <1>{{postCount}}</1> messages",
-  "board_stats_all": "Depuis lors, <1>{{userCount}}</1> utilisateurs ont publié <1>{{postCount}}</1> messages",
-  "board_created": "Forum créé",
   "settings": "Paramètres",
   "home": "Accueil",
   "subscribe": "S'abonner",
@@ -280,5 +273,11 @@
   "prev": "Précédent",
   "next": "Suivant",
   "bottom": "Bas",
-  "enable_infinite_scroll_tip": "Ne s'applique pas aux multiboards, qui utilisent toujours le défilement infini."
+  "enable_infinite_scroll_tip": "Ne s'applique pas aux multiboards, qui utilisent toujours le défilement infini.",
+  "blotter": "Annonces",
+  "date": "Date",
+  "hide_blotter": "Masquer le Blotter",
+  "message": "Message",
+  "show_all": "Tout afficher",
+  "show_blotter": "Afficher le Blotter"
 }

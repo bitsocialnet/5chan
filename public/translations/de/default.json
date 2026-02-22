@@ -11,14 +11,7 @@
   "whitepaper": "Whitepaper",
   "token": "Token",
   "start_new_thread": "Starte einen neuen Thread",
-  "show_stats": "Statistiken anzeigen",
   "hide": "Ausblenden",
-  "board_stats_hour": "In der letzten Stunde haben <1>{{userCount}}</1> Benutzer <1>{{postCount}}</1> Beiträge veröffentlicht",
-  "board_stats_day": "Im letzten Tag haben <1>{{userCount}}</1> Benutzer <1>{{postCount}}</1> Beiträge veröffentlicht",
-  "board_stats_week": "In der letzten Woche haben <1>{{userCount}}</1> Benutzer <1>{{postCount}}</1> Beiträge veröffentlicht",
-  "board_stats_month": "Im letzten Monat haben <1>{{userCount}}</1> Benutzer <1>{{postCount}}</1> Beiträge veröffentlicht",
-  "board_stats_all": "Seitdem haben <1>{{userCount}}</1> Benutzer <1>{{postCount}}</1> Beiträge veröffentlicht",
-  "board_created": "Forum erstellt",
   "settings": "Einstellungen",
   "home": "Startseite",
   "subscribe": "Abonnieren",
@@ -280,5 +273,11 @@
   "prev": "Zurück",
   "next": "Weiter",
   "bottom": "Unten",
-  "enable_infinite_scroll_tip": "Gilt nicht für Multiboards, die immer Endlos-Scrolling verwenden."
+  "enable_infinite_scroll_tip": "Gilt nicht für Multiboards, die immer Endlos-Scrolling verwenden.",
+  "blotter": "Ankündigungen",
+  "date": "Datum",
+  "hide_blotter": "Blotter ausblenden",
+  "message": "Nachricht",
+  "show_all": "Alle anzeigen",
+  "show_blotter": "Blotter anzeigen"
 }

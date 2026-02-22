@@ -11,14 +11,7 @@
   "whitepaper": "מסמך לבן",
   "token": "אסימון",
   "start_new_thread": "התחלה של פוסט חדש",
-  "show_stats": "הצג סטטיסטיקות",
   "hide": "הסתר",
-  "board_stats_hour": "בשעה האחרונה, <1>{{userCount}}</1> משתמשים פרסמו <1>{{postCount}}</1> הודעות",
-  "board_stats_day": "ביום האחרון, <1>{{userCount}}</1> משתמשים פרסמו <1>{{postCount}}</1> הודעות",
-  "board_stats_week": "בשבוע האחרון, <1>{{userCount}}</1> משתמשים פרסמו <1>{{postCount}}</1> הודעות",
-  "board_stats_month": "בחודש האחרון, <1>{{userCount}}</1> משתמשים פרסמו <1>{{postCount}}</1> הודעות",
-  "board_stats_all": "מאז, <1>{{userCount}}</1> משתמשים פרסמו <1>{{postCount}}</1> הודעות",
-  "board_created": "פורום נוצר",
   "settings": "הגדרות",
   "home": "בית",
   "subscribe": "הירשם",
@@ -280,5 +273,11 @@
   "prev": "הקודם",
   "next": "הבא",
   "bottom": "תחתית",
-  "enable_infinite_scroll_tip": "לא חל על לוחות מרובים, שתמיד משתמשים בגלילה אינסופית."
+  "enable_infinite_scroll_tip": "לא חל על לוחות מרובים, שתמיד משתמשים בגלילה אינסופית.",
+  "blotter": "הודעות",
+  "date": "תאריך",
+  "hide_blotter": "הסתר Blotter",
+  "message": "הודעה",
+  "show_all": "הצג הכל",
+  "show_blotter": "הצג Blotter"
 }

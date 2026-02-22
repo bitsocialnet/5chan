@@ -11,14 +11,7 @@
   "whitepaper": "کاغذ سفید",
   "token": "توکن",
   "start_new_thread": "شروع موضوع جدید",
-  "show_stats": "نمایش آمار",
   "hide": "پنهان کردن",
-  "board_stats_hour": "در ساعت گذشته، <1>{{userCount}}</1> کاربر <1>{{postCount}}</1> پست ارسال کردند",
-  "board_stats_day": "در گذشته، <1>{{userCount}}</1> کاربر <1>{{postCount}}</1> پست ارسال کردند",
-  "board_stats_week": "در هفته گذشته، <1>{{userCount}}</1> کاربر <1>{{postCount}}</1> پست ارسال کردند",
-  "board_stats_month": "در ماه گذشته، <1>{{userCount}}</1> کاربر <1>{{postCount}}</1> پست ارسال کردند",
-  "board_stats_all": "از آن زمان، <1>{{userCount}}</1> کاربر <1>{{postCount}}</1> پست ارسال کرده‌اند",
-  "board_created": "انجمن ایجاد شده",
   "settings": "تنظیمات",
   "home": "خانه",
   "subscribe": "اشتراک",
@@ -280,5 +273,11 @@
   "prev": "قبلی",
   "next": "بعدی",
   "bottom": "پایین",
-  "enable_infinite_scroll_tip": "برای تابلوهای چندگانه اعمال نمی‌شود، که همیشه از اسکرول بی‌نهایت استفاده می‌کنند."
+  "enable_infinite_scroll_tip": "برای تابلوهای چندگانه اعمال نمی‌شود، که همیشه از اسکرول بی‌نهایت استفاده می‌کنند.",
+  "blotter": "اعلانات",
+  "date": "تاریخ",
+  "hide_blotter": "مخفی کردن بلوتر",
+  "message": "پیام",
+  "show_all": "نمایش همه",
+  "show_blotter": "نمایش بلوتر"
 }

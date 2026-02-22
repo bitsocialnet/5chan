@@ -11,14 +11,7 @@
   "whitepaper": "ホワイトペーパー",
   "token": "トークン",
   "start_new_thread": "新しいスレッドを開始",
-  "show_stats": "統計を表示",
   "hide": "非表示",
-  "board_stats_hour": "直近1時間で<1>{{userCount}}</1>人のユーザーが<1>{{postCount}}</1>件の投稿をしました",
-  "board_stats_day": "直近1日間で<1>{{userCount}}</1>人のユーザーが<1>{{postCount}}</1>件の投稿をしました",
-  "board_stats_week": "直近1週間で<1>{{userCount}}</1>人のユーザーが<1>{{postCount}}</1>件の投稿をしました",
-  "board_stats_month": "直近1ヶ月で<1>{{userCount}}</1>人のユーザーが<1>{{postCount}}</1>件の投稿をしました",
-  "board_stats_all": "その後、<1>{{userCount}}</1>人のユーザーが<1>{{postCount}}</1>件の投稿をしました",
-  "board_created": "掲示板が作成されました",
   "settings": "設定",
   "home": "ホーム",
   "subscribe": "購読",
@@ -280,5 +273,11 @@
   "prev": "前へ",
   "next": "次へ",
   "bottom": "下",
-  "enable_infinite_scroll_tip": "マルチボードには適用されません。マルチボードは常に無限スクロールを使用します。"
+  "enable_infinite_scroll_tip": "マルチボードには適用されません。マルチボードは常に無限スクロールを使用します。",
+  "blotter": "お知らせ",
+  "date": "日付",
+  "hide_blotter": "ブロッターを非表示",
+  "message": "メッセージ",
+  "show_all": "すべて表示",
+  "show_blotter": "ブロッターを表示"
 }

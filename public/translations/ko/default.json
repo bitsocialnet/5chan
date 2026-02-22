@@ -11,14 +11,7 @@
   "whitepaper": "화이트페이퍼",
   "token": "토큰",
   "start_new_thread": "새로운 쓰레드 시작",
-  "show_stats": "통계 표시",
   "hide": "숨기기",
-  "board_stats_hour": "지난 1시간 동안 <1>{{userCount}}</1>명의 사용자가 <1>{{postCount}}</1>개의 게시물을 작성했습니다",
-  "board_stats_day": "지난 1일 동안 <1>{{userCount}}</1>명의 사용자가 <1>{{postCount}}</1>개의 게시물을 작성했습니다",
-  "board_stats_week": "지난 1주간 <1>{{userCount}}</1>명의 사용자가 <1>{{postCount}}</1>개의 게시물을 작성했습니다",
-  "board_stats_month": "지난 1개월 동안 <1>{{userCount}}</1>명의 사용자가 <1>{{postCount}}</1>개의 게시물을 작성했습니다",
-  "board_stats_all": "그 후 <1>{{userCount}}</1>명의 사용자가 <1>{{postCount}}</1>개의 게시물을 작성했습니다",
-  "board_created": "게시판이 생성되었습니다",
   "settings": "설정",
   "home": "홈",
   "subscribe": "구독",
@@ -280,5 +273,11 @@
   "prev": "이전",
   "next": "다음",
   "bottom": "아래",
-  "enable_infinite_scroll_tip": "항상 무한 스크롤을 사용하는 멀티보드에는 적용되지 않습니다."
+  "enable_infinite_scroll_tip": "항상 무한 스크롤을 사용하는 멀티보드에는 적용되지 않습니다.",
+  "blotter": "공지",
+  "date": "날짜",
+  "hide_blotter": "블로터 숨기기",
+  "message": "메시지",
+  "show_all": "모두 보기",
+  "show_blotter": "블로터 표시"
 }

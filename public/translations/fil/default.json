@@ -11,14 +11,7 @@
   "whitepaper": "Whitepaper",
   "token": "Token",
   "start_new_thread": "Magsimula ng Bagong Thread",
-  "show_stats": "Ipakita ang mga Estadistika",
   "hide": "Itago",
-  "board_stats_hour": "Sa nakaraang oras, <1>{{userCount}}</1> mga gumagamit ang gumawa ng <1>{{postCount}}</1> na mga post",
-  "board_stats_day": "Sa nakaraang araw, <1>{{userCount}}</1> mga gumagamit ang gumawa ng <1>{{postCount}}</1> na mga post",
-  "board_stats_week": "Sa nakaraang linggo, <1>{{userCount}}</1> mga gumagamit ang gumawa ng <1>{{postCount}}</1> na mga post",
-  "board_stats_month": "Sa nakaraang buwan, <1>{{userCount}}</1> mga gumagamit ang gumawa ng <1>{{postCount}}</1> na mga post",
-  "board_stats_all": "Mula noon, <1>{{userCount}}</1> mga gumagamit ang gumawa ng <1>{{postCount}}</1> na mga post",
-  "board_created": "Board na nilikha",
   "settings": "Mga Setting",
   "home": "Bahay",
   "subscribe": "Mag-subscribe",
@@ -280,5 +273,11 @@
   "prev": "Nakaraan",
   "next": "Susunod",
   "bottom": "Ibaba",
-  "enable_infinite_scroll_tip": "Hindi naaangkop sa mga multiboard, na palaging gumagamit ng walang hanggang scroll."
+  "enable_infinite_scroll_tip": "Hindi naaangkop sa mga multiboard, na palaging gumagamit ng walang hanggang scroll.",
+  "blotter": "Mga anunsyo",
+  "date": "Petsa",
+  "hide_blotter": "Itago ang Blotter",
+  "message": "Mensahe",
+  "show_all": "Ipakita lahat",
+  "show_blotter": "Ipakita ang Blotter"
 }

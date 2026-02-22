@@ -11,14 +11,7 @@
   "whitepaper": "व्हाइटपेपर",
   "token": "टोकन",
   "start_new_thread": "नया थ्रेड शुरू करें",
-  "show_stats": "आँकड़े दिखाएं",
   "hide": "छिपाएं",
-  "board_stats_hour": "पिछले घंटे में, <1>{{userCount}}</1> उपयोगकर्ता <1>{{postCount}}</1> पोस्ट की",
-  "board_stats_day": "पिछले दिन, <1>{{userCount}}</1> उपयोगकर्ता <1>{{postCount}}</1> पोस्ट की",
-  "board_stats_week": "पिछले सप्ताह, <1>{{userCount}}</1> उपयोगकर्ता <1>{{postCount}}</1> पोस्ट की",
-  "board_stats_month": "पिछले महीने, <1>{{userCount}}</1> उपयोगकर्ता <1>{{postCount}}</1> पोस्ट की",
-  "board_stats_all": "उस समय से, <1>{{userCount}}</1> उपयोगकर्ता <1>{{postCount}}</1> पोस्ट की",
-  "board_created": "बोर्ड बनाया गया",
   "settings": "सेटिंग्स",
   "home": "होम",
   "subscribe": "सब्सक्राइब करें",
@@ -280,5 +273,11 @@
   "prev": "पिछला",
   "next": "अगला",
   "bottom": "नीचे",
-  "enable_infinite_scroll_tip": "मल्टीबोर्ड पर लागू नहीं होता, जो हमेशा अनंत स्क्रॉल का उपयोग करते हैं।"
+  "enable_infinite_scroll_tip": "मल्टीबोर्ड पर लागू नहीं होता, जो हमेशा अनंत स्क्रॉल का उपयोग करते हैं।",
+  "blotter": "सूचनाएं",
+  "date": "तारीख",
+  "hide_blotter": "ब्लॉटर छिपाएं",
+  "message": "संदेश",
+  "show_all": "सभी दिखाएं",
+  "show_blotter": "ब्लॉटर दिखाएं"
 }

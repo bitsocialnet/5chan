@@ -11,14 +11,7 @@
   "whitepaper": "Bản trắng",
   "token": "Token",
   "start_new_thread": "Bắt đầu một chủ đề mới",
-  "show_stats": "Hiển thị Thống kê",
   "hide": "Ẩn",
-  "board_stats_hour": "Trong giờ qua, <1>{{userCount}}</1> người dùng đã đăng <1>{{postCount}}</1> bài",
-  "board_stats_day": "Trong ngày qua, <1>{{userCount}}</1> người dùng đã đăng <1>{{postCount}}</1> bài",
-  "board_stats_week": "Trong tuần qua, <1>{{userCount}}</1> người dùng đã đăng <1>{{postCount}}</1> bài",
-  "board_stats_month": "Trong tháng qua, <1>{{userCount}}</1> người dùng đã đăng <1>{{postCount}}</1> bài",
-  "board_stats_all": "Từ đó, <1>{{userCount}}</1> người dùng đã đăng <1>{{postCount}}</1> bài",
-  "board_created": "Diễn đàn được tạo",
   "settings": "Cài đặt",
   "home": "Trang chủ",
   "subscribe": "Đăng ký",
@@ -280,5 +273,11 @@
   "prev": "Trước",
   "next": "Tiếp theo",
   "bottom": "Dưới cùng",
-  "enable_infinite_scroll_tip": "Không áp dụng cho đa bảng, luôn sử dụng cuộn vô hạn."
+  "enable_infinite_scroll_tip": "Không áp dụng cho đa bảng, luôn sử dụng cuộn vô hạn.",
+  "blotter": "Thông báo",
+  "date": "Ngày",
+  "hide_blotter": "Ẩn Blotter",
+  "message": "Tin nhắn",
+  "show_all": "Hiển thị tất cả",
+  "show_blotter": "Hiển thị Blotter"
 }

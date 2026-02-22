@@ -11,14 +11,7 @@
   "whitepaper": "Whitepaper",
   "token": "Token",
   "start_new_thread": "Start een nieuw onderwerp",
-  "show_stats": "Toon statistieken",
   "hide": "Verbergen",
-  "board_stats_hour": "In het afgelopen uur hebben <1>{{userCount}}</1> gebruikers <1>{{postCount}}</1> berichten gemaakt",
-  "board_stats_day": "In de afgelopen dag hebben <1>{{userCount}}</1> gebruikers <1>{{postCount}}</1> berichten gemaakt",
-  "board_stats_week": "In de afgelopen week hebben <1>{{userCount}}</1> gebruikers <1>{{postCount}}</1> berichten gemaakt",
-  "board_stats_month": "In de afgelopen maand hebben <1>{{userCount}}</1> gebruikers <1>{{postCount}}</1> berichten gemaakt",
-  "board_stats_all": "Sindsdien hebben <1>{{userCount}}</1> gebruikers <1>{{postCount}}</1> berichten gemaakt",
-  "board_created": "Forum aangemaakt",
   "settings": "Instellingen",
   "home": "Home",
   "subscribe": "Abonneren",
@@ -280,5 +273,11 @@
   "prev": "Vorige",
   "next": "Volgende",
   "bottom": "Onder",
-  "enable_infinite_scroll_tip": "Geldt niet voor multiboards, die altijd oneindig scrollen gebruiken."
+  "enable_infinite_scroll_tip": "Geldt niet voor multiboards, die altijd oneindig scrollen gebruiken.",
+  "blotter": "Mededelingen",
+  "date": "Datum",
+  "hide_blotter": "Blotter verbergen",
+  "message": "Bericht",
+  "show_all": "Alles tonen",
+  "show_blotter": "Blotter tonen"
 }

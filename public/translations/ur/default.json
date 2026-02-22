@@ -11,14 +11,7 @@
   "whitepaper": "سفید پیپر",
   "token": "ٹوکن",
   "start_new_thread": "نئی دھاگہ شروع کریں",
-  "show_stats": "احصائیہ دکھائیں",
   "hide": "چھپائیں",
-  "board_stats_hour": "گذشتہ گھنٹے میں، <1>{{userCount}}</1> صارفین نے <1>{{postCount}}</1> مواد ارسال کیا ہے",
-  "board_stats_day": "گذشتہ دن، <1>{{userCount}}</1> صارفین نے <1>{{postCount}}</1> مواد ارسال کیا ہے",
-  "board_stats_week": "گذشتہ ہفتے، <1>{{userCount}}</1> صارفین نے <1>{{postCount}}</1> مواد ارسال کیا ہے",
-  "board_stats_month": "گذشتہ مہینے، <1>{{userCount}}</1> صارفین نے <1>{{postCount}}</1> مواد ارسال کیا ہے",
-  "board_stats_all": "اس کے بعد، <1>{{userCount}}</1> صارفین نے <1>{{postCount}}</1> مواد ارسال کیا ہے",
-  "board_created": "پیغام بورڈز بنایا گیا",
   "settings": "ترتیبات",
   "home": "ہوم",
   "subscribe": "سبسکرائب کریں",
@@ -280,5 +273,11 @@
   "prev": "پچھلا",
   "next": "اگلا",
   "bottom": "نیچے",
-  "enable_infinite_scroll_tip": "ملٹی بورڈز پر لاگو نہیں ہوتا، جو ہمیشہ لامحدود سکرول استعمال کرتے ہیں۔"
+  "enable_infinite_scroll_tip": "ملٹی بورڈز پر لاگو نہیں ہوتا، جو ہمیشہ لامحدود سکرول استعمال کرتے ہیں۔",
+  "blotter": "اعلانات",
+  "date": "تاریخ",
+  "hide_blotter": "بلوٹر چھپائیں",
+  "message": "پیغام",
+  "show_all": "سب دکھائیں",
+  "show_blotter": "بلاٹر دکھائیں"
 }

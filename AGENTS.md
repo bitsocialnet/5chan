@@ -367,6 +367,13 @@ React Doctor is advisory quality tooling for React architecture/perf/correctness
 - Prioritize `error` diagnostics first, then `warning`.
 - Score is informative only; no merge blocking based on score yet.
 
+## Blotter Maintenance
+
+- Always run `yarn blotter:check` when `CHANGELOG.md` or `package.json` version changes.
+- If check fails for missing release line, AI must read that changelog section and add a concise one-liner release entry.
+- AI must ignore manual entries for release coverage logic.
+- Manual dev messages should be added through `yarn blotter` / `yarn blotter:manual`.
+
 ## Agent Workflow
 
 ### Verify Before Done

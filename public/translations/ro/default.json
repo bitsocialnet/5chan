@@ -11,14 +11,7 @@
   "whitepaper": "Whitepaper",
   "token": "Token",
   "start_new_thread": "Începeți un nou fir de discuție",
-  "show_stats": "Afișează statistici",
   "hide": "Ascunde",
-  "board_stats_hour": "În ultima oră, <1>{{userCount}}</1> utilizatori au făcut <1>{{postCount}}</1> postări",
-  "board_stats_day": "În ultima zi, <1>{{userCount}}</1> utilizatori au făcut <1>{{postCount}}</1> postări",
-  "board_stats_week": "În ultima săptămână, <1>{{userCount}}</1> utilizatori au făcut <1>{{postCount}}</1> postări",
-  "board_stats_month": "În ultima lună, <1>{{userCount}}</1> utilizatori au făcut <1>{{postCount}}</1> postări",
-  "board_stats_all": "De atunci, <1>{{userCount}}</1> utilizatori au făcut <1>{{postCount}}</1> postări",
-  "board_created": "Forum creat",
   "settings": "Setări",
   "home": "Acasă",
   "subscribe": "Abonare",
@@ -280,5 +273,11 @@
   "prev": "Anterior",
   "next": "Următorul",
   "bottom": "Jos",
-  "enable_infinite_scroll_tip": "Nu se aplică la multiboard-urile, care folosesc întotdeauna defilarea infinită."
+  "enable_infinite_scroll_tip": "Nu se aplică la multiboard-urile, care folosesc întotdeauna defilarea infinită.",
+  "blotter": "Anunțuri",
+  "date": "Dată",
+  "hide_blotter": "Ascunde Blotter",
+  "message": "Mesaj",
+  "show_all": "Afișează toate",
+  "show_blotter": "Afișează Blotter"
 }

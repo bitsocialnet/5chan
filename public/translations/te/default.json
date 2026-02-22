@@ -11,14 +11,7 @@
   "whitepaper": "వైట్‌పేపర్",
   "token": "టోకెన్",
   "start_new_thread": "కొత్త థ్రెడ్‌ను ప్రారంభించండి",
-  "show_stats": "సాంకేతికాలను చూపించు",
   "hide": "దాచు",
-  "board_stats_hour": "గత గంటలో, <1>{{userCount}}</1> యూజర్‌లు <1>{{postCount}}</1> పోస్టులు చేశారు",
-  "board_stats_day": "గత రోజు, <1>{{userCount}}</1> యూజర్‌లు <1>{{postCount}}</1> పోస్టులు చేశారు",
-  "board_stats_week": "గత వారం, <1>{{userCount}}</1> వాడుకరులు <1>{{postCount}}</1> పోస్టులు చేశారు",
-  "board_stats_month": "గత నెలలో, <1>{{userCount}}</1> వాడుకరులు <1>{{postCount}}</1> పోస్టులు చేశారు",
-  "board_stats_all": "అప్పుడు నుండి, <1>{{userCount}}</1> వాడుకరులు <1>{{postCount}}</1> పోస్టులు చేశారు",
-  "board_created": "బోర్డు సృష్టించబడింది",
   "settings": "అమరికలు",
   "home": "హోమ్",
   "subscribe": "చేరండి",
@@ -280,5 +273,11 @@
   "prev": "మునుపటి",
   "next": "తదుపరి",
   "bottom": "క్రింద",
-  "enable_infinite_scroll_tip": "మల్టీబోర్డ్‌లకు వర్తించదు, అవి ఎల్లప్పుడూ అనంత స్క్రాల్ ఉపయోగిస్తాయి."
+  "enable_infinite_scroll_tip": "మల్టీబోర్డ్‌లకు వర్తించదు, అవి ఎల్లప్పుడూ అనంత స్క్రాల్ ఉపయోగిస్తాయి.",
+  "blotter": "ప్రకటనలు",
+  "date": "తేదీ",
+  "hide_blotter": "బ్లాటర్ దాచండి",
+  "message": "సందేశం",
+  "show_all": "అన్నీ చూపించు",
+  "show_blotter": "బ్లాటర్ చూపించు"
 }
