@@ -39,7 +39,7 @@ import usePostNumberStore from '../../stores/use-post-number-store';
 import { alertChallengeVerificationFailed } from '../../lib/utils/challenge-utils';
 import useQuotedByMap from '../../hooks/use-quoted-by-map';
 import useProgressiveRender from '../../hooks/use-progressive-render';
-import { REPLIES_PER_PAGE } from '../../lib/constants';
+import { BOARD_REPLIES_PREVIEW_FETCH_SIZE, BOARD_REPLIES_PREVIEW_VISIBLE_COUNT, REPLIES_PER_PAGE } from '../../lib/constants';
 
 const { addChallenge } = useChallengesStore.getState();
 
@@ -403,17 +403,13 @@ const PostMediaContent = ({ post, link }: { post: any; link: string }) => {
   );
 };
 
-const ReplyBacklinks = ({ post, quotedByMap }: PostProps) => {
+interface ReplyBacklinksProps extends PostProps {
+  directRepliesByParentCid?: Map<string, Comment[]>;
+}
+
+const ReplyBacklinks = ({ post, quotedByMap, directRepliesByParentCid }: ReplyBacklinksProps) => {
   const { cid, parentCid } = post || {};
-  const repliesResult = useReplies({
-    comment: post,
-    sortType: 'old',
-    flat: true,
-    accountComments: { newerThan: Infinity, append: true },
-  });
-  const { replies } = repliesResult;
-  const updatedReplies = (repliesResult as { updatedReplies?: Comment[] }).updatedReplies;
-  const repliesForRender = updatedReplies?.length ? updatedReplies : replies || [];
+  const directReplies = directRepliesByParentCid?.get(cid) || [];
 
   const opBacklinks =
     cid &&
@@ -426,9 +422,9 @@ const ReplyBacklinks = ({ post, quotedByMap }: PostProps) => {
       )
       .filter(Boolean);
 
-  const replyBacklinks = cid && parentCid && ((repliesForRender?.length || 0) > 0 || quotedByMap?.get(cid)?.length) && (
+  const replyBacklinks = cid && parentCid && (directReplies.length > 0 || quotedByMap?.get(cid)?.length) && (
     <>
-      {repliesForRender?.map(
+      {directReplies.map(
         (reply: Comment, index: number) =>
           reply?.parentCid === cid && reply?.cid && !(reply?.deleted || reply?.removed) && <ReplyQuotePreview key={index} isBacklinkReply={true} backlinkReply={reply} />,
       )}
@@ -451,7 +447,14 @@ const ReplyBacklinks = ({ post, quotedByMap }: PostProps) => {
   ) : null;
 };
 
-const Reply = ({ postReplyCount, reply, roles, threadNumber, quotedByMap }: PostProps) => {
+const Reply = ({
+  postReplyCount,
+  reply,
+  roles,
+  threadNumber,
+  quotedByMap,
+  directRepliesByParentCid,
+}: PostProps & { directRepliesByParentCid?: Map<string, Comment[]> }) => {
   const accountReply = useAccountComment({
     commentIndex: typeof reply?.index === 'number' ? reply.index : undefined,
   });
@@ -481,7 +484,7 @@ const Reply = ({ postReplyCount, reply, roles, threadNumber, quotedByMap }: Post
         >
           <PostInfoAndMedia post={post} postReplyCount={postReplyCount} roles={roles} threadNumber={threadNumber} />
           {!hidden && (!(removed || deleted) || ((removed || deleted) && reason)) && <CommentContent comment={post} />}
-          <ReplyBacklinks post={post} quotedByMap={quotedByMap} />
+          <ReplyBacklinks post={post} quotedByMap={quotedByMap} directRepliesByParentCid={directRepliesByParentCid} />
         </div>
       </div>
     </div>
@@ -511,13 +514,22 @@ const PostMobile = ({
   const directories = useDirectories();
   const boardPath = subplebbitAddress ? getBoardPath(subplebbitAddress, directories) : undefined;
   const linksCount = useCountLinksInReplies(post);
-  const repliesResult = useReplies({
-    comment: post,
+  const shouldFetchReplies = showReplies && !isModQueue;
+  const previewRepliesResult = useReplies({
+    comment: shouldFetchReplies && !showAllReplies ? post : undefined,
+    sortType: 'new',
+    flat: true,
+    repliesPerPage: BOARD_REPLIES_PREVIEW_FETCH_SIZE,
+    accountComments: { newerThan: Infinity, append: true },
+  });
+  const fullRepliesResult = useReplies({
+    comment: shouldFetchReplies && showAllReplies ? post : undefined,
     sortType: 'old',
     flat: true,
     repliesPerPage: REPLIES_PER_PAGE,
     accountComments: { newerThan: Infinity, append: true },
   });
+  const repliesResult = showAllReplies ? fullRepliesResult : previewRepliesResult;
   const { replies, hasMore, loadMore } = repliesResult;
   const updatedReplies = (repliesResult as { updatedReplies?: Comment[] }).updatedReplies;
   const repliesForRender = updatedReplies?.length ? updatedReplies : replies || [];
@@ -553,6 +565,21 @@ const PostMobile = ({
 
   // Filter out deleted replies with no children for both virtuoso and non-virtuoso rendering
   const filteredReplies = useMemo(() => repliesForRender.filter((reply) => !(reply.deleted && (reply.replyCount === 0 || !reply.replyCount))), [repliesForRender]);
+
+  const directRepliesByParentCid = useMemo(() => {
+    const map = new Map<string, Comment[]>();
+    for (const reply of filteredReplies) {
+      const directParentCid = reply?.parentCid;
+      if (!directParentCid || !reply?.cid) continue;
+      const existingReplies = map.get(directParentCid);
+      if (existingReplies) {
+        existingReplies.push(reply);
+      } else {
+        map.set(directParentCid, [reply]);
+      }
+    }
+    return map;
+  }, [filteredReplies]);
 
   const quotedByMap = useQuotedByMap(filteredReplies);
 
@@ -625,7 +652,7 @@ const PostMobile = ({
                 {shouldShowSnow() && <img src='assets/xmashat.gif' className={styles.xmasHat} alt='' />}
                 <PostInfoAndMedia post={post} postReplyCount={replyCount} roles={roles} threadNumber={post?.number} />
                 <CommentContent comment={post} />
-                <ReplyBacklinks post={post} quotedByMap={quotedByMap} />
+                <ReplyBacklinks post={post} quotedByMap={quotedByMap} directRepliesByParentCid={directRepliesByParentCid} />
               </div>
               {!isInPostView && !isInPendingPostView && (showReplies || isModQueue) && (
                 <div className={styles.postLink}>
@@ -673,7 +700,14 @@ const PostMobile = ({
                 data={filteredReplies}
                 itemContent={(index, reply) => (
                   <div className={styles.replyContainer}>
-                    <Reply postReplyCount={replyCount} reply={reply} roles={roles} threadNumber={post?.number} quotedByMap={quotedByMap} />
+                    <Reply
+                      postReplyCount={replyCount}
+                      reply={reply}
+                      roles={roles}
+                      threadNumber={post?.number}
+                      quotedByMap={quotedByMap}
+                      directRepliesByParentCid={directRepliesByParentCid}
+                    />
                   </div>
                 )}
                 useWindowScroll={true}
@@ -692,7 +726,14 @@ const PostMobile = ({
               !hasMore &&
               visibleReplies.map((reply, index) => (
                 <div key={index} className={styles.replyContainer}>
-                  <Reply postReplyCount={replyCount} reply={reply} roles={roles} threadNumber={post?.number} quotedByMap={quotedByMap} />
+                  <Reply
+                    postReplyCount={replyCount}
+                    reply={reply}
+                    roles={roles}
+                    threadNumber={post?.number}
+                    quotedByMap={quotedByMap}
+                    directRepliesByParentCid={directRepliesByParentCid}
+                  />
                 </div>
               ))}
             {/* Non-virtualized rendering for board view (last 5 replies) */}
@@ -701,9 +742,16 @@ const PostMobile = ({
               !isInPendingPostView &&
               repliesForRender &&
               showReplies &&
-              filteredReplies.slice(-5).map((reply, index) => (
+              filteredReplies.slice(-BOARD_REPLIES_PREVIEW_VISIBLE_COUNT).map((reply, index) => (
                 <div key={index} className={styles.replyContainer}>
-                  <Reply postReplyCount={replyCount} reply={reply} roles={roles} threadNumber={post?.number} quotedByMap={quotedByMap} />
+                  <Reply
+                    postReplyCount={replyCount}
+                    reply={reply}
+                    roles={roles}
+                    threadNumber={post?.number}
+                    quotedByMap={quotedByMap}
+                    directRepliesByParentCid={directRepliesByParentCid}
+                  />
                 </div>
               ))}
           </div>

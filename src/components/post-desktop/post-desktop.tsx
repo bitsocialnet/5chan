@@ -45,7 +45,8 @@ import { alertChallengeVerificationFailed } from '../../lib/utils/challenge-util
 import { usePublishCommentModeration } from '@plebbit/plebbit-react-hooks';
 import useQuotedByMap from '../../hooks/use-quoted-by-map';
 import useProgressiveRender from '../../hooks/use-progressive-render';
-import { REPLIES_PER_PAGE } from '../../lib/constants';
+import { BOARD_REPLIES_PREVIEW_FETCH_SIZE, BOARD_REPLIES_PREVIEW_VISIBLE_COUNT, REPLIES_PER_PAGE } from '../../lib/constants';
+import { computeOmittedCount, getPreviewDisplayReplies, getTotalReplyCount } from '../../lib/utils/replies-preview-utils';
 
 const { addChallenge } = useChallengesStore.getState();
 
@@ -699,17 +700,45 @@ const PostDesktop = ({
   const { hidden, unhide, hide } = useHide({ cid });
   const isHidden = hidden && !isInPostPageView;
 
-  const repliesResult = useReplies({
-    comment: post,
+  const { showOmittedReplies, setShowOmittedReplies } = useShowOmittedReplies();
+
+  const shouldFetchPreview = showReplies && !isModQueue && !showAllReplies && showOmittedReplies[cid] !== true;
+  const shouldFetchFull = showReplies && !isModQueue && (showAllReplies || showOmittedReplies[cid]);
+
+  const previewRepliesResult = useReplies({
+    comment: shouldFetchPreview ? post : undefined,
+    sortType: 'new',
+    flat: true,
+    repliesPerPage: BOARD_REPLIES_PREVIEW_FETCH_SIZE,
+    accountComments: { newerThan: Infinity, append: true },
+  });
+  const fullRepliesResult = useReplies({
+    comment: shouldFetchFull ? post : undefined,
     sortType: 'old',
     flat: true,
     repliesPerPage: REPLIES_PER_PAGE,
     accountComments: { newerThan: Infinity, append: true },
   });
-  const { replies, hasMore, loadMore } = repliesResult;
-  const updatedReplies = (repliesResult as { updatedReplies?: Comment[] }).updatedReplies;
-  const repliesForRender = updatedReplies?.length ? updatedReplies : replies || [];
-  const reset = (repliesResult as { reset?: () => Promise<void> }).reset;
+
+  const previewReplies = (previewRepliesResult as { updatedReplies?: Comment[] }).updatedReplies?.length
+    ? (previewRepliesResult as { updatedReplies?: Comment[] }).updatedReplies!
+    : previewRepliesResult.replies || [];
+  const fullReplies = (fullRepliesResult as { updatedReplies?: Comment[] }).updatedReplies?.length
+    ? (fullRepliesResult as { updatedReplies?: Comment[] }).updatedReplies!
+    : fullRepliesResult.replies || [];
+
+  const { hasMore, loadMore } = fullRepliesResult;
+  const reset = (fullRepliesResult as { reset?: () => Promise<void> }).reset;
+
+  const fullIsFetching = shouldFetchFull && fullReplies.length === 0 && fullRepliesResult.hasMore;
+
+  const repliesForRender = showAllReplies
+    ? fullReplies
+    : showOmittedReplies[cid]
+      ? fullReplies.length
+        ? fullReplies
+        : previewReplies
+      : getPreviewDisplayReplies(previewReplies, BOARD_REPLIES_PREVIEW_VISIBLE_COUNT);
   const setResetFunction = useFeedResetStore((s) => s.setResetFunction);
   useEffect(() => {
     if ((isInPostPageView || isInPendingPostView) && reset) {
@@ -732,13 +761,21 @@ const PostDesktop = ({
     prevCidsRef.current = cidsKey;
     registerComments(all);
   }, [post, repliesForRender, registerComments]);
-  const visiblelinksCount = useCountLinksInReplies(post, 5);
+  const visiblelinksCount = useCountLinksInReplies(post, BOARD_REPLIES_PREVIEW_VISIBLE_COUNT);
   const totalLinksCount = useCountLinksInReplies(post);
   const replyCount = repliesForRender.length;
 
-  const repliesCount = pinned ? replyCount : replyCount - 5;
+  const totalReplyCount = getTotalReplyCount({
+    replyCount: post?.replyCount,
+    fullLoadedCount: fullReplies.length,
+    previewLoadedCount: previewReplies.length,
+  });
+  const repliesCount = computeOmittedCount({
+    totalReplyCount,
+    visibleCount: BOARD_REPLIES_PREVIEW_VISIBLE_COUNT,
+    pinned,
+  });
   const linksCount = pinned ? totalLinksCount : totalLinksCount - visiblelinksCount;
-  const { showOmittedReplies, setShowOmittedReplies } = useShowOmittedReplies();
 
   const stateString = useStateString(post) || t('downloading_board');
   const hasFailedState = state === 'failed';
@@ -870,7 +907,7 @@ const PostDesktop = ({
           {!isHidden && !content && !(deleted || removed) && <div className={styles.spacer} />}
           {!isHidden && <CommentContent comment={post} />}
         </div>
-        {!isHidden && !isInPendingPostView && (replyCount > 5 || (pinned && repliesCount > 0)) && !isInPostPageView && (
+        {!isHidden && !isInPendingPostView && repliesCount > 0 && !isInPostPageView && (
           <span className={styles.summary}>
             <span
               className={`${showOmittedReplies[cid] ? styles.hideOmittedReplies : styles.showOmittedReplies} ${styles.omittedRepliesButtonWrapper}`}
@@ -939,14 +976,14 @@ const PostDesktop = ({
               />
             </div>
           ))}
-        {/* Non-virtualized rendering for board view (last 5 replies or show omitted) */}
+        {/* Non-virtualized rendering for board view (preview replies when collapsed, full when expanded) */}
         {!isHidden &&
           !showAllReplies &&
           !(pinned && !isInPostPageView && !showOmittedReplies[cid]) &&
           !isInPendingPostView &&
           repliesForRender &&
           showReplies &&
-          (showOmittedReplies[cid] ? filteredReplies : filteredReplies.slice(-5)).map((reply, index) => (
+          filteredReplies.map((reply, index) => (
             <div key={index} className={styles.replyContainer}>
               <Reply
                 reply={reply}
@@ -958,6 +995,11 @@ const PostDesktop = ({
               />
             </div>
           ))}
+        {!isHidden && !showAllReplies && showOmittedReplies[cid] && fullIsFetching && showReplies && filteredReplies.length > 0 && (
+          <div className={styles.stateString}>
+            <LoadingEllipsis string={t('loading')} />
+          </div>
+        )}
       </div>
       {!isInPendingPostView && stateString && !hasFailedState && state !== 'succeeded' && isInPostPageView && !(!showReplies && !showAllReplies) ? (
         <div className={styles.stateString}>
