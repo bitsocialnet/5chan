@@ -284,5 +284,6 @@
   "enable_infinite_scroll": "Végtelen görgetés engedélyezése",
   "prev": "Előző",
   "next": "Következő",
-  "bottom": "Alul"
+  "bottom": "Alul",
+  "enable_infinite_scroll_tip": "A többtáblás nézetekre nem vonatkozik, amelyek mindig végtelen görgetést használnak."
 }

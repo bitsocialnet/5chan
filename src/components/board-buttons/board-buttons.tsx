@@ -416,7 +416,9 @@ export const MobileBoardButtons = () => {
 
   const { filteredCount, searchText } = useCatalogFiltersStore();
   const enableInfiniteScroll = useFeedViewSettingsStore((state) => state.enableInfiniteScroll);
-  const showBottomButton = (isInCatalogView || isInPostView || isInPendingPostPage) && !enableInfiniteScroll;
+  const isMultiboard = isInAllView || isInSubscriptionsView || isInModView;
+  const effectiveInfiniteScroll = isMultiboard || enableInfiniteScroll;
+  const showBottomButton = (isInCatalogView || isInPostView || isInPendingPostPage) && !effectiveInfiniteScroll;
 
   // Check if we should show the vote button (only for directory boards)
   const directories = useDirectories();
@@ -539,7 +541,9 @@ export const DesktopBoardButtons = () => {
 
   const { filteredCount, searchText } = useCatalogFiltersStore();
   const enableInfiniteScroll = useFeedViewSettingsStore((state) => state.enableInfiniteScroll);
-  const showBottomButton = (isInCatalogView || isInPostView || isInPendingPostPage) && !enableInfiniteScroll;
+  const isMultiboard = isInAllView || isInSubscriptionsView || isInModView;
+  const effectiveInfiniteScroll = isMultiboard || enableInfiniteScroll;
+  const showBottomButton = (isInCatalogView || isInPostView || isInPendingPostPage) && !effectiveInfiniteScroll;
 
   // Check if we should show the vote button (only for directory boards)
   const directories = useDirectories();

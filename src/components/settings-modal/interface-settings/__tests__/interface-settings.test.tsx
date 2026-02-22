@@ -72,6 +72,11 @@ describe('InterfaceSettings', () => {
     setItemSpy.mockRestore();
   });
 
+  it('renders enable_infinite_scroll_tip under the infinite scroll checkbox', () => {
+    render(createElement(InterfaceSettings));
+    expect(container.textContent).toMatch(/enable_infinite_scroll_tip/i);
+  });
+
   it('renders enable_infinite_scroll checkbox unchecked by default', () => {
     render(createElement(InterfaceSettings));
     const label = Array.from(container.querySelectorAll('label')).find((l) => l.textContent?.toLowerCase().includes('enable_infinite_scroll'));

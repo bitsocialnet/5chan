@@ -284,5 +284,6 @@
   "enable_infinite_scroll": "启用无限滚动",
   "prev": "上一页",
   "next": "下一步",
-  "bottom": "底部"
+  "bottom": "底部",
+  "enable_infinite_scroll_tip": "不适用于多板视图，后者始终使用无限滚动。"
 }

@@ -284,5 +284,6 @@
   "enable_infinite_scroll": "Unendliches Scrollen aktivieren",
   "prev": "Zurück",
   "next": "Weiter",
-  "bottom": "Unten"
+  "bottom": "Unten",
+  "enable_infinite_scroll_tip": "Gilt nicht für Multiboards, die immer Endlos-Scrolling verwenden."
 }

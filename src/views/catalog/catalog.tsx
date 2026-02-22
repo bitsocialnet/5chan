@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
-import { Link, useLocation, useNavigationType, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useNavigationType, useParams } from 'react-router-dom';
 import { Trans, useTranslation } from 'react-i18next';
 import { Comment, useAccount, useFeed, useSubplebbit, useAccountComments } from '@plebbit/plebbit-react-hooks';
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
@@ -16,7 +16,7 @@ import useFeedResetStore from '../../stores/use-feed-reset-store';
 import useFeedViewSettingsStore from '../../stores/use-feed-view-settings-store';
 import useSortingStore from '../../stores/use-sorting-store';
 import useCatalogFiltersStore from '../../stores/use-catalog-filters-store';
-import { getSubplebbitAddress, isDirectoryBoard } from '../../lib/utils/route-utils';
+import { getSubplebbitAddress, isDirectoryBoard, normalizeMultiboardFeedPath } from '../../lib/utils/route-utils';
 import CatalogRow from '../../components/catalog-row';
 import LoadingEllipsis from '../../components/loading-ellipsis';
 import ErrorDisplay from '../../components/error-display/error-display';
@@ -34,6 +34,7 @@ interface CatalogFooterProps {
   onNewerPostsClick: () => void;
   isInAllView: boolean;
   isInSubscriptionsView: boolean;
+  isInModView: boolean;
   showMorePostsSuggestion: boolean;
   weeklyFeedLength: number;
   monthlyFeedLength: number;
@@ -56,6 +57,7 @@ const CatalogFooter = ({
   onNewerPostsClick,
   isInAllView,
   isInSubscriptionsView,
+  isInModView,
   showMorePostsSuggestion,
   weeklyFeedLength,
   monthlyFeedLength,
@@ -91,7 +93,7 @@ const CatalogFooter = ({
             />
           </div>
         ) : (
-          (isInAllView || isInSubscriptionsView) &&
+          (isInAllView || isInSubscriptionsView || isInModView) &&
           showMorePostsSuggestion &&
           (monthlyFeedLength > feedLength || yearlyFeedLength > monthlyFeedLength) &&
           (weeklyFeedLength > feedLength ? (
@@ -100,7 +102,11 @@ const CatalogFooter = ({
                 i18nKey='more_threads_last_week'
                 values={{ currentTimeFilterName, count: feedLength }}
                 components={{
-                  1: <Link to={(isInAllView ? '/all/catalog' : isInSubscriptionsView ? '/subs/catalog' : `/${boardPath}/catalog`) + '/1w'} />,
+                  1: (
+                    <Link
+                      to={(isInAllView ? '/all/catalog' : isInSubscriptionsView ? '/subs/catalog' : isInModView ? '/mod/catalog' : `/${boardPath}/catalog`) + '/1w'}
+                    />
+                  ),
                 }}
               />
             </div>
@@ -110,7 +116,11 @@ const CatalogFooter = ({
                 i18nKey='more_threads_last_month'
                 values={{ currentTimeFilterName, count: feedLength }}
                 components={{
-                  1: <Link to={(isInAllView ? '/all/catalog' : isInSubscriptionsView ? '/subs/catalog' : `/${boardPath}/catalog`) + '/1m'} />,
+                  1: (
+                    <Link
+                      to={(isInAllView ? '/all/catalog' : isInSubscriptionsView ? '/subs/catalog' : isInModView ? '/mod/catalog' : `/${boardPath}/catalog`) + '/1m'}
+                    />
+                  ),
                 }}
               />
             </div>
@@ -120,7 +130,11 @@ const CatalogFooter = ({
                 i18nKey='more_threads_last_year'
                 values={{ currentTimeFilterName, count: feedLength }}
                 components={{
-                  1: <Link to={(isInAllView ? '/all/catalog' : isInSubscriptionsView ? '/subs/catalog' : `/${boardPath}/catalog`) + '/1y'} />,
+                  1: (
+                    <Link
+                      to={(isInAllView ? '/all/catalog' : isInSubscriptionsView ? '/subs/catalog' : isInModView ? '/mod/catalog' : `/${boardPath}/catalog`) + '/1y'}
+                    />
+                  ),
                 }}
               />
             </div>
@@ -282,10 +296,16 @@ export interface CatalogProps {
 const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, timeFilterNameFromCache, isVisible = true }: CatalogProps) => {
   const { t } = useTranslation();
   const location = useLocation();
+  const navigate = useNavigate();
   const params = useParams();
 
   const isInAllView = viewType ? viewType === 'all' : false;
   const isInSubscriptionsView = viewType ? viewType === 'subs' : false;
+  const isInModView = viewType ? viewType === 'mod' : false;
+
+  const enableInfiniteScroll = useFeedViewSettingsStore((state) => state.enableInfiniteScroll);
+  const isForcedInfiniteScroll = isInAllView || isInSubscriptionsView || isInModView;
+  const effectiveInfiniteScroll = enableInfiniteScroll || isForcedInfiniteScroll;
 
   const directories = useDirectories();
   const resolvedAddressFromUrl = useResolvedSubplebbitAddress();
@@ -320,9 +340,17 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   const columnCount = Math.floor(useWindowWidth() / columnWidth);
   const postsPerPage = columnCount <= 2 ? 10 : columnCount === 3 ? 15 : columnCount === 4 ? 20 : 25;
 
-  const enableInfiniteScroll = useFeedViewSettingsStore((state) => state.enableInfiniteScroll);
-  const community = useDirectoryByAddress(isInAllView || isInSubscriptionsView ? undefined : subplebbitAddress);
+  const community = useDirectoryByAddress(isInAllView || isInSubscriptionsView || isInModView ? undefined : subplebbitAddress);
   const { guiPostsPerPage: boardPostsPerPage, maxGuiPages, paginationFeedPostsPerPage, infiniteFeedPostsPerPage } = useBoardFeedPageSize(community);
+
+  // Canonical redirect for multiboard catalog paths with numeric page segment (e.g. /all/catalog/1w/5 -> /all/catalog/1w)
+  useEffect(() => {
+    if (!(isInAllView || isInSubscriptionsView || isInModView)) return;
+    const canonical = normalizeMultiboardFeedPath(location.pathname);
+    if (location.pathname !== canonical) {
+      navigate(canonical, { replace: true });
+    }
+  }, [isInAllView, isInSubscriptionsView, isInModView, location.pathname, navigate]);
 
   const { timeFilterSeconds: timeFilterSecondsFromHook, timeFilterName: timeFilterNameFromHook } = useTimeFilter();
   const { sortType } = useSortingStore();
@@ -344,7 +372,13 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
 
   const feedOptions = useMemo(() => {
     const catalogPostsPerPage =
-      isInAllView || isInSubscriptionsView ? (enableInfiniteScroll ? 10 : 100) : enableInfiniteScroll ? infiniteFeedPostsPerPage : paginationFeedPostsPerPage;
+      isInAllView || isInSubscriptionsView || isInModView
+        ? effectiveInfiniteScroll
+          ? 10
+          : 100
+        : effectiveInfiniteScroll
+          ? infiniteFeedPostsPerPage
+          : paginationFeedPostsPerPage;
 
     const options: any = {
       subplebbitAddresses,
@@ -353,7 +387,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
       filter: createCombinedFilter(filterItems, searchText, subplebbitAddress || 'all', handleFilterMatch),
     };
 
-    if (isInAllView || isInSubscriptionsView) {
+    if (isInAllView || isInSubscriptionsView || isInModView) {
       options.newerThan = timeFilterSeconds;
     }
 
@@ -363,7 +397,8 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
     sortType,
     isInAllView,
     isInSubscriptionsView,
-    enableInfiniteScroll,
+    isInModView,
+    effectiveInfiniteScroll,
     infiniteFeedPostsPerPage,
     paginationFeedPostsPerPage,
     timeFilterSeconds,
@@ -420,8 +455,8 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   }, [feed, filteredComments]);
 
   const cappedFeed = useMemo(
-    () => (enableInfiniteScroll ? combinedFeed : combinedFeed.slice(0, boardPostsPerPage * maxGuiPages)),
-    [enableInfiniteScroll, combinedFeed, boardPostsPerPage, maxGuiPages],
+    () => (effectiveInfiniteScroll ? combinedFeed : combinedFeed.slice(0, boardPostsPerPage * maxGuiPages)),
+    [effectiveInfiniteScroll, combinedFeed, boardPostsPerPage, maxGuiPages],
   );
 
   useEffect(() => {
@@ -499,13 +534,14 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
           onNewerPostsClick={handleNewerPostsButtonClick}
           isInAllView={isInAllView}
           isInSubscriptionsView={isInSubscriptionsView}
+          isInModView={isInModView}
           showMorePostsSuggestion={showMorePostsSuggestion}
           weeklyFeedLength={weeklyFeedLength}
           monthlyFeedLength={monthlyFeedLength}
           yearlyFeedLength={yearlyFeedLength}
           boardPath={boardPath}
           currentTimeFilterName={currentTimeFilterName}
-          showLoadingEllipsis={enableInfiniteScroll}
+          showLoadingEllipsis={effectiveInfiniteScroll}
         />
       ),
     }),
@@ -518,13 +554,14 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
       handleNewerPostsButtonClick,
       isInAllView,
       isInSubscriptionsView,
+      isInModView,
       showMorePostsSuggestion,
       weeklyFeedLength,
       monthlyFeedLength,
       yearlyFeedLength,
       boardPath,
       currentTimeFilterName,
-      enableInfiniteScroll,
+      effectiveInfiniteScroll,
     ],
   );
 
@@ -650,7 +687,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
       <div className={styles.catalog}>
         {processedFeed?.length !== 0 ? (
           <>
-            {enableInfiniteScroll ? (
+            {effectiveInfiniteScroll ? (
               hasMore ? (
                 <Virtuoso
                   increaseViewportBy={{ bottom: 1200, top: 1200 }}
@@ -678,6 +715,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
                     onNewerPostsClick={handleNewerPostsButtonClick}
                     isInAllView={isInAllView}
                     isInSubscriptionsView={isInSubscriptionsView}
+                    isInModView={isInModView}
                     showMorePostsSuggestion={showMorePostsSuggestion}
                     weeklyFeedLength={weeklyFeedLength}
                     monthlyFeedLength={monthlyFeedLength}
@@ -702,6 +740,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
                   onNewerPostsClick={handleNewerPostsButtonClick}
                   isInAllView={isInAllView}
                   isInSubscriptionsView={isInSubscriptionsView}
+                  isInModView={isInModView}
                   showMorePostsSuggestion={showMorePostsSuggestion}
                   weeklyFeedLength={weeklyFeedLength}
                   monthlyFeedLength={monthlyFeedLength}

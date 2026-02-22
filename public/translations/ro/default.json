@@ -284,5 +284,6 @@
   "enable_infinite_scroll": "Activează derularea infinită",
   "prev": "Anterior",
   "next": "Următorul",
-  "bottom": "Jos"
+  "bottom": "Jos",
+  "enable_infinite_scroll_tip": "Nu se aplică la multiboard-urile, care folosesc întotdeauna defilarea infinită."
 }

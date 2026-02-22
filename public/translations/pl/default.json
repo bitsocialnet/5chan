@@ -284,5 +284,6 @@
   "enable_infinite_scroll": "Włącz nieskończone przewijanie",
   "prev": "Poprz.",
   "next": "Dalej",
-  "bottom": "Dół"
+  "bottom": "Dół",
+  "enable_infinite_scroll_tip": "Nie dotyczy multiboardów, które zawsze używają nieskończonego przewijania."
 }

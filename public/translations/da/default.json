@@ -284,5 +284,6 @@
   "enable_infinite_scroll": "Aktiver uendelig rulning",
   "prev": "Forrige",
   "next": "Næste",
-  "bottom": "Bund"
+  "bottom": "Bund",
+  "enable_infinite_scroll_tip": "Gælder ikke for multiboard, som altid bruger uendelig scroll."
 }

@@ -284,5 +284,6 @@
   "enable_infinite_scroll": "Aktivera oändlig scrollning",
   "prev": "Föreg.",
   "next": "Nästa",
-  "bottom": "Botten"
+  "bottom": "Botten",
+  "enable_infinite_scroll_tip": "Gäller inte multiboard, som alltid använder oändlig scroll."
 }

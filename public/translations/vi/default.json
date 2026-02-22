@@ -284,5 +284,6 @@
   "enable_infinite_scroll": "Bật cuộn vô hạn",
   "prev": "Trước",
   "next": "Tiếp theo",
-  "bottom": "Dưới cùng"
+  "bottom": "Dưới cùng",
+  "enable_infinite_scroll_tip": "Không áp dụng cho đa bảng, luôn sử dụng cuộn vô hạn."
 }

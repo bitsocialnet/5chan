@@ -284,5 +284,6 @@
   "enable_infinite_scroll": "Povolit nekonečné posouvání",
   "prev": "Předchozí",
   "next": "Další",
-  "bottom": "Dole"
+  "bottom": "Dole",
+  "enable_infinite_scroll_tip": "Netýká se multidesek, které vždy používají nekonečné posouvání."
 }

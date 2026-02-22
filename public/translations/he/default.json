@@ -284,5 +284,6 @@
   "enable_infinite_scroll": "הפעל גלילה אינסופית",
   "prev": "הקודם",
   "next": "הבא",
-  "bottom": "תחתית"
+  "bottom": "תחתית",
+  "enable_infinite_scroll_tip": "לא חל על לוחות מרובים, שתמיד משתמשים בגלילה אינסופית."
 }

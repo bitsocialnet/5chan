@@ -284,5 +284,6 @@
   "enable_infinite_scroll": "Aktivizo rrëshqitjen e pafundme",
   "prev": "Paraprake",
   "next": "Tjetra",
-  "bottom": "Poshtë"
+  "bottom": "Poshtë",
+  "enable_infinite_scroll_tip": "Nuk aplikohet për multiboard-et, që gjithmonë përdorin rrëshqitje të pafundme."
 }

@@ -284,5 +284,6 @@
   "enable_infinite_scroll": "Sonsuz kaydırmayı etkinleştir",
   "prev": "Önceki",
   "next": "İleri",
-  "bottom": "Alt"
+  "bottom": "Alt",
+  "enable_infinite_scroll_tip": "Her zaman sonsuz kaydırma kullanan çoklu panolar için geçerli değildir."
 }

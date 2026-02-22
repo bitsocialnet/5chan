@@ -153,6 +153,7 @@ const InterfaceSettings = () => {
           <input type='checkbox' checked={enableInfiniteScroll} onChange={(e) => setEnableInfiniteScroll(e.target.checked)} />
           {capitalize(t('enable_infinite_scroll'))}
         </label>
+        <div className={styles.settingTip}>{capitalize(t('enable_infinite_scroll_tip'))}</div>
       </div>
     </div>
   );

@@ -284,5 +284,6 @@
   "enable_infinite_scroll": "Activer le défilement infini",
   "prev": "Précédent",
   "next": "Suivant",
-  "bottom": "Bas"
+  "bottom": "Bas",
+  "enable_infinite_scroll_tip": "Ne s'applique pas aux multiboards, qui utilisent toujours le défilement infini."
 }

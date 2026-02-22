@@ -284,5 +284,6 @@
   "enable_infinite_scroll": "Paganahin ang walang hanggang scroll",
   "prev": "Nakaraan",
   "next": "Susunod",
-  "bottom": "Ibaba"
+  "bottom": "Ibaba",
+  "enable_infinite_scroll_tip": "Hindi naaangkop sa mga multiboard, na palaging gumagamit ng walang hanggang scroll."
 }

@@ -284,5 +284,6 @@
   "enable_infinite_scroll": "Activar desplazamiento infinito",
   "prev": "Anterior",
   "next": "Siguiente",
-  "bottom": "Abajo"
+  "bottom": "Abajo",
+  "enable_infinite_scroll_tip": "No aplica a los multiboard, que siempre usan scroll infinito."
 }

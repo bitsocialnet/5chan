@@ -284,5 +284,6 @@
   "enable_infinite_scroll": "Oneindig scrollen inschakelen",
   "prev": "Vorige",
   "next": "Volgende",
-  "bottom": "Onder"
+  "bottom": "Onder",
+  "enable_infinite_scroll_tip": "Geldt niet voor multiboards, die altijd oneindig scrollen gebruiken."
 }

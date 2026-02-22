@@ -284,5 +284,6 @@
   "enable_infinite_scroll": "Ativar rolagem infinita",
   "prev": "Anterior",
   "next": "Próximo",
-  "bottom": "Inferior"
+  "bottom": "Inferior",
+  "enable_infinite_scroll_tip": "Não se aplica a multiboard, que sempre usam rolagem infinita."
 }

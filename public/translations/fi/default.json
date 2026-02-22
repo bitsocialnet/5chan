@@ -284,5 +284,6 @@
   "enable_infinite_scroll": "Ota ääretön vieritys käyttöön",
   "prev": "Edell.",
   "next": "Seuraava",
-  "bottom": "Pohja"
+  "bottom": "Pohja",
+  "enable_infinite_scroll_tip": "Ei koske monilautalistauksia, jotka aina käyttävät ääretöntä vieritystä."
 }

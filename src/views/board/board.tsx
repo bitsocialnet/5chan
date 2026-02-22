@@ -16,7 +16,7 @@ import useSortingStore from '../../stores/use-sorting-store';
 import useFeedViewSettingsStore from '../../stores/use-feed-view-settings-store';
 import { useBoardFeedPageSize } from '../../hooks/use-board-feed-page-size';
 import { getPageSlice } from '../../lib/utils/board-feed-pagination';
-import { getPageFromFeedPath, getSubplebbitAddress, isDirectoryBoard, stripPageFromFeedPath } from '../../lib/utils/route-utils';
+import { getPageFromFeedPath, getSubplebbitAddress, isDirectoryBoard, normalizeMultiboardFeedPath, stripPageFromFeedPath } from '../../lib/utils/route-utils';
 import ErrorDisplay from '../../components/error-display/error-display';
 import LoadingEllipsis from '../../components/loading-ellipsis';
 import BoardPagination from '../../components/board-pagination';
@@ -209,6 +209,8 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
   const timeFilterSeconds = timeFilterNameFromCache ? timeFilterNameToSeconds(timeFilterNameFromCache) : timeFilterSecondsFromHook;
 
   const enableInfiniteScroll = useFeedViewSettingsStore((state) => state.enableInfiniteScroll);
+  const isForcedInfiniteScroll = isInAllView || isInSubscriptionsView || isInModView;
+  const effectiveInfiniteScroll = enableInfiniteScroll || isForcedInfiniteScroll;
   const community = useDirectoryByAddress(isInAllView || isInSubscriptionsView || isInModView ? undefined : subplebbitAddress);
   const { guiPostsPerPage, maxGuiPages, paginationFeedPostsPerPage, infiniteFeedPostsPerPage } = useBoardFeedPageSize(community);
 
@@ -216,13 +218,13 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
     () => ({
       subplebbitAddresses,
       sortType,
-      postsPerPage: enableInfiniteScroll ? infiniteFeedPostsPerPage : paginationFeedPostsPerPage,
+      postsPerPage: effectiveInfiniteScroll ? infiniteFeedPostsPerPage : paginationFeedPostsPerPage,
       ...(isInAllView || isInSubscriptionsView || isInModView ? { newerThan: timeFilterSeconds } : {}),
     }),
     [
       subplebbitAddresses,
       sortType,
-      enableInfiniteScroll,
+      effectiveInfiniteScroll,
       infiniteFeedPostsPerPage,
       paginationFeedPostsPerPage,
       isInAllView,
@@ -235,7 +237,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
   const { feed, hasMore, loadMore, reset, subplebbitAddressesWithNewerPosts } = useFeed(feedOptions);
   const { accountComments } = useAccountComments();
 
-  const feedContextKey = `${isInAllView ? 'all' : isInSubscriptionsView ? 'subs' : isInModView ? 'mod' : (subplebbitAddress ?? 'board')}-${sortType}-${timeFilterSeconds}-${viewType ?? 'board'}-${enableInfiniteScroll}`;
+  const feedContextKey = `${isInAllView ? 'all' : isInSubscriptionsView ? 'subs' : isInModView ? 'mod' : (subplebbitAddress ?? 'board')}-${sortType}-${timeFilterSeconds}-${viewType ?? 'board'}-${effectiveInfiniteScroll}`;
   const pathWithoutSettings = location.pathname.replace(/\/settings$/, '');
   const currentPage = getPageFromFeedPath(pathWithoutSettings);
   const paginationBasePath = stripPageFromFeedPath(pathWithoutSettings);
@@ -279,30 +281,40 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
   }, [feed, filteredComments]);
 
   const cappedFeed = useMemo(
-    () => (enableInfiniteScroll ? combinedFeed : combinedFeed.slice(0, guiPostsPerPage * maxGuiPages)),
-    [enableInfiniteScroll, combinedFeed, guiPostsPerPage, maxGuiPages],
+    () => (effectiveInfiniteScroll ? combinedFeed : combinedFeed.slice(0, guiPostsPerPage * maxGuiPages)),
+    [effectiveInfiniteScroll, combinedFeed, guiPostsPerPage, maxGuiPages],
   );
   const totalPages = useMemo(() => Math.min(maxGuiPages, Math.ceil(cappedFeed.length / guiPostsPerPage) || 1), [cappedFeed.length, guiPostsPerPage, maxGuiPages]);
   const currentPageFeed = useMemo(
-    () => (enableInfiniteScroll ? [] : getPageSlice(cappedFeed, currentPage, guiPostsPerPage, maxGuiPages)),
-    [enableInfiniteScroll, cappedFeed, currentPage, guiPostsPerPage, maxGuiPages],
+    () => (effectiveInfiniteScroll ? [] : getPageSlice(cappedFeed, currentPage, guiPostsPerPage, maxGuiPages)),
+    [effectiveInfiniteScroll, cappedFeed, currentPage, guiPostsPerPage, maxGuiPages],
   );
 
   const navigate = useNavigate();
+
+  // Redirect multiboard paths with page-number segments to normalized path (infinite-scroll only)
   useEffect(() => {
-    if (!enableInfiniteScroll && currentPage > totalPages && totalPages > 0) {
+    if (!isForcedInfiniteScroll) return;
+    const normalized = normalizeMultiboardFeedPath(location.pathname);
+    if (normalized !== location.pathname) {
+      navigate(normalized, { replace: true });
+    }
+  }, [isForcedInfiniteScroll, location.pathname, navigate]);
+
+  useEffect(() => {
+    if (!effectiveInfiniteScroll && currentPage > totalPages && totalPages > 0) {
       const targetPage = totalPages;
       const targetPath = targetPage === 1 ? paginationBasePath : `${paginationBasePath}/${targetPage}`;
-      navigate(targetPage === 1 ? paginationBasePath : `${paginationBasePath}/${targetPage}`, { replace: true });
+      navigate(targetPath, { replace: true });
     }
-  }, [enableInfiniteScroll, currentPage, totalPages, paginationBasePath, navigate]);
+  }, [effectiveInfiniteScroll, currentPage, totalPages, paginationBasePath, navigate]);
 
   // Scroll to top instantly when page changes in pagination mode
   useEffect(() => {
-    if (!enableInfiniteScroll) {
+    if (!effectiveInfiniteScroll) {
       window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     }
-  }, [enableInfiniteScroll, currentPage]);
+  }, [effectiveInfiniteScroll, currentPage]);
 
   useEffect(() => {
     if (filteredComments.length > 0 && !resetTriggeredRef.current) {
@@ -383,7 +395,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
           subplebbitState={subplebbitState}
           subscriptionsLength={subscriptions?.length || 0}
           accountSubplebbitAddressesLength={accountSubplebbitAddresses?.length || 0}
-          showLoadingEllipsis={enableInfiniteScroll || combinedFeed.length === 0}
+          showLoadingEllipsis={effectiveInfiniteScroll || combinedFeed.length === 0}
         />
       ),
     }),
@@ -406,7 +418,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
       subplebbitState,
       subscriptions?.length,
       accountSubplebbitAddresses?.length,
-      enableInfiniteScroll,
+      effectiveInfiniteScroll,
       combinedFeed.length,
     ],
   );
@@ -474,7 +486,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
           </div>
         )}
         {/* Infinite mode: Virtuoso when hasMore, else plain list */}
-        {enableInfiniteScroll ? (
+        {effectiveInfiniteScroll ? (
           hasMore ? (
             <Virtuoso
               increaseViewportBy={{ bottom: 1200, top: 1200 }}

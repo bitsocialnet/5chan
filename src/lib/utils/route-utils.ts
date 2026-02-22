@@ -150,6 +150,43 @@ export const BOARD_PAGE_REGEX = /^([1-9]|10)$/;
 
 export const isBoardFeedPageNumber = (segment: string): boolean => BOARD_PAGE_REGEX.test(segment);
 
+/** Internal: check if segment is a multiboard root (all, subs, mod) */
+function isMultiboardRoot(segment: string): boolean {
+  return segment === 'all' || segment === 'subs' || segment === 'mod';
+}
+
+/** Internal: check if pathname is a multiboard feed path (starts with /all, /subs, or /mod) */
+function isMultiboardFeedPath(pathname: string): boolean {
+  const trimmed = pathname.replace(/\/$/, '');
+  const segments = trimmed.split('/').filter(Boolean);
+  return segments.length > 0 && isMultiboardRoot(segments[0]);
+}
+
+/**
+ * Normalize multiboard feed paths by removing trailing page-number segments (1–10),
+ * while preserving /settings and valid time-filter segments.
+ * Non-multiboard paths are returned unchanged.
+ */
+export const normalizeMultiboardFeedPath = (pathname: string): string => {
+  let path = pathname.replace(/\/$/, '');
+  if (!isMultiboardFeedPath(path)) {
+    return pathname;
+  }
+
+  const hasSettings = path.endsWith('/settings');
+  if (hasSettings) {
+    path = path.replace(/\/settings$/, '');
+  }
+
+  const segments = path.split('/').filter(Boolean);
+  if (segments.length > 1 && isBoardFeedPageNumber(segments[segments.length - 1])) {
+    const newPath = '/' + segments.slice(0, -1).join('/');
+    return hasSettings ? newPath + '/settings' : newPath;
+  }
+
+  return hasSettings ? path + '/settings' : path;
+};
+
 /** Strip trailing page number (1–10) from path for feed cache key */
 export const stripPageFromFeedPath = (path: string): string => {
   const segments = path.split('/').filter(Boolean);
