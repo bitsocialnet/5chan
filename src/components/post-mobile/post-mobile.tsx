@@ -9,7 +9,7 @@ import { shouldShowSnow } from '../../lib/snow';
 import { getHasThumbnail } from '../../lib/utils/media-utils';
 import { getTextColorForBackground, hashStringToColor } from '../../lib/utils/post-utils';
 import { getFormattedDate, getFormattedTimeAgo } from '../../lib/utils/time-utils';
-import { isAllView, isModQueueView, isPendingPostView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
+import { isAllView, isModQueueView, isModView, isPendingPostView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import { formatUserIDForDisplay } from '../../lib/utils/string-utils';
 import useModQueueStore from '../../stores/use-mod-queue-store';
 import { useDirectories } from '../../hooks/use-directories';
@@ -59,6 +59,14 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
   const { author, cid, deleted, link, linkHeight, linkWidth, locked, parentCid, pinned, postCid, reason, removed, state, subplebbitAddress, timestamp, thumbnailUrl } =
     post || {};
   const boardPath = subplebbitAddress ? getBoardPath(subplebbitAddress, directories) : undefined;
+  const displayBoardPath =
+    boardPath && subplebbitAddress
+      ? boardPath !== subplebbitAddress
+        ? boardPath
+        : subplebbitAddress.endsWith('.eth') || subplebbitAddress.endsWith('.sol')
+          ? subplebbitAddress
+          : Plebbit.getShortAddress({ address: subplebbitAddress })
+      : undefined;
   const isReply = parentCid;
   const title = post?.title?.trim();
   const { address, shortAddress } = author || {};
@@ -70,6 +78,7 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
   const isInAllView = isAllView(location.pathname);
   const isInPostPageView = isPostPageView(location.pathname, params);
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, params);
+  const isInModView = isModView(location.pathname);
   const isInModQueueView = isModQueueView(location.pathname);
   const { getAlertThresholdSeconds } = useModQueueStore();
   const currentTime = useCurrentTime();
@@ -304,10 +313,10 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
             )}
           </span>
           <span className={styles.dateTimePostNum}>
-            {subplebbitAddress && (isInAllView || isInSubscriptionsView) && !isReply && boardPath && (
+            {subplebbitAddress && (isInAllView || isInSubscriptionsView || isInModView) && !isReply && boardPath && displayBoardPath && (
               <div className={styles.postNumLink}>
                 {' '}
-                <Link to={`/${boardPath}`}>Board: {boardPath}</Link>
+                <Link to={`/${boardPath}`}>Board: {displayBoardPath}</Link>
               </div>
             )}
             {isInModQueueView && isOverThreshold ? (

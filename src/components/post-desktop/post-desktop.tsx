@@ -9,7 +9,7 @@ import { CommentMediaInfo, getDisplayMediaInfoType, getHasThumbnail, getMediaDim
 import { hashStringToColor, getTextColorForBackground } from '../../lib/utils/post-utils';
 import { getFormattedDate, getFormattedTimeAgo } from '../../lib/utils/time-utils';
 import { isValidURL } from '../../lib/utils/url-utils';
-import { isAllView, isModQueueView, isPendingPostView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
+import { isAllView, isModQueueView, isModView, isPendingPostView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import { formatUserIDForDisplay } from '../../lib/utils/string-utils';
 import useModQueueStore from '../../stores/use-mod-queue-store';
 import { useDirectories } from '../../hooks/use-directories';
@@ -497,6 +497,7 @@ interface PostMediaProps {
   subplebbitAddress: string;
   isInAllView: boolean;
   isInSubscriptionsView: boolean;
+  isInModView: boolean;
 }
 
 const PostMedia = ({
@@ -511,6 +512,7 @@ const PostMedia = ({
   subplebbitAddress,
   isInAllView,
   isInSubscriptionsView,
+  isInModView,
 }: PostMediaProps) => {
   const { t } = useTranslation();
   const { url } = commentMediaInfo || {};
@@ -529,13 +531,19 @@ const PostMedia = ({
 
   const mediaDimensions = getMediaDimensions(commentMediaInfo);
   const boardPath = getBoardPath(subplebbitAddress, directories);
+  const displayBoardPath =
+    boardPath !== subplebbitAddress
+      ? boardPath
+      : subplebbitAddress.endsWith('.eth') || subplebbitAddress.endsWith('.sol')
+        ? subplebbitAddress
+        : Plebbit.getShortAddress({ address: subplebbitAddress });
 
   return (
     <div className={styles.file}>
       <div className={styles.fileText}>
-        {subplebbitAddress && (isInAllView || isInSubscriptionsView) && boardPath && !parentCid && (
+        {subplebbitAddress && (isInAllView || isInSubscriptionsView || isInModView) && boardPath && !parentCid && (
           <>
-            {t('board')}: <Link to={`/${boardPath}`}>{boardPath}</Link>{' '}
+            {t('board')}: <Link to={`/${boardPath}`}>{displayBoardPath}</Link>{' '}
           </>
         )}
         {t('link')}:{' '}
@@ -613,6 +621,7 @@ const Reply = ({
   const isInAllView = isAllView(location.pathname);
   const params = useParams();
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, params);
+  const isInModView = isModView(location.pathname);
 
   const commentMediaInfo = useCommentMediaInfo(link, thumbnailUrl, linkWidth, linkHeight);
   const hasThumbnail = getHasThumbnail(commentMediaInfo, link);
@@ -643,6 +652,7 @@ const Reply = ({
             subplebbitAddress={subplebbitAddress}
             isInAllView={isInAllView}
             isInSubscriptionsView={isInSubscriptionsView}
+            isInModView={isInModView}
           />
         )}
         {!hidden && (!(removed || deleted) || ((removed || deleted) && reason)) && <CommentContent comment={post} />}
@@ -673,8 +683,18 @@ const PostDesktop = ({
   const isInPostPageView = isPostPageView(location.pathname, params);
   const isInAllView = isAllView(location.pathname);
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, params);
+  const isInModView = isModView(location.pathname);
+  const isMultiboardView = isInAllView || isInSubscriptionsView || isInModView;
   const directories = useDirectories();
   const boardPath = subplebbitAddress ? getBoardPath(subplebbitAddress, directories) : undefined;
+  const displayBoardPath =
+    boardPath && subplebbitAddress
+      ? boardPath !== subplebbitAddress
+        ? boardPath
+        : subplebbitAddress.endsWith('.eth') || subplebbitAddress.endsWith('.sol')
+          ? subplebbitAddress
+          : Plebbit.getShortAddress({ address: subplebbitAddress })
+      : undefined;
 
   const { hidden, unhide, hide } = useHide({ cid });
   const isHidden = hidden && !isInPostPageView;
@@ -809,6 +829,13 @@ const PostDesktop = ({
           className={`${styles.opContainer} ${shouldShowSnow() && hasThumbnail ? styles.xmasHatWrapper : ''}`}
         >
           {shouldShowSnow() && hasThumbnail && <img src='assets/xmashat.gif' className={styles.xmasHat} alt='' />}
+          {!link && !parentCid && subplebbitAddress && isMultiboardView && boardPath && (
+            <div className={styles.file}>
+              <div className={styles.fileText}>
+                {t('board')}: <Link to={`/${boardPath}`}>{displayBoardPath}</Link>
+              </div>
+            </div>
+          )}
           {link && !isHidden && !(deleted || removed) && isValidURL(link) && (
             <PostMedia
               commentMediaInfo={commentMediaInfo}
@@ -822,6 +849,7 @@ const PostDesktop = ({
               subplebbitAddress={subplebbitAddress}
               isInAllView={isInAllView}
               isInSubscriptionsView={isInSubscriptionsView}
+              isInModView={isInModView}
             />
           )}
           <PostInfo
