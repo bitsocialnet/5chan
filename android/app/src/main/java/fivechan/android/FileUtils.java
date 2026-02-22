@@ -14,21 +14,25 @@ public class FileUtils {
         String fileName = getFileName(context, uri);
         File file = new File(context.getCacheDir(), fileName);
 
-        try (InputStream inputStream = context.getContentResolver().openInputStream(uri);
-             FileOutputStream outputStream = new FileOutputStream(file)) {
-            byte[] buffer = new byte[4096];
-            int length;
-            while ((length = inputStream.read(buffer)) > 0) {
-                outputStream.write(buffer, 0, length);
+        try (InputStream inputStream = context.getContentResolver().openInputStream(uri)) {
+            if (inputStream == null) {
+                throw new java.io.IOException("Unable to open input stream for URI: " + uri);
             }
-            outputStream.flush();
+            try (FileOutputStream outputStream = new FileOutputStream(file)) {
+                byte[] buffer = new byte[4096];
+                int length;
+                while ((length = inputStream.read(buffer)) > 0) {
+                    outputStream.write(buffer, 0, length);
+                }
+                outputStream.flush();
+            }
             return file;
         }
     }
 
     private static String getFileName(Context context, Uri uri) {
         String result = null;
-        if (uri.getScheme().equals("content")) {
+        if ("content".equals(uri.getScheme())) {
             try (Cursor cursor = context.getContentResolver().query(uri, null, null, null, null)) {
                 if (cursor != null && cursor.moveToFirst()) {
                     int columnIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
@@ -39,10 +43,12 @@ public class FileUtils {
             }
         }
         if (result == null) {
-            result = uri.getPath();
-            int cut = result.lastIndexOf('/');
-            if (cut != -1) {
-                result = result.substring(cut + 1);
+            String path = uri.getPath();
+            if (path != null) {
+                int cut = path.lastIndexOf('/');
+                result = (cut != -1) ? path.substring(cut + 1) : path;
+            } else {
+                result = "unknown";
             }
         }
         return result;

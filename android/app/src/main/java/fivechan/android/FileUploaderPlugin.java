@@ -133,6 +133,7 @@ public class FileUploaderPlugin extends Plugin {
                 attempt.put("success", res.success);
                 if (res.success) {
                     attempt.put("url", res.url);
+                    attempts.add(attempt);
                     resolveWithSuccess(call, res.url, getFileName(fileUri), provider, attempts);
                     return;
                 }
@@ -144,6 +145,7 @@ public class FileUploaderPlugin extends Plugin {
                 attempt.put("success", res.success);
                 if (res.success) {
                     attempt.put("url", res.url);
+                    attempts.add(attempt);
                     resolveWithSuccess(call, res.url, getFileName(fileUri), provider, attempts);
                     return;
                 }
@@ -225,6 +227,9 @@ public class FileUploaderPlugin extends Plugin {
                 if (!response.isSuccessful()) {
                     return new MediaUploadResult(
                             false, null, "Unexpected response " + response.code());
+                }
+                if (response.body() == null) {
+                    return new MediaUploadResult(false, null, "Empty response body");
                 }
                 String url = response.body().string();
                 Log.d(TAG, "Catbox upload successful. URL: " + url);
