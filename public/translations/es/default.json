@@ -276,10 +276,10 @@
   "enable_infinite_scroll_tip": "No aplica a los multiboard, que siempre usan scroll infinito.",
   "blotter": "Anuncios",
   "date": "Fecha",
-  "hide_blotter": "Ocultar Blotter",
+  "hide_blotter": "Ocultar Anuncios",
   "message": "Mensaje",
   "show_all": "Mostrar todo",
-  "show_blotter": "Mostrar Blotter",
+  "show_blotter": "Mostrar Anuncios",
   "top": "Arriba",
   "reply_count": "Número de respuestas"
 }

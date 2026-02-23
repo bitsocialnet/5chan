@@ -276,10 +276,10 @@
   "enable_infinite_scroll_tip": "Nuk aplikohet për multiboard-et, që gjithmonë përdorin rrëshqitje të pafundme.",
   "blotter": "Njoftimet",
   "date": "Data",
-  "hide_blotter": "Fsheh Blotterin",
+  "hide_blotter": "Fshi Njoftimet",
   "message": "Mesazh",
   "show_all": "Shfaq të gjitha",
-  "show_blotter": "Shfaq Blotterin",
+  "show_blotter": "Shfaq Njoftimet",
   "top": "Lart",
   "reply_count": "Numri i përgjigjeve"
 }

@@ -276,10 +276,10 @@
   "enable_infinite_scroll_tip": "ไม่ใช้กับมัลติบอร์ด ซึ่งใช้การเลื่อนแบบไม่สิ้นสุดเสมอ",
   "blotter": "ประกาศ",
   "date": "วันที่",
-  "hide_blotter": "ซ่อน ประกาศ",
+  "hide_blotter": "ซ่อนประกาศ",
   "message": "ข้อความ",
   "show_all": "แสดงทั้งหมด",
-  "show_blotter": "แสดง ประกาศ",
+  "show_blotter": "แสดงประกาศ",
   "top": "บน",
   "reply_count": "จำนวนการตอบกลับ"
 }

@@ -276,10 +276,10 @@
   "enable_infinite_scroll_tip": "Không áp dụng cho đa bảng, luôn sử dụng cuộn vô hạn.",
   "blotter": "Thông báo",
   "date": "Ngày",
-  "hide_blotter": "Ẩn Blotter",
+  "hide_blotter": "Ẩn Thông báo",
   "message": "Tin nhắn",
   "show_all": "Hiển thị tất cả",
-  "show_blotter": "Hiển thị Blotter",
+  "show_blotter": "Hiển thị Thông báo",
   "top": "Trên",
   "reply_count": "Số lượng phản hồi"
 }

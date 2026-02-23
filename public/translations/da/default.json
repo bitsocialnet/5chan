@@ -276,10 +276,10 @@
   "enable_infinite_scroll_tip": "Gælder ikke for multiboard, som altid bruger uendelig scroll.",
   "blotter": "Meddelelser",
   "date": "Dato",
-  "hide_blotter": "Skjul Blotter",
+  "hide_blotter": "Skjul Meddelelser",
   "message": "Besked",
   "show_all": "Vis alle",
-  "show_blotter": "Vis Blotter",
+  "show_blotter": "Vis Meddelelser",
   "top": "Top",
   "reply_count": "Antal svar"
 }

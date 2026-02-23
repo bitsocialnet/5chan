@@ -276,10 +276,10 @@
   "enable_infinite_scroll_tip": "A többtáblás nézetekre nem vonatkozik, amelyek mindig végtelen görgetést használnak.",
   "blotter": "Közlemények",
   "date": "Dátum",
-  "hide_blotter": "Blotter elrejtése",
+  "hide_blotter": "Közlemények elrejtése",
   "message": "Üzenet",
   "show_all": "Összes megjelenítése",
-  "show_blotter": "Blotter megjelenítése",
+  "show_blotter": "Közlemények megjelenítése",
   "top": "Felül",
   "reply_count": "Válaszok száma"
 }

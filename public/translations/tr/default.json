@@ -276,10 +276,10 @@
   "enable_infinite_scroll_tip": "Her zaman sonsuz kaydırma kullanan çoklu panolar için geçerli değildir.",
   "blotter": "Duyurular",
   "date": "Tarih",
-  "hide_blotter": "Blotter'ı Gizle",
+  "hide_blotter": "Duyuruları Gizle",
   "message": "Mesaj",
   "show_all": "Tümünü göster",
-  "show_blotter": "Blotter'ı Göster",
+  "show_blotter": "Duyuruları Göster",
   "top": "Üst",
   "reply_count": "Yanıt sayısı"
 }

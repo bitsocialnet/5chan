@@ -276,10 +276,10 @@
   "enable_infinite_scroll_tip": "Geldt niet voor multiboards, die altijd oneindig scrollen gebruiken.",
   "blotter": "Mededelingen",
   "date": "Datum",
-  "hide_blotter": "Blotter verbergen",
+  "hide_blotter": "Mededelingen verbergen",
   "message": "Bericht",
   "show_all": "Alles tonen",
-  "show_blotter": "Blotter tonen",
+  "show_blotter": "Mededelingen tonen",
   "top": "Boven",
   "reply_count": "Aantal reacties"
 }

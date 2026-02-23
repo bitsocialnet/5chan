@@ -276,10 +276,10 @@
   "enable_infinite_scroll_tip": "Netýká se multidesek, které vždy používají nekonečné posouvání.",
   "blotter": "Oznámení",
   "date": "Datum",
-  "hide_blotter": "Skrýt Blotter",
+  "hide_blotter": "Skrýt Oznámení",
   "message": "Zpráva",
   "show_all": "Zobrazit vše",
-  "show_blotter": "Zobrazit Blotter",
+  "show_blotter": "Zobrazit Oznámení",
   "top": "Nahoru",
   "reply_count": "Počet odpovědí"
 }

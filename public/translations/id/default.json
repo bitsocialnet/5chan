@@ -276,10 +276,10 @@
   "enable_infinite_scroll_tip": "Tidak berlaku untuk papan ganda, yang selalu menggunakan scroll tak terbatas.",
   "blotter": "Pengumuman",
   "date": "Tanggal",
-  "hide_blotter": "Sembunyikan Blotter",
+  "hide_blotter": "Sembunyikan Pengumuman",
   "message": "Pesan",
   "show_all": "Tampilkan Semua",
-  "show_blotter": "Tampilkan Blotter",
+  "show_blotter": "Tampilkan Pengumuman",
   "top": "Atas",
   "reply_count": "Jumlah balasan"
 }

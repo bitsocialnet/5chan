@@ -276,10 +276,10 @@
   "enable_infinite_scroll_tip": "マルチボードには適用されません。マルチボードは常に無限スクロールを使用します。",
   "blotter": "お知らせ",
   "date": "日付",
-  "hide_blotter": "ブロッターを非表示",
+  "hide_blotter": "お知らせを非表示",
   "message": "メッセージ",
   "show_all": "すべて表示",
-  "show_blotter": "ブロッターを表示",
+  "show_blotter": "お知らせを表示",
   "top": "上",
   "reply_count": "返信数"
 }
