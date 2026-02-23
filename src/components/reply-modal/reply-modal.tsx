@@ -50,6 +50,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
   const lastSelectionEndRef = useRef(0);
   const lastProcessedQuoteInsertRequestIdRef = useRef(0);
   const { selectedText } = useSelectedTextStore();
+  const openEmpty = useReplyModalStore((state) => state.openEmpty);
   const quoteInsertRequestId = useReplyModalStore((state) => state.quoteInsertRequestId);
   const quoteInsertNumber = useReplyModalStore((state) => state.quoteInsertNumber);
   const quoteInsertSelectedText = useReplyModalStore((state) => state.quoteInsertSelectedText);
@@ -195,7 +196,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
   useEffect(() => {
     if (showReplyModal && textRef.current) {
       textRef.current.spellcheck = false;
-      textRef.current.value = `${defaultParentQuote}${selectedText || ''}`;
+      textRef.current.value = openEmpty ? selectedText || '' : `${defaultParentQuote}${selectedText || ''}`;
       const len = textRef.current.value.length;
       lastSelectionStartRef.current = len;
       lastSelectionEndRef.current = len;
@@ -209,7 +210,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
         }
       }, 100);
     }
-  }, [showReplyModal, defaultParentQuote, selectedText]);
+  }, [showReplyModal, openEmpty, defaultParentQuote, selectedText]);
 
   const handleContentInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     lastSelectionStartRef.current = e.target.selectionStart ?? e.target.value.length;

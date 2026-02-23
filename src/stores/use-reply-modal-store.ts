@@ -3,6 +3,8 @@ import useSelectedTextStore from './use-selected-text-store';
 
 interface ReplyModalState {
   showReplyModal: boolean;
+  /** True when opened via "Post a Reply" footer button — textarea should be empty, no quote. */
+  openEmpty: boolean;
   activeCid: string | null;
   parentNumber: number | null;
   threadNumber: number | null;
@@ -35,6 +37,7 @@ const getQuotedSelection = () => {
 
 const useReplyModalStore = create<ReplyModalState>((set, get) => ({
   showReplyModal: false,
+  openEmpty: false,
   activeCid: null,
   parentNumber: null,
   threadNumber: null,
@@ -50,6 +53,7 @@ const useReplyModalStore = create<ReplyModalState>((set, get) => ({
     useSelectedTextStore.getState().resetSelectedText();
     set({
       showReplyModal: false,
+      openEmpty: false,
       activeCid: null,
       parentNumber: null,
       threadNumber: null,
@@ -80,6 +84,7 @@ const useReplyModalStore = create<ReplyModalState>((set, get) => ({
     const scrollY = isMobile ? window.scrollY : 0;
 
     set({
+      openEmpty: false,
       activeCid: postCid,
       parentNumber: parentNumber ?? null,
       threadNumber: threadNumber ?? null,
@@ -95,6 +100,7 @@ const useReplyModalStore = create<ReplyModalState>((set, get) => ({
     const isMobile = window.innerWidth <= 768;
     const scrollY = isMobile ? window.scrollY : 0;
     set({
+      openEmpty: true,
       activeCid: postCid,
       parentNumber: null,
       threadNumber: threadNumber ?? null,
