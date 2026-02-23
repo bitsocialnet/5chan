@@ -280,5 +280,6 @@
   "message": "Zpráva",
   "show_all": "Zobrazit vše",
   "show_blotter": "Zobrazit Blotter",
-  "top": "Nahoru"
+  "top": "Nahoru",
+  "reply_count": "Počet odpovědí"
 }

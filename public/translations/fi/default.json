@@ -280,5 +280,6 @@
   "message": "Viesti",
   "show_all": "Näytä kaikki",
   "show_blotter": "Näytä ilmoitukset",
-  "top": "Ylös"
+  "top": "Ylös",
+  "reply_count": "Vastausten määrä"
 }

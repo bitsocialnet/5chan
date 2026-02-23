@@ -280,5 +280,6 @@
   "message": "Üzenet",
   "show_all": "Összes megjelenítése",
   "show_blotter": "Blotter megjelenítése",
-  "top": "Felül"
+  "top": "Felül",
+  "reply_count": "Válaszok száma"
 }

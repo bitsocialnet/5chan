@@ -280,5 +280,6 @@
   "message": "Mensaje",
   "show_all": "Mostrar todo",
   "show_blotter": "Mostrar Blotter",
-  "top": "Arriba"
+  "top": "Arriba",
+  "reply_count": "Número de respuestas"
 }

@@ -280,5 +280,6 @@
   "message": "Meddelande",
   "show_all": "Visa alla",
   "show_blotter": "Visa Meddelanden",
-  "top": "Topp"
+  "top": "Topp",
+  "reply_count": "Antal svar"
 }

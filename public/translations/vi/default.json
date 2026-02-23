@@ -280,5 +280,6 @@
   "message": "Tin nhắn",
   "show_all": "Hiển thị tất cả",
   "show_blotter": "Hiển thị Blotter",
-  "top": "Trên"
+  "top": "Trên",
+  "reply_count": "Số lượng phản hồi"
 }

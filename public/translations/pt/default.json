@@ -280,5 +280,6 @@
   "message": "Mensagem",
   "show_all": "Mostrar tudo",
   "show_blotter": "Mostrar Blotter",
-  "top": "Topo"
+  "top": "Topo",
+  "reply_count": "Número de respostas"
 }

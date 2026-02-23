@@ -280,5 +280,6 @@
   "hide_blotter": "Hide Blotter",
   "message": "Message",
   "show_all": "Show All",
-  "show_blotter": "Show Blotter"
+  "show_blotter": "Show Blotter",
+  "reply_count": "Reply count"
 }

@@ -280,5 +280,6 @@
   "message": "Wiadomość",
   "show_all": "Pokaż wszystko",
   "show_blotter": "Pokaż Ogłoszenia",
-  "top": "Góra"
+  "top": "Góra",
+  "reply_count": "Liczba odpowiedzi"
 }

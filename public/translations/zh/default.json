@@ -280,5 +280,6 @@
   "message": "消息",
   "show_all": "显示全部",
   "show_blotter": "显示公告",
-  "top": "顶部"
+  "top": "顶部",
+  "reply_count": "回复数"
 }

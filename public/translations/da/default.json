@@ -280,5 +280,6 @@
   "message": "Besked",
   "show_all": "Vis alle",
   "show_blotter": "Vis Blotter",
-  "top": "Top"
+  "top": "Top",
+  "reply_count": "Antal svar"
 }

@@ -280,5 +280,6 @@
   "message": "Bericht",
   "show_all": "Alles tonen",
   "show_blotter": "Blotter tonen",
-  "top": "Boven"
+  "top": "Boven",
+  "reply_count": "Aantal reacties"
 }

@@ -280,5 +280,6 @@
   "message": "メッセージ",
   "show_all": "すべて表示",
   "show_blotter": "ブロッターを表示",
-  "top": "上"
+  "top": "上",
+  "reply_count": "返信数"
 }

@@ -280,5 +280,6 @@
   "message": "Mesaj",
   "show_all": "Tümünü göster",
   "show_blotter": "Blotter'ı Göster",
-  "top": "Üst"
+  "top": "Üst",
+  "reply_count": "Yanıt sayısı"
 }

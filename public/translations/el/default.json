@@ -280,5 +280,6 @@
   "message": "Μήνυμα",
   "show_all": "Εμφάνιση όλων",
   "show_blotter": "Εμφάνιση Blotter",
-  "top": "Πάνω"
+  "top": "Πάνω",
+  "reply_count": "Αριθμός απαντήσεων"
 }

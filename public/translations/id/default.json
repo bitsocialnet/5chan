@@ -280,5 +280,6 @@
   "message": "Pesan",
   "show_all": "Tampilkan Semua",
   "show_blotter": "Tampilkan Blotter",
-  "top": "Atas"
+  "top": "Atas",
+  "reply_count": "Jumlah balasan"
 }

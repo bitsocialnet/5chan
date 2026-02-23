@@ -280,5 +280,6 @@
   "message": "메시지",
   "show_all": "모두 보기",
   "show_blotter": "블로터 표시",
-  "top": "맨 위"
+  "top": "맨 위",
+  "reply_count": "답글 수"
 }
