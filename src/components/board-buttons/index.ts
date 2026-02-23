@@ -1,1 +1,1 @@
-export { MobileBoardButtons, DesktopBoardButtons } from './board-buttons';
+export { MobileBoardButtons, DesktopBoardButtons, PostPageStats, ReturnButton, CatalogButton, UpdateButton, AutoButton, TopButton } from './board-buttons';

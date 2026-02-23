@@ -32,7 +32,7 @@ interface BoardButtonsProps {
   isTopbar?: boolean;
 }
 
-const CatalogButton = ({ address, isInAllView, isInSubscriptionsView, isInModView }: BoardButtonsProps) => {
+export const CatalogButton = ({ address, isInAllView, isInSubscriptionsView, isInModView }: BoardButtonsProps) => {
   const { t } = useTranslation();
   const params = useParams();
   const directories = useDirectories();
@@ -68,7 +68,7 @@ const SubscribeButton = ({ address }: BoardButtonsProps) => {
   );
 };
 
-const ReturnButton = ({ address, isInAllView, isInSubscriptionsView, isInModView, isInModQueueView }: BoardButtonsProps) => {
+export const ReturnButton = ({ address, isInAllView, isInSubscriptionsView, isInModView, isInModQueueView }: BoardButtonsProps) => {
   const { t } = useTranslation();
   const params = useParams();
   const directories = useDirectories();
@@ -133,7 +133,7 @@ const RefreshButton = () => {
   );
 };
 
-const UpdateButton = () => {
+export const UpdateButton = () => {
   const { t } = useTranslation();
   const reset = useFeedResetStore((state) => state.reset);
   return (
@@ -143,7 +143,7 @@ const UpdateButton = () => {
   );
 };
 
-const AutoButton = () => {
+export const AutoButton = () => {
   const { t } = useTranslation();
   const isMobile = useIsMobile();
   const handleAutoClick = () => {
@@ -177,6 +177,18 @@ const BottomButton = () => {
   return (
     <button className='button' onClick={handleClick}>
       {t('bottom')}
+    </button>
+  );
+};
+
+export const TopButton = () => {
+  const { t } = useTranslation();
+  const handleClick = () => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  };
+  return (
+    <button className='button' onClick={handleClick}>
+      {t('top')}
     </button>
   );
 };
@@ -442,7 +454,7 @@ export const MobileBoardButtons = () => {
   );
 };
 
-const PostPageStats = () => {
+export const PostPageStats = () => {
   const { t } = useTranslation();
   const params = useParams();
 

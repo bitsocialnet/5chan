@@ -1,10 +1,10 @@
 import { useState, useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAccount } from '@plebbit/plebbit-react-hooks';
-import useTopbarEditModalStore from '../../stores/use-topbar-edit-modal-store';
-import useTopbarVisibilityStore from '../../stores/use-topbar-visibility-store';
+import useBoardsBarEditModalStore from '../../stores/use-boardsbar-edit-modal-store';
+import useBoardsBarVisibilityStore from '../../stores/use-boardsbar-visibility-store';
 import { getAllBoardCodes } from '../../constants/board-codes';
-import styles from './topbar-edit-modal.module.css';
+import styles from './boardsbar-edit-modal.module.css';
 
 const directoriesToString = (dirs: Set<string>): string => Array.from(dirs).sort().join(' ');
 
@@ -18,20 +18,20 @@ const stringToDirectories = (str: string): Set<string> => {
 };
 
 // Form component keyed by store values so it remounts with fresh state when modal reopens
-const TopbarEditModalForm = ({
+const BoardsBarEditModalForm = ({
   visibleDirectories,
-  showSubscriptionsInTopbar,
+  showSubscriptionsInBoardsBar,
   setDirectoryVisibility,
-  setShowSubscriptionsInTopbar,
-  closeTopbarEditModal,
+  setShowSubscriptionsInBoardsBar,
+  closeBoardsBarEditModal,
   subscriptions,
   location,
 }: {
   visibleDirectories: Set<string>;
-  showSubscriptionsInTopbar: boolean;
+  showSubscriptionsInBoardsBar: boolean;
   setDirectoryVisibility: (code: string, visible: boolean) => void;
-  setShowSubscriptionsInTopbar: (show: boolean) => void;
-  closeTopbarEditModal: () => void;
+  setShowSubscriptionsInBoardsBar: (show: boolean) => void;
+  closeBoardsBarEditModal: () => void;
   subscriptions: string[];
   location: { pathname: string };
 }) => {
@@ -39,7 +39,7 @@ const TopbarEditModalForm = ({
   const allVisible = allBoardCodes.every((code) => visibleDirectories.has(code));
 
   const [localDirectoryInput, setLocalDirectoryInput] = useState(() => (allVisible ? '' : directoriesToString(visibleDirectories)));
-  const [showSubscriptions, setShowSubscriptions] = useState(() => showSubscriptionsInTopbar);
+  const [showSubscriptions, setShowSubscriptions] = useState(() => showSubscriptionsInBoardsBar);
 
   const handleSave = () => {
     if (localDirectoryInput.trim() === '') {
@@ -48,8 +48,8 @@ const TopbarEditModalForm = ({
       const inputDirectories = stringToDirectories(localDirectoryInput);
       allBoardCodes.forEach((code) => setDirectoryVisibility(code, inputDirectories.has(code)));
     }
-    setShowSubscriptionsInTopbar(showSubscriptions);
-    closeTopbarEditModal();
+    setShowSubscriptionsInBoardsBar(showSubscriptions);
+    closeBoardsBarEditModal();
   };
 
   return (
@@ -76,7 +76,7 @@ const TopbarEditModalForm = ({
                 className={styles.editSubscriptionsLink}
                 onClick={(e) => {
                   e.stopPropagation();
-                  closeTopbarEditModal();
+                  closeBoardsBarEditModal();
                 }}
               >
                 edit subscriptions
@@ -86,16 +86,16 @@ const TopbarEditModalForm = ({
           </div>
         </div>
       )}
-      <div className={styles.topbarEditFooter}>
+      <div className={styles.boardsbarEditFooter}>
         <button onClick={handleSave}>Save</button>
       </div>
     </>
   );
 };
 
-const TopbarEditModal = () => {
-  const { showModal, closeTopbarEditModal } = useTopbarEditModalStore();
-  const { visibleDirectories, showSubscriptionsInTopbar, setDirectoryVisibility, setShowSubscriptionsInTopbar } = useTopbarVisibilityStore();
+const BoardsBarEditModal = () => {
+  const { showModal, closeBoardsBarEditModal } = useBoardsBarEditModalStore();
+  const { visibleDirectories, showSubscriptionsInBoardsBar, setDirectoryVisibility, setShowSubscriptionsInBoardsBar } = useBoardsBarVisibilityStore();
   const account = useAccount();
   const subscriptions = useMemo(() => account?.subscriptions || [], [account?.subscriptions]);
   const location = useLocation();
@@ -106,27 +106,27 @@ const TopbarEditModal = () => {
 
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
-      closeTopbarEditModal();
+      closeBoardsBarEditModal();
     }
   };
 
-  const formKey = `${directoriesToString(visibleDirectories)}-${showSubscriptionsInTopbar}`;
+  const formKey = `${directoriesToString(visibleDirectories)}-${showSubscriptionsInBoardsBar}`;
 
   return (
     <div className={styles.backdrop} onClick={handleBackdropClick}>
-      <div className={styles.topbarEditDialog}>
+      <div className={styles.boardsbarEditDialog}>
         <div className={styles.hd}>
           <h2>Custom Board List</h2>
-          <button className={styles.closeButton} onClick={closeTopbarEditModal} title='Close' />
+          <button className={styles.closeButton} onClick={closeBoardsBarEditModal} title='Close' />
         </div>
         <div className={styles.bd}>
-          <TopbarEditModalForm
+          <BoardsBarEditModalForm
             key={formKey}
             visibleDirectories={visibleDirectories}
-            showSubscriptionsInTopbar={showSubscriptionsInTopbar}
+            showSubscriptionsInBoardsBar={showSubscriptionsInBoardsBar}
             setDirectoryVisibility={setDirectoryVisibility}
-            setShowSubscriptionsInTopbar={setShowSubscriptionsInTopbar}
-            closeTopbarEditModal={closeTopbarEditModal}
+            setShowSubscriptionsInBoardsBar={setShowSubscriptionsInBoardsBar}
+            closeBoardsBarEditModal={closeBoardsBarEditModal}
             subscriptions={subscriptions}
             location={location}
           />
@@ -136,4 +136,4 @@ const TopbarEditModal = () => {
   );
 };
 
-export default TopbarEditModal;
+export default BoardsBarEditModal;

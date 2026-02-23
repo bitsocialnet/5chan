@@ -35,8 +35,8 @@ import FeedCacheContainer from './components/feed-cache-container';
 import ReplyModal from './components/reply-modal';
 import PostForm from './components/post-form';
 import BoardBlotter from './components/board-blotter';
-import TopBar from './components/topbar';
-import TopbarEditModal from './components/topbar-edit-modal';
+import BoardsBar from './components/boardsbar';
+import BoardsBarEditModal from './components/boardsbar-edit-modal';
 import DirectoryModal from './components/directory-modal';
 import DisclaimerModal from './components/disclaimer-modal';
 import SettingsModal from './components/settings-modal';
@@ -96,9 +96,9 @@ const BoardLayout = () => {
 
   return (
     <div className={styles.boardLayout}>
-      <TopBar />
+      <BoardsBar />
       <CreateBoardModal />
-      <TopbarEditModal />
+      <BoardsBarEditModal />
       <DirectoryModal />
       <DisclaimerModal />
       <BoardHeader />

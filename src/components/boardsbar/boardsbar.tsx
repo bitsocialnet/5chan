@@ -9,11 +9,11 @@ import { useDirectories, DirectoryCommunity } from '../../hooks/use-directories'
 import { useBoardPath, useResolvedSubplebbitAddress } from '../../hooks/use-resolved-subplebbit-address';
 import { getBoardPath, extractDirectoryFromTitle } from '../../lib/utils/route-utils';
 import useCreateBoardModalStore from '../../stores/use-create-board-modal-store';
-import useTopbarEditModalStore from '../../stores/use-topbar-edit-modal-store';
-import useTopbarVisibilityStore from '../../stores/use-topbar-visibility-store';
+import useBoardsBarEditModalStore from '../../stores/use-boardsbar-edit-modal-store';
+import useBoardsBarVisibilityStore from '../../stores/use-boardsbar-visibility-store';
 import useDirectoryModalStore from '../../stores/use-directory-modal-store';
 import { BOARD_CODE_GROUPS, getAllBoardCodes } from '../../constants/board-codes';
-import styles from './topbar.module.css';
+import styles from './boardsbar.module.css';
 import capitalize from 'lodash/capitalize';
 import debounce from 'lodash/debounce';
 import lowerCase from 'lodash/lowerCase';
@@ -87,7 +87,7 @@ const findBoardAddressByCode = (code: string, directories: DirectoryCommunity[])
   return entry?.address || null;
 };
 
-const TopBarDesktop = () => {
+const BoardsBarDesktop = () => {
   const { t } = useTranslation();
   const location = useLocation();
   const params = useParams();
@@ -95,9 +95,9 @@ const TopBarDesktop = () => {
   const [showSearchBar, setShowSearchBar] = useState(false);
   const [showAllTemporarily, setShowAllTemporarily] = useState(false);
   const { openCreateBoardModal } = useCreateBoardModalStore();
-  const { openTopbarEditModal } = useTopbarEditModalStore();
+  const { openBoardsBarEditModal } = useBoardsBarEditModalStore();
   const { openDirectoryModal } = useDirectoryModalStore();
-  const { visibleDirectories, showSubscriptionsInTopbar } = useTopbarVisibilityStore();
+  const { visibleDirectories, showSubscriptionsInBoardsBar } = useBoardsBarVisibilityStore();
   const directories = useDirectories();
 
   // Memoize allBoardCodes since it's derived from a constant
@@ -129,7 +129,7 @@ const TopBarDesktop = () => {
   );
 
   // Show all subscriptions when enabled; no separate per-address tracking (avoids drift when subscribing from board-buttons)
-  const visibleSubscriptionAddresses = showSubscriptionsInTopbar ? subscriptions : [];
+  const visibleSubscriptionAddresses = showSubscriptionsInBoardsBar ? subscriptions : [];
 
   // Check if any directories are hidden
   const hasHiddenDirectories = useMemo(() => {
@@ -146,7 +146,7 @@ const TopBarDesktop = () => {
 
   // Initialize visibility store on mount
   useEffect(() => {
-    useTopbarVisibilityStore.getState().initialize();
+    useBoardsBarVisibilityStore.getState().initialize();
   }, []);
 
   // Render a board code link or placeholder
@@ -229,7 +229,7 @@ const TopBarDesktop = () => {
           <>[{visibleSubscriptionAddresses.map((address: string, index: number) => renderSubscription(address, index, visibleSubscriptionAddresses.length))}] </>
         )}
         [
-        <span className={styles.temporaryButton} onClick={() => openTopbarEditModal()} style={{ cursor: 'pointer' }}>
+        <span className={styles.temporaryButton} onClick={() => openBoardsBarEditModal()} style={{ cursor: 'pointer' }}>
           {capitalize(t('edit'))}
         </span>
         ] [
@@ -247,7 +247,7 @@ const TopBarDesktop = () => {
   );
 };
 
-const TopBarMobile = ({ subplebbitAddress }: { subplebbitAddress: string }) => {
+const BoardsBarMobile = ({ subplebbitAddress }: { subplebbitAddress?: string }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const directories = useDirectories();
@@ -302,7 +302,7 @@ const TopBarMobile = ({ subplebbitAddress }: { subplebbitAddress: string }) => {
       {directoryBoards.map((board, index) => {
         const directoryCode = extractDirectoryFromTitle(board.title!);
         return (
-          <option key={index} value={directoryCode!}>
+          <option key={board.address} value={directoryCode!}>
             {board.title}
           </option>
         );
@@ -344,7 +344,7 @@ const TopBarMobile = ({ subplebbitAddress }: { subplebbitAddress: string }) => {
   );
 };
 
-const TopBar = () => {
+const BoardsBar = () => {
   const params = useParams();
   const commentIndex = params?.accountCommentIndex ? parseInt(params.accountCommentIndex) : undefined;
   const accountComment = useAccountComment({ commentIndex });
@@ -353,10 +353,10 @@ const TopBar = () => {
 
   return (
     <>
-      <TopBarDesktop />
-      <TopBarMobile subplebbitAddress={subplebbitAddress} />
+      <BoardsBarDesktop />
+      <BoardsBarMobile subplebbitAddress={subplebbitAddress} />
     </>
   );
 };
 
-export default TopBar;
+export default BoardsBar;

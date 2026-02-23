@@ -209,17 +209,17 @@
   /* tooltip */
   --tooltip-background-color: #181f24;
   
-  /* topbar */
-  --topbar-font-size: 9pt;
-  --topbar-separator-color: #b86;
-  --topbar-desktop-link-text-color: #800;
-  --topbar-desktop-link-text-color-hover: #e00;
-  --topbar-desktop-link-text-decoration: none;
-  --topbar-desktop-link-text-decoration-hover: none;
-  --topbar-mobile-background-color: #f0e0d6;
-  --topbar-mobile-border-bottom: 2px solid #d9c5b7;
-  --topbar-mobile-font-size: 10px;
-  --topbar-mobile-button-text-color: navy;
+  /* boardsbar */
+  --boardsbar-font-size: 9pt;
+  --boardsbar-separator-color: #b86;
+  --boardsbar-desktop-link-text-color: #800;
+  --boardsbar-desktop-link-text-color-hover: #e00;
+  --boardsbar-desktop-link-text-decoration: none;
+  --boardsbar-desktop-link-text-decoration-hover: none;
+  --boardsbar-mobile-background-color: #f0e0d6;
+  --boardsbar-mobile-border-bottom: 2px solid #d9c5b7;
+  --boardsbar-mobile-font-size: 10px;
+  --boardsbar-mobile-button-text-color: navy;
 
   /* mod queue */
   --mod-queue-table-border: 1px solid #d9bfb7;
@@ -446,17 +446,17 @@
   /* tooltip */
   --tooltip-background-color: #181f24;
 
-  /* topbar */
-  --topbar-font-size: 9pt;
-  --topbar-separator-color: #89a;
-  --topbar-desktop-link-text-color: #34345c;
-  --topbar-desktop-link-text-color-hover: #d00;
-  --topbar-desktop-link-text-decoration: none;
-  --topbar-desktop-link-text-decoration-hover: none;
-  --topbar-mobile-background-color: #d6daf0;
-  --topbar-mobile-border-bottom: 2px solid #b7c5d9;
-  --topbar-mobile-font-size: 10px;
-  --topbar-mobile-button-text-color: #34345c;
+  /* boardsbar */
+  --boardsbar-font-size: 9pt;
+  --boardsbar-separator-color: #89a;
+  --boardsbar-desktop-link-text-color: #34345c;
+  --boardsbar-desktop-link-text-color-hover: #d00;
+  --boardsbar-desktop-link-text-decoration: none;
+  --boardsbar-desktop-link-text-decoration-hover: none;
+  --boardsbar-mobile-background-color: #d6daf0;
+  --boardsbar-mobile-border-bottom: 2px solid #b7c5d9;
+  --boardsbar-mobile-font-size: 10px;
+  --boardsbar-mobile-button-text-color: #34345c;
 
   /* mod queue */
   --mod-queue-table-border: 1px solid #b7c5d9;
@@ -654,17 +654,17 @@
   /* tooltip */
   --tooltip-background-color: #181f24;
 
-  /* topbar */
-  --topbar-font-size: 11pt;
-  --topbar-separator-color: none;
-  --topbar-desktop-link-text-color: #00e;
-  --topbar-desktop-link-text-color-hover: red;
-  --topbar-desktop-link-text-decoration: underline;
-  --topbar-desktop-link-text-decoration-hover: underline;
-  --topbar-mobile-background-color: #f0e0d6;
-  --topbar-mobile-border-bottom: 2px solid #d9c5b7;
-  --topbar-mobile-font-size: 9pt;
-  --topbar-mobile-button-text-color: #00f;
+  /* boardsbar */
+  --boardsbar-font-size: 11pt;
+  --boardsbar-separator-color: none;
+  --boardsbar-desktop-link-text-color: #00e;
+  --boardsbar-desktop-link-text-color-hover: red;
+  --boardsbar-desktop-link-text-decoration: underline;
+  --boardsbar-desktop-link-text-decoration-hover: underline;
+  --boardsbar-mobile-background-color: #f0e0d6;
+  --boardsbar-mobile-border-bottom: 2px solid #d9c5b7;
+  --boardsbar-mobile-font-size: 9pt;
+  --boardsbar-mobile-button-text-color: #00f;
 
   /* mod queue */
   --mod-queue-table-border: 1px solid rgba(0, 0, 0, 0.20);
@@ -866,17 +866,17 @@
   /* tooltip */
   --tooltip-background-color: #181f24;
 
-  /* topbar */
-  --topbar-font-size: 11pt;
-  --topbar-separator-color: none;
-  --topbar-desktop-link-text-color: #34345c;
-  --topbar-desktop-link-text-color-hover: #d00;
-  --topbar-desktop-link-text-decoration: underline;
-  --topbar-desktop-link-text-decoration-hover: underline;
-  --topbar-mobile-background-color: #d6daf0;
-  --topbar-mobile-border-bottom: 2px solid #b7c5d9;
-  --topbar-mobile-font-size: 9pt;
-  --topbar-mobile-button-text-color: #34345c;
+  /* boardsbar */
+  --boardsbar-font-size: 11pt;
+  --boardsbar-separator-color: none;
+  --boardsbar-desktop-link-text-color: #34345c;
+  --boardsbar-desktop-link-text-color-hover: #d00;
+  --boardsbar-desktop-link-text-decoration: underline;
+  --boardsbar-desktop-link-text-decoration-hover: underline;
+  --boardsbar-mobile-background-color: #d6daf0;
+  --boardsbar-mobile-border-bottom: 2px solid #b7c5d9;
+  --boardsbar-mobile-font-size: 9pt;
+  --boardsbar-mobile-button-text-color: #34345c;
 
   /* mod queue */
   --mod-queue-table-border: 1px solid rgba(0, 0, 0, 0.20);
@@ -1112,18 +1112,18 @@
   /* tooltip */
   --tooltip-background-color: #000;
 
-  /* topbar */
-  --topbar-font-size: 9pt;
-  --topbar-separator-color: #c5c8c6;
-  --topbar-desktop-link-text-color: #81a2be;
-  --topbar-desktop-link-text-color-hover: #5f89ac;
-  --topbar-desktop-link-text-decoration: none;
-  --topbar-desktop-link-text-decoration-hover: none;
-  --topbar-mobile-background-color: #1d1f21;
-  --topbar-mobile-border-bottom: 2px solid #282a2e;
-  --topbar-mobile-font-size: 10px;
-  --topbar-mobile-button-text-color: #81a2be;
-  --topbar-mobile-button-color: #81a2be;
+  /* boardsbar */
+  --boardsbar-font-size: 9pt;
+  --boardsbar-separator-color: #c5c8c6;
+  --boardsbar-desktop-link-text-color: #81a2be;
+  --boardsbar-desktop-link-text-color-hover: #5f89ac;
+  --boardsbar-desktop-link-text-decoration: none;
+  --boardsbar-desktop-link-text-decoration-hover: none;
+  --boardsbar-mobile-background-color: #1d1f21;
+  --boardsbar-mobile-border-bottom: 2px solid #282a2e;
+  --boardsbar-mobile-font-size: 10px;
+  --boardsbar-mobile-button-text-color: #81a2be;
+  --boardsbar-mobile-button-color: #81a2be;
 
   /* mod queue */
   --mod-queue-table-border: 1px solid #111;
@@ -1341,18 +1341,18 @@
   /* tooltip */
   --tooltip-background-color: #181f24;
 
-  /* topbar */
-  --topbar-font-size: 9pt;
-  --topbar-separator-color: #333;
-  --topbar-desktop-link-text-color: #f60;
-  --topbar-desktop-link-text-color-hover: #f30;
-  --topbar-desktop-link-text-decoration: none;
-  --topbar-desktop-link-text-decoration-hover: none;
-  --topbar-mobile-background-color: #ddd;
-  --topbar-mobile-border-bottom: 2px solid #ccc;
-  --topbar-mobile-font-size: 10px;
-  --topbar-mobile-button-text-color: #f60;
-  --topbar-mobile-button-color: #f60;
+  /* boardsbar */
+  --boardsbar-font-size: 9pt;
+  --boardsbar-separator-color: #333;
+  --boardsbar-desktop-link-text-color: #f60;
+  --boardsbar-desktop-link-text-color-hover: #f30;
+  --boardsbar-desktop-link-text-decoration: none;
+  --boardsbar-desktop-link-text-decoration-hover: none;
+  --boardsbar-mobile-background-color: #ddd;
+  --boardsbar-mobile-border-bottom: 2px solid #ccc;
+  --boardsbar-mobile-font-size: 10px;
+  --boardsbar-mobile-button-text-color: #f60;
+  --boardsbar-mobile-button-color: #f60;
 
   /* mod queue */
   --mod-queue-table-border: 1px solid #ccc;

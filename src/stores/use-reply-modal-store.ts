@@ -14,6 +14,8 @@ interface ReplyModalState {
   quoteInsertSelectedText: string | null;
   closeModal: () => void;
   openReplyModal: (parentCid: string, parentNumber: number | undefined, postCid: string, threadNumber: number | undefined, subplebbitAddress: string) => void;
+  /** Open reply modal with empty textarea, no prefilled quote. Use for "Post a Reply" footer button. */
+  openReplyModalEmpty: (postCid: string, threadNumber: number | undefined, subplebbitAddress: string) => void;
 }
 
 const getQuotedSelection = () => {
@@ -85,6 +87,23 @@ const useReplyModalStore = create<ReplyModalState>((set, get) => ({
       showReplyModal: true,
       subplebbitAddress,
       scrollY,
+    });
+  },
+
+  openReplyModalEmpty: (postCid, threadNumber, subplebbitAddress) => {
+    useSelectedTextStore.getState().resetSelectedText();
+    const isMobile = window.innerWidth <= 768;
+    const scrollY = isMobile ? window.scrollY : 0;
+    set({
+      activeCid: postCid,
+      parentNumber: null,
+      threadNumber: threadNumber ?? null,
+      threadCid: postCid,
+      showReplyModal: true,
+      subplebbitAddress,
+      scrollY,
+      quoteInsertNumber: null,
+      quoteInsertSelectedText: null,
     });
   },
 }));

@@ -17,8 +17,10 @@ import useSortingStore from '../../stores/use-sorting-store';
 import useCatalogFiltersStore from '../../stores/use-catalog-filters-store';
 import { getSubplebbitAddress, isDirectoryBoard, normalizeMultiboardFeedPath } from '../../lib/utils/route-utils';
 import CatalogRow from '../../components/catalog-row';
+import CatalogFooterFirstRow from '../../components/catalog-footer-first-row';
 import LoadingEllipsis from '../../components/loading-ellipsis';
 import ErrorDisplay from '../../components/error-display/error-display';
+import PageFooterDesktop from '../../components/page-footer-desktop';
 import styles from './catalog.module.css';
 import { commentMatchesPattern } from '../../lib/utils/pattern-utils';
 
@@ -391,17 +393,20 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   const footerComponents = useMemo(
     () => ({
       Footer: () => (
-        <CatalogFooter
-          subplebbitAddresses={subplebbitAddresses}
-          hasMore={hasMore}
-          combinedFeedLength={cappedFeed.length}
-          subplebbitAddressesWithNewerPosts={subplebbitAddressesWithNewerPosts}
-          onNewerPostsClick={handleNewerPostsButtonClick}
-          isInAllView={isInAllView}
-          isInSubscriptionsView={isInSubscriptionsView}
-          isInModView={isInModView}
-          showLoadingEllipsis={effectiveInfiniteScroll}
-        />
+        <>
+          <CatalogFooter
+            subplebbitAddresses={subplebbitAddresses}
+            hasMore={hasMore}
+            combinedFeedLength={cappedFeed.length}
+            subplebbitAddressesWithNewerPosts={subplebbitAddressesWithNewerPosts}
+            onNewerPostsClick={handleNewerPostsButtonClick}
+            isInAllView={isInAllView}
+            isInSubscriptionsView={isInSubscriptionsView}
+            isInModView={isInModView}
+            showLoadingEllipsis={effectiveInfiniteScroll}
+          />
+          <PageFooterDesktop firstRow={<CatalogFooterFirstRow />} />
+        </>
       ),
     }),
     [
@@ -556,7 +561,16 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
               ) : (
                 <>
                   {rows.map((row, index) => (
-                    <CatalogRow key={index} index={index} row={row} />
+                    <CatalogRow
+                      key={
+                        row
+                          .map((p) => p?.cid ?? (p?.timestamp != null ? `t${p.timestamp}` : ''))
+                          .filter(Boolean)
+                          .join('-') || 'row-no-ids'
+                      }
+                      index={index}
+                      row={row}
+                    />
                   ))}
                   <CatalogFooter
                     subplebbitAddresses={subplebbitAddresses}
@@ -569,12 +583,22 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
                     isInModView={isInModView}
                     showLoadingEllipsis={true}
                   />
+                  <PageFooterDesktop firstRow={<CatalogFooterFirstRow />} />
                 </>
               )
             ) : (
               <>
                 {rows.map((row, index) => (
-                  <CatalogRow key={index} index={index} row={row} />
+                  <CatalogRow
+                    key={
+                      row
+                        .map((p) => p?.cid ?? (p?.timestamp != null ? `t${p.timestamp}` : ''))
+                        .filter(Boolean)
+                        .join('-') || 'row-no-ids'
+                    }
+                    index={index}
+                    row={row}
+                  />
                 ))}
                 <CatalogFooter
                   subplebbitAddresses={subplebbitAddresses}
@@ -587,20 +611,24 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
                   isInModView={isInModView}
                   showLoadingEllipsis={false}
                 />
+                <PageFooterDesktop firstRow={<CatalogFooterFirstRow />} />
               </>
             )}
           </>
         ) : (
-          <div className={styles.footer}>
-            <CatalogLoading
-              subplebbitAddresses={subplebbitAddresses}
-              hasMore={hasMore}
-              combinedFeedLength={cappedFeed.length}
-              state={state}
-              subscriptionsLength={isInSubscriptionsView ? subscriptions?.length || 0 : 1}
-              error={error}
-            />
-          </div>
+          <>
+            <div className={styles.footer}>
+              <CatalogLoading
+                subplebbitAddresses={subplebbitAddresses}
+                hasMore={hasMore}
+                combinedFeedLength={cappedFeed.length}
+                state={state}
+                subscriptionsLength={isInSubscriptionsView ? subscriptions?.length || 0 : 1}
+                error={error}
+              />
+            </div>
+            <PageFooterDesktop firstRow={<CatalogFooterFirstRow />} />
+          </>
         )}
       </div>
     </div>

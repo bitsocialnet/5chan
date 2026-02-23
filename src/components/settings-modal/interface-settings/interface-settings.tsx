@@ -1,13 +1,10 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import useTheme from '../../../hooks/use-theme';
 import packageJson from '../../../../package.json';
 import styles from './interface-settings.module.css';
 import capitalize from 'lodash/capitalize';
 import useExpandedMediaStore from '../../../stores/use-expanded-media-store';
 import useFeedViewSettingsStore from '../../../stores/use-feed-view-settings-store';
-import useSpecialThemeStore from '../../../stores/use-special-theme-store';
-import { isChristmas } from '../../../lib/utils/time-utils';
 import Version from '../../version';
 
 const commitRef = process.env.VITE_COMMIT_REF;
@@ -68,36 +65,6 @@ const CheckForUpdates = () => {
   );
 };
 
-const Style = () => {
-  const [theme, setTheme] = useTheme();
-  const { isEnabled, setIsEnabled } = useSpecialThemeStore();
-  const isChristmasTime = isChristmas();
-
-  const handleThemeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newTheme = e.target.value;
-
-    if (newTheme === 'special') {
-      setIsEnabled(true);
-      setTheme('tomorrow');
-    } else {
-      setIsEnabled(false);
-      setTheme(newTheme);
-    }
-  };
-
-  return (
-    <select className={styles.themeSettings} value={isEnabled ? 'special' : theme} onChange={handleThemeChange}>
-      <option value='yotsuba'>Yotsuba</option>
-      <option value='yotsuba-b'>Yotsuba B</option>
-      <option value='futaba'>Futaba</option>
-      <option value='burichan'>Burichan</option>
-      <option value='tomorrow'>Tomorrow</option>
-      <option value='photon'>Photon</option>
-      {isChristmasTime && <option value='special'>Special</option>}
-    </select>
-  );
-};
-
 // prettier-ignore
 const availableLanguages = ['ar', 'bn', 'cs', 'da', 'de', 'el', 'en', 'es', 'fa', 'fi', 'fil', 'fr', 'he', 'hi', 'hu', 'id', 'it', 'ja', 'ko', 'mr', 'nl', 'no', 'pl', 'pt', 'ro', 'ru', 'sq', 'sv', 'te', 'th', 'tr', 'uk', 'ur', 'vi', 'zh'];
 
@@ -134,9 +101,6 @@ const InterfaceSettings = () => {
       </div>
       <div className={styles.setting}>
         {capitalize(t('update'))}: <CheckForUpdates />
-      </div>
-      <div className={styles.setting}>
-        {capitalize(t('style'))}: <Style />
       </div>
       <div className={styles.setting}>
         {capitalize(t('interface_language'))}: <InterfaceLanguage />

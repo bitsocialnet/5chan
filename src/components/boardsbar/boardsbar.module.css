@@ -1,29 +1,29 @@
 
 .boardNavDesktop {
-  font-size: var(--topbar-font-size);
-  color: var(--topbar-separator-color);
+  font-size: var(--boardsbar-font-size);
+  color: var(--boardsbar-separator-color);
   position: relative;
 }
 
 .checkingSubscriptions {
-  font-size: var(--topbar-font-size);
-  color: var(--topbar-desktop-link-text-color);
+  font-size: var(--boardsbar-font-size);
+  color: var(--boardsbar-desktop-link-text-color);
   text-transform: lowercase;
 }
 
 .boardNavDesktop a, .navTopRight span {
-  color: var(--topbar-desktop-link-text-color);
-  text-decoration: var(--topbar-desktop-link-text-decoration);
+  color: var(--boardsbar-desktop-link-text-color);
+  text-decoration: var(--boardsbar-desktop-link-text-decoration);
 }
 
 .boardNavDesktop a:hover, .navTopRight span:hover {
-  color: var(--topbar-desktop-link-text-color-hover);
-  text-decoration: var(--topbar-desktop-link-text-decoration-hover);
+  color: var(--boardsbar-desktop-link-text-color-hover);
+  text-decoration: var(--boardsbar-desktop-link-text-decoration-hover);
   cursor: pointer;
 }
 
 .placeholder {
-  color: var(--topbar-separator-color);
+  color: var(--boardsbar-separator-color);
 }
 
 .navTopRight {
@@ -42,14 +42,14 @@
 }
 
 .temporaryButton {
-  color: var(--topbar-desktop-link-text-color);
-  text-decoration: var(--topbar-desktop-link-text-decoration);
+  color: var(--boardsbar-desktop-link-text-color);
+  text-decoration: var(--boardsbar-desktop-link-text-decoration);
   text-transform: capitalize;
 }
 
 .temporaryButton:hover {
-  color: var(--topbar-desktop-link-text-color-hover);
-  text-decoration: var(--topbar-desktop-link-text-decoration-hover);
+  color: var(--boardsbar-desktop-link-text-color-hover);
+  text-decoration: var(--boardsbar-desktop-link-text-decoration-hover);
   cursor: pointer;
 }
 
@@ -63,9 +63,9 @@
 
 .boardNavMobile {
   padding: 2px 4px;
-  background-color: var(--topbar-mobile-background-color);
-  border-bottom: var(--topbar-mobile-border-bottom);
-  font-size: var(--topbar-mobile-font-size);
+  background-color: var(--boardsbar-mobile-background-color);
+  border-bottom: var(--boardsbar-mobile-border-bottom);
+  font-size: var(--boardsbar-mobile-font-size);
   position: fixed;
   width: 100%;
   z-index: 3;
@@ -77,7 +77,7 @@
 }
 
 .boardNavMobile .pageJump a, .boardNavMobile .pageJump span {
-  color: var(--topbar-mobile-button-text-color);
+  color: var(--boardsbar-mobile-button-text-color);
   text-decoration: var(--button-text-decoration-mobile);
 }
 
@@ -91,7 +91,7 @@
 }
 
 .boardNavMobile select {
-  font-size: var(--topbar-mobile-font-size);
+  font-size: var(--boardsbar-mobile-font-size);
 }
 
 .boardSelect {

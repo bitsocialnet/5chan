@@ -34,3 +34,21 @@
   font-weight: bold;
   color: var(--button-desktop-text-color-hover);
 }
+
+/* Footer-style compact pagination (layout in footer-first-row.module.css) */
+.footerPageLink {
+  padding: 2px 6px;
+  font-size: 12px;
+  text-decoration: var(--button-text-decoration);
+  color: var(--button-desktop-text-color);
+}
+
+.footerPageLink:hover {
+  color: var(--button-desktop-text-color-hover);
+  text-decoration: var(--button-text-decoration);
+}
+
+.footerPageCurrent {
+  font-weight: bold;
+  color: var(--button-desktop-text-color-hover);
+}

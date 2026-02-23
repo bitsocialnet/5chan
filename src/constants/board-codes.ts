@@ -1,6 +1,6 @@
 /**
  * Mapping of 4chan board codes to 5chan directory names
- * Used for displaying board links in the topbar
+ * Used for displaying board links in the boardsbar
  */
 export const BOARD_CODE_TO_DIRECTORY: Record<string, string> = {
   a: 'Anime & Manga',

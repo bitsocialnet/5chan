@@ -19,6 +19,7 @@ import { getPageFromFeedPath, getSubplebbitAddress, isDirectoryBoard, normalizeM
 import ErrorDisplay from '../../components/error-display/error-display';
 import LoadingEllipsis from '../../components/loading-ellipsis';
 import BoardPagination from '../../components/board-pagination';
+import PageFooterDesktop from '../../components/page-footer-desktop';
 import { Post } from '../post';
 
 const lastVirtuosoStates: { [key: string]: StateSnapshot } = {};
@@ -270,20 +271,23 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, i
   const footerComponents = useMemo(
     () => ({
       Footer: () => (
-        <BoardFooter
-          subplebbitAddresses={subplebbitAddresses}
-          hasMore={hasMore}
-          combinedFeedLength={combinedFeed.length}
-          subplebbitAddressesWithNewerPosts={subplebbitAddressesWithNewerPosts}
-          onNewerPostsClick={handleNewerPostsButtonClick}
-          isInAllView={isInAllView}
-          isInSubscriptionsView={isInSubscriptionsView}
-          isInModView={isInModView}
-          subplebbitState={subplebbitState}
-          subscriptionsLength={subscriptions?.length || 0}
-          accountSubplebbitAddressesLength={accountSubplebbitAddresses?.length || 0}
-          showLoadingEllipsis={effectiveInfiniteScroll || combinedFeed.length === 0}
-        />
+        <>
+          <BoardFooter
+            subplebbitAddresses={subplebbitAddresses}
+            hasMore={hasMore}
+            combinedFeedLength={combinedFeed.length}
+            subplebbitAddressesWithNewerPosts={subplebbitAddressesWithNewerPosts}
+            onNewerPostsClick={handleNewerPostsButtonClick}
+            isInAllView={isInAllView}
+            isInSubscriptionsView={isInSubscriptionsView}
+            isInModView={isInModView}
+            subplebbitState={subplebbitState}
+            subscriptionsLength={subscriptions?.length || 0}
+            accountSubplebbitAddressesLength={accountSubplebbitAddresses?.length || 0}
+            showLoadingEllipsis={effectiveInfiniteScroll || combinedFeed.length === 0}
+          />
+          <PageFooterDesktop firstRow={<BoardPagination basePath={paginationBasePath} currentPage={currentPage} totalPages={totalPages} footerStyle />} />
+        </>
       ),
     }),
     [
@@ -299,7 +303,9 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, i
       subscriptions?.length,
       accountSubplebbitAddresses?.length,
       effectiveInfiniteScroll,
-      combinedFeed.length,
+      paginationBasePath,
+      currentPage,
+      totalPages,
     ],
   );
 
@@ -399,6 +405,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, i
                 accountSubplebbitAddressesLength={accountSubplebbitAddresses?.length || 0}
                 showLoadingEllipsis={true}
               />
+              <PageFooterDesktop firstRow={<BoardPagination basePath={paginationBasePath} currentPage={currentPage} totalPages={totalPages} footerStyle />} />
             </>
           )
         ) : (
@@ -407,7 +414,6 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, i
             {currentPageFeed.map((post, index) => (
               <Post key={post.cid} index={index} post={post} />
             ))}
-            <BoardPagination basePath={paginationBasePath} currentPage={currentPage} totalPages={totalPages} />
             <BoardFooter
               subplebbitAddresses={subplebbitAddresses}
               hasMore={hasMore}
@@ -422,6 +428,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, i
               accountSubplebbitAddressesLength={accountSubplebbitAddresses?.length || 0}
               showLoadingEllipsis={combinedFeed.length === 0}
             />
+            <PageFooterDesktop firstRow={<BoardPagination basePath={paginationBasePath} currentPage={currentPage} totalPages={totalPages} footerStyle />} />
           </>
         )}
       </div>

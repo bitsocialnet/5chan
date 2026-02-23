@@ -1,0 +1,38 @@
+.footer {
+  margin-top: 16px;
+  padding-bottom: 24px;
+}
+
+.footer hr {
+  width: 90%;
+  margin: 16px auto;
+  border: none;
+  border-top: 1px solid var(--border-color, #ccc);
+}
+
+.firstRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px 0;
+  text-align: center;
+}
+
+.boardsBarRow {
+  padding: 8px 0;
+}
+
+.legalMeta {
+  padding: 12px 0 0;
+  font-size: 11px;
+  color: var(--body-font-color);
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .footer {
+    display: none;
+  }
+}

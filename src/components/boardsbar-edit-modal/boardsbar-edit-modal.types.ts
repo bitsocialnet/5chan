@@ -1,4 +1,4 @@
-// Types for topbar edit modal component
+// Types for boardsbar edit modal component
 
 export interface BoardCodeCheckbox {
   code: string;

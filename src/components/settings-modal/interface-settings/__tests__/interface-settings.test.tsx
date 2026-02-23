@@ -16,20 +16,8 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
-vi.mock('../../../../hooks/use-theme', () => ({
-  default: () => ['yotsuba', vi.fn()],
-}));
-
 vi.mock('../../../../stores/use-expanded-media-store', () => ({
   default: () => ({ fitExpandedImagesToScreen: false, setFitExpandedImagesToScreen: vi.fn() }),
-}));
-
-vi.mock('../../../../stores/use-special-theme-store', () => ({
-  default: () => ({ isEnabled: false, setIsEnabled: vi.fn() }),
-}));
-
-vi.mock('../../../../lib/utils/time-utils', () => ({
-  isChristmas: () => false,
 }));
 
 vi.mock('../../version', () => ({
