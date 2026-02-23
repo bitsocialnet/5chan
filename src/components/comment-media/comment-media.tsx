@@ -29,8 +29,6 @@ interface MediaProps {
 const Thumbnail = ({ commentMediaInfo, deleted, displayHeight, displayWidth, isFloatingEmbed, isOutOfFeed, isReply, removed, spoiler, setShowThumbnail }: MediaProps) => {
   const isMobile = useIsMobile();
   const { patternThumbnailUrl, thumbnail, type, url } = commentMediaInfo || {};
-  const numericWidth = parseInt(displayWidth || '') || undefined;
-  const numericHeight = parseInt(displayHeight || '') || undefined;
 
   let thumbnailComponent: React.ReactNode = null;
   const iframeThumbnail = patternThumbnailUrl || thumbnail;
@@ -38,20 +36,18 @@ const Thumbnail = ({ commentMediaInfo, deleted, displayHeight, displayWidth, isF
   const hasThumbnail = getHasThumbnail(commentMediaInfo, url);
 
   if (type === 'gif') {
-    thumbnailComponent = <img src={gifFrameUrl || url} alt='' onClick={() => setShowThumbnail(false)} width={numericWidth} height={numericHeight} />;
+    thumbnailComponent = <img src={gifFrameUrl || url} alt='' onClick={() => setShowThumbnail(false)} />;
   } else if (type === 'video') {
     thumbnailComponent = thumbnail ? (
-      <img src={thumbnail} alt='' width={numericWidth} height={numericHeight} />
+      <img src={thumbnail} alt='' />
     ) : (
       // show first frame of the video, as a workaround for Safari not loading thumbnails
       <video src={`${url}#t=0.001`} onClick={() => setShowThumbnail(false)} />
     );
   } else if (type === 'webpage') {
-    thumbnailComponent = <img src={thumbnail} alt='' onClick={() => setShowThumbnail(false)} width={numericWidth} height={numericHeight} />;
+    thumbnailComponent = <img src={thumbnail} alt='' onClick={() => setShowThumbnail(false)} />;
   } else if (type === 'iframe') {
-    thumbnailComponent = iframeThumbnail ? (
-      <img src={iframeThumbnail} alt='' onClick={() => setShowThumbnail(false)} width={numericWidth} height={numericHeight} />
-    ) : null;
+    thumbnailComponent = iframeThumbnail ? <img src={iframeThumbnail} alt='' onClick={() => setShowThumbnail(false)} /> : null;
   } else if (type === 'audio') {
     thumbnailComponent = <audio src={url} controls />;
   }
@@ -144,8 +140,6 @@ const Image = ({ commentMediaInfo, disableToggle = false, displayHeight, display
   const { t } = useTranslation();
   const { type, url } = commentMediaInfo || {};
   const isReply = parentCid;
-  const numericWidth = parseInt(displayWidth || '') || undefined;
-  const numericHeight = parseInt(displayHeight || '') || undefined;
   const isMobile = useIsMobile();
   const [isImageExpanded, setIsImageExpanded] = useState(initialExpanded);
   const { fitExpandedImagesToScreen } = useExpandedMediaStore();
@@ -180,14 +174,7 @@ const Image = ({ commentMediaInfo, disableToggle = false, displayHeight, display
         {hasError ? (
           <img src='assets/filedeleted-res.gif' alt='File deleted' />
         ) : (
-          <img
-            src={url}
-            onError={handleError}
-            alt=''
-            onClick={disableToggle ? undefined : () => setIsImageExpanded(!isImageExpanded)}
-            width={numericWidth}
-            height={numericHeight}
-          />
+          <img src={url} onError={handleError} alt='' onClick={disableToggle ? undefined : () => setIsImageExpanded(!isImageExpanded)} />
         )}
       </span>
       {isImageExpanded && type && (
@@ -209,14 +196,7 @@ const Image = ({ commentMediaInfo, disableToggle = false, displayHeight, display
       {hasError ? (
         <img src='assets/filedeleted-res.gif' alt='File deleted' />
       ) : (
-        <img
-          src={url}
-          onError={handleError}
-          alt=''
-          onClick={disableToggle ? undefined : () => setIsImageExpanded(!isImageExpanded)}
-          width={numericWidth}
-          height={numericHeight}
-        />
+        <img src={url} onError={handleError} alt='' onClick={disableToggle ? undefined : () => setIsImageExpanded(!isImageExpanded)} />
       )}
     </span>
   );
