@@ -276,9 +276,9 @@
   "enable_infinite_scroll_tip": "Не применяется к мультибордам, которые всегда используют бесконечную прокрутку.",
   "blotter": "Объявления",
   "date": "Дата",
-  "hide_blotter": "Скрыть Blotter",
+  "hide_blotter": "Скрыть объявления",
   "message": "Сообщение",
   "show_all": "Показать всё",
-  "show_blotter": "Показать Blotter",
+  "show_blotter": "Показать объявления",
   "top": "Вверх"
 }

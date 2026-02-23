@@ -276,9 +276,9 @@
   "enable_infinite_scroll_tip": "Gäller inte multiboard, som alltid använder oändlig scroll.",
   "blotter": "Meddelanden",
   "date": "Datum",
-  "hide_blotter": "Dölj Blotter",
+  "hide_blotter": "Dölj Meddelanden",
   "message": "Meddelande",
   "show_all": "Visa alla",
-  "show_blotter": "Visa Blotter",
+  "show_blotter": "Visa Meddelanden",
   "top": "Topp"
 }

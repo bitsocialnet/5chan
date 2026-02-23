@@ -276,9 +276,9 @@
   "enable_infinite_scroll_tip": "Ei koske monilautalistauksia, jotka aina käyttävät ääretöntä vieritystä.",
   "blotter": "Ilmoitukset",
   "date": "Päivämäärä",
-  "hide_blotter": "Piilota Blotter",
+  "hide_blotter": "Piilota ilmoitukset",
   "message": "Viesti",
   "show_all": "Näytä kaikki",
-  "show_blotter": "Näytä Blotter",
+  "show_blotter": "Näytä ilmoitukset",
   "top": "Ylös"
 }

@@ -276,9 +276,9 @@
   "enable_infinite_scroll_tip": "Nie dotyczy multiboardów, które zawsze używają nieskończonego przewijania.",
   "blotter": "Ogłoszenia",
   "date": "Data",
-  "hide_blotter": "Ukryj Blotter",
+  "hide_blotter": "Ukryj Ogłoszenia",
   "message": "Wiadomość",
   "show_all": "Pokaż wszystko",
-  "show_blotter": "Pokaż Blotter",
+  "show_blotter": "Pokaż Ogłoszenia",
   "top": "Góra"
 }

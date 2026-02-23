@@ -276,7 +276,7 @@
   "enable_infinite_scroll_tip": "不适用于多板视图，后者始终使用无限滚动。",
   "blotter": "公告",
   "date": "日期",
-  "hide_blotter": "隐藏 Blotter",
+  "hide_blotter": "隐藏公告",
   "message": "消息",
   "show_all": "显示全部",
   "show_blotter": "显示公告",
