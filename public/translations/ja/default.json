@@ -281,5 +281,6 @@
   "show_all": "すべて表示",
   "show_blotter": "お知らせを表示",
   "top": "上",
-  "reply_count": "返信数"
+  "reply_count": "返信数",
+  "pagination.pageCurrent": "{{page}}ページ（現在）"
 }

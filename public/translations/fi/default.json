@@ -281,5 +281,6 @@
   "show_all": "Näytä kaikki",
   "show_blotter": "Näytä ilmoitukset",
   "top": "Ylös",
-  "reply_count": "Vastausten määrä"
+  "reply_count": "Vastausten määrä",
+  "pagination.pageCurrent": "Sivu {{page}} (nykyinen)"
 }

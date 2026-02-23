@@ -281,5 +281,6 @@
   "show_all": "Показати все",
   "show_blotter": "Показати оголошення",
   "top": "Вгору",
-  "reply_count": "Кількість відповідей"
+  "reply_count": "Кількість відповідей",
+  "pagination.pageCurrent": "Сторінка {{page}} (поточна)"
 }

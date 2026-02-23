@@ -281,5 +281,6 @@
   "show_all": "Hiển thị tất cả",
   "show_blotter": "Hiển thị Thông báo",
   "top": "Trên",
-  "reply_count": "Số lượng phản hồi"
+  "reply_count": "Số lượng phản hồi",
+  "pagination.pageCurrent": "Trang {{page}} (hiện tại)"
 }

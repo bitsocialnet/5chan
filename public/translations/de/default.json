@@ -276,10 +276,11 @@
   "enable_infinite_scroll_tip": "Gilt nicht für Multiboards, die immer Endlos-Scrolling verwenden.",
   "blotter": "Ankündigungen",
   "date": "Datum",
-  "hide_blotter": "Blotter ausblenden",
+  "hide_blotter": "Ankündigungen ausblenden",
   "message": "Nachricht",
   "show_all": "Alle anzeigen",
-  "show_blotter": "Blotter anzeigen",
+  "show_blotter": "Ankündigungen anzeigen",
   "top": "Oben",
-  "reply_count": "Anzahl Antworten"
+  "reply_count": "Anzahl Antworten",
+  "pagination.pageCurrent": "Seite {{page}} (aktuell)"
 }

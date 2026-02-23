@@ -281,5 +281,6 @@
   "show_all": "แสดงทั้งหมด",
   "show_blotter": "แสดงประกาศ",
   "top": "บน",
-  "reply_count": "จำนวนการตอบกลับ"
+  "reply_count": "จำนวนการตอบกลับ",
+  "pagination.pageCurrent": "หน้า {{page}} (ปัจจุบัน)"
 }

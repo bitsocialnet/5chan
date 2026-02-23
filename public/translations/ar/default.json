@@ -281,5 +281,6 @@
   "show_all": "عرض الكل",
   "show_blotter": "إظهار لوحة الإعلانات",
   "top": "أعلى",
-  "reply_count": "عدد الردود"
+  "reply_count": "عدد الردود",
+  "pagination.pageCurrent": "الصفحة {{page}} (الحالية)"
 }

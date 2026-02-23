@@ -281,5 +281,6 @@
   "show_all": "Tampilkan Semua",
   "show_blotter": "Tampilkan Pengumuman",
   "top": "Atas",
-  "reply_count": "Jumlah balasan"
+  "reply_count": "Jumlah balasan",
+  "pagination.pageCurrent": "Halaman {{page}} (saat ini)"
 }

@@ -281,5 +281,6 @@
   "show_all": "Zobrazit vše",
   "show_blotter": "Zobrazit Oznámení",
   "top": "Nahoru",
-  "reply_count": "Počet odpovědí"
+  "reply_count": "Počet odpovědí",
+  "pagination.pageCurrent": "Stránka {{page}} (aktuální)"
 }

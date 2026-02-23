@@ -281,5 +281,6 @@
   "show_all": "سب دکھائیں",
   "show_blotter": "اعلانات دکھائیں",
   "top": "اوپر",
-  "reply_count": "جوابوں کی تعداد"
+  "reply_count": "جوابوں کی تعداد",
+  "pagination.pageCurrent": "صفحہ {{page}} (موجودہ)"
 }

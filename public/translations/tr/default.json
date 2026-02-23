@@ -281,5 +281,6 @@
   "show_all": "Tümünü göster",
   "show_blotter": "Duyuruları Göster",
   "top": "Üst",
-  "reply_count": "Yanıt sayısı"
+  "reply_count": "Yanıt sayısı",
+  "pagination.pageCurrent": "Sayfa {{page}} (mevcut)"
 }

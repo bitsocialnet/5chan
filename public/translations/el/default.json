@@ -281,5 +281,6 @@
   "show_all": "Εμφάνιση όλων",
   "show_blotter": "Εμφάνιση Ανακοινώσεων",
   "top": "Πάνω",
-  "reply_count": "Αριθμός απαντήσεων"
+  "reply_count": "Αριθμός απαντήσεων",
+  "pagination.pageCurrent": "Σελίδα {{page}} (τρέχουσα)"
 }

@@ -281,5 +281,6 @@
   "show_all": "सभी दिखाएं",
   "show_blotter": "सूचनाएं दिखाएं",
   "top": "शीर्ष",
-  "reply_count": "जवाबों की संख्या"
+  "reply_count": "जवाबों की संख्या",
+  "pagination.pageCurrent": "पृष्ठ {{page}} (वर्तमान)"
 }

@@ -281,5 +281,6 @@
   "show_all": "Mostrar todo",
   "show_blotter": "Mostrar Anuncios",
   "top": "Arriba",
-  "reply_count": "Número de respuestas"
+  "reply_count": "Número de respuestas",
+  "pagination.pageCurrent": "Página {{page}} (actual)"
 }

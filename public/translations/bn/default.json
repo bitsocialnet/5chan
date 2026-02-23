@@ -276,10 +276,11 @@
   "enable_infinite_scroll_tip": "মাল্টিবোর্ডে প্রযোজ্য নয়, যা সবসময় অসীম স্ক্রল ব্যবহার করে।",
   "blotter": "ঘোষণা",
   "date": "তারিখ",
-  "hide_blotter": "ব্লটার লুকিয়ে রাখুন",
+  "hide_blotter": "ঘোষণা লুকিয়ে রাখুন",
   "message": "বার্তা",
   "show_all": "সব দেখুন",
-  "show_blotter": "ব্লটার দেখান",
+  "show_blotter": "ঘোষণা দেখান",
   "top": "শীর্ষ",
-  "reply_count": "উত্তরসংখ্যা"
+  "reply_count": "উত্তরসংখ্যা",
+  "pagination.pageCurrent": "পৃষ্ঠা {{page}} (বর্তমান)"
 }

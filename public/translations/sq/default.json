@@ -281,5 +281,6 @@
   "show_all": "Shfaq të gjitha",
   "show_blotter": "Shfaq Njoftimet",
   "top": "Lart",
-  "reply_count": "Numri i përgjigjeve"
+  "reply_count": "Numri i përgjigjeve",
+  "pagination.pageCurrent": "Faqja {{page}} (aktuale)"
 }

@@ -281,5 +281,6 @@
   "show_all": "הצג הכל",
   "show_blotter": "הצג הודעות",
   "top": "למעלה",
-  "reply_count": "מספר תגובות"
+  "reply_count": "מספר תגובות",
+  "pagination.pageCurrent": "עמוד {{page}} (נוכחי)"
 }

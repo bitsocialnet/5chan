@@ -274,6 +274,7 @@
   "enable_infinite_scroll": "Enable infinite scroll",
   "prev": "Prev",
   "next": "Next",
+  "pagination.pageCurrent": "Page {{page}} (current)",
   "enable_infinite_scroll_tip": "Does not apply to multiboards, which always use infinite scroll.",
   "blotter": "Blotter",
   "date": "Date",

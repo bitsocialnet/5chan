@@ -276,10 +276,11 @@
   "enable_infinite_scroll_tip": "మల్టీబోర్డ్‌లకు వర్తించదు, అవి ఎల్లప్పుడూ అనంత స్క్రాల్ ఉపయోగిస్తాయి.",
   "blotter": "ప్రకటనలు",
   "date": "తేదీ",
-  "hide_blotter": "బ్లాటర్ దాచండి",
+  "hide_blotter": "ప్రకటనలు దాచండి",
   "message": "సందేశం",
   "show_all": "అన్నీ చూపించు",
-  "show_blotter": "బ్లాటర్ చూపించు",
+  "show_blotter": "ప్రకటనలు చూపించు",
   "top": "పై",
-  "reply_count": "సమాధానాల సంఖ్య"
+  "reply_count": "సమాధానాల సంఖ్య",
+  "pagination.pageCurrent": "పేజీ {{page}} (ప్రస్తుత)"
 }

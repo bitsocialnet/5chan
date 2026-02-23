@@ -281,5 +281,6 @@
   "show_all": "Pokaż wszystko",
   "show_blotter": "Pokaż Ogłoszenia",
   "top": "Góra",
-  "reply_count": "Liczba odpowiedzi"
+  "reply_count": "Liczba odpowiedzi",
+  "pagination.pageCurrent": "Strona {{page}} (bieżąca)"
 }

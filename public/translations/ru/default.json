@@ -281,5 +281,6 @@
   "show_all": "Показать всё",
   "show_blotter": "Показать объявления",
   "top": "Вверх",
-  "reply_count": "Количество ответов"
+  "reply_count": "Количество ответов",
+  "pagination.pageCurrent": "Страница {{page}} (текущая)"
 }

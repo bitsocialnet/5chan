@@ -281,5 +281,6 @@
   "show_all": "Alles tonen",
   "show_blotter": "Mededelingen tonen",
   "top": "Boven",
-  "reply_count": "Aantal reacties"
+  "reply_count": "Aantal reacties",
+  "pagination.pageCurrent": "Pagina {{page}} (huidige)"
 }
