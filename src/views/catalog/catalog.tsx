@@ -375,12 +375,12 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
     }
   }, [filteredComments, reset]);
 
-  const handleNewerPostsButtonClick = () => {
+  const handleNewerPostsButtonClick = useCallback(() => {
     window.scrollTo({ top: 0, left: 0 });
     setTimeout(() => {
       reset();
     }, 300);
-  };
+  }, [reset]);
 
   // suggest the user to change time filter if there aren't enough posts
   const setResetFunction = useFeedResetStore((state) => state.setResetFunction);
