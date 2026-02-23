@@ -8,11 +8,17 @@ import android.provider.OpenableColumns;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.util.UUID;
+import java.util.regex.Pattern;
 
 public class FileUtils {
+    private static final int MAX_FILENAME_LENGTH = 255;
+    private static final Pattern UNSAFE_CHARS = Pattern.compile("[^a-zA-Z0-9._-]");
+
     public static File getFileFromUri(Context context, Uri uri) throws Exception {
         String fileName = getFileName(context, uri);
-        File file = new File(context.getCacheDir(), fileName);
+        String sanitizedName = sanitizeFileName(fileName);
+        File file = new File(context.getCacheDir(), sanitizedName);
 
         try (InputStream inputStream = context.getContentResolver().openInputStream(uri)) {
             if (inputStream == null) {
@@ -52,5 +58,24 @@ public class FileUtils {
             }
         }
         return result;
+    }
+
+    /**
+     * Sanitize a filename to prevent path traversal and invalid characters.
+     * Takes only the last path segment, removes/replaces unsafe chars, enforces max length,
+     * and falls back to a UUID if the result is empty.
+     */
+    private static String sanitizeFileName(String fileName) {
+        if (fileName == null || fileName.isEmpty()) {
+            return UUID.randomUUID().toString();
+        }
+        String basename = new File(fileName).getName();
+        basename = basename.replace("..", "");
+        basename = UNSAFE_CHARS.matcher(basename).replaceAll("_");
+        basename = basename.trim();
+        if (basename.isEmpty() || basename.length() > MAX_FILENAME_LENGTH) {
+            return UUID.randomUUID().toString();
+        }
+        return basename;
     }
 } 
