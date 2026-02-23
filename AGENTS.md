@@ -21,12 +21,12 @@ Use this as the default policy. Load linked playbooks only when their trigger co
 |---|---|
 | React UI logic changed (`src/components`, `src/views`, `src/hooks`, UI stores) | Follow React architecture rules below and run `yarn doctor` |
 | `package.json` changed | Run `yarn install` to keep `yarn.lock` in sync |
-| Translation key/value changed | Use `/Users/Tommaso/Desktop/bitsocial/5chan/docs/agent-playbooks/translations.md` |
-| Bug report in a specific file/line | Start with git history scan from `/Users/Tommaso/Desktop/bitsocial/5chan/docs/agent-playbooks/bug-investigation.md` before editing |
+| Translation key/value changed | Use `docs/agent-playbooks/translations.md` |
+| Bug report in a specific file/line | Start with git history scan from `docs/agent-playbooks/bug-investigation.md` before editing |
 | `CHANGELOG.md` or package version changed | Run `yarn blotter:check`; if needed add a concise release one-liner |
 | UI/visual behavior changed | Verify in browser with `playwright-cli`; test desktop and mobile viewport |
 | GitHub operation needed | Use `gh` CLI, not GitHub MCP |
-| User asks for commit/issue phrasing | Use `/Users/Tommaso/Desktop/bitsocial/5chan/docs/agent-playbooks/commit-issue-format.md` |
+| User asks for commit/issue phrasing | Use `docs/agent-playbooks/commit-issue-format.md` |
 
 ## Stack
 
@@ -80,7 +80,7 @@ src/
 
 - For bug reports tied to a specific file/line, check relevant git history before any fix.
 - Minimum sequence: `git log --oneline` or `git blame` first, then scoped `git show` for relevant commits.
-- Full workflow: `/Users/Tommaso/Desktop/bitsocial/5chan/docs/agent-playbooks/bug-investigation.md`.
+- Full workflow: `docs/agent-playbooks/bug-investigation.md`.
 
 ### Verification Rules
 
@@ -118,7 +118,7 @@ src/
 - When proposing or implementing meaningful code changes, include both:
   - a Conventional Commit title suggestion
   - a short GitHub issue suggestion
-  Use the format playbook: `/Users/Tommaso/Desktop/bitsocial/5chan/docs/agent-playbooks/commit-issue-format.md`.
+  Use the format playbook: `docs/agent-playbooks/commit-issue-format.md`.
 - When stuck on a bug, search the web for recent fixes/workarounds.
 - After user corrections, identify root cause and apply the lesson in subsequent steps.
 
@@ -140,8 +140,8 @@ yarn doctor:verbose
 
 Use these only when relevant to the active task:
 
-- Hooks setup and scripts: `/Users/Tommaso/Desktop/bitsocial/5chan/docs/agent-playbooks/hooks-setup.md`
-- Translations workflow: `/Users/Tommaso/Desktop/bitsocial/5chan/docs/agent-playbooks/translations.md`
-- Commit/issue output format: `/Users/Tommaso/Desktop/bitsocial/5chan/docs/agent-playbooks/commit-issue-format.md`
-- Skills/tools setup and MCP rationale: `/Users/Tommaso/Desktop/bitsocial/5chan/docs/agent-playbooks/skills-and-tools.md`
-- Bug investigation workflow: `/Users/Tommaso/Desktop/bitsocial/5chan/docs/agent-playbooks/bug-investigation.md`
+- Hooks setup and scripts: `docs/agent-playbooks/hooks-setup.md`
+- Translations workflow: `docs/agent-playbooks/translations.md`
+- Commit/issue output format: `docs/agent-playbooks/commit-issue-format.md`
+- Skills/tools setup and MCP rationale: `docs/agent-playbooks/skills-and-tools.md`
+- Bug investigation workflow: `docs/agent-playbooks/bug-investigation.md`
