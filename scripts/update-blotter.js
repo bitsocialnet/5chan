@@ -201,13 +201,13 @@ async function modeRelease(args) {
     process.exit(1);
   }
 
-  const timestamp = dateToUnix(releaseDate);
-  const fullMessage = formatReleaseMessage(version, message);
   if (!message) {
     console.error('--message is required for release mode');
     process.exit(1);
   }
 
+  const timestamp = dateToUnix(releaseDate);
+  const fullMessage = formatReleaseMessage(version, message);
   const entries = await loadBlotter();
   const id = `release-${version}`;
   const existingIdx = entries.findIndex((e) => e.kind === 'release' && (e.version === version || e.id === id));
