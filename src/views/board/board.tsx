@@ -350,6 +350,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, i
           increaseViewportBy={{ bottom: 1200, top: 1200 }}
           totalCount={displayFeed.length}
           data={displayFeed}
+          computeItemKey={(index, post) => post?.cid || `post-${index}`}
           itemContent={(index, post) => <Post index={index} post={post} />}
           useWindowScroll={true}
           components={footerComponents}
