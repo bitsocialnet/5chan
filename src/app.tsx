@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { Navigate, Outlet, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { useAccount, useAccountComment, useSubplebbit } from '@plebbit/plebbit-react-hooks';
 import useAccountsStore from '@plebbit/plebbit-react-hooks/dist/stores/accounts';
@@ -8,38 +8,37 @@ import { preloadThemeAssets } from './lib/utils/preload-utils';
 import useReplyModalStore from './stores/use-reply-modal-store';
 import useCreateBoardModalStore from './stores/use-create-board-modal-store';
 import useSpecialThemeStore from './stores/use-special-theme-store';
-import useFeedViewSettingsStore from './stores/use-feed-view-settings-store';
-import useFeedCacheStore from './stores/use-feed-cache-store';
 import useIsMobile from './hooks/use-is-mobile';
 import useTheme from './hooks/use-theme';
 import { useDirectories } from './hooks/use-directories';
 import { useResolvedSubplebbitAddress } from './hooks/use-resolved-subplebbit-address';
 import { getSubplebbitAddress, isPostRoute, isPendingPostRoute, isModQueueRoute } from './lib/utils/route-utils';
 import styles from './app.module.css';
+import { DesktopBoardButtons, MobileBoardButtons } from './components/board-buttons';
+import Board from './views/board';
 import Blotter from './views/blotter';
+import Catalog from './views/catalog';
 import FAQ from './views/faq';
 import Home from './views/home';
-import Rules from './views/rules';
-import NotFound from './views/not-found';
+import ModQueueView from './views/mod-queue';
 import NotAllowed from './views/not-allowed';
+import NotFound from './views/not-found';
 import PendingPost from './views/pending-post';
 import Post from './views/post';
-import Board from './views/board';
-import Catalog from './views/catalog';
-import ModQueueView from './views/mod-queue';
-import { DesktopBoardButtons, MobileBoardButtons } from './components/board-buttons';
+import Rules from './views/rules';
 import BoardHeader from './components/board-header';
 import ChallengeModal from './components/challenge-modal';
-import CreateBoardModal from './components/create-board-modal';
 import FeedCacheContainer from './components/feed-cache-container';
 import ReplyModal from './components/reply-modal';
 import PostForm from './components/post-form';
 import BoardBlotter from './components/board-blotter';
 import BoardsBar from './components/boardsbar';
-import BoardsBarEditModal from './components/boardsbar-edit-modal';
-import DirectoryModal from './components/directory-modal';
-import DisclaimerModal from './components/disclaimer-modal';
-import SettingsModal from './components/settings-modal';
+
+const BoardsBarEditModal = lazy(() => import('./components/boardsbar-edit-modal'));
+const CreateBoardModal = lazy(() => import('./components/create-board-modal'));
+const DirectoryModal = lazy(() => import('./components/directory-modal'));
+const DisclaimerModal = lazy(() => import('./components/disclaimer-modal'));
+const SettingsModal = lazy(() => import('./components/settings-modal'));
 
 // Preload all theme assets (buttons, backgrounds) immediately on app load
 // to prevent visible loading delays when switching themes
@@ -58,20 +57,10 @@ const BoardLayout = () => {
   const subplebbitAddress = boardIdentifier ? getSubplebbitAddress(boardIdentifier, directories) : undefined;
   const pendingPost = useAccountComment({ commentIndex: accountCommentIndex ? parseInt(accountCommentIndex) : undefined });
   const { closeCreateBoardModal } = useCreateBoardModalStore();
-  const enableInfiniteScroll = useFeedViewSettingsStore((state) => state.enableInfiniteScroll);
-  const clearFeeds = useFeedCacheStore((state) => state.clearFeeds);
-
   const isOnPostRoute = isPostRoute(location.pathname);
   const isOnPendingPostRoute = isPendingPostRoute(location.pathname);
   const isOnModQueueRoute = isModQueueRoute(location.pathname);
-  const shouldRenderOutlet = !enableInfiniteScroll || isOnPostRoute || isOnPendingPostRoute || isOnModQueueRoute;
-
-  // Clear feed cache when switching from infinite scroll to pagination
-  useEffect(() => {
-    if (!enableInfiniteScroll) {
-      clearFeeds();
-    }
-  }, [enableInfiniteScroll, clearFeeds]);
+  const shouldRenderOutlet = isOnPostRoute || isOnPendingPostRoute || isOnModQueueRoute;
 
   // Christmas theme
   const { isEnabled: isSpecialEnabled } = useSpecialThemeStore();
@@ -97,10 +86,18 @@ const BoardLayout = () => {
   return (
     <div className={styles.boardLayout}>
       <BoardsBar />
-      <CreateBoardModal />
-      <BoardsBarEditModal />
-      <DirectoryModal />
-      <DisclaimerModal />
+      <Suspense fallback={null}>
+        <CreateBoardModal />
+      </Suspense>
+      <Suspense fallback={null}>
+        <BoardsBarEditModal />
+      </Suspense>
+      <Suspense fallback={null}>
+        <DirectoryModal />
+      </Suspense>
+      <Suspense fallback={null}>
+        <DisclaimerModal />
+      </Suspense>
       <BoardHeader />
       {isMobile
         ? (subplebbitAddress || isInAllView || isInModView || isInSubscriptionsView || pendingPost?.subplebbitAddress || isOnModQueueRoute) && (
@@ -116,7 +113,7 @@ const BoardLayout = () => {
               <DesktopBoardButtons />
             </>
           )}
-      {enableInfiniteScroll && <FeedCacheContainer />}
+      <FeedCacheContainer />
       {shouldRenderOutlet && <Outlet />}
     </div>
   );
@@ -154,7 +151,11 @@ const GlobalLayout = () => {
           subplebbitAddress={subplebbitAddress}
         />
       )}
-      {isInSettingsView && <SettingsModal />}
+      {isInSettingsView && (
+        <Suspense fallback={null}>
+          <SettingsModal />
+        </Suspense>
+      )}
       <Outlet />
     </>
   );
@@ -232,9 +233,9 @@ const ModQueueRoute = () => {
 };
 
 const App = () => {
-  const enableInfiniteScroll = useFeedViewSettingsStore((state) => state.enableInfiniteScroll);
-  const boardFeedElement = enableInfiniteScroll ? null : <BoardFeedRoute />;
-  const catalogFeedElement = enableInfiniteScroll ? null : <CatalogFeedRoute />;
+  // Feed routes are always rendered by FeedCacheContainer (Virtuoso used for all modes)
+  const boardFeedElement = null;
+  const catalogFeedElement = null;
 
   return (
     <div className={styles.app}>
