@@ -1,6 +1,7 @@
-import { memo, useEffect } from 'react';
+import { memo, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Comment, Role, useComment, useEditedComment, useSubplebbit } from '@plebbit/plebbit-react-hooks';
+import useSubplebbitsPagesStore from '@plebbit/plebbit-react-hooks/dist/stores/subplebbits-pages';
 import { useSubplebbitField } from '../../hooks/use-stable-subplebbit';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { isAllView } from '../../lib/utils/view-utils';
@@ -14,6 +15,19 @@ import PostDesktop from '../../components/post-desktop';
 import PostMobile from '../../components/post-mobile';
 import ThreadFooterFirstRow from '../../components/thread-footer-first-row';
 import styles from './post.module.css';
+
+// useComment may not return cached feed data immediately due to its updatedAt comparison logic.
+// This hook falls back to the subplebbit pages store (populated by useFeed) so content
+// from the catalog appears instantly instead of going through a loading phase.
+const useCommentWithFeedCache = (options: { commentCid: string | undefined }) => {
+  const comment = useComment(options);
+  const cachedComment = useSubplebbitsPagesStore((state) => state.comments[options?.commentCid || '']);
+
+  return useMemo(() => {
+    if (!cachedComment || comment?.timestamp) return comment;
+    return { ...cachedComment, state: comment?.state, error: comment?.error, errors: comment?.errors } as Comment;
+  }, [comment, cachedComment]);
+};
 
 export interface PostProps {
   index?: number;
@@ -118,7 +132,7 @@ const PostPage = () => {
   const subplebbitAddress = useResolvedSubplebbitAddress();
   const isInAllView = isAllView(location.pathname);
 
-  const comment = useComment({ commentCid });
+  const comment = useCommentWithFeedCache({ commentCid });
 
   const navigate = useNavigate();
   useEffect(() => {
@@ -132,7 +146,7 @@ const PostPage = () => {
   const directories = useDirectories();
 
   // if the comment is a reply, return the post comment instead, then the reply will be highlighted in the thread
-  const postComment = useComment({ commentCid: comment?.postCid });
+  const postComment = useCommentWithFeedCache({ commentCid: comment?.postCid });
   let post: Comment;
   if (comment.parentCid) {
     post = postComment;
