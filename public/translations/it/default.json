@@ -173,7 +173,6 @@
   "no_board_selected_warning": "Per favore, seleziona una board prima di pubblicare.",
   "invalid_url_alert": "Il link fornito non è un URL valido.",
   "empty_comment_alert": "Impossibile pubblicare un commento vuoto.",
-  "newer_threads_available": "Nuovi thread disponibili — [<1>Aggiorna</1>]",
   "stored_locally": "Archiviato localmente (nei dati di {{location}}), non sincronizzato tra dispositivi",
   "choose_one": "Scegline una:",
   "create": "Crea",

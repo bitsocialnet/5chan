@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useLocation, useNavigate, useNavigationType, useParams } from 'react-router-dom';
-import { Trans, useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import { Comment, useAccount, useFeed, useSubplebbit, useAccountComments } from '@plebbit/plebbit-react-hooks';
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
 import useCatalogFeedRows from '../../hooks/use-catalog-feed-rows';
@@ -31,8 +31,6 @@ interface CatalogFooterProps {
   subplebbitAddresses: string[];
   hasMore: boolean;
   combinedFeedLength: number;
-  subplebbitAddressesWithNewerPosts: string[];
-  onNewerPostsClick: () => void;
   isInAllView: boolean;
   isInSubscriptionsView: boolean;
   isInModView: boolean;
@@ -47,8 +45,6 @@ const CatalogFooter = ({
   subplebbitAddresses,
   hasMore,
   combinedFeedLength,
-  subplebbitAddressesWithNewerPosts,
-  onNewerPostsClick,
   isInAllView,
   isInSubscriptionsView,
   isInModView,
@@ -65,16 +61,6 @@ const CatalogFooter = ({
   if (hasMore || (subplebbitAddresses && subplebbitAddresses.length === 0)) {
     footerContent = (
       <>
-        {subplebbitAddressesWithNewerPosts.length > 0 && (
-          <div className={styles.stateString}>
-            <Trans
-              i18nKey='newer_threads_available'
-              components={{
-                1: <span className={styles.newerPostsButton} onClick={onNewerPostsClick} />,
-              }}
-            />
-          </div>
-        )}
         {showLoadingEllipsis && (
           <div className={styles.stateString}>
             <LoadingEllipsis string={loadingStateString} />
@@ -314,7 +300,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
     handleFilterMatch,
   ]);
 
-  const { feed, hasMore, loadMore, reset, subplebbitAddressesWithNewerPosts } = useFeed(feedOptions);
+  const { feed, hasMore, loadMore, reset } = useFeed(feedOptions);
   const { accountComments } = useAccountComments();
 
   const resetTriggeredRef = useRef(false);
@@ -375,13 +361,6 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
     }
   }, [filteredComments, reset]);
 
-  const handleNewerPostsButtonClick = useCallback(() => {
-    window.scrollTo({ top: 0, left: 0 });
-    setTimeout(() => {
-      reset();
-    }, 300);
-  }, [reset]);
-
   // suggest the user to change time filter if there aren't enough posts
   const setResetFunction = useFeedResetStore((state) => state.setResetFunction);
   useEffect(() => {
@@ -403,8 +382,6 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
             subplebbitAddresses={subplebbitAddresses}
             hasMore={hasMore}
             combinedFeedLength={cappedFeed.length}
-            subplebbitAddressesWithNewerPosts={subplebbitAddressesWithNewerPosts}
-            onNewerPostsClick={handleNewerPostsButtonClick}
             isInAllView={isInAllView}
             isInSubscriptionsView={isInSubscriptionsView}
             isInModView={isInModView}
@@ -414,17 +391,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
         </>
       ),
     }),
-    [
-      subplebbitAddresses,
-      hasMore,
-      cappedFeed.length,
-      subplebbitAddressesWithNewerPosts,
-      handleNewerPostsButtonClick,
-      isInAllView,
-      isInSubscriptionsView,
-      isInModView,
-      effectiveInfiniteScroll,
-    ],
+    [subplebbitAddresses, hasMore, cappedFeed.length, isInAllView, isInSubscriptionsView, isInModView, effectiveInfiniteScroll],
   );
 
   const isFeedLoaded = feed.length > 0 || state === 'failed';

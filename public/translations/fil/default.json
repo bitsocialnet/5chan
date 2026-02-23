@@ -173,7 +173,6 @@
   "no_board_selected_warning": "Mangyaring pumili ng board bago mag-post.",
   "invalid_url_alert": "Ang ibinigay na link ay hindi isang wastong URL.",
   "empty_comment_alert": "Hindi makapag-post ng walang laman na komento.",
-  "newer_threads_available": "Bagong mga thread na magagamit — [<1>I-refresh</1>]",
   "stored_locally": "Naka-imbak nang lokal (sa datos ng {{location}}), hindi naka-sync sa mga device",
   "choose_one": "Pumili ng isa:",
   "create": "Lumikha",

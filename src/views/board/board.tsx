@@ -3,7 +3,7 @@ import { useLocation, useNavigate, useNavigationType, useParams } from 'react-ro
 import { Comment, useAccount, useAccountComments, useAccountSubplebbits, useFeed, useSubplebbit } from '@plebbit/plebbit-react-hooks';
 import { useSubplebbitField } from '../../hooks/use-stable-subplebbit';
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
-import { Trans, useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import styles from './board.module.css';
 import { shouldShowSnow } from '../../lib/snow';
 import { useDirectoryAddresses, useDirectories, useDirectoryByAddress } from '../../hooks/use-directories';
@@ -30,8 +30,6 @@ interface BoardFooterProps {
   subplebbitAddresses: string[];
   hasMore: boolean;
   combinedFeedLength: number;
-  subplebbitAddressesWithNewerPosts: string[];
-  onNewerPostsClick: () => void;
   isInAllView: boolean;
   isInSubscriptionsView: boolean;
   isInModView: boolean;
@@ -49,8 +47,6 @@ const BoardFooter = ({
   subplebbitAddresses,
   hasMore,
   combinedFeedLength,
-  subplebbitAddressesWithNewerPosts,
-  onNewerPostsClick,
   isInAllView,
   isInSubscriptionsView,
   isInModView,
@@ -68,20 +64,7 @@ const BoardFooter = ({
     footerContent = t('no_threads');
   }
   if (hasMore || (subplebbitAddresses && subplebbitAddresses.length === 0)) {
-    footerContent = (
-      <>
-        {subplebbitAddressesWithNewerPosts.length > 0 && (
-          <div className={styles.morePostsSuggestion}>
-            <Trans
-              i18nKey='newer_threads_available'
-              components={{
-                1: <span className={styles.newerPostsButton} onClick={onNewerPostsClick} />,
-              }}
-            />
-          </div>
-        )}
-      </>
-    );
+    footerContent = null;
   }
   return (
     <div className={styles.footer}>
@@ -162,7 +145,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, i
     [subplebbitAddresses, effectiveInfiniteScroll, infiniteFeedPostsPerPage, paginationFeedPostsPerPage],
   );
 
-  const { feed, hasMore, loadMore, reset, subplebbitAddressesWithNewerPosts } = useFeed(feedOptions);
+  const { feed, hasMore, loadMore, reset } = useFeed(feedOptions);
   const { accountComments } = useAccountComments();
 
   const feedContextKey = `${isInAllView ? 'all' : isInSubscriptionsView ? 'subs' : isInModView ? 'mod' : (subplebbitAddress ?? 'board')}-${BOARD_SORT_TYPE}-${viewType ?? 'board'}-${effectiveInfiniteScroll}`;
@@ -260,13 +243,6 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, i
   const { error: subplebbitError, state: subplebbitState } = subplebbit || {};
   const title = isInAllView ? t('all') : isInSubscriptionsView ? t('subscriptions') : isInModView ? t('mod') : subplebbitTitle;
 
-  const handleNewerPostsButtonClick = () => {
-    window.scrollTo({ top: 0, left: 0 });
-    setTimeout(() => {
-      reset();
-    }, 300);
-  };
-
   // Memoize footer component to preserve identity across renders (Virtuoso optimization)
   // Note: useFeedStateString is called inside BoardFooter to isolate re-renders from backend state changes
   const footerComponents = useMemo(
@@ -277,8 +253,6 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, i
             subplebbitAddresses={subplebbitAddresses}
             hasMore={hasMore}
             combinedFeedLength={combinedFeed.length}
-            subplebbitAddressesWithNewerPosts={subplebbitAddressesWithNewerPosts}
-            onNewerPostsClick={handleNewerPostsButtonClick}
             isInAllView={isInAllView}
             isInSubscriptionsView={isInSubscriptionsView}
             isInModView={isInModView}
@@ -295,8 +269,6 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, i
       subplebbitAddresses,
       hasMore,
       combinedFeed.length,
-      subplebbitAddressesWithNewerPosts,
-      handleNewerPostsButtonClick,
       isInAllView,
       isInSubscriptionsView,
       isInModView,

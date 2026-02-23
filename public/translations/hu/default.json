@@ -173,7 +173,6 @@
   "no_board_selected_warning": "Kérlek, válassz egy táblát a közzététel előtt.",
   "invalid_url_alert": "A megadott hivatkozás nem érvényes URL.",
   "empty_comment_alert": "Üres hozzászólást nem lehet közzétenni.",
-  "newer_threads_available": "Újabb szálak elérhetők — [<1>Frissíteni</1>]",
   "stored_locally": "Helyileg tárolva (a {{location}} adatában), nem szinkronizálva az eszközök között",
   "choose_one": "Válasszon egyet:",
   "create": "Létrehozás",

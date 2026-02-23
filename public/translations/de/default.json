@@ -173,7 +173,6 @@
   "no_board_selected_warning": "Bitte wählen Sie ein Board, bevor Sie posten.",
   "invalid_url_alert": "Der bereitgestellte Link ist keine gültige URL.",
   "empty_comment_alert": "Kann keinen leeren Kommentar posten.",
-  "newer_threads_available": "Neuere Threads verfügbar — [<1>Aktualisieren</1>]",
   "stored_locally": "Lokal gespeichert (in {{location}}-Daten), nicht zwischen Geräten synchronisiert",
   "choose_one": "Wählen Sie eine:",
   "create": "Erstellen",

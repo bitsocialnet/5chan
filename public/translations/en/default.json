@@ -182,7 +182,6 @@
   "no_board_selected_warning": "Please select a board before posting.",
   "invalid_url_alert": "The provided link is not a valid URL.",
   "empty_comment_alert": "Cannot post empty comment.",
-  "newer_threads_available": "Newer threads available — [<1>Refresh</1>]",
   "stored_locally": "Stored locally (in {{location}} data), not synced across devices",
   "choose_one": "Choose one:",
   "create": "Create",

@@ -173,7 +173,6 @@
   "no_board_selected_warning": "पोस्ट करने से पहले कृपया एक बोर्ड चुनें।",
   "invalid_url_alert": "प्रदत्त लिंक एक वैध URL नहीं है।",
   "empty_comment_alert": "खाली टिप्पणी पोस्ट नहीं कर सकते।",
-  "newer_threads_available": "नए थ्रेड्स उपलब्ध हैं — [<1>रिफ्रेश करें</1>]",
   "stored_locally": "स्थानीय रूप से संग्रहीत ({{location}} डेटा में), डिवाइस पर सिंक नहीं",
   "choose_one": "एक चुनें:",
   "create": "बनाएं",

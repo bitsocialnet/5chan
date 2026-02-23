@@ -173,7 +173,6 @@
   "no_board_selected_warning": "Ju lutemi zgjidhni një bord para se të postoni.",
   "invalid_url_alert": "Lidhja e ofruar nuk është një URL e vlefshme.",
   "empty_comment_alert": "Nuk mund të postoni një koment bosh.",
-  "newer_threads_available": "Temat më të reja të disponueshme — [<1>Rifresko</1>]",
   "stored_locally": "Ruhet lokalisht (në të dhënat {{location}}), nuk sinkronizohet ndër pajisjet",
   "choose_one": "Zgjidhni një:",
   "create": "Krijo",

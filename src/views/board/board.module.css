@@ -12,18 +12,13 @@
   padding: 15px 0 20px 5px;
 }
 
-.morePostsSuggestion {
-  color: var(--body-font-color);
-  padding-bottom: 5px;
-}
-
-.footer a, .newerPostsButton  {
+.footer a {
   cursor: pointer;
   text-decoration: var(--button-text-decoration);
   color: var(--button-desktop-text-color);
 }
 
-.footer a:hover, .newerPostsButton:hover {
+.footer a:hover {
   color: var(--button-desktop-text-color-hover);
 }
 

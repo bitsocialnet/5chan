@@ -173,7 +173,6 @@
   "no_board_selected_warning": "يرجى تحديد لوحة قبل النشر.",
   "invalid_url_alert": "الرابط المقدم ليس عنوان URL صالحًا.",
   "empty_comment_alert": "لا يمكن نشر تعليق فارغ.",
-  "newer_threads_available": "مواضيع أحدث متاحة — [<1>تحديث</1>]",
   "stored_locally": "مُخزّن محليًا (في بيانات {{location}})، غير مُزامَن بين الأجهزة",
   "choose_one": "اختر واحدة:",
   "create": "إنشاء",

@@ -173,7 +173,6 @@
   "no_board_selected_warning": "Silakan pilih papan sebelum memposting.",
   "invalid_url_alert": "Tautan yang diberikan bukan URL yang valid.",
   "empty_comment_alert": "Tidak dapat memposting komentar kosong.",
-  "newer_threads_available": "Thread terbaru tersedia — [<1>Segarkan</1>]",
   "stored_locally": "Disimpan secara lokal (dalam data {{location}}), tidak disinkronkan antar perangkat",
   "choose_one": "Pilih satu:",
   "create": "Buat",

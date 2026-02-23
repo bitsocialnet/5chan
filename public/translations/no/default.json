@@ -173,7 +173,6 @@
   "no_board_selected_warning": "Vennligst velg et brett før du poster.",
   "invalid_url_alert": "Den angitte lenken er ikke en gyldig URL.",
   "empty_comment_alert": "Kan ikke poste tom kommentar.",
-  "newer_threads_available": "Nyere tråder tilgjengelig — [<1>Oppdater</1>]",
   "stored_locally": "Lagres lokalt (i {{location}} data), ikke synkronisert på tvers av enheter",
   "choose_one": "Velg en:",
   "create": "Opprett",

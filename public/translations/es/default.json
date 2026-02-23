@@ -173,7 +173,6 @@
   "no_board_selected_warning": "Por favor, selecciona una tabla antes de publicar.",
   "invalid_url_alert": "El enlace proporcionado no es una URL válida.",
   "empty_comment_alert": "No se puede publicar un comentario vacío.",
-  "newer_threads_available": "Nuevos hilos disponibles — [<1>Actualizar</1>]",
   "stored_locally": "Almacenado localmente (en datos de {{location}}), no sincronizado entre dispositivos",
   "choose_one": "Elige uno:",
   "create": "Crear",

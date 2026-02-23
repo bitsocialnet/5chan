@@ -173,7 +173,6 @@
   "no_board_selected_warning": "Selecteer een bord voordat je plaatst.",
   "invalid_url_alert": "De opgegeven link is geen geldige URL.",
   "empty_comment_alert": "Kan geen lege opmerking plaatsen.",
-  "newer_threads_available": "Nieuwere threads beschikbaar — [<1>Vernieuwen</1>]",
   "stored_locally": "Lokaal opgeslagen (in {{location}} gegevens), niet gesynchroniseerd tussen apparaten",
   "choose_one": "Kies er een:",
   "create": "Maak aan",

@@ -173,7 +173,6 @@
   "no_board_selected_warning": "投稿する前にボードを選択してください。",
   "invalid_url_alert": "提供されたリンクは有効なURLではありません。",
   "empty_comment_alert": "空のコメントは投稿できません。",
-  "newer_threads_available": "新しいスレッドが利用可能 — [<1>更新</1>]",
   "stored_locally": "ローカルに保存（{{location}}のデータ内）、デバイス間で同期されません",
   "choose_one": "いずれかを選択してください:",
   "create": "作成",

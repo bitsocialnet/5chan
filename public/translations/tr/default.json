@@ -173,7 +173,6 @@
   "no_board_selected_warning": "Lütfen gönderimden önce bir pano seçin.",
   "invalid_url_alert": "Verilen bağlantı geçerli bir URL değildir.",
   "empty_comment_alert": "Boş yorum gönderilemez.",
-  "newer_threads_available": "Yeni gönderiler mevcut — [<1>Yenile</1>]",
   "stored_locally": "Yerel olarak depolandı ({{location}} verisinde), cihazlar arasında senkronize değil",
   "choose_one": "Birini seç:",
   "create": "Oluştur",

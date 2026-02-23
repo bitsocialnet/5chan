@@ -173,7 +173,6 @@
   "no_board_selected_warning": "Proszę wybrać tablicę przed opublikowaniem.",
   "invalid_url_alert": "Podany link nie jest poprawnym adresem URL.",
   "empty_comment_alert": "Nie można opublikować pustego komentarza.",
-  "newer_threads_available": "Nowsze wątki dostępne — [<1>Odśwież</1>]",
   "stored_locally": "Przechowywane lokalnie (w danych {{location}}), nie synchronizowane między urządzeniami",
   "choose_one": "Wybierz jeden:",
   "create": "Utwórz",
