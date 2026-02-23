@@ -270,7 +270,7 @@ const App = () => {
             <Route path='/subs/*' element={<Navigate to='/not-found' replace />} />
             <Route path='/mod/*' element={<Navigate to='/not-found' replace />} />
 
-            <Route path='/:boardIdentifier/:pageNumber' element={boardFeedElement} />
+            <Route path='/:boardIdentifier/:pageNumber(\\d+)' element={boardFeedElement} />
             <Route path='/:boardIdentifier' element={boardFeedElement} />
             <Route path='/:boardIdentifier/settings' element={boardFeedElement} />
             <Route path='/:boardIdentifier/catalog' element={catalogFeedElement} />
