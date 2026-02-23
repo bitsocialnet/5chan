@@ -87,7 +87,7 @@ const BoardPagination = ({ basePath, currentPage, totalPages, footerStyle = fals
         const href = pageHref(page);
         const isCurrent = page === currentPage;
         return isCurrent ? (
-          <span key={page} className={`${styles.paginationButton} ${styles.pageButtonActive}`} aria-label={`Page ${page} (current)`} aria-current='page'>
+          <span key={page} className={`${styles.paginationButton} ${styles.pageButtonActive}`} aria-label={t('pagination.pageCurrent', { page })} aria-current='page'>
             {page}
           </span>
         ) : (
