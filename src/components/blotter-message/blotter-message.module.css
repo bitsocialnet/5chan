@@ -1,0 +1,9 @@
+.versionLink {
+  color: var(--button-desktop-text-color);
+  text-decoration: var(--button-text-decoration);
+  text-transform: none;
+}
+
+.versionLink:hover {
+  color: var(--button-desktop-text-color-hover);
+}

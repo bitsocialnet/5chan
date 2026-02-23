@@ -1,6 +1,7 @@
-import { useEffect } from 'react';
+import { memo, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Comment, Role, useComment, useEditedComment, useSubplebbit } from '@plebbit/plebbit-react-hooks';
+import useSubplebbitsPagesStore from '@plebbit/plebbit-react-hooks/dist/stores/subplebbits-pages';
 import { useSubplebbitField } from '../../hooks/use-stable-subplebbit';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { isAllView } from '../../lib/utils/view-utils';
@@ -9,9 +10,23 @@ import { useDirectories } from '../../hooks/use-directories';
 import { isDirectoryBoard } from '../../lib/utils/route-utils';
 import useIsMobile from '../../hooks/use-is-mobile';
 import ErrorDisplay from '../../components/error-display/error-display';
+import { PageFooterDesktop, ThreadFooterFirstRow } from '../../components/footer';
 import PostDesktop from '../../components/post-desktop';
 import PostMobile from '../../components/post-mobile';
 import styles from './post.module.css';
+
+// useComment may not return cached feed data immediately due to its updatedAt comparison logic.
+// This hook falls back to the subplebbit pages store (populated by useFeed) so content
+// from the catalog appears instantly instead of going through a loading phase.
+const useCommentWithFeedCache = (options: { commentCid: string | undefined }) => {
+  const comment = useComment(options);
+  const cachedComment = useSubplebbitsPagesStore((state) => state.comments[options?.commentCid || '']);
+
+  return useMemo(() => {
+    if (!cachedComment || comment?.timestamp) return comment;
+    return { ...cachedComment, state: comment?.state, error: comment?.error, errors: comment?.errors } as Comment;
+  }, [comment, cachedComment]);
+};
 
 export interface PostProps {
   index?: number;
@@ -34,66 +49,79 @@ export interface PostProps {
   quotedByMap?: Map<string, Comment[]>;
 }
 
-export const Post = ({
-  post,
-  showAllReplies = false,
-  showReplies = true,
-  targetReplyCid,
-  isModQueue,
-  modQueueStatus,
-  modQueueError,
-  isPublishing,
-  onApprove,
-  onReject,
-}: PostProps) => {
-  // Only subscribe to roles field to avoid rerenders from updatingState changes
-  const roles = useSubplebbitField(post?.subplebbitAddress, (subplebbit) => subplebbit?.roles);
-  const isMobile = useIsMobile();
+export const Post = memo(
+  ({ post, showAllReplies = false, showReplies = true, targetReplyCid, isModQueue, modQueueStatus, modQueueError, isPublishing, onApprove, onReject }: PostProps) => {
+    // Only subscribe to roles field to avoid rerenders from updatingState changes
+    const roles = useSubplebbitField(post?.subplebbitAddress, (subplebbit) => subplebbit?.roles);
+    const isMobile = useIsMobile();
 
-  let comment = post;
+    let comment = post;
 
-  // handle pending mod or author edit
-  const { editedComment } = useEditedComment({ comment });
-  if (editedComment) {
-    comment = editedComment;
-  }
+    // handle pending mod or author edit
+    const { editedComment } = useEditedComment({ comment });
+    if (editedComment) {
+      comment = editedComment;
+    }
 
-  return (
-    <div className={styles.thread}>
-      <div className={styles.postContainer}>
-        {isMobile ? (
-          <PostMobile
-            post={comment}
-            roles={roles}
-            showAllReplies={showAllReplies}
-            showReplies={showReplies}
-            targetReplyCid={targetReplyCid}
-            isModQueue={isModQueue}
-            modQueueStatus={modQueueStatus}
-            modQueueError={modQueueError}
-            isPublishing={isPublishing}
-            onApprove={onApprove}
-            onReject={onReject}
-          />
-        ) : (
-          <PostDesktop
-            post={comment}
-            roles={roles}
-            showAllReplies={showAllReplies}
-            showReplies={showReplies}
-            targetReplyCid={targetReplyCid}
-            isModQueue={isModQueue}
-            modQueueStatus={modQueueStatus}
-            modQueueError={modQueueError}
-            isPublishing={isPublishing}
-            onApprove={onApprove}
-            onReject={onReject}
-          />
-        )}
+    return (
+      <div className={styles.thread}>
+        <div className={styles.postContainer}>
+          {isMobile ? (
+            <PostMobile
+              post={comment}
+              roles={roles}
+              showAllReplies={showAllReplies}
+              showReplies={showReplies}
+              targetReplyCid={targetReplyCid}
+              isModQueue={isModQueue}
+              modQueueStatus={modQueueStatus}
+              modQueueError={modQueueError}
+              isPublishing={isPublishing}
+              onApprove={onApprove}
+              onReject={onReject}
+            />
+          ) : (
+            <PostDesktop
+              post={comment}
+              roles={roles}
+              showAllReplies={showAllReplies}
+              showReplies={showReplies}
+              targetReplyCid={targetReplyCid}
+              isModQueue={isModQueue}
+              modQueueStatus={modQueueStatus}
+              modQueueError={modQueueError}
+              isPublishing={isPublishing}
+              onApprove={onApprove}
+              onReject={onReject}
+            />
+          )}
+        </div>
       </div>
-    </div>
-  );
-};
+    );
+  },
+  (prevProps, nextProps) => {
+    const prev = prevProps.post;
+    const next = nextProps.post;
+    return (
+      prev?.cid === next?.cid &&
+      prev?.replyCount === next?.replyCount &&
+      prev?.updatedAt === next?.updatedAt &&
+      prev?.locked === next?.locked &&
+      prev?.pinned === next?.pinned &&
+      prev?.removed === next?.removed &&
+      prev?.deleted === next?.deleted &&
+      prevProps.showAllReplies === nextProps.showAllReplies &&
+      prevProps.showReplies === nextProps.showReplies &&
+      prevProps.targetReplyCid === nextProps.targetReplyCid &&
+      prevProps.isModQueue === nextProps.isModQueue &&
+      prevProps.modQueueStatus === nextProps.modQueueStatus &&
+      prevProps.modQueueError === nextProps.modQueueError &&
+      prevProps.isPublishing === nextProps.isPublishing &&
+      prevProps.onApprove === nextProps.onApprove &&
+      prevProps.onReject === nextProps.onReject
+    );
+  },
+);
 
 const PostPage = () => {
   const { t } = useTranslation();
@@ -103,7 +131,7 @@ const PostPage = () => {
   const subplebbitAddress = useResolvedSubplebbitAddress();
   const isInAllView = isAllView(location.pathname);
 
-  const comment = useComment({ commentCid });
+  const comment = useCommentWithFeedCache({ commentCid });
 
   const navigate = useNavigate();
   useEffect(() => {
@@ -117,7 +145,7 @@ const PostPage = () => {
   const directories = useDirectories();
 
   // if the comment is a reply, return the post comment instead, then the reply will be highlighted in the thread
-  const postComment = useComment({ commentCid: comment?.postCid });
+  const postComment = useCommentWithFeedCache({ commentCid: comment?.postCid });
   let post: Comment;
   if (comment.parentCid) {
     post = postComment;
@@ -174,6 +202,11 @@ const PostPage = () => {
           <ErrorDisplay error={comment?.error} />
         </div>
       )}
+      {post?.cid && subplebbitAddress ? (
+        <PageFooterDesktop
+          firstRow={<ThreadFooterFirstRow postCid={post.cid} threadNumber={post?.number} subplebbitAddress={subplebbitAddress} isThreadClosed={!!post?.locked} />}
+        />
+      ) : null}
     </div>
   );
 };

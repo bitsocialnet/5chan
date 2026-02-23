@@ -25,6 +25,18 @@ const getClientHost = (clientUrl: string): string => {
   return clientHosts[clientUrl];
 };
 
+const sanitizeSingleFeedLoadingState = (stateString?: string): string | undefined => {
+  if (!stateString) {
+    return stateString;
+  }
+
+  return stateString
+    .replace(/\bDownloading thread\b/g, 'Downloading board')
+    .replace(/\bdownloading thread\b/g, 'downloading board')
+    .replace(/\bLoading thread\b/g, 'Loading board')
+    .replace(/\bloading thread\b/g, 'loading board');
+};
+
 const useStateString = (commentOrSubplebbit: CommentOrSubplebbit): string | undefined => {
   const { states: rawStates } = useClientsStates({ comment: commentOrSubplebbit }) as { states: States };
 
@@ -81,7 +93,7 @@ export const useFeedStateString = (subplebbitAddresses?: string[]): string | und
   // single subplebbit feed state string
   const subplebbitAddress = subplebbitAddresses?.length === 1 ? subplebbitAddresses[0] : undefined;
   const subplebbit = useSubplebbit({ subplebbitAddress });
-  const singleSubplebbitFeedStateString = useStateString(subplebbit);
+  const singleSubplebbitFeedStateString = sanitizeSingleFeedLoadingState(useStateString(subplebbit));
 
   // multiple subplebbit feed state string
   const { states } = useSubplebbitsStates({ subplebbitAddresses });

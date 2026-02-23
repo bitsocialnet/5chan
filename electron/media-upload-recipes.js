@@ -85,6 +85,9 @@ function validateRecipes() {
     if (!Array.isArray(recipe.blockedIndicators) || recipe.blockedIndicators.length === 0) {
       throw new Error(`Recipe validation failed: ${provider} blockedIndicators must be non-empty array`);
     }
+    if (!Array.isArray(recipe.submitSelectorCandidates) || recipe.submitSelectorCandidates.length === 0) {
+      throw new Error(`Recipe validation failed: ${provider} submitSelectorCandidates must be non-empty array`);
+    }
     if (typeof recipe.timeoutMs !== 'number' || recipe.timeoutMs <= 0) {
       throw new Error(`Recipe validation failed: ${provider} timeoutMs must be positive number`);
     }

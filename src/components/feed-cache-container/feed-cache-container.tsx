@@ -9,7 +9,6 @@ import styles from './feed-cache-container.module.css';
 interface FeedContextFromKey {
   viewType: 'all' | 'subs' | 'mod' | 'board';
   boardIdentifier?: string;
-  timeFilterName?: string;
 }
 
 const parseFeedKey = (key: string): FeedContextFromKey => {
@@ -17,28 +16,18 @@ const parseFeedKey = (key: string): FeedContextFromKey => {
 
   const filteredSegments = segments.filter((s) => s !== 'catalog');
   if (filteredSegments[0] === 'all') {
-    return {
-      viewType: 'all',
-      timeFilterName: filteredSegments[1],
-    };
+    return { viewType: 'all' };
   }
   if (filteredSegments[0] === 'subs') {
-    return {
-      viewType: 'subs',
-      timeFilterName: filteredSegments[1],
-    };
+    return { viewType: 'subs' };
   }
   if (filteredSegments[0] === 'mod') {
-    return {
-      viewType: 'mod',
-      timeFilterName: filteredSegments[1],
-    };
+    return { viewType: 'mod' };
   }
 
   return {
     viewType: 'board',
     boardIdentifier: filteredSegments[0],
-    timeFilterName: filteredSegments[1],
   };
 };
 
@@ -53,21 +42,9 @@ const CachedFeedWrapper = ({ feed, isVisible }: CachedFeedWrapperProps) => {
   return (
     <div className={isVisible ? styles.visible : styles.hidden}>
       {feed.type === 'catalog' ? (
-        <Catalog
-          feedCacheKey={feed.key}
-          viewType={context.viewType}
-          boardIdentifier={context.boardIdentifier}
-          timeFilterNameFromCache={context.timeFilterName}
-          isVisible={isVisible}
-        />
+        <Catalog feedCacheKey={feed.key} viewType={context.viewType} boardIdentifier={context.boardIdentifier} isVisible={isVisible} />
       ) : (
-        <Board
-          feedCacheKey={feed.key}
-          viewType={context.viewType}
-          boardIdentifier={context.boardIdentifier}
-          timeFilterNameFromCache={context.timeFilterName}
-          isVisible={isVisible}
-        />
+        <Board feedCacheKey={feed.key} viewType={context.viewType} boardIdentifier={context.boardIdentifier} isVisible={isVisible} />
       )}
     </div>
   );

@@ -7,7 +7,7 @@ import { useDirectories, useDirectoryAddresses } from '../../hooks/use-directori
 import { SubplebbitStatsCollector, useSubplebbitsStatsStore } from '../../hooks/use-subplebbits-stats';
 import PopularThreadsBox from './popular-threads-box';
 import BoardsList from './boards-list';
-import Version from '../../components/version';
+import SiteLegalMeta from '../../components/site-legal-meta';
 import useDirectoryModalStore from '../../stores/use-directory-modal-store';
 import DisclaimerModal from '../../components/disclaimer-modal';
 import DirectoryModal from '../../components/directory-modal';
@@ -163,19 +163,7 @@ export const Footer = () => {
         </li>
       </ul>
       <div className={styles.footerInfo}>
-        <br />
-        <Version /> •{' '}
-        <a href='https://github.com/bitsocialhq/5chan/issues/new' target='_blank' rel='noopener noreferrer'>
-          Feedback
-        </a>{' '}
-        •{' '}
-        <a href='https://github.com/bitsocialhq/5chan/graphs/contributors' target='_blank' rel='noopener noreferrer'>
-          Contact
-        </a>
-        <br />
-        <br />
-        <br />
-        <span>5chan is free and open source software under GPLv2 license.</span>
+        <SiteLegalMeta />
       </div>
     </>
   );

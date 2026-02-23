@@ -2,7 +2,7 @@ import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useParams } from 'react-router-dom';
-import { useFloating, offset, size, autoUpdate, Placement } from '@floating-ui/react';
+import { useFloating, offset, size, Placement } from '@floating-ui/react';
 import { Comment, useReplies } from '@plebbit/plebbit-react-hooks';
 import Plebbit from '@plebbit/plebbit-js';
 import { shouldShowSnow } from '../../lib/snow';
@@ -18,7 +18,6 @@ import { useCommentMediaInfo } from '../../hooks/use-comment-media-info';
 import useCountLinksInReplies from '../../hooks/use-count-links-in-replies';
 import useFetchGifFirstFrame from '../../hooks/use-fetch-gif-first-frame';
 import useHide from '../../hooks/use-hide';
-import useWindowWidth from '../../hooks/use-window-width';
 import { ContentPreview } from '../../views/home/popular-threads-box';
 import PostMenuDesktop from '../post-desktop/post-menu-desktop';
 import styles from './catalog-row.module.css';
@@ -41,7 +40,7 @@ export const CatalogPostMedia = ({ cid, commentMediaInfo, linkWidth, linkHeight 
   const [hasError, setHasError] = useState(false);
   const handleLoad = () => setIsLoaded(true);
   const handleError = () => setHasError(true);
-  const loadingStyle = { display: isLoaded ? 'block' : 'none' };
+  const loadingStyle = { opacity: isLoaded ? 1 : 0 };
 
   const { imageSize } = useCatalogStyleStore();
 
@@ -62,6 +61,9 @@ export const CatalogPostMedia = ({ cid, commentMediaInfo, linkWidth, linkHeight 
     displayHeight = 'unset';
   }
 
+  const numericWidth = parseInt(displayWidth) || undefined;
+  const numericHeight = parseInt(displayHeight) || undefined;
+
   const maxWidth = imageSize === 'Large' ? '250px' : '150px';
   const maxHeight = imageSize === 'Large' ? '250px' : '150px';
 
@@ -75,20 +77,20 @@ export const CatalogPostMedia = ({ cid, commentMediaInfo, linkWidth, linkHeight 
   let thumbnailComponent: React.ReactNode = null;
 
   if (type === 'gif' && gifFrameUrl && !hasError) {
-    thumbnailComponent = <img src={gifFrameUrl} alt='' onLoad={handleLoad} onError={handleError} style={loadingStyle} />;
+    thumbnailComponent = <img src={gifFrameUrl} alt='' onLoad={handleLoad} onError={handleError} style={loadingStyle} width={numericWidth} height={numericHeight} />;
   } else if (type === 'image' && !hasError) {
-    thumbnailComponent = <img src={url} alt='' onLoad={handleLoad} onError={handleError} style={loadingStyle} />;
+    thumbnailComponent = <img src={url} alt='' onLoad={handleLoad} onError={handleError} style={loadingStyle} width={numericWidth} height={numericHeight} />;
   } else if (type === 'video' && !hasError) {
     thumbnailComponent = thumbnail ? (
-      <img src={thumbnail} alt='' onLoad={handleLoad} onError={handleError} style={loadingStyle} />
+      <img src={thumbnail} alt='' onLoad={handleLoad} onError={handleError} style={loadingStyle} width={numericWidth} height={numericHeight} />
     ) : (
       // show first frame of the video, as a workaround for Safari not loading thumbnails
       <video src={`${url}#t=0.001`} onError={handleError} />
     );
   } else if (type === 'webpage' && !hasError) {
-    thumbnailComponent = <img src={thumbnail} alt='' onLoad={handleLoad} onError={handleError} style={loadingStyle} />;
+    thumbnailComponent = <img src={thumbnail} alt='' onLoad={handleLoad} onError={handleError} style={loadingStyle} width={numericWidth} height={numericHeight} />;
   } else if (type === 'iframe' && iframeThumbnail && !hasError) {
-    thumbnailComponent = <img src={iframeThumbnail} alt='' onLoad={handleLoad} onError={handleError} style={loadingStyle} />;
+    thumbnailComponent = <img src={iframeThumbnail} alt='' onLoad={handleLoad} onError={handleError} style={loadingStyle} width={numericWidth} height={numericHeight} />;
   } else if (type === 'audio') {
     thumbnailComponent = <audio src={url} controls />;
   }
@@ -143,8 +145,6 @@ const CatalogPost = memo(
     const placementRef = useRef<Placement>('right-start');
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-    const windowWidth = useWindowWidth();
-
     const { refs, floatingStyles, update } = useFloating({
       open: showPortal,
       placement: placementRef.current,
@@ -154,9 +154,9 @@ const CatalogPost = memo(
           apply({ elements }) {
             const referenceElement = refs.reference.current;
             if (referenceElement) {
-              const availableWidthToTheRight = windowWidth - (referenceElement.getBoundingClientRect().left + referenceElement.getBoundingClientRect().width);
+              const availableWidthToTheRight = window.innerWidth - (referenceElement.getBoundingClientRect().left + referenceElement.getBoundingClientRect().width);
               const availableWidthToTheLeft = referenceElement.getBoundingClientRect().left;
-              const minWidth = windowWidth * 0.25;
+              const minWidth = window.innerWidth * 0.25;
 
               if (availableWidthToTheRight >= minWidth) {
                 placementRef.current = 'right-start';
@@ -175,14 +175,13 @@ const CatalogPost = memo(
           },
         }),
       ],
-      whileElementsMounted: autoUpdate,
     });
 
     useEffect(() => {
-      update();
-    }, [update, windowWidth]);
+      if (showPortal) update();
+    }, [showPortal, update]);
 
-    const { replies } = useReplies({ comment: post, flat: true });
+    const { replies } = useReplies({ comment: showPortal ? post : undefined, flat: true });
     const lastReply = replies?.length > 0 ? replies[replies.length - 1] : null;
 
     const { isCommentAuthorMod: isCatalogPostAuthorMod, commentAuthorRole: catalogPostAuthorRole } = useEditCommentPrivileges({
@@ -336,14 +335,14 @@ interface CatalogRowProps {
   row: Comment[];
 }
 
-const CatalogRow = ({ row }: CatalogRowProps) => {
+const CatalogRow = memo(({ row }: CatalogRowProps) => {
   return (
     <div className={styles.row}>
       {row.map((post, index) => (
-        <CatalogPost key={index} post={post} />
+        <CatalogPost key={post?.cid || index} post={post} />
       ))}
     </div>
   );
-};
+});
 
 export default CatalogRow;

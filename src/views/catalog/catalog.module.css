@@ -3,12 +3,12 @@
   color: var(--post-mobile-abbr-text-color);
 }
 
-.footer a, .newerPostsButton  {
+.footer a {
   text-decoration: var(--button-text-decoration);
   color: var(--button-desktop-text-color);
 }
 
-.footer a:hover, .newerPostsButton:hover {
+.footer a:hover {
   color: var(--button-desktop-text-color-hover);
 }
 

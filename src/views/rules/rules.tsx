@@ -1,7 +1,10 @@
 import { useEffect, useState, FormEvent } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useSubplebbit } from '@plebbit/plebbit-react-hooks';
 import { Footer, HomeLogo } from '../home';
 import { useDirectories, DirectoryCommunity } from '../../hooks/use-directories';
+import { getSubplebbitAddress, getBoardPath } from '../../lib/utils/route-utils';
+import Markdown from '../../components/markdown';
 import styles from './rules.module.css';
 
 const getBoardShortCode = (title?: string): string => {
@@ -73,7 +76,9 @@ const BoardRulesDisplay = ({ subplebbitAddress, directories }: { subplebbitAddre
         ) : rules && rules.length > 0 ? (
           <ol>
             {rules.map((rule: string, index: number) => (
-              <li key={index}>{rule}</li>
+              <li key={index}>
+                <Markdown content={rule} />
+              </li>
             ))}
           </ol>
         ) : (
@@ -107,8 +112,9 @@ const BoardSelector = ({
 
   const handleCustomSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (customAddress.trim()) {
-      onSelect(customAddress.trim());
+    const trimmed = customAddress.trim();
+    if (trimmed) {
+      onSelect(trimmed);
     }
   };
 
@@ -130,6 +136,7 @@ const BoardSelector = ({
                 </option>
               );
             })}
+            {selectedAddress && !directories.some((sub) => sub.address === selectedAddress) && <option value={selectedAddress}>{selectedAddress}</option>}
           </select>
           <span className={styles.orSeparator}>or</span>
           <form onSubmit={handleCustomSubmit} className={styles.customAddressForm}>
@@ -151,8 +158,16 @@ const BoardSelector = ({
 };
 
 const Rules = () => {
+  const { boardIdentifier } = useParams();
+  const navigate = useNavigate();
   const directories = useDirectories();
-  const [selectedAddress, setSelectedAddress] = useState('');
+
+  const selectedAddress = boardIdentifier ? getSubplebbitAddress(boardIdentifier, directories) : '';
+
+  const handleBoardSelect = (address: string) => {
+    const path = getBoardPath(address, directories);
+    navigate(`/rules/${path}`, { replace: true });
+  };
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -175,7 +190,7 @@ const Rules = () => {
             Please read and respect the rules of whatever board you decide to post to.
           </div>
         </div>
-        <BoardSelector directories={directories} selectedAddress={selectedAddress} onSelect={setSelectedAddress} />
+        <BoardSelector directories={directories} selectedAddress={selectedAddress} onSelect={handleBoardSelect} />
         {selectedAddress && <BoardRulesDisplay subplebbitAddress={selectedAddress} directories={directories} />}
         <Footer />
       </div>

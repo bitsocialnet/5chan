@@ -1,0 +1,298 @@
+{
+  "entries": [
+    {
+      "id": "release-0.6.6",
+      "kind": "release",
+      "timestamp": 1771243200,
+      "message": "v0.6.6: Syncs board dirs from GitHub, macOS icon, reply perf",
+      "version": "0.6.6"
+    },
+    {
+      "id": "release-0.6.5",
+      "kind": "release",
+      "timestamp": 1770811200,
+      "message": "v0.6.5: quotedCids in replies, OP backlinks, dependabot fix",
+      "version": "0.6.5"
+    },
+    {
+      "id": "release-0.6.4",
+      "kind": "release",
+      "timestamp": 1770724800,
+      "message": "v0.6.4: Quote links, backlinks, pseudonymityMode, release artifacts",
+      "version": "0.6.4"
+    },
+    {
+      "id": "release-0.6.3",
+      "kind": "release",
+      "timestamp": 1769774400,
+      "message": "v0.6.3: Electron icon config, production build fixes",
+      "version": "0.6.3"
+    },
+    {
+      "id": "release-0.6.2",
+      "kind": "release",
+      "timestamp": 1769428800,
+      "message": "v0.6.2: Mod-queue compact view, pending approval features",
+      "version": "0.6.2"
+    },
+    {
+      "id": "release-0.6.1",
+      "kind": "release",
+      "timestamp": 1769342400,
+      "message": "v0.6.1: Major CI, Android, mod-queue, and routing fixes",
+      "version": "0.6.1"
+    },
+    {
+      "id": "release-0.5.3",
+      "kind": "release",
+      "timestamp": 1753790400,
+      "message": "v0.5.3: Pending post redirect, challenge verification, libp2p deps",
+      "version": "0.5.3"
+    },
+    {
+      "id": "release-0.5.2",
+      "kind": "release",
+      "timestamp": 1749038400,
+      "message": "v0.5.2: Board search, board address length, markdown 5chan links",
+      "version": "0.5.2"
+    },
+    {
+      "id": "release-0.5.1",
+      "kind": "release",
+      "timestamp": 1748952000,
+      "message": "v0.5.1: Android fullscreen fix, electron clipboard, reply filtering",
+      "version": "0.5.1"
+    },
+    {
+      "id": "release-0.5.0",
+      "kind": "release",
+      "timestamp": 1747915200,
+      "message": "v0.5.0: Electron IPFS retry, markdown spoiler, pending post redirect",
+      "version": "0.5.0"
+    },
+    {
+      "id": "release-0.4.0",
+      "kind": "release",
+      "timestamp": 1741348800,
+      "message": "v0.4.0: Catalog filters, p/mod feed, catalog search, schema adapters",
+      "version": "0.4.0"
+    },
+    {
+      "id": "release-0.3.6",
+      "kind": "release",
+      "timestamp": 1740312000,
+      "message": "v0.3.6: Catalog instant posts, feed no-posts fix, spoiler visibility",
+      "version": "0.3.6"
+    },
+    {
+      "id": "release-0.3.5",
+      "kind": "release",
+      "timestamp": 1740052800,
+      "message": "v0.3.5: Auto-subscribe new accounts, markdown list fix, topbar links",
+      "version": "0.3.5"
+    },
+    {
+      "id": "release-0.3.4",
+      "kind": "release",
+      "timestamp": 1738756800,
+      "message": "v0.3.4: Boards list vichan-style, spoiler text, challenge modal, settings hash routing",
+      "version": "0.3.4"
+    },
+    {
+      "id": "release-0.3.3",
+      "kind": "release",
+      "timestamp": 1735128000,
+      "message": "v0.3.3: Snow effect mobile fix",
+      "version": "0.3.3"
+    },
+    {
+      "id": "release-0.3.2",
+      "kind": "release",
+      "timestamp": 1735041600,
+      "message": "v0.3.2: Christmas theme, avatar timestamp, electron routers",
+      "version": "0.3.2"
+    },
+    {
+      "id": "release-0.3.1",
+      "kind": "release",
+      "timestamp": 1731240000,
+      "message": "v0.3.1: Moderation API schema, post quote hover fix",
+      "version": "0.3.1"
+    },
+    {
+      "id": "release-0.3.0",
+      "kind": "release",
+      "timestamp": 1731067200,
+      "message": "v0.3.0: Android choose file, interface settings, reply modal errors",
+      "version": "0.3.0"
+    },
+    {
+      "id": "release-0.2.9",
+      "kind": "release",
+      "timestamp": 1730203200,
+      "message": "v0.2.9: Catalog bump order, Reddit embed, p/all time filter, Java APK fix",
+      "version": "0.2.9"
+    },
+    {
+      "id": "release-0.2.8",
+      "kind": "release",
+      "timestamp": 1729339200,
+      "message": "v0.2.8: Account storage alert, catalog thumbnails, embed support",
+      "version": "0.2.8"
+    },
+    {
+      "id": "release-0.2.7",
+      "kind": "release",
+      "timestamp": 1726920000,
+      "message": "v0.2.7: Deleted posts collapse styling, edit reason display",
+      "version": "0.2.7"
+    },
+    {
+      "id": "release-0.2.6",
+      "kind": "release",
+      "timestamp": 1726833600,
+      "message": "v0.2.6: Anon mode refresh fix, catalog filters save, feed instant posts",
+      "version": "0.2.6"
+    },
+    {
+      "id": "release-0.2.5",
+      "kind": "release",
+      "timestamp": 1725624000,
+      "message": "v0.2.5: Board buttons, catalog, edit menu, markdown fixes",
+      "version": "0.2.5"
+    },
+    {
+      "id": "release-0.2.4",
+      "kind": "release",
+      "timestamp": 1721736000,
+      "message": "v0.2.4: Avatars, board header offline icon, post loading states",
+      "version": "0.2.4"
+    },
+    {
+      "id": "release-0.2.3",
+      "kind": "release",
+      "timestamp": 1720008000,
+      "message": "v0.2.3: Feed description, mod menu fixes, catalog filters",
+      "version": "0.2.3"
+    },
+    {
+      "id": "release-0.2.2",
+      "kind": "release",
+      "timestamp": 1719057600,
+      "message": "v0.2.2: Catalog filter label, large image size fix",
+      "version": "0.2.2"
+    },
+    {
+      "id": "release-0.2.1",
+      "kind": "release",
+      "timestamp": 1718884800,
+      "message": "v0.2.1: Incorrect assets path fix",
+      "version": "0.2.1"
+    },
+    {
+      "id": "release-0.2.0",
+      "kind": "release",
+      "timestamp": 1718884800,
+      "message": "v0.2.0: Major rewrite with p/all, catalog, multiboards, mod menu",
+      "version": "0.2.0"
+    },
+    {
+      "id": "release-0.1.17",
+      "kind": "release",
+      "timestamp": 1703073600,
+      "message": "v0.1.17: Electron IPFS errors, SettingsModal signer fix",
+      "version": "0.1.17"
+    },
+    {
+      "id": "release-0.1.16",
+      "kind": "release",
+      "timestamp": 1702900800,
+      "message": "v0.1.16: SettingsModal signer preview fix",
+      "version": "0.1.16"
+    },
+    {
+      "id": "release-0.1.15",
+      "kind": "release",
+      "timestamp": 1702641600,
+      "message": "v0.1.15: multisub.json, share link copy, view on seedit",
+      "version": "0.1.15"
+    },
+    {
+      "id": "release-0.1.14",
+      "kind": "release",
+      "timestamp": 1697976000,
+      "message": "v0.1.14: Anon mode per-thread, home redesign, popular threads",
+      "version": "0.1.14"
+    },
+    {
+      "id": "release-0.1.12",
+      "kind": "release",
+      "timestamp": 1695038400,
+      "message": "v0.1.12: New version toast once fix",
+      "version": "0.1.12"
+    },
+    {
+      "id": "release-0.1.10",
+      "kind": "release",
+      "timestamp": 1691668800,
+      "message": "v0.1.10: Revert refresh button",
+      "version": "0.1.10"
+    },
+    {
+      "id": "release-0.1.8",
+      "kind": "release",
+      "timestamp": 1686312000,
+      "message": "v0.1.8: Maintenance release",
+      "version": "0.1.8"
+    },
+    {
+      "id": "release-0.1.7",
+      "kind": "release",
+      "timestamp": 1686225600,
+      "message": "v0.1.7: Revert toasts refactor",
+      "version": "0.1.7"
+    },
+    {
+      "id": "release-0.1.5",
+      "kind": "release",
+      "timestamp": 1683892800,
+      "message": "v0.1.5: Maintenance release",
+      "version": "0.1.5"
+    },
+    {
+      "id": "release-0.1.4",
+      "kind": "release",
+      "timestamp": 1683806400,
+      "message": "v0.1.4: Maintenance release",
+      "version": "0.1.4"
+    },
+    {
+      "id": "release-0.1.3",
+      "kind": "release",
+      "timestamp": 1683374400,
+      "message": "v0.1.3: Maintenance release",
+      "version": "0.1.3"
+    },
+    {
+      "id": "release-0.1.2",
+      "kind": "release",
+      "timestamp": 1682769600,
+      "message": "v0.1.2: Maintenance release",
+      "version": "0.1.2"
+    },
+    {
+      "id": "release-0.1.1",
+      "kind": "release",
+      "timestamp": 1682596800,
+      "message": "v0.1.1: Maintenance release",
+      "version": "0.1.1"
+    },
+    {
+      "id": "release-0.1.0",
+      "kind": "release",
+      "timestamp": 1682337600,
+      "message": "v0.1.0: Initial release",
+      "version": "0.1.0"
+    }
+  ]
+}

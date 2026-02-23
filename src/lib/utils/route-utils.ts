@@ -109,17 +109,12 @@ export const isFeedRoute = (pathname: string): boolean => {
   if (normalizedPath.includes('/modqueue')) return false;
 
   const pathWithoutSettings = normalizedPath.replace(/\/settings$/, '');
-
-  if (pathWithoutSettings.startsWith('/all')) return true;
-  if (pathWithoutSettings.startsWith('/subs')) return true;
-  if (pathWithoutSettings.startsWith('/mod')) return true;
-
   const segments = pathWithoutSettings.split('/').filter(Boolean);
   if (segments.length >= 1) {
     if (segments.length === 1) return true;
     if (segments.length === 2 && segments[1] === 'catalog') return true;
-    if (segments.length === 2 && /^(?:\d+(?:h|d|w|m|y)|all)$/.test(segments[1])) return true;
-    if (segments.length === 3 && segments[1] === 'catalog' && /^(?:\d+(?:h|d|w|m|y)|all)$/.test(segments[2])) return true;
+    if (segments.length === 2 && /^([1-9]|10)$/.test(segments[1])) return true;
+    if (segments.length === 3 && segments[1] === 'catalog' && /^([1-9]|10)$/.test(segments[2])) return true;
   }
 
   return false;
@@ -143,6 +138,69 @@ export const isModQueueRoute = (pathname: string): boolean => {
   return normalizedPath.includes('/modqueue');
 };
 
+/** Page numbers 1–10 for board feed pagination */
+export const BOARD_PAGE_REGEX = /^([1-9]|10)$/;
+
+export const isBoardFeedPageNumber = (segment: string): boolean => BOARD_PAGE_REGEX.test(segment);
+
+/** Internal: check if segment is a multiboard root (all, subs, mod) */
+function isMultiboardRoot(segment: string): boolean {
+  return segment === 'all' || segment === 'subs' || segment === 'mod';
+}
+
+/** Internal: check if pathname is a multiboard feed path (starts with /all, /subs, or /mod) */
+function isMultiboardFeedPath(pathname: string): boolean {
+  const trimmed = pathname.replace(/\/$/, '');
+  const segments = trimmed.split('/').filter(Boolean);
+  return segments.length > 0 && isMultiboardRoot(segments[0]);
+}
+
+/**
+ * Normalize multiboard feed paths by removing trailing page-number segments (1–10)
+ * and preserving /settings.
+ * Non-multiboard paths are returned unchanged.
+ */
+export const normalizeMultiboardFeedPath = (pathname: string): string => {
+  let path = pathname.replace(/\/$/, '');
+  if (!isMultiboardFeedPath(path)) {
+    return pathname;
+  }
+
+  const hasSettings = path.endsWith('/settings');
+  if (hasSettings) {
+    path = path.replace(/\/settings$/, '');
+  }
+
+  const segments = path.split('/').filter(Boolean);
+  if (segments.length > 1 && isBoardFeedPageNumber(segments[segments.length - 1])) {
+    const newPath = '/' + segments.slice(0, -1).join('/');
+    return hasSettings ? newPath + '/settings' : newPath;
+  }
+
+  return hasSettings ? path + '/settings' : path;
+};
+
+/** Strip trailing page number (1–10) from path for feed cache key */
+export const stripPageFromFeedPath = (path: string): string => {
+  const segments = path.split('/').filter(Boolean);
+  if (segments.length > 1 && isBoardFeedPageNumber(segments[segments.length - 1])) {
+    return '/' + segments.slice(0, -1).join('/');
+  }
+  return path;
+};
+
+/** Parse current page number (1–10) from feed pathname; returns 1 if none */
+export const getPageFromFeedPath = (pathname: string): number => {
+  const normalized = pathname.replace(/\/settings$/, '').replace(/\/$/, '');
+  const segments = normalized.split('/').filter(Boolean);
+  const last = segments[segments.length - 1];
+  if (last && isBoardFeedPageNumber(last)) {
+    const n = parseInt(last, 10);
+    return Math.min(10, Math.max(1, n));
+  }
+  return 1;
+};
+
 export const getFeedCacheKey = (pathname: string): string | null => {
   let normalizedPath = pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
   normalizedPath = normalizedPath.replace(/\/settings$/, '');
@@ -161,7 +219,7 @@ export const getFeedCacheKey = (pathname: string): string | null => {
   }
 
   if (isFeedRoute(pathname)) {
-    return normalizedPath;
+    return stripPageFromFeedPath(normalizedPath);
   }
 
   return null;

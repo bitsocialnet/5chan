@@ -9,7 +9,7 @@ import { CommentMediaInfo, getDisplayMediaInfoType, getHasThumbnail, getMediaDim
 import { hashStringToColor, getTextColorForBackground } from '../../lib/utils/post-utils';
 import { getFormattedDate, getFormattedTimeAgo } from '../../lib/utils/time-utils';
 import { isValidURL } from '../../lib/utils/url-utils';
-import { isAllView, isModQueueView, isPendingPostView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
+import { isAllView, isModQueueView, isModView, isPendingPostView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import { formatUserIDForDisplay } from '../../lib/utils/string-utils';
 import useModQueueStore from '../../stores/use-mod-queue-store';
 import { useDirectories } from '../../hooks/use-directories';
@@ -45,7 +45,8 @@ import { alertChallengeVerificationFailed } from '../../lib/utils/challenge-util
 import { usePublishCommentModeration } from '@plebbit/plebbit-react-hooks';
 import useQuotedByMap from '../../hooks/use-quoted-by-map';
 import useProgressiveRender from '../../hooks/use-progressive-render';
-import { REPLIES_PER_PAGE } from '../../lib/constants';
+import { BOARD_REPLIES_PREVIEW_FETCH_SIZE, BOARD_REPLIES_PREVIEW_VISIBLE_COUNT, REPLIES_PER_PAGE } from '../../lib/constants';
+import { computeOmittedCount, getPreviewDisplayReplies, getTotalReplyCount } from '../../lib/utils/replies-preview-utils';
 
 const { addChallenge } = useChallengesStore.getState();
 
@@ -223,7 +224,10 @@ const PostInfo = ({
       return 0;
     }
 
-    return document.querySelectorAll(`[data-author-address="${shortAddress}"][data-post-cid="${postCid}"]`).length;
+    const domCount = document.querySelectorAll(`[data-author-address="${shortAddress}"][data-post-cid="${postCid}"]`).length;
+    // DOM-based count can be 0 on initial mount (before commit) or when parent isn't in DOM yet (e.g. Virtuoso board feed).
+    // The current post is always at least 1 when we're displaying it.
+    return Math.max(domCount, 1);
   }, [showUserID, deleted, removed, shortAddress, postCid, postReplyCount]);
 
   const { hidden } = useHide(post);
@@ -291,6 +295,8 @@ const PostInfo = ({
                 t('deleted')
               ) : removed ? (
                 t('removed')
+              ) : !cid && pseudonymityMode ? (
+                <span className={styles.pendingCid}>{hasFailedState ? capitalize(t('failed')) : capitalize(t('pending'))}</span>
               ) : (
                 <Tooltip
                   children={
@@ -492,6 +498,7 @@ interface PostMediaProps {
   subplebbitAddress: string;
   isInAllView: boolean;
   isInSubscriptionsView: boolean;
+  isInModView: boolean;
 }
 
 const PostMedia = ({
@@ -506,6 +513,7 @@ const PostMedia = ({
   subplebbitAddress,
   isInAllView,
   isInSubscriptionsView,
+  isInModView,
 }: PostMediaProps) => {
   const { t } = useTranslation();
   const { url } = commentMediaInfo || {};
@@ -524,13 +532,19 @@ const PostMedia = ({
 
   const mediaDimensions = getMediaDimensions(commentMediaInfo);
   const boardPath = getBoardPath(subplebbitAddress, directories);
+  const displayBoardPath =
+    boardPath !== subplebbitAddress
+      ? boardPath
+      : subplebbitAddress.endsWith('.eth') || subplebbitAddress.endsWith('.sol')
+        ? subplebbitAddress
+        : Plebbit.getShortAddress({ address: subplebbitAddress });
 
   return (
     <div className={styles.file}>
       <div className={styles.fileText}>
-        {subplebbitAddress && (isInAllView || isInSubscriptionsView) && boardPath && !parentCid && (
+        {subplebbitAddress && (isInAllView || isInSubscriptionsView || isInModView) && boardPath && !parentCid && (
           <>
-            {t('board')}: <Link to={`/${boardPath}`}>{boardPath}</Link>{' '}
+            {t('board')}: <Link to={`/${boardPath}`}>{displayBoardPath}</Link>{' '}
           </>
         )}
         {t('link')}:{' '}
@@ -608,6 +622,7 @@ const Reply = ({
   const isInAllView = isAllView(location.pathname);
   const params = useParams();
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, params);
+  const isInModView = isModView(location.pathname);
 
   const commentMediaInfo = useCommentMediaInfo(link, thumbnailUrl, linkWidth, linkHeight);
   const hasThumbnail = getHasThumbnail(commentMediaInfo, link);
@@ -638,6 +653,7 @@ const Reply = ({
             subplebbitAddress={subplebbitAddress}
             isInAllView={isInAllView}
             isInSubscriptionsView={isInSubscriptionsView}
+            isInModView={isInModView}
           />
         )}
         {!hidden && (!(removed || deleted) || ((removed || deleted) && reason)) && <CommentContent comment={post} />}
@@ -668,23 +684,61 @@ const PostDesktop = ({
   const isInPostPageView = isPostPageView(location.pathname, params);
   const isInAllView = isAllView(location.pathname);
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, params);
+  const isInModView = isModView(location.pathname);
+  const isMultiboardView = isInAllView || isInSubscriptionsView || isInModView;
   const directories = useDirectories();
   const boardPath = subplebbitAddress ? getBoardPath(subplebbitAddress, directories) : undefined;
+  const displayBoardPath =
+    boardPath && subplebbitAddress
+      ? boardPath !== subplebbitAddress
+        ? boardPath
+        : subplebbitAddress.endsWith('.eth') || subplebbitAddress.endsWith('.sol')
+          ? subplebbitAddress
+          : Plebbit.getShortAddress({ address: subplebbitAddress })
+      : undefined;
 
   const { hidden, unhide, hide } = useHide({ cid });
   const isHidden = hidden && !isInPostPageView;
 
-  const repliesResult = useReplies({
-    comment: post,
+  const { showOmittedReplies, setShowOmittedReplies } = useShowOmittedReplies();
+
+  const shouldFetchPreview = showReplies && !isModQueue && !showAllReplies && showOmittedReplies[cid] !== true;
+  const shouldFetchFull = showReplies && !isModQueue && (showAllReplies || showOmittedReplies[cid]);
+
+  const previewRepliesResult = useReplies({
+    comment: shouldFetchPreview ? post : undefined,
+    sortType: 'new',
+    flat: true,
+    repliesPerPage: BOARD_REPLIES_PREVIEW_FETCH_SIZE,
+    accountComments: { newerThan: Infinity, append: true },
+  });
+  const fullRepliesResult = useReplies({
+    comment: shouldFetchFull ? post : undefined,
     sortType: 'old',
     flat: true,
     repliesPerPage: REPLIES_PER_PAGE,
     accountComments: { newerThan: Infinity, append: true },
   });
-  const { replies, hasMore, loadMore } = repliesResult;
-  const updatedReplies = (repliesResult as { updatedReplies?: Comment[] }).updatedReplies;
-  const repliesForRender = updatedReplies?.length ? updatedReplies : replies || [];
-  const reset = (repliesResult as { reset?: () => Promise<void> }).reset;
+
+  const previewReplies = (previewRepliesResult as { updatedReplies?: Comment[] }).updatedReplies?.length
+    ? (previewRepliesResult as { updatedReplies?: Comment[] }).updatedReplies!
+    : previewRepliesResult.replies || [];
+  const fullReplies = (fullRepliesResult as { updatedReplies?: Comment[] }).updatedReplies?.length
+    ? (fullRepliesResult as { updatedReplies?: Comment[] }).updatedReplies!
+    : fullRepliesResult.replies || [];
+
+  const { hasMore, loadMore } = fullRepliesResult;
+  const reset = (fullRepliesResult as { reset?: () => Promise<void> }).reset;
+
+  const fullIsFetching = shouldFetchFull && fullReplies.length === 0 && fullRepliesResult.hasMore;
+
+  const repliesForRender = showAllReplies
+    ? fullReplies
+    : showOmittedReplies[cid]
+      ? fullReplies.length
+        ? fullReplies
+        : previewReplies
+      : getPreviewDisplayReplies(previewReplies, BOARD_REPLIES_PREVIEW_VISIBLE_COUNT);
   const setResetFunction = useFeedResetStore((s) => s.setResetFunction);
   useEffect(() => {
     if ((isInPostPageView || isInPendingPostView) && reset) {
@@ -707,13 +761,21 @@ const PostDesktop = ({
     prevCidsRef.current = cidsKey;
     registerComments(all);
   }, [post, repliesForRender, registerComments]);
-  const visiblelinksCount = useCountLinksInReplies(post, 5);
+  const visiblelinksCount = useCountLinksInReplies(post, BOARD_REPLIES_PREVIEW_VISIBLE_COUNT);
   const totalLinksCount = useCountLinksInReplies(post);
   const replyCount = repliesForRender.length;
 
-  const repliesCount = pinned ? replyCount : replyCount - 5;
+  const totalReplyCount = getTotalReplyCount({
+    replyCount: post?.replyCount,
+    fullLoadedCount: fullReplies.length,
+    previewLoadedCount: previewReplies.length,
+  });
+  const repliesCount = computeOmittedCount({
+    totalReplyCount,
+    visibleCount: BOARD_REPLIES_PREVIEW_VISIBLE_COUNT,
+    pinned,
+  });
   const linksCount = pinned ? totalLinksCount : totalLinksCount - visiblelinksCount;
-  const { showOmittedReplies, setShowOmittedReplies } = useShowOmittedReplies();
 
   const stateString = useStateString(post) || t('downloading_board');
   const hasFailedState = state === 'failed';
@@ -804,6 +866,13 @@ const PostDesktop = ({
           className={`${styles.opContainer} ${shouldShowSnow() && hasThumbnail ? styles.xmasHatWrapper : ''}`}
         >
           {shouldShowSnow() && hasThumbnail && <img src='assets/xmashat.gif' className={styles.xmasHat} alt='' />}
+          {!link && !parentCid && subplebbitAddress && isMultiboardView && boardPath && (
+            <div className={styles.file}>
+              <div className={styles.fileText}>
+                {t('board')}: <Link to={`/${boardPath}`}>{displayBoardPath}</Link>
+              </div>
+            </div>
+          )}
           {link && !isHidden && !(deleted || removed) && isValidURL(link) && (
             <PostMedia
               commentMediaInfo={commentMediaInfo}
@@ -817,6 +886,7 @@ const PostDesktop = ({
               subplebbitAddress={subplebbitAddress}
               isInAllView={isInAllView}
               isInSubscriptionsView={isInSubscriptionsView}
+              isInModView={isInModView}
             />
           )}
           <PostInfo
@@ -837,7 +907,7 @@ const PostDesktop = ({
           {!isHidden && !content && !(deleted || removed) && <div className={styles.spacer} />}
           {!isHidden && <CommentContent comment={post} />}
         </div>
-        {!isHidden && !isInPendingPostView && (replyCount > 5 || (pinned && repliesCount > 0)) && !isInPostPageView && (
+        {!isHidden && !isInPendingPostView && repliesCount > 0 && !isInPostPageView && (
           <span className={styles.summary}>
             <span
               className={`${showOmittedReplies[cid] ? styles.hideOmittedReplies : styles.showOmittedReplies} ${styles.omittedRepliesButtonWrapper}`}
@@ -906,14 +976,14 @@ const PostDesktop = ({
               />
             </div>
           ))}
-        {/* Non-virtualized rendering for board view (last 5 replies or show omitted) */}
+        {/* Non-virtualized rendering for board view (preview replies when collapsed, full when expanded) */}
         {!isHidden &&
           !showAllReplies &&
           !(pinned && !isInPostPageView && !showOmittedReplies[cid]) &&
           !isInPendingPostView &&
           repliesForRender &&
           showReplies &&
-          (showOmittedReplies[cid] ? filteredReplies : filteredReplies.slice(-5)).map((reply, index) => (
+          filteredReplies.map((reply, index) => (
             <div key={index} className={styles.replyContainer}>
               <Reply
                 reply={reply}
@@ -925,6 +995,11 @@ const PostDesktop = ({
               />
             </div>
           ))}
+        {!isHidden && !showAllReplies && showOmittedReplies[cid] && fullIsFetching && showReplies && filteredReplies.length > 0 && (
+          <div className={styles.stateString}>
+            <LoadingEllipsis string={t('loading')} />
+          </div>
+        )}
       </div>
       {!isInPendingPostView && stateString && !hasFailedState && state !== 'succeeded' && isInPostPageView && !(!showReplies && !showAllReplies) ? (
         <div className={styles.stateString}>

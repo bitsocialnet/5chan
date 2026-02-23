@@ -38,7 +38,8 @@ const BoardsList = ({ multisub }: { multisub: DirectoryCommunity[] }) => {
   const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, address: string) => {
     e.preventDefault();
     const boardPath = getBoardPath(address, directories);
-    showDisclaimerModal(address, navigate, boardPath);
+    const targetPath = boardPath + (useCatalogLinks ? '/catalog' : '');
+    showDisclaimerModal(address, navigate, targetPath);
   };
 
   // Helper to generate link URL with optional catalog suffix

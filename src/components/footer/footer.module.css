@@ -1,0 +1,94 @@
+/* Page footer (desktop) */
+.footer {
+  margin-top: 16px;
+  padding-bottom: 24px;
+}
+
+.firstRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px 0;
+  text-align: center;
+}
+
+.boardsBarRow {
+  padding: 8px 0;
+}
+
+.legalMeta {
+  padding: 12px 0 0;
+  font-size: 11px;
+  color: var(--body-font-color);
+  text-align: center;
+}
+
+/* Shared footer first-row layout (catalog, board pagination footer mode) */
+.footerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
+}
+
+.footerLeft {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.footerRight {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.styleLabel {
+  font-size: 12px;
+  text-transform: capitalize;
+}
+
+/* Thread footer first row */
+.threadRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  width: 100%;
+  text-transform: capitalize;
+}
+
+.threadLeft {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.threadCenter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.threadRight {
+  display: flex;
+  align-items: center;
+}
+
+.threadRow .button,
+.button {
+  text-transform: capitalize;
+}
+
+@media (max-width: 640px) {
+  .footer {
+    display: none;
+  }
+}

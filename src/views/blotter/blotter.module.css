@@ -1,0 +1,72 @@
+.wrapper {
+  width: 100%;
+}
+
+.content {
+  margin: auto;
+  text-align: center;
+  padding: 0 10px;
+}
+
+.content h1 {
+  font-size: 28px;
+  font-weight: 700;
+  text-align: center;
+  margin: 20px 0 0;
+  font-family: 'Helvetica Neue', arial, sans-serif;
+  letter-spacing: -2px;
+}
+
+.table {
+  width: 80%;
+  max-width: 1000px;
+  margin: 25px auto;
+  border-collapse: collapse;
+  border: 1px solid #606060;
+  background-color: #fff;
+  color: #000;
+}
+
+.table th {
+  padding: 5px;
+  font-weight: 700;
+  background-color: #ffccaa;
+  vertical-align: middle;
+}
+
+.table .dateHeader {
+  text-align: center;
+  white-space: nowrap;
+  width: 90px;
+}
+
+.table .messageHeader {
+  text-align: left;
+  border-left: 1px solid #606060;
+}
+
+.table .dateCell {
+  white-space: nowrap;
+  width: 90px;
+  text-align: center;
+}
+
+.table .messageCell {
+  text-align: left;
+  border-left: 1px solid #606060;
+}
+
+.table td {
+  padding: 5px;
+  vertical-align: top;
+}
+
+.table tbody tr {
+  border-bottom: 1px solid #606060;
+}
+
+@media (max-width: 640px) {
+  .table {
+    width: calc(100% - 20px);
+  }
+}
