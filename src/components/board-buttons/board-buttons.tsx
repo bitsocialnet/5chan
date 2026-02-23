@@ -198,7 +198,7 @@ const SortOptions = () => {
   const { sortType, setSortType } = useSortingStore();
 
   const handleSortChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const type = event.target.value as 'active' | 'new';
+    const type = event.target.value as 'active' | 'new' | 'replyCount';
     setSortType(type);
   };
   return (
@@ -207,6 +207,7 @@ const SortOptions = () => {
       <select className='capitalize' value={sortType} onChange={handleSortChange}>
         <option value='active'>{t('bump_order')}</option>
         <option value='new'>{t('creation_date')}</option>
+        <option value='replyCount'>{t('reply_count')}</option>
       </select>
     </>
   );

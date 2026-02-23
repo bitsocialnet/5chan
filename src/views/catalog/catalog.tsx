@@ -23,6 +23,7 @@ import ErrorDisplay from '../../components/error-display/error-display';
 import PageFooterDesktop from '../../components/page-footer-desktop';
 import styles from './catalog.module.css';
 import { commentMatchesPattern } from '../../lib/utils/pattern-utils';
+import { sortCatalogFeedForDisplay } from '../../lib/utils/catalog-sort';
 
 const lastVirtuosoStates: { [key: string]: StateSnapshot } = {};
 
@@ -267,6 +268,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   }, [isInAllView, isInSubscriptionsView, isInModView, location.pathname, navigate]);
 
   const { sortType } = useSortingStore();
+  const feedSortType = sortType === 'new' ? 'new' : 'active';
 
   // Create a stable callback for filter matching
   const handleFilterMatch = useCallback((filterIndex: number, cid: string, subplebbitAddress: string) => {
@@ -293,13 +295,13 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
 
     return {
       subplebbitAddresses,
-      sortType,
+      sortType: feedSortType,
       postsPerPage: catalogPostsPerPage,
       filter: createCombinedFilter(filterItems, searchText, subplebbitAddress || 'all', handleFilterMatch),
     };
   }, [
     subplebbitAddresses,
-    sortType,
+    feedSortType,
     isInAllView,
     isInSubscriptionsView,
     isInModView,
@@ -363,6 +365,8 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
     [effectiveInfiniteScroll, combinedFeed, boardPostsPerPage, maxGuiPages],
   );
 
+  const sortedFeed = useMemo(() => sortCatalogFeedForDisplay(cappedFeed, sortType), [cappedFeed, sortType]);
+
   useEffect(() => {
     if (filteredComments.length > 0 && !resetTriggeredRef.current) {
       reset();
@@ -424,18 +428,18 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
 
   const isFeedLoaded = feed.length > 0 || state === 'failed';
 
-  // Process the feed to move "top" posts to the top
+  // Process the feed to move "top" posts to the top (applied after display sort)
   const processedFeed = useMemo(() => {
-    if (!cappedFeed || cappedFeed.length === 0) return cappedFeed;
+    if (!sortedFeed || sortedFeed.length === 0) return sortedFeed;
 
     const enabledTopFilters = filterItems.filter((item) => item.enabled && item.text.trim() !== '' && item.top);
-    if (enabledTopFilters.length === 0) return cappedFeed;
+    if (enabledTopFilters.length === 0) return sortedFeed;
 
     // Separate posts that match "top" filters
     const topPosts: Comment[] = [];
     const regularPosts: Comment[] = [];
 
-    cappedFeed.forEach((comment) => {
+    sortedFeed.forEach((comment) => {
       if (!comment) return;
 
       let isTop = false;
@@ -455,7 +459,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
 
     // Return top posts followed by regular posts
     return [...topPosts, ...regularPosts];
-  }, [cappedFeed, filterItems]);
+  }, [sortedFeed, filterItems]);
 
   const rows = useCatalogFeedRows(columnCount, processedFeed, isFeedLoaded, subplebbit);
 

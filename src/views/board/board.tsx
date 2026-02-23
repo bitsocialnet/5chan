@@ -11,7 +11,6 @@ import { useFilteredDirectoryAddresses } from '../../hooks/use-filtered-director
 import { useResolvedSubplebbitAddress } from '../../hooks/use-resolved-subplebbit-address';
 import { useFeedStateString } from '../../hooks/use-state-string';
 import useFeedResetStore from '../../stores/use-feed-reset-store';
-import useSortingStore from '../../stores/use-sorting-store';
 import useFeedViewSettingsStore from '../../stores/use-feed-view-settings-store';
 import { useBoardFeedPageSize } from '../../hooks/use-board-feed-page-size';
 import { getPageSlice } from '../../lib/utils/board-feed-pagination';
@@ -23,6 +22,9 @@ import PageFooterDesktop from '../../components/page-footer-desktop';
 import { Post } from '../post';
 
 const lastVirtuosoStates: { [key: string]: StateSnapshot } = {};
+
+/** Board feed always uses 'active' sort; catalog dropdown does not affect board ordering. */
+const BOARD_SORT_TYPE = 'active' as const;
 
 interface BoardFooterProps {
   subplebbitAddresses: string[];
@@ -145,8 +147,6 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, i
     return [subplebbitAddress];
   }, [isInAllView, isInSubscriptionsView, isInModView, subplebbitAddress, directoryAddresses, filteredDirectoryAddresses, subscriptions, accountSubplebbitAddresses]);
 
-  const { sortType } = useSortingStore();
-
   const enableInfiniteScroll = useFeedViewSettingsStore((state) => state.enableInfiniteScroll);
   const isForcedInfiniteScroll = isInAllView || isInSubscriptionsView || isInModView;
   const effectiveInfiniteScroll = enableInfiniteScroll || isForcedInfiniteScroll;
@@ -156,16 +156,16 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, i
   const feedOptions = useMemo(
     () => ({
       subplebbitAddresses,
-      sortType,
+      sortType: BOARD_SORT_TYPE,
       postsPerPage: effectiveInfiniteScroll ? infiniteFeedPostsPerPage : paginationFeedPostsPerPage,
     }),
-    [subplebbitAddresses, sortType, effectiveInfiniteScroll, infiniteFeedPostsPerPage, paginationFeedPostsPerPage],
+    [subplebbitAddresses, effectiveInfiniteScroll, infiniteFeedPostsPerPage, paginationFeedPostsPerPage],
   );
 
   const { feed, hasMore, loadMore, reset, subplebbitAddressesWithNewerPosts } = useFeed(feedOptions);
   const { accountComments } = useAccountComments();
 
-  const feedContextKey = `${isInAllView ? 'all' : isInSubscriptionsView ? 'subs' : isInModView ? 'mod' : (subplebbitAddress ?? 'board')}-${sortType}-${viewType ?? 'board'}-${effectiveInfiniteScroll}`;
+  const feedContextKey = `${isInAllView ? 'all' : isInSubscriptionsView ? 'subs' : isInModView ? 'mod' : (subplebbitAddress ?? 'board')}-${BOARD_SORT_TYPE}-${viewType ?? 'board'}-${effectiveInfiniteScroll}`;
   const pathWithoutSettings = location.pathname.replace(/\/settings$/, '');
   const currentPage = getPageFromFeedPath(pathWithoutSettings);
   const paginationBasePath = stripPageFromFeedPath(pathWithoutSettings);
@@ -310,7 +310,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, i
   );
 
   const virtuosoRef = useRef<VirtuosoHandle | null>(null);
-  const virtuosoStateKey = feedCacheKey ? `${feedCacheKey}-${sortType}` : `${location.pathname}-${sortType}`;
+  const virtuosoStateKey = feedCacheKey ? `${feedCacheKey}-${BOARD_SORT_TYPE}` : `${location.pathname}-${BOARD_SORT_TYPE}`;
   const navigationType = useNavigationType();
 
   const hasBeenVisibleRef = useRef(false);
