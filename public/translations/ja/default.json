@@ -279,5 +279,6 @@
   "hide_blotter": "ブロッターを非表示",
   "message": "メッセージ",
   "show_all": "すべて表示",
-  "show_blotter": "ブロッターを表示"
+  "show_blotter": "ブロッターを表示",
+  "top": "上"
 }
