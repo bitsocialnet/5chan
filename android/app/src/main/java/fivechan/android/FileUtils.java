@@ -51,8 +51,12 @@ public class FileUtils {
         if (result == null) {
             String path = uri.getPath();
             if (path != null) {
+                path = path.replaceAll("/+$", "");
                 int cut = path.lastIndexOf('/');
                 result = (cut != -1) ? path.substring(cut + 1) : path;
+                if (result.isEmpty()) {
+                    result = "unknown";
+                }
             } else {
                 result = "unknown";
             }

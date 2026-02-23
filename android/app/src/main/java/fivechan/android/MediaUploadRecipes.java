@@ -134,7 +134,6 @@ public final class MediaUploadRecipes {
      */
     public static String getSuccessJs(String provider) {
         String[] selectorCandidates;
-        String attribute;
         if (PROVIDER_IMGUR.equals(provider)) {
             selectorCandidates =
                     new String[] {
@@ -143,7 +142,6 @@ public final class MediaUploadRecipes {
                         "[class*=\"copy-link\"] input",
                         "[data-link]",
                     };
-            attribute = "href";
         } else if (PROVIDER_POSTIMAGES.equals(provider)) {
             selectorCandidates =
                     new String[] {
@@ -152,14 +150,13 @@ public final class MediaUploadRecipes {
                         "[class*=\"direct-link\"]",
                         "textarea",
                     };
-            attribute = "value";
         } else {
             return null;
         }
-        return buildSuccessJs(selectorCandidates, attribute);
+        return buildSuccessJs(selectorCandidates);
     }
 
-    private static String buildSuccessJs(String[] selectors, String attr) {
+    private static String buildSuccessJs(String[] selectors) {
         StringBuilder sb = new StringBuilder("(function(){var s=[");
         for (int i = 0; i < selectors.length; i++) {
             if (i > 0) sb.append(",");

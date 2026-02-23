@@ -113,7 +113,8 @@ public class FileUploaderPlugin extends Plugin {
                                 Log.e(TAG, "Upload failed", e);
                                 try {
                                     call.reject("Upload failed: " + e.getMessage());
-                                } catch (Exception ignored) {
+                                } catch (Exception rejectEx) {
+                                    Log.e(TAG, "Failed to reject call", rejectEx);
                                 }
                             }
                         })
