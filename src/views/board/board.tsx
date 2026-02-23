@@ -18,7 +18,7 @@ import { getPageFromFeedPath, getSubplebbitAddress, isDirectoryBoard, normalizeM
 import ErrorDisplay from '../../components/error-display/error-display';
 import LoadingEllipsis from '../../components/loading-ellipsis';
 import BoardPagination from '../../components/board-pagination';
-import PageFooterDesktop from '../../components/page-footer-desktop';
+import { PageFooterDesktop } from '../../components/footer';
 import { Post } from '../post';
 
 const lastVirtuosoStates: { [key: string]: StateSnapshot } = {};

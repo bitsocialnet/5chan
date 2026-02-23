@@ -10,10 +10,9 @@ import { useDirectories } from '../../hooks/use-directories';
 import { isDirectoryBoard } from '../../lib/utils/route-utils';
 import useIsMobile from '../../hooks/use-is-mobile';
 import ErrorDisplay from '../../components/error-display/error-display';
-import PageFooterDesktop from '../../components/page-footer-desktop';
+import { PageFooterDesktop, ThreadFooterFirstRow } from '../../components/footer';
 import PostDesktop from '../../components/post-desktop';
 import PostMobile from '../../components/post-mobile';
-import ThreadFooterFirstRow from '../../components/thread-footer-first-row';
 import styles from './post.module.css';
 
 // useComment may not return cached feed data immediately due to its updatedAt comparison logic.

@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import StyleSelector from '../style-selector/style-selector';
-import footerStyles from '../footer-first-row/footer-first-row.module.css';
+import footerStyles from '../footer/footer.module.css';
 import styles from './board-pagination.module.css';
 
 export interface BoardPaginationProps {
