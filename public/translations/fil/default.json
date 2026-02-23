@@ -276,10 +276,10 @@
   "enable_infinite_scroll_tip": "Hindi naaangkop sa mga multiboard, na palaging gumagamit ng walang hanggang scroll.",
   "blotter": "Mga anunsyo",
   "date": "Petsa",
-  "hide_blotter": "Itago ang Blotter",
+  "hide_blotter": "Itago ang Mga anunsyo",
   "message": "Mensahe",
   "show_all": "Ipakita lahat",
-  "show_blotter": "Ipakita ang Blotter",
+  "show_blotter": "Ipakita ang Mga anunsyo",
   "top": "Itaas",
   "reply_count": "Bilang ng mga tugon"
 }
