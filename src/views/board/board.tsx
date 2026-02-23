@@ -180,10 +180,11 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, i
   }, [reset, setResetFunction, feed, isVisible]);
 
   // show account comments instantly in the feed once published (cid defined), instead of waiting for the feed to update
+  const feedCids = useMemo(() => new Set(feed.map((f) => f.cid)), [feed]);
   const filteredComments = useMemo(
     () =>
       accountComments.filter((comment) => {
-        const { cid, deleted, link, linkHeight, linkWidth, postCid, removed, state, thumbnailUrl, timestamp } = comment || {};
+        const { cid, deleted, postCid, removed, state, timestamp } = comment || {};
         return (
           !deleted &&
           !removed &&
@@ -192,10 +193,10 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, i
           cid &&
           cid === postCid &&
           comment?.subplebbitAddress === subplebbitAddress &&
-          !feed.some((post) => post.cid === cid)
+          !feedCids.has(cid)
         );
       }),
-    [accountComments, subplebbitAddress, feed],
+    [accountComments, subplebbitAddress, feedCids],
   );
 
   // show newest account comment at the top of the feed but after pinned posts
@@ -361,6 +362,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, i
   }, [title, shortAddress, subplebbitAddress, isVisible, params.boardIdentifier, boardIdentifierProp, directories, isInAllView, isInSubscriptionsView, isInModView, t]);
 
   const shouldShowErrorToUser = subplebbitError?.message && feed.length === 0;
+  const displayFeed = effectiveInfiniteScroll ? combinedFeed : currentPageFeed;
 
   return (
     <>
@@ -371,66 +373,19 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, i
             <ErrorDisplay error={subplebbitError} />
           </div>
         )}
-        {/* Infinite mode: Virtuoso when hasMore, else plain list */}
-        {effectiveInfiniteScroll ? (
-          hasMore ? (
-            <Virtuoso
-              increaseViewportBy={{ bottom: 1200, top: 1200 }}
-              totalCount={combinedFeed.length}
-              data={combinedFeed}
-              itemContent={(index, post) => <Post index={index} post={post} />}
-              useWindowScroll={true}
-              components={footerComponents}
-              endReached={loadMore}
-              ref={virtuosoRef}
-              restoreStateFrom={lastVirtuosoState}
-              initialScrollTop={lastVirtuosoState?.scrollTop}
-            />
-          ) : (
-            <>
-              {combinedFeed.map((post, index) => (
-                <Post key={post.cid} index={index} post={post} />
-              ))}
-              <BoardFooter
-                subplebbitAddresses={subplebbitAddresses}
-                hasMore={hasMore}
-                combinedFeedLength={combinedFeed.length}
-                subplebbitAddressesWithNewerPosts={subplebbitAddressesWithNewerPosts}
-                onNewerPostsClick={handleNewerPostsButtonClick}
-                isInAllView={isInAllView}
-                isInSubscriptionsView={isInSubscriptionsView}
-                isInModView={isInModView}
-                subplebbitState={subplebbitState}
-                subscriptionsLength={subscriptions?.length || 0}
-                accountSubplebbitAddressesLength={accountSubplebbitAddresses?.length || 0}
-                showLoadingEllipsis={true}
-              />
-              <PageFooterDesktop firstRow={<BoardPagination basePath={paginationBasePath} currentPage={currentPage} totalPages={totalPages} footerStyle />} />
-            </>
-          )
-        ) : (
-          /* Pagination mode: plain list, no Virtuoso, no loadMore */
-          <>
-            {currentPageFeed.map((post, index) => (
-              <Post key={post.cid} index={index} post={post} />
-            ))}
-            <BoardFooter
-              subplebbitAddresses={subplebbitAddresses}
-              hasMore={hasMore}
-              combinedFeedLength={combinedFeed.length}
-              subplebbitAddressesWithNewerPosts={subplebbitAddressesWithNewerPosts}
-              onNewerPostsClick={handleNewerPostsButtonClick}
-              isInAllView={isInAllView}
-              isInSubscriptionsView={isInSubscriptionsView}
-              isInModView={isInModView}
-              subplebbitState={subplebbitState}
-              subscriptionsLength={subscriptions?.length || 0}
-              accountSubplebbitAddressesLength={accountSubplebbitAddresses?.length || 0}
-              showLoadingEllipsis={combinedFeed.length === 0}
-            />
-            <PageFooterDesktop firstRow={<BoardPagination basePath={paginationBasePath} currentPage={currentPage} totalPages={totalPages} footerStyle />} />
-          </>
-        )}
+        <Virtuoso
+          defaultItemHeight={300}
+          increaseViewportBy={{ bottom: 1200, top: 1200 }}
+          totalCount={displayFeed.length}
+          data={displayFeed}
+          itemContent={(index, post) => <Post index={index} post={post} />}
+          useWindowScroll={true}
+          components={footerComponents}
+          endReached={effectiveInfiniteScroll && hasMore ? loadMore : undefined}
+          ref={virtuosoRef}
+          restoreStateFrom={lastVirtuosoState}
+          initialScrollTop={lastVirtuosoState?.scrollTop}
+        />
       </div>
     </>
   );

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { memo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Comment, Role, useComment, useEditedComment, useSubplebbit } from '@plebbit/plebbit-react-hooks';
 import { useSubplebbitField } from '../../hooks/use-stable-subplebbit';
@@ -36,66 +36,75 @@ export interface PostProps {
   quotedByMap?: Map<string, Comment[]>;
 }
 
-export const Post = ({
-  post,
-  showAllReplies = false,
-  showReplies = true,
-  targetReplyCid,
-  isModQueue,
-  modQueueStatus,
-  modQueueError,
-  isPublishing,
-  onApprove,
-  onReject,
-}: PostProps) => {
-  // Only subscribe to roles field to avoid rerenders from updatingState changes
-  const roles = useSubplebbitField(post?.subplebbitAddress, (subplebbit) => subplebbit?.roles);
-  const isMobile = useIsMobile();
+export const Post = memo(
+  ({ post, showAllReplies = false, showReplies = true, targetReplyCid, isModQueue, modQueueStatus, modQueueError, isPublishing, onApprove, onReject }: PostProps) => {
+    // Only subscribe to roles field to avoid rerenders from updatingState changes
+    const roles = useSubplebbitField(post?.subplebbitAddress, (subplebbit) => subplebbit?.roles);
+    const isMobile = useIsMobile();
 
-  let comment = post;
+    let comment = post;
 
-  // handle pending mod or author edit
-  const { editedComment } = useEditedComment({ comment });
-  if (editedComment) {
-    comment = editedComment;
-  }
+    // handle pending mod or author edit
+    const { editedComment } = useEditedComment({ comment });
+    if (editedComment) {
+      comment = editedComment;
+    }
 
-  return (
-    <div className={styles.thread}>
-      <div className={styles.postContainer}>
-        {isMobile ? (
-          <PostMobile
-            post={comment}
-            roles={roles}
-            showAllReplies={showAllReplies}
-            showReplies={showReplies}
-            targetReplyCid={targetReplyCid}
-            isModQueue={isModQueue}
-            modQueueStatus={modQueueStatus}
-            modQueueError={modQueueError}
-            isPublishing={isPublishing}
-            onApprove={onApprove}
-            onReject={onReject}
-          />
-        ) : (
-          <PostDesktop
-            post={comment}
-            roles={roles}
-            showAllReplies={showAllReplies}
-            showReplies={showReplies}
-            targetReplyCid={targetReplyCid}
-            isModQueue={isModQueue}
-            modQueueStatus={modQueueStatus}
-            modQueueError={modQueueError}
-            isPublishing={isPublishing}
-            onApprove={onApprove}
-            onReject={onReject}
-          />
-        )}
+    return (
+      <div className={styles.thread}>
+        <div className={styles.postContainer}>
+          {isMobile ? (
+            <PostMobile
+              post={comment}
+              roles={roles}
+              showAllReplies={showAllReplies}
+              showReplies={showReplies}
+              targetReplyCid={targetReplyCid}
+              isModQueue={isModQueue}
+              modQueueStatus={modQueueStatus}
+              modQueueError={modQueueError}
+              isPublishing={isPublishing}
+              onApprove={onApprove}
+              onReject={onReject}
+            />
+          ) : (
+            <PostDesktop
+              post={comment}
+              roles={roles}
+              showAllReplies={showAllReplies}
+              showReplies={showReplies}
+              targetReplyCid={targetReplyCid}
+              isModQueue={isModQueue}
+              modQueueStatus={modQueueStatus}
+              modQueueError={modQueueError}
+              isPublishing={isPublishing}
+              onApprove={onApprove}
+              onReject={onReject}
+            />
+          )}
+        </div>
       </div>
-    </div>
-  );
-};
+    );
+  },
+  (prevProps, nextProps) => {
+    const prev = prevProps.post;
+    const next = nextProps.post;
+    return (
+      prev?.cid === next?.cid &&
+      prev?.replyCount === next?.replyCount &&
+      prev?.updatedAt === next?.updatedAt &&
+      prev?.locked === next?.locked &&
+      prev?.pinned === next?.pinned &&
+      prev?.removed === next?.removed &&
+      prev?.deleted === next?.deleted &&
+      prevProps.showAllReplies === nextProps.showAllReplies &&
+      prevProps.showReplies === nextProps.showReplies &&
+      prevProps.targetReplyCid === nextProps.targetReplyCid &&
+      prevProps.isModQueue === nextProps.isModQueue &&
+      prevProps.modQueueStatus === nextProps.modQueueStatus
+    );
+  },
+);
 
 const PostPage = () => {
   const { t } = useTranslation();

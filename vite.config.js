@@ -182,6 +182,15 @@ export default defineConfig({
           if (/[\\/]node_modules[\\/](react|react-dom|react-router-dom|react-i18next|i18next|i18next-browser-languagedetector|i18next-http-backend)[\\/]/.test(id)) {
             return 'vendor';
           }
+          if (/[\\/]node_modules[\\/](react-markdown|remark-|rehype-|unified|micromark|mdast|hast|unist)[\\/]/.test(id)) {
+            return 'markdown';
+          }
+          if (/[\\/]node_modules[\\/](react-virtuoso)[\\/]/.test(id)) {
+            return 'virtuoso';
+          }
+          if (/[\\/]node_modules[\\/](@floating-ui)[\\/]/.test(id)) {
+            return 'floating-ui';
+          }
         },
       },
     },

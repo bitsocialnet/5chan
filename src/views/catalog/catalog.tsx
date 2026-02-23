@@ -320,6 +320,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   const resetTriggeredRef = useRef(false);
 
   // show account comments instantly in the feed once published (cid defined), instead of waiting for the feed to update
+  const feedCids = useMemo(() => new Set(feed.map((f) => f.cid)), [feed]);
   const filteredComments = useMemo(
     () =>
       accountComments.filter((comment) => {
@@ -334,7 +335,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
           cid &&
           cid === postCid &&
           comment?.subplebbitAddress === subplebbitAddress &&
-          !feed.some((post) => post.cid === cid);
+          !feedCids.has(cid);
 
         // If search is active, also check search conditions
         if (basicConditions && searchText.trim()) {
@@ -347,7 +348,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
 
         return basicConditions;
       }),
-    [accountComments, subplebbitAddress, feed, searchText],
+    [accountComments, subplebbitAddress, feedCids, searchText],
   );
 
   // show newest account comment at the top of the feed but after pinned posts
@@ -548,76 +549,19 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
       <div className={styles.catalog}>
         {processedFeed?.length !== 0 ? (
           <>
-            {effectiveInfiniteScroll ? (
-              hasMore ? (
-                <Virtuoso
-                  increaseViewportBy={{ bottom: 1200, top: 1200 }}
-                  totalCount={rows?.length || 0}
-                  data={rows}
-                  itemContent={(index, row) => <CatalogRow index={index} row={row} />}
-                  useWindowScroll={true}
-                  components={footerComponents}
-                  endReached={loadMore}
-                  ref={virtuosoRef}
-                  restoreStateFrom={lastVirtuosoState}
-                  initialScrollTop={lastVirtuosoState?.scrollTop}
-                />
-              ) : (
-                <>
-                  {rows.map((row, index) => (
-                    <CatalogRow
-                      key={
-                        row
-                          .map((p) => p?.cid ?? (p?.timestamp != null ? `t${p.timestamp}` : ''))
-                          .filter(Boolean)
-                          .join('-') || 'row-no-ids'
-                      }
-                      index={index}
-                      row={row}
-                    />
-                  ))}
-                  <CatalogFooter
-                    subplebbitAddresses={subplebbitAddresses}
-                    hasMore={hasMore}
-                    combinedFeedLength={cappedFeed.length}
-                    subplebbitAddressesWithNewerPosts={subplebbitAddressesWithNewerPosts}
-                    onNewerPostsClick={handleNewerPostsButtonClick}
-                    isInAllView={isInAllView}
-                    isInSubscriptionsView={isInSubscriptionsView}
-                    isInModView={isInModView}
-                    showLoadingEllipsis={true}
-                  />
-                  <PageFooterDesktop firstRow={<CatalogFooterFirstRow />} />
-                </>
-              )
-            ) : (
-              <>
-                {rows.map((row, index) => (
-                  <CatalogRow
-                    key={
-                      row
-                        .map((p) => p?.cid ?? (p?.timestamp != null ? `t${p.timestamp}` : ''))
-                        .filter(Boolean)
-                        .join('-') || 'row-no-ids'
-                    }
-                    index={index}
-                    row={row}
-                  />
-                ))}
-                <CatalogFooter
-                  subplebbitAddresses={subplebbitAddresses}
-                  hasMore={hasMore}
-                  combinedFeedLength={cappedFeed.length}
-                  subplebbitAddressesWithNewerPosts={subplebbitAddressesWithNewerPosts}
-                  onNewerPostsClick={handleNewerPostsButtonClick}
-                  isInAllView={isInAllView}
-                  isInSubscriptionsView={isInSubscriptionsView}
-                  isInModView={isInModView}
-                  showLoadingEllipsis={false}
-                />
-                <PageFooterDesktop firstRow={<CatalogFooterFirstRow />} />
-              </>
-            )}
+            <Virtuoso
+              defaultItemHeight={imageSize === 'Large' ? 320 : 200}
+              increaseViewportBy={{ bottom: 1200, top: 1200 }}
+              totalCount={rows?.length || 0}
+              data={rows}
+              itemContent={(index, row) => <CatalogRow index={index} row={row} />}
+              useWindowScroll={true}
+              components={footerComponents}
+              endReached={effectiveInfiniteScroll && hasMore ? loadMore : undefined}
+              ref={virtuosoRef}
+              restoreStateFrom={lastVirtuosoState}
+              initialScrollTop={lastVirtuosoState?.scrollTop}
+            />
           </>
         ) : (
           <>
