@@ -38,7 +38,7 @@ const BoardBlotter = () => {
         )}
         <tfoot>
           <tr>
-            <td colSpan={2}>
+            <td>
               [
               <span className={styles.hideButton} onClick={() => toggleVisibility()}>
                 {isHidden ? t('show_blotter') : t('hide')}

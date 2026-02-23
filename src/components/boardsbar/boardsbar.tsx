@@ -335,7 +335,7 @@ const BoardsBarMobile = ({ subplebbitAddress }: { subplebbitAddress?: string }) 
         {boardSelect}
       </div>
       <div className={styles.pageJump}>
-        <Link to={useLocation().pathname.replace(/\/$/, '') + '/settings'}>{t('settings')}</Link>
+        <Link to={location.pathname.replace(/\/$/, '') + '/settings'}>{t('settings')}</Link>
         <span onClick={() => setShowSearchBar(!showSearchBar)}>{capitalize(t('search'))}</span>
         <Link to='/'>{t('home')}</Link>
         {showSearchBar && <SearchBar setShowSearchBar={setShowSearchBar} />}

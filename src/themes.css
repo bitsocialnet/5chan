@@ -656,7 +656,7 @@
 
   /* boardsbar */
   --boardsbar-font-size: 11pt;
-  --boardsbar-separator-color: none;
+  --boardsbar-separator-color: transparent;
   --boardsbar-desktop-link-text-color: #00e;
   --boardsbar-desktop-link-text-color-hover: red;
   --boardsbar-desktop-link-text-decoration: underline;
@@ -868,7 +868,7 @@
 
   /* boardsbar */
   --boardsbar-font-size: 11pt;
-  --boardsbar-separator-color: none;
+  --boardsbar-separator-color: transparent;
   --boardsbar-desktop-link-text-color: #34345c;
   --boardsbar-desktop-link-text-color-hover: #d00;
   --boardsbar-desktop-link-text-decoration: underline;

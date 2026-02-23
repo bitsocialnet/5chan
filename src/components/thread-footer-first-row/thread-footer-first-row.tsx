@@ -1,8 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { useLocation, useParams } from 'react-router-dom';
 import { isAllView, isSubscriptionsView, isModView } from '../../lib/utils/view-utils';
-import { useDirectories } from '../../hooks/use-directories';
-import { getBoardPath } from '../../lib/utils/route-utils';
 import useReplyModalStore from '../../stores/use-reply-modal-store';
 import { ReturnButton, CatalogButton, TopButton, UpdateButton, AutoButton, PostPageStats } from '../board-buttons/board-buttons';
 import styles from './thread-footer-first-row.module.css';
@@ -19,7 +17,6 @@ const ThreadFooterFirstRow = ({ postCid, threadNumber, subplebbitAddress, isThre
   const { t } = useTranslation();
   const location = useLocation();
   const params = useParams();
-  const directories = useDirectories();
   const { openReplyModalEmpty } = useReplyModalStore();
 
   const isInAllView = isAllView(location.pathname);

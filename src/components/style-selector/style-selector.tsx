@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import useTheme from '../../hooks/use-theme';
 import useSpecialThemeStore from '../../stores/use-special-theme-store';
 import { isChristmas } from '../../lib/utils/time-utils';
@@ -7,6 +8,13 @@ const StyleSelector = () => {
   const [theme, setTheme] = useTheme();
   const { isEnabled, setIsEnabled } = useSpecialThemeStore();
   const isChristmasTime = isChristmas();
+
+  useEffect(() => {
+    if (!isChristmasTime && isEnabled) {
+      setIsEnabled(false);
+      setTheme('tomorrow');
+    }
+  }, [isChristmasTime, isEnabled, setIsEnabled, setTheme]);
 
   const handleThemeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newTheme = e.target.value;
