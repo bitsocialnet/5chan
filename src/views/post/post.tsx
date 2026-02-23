@@ -101,7 +101,11 @@ export const Post = memo(
       prevProps.showReplies === nextProps.showReplies &&
       prevProps.targetReplyCid === nextProps.targetReplyCid &&
       prevProps.isModQueue === nextProps.isModQueue &&
-      prevProps.modQueueStatus === nextProps.modQueueStatus
+      prevProps.modQueueStatus === nextProps.modQueueStatus &&
+      prevProps.modQueueError === nextProps.modQueueError &&
+      prevProps.isPublishing === nextProps.isPublishing &&
+      prevProps.onApprove === nextProps.onApprove &&
+      prevProps.onReject === nextProps.onReject
     );
   },
 );
