@@ -282,5 +282,14 @@
   "top": "Nahoru",
   "reply_count": "Počet odpovědí",
   "pagination.pageCurrent": "Stránka {{page}} (aktuální)",
-  "pagination.pageLabel": "Stránka"
+  "pagination.pageLabel": "Stránka",
+  "archive": "Archiv",
+  "search_ops_placeholder": "Search OPs...",
+  "private_key_warning_title": "Varování o privátním klíči",
+  "private_key_warning_description": "Tento editor zobrazuje soukromý klíč vašeho účtu. Tyto údaje nikomu nesdílejte. Nesprávná úprava může váš účet poškodit.",
+  "go_back": "Zpět",
+  "continue": "Pokračovat",
+  "loading_editor": "Načítání editoru...",
+  "editor_fallback_warning": "Načtení editoru kódu selhalo. Místo toho se používá jednoduché textové pole.",
+  "return_to_settings": "Zpět na nastavení"
 }

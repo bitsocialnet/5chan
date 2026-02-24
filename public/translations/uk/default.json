@@ -282,5 +282,14 @@
   "top": "Вгору",
   "reply_count": "Кількість відповідей",
   "pagination.pageCurrent": "Сторінка {{page}} (поточна)",
-  "pagination.pageLabel": "Сторінка"
+  "pagination.pageLabel": "Сторінка",
+  "archive": "Архів",
+  "search_ops_placeholder": "Search OPs...",
+  "private_key_warning_title": "Попередження про приватний ключ",
+  "private_key_warning_description": "Цей редактор показує приватний ключ вашого облікового запису. Не передавайте ці дані нікому. Неправильне редагування може пошкодити ваш обліковий запис.",
+  "go_back": "Назад",
+  "continue": "Продовжити",
+  "loading_editor": "Завантаження редактора...",
+  "editor_fallback_warning": "Не вдалося завантажити редактор коду. Використовується прості текстове поле замість нього.",
+  "return_to_settings": "Повернутися до налаштувань"
 }

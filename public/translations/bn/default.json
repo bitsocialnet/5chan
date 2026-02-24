@@ -282,5 +282,14 @@
   "top": "শীর্ষ",
   "reply_count": "উত্তরসংখ্যা",
   "pagination.pageCurrent": "পৃষ্ঠা {{page}} (বর্তমান)",
-  "pagination.pageLabel": "পৃষ্ঠা"
+  "pagination.pageLabel": "পৃষ্ঠা",
+  "archive": "সংরক্ষণাগার",
+  "search_ops_placeholder": "Search OPs...",
+  "private_key_warning_title": "প্রাইভেট কী সতর্কতা",
+  "private_key_warning_description": "এই সম্পাদক আপনার অ্যাকাউন্টের প্রাইভেট কী দেখায়। এই ডেটা কারও সাথে শেয়ার করবেন না। ভুলভাবে সম্পাদনা করলে আপনার অ্যাকাউন্ট ক্ষতিগ্রস্ত হতে পারে।",
+  "go_back": "ফিরে যান",
+  "continue": "চালিয়ে যান",
+  "loading_editor": "এডিটর লোড হচ্ছে...",
+  "editor_fallback_warning": "কোড এডিটর লোড করতে ব্যর্থ হয়েছে। পরিবর্তে একটি সাধারণ টেক্সট এরিয়া ব্যবহার করা হচ্ছে।",
+  "return_to_settings": "সেটিংসে ফিরে যান"
 }

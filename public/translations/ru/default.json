@@ -282,5 +282,14 @@
   "top": "Вверх",
   "reply_count": "Количество ответов",
   "pagination.pageCurrent": "Страница {{page}} (текущая)",
-  "pagination.pageLabel": "Страница"
+  "pagination.pageLabel": "Страница",
+  "archive": "Архив",
+  "search_ops_placeholder": "Search OPs...",
+  "private_key_warning_title": "Предупреждение о закрытом ключе",
+  "private_key_warning_description": "Этот редактор показывает ваш приватный ключ. Не передавайте эти данные никому. Неправильное редактирование может повредить ваш аккаунт.",
+  "go_back": "Назад",
+  "continue": "Продолжить",
+  "loading_editor": "Загрузка редактора...",
+  "editor_fallback_warning": "Не удалось загрузить редактор кода. Используется вместо него обычное текстовое поле.",
+  "return_to_settings": "Вернуться к настройкам"
 }

@@ -282,5 +282,14 @@
   "top": "Top",
   "reply_count": "Antal svar",
   "pagination.pageCurrent": "Side {{page}} (nuværende)",
-  "pagination.pageLabel": "Side"
+  "pagination.pageLabel": "Side",
+  "archive": "Arkiv",
+  "search_ops_placeholder": "Search OPs...",
+  "private_key_warning_title": "Advarsel om privat nøgle",
+  "private_key_warning_description": "Denne editor viser din kontos private nøgle. Del ikke disse data med nogen. Forkert redigering kan ødelægge din konto.",
+  "go_back": "Gå tilbage",
+  "continue": "Fortsæt",
+  "loading_editor": "Indlæser editor...",
+  "editor_fallback_warning": "Kodeeditoren kunne ikke indlæses. Bruger et simpelt tekstfelt i stedet.",
+  "return_to_settings": "Tilbage til indstillinger"
 }

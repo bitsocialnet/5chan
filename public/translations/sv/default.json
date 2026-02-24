@@ -282,5 +282,14 @@
   "top": "Topp",
   "reply_count": "Antal svar",
   "pagination.pageCurrent": "Sida {{page}} (nuvarande)",
-  "pagination.pageLabel": "Sida"
+  "pagination.pageLabel": "Sida",
+  "archive": "Arkiv",
+  "search_ops_placeholder": "Search OPs...",
+  "private_key_warning_title": "Varning för privat nyckel",
+  "private_key_warning_description": "Denna redigerare visar ditt kontos privata nyckel. Del inte dessa data med någon. Felaktig redigering kan skada ditt konto.",
+  "go_back": "Tillbaka",
+  "continue": "Fortsätt",
+  "loading_editor": "Laddar editor...",
+  "editor_fallback_warning": "Kodredigeraren kunde inte laddas. Använder ett enkelt textfält istället.",
+  "return_to_settings": "Tillbaka till inställningar"
 }

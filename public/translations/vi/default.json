@@ -282,5 +282,14 @@
   "top": "Trên",
   "reply_count": "Số lượng phản hồi",
   "pagination.pageCurrent": "Trang {{page}} (hiện tại)",
-  "pagination.pageLabel": "Trang"
+  "pagination.pageLabel": "Trang",
+  "archive": "Lưu trữ",
+  "search_ops_placeholder": "Search OPs...",
+  "private_key_warning_title": "Cảnh báo khóa riêng tư",
+  "private_key_warning_description": "Trình chỉnh sửa này hiển thị khóa riêng tư của tài khoản bạn. Không chia sẻ dữ liệu này với bất kỳ ai. Chỉnh sửa sai có thể làm hỏng tài khoản của bạn.",
+  "go_back": "Quay lại",
+  "continue": "Tiếp tục",
+  "loading_editor": "Đang tải trình soạn thảo...",
+  "editor_fallback_warning": "Không thể tải trình soạn thảo mã. Đang sử dụng ô văn bản thuần thay thế.",
+  "return_to_settings": "Quay lại Cài đặt"
 }

@@ -1,7 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { createAccount, deleteAccount, exportAccount, importAccount, setAccount, setActiveAccount, useAccount, useAccounts } from '@plebbit/plebbit-react-hooks';
-import stringify from 'json-stringify-pretty-compact';
+import { createAccount, deleteAccount, exportAccount, importAccount, setActiveAccount, useAccount, useAccounts } from '@plebbit/plebbit-react-hooks';
 import styles from './account-settings.module.css';
 import { Capacitor } from '@capacitor/core';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -33,24 +32,6 @@ const AccountSettingsEditor = ({
 }) => {
   const { t } = useTranslation();
   const location = useLocation();
-
-  const accountJson = useMemo(
-    () =>
-      stringify({
-        account: {
-          ...account,
-          author: { ...account?.author, avatar: undefined },
-          plebbit: undefined,
-          karma: undefined,
-          plebbitReactOptions: undefined,
-          unreadNotificationCount: undefined,
-        },
-      }),
-    [account],
-  );
-
-  const [text, setText] = useState(() => accountJson);
-
   const { accounts } = useAccounts();
   const switchToNewAccountRef = useRef(false);
   const navigate = useNavigate();
@@ -90,29 +71,6 @@ const AccountSettingsEditor = ({
       }
     } else {
       return;
-    }
-  };
-
-  const saveAccount = async () => {
-    const parsed = safeParseJSON<{ account: Record<string, unknown> }>(text);
-    if (!parsed?.account) {
-      alert('Invalid JSON');
-      return;
-    }
-    const newAccount = parsed.account;
-    const result = await withErrorHandling(
-      () => setAccount({ ...newAccount, id: account?.id }),
-      (error) => {
-        if (error instanceof Error) {
-          alert(error.message);
-          console.log(error);
-        } else {
-          console.error('An unknown error occurred:', error);
-        }
-      },
-    );
-    if (result !== undefined) {
-      alert(`Saved ${newAccount.name}`);
     }
   };
 
@@ -247,10 +205,8 @@ const AccountSettingsEditor = ({
           })}
         </div>
       </div>
-      <div></div>
-      <textarea value={text} onChange={(e) => setText(e.target.value)} autoCorrect='off' autoComplete='off' spellCheck='false' />
       <div>
-        <button onClick={saveAccount}>{t('save_changes')}</button> <button onClick={() => setText(accountJson)}>{t('reset_changes')}</button>
+        <button onClick={() => navigate('/settings/account-data', { state: { returnTo: location.pathname + location.hash } })}>{t('edit')}</button>
         <button className={styles.deleteAccount} onClick={() => _deleteAccount(account?.name ?? '')}>
           {t('delete_account')}
         </button>

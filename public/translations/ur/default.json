@@ -282,5 +282,14 @@
   "top": "اوپر",
   "reply_count": "جوابوں کی تعداد",
   "pagination.pageCurrent": "صفحہ {{page}} (موجودہ)",
-  "pagination.pageLabel": "صفحہ"
+  "pagination.pageLabel": "صفحہ",
+  "archive": "آرکائیو",
+  "search_ops_placeholder": "Search OPs...",
+  "private_key_warning_title": "نجی کلید کی تنبیہ",
+  "private_key_warning_description": "یہ ایڈیٹر آپ کے اکاؤنٹ کی نجی کلید دکھاتا ہے۔ یہ ڈیٹا کسی کے ساتھ شیئر نہ کریں۔ غلط ترمیم سے آپ کا اکاؤنٹ خراب ہو سکتا ہے۔",
+  "go_back": "واپس جائیں",
+  "continue": "جاری رکھیں",
+  "loading_editor": "ایڈیٹر لوڈ ہو رہا ہے...",
+  "editor_fallback_warning": "کوڈ ایڈیٹر لوڈ نہیں ہو سکا۔ اس کے بجائے ایک سادہ ٹیکسٹ ایریا استعمال کیا جا رہا ہے۔",
+  "return_to_settings": "ترتیبات میں واپس جائیں"
 }

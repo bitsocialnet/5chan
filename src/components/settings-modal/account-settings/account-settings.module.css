@@ -3,32 +3,8 @@
   margin-bottom: 10px;
 }
 
-.setting textarea {
-  display: block;
-  font-family: dejavu sans mono, consolas, andale mono, lucida console, monospace;
-  outline: none;
-  border: 1px solid #aaa;
-  font-size: 11px;
-  margin: 0 2px 0 0;
-  padding: 2px 4px 3px;
-  min-height: 150px;
-  width: 95%;
-}
-
-.setting textarea:focus {
-  border-color: 1px solid #98e;
-}
-
 .setting button {
   cursor: pointer;
-}
-
-.saveResetAccount {
-  margin-top: 15px;
-}
-
-.setting textarea {
-  margin-bottom: 5px;
 }
 
 .setting div {

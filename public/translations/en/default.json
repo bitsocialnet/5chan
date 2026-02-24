@@ -283,5 +283,12 @@
   "show_all": "Show All",
   "show_blotter": "Show Blotter",
   "reply_count": "Reply count",
-  "pagination.pageLabel": "Page"
+  "pagination.pageLabel": "Page",
+  "private_key_warning_title": "Private Key Warning",
+  "private_key_warning_description": "This editor shows your account's private key. Do not share this data with anyone. Editing incorrectly may break your account.",
+  "go_back": "Go Back",
+  "continue": "Continue",
+  "loading_editor": "Loading editor...",
+  "editor_fallback_warning": "The code editor failed to load. Using a plain textarea instead.",
+  "return_to_settings": "Return to Settings"
 }

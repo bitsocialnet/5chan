@@ -282,5 +282,14 @@
   "top": "Felül",
   "reply_count": "Válaszok száma",
   "pagination.pageCurrent": "{{page}}. oldal (jelenlegi)",
-  "pagination.pageLabel": "Oldal"
+  "pagination.pageLabel": "Oldal",
+  "archive": "Archívum",
+  "search_ops_placeholder": "Search OPs...",
+  "private_key_warning_title": "Privát kulcs figyelmeztetés",
+  "private_key_warning_description": "Ez a szerkesztő megjeleníti fiókod titkos kulcsát. Ne osszd meg ezeket az adatokat senkivel. A helytelen szerkesztés tönkreteheti a fiókodat.",
+  "go_back": "Vissza",
+  "continue": "Folytatás",
+  "loading_editor": "Szerkesztő betöltése...",
+  "editor_fallback_warning": "A kódszerkesztő betöltése sikertelen. Egyszerű szövegmező használata helyette.",
+  "return_to_settings": "Vissza a beállításokhoz"
 }

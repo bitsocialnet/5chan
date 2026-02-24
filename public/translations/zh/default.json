@@ -282,5 +282,14 @@
   "top": "顶部",
   "reply_count": "回复数",
   "pagination.pageCurrent": "第{{page}}页（当前）",
-  "pagination.pageLabel": "页"
+  "pagination.pageLabel": "页面",
+  "archive": "归档",
+  "search_ops_placeholder": "Search OPs...",
+  "private_key_warning_title": "私钥警告",
+  "private_key_warning_description": "此编辑器显示您账户的私钥。请勿与任何人分享此数据。错误编辑可能会损坏您的账户。",
+  "go_back": "返回",
+  "continue": "继续",
+  "loading_editor": "正在加载编辑器...",
+  "editor_fallback_warning": "代码编辑器加载失败。改用纯文本输入框。",
+  "return_to_settings": "返回设置"
 }

@@ -282,5 +282,14 @@
   "top": "Itaas",
   "reply_count": "Bilang ng mga tugon",
   "pagination.pageCurrent": "Pahina {{page}} (kasalukuyan)",
-  "pagination.pageLabel": "Pahina"
+  "pagination.pageLabel": "Pahina",
+  "archive": "Arkibo",
+  "search_ops_placeholder": "Search OPs...",
+  "private_key_warning_title": "Babala sa Pribadong Susi",
+  "private_key_warning_description": "Ang editor na ito ay nagpapakita ng pribadong susi ng iyong account. Huwag ibahagi ang data na ito sa sinuman. Ang maling pag-edit ay maaaring masira ang iyong account.",
+  "go_back": "Bumalik",
+  "continue": "Magpatuloy",
+  "loading_editor": "Nilo-load ang editor...",
+  "editor_fallback_warning": "Nabigo ang pag-load ng code editor. Gumagamit ng plain textarea sa halip.",
+  "return_to_settings": "Bumalik sa Mga Setting"
 }

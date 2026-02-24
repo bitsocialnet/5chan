@@ -282,5 +282,14 @@
   "top": "上",
   "reply_count": "返信数",
   "pagination.pageCurrent": "{{page}}ページ（現在）",
-  "pagination.pageLabel": "ページ"
+  "pagination.pageLabel": "ページ",
+  "archive": "アーカイブ",
+  "search_ops_placeholder": "Search OPs...",
+  "private_key_warning_title": "秘密鍵の警告",
+  "private_key_warning_description": "このエディターはアカウントの秘密鍵を表示します。このデータを誰とも共有しないでください。誤った編集によりアカウントが破損する可能性があります。",
+  "go_back": "戻る",
+  "continue": "続ける",
+  "loading_editor": "エディターを読み込み中...",
+  "editor_fallback_warning": "コードエディターの読み込みに失敗しました。代わりにプレーンテキストエリアを使用します。",
+  "return_to_settings": "設定に戻る"
 }

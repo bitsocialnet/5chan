@@ -282,5 +282,14 @@
   "top": "למעלה",
   "reply_count": "מספר תגובות",
   "pagination.pageCurrent": "עמוד {{page}} (נוכחי)",
-  "pagination.pageLabel": "עמוד"
+  "pagination.pageLabel": "עמוד",
+  "archive": "ארכיון",
+  "search_ops_placeholder": "Search OPs...",
+  "private_key_warning_title": "אזהרת מפתח פרטי",
+  "private_key_warning_description": "עורך זה מציג את המפתח הפרטי של חשבונך. אל תשתף נתונים אלה עם אף אחד. עריכה שגויה עלולה לשבור את חשבונך.",
+  "go_back": "חזור",
+  "continue": "המשך",
+  "loading_editor": "טוען עורך...",
+  "editor_fallback_warning": "טעינת עורך הקוד נכשלה. משתמשים בשדה טקסט פשוט במקום.",
+  "return_to_settings": "חזרה להגדרות"
 }
