@@ -123,7 +123,7 @@ const VoteButton = () => {
   );
 };
 
-const RefreshButton = () => {
+export const RefreshButton = () => {
   const { t } = useTranslation();
   const reset = useFeedResetStore((state) => state.reset);
   return (

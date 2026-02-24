@@ -386,11 +386,20 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
             isInModView={isInModView}
             showLoadingEllipsis={effectiveInfiniteScroll}
           />
-          <PageFooterDesktop firstRow={<CatalogFooterFirstRow />} />
+          <PageFooterDesktop
+            firstRow={
+              <CatalogFooterFirstRow
+                subplebbitAddress={subplebbitAddress}
+                isInAllView={isInAllView}
+                isInSubscriptionsView={isInSubscriptionsView}
+                isInModView={isInModView}
+              />
+            }
+          />
         </>
       ),
     }),
-    [subplebbitAddresses, hasMore, cappedFeed.length, isInAllView, isInSubscriptionsView, isInModView, effectiveInfiniteScroll],
+    [subplebbitAddresses, hasMore, cappedFeed.length, subplebbitAddress, isInAllView, isInSubscriptionsView, isInModView, effectiveInfiniteScroll],
   );
 
   const isFeedLoaded = feed.length > 0 || state === 'failed';
@@ -541,7 +550,16 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
                 error={error}
               />
             </div>
-            <PageFooterDesktop firstRow={<CatalogFooterFirstRow />} />
+            <PageFooterDesktop
+              firstRow={
+                <CatalogFooterFirstRow
+                  subplebbitAddress={subplebbitAddress}
+                  isInAllView={isInAllView}
+                  isInSubscriptionsView={isInSubscriptionsView}
+                  isInModView={isInModView}
+                />
+              }
+            />
           </>
         )}
       </div>

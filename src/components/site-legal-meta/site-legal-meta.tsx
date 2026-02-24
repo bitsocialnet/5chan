@@ -28,12 +28,9 @@ const SiteLegalMeta = ({ order = 'version-first' }: SiteLegalMetaProps) => {
 
   return (
     <>
-      <br />
       {first}
       <br />
-      <br />
-      <br />
-      {second}
+      <span style={{ display: 'block', marginTop: 5 }}>{second}</span>
     </>
   );
 };
