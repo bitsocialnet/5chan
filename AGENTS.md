@@ -5,6 +5,13 @@
 This file defines the always-on rules for AI agents working on 5chan.
 Use this as the default policy. Load linked playbooks only when their trigger condition applies.
 
+## Surprise Handling
+
+The role of this file is to reduce recurring agent mistakes and confusion points in this repository.
+If you encounter something surprising or ambiguous while working, alert the developer immediately.
+After confirmation, add a concise entry to `docs/agent-playbooks/known-surprises.md` so future agents avoid the same issue.
+Only record items that are repo-specific, likely to recur, and have a concrete mitigation.
+
 ## Project Overview
 
 5chan is a serverless, adminless, decentralized 4chan alternative built on the Bitsocial protocol.
@@ -27,6 +34,7 @@ Use this as the default policy. Load linked playbooks only when their trigger co
 | UI/visual behavior changed | Verify in browser with `playwright-cli`; test desktop and mobile viewport |
 | GitHub operation needed | Use `gh` CLI, not GitHub MCP |
 | User asks for commit/issue phrasing | Use `docs/agent-playbooks/commit-issue-format.md` |
+| Surprising/ambiguous repo behavior encountered | Alert developer and, once confirmed, document in `docs/agent-playbooks/known-surprises.md` |
 
 ## Stack
 
@@ -145,3 +153,4 @@ Use these only when relevant to the active task:
 - Commit/issue output format: `docs/agent-playbooks/commit-issue-format.md`
 - Skills/tools setup and MCP rationale: `docs/agent-playbooks/skills-and-tools.md`
 - Bug investigation workflow: `docs/agent-playbooks/bug-investigation.md`
+- Known surprises log: `docs/agent-playbooks/known-surprises.md`
