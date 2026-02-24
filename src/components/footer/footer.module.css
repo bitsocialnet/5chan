@@ -57,6 +57,11 @@
   width: 100%;
 }
 
+/* When only footerRight is shown (e.g. multiboards), align it right */
+.footerRowRightOnly {
+  justify-content: flex-end;
+}
+
 .footerLeft {
   display: flex;
   align-items: center;

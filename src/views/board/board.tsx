@@ -261,7 +261,11 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, i
             accountSubplebbitAddressesLength={accountSubplebbitAddresses?.length || 0}
             showLoadingEllipsis={effectiveInfiniteScroll || combinedFeed.length === 0}
           />
-          <PageFooterDesktop firstRow={<BoardPagination basePath={paginationBasePath} currentPage={currentPage} totalPages={totalPages} footerStyle />} />
+          <PageFooterDesktop
+            firstRow={
+              <BoardPagination basePath={paginationBasePath} currentPage={currentPage} totalPages={totalPages} footerStyle isMultiboard={isForcedInfiniteScroll} />
+            }
+          />
         </>
       ),
     }),
@@ -276,6 +280,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, i
       subscriptions?.length,
       accountSubplebbitAddresses?.length,
       effectiveInfiniteScroll,
+      isForcedInfiniteScroll,
       paginationBasePath,
       currentPage,
       totalPages,

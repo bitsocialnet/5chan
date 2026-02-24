@@ -11,9 +11,11 @@ export interface BoardPaginationProps {
   totalPages: number;
   /** When true, renders pagelist: [All] [1] [2] ... [10] Catalog Archive + Style select */
   footerStyle?: boolean;
+  /** When true, pagelist is never shown (multiboards always use infinite scroll) */
+  isMultiboard?: boolean;
 }
 
-const BoardPagination = ({ basePath, currentPage, totalPages, footerStyle = false }: BoardPaginationProps) => {
+const BoardPagination = ({ basePath, currentPage, totalPages, footerStyle = false, isMultiboard = false }: BoardPaginationProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const enableInfiniteScroll = useFeedViewSettingsStore((state) => state.enableInfiniteScroll);
@@ -31,8 +33,8 @@ const BoardPagination = ({ basePath, currentPage, totalPages, footerStyle = fals
     const archiveHref = `${basePath}/archive`;
 
     return (
-      <div className={footerStyles.footerRow}>
-        {!enableInfiniteScroll && (
+      <div className={`${footerStyles.footerRow} ${isMultiboard ? footerStyles.footerRowRightOnly : ''}`}>
+        {!isMultiboard && !enableInfiniteScroll && (
           <div className={styles.pagelist}>
             {currentPage > 1 && (
               <button type='button' className={styles.pagelistNavButton} onClick={() => navigate(pageHref(currentPage - 1))}>
