@@ -284,7 +284,7 @@
   "pagination.pageCurrent": "الصفحة {{page}} (الحالية)",
   "pagination.pageLabel": "صفحة",
   "archive": "الأرشيف",
-  "search_ops_placeholder": "Search OPs...",
+  "search_ops_placeholder": "بحث عن OPs...",
   "private_key_warning_title": "تحذير المفتاح الخاص",
   "private_key_warning_description": "يعرض هذا المحرر المفتاح الخاص لحسابك. لا تشارك هذه البيانات مع أي شخص. التحرير بشكل خاطئ قد يكسر حسابك.",
   "go_back": "رجوع",

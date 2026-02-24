@@ -284,7 +284,7 @@
   "pagination.pageCurrent": "Pagina {{page}} (curentă)",
   "pagination.pageLabel": "Pagină",
   "archive": "Arhivă",
-  "search_ops_placeholder": "Search OPs...",
+  "search_ops_placeholder": "Căutați OPs...",
   "private_key_warning_title": "Avertisment cheie privată",
   "private_key_warning_description": "Acest editor afișează cheia privată a contului tău. Nu partaja aceste date cu nimeni. Editarea incorectă poate deteriora contul tău.",
   "go_back": "Înapoi",

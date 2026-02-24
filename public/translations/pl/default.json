@@ -284,7 +284,7 @@
   "pagination.pageCurrent": "Strona {{page}} (bieżąca)",
   "pagination.pageLabel": "Strona",
   "archive": "Archiwum",
-  "search_ops_placeholder": "Search OPs...",
+  "search_ops_placeholder": "Szukaj OPs...",
   "private_key_warning_title": "Ostrzeżenie o kluczu prywatnym",
   "private_key_warning_description": "Ten edytor wyświetla klucz prywatny Twojego konta. Nie udostępniaj tych danych nikomu. Nieprawidłowa edycja może uszkodzić Twoje konto.",
   "go_back": "Wróć",

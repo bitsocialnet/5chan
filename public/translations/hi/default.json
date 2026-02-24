@@ -284,7 +284,7 @@
   "pagination.pageCurrent": "पृष्ठ {{page}} (वर्तमान)",
   "pagination.pageLabel": "पृष्ठ",
   "archive": "संग्रह",
-  "search_ops_placeholder": "Search OPs...",
+  "search_ops_placeholder": "OPs खोजें...",
   "private_key_warning_title": "निजी कुंजी चेतावनी",
   "private_key_warning_description": "यह संपादक आपके खाते की निजी कुंजी दिखाता है। इस डेटा को किसी के साथ साझा न करें। गलत तरीके से संपादन करने से आपका खाता खराब हो सकता है।",
   "go_back": "वापस जाएं",
