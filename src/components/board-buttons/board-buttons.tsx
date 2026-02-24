@@ -1,7 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { useAccountComment, useSubscribe } from '@plebbit/plebbit-react-hooks';
-import useSubplebbitsPagesStore from '@plebbit/plebbit-react-hooks/dist/stores/subplebbits-pages';
+import { useAccountComment, useComment, useSubscribe } from '@plebbit/plebbit-react-hooks';
 import { isAllView, isCatalogView, isModView, isModQueueView, isPendingPostView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import { useDirectories } from '../../hooks/use-directories';
 import { getBoardPath, isDirectoryBoard } from '../../lib/utils/route-utils';
@@ -458,11 +457,14 @@ export const MobileBoardButtons = () => {
 export const PostPageStats = () => {
   const { t } = useTranslation();
   const params = useParams();
+  const commentCid = params?.commentCid as string | undefined;
 
-  const comment = useSubplebbitsPagesStore((state) => state.comments[params?.commentCid as string]);
+  const comment = useComment({ commentCid });
+  const postCid = comment?.parentCid ?? commentCid;
+  const post = useComment({ commentCid: postCid });
 
-  const { closed, pinned, replyCount } = comment || {};
-  const linkCount = useCountLinksInReplies(comment);
+  const { closed, pinned, replyCount } = post || {};
+  const linkCount = useCountLinksInReplies(post);
 
   const displayReplyCount = replyCount !== undefined ? replyCount.toString() : '?';
   const replyCountTooltip = replyCount !== undefined ? capitalize(t('replies')) : t('loading');
