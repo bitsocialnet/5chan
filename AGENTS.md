@@ -130,11 +130,17 @@ src/
 - When stuck on a bug, search the web for recent fixes/workarounds.
 - After user corrections, identify root cause and apply the lesson in subsequent steps.
 
+## Local Development URLs
+
+This project uses [Portless](https://github.com/vercel-labs/portless) for local dev. The dev server is available at http://5chan.localhost:1355 instead of a random port. Other Bitsocial projects use the same proxy (seedit, mintpass, bitsocial at `.localhost:1355`), so they can all run simultaneously without port conflicts.
+
+To bypass Portless: `PORTLESS=0 yarn start`
+
 ## Common Commands
 
 ```bash
 yarn install
-yarn start
+yarn start                # http://5chan.localhost:1355
 yarn build
 yarn test
 yarn prettier
