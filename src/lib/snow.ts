@@ -7,10 +7,6 @@ interface SnowOptions {
 // Add this new variable to track manual override
 let manualSnowOverride: boolean | null = null;
 
-export const setManualSnowOverride = (value: boolean): void => {
-  manualSnowOverride = value;
-};
-
 export const initSnow = ({ flakeCount }: SnowOptions): void => {
   const randomRange = (min: number, max: number): number => {
     min = Math.ceil(min);

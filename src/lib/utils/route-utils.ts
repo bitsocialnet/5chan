@@ -20,7 +20,7 @@ let cachedAddressToDirectoryMap: Map<string, string> | null = null;
  * Create a map from directory codes to community addresses
  * Uses caching to avoid recreating the map when communities array hasn't changed
  */
-export const getDirectoryToAddressMap = (communities: DirectoryCommunity[]): Map<string, string> => {
+const getDirectoryToAddressMap = (communities: DirectoryCommunity[]): Map<string, string> => {
   // Check if we can use cached map (same array reference)
   if (cachedDirectoryToAddressMap && cachedCommunitiesForDirectory === communities) {
     return cachedDirectoryToAddressMap;
@@ -46,7 +46,7 @@ export const getDirectoryToAddressMap = (communities: DirectoryCommunity[]): Map
  * Create a map from community addresses to directory codes
  * Uses caching to avoid recreating the map when communities array hasn't changed
  */
-export const getAddressToDirectoryMap = (communities: DirectoryCommunity[]): Map<string, string> => {
+const getAddressToDirectoryMap = (communities: DirectoryCommunity[]): Map<string, string> => {
   // Check if we can use cached map (same array reference)
   if (cachedAddressToDirectoryMap && cachedCommunitiesForAddress === communities) {
     return cachedAddressToDirectoryMap;
@@ -139,9 +139,9 @@ export const isModQueueRoute = (pathname: string): boolean => {
 };
 
 /** Page numbers 1–10 for board feed pagination */
-export const BOARD_PAGE_REGEX = /^([1-9]|10)$/;
+const BOARD_PAGE_REGEX = /^([1-9]|10)$/;
 
-export const isBoardFeedPageNumber = (segment: string): boolean => BOARD_PAGE_REGEX.test(segment);
+const isBoardFeedPageNumber = (segment: string): boolean => BOARD_PAGE_REGEX.test(segment);
 
 /** Internal: check if segment is a multiboard root (all, subs, mod) */
 function isMultiboardRoot(segment: string): boolean {
