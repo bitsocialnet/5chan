@@ -3,6 +3,15 @@ import { useTranslation } from 'react-i18next';
 import { useAccount, setAccount, useResolvedAuthorAddress } from '@plebbit/plebbit-react-hooks';
 import styles from './crypto-address-setting.module.css';
 
+const withErrorHandling = async <T,>(fn: () => Promise<T>, onError: (e: unknown) => void): Promise<T | undefined> => {
+  try {
+    return await fn();
+  } catch (e) {
+    onError(e);
+    return undefined;
+  }
+};
+
 const CryptoAddressSetting = () => {
   const { t } = useTranslation();
   const account = useAccount();
@@ -75,27 +84,26 @@ const CryptoAddressSetting = () => {
       alert(t('crypto_address_not_resolved'));
       return;
     } else if (resolvedAddress && resolvedAddress === account?.signer?.address) {
-      try {
-        await setAccount({ ...account, author: { ...account?.author, address: cryptoState.cryptoAddress } });
+      const result = await withErrorHandling(
+        () => setAccount({ ...account, author: { ...account?.author, address: cryptoState.cryptoAddress } }),
+        (error) => {
+          if (error instanceof Error) {
+            alert(error.message);
+            console.log(error);
+          } else {
+            console.error('An unknown error occurred:', error);
+          }
+        },
+      );
+      if (result !== undefined) {
         setSavedCryptoAddress(true);
-
-        setTimeout(() => {
-          setSavedCryptoAddress(false);
-        }, 2000);
-
+        setTimeout(() => setSavedCryptoAddress(false), 2000);
         setCryptoState((prevState) => ({
           ...prevState,
           savedCryptoAddress: true,
           cryptoAddress: '',
           checkingCryptoAddress: false,
         }));
-      } catch (error) {
-        if (error instanceof Error) {
-          alert(error.message);
-          console.log(error);
-        } else {
-          console.error('An unknown error occurred:', error);
-        }
       }
       setSavedCryptoAddress(true);
       setCryptoState((prevState) => ({

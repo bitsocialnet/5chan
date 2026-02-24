@@ -14,6 +14,30 @@ import useHide from '../../../hooks/use-hide';
 import capitalize from 'lodash/capitalize';
 import { PostMenuProps } from '../../../lib/utils/post-menu-props';
 
+const safeCopyShareLink = async (boardIdentifier: string, linkType: ShareLinkType, cid?: string): Promise<boolean> => {
+  try {
+    if (linkType === 'thread' && cid) {
+      await copyShareLinkToClipboard(boardIdentifier, linkType, cid);
+    } else {
+      await copyShareLinkToClipboard(boardIdentifier, linkType as Exclude<ShareLinkType, 'thread'>);
+    }
+    return true;
+  } catch (error) {
+    console.error('Failed to copy share link', error);
+    return false;
+  }
+};
+
+const safeCopyToClipboard = async (text: string, label: string): Promise<boolean> => {
+  try {
+    await copyToClipboard(text);
+    return true;
+  } catch (error) {
+    console.error(`Failed to copy ${label}`, error);
+    return false;
+  }
+};
+
 type CopyLinkButtonProps =
   | { cid: string; subplebbitAddress: string; linkType: 'thread'; onClose: () => void }
   | { subplebbitAddress: string; linkType: Exclude<ShareLinkType, 'thread'>; onClose: () => void; cid?: undefined };
@@ -22,61 +46,72 @@ const CopyLinkButton = ({ cid, subplebbitAddress, linkType, onClose }: CopyLinkB
   const { t } = useTranslation();
   const directories = useDirectories();
   const boardIdentifier = getBoardPath(subplebbitAddress, directories);
+  const handleClick = async () => {
+    await safeCopyShareLink(boardIdentifier, linkType, linkType === 'thread' ? cid : undefined);
+    onClose();
+  };
   return (
     <div
-      onClick={async () => {
-        try {
-          if (linkType === 'thread') {
-            await copyShareLinkToClipboard(boardIdentifier, linkType, cid);
-          } else {
-            await copyShareLinkToClipboard(boardIdentifier, linkType);
-          }
-        } catch (error) {
-          console.error('Failed to copy share link', error);
-        } finally {
-          onClose();
+      className={styles.postMenuItem}
+      role='button'
+      tabIndex={0}
+      onClick={handleClick}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleClick();
         }
       }}
     >
-      <div className={styles.postMenuItem}>{t('copy_direct_link')}</div>
+      {t('copy_direct_link')}
     </div>
   );
 };
 
 const CopyContentIdButton = ({ cid, onClose }: { cid: string; onClose: () => void }) => {
   const { t } = useTranslation();
+  const handleClick = async () => {
+    await safeCopyToClipboard(cid, 'content id');
+    onClose();
+  };
   return (
     <div
-      onClick={async () => {
-        try {
-          await copyToClipboard(cid);
-        } catch (error) {
-          console.error('Failed to copy content id', error);
-        } finally {
-          onClose();
+      className={styles.postMenuItem}
+      role='button'
+      tabIndex={0}
+      onClick={handleClick}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleClick();
         }
       }}
     >
-      <div className={styles.postMenuItem}>{t('copy_content_id')}</div>
+      {t('copy_content_id')}
     </div>
   );
 };
 
 const CopyUserIdButton = ({ address, onClose }: { address: string; onClose: () => void }) => {
   const { t } = useTranslation();
+  const handleClick = async () => {
+    await safeCopyToClipboard(address, 'user id');
+    onClose();
+  };
   return (
     <div
-      onClick={async () => {
-        try {
-          await copyToClipboard(address);
-        } catch (error) {
-          console.error('Failed to copy user id', error);
-        } finally {
-          onClose();
+      className={styles.postMenuItem}
+      role='button'
+      tabIndex={0}
+      onClick={handleClick}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleClick();
         }
       }}
     >
-      <div className={styles.postMenuItem}>{t('copy_user_id')}</div>
+      {t('copy_user_id')}
     </div>
   );
 };
@@ -93,10 +128,18 @@ const ImageSearchButton = ({ url, onClose }: { url: string; onClose: () => void 
   return (
     <div
       className={`${styles.postMenuItem} ${styles.dropdown}`}
+      role='button'
+      tabIndex={0}
       onMouseOver={() => setIsImageSearchMenuOpen(true)}
       onMouseLeave={() => setIsImageSearchMenuOpen(false)}
       ref={refs.setReference}
       onClick={onClose}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClose();
+        }
+      }}
     >
       {capitalize(t('image_search'))} »
       {isImageSearchMenuOpen && (
@@ -163,7 +206,15 @@ const PostMenuDesktop = ({ postMenu }: PostMenuDesktopProps) => {
         <span
           className={isInCatalogView ? styles.postMenuBtnCatalog : styles.postMenuBtn}
           title='Post menu'
+          role='button'
+          tabIndex={0}
           onClick={handleMenuClick}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              handleMenuClick();
+            }
+          }}
           style={{ transform: menuBtnRotated && cid ? 'rotate(90deg)' : 'rotate(0deg)' }}
         >
           ▶
@@ -180,9 +231,18 @@ const PostMenuDesktop = ({ postMenu }: PostMenuDesktopProps) => {
               {!(isInPostPageView && postCid === cid) && (
                 <div
                   className={styles.postMenuItem}
+                  role='button'
+                  tabIndex={0}
                   onClick={() => {
                     hidden ? unhide() : hide();
                     handleClose();
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      hidden ? unhide() : hide();
+                      handleClose();
+                    }
                   }}
                 >
                   {hidden ? (postCid === cid ? t('unhide_thread') : t('unhide_post')) : postCid === cid ? t('hide_thread') : t('hide_post')}

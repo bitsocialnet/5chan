@@ -10,52 +10,54 @@ import Version from '../../version';
 const commitRef = process.env.VITE_COMMIT_REF;
 const isElectron = window.electronApi?.isElectron === true;
 
+const fetchLatestVersionInfo = async (t: (key: string, opts?: Record<string, unknown>) => string): Promise<void> => {
+  try {
+    const packageRes = await fetch('https://raw.githubusercontent.com/bitsocialhq/5chan/master/package.json', { cache: 'no-cache' });
+    const packageData = await packageRes.json();
+    let updateAvailable = false;
+
+    if (packageJson.version !== packageData.version) {
+      const newVersionText = t('new_stable_version', { newVersion: packageData.version, oldVersion: packageJson.version });
+      const updateActionText = isElectron
+        ? t('download_latest_desktop', { link: 'https://github.com/bitsocialhq/5chan/releases/latest', interpolation: { escapeValue: false } })
+        : t('refresh_to_update');
+      alert(newVersionText + ' ' + updateActionText);
+      updateAvailable = true;
+    }
+
+    if (commitRef && commitRef.length > 0) {
+      const commitRes = await fetch('https://api.github.com/repos/bitsocialhq/5chan/commits?per_page=1&sha=development', { cache: 'no-cache' });
+      const commitData = await commitRes.json();
+
+      const latestCommitHash = commitData[0].sha;
+
+      if (latestCommitHash.trim() !== commitRef.trim()) {
+        const newVersionText = t('new_development_version', { newCommit: latestCommitHash.slice(0, 7), oldCommit: commitRef.slice(0, 7) }) + ' ' + t('refresh_to_update');
+        alert(newVersionText);
+        updateAvailable = true;
+      }
+    }
+
+    if (!updateAvailable) {
+      alert(
+        commitRef
+          ? `${t('latest_development_version', { commit: commitRef.slice(0, 7), link: 'https://5chan.app/#/', interpolation: { escapeValue: false } })}`
+          : `${t('latest_stable_version', { version: packageJson.version })}`,
+      );
+    }
+  } catch (error) {
+    alert('Failed to fetch latest version info: ' + error);
+  }
+};
+
 const CheckForUpdates = () => {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
 
   const checkForUpdates = async () => {
-    try {
-      setLoading(true);
-      const packageRes = await fetch('https://raw.githubusercontent.com/bitsocialhq/5chan/master/package.json', { cache: 'no-cache' });
-      const packageData = await packageRes.json();
-      let updateAvailable = false;
-
-      if (packageJson.version !== packageData.version) {
-        const newVersionText = t('new_stable_version', { newVersion: packageData.version, oldVersion: packageJson.version });
-        const updateActionText = isElectron
-          ? t('download_latest_desktop', { link: 'https://github.com/bitsocialhq/5chan/releases/latest', interpolation: { escapeValue: false } })
-          : t('refresh_to_update');
-        alert(newVersionText + ' ' + updateActionText);
-        updateAvailable = true;
-      }
-
-      if (commitRef && commitRef.length > 0) {
-        const commitRes = await fetch('https://api.github.com/repos/bitsocialhq/5chan/commits?per_page=1&sha=development', { cache: 'no-cache' });
-        const commitData = await commitRes.json();
-
-        const latestCommitHash = commitData[0].sha;
-
-        if (latestCommitHash.trim() !== commitRef.trim()) {
-          const newVersionText =
-            t('new_development_version', { newCommit: latestCommitHash.slice(0, 7), oldCommit: commitRef.slice(0, 7) }) + ' ' + t('refresh_to_update');
-          alert(newVersionText);
-          updateAvailable = true;
-        }
-      }
-
-      if (!updateAvailable) {
-        alert(
-          commitRef
-            ? `${t('latest_development_version', { commit: commitRef.slice(0, 7), link: 'https://5chan.app/#/', interpolation: { escapeValue: false } })}`
-            : `${t('latest_stable_version', { version: packageJson.version })}`,
-        );
-      }
-    } catch (error) {
-      alert('Failed to fetch latest version info: ' + error);
-    } finally {
-      setLoading(false);
-    }
+    setLoading(true);
+    await fetchLatestVersionInfo(t);
+    setLoading(false);
   };
 
   return (

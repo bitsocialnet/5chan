@@ -120,16 +120,7 @@ const BoardLayout = () => {
 };
 
 const GlobalLayout = () => {
-  const [currentTheme] = useTheme();
-
-  useEffect(() => {
-    if (currentTheme) {
-      document.body.classList.add(currentTheme);
-      return () => {
-        document.body.classList.remove(currentTheme);
-      };
-    }
-  }, [currentTheme]);
+  useTheme();
 
   const { activeCid, parentNumber, threadNumber, threadCid, subplebbitAddress, closeModal, showReplyModal, scrollY } = useReplyModalStore();
 

@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { autoUpdate, FloatingFocusManager, offset, shift, useClick, useDismiss, useFloating, useId, useInteractions, useRole } from '@floating-ui/react';
 import {
@@ -47,7 +47,9 @@ const EditMenu = ({ post }: { post: Comment }) => {
   });
   const signer = isAccountCommentAuthor ? account?.signer : null;
   const latestPostRef = useRef(post);
-  latestPostRef.current = post;
+  useEffect(() => {
+    latestPostRef.current = post;
+  }, [post]);
   const onChallenge = useCallback((...args: any) => addChallenge([...args, latestPostRef.current]), []);
 
   const defaultPublishEditOptions = useMemo(() => {

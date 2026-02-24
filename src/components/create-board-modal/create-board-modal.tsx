@@ -15,7 +15,18 @@ const CreateBoardModal = () => {
   };
 
   return (
-    <div className={styles.backdrop} onClick={handleBackdropClick}>
+    <div
+      className={styles.backdrop}
+      role='button'
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          closeCreateBoardModal();
+        }
+      }}
+      onClick={handleBackdropClick}
+    >
       <div className={styles.createBoardDialog}>
         <div className={styles.hd}>
           <h2>Create a Board</h2>

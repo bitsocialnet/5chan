@@ -58,7 +58,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
   const [error, setError] = useState<string | null>(null);
   const [lengthError, setLengthError] = useState<string | null>(null);
 
-  const checkContentLength = useRef(
+  const checkContentLengthRef = useRef(
     debounce((content: string, t: Function) => {
       const length = content.trim().length;
       if (length > 2000) {
@@ -68,7 +68,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
         setLengthError(null);
       }
     }, 1000),
-  ).current;
+  );
 
   const onPublishReply = () => {
     const currentContent = textRef.current?.value.trim() || '';
@@ -84,7 +84,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
       return;
     }
 
-    checkContentLength.cancel();
+    checkContentLengthRef.current.cancel();
     setLengthError(null);
 
     if (currentContent.length > 2000) {
@@ -202,7 +202,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
       lastSelectionEndRef.current = len;
       const formattedContent = formatMarkdown(textRef.current.value);
       setPublishReplyOptions({ content: formattedContent });
-      checkContentLength(formattedContent, t);
+      checkContentLengthRef.current(formattedContent, t);
 
       setTimeout(() => {
         if (textRef.current) {
@@ -220,7 +220,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const formattedContent = formatMarkdown(e.target.value);
     setPublishReplyOptions({ content: formattedContent });
-    checkContentLength(formattedContent, t);
+    checkContentLengthRef.current(formattedContent, t);
   };
 
   useEffect(() => {
@@ -264,8 +264,8 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
 
     const formattedContent = formatMarkdown(nextValue);
     setPublishReplyOptions({ content: formattedContent });
-    checkContentLength(formattedContent, t);
-  }, [showReplyModal, quoteInsertRequestId, quoteInsertNumber, quoteInsertSelectedText, setPublishReplyOptions, checkContentLength, t]);
+    checkContentLengthRef.current(formattedContent, t);
+  }, [showReplyModal, quoteInsertRequestId, quoteInsertNumber, quoteInsertSelectedText, setPublishReplyOptions, t]);
 
   const { isUploading, uploadedFileName, handleUpload } = useFileUpload({
     onUploadComplete: (uploadedUrl: string) => {

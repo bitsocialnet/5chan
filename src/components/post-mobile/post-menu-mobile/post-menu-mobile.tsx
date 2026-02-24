@@ -16,6 +16,34 @@ import { isBoardView, isPostPageView } from '../../../lib/utils/view-utils';
 import { useLocation, useParams } from 'react-router-dom';
 import { PostMenuProps } from '../../../lib/utils/post-menu-props';
 
+async function copyShareLinkSafe(boardIdentifier: string, linkType: ShareLinkType, cid?: string): Promise<void> {
+  try {
+    if (linkType === 'thread' && cid) {
+      await copyShareLinkToClipboard(boardIdentifier, linkType, cid);
+    } else {
+      await copyShareLinkToClipboard(boardIdentifier, linkType as Exclude<ShareLinkType, 'thread'>);
+    }
+  } catch (error) {
+    console.error('Failed to copy share link', error);
+  }
+}
+
+async function copyContentIdSafe(cid: string): Promise<void> {
+  try {
+    await copyToClipboard(cid);
+  } catch (error) {
+    console.error('Failed to copy content id', error);
+  }
+}
+
+async function copyUserIdSafe(address: string): Promise<void> {
+  try {
+    await copyToClipboard(address);
+  } catch (error) {
+    console.error('Failed to copy user id', error);
+  }
+}
+
 type HideButtonProps = {
   cid?: string;
   isReply?: boolean;
@@ -31,19 +59,19 @@ const CopyLinkButton = ({ cid, subplebbitAddress, linkType, onClose }: CopyLinkB
   const { t } = useTranslation();
   const directories = useDirectories();
   const boardIdentifier = getBoardPath(subplebbitAddress, directories);
+  const handleClick = async () => {
+    await copyShareLinkSafe(boardIdentifier, linkType, linkType === 'thread' ? cid : undefined);
+    onClose();
+  };
   return (
     <div
-      onClick={async () => {
-        try {
-          if (linkType === 'thread') {
-            await copyShareLinkToClipboard(boardIdentifier, linkType, cid);
-          } else {
-            await copyShareLinkToClipboard(boardIdentifier, linkType);
-          }
-        } catch (error) {
-          console.error('Failed to copy share link', error);
-        } finally {
-          onClose();
+      role='button'
+      tabIndex={0}
+      onClick={handleClick}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleClick();
         }
       }}
     >
@@ -54,15 +82,19 @@ const CopyLinkButton = ({ cid, subplebbitAddress, linkType, onClose }: CopyLinkB
 
 const CopyContentIdButton = ({ cid, onClose }: { cid: string; onClose: () => void }) => {
   const { t } = useTranslation();
+  const handleClick = async () => {
+    await copyContentIdSafe(cid);
+    onClose();
+  };
   return (
     <div
-      onClick={async () => {
-        try {
-          await copyToClipboard(cid);
-        } catch (error) {
-          console.error('Failed to copy content id', error);
-        } finally {
-          onClose();
+      role='button'
+      tabIndex={0}
+      onClick={handleClick}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleClick();
         }
       }}
     >
@@ -73,15 +105,19 @@ const CopyContentIdButton = ({ cid, onClose }: { cid: string; onClose: () => voi
 
 const CopyUserIdButton = ({ address, onClose }: { address: string; onClose: () => void }) => {
   const { t } = useTranslation();
+  const handleClick = async () => {
+    await copyUserIdSafe(address);
+    onClose();
+  };
   return (
     <div
-      onClick={async () => {
-        try {
-          await copyToClipboard(address);
-        } catch (error) {
-          console.error('Failed to copy user id', error);
-        } finally {
-          onClose();
+      role='button'
+      tabIndex={0}
+      onClick={handleClick}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleClick();
         }
       }}
     >
@@ -93,7 +129,17 @@ const CopyUserIdButton = ({ address, onClose }: { address: string; onClose: () =
 const ImageSearchButtons = ({ url, onClose }: { url: string; onClose: () => void }) => {
   const { t } = useTranslation();
   return (
-    <div onClick={onClose}>
+    <div
+      role='button'
+      tabIndex={0}
+      onClick={onClose}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClose();
+        }
+      }}
+    >
       <a href={`https://lens.google.com/uploadbyurl?url=${url}`} target='_blank' rel='noreferrer'>
         <div className={styles.postMenuItem}>{t('search_image_on_google')}</div>
       </a>
@@ -112,12 +158,21 @@ const HidePostButton = ({ cid, isReply, onClose, postCid }: HideButtonProps) => 
   const { hide, hidden, unhide } = useHide({ cid: cid || '' });
   const isInPostView = isPostPageView(useLocation().pathname, useParams());
 
+  const handleClick = () => {
+    hidden ? unhide() : hide();
+    onClose && onClose();
+  };
   return (
     (!isInPostView || isReply) && (
       <div
-        onClick={() => {
-          hidden ? unhide() : hide();
-          onClose && onClose();
+        role='button'
+        tabIndex={0}
+        onClick={handleClick}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleClick();
+          }
         }}
       >
         <div className={styles.postMenuItem}>
@@ -169,7 +224,21 @@ const PostMenuMobile = ({ postMenu, editMenuPost }: PostMenuMobileProps) => {
     <>
       {!(deleted || removed) && (
         <>
-          <span className={styles.postMenuBtn} title='Post menu' onClick={handleMenuClick} ref={refs.setReference} {...getReferenceProps()}>
+          <span
+            className={styles.postMenuBtn}
+            title='Post menu'
+            role='button'
+            tabIndex={0}
+            onClick={handleMenuClick}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleMenuClick();
+              }
+            }}
+            ref={refs.setReference}
+            {...getReferenceProps()}
+          >
             ...
           </span>
           {isMenuOpen &&

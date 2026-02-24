@@ -31,7 +31,18 @@ const DisclaimerModal = () => {
   };
 
   return (
-    <div className={styles.backdrop} onClick={handleBackdropClick}>
+    <div
+      className={styles.backdrop}
+      role='button'
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          closeDisclaimerModal();
+        }
+      }}
+      onClick={handleBackdropClick}
+    >
       <div className={styles.disclaimerDialog}>
         <div className={styles.hd}>
           <h2>Disclaimer</h2>

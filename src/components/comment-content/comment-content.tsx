@@ -1,4 +1,4 @@
-import { Fragment, useCallback, useMemo, useState } from 'react';
+import { Fragment, useMemo, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import { Trans, useTranslation } from 'react-i18next';
 import { Comment, useComment } from '@plebbit/plebbit-react-hooks';
@@ -36,28 +36,20 @@ const useScopedCidToNumber = (cids: string[]) => {
     return [...uniqueCids].sort();
   }, [cids]);
 
-  // Subscribe only to CIDs this comment needs so unrelated thread updates do not rerender content.
-  const cidNumbersSignature = usePostNumberStore(
-    useCallback((state) => sortedUniqueCids.map((cid) => `${cid}:${state.cidToNumber[cid] ?? ''}`).join('|'), [sortedUniqueCids]),
-  );
+  const cidToNumber = usePostNumberStore((s) => s.cidToNumber);
 
-  return useMemo(() => {
-    if (sortedUniqueCids.length === 0) {
-      return {} as Record<string, number>;
+  if (sortedUniqueCids.length === 0) {
+    return {} as Record<string, number>;
+  }
+
+  const nextCidToNumber: Record<string, number> = {};
+  for (const cid of sortedUniqueCids) {
+    const number = cidToNumber[cid];
+    if (typeof number === 'number') {
+      nextCidToNumber[cid] = number;
     }
-
-    const { cidToNumber } = usePostNumberStore.getState();
-    const nextCidToNumber: Record<string, number> = {};
-
-    for (const cid of sortedUniqueCids) {
-      const number = cidToNumber[cid];
-      if (typeof number === 'number') {
-        nextCidToNumber[cid] = number;
-      }
-    }
-
-    return nextCidToNumber;
-  }, [sortedUniqueCids, cidNumbersSignature]);
+  }
+  return nextCidToNumber;
 };
 
 const CommentContent = ({ comment: post }: { comment: Comment }) => {
@@ -88,28 +80,23 @@ const CommentContent = ({ comment: post }: { comment: Comment }) => {
   const isReply = !!parentCid;
   const isReplyingToReply = isReply && parentCid !== postCid;
 
-  const contentNumbers = useMemo(() => {
-    if (!content) return new Set<number>();
-    const matches = content.matchAll(/(?<![>/\w])>>(\d+)(?![\d/])/g);
-    return new Set([...matches].map((m) => parseInt(m[1], 10)));
-  }, [content]);
+  const contentNumbers = !content ? new Set<number>() : new Set([...content.matchAll(/(?<![>/\w])>>(\d+)(?![\d/])/g)].map((m) => parseInt(m[1], 10)));
 
-  const relevantQuotedCids = useMemo(() => {
+  const relevantQuotedCids = (() => {
     const cids = quotedCids ? [...quotedCids] : [];
     if (parentCid) {
       cids.push(parentCid);
     }
     return cids;
-  }, [quotedCids, parentCid]);
+  })();
 
   const cidToNumber = useScopedCidToNumber(relevantQuotedCids);
-  const filteredQuotedCids = useMemo(() => {
-    if (!quotedCids?.length) return [];
-    return quotedCids.filter((cid: string) => {
-      const num = cidToNumber[cid];
-      return num === undefined || !contentNumbers.has(num);
-    });
-  }, [quotedCids, cidToNumber, contentNumbers]);
+  const filteredQuotedCids = !quotedCids?.length
+    ? []
+    : quotedCids.filter((cid: string) => {
+        const num = cidToNumber[cid];
+        return num === undefined || !contentNumbers.has(num);
+      });
 
   const shouldShowReplyingToReply = isReplyingToReply && (parentCid ? !contentNumbers.has(cidToNumber[parentCid] ?? -1) : true);
 
@@ -161,7 +148,26 @@ const CommentContent = ({ comment: post }: { comment: Comment }) => {
             <span className={styles.abbr}>
               <br />
               <br />
-              <Trans i18nKey={'comment_too_long'} shouldUnescape={true} components={{ 1: <span key={cid} onClick={() => setShowFullComment(true)} /> }} />
+              <Trans
+                i18nKey={'comment_too_long'}
+                shouldUnescape={true}
+                components={{
+                  1: (
+                    <span
+                      key={cid}
+                      role='button'
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          setShowFullComment(true);
+                        }
+                      }}
+                      onClick={() => setShowFullComment(true)}
+                    />
+                  ),
+                }}
+              />
             </span>
           )}
           {edit && original?.content !== content && (
@@ -174,7 +180,11 @@ const CommentContent = ({ comment: post }: { comment: Comment }) => {
                 values={{ timestamp: getFormattedDate(edit?.timestamp) }}
                 shouldUnescape={true}
                 components={{
-                  1: <Tooltip key={edit?.timestamp} content={getFormattedTimeAgo(edit?.timestamp)} children={<Fragment key={edit?.timestamp}></Fragment>} />,
+                  1: (
+                    <Tooltip key={edit?.timestamp} content={getFormattedTimeAgo(edit?.timestamp)}>
+                      <Fragment key={edit?.timestamp}></Fragment>
+                    </Tooltip>
+                  ),
                 }}
               />{' '}
               {reason && <>{t('reason_reason', { reason: reason, interpolation: { escapeValue: false } })} </>}
@@ -182,13 +192,45 @@ const CommentContent = ({ comment: post }: { comment: Comment }) => {
                 <Trans
                   i18nKey={'click_here_to_hide_original'}
                   shouldUnescape={true}
-                  components={{ 1: <span key={cid} className={styles.showOriginal} onClick={() => setShowOriginal(!showOriginal)} /> }}
+                  components={{
+                    1: (
+                      <span
+                        key={cid}
+                        className={styles.showOriginal}
+                        role='button'
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            setShowOriginal(!showOriginal);
+                          }
+                        }}
+                        onClick={() => setShowOriginal(!showOriginal)}
+                      />
+                    ),
+                  }}
                 />
               ) : (
                 <Trans
                   i18nKey={'click_here_to_show_original'}
                   shouldUnescape={true}
-                  components={{ 1: <span key={cid} className={styles.showOriginal} onClick={() => setShowOriginal(!showOriginal)} /> }}
+                  components={{
+                    1: (
+                      <span
+                        key={cid}
+                        className={styles.showOriginal}
+                        role='button'
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            setShowOriginal(!showOriginal);
+                          }
+                        }}
+                        onClick={() => setShowOriginal(!showOriginal)}
+                      />
+                    ),
+                  }}
                 />
               )}
             </span>
@@ -200,13 +242,14 @@ const CommentContent = ({ comment: post }: { comment: Comment }) => {
           <br />
           <br />
           <Tooltip
-            children={`(${t('user_banned')})`}
             content={`${t('ban_expires_at', {
               address: subplebbitAddress && Plebbit.getShortAddress({ address: subplebbitAddress }),
               timestamp: getFormattedDate(post?.author?.subplebbit?.banExpiresAt),
               interpolation: { escapeValue: false },
             })}${reason ? `. ${capitalize(t('reason'))}: "${reason}"` : ''}`}
-          />
+          >
+            {`(${t('user_banned')})`}
+          </Tooltip>
         </span>
       )}
       {!cid && !hasFailedState && (

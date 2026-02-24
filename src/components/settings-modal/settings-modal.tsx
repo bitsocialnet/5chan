@@ -34,12 +34,14 @@ const SettingsModal = () => {
     };
   }, [closeModal]);
 
-  const [showInterfaceSettings, setShowInterfaceSettings] = useState(false);
-  const [showMediaHostingSettings, setShowMediaHostingSettings] = useState(false);
-  const [showAccountSettings, setShowAccountSettings] = useState(false);
-  const [showSubscriptionsSettings, setShowSubscriptionsSettings] = useState(false);
-  const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
   const [expandAll, setExpandAll] = useState(false);
+
+  const expandAccount = hash === 'account-settings' || hash === 'crypto-address-settings' || hash === 'crypto-wallet-settings';
+  const showInterfaceSettings = expandAll || hash === 'interface-settings';
+  const showMediaHostingSettings = expandAll || hash === 'media-hosting-settings';
+  const showAccountSettings = expandAll || expandAccount;
+  const showSubscriptionsSettings = expandAll || hash === 'subscriptions-settings';
+  const showAdvancedSettings = expandAll || hash === 'advanced-settings';
 
   const getExpandedCount = () => {
     return (
@@ -56,13 +58,10 @@ const SettingsModal = () => {
     return null;
   };
 
-  const handleCategoryClick = (categoryId: string, isShowing: boolean, setShowing: (value: boolean) => void) => {
+  const handleCategoryClick = (categoryId: string, isShowing: boolean) => {
     const newState = !isShowing;
-    setShowing(newState);
-
     const currentPath = location.pathname;
     const baseSettingsPath = currentPath.split('#')[0];
-
     const currentExpandedCount = getExpandedCount();
 
     if (newState) {
@@ -83,57 +82,50 @@ const SettingsModal = () => {
     }
   };
 
-  useEffect(() => {
-    if (hash) {
-      const expandAccount = hash === 'account-settings' || hash === 'crypto-address-settings' || hash === 'crypto-wallet-settings';
-      setShowInterfaceSettings(hash === 'interface-settings');
-      setShowMediaHostingSettings(hash === 'media-hosting-settings');
-      setShowAccountSettings(expandAccount);
-      setShowSubscriptionsSettings(hash === 'subscriptions-settings');
-      setShowAdvancedSettings(hash === 'advanced-settings');
-    }
-  }, [hash]);
-
   const handleExpandAll = () => {
-    const newExpandState = !expandAll;
-    setExpandAll(newExpandState);
-    setShowInterfaceSettings(newExpandState);
-    setShowMediaHostingSettings(newExpandState);
-    setShowAccountSettings(newExpandState);
-    setShowSubscriptionsSettings(newExpandState);
-    setShowAdvancedSettings(newExpandState);
-
+    setExpandAll((prev) => !prev);
     const baseSettingsPath = location.pathname.split('#')[0];
     navigate(baseSettingsPath, { replace: true });
   };
 
+  const handleKeyDown = (handler: () => void) => (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handler();
+    }
+  };
+
   return (
     <>
-      <div className={styles.overlay} onClick={closeModal} />
+      <div className={styles.overlay} role='button' tabIndex={0} onClick={closeModal} onKeyDown={handleKeyDown(closeModal)} />
       <div className={styles.settingsModal}>
         <div className={styles.header}>
           <span className={styles.title}>{t('settings')}</span>
-          <span className={styles.closeButton} title='close' onClick={closeModal} />
+          <span className={styles.closeButton} role='button' tabIndex={0} title='close' onClick={closeModal} onKeyDown={handleKeyDown(closeModal)} />
         </div>
         <div className={styles.expandAllSettings}>
-          [<span onClick={handleExpandAll}>{expandAll ? t('collapse_all_settings') : t('expand_all_settings')}</span>]
+          [
+          <span role='button' tabIndex={0} onClick={handleExpandAll} onKeyDown={handleKeyDown(handleExpandAll)}>
+            {expandAll ? t('collapse_all_settings') : t('expand_all_settings')}
+          </span>
+          ]
         </div>
         <div id='interface-settings' className={`${styles.setting} ${styles.category}`}>
-          <label onClick={() => handleCategoryClick('interface-settings', showInterfaceSettings, setShowInterfaceSettings)}>
+          <label onClick={() => handleCategoryClick('interface-settings', showInterfaceSettings)}>
             <span className={showInterfaceSettings ? styles.hideButton : styles.showButton} />
             {t('interface')}
           </label>
         </div>
         {showInterfaceSettings && <InterfaceSettings />}
         <div id='media-hosting-settings' className={`${styles.setting} ${styles.category}`}>
-          <label onClick={() => handleCategoryClick('media-hosting-settings', showMediaHostingSettings, setShowMediaHostingSettings)}>
+          <label onClick={() => handleCategoryClick('media-hosting-settings', showMediaHostingSettings)}>
             <span className={showMediaHostingSettings ? styles.hideButton : styles.showButton} />
             {t('media_hosting')}
           </label>
         </div>
         {showMediaHostingSettings && <MediaHostingSettings />}
         <div id='account-settings' className={`${styles.setting} ${styles.category}`}>
-          <label onClick={() => handleCategoryClick('account-settings', showAccountSettings, setShowAccountSettings)}>
+          <label onClick={() => handleCategoryClick('account-settings', showAccountSettings)}>
             <span className={showAccountSettings ? styles.hideButton : styles.showButton} />
             {t('bitsocial_account')}
           </label>
@@ -148,14 +140,14 @@ const SettingsModal = () => {
           </>
         )}
         <div id='subscriptions-settings' className={`${styles.setting} ${styles.category}`}>
-          <label onClick={() => handleCategoryClick('subscriptions-settings', showSubscriptionsSettings, setShowSubscriptionsSettings)}>
+          <label onClick={() => handleCategoryClick('subscriptions-settings', showSubscriptionsSettings)}>
             <span className={showSubscriptionsSettings ? styles.hideButton : styles.showButton} />
             {t('board_subscriptions')}
           </label>
         </div>
         {showSubscriptionsSettings && <SubscriptionsSetting />}
         <div id='advanced-settings' className={`${styles.setting} ${styles.category}`}>
-          <label onClick={() => handleCategoryClick('advanced-settings', showAdvancedSettings, setShowAdvancedSettings)}>
+          <label onClick={() => handleCategoryClick('advanced-settings', showAdvancedSettings)}>
             <span className={showAdvancedSettings ? styles.hideButton : styles.showButton} />
             {t('advanced_settings')}
           </label>

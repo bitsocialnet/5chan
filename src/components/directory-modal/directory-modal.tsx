@@ -18,7 +18,18 @@ const DirectoryModal = () => {
   };
 
   return (
-    <div className={`${styles.backdrop} ${isHomeView ? styles.backdropHome : ''}`} onClick={handleBackdropClick}>
+    <div
+      className={`${styles.backdrop} ${isHomeView ? styles.backdropHome : ''}`}
+      role='button'
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          closeDirectoryModal();
+        }
+      }}
+      onClick={handleBackdropClick}
+    >
       <div className={styles.directoryDialog}>
         <div className={styles.hd}>
           <h2>Submit a Board to a Directory</h2>

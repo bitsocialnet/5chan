@@ -1,11 +1,12 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import type { Placement } from '@floating-ui/react';
 import { useTranslation } from 'react-i18next';
 import ReactMarkdown, { Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import supersub from 'remark-supersub';
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
 import rehypeRaw from 'rehype-raw';
-import { useDismiss, useFloating, useFocus, useHover, useInteractions, offset, shift, size, autoUpdate, Placement, FloatingPortal } from '@floating-ui/react';
+import { useDismiss, useFloating, useFocus, useHover, useInteractions, offset, shift, size, autoUpdate, FloatingPortal } from '@floating-ui/react';
 import { getLinkMediaInfo, getHasThumbnail } from '../../lib/utils/media-utils';
 import { isCatalogView } from '../../lib/utils/view-utils';
 import useIsMobile from '../../hooks/use-is-mobile';
@@ -18,6 +19,14 @@ import usePostNumberStore from '../../stores/use-post-number-store';
 import useSubplebbitsPagesStore from '@plebbit/plebbit-react-hooks/dist/stores/subplebbits-pages';
 import { useComment } from '@plebbit/plebbit-react-hooks';
 import ReplyQuotePreview from '../reply-quote-preview';
+
+const safeParseUrl = (href: string): URL | null => {
+  try {
+    return href.startsWith('http') ? new URL(href) : null;
+  } catch {
+    return null;
+  }
+};
 
 interface ContentLinkEmbedProps {
   children: any;
@@ -34,13 +43,13 @@ const ContentLinkEmbed = ({ children, href, linkMediaInfo }: ContentLinkEmbedPro
   const isMobile = useIsMobile();
   const [isOpen, setIsOpen] = useState(false);
   const [showMedia, setShowMedia] = useState(false);
-  const placementRef = useRef<Placement>('right');
+  const [placement, setPlacement] = useState<Placement>('right');
   const availableWidthRef = useRef<number>(0);
 
   const { refs, floatingStyles, update, context } = useFloating({
     open: isOpen,
     onOpenChange: setIsOpen,
-    placement: placementRef.current,
+    placement,
     middleware: [
       shift({ padding: 10 }),
       offset({ mainAxis: 5 }),
@@ -49,8 +58,8 @@ const ContentLinkEmbed = ({ children, href, linkMediaInfo }: ContentLinkEmbedPro
           availableWidthRef.current = availableWidth;
           if (availableWidth >= 250) {
             elements.floating.style.maxWidth = `${availableWidth - 12}px`;
-          } else if (placementRef.current === 'right') {
-            placementRef.current = 'left';
+          } else if (placement === 'right') {
+            setPlacement('left');
           }
         },
       }),
@@ -68,9 +77,9 @@ const ContentLinkEmbed = ({ children, href, linkMediaInfo }: ContentLinkEmbedPro
     const handleResize = () => {
       const availableWidth = availableWidthRef.current;
       if (availableWidth >= 250) {
-        placementRef.current = 'right';
+        setPlacement('right');
       } else {
-        placementRef.current = 'left';
+        setPlacement('left');
       }
       update();
     };
@@ -87,7 +96,20 @@ const ContentLinkEmbed = ({ children, href, linkMediaInfo }: ContentLinkEmbedPro
         {children}
       </a>{' '}
       [
-      <span className={styles.embedButton} onClick={() => setShowMedia(!showMedia)} ref={refs.setReference} {...getReferenceProps()}>
+      <span
+        className={styles.embedButton}
+        role='button'
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setShowMedia(!showMedia);
+          }
+        }}
+        onClick={() => setShowMedia(!showMedia)}
+        ref={refs.setReference}
+        {...getReferenceProps()}
+      >
         {showMedia ? t('remove') : isMobile ? t('open') : t('embed')}
       </span>
       ]
@@ -303,13 +325,16 @@ const Markdown = ({ content, title, postCid }: MarkdownProps) => {
         spoiler: ({ children }) => <span className='spoilertext'>{children}</span>,
         a: ({ href, children }) => {
           if (href && !isInCatalogView) {
-            try {
-              const linkMediaInfo = getLinkMediaInfo(href);
-              const embedUrl = href.startsWith('http') ? new URL(href) : null;
-              if ((embedUrl && canEmbed(embedUrl)) || getHasThumbnail(linkMediaInfo, href)) {
-                return <ContentLinkEmbed children={children} href={href} linkMediaInfo={linkMediaInfo} />;
-              }
-            } catch (e) {
+            const linkMediaInfo = getLinkMediaInfo(href);
+            const embedUrl = safeParseUrl(href);
+            if ((embedUrl && canEmbed(embedUrl)) || getHasThumbnail(linkMediaInfo, href)) {
+              return (
+                <ContentLinkEmbed href={href} linkMediaInfo={linkMediaInfo}>
+                  {children}
+                </ContentLinkEmbed>
+              );
+            }
+            if (!embedUrl && href.startsWith('http')) {
               console.debug('Invalid URL:', href);
             }
 
@@ -330,7 +355,9 @@ const Markdown = ({ content, title, postCid }: MarkdownProps) => {
           {content ? ': ' : ''}
         </span>
       )}
-      <ReactMarkdown children={processedContent} remarkPlugins={remarkPlugins} rehypePlugins={rehypePlugins} components={components} />
+      <ReactMarkdown remarkPlugins={remarkPlugins} rehypePlugins={rehypePlugins} components={components}>
+        {processedContent}
+      </ReactMarkdown>
     </span>
   );
 };

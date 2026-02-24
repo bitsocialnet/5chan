@@ -12,8 +12,9 @@ const FiltersTable = ({ onSave }: { onSave: () => void }) => {
   const resetFeed = useFeedResetStore((state) => state.reset);
 
   const [localFilterItems, setLocalFilterItems] = useState(() =>
-    filterItems.map((item) => ({
+    filterItems.map((item, i) => ({
       ...item,
+      id: `filter-${i}-${Date.now()}`,
       hide: item.hide ?? true,
       top: item.top ?? false,
       color: item.color ?? '',
@@ -31,6 +32,7 @@ const FiltersTable = ({ onSave }: { onSave: () => void }) => {
       return [
         ...prev,
         {
+          id: `filter-${newIndex}-${Date.now()}`,
           text: '',
           enabled: true,
           count: 0,
@@ -46,7 +48,7 @@ const FiltersTable = ({ onSave }: { onSave: () => void }) => {
   }, []);
 
   const handleSave = useCallback(() => {
-    const nonEmptyFilters = localFilterItems.filter((item) => item.text.trim() !== '');
+    const nonEmptyFilters = localFilterItems.filter((item) => item.text.trim() !== '').map(({ id: _id, ...rest }) => rest);
 
     saveAndApplyFilters(nonEmptyFilters);
 
@@ -105,9 +107,20 @@ const FiltersTable = ({ onSave }: { onSave: () => void }) => {
       </thead>
       <tbody>
         {localFilterItems.map((item, index) => (
-          <tr key={index}>
+          <tr key={item.id ?? index}>
             <td>
-              <span className={styles.orderButton} onClick={() => moveLocalFilterItemUp(index)}>
+              <span
+                className={styles.orderButton}
+                role='button'
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    moveLocalFilterItemUp(index);
+                  }
+                }}
+                onClick={() => moveLocalFilterItemUp(index)}
+              >
                 ↑
               </span>
             </td>
@@ -140,7 +153,18 @@ const FiltersTable = ({ onSave }: { onSave: () => void }) => {
               <input type='checkbox' checked={item.top} onChange={(e) => updateLocalFilterItem(index, { ...item, top: e.target.checked })} />
             </td>
             <td>
-              <span className={styles.deleteButton} onClick={() => removeLocalFilterItem(index)}>
+              <span
+                className={styles.deleteButton}
+                role='button'
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    removeLocalFilterItem(index);
+                  }
+                }}
+                onClick={() => removeLocalFilterItem(index)}
+              >
                 ×
               </span>
             </td>
@@ -189,12 +213,49 @@ const FiltersModal = ({ closeModal }: { closeModal: () => void }) => {
 
   return (
     <>
-      <div className={styles.overlay} onClick={showHelp ? closeHelp : closeModal} />
+      <div
+        className={styles.overlay}
+        role='button'
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            showHelp ? closeHelp() : closeModal();
+          }
+        }}
+        onClick={showHelp ? closeHelp : closeModal}
+      />
       <div className={`${styles.modal} ${showHelp ? styles.filtersProtipModal : ''}`}>
         <div className={styles.header}>
           <span className={styles.title}>{showHelp ? t('filter_and_highlights_help') : t('filter_and_highlights')}</span>
-          {!showHelp && <span className={styles.openHelpButton} title={t('help')} onClick={openHelp} />}
-          <span className={styles.closeButton} title={t('close')} onClick={closeModal} />
+          {!showHelp && (
+            <span
+              className={styles.openHelpButton}
+              title={t('help')}
+              role='button'
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  openHelp();
+                }
+              }}
+              onClick={openHelp}
+            />
+          )}
+          <span
+            className={styles.closeButton}
+            title={t('close')}
+            role='button'
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                closeModal();
+              }
+            }}
+            onClick={closeModal}
+          />
         </div>
         {showHelp ? <FiltersProtip /> : <FiltersTable key={currentSubplebbitAddress ?? 'none'} onSave={closeModal} />}
       </div>
@@ -212,7 +273,18 @@ const CatalogFilters = () => {
 
   return (
     <>
-      <span className={`${styles.filtersButton} button`} onClick={() => setShowModal(true)}>
+      <span
+        className={`${styles.filtersButton} button`}
+        role='button'
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setShowModal(true);
+          }
+        }}
+        onClick={() => setShowModal(true)}
+      >
         {t('filters')}
       </span>
       {showModal && <FiltersModal closeModal={closeModal} />}

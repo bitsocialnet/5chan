@@ -168,8 +168,8 @@ const CryptoWalletsForm = ({ account }: { account: Account | undefined }) => {
       <div className={styles.addWallet}>
         <select onChange={(e) => setSelectedWallet(Number(e.target.value))} value={selectedWallet}>
           {walletsArray.length === 0 && <option>{t('none')}</option>}
-          {walletsArray.map((_, index) => (
-            <option key={index} value={index}>
+          {walletsArray.map((wallet, index) => (
+            <option key={wallet.address || (wallet.chainTicker ? `${wallet.chainTicker}-${index}` : `wallet-${index}`)} value={index}>
               {t('wallet')} #{index + 1}
             </option>
           ))}

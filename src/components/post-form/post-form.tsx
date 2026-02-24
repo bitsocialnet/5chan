@@ -50,6 +50,252 @@ export const LinkTypePreviewer = ({ link }: { link: string }) => {
   return isValidURL(link) ? type : t('invalid_url');
 };
 
+const PostFormActions = ({
+  variant,
+  t,
+  isInPostView,
+  onPublishReply,
+  onPublishPost,
+  handleUpload,
+  isUploading,
+  showUploadControls,
+}: {
+  variant: 'reply' | 'post' | 'upload';
+  t: (key: string) => string;
+  isInPostView: boolean;
+  onPublishReply: () => void;
+  onPublishPost: () => void;
+  handleUpload: () => void;
+  isUploading: boolean;
+  showUploadControls: boolean;
+}) => {
+  if (variant === 'reply' && isInPostView) {
+    return (
+      <button onClick={onPublishReply} disabled={isUploading}>
+        {t('post')}
+      </button>
+    );
+  }
+  if (variant === 'post' && !isInPostView) {
+    return <button onClick={onPublishPost}>{t('post')}</button>;
+  }
+  if (variant === 'upload' && showUploadControls) {
+    return (
+      <button onClick={handleUpload} disabled={isUploading}>
+        {t('choose_file')}
+      </button>
+    );
+  }
+  return null;
+};
+
+interface PostFormFieldsProps {
+  t: (key: string) => string;
+  account: ReturnType<typeof useAccount>;
+  displayName: string | undefined;
+  isInPostView: boolean;
+  subjectRef: React.Ref<HTMLInputElement>;
+  textRef: React.Ref<HTMLTextAreaElement>;
+  urlRef: React.Ref<HTMLInputElement>;
+  url: string;
+  lengthError: string | null;
+  handleContentChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  setPublishPostOptions: (opts: Record<string, unknown>) => void;
+  setPublishReplyOptions: (opts: Record<string, unknown>) => void;
+  setUrl: (url: string) => void;
+  isUploading: boolean;
+  uploadedFileName: string | null | undefined;
+  showUploadControls: boolean;
+  showSpoilerForPost: boolean;
+  showSpoilerForReply: boolean;
+  isInAllView: boolean;
+  isInSubscriptionsView: boolean;
+  isInModView: boolean;
+  directories: ReturnType<typeof useDirectories>;
+  accountSubplebbitAddresses: string[];
+  subscriptions: string[];
+  subplebbitAddress: string | undefined;
+  onPublishReply: () => void;
+  onPublishPost: () => void;
+  handleUpload: () => void;
+}
+
+const PostFormFields = ({
+  t,
+  account,
+  displayName,
+  isInPostView,
+  subjectRef,
+  textRef,
+  urlRef,
+  url,
+  lengthError,
+  handleContentChange,
+  setPublishPostOptions,
+  setPublishReplyOptions,
+  setUrl,
+  isUploading,
+  uploadedFileName,
+  showUploadControls,
+  showSpoilerForPost,
+  showSpoilerForReply,
+  isInAllView,
+  isInSubscriptionsView,
+  isInModView,
+  directories,
+  accountSubplebbitAddresses,
+  subscriptions,
+  subplebbitAddress,
+  onPublishReply,
+  onPublishPost,
+  handleUpload,
+}: PostFormFieldsProps) => (
+  <>
+    <tr>
+      <td>{t('name')}</td>
+      <td>
+        <input
+          type='text'
+          placeholder={!displayName ? capitalize(t('anonymous')) : undefined}
+          defaultValue={displayName || undefined}
+          onChange={(e) => {
+            const newDisplayName = e.target.value.trim() || undefined;
+            setAccount({ ...account, author: { ...account?.author, displayName: newDisplayName } });
+            if (isInPostView) {
+              setPublishReplyOptions({ displayName: newDisplayName });
+            } else {
+              setPublishPostOptions({ displayName: newDisplayName });
+            }
+          }}
+        />
+        <PostFormActions
+          variant='reply'
+          t={t}
+          isInPostView={isInPostView}
+          onPublishReply={onPublishReply}
+          onPublishPost={onPublishPost}
+          handleUpload={handleUpload}
+          isUploading={isUploading}
+          showUploadControls={showUploadControls}
+        />
+      </td>
+    </tr>
+    {!isInPostView && (
+      <tr>
+        <td>{t('subject')}</td>
+        <td>
+          <input
+            type='text'
+            ref={subjectRef}
+            onChange={(e) => {
+              setPublishPostOptions({ title: e.target.value });
+            }}
+          />
+          <PostFormActions
+            variant='post'
+            t={t}
+            isInPostView={isInPostView}
+            onPublishReply={onPublishReply}
+            onPublishPost={onPublishPost}
+            handleUpload={handleUpload}
+            isUploading={isUploading}
+            showUploadControls={showUploadControls}
+          />
+        </td>
+      </tr>
+    )}
+    <tr>
+      <td>{t('comment')}</td>
+      <td>
+        <textarea cols={48} rows={4} wrap='soft' ref={textRef} onChange={handleContentChange} />
+        {lengthError && <div className={styles.error}>{lengthError}</div>}
+      </td>
+    </tr>
+    <tr>
+      <td>{t('link')}</td>
+      <td className={styles.linkField}>
+        <input
+          type='text'
+          autoCorrect='off'
+          autoComplete='off'
+          spellCheck='false'
+          ref={urlRef}
+          disabled={isUploading}
+          onChange={(e) => {
+            setUrl(e.target.value);
+            isInPostView ? setPublishReplyOptions({ link: e.target.value }) : setPublishPostOptions({ link: e.target.value });
+          }}
+        />
+        <span className={styles.linkType}> {url && <LinkTypePreviewer link={url} />}</span>
+      </td>
+    </tr>
+    {showUploadControls && (
+      <tr className={styles.uploadButton}>
+        <td>{t('file')}</td>
+        <td>
+          <PostFormActions
+            variant='upload'
+            t={t}
+            isInPostView={isInPostView}
+            onPublishReply={onPublishReply}
+            onPublishPost={onPublishPost}
+            handleUpload={handleUpload}
+            isUploading={isUploading}
+            showUploadControls={showUploadControls}
+          />
+          <span>{isUploading ? t('uploading') : uploadedFileName || t('no_file_chosen')}</span>
+        </td>
+      </tr>
+    )}
+    {((isInPostView && showSpoilerForReply) || (!isInPostView && showSpoilerForPost)) && (
+      <tr className={styles.spoilerButton}>
+        <td>{t('options')}</td>
+        <td>
+          [
+          <label>
+            <input
+              type='checkbox'
+              onChange={(e) => (isInPostView ? setPublishReplyOptions({ spoiler: e.target.checked }) : setPublishPostOptions({ spoiler: e.target.checked }))}
+            />
+            {capitalize(t('spoiler'))}?
+          </label>
+          ]
+        </td>
+      </tr>
+    )}
+    {(isInAllView || isInSubscriptionsView || isInModView) && (
+      <tr>
+        <td>{t('board')}</td>
+        <td>
+          <select onChange={(e) => setPublishPostOptions({ subplebbitAddress: e.target.value })} value={subplebbitAddress}>
+            <option value=''>{t('choose_one')}</option>
+            {isInAllView &&
+              directories
+                .filter((subplebbit) => subplebbit.title && subplebbit.address)
+                .map((subplebbit) => (
+                  <option key={subplebbit.address} value={subplebbit.address}>
+                    {subplebbit.title}
+                  </option>
+                ))}
+            {isInModView &&
+              accountSubplebbitAddresses.map((address: string) => (
+                <option key={address} value={address}>
+                  {address && Plebbit.getShortAddress({ address })}
+                </option>
+              ))}
+            {isInSubscriptionsView &&
+              subscriptions.map((sub: string) => (
+                <option key={sub} value={sub}>
+                  {sub}
+                </option>
+              ))}
+          </select>
+        </td>
+      </tr>
+    )}
+  </>
+);
+
 const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid: string }) => {
   const { t } = useTranslation();
   const params = useParams();
@@ -230,127 +476,36 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
   return (
     <table className={styles.postFormTable}>
       <tbody>
-        <tr>
-          <td>{t('name')}</td>
-          <td>
-            <input
-              type='text'
-              placeholder={!displayName ? capitalize(t('anonymous')) : undefined}
-              defaultValue={displayName || undefined}
-              onChange={(e) => {
-                const newDisplayName = e.target.value.trim() || undefined;
-                setAccount({ ...account, author: { ...account?.author, displayName: newDisplayName } });
-                if (isInPostView) {
-                  setPublishReplyOptions({ displayName: newDisplayName });
-                } else {
-                  setPublishPostOptions({ displayName: newDisplayName });
-                }
-              }}
-            />
-            {isInPostView && (
-              <button onClick={onPublishReply} disabled={isUploading}>
-                {t('post')}
-              </button>
-            )}
-          </td>
-        </tr>
-        {!isInPostView && (
-          <tr>
-            <td>{t('subject')}</td>
-            <td>
-              <input
-                type='text'
-                ref={subjectRef}
-                onChange={(e) => {
-                  setPublishPostOptions({ title: e.target.value });
-                }}
-              />
-              <button onClick={onPublishPost}>{t('post')}</button>
-            </td>
-          </tr>
-        )}
-        <tr>
-          <td>{t('comment')}</td>
-          <td>
-            <textarea cols={48} rows={4} wrap='soft' ref={textRef} onChange={handleContentChange} />
-            {lengthError && <div className={styles.error}>{lengthError}</div>}
-          </td>
-        </tr>
-        <tr>
-          <td>{t('link')}</td>
-          <td className={styles.linkField}>
-            <input
-              type='text'
-              autoCorrect='off'
-              autoComplete='off'
-              spellCheck='false'
-              ref={urlRef}
-              disabled={isUploading}
-              onChange={(e) => {
-                setUrl(e.target.value);
-                isInPostView ? setPublishReplyOptions({ link: e.target.value }) : setPublishPostOptions({ link: e.target.value });
-              }}
-            />
-            <span className={styles.linkType}> {url && <LinkTypePreviewer link={url} />}</span>
-          </td>
-        </tr>
-        {showUploadControls && (
-          <tr className={styles.uploadButton}>
-            <td>{t('file')}</td>
-            <td>
-              <button onClick={handleUpload} disabled={isUploading}>
-                {t('choose_file')}
-              </button>
-              <span>{isUploading ? t('uploading') : uploadedFileName || t('no_file_chosen')}</span>
-            </td>
-          </tr>
-        )}
-        {((isInPostView && showSpoilerForReply) || (!isInPostView && showSpoilerForPost)) && (
-          <tr className={styles.spoilerButton}>
-            <td>{t('options')}</td>
-            <td>
-              [
-              <label>
-                <input
-                  type='checkbox'
-                  onChange={(e) => (isInPostView ? setPublishReplyOptions({ spoiler: e.target.checked }) : setPublishPostOptions({ spoiler: e.target.checked }))}
-                />
-                {capitalize(t('spoiler'))}?
-              </label>
-              ]
-            </td>
-          </tr>
-        )}
-        {(isInAllView || isInSubscriptionsView || isInModView) && (
-          <tr>
-            <td>{t('board')}</td>
-            <td>
-              <select onChange={(e) => setPublishPostOptions({ subplebbitAddress: e.target.value })} value={subplebbitAddress}>
-                <option value=''>{t('choose_one')}</option>
-                {isInAllView &&
-                  directories
-                    .filter((subplebbit) => subplebbit.title && subplebbit.address)
-                    .map((subplebbit) => (
-                      <option key={subplebbit.address} value={subplebbit.address}>
-                        {subplebbit.title}
-                      </option>
-                    ))}
-                {isInModView &&
-                  accountSubplebbitAddresses.map((address: string) => (
-                    <option key={address} value={address}>
-                      {address && Plebbit.getShortAddress({ address })}
-                    </option>
-                  ))}
-                {isInSubscriptionsView &&
-                  subscriptions.map((sub: string) => (
-                    <option key={sub} value={sub}>
-                      {sub}
-                    </option>
-                  ))}
-              </select>
-            </td>
-          </tr>
-        )}
+        <PostFormFields
+          t={t}
+          account={account}
+          displayName={displayName}
+          isInPostView={isInPostView}
+          subjectRef={subjectRef}
+          textRef={textRef}
+          urlRef={urlRef}
+          url={url}
+          lengthError={lengthError}
+          handleContentChange={handleContentChange}
+          setPublishPostOptions={setPublishPostOptions}
+          setPublishReplyOptions={setPublishReplyOptions}
+          setUrl={setUrl}
+          isUploading={isUploading}
+          uploadedFileName={uploadedFileName}
+          showUploadControls={showUploadControls}
+          showSpoilerForPost={showSpoilerForPost}
+          showSpoilerForReply={showSpoilerForReply}
+          isInAllView={isInAllView}
+          isInSubscriptionsView={isInSubscriptionsView}
+          isInModView={isInModView}
+          directories={directories}
+          accountSubplebbitAddresses={accountSubplebbitAddresses}
+          subscriptions={subscriptions}
+          subplebbitAddress={subplebbitAddress}
+          onPublishReply={onPublishReply}
+          onPublishPost={onPublishPost}
+          handleUpload={handleUpload}
+        />
       </tbody>
     </table>
   );

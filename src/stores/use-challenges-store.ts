@@ -1,8 +1,10 @@
 import { create } from 'zustand';
 import { Challenge } from '@plebbit/plebbit-react-hooks';
 
+let nextChallengeId = 0;
+
 interface State {
-  challenges: Challenge[];
+  challenges: Array<{ challenge: Challenge; id: number }>;
   addChallenge: (challenge: Challenge) => void;
   removeChallenge: () => void;
 }
@@ -10,7 +12,9 @@ interface State {
 const useChallengesStore = create<State>((set) => ({
   challenges: [],
   addChallenge: (challenge: Challenge) => {
-    set((state) => ({ challenges: [...state.challenges, challenge] }));
+    set((state) => ({
+      challenges: [...state.challenges, { challenge, id: nextChallengeId++ }],
+    }));
   },
   removeChallenge: () => {
     set((state) => {

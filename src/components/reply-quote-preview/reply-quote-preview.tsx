@@ -74,22 +74,22 @@ const scrollToThreadCardTop = (threadCid: string) => {
 const DesktopQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, isQuotelinkReply, isOP, showTrailingBreak = true }: ReplyQuotePreviewProps) => {
   const [hoveredCid, setHoveredCid] = useState<string | null>(null);
   const [outOfViewCid, setOutOfViewCid] = useState<string | null>(null);
-  const placementRef = useRef<Placement>('right');
+  const [placement, setPlacement] = useState<Placement>('right');
   const availableWidthRef = useRef<number>(0);
   const directories = useDirectories();
 
   const { refs, floatingStyles, update } = useFloating({
-    placement: placementRef.current,
+    placement,
     middleware: [
       shift({ padding: 10 }),
-      offset({ mainAxis: placementRef.current === 'right' ? 8 : 4 }),
+      offset({ mainAxis: placement === 'right' ? 8 : 4 }),
       size({
         apply({ availableWidth, elements }) {
           availableWidthRef.current = availableWidth;
           if (availableWidth >= 250) {
             elements.floating.style.maxWidth = `${availableWidth - 12}px`;
-          } else if (placementRef.current === 'right') {
-            placementRef.current = 'left';
+          } else if (placement === 'right') {
+            setPlacement('left');
           }
         },
       }),
@@ -101,9 +101,9 @@ const DesktopQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, i
     const handleResize = () => {
       const availableWidth = availableWidthRef.current;
       if (availableWidth >= 250) {
-        placementRef.current = 'right';
+        setPlacement('right');
       } else {
-        placementRef.current = 'left';
+        setPlacement('left');
       }
       update();
     };

@@ -471,7 +471,7 @@ export const PostPageStats = () => {
     <span>
       {pinned && `${capitalize(t('sticky'))} / `}
       {closed && `${capitalize(t('closed'))} / `}
-      <Tooltip children={displayReplyCount} content={replyCountTooltip} /> / <Tooltip children={linkCount?.toString()} content={capitalize(t('links'))} />
+      <Tooltip content={replyCountTooltip}>{displayReplyCount}</Tooltip> / <Tooltip content={capitalize(t('links'))}>{linkCount?.toString()}</Tooltip>
     </span>
   );
 };

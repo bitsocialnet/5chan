@@ -29,13 +29,36 @@ const BoxModal = () => {
 
   return (
     <>
-      <span ref={buttonRef} onClick={() => !showFilterModal && setShowFilterModal(true)}>
+      <span
+        ref={buttonRef}
+        role='button'
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            if (!showFilterModal) setShowFilterModal(true);
+          }
+        }}
+        onClick={() => !showFilterModal && setShowFilterModal(true)}
+      >
         {t('options')} ▼
       </span>
       {showFilterModal && (
         <div ref={modalRef} className={styles.filterModal}>
           <div
             className={`${styles.option} ${showWorksafeContentOnly && styles.selected}`}
+            role='button'
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                if (showNsfwContentOnly) {
+                  setShowNsfwContentOnly(false);
+                }
+                setShowWorksafeContentOnly(!showWorksafeContentOnly);
+                setShowFilterModal(false);
+              }
+            }}
             onClick={() => {
               if (showNsfwContentOnly) {
                 setShowNsfwContentOnly(false);
@@ -48,6 +71,18 @@ const BoxModal = () => {
           </div>
           <div
             className={`${styles.option} ${showNsfwContentOnly && styles.selected}`}
+            role='button'
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                if (showWorksafeContentOnly) {
+                  setShowWorksafeContentOnly(false);
+                }
+                setShowNsfwContentOnly(!showNsfwContentOnly);
+                setShowFilterModal(false);
+              }
+            }}
             onClick={() => {
               if (showWorksafeContentOnly) {
                 setShowWorksafeContentOnly(false);
@@ -60,6 +95,16 @@ const BoxModal = () => {
           </div>
           <div
             className={`${styles.option} ${!showWorksafeContentOnly && !showNsfwContentOnly && styles.selected}`}
+            role='button'
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                setShowWorksafeContentOnly(false);
+                setShowNsfwContentOnly(false);
+                setShowFilterModal(false);
+              }
+            }}
             onClick={() => {
               setShowWorksafeContentOnly(false);
               setShowNsfwContentOnly(false);
