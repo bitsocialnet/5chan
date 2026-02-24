@@ -25,7 +25,8 @@
 }
 
 .paginationButton:disabled,
-.paginationButton.disabled {
+.paginationButton.disabled,
+.disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
@@ -39,11 +40,26 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
+  gap: 0 0.25em;
   margin: 0;
   padding: 3px 7px !important;
   overflow: hidden;
   list-style: none;
   background-color: var(--pagelist-background-color);
+}
+
+.footerPageItem {
+  display: inline-flex;
+  align-items: center;
+}
+
+.footerPageBracket {
+  color: var(--boardsbar-separator-color);
+}
+
+/* Restore native button appearance (footer.module.css applies all: unset to .footerRow button) */
+.pagelist button.pagelistNavButton {
+  all: revert;
 }
 
 .footerNavPlain {
@@ -76,12 +92,12 @@
 .footerPageCurrent {
   font-size: 13px;
   margin: 0;
-  padding: 3px 2px;
+  padding: 0;
   border: none;
   background: transparent;
   list-style: none;
   overflow: hidden;
-  color: var(--pagelist-item-text-color, #89a);
+  color: var(--boardsbar-desktop-link-text-color);
 }
 
 .footerPageLink {
@@ -89,21 +105,22 @@
   display: inline-block;
   font-size: 13px;
   margin: 0;
-  padding: 3px 2px;
+  padding: 0;
   border: none;
   background: transparent;
-  color: var(--pagelist-item-text-color, #89a);
+  color: var(--boardsbar-desktop-link-text-color);
   text-transform: capitalize;
   cursor: pointer;
-  text-decoration: var(--button-text-decoration);
+  text-decoration: var(--boardsbar-desktop-link-text-decoration);
 }
 
 .footerPageLink:hover {
-  color: var(--pagelist-item-text-color-hover, #d00);
-  text-decoration: var(--button-text-decoration);
+  color: var(--boardsbar-desktop-link-text-color-hover);
+  text-decoration: var(--boardsbar-desktop-link-text-decoration-hover);
 }
 
 .footerPageCurrent {
   font-weight: bold;
-  color: var(--pagelist-item-text-color-current, #000);
+  color: var(--boardsbar-desktop-link-text-color-hover);
+  text-decoration: var(--boardsbar-desktop-link-text-decoration);
 }

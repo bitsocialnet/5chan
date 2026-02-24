@@ -1,5 +1,6 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import useFeedViewSettingsStore from '../../stores/use-feed-view-settings-store';
 import StyleSelector from '../style-selector/style-selector';
 import footerStyles from '../footer/footer.module.css';
 import styles from './board-pagination.module.css';
@@ -14,10 +15,11 @@ export interface BoardPaginationProps {
 
 const BoardPagination = ({ basePath, currentPage, totalPages, footerStyle = false }: BoardPaginationProps) => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const enableInfiniteScroll = useFeedViewSettingsStore((state) => state.enableInfiniteScroll);
+  const setEnableInfiniteScroll = useFeedViewSettingsStore((state) => state.setEnableInfiniteScroll);
 
   const pageHref = (page: number) => (page === 1 ? basePath : `${basePath}/${page}`);
-  const prevHref = currentPage > 1 ? pageHref(currentPage - 1) : undefined;
-  const nextHref = currentPage < totalPages ? pageHref(currentPage + 1) : undefined;
   const catalogHref = `${basePath}/catalog`;
 
   if (totalPages <= 1 && !footerStyle) {
@@ -30,40 +32,65 @@ const BoardPagination = ({ basePath, currentPage, totalPages, footerStyle = fals
 
     return (
       <div className={footerStyles.footerRow}>
-        <div className={styles.pagelist}>
-          {currentPage > 1 && (
-            <Link to={pageHref(currentPage - 1)} className={styles.footerNavPlain}>
-              {t('previous')}
-            </Link>
-          )}
-          <Link to={basePath} className={styles.footerPageLink}>
-            [{t('all')}]
-          </Link>
-          {pageNumbers.map((page) =>
-            page === currentPage ? (
-              <span key={page} className={styles.footerPageCurrent}>
-                [{page}]
+        {!enableInfiniteScroll && (
+          <div className={styles.pagelist}>
+            {currentPage > 1 && (
+              <button type='button' className={styles.pagelistNavButton} onClick={() => navigate(pageHref(currentPage - 1))}>
+                {t('previous')}
+              </button>
+            )}
+            {currentPage === 1 && (
+              <span className={styles.footerPageItem}>
+                <span className={styles.footerPageBracket}>[</span>
+                <span
+                  className={styles.footerPageLink}
+                  role='button'
+                  tabIndex={0}
+                  onClick={() => setEnableInfiniteScroll(true)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setEnableInfiniteScroll(true);
+                    }
+                  }}
+                >
+                  {t('all')}
+                </span>
+                <span className={styles.footerPageBracket}>]</span>
               </span>
+            )}
+            {pageNumbers.map((page) =>
+              page === currentPage ? (
+                <span key={page} className={styles.footerPageItem}>
+                  <span className={styles.footerPageBracket}>[</span>
+                  <span className={styles.footerPageCurrent}>{page}</span>
+                  <span className={styles.footerPageBracket}>]</span>
+                </span>
+              ) : (
+                <span key={page} className={styles.footerPageItem}>
+                  <span className={styles.footerPageBracket}>[</span>
+                  <Link to={pageHref(page)} className={styles.footerPageLink}>
+                    {page}
+                  </Link>
+                  <span className={styles.footerPageBracket}>]</span>
+                </span>
+              ),
+            )}
+            {currentPage < totalPages ? (
+              <button type='button' className={styles.pagelistNavButton} onClick={() => navigate(pageHref(currentPage + 1))}>
+                {t('next')}
+              </button>
             ) : (
-              <Link key={page} to={pageHref(page)} className={styles.footerPageLink}>
-                [{page}]
-              </Link>
-            ),
-          )}
-          {currentPage < totalPages ? (
-            <Link to={pageHref(currentPage + 1)} className={styles.footerNavPlain}>
-              {t('next')}
+              <span className={styles.footerNavPlainDisabled}>{t('next')}</span>
+            )}
+            <Link to={catalogHref} className={styles.footerPageLink}>
+              {t('catalog')}
             </Link>
-          ) : (
-            <span className={styles.footerNavPlainDisabled}>{t('next')}</span>
-          )}
-          <Link to={catalogHref} className={styles.footerPageLink}>
-            {t('catalog')}
-          </Link>
-          <Link to={archiveHref} className={styles.footerPageLink}>
-            {t('archive')}
-          </Link>
-        </div>
+            <Link to={archiveHref} className={styles.footerPageLink}>
+              {t('archive')}
+            </Link>
+          </div>
+        )}
         <div className={footerStyles.footerRight}>
           <span className={footerStyles.styleLabel}>{t('style')}:</span>
           <StyleSelector />
@@ -76,14 +103,10 @@ const BoardPagination = ({ basePath, currentPage, totalPages, footerStyle = fals
 
   return (
     <div className={styles.pagination}>
-      {prevHref ? (
-        <Link to={prevHref} className={styles.paginationButton} aria-label={t('previous')}>
+      {currentPage > 1 && (
+        <button type='button' onClick={() => navigate(pageHref(currentPage - 1))} aria-label={t('previous')}>
           {t('previous')}
-        </Link>
-      ) : (
-        <span className={`${styles.paginationButton} ${styles.disabled}`} aria-disabled='true'>
-          {t('previous')}
-        </span>
+        </button>
       )}
       {pageNumbers.map((page) => {
         const href = pageHref(page);
@@ -98,12 +121,12 @@ const BoardPagination = ({ basePath, currentPage, totalPages, footerStyle = fals
           </Link>
         );
       })}
-      {nextHref ? (
-        <Link to={nextHref} className={styles.paginationButton} aria-label={t('next')}>
+      {currentPage < totalPages ? (
+        <button type='button' onClick={() => navigate(pageHref(currentPage + 1))} aria-label={t('next')}>
           {t('next')}
-        </Link>
+        </button>
       ) : (
-        <span className={`${styles.paginationButton} ${styles.disabled}`} aria-disabled='true'>
+        <span className={styles.disabled} aria-disabled='true'>
           {t('next')}
         </span>
       )}

@@ -180,6 +180,14 @@ const CatalogFeedRoute = () => {
   return <Catalog viewType={viewType} boardIdentifier={params.boardIdentifier} />;
 };
 
+const PageOneGuard = () => {
+  const { pageNumber } = useParams();
+  if (pageNumber === '1') {
+    return <Navigate to='/not-found' replace />;
+  }
+  return null;
+};
+
 const ModQueueRoute = () => {
   const { boardIdentifier } = useParams();
   const account = useAccount();
@@ -261,7 +269,7 @@ const App = () => {
             <Route path='/subs/*' element={<Navigate to='/not-found' replace />} />
             <Route path='/mod/*' element={<Navigate to='/not-found' replace />} />
 
-            <Route path='/:boardIdentifier/:pageNumber' element={boardFeedElement} />
+            <Route path='/:boardIdentifier/:pageNumber' element={<PageOneGuard />} />
             <Route path='/:boardIdentifier' element={boardFeedElement} />
             <Route path='/:boardIdentifier/settings' element={boardFeedElement} />
             <Route path='/:boardIdentifier/catalog' element={catalogFeedElement} />
