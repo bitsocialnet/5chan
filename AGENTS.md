@@ -5,6 +5,13 @@
 This file defines the always-on rules for AI agents working on 5chan.
 Use this as the default policy. Load linked playbooks only when their trigger condition applies.
 
+## Surprise Handling
+
+The role of this file is to reduce recurring agent mistakes and confusion points in this repository.
+If you encounter something surprising or ambiguous while working, alert the developer immediately.
+After confirmation, add a concise entry to `docs/agent-playbooks/known-surprises.md` so future agents avoid the same issue.
+Only record items that are repo-specific, likely to recur, and have a concrete mitigation.
+
 ## Project Overview
 
 5chan is a serverless, adminless, decentralized 4chan alternative built on the Bitsocial protocol.
@@ -27,6 +34,7 @@ Use this as the default policy. Load linked playbooks only when their trigger co
 | UI/visual behavior changed | Verify in browser with `playwright-cli`; test desktop and mobile viewport |
 | GitHub operation needed | Use `gh` CLI, not GitHub MCP |
 | User asks for commit/issue phrasing | Use `docs/agent-playbooks/commit-issue-format.md` |
+| Surprising/ambiguous repo behavior encountered | Alert developer and, once confirmed, document in `docs/agent-playbooks/known-surprises.md` |
 
 ## Stack
 
@@ -122,11 +130,17 @@ src/
 - When stuck on a bug, search the web for recent fixes/workarounds.
 - After user corrections, identify root cause and apply the lesson in subsequent steps.
 
+## Local Development URLs
+
+This project uses [Portless](https://github.com/vercel-labs/portless) for local dev. The dev server is available at http://5chan.localhost:1355 instead of a random port. Other Bitsocial projects use the same proxy (seedit, mintpass, bitsocial at `.localhost:1355`), so they can all run simultaneously without port conflicts.
+
+To bypass Portless: `PORTLESS=0 yarn start`
+
 ## Common Commands
 
 ```bash
 yarn install
-yarn start
+yarn start                # http://5chan.localhost:1355
 yarn build
 yarn test
 yarn prettier
@@ -145,3 +159,4 @@ Use these only when relevant to the active task:
 - Commit/issue output format: `docs/agent-playbooks/commit-issue-format.md`
 - Skills/tools setup and MCP rationale: `docs/agent-playbooks/skills-and-tools.md`
 - Bug investigation workflow: `docs/agent-playbooks/bug-investigation.md`
+- Known surprises log: `docs/agent-playbooks/known-surprises.md`

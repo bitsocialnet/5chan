@@ -269,7 +269,7 @@
   "board_subscriptions": "การสมัครสมาชิกบอร์ด",
   "chain_ticker": "สัญลักษณ์เชน",
   "enable_infinite_scroll": "เปิดใช้งานการเลื่อนแบบไม่จำกัด",
-  "prev": "ก่อนหน้า",
+  "previous": "ก่อนหน้า",
   "next": "ถัดไป",
   "bottom": "ล่าง",
   "enable_infinite_scroll_tip": "ไม่ใช้กับมัลติบอร์ด ซึ่งใช้การเลื่อนแบบไม่สิ้นสุดเสมอ",
@@ -281,5 +281,15 @@
   "show_blotter": "แสดงประกาศ",
   "top": "บน",
   "reply_count": "จำนวนการตอบกลับ",
-  "pagination.pageCurrent": "หน้า {{page}} (ปัจจุบัน)"
+  "pagination.pageCurrent": "หน้า {{page}} (ปัจจุบัน)",
+  "pagination.pageLabel": "หน้า",
+  "archive": "เก็บถาวร",
+  "search_ops_placeholder": "Search OPs...",
+  "private_key_warning_title": "คำเตือนคีย์ส่วนตัว",
+  "private_key_warning_description": "โปรแกรมแก้ไขนี้แสดงคีย์ส่วนตัวของบัญชีคุณ ห้ามแชร์ข้อมูลนี้กับใครก็ตาม การแก้ไขผิดพลาดอาจทำให้บัญชีของคุณเสียหายได้",
+  "go_back": "กลับ",
+  "continue": "ดำเนินการต่อ",
+  "loading_editor": "กำลังโหลดตัวแก้ไข...",
+  "editor_fallback_warning": "โหลดตัวแก้ไขโค้ดไม่สำเร็จ กำลังใช้ช่องข้อความธรรมดาแทน",
+  "return_to_settings": "กลับไปที่การตั้งค่า"
 }

@@ -89,6 +89,7 @@ To have your board appear in a directory on the 5chan homepage:
 
 - Node.js v22 (Download from https://nodejs.org)
 - Yarn: `npm install -g yarn`
+- [Portless](https://github.com/vercel-labs/portless): `npm install -g portless`
 
 ### Setup
 
@@ -96,9 +97,11 @@ To have your board appear in a directory on the 5chan homepage:
 2. Install dependencies: `yarn install --frozen-lockfile`
 3. Start the web client: `yarn start`
 
+The dev server runs at http://5chan.localhost:1355 via [Portless](https://port1355.dev/), which gives each Bitsocial project a stable, named URL instead of a random port. To bypass Portless and use a plain Vite dev server: `PORTLESS=0 yarn start`
+
 ### Scripts
 
-- **Web client**: `yarn start`
+- **Web client**: `yarn start` (http://5chan.localhost:1355)
 - **Electron client** (must start web client first): `yarn electron`
 - **Electron client** (don't delete data): `yarn electron:no-delete-data`
 - **Web client and electron client**: `yarn electron:start`

@@ -269,7 +269,7 @@
   "board_subscriptions": "板块订阅",
   "chain_ticker": "链代币符号",
   "enable_infinite_scroll": "启用无限滚动",
-  "prev": "上一页",
+  "previous": "上一页",
   "next": "下一页",
   "bottom": "底部",
   "enable_infinite_scroll_tip": "不适用于多板视图，后者始终使用无限滚动。",
@@ -281,5 +281,15 @@
   "show_blotter": "显示公告",
   "top": "顶部",
   "reply_count": "回复数",
-  "pagination.pageCurrent": "第{{page}}页（当前）"
+  "pagination.pageCurrent": "第{{page}}页（当前）",
+  "pagination.pageLabel": "页面",
+  "archive": "归档",
+  "search_ops_placeholder": "Search OPs...",
+  "private_key_warning_title": "私钥警告",
+  "private_key_warning_description": "此编辑器显示您账户的私钥。请勿与任何人分享此数据。错误编辑可能会损坏您的账户。",
+  "go_back": "返回",
+  "continue": "继续",
+  "loading_editor": "正在加载编辑器...",
+  "editor_fallback_warning": "代码编辑器加载失败。改用纯文本输入框。",
+  "return_to_settings": "返回设置"
 }

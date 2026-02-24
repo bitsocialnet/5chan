@@ -41,7 +41,18 @@ const BoardsFilterModal = () => {
 
   return (
     <>
-      <span ref={buttonRef} onClick={() => !showFilterModal && setShowFilterModal(true)}>
+      <span
+        ref={buttonRef}
+        role='button'
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            if (!showFilterModal) setShowFilterModal(true);
+          }
+        }}
+        onClick={() => !showFilterModal && setShowFilterModal(true)}
+      >
         {t('filter')} ▼
       </span>
       {showFilterModal && (
@@ -49,6 +60,15 @@ const BoardsFilterModal = () => {
           {/* Always shown: Use Catalog */}
           <div
             className={`${styles.option} ${useCatalogLinks && styles.selected}`}
+            role='button'
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                setUseCatalogLinks(!useCatalogLinks);
+                setShowFilterModal(false);
+              }
+            }}
             onClick={() => {
               setUseCatalogLinks(!useCatalogLinks);
               setShowFilterModal(false);
@@ -63,6 +83,15 @@ const BoardsFilterModal = () => {
               <div className={styles.separator} />
               <div
                 className={`${styles.option} ${boardFilter === 'all' && styles.selected}`}
+                role='button'
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setBoardFilter('all');
+                    setShowFilterModal(false);
+                  }
+                }}
                 onClick={() => {
                   setBoardFilter('all');
                   setShowFilterModal(false);
@@ -72,6 +101,15 @@ const BoardsFilterModal = () => {
               </div>
               <div
                 className={`${styles.option} ${boardFilter === 'nsfw' && styles.selected}`}
+                role='button'
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setBoardFilter('nsfw');
+                    setShowFilterModal(false);
+                  }
+                }}
                 onClick={() => {
                   setBoardFilter('nsfw');
                   setShowFilterModal(false);
@@ -81,6 +119,15 @@ const BoardsFilterModal = () => {
               </div>
               <div
                 className={`${styles.option} ${boardFilter === 'worksafe' && styles.selected}`}
+                role='button'
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setBoardFilter('worksafe');
+                    setShowFilterModal(false);
+                  }
+                }}
                 onClick={() => {
                   setBoardFilter('worksafe');
                   setShowFilterModal(false);

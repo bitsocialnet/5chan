@@ -269,7 +269,7 @@
   "board_subscriptions": "Boardabonnementen",
   "chain_ticker": "kettingticker",
   "enable_infinite_scroll": "Oneindig scrollen inschakelen",
-  "prev": "Vorige",
+  "previous": "Vorige",
   "next": "Volgende",
   "bottom": "Onder",
   "enable_infinite_scroll_tip": "Geldt niet voor multiboards, die altijd oneindig scrollen gebruiken.",
@@ -281,5 +281,15 @@
   "show_blotter": "Mededelingen tonen",
   "top": "Boven",
   "reply_count": "Aantal reacties",
-  "pagination.pageCurrent": "Pagina {{page}} (huidige)"
+  "pagination.pageCurrent": "Pagina {{page}} (huidige)",
+  "pagination.pageLabel": "Pagina",
+  "archive": "Archief",
+  "search_ops_placeholder": "Search OPs...",
+  "private_key_warning_title": "Waarschuwing privésleutel",
+  "private_key_warning_description": "Deze editor toont de privésleutel van je account. Deel deze gegevens met niemand. Onjuiste bewerking kan je account beschadigen.",
+  "go_back": "Terug",
+  "continue": "Doorgaan",
+  "loading_editor": "Editor laden...",
+  "editor_fallback_warning": "De code-editor kon niet worden geladen. Er wordt een eenvoudig tekstveld gebruikt.",
+  "return_to_settings": "Terug naar Instellingen"
 }

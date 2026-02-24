@@ -19,6 +19,7 @@
   "close_post_form": "Close Post Form",
   "catalog": "Catalog",
   "all": "All",
+  "archive": "Archive",
   "subscriptions": "Subscriptions",
   "board_subscriptions": "Board subscriptions",
   "board": "Board",
@@ -271,7 +272,7 @@
   "media_hosting_preferred_failure_guidance": "If your preferred provider fails, the app will try other providers (Random mode) or show an error (Preferred mode).",
   "media_hosting_all_providers_failed_guidance": "All upload providers failed. Try again or paste a link manually.",
   "enable_infinite_scroll": "Enable infinite scroll",
-  "prev": "Prev",
+  "previous": "Previous",
   "next": "Next",
   "pagination.pageCurrent": "Page {{page}} (current)",
   "enable_infinite_scroll_tip": "Does not apply to multiboards, which always use infinite scroll.",
@@ -281,5 +282,13 @@
   "message": "Message",
   "show_all": "Show All",
   "show_blotter": "Show Blotter",
-  "reply_count": "Reply count"
+  "reply_count": "Reply count",
+  "pagination.pageLabel": "Page",
+  "private_key_warning_title": "Private Key Warning",
+  "private_key_warning_description": "This editor shows your account's private key. Do not share this data with anyone. Editing incorrectly may break your account.",
+  "go_back": "Go Back",
+  "continue": "Continue",
+  "loading_editor": "Loading editor...",
+  "editor_fallback_warning": "The code editor failed to load. Using a plain textarea instead.",
+  "return_to_settings": "Return to Settings"
 }

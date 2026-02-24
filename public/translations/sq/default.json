@@ -269,7 +269,7 @@
   "board_subscriptions": "Abonime në tabela",
   "chain_ticker": "simboli i zinxhirit",
   "enable_infinite_scroll": "Aktivizo rrëshqitjen e pafundme",
-  "prev": "Paraprake",
+  "previous": "Paraprake",
   "next": "Tjetra",
   "bottom": "Poshtë",
   "enable_infinite_scroll_tip": "Nuk aplikohet për multiboard-et, që gjithmonë përdorin rrëshqitje të pafundme.",
@@ -281,5 +281,15 @@
   "show_blotter": "Shfaq Njoftimet",
   "top": "Lart",
   "reply_count": "Numri i përgjigjeve",
-  "pagination.pageCurrent": "Faqja {{page}} (aktuale)"
+  "pagination.pageCurrent": "Faqja {{page}} (aktuale)",
+  "pagination.pageLabel": "Faqe",
+  "archive": "Arkiv",
+  "search_ops_placeholder": "Search OPs...",
+  "private_key_warning_title": "Paralajmërim për çelësin privat",
+  "private_key_warning_description": "Ky redaktor tregon çelësin privat të llogarisë tuaj. Mos ndani këto të dhëna me askënd. Redaktimi gabim mund të dëmtojë llogarinë tuaj.",
+  "go_back": "Kthehu",
+  "continue": "Vazhdo",
+  "loading_editor": "Duke ngarkuar redaktuesin...",
+  "editor_fallback_warning": "Redaktori i kodit dështoi të ngarkohet. Duke përdorur një fushë teksti të thjeshtë në vend.",
+  "return_to_settings": "Kthehu te Cilësimet"
 }

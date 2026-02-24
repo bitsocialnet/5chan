@@ -57,7 +57,20 @@ const HighlightColorPicker = ({ item, index, updateLocalFilterItem, localFilterI
 
   return (
     <>
-      <span className={styles.colorClickbox} style={{ backgroundColor: item.color || '#fff' }} ref={refs.setReference} {...getReferenceProps()}>
+      <span
+        className={styles.colorClickbox}
+        style={{ backgroundColor: item.color || '#fff' }}
+        role='button'
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setIsColorPickerOpen(!isColorPickerOpen);
+          }
+        }}
+        ref={refs.setReference}
+        {...getReferenceProps()}
+      >
         {!item.color && '∕'}
       </span>
 
@@ -72,6 +85,14 @@ const HighlightColorPicker = ({ item, index, updateLocalFilterItem, localFilterI
               bottom: 0,
               zIndex: 999,
             }}
+            role='button'
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                setIsColorPickerOpen(false);
+              }
+            }}
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -85,6 +106,7 @@ const HighlightColorPicker = ({ item, index, updateLocalFilterItem, localFilterI
               style={floatingStyles}
               aria-labelledby={headingId}
               {...getFloatingProps()}
+              role='presentation'
               onClick={(e) => e.stopPropagation()}
             >
               <table className={styles.colorGrid}>
@@ -93,7 +115,19 @@ const HighlightColorPicker = ({ item, index, updateLocalFilterItem, localFilterI
                     <tr key={rowIndex}>
                       {row.map((color, colorIndex) => (
                         <td key={colorIndex}>
-                          <span className={styles.colorOption} style={{ backgroundColor: color }} onClick={() => setItemColor(color)} />
+                          <span
+                            className={styles.colorOption}
+                            style={{ backgroundColor: color }}
+                            role='button'
+                            tabIndex={0}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                setItemColor(color);
+                              }
+                            }}
+                            onClick={() => setItemColor(color)}
+                          />
                         </td>
                       ))}
                     </tr>
@@ -118,16 +152,46 @@ const HighlightColorPicker = ({ item, index, updateLocalFilterItem, localFilterI
                           marginLeft: '5px',
                           cursor: 'pointer',
                         }}
+                        role='button'
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            applyCustomColor();
+                          }
+                        }}
                         onClick={applyCustomColor}
                       />
                     </td>
                   </tr>
                   <tr>
                     <td colSpan={4}>
-                      <span className={styles.button} onClick={() => setIsColorPickerOpen(false)}>
+                      <span
+                        className={styles.button}
+                        role='button'
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            setIsColorPickerOpen(false);
+                          }
+                        }}
+                        onClick={() => setIsColorPickerOpen(false)}
+                      >
                         <span className={styles.buttonText}>Close</span>
                       </span>
-                      <span className={styles.button} onClick={clearColor}>
+                      <span
+                        className={styles.button}
+                        role='button'
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            clearColor();
+                          }
+                        }}
+                        onClick={clearColor}
+                      >
                         <span className={styles.buttonText}>Clear</span>
                       </span>
                     </td>

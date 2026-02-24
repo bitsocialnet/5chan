@@ -57,6 +57,14 @@
   --hr-border-top: 1px solid #d9bfb7;
   --hr-height: 0px;
 
+  /* pagelist */
+  --pagelist-background-color: #ead6ca;
+  --pagelist-item-background-color: #f0e0d6;
+  --pagelist-item-border-color: #d9bfb7;
+  --pagelist-item-text-color: #800;
+  --pagelist-item-text-color-hover: red;
+  --pagelist-item-text-color-current: #800;
+
   /* homepage */
   --homepage-infobox-text-color: #000;
   --homepage-infobox-bar-text-color: #fff;
@@ -293,6 +301,14 @@
 
   /* footer */
   --footer-item-background-color-desktop: #eef2ff;
+
+  /* pagelist */
+  --pagelist-background-color: #c9cde8;
+  --pagelist-item-background-color: #d6daf0;
+  --pagelist-item-border-color: #b7c5d9;
+  --pagelist-item-text-color: #89a;
+  --pagelist-item-text-color-hover: #d00;
+  --pagelist-item-text-color-current: #000;
 
   /* homepage */
   --homepage-infobox-text-color: #000;
@@ -532,6 +548,14 @@
   --close-button-background-image: url("/assets/buttons/cross-red.png");
   --open-help-button-background-image: url("/assets/buttons/help-red.png");
 
+  /* pagelist */
+  --pagelist-background-color: #ead6ca;
+  --pagelist-item-background-color: #f0e0d6;
+  --pagelist-item-border-color: #d9bfb7;
+  --pagelist-item-text-color: #800;
+  --pagelist-item-text-color-hover: red;
+  --pagelist-item-text-color-current: #800;
+
   /* directory modal */
   --directory-modal-background-color: #f0e0d6;
   --directory-modal-border: 1px solid rgba(0, 0, 0, 0.20);
@@ -736,8 +760,17 @@
   --button-desktop-text-color-hover: #d00;
   --close-button-background-image: url("/assets/buttons/cross-blue.png");
   --open-help-button-background-image: url("/assets/buttons/help-blue.png");
+
   /* footer */
   --footer-item-background-color-desktop: #eef2ff;
+
+  /* pagelist */
+  --pagelist-background-color: #c9cde8;
+  --pagelist-item-background-color: #d6daf0;
+  --pagelist-item-border-color: #b7c5d9;
+  --pagelist-item-text-color: #89a;
+  --pagelist-item-text-color-hover: #d00;
+  --pagelist-item-text-color-current: #000;
 
   /* homepage */
   --homepage-infobox-text-color: #000;
@@ -953,6 +986,14 @@
   --open-help-button-background-image: url("/assets/buttons/help-dark.png");
   /* filter for inputs */
   --filter80: brightness(85%);
+
+  /* pagelist */
+  --pagelist-background-color: #282a2e;
+  --pagelist-item-background-color: #282a2e;
+  --pagelist-item-border-color: #111;
+  --pagelist-item-text-color: #81a2be;
+  --pagelist-item-text-color-hover: #5f89ac;
+  --pagelist-item-text-color-current: #c5c8c6;
 
   /* homepage */
   --homepage-infobox-text-color: #c5c8c6;
@@ -1194,6 +1235,15 @@
   --button-desktop-text-color-hover: #f30;
   --close-button-background-image: url("/assets/buttons/cross-photon.png");
   --open-help-button-background-image: url("/assets/buttons/help-photon.png");
+
+  /* pagelist */
+  --pagelist-background-color: #ddd;
+  --pagelist-item-background-color: #ddd;
+  --pagelist-item-border-color: #ccc;
+  --pagelist-item-text-color: #333;
+  --pagelist-item-text-color-hover: #f30;
+  --pagelist-item-text-color-current: #333;
+
   /* horizontal rule */
   --hr-border: none;
   --hr-border-top: 1px solid #ddd;

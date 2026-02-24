@@ -269,7 +269,7 @@
   "board_subscriptions": "బోర్డ్ సబ్‌స్క్రిప్షన్లు",
   "chain_ticker": "చైన్ టికర్",
   "enable_infinite_scroll": "అనంత స్క్రోల్ చేతనం చేయండి",
-  "prev": "మునుపటి",
+  "previous": "మునుపటి",
   "next": "తదుపరి",
   "bottom": "క్రింద",
   "enable_infinite_scroll_tip": "మల్టీబోర్డ్‌లకు వర్తించదు, అవి ఎల్లప్పుడూ అనంత స్క్రాల్ ఉపయోగిస్తాయి.",
@@ -281,5 +281,15 @@
   "show_blotter": "ప్రకటనలు చూపించు",
   "top": "పై",
   "reply_count": "సమాధానాల సంఖ్య",
-  "pagination.pageCurrent": "పేజీ {{page}} (ప్రస్తుత)"
+  "pagination.pageCurrent": "పేజీ {{page}} (ప్రస్తుత)",
+  "pagination.pageLabel": "పేజీ",
+  "archive": "ఆర్కైవ్",
+  "search_ops_placeholder": "Search OPs...",
+  "private_key_warning_title": "ప్రైవేట్ కీ హెచ్చరిక",
+  "private_key_warning_description": "ఈ ఎడిటర్ మీ ఖాతా యొక్క ప్రైవేట్ కీని చూపిస్తుంది. ఈ డేటాను ఎవరితోనూ భాగస్వామ్యం చేయవద్దు. తప్పుగా ఎడిట్ చేయడం మీ ఖాతాను పాడు చేయవచ్చు.",
+  "go_back": "వెనుకకు",
+  "continue": "కొనసాగించు",
+  "loading_editor": "సంపాదకాన్ని లోడ్ చేస్తోంది...",
+  "editor_fallback_warning": "కోడ్ ఎడిటర్ లోడ్ చేయడం విఫలమైంది. బదులుగా సాధారణ టెక్స్ట్ ఏరియా ఉపయోగిస్తున్నారు.",
+  "return_to_settings": "సెట్టింగ్‌లకు తిరిగి వెళ్ళండి"
 }

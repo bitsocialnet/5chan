@@ -269,7 +269,7 @@
   "board_subscriptions": "اشتراكات اللوحات",
   "chain_ticker": "رمز السلسلة",
   "enable_infinite_scroll": "تفعيل التمرير اللانهائي",
-  "prev": "السابق",
+  "previous": "السابق",
   "next": "التالي",
   "bottom": "أسفل",
   "enable_infinite_scroll_tip": "لا ينطبق على اللوحات المتعددة، التي تستخدم التمرير اللانهائي دائماً.",
@@ -281,5 +281,15 @@
   "show_blotter": "إظهار لوحة الإعلانات",
   "top": "أعلى",
   "reply_count": "عدد الردود",
-  "pagination.pageCurrent": "الصفحة {{page}} (الحالية)"
+  "pagination.pageCurrent": "الصفحة {{page}} (الحالية)",
+  "pagination.pageLabel": "صفحة",
+  "archive": "الأرشيف",
+  "search_ops_placeholder": "Search OPs...",
+  "private_key_warning_title": "تحذير المفتاح الخاص",
+  "private_key_warning_description": "يعرض هذا المحرر المفتاح الخاص لحسابك. لا تشارك هذه البيانات مع أي شخص. التحرير بشكل خاطئ قد يكسر حسابك.",
+  "go_back": "رجوع",
+  "continue": "متابعة",
+  "loading_editor": "جاري تحميل المحرر...",
+  "editor_fallback_warning": "فشل تحميل محرر الأكواد. يتم استخدام حقل نص عادي بدلاً منه.",
+  "return_to_settings": "العودة إلى الإعدادات"
 }

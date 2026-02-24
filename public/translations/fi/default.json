@@ -269,7 +269,7 @@
   "board_subscriptions": "Alustojen tilaukset",
   "chain_ticker": "ketjumerkki",
   "enable_infinite_scroll": "Ota ääretön vieritys käyttöön",
-  "prev": "Edell.",
+  "previous": "Edell.",
   "next": "Seuraava",
   "bottom": "Pohja",
   "enable_infinite_scroll_tip": "Ei koske monilautalistauksia, jotka aina käyttävät ääretöntä vieritystä.",
@@ -281,5 +281,15 @@
   "show_blotter": "Näytä ilmoitukset",
   "top": "Ylös",
   "reply_count": "Vastausten määrä",
-  "pagination.pageCurrent": "Sivu {{page}} (nykyinen)"
+  "pagination.pageCurrent": "Sivu {{page}} (nykyinen)",
+  "pagination.pageLabel": "Sivu",
+  "archive": "Arkisto",
+  "search_ops_placeholder": "Search OPs...",
+  "private_key_warning_title": "Yksityisen avaimen varoitus",
+  "private_key_warning_description": "Tämä editori näyttää tilisi yksityisen avaimen. Älä jaa näitä tietoja kenenkään kanssa. Virheellinen muokkaus voi rikkoa tilisi.",
+  "go_back": "Takaisin",
+  "continue": "Jatka",
+  "loading_editor": "Ladataan editoria...",
+  "editor_fallback_warning": "Koodieditorin lataus epäonnistui. Käytetään sen sijaan yksinkertaista tekstikenttää.",
+  "return_to_settings": "Palaa asetuksiin"
 }

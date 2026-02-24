@@ -269,7 +269,7 @@
   "board_subscriptions": "Mga subscription sa board",
   "chain_ticker": "chain ticker",
   "enable_infinite_scroll": "Paganahin ang walang hanggang scroll",
-  "prev": "Nakaraan",
+  "previous": "Nakaraan",
   "next": "Susunod",
   "bottom": "Ibaba",
   "enable_infinite_scroll_tip": "Hindi naaangkop sa mga multiboard, na palaging gumagamit ng walang hanggang scroll.",
@@ -281,5 +281,15 @@
   "show_blotter": "Ipakita ang Mga anunsyo",
   "top": "Itaas",
   "reply_count": "Bilang ng mga tugon",
-  "pagination.pageCurrent": "Pahina {{page}} (kasalukuyan)"
+  "pagination.pageCurrent": "Pahina {{page}} (kasalukuyan)",
+  "pagination.pageLabel": "Pahina",
+  "archive": "Arkibo",
+  "search_ops_placeholder": "Search OPs...",
+  "private_key_warning_title": "Babala sa Pribadong Susi",
+  "private_key_warning_description": "Ang editor na ito ay nagpapakita ng pribadong susi ng iyong account. Huwag ibahagi ang data na ito sa sinuman. Ang maling pag-edit ay maaaring masira ang iyong account.",
+  "go_back": "Bumalik",
+  "continue": "Magpatuloy",
+  "loading_editor": "Nilo-load ang editor...",
+  "editor_fallback_warning": "Nabigo ang pag-load ng code editor. Gumagamit ng plain textarea sa halip.",
+  "return_to_settings": "Bumalik sa Mga Setting"
 }

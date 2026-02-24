@@ -10,8 +10,19 @@
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 8px;
-  padding: 8px 0;
   text-align: center;
+}
+
+.styleRow {
+  padding: 8px 0 0;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.styleRowContent {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .boardsBarRow {
@@ -20,9 +31,20 @@
 
 .legalMeta {
   padding: 12px 0 0;
-  font-size: 11px;
+  font-size: 10px;
   color: var(--body-font-color);
   text-align: center;
+}
+
+.legalMeta a {
+  color: var(--boardsbar-desktop-link-text-color);
+  text-decoration: var(--boardsbar-desktop-link-text-decoration);
+}
+
+.legalMeta a:hover {
+  color: var(--boardsbar-desktop-link-text-color-hover);
+  text-decoration: var(--boardsbar-desktop-link-text-decoration-hover);
+  cursor: pointer;
 }
 
 /* Shared footer first-row layout (catalog, board pagination footer mode) */
@@ -33,6 +55,11 @@
   flex-wrap: wrap;
   gap: 8px;
   width: 100%;
+}
+
+/* When only footerRight is shown (e.g. multiboards), align it right */
+.footerRowRightOnly {
+  justify-content: flex-end;
 }
 
 .footerLeft {
@@ -55,10 +82,9 @@
 
 /* Thread footer first row */
 .threadRow {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
   gap: 12px;
   width: 100%;
   text-transform: capitalize;
@@ -69,22 +95,56 @@
   align-items: center;
   gap: 4px;
   flex-wrap: wrap;
+  justify-self: start;
 }
 
 .threadCenter {
   display: flex;
   align-items: center;
   justify-content: center;
+  justify-self: center;
 }
 
 .threadRight {
   display: flex;
   align-items: center;
+  gap: 12px;
+  justify-self: end;
 }
 
+/* Buttons and links in footer first row (catalog, thread): same text-link styling */
+.threadRow button,
 .threadRow .button,
+.threadLeft a,
+.footerRow button,
+.footerRow .button,
+.footerLeft a,
 .button {
+  all: unset;
+  font: inherit;
   text-transform: capitalize;
+  color: var(--button-desktop-text-color);
+  text-decoration: var(--button-text-decoration);
+  cursor: pointer;
+}
+
+.threadRow button:hover:not(:disabled),
+.threadRow .button:hover:not(:disabled),
+.threadLeft a:hover,
+.footerRow button:hover:not(:disabled),
+.footerRow .button:hover:not(:disabled),
+.footerLeft a:hover,
+.button:hover:not(:disabled) {
+  color: var(--button-desktop-text-color-hover);
+}
+
+.threadRow button:disabled,
+.threadRow .button:disabled,
+.footerRow button:disabled,
+.footerRow .button:disabled,
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 @media (max-width: 640px) {

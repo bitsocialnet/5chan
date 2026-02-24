@@ -66,6 +66,72 @@ interface ModQueueActionState {
   handleReject: () => Promise<void>;
 }
 
+interface ModQueueActionsProps {
+  status: 'approved' | 'rejected' | 'failed' | null;
+  errorMessage?: string;
+  isPublishing: boolean;
+  handleApprove: () => Promise<void>;
+  handleReject: () => Promise<void>;
+  variant: 'row' | 'card';
+}
+
+const ModQueueActions = ({ status, errorMessage, isPublishing, handleApprove, handleReject, variant }: ModQueueActionsProps) => {
+  const { t } = useTranslation();
+
+  if (status === 'approved') {
+    const content = <span className={`${styles.button} ${styles.approve}`}>{t('approved')}</span>;
+    return variant === 'card' ? <div className={styles.cardActions}>{content}</div> : content;
+  }
+  if (status === 'rejected') {
+    const content = <span className={`${styles.button} ${styles.reject}`}>{t('rejected')}</span>;
+    return variant === 'card' ? <div className={styles.cardActions}>{content}</div> : content;
+  }
+  if (status === 'failed') {
+    const content = (
+      <span className={`${styles.button} ${styles.reject}`}>
+        {t('failed')}
+        {errorMessage ? `: ${errorMessage}` : ''}
+      </span>
+    );
+    return variant === 'card' ? <div className={styles.cardActions}>{content}</div> : content;
+  }
+  if (isPublishing) {
+    const content = <LoadingEllipsis string={t('publishing')} />;
+    return variant === 'card' ? <div className={styles.cardActions}>{content}</div> : content;
+  }
+
+  const buttons =
+    variant === 'row' ? (
+      <div className={styles.actionButtons}>
+        <span className={styles.buttonWrapper}>
+          [
+          <button className={styles.button} onClick={handleApprove} disabled={isPublishing}>
+            {t('approve')}
+          </button>
+          ]
+        </span>
+        <span className={styles.buttonWrapper}>
+          [
+          <button className={styles.button} onClick={handleReject} disabled={isPublishing}>
+            {t('reject')}
+          </button>
+          ]
+        </span>
+      </div>
+    ) : (
+      <div className={styles.cardActions}>
+        <button className={styles.button} onClick={handleApprove} disabled={isPublishing}>
+          {t('approve')}
+        </button>
+        <button className={styles.button} onClick={handleReject} disabled={isPublishing}>
+          {t('reject')}
+        </button>
+      </div>
+    );
+
+  return buttons;
+};
+
 const useModQueueActions = (comment: Comment): ModQueueActionState => {
   const { t } = useTranslation();
   const { cid, subplebbitAddress, approved, removed } = comment || {};
@@ -202,47 +268,6 @@ const ModQueueRow = ({ comment, isOdd = false }: ModQueueRowProps) => {
   const threadTargetCid = threadCid || cid;
   const postUrl = boardPath && threadTargetCid ? `/${boardPath}/thread/${threadTargetCid}` : undefined;
 
-  // Render the status or action buttons
-  const renderActions = () => {
-    // Check existing moderation state first (from API/previous sessions)
-    if (status === 'approved') {
-      return <span className={`${styles.button} ${styles.approve}`}>{t('approved')}</span>;
-    }
-    if (status === 'rejected') {
-      return <span className={`${styles.button} ${styles.reject}`}>{t('rejected')}</span>;
-    }
-    if (status === 'failed') {
-      return (
-        <span className={`${styles.button} ${styles.reject}`}>
-          {t('failed')}
-          {errorMessage ? `: ${errorMessage}` : ''}
-        </span>
-      );
-    }
-    if (isPublishing) {
-      return <LoadingEllipsis string={t('publishing')} />;
-    }
-
-    return (
-      <div className={styles.actionButtons}>
-        <span className={styles.buttonWrapper}>
-          [
-          <button className={styles.button} onClick={handleApprove} disabled={isPublishing}>
-            {t('approve')}
-          </button>
-          ]
-        </span>
-        <span className={styles.buttonWrapper}>
-          [
-          <button className={styles.button} onClick={handleReject} disabled={isPublishing}>
-            {t('reject')}
-          </button>
-          ]
-        </span>
-      </div>
-    );
-  };
-
   return (
     <div className={`${styles.row} ${isOdd ? styles.rowOdd : ''}`}>
       <div className={styles.number}>{number ?? 'N/A'}</div>
@@ -266,19 +291,32 @@ const ModQueueRow = ({ comment, isOdd = false }: ModQueueRowProps) => {
         ) : // On desktop, show full date with tooltip
         isAwaitingApproval && isOverThreshold ? (
           <>
-            <Tooltip children={<span>{getFormattedDate(timestamp)}</span>} content={getFormattedTimeAgo(timestamp)} />
+            <Tooltip content={getFormattedTimeAgo(timestamp)}>
+              <span>{getFormattedDate(timestamp)}</span>
+            </Tooltip>
             <span className={styles.alertWrapper}>
               {' '}
               (<span className={styles.alert}>{getFormattedTimeAgo(timestamp)}</span>)
             </span>
           </>
         ) : (
-          <Tooltip children={<span>{getFormattedDate(timestamp)}</span>} content={getFormattedTimeAgo(timestamp)} />
+          <Tooltip content={getFormattedTimeAgo(timestamp)}>
+            <span>{getFormattedDate(timestamp)}</span>
+          </Tooltip>
         )}
       </div>
       <div className={styles.type}>{isReply ? capitalize(t('reply')) : capitalize(t('post'))}</div>
       <div className={styles.image}>{hasThumbnail ? t('yes') : t('no')}</div>
-      <div className={styles.actions}>{renderActions()}</div>
+      <div className={styles.actions}>
+        <ModQueueActions
+          status={status}
+          errorMessage={errorMessage}
+          isPublishing={isPublishing}
+          handleApprove={handleApprove}
+          handleReject={handleReject}
+          variant='row'
+        />
+      </div>
     </div>
   );
 };
@@ -326,51 +364,6 @@ const ModQueueCard = ({ comment }: ModQueueCardProps) => {
   const threadTargetCid = threadCid || cid;
   const postUrl = boardPath && threadTargetCid ? `/${boardPath}/thread/${threadTargetCid}` : undefined;
 
-  const renderActions = () => {
-    if (status === 'approved') {
-      return (
-        <div className={styles.cardActions}>
-          <span className={`${styles.button} ${styles.approve}`}>{t('approved')}</span>
-        </div>
-      );
-    }
-    if (status === 'rejected') {
-      return (
-        <div className={styles.cardActions}>
-          <span className={`${styles.button} ${styles.reject}`}>{t('rejected')}</span>
-        </div>
-      );
-    }
-    if (status === 'failed') {
-      return (
-        <div className={styles.cardActions}>
-          <span className={`${styles.button} ${styles.reject}`}>
-            {t('failed')}
-            {errorMessage ? `: ${errorMessage}` : ''}
-          </span>
-        </div>
-      );
-    }
-    if (isPublishing) {
-      return (
-        <div className={styles.cardActions}>
-          <LoadingEllipsis string={t('publishing')} />
-        </div>
-      );
-    }
-
-    return (
-      <div className={styles.cardActions}>
-        <button className={styles.button} onClick={handleApprove} disabled={isPublishing}>
-          {t('approve')}
-        </button>
-        <button className={styles.button} onClick={handleReject} disabled={isPublishing}>
-          {t('reject')}
-        </button>
-      </div>
-    );
-  };
-
   return (
     <div className={styles.mobileCard}>
       <div className={styles.cardHeader}>
@@ -396,7 +389,7 @@ const ModQueueCard = ({ comment }: ModQueueCardProps) => {
         )}{' '}
         / {t('type')}: {isReply ? t('reply') : t('post')} / {capitalize(t('image'))}: {hasThumbnail ? lowerCase(t('yes')) : lowerCase(t('no'))}
       </div>
-      {renderActions()}
+      <ModQueueActions status={status} errorMessage={errorMessage} isPublishing={isPublishing} handleApprove={handleApprove} handleReject={handleReject} variant='card' />
     </div>
   );
 };
@@ -646,7 +639,7 @@ export const ModQueueButton = ({ boardIdentifier, isMobile }: ModQueueButtonProp
   return <ModQueueButtonContent key={contentKey} feed={feed} alertThresholdSeconds={alertThresholdSeconds} boardIdentifier={boardIdentifier} isMobile={isMobile} />;
 };
 
-export const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProps) => {
+const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProps) => {
   const { t } = useTranslation();
   const params = useParams();
   const { selectedBoardFilter, viewMode } = useModQueueStore();
@@ -707,7 +700,6 @@ export const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueV
     postsPerPage: 50,
   });
 
-  // Register reset function with feed reset store so refresh button works
   const setResetFunction = useFeedResetStore((state) => state.setResetFunction);
   useEffect(() => {
     setResetFunction(reset);

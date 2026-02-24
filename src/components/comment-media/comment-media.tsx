@@ -36,18 +36,71 @@ const Thumbnail = ({ commentMediaInfo, deleted, displayHeight, displayWidth, isF
   const hasThumbnail = getHasThumbnail(commentMediaInfo, url);
 
   if (type === 'gif') {
-    thumbnailComponent = <img src={gifFrameUrl || url} alt='' onClick={() => setShowThumbnail(false)} />;
+    thumbnailComponent = (
+      <img
+        src={gifFrameUrl || url}
+        alt=''
+        role='button'
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setShowThumbnail(false);
+          }
+        }}
+        onClick={() => setShowThumbnail(false)}
+      />
+    );
   } else if (type === 'video') {
     thumbnailComponent = thumbnail ? (
       <img src={thumbnail} alt='' />
     ) : (
       // show first frame of the video, as a workaround for Safari not loading thumbnails
-      <video src={`${url}#t=0.001`} onClick={() => setShowThumbnail(false)} />
+      <video
+        src={`${url}#t=0.001`}
+        role='button'
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setShowThumbnail(false);
+          }
+        }}
+        onClick={() => setShowThumbnail(false)}
+      />
     );
   } else if (type === 'webpage') {
-    thumbnailComponent = <img src={thumbnail} alt='' onClick={() => setShowThumbnail(false)} />;
+    thumbnailComponent = (
+      <img
+        src={thumbnail}
+        alt=''
+        role='button'
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setShowThumbnail(false);
+          }
+        }}
+        onClick={() => setShowThumbnail(false)}
+      />
+    );
   } else if (type === 'iframe') {
-    thumbnailComponent = iframeThumbnail ? <img src={iframeThumbnail} alt='' onClick={() => setShowThumbnail(false)} /> : null;
+    thumbnailComponent = iframeThumbnail ? (
+      <img
+        src={iframeThumbnail}
+        alt=''
+        role='button'
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setShowThumbnail(false);
+          }
+        }}
+        onClick={() => setShowThumbnail(false)}
+      />
+    ) : null;
   } else if (type === 'audio') {
     thumbnailComponent = <audio src={url} controls />;
   }
@@ -60,7 +113,20 @@ const Thumbnail = ({ commentMediaInfo, deleted, displayHeight, displayWidth, isF
   return deleted || removed ? (
     <img className={styles.fileDeleted} src='assets/filedeleted-res.gif' alt='File deleted' />
   ) : spoiler ? (
-    <img className={styles.spoiler} src='assets/spoiler.png' alt='' onClick={() => setShowThumbnail(false)} />
+    <img
+      className={styles.spoiler}
+      src='assets/spoiler.png'
+      alt=''
+      role='button'
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          setShowThumbnail(false);
+        }
+      }}
+      onClick={() => setShowThumbnail(false)}
+    />
   ) : isOutOfFeed ? (
     <span className={`${isFloatingEmbed ? styles.floatingEmbed : styles.subplebbitAvatar}`}>{thumbnailComponent}</span>
   ) : isMobile || isReply ? (
@@ -70,7 +136,19 @@ const Thumbnail = ({ commentMediaInfo, deleted, displayHeight, displayWidth, isF
         !hasThumbnail &&
         linkWithoutThumbnail &&
         (canEmbed(linkWithoutThumbnail) ? (
-          <span onClick={() => setShowThumbnail(false)}>{getHostname(url)}</span>
+          <span
+            role='button'
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                setShowThumbnail(false);
+              }
+            }}
+            onClick={() => setShowThumbnail(false)}
+          >
+            {getHostname(url)}
+          </span>
         ) : (
           <a href={url} target='_blank' rel='noreferrer'>
             {getHostname(url) || (url.length > 30 ? url.slice(0, 30) + '...' : url)}
@@ -99,11 +177,43 @@ const Media = ({ commentMediaInfo, disableToggle, isReply, setShowThumbnail }: M
       {type === 'iframe' && url ? (
         <Embed url={url} />
       ) : type === 'gif' ? (
-        <img src={url} alt='' onClick={disableToggle ? undefined : () => setShowThumbnail(true)} />
+        <img
+          src={url}
+          alt=''
+          role={disableToggle ? undefined : 'button'}
+          tabIndex={disableToggle ? undefined : 0}
+          onKeyDown={
+            disableToggle
+              ? undefined
+              : (e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setShowThumbnail(true);
+                  }
+                }
+          }
+          onClick={disableToggle ? undefined : () => setShowThumbnail(true)}
+        />
       ) : type === 'video' ? (
         <video src={url} controls autoPlay loop muted />
       ) : type === 'webpage' ? (
-        <img src={thumbnail} alt='' onClick={disableToggle ? undefined : () => setShowThumbnail(true)} />
+        <img
+          src={thumbnail}
+          alt=''
+          role={disableToggle ? undefined : 'button'}
+          tabIndex={disableToggle ? undefined : 0}
+          onKeyDown={
+            disableToggle
+              ? undefined
+              : (e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setShowThumbnail(true);
+                  }
+                }
+          }
+          onClick={disableToggle ? undefined : () => setShowThumbnail(true)}
+        />
       ) : null}
       {isMobile && type && (
         <div className={styles.fileInfo}>
@@ -116,7 +226,18 @@ const Media = ({ commentMediaInfo, disableToggle, isReply, setShowThumbnail }: M
       )}
       {isMobile && (type === 'iframe' || type === 'video' || type === 'audio') && (
         <div className={styles.closeButton}>
-          <span className='button' onClick={() => setShowThumbnail(true)}>
+          <span
+            className='button'
+            role='button'
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                setShowThumbnail(true);
+              }
+            }}
+            onClick={() => setShowThumbnail(true)}
+          >
             {t('close')}
           </span>
         </div>
@@ -160,7 +281,20 @@ const Image = ({ commentMediaInfo, disableToggle = false, displayHeight, display
         className={`${isOutOfFeed ? styles.subplebbitAvatar : styles.thumbnailBig} ${styles.thumbnail} ${isImageExpanded && isMobile ? styles.removeFloat : ''}`}
         style={spoilerDimensions}
       >
-        <img className={styles.spoiler} src='assets/spoiler.png' alt='' onClick={() => setIsImageExpanded(true)} />
+        <img
+          className={styles.spoiler}
+          src='assets/spoiler.png'
+          alt=''
+          role='button'
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              setIsImageExpanded(true);
+            }
+          }}
+          onClick={() => setIsImageExpanded(true)}
+        />
       </span>
     );
   }
@@ -174,7 +308,24 @@ const Image = ({ commentMediaInfo, disableToggle = false, displayHeight, display
         {hasError ? (
           <img src='assets/filedeleted-res.gif' alt='File deleted' />
         ) : (
-          <img src={url} onError={handleError} alt='' onClick={disableToggle ? undefined : () => setIsImageExpanded(!isImageExpanded)} />
+          <img
+            src={url}
+            onError={handleError}
+            alt=''
+            role={disableToggle ? undefined : 'button'}
+            tabIndex={disableToggle ? undefined : 0}
+            onKeyDown={
+              disableToggle
+                ? undefined
+                : (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setIsImageExpanded(!isImageExpanded);
+                    }
+                  }
+            }
+            onClick={disableToggle ? undefined : () => setIsImageExpanded(!isImageExpanded)}
+          />
         )}
       </span>
       {isImageExpanded && type && (
@@ -196,7 +347,24 @@ const Image = ({ commentMediaInfo, disableToggle = false, displayHeight, display
       {hasError ? (
         <img src='assets/filedeleted-res.gif' alt='File deleted' />
       ) : (
-        <img src={url} onError={handleError} alt='' onClick={disableToggle ? undefined : () => setIsImageExpanded(!isImageExpanded)} />
+        <img
+          src={url}
+          onError={handleError}
+          alt=''
+          role='button'
+          tabIndex={0}
+          onKeyDown={
+            disableToggle
+              ? undefined
+              : (e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setIsImageExpanded(!isImageExpanded);
+                  }
+                }
+          }
+          onClick={disableToggle ? undefined : () => setIsImageExpanded(!isImageExpanded)}
+        />
       )}
     </span>
   );

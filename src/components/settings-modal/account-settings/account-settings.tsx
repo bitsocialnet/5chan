@@ -1,12 +1,28 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { createAccount, deleteAccount, exportAccount, importAccount, setAccount, setActiveAccount, useAccount, useAccounts } from '@plebbit/plebbit-react-hooks';
-import stringify from 'json-stringify-pretty-compact';
+import { createAccount, deleteAccount, exportAccount, importAccount, setActiveAccount, useAccount, useAccounts } from '@plebbit/plebbit-react-hooks';
 import styles from './account-settings.module.css';
 import { Capacitor } from '@capacitor/core';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 const isAndroid = Capacitor.getPlatform() === 'android';
+
+const safeParseJSON = <T,>(value: string): T | null => {
+  try {
+    return JSON.parse(value) as T;
+  } catch {
+    return null;
+  }
+};
+
+const withErrorHandling = async <T,>(fn: () => Promise<T>, onError: (e: unknown) => void): Promise<T | undefined> => {
+  try {
+    return await fn();
+  } catch (e) {
+    onError(e);
+    return undefined;
+  }
+};
 
 // Inner component keyed by account id so state resets when user switches account
 const AccountSettingsEditor = ({
@@ -16,24 +32,6 @@ const AccountSettingsEditor = ({
 }) => {
   const { t } = useTranslation();
   const location = useLocation();
-
-  const accountJson = useMemo(
-    () =>
-      stringify({
-        account: {
-          ...account,
-          author: { ...account?.author, avatar: undefined },
-          plebbit: undefined,
-          karma: undefined,
-          plebbitReactOptions: undefined,
-          unreadNotificationCount: undefined,
-        },
-      }),
-    [account],
-  );
-
-  const [text, setText] = useState(() => accountJson);
-
   const { accounts } = useAccounts();
   const switchToNewAccountRef = useRef(false);
   const navigate = useNavigate();
@@ -47,17 +45,21 @@ const AccountSettingsEditor = ({
   }, [accounts]);
 
   const handleCreateAccount = async () => {
-    try {
-      switchToNewAccountRef.current = true;
-      await createAccount();
-    } catch (error) {
-      if (error instanceof Error) {
-        alert(error.message);
-        console.log(error);
-      } else {
-        console.error('An unknown error occurred:', error);
-      }
-    }
+    const result = await withErrorHandling(
+      async () => {
+        switchToNewAccountRef.current = true;
+        await createAccount();
+      },
+      (error) => {
+        if (error instanceof Error) {
+          alert(error.message);
+          console.log(error);
+        } else {
+          console.error('An unknown error occurred:', error);
+        }
+      },
+    );
+    void result;
   };
 
   const _deleteAccount = (accountName: string) => {
@@ -72,54 +74,34 @@ const AccountSettingsEditor = ({
     }
   };
 
-  const saveAccount = async () => {
-    try {
-      const newAccount = JSON.parse(text).account;
-      // force keeping the same id, makes it easier to copy paste
-      await setAccount({ ...newAccount, id: account?.id });
-      alert(`Saved ${newAccount.name}`);
-    } catch (error) {
-      if (error instanceof Error) {
-        alert(error.message);
-        console.log(error);
-      } else {
-        console.error('An unknown error occurred:', error);
-      }
-    }
-  };
-
   const handleExportAccount = async () => {
-    try {
-      const accountString = await exportAccount();
-      const accountObject = JSON.parse(accountString);
-      const formattedAccountJson = JSON.stringify(accountObject, null, 2);
-
-      // Create a Blob from the JSON string
-      const blob = new Blob([formattedAccountJson], { type: 'application/json' });
-
-      // Create a URL for the Blob
-      const fileUrl = URL.createObjectURL(blob);
-
-      // Create a temporary download link
-      const link = document.createElement('a');
-      link.href = fileUrl;
-      link.download = `${account?.name ?? 'account'}.json`;
-
-      // Append the link, trigger the download, then remove the link
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      // Release the Blob URL
-      URL.revokeObjectURL(fileUrl);
-    } catch (error) {
-      if (error instanceof Error) {
-        alert(error.message);
-        console.log(error);
-      } else {
-        console.error('An unknown error occurred:', error);
-      }
+    const accountString = await withErrorHandling(
+      () => exportAccount(),
+      (error) => {
+        if (error instanceof Error) {
+          alert(error.message);
+          console.log(error);
+        } else {
+          console.error('An unknown error occurred:', error);
+        }
+      },
+    );
+    if (accountString === undefined) return;
+    const accountObject = safeParseJSON<Record<string, unknown>>(accountString);
+    if (!accountObject) {
+      alert('Failed to parse account');
+      return;
     }
+    const formattedAccountJson = JSON.stringify(accountObject, null, 2);
+    const blob = new Blob([formattedAccountJson], { type: 'application/json' });
+    const fileUrl = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = fileUrl;
+    link.download = `${account?.name ?? 'account'}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(fileUrl);
   };
 
   const handleImportAccount = async () => {
@@ -128,78 +110,73 @@ const AccountSettingsEditor = ({
     fileInput.accept = '.json';
 
     fileInput.onchange = async (event) => {
-      try {
-        const files = (event.target as HTMLInputElement).files;
-        if (!files || files.length === 0) {
-          throw new Error('No file selected.');
+      const files = (event.target as HTMLInputElement).files;
+      if (!files || files.length === 0) {
+        alert('No file selected.');
+        return;
+      }
+      const file = files[0];
+
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const fileContent = e.target!.result;
+        if (typeof fileContent !== 'string') {
+          alert('File content is not a string.');
+          return;
         }
-        const file = files[0];
 
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-          try {
-            const fileContent = e.target!.result;
-            if (typeof fileContent !== 'string') {
-              throw new Error('File content is not a string.');
+        const accountData = safeParseJSON<{
+          account?: { subplebbits?: Record<string, unknown>; subscriptions?: string[]; author?: { address?: string }; name?: string };
+        }>(fileContent);
+        if (!accountData) {
+          alert('Invalid JSON in file.');
+          return;
+        }
+
+        if (accountData.account?.subplebbits) {
+          const subplebbitAddresses = Object.keys(accountData.account.subplebbits);
+          if (!accountData.account.subscriptions) {
+            accountData.account.subscriptions = [];
+          }
+          const uniqueSubscriptions = [...accountData.account.subscriptions];
+          for (const address of subplebbitAddresses) {
+            if (!uniqueSubscriptions.includes(address)) {
+              uniqueSubscriptions.push(address);
             }
+          }
+          accountData.account.subscriptions = uniqueSubscriptions;
+        }
 
-            const accountData = JSON.parse(fileContent);
-
-            // Add subplebbit addresses to subscriptions if they exist
-            if (accountData.account?.subplebbits) {
-              const subplebbitAddresses = Object.keys(accountData.account.subplebbits);
-
-              if (!accountData.account.subscriptions) {
-                accountData.account.subscriptions = [];
-              }
-
-              const uniqueSubscriptions = [...accountData.account.subscriptions];
-
-              for (const address of subplebbitAddresses) {
-                if (!uniqueSubscriptions.includes(address)) {
-                  uniqueSubscriptions.push(address);
-                }
-              }
-
-              accountData.account.subscriptions = uniqueSubscriptions;
-            }
-
-            const modifiedAccountJson = JSON.stringify(accountData);
+        const modifiedAccountJson = JSON.stringify(accountData);
+        const result = await withErrorHandling(
+          async () => {
             await importAccount(modifiedAccountJson);
-
             if (accountData.account?.author?.address) {
               localStorage.setItem('importedAccountAddress', accountData.account.author.address);
             }
-
             if (accountData.account?.name) {
               await setActiveAccount(accountData.account.name);
             }
-
-            alert(`Imported ${accountData.account?.name}`);
-
-            const currentPath = location.pathname;
-            if (!currentPath.includes('/settings#account-settings')) {
-              navigate(`${currentPath}#account-settings`, { replace: true });
-            }
-            window.location.reload();
-          } catch (error) {
+          },
+          (error) => {
             if (error instanceof Error) {
               alert(error.message);
               console.log(error);
             } else {
               console.error('An unknown error occurred:', error);
             }
-          }
-        };
-        reader.readAsText(file);
-      } catch (error) {
-        if (error instanceof Error) {
-          alert(error.message);
-          console.log(error);
-        } else {
-          console.error('An unknown error occurred:', error);
+          },
+        );
+        if (result === undefined) return;
+
+        alert(`Imported ${accountData.account?.name}`);
+        const currentPath = location.pathname;
+        if (!currentPath.includes('/settings#account-settings')) {
+          navigate(`${currentPath}#account-settings`, { replace: true });
         }
-      }
+        window.location.reload();
+      };
+      reader.readAsText(file);
     };
 
     fileInput.click();
@@ -228,10 +205,8 @@ const AccountSettingsEditor = ({
           })}
         </div>
       </div>
-      <div></div>
-      <textarea value={text} onChange={(e) => setText(e.target.value)} autoCorrect='off' autoComplete='off' spellCheck='false' />
       <div>
-        <button onClick={saveAccount}>{t('save_changes')}</button> <button onClick={() => setText(accountJson)}>{t('reset_changes')}</button>
+        <button onClick={() => navigate('/settings/account-data', { state: { returnTo: location.pathname + location.hash } })}>{t('edit')}</button>
         <button className={styles.deleteAccount} onClick={() => _deleteAccount(account?.name ?? '')}>
           {t('delete_account')}
         </button>

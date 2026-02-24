@@ -269,7 +269,7 @@
   "board_subscriptions": "Assinaturas de quadros",
   "chain_ticker": "ticker da cadeia",
   "enable_infinite_scroll": "Ativar rolagem infinita",
-  "prev": "Anterior",
+  "previous": "Anterior",
   "next": "Próximo",
   "bottom": "Inferior",
   "enable_infinite_scroll_tip": "Não se aplica a multiboard, que sempre usam rolagem infinita.",
@@ -281,5 +281,15 @@
   "show_blotter": "Mostrar Anúncios",
   "top": "Topo",
   "reply_count": "Número de respostas",
-  "pagination.pageCurrent": "Página {{page}} (atual)"
+  "pagination.pageCurrent": "Página {{page}} (atual)",
+  "pagination.pageLabel": "Página",
+  "archive": "Arquivo",
+  "search_ops_placeholder": "Search OPs...",
+  "private_key_warning_title": "Aviso de chave privada",
+  "private_key_warning_description": "Este editor mostra a chave privada da sua conta. Não compartilhe esses dados com ninguém. Editar incorretamente pode quebrar sua conta.",
+  "go_back": "Voltar",
+  "continue": "Continuar",
+  "loading_editor": "Carregando editor...",
+  "editor_fallback_warning": "O editor de código falhou ao carregar. Usando um campo de texto simples em vez disso.",
+  "return_to_settings": "Voltar às Configurações"
 }

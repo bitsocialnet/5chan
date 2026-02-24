@@ -100,7 +100,18 @@ const BoardHeader = () => {
       </div>
       <div className={styles.boardSubtitle}>
         {isInSubscriptionsView ? (
-          <span className={styles.clickableSubtitle} onClick={() => navigate('/subs/settings#subscriptions-settings')}>
+          <span
+            className={styles.clickableSubtitle}
+            role='button'
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                navigate('/subs/settings#subscriptions-settings');
+              }
+            }}
+            onClick={() => navigate('/subs/settings#subscriptions-settings')}
+          >
             {subtitle}
           </span>
         ) : !isInAllView && !isInModView && subtitle ? (

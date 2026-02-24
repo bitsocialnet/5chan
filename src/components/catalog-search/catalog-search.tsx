@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import styles from './catalog-search.module.css';
@@ -10,22 +10,18 @@ const CatalogSearch = () => {
   const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
-  const [openSearch, setOpenSearch] = useState(false);
-  const [inputValue, setInputValue] = useState('');
+  const [searchState, setSearchState] = useState({ open: false, value: '' });
   const { setSearchFilter, clearSearchFilter } = useCatalogFiltersStore();
+  const queryParam = new URLSearchParams(location.search).get('q') ?? '';
+  const openSearch = !!queryParam || searchState.open;
+  const inputValue = searchState.open || searchState.value ? searchState.value : queryParam;
 
-  // Extract query parameter from URL
   useEffect(() => {
-    const urlParams = new URLSearchParams(location.search);
-    const queryParam = urlParams.get('q');
     if (queryParam) {
-      setInputValue(queryParam);
       setSearchFilter(queryParam);
-      setOpenSearch(true);
     }
-  }, [location.search, setSearchFilter]);
+  }, [queryParam, setSearchFilter]);
 
-  // Update URL when search changes
   const updateURL = useCallback(
     (searchText: string) => {
       const urlParams = new URLSearchParams(location.search);
@@ -41,66 +37,44 @@ const CatalogSearch = () => {
     [location.pathname, location.search, navigate],
   );
 
-  // Create a debounced version of setSearchFilter and URL update
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const debouncedSetSearchFilter = useCallback(
-    debounce((text: string) => {
-      if (text.trim()) {
-        setSearchFilter(text);
-        updateURL(text);
-      } else {
-        clearSearchFilter();
-        updateURL('');
-      }
-    }, 300),
+  const debouncedSetSearchFilter = useMemo(
+    () =>
+      debounce((text: string) => {
+        if (text.trim()) {
+          setSearchFilter(text);
+          updateURL(text);
+        } else {
+          clearSearchFilter();
+          updateURL('');
+        }
+      }, 300),
     [setSearchFilter, clearSearchFilter, updateURL],
   );
 
-  const handleToggleSearch = useCallback(() => {
-    setOpenSearch((prev) => !prev);
+  useEffect(() => {
+    return () => debouncedSetSearchFilter.cancel();
+  }, [debouncedSetSearchFilter]);
 
+  const handleToggleSearch = useCallback(() => {
     if (openSearch) {
-      setInputValue('');
       clearSearchFilter();
       updateURL('');
+      setSearchState({ open: false, value: '' });
+    } else {
+      setSearchState((prev) => ({ open: true, value: prev.value }));
     }
   }, [openSearch, clearSearchFilter, updateURL]);
 
   const handleCloseSearch = useCallback(() => {
-    setOpenSearch(false);
-    setInputValue('');
+    setSearchState({ open: false, value: '' });
     clearSearchFilter();
     updateURL('');
   }, [clearSearchFilter, updateURL]);
 
-  useEffect(() => {
-    if (openSearch) {
-      const input = document.querySelector('input');
-      input?.focus();
-
-      const handleKeyDown = (event: KeyboardEvent) => {
-        if (event.key === 'Escape') {
-          handleCloseSearch();
-        }
-      };
-      window.addEventListener('keydown', handleKeyDown);
-
-      return () => {
-        window.removeEventListener('keydown', handleKeyDown);
-      };
-    }
-  }, [openSearch, handleCloseSearch]);
-
-  useEffect(() => {
-    debouncedSetSearchFilter(inputValue);
-
-    return () => {
-      debouncedSetSearchFilter.cancel();
-    };
-  }, [inputValue, debouncedSetSearchFilter]);
-
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInputValue(e.target.value);
+    const next = e.target.value;
+    setSearchState((prev) => ({ ...prev, value: next }));
+    debouncedSetSearchFilter(next);
   };
 
   const isMobile = useIsMobile();
@@ -108,14 +82,46 @@ const CatalogSearch = () => {
   return (
     <>
       {!isMobile && '['}
-      <span className={`${styles.filtersButton} button`} onClick={handleToggleSearch}>
+      <span
+        className={`${styles.filtersButton} button`}
+        role='button'
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleToggleSearch();
+          }
+        }}
+        onClick={handleToggleSearch}
+      >
         {t('search')}
       </span>
       {!isMobile && ']'}
       {openSearch && (
         <div className={styles.searchContainer}>
-          <input type='text' value={inputValue} onChange={handleSearchChange} />
-          <span className={styles.closeSearch} onClick={handleCloseSearch}>
+          <input
+            ref={(el) => el?.focus()}
+            type='text'
+            value={inputValue}
+            onChange={handleSearchChange}
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') {
+                handleCloseSearch();
+              }
+            }}
+          />
+          <span
+            className={styles.closeSearch}
+            role='button'
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleCloseSearch();
+              }
+            }}
+            onClick={handleCloseSearch}
+          >
             ✖
           </span>
         </div>

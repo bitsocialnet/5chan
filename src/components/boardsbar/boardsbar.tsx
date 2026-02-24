@@ -166,7 +166,19 @@ const BoardsBarDesktop = () => {
     const linkContent = (
       <>
         {isPlaceholder ? (
-          <span className={styles.placeholder} onClick={handleClick} style={{ cursor: 'pointer' }}>
+          <span
+            className={styles.placeholder}
+            role='button'
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                if (!address) openDirectoryModal();
+              }
+            }}
+            onClick={handleClick}
+            style={{ cursor: 'pointer' }}
+          >
             {code}
           </span>
         ) : (
@@ -219,7 +231,20 @@ const BoardsBarDesktop = () => {
           <>
             {' '}
             [
-            <span className={styles.temporaryButton} onClick={() => setShowAllTemporarily(true)} style={{ cursor: 'pointer' }} title='Show all'>
+            <span
+              className={styles.temporaryButton}
+              role='button'
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setShowAllTemporarily(true);
+                }
+              }}
+              onClick={() => setShowAllTemporarily(true)}
+              style={{ cursor: 'pointer' }}
+              title='Show all'
+            >
               ...
             </span>
             ]{' '}
@@ -229,18 +254,55 @@ const BoardsBarDesktop = () => {
           <>[{visibleSubscriptionAddresses.map((address: string, index: number) => renderSubscription(address, index, visibleSubscriptionAddresses.length))}] </>
         )}
         [
-        <span className={styles.temporaryButton} onClick={() => openBoardsBarEditModal()} style={{ cursor: 'pointer' }}>
+        <span
+          className={styles.temporaryButton}
+          role='button'
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              openBoardsBarEditModal();
+            }
+          }}
+          onClick={() => openBoardsBarEditModal()}
+          style={{ cursor: 'pointer' }}
+        >
           {capitalize(t('edit'))}
         </span>
         ] [
-        <span className={styles.temporaryButton} onClick={() => openCreateBoardModal()} style={{ cursor: 'pointer' }}>
+        <span
+          className={styles.temporaryButton}
+          role='button'
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              openCreateBoardModal();
+            }
+          }}
+          onClick={() => openCreateBoardModal()}
+          style={{ cursor: 'pointer' }}
+        >
           {t('create_board')}
         </span>
         ]
       </span>
       <span className={styles.navTopRight}>
         [<Link to={!location.pathname.endsWith('settings') ? location.pathname.replace(/\/$/, '') + '/settings' : location.pathname}>{t('settings')}</Link>] [
-        <span onClick={() => setShowSearchBar(!showSearchBar)}>{t('search')}</span>] [<Link to='/'>{t('home')}</Link>]
+        <span
+          role='button'
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              setShowSearchBar(!showSearchBar);
+            }
+          }}
+          onClick={() => setShowSearchBar(!showSearchBar)}
+        >
+          {t('search')}
+        </span>
+        ] [<Link to='/'>{t('home')}</Link>]
       </span>
       {showSearchBar && <SearchBar setShowSearchBar={setShowSearchBar} />}
     </div>
@@ -336,7 +398,19 @@ const BoardsBarMobile = ({ subplebbitAddress }: { subplebbitAddress?: string }) 
       </div>
       <div className={styles.pageJump}>
         <Link to={location.pathname.replace(/\/$/, '') + '/settings'}>{t('settings')}</Link>
-        <span onClick={() => setShowSearchBar(!showSearchBar)}>{capitalize(t('search'))}</span>
+        <span
+          role='button'
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              setShowSearchBar(!showSearchBar);
+            }
+          }}
+          onClick={() => setShowSearchBar(!showSearchBar)}
+        >
+          {capitalize(t('search'))}
+        </span>
         <Link to='/'>{t('home')}</Link>
         {showSearchBar && <SearchBar setShowSearchBar={setShowSearchBar} />}
       </div>

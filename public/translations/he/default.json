@@ -269,7 +269,7 @@
   "board_subscriptions": "מנויים ללוחות",
   "chain_ticker": "טיקר שרשרת",
   "enable_infinite_scroll": "הפעל גלילה אינסופית",
-  "prev": "הקודם",
+  "previous": "הקודם",
   "next": "הבא",
   "bottom": "תחתית",
   "enable_infinite_scroll_tip": "לא חל על לוחות מרובים, שתמיד משתמשים בגלילה אינסופית.",
@@ -281,5 +281,15 @@
   "show_blotter": "הצג הודעות",
   "top": "למעלה",
   "reply_count": "מספר תגובות",
-  "pagination.pageCurrent": "עמוד {{page}} (נוכחי)"
+  "pagination.pageCurrent": "עמוד {{page}} (נוכחי)",
+  "pagination.pageLabel": "עמוד",
+  "archive": "ארכיון",
+  "search_ops_placeholder": "Search OPs...",
+  "private_key_warning_title": "אזהרת מפתח פרטי",
+  "private_key_warning_description": "עורך זה מציג את המפתח הפרטי של חשבונך. אל תשתף נתונים אלה עם אף אחד. עריכה שגויה עלולה לשבור את חשבונך.",
+  "go_back": "חזור",
+  "continue": "המשך",
+  "loading_editor": "טוען עורך...",
+  "editor_fallback_warning": "טעינת עורך הקוד נכשלה. משתמשים בשדה טקסט פשוט במקום.",
+  "return_to_settings": "חזרה להגדרות"
 }

@@ -26,6 +26,34 @@ const NSFWBadge = () => {
   );
 };
 
+interface BoardLinkProps {
+  boardName: string;
+  address: string | null;
+  getBoardLink: (address: string) => string;
+  onLinkClick: (e: React.MouseEvent<HTMLAnchorElement>, address: string) => void;
+  onPlaceholderClick: (e: React.MouseEvent<HTMLAnchorElement>) => void;
+}
+
+const BoardLink = ({ boardName, address, getBoardLink, onLinkClick, onPlaceholderClick }: BoardLinkProps) => {
+  if (address) {
+    return (
+      <li>
+        <Link to={getBoardLink(address)} onClick={(e) => onLinkClick(e, address)}>
+          {boardName}
+        </Link>
+      </li>
+    );
+  }
+
+  return (
+    <li>
+      <Link to='#' onClick={onPlaceholderClick} className={styles.placeholder}>
+        {boardName}
+      </Link>
+    </li>
+  );
+};
+
 const BoardsList = ({ multisub }: { multisub: DirectoryCommunity[] }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -64,27 +92,10 @@ const BoardsList = ({ multisub }: { multisub: DirectoryCommunity[] }) => {
     return acc;
   }, {});
 
-  const renderBoardLink = (boardName: string) => {
-    const address = boardAddressesByName[boardName];
-    const key = address ?? boardName;
-
-    if (address) {
-      return (
-        <li key={key}>
-          <Link to={getBoardLink(address)} onClick={(e) => handleLinkClick(e, address)}>
-            {boardName}
-          </Link>
-        </li>
-      );
-    }
-
-    return (
-      <li key={key}>
-        <Link to='#' onClick={handlePlaceholderClick} className={styles.placeholder}>
-          {boardName}
-        </Link>
-      </li>
-    );
+  const boardLinkProps = {
+    getBoardLink,
+    onLinkClick: handleLinkClick,
+    onPlaceholderClick: handlePlaceholderClick,
   };
 
   const errorMessage = error?.message;
@@ -122,20 +133,62 @@ const BoardsList = ({ multisub }: { multisub: DirectoryCommunity[] }) => {
                 <ul>
                   {(showAll || showWorksafeOnly) && (
                     <>
-                      {renderBoardLink('Anime & Manga')}
-                      {renderBoardLink('Anime/Cute')}
-                      {renderBoardLink('Anime/Wallpapers')}
-                      {renderBoardLink('Mecha')}
-                      {renderBoardLink('Cosplay & EGL')}
-                      {renderBoardLink('Cute/Male')}
+                      <BoardLink
+                        key={boardAddressesByName['Anime & Manga'] ?? 'Anime & Manga'}
+                        boardName='Anime & Manga'
+                        address={boardAddressesByName['Anime & Manga'] ?? null}
+                        {...boardLinkProps}
+                      />
+                      <BoardLink
+                        key={boardAddressesByName['Anime/Cute'] ?? 'Anime/Cute'}
+                        boardName='Anime/Cute'
+                        address={boardAddressesByName['Anime/Cute'] ?? null}
+                        {...boardLinkProps}
+                      />
+                      <BoardLink
+                        key={boardAddressesByName['Anime/Wallpapers'] ?? 'Anime/Wallpapers'}
+                        boardName='Anime/Wallpapers'
+                        address={boardAddressesByName['Anime/Wallpapers'] ?? null}
+                        {...boardLinkProps}
+                      />
+                      <BoardLink key={boardAddressesByName['Mecha'] ?? 'Mecha'} boardName='Mecha' address={boardAddressesByName['Mecha'] ?? null} {...boardLinkProps} />
+                      <BoardLink
+                        key={boardAddressesByName['Cosplay & EGL'] ?? 'Cosplay & EGL'}
+                        boardName='Cosplay & EGL'
+                        address={boardAddressesByName['Cosplay & EGL'] ?? null}
+                        {...boardLinkProps}
+                      />
+                      <BoardLink
+                        key={boardAddressesByName['Cute/Male'] ?? 'Cute/Male'}
+                        boardName='Cute/Male'
+                        address={boardAddressesByName['Cute/Male'] ?? null}
+                        {...boardLinkProps}
+                      />
                     </>
                   )}
-                  {(showAll || showNsfwOnly) && renderBoardLink('Flash')}
+                  {(showAll || showNsfwOnly) && (
+                    <BoardLink key={boardAddressesByName['Flash'] ?? 'Flash'} boardName='Flash' address={boardAddressesByName['Flash'] ?? null} {...boardLinkProps} />
+                  )}
                   {(showAll || showWorksafeOnly) && (
                     <>
-                      {renderBoardLink('Transportation')}
-                      {renderBoardLink('Otaku Culture')}
-                      {renderBoardLink('Virtual YouTubers')}
+                      <BoardLink
+                        key={boardAddressesByName['Transportation'] ?? 'Transportation'}
+                        boardName='Transportation'
+                        address={boardAddressesByName['Transportation'] ?? null}
+                        {...boardLinkProps}
+                      />
+                      <BoardLink
+                        key={boardAddressesByName['Otaku Culture'] ?? 'Otaku Culture'}
+                        boardName='Otaku Culture'
+                        address={boardAddressesByName['Otaku Culture'] ?? null}
+                        {...boardLinkProps}
+                      />
+                      <BoardLink
+                        key={boardAddressesByName['Virtual YouTubers'] ?? 'Virtual YouTubers'}
+                        boardName='Virtual YouTubers'
+                        address={boardAddressesByName['Virtual YouTubers'] ?? null}
+                        {...boardLinkProps}
+                      />
                     </>
                   )}
                 </ul>
@@ -147,14 +200,54 @@ const BoardsList = ({ multisub }: { multisub: DirectoryCommunity[] }) => {
               <>
                 <h3>Video Games</h3>
                 <ul>
-                  {renderBoardLink('Video Games')}
-                  {renderBoardLink('Video Game Generals')}
-                  {renderBoardLink('Video Games/Multiplayer')}
-                  {renderBoardLink('Video Games/Mobile')}
-                  {renderBoardLink('Pokémon')}
-                  {renderBoardLink('Retro Games')}
-                  {renderBoardLink('Video Games/RPG')}
-                  {renderBoardLink('Video Games/Strategy')}
+                  <BoardLink
+                    key={boardAddressesByName['Video Games'] ?? 'Video Games'}
+                    boardName='Video Games'
+                    address={boardAddressesByName['Video Games'] ?? null}
+                    {...boardLinkProps}
+                  />
+                  <BoardLink
+                    key={boardAddressesByName['Video Game Generals'] ?? 'Video Game Generals'}
+                    boardName='Video Game Generals'
+                    address={boardAddressesByName['Video Game Generals'] ?? null}
+                    {...boardLinkProps}
+                  />
+                  <BoardLink
+                    key={boardAddressesByName['Video Games/Multiplayer'] ?? 'Video Games/Multiplayer'}
+                    boardName='Video Games/Multiplayer'
+                    address={boardAddressesByName['Video Games/Multiplayer'] ?? null}
+                    {...boardLinkProps}
+                  />
+                  <BoardLink
+                    key={boardAddressesByName['Video Games/Mobile'] ?? 'Video Games/Mobile'}
+                    boardName='Video Games/Mobile'
+                    address={boardAddressesByName['Video Games/Mobile'] ?? null}
+                    {...boardLinkProps}
+                  />
+                  <BoardLink
+                    key={boardAddressesByName['Pokémon'] ?? 'Pokémon'}
+                    boardName='Pokémon'
+                    address={boardAddressesByName['Pokémon'] ?? null}
+                    {...boardLinkProps}
+                  />
+                  <BoardLink
+                    key={boardAddressesByName['Retro Games'] ?? 'Retro Games'}
+                    boardName='Retro Games'
+                    address={boardAddressesByName['Retro Games'] ?? null}
+                    {...boardLinkProps}
+                  />
+                  <BoardLink
+                    key={boardAddressesByName['Video Games/RPG'] ?? 'Video Games/RPG'}
+                    boardName='Video Games/RPG'
+                    address={boardAddressesByName['Video Games/RPG'] ?? null}
+                    {...boardLinkProps}
+                  />
+                  <BoardLink
+                    key={boardAddressesByName['Video Games/Strategy'] ?? 'Video Games/Strategy'}
+                    boardName='Video Games/Strategy'
+                    address={boardAddressesByName['Video Games/Strategy'] ?? null}
+                    {...boardLinkProps}
+                  />
                 </ul>
               </>
             )}
@@ -166,21 +259,76 @@ const BoardsList = ({ multisub }: { multisub: DirectoryCommunity[] }) => {
           <div className={styles.boardsColumn}>
             <h3>Interests</h3>
             <ul>
-              {renderBoardLink('Comics & Cartoons')}
-              {renderBoardLink('Technology')}
-              {renderBoardLink('Television & Film')}
-              {renderBoardLink('Weapons')}
-              {renderBoardLink('Auto')}
-              {renderBoardLink('Animals & Nature')}
-              {renderBoardLink('Traditional Games')}
-              {renderBoardLink('Sports')}
-              {renderBoardLink('Extreme Sports')}
-              {renderBoardLink('Professional Wrestling')}
-              {renderBoardLink('Science & Math')}
-              {renderBoardLink('History & Humanities')}
-              {renderBoardLink('International')}
-              {renderBoardLink('Outdoors')}
-              {renderBoardLink('Toys')}
+              <BoardLink
+                key={boardAddressesByName['Comics & Cartoons'] ?? 'Comics & Cartoons'}
+                boardName='Comics & Cartoons'
+                address={boardAddressesByName['Comics & Cartoons'] ?? null}
+                {...boardLinkProps}
+              />
+              <BoardLink
+                key={boardAddressesByName['Technology'] ?? 'Technology'}
+                boardName='Technology'
+                address={boardAddressesByName['Technology'] ?? null}
+                {...boardLinkProps}
+              />
+              <BoardLink
+                key={boardAddressesByName['Television & Film'] ?? 'Television & Film'}
+                boardName='Television & Film'
+                address={boardAddressesByName['Television & Film'] ?? null}
+                {...boardLinkProps}
+              />
+              <BoardLink key={boardAddressesByName['Weapons'] ?? 'Weapons'} boardName='Weapons' address={boardAddressesByName['Weapons'] ?? null} {...boardLinkProps} />
+              <BoardLink key={boardAddressesByName['Auto'] ?? 'Auto'} boardName='Auto' address={boardAddressesByName['Auto'] ?? null} {...boardLinkProps} />
+              <BoardLink
+                key={boardAddressesByName['Animals & Nature'] ?? 'Animals & Nature'}
+                boardName='Animals & Nature'
+                address={boardAddressesByName['Animals & Nature'] ?? null}
+                {...boardLinkProps}
+              />
+              <BoardLink
+                key={boardAddressesByName['Traditional Games'] ?? 'Traditional Games'}
+                boardName='Traditional Games'
+                address={boardAddressesByName['Traditional Games'] ?? null}
+                {...boardLinkProps}
+              />
+              <BoardLink key={boardAddressesByName['Sports'] ?? 'Sports'} boardName='Sports' address={boardAddressesByName['Sports'] ?? null} {...boardLinkProps} />
+              <BoardLink
+                key={boardAddressesByName['Extreme Sports'] ?? 'Extreme Sports'}
+                boardName='Extreme Sports'
+                address={boardAddressesByName['Extreme Sports'] ?? null}
+                {...boardLinkProps}
+              />
+              <BoardLink
+                key={boardAddressesByName['Professional Wrestling'] ?? 'Professional Wrestling'}
+                boardName='Professional Wrestling'
+                address={boardAddressesByName['Professional Wrestling'] ?? null}
+                {...boardLinkProps}
+              />
+              <BoardLink
+                key={boardAddressesByName['Science & Math'] ?? 'Science & Math'}
+                boardName='Science & Math'
+                address={boardAddressesByName['Science & Math'] ?? null}
+                {...boardLinkProps}
+              />
+              <BoardLink
+                key={boardAddressesByName['History & Humanities'] ?? 'History & Humanities'}
+                boardName='History & Humanities'
+                address={boardAddressesByName['History & Humanities'] ?? null}
+                {...boardLinkProps}
+              />
+              <BoardLink
+                key={boardAddressesByName['International'] ?? 'International'}
+                boardName='International'
+                address={boardAddressesByName['International'] ?? null}
+                {...boardLinkProps}
+              />
+              <BoardLink
+                key={boardAddressesByName['Outdoors'] ?? 'Outdoors'}
+                boardName='Outdoors'
+                address={boardAddressesByName['Outdoors'] ?? null}
+                {...boardLinkProps}
+              />
+              <BoardLink key={boardAddressesByName['Toys'] ?? 'Toys'} boardName='Toys' address={boardAddressesByName['Toys'] ?? null} {...boardLinkProps} />
             </ul>
           </div>
         )}
@@ -190,26 +338,82 @@ const BoardsList = ({ multisub }: { multisub: DirectoryCommunity[] }) => {
           <div className={styles.boardsColumn}>
             <h3>Creative</h3>
             <ul>
-              {(showAll || showNsfwOnly) && renderBoardLink('Oekaki')}
+              {(showAll || showNsfwOnly) && (
+                <BoardLink key={boardAddressesByName['Oekaki'] ?? 'Oekaki'} boardName='Oekaki' address={boardAddressesByName['Oekaki'] ?? null} {...boardLinkProps} />
+              )}
               {(showAll || showWorksafeOnly) && (
                 <>
-                  {renderBoardLink('Papercraft & Origami')}
-                  {renderBoardLink('Photography')}
-                  {renderBoardLink('Food & Cooking')}
+                  <BoardLink
+                    key={boardAddressesByName['Papercraft & Origami'] ?? 'Papercraft & Origami'}
+                    boardName='Papercraft & Origami'
+                    address={boardAddressesByName['Papercraft & Origami'] ?? null}
+                    {...boardLinkProps}
+                  />
+                  <BoardLink
+                    key={boardAddressesByName['Photography'] ?? 'Photography'}
+                    boardName='Photography'
+                    address={boardAddressesByName['Photography'] ?? null}
+                    {...boardLinkProps}
+                  />
+                  <BoardLink
+                    key={boardAddressesByName['Food & Cooking'] ?? 'Food & Cooking'}
+                    boardName='Food & Cooking'
+                    address={boardAddressesByName['Food & Cooking'] ?? null}
+                    {...boardLinkProps}
+                  />
                 </>
               )}
-              {(showAll || showNsfwOnly) && renderBoardLink('Artwork/Critique')}
-              {(showAll || showNsfwOnly) && renderBoardLink('Wallpapers/General')}
+              {(showAll || showNsfwOnly) && (
+                <BoardLink
+                  key={boardAddressesByName['Artwork/Critique'] ?? 'Artwork/Critique'}
+                  boardName='Artwork/Critique'
+                  address={boardAddressesByName['Artwork/Critique'] ?? null}
+                  {...boardLinkProps}
+                />
+              )}
+              {(showAll || showNsfwOnly) && (
+                <BoardLink
+                  key={boardAddressesByName['Wallpapers/General'] ?? 'Wallpapers/General'}
+                  boardName='Wallpapers/General'
+                  address={boardAddressesByName['Wallpapers/General'] ?? null}
+                  {...boardLinkProps}
+                />
+              )}
               {(showAll || showWorksafeOnly) && (
                 <>
-                  {renderBoardLink('Literature')}
-                  {renderBoardLink('Music')}
-                  {renderBoardLink('Fashion')}
-                  {renderBoardLink('3DCG')}
-                  {renderBoardLink('Graphic Design')}
-                  {renderBoardLink('Do It Yourself')}
-                  {renderBoardLink('Worksafe GIF')}
-                  {renderBoardLink('Quests')}
+                  <BoardLink
+                    key={boardAddressesByName['Literature'] ?? 'Literature'}
+                    boardName='Literature'
+                    address={boardAddressesByName['Literature'] ?? null}
+                    {...boardLinkProps}
+                  />
+                  <BoardLink key={boardAddressesByName['Music'] ?? 'Music'} boardName='Music' address={boardAddressesByName['Music'] ?? null} {...boardLinkProps} />
+                  <BoardLink
+                    key={boardAddressesByName['Fashion'] ?? 'Fashion'}
+                    boardName='Fashion'
+                    address={boardAddressesByName['Fashion'] ?? null}
+                    {...boardLinkProps}
+                  />
+                  <BoardLink key={boardAddressesByName['3DCG'] ?? '3DCG'} boardName='3DCG' address={boardAddressesByName['3DCG'] ?? null} {...boardLinkProps} />
+                  <BoardLink
+                    key={boardAddressesByName['Graphic Design'] ?? 'Graphic Design'}
+                    boardName='Graphic Design'
+                    address={boardAddressesByName['Graphic Design'] ?? null}
+                    {...boardLinkProps}
+                  />
+                  <BoardLink
+                    key={boardAddressesByName['Do It Yourself'] ?? 'Do It Yourself'}
+                    boardName='Do It Yourself'
+                    address={boardAddressesByName['Do It Yourself'] ?? null}
+                    {...boardLinkProps}
+                  />
+                  <BoardLink
+                    key={boardAddressesByName['Worksafe GIF'] ?? 'Worksafe GIF'}
+                    boardName='Worksafe GIF'
+                    address={boardAddressesByName['Worksafe GIF'] ?? null}
+                    {...boardLinkProps}
+                  />
+                  <BoardLink key={boardAddressesByName['Quests'] ?? 'Quests'} boardName='Quests' address={boardAddressesByName['Quests'] ?? null} {...boardLinkProps} />
                 </>
               )}
             </ul>
@@ -224,16 +428,46 @@ const BoardsList = ({ multisub }: { multisub: DirectoryCommunity[] }) => {
               <>
                 <h3>Other</h3>
                 <ul>
-                  {renderBoardLink('Business & Finance')}
-                  {renderBoardLink('Travel')}
-                  {renderBoardLink('Fitness')}
-                  {renderBoardLink('Paranormal')}
-                  {renderBoardLink('Advice')}
-                  {renderBoardLink('LGBT')}
-                  {renderBoardLink('Pony')}
-                  {renderBoardLink('Current News')}
-                  {renderBoardLink('Worksafe Requests')}
-                  {renderBoardLink('Very Important Posts')}
+                  <BoardLink
+                    key={boardAddressesByName['Business & Finance'] ?? 'Business & Finance'}
+                    boardName='Business & Finance'
+                    address={boardAddressesByName['Business & Finance'] ?? null}
+                    {...boardLinkProps}
+                  />
+                  <BoardLink key={boardAddressesByName['Travel'] ?? 'Travel'} boardName='Travel' address={boardAddressesByName['Travel'] ?? null} {...boardLinkProps} />
+                  <BoardLink
+                    key={boardAddressesByName['Fitness'] ?? 'Fitness'}
+                    boardName='Fitness'
+                    address={boardAddressesByName['Fitness'] ?? null}
+                    {...boardLinkProps}
+                  />
+                  <BoardLink
+                    key={boardAddressesByName['Paranormal'] ?? 'Paranormal'}
+                    boardName='Paranormal'
+                    address={boardAddressesByName['Paranormal'] ?? null}
+                    {...boardLinkProps}
+                  />
+                  <BoardLink key={boardAddressesByName['Advice'] ?? 'Advice'} boardName='Advice' address={boardAddressesByName['Advice'] ?? null} {...boardLinkProps} />
+                  <BoardLink key={boardAddressesByName['LGBT'] ?? 'LGBT'} boardName='LGBT' address={boardAddressesByName['LGBT'] ?? null} {...boardLinkProps} />
+                  <BoardLink key={boardAddressesByName['Pony'] ?? 'Pony'} boardName='Pony' address={boardAddressesByName['Pony'] ?? null} {...boardLinkProps} />
+                  <BoardLink
+                    key={boardAddressesByName['Current News'] ?? 'Current News'}
+                    boardName='Current News'
+                    address={boardAddressesByName['Current News'] ?? null}
+                    {...boardLinkProps}
+                  />
+                  <BoardLink
+                    key={boardAddressesByName['Worksafe Requests'] ?? 'Worksafe Requests'}
+                    boardName='Worksafe Requests'
+                    address={boardAddressesByName['Worksafe Requests'] ?? null}
+                    {...boardLinkProps}
+                  />
+                  <BoardLink
+                    key={boardAddressesByName['Very Important Posts'] ?? 'Very Important Posts'}
+                    boardName='Very Important Posts'
+                    address={boardAddressesByName['Very Important Posts'] ?? null}
+                    {...boardLinkProps}
+                  />
                 </ul>
               </>
             )}
@@ -244,12 +478,37 @@ const BoardsList = ({ multisub }: { multisub: DirectoryCommunity[] }) => {
                 <h3>Misc.</h3>
                 <NSFWBadge />
                 <ul>
-                  {renderBoardLink('Random')}
-                  {renderBoardLink('ROBOT9001')}
-                  {renderBoardLink('Politically Incorrect')}
-                  {renderBoardLink('International/Random')}
-                  {renderBoardLink('Cams & Meetups')}
-                  {renderBoardLink('Shit 5chan Says')}
+                  <BoardLink key={boardAddressesByName['Random'] ?? 'Random'} boardName='Random' address={boardAddressesByName['Random'] ?? null} {...boardLinkProps} />
+                  <BoardLink
+                    key={boardAddressesByName['ROBOT9001'] ?? 'ROBOT9001'}
+                    boardName='ROBOT9001'
+                    address={boardAddressesByName['ROBOT9001'] ?? null}
+                    {...boardLinkProps}
+                  />
+                  <BoardLink
+                    key={boardAddressesByName['Politically Incorrect'] ?? 'Politically Incorrect'}
+                    boardName='Politically Incorrect'
+                    address={boardAddressesByName['Politically Incorrect'] ?? null}
+                    {...boardLinkProps}
+                  />
+                  <BoardLink
+                    key={boardAddressesByName['International/Random'] ?? 'International/Random'}
+                    boardName='International/Random'
+                    address={boardAddressesByName['International/Random'] ?? null}
+                    {...boardLinkProps}
+                  />
+                  <BoardLink
+                    key={boardAddressesByName['Cams & Meetups'] ?? 'Cams & Meetups'}
+                    boardName='Cams & Meetups'
+                    address={boardAddressesByName['Cams & Meetups'] ?? null}
+                    {...boardLinkProps}
+                  />
+                  <BoardLink
+                    key={boardAddressesByName['Shit 5chan Says'] ?? 'Shit 5chan Says'}
+                    boardName='Shit 5chan Says'
+                    address={boardAddressesByName['Shit 5chan Says'] ?? null}
+                    {...boardLinkProps}
+                  />
                 </ul>
               </>
             )}
@@ -262,19 +521,64 @@ const BoardsList = ({ multisub }: { multisub: DirectoryCommunity[] }) => {
             <h3>Adult</h3>
             <NSFWBadge />
             <ul>
-              {renderBoardLink('Sexy Beautiful Women')}
-              {renderBoardLink('Hardcore')}
-              {renderBoardLink('Handsome Men')}
-              {renderBoardLink('Hentai')}
-              {renderBoardLink('Ecchi')}
-              {renderBoardLink('Yuri')}
-              {renderBoardLink('Hentai/Alternative')}
-              {renderBoardLink('Yaoi')}
-              {renderBoardLink('Torrents')}
-              {renderBoardLink('High Resolution')}
-              {renderBoardLink('Adult GIF')}
-              {renderBoardLink('Adult Cartoons')}
-              {renderBoardLink('Adult Requests')}
+              <BoardLink
+                key={boardAddressesByName['Sexy Beautiful Women'] ?? 'Sexy Beautiful Women'}
+                boardName='Sexy Beautiful Women'
+                address={boardAddressesByName['Sexy Beautiful Women'] ?? null}
+                {...boardLinkProps}
+              />
+              <BoardLink
+                key={boardAddressesByName['Hardcore'] ?? 'Hardcore'}
+                boardName='Hardcore'
+                address={boardAddressesByName['Hardcore'] ?? null}
+                {...boardLinkProps}
+              />
+              <BoardLink
+                key={boardAddressesByName['Handsome Men'] ?? 'Handsome Men'}
+                boardName='Handsome Men'
+                address={boardAddressesByName['Handsome Men'] ?? null}
+                {...boardLinkProps}
+              />
+              <BoardLink key={boardAddressesByName['Hentai'] ?? 'Hentai'} boardName='Hentai' address={boardAddressesByName['Hentai'] ?? null} {...boardLinkProps} />
+              <BoardLink key={boardAddressesByName['Ecchi'] ?? 'Ecchi'} boardName='Ecchi' address={boardAddressesByName['Ecchi'] ?? null} {...boardLinkProps} />
+              <BoardLink key={boardAddressesByName['Yuri'] ?? 'Yuri'} boardName='Yuri' address={boardAddressesByName['Yuri'] ?? null} {...boardLinkProps} />
+              <BoardLink
+                key={boardAddressesByName['Hentai/Alternative'] ?? 'Hentai/Alternative'}
+                boardName='Hentai/Alternative'
+                address={boardAddressesByName['Hentai/Alternative'] ?? null}
+                {...boardLinkProps}
+              />
+              <BoardLink key={boardAddressesByName['Yaoi'] ?? 'Yaoi'} boardName='Yaoi' address={boardAddressesByName['Yaoi'] ?? null} {...boardLinkProps} />
+              <BoardLink
+                key={boardAddressesByName['Torrents'] ?? 'Torrents'}
+                boardName='Torrents'
+                address={boardAddressesByName['Torrents'] ?? null}
+                {...boardLinkProps}
+              />
+              <BoardLink
+                key={boardAddressesByName['High Resolution'] ?? 'High Resolution'}
+                boardName='High Resolution'
+                address={boardAddressesByName['High Resolution'] ?? null}
+                {...boardLinkProps}
+              />
+              <BoardLink
+                key={boardAddressesByName['Adult GIF'] ?? 'Adult GIF'}
+                boardName='Adult GIF'
+                address={boardAddressesByName['Adult GIF'] ?? null}
+                {...boardLinkProps}
+              />
+              <BoardLink
+                key={boardAddressesByName['Adult Cartoons'] ?? 'Adult Cartoons'}
+                boardName='Adult Cartoons'
+                address={boardAddressesByName['Adult Cartoons'] ?? null}
+                {...boardLinkProps}
+              />
+              <BoardLink
+                key={boardAddressesByName['Adult Requests'] ?? 'Adult Requests'}
+                boardName='Adult Requests'
+                address={boardAddressesByName['Adult Requests'] ?? null}
+                {...boardLinkProps}
+              />
             </ul>
           </div>
         )}

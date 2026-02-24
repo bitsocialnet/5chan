@@ -269,7 +269,7 @@
   "board_subscriptions": "Iscrizioni alle bacheche",
   "chain_ticker": "ticker di catena",
   "enable_infinite_scroll": "Abilita scorrimento infinito",
-  "prev": "Prec.",
+  "previous": "Prec.",
   "next": "Avanti",
   "bottom": "In basso",
   "enable_infinite_scroll_tip": "Non si applica ai multiboard, che usano sempre lo scroll infinito.",
@@ -281,5 +281,15 @@
   "show_blotter": "Mostra annunci",
   "top": "In alto",
   "reply_count": "Numero di risposte",
-  "pagination.pageCurrent": "Pagina {{page}} (corrente)"
+  "pagination.pageCurrent": "Pagina {{page}} (corrente)",
+  "pagination.pageLabel": "Pagina",
+  "archive": "Archivio",
+  "search_ops_placeholder": "Search OPs...",
+  "private_key_warning_title": "Avviso chiave privata",
+  "private_key_warning_description": "Questo editor mostra la chiave privata del tuo account. Non condividere questi dati con nessuno. Modifiche errate potrebbero compromettere il tuo account.",
+  "go_back": "Indietro",
+  "continue": "Continua",
+  "loading_editor": "Caricamento editor...",
+  "editor_fallback_warning": "Il caricamento dell'editor di codice non è riuscito. Si usa un campo di testo semplice al suo posto.",
+  "return_to_settings": "Torna alle impostazioni"
 }

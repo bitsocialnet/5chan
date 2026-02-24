@@ -269,7 +269,7 @@
   "board_subscriptions": "Fórum feliratkozások",
   "chain_ticker": "lánc ticker",
   "enable_infinite_scroll": "Végtelen görgetés engedélyezése",
-  "prev": "Előző",
+  "previous": "Előző",
   "next": "Következő",
   "bottom": "Alul",
   "enable_infinite_scroll_tip": "A többtáblás nézetekre nem vonatkozik, amelyek mindig végtelen görgetést használnak.",
@@ -281,5 +281,15 @@
   "show_blotter": "Közlemények megjelenítése",
   "top": "Felül",
   "reply_count": "Válaszok száma",
-  "pagination.pageCurrent": "{{page}}. oldal (jelenlegi)"
+  "pagination.pageCurrent": "{{page}}. oldal (jelenlegi)",
+  "pagination.pageLabel": "Oldal",
+  "archive": "Archívum",
+  "search_ops_placeholder": "Search OPs...",
+  "private_key_warning_title": "Privát kulcs figyelmeztetés",
+  "private_key_warning_description": "Ez a szerkesztő megjeleníti fiókod titkos kulcsát. Ne osszd meg ezeket az adatokat senkivel. A helytelen szerkesztés tönkreteheti a fiókodat.",
+  "go_back": "Vissza",
+  "continue": "Folytatás",
+  "loading_editor": "Szerkesztő betöltése...",
+  "editor_fallback_warning": "A kódszerkesztő betöltése sikertelen. Egyszerű szövegmező használata helyette.",
+  "return_to_settings": "Vissza a beállításokhoz"
 }

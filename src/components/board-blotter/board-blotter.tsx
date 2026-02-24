@@ -40,7 +40,18 @@ const BoardBlotter = () => {
           <tr>
             <td>
               [
-              <span className={styles.hideButton} onClick={() => toggleVisibility()}>
+              <span
+                className={styles.hideButton}
+                role='button'
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    toggleVisibility();
+                  }
+                }}
+                onClick={() => toggleVisibility()}
+              >
                 {isHidden ? t('show_blotter') : t('hide')}
               </span>
               ]

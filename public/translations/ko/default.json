@@ -269,7 +269,7 @@
   "board_subscriptions": "보드 구독",
   "chain_ticker": "체인 티커",
   "enable_infinite_scroll": "무한 스크롤 활성화",
-  "prev": "이전",
+  "previous": "이전",
   "next": "다음",
   "bottom": "아래",
   "enable_infinite_scroll_tip": "항상 무한 스크롤을 사용하는 멀티보드에는 적용되지 않습니다.",
@@ -281,5 +281,15 @@
   "show_blotter": "공지 표시",
   "top": "맨 위",
   "reply_count": "답글 수",
-  "pagination.pageCurrent": "{{page}}페이지 (현재)"
+  "pagination.pageCurrent": "{{page}}페이지 (현재)",
+  "pagination.pageLabel": "페이지",
+  "archive": "아카이브",
+  "search_ops_placeholder": "Search OPs...",
+  "private_key_warning_title": "개인 키 경고",
+  "private_key_warning_description": "이 편집기는 계정의 개인 키를 표시합니다. 이 데이터를 누구와도 공유하지 마세요. 잘못된 편집은 계정을 손상시킬 수 있습니다.",
+  "go_back": "돌아가기",
+  "continue": "계속",
+  "loading_editor": "편집기 로딩 중...",
+  "editor_fallback_warning": "코드 편집기 로드에 실패했습니다. 대신 일반 텍스트 영역을 사용합니다.",
+  "return_to_settings": "설정으로 돌아가기"
 }

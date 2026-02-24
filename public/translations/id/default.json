@@ -269,7 +269,7 @@
   "board_subscriptions": "Langganan papan",
   "chain_ticker": "ticker rantai",
   "enable_infinite_scroll": "Aktifkan scroll tak terbatas",
-  "prev": "Sebelumnya",
+  "previous": "Sebelumnya",
   "next": "Berikutnya",
   "bottom": "Bawah",
   "enable_infinite_scroll_tip": "Tidak berlaku untuk papan ganda, yang selalu menggunakan scroll tak terbatas.",
@@ -281,5 +281,15 @@
   "show_blotter": "Tampilkan Pengumuman",
   "top": "Atas",
   "reply_count": "Jumlah balasan",
-  "pagination.pageCurrent": "Halaman {{page}} (saat ini)"
+  "pagination.pageCurrent": "Halaman {{page}} (saat ini)",
+  "pagination.pageLabel": "Halaman",
+  "archive": "Arsip",
+  "search_ops_placeholder": "Search OPs...",
+  "private_key_warning_title": "Peringatan Kunci Privat",
+  "private_key_warning_description": "Editor ini menampilkan kunci pribadi akun Anda. Jangan bagikan data ini kepada siapa pun. Mengedit dengan salah dapat merusak akun Anda.",
+  "go_back": "Kembali",
+  "continue": "Lanjutkan",
+  "loading_editor": "Memuat editor...",
+  "editor_fallback_warning": "Editor kode gagal dimuat. Menggunakan textarea biasa sebagai gantinya.",
+  "return_to_settings": "Kembali ke Pengaturan"
 }

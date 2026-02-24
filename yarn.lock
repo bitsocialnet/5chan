@@ -3886,12 +3886,13 @@
     semver "^7.3.5"
     tar "^6.1.11"
 
-"@mintpass/challenge@1.1.10":
-  version "1.1.10"
-  resolved "https://registry.yarnpkg.com/@mintpass/challenge/-/challenge-1.1.10.tgz#b32547c55462df4582861e1ae005888056178d74"
-  integrity sha512-ICi668eSf6nqdwERqXXHWevrO/5CIx4mMFxsS7Ob/IS1lmRr5h7jeAfp4HVofdCkyMw6K61nzjfnhd9rd9AMjQ==
+"@mintpass/challenge@1.1.11":
+  version "1.1.11"
+  resolved "https://registry.yarnpkg.com/@mintpass/challenge/-/challenge-1.1.11.tgz#aa2d0d010d53f3d9bf36bf5427c8cb28b05a04bc"
+  integrity sha512-wr6oCXwrPer88xNNy7fksgBOI6lN+5zU9qkZ2+HSWBjJe1223XXbyJe/atvX/e3mi6ITVrbxOO3rO99iRDEwFg==
   dependencies:
     "@keyv/sqlite" "^4.0.5"
+    "@plebbit/plebbit-logger" "https://github.com/plebbit/plebbit-logger.git"
     env-paths "^3.0.0"
     keyv "5.5.0"
     multiformats "^13.1.0"
@@ -4515,9 +4516,9 @@
   resolved "https://registry.yarnpkg.com/@pkgjs/parseargs/-/parseargs-0.11.0.tgz#a77ea742fab25775145434eb1d2328cf5013ac33"
   integrity sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==
 
-"@plebbit/plebbit-js@https://github.com/plebbit/plebbit-js.git#339f22b29aa670c44b938aa3533529db14261851":
+"@plebbit/plebbit-js@https://github.com/plebbit/plebbit-js.git#41a631c9ef28631bbd41cc8f3915dd1fa2a9345c":
   version "0.0.8"
-  resolved "https://github.com/plebbit/plebbit-js.git#339f22b29aa670c44b938aa3533529db14261851"
+  resolved "https://github.com/plebbit/plebbit-js.git#41a631c9ef28631bbd41cc8f3915dd1fa2a9345c"
   dependencies:
     "@bonfida/spl-name-service" "3.0.16"
     "@enhances/with-resolvers" "0.0.5"
@@ -4533,7 +4534,7 @@
     "@libp2p/peer-id" "6.0.4"
     "@libp2p/peer-id-factory" "4.2.4"
     "@libp2p/websockets" "10.1.2"
-    "@mintpass/challenge" "1.1.10"
+    "@mintpass/challenge" "1.1.11"
     "@plebbit/plebbit-logger" "github:plebbit/plebbit-logger#355a96d7659ed820047980049dfa627d30d83a69"
     "@plebbit/proper-lockfile" "github:plebbit/node-proper-lockfile#7fd6332117340c1d3d98dd0afee2d31cc06f72b8"
     "@types/proper-lockfile" "4.1.2"
@@ -4593,11 +4594,11 @@
   dependencies:
     debug "4.3.4"
 
-"@plebbit/plebbit-react-hooks@https://github.com/plebbit/plebbit-react-hooks.git#e197af2381ad651e5b74a93bcb705de78f94742c":
+"@plebbit/plebbit-react-hooks@https://github.com/plebbit/plebbit-react-hooks.git#0bfd516d2bfae47bfc255988a2e845f849adcf12":
   version "0.0.1"
-  resolved "https://github.com/plebbit/plebbit-react-hooks.git#e197af2381ad651e5b74a93bcb705de78f94742c"
+  resolved "https://github.com/plebbit/plebbit-react-hooks.git#0bfd516d2bfae47bfc255988a2e845f849adcf12"
   dependencies:
-    "@plebbit/plebbit-js" "https://github.com/plebbit/plebbit-js.git#339f22b29aa670c44b938aa3533529db14261851"
+    "@plebbit/plebbit-js" "https://github.com/plebbit/plebbit-js.git#41a631c9ef28631bbd41cc8f3915dd1fa2a9345c"
     "@plebbit/plebbit-logger" "https://github.com/plebbit/plebbit-logger.git"
     assert "2.0.0"
     ethers "5.6.9"
@@ -5708,6 +5709,16 @@ abort-error@^1.0.0, abort-error@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/abort-error/-/abort-error-1.0.1.tgz#526c17caf2ac9eb1fab1ffdff18c5076157a324e"
   integrity sha512-fxqCblJiIPdSXIUrxI0PL+eJG49QdP9SQ70qtB65MVAoMr2rASlOyAbJFOylfB467F/f+5BCLJJq58RYi7mGfg==
+
+ace-builds@1.41.0:
+  version "1.41.0"
+  resolved "https://registry.yarnpkg.com/ace-builds/-/ace-builds-1.41.0.tgz#682db7c31624bd42d69be4e975075fb60751ca75"
+  integrity sha512-tiEUfw7V/FpHuI4tG7KS+muOTMIuPh6zReBAD2Uqhe9t00tLeyVGxjXu0tSqz5OIPWy7/wvuJBVXAsNWx0rYvQ==
+
+ace-builds@^1.36.3:
+  version "1.43.6"
+  resolved "https://registry.yarnpkg.com/ace-builds/-/ace-builds-1.43.6.tgz#6feffd0283da5bbf45a2052470fe0fc3c442831a"
+  integrity sha512-L1ddibQ7F3vyXR2k2fg+I8TQTPWVA6CKeDQr/h2+8CeyTp3W6EQL8xNFZRTztuP8xNOAqL3IYPqdzs31GCjDvg==
 
 acme-client@^5.4.0:
   version "5.4.0"
@@ -7671,6 +7682,11 @@ devlop@^1.0.0:
   integrity sha512-RWmIqhcFf1lRYBvNmr7qTNuyCt/7/ns2jbpp1+PalgE/rDQcBT0fioSMUpJ93irlUhC5hrg4cYqe6U+0ImW0rA==
   dependencies:
     dequal "^2.0.0"
+
+diff-match-patch@^1.0.5:
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/diff-match-patch/-/diff-match-patch-1.0.5.tgz#abb584d5f10cd1196dfc55aa03701592ae3f7b37"
+  integrity sha512-IayShXAgj/QMXgB0IWmKx+rOPuGMhqm5w6jvFxmVenXKIzRqTAAsbBPT3kWQeGANj3jGgvcvv4yK6SxqYmikgw==
 
 diff@^5.0.0, diff@^8.0.3:
   version "8.0.3"
@@ -11135,12 +11151,12 @@ lodash.debounce@^4.0.8:
   resolved "https://registry.yarnpkg.com/lodash.debounce/-/lodash.debounce-4.0.8.tgz#82d79bff30a67c4005ffd5e2515300ad9ca4d7af"
   integrity sha512-FT1yDzDYEoYWhnSGnpE/4Kj1fLZkDFyqRb7fNt6FdYOSxlUWAtp42Eh6Wb0rGIv/m9Bgo7x4GhQbm5Ys4SG5ow==
 
-lodash.get@^4.0.0:
+lodash.get@^4.0.0, lodash.get@^4.4.2:
   version "4.4.2"
   resolved "https://registry.yarnpkg.com/lodash.get/-/lodash.get-4.4.2.tgz#2d177f652fa31e939b4438d5341499dfa3825e99"
   integrity sha512-z+Uw/vLuy6gQe8cfaFWD7p0wVv8fJl3mbzXh33RS+0oW2wvUqiRXiQ69gLWSLpgB5/6sU+r6BlQR0MBILadqTQ==
 
-lodash.isequal@4.5.0:
+lodash.isequal@4.5.0, lodash.isequal@^4.5.0:
   version "4.5.0"
   resolved "https://registry.yarnpkg.com/lodash.isequal/-/lodash.isequal-4.5.0.tgz#415c4478f2bcc30120c22ce10ed3226f7d3e18e0"
   integrity sha512-pDo3lu8Jhfjqls6GkMgpahsF9kCyayhgykjyLMNFTKWrpVdAQtYyB4muAMWozBB4ig/dtWAmsMxLEI8wuz+DYQ==
@@ -13348,7 +13364,7 @@ prompts@^2.4.2:
     kleur "^3.0.3"
     sisteransi "^1.0.5"
 
-prop-types@^15.0.0, prop-types@^15.7.2:
+prop-types@^15.0.0, prop-types@^15.7.2, prop-types@^15.8.1:
   version "15.8.1"
   resolved "https://registry.yarnpkg.com/prop-types/-/prop-types-15.8.1.tgz#67d87bf1a694f48435cf332c24af10214a3140b5"
   integrity sha512-oj87CgZICdulUohogVAR7AjlC0327U4el4L6eAvOqCeudMDVU0NThNaV+b9Df4dXgSP1gXMTnPdhfe/2qDH5cg==
@@ -13559,6 +13575,17 @@ rc@^1.2.7:
     ini "~1.3.0"
     minimist "^1.2.0"
     strip-json-comments "~2.0.1"
+
+react-ace@14.0.1:
+  version "14.0.1"
+  resolved "https://registry.yarnpkg.com/react-ace/-/react-ace-14.0.1.tgz#dba5761cee92a1e522be7e7dab7584df7e1aa1c7"
+  integrity sha512-z6YAZ20PNf/FqmYEic//G/UK6uw0rn21g58ASgHJHl9rfE4nITQLqthr9rHMVQK4ezwohJbp2dGrZpkq979PYQ==
+  dependencies:
+    ace-builds "^1.36.3"
+    diff-match-patch "^1.0.5"
+    lodash.get "^4.4.2"
+    lodash.isequal "^4.5.0"
+    prop-types "^15.8.1"
 
 react-doctor@0.0.28:
   version "0.0.28"

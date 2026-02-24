@@ -3,7 +3,7 @@ import { useLocation, useParams } from 'react-router-dom';
 import BoardsBar from '../boardsbar';
 import SiteLegalMeta from '../site-legal-meta';
 import StyleSelector from '../style-selector/style-selector';
-import { ReturnButton, CatalogButton, TopButton, UpdateButton, AutoButton, PostPageStats } from '../board-buttons/board-buttons';
+import { ReturnButton, CatalogButton, TopButton, UpdateButton, AutoButton, PostPageStats, RefreshButton } from '../board-buttons/board-buttons';
 import { isAllView, isSubscriptionsView, isModView } from '../../lib/utils/view-utils';
 import useReplyModalStore from '../../stores/use-reply-modal-store';
 import styles from './footer.module.css';
@@ -16,12 +16,15 @@ import styles from './footer.module.css';
 export interface PageFooterDesktopProps {
   /** Mode-specific first row content (e.g. board pagination or thread controls) */
   firstRow: React.ReactNode;
+  /** Optional row between first row and BoardsBar (e.g. style selector on thread page) */
+  styleRow?: React.ReactNode;
 }
 
-export const PageFooterDesktop = ({ firstRow }: PageFooterDesktopProps) => (
+export const PageFooterDesktop = ({ firstRow, styleRow }: PageFooterDesktopProps) => (
   <footer className={styles.footer}>
     <hr />
     <div className={styles.firstRow}>{firstRow}</div>
+    {styleRow != null ? <div className={styles.styleRow}>{styleRow}</div> : null}
     <div className={styles.boardsBarRow}>
       <BoardsBar />
     </div>
@@ -33,19 +36,54 @@ export const PageFooterDesktop = ({ firstRow }: PageFooterDesktopProps) => (
 
 /* -----------------------------------------------------------------------------
  * CatalogFooterFirstRow
- * Catalog footer first row: Style selector on right only (no pagination).
+ * Catalog footer first row: Return, Archive, Top, Refresh on left; Style selector on right.
  * -------------------------------------------------------------------------- */
 
-export const CatalogFooterFirstRow = () => {
+export interface CatalogFooterFirstRowProps {
+  subplebbitAddress?: string;
+  isInAllView?: boolean;
+  isInSubscriptionsView?: boolean;
+  isInModView?: boolean;
+}
+
+export const CatalogFooterFirstRow = ({ subplebbitAddress, isInAllView = false, isInSubscriptionsView = false, isInModView = false }: CatalogFooterFirstRowProps) => {
   const { t } = useTranslation();
   return (
     <div className={styles.footerRow}>
-      <div className={styles.footerLeft} />
+      <div className={styles.footerLeft}>
+        <span>
+          [<ReturnButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />]
+        </span>
+        <span>
+          [<CatalogButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />]
+        </span>
+        <span>
+          [<TopButton />]
+        </span>
+        <span>
+          [<RefreshButton />]
+        </span>
+      </div>
       <div className={styles.footerRight}>
         <span className={styles.styleLabel}>{t('style')}:</span>
         <StyleSelector />
       </div>
     </div>
+  );
+};
+
+/* -----------------------------------------------------------------------------
+ * ThreadFooterStyleRow
+ * Style selector on its own row (thread page only, below first row, above BoardsBar).
+ * -------------------------------------------------------------------------- */
+
+export const ThreadFooterStyleRow = () => {
+  const { t } = useTranslation();
+  return (
+    <span className={styles.styleRowContent}>
+      <span className={styles.styleLabel}>{t('style')}:</span>
+      <StyleSelector />
+    </span>
   );
 };
 
@@ -80,16 +118,30 @@ export const ThreadFooterFirstRow = ({ postCid, threadNumber, subplebbitAddress,
   return (
     <div className={styles.threadRow}>
       <div className={styles.threadLeft}>
-        [<ReturnButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />] [
-        <CatalogButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />] [
-        <TopButton />] [<UpdateButton />] [<AutoButton />]
+        <span>
+          [<ReturnButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />]
+        </span>
+        <span>
+          [<CatalogButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />]
+        </span>
+        <span>
+          [<TopButton />]
+        </span>
+        <span>
+          [<UpdateButton />]
+        </span>
+        <span>
+          [<AutoButton />]
+        </span>
       </div>
       <div className={styles.threadCenter}>
-        [
-        <button type='button' className={styles.button} onClick={handlePostReplyClick} disabled={isThreadClosed} aria-label={t('post_a_reply')}>
-          {t('post_a_reply')}
-        </button>
-        ]
+        <span>
+          [
+          <button type='button' className={styles.button} onClick={handlePostReplyClick} disabled={isThreadClosed} aria-label={t('post_a_reply')}>
+            {t('post_a_reply')}
+          </button>
+          ]
+        </span>
       </div>
       <div className={styles.threadRight}>
         <PostPageStats />

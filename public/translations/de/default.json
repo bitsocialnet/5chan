@@ -269,7 +269,7 @@
   "board_subscriptions": "Board-Abonnements",
   "chain_ticker": "Chain-Ticker",
   "enable_infinite_scroll": "Unendliches Scrollen aktivieren",
-  "prev": "Zurück",
+  "previous": "Zurück",
   "next": "Weiter",
   "bottom": "Unten",
   "enable_infinite_scroll_tip": "Gilt nicht für Multiboards, die immer Endlos-Scrolling verwenden.",
@@ -281,5 +281,15 @@
   "show_blotter": "Ankündigungen anzeigen",
   "top": "Oben",
   "reply_count": "Anzahl Antworten",
-  "pagination.pageCurrent": "Seite {{page}} (aktuell)"
+  "pagination.pageCurrent": "Seite {{page}} (aktuell)",
+  "pagination.pageLabel": "Seite",
+  "archive": "Archiv",
+  "search_ops_placeholder": "Search OPs...",
+  "private_key_warning_title": "Warnung zum privaten Schlüssel",
+  "private_key_warning_description": "Dieser Editor zeigt den privaten Schlüssel Ihres Kontos an. Teilen Sie diese Daten mit niemandem. Falsche Bearbeitung kann Ihr Konto beschädigen.",
+  "go_back": "Zurück",
+  "continue": "Weiter",
+  "loading_editor": "Editor wird geladen...",
+  "editor_fallback_warning": "Der Code-Editor konnte nicht geladen werden. Es wird stattdessen ein einfaches Textfeld verwendet.",
+  "return_to_settings": "Zurück zu den Einstellungen"
 }

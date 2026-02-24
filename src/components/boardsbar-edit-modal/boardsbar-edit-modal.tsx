@@ -113,7 +113,18 @@ const BoardsBarEditModal = () => {
   const formKey = `${directoriesToString(visibleDirectories)}-${showSubscriptionsInBoardsBar}`;
 
   return (
-    <div className={styles.backdrop} onClick={handleBackdropClick}>
+    <div
+      className={styles.backdrop}
+      role='button'
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          closeBoardsBarEditModal();
+        }
+      }}
+      onClick={handleBackdropClick}
+    >
       <div className={styles.boardsbarEditDialog}>
         <div className={styles.hd}>
           <h2>Custom Board List</h2>

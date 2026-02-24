@@ -269,7 +269,7 @@
   "board_subscriptions": "बोर्ड सदस्यता",
   "chain_ticker": "चेन टिकर",
   "enable_infinite_scroll": "अनंत स्क्रोल सक्षम करा",
-  "prev": "मागील",
+  "previous": "मागील",
   "next": "पुढे",
   "bottom": "तळ",
   "enable_infinite_scroll_tip": "मल्टीबोर्डवर लागू होत नाही, जे नेहमी अंतहीन स्क्रॉल वापरतात.",
@@ -281,5 +281,15 @@
   "show_blotter": "जाहिराती दाखवा",
   "top": "वर",
   "reply_count": "प्रत्युत्तरांची संख्या",
-  "pagination.pageCurrent": "पृष्ठ {{page}} (वर्तमान)"
+  "pagination.pageCurrent": "पृष्ठ {{page}} (वर्तमान)",
+  "pagination.pageLabel": "पृष्ठ",
+  "archive": "संग्रह",
+  "search_ops_placeholder": "Search OPs...",
+  "private_key_warning_title": "खाजगी कुंजी चेतावनी",
+  "private_key_warning_description": "हा संपादक तुमच्या खात्याची खाजगी की दर्शवतो. हा डेटा कोणाशीही सामायिक करू नका. चुकीच्या संपादनामुळे तुमचे खाते बिघडू शकते.",
+  "go_back": "मागे जा",
+  "continue": "सुरू ठेवा",
+  "loading_editor": "संपादक लोड होत आहे...",
+  "editor_fallback_warning": "कोड एडिटर लोड नाही झाला. त्याऐवजी साध्या टेक्स्ट एरियाचा वापर केला जात आहे.",
+  "return_to_settings": "सेटिंग्जवर परत जा"
 }

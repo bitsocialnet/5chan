@@ -269,7 +269,7 @@
   "board_subscriptions": "Brettabonnementer",
   "chain_ticker": "kjede-ticker",
   "enable_infinite_scroll": "Aktiver uendelig rulling",
-  "prev": "Forrige",
+  "previous": "Forrige",
   "next": "Neste",
   "bottom": "Bunn",
   "enable_infinite_scroll_tip": "Gjelder ikke for multiboard, som alltid bruker uendelig scroll.",
@@ -281,5 +281,15 @@
   "show_blotter": "Vis Kunngjøringer",
   "top": "Topp",
   "reply_count": "Antall svar",
-  "pagination.pageCurrent": "Side {{page}} (nåværende)"
+  "pagination.pageCurrent": "Side {{page}} (nåværende)",
+  "pagination.pageLabel": "Side",
+  "archive": "Arkiv",
+  "search_ops_placeholder": "Search OPs...",
+  "private_key_warning_title": "Advarsel om privat nøkkel",
+  "private_key_warning_description": "Denne editoren viser kontoens private nøkkel. Ikke del disse dataene med noen. Feil redigering kan ødelegge kontoen din.",
+  "go_back": "Gå tilbake",
+  "continue": "Fortsett",
+  "loading_editor": "Laster editor...",
+  "editor_fallback_warning": "Kodeeditoren kunne ikke lastes. Bruker et enkelt tekstfelt i stedet.",
+  "return_to_settings": "Tilbake til Innstillinger"
 }

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigationType, useParams } from 'react-router-dom';
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
@@ -102,7 +102,7 @@ const PostInfo = ({
   const { showOmittedReplies } = useShowOmittedReplies();
   const directories = useDirectories();
   const boardPath = subplebbitAddress ? getBoardPath(subplebbitAddress, directories) : undefined;
-  const postMenuProps = useMemo(() => selectPostMenuProps(post), [post]);
+  const postMenuProps = selectPostMenuProps(post);
 
   const params = useParams();
   const location = useLocation();
@@ -219,16 +219,14 @@ const PostInfo = ({
   const showUserID = pseudonymityMode !== 'per-reply';
 
   const handleUserAddressClick = useAuthorAddressClick();
-  const numberOfPostsByAuthor = useMemo(() => {
+  const numberOfPostsByAuthor = (() => {
     if (!showUserID || deleted || removed || !shortAddress || !postCid || typeof document === 'undefined') {
       return 0;
     }
 
     const domCount = document.querySelectorAll(`[data-author-address="${shortAddress}"][data-post-cid="${postCid}"]`).length;
-    // DOM-based count can be 0 on initial mount (before commit) or when parent isn't in DOM yet (e.g. Virtuoso board feed).
-    // The current post is always at least 1 when we're displaying it.
     return Math.max(domCount, 1);
-  }, [showUserID, deleted, removed, shortAddress, postCid, postReplyCount]);
+  })();
 
   const { hidden } = useHide(post);
 
@@ -254,10 +252,9 @@ const PostInfo = ({
           (title.length <= 75 ? (
             <span className={styles.subject}>{title} </span>
           ) : (
-            <Tooltip
-              children={<span className={styles.subject}>{title.slice(0, 75) + '(...)'} </span>}
-              content={title.length < 1000 ? title : title.slice(0, 1000) + `... ${t('title_too_long')}`}
-            />
+            <Tooltip content={title.length < 1000 ? title : title.slice(0, 1000) + `... ${t('title_too_long')}`}>
+              <span className={styles.subject}>{title.slice(0, 75) + '(...)'} </span>
+            </Tooltip>
           ))}
         <span className={styles.nameBlock}>
           <span className={`${styles.name} ${authorRole && !(deleted || removed) && (authorRole === 'mod' ? styles.capcodeMod : styles.capcodeAdmin)}`}>
@@ -269,10 +266,9 @@ const PostInfo = ({
               displayName.length <= 20 ? (
                 displayName
               ) : (
-                <Tooltip
-                  children={displayName.slice(0, 20) + '(...)'}
-                  content={displayName.length < 1000 ? displayName : displayName.slice(0, 1000) + `... ${t('display_name_too_long')}`}
-                />
+                <Tooltip content={displayName.length < 1000 ? displayName : displayName.slice(0, 1000) + `... ${t('display_name_too_long')}`}>
+                  {displayName.slice(0, 20) + '(...)'}
+                </Tooltip>
               )
             ) : (
               capitalize(t('anonymous'))
@@ -299,19 +295,26 @@ const PostInfo = ({
                 <span className={styles.pendingCid}>{hasFailedState ? capitalize(t('failed')) : capitalize(t('pending'))}</span>
               ) : (
                 <Tooltip
-                  children={
-                    <span
-                      title={t('highlight_posts')}
-                      className={styles.userAddress}
-                      onClick={() => handleUserAddressClick(userID, postCid)}
-                      style={{ backgroundColor: userIDBackgroundColor, color: userIDTextColor }}
-                    >
-                      {formatUserIDForDisplay(userID)}
-                    </span>
-                  }
                   content={`${numberOfPostsByAuthor === 1 ? t('1_post_by_this_id') : t('x_posts_by_this_id', { number: numberOfPostsByAuthor })}`}
                   showTooltip={isInPostPageView || showOmittedReplies[postCid] || (postReplyCount < 6 && !pinned)}
-                />
+                >
+                  <span
+                    title={t('highlight_posts')}
+                    className={styles.userAddress}
+                    role='button'
+                    tabIndex={0}
+                    onClick={() => handleUserAddressClick(userID, postCid)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleUserAddressClick(userID, postCid);
+                      }
+                    }}
+                    style={{ backgroundColor: userIDBackgroundColor, color: userIDTextColor }}
+                  >
+                    {formatUserIDForDisplay(userID)}
+                  </span>
+                </Tooltip>
               )}
               ){' '}
             </>
@@ -320,11 +323,15 @@ const PostInfo = ({
         <span className={styles.dateTime}>
           {isInModQueueView && isOverThreshold ? (
             <>
-              <Tooltip children={<span>{getFormattedDate(timestamp)}</span>} content={getFormattedTimeAgo(timestamp)} /> (
-              <span className={styles.alert}>{getFormattedTimeAgo(timestamp)}</span>)
+              <Tooltip content={getFormattedTimeAgo(timestamp)}>
+                <span>{getFormattedDate(timestamp)}</span>
+              </Tooltip>{' '}
+              (<span className={styles.alert}>{getFormattedTimeAgo(timestamp)}</span>)
             </>
           ) : (
-            <Tooltip children={<span>{getFormattedDate(timestamp)}</span>} content={getFormattedTimeAgo(timestamp)} />
+            <Tooltip content={getFormattedTimeAgo(timestamp)}>
+              <span>{getFormattedDate(timestamp)}</span>
+            </Tooltip>
           )}{' '}
         </span>
         <span className={styles.postNum}>
@@ -338,7 +345,19 @@ const PostInfo = ({
               >
                 No.
               </Link>
-              <span className={styles.replyToPost} title={t('reply_to_post')} onMouseDown={onReplyModalClick}>
+              <span
+                className={styles.replyToPost}
+                title={t('reply_to_post')}
+                role='button'
+                tabIndex={0}
+                onMouseDown={onReplyModalClick}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    onReplyModalClick();
+                  }
+                }}
+              >
                 {post?.number || '?'}
               </span>
             </span>
@@ -460,16 +479,18 @@ const ReplyBacklinks = ({
   return (
     <>
       {directReplies.map(
-        (reply: Comment, index: number) =>
-          reply?.parentCid === cid && reply?.cid && !(reply?.deleted || reply?.removed) && <ReplyQuotePreview key={index} isBacklinkReply={true} backlinkReply={reply} />,
+        (reply: Comment) =>
+          reply?.parentCid === cid &&
+          reply?.cid &&
+          !(reply?.deleted || reply?.removed) && <ReplyQuotePreview key={reply.cid} isBacklinkReply={true} backlinkReply={reply} />,
       )}
       {quotedByMap
         ?.get(cid)
         ?.map(
-          (reply: Comment, index: number) =>
+          (reply: Comment) =>
             reply?.parentCid !== cid &&
             reply?.cid &&
-            !(reply?.deleted || reply?.removed) && <ReplyQuotePreview key={`qb-${index}`} isBacklinkReply={true} backlinkReply={reply} />,
+            !(reply?.deleted || reply?.removed) && <ReplyQuotePreview key={reply.cid} isBacklinkReply={true} backlinkReply={reply} />,
         )}
     </>
   );
@@ -556,7 +577,18 @@ const PostMedia = ({
         {!showThumbnail && (type === 'iframe' || type === 'video' || type === 'audio') && (
           <span>
             -[
-            <span className={styles.closeMedia} onClick={() => setShowThumbnail(true)}>
+            <span
+              className={styles.closeMedia}
+              role='button'
+              tabIndex={0}
+              onClick={() => setShowThumbnail(true)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setShowThumbnail(true);
+                }
+              }}
+            >
               {t('close')}
             </span>
             ]
@@ -565,7 +597,18 @@ const PostMedia = ({
         {showThumbnail && !hasThumbnail && embedUrl && canEmbed(embedUrl) && (
           <span>
             -[
-            <span className={styles.closeMedia} onClick={() => setShowThumbnail(false)}>
+            <span
+              className={styles.closeMedia}
+              role='button'
+              tabIndex={0}
+              onClick={() => setShowThumbnail(false)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setShowThumbnail(false);
+                }
+              }}
+            >
               {t('open')}
             </span>
             ]
@@ -784,8 +827,8 @@ const PostDesktop = ({
   const hasThumbnail = getHasThumbnail(commentMediaInfo, link);
 
   // Filter out deleted replies with no children for both virtuoso and non-virtuoso rendering
-  const filteredReplies = useMemo(() => repliesForRender.filter((reply) => !(reply.deleted && (reply.replyCount === 0 || !reply.replyCount))), [repliesForRender]);
-  const directRepliesByParentCid = useMemo(() => {
+  const filteredReplies = repliesForRender.filter((reply) => !(reply.deleted && (reply.replyCount === 0 || !reply.replyCount)));
+  const directRepliesByParentCid = (() => {
     const map = new Map<string, Comment[]>();
     for (const reply of filteredReplies) {
       const directParentCid = reply?.parentCid;
@@ -800,7 +843,7 @@ const PostDesktop = ({
       }
     }
     return map;
-  }, [filteredReplies]);
+  })();
 
   const quotedByMap = useQuotedByMap(filteredReplies);
 
@@ -856,7 +899,18 @@ const PostDesktop = ({
       <div className={isHidden ? styles.postDesktopHidden : ''}>
         {!isInPostPageView && showReplies && (
           <span className={`${styles.hideButtonWrapper} ${!hasThumbnail ? styles.hideButtonWrapperNoImage : ''}`}>
-            <span className={`${styles.hideButton} ${hidden ? styles.unhideThread : styles.hideThread}`} onClick={hidden ? unhide : hide} />
+            <span
+              className={`${styles.hideButton} ${hidden ? styles.unhideThread : styles.hideThread}`}
+              role='button'
+              tabIndex={0}
+              onClick={hidden ? unhide : hide}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  (hidden ? unhide : hide)();
+                }
+              }}
+            />
           </span>
         )}
         <div
@@ -911,7 +965,15 @@ const PostDesktop = ({
           <span className={styles.summary}>
             <span
               className={`${showOmittedReplies[cid] ? styles.hideOmittedReplies : styles.showOmittedReplies} ${styles.omittedRepliesButtonWrapper}`}
+              role='button'
+              tabIndex={0}
               onClick={() => setShowOmittedReplies(cid, !showOmittedReplies[cid])}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setShowOmittedReplies(cid, !showOmittedReplies[cid]);
+                }
+              }}
             />
             {showOmittedReplies[cid] ? (
               t('showing_all_replies')
@@ -964,8 +1026,8 @@ const PostDesktop = ({
           !isInPendingPostView &&
           showReplies &&
           !hasMore &&
-          visibleReplies.map((reply, index) => (
-            <div key={index} className={styles.replyContainer}>
+          visibleReplies.map((reply) => (
+            <div key={reply.cid} className={styles.replyContainer}>
               <Reply
                 reply={reply}
                 roles={roles}
@@ -983,8 +1045,8 @@ const PostDesktop = ({
           !isInPendingPostView &&
           repliesForRender &&
           showReplies &&
-          filteredReplies.map((reply, index) => (
-            <div key={index} className={styles.replyContainer}>
+          filteredReplies.map((reply) => (
+            <div key={reply.cid} className={styles.replyContainer}>
               <Reply
                 reply={reply}
                 roles={roles}

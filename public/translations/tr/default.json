@@ -269,7 +269,7 @@
   "board_subscriptions": "Pano abonelikleri",
   "chain_ticker": "zincir ticker'ı",
   "enable_infinite_scroll": "Sonsuz kaydırmayı etkinleştir",
-  "prev": "Önceki",
+  "previous": "Önceki",
   "next": "İleri",
   "bottom": "Alt",
   "enable_infinite_scroll_tip": "Her zaman sonsuz kaydırma kullanan çoklu panolar için geçerli değildir.",
@@ -281,5 +281,15 @@
   "show_blotter": "Duyuruları Göster",
   "top": "Üst",
   "reply_count": "Yanıt sayısı",
-  "pagination.pageCurrent": "Sayfa {{page}} (mevcut)"
+  "pagination.pageCurrent": "Sayfa {{page}} (mevcut)",
+  "pagination.pageLabel": "Sayfa",
+  "archive": "Arşiv",
+  "search_ops_placeholder": "Search OPs...",
+  "private_key_warning_title": "Özel anahtar uyarısı",
+  "private_key_warning_description": "Bu düzenleyici hesabınızın özel anahtarını gösterir. Bu verileri kimseyle paylaşmayın. Yanlış düzenleme hesabınıza zarar verebilir.",
+  "go_back": "Geri",
+  "continue": "Devam",
+  "loading_editor": "Düzenleyici yükleniyor...",
+  "editor_fallback_warning": "Kod düzenleyici yüklenemedi. Bunun yerine düz bir metin alanı kullanılıyor.",
+  "return_to_settings": "Ayarlara Dön"
 }

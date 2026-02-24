@@ -269,7 +269,7 @@
   "board_subscriptions": "اشتراک‌های تابلو",
   "chain_ticker": "نماد زنجیره",
   "enable_infinite_scroll": "فعال کردن اسکرول بی‌نهایت",
-  "prev": "قبلی",
+  "previous": "قبلی",
   "next": "بعدی",
   "bottom": "پایین",
   "enable_infinite_scroll_tip": "برای تابلوهای چندگانه اعمال نمی‌شود، که همیشه از اسکرول بی‌نهایت استفاده می‌کنند.",
@@ -281,5 +281,15 @@
   "show_blotter": "نمایش اعلانات",
   "top": "بالا",
   "reply_count": "تعداد پاسخ‌ها",
-  "pagination.pageCurrent": "صفحه {{page}} (فعلی)"
+  "pagination.pageCurrent": "صفحه {{page}} (فعلی)",
+  "pagination.pageLabel": "صفحه",
+  "archive": "بایگانی",
+  "search_ops_placeholder": "Search OPs...",
+  "private_key_warning_title": "هشدار کلید خصوصی",
+  "private_key_warning_description": "این ویرایشگر کلید خصوصی حساب شما را نمایش می‌دهد. این داده‌ها را با هیچ‌کس به اشتراک نگذارید. ویرایش نادرست ممکن است حساب شما را خراب کند.",
+  "go_back": "بازگشت",
+  "continue": "ادامه",
+  "loading_editor": "در حال بارگذاری ویرایشگر...",
+  "editor_fallback_warning": "بارگذاری ویرایشگر کد ناموفق بود. در عوض از یک فیلد متنی ساده استفاده می‌شود.",
+  "return_to_settings": "بازگشت به تنظیمات"
 }

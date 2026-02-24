@@ -269,7 +269,7 @@
   "board_subscriptions": "Підписки на дошки",
   "chain_ticker": "тикер ланцюга",
   "enable_infinite_scroll": "Увімкнути нескінченну прокрутку",
-  "prev": "Попередн.",
+  "previous": "Попередн.",
   "next": "Далі",
   "bottom": "Вниз",
   "enable_infinite_scroll_tip": "Не застосовується до мультибордів, які завжди використовують нескінченне прокручування.",
@@ -281,5 +281,15 @@
   "show_blotter": "Показати оголошення",
   "top": "Вгору",
   "reply_count": "Кількість відповідей",
-  "pagination.pageCurrent": "Сторінка {{page}} (поточна)"
+  "pagination.pageCurrent": "Сторінка {{page}} (поточна)",
+  "pagination.pageLabel": "Сторінка",
+  "archive": "Архів",
+  "search_ops_placeholder": "Search OPs...",
+  "private_key_warning_title": "Попередження про приватний ключ",
+  "private_key_warning_description": "Цей редактор показує приватний ключ вашого облікового запису. Не передавайте ці дані нікому. Неправильне редагування може пошкодити ваш обліковий запис.",
+  "go_back": "Назад",
+  "continue": "Продовжити",
+  "loading_editor": "Завантаження редактора...",
+  "editor_fallback_warning": "Не вдалося завантажити редактор коду. Використовується прості текстове поле замість нього.",
+  "return_to_settings": "Повернутися до налаштувань"
 }

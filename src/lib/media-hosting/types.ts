@@ -29,17 +29,3 @@ export interface ProviderAttempt {
   /** Selectors tried (e.g. when file input / submit not found); from plugin or parsed from error */
   matchedSelectors?: string[];
 }
-
-/** Successful upload result */
-export interface ProviderSuccess {
-  provider: ProviderId;
-  url: string;
-  fileName: string;
-  attempts?: ProviderAttempt[];
-}
-
-/** Aggregate error when all providers fail */
-export interface ProviderAggregateError {
-  attempts: ProviderAttempt[];
-  message: string;
-}

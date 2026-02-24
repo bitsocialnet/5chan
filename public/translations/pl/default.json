@@ -269,7 +269,7 @@
   "board_subscriptions": "Subskrypcje tablic",
   "chain_ticker": "ticker łańcucha",
   "enable_infinite_scroll": "Włącz nieskończone przewijanie",
-  "prev": "Poprz.",
+  "previous": "Poprz.",
   "next": "Dalej",
   "bottom": "Dół",
   "enable_infinite_scroll_tip": "Nie dotyczy multiboardów, które zawsze używają nieskończonego przewijania.",
@@ -281,5 +281,15 @@
   "show_blotter": "Pokaż Ogłoszenia",
   "top": "Góra",
   "reply_count": "Liczba odpowiedzi",
-  "pagination.pageCurrent": "Strona {{page}} (bieżąca)"
+  "pagination.pageCurrent": "Strona {{page}} (bieżąca)",
+  "pagination.pageLabel": "Strona",
+  "archive": "Archiwum",
+  "search_ops_placeholder": "Search OPs...",
+  "private_key_warning_title": "Ostrzeżenie o kluczu prywatnym",
+  "private_key_warning_description": "Ten edytor wyświetla klucz prywatny Twojego konta. Nie udostępniaj tych danych nikomu. Nieprawidłowa edycja może uszkodzić Twoje konto.",
+  "go_back": "Wróć",
+  "continue": "Kontynuuj",
+  "loading_editor": "Ładowanie edytora...",
+  "editor_fallback_warning": "Nie udało się załadować edytora kodu. Używane jest zamiast tego prostego pola tekstowego.",
+  "return_to_settings": "Powrót do ustawień"
 }

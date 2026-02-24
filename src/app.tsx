@@ -34,6 +34,7 @@ import PostForm from './components/post-form';
 import BoardBlotter from './components/board-blotter';
 import BoardsBar from './components/boardsbar';
 
+const AccountDataEditor = lazy(() => import('./views/account-data-editor'));
 const BoardsBarEditModal = lazy(() => import('./components/boardsbar-edit-modal'));
 const CreateBoardModal = lazy(() => import('./components/create-board-modal'));
 const DirectoryModal = lazy(() => import('./components/directory-modal'));
@@ -47,7 +48,7 @@ preloadThemeAssets();
 const hasModQueueAccessRole = (role?: string): boolean => role === 'admin' || role === 'owner' || role === 'moderator';
 
 const BoardLayout = () => {
-  const { accountCommentIndex, boardIdentifier } = useParams();
+  const { accountCommentIndex, boardIdentifier, pageNumber } = useParams();
   const location = useLocation();
   const isMobile = useIsMobile();
   const isInAllView = isAllView(location.pathname);
@@ -82,6 +83,10 @@ const BoardLayout = () => {
   const key = location.pathname.endsWith('/settings')
     ? `${subplebbitAddress}-${location.pathname.replace(/\/settings$/, '')}`
     : `${subplebbitAddress}-${location.pathname}`;
+
+  if (pageNumber === '1') {
+    return <Navigate to='/not-found' replace />;
+  }
 
   return (
     <div className={styles.boardLayout}>
@@ -120,16 +125,7 @@ const BoardLayout = () => {
 };
 
 const GlobalLayout = () => {
-  const [currentTheme] = useTheme();
-
-  useEffect(() => {
-    if (currentTheme) {
-      document.body.classList.add(currentTheme);
-      return () => {
-        document.body.classList.remove(currentTheme);
-      };
-    }
-  }, [currentTheme]);
+  useTheme();
 
   const { activeCid, parentNumber, threadNumber, threadCid, subplebbitAddress, closeModal, showReplyModal, scrollY } = useReplyModalStore();
 
@@ -245,6 +241,14 @@ const App = () => {
           <Route path='/faq' element={<FAQ />} />
           <Route path='/rules/:boardIdentifier?' element={<Rules />} />
           <Route path='/blotter' element={<Blotter />} />
+          <Route
+            path='/settings/account-data'
+            element={
+              <Suspense fallback={null}>
+                <AccountDataEditor />
+              </Suspense>
+            }
+          />
           <Route element={<BoardLayout />}>
             {/* Canonical multiboard routes (no time filter) */}
             <Route path='/all' element={boardFeedElement} />
@@ -271,6 +275,7 @@ const App = () => {
             <Route path='/mod/*' element={<Navigate to='/not-found' replace />} />
 
             <Route path='/:boardIdentifier/:pageNumber' element={boardFeedElement} />
+            <Route path='/:boardIdentifier/:pageNumber/settings' element={boardFeedElement} />
             <Route path='/:boardIdentifier' element={boardFeedElement} />
             <Route path='/:boardIdentifier/settings' element={boardFeedElement} />
             <Route path='/:boardIdentifier/catalog' element={catalogFeedElement} />

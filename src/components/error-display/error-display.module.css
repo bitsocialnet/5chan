@@ -3,7 +3,15 @@
 }
 
 .clickableErrorMessage {
+  all: unset;
+  font: inherit;
+  color: red;
   cursor: pointer;
+  display: inline;
+}
+
+.clickableErrorMessage:hover {
+  text-decoration: underline;
 }
 
 .feedbackSuccessMessage {

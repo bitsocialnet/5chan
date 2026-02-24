@@ -269,7 +269,7 @@
   "board_subscriptions": "Suscripciones a tableros",
   "chain_ticker": "ticker de cadena",
   "enable_infinite_scroll": "Activar desplazamiento infinito",
-  "prev": "Anterior",
+  "previous": "Anterior",
   "next": "Siguiente",
   "bottom": "Abajo",
   "enable_infinite_scroll_tip": "No aplica a los multiboard, que siempre usan scroll infinito.",
@@ -281,5 +281,15 @@
   "show_blotter": "Mostrar Anuncios",
   "top": "Arriba",
   "reply_count": "Número de respuestas",
-  "pagination.pageCurrent": "Página {{page}} (actual)"
+  "pagination.pageCurrent": "Página {{page}} (actual)",
+  "pagination.pageLabel": "Página",
+  "archive": "Archivo",
+  "search_ops_placeholder": "Search OPs...",
+  "private_key_warning_title": "Advertencia de clave privada",
+  "private_key_warning_description": "Este editor muestra la clave privada de tu cuenta. No compartas estos datos con nadie. Editar incorrectamente puede dañar tu cuenta.",
+  "go_back": "Volver",
+  "continue": "Continuar",
+  "loading_editor": "Cargando editor...",
+  "editor_fallback_warning": "No se pudo cargar el editor de código. Se usa un campo de texto simple en su lugar.",
+  "return_to_settings": "Volver a Configuración"
 }

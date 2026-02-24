@@ -11,13 +11,14 @@
     "@capacitor/status-bar": "7.0.1",
     "@capawesome/capacitor-android-edge-to-edge-support": "7.2.2",
     "@floating-ui/react": "0.26.1",
-    "@plebbit/plebbit-react-hooks": "https://github.com/plebbit/plebbit-react-hooks.git#e197af2381ad651e5b74a93bcb705de78f94742c",
+    "@plebbit/plebbit-react-hooks": "https://github.com/plebbit/plebbit-react-hooks.git#0bfd516d2bfae47bfc255988a2e845f849adcf12",
     "@react-spring/web": "9.7.5",
     "@types/node": "20.8.2",
     "@types/react": "18.2.25",
     "@types/react-dom": "18.2.10",
     "@use-gesture/react": "10.3.1",
     "@vercel/analytics": "^1.6.1",
+    "ace-builds": "1.41.0",
     "cross-env": "7.0.3",
     "electron-context-menu": "3.3.0",
     "electron-is-dev": "2.0.0",
@@ -32,6 +33,7 @@
     "lodash": "4.17.23",
     "memoizee": "0.4.15",
     "react": "19.1.2",
+    "react-ace": "14.0.1",
     "react-dom": "19.1.2",
     "react-i18next": "15.7.4",
     "react-markdown": "8.0.6",
@@ -52,7 +54,7 @@
     "postinstall": "node scripts/patch-capacitor-cli-tar.cjs",
     "prebuild": "yarn sync:directories && yarn generate:assets",
     "prestart": "yarn sync:directories && yarn generate:assets",
-    "start": "vite",
+    "start": "portless 5chan vite",
     "build": "cross-env PUBLIC_URL=./ GENERATE_SOURCEMAP=false vite build",
     "build:preload": "vite build --config electron/vite.preload.config.js",
     "build-vercel": "cross-env NODE_OPTIONS=\"--max_old_space_size=4096\" PUBLIC_URL=./ GENERATE_SOURCEMAP=true VITE_COMMIT_REF=$COMMIT_REF CI='' vite build",
@@ -61,8 +63,8 @@
     "analyze-bundle": "cross-env PUBLIC_URL=./ GENERATE_SOURCEMAP=true vite build && npx source-map-explorer 'dist/assets/*.js'",
     "electron": "yarn build:preload && yarn electron:before && electron .",
     "electron:no-delete-data": "yarn build:preload && electron .",
-    "electron:start": "concurrently \"cross-env BROWSER=none yarn start\" \"wait-on http://localhost:3000 && yarn electron\"",
-    "electron:start:no-delete-data": "concurrently \"cross-env BROWSER=none yarn start\" \"wait-on http://localhost:3000 && yarn electron:no-delete-data\"",
+    "electron:start": "concurrently \"cross-env BROWSER=none yarn start\" \"wait-on http://5chan.localhost:1355 && yarn electron\"",
+    "electron:start:no-delete-data": "concurrently \"cross-env BROWSER=none yarn start\" \"wait-on http://5chan.localhost:1355 && yarn electron:no-delete-data\"",
     "electron:package": "yarn build && yarn build:preload && electron-forge package",
     "electron:build": "yarn build && yarn build:preload && electron-forge make",
     "electron:build:linux": "yarn build && yarn build:preload && electron-forge make --platform=linux",
@@ -141,8 +143,8 @@
     "lint-staged": "12.3.8",
     "node-fetch": "3.3.2",
     "oxfmt": "0.20.0",
-    "playwright": "1.56.1",
     "oxlint": "1.35.0",
+    "playwright": "1.56.1",
     "progress": "2.0.3",
     "react-doctor": "0.0.28",
     "react-grab": "0.0.98",
@@ -196,5 +198,8 @@
     "commitizen": {
       "path": "./node_modules/cz-conventional-changelog"
     }
+  },
+  "reactDoctor": {
+    "diff": false
   }
 }
