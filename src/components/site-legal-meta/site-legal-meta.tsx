@@ -26,6 +26,19 @@ const SiteLegalMeta = ({ order = 'version-first' }: SiteLegalMetaProps) => {
   const first = order === 'version-first' ? <VersionFeedbackContact /> : <LicenseText />;
   const second = order === 'version-first' ? <LicenseText /> : <VersionFeedbackContact />;
 
+  if (order === 'version-first') {
+    return (
+      <>
+        <br />
+        {first}
+        <br />
+        <br />
+        <br />
+        {second}
+      </>
+    );
+  }
+
   return (
     <>
       {first}
