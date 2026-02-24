@@ -281,5 +281,6 @@
   "show_blotter": "نمایش اعلانات",
   "top": "بالا",
   "reply_count": "تعداد پاسخ‌ها",
-  "pagination.pageCurrent": "صفحه {{page}} (فعلی)"
+  "pagination.pageCurrent": "صفحه {{page}} (فعلی)",
+  "pagination.pageLabel": "صفحه"
 }

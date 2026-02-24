@@ -281,5 +281,6 @@
   "show_blotter": "Ipakita ang Mga anunsyo",
   "top": "Itaas",
   "reply_count": "Bilang ng mga tugon",
-  "pagination.pageCurrent": "Pahina {{page}} (kasalukuyan)"
+  "pagination.pageCurrent": "Pahina {{page}} (kasalukuyan)",
+  "pagination.pageLabel": "Pahina"
 }

@@ -281,5 +281,6 @@
   "show_blotter": "ప్రకటనలు చూపించు",
   "top": "పై",
   "reply_count": "సమాధానాల సంఖ్య",
-  "pagination.pageCurrent": "పేజీ {{page}} (ప్రస్తుత)"
+  "pagination.pageCurrent": "పేజీ {{page}} (ప్రస్తుత)",
+  "pagination.pageLabel": "పేజీ"
 }

@@ -281,5 +281,6 @@
   "show_blotter": "Közlemények megjelenítése",
   "top": "Felül",
   "reply_count": "Válaszok száma",
-  "pagination.pageCurrent": "{{page}}. oldal (jelenlegi)"
+  "pagination.pageCurrent": "{{page}}. oldal (jelenlegi)",
+  "pagination.pageLabel": "Oldal"
 }

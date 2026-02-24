@@ -281,5 +281,6 @@
   "show_blotter": "Visa Meddelanden",
   "top": "Topp",
   "reply_count": "Antal svar",
-  "pagination.pageCurrent": "Sida {{page}} (nuvarande)"
+  "pagination.pageCurrent": "Sida {{page}} (nuvarande)",
+  "pagination.pageLabel": "Sida"
 }

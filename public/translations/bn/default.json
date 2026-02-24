@@ -281,5 +281,6 @@
   "show_blotter": "ঘোষণা দেখান",
   "top": "শীর্ষ",
   "reply_count": "উত্তরসংখ্যা",
-  "pagination.pageCurrent": "পৃষ্ঠা {{page}} (বর্তমান)"
+  "pagination.pageCurrent": "পৃষ্ঠা {{page}} (বর্তমান)",
+  "pagination.pageLabel": "পৃষ্ঠা"
 }

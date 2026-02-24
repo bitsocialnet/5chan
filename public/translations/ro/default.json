@@ -281,5 +281,6 @@
   "show_blotter": "Afișează Blotter",
   "top": "Sus",
   "reply_count": "Număr de răspunsuri",
-  "pagination.pageCurrent": "Pagina {{page}} (curentă)"
+  "pagination.pageCurrent": "Pagina {{page}} (curentă)",
+  "pagination.pageLabel": "Pagină"
 }

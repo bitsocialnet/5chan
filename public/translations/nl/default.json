@@ -281,5 +281,6 @@
   "show_blotter": "Mededelingen tonen",
   "top": "Boven",
   "reply_count": "Aantal reacties",
-  "pagination.pageCurrent": "Pagina {{page}} (huidige)"
+  "pagination.pageCurrent": "Pagina {{page}} (huidige)",
+  "pagination.pageLabel": "Pagina"
 }

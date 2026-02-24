@@ -281,5 +281,6 @@
   "show_blotter": "Mostra annunci",
   "top": "In alto",
   "reply_count": "Numero di risposte",
-  "pagination.pageCurrent": "Pagina {{page}} (corrente)"
+  "pagination.pageCurrent": "Pagina {{page}} (corrente)",
+  "pagination.pageLabel": "Pagina"
 }

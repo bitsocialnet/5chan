@@ -281,5 +281,6 @@
   "show_blotter": "जाहिराती दाखवा",
   "top": "वर",
   "reply_count": "प्रत्युत्तरांची संख्या",
-  "pagination.pageCurrent": "पृष्ठ {{page}} (वर्तमान)"
+  "pagination.pageCurrent": "पृष्ठ {{page}} (वर्तमान)",
+  "pagination.pageLabel": "पृष्ठ"
 }

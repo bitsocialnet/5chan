@@ -282,5 +282,6 @@
   "message": "Message",
   "show_all": "Show All",
   "show_blotter": "Show Blotter",
-  "reply_count": "Reply count"
+  "reply_count": "Reply count",
+  "pagination.pageLabel": "Page"
 }

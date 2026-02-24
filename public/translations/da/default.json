@@ -281,5 +281,6 @@
   "show_blotter": "Vis Meddelelser",
   "top": "Top",
   "reply_count": "Antal svar",
-  "pagination.pageCurrent": "Side {{page}} (nuværende)"
+  "pagination.pageCurrent": "Side {{page}} (nuværende)",
+  "pagination.pageLabel": "Side"
 }

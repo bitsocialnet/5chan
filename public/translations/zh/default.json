@@ -281,5 +281,6 @@
   "show_blotter": "显示公告",
   "top": "顶部",
   "reply_count": "回复数",
-  "pagination.pageCurrent": "第{{page}}页（当前）"
+  "pagination.pageCurrent": "第{{page}}页（当前）",
+  "pagination.pageLabel": "页"
 }

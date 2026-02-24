@@ -281,5 +281,6 @@
   "show_blotter": "Duyuruları Göster",
   "top": "Üst",
   "reply_count": "Yanıt sayısı",
-  "pagination.pageCurrent": "Sayfa {{page}} (mevcut)"
+  "pagination.pageCurrent": "Sayfa {{page}} (mevcut)",
+  "pagination.pageLabel": "Sayfa"
 }

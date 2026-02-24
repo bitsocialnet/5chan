@@ -281,5 +281,6 @@
   "show_blotter": "Mostrar Anúncios",
   "top": "Topo",
   "reply_count": "Número de respostas",
-  "pagination.pageCurrent": "Página {{page}} (atual)"
+  "pagination.pageCurrent": "Página {{page}} (atual)",
+  "pagination.pageLabel": "Página"
 }

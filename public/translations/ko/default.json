@@ -281,5 +281,6 @@
   "show_blotter": "공지 표시",
   "top": "맨 위",
   "reply_count": "답글 수",
-  "pagination.pageCurrent": "{{page}}페이지 (현재)"
+  "pagination.pageCurrent": "{{page}}페이지 (현재)",
+  "pagination.pageLabel": "페이지"
 }
