@@ -269,7 +269,7 @@
   "board_subscriptions": "Abonime në tabela",
   "chain_ticker": "simboli i zinxhirit",
   "enable_infinite_scroll": "Aktivizo rrëshqitjen e pafundme",
-  "prev": "Paraprake",
+  "previous": "Paraprake",
   "next": "Tjetra",
   "bottom": "Poshtë",
   "enable_infinite_scroll_tip": "Nuk aplikohet për multiboard-et, që gjithmonë përdorin rrëshqitje të pafundme.",

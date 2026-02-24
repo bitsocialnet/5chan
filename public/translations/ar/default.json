@@ -269,7 +269,7 @@
   "board_subscriptions": "اشتراكات اللوحات",
   "chain_ticker": "رمز السلسلة",
   "enable_infinite_scroll": "تفعيل التمرير اللانهائي",
-  "prev": "السابق",
+  "previous": "السابق",
   "next": "التالي",
   "bottom": "أسفل",
   "enable_infinite_scroll_tip": "لا ينطبق على اللوحات المتعددة، التي تستخدم التمرير اللانهائي دائماً.",

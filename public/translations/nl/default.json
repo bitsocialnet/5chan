@@ -269,7 +269,7 @@
   "board_subscriptions": "Boardabonnementen",
   "chain_ticker": "kettingticker",
   "enable_infinite_scroll": "Oneindig scrollen inschakelen",
-  "prev": "Vorige",
+  "previous": "Vorige",
   "next": "Volgende",
   "bottom": "Onder",
   "enable_infinite_scroll_tip": "Geldt niet voor multiboards, die altijd oneindig scrollen gebruiken.",

@@ -269,7 +269,7 @@
   "board_subscriptions": "Brädeabonnemang",
   "chain_ticker": "kedjeticker",
   "enable_infinite_scroll": "Aktivera oändlig scrollning",
-  "prev": "Föreg.",
+  "previous": "Föreg.",
   "next": "Nästa",
   "bottom": "Botten",
   "enable_infinite_scroll_tip": "Gäller inte multiboard, som alltid använder oändlig scroll.",

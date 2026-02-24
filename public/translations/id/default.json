@@ -269,7 +269,7 @@
   "board_subscriptions": "Langganan papan",
   "chain_ticker": "ticker rantai",
   "enable_infinite_scroll": "Aktifkan scroll tak terbatas",
-  "prev": "Sebelumnya",
+  "previous": "Sebelumnya",
   "next": "Berikutnya",
   "bottom": "Bawah",
   "enable_infinite_scroll_tip": "Tidak berlaku untuk papan ganda, yang selalu menggunakan scroll tak terbatas.",

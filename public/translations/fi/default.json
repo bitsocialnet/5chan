@@ -269,7 +269,7 @@
   "board_subscriptions": "Alustojen tilaukset",
   "chain_ticker": "ketjumerkki",
   "enable_infinite_scroll": "Ota ääretön vieritys käyttöön",
-  "prev": "Edell.",
+  "previous": "Edell.",
   "next": "Seuraava",
   "bottom": "Pohja",
   "enable_infinite_scroll_tip": "Ei koske monilautalistauksia, jotka aina käyttävät ääretöntä vieritystä.",

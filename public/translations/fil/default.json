@@ -269,7 +269,7 @@
   "board_subscriptions": "Mga subscription sa board",
   "chain_ticker": "chain ticker",
   "enable_infinite_scroll": "Paganahin ang walang hanggang scroll",
-  "prev": "Nakaraan",
+  "previous": "Nakaraan",
   "next": "Susunod",
   "bottom": "Ibaba",
   "enable_infinite_scroll_tip": "Hindi naaangkop sa mga multiboard, na palaging gumagamit ng walang hanggang scroll.",

@@ -35,20 +35,75 @@
   color: var(--button-desktop-text-color-hover);
 }
 
-/* Footer-style compact pagination (layout in footer-first-row.module.css) */
+.pagelist {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 3px 7px !important;
+  overflow: hidden;
+  list-style: none;
+  background-color: var(--pagelist-background-color);
+}
+
+.footerNavPlain {
+  font: inherit;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+}
+
+.footerNavPlain:hover {
+  text-decoration: none;
+}
+
+.footerNavPlainDisabled {
+  font: inherit;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  opacity: 0.5;
+  cursor: default;
+  color: inherit;
+}
+
+.footerPageLink,
+.footerPageCurrent {
+  font-size: 13px;
+  margin: 0;
+  padding: 3px 2px;
+  border: none;
+  background: transparent;
+  list-style: none;
+  overflow: hidden;
+  color: var(--pagelist-item-text-color, #89a);
+}
+
 .footerPageLink {
-  padding: 2px 6px;
-  font-size: 12px;
+  all: unset;
+  display: inline-block;
+  font-size: 13px;
+  margin: 0;
+  padding: 3px 2px;
+  border: none;
+  background: transparent;
+  color: var(--pagelist-item-text-color, #89a);
+  text-transform: capitalize;
+  cursor: pointer;
   text-decoration: var(--button-text-decoration);
-  color: var(--button-desktop-text-color);
 }
 
 .footerPageLink:hover {
-  color: var(--button-desktop-text-color-hover);
+  color: var(--pagelist-item-text-color-hover, #d00);
   text-decoration: var(--button-text-decoration);
 }
 
 .footerPageCurrent {
   font-weight: bold;
-  color: var(--button-desktop-text-color-hover);
+  color: var(--pagelist-item-text-color-current, #000);
 }

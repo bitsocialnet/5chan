@@ -269,7 +269,7 @@
   "board_subscriptions": "Abonamente la panouri",
   "chain_ticker": "ticker lanț",
   "enable_infinite_scroll": "Activează derularea infinită",
-  "prev": "Anterior",
+  "previous": "Anterior",
   "next": "Următorul",
   "bottom": "Jos",
   "enable_infinite_scroll_tip": "Nu se aplică la multiboard-urile, care folosesc întotdeauna defilarea infinită.",

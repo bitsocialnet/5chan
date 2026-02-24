@@ -269,7 +269,7 @@
   "board_subscriptions": "Suscripciones a tableros",
   "chain_ticker": "ticker de cadena",
   "enable_infinite_scroll": "Activar desplazamiento infinito",
-  "prev": "Anterior",
+  "previous": "Anterior",
   "next": "Siguiente",
   "bottom": "Abajo",
   "enable_infinite_scroll_tip": "No aplica a los multiboard, que siempre usan scroll infinito.",

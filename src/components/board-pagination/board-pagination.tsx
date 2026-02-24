@@ -8,7 +8,7 @@ export interface BoardPaginationProps {
   basePath: string;
   currentPage: number;
   totalPages: number;
-  /** When true, renders compact footer-style row with [1] [2] ... [10] Next Catalog + Style select */
+  /** When true, renders pagelist: [All] [1] [2] ... [10] Catalog Archive + Style select */
   footerStyle?: boolean;
 }
 
@@ -26,40 +26,42 @@ const BoardPagination = ({ basePath, currentPage, totalPages, footerStyle = fals
 
   if (footerStyle) {
     const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
-    const ellipsisThreshold = 7;
-    const showEllipsis = totalPages > ellipsisThreshold;
-    const visiblePages = showEllipsis ? [1, 2, currentPage, totalPages].filter((p, i, arr) => arr.indexOf(p) === i).sort((a, b) => a - b) : pageNumbers;
+    const archiveHref = `${basePath}/archive`;
 
     return (
       <div className={footerStyles.footerRow}>
-        <div className={footerStyles.footerLeft}>
-          {visiblePages.map((page, idx) => {
-            const isCurrent = page === currentPage;
-            const prevPage = visiblePages[idx - 1];
-            const showLeadingEllipsis = showEllipsis && prevPage !== undefined && page - prevPage > 1;
-            return (
-              <span key={page}>
-                {showLeadingEllipsis && <span> ... </span>}
-                {isCurrent ? (
-                  <span className={styles.footerPageCurrent}>[{page}]</span>
-                ) : (
-                  <Link to={pageHref(page)} className={styles.footerPageLink}>
-                    [{page}]
-                  </Link>
-                )}
+        <div className={styles.pagelist}>
+          {currentPage > 1 && (
+            <Link to={pageHref(currentPage - 1)} className={styles.footerNavPlain}>
+              {t('previous')}
+            </Link>
+          )}
+          <Link to={basePath} className={styles.footerPageLink}>
+            [{t('all')}]
+          </Link>
+          {pageNumbers.map((page) =>
+            page === currentPage ? (
+              <span key={page} className={styles.footerPageCurrent}>
+                [{page}]
               </span>
-            );
-          })}
-          {nextHref && (
-            <>
-              {' '}
-              <Link to={nextHref} className={styles.footerPageLink}>
-                {t('next')}
+            ) : (
+              <Link key={page} to={pageHref(page)} className={styles.footerPageLink}>
+                [{page}]
               </Link>
-            </>
-          )}{' '}
+            ),
+          )}
+          {currentPage < totalPages ? (
+            <Link to={pageHref(currentPage + 1)} className={styles.footerNavPlain}>
+              {t('next')}
+            </Link>
+          ) : (
+            <span className={styles.footerNavPlainDisabled}>{t('next')}</span>
+          )}
           <Link to={catalogHref} className={styles.footerPageLink}>
             {t('catalog')}
+          </Link>
+          <Link to={archiveHref} className={styles.footerPageLink}>
+            {t('archive')}
           </Link>
         </div>
         <div className={footerStyles.footerRight}>
@@ -75,12 +77,12 @@ const BoardPagination = ({ basePath, currentPage, totalPages, footerStyle = fals
   return (
     <div className={styles.pagination}>
       {prevHref ? (
-        <Link to={prevHref} className={styles.paginationButton} aria-label={t('prev')}>
-          {t('prev')}
+        <Link to={prevHref} className={styles.paginationButton} aria-label={t('previous')}>
+          {t('previous')}
         </Link>
       ) : (
         <span className={`${styles.paginationButton} ${styles.disabled}`} aria-disabled='true'>
-          {t('prev')}
+          {t('previous')}
         </span>
       )}
       {pageNumbers.map((page) => {

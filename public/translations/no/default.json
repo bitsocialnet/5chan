@@ -269,7 +269,7 @@
   "board_subscriptions": "Brettabonnementer",
   "chain_ticker": "kjede-ticker",
   "enable_infinite_scroll": "Aktiver uendelig rulling",
-  "prev": "Forrige",
+  "previous": "Forrige",
   "next": "Neste",
   "bottom": "Bunn",
   "enable_infinite_scroll_tip": "Gjelder ikke for multiboard, som alltid bruker uendelig scroll.",

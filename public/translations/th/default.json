@@ -269,7 +269,7 @@
   "board_subscriptions": "การสมัครสมาชิกบอร์ด",
   "chain_ticker": "สัญลักษณ์เชน",
   "enable_infinite_scroll": "เปิดใช้งานการเลื่อนแบบไม่จำกัด",
-  "prev": "ก่อนหน้า",
+  "previous": "ก่อนหน้า",
   "next": "ถัดไป",
   "bottom": "ล่าง",
   "enable_infinite_scroll_tip": "ไม่ใช้กับมัลติบอร์ด ซึ่งใช้การเลื่อนแบบไม่สิ้นสุดเสมอ",

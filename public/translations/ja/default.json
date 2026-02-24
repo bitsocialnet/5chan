@@ -269,7 +269,7 @@
   "board_subscriptions": "掲示板の購読",
   "chain_ticker": "チェーンチッカー",
   "enable_infinite_scroll": "無限スクロールを有効にする",
-  "prev": "前へ",
+  "previous": "前へ",
   "next": "次へ",
   "bottom": "下",
   "enable_infinite_scroll_tip": "マルチボードには適用されません。マルチボードは常に無限スクロールを使用します。",

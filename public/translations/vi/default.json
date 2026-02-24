@@ -269,7 +269,7 @@
   "board_subscriptions": "Đăng ký bảng",
   "chain_ticker": "mã chuỗi",
   "enable_infinite_scroll": "Bật cuộn vô hạn",
-  "prev": "Trước",
+  "previous": "Trước",
   "next": "Tiếp theo",
   "bottom": "Dưới cùng",
   "enable_infinite_scroll_tip": "Không áp dụng cho đa bảng, luôn sử dụng cuộn vô hạn.",

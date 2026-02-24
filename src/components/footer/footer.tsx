@@ -24,7 +24,6 @@ export const PageFooterDesktop = ({ firstRow, styleRow }: PageFooterDesktopProps
   <footer className={styles.footer}>
     <hr />
     <div className={styles.firstRow}>{firstRow}</div>
-    <hr />
     {styleRow != null ? <div className={styles.styleRow}>{styleRow}</div> : null}
     <div className={styles.boardsBarRow}>
       <BoardsBar />

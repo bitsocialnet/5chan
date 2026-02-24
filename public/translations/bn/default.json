@@ -269,7 +269,7 @@
   "board_subscriptions": "বোর্ড সাবস্ক্রিপশন",
   "chain_ticker": "চেইন টিকার",
   "enable_infinite_scroll": "অসীম স্ক্রল সক্ষম করুন",
-  "prev": "পূর্ববর্তী",
+  "previous": "পূর্ববর্তী",
   "next": "পরবর্তী",
   "bottom": "নিচ",
   "enable_infinite_scroll_tip": "মাল্টিবোর্ডে প্রযোজ্য নয়, যা সবসময় অসীম স্ক্রল ব্যবহার করে।",

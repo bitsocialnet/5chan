@@ -269,7 +269,7 @@
   "board_subscriptions": "Abonnements aux tableaux",
   "chain_ticker": "ticker de chaîne",
   "enable_infinite_scroll": "Activer le défilement infini",
-  "prev": "Précédent",
+  "previous": "Précédent",
   "next": "Suivant",
   "bottom": "Bas",
   "enable_infinite_scroll_tip": "Ne s'applique pas aux multiboards, qui utilisent toujours le défilement infini.",

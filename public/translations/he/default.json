@@ -269,7 +269,7 @@
   "board_subscriptions": "מנויים ללוחות",
   "chain_ticker": "טיקר שרשרת",
   "enable_infinite_scroll": "הפעל גלילה אינסופית",
-  "prev": "הקודם",
+  "previous": "הקודם",
   "next": "הבא",
   "bottom": "תחתית",
   "enable_infinite_scroll_tip": "לא חל על לוחות מרובים, שתמיד משתמשים בגלילה אינסופית.",

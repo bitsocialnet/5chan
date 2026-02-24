@@ -269,7 +269,7 @@
   "board_subscriptions": "Pano abonelikleri",
   "chain_ticker": "zincir ticker'ı",
   "enable_infinite_scroll": "Sonsuz kaydırmayı etkinleştir",
-  "prev": "Önceki",
+  "previous": "Önceki",
   "next": "İleri",
   "bottom": "Alt",
   "enable_infinite_scroll_tip": "Her zaman sonsuz kaydırma kullanan çoklu panolar için geçerli değildir.",

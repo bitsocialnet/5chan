@@ -269,7 +269,7 @@
   "board_subscriptions": "opslagstavleabonnementer",
   "chain_ticker": "kæde-ticker",
   "enable_infinite_scroll": "Aktiver uendelig rulning",
-  "prev": "Forrige",
+  "previous": "Forrige",
   "next": "Næste",
   "bottom": "Bund",
   "enable_infinite_scroll_tip": "Gælder ikke for multiboard, som altid bruger uendelig scroll.",

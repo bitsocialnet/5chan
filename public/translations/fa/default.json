@@ -269,7 +269,7 @@
   "board_subscriptions": "اشتراک‌های تابلو",
   "chain_ticker": "نماد زنجیره",
   "enable_infinite_scroll": "فعال کردن اسکرول بی‌نهایت",
-  "prev": "قبلی",
+  "previous": "قبلی",
   "next": "بعدی",
   "bottom": "پایین",
   "enable_infinite_scroll_tip": "برای تابلوهای چندگانه اعمال نمی‌شود، که همیشه از اسکرول بی‌نهایت استفاده می‌کنند.",

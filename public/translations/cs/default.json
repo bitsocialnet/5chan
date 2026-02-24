@@ -269,7 +269,7 @@
   "board_subscriptions": "Odběry desek",
   "chain_ticker": "ticker řetězce",
   "enable_infinite_scroll": "Povolit nekonečné posouvání",
-  "prev": "Předchozí",
+  "previous": "Předchozí",
   "next": "Další",
   "bottom": "Dole",
   "enable_infinite_scroll_tip": "Netýká se multidesek, které vždy používají nekonečné posouvání.",

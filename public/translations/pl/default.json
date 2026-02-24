@@ -269,7 +269,7 @@
   "board_subscriptions": "Subskrypcje tablic",
   "chain_ticker": "ticker łańcucha",
   "enable_infinite_scroll": "Włącz nieskończone przewijanie",
-  "prev": "Poprz.",
+  "previous": "Poprz.",
   "next": "Dalej",
   "bottom": "Dół",
   "enable_infinite_scroll_tip": "Nie dotyczy multiboardów, które zawsze używają nieskończonego przewijania.",
