@@ -74,9 +74,9 @@ const scrollToThreadCardTop = (threadCid: string) => {
 const scrollToReplyOnPage = (cid: string) => {
   const el = document.querySelector<HTMLElement>(`[data-cid="${cid}"][data-post-cid]`);
   if (!el) return false;
-  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  document.querySelectorAll('.scroll-highlight').forEach((prev) => prev.classList.remove('scroll-highlight'));
+  el.scrollIntoView({ behavior: 'auto', block: 'center' });
   el.classList.add('scroll-highlight');
-  setTimeout(() => el.classList.remove('scroll-highlight'), 2000);
   return true;
 };
 
