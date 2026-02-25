@@ -8,8 +8,11 @@ import styles from './account-data-editor.module.css';
 const DEFAULT_RETURN_TO = '/subs/settings#account-settings';
 
 const loadAce = async () => {
-  const [aceModule] = await Promise.all([import('react-ace'), import('ace-builds/src-noconflict/mode-json'), import('ace-builds/src-noconflict/theme-monokai')]);
-  return aceModule.default;
+  const aceModule = await import('react-ace');
+  await Promise.all([import('ace-builds/src-noconflict/mode-json'), import('ace-builds/src-noconflict/theme-monokai')]);
+  // Vite CJS interop can double-wrap the default export
+  const mod = aceModule.default;
+  return typeof mod === 'function' ? mod : (mod as unknown as { default: typeof mod }).default;
 };
 
 const AccountDataEditor = () => {
@@ -103,7 +106,7 @@ const AccountDataEditor = () => {
       </div>
       <div className={styles.controls}>
         <button type='button' onClick={handleSave}>
-          {t('save')}
+          {t('save_changes')}
         </button>
         <button type='button' onClick={handleReset}>
           {t('reset_changes')}
