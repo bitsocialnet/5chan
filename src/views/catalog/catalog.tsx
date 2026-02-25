@@ -12,7 +12,6 @@ import { useFeedStateString } from '../../hooks/use-state-string';
 import useWindowWidth from '../../hooks/use-window-width';
 import useCatalogStyleStore from '../../stores/use-catalog-style-store';
 import useFeedResetStore from '../../stores/use-feed-reset-store';
-import useFeedViewSettingsStore from '../../stores/use-feed-view-settings-store';
 import useSortingStore from '../../stores/use-sorting-store';
 import useCatalogFiltersStore from '../../stores/use-catalog-filters-store';
 import { getSubplebbitAddress, isDirectoryBoard, normalizeMultiboardFeedPath } from '../../lib/utils/route-utils';
@@ -204,9 +203,9 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   const isInSubscriptionsView = viewType ? viewType === 'subs' : false;
   const isInModView = viewType ? viewType === 'mod' : false;
 
-  const enableInfiniteScroll = useFeedViewSettingsStore((state) => state.enableInfiniteScroll);
-  const isForcedInfiniteScroll = isInAllView || isInSubscriptionsView || isInModView;
-  const effectiveInfiniteScroll = enableInfiniteScroll || isForcedInfiniteScroll;
+  const isMultiboard = isInAllView || isInSubscriptionsView || isInModView;
+  // Single-board catalogs always cap at maxGuiPages (no infinite scroll beyond the board's page limit)
+  const effectiveInfiniteScroll = isMultiboard;
 
   const directories = useDirectories();
   const resolvedAddressFromUrl = useResolvedSubplebbitAddress();
@@ -241,7 +240,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   const postsPerPage = columnCount <= 2 ? 10 : columnCount === 3 ? 15 : columnCount === 4 ? 20 : 25;
 
   const community = useDirectoryByAddress(isInAllView || isInSubscriptionsView || isInModView ? undefined : subplebbitAddress);
-  const { guiPostsPerPage: boardPostsPerPage, maxGuiPages, paginationFeedPostsPerPage, infiniteFeedPostsPerPage } = useBoardFeedPageSize(community);
+  const { guiPostsPerPage: boardPostsPerPage, maxGuiPages, paginationFeedPostsPerPage } = useBoardFeedPageSize(community);
 
   // Canonical redirect for multiboard catalog paths with numeric page segment (e.g. /all/catalog/1w/5 -> /all/catalog/1w)
   useEffect(() => {
@@ -269,35 +268,13 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   }, [subplebbitAddress]);
 
   const feedOptions = useMemo(() => {
-    const catalogPostsPerPage =
-      isInAllView || isInSubscriptionsView || isInModView
-        ? effectiveInfiniteScroll
-          ? 10
-          : 100
-        : effectiveInfiniteScroll
-          ? infiniteFeedPostsPerPage
-          : paginationFeedPostsPerPage;
-
     return {
       subplebbitAddresses,
       sortType: feedSortType,
-      postsPerPage: catalogPostsPerPage,
+      postsPerPage: isMultiboard ? 10 : paginationFeedPostsPerPage,
       filter: createCombinedFilter(filterItems, searchText, subplebbitAddress || 'all', handleFilterMatch),
     };
-  }, [
-    subplebbitAddresses,
-    feedSortType,
-    isInAllView,
-    isInSubscriptionsView,
-    isInModView,
-    effectiveInfiniteScroll,
-    infiniteFeedPostsPerPage,
-    paginationFeedPostsPerPage,
-    filterItems,
-    searchText,
-    subplebbitAddress,
-    handleFilterMatch,
-  ]);
+  }, [subplebbitAddresses, feedSortType, isMultiboard, paginationFeedPostsPerPage, filterItems, searchText, subplebbitAddress, handleFilterMatch]);
 
   const { feed, hasMore, loadMore, reset } = useFeed(feedOptions);
   const { accountComments } = useAccountComments();
