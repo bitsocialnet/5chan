@@ -36,7 +36,7 @@ const PopularThreadCard = memo(
         <div className={styles.title}>{boardTitle}</div>
         <div className={styles.mediaContainer}>
           <Link to={`/${boardPath}/thread/${cid}`}>
-            <CatalogPostMedia commentMediaInfo={commentMediaInfo} isOutOfFeed={true} cid={cid} />
+            <CatalogPostMedia commentMediaInfo={commentMediaInfo} isOutOfFeed={true} cid={cid} linkWidth={linkWidth} linkHeight={linkHeight} />
           </Link>
         </div>
         <div className={styles.threadContent}>
