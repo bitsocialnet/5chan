@@ -294,5 +294,6 @@
   "return_to_settings": "Вернуться к настройкам",
   "import_account_backup": "Импорт резервной копии аккаунта",
   "account_auto_generated": "Этот аккаунт был автоматически создан 5chan, регистрация не требуется.",
-  "download_backup": "Скачать резервную копию"
+  "download_backup": "Скачать резервную копию",
+  "boards_you_moderate_nav": "Доски, которые вы модерируете"
 }

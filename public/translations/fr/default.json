@@ -294,5 +294,6 @@
   "return_to_settings": "Retour aux paramètres",
   "import_account_backup": "Importer la sauvegarde du compte",
   "account_auto_generated": "Ce compte a été généré automatiquement par 5chan, aucune inscription requise.",
-  "download_backup": "Télécharger la sauvegarde"
+  "download_backup": "Télécharger la sauvegarde",
+  "boards_you_moderate_nav": "Tableaux que vous modérez"
 }

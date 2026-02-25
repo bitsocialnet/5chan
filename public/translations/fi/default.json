@@ -294,5 +294,6 @@
   "return_to_settings": "Palaa asetuksiin",
   "import_account_backup": "Tuo tilin varmuuskopio",
   "account_auto_generated": "Tämä tili luotiin automaattisesti 5chanissa, rekisteröitymistä ei tarvita.",
-  "download_backup": "Lataa varmuuskopio"
+  "download_backup": "Lataa varmuuskopio",
+  "boards_you_moderate_nav": "Laudat, joita moderoit"
 }

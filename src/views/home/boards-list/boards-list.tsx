@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import useAccountsStore from '@plebbit/plebbit-react-hooks/dist/stores/accounts';
 import { useDirectoriesState, useDirectories, DirectoryCommunity } from '../../../hooks/use-directories';
 import { getBoardPath } from '../../../lib/utils/route-utils';
 import useDisclaimerModalStore from '../../../stores/use-disclaimer-modal-store';
@@ -62,6 +63,15 @@ const BoardsList = ({ multisub }: { multisub: DirectoryCommunity[] }) => {
   const { openDirectoryModal } = useDirectoryModalStore();
   const { useCatalogLinks, boardFilter } = useBoardsFilterStore();
   const directories = useDirectories();
+
+  const accountSubplebbitAddresses = useAccountsStore(
+    (state) => {
+      const activeAccountId = state.activeAccountId;
+      const activeAccount = activeAccountId ? state.accounts[activeAccountId] : undefined;
+      return Object.keys(activeAccount?.subplebbits || {});
+    },
+    (prev, next) => prev.length === next.length && prev.every((val, idx) => val === next[idx]),
+  );
 
   const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, address: string) => {
     e.preventDefault();
@@ -595,6 +605,11 @@ const BoardsList = ({ multisub }: { multisub: DirectoryCommunity[] }) => {
               <li>
                 <Link to='/subs'>Subscriptions</Link>
               </li>
+              {accountSubplebbitAddresses.length > 0 && (
+                <li>
+                  <Link to='/mod'>{t('boards_you_moderate_nav')}</Link>
+                </li>
+              )}
             </ul>
           </div>
         )}

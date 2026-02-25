@@ -294,5 +294,6 @@
   "return_to_settings": "ترتیبات میں واپس جائیں",
   "import_account_backup": "اکاؤنٹ بیک اپ درآمد کریں",
   "account_auto_generated": "یہ اکاؤنٹ 5chan نے خودکار طور پر بنایا ہے، سائن اپ کی ضرورت نہیں۔",
-  "download_backup": "بیک اپ ڈاؤن لوڈ کریں"
+  "download_backup": "بیک اپ ڈاؤن لوڈ کریں",
+  "boards_you_moderate_nav": "بورڈز جنہیں آپ ماڈریٹ کرتے ہیں"
 }

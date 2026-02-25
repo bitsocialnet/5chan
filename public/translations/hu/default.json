@@ -294,5 +294,6 @@
   "return_to_settings": "Vissza a beállításokhoz",
   "import_account_backup": "Fiók biztonsági mentés importálása",
   "account_auto_generated": "Ezt a fiókot a 5chan automatikusan hozta létre, regisztráció nem szükséges.",
-  "download_backup": "Biztonsági mentés letöltése"
+  "download_backup": "Biztonsági mentés letöltése",
+  "boards_you_moderate_nav": "A táblák, amelyeket moderálsz"
 }

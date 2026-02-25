@@ -294,5 +294,6 @@
   "return_to_settings": "सेटिंग्जवर परत जा",
   "import_account_backup": "खाते बॅकअप आयात करा",
   "account_auto_generated": "हा खाता 5chan द्वारा स्वयंचलितपणे तयार केला गेला, साइनअप आवश्यक नाही.",
-  "download_backup": "बॅकअप डाउनलोड करा"
+  "download_backup": "बॅकअप डाउनलोड करा",
+  "boards_you_moderate_nav": "तुम्ही मॉडरेट करता ते बोर्ड"
 }

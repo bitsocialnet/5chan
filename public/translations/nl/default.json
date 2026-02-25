@@ -294,5 +294,6 @@
   "return_to_settings": "Terug naar Instellingen",
   "import_account_backup": "Accountback-up importeren",
   "account_auto_generated": "Dit account is automatisch gegenereerd door 5chan, geen aanmelding vereist.",
-  "download_backup": "Back-up downloaden"
+  "download_backup": "Back-up downloaden",
+  "boards_you_moderate_nav": "Boards die je beheert"
 }

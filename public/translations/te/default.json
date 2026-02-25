@@ -294,5 +294,6 @@
   "return_to_settings": "సెట్టింగ్‌లకు తిరిగి వెళ్ళండి",
   "import_account_backup": "ఖాతా బ్యాకప్ దిగుమతి చేయండి",
   "account_auto_generated": "ఈ ఖాతా 5chan చేత స్వయంచాలకంగా సృష్టించబడింది, సైన్ అప్ అవసరం లేదు.",
-  "download_backup": "బ్యాకప్ డౌన్‌లోడ్ చేయండి"
+  "download_backup": "బ్యాకప్ డౌన్‌లోడ్ చేయండి",
+  "boards_you_moderate_nav": "మీరు మోడరేట్ చేసే బోర్డ్లు"
 }

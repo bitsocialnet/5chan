@@ -294,5 +294,6 @@
   "return_to_settings": "Înapoi la Setări",
   "import_account_backup": "Importă backup cont",
   "account_auto_generated": "Acest cont a fost generat automat de 5chan, nu este nevoie de înregistrare.",
-  "download_backup": "Descarcă backup"
+  "download_backup": "Descarcă backup",
+  "boards_you_moderate_nav": "Forumuri pe care le moderăm"
 }
