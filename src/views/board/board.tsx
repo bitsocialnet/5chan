@@ -350,20 +350,29 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, i
             <ErrorDisplay error={subplebbitError} />
           </div>
         )}
-        <Virtuoso
-          defaultItemHeight={300}
-          increaseViewportBy={{ bottom: 1200, top: 1200 }}
-          totalCount={displayFeed.length}
-          data={displayFeed}
-          computeItemKey={(index, post) => post?.cid || `post-${index}`}
-          itemContent={(index, post) => <Post index={index} post={post} />}
-          useWindowScroll={true}
-          components={footerComponents}
-          endReached={effectiveInfiniteScroll && hasMore ? loadMore : undefined}
-          ref={virtuosoRef}
-          restoreStateFrom={lastVirtuosoState}
-          initialScrollTop={lastVirtuosoState?.scrollTop}
-        />
+        {effectiveInfiniteScroll ? (
+          <Virtuoso
+            defaultItemHeight={300}
+            increaseViewportBy={{ bottom: 1200, top: 1200 }}
+            totalCount={displayFeed.length}
+            data={displayFeed}
+            computeItemKey={(index, post) => post?.cid || `post-${index}`}
+            itemContent={(index, post) => <Post index={index} post={post} />}
+            useWindowScroll={true}
+            components={footerComponents}
+            endReached={hasMore ? loadMore : undefined}
+            ref={virtuosoRef}
+            restoreStateFrom={lastVirtuosoState}
+            initialScrollTop={lastVirtuosoState?.scrollTop}
+          />
+        ) : (
+          <>
+            {displayFeed.map((post, index) => (
+              <Post key={post?.cid || `post-${index}`} index={index} post={post} />
+            ))}
+            <footerComponents.Footer />
+          </>
+        )}
       </div>
     </>
   );
