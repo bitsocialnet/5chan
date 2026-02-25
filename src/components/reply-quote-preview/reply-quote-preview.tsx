@@ -71,6 +71,15 @@ const scrollToThreadCardTop = (threadCid: string) => {
   return true;
 };
 
+const scrollToReplyOnPage = (cid: string) => {
+  const el = document.querySelector<HTMLElement>(`[data-cid="${cid}"][data-post-cid]`);
+  if (!el) return false;
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  el.classList.add('scroll-highlight');
+  setTimeout(() => el.classList.remove('scroll-highlight'), 2000);
+  return true;
+};
+
 const DesktopQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, isQuotelinkReply, isOP, showTrailingBreak = true }: ReplyQuotePreviewProps) => {
   const [hoveredCid, setHoveredCid] = useState<string | null>(null);
   const [outOfViewCid, setOutOfViewCid] = useState<string | null>(null);
@@ -126,6 +135,7 @@ const DesktopQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, i
         scrollToThreadCardTop(cid);
         return;
       }
+      if (scrollToReplyOnPage(cid)) return;
       navigate(threadRoute);
     }
   };
@@ -242,6 +252,7 @@ const MobileQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, is
         scrollToThreadCardTop(cid);
         return;
       }
+      if (scrollToReplyOnPage(cid)) return;
       navigate(threadRoute);
     }
   };
