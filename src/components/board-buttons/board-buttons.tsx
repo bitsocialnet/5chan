@@ -465,7 +465,7 @@ export const PostPageStats = () => {
   const subplebbitAddress = resolvedAddress || accountComment?.subplebbitAddress;
 
   const comment = useComment({ commentCid });
-  const postCid = comment?.parentCid ?? commentCid;
+  const postCid = comment?.postCid ?? commentCid;
   const post = useComment({ commentCid: postCid });
 
   const { closed, pinned, replyCount } = post || {};
