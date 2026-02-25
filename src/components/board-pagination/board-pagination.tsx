@@ -61,23 +61,15 @@ const BoardPagination = ({ basePath, currentPage, totalPages, footerStyle = fals
                 <span className={styles.footerPageBracket}>]</span>
               </span>
             )}
-            {pageNumbers.map((page) =>
-              page === currentPage ? (
-                <span key={page} className={styles.footerPageItem}>
-                  <span className={styles.footerPageBracket}>[</span>
-                  <span className={styles.footerPageCurrent}>{page}</span>
-                  <span className={styles.footerPageBracket}>]</span>
-                </span>
-              ) : (
-                <span key={page} className={styles.footerPageItem}>
-                  <span className={styles.footerPageBracket}>[</span>
-                  <Link to={pageHref(page)} className={styles.footerPageLink}>
-                    {page}
-                  </Link>
-                  <span className={styles.footerPageBracket}>]</span>
-                </span>
-              ),
-            )}
+            {pageNumbers.map((page) => (
+              <span key={page} className={styles.footerPageItem}>
+                <span className={styles.footerPageBracket}>[</span>
+                <Link to={pageHref(page)} className={page === currentPage ? styles.footerPageCurrent : styles.footerPageLink}>
+                  {page}
+                </Link>
+                <span className={styles.footerPageBracket}>]</span>
+              </span>
+            ))}
             {currentPage < totalPages ? (
               <button type='button' className={styles.pagelistNavButton} onClick={() => navigate(pageHref(currentPage + 1))}>
                 {t('next')}

@@ -46,6 +46,8 @@
   overflow: hidden;
   list-style: none;
   background-color: var(--pagelist-background-color);
+  border-right: 1px solid var(--pagelist-item-border-color);
+  border-bottom: 1px solid var(--pagelist-item-border-color);
 }
 
 .footerPageItem {
@@ -97,7 +99,7 @@
   background: transparent;
   list-style: none;
   overflow: hidden;
-  color: var(--boardsbar-desktop-link-text-color);
+  color: var(--button-desktop-text-color);
 }
 
 .footerPageLink {
@@ -108,15 +110,14 @@
   padding: 0;
   border: none;
   background: transparent;
-  color: var(--boardsbar-desktop-link-text-color);
+  color: var(--button-desktop-text-color);
   text-transform: capitalize;
   cursor: pointer;
-  text-decoration: var(--boardsbar-desktop-link-text-decoration);
+  text-decoration: var(--button-text-decoration);
 }
 
 .footerPageLink:hover {
-  color: var(--boardsbar-desktop-link-text-color-hover);
-  text-decoration: var(--boardsbar-desktop-link-text-decoration-hover);
+  color: var(--button-desktop-text-color-hover);
 }
 
 .pagelistSeparatorLink {
@@ -127,7 +128,6 @@
 }
 
 .footerPageCurrent {
+  composes: footerPageLink;
   font-weight: bold;
-  color: var(--boardsbar-desktop-link-text-color-hover);
-  text-decoration: var(--boardsbar-desktop-link-text-decoration);
 }
