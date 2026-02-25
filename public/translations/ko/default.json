@@ -295,5 +295,5 @@
   "import_account_backup": "계정 백업 가져오기",
   "account_auto_generated": "이 계정은 5chan에서 자동으로 생성되었으며, 가입이 필요하지 않습니다.",
   "download_backup": "백업 다운로드",
-  "boards_you_moderate_nav": "사용자가 관리하는 게시판"
+  "boards_you_moderate_nav": "당신이 관리하는 게시판"
 }
