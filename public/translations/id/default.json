@@ -284,7 +284,7 @@
   "pagination.pageCurrent": "Halaman {{page}} (saat ini)",
   "pagination.pageLabel": "Halaman",
   "archive": "Arsip",
-  "search_ops_placeholder": "Search OPs...",
+  "search_ops_placeholder": "Cari OPs...",
   "private_key_warning_title": "Peringatan Kunci Privat",
   "private_key_warning_description": "Editor ini menampilkan kunci pribadi akun Anda. Jangan bagikan data ini kepada siapa pun. Mengedit dengan salah dapat merusak akun Anda.",
   "go_back": "Kembali",

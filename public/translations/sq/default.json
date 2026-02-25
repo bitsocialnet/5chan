@@ -284,7 +284,7 @@
   "pagination.pageCurrent": "Faqja {{page}} (aktuale)",
   "pagination.pageLabel": "Faqe",
   "archive": "Arkiv",
-  "search_ops_placeholder": "Search OPs...",
+  "search_ops_placeholder": "Kërko OPs...",
   "private_key_warning_title": "Paralajmërim për çelësin privat",
   "private_key_warning_description": "Ky redaktor tregon çelësin privat të llogarisë tuaj. Mos ndani këto të dhëna me askënd. Redaktimi gabim mund të dëmtojë llogarinë tuaj.",
   "go_back": "Kthehu",

@@ -284,7 +284,7 @@
   "pagination.pageCurrent": "صفحہ {{page}} (موجودہ)",
   "pagination.pageLabel": "صفحہ",
   "archive": "آرکائیو",
-  "search_ops_placeholder": "Search OPs...",
+  "search_ops_placeholder": "OPs تلاش کریں...",
   "private_key_warning_title": "نجی کلید کی تنبیہ",
   "private_key_warning_description": "یہ ایڈیٹر آپ کے اکاؤنٹ کی نجی کلید دکھاتا ہے۔ یہ ڈیٹا کسی کے ساتھ شیئر نہ کریں۔ غلط ترمیم سے آپ کا اکاؤنٹ خراب ہو سکتا ہے۔",
   "go_back": "واپس جائیں",

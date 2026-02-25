@@ -328,6 +328,24 @@ const Challenge = ({ challenge, closeModal }: ChallengeProps) => {
           />
         ) : (
           <>
+            <div className={styles.name}>
+              <input type='text' value={displayName || capitalize(t('anonymous'))} disabled />
+            </div>
+            {title && (
+              <div className={styles.subject}>
+                <input type='text' value={title} disabled />
+              </div>
+            )}
+            {content && (
+              <div className={styles.content}>
+                <textarea value={content} disabled cols={48} rows={4} wrap='soft' />
+              </div>
+            )}
+            {link && (
+              <div className={styles.link}>
+                <input type='text' value={link} disabled />
+              </div>
+            )}
             <div className={styles.challengeContainer}>
               <input
                 ref={inputRef}

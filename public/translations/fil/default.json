@@ -284,7 +284,7 @@
   "pagination.pageCurrent": "Pahina {{page}} (kasalukuyan)",
   "pagination.pageLabel": "Pahina",
   "archive": "Arkibo",
-  "search_ops_placeholder": "Search OPs...",
+  "search_ops_placeholder": "Maghanap ng OPs...",
   "private_key_warning_title": "Babala sa Pribadong Susi",
   "private_key_warning_description": "Ang editor na ito ay nagpapakita ng pribadong susi ng iyong account. Huwag ibahagi ang data na ito sa sinuman. Ang maling pag-edit ay maaaring masira ang iyong account.",
   "go_back": "Bumalik",

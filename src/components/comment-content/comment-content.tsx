@@ -36,20 +36,26 @@ const useScopedCidToNumber = (cids: string[]) => {
     return [...uniqueCids].sort();
   }, [cids]);
 
-  const cidToNumber = usePostNumberStore((s) => s.cidToNumber);
+  const cidToNumber = usePostNumberStore(
+    useMemo(
+      () => (state) => {
+        if (sortedUniqueCids.length === 0) {
+          return {} as Record<string, number>;
+        }
+        const nextCidToNumber: Record<string, number> = {};
+        for (const cid of sortedUniqueCids) {
+          const number = state.cidToNumber[cid];
+          if (typeof number === 'number') {
+            nextCidToNumber[cid] = number;
+          }
+        }
+        return nextCidToNumber;
+      },
+      [sortedUniqueCids],
+    ),
+  );
 
-  if (sortedUniqueCids.length === 0) {
-    return {} as Record<string, number>;
-  }
-
-  const nextCidToNumber: Record<string, number> = {};
-  for (const cid of sortedUniqueCids) {
-    const number = cidToNumber[cid];
-    if (typeof number === 'number') {
-      nextCidToNumber[cid] = number;
-    }
-  }
-  return nextCidToNumber;
+  return cidToNumber;
 };
 
 const CommentContent = ({ comment: post }: { comment: Comment }) => {
@@ -80,23 +86,27 @@ const CommentContent = ({ comment: post }: { comment: Comment }) => {
   const isReply = !!parentCid;
   const isReplyingToReply = isReply && parentCid !== postCid;
 
-  const contentNumbers = !content ? new Set<number>() : new Set([...content.matchAll(/(?<![>/\w])>>(\d+)(?![\d/])/g)].map((m) => parseInt(m[1], 10)));
+  const contentNumbers = useMemo(() => {
+    if (!content) return new Set<number>();
+    return new Set([...content.matchAll(/(?<![>/\w])>>(\d+)(?![\d/])/g)].map((m) => parseInt(m[1], 10)));
+  }, [content]);
 
-  const relevantQuotedCids = (() => {
+  const relevantQuotedCids = useMemo(() => {
     const cids = quotedCids ? [...quotedCids] : [];
     if (parentCid) {
       cids.push(parentCid);
     }
     return cids;
-  })();
+  }, [quotedCids, parentCid]);
 
   const cidToNumber = useScopedCidToNumber(relevantQuotedCids);
-  const filteredQuotedCids = !quotedCids?.length
-    ? []
-    : quotedCids.filter((cid: string) => {
-        const num = cidToNumber[cid];
-        return num === undefined || !contentNumbers.has(num);
-      });
+  const filteredQuotedCids = useMemo(() => {
+    if (!quotedCids?.length) return [];
+    return quotedCids.filter((cid: string) => {
+      const num = cidToNumber[cid];
+      return num === undefined || !contentNumbers.has(num);
+    });
+  }, [quotedCids, cidToNumber, contentNumbers]);
 
   const shouldShowReplyingToReply = isReplyingToReply && (parentCid ? !contentNumbers.has(cidToNumber[parentCid] ?? -1) : true);
 
