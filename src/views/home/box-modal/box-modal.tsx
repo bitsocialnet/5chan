@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useHomeFiltersStore from '../../../stores/use-popular-threads-options-store';
 import styles from '../home.module.css';
@@ -11,21 +11,37 @@ const BoxModal = () => {
 
   const { showWorksafeContentOnly, setShowWorksafeContentOnly, showNsfwContentOnly, setShowNsfwContentOnly } = useHomeFiltersStore();
 
-  const handleClickOutside = useCallback(
-    (event: MouseEvent) => {
+  useEffect(() => {
+    if (!showFilterModal) return;
+    const handleClickOutside = (event: MouseEvent) => {
       if (modalRef.current && !modalRef.current.contains(event.target as Node) && buttonRef.current && !buttonRef.current.contains(event.target as Node)) {
         setShowFilterModal(false);
       }
-    },
-    [modalRef, buttonRef, setShowFilterModal],
-  );
-
-  useEffect(() => {
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [handleClickOutside]);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showFilterModal]);
+
+  const selectFilter = (filter: 'worksafe' | 'nsfw' | 'all') => {
+    if (filter === 'worksafe') {
+      if (showNsfwContentOnly) setShowNsfwContentOnly(false);
+      setShowWorksafeContentOnly(!showWorksafeContentOnly);
+    } else if (filter === 'nsfw') {
+      if (showWorksafeContentOnly) setShowWorksafeContentOnly(false);
+      setShowNsfwContentOnly(!showNsfwContentOnly);
+    } else {
+      setShowWorksafeContentOnly(false);
+      setShowNsfwContentOnly(false);
+    }
+    setShowFilterModal(false);
+  };
+
+  const handleKey = (e: React.KeyboardEvent, filter: 'worksafe' | 'nsfw' | 'all') => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      selectFilter(filter);
+    }
+  };
 
   return (
     <>
@@ -46,70 +62,29 @@ const BoxModal = () => {
       {showFilterModal && (
         <div ref={modalRef} className={styles.filterModal}>
           <div
-            className={`${styles.option} ${showWorksafeContentOnly && styles.selected}`}
+            className={`${styles.option} ${showWorksafeContentOnly ? styles.selected : ''}`}
             role='button'
             tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                if (showNsfwContentOnly) {
-                  setShowNsfwContentOnly(false);
-                }
-                setShowWorksafeContentOnly(!showWorksafeContentOnly);
-                setShowFilterModal(false);
-              }
-            }}
-            onClick={() => {
-              if (showNsfwContentOnly) {
-                setShowNsfwContentOnly(false);
-              }
-              setShowWorksafeContentOnly(!showWorksafeContentOnly);
-              setShowFilterModal(false);
-            }}
+            onKeyDown={(e) => handleKey(e, 'worksafe')}
+            onClick={() => selectFilter('worksafe')}
           >
             {t('show_worksafe_content_only')}
           </div>
           <div
-            className={`${styles.option} ${showNsfwContentOnly && styles.selected}`}
+            className={`${styles.option} ${showNsfwContentOnly ? styles.selected : ''}`}
             role='button'
             tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                if (showWorksafeContentOnly) {
-                  setShowWorksafeContentOnly(false);
-                }
-                setShowNsfwContentOnly(!showNsfwContentOnly);
-                setShowFilterModal(false);
-              }
-            }}
-            onClick={() => {
-              if (showWorksafeContentOnly) {
-                setShowWorksafeContentOnly(false);
-              }
-              setShowNsfwContentOnly(!showNsfwContentOnly);
-              setShowFilterModal(false);
-            }}
+            onKeyDown={(e) => handleKey(e, 'nsfw')}
+            onClick={() => selectFilter('nsfw')}
           >
             {t('show_nsfw_content_only')}
           </div>
           <div
-            className={`${styles.option} ${!showWorksafeContentOnly && !showNsfwContentOnly && styles.selected}`}
+            className={`${styles.option} ${!showWorksafeContentOnly && !showNsfwContentOnly ? styles.selected : ''}`}
             role='button'
             tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                setShowWorksafeContentOnly(false);
-                setShowNsfwContentOnly(false);
-                setShowFilterModal(false);
-              }
-            }}
-            onClick={() => {
-              setShowWorksafeContentOnly(false);
-              setShowNsfwContentOnly(false);
-              setShowFilterModal(false);
-            }}
+            onKeyDown={(e) => handleKey(e, 'all')}
+            onClick={() => selectFilter('all')}
           >
             {t('show_all_content')}
           </div>

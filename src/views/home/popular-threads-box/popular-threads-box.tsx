@@ -15,7 +15,8 @@ import { removeMarkdown } from '../../../lib/utils/post-utils';
 
 interface PopularThreadProps {
   post: Comment;
-  directories: DirectoryCommunity[];
+  boardTitle: string;
+  boardPath: string;
 }
 
 export const ContentPreview = ({ content, maxLength = 99 }: { content: string; maxLength?: number }) => {
@@ -25,16 +26,10 @@ export const ContentPreview = ({ content, maxLength = 99 }: { content: string; m
   return truncatedText;
 };
 
-// Memoize to prevent rerenders when parent rerenders due to updatingState
 const PopularThreadCard = memo(
-  ({ post, directories }: PopularThreadProps) => {
-    const { cid, content, link, linkHeight, linkWidth, subplebbitAddress, thumbnailUrl, title } = post || {};
+  ({ post, boardTitle, boardPath }: PopularThreadProps) => {
+    const { cid, content, link, linkHeight, linkWidth, thumbnailUrl, title } = post || {};
     const commentMediaInfo = getCommentMediaInfo(link, thumbnailUrl, linkWidth, linkHeight);
-
-    // Find the matching DirectoryCommunity entry and get its title
-    const directoriesEntry = directories.find((ms) => ms?.address === subplebbitAddress);
-    const boardTitle = directoriesEntry?.title?.replace(/^\/[^/]+\/\s*-\s*/, '') || '';
-    const boardPath = subplebbitAddress ? getBoardPath(subplebbitAddress, directories) : '';
 
     return (
       <div className={styles.popularThread} key={cid}>
@@ -56,35 +51,31 @@ const PopularThreadCard = memo(
       </div>
     );
   },
-  // Custom equality: rerender if post.cid or directories entry title changes
-  (prevProps, nextProps) => {
-    if (prevProps.post?.cid !== nextProps.post?.cid) return false;
-    // Compare the relevant directories entry for this post's subplebbitAddress
-    const prevEntry = prevProps.directories.find((ms) => ms?.address === prevProps.post?.subplebbitAddress);
-    const nextEntry = nextProps.directories.find((ms) => ms?.address === nextProps.post?.subplebbitAddress);
-    return prevEntry?.title === nextEntry?.title;
-  },
+  (prevProps, nextProps) => prevProps.post?.cid === nextProps.post?.cid && prevProps.boardTitle === nextProps.boardTitle,
 );
 
 const PopularThreadsBox = ({ directories, subplebbits }: { directories: DirectoryCommunity[]; subplebbits: any }) => {
   const { t } = useTranslation();
   const { showWorksafeContentOnly, showNsfwContentOnly } = usePopularThreadsOptionsStore();
 
+  const directoryByAddress = useMemo(() => new Map(directories.map((d) => [d.address, d])), [directories]);
+
   const filteredSubplebbits = useMemo(() => {
     if (showWorksafeContentOnly) {
       return subplebbits.filter((sub: Subplebbit) => {
-        const directoriesEntry = directories.find((ms) => ms?.address === sub?.address);
-        return directoriesEntry ? !directoriesEntry.nsfw : true;
+        const entry = directoryByAddress.get(sub?.address);
+        return entry ? !entry.nsfw : true;
       });
     }
     if (showNsfwContentOnly) {
       return subplebbits.filter((sub: Subplebbit) => {
-        const directoriesEntry = directories.find((ms) => ms?.address === sub?.address);
-        return directoriesEntry ? directoriesEntry.nsfw : false;
+        const entry = directoryByAddress.get(sub?.address);
+        return entry ? entry.nsfw : false;
       });
     }
     return subplebbits;
-  }, [subplebbits, showWorksafeContentOnly, showNsfwContentOnly, directories]);
+  }, [subplebbits, showWorksafeContentOnly, showNsfwContentOnly, directoryByAddress]);
+
   const { popularPosts } = usePopularPosts(filteredSubplebbits);
   const isLoading = popularPosts.length === 0;
 
@@ -98,7 +89,12 @@ const PopularThreadsBox = ({ directories, subplebbits }: { directories: Director
         {isLoading ? (
           <LoadingEllipsis string={t('loading')} />
         ) : (
-          popularPosts.map((post: any) => <PopularThreadCard key={post.cid} post={post} directories={directories} />)
+          popularPosts.map((post: Comment) => {
+            const entry = directoryByAddress.get(post.subplebbitAddress);
+            const boardTitle = entry?.title?.replace(/^\/[^/]+\/\s*-\s*/, '') || '';
+            const boardPath = post.subplebbitAddress ? getBoardPath(post.subplebbitAddress, directories) : '';
+            return <PopularThreadCard key={post.cid} post={post} boardTitle={boardTitle} boardPath={boardPath} />;
+          })
         )}
       </div>
     </div>
