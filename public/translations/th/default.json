@@ -284,7 +284,7 @@
   "pagination.pageCurrent": "หน้า {{page}} (ปัจจุบัน)",
   "pagination.pageLabel": "หน้า",
   "archive": "เก็บถาวร",
-  "search_ops_placeholder": "Search OPs...",
+  "search_ops_placeholder": "ค้นหา OPs...",
   "private_key_warning_title": "คำเตือนคีย์ส่วนตัว",
   "private_key_warning_description": "โปรแกรมแก้ไขนี้แสดงคีย์ส่วนตัวของบัญชีคุณ ห้ามแชร์ข้อมูลนี้กับใครก็ตาม การแก้ไขผิดพลาดอาจทำให้บัญชีของคุณเสียหายได้",
   "go_back": "กลับ",

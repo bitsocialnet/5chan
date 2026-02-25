@@ -284,7 +284,7 @@
   "pagination.pageCurrent": "Σελίδα {{page}} (τρέχουσα)",
   "pagination.pageLabel": "Σελίδα",
   "archive": "Αρχείο",
-  "search_ops_placeholder": "Search OPs...",
+  "search_ops_placeholder": "Αναζήτηση OPs...",
   "private_key_warning_title": "Προειδοποίηση ιδιωτικού κλειδιού",
   "private_key_warning_description": "Αυτό το πρόγραμμα επεξεργασίας εμφανίζει το ιδιωτικό κλειδί του λογαριασμού σας. Μην μοιράζεστε αυτά τα δεδομένα με κανέναν. Η λανθασμένη επεξεργασία μπορεί να καταστρέψει τον λογαριασμό σας.",
   "go_back": "Επιστροφή",

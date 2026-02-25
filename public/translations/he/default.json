@@ -284,7 +284,7 @@
   "pagination.pageCurrent": "עמוד {{page}} (נוכחי)",
   "pagination.pageLabel": "עמוד",
   "archive": "ארכיון",
-  "search_ops_placeholder": "Search OPs...",
+  "search_ops_placeholder": "חפש OPs...",
   "private_key_warning_title": "אזהרת מפתח פרטי",
   "private_key_warning_description": "עורך זה מציג את המפתח הפרטי של חשבונך. אל תשתף נתונים אלה עם אף אחד. עריכה שגויה עלולה לשבור את חשבונך.",
   "go_back": "חזור",

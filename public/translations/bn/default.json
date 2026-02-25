@@ -284,7 +284,7 @@
   "pagination.pageCurrent": "পৃষ্ঠা {{page}} (বর্তমান)",
   "pagination.pageLabel": "পৃষ্ঠা",
   "archive": "সংরক্ষণাগার",
-  "search_ops_placeholder": "Search OPs...",
+  "search_ops_placeholder": "OPs অনুসন্ধান...",
   "private_key_warning_title": "প্রাইভেট কী সতর্কতা",
   "private_key_warning_description": "এই সম্পাদক আপনার অ্যাকাউন্টের প্রাইভেট কী দেখায়। এই ডেটা কারও সাথে শেয়ার করবেন না। ভুলভাবে সম্পাদনা করলে আপনার অ্যাকাউন্ট ক্ষতিগ্রস্ত হতে পারে।",
   "go_back": "ফিরে যান",

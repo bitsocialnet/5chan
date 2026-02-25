@@ -284,7 +284,7 @@
   "pagination.pageCurrent": "Sivu {{page}} (nykyinen)",
   "pagination.pageLabel": "Sivu",
   "archive": "Arkisto",
-  "search_ops_placeholder": "Search OPs...",
+  "search_ops_placeholder": "Hae OPs...",
   "private_key_warning_title": "Yksityisen avaimen varoitus",
   "private_key_warning_description": "Tämä editori näyttää tilisi yksityisen avaimen. Älä jaa näitä tietoja kenenkään kanssa. Virheellinen muokkaus voi rikkoa tilisi.",
   "go_back": "Takaisin",

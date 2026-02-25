@@ -284,7 +284,7 @@
   "pagination.pageCurrent": "Side {{page}} (nuværende)",
   "pagination.pageLabel": "Side",
   "archive": "Arkiv",
-  "search_ops_placeholder": "Search OPs...",
+  "search_ops_placeholder": "Søg OPs...",
   "private_key_warning_title": "Advarsel om privat nøgle",
   "private_key_warning_description": "Denne editor viser din kontos private nøgle. Del ikke disse data med nogen. Forkert redigering kan ødelægge din konto.",
   "go_back": "Gå tilbage",

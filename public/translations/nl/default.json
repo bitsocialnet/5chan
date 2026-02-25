@@ -284,7 +284,7 @@
   "pagination.pageCurrent": "Pagina {{page}} (huidige)",
   "pagination.pageLabel": "Pagina",
   "archive": "Archief",
-  "search_ops_placeholder": "Search OPs...",
+  "search_ops_placeholder": "Zoek OPs...",
   "private_key_warning_title": "Waarschuwing privésleutel",
   "private_key_warning_description": "Deze editor toont de privésleutel van je account. Deel deze gegevens met niemand. Onjuiste bewerking kan je account beschadigen.",
   "go_back": "Terug",

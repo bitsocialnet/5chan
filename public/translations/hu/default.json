@@ -284,7 +284,7 @@
   "pagination.pageCurrent": "{{page}}. oldal (jelenlegi)",
   "pagination.pageLabel": "Oldal",
   "archive": "Archívum",
-  "search_ops_placeholder": "Search OPs...",
+  "search_ops_placeholder": "OPs keresése...",
   "private_key_warning_title": "Privát kulcs figyelmeztetés",
   "private_key_warning_description": "Ez a szerkesztő megjeleníti fiókod titkos kulcsát. Ne osszd meg ezeket az adatokat senkivel. A helytelen szerkesztés tönkreteheti a fiókodat.",
   "go_back": "Vissza",

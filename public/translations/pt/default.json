@@ -284,7 +284,7 @@
   "pagination.pageCurrent": "Página {{page}} (atual)",
   "pagination.pageLabel": "Página",
   "archive": "Arquivo",
-  "search_ops_placeholder": "Search OPs...",
+  "search_ops_placeholder": "Pesquisar OPs...",
   "private_key_warning_title": "Aviso de chave privada",
   "private_key_warning_description": "Este editor mostra a chave privada da sua conta. Não compartilhe esses dados com ninguém. Editar incorretamente pode quebrar sua conta.",
   "go_back": "Voltar",

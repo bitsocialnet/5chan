@@ -284,7 +284,7 @@
   "pagination.pageCurrent": "పేజీ {{page}} (ప్రస్తుత)",
   "pagination.pageLabel": "పేజీ",
   "archive": "ఆర్కైవ్",
-  "search_ops_placeholder": "Search OPs...",
+  "search_ops_placeholder": "OPsను వెతకండి...",
   "private_key_warning_title": "ప్రైవేట్ కీ హెచ్చరిక",
   "private_key_warning_description": "ఈ ఎడిటర్ మీ ఖాతా యొక్క ప్రైవేట్ కీని చూపిస్తుంది. ఈ డేటాను ఎవరితోనూ భాగస్వామ్యం చేయవద్దు. తప్పుగా ఎడిట్ చేయడం మీ ఖాతాను పాడు చేయవచ్చు.",
   "go_back": "వెనుకకు",

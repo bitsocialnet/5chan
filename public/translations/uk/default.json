@@ -284,7 +284,7 @@
   "pagination.pageCurrent": "Сторінка {{page}} (поточна)",
   "pagination.pageLabel": "Сторінка",
   "archive": "Архів",
-  "search_ops_placeholder": "Search OPs...",
+  "search_ops_placeholder": "Пошук OPs...",
   "private_key_warning_title": "Попередження про приватний ключ",
   "private_key_warning_description": "Цей редактор показує приватний ключ вашого облікового запису. Не передавайте ці дані нікому. Неправильне редагування може пошкодити ваш обліковий запис.",
   "go_back": "Назад",

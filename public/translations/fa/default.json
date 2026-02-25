@@ -284,7 +284,7 @@
   "pagination.pageCurrent": "صفحه {{page}} (فعلی)",
   "pagination.pageLabel": "صفحه",
   "archive": "بایگانی",
-  "search_ops_placeholder": "Search OPs...",
+  "search_ops_placeholder": "جستجوی OPs...",
   "private_key_warning_title": "هشدار کلید خصوصی",
   "private_key_warning_description": "این ویرایشگر کلید خصوصی حساب شما را نمایش می‌دهد. این داده‌ها را با هیچ‌کس به اشتراک نگذارید. ویرایش نادرست ممکن است حساب شما را خراب کند.",
   "go_back": "بازگشت",

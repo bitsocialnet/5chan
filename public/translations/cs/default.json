@@ -284,7 +284,7 @@
   "pagination.pageCurrent": "Stránka {{page}} (aktuální)",
   "pagination.pageLabel": "Stránka",
   "archive": "Archiv",
-  "search_ops_placeholder": "Search OPs...",
+  "search_ops_placeholder": "Hledat OPs...",
   "private_key_warning_title": "Varování o privátním klíči",
   "private_key_warning_description": "Tento editor zobrazuje soukromý klíč vašeho účtu. Tyto údaje nikomu nesdílejte. Nesprávná úprava může váš účet poškodit.",
   "go_back": "Zpět",

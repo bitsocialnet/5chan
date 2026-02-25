@@ -284,7 +284,7 @@
   "pagination.pageCurrent": "Sayfa {{page}} (mevcut)",
   "pagination.pageLabel": "Sayfa",
   "archive": "Arşiv",
-  "search_ops_placeholder": "Search OPs...",
+  "search_ops_placeholder": "OPs ara...",
   "private_key_warning_title": "Özel anahtar uyarısı",
   "private_key_warning_description": "Bu düzenleyici hesabınızın özel anahtarını gösterir. Bu verileri kimseyle paylaşmayın. Yanlış düzenleme hesabınıza zarar verebilir.",
   "go_back": "Geri",
