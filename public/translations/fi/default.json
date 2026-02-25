@@ -209,7 +209,7 @@
   "help": "Apua",
   "filter_and_highlights_help": "Suodattimet ja korostukset -apu",
   "filter_and_highlights": "Suodattimet ja korostukset",
-  "boards_you_moderate": "lautakunnat, joita valvot",
+  "boards_you_moderate": "Laudat, joita moderoit",
   "moderator_of_this_board": "Tämä käyttäjä on tämän taulun moderaattori",
   "administrator_of_this_board": "Tämä käyttäjä on tämän taulun järjestelmänvalvoja",
   "copy_content_id": "kopioi sisältö-ID",
@@ -291,5 +291,9 @@
   "continue": "Jatka",
   "loading_editor": "Ladataan editoria...",
   "editor_fallback_warning": "Koodieditorin lataus epäonnistui. Käytetään sen sijaan yksinkertaista tekstikenttää.",
-  "return_to_settings": "Palaa asetuksiin"
+  "return_to_settings": "Palaa asetuksiin",
+  "import_account_backup": "Tuo tilin varmuuskopio",
+  "account_auto_generated": "Tämä tili luotiin automaattisesti 5chanissa, rekisteröitymistä ei tarvita.",
+  "download_backup": "Lataa varmuuskopio",
+  "boards_you_moderate_nav": "Laudat, joita moderoit"
 }

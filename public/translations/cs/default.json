@@ -291,5 +291,9 @@
   "continue": "Pokračovat",
   "loading_editor": "Načítání editoru...",
   "editor_fallback_warning": "Načtení editoru kódu selhalo. Místo toho se používá jednoduché textové pole.",
-  "return_to_settings": "Zpět na nastavení"
+  "return_to_settings": "Zpět na nastavení",
+  "import_account_backup": "Importovat zálohu účtu",
+  "account_auto_generated": "Tento účet byl automaticky vygenerován 5chanem, registrace není nutná.",
+  "download_backup": "Stáhnout zálohu",
+  "boards_you_moderate_nav": "Fóra, která moderujete"
 }

@@ -209,7 +209,7 @@
   "help": "Aide",
   "filter_and_highlights_help": "Aide sur les filtres et surlignages",
   "filter_and_highlights": "Filtres et surlignages",
-  "boards_you_moderate": "boards que vous modérez",
+  "boards_you_moderate": "Tableaux que vous modérez",
   "moderator_of_this_board": "Cet utilisateur est modérateur de ce tableau",
   "administrator_of_this_board": "Cet utilisateur est administrateur de ce tableau",
   "copy_content_id": "Copier l'ID du contenu",
@@ -291,5 +291,9 @@
   "continue": "Continuer",
   "loading_editor": "Chargement de l'éditeur...",
   "editor_fallback_warning": "Le chargement de l'éditeur de code a échoué. Utilisation d'un champ de texte simple à la place.",
-  "return_to_settings": "Retour aux paramètres"
+  "return_to_settings": "Retour aux paramètres",
+  "import_account_backup": "Importer la sauvegarde du compte",
+  "account_auto_generated": "Ce compte a été généré automatiquement par 5chan, aucune inscription requise.",
+  "download_backup": "Télécharger la sauvegarde",
+  "boards_you_moderate_nav": "Tableaux que vous modérez"
 }

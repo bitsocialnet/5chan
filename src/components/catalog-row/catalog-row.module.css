@@ -10,6 +10,7 @@
   width: 180px;
   position: relative;
   max-height: 320px;
+  overflow: hidden;
   padding: 10px 0 3px 0;
   vertical-align: top;
   display: inline-block;
@@ -18,8 +19,6 @@
 }
 
 .postContent {
-  overflow: hidden;
-  max-height: 155px;
 }
 
 .large {

@@ -209,7 +209,7 @@
   "help": "도움말",
   "filter_and_highlights_help": "필터 및 하이라이트 도움말",
   "filter_and_highlights": "필터 및 하이라이트",
-  "boards_you_moderate": "당신이 관리하는 게시판",
+  "boards_you_moderate": "관리하는 게시판",
   "moderator_of_this_board": "이 사용자는 이 게시판의 관리자입니다",
   "administrator_of_this_board": "이 사용자는 이 게시판의 관리자입니다",
   "copy_content_id": "콘텐츠 ID 복사",
@@ -291,5 +291,9 @@
   "continue": "계속",
   "loading_editor": "편집기 로딩 중...",
   "editor_fallback_warning": "코드 편집기 로드에 실패했습니다. 대신 일반 텍스트 영역을 사용합니다.",
-  "return_to_settings": "설정으로 돌아가기"
+  "return_to_settings": "설정으로 돌아가기",
+  "import_account_backup": "계정 백업 가져오기",
+  "account_auto_generated": "이 계정은 5chan에서 자동으로 생성되었으며, 가입이 필요하지 않습니다.",
+  "download_backup": "백업 다운로드",
+  "boards_you_moderate_nav": "당신이 관리하는 게시판"
 }

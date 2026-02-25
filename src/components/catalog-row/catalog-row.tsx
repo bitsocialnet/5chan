@@ -18,7 +18,7 @@ import { useCommentMediaInfo } from '../../hooks/use-comment-media-info';
 import useCountLinksInReplies from '../../hooks/use-count-links-in-replies';
 import useFetchGifFirstFrame from '../../hooks/use-fetch-gif-first-frame';
 import useHide from '../../hooks/use-hide';
-import { ContentPreview } from '../../views/home/popular-threads-box';
+import { removeMarkdown } from '../../lib/utils/post-utils';
 import PostMenuDesktop from '../post-desktop/post-menu-desktop';
 import styles from './catalog-row.module.css';
 import capitalize from 'lodash/capitalize';
@@ -205,7 +205,7 @@ const CatalogPost = memo(
                 {content ? ': ' : ''}
               </span>
             )}
-            {content && <ContentPreview content={content} maxLength={9999} />}
+            {content && removeMarkdown(content)}
           </>
         )}
       </div>

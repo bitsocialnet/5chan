@@ -291,5 +291,9 @@
   "continue": "Tiếp tục",
   "loading_editor": "Đang tải trình soạn thảo...",
   "editor_fallback_warning": "Không thể tải trình soạn thảo mã. Đang sử dụng ô văn bản thuần thay thế.",
-  "return_to_settings": "Quay lại Cài đặt"
+  "return_to_settings": "Quay lại Cài đặt",
+  "import_account_backup": "Nhập bản sao lưu tài khoản",
+  "account_auto_generated": "Tài khoản này được tạo tự động bởi 5chan, không cần đăng ký.",
+  "download_backup": "Tải xuống bản sao lưu",
+  "boards_you_moderate_nav": "Các bảng bạn điều hành"
 }

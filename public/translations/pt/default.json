@@ -209,7 +209,7 @@
   "help": "Ajuda",
   "filter_and_highlights_help": "Ajuda de Filtros e Realces",
   "filter_and_highlights": "Filtros e Destaques",
-  "boards_you_moderate": "boards que você modera",
+  "boards_you_moderate": "Quadros que você modera",
   "moderator_of_this_board": "Este usuário é moderador deste quadro",
   "administrator_of_this_board": "Este usuário é administrador deste quadro",
   "copy_content_id": "Copiar ID do conteúdo",
@@ -291,5 +291,9 @@
   "continue": "Continuar",
   "loading_editor": "Carregando editor...",
   "editor_fallback_warning": "O editor de código falhou ao carregar. Usando um campo de texto simples em vez disso.",
-  "return_to_settings": "Voltar às Configurações"
+  "return_to_settings": "Voltar às Configurações",
+  "import_account_backup": "Importar backup da conta",
+  "account_auto_generated": "Esta conta foi gerada automaticamente pelo 5chan, sem necessidade de cadastro.",
+  "download_backup": "Baixar backup",
+  "boards_you_moderate_nav": "Quadros que você modera"
 }

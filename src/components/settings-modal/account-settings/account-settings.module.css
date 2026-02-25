@@ -17,11 +17,7 @@
   color: red;
 }
 
-.setting .createAccount {
-  margin-left: 5px;
-}
-
-.warning {
+.info {
   font-size: 0.8em;
   padding: 5px 0;
 }

@@ -1,6 +1,5 @@
-import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { createAccount, deleteAccount, exportAccount, importAccount, setActiveAccount, useAccount, useAccounts } from '@plebbit/plebbit-react-hooks';
+import { deleteAccount, exportAccount, importAccount, setActiveAccount, useAccount, useAccounts } from '@plebbit/plebbit-react-hooks';
 import styles from './account-settings.module.css';
 import { Capacitor } from '@capacitor/core';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -33,34 +32,7 @@ const AccountSettingsEditor = ({
   const { t } = useTranslation();
   const location = useLocation();
   const { accounts } = useAccounts();
-  const switchToNewAccountRef = useRef(false);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    if (switchToNewAccountRef.current && accounts.length > 0) {
-      const lastAccount = accounts[accounts.length - 1];
-      setActiveAccount(lastAccount.name);
-      switchToNewAccountRef.current = false;
-    }
-  }, [accounts]);
-
-  const handleCreateAccount = async () => {
-    const result = await withErrorHandling(
-      async () => {
-        switchToNewAccountRef.current = true;
-        await createAccount();
-      },
-      (error) => {
-        if (error instanceof Error) {
-          alert(error.message);
-          console.log(error);
-        } else {
-          console.error('An unknown error occurred:', error);
-        }
-      },
-    );
-    void result;
-  };
 
   const _deleteAccount = (accountName: string) => {
     if (!accountName) {
@@ -184,29 +156,26 @@ const AccountSettingsEditor = ({
 
   const accountsOptions = accounts.map((account) => (
     <option key={account?.id} value={account?.name}>
-      u/{account?.author?.shortAddress}
+      {account?.author?.shortAddress}
     </option>
   ));
+
+  const host = window.electronApi?.isElectron ? 'this desktop app' : isAndroid ? 'this mobile app' : window.location.hostname;
 
   return (
     <div className={styles.setting}>
       <div>
         <select value={account?.name} onChange={(e) => setActiveAccount(e.target.value)}>
           {accountsOptions}
-        </select>
-        <button className={styles.createAccount} onClick={handleCreateAccount}>
-          {t('create')}
-        </button>{' '}
-        <button onClick={handleImportAccount}>{t('import')}</button> <button onClick={handleExportAccount}>{t('export')}</button>
-        <div className={styles.warning}>
-          {t('stored_locally', {
-            location: window.electronApi?.isElectron ? 'this desktop app' : isAndroid ? 'this mobile app' : window.location.hostname,
-            interpolation: { escapeValue: false },
-          })}
+        </select>{' '}
+        <button onClick={() => navigate('/settings/account-data', { state: { returnTo: location.pathname + location.hash } })}>{t('edit')}</button>{' '}
+        <button onClick={handleExportAccount}>{t('download_backup')}</button>
+        <div className={styles.info}>
+          {t('account_auto_generated')} {t('stored_locally', { location: host, interpolation: { escapeValue: false } })}
         </div>
       </div>
       <div>
-        <button onClick={() => navigate('/settings/account-data', { state: { returnTo: location.pathname + location.hash } })}>{t('edit')}</button>
+        <button onClick={handleImportAccount}>{t('import_account_backup')}</button>
         <button className={styles.deleteAccount} onClick={() => _deleteAccount(account?.name ?? '')}>
           {t('delete_account')}
         </button>

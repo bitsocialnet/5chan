@@ -291,5 +291,9 @@
   "continue": "Fortsæt",
   "loading_editor": "Indlæser editor...",
   "editor_fallback_warning": "Kodeeditoren kunne ikke indlæses. Bruger et simpelt tekstfelt i stedet.",
-  "return_to_settings": "Tilbage til indstillinger"
+  "return_to_settings": "Tilbage til indstillinger",
+  "import_account_backup": "Importer kontobackup",
+  "account_auto_generated": "Denne konto blev automatisk oprettet af 5chan, ingen tilmelding påkrævet.",
+  "download_backup": "Download sikkerhedskopi",
+  "boards_you_moderate_nav": "Boards du modererer"
 }

@@ -291,5 +291,9 @@
   "continue": "Doorgaan",
   "loading_editor": "Editor laden...",
   "editor_fallback_warning": "De code-editor kon niet worden geladen. Er wordt een eenvoudig tekstveld gebruikt.",
-  "return_to_settings": "Terug naar Instellingen"
+  "return_to_settings": "Terug naar Instellingen",
+  "import_account_backup": "Accountback-up importeren",
+  "account_auto_generated": "Dit account is automatisch gegenereerd door 5chan, geen aanmelding vereist.",
+  "download_backup": "Back-up downloaden",
+  "boards_you_moderate_nav": "Boards die je beheert"
 }

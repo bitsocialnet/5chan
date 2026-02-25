@@ -291,5 +291,9 @@
   "continue": "ดำเนินการต่อ",
   "loading_editor": "กำลังโหลดตัวแก้ไข...",
   "editor_fallback_warning": "โหลดตัวแก้ไขโค้ดไม่สำเร็จ กำลังใช้ช่องข้อความธรรมดาแทน",
-  "return_to_settings": "กลับไปที่การตั้งค่า"
+  "return_to_settings": "กลับไปที่การตั้งค่า",
+  "import_account_backup": "นำเข้ารายการสำรองของบัญชี",
+  "account_auto_generated": "บัญชีนี้ถูกสร้างโดยอัตโนมัติโดย 5chan ไม่ต้องสมัครสมาชิก",
+  "download_backup": "ดาวน์โหลดสำรอง",
+  "boards_you_moderate_nav": "บอร์ดที่คุณดูแล"
 }

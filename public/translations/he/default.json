@@ -291,5 +291,9 @@
   "continue": "המשך",
   "loading_editor": "טוען עורך...",
   "editor_fallback_warning": "טעינת עורך הקוד נכשלה. משתמשים בשדה טקסט פשוט במקום.",
-  "return_to_settings": "חזרה להגדרות"
+  "return_to_settings": "חזרה להגדרות",
+  "import_account_backup": "ייבוא גיבוי חשבון",
+  "account_auto_generated": "חשבון זה נוצר אוטומטית על ידי 5chan, אין צורך בהרשמה.",
+  "download_backup": "הורד גיבוי",
+  "boards_you_moderate_nav": "לוחות שאתה מפקח עליהם"
 }
