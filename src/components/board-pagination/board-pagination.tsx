@@ -85,10 +85,10 @@ const BoardPagination = ({ basePath, currentPage, totalPages, footerStyle = fals
             ) : (
               <span className={styles.footerNavPlainDisabled}>{t('next')}</span>
             )}
-            <Link to={catalogHref} className={styles.footerPageLink}>
+            <Link to={catalogHref} className={styles.pagelistSeparatorLink}>
               {t('catalog')}
             </Link>
-            <Link to={archiveHref} className={styles.footerPageLink}>
+            <Link to={archiveHref} className={styles.pagelistSeparatorLink}>
               {t('archive')}
             </Link>
           </div>

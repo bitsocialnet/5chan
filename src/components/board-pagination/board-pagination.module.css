@@ -119,6 +119,13 @@
   text-decoration: var(--boardsbar-desktop-link-text-decoration-hover);
 }
 
+.pagelistSeparatorLink {
+  composes: footerPageLink;
+  border-left: 1px solid var(--pagelist-item-border-color);
+  padding-left: 12px;
+  margin-left: 7px;
+}
+
 .footerPageCurrent {
   font-weight: bold;
   color: var(--boardsbar-desktop-link-text-color-hover);
