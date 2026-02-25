@@ -482,6 +482,7 @@ const ReplyBacklinks = ({
         (reply: Comment) =>
           reply?.parentCid === cid &&
           reply?.cid &&
+          reply?.number &&
           !(reply?.deleted || reply?.removed) && <ReplyQuotePreview key={reply.cid} isBacklinkReply={true} backlinkReply={reply} />,
       )}
       {quotedByMap
@@ -490,6 +491,7 @@ const ReplyBacklinks = ({
           (reply: Comment) =>
             reply?.parentCid !== cid &&
             reply?.cid &&
+            reply?.number &&
             !(reply?.deleted || reply?.removed) && <ReplyQuotePreview key={reply.cid} isBacklinkReply={true} backlinkReply={reply} />,
         )}
     </>
@@ -502,7 +504,9 @@ const OpBacklinks = ({ cid, quotedByMap }: { cid: string; quotedByMap?: Map<stri
       ?.get(cid)
       ?.map(
         (reply: Comment) =>
-          reply?.cid && !(reply?.deleted || reply?.removed) && <ReplyQuotePreview key={`op-bl-${reply.cid}`} isBacklinkReply={true} backlinkReply={reply} />,
+          reply?.cid &&
+          reply?.number &&
+          !(reply?.deleted || reply?.removed) && <ReplyQuotePreview key={`op-bl-${reply.cid}`} isBacklinkReply={true} backlinkReply={reply} />,
       )}
   </>
 );
