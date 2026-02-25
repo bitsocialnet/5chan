@@ -209,7 +209,7 @@
   "help": "Apua",
   "filter_and_highlights_help": "Suodattimet ja korostukset -apu",
   "filter_and_highlights": "Suodattimet ja korostukset",
-  "boards_you_moderate": "lautakunnat, joita valvot",
+  "boards_you_moderate": "Laudat, joita moderoit",
   "moderator_of_this_board": "Tämä käyttäjä on tämän taulun moderaattori",
   "administrator_of_this_board": "Tämä käyttäjä on tämän taulun järjestelmänvalvoja",
   "copy_content_id": "kopioi sisältö-ID",
