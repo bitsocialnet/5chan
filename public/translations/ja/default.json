@@ -291,5 +291,8 @@
   "continue": "続ける",
   "loading_editor": "エディターを読み込み中...",
   "editor_fallback_warning": "コードエディターの読み込みに失敗しました。代わりにプレーンテキストエリアを使用します。",
-  "return_to_settings": "設定に戻る"
+  "return_to_settings": "設定に戻る",
+  "import_account_backup": "アカウントバックアップをインポート",
+  "account_auto_generated": "このアカウントは5chanによって自動生成されました。サインアップは不要です。",
+  "download_backup": "バックアップをダウンロード"
 }

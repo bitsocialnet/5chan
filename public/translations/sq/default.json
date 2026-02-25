@@ -291,5 +291,8 @@
   "continue": "Vazhdo",
   "loading_editor": "Duke ngarkuar redaktuesin...",
   "editor_fallback_warning": "Redaktori i kodit dështoi të ngarkohet. Duke përdorur një fushë teksti të thjeshtë në vend.",
-  "return_to_settings": "Kthehu te Cilësimet"
+  "return_to_settings": "Kthehu te Cilësimet",
+  "import_account_backup": "Importo backup të llogarisë",
+  "account_auto_generated": "Ky llogari u krijua automatikisht nga 5chan, nuk kërkohet regjistrim.",
+  "download_backup": "Shkarko kopjen e rezervë"
 }

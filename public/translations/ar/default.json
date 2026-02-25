@@ -291,5 +291,8 @@
   "continue": "متابعة",
   "loading_editor": "جاري تحميل المحرر...",
   "editor_fallback_warning": "فشل تحميل محرر الأكواد. يتم استخدام حقل نص عادي بدلاً منه.",
-  "return_to_settings": "العودة إلى الإعدادات"
+  "return_to_settings": "العودة إلى الإعدادات",
+  "import_account_backup": "استيراد نسخة احتياطية للحساب",
+  "account_auto_generated": "تم إنشاء هذا الحساب تلقائياً بواسطة 5chan، دون الحاجة للتسجيل.",
+  "download_backup": "تحميل النسخة الاحتياطية"
 }

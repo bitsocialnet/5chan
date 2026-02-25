@@ -291,5 +291,8 @@
   "continue": "Jatka",
   "loading_editor": "Ladataan editoria...",
   "editor_fallback_warning": "Koodieditorin lataus epäonnistui. Käytetään sen sijaan yksinkertaista tekstikenttää.",
-  "return_to_settings": "Palaa asetuksiin"
+  "return_to_settings": "Palaa asetuksiin",
+  "import_account_backup": "Tuo tilin varmuuskopio",
+  "account_auto_generated": "Tämä tili luotiin automaattisesti 5chanissa, rekisteröitymistä ei tarvita.",
+  "download_backup": "Lataa varmuuskopio"
 }

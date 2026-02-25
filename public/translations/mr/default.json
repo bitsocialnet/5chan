@@ -291,5 +291,8 @@
   "continue": "सुरू ठेवा",
   "loading_editor": "संपादक लोड होत आहे...",
   "editor_fallback_warning": "कोड एडिटर लोड नाही झाला. त्याऐवजी साध्या टेक्स्ट एरियाचा वापर केला जात आहे.",
-  "return_to_settings": "सेटिंग्जवर परत जा"
+  "return_to_settings": "सेटिंग्जवर परत जा",
+  "import_account_backup": "खाते बॅकअप आयात करा",
+  "account_auto_generated": "हा खाता 5chan द्वारा स्वयंचलितपणे तयार केला गेला, साइनअप आवश्यक नाही.",
+  "download_backup": "बॅकअप डाउनलोड करा"
 }

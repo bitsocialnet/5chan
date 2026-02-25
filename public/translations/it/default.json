@@ -291,5 +291,8 @@
   "continue": "Continua",
   "loading_editor": "Caricamento editor...",
   "editor_fallback_warning": "Il caricamento dell'editor di codice non è riuscito. Si usa un campo di testo semplice al suo posto.",
-  "return_to_settings": "Torna alle impostazioni"
+  "return_to_settings": "Torna alle impostazioni",
+  "import_account_backup": "Importa backup account",
+  "account_auto_generated": "Questo account è stato generato automaticamente da 5chan, nessuna registrazione richiesta.",
+  "download_backup": "Scarica backup"
 }

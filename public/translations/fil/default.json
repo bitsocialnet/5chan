@@ -291,5 +291,8 @@
   "continue": "Magpatuloy",
   "loading_editor": "Nilo-load ang editor...",
   "editor_fallback_warning": "Nabigo ang pag-load ng code editor. Gumagamit ng plain textarea sa halip.",
-  "return_to_settings": "Bumalik sa Mga Setting"
+  "return_to_settings": "Bumalik sa Mga Setting",
+  "import_account_backup": "I-import ang Backup ng Account",
+  "account_auto_generated": "Ang account na ito ay awtomatikong nilikha ng 5chan, walang kailangang signup.",
+  "download_backup": "I-download ang Backup"
 }

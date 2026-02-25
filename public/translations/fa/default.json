@@ -291,5 +291,8 @@
   "continue": "ادامه",
   "loading_editor": "در حال بارگذاری ویرایشگر...",
   "editor_fallback_warning": "بارگذاری ویرایشگر کد ناموفق بود. در عوض از یک فیلد متنی ساده استفاده می‌شود.",
-  "return_to_settings": "بازگشت به تنظیمات"
+  "return_to_settings": "بازگشت به تنظیمات",
+  "import_account_backup": "وارد کردن پشتیبان حساب",
+  "account_auto_generated": "این حساب به‌طور خودکار توسط 5chan ایجاد شده، نیازی به ثبت‌نام نیست.",
+  "download_backup": "دانلود پشتیبان"
 }

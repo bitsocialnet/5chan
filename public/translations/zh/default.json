@@ -291,5 +291,8 @@
   "continue": "继续",
   "loading_editor": "正在加载编辑器...",
   "editor_fallback_warning": "代码编辑器加载失败。改用纯文本输入框。",
-  "return_to_settings": "返回设置"
+  "return_to_settings": "返回设置",
+  "import_account_backup": "导入账户备份",
+  "account_auto_generated": "此账户由 5chan 自动生成，无需注册。",
+  "download_backup": "下载备份"
 }

@@ -291,5 +291,8 @@
   "continue": "Fortsätt",
   "loading_editor": "Laddar editor...",
   "editor_fallback_warning": "Kodredigeraren kunde inte laddas. Använder ett enkelt textfält istället.",
-  "return_to_settings": "Tillbaka till inställningar"
+  "return_to_settings": "Tillbaka till inställningar",
+  "import_account_backup": "Importera kontobackup",
+  "account_auto_generated": "Detta konto skapades automatiskt av 5chan, ingen registrering krävs.",
+  "download_backup": "Ladda ner säkerhetskopia"
 }

@@ -291,5 +291,8 @@
   "continue": "Kontynuuj",
   "loading_editor": "Ładowanie edytora...",
   "editor_fallback_warning": "Nie udało się załadować edytora kodu. Używane jest zamiast tego prostego pola tekstowego.",
-  "return_to_settings": "Powrót do ustawień"
+  "return_to_settings": "Powrót do ustawień",
+  "import_account_backup": "Importuj kopię zapasową konta",
+  "account_auto_generated": "To konto zostało automatycznie wygenerowane przez 5chan, rejestracja nie jest wymagana.",
+  "download_backup": "Pobierz kopię zapasową"
 }

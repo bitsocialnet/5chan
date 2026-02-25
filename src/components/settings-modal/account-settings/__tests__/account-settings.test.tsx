@@ -18,7 +18,6 @@ vi.mock('react-i18next', () => ({
 vi.mock('@plebbit/plebbit-react-hooks', () => ({
   useAccount: () => ({ id: 'test-id', name: 'Account 1', author: { address: '0x123', shortAddress: '0x1...3' } }),
   useAccounts: () => ({ accounts: [{ id: 'test-id', name: 'Account 1', author: { shortAddress: '0x1...3' } }] }),
-  createAccount: vi.fn(),
   deleteAccount: vi.fn(),
   exportAccount: vi.fn(),
   importAccount: vi.fn(),
@@ -70,13 +69,13 @@ describe('AccountSettings', () => {
     expect(buttons.some((b) => (b.textContent ?? '').includes('edit'))).toBe(true);
   });
 
-  it('renders create, import, export buttons', () => {
+  it('renders download_backup and import_account_backup buttons', () => {
     render(createElement(AccountSettings));
     const buttons = Array.from(container.querySelectorAll('button'));
     const texts = buttons.map((b) => b.textContent ?? '');
-    expect(texts.some((t) => t.includes('create'))).toBe(true);
-    expect(texts.some((t) => t.includes('import'))).toBe(true);
-    expect(texts.some((t) => t.includes('export'))).toBe(true);
+    expect(texts.some((t) => t.includes('download_backup'))).toBe(true);
+    expect(texts.some((t) => t.includes('import_account_backup'))).toBe(true);
+    expect(texts.some((t) => t.includes('create'))).toBe(false);
   });
 
   it('renders delete_account button', () => {

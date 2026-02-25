@@ -291,5 +291,8 @@
   "continue": "Devam",
   "loading_editor": "Düzenleyici yükleniyor...",
   "editor_fallback_warning": "Kod düzenleyici yüklenemedi. Bunun yerine düz bir metin alanı kullanılıyor.",
-  "return_to_settings": "Ayarlara Dön"
+  "return_to_settings": "Ayarlara Dön",
+  "import_account_backup": "Hesap yedeğini içe aktar",
+  "account_auto_generated": "Bu hesap 5chan tarafından otomatik olarak oluşturuldu, kayıt gerekmez.",
+  "download_backup": "Yedek indir"
 }
