@@ -21,6 +21,22 @@
       }
     },
     {
+      "address": "food-and-cooking.eth",
+      "title": "/ck/ - Food & Cooking",
+      "directoryCode": "ck",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      }
+    },
+    {
       "address": "politically-incorrect.eth",
       "title": "/pol/ - Politically Incorrect",
       "directoryCode": "pol",
