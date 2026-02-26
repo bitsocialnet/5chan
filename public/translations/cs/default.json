@@ -295,5 +295,6 @@
   "import_account_backup": "Importovat zálohu účtu",
   "account_auto_generated": "Tento účet byl automaticky vygenerován 5chanem, registrace není nutná.",
   "download_backup": "Stáhnout zálohu",
-  "boards_you_moderate_nav": "Fóra, která moderujete"
+  "boards_you_moderate_nav": "Fóra, která moderujete",
+  "link_to_file": "Odkaz na soubor"
 }

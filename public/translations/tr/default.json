@@ -295,5 +295,6 @@
   "import_account_backup": "Hesap yedeğini içe aktar",
   "account_auto_generated": "Bu hesap 5chan tarafından otomatik olarak oluşturuldu, kayıt gerekmez.",
   "download_backup": "Yedek indir",
-  "boards_you_moderate_nav": "Yönettiğiniz panolar"
+  "boards_you_moderate_nav": "Yönettiğiniz panolar",
+  "link_to_file": "Dosyaya bağlantı"
 }

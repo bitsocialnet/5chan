@@ -295,5 +295,6 @@
   "import_account_backup": "Імпорт резервної копії облікового запису",
   "account_auto_generated": "Цей обліковий запис було автоматично створено 5chan, реєстрація не потрібна.",
   "download_backup": "Завантажити резервну копію",
-  "boards_you_moderate_nav": "Дошки, які ви модеруєте"
+  "boards_you_moderate_nav": "Дошки, які ви модеруєте",
+  "link_to_file": "Посилання на файл"
 }

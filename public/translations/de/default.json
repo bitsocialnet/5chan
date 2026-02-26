@@ -295,5 +295,6 @@
   "import_account_backup": "Kontosicherung importieren",
   "account_auto_generated": "Dieses Konto wurde automatisch von 5chan erstellt, keine Anmeldung erforderlich.",
   "download_backup": "Sicherung herunterladen",
-  "boards_you_moderate_nav": "Von dir moderierte Boards"
+  "boards_you_moderate_nav": "Von dir moderierte Boards",
+  "link_to_file": "Link zur Datei"
 }

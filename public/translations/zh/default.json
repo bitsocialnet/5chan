@@ -295,5 +295,6 @@
   "import_account_backup": "导入账户备份",
   "account_auto_generated": "此账户由 5chan 自动生成，无需注册。",
   "download_backup": "下载备份",
-  "boards_you_moderate_nav": "您管理的板块"
+  "boards_you_moderate_nav": "您管理的板块",
+  "link_to_file": "链接到文件"
 }

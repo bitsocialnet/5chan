@@ -295,5 +295,6 @@
   "import_account_backup": "Importar backup da conta",
   "account_auto_generated": "Esta conta foi gerada automaticamente pelo 5chan, sem necessidade de cadastro.",
   "download_backup": "Baixar backup",
-  "boards_you_moderate_nav": "Quadros que você modera"
+  "boards_you_moderate_nav": "Quadros que você modera",
+  "link_to_file": "Link para o arquivo"
 }

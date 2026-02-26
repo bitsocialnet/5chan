@@ -295,5 +295,6 @@
   "import_account_backup": "Importer kontobackup",
   "account_auto_generated": "Denne kontoen ble automatisk opprettet av 5chan, ingen registrering nødvendig.",
   "download_backup": "Last ned sikkerhetskopi",
-  "boards_you_moderate_nav": "Boards du modererer"
+  "boards_you_moderate_nav": "Boards du modererer",
+  "link_to_file": "Lenke til fil"
 }

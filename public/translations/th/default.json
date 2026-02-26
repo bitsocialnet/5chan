@@ -295,5 +295,6 @@
   "import_account_backup": "นำเข้ารายการสำรองของบัญชี",
   "account_auto_generated": "บัญชีนี้ถูกสร้างโดยอัตโนมัติโดย 5chan ไม่ต้องสมัครสมาชิก",
   "download_backup": "ดาวน์โหลดสำรอง",
-  "boards_you_moderate_nav": "บอร์ดที่คุณดูแล"
+  "boards_you_moderate_nav": "บอร์ดที่คุณดูแล",
+  "link_to_file": "ลิงก์ไปยังไฟล์"
 }

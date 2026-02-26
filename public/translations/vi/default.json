@@ -295,5 +295,6 @@
   "import_account_backup": "Nhập bản sao lưu tài khoản",
   "account_auto_generated": "Tài khoản này được tạo tự động bởi 5chan, không cần đăng ký.",
   "download_backup": "Tải xuống bản sao lưu",
-  "boards_you_moderate_nav": "Các bảng bạn điều hành"
+  "boards_you_moderate_nav": "Các bảng bạn điều hành",
+  "link_to_file": "Liên kết đến tệp"
 }

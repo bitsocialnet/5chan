@@ -295,5 +295,6 @@
   "import_account_backup": "Importo backup të llogarisë",
   "account_auto_generated": "Ky llogari u krijua automatikisht nga 5chan, nuk kërkohet regjistrim.",
   "download_backup": "Shkarko kopjen e rezervë",
-  "boards_you_moderate_nav": "Bordet që moderoni"
+  "boards_you_moderate_nav": "Bordet që moderoni",
+  "link_to_file": "Lidhje me skedarin"
 }

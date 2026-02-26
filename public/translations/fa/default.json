@@ -295,5 +295,6 @@
   "import_account_backup": "وارد کردن پشتیبان حساب",
   "account_auto_generated": "این حساب به‌طور خودکار توسط 5chan ایجاد شده، نیازی به ثبت‌نام نیست.",
   "download_backup": "دانلود پشتیبان",
-  "boards_you_moderate_nav": "تابلوهایی که مدیریت می‌کنید"
+  "boards_you_moderate_nav": "تابلوهایی که مدیریت می‌کنید",
+  "link_to_file": "لینک به فایل"
 }

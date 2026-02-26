@@ -295,5 +295,6 @@
   "import_account_backup": "アカウントバックアップをインポート",
   "account_auto_generated": "このアカウントは5chanによって自動生成されました。サインアップは不要です。",
   "download_backup": "バックアップをダウンロード",
-  "boards_you_moderate_nav": "あなたがモデレートする板"
+  "boards_you_moderate_nav": "あなたがモデレートする板",
+  "link_to_file": "ファイルへのリンク"
 }

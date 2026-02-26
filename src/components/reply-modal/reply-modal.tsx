@@ -37,6 +37,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
   const { t } = useTranslation();
   const directoryEntry = useDirectoryByAddress(subplebbitAddress);
   const showSpoilerForReply = directoryEntry?.features?.noSpoilerReplies !== true;
+  const requirePostLinkIsMedia = directoryEntry?.features?.requirePostLinkIsMedia === true;
   const { setPublishReplyOptions, publishReply, resetPublishReplyOptions, replyIndex } = usePublishReply({
     cid: parentCid,
     subplebbitAddress,
@@ -322,7 +323,13 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
           />
         </div>
         <div className={styles.link}>
-          <input type='text' ref={urlRef} placeholder={capitalize(t('link'))} disabled={isUploading} onChange={(e) => setPublishReplyOptions({ link: e.target.value })} />
+          <input
+            type='text'
+            ref={urlRef}
+            placeholder={capitalize(requirePostLinkIsMedia ? t('link_to_file') : t('link'))}
+            disabled={isUploading}
+            onChange={(e) => setPublishReplyOptions({ link: e.target.value })}
+          />
         </div>
         <div className={styles.content}>
           <textarea

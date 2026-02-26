@@ -295,5 +295,6 @@
   "import_account_backup": "Impor Cadangan Akun",
   "account_auto_generated": "Akun ini dibuat secara otomatis oleh 5chan, tidak perlu mendaftar.",
   "download_backup": "Unduh cadangan",
-  "boards_you_moderate_nav": "Papan yang Anda moderasi"
+  "boards_you_moderate_nav": "Papan yang Anda moderasi",
+  "link_to_file": "Tautan ke File"
 }

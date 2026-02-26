@@ -115,6 +115,7 @@ interface PostFormFieldsProps {
   accountSubplebbitAddresses: string[];
   subscriptions: string[];
   subplebbitAddress: string | undefined;
+  requirePostLinkIsMedia: boolean;
   onPublishReply: () => void;
   onPublishPost: () => void;
   handleUpload: () => void;
@@ -146,6 +147,7 @@ const PostFormFields = ({
   accountSubplebbitAddresses,
   subscriptions,
   subplebbitAddress,
+  requirePostLinkIsMedia,
   onPublishReply,
   onPublishPost,
   handleUpload,
@@ -212,7 +214,7 @@ const PostFormFields = ({
       </td>
     </tr>
     <tr>
-      <td>{t('link')}</td>
+      <td>{requirePostLinkIsMedia ? t('link_to_file') : t('link')}</td>
       <td className={styles.linkField}>
         <input
           type='text'
@@ -322,6 +324,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
   const directoryEntry = useDirectoryByAddress(effectiveBoardAddress);
   const showSpoilerForPost = directoryEntry?.features?.noSpoilers !== true;
   const showSpoilerForReply = directoryEntry?.features?.noSpoilerReplies !== true;
+  const requirePostLinkIsMedia = directoryEntry?.features?.requirePostLinkIsMedia === true;
 
   const { accountSubplebbits } = useAccountSubplebbits();
   const accountSubplebbitAddresses = Object.keys(accountSubplebbits);
@@ -502,6 +505,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
           accountSubplebbitAddresses={accountSubplebbitAddresses}
           subscriptions={subscriptions}
           subplebbitAddress={subplebbitAddress}
+          requirePostLinkIsMedia={requirePostLinkIsMedia}
           onPublishReply={onPublishReply}
           onPublishPost={onPublishPost}
           handleUpload={handleUpload}

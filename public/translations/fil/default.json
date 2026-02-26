@@ -295,5 +295,6 @@
   "import_account_backup": "I-import ang Backup ng Account",
   "account_auto_generated": "Ang account na ito ay awtomatikong nilikha ng 5chan, walang kailangang signup.",
   "download_backup": "I-download ang Backup",
-  "boards_you_moderate_nav": "Mga board na minomodera mo"
+  "boards_you_moderate_nav": "Mga board na minomodera mo",
+  "link_to_file": "Link sa File"
 }
