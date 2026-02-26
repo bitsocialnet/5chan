@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import localForageLru from '@plebbit/plebbit-react-hooks/dist/lib/localforage-lru/index.js';
 
 const gifFrameDb = localForageLru.createInstance({ name: '5chanGifFrames', size: 500 });
+const failedUrls = new Set<string>();
 
 const getCachedGifFrame = async (url: string): Promise<string | null> => {
   return await gifFrameDb.getItem(url);
@@ -72,6 +73,10 @@ const useFetchGifFirstFrame = (url: string | undefined) => {
     let isActive = true;
 
     const fetchFrame = async () => {
+      if (failedUrls.has(url)) {
+        if (isActive) setFrameUrl(null);
+        return;
+      }
       try {
         const cachedFrame = await getCachedGifFrame(url);
         if (cachedFrame) {
@@ -91,6 +96,7 @@ const useFetchGifFirstFrame = (url: string | undefined) => {
           await setCachedGifFrame(url, objectUrl);
         }
       } catch (error) {
+        failedUrls.add(url);
         console.error('Failed to load GIF frame:', error);
         if (isActive) setFrameUrl(null);
       }

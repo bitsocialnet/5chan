@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Comment, setAccount, useAccount, useAccountComment, useAccountSubplebbits, useEditedComment } from '@plebbit/plebbit-react-hooks';
-import Plebbit from '@plebbit/plebbit-js';
+import getShortAddress from '../../lib/get-short-address';
 import useSubplebbitsStore from '@plebbit/plebbit-react-hooks/dist/stores/subplebbits';
 import useSubplebbitsPagesStore from '@plebbit/plebbit-react-hooks/dist/stores/subplebbits-pages';
 import { getHasThumbnail, getLinkMediaInfo } from '../../lib/utils/media-utils';
@@ -280,7 +280,7 @@ const PostFormFields = ({
             {isInModView &&
               accountSubplebbitAddresses.map((address: string) => (
                 <option key={address} value={address}>
-                  {address && Plebbit.getShortAddress({ address })}
+                  {address && getShortAddress(address)}
                 </option>
               ))}
             {isInSubscriptionsView &&

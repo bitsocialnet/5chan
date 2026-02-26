@@ -4,7 +4,7 @@ import { Trans, useTranslation } from 'react-i18next';
 import { Comment, useComment } from '@plebbit/plebbit-react-hooks';
 import useSubplebbitsPagesStore from '@plebbit/plebbit-react-hooks/dist/stores/subplebbits-pages';
 import usePostNumberStore from '../../stores/use-post-number-store';
-import Plebbit from '@plebbit/plebbit-js';
+import getShortAddress from '../../lib/get-short-address';
 import { getFormattedDate, getFormattedTimeAgo } from '../../lib/utils/time-utils';
 import { isPostPageView } from '../../lib/utils/view-utils';
 import useIsMobile from '../../hooks/use-is-mobile';
@@ -253,7 +253,7 @@ const CommentContent = ({ comment: post }: { comment: Comment }) => {
           <br />
           <Tooltip
             content={`${t('ban_expires_at', {
-              address: subplebbitAddress && Plebbit.getShortAddress({ address: subplebbitAddress }),
+              address: subplebbitAddress && getShortAddress(subplebbitAddress),
               timestamp: getFormattedDate(post?.author?.subplebbit?.banExpiresAt),
               interpolation: { escapeValue: false },
             })}${reason ? `. ${capitalize(t('reason'))}: "${reason}"` : ''}`}

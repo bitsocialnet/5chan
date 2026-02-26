@@ -1,10 +1,9 @@
 if (import.meta.env.DEV) {
-  const { scan, getReport } = await import('react-scan');
-  scan({
-    enabled: true,
-    showToolbar: !(window as any).__PROFILING__,
-    playSound: !(window as any).__PROFILING__,
-    report: true,
+  import('react-scan').then(({ scan, getReport }) => {
+    scan({
+      enabled: true,
+      showToolbar: !(window as any).__PROFILING__,
+    });
+    (window as any).__getReactScanReport = getReport;
   });
-  (window as any).__getReactScanReport = getReport;
 }

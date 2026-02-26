@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import { useFloating, offset, size, Placement } from '@floating-ui/react';
 import { Comment, useReplies } from '@plebbit/plebbit-react-hooks';
-import Plebbit from '@plebbit/plebbit-js';
+import getShortAddress from '../../lib/get-short-address';
 import { shouldShowSnow } from '../../lib/snow';
 import { getHasThumbnail } from '../../lib/utils/media-utils';
 import { getFormattedTimeAgo } from '../../lib/utils/time-utils';
@@ -57,8 +57,8 @@ export const CatalogPostMedia = ({ cid, commentMediaInfo, linkWidth, linkHeight 
   }
 
   if (type === 'audio') {
-    displayWidth = 'unset';
-    displayHeight = 'unset';
+    displayWidth = `${maxThumbnailSize}px`;
+    displayHeight = '54px';
   }
 
   const numericWidth = parseInt(displayWidth) || undefined;
@@ -288,7 +288,7 @@ const CatalogPost = memo(
                 {author?.displayName || capitalize(t('anonymous'))}
                 {isCatalogPostAuthorMod && <span className='capitalize'>{` ## Board ${catalogPostAuthorRole}`}</span>}
               </span>
-              {(isInAllView || isInSubscriptionsView) && subplebbitAddress && ` to p/${Plebbit.getShortAddress({ address: subplebbitAddress })}`}
+              {(isInAllView || isInSubscriptionsView) && subplebbitAddress && ` to p/${getShortAddress(subplebbitAddress)}`}
               <span className={styles.postAgo}> {getFormattedTimeAgo(timestamp)}</span>
               {replyCount > 0 && (
                 <div className={styles.postLast}>

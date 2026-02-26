@@ -622,12 +622,17 @@ export const ModQueueButton = ({ boardIdentifier, isMobile }: ModQueueButtonProp
   // Only fetch if we have addresses to check and permissions
   const shouldFetch = subplebbitAddresses.length > 0 && isModOfBoard;
 
-  const { feed } = useFeed({
-    subplebbitAddresses: shouldFetch ? subplebbitAddresses : [],
-    modQueue: ['pendingApproval'],
-    sortType: 'new',
-    postsPerPage: 200, // Fetch more items to get accurate pending count for the badge
-  });
+  const feedAddresses = shouldFetch ? subplebbitAddresses : [];
+  const feedOptions = useMemo(
+    () => ({
+      subplebbitAddresses: feedAddresses,
+      modQueue: ['pendingApproval'],
+      sortType: 'new' as const,
+      postsPerPage: 200,
+    }),
+    [feedAddresses],
+  );
+  const { feed } = useFeed(feedOptions);
 
   if (!shouldFetch || subplebbitAddresses.length === 0) {
     return null;
@@ -694,11 +699,15 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
   const subplebbit = useSubplebbit({ subplebbitAddress });
   const { error: subplebbitError } = subplebbit || {};
 
-  const { feed, hasMore, loadMore, reset } = useFeed({
-    subplebbitAddresses,
-    modQueue: ['pendingApproval'],
-    postsPerPage: 50,
-  });
+  const feedOptions = useMemo(
+    () => ({
+      subplebbitAddresses,
+      modQueue: ['pendingApproval'],
+      postsPerPage: 50,
+    }),
+    [subplebbitAddresses],
+  );
+  const { feed, hasMore, loadMore, reset } = useFeed(feedOptions);
 
   const setResetFunction = useFeedResetStore((state) => state.setResetFunction);
   useEffect(() => {

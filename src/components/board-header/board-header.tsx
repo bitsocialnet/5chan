@@ -4,7 +4,7 @@ import { useLocation, useParams, useNavigate } from 'react-router-dom';
 import { useAccountComment } from '@plebbit/plebbit-react-hooks';
 import useAccountsStore from '@plebbit/plebbit-react-hooks/dist/stores/accounts';
 import useSubplebbitsStore from '@plebbit/plebbit-react-hooks/dist/stores/subplebbits';
-import Plebbit from '@plebbit/plebbit-js';
+import getShortAddress from '../../lib/get-short-address';
 import { useStableSubplebbit } from '../../hooks/use-stable-subplebbit';
 import { isAllView, isSubscriptionsView, isModView } from '../../lib/utils/view-utils';
 import styles from './board-header.module.css';
@@ -95,7 +95,7 @@ const BoardHeader = () => {
             ? shortAddress.endsWith('.eth') || shortAddress.endsWith('.sol')
               ? shortAddress.slice(0, -4)
               : shortAddress
-            : subplebbitAddress && Plebbit.getShortAddress({ address: subplebbitAddress }))}
+            : subplebbitAddress && getShortAddress(subplebbitAddress))}
         {!isInAllView && !isInSubscriptionsView && !isInModView && <OfflineIndicator subplebbitAddress={subplebbitAddress} />}
       </div>
       <div className={styles.boardSubtitle}>

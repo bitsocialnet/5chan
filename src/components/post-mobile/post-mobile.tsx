@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigationType, useParams } from 'react-router-dom';
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
 import { Comment, useEditedComment, useReplies, useAccount, usePublishCommentModeration, useAccountComment } from '@plebbit/plebbit-react-hooks';
-import Plebbit from '@plebbit/plebbit-js';
+import getShortAddress from '../../lib/get-short-address';
 import styles from '../../views/post/post.module.css';
 import { shouldShowSnow } from '../../lib/snow';
 import { getHasThumbnail } from '../../lib/utils/media-utils';
@@ -66,7 +66,7 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
         ? boardPath
         : subplebbitAddress.endsWith('.eth') || subplebbitAddress.endsWith('.sol')
           ? subplebbitAddress
-          : Plebbit.getShortAddress({ address: subplebbitAddress })
+          : getShortAddress(subplebbitAddress)
       : undefined;
   const isReply = parentCid;
   const title = post?.title?.trim();
@@ -203,7 +203,7 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
     return Math.max(domCount, 1);
   })();
 
-  const userID = address && Plebbit.getShortAddress({ address }); // shortened to 8 chars for display; users can verify the full user ID via "Copy user ID" in the post menu to guard against spoofing
+  const userID = address && getShortAddress(address); // shortened to 8 chars for display; users can verify the full user ID via "Copy user ID" in the post menu to guard against spoofing
   const userIDBackgroundColor = hashStringToColor(userID);
   const userIDTextColor = getTextColorForBackground(userIDBackgroundColor);
 

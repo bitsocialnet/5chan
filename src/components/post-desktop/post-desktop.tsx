@@ -3,7 +3,7 @@ import { Trans, useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigationType, useParams } from 'react-router-dom';
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
 import { Comment, useEditedComment, useReplies, useAccount, useAccountComment } from '@plebbit/plebbit-react-hooks';
-import Plebbit from '@plebbit/plebbit-js';
+import getShortAddress from '../../lib/get-short-address';
 import styles from '../../views/post/post.module.css';
 import { CommentMediaInfo, getDisplayMediaInfoType, getHasThumbnail, getMediaDimensions } from '../../lib/utils/media-utils';
 import { hashStringToColor, getTextColorForBackground } from '../../lib/utils/post-utils';
@@ -211,7 +211,7 @@ const PostInfo = ({
   const alertThresholdSeconds = getAlertThresholdSeconds();
   const isOverThreshold = isAwaitingApproval && timeWaiting > alertThresholdSeconds;
 
-  const userID = address && Plebbit.getShortAddress({ address }); // shortened to 8 chars for display; users can verify the full user ID via "Copy user ID" in the post menu to guard against spoofing
+  const userID = address && getShortAddress(address); // shortened to 8 chars for display; users can verify the full user ID via "Copy user ID" in the post menu to guard against spoofing
   const userIDBackgroundColor = hashStringToColor(userID);
   const userIDTextColor = getTextColorForBackground(userIDBackgroundColor);
 
@@ -562,7 +562,7 @@ const PostMedia = ({
       ? boardPath
       : subplebbitAddress.endsWith('.eth') || subplebbitAddress.endsWith('.sol')
         ? subplebbitAddress
-        : Plebbit.getShortAddress({ address: subplebbitAddress });
+        : getShortAddress(subplebbitAddress);
 
   return (
     <div className={styles.file}>
@@ -741,7 +741,7 @@ const PostDesktop = ({
         ? boardPath
         : subplebbitAddress.endsWith('.eth') || subplebbitAddress.endsWith('.sol')
           ? subplebbitAddress
-          : Plebbit.getShortAddress({ address: subplebbitAddress })
+          : getShortAddress(subplebbitAddress)
       : undefined;
 
   const { hidden, unhide, hide } = useHide({ cid });

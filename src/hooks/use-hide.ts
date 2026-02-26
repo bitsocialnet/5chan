@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { create } from 'zustand';
 import localForageLru from '@plebbit/plebbit-react-hooks/dist/lib/localforage-lru/index.js';
 
@@ -46,16 +46,14 @@ const initializeHideStore = async () => {
 initializeHideStore();
 
 const useHide = ({ cid }: { cid: string }) => {
-  const hiddenCids = useHideStore((state) => state.hiddenCids);
+  const hidden = useHideStore((state) => !!state.hiddenCids[cid]);
   const hide = useHideStore((state) => state.hide);
   const unhide = useHideStore((state) => state.unhide);
-
-  const hidden = !!hiddenCids[cid];
 
   const hideCallback = useCallback(() => hide(cid), [hide, cid]);
   const unhideCallback = useCallback(() => unhide(cid), [unhide, cid]);
 
-  return { hidden, hide: hideCallback, unhide: unhideCallback };
+  return useMemo(() => ({ hidden, hide: hideCallback, unhide: unhideCallback }), [hidden, hideCallback, unhideCallback]);
 };
 
 export default useHide;

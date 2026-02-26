@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import Plebbit from '@plebbit/plebbit-js';
+import getShortAddress from '../../lib/get-short-address';
 import { useAccountComment } from '@plebbit/plebbit-react-hooks';
 import useAccountsStore from '@plebbit/plebbit-react-hooks/dist/stores/accounts';
 import { isAllView, isCatalogView, isSubscriptionsView } from '../../lib/utils/view-utils';
@@ -200,7 +200,7 @@ const BoardsBarDesktop = () => {
   // Render a subscription link
   const renderSubscription = (address: string, index: number, total: number) => {
     const boardPath = getBoardPath(address, directories);
-    const displayText = address.endsWith('.eth') || address.endsWith('.sol') ? address : Plebbit.getShortAddress({ address });
+    const displayText = address.endsWith('.eth') || address.endsWith('.sol') ? address : getShortAddress(address);
 
     return (
       <span key={address}>

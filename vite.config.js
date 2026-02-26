@@ -169,6 +169,15 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
+          if (/[\\/]node_modules[\\/](@plebbit[\\/]plebbit-js)[\\/]/.test(id)) {
+            return 'plebbit-js';
+          }
+          if (/[\\/]node_modules[\\/](@plebbit[\\/]plebbit-react-hooks)[\\/]/.test(id)) {
+            return 'plebbit-react-hooks';
+          }
+          if (/[\\/]node_modules[\\/](@react-spring|@use-gesture)[\\/]/.test(id)) {
+            return 'spring-gesture';
+          }
           if (/[\\/]node_modules[\\/](react|react-dom|react-router-dom|react-i18next|i18next|i18next-browser-languagedetector|i18next-http-backend)[\\/]/.test(id)) {
             return 'vendor';
           }
