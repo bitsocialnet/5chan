@@ -40,6 +40,7 @@ import { alertChallengeVerificationFailed } from '../../lib/utils/challenge-util
 import useQuotedByMap from '../../hooks/use-quoted-by-map';
 import useProgressiveRender from '../../hooks/use-progressive-render';
 import { BOARD_REPLIES_PREVIEW_FETCH_SIZE, BOARD_REPLIES_PREVIEW_VISIBLE_COUNT, REPLIES_PER_PAGE } from '../../lib/constants';
+import { getPreviewDisplayReplies } from '../../lib/utils/replies-preview-utils';
 
 const { addChallenge } = useChallengesStore.getState();
 
@@ -590,6 +591,7 @@ const PostMobile = ({
 
   // Filter out deleted replies with no children for both virtuoso and non-virtuoso rendering
   const filteredReplies = repliesForRender.filter((reply) => !(reply.deleted && (reply.replyCount === 0 || !reply.replyCount)));
+  const previewDisplayReplies = getPreviewDisplayReplies(filteredReplies, BOARD_REPLIES_PREVIEW_VISIBLE_COUNT);
 
   const directRepliesByParentCid = (() => {
     const map = new Map<string, Comment[]>();
@@ -778,7 +780,7 @@ const PostMobile = ({
               !isInPendingPostView &&
               repliesForRender &&
               showReplies &&
-              filteredReplies.slice(-BOARD_REPLIES_PREVIEW_VISIBLE_COUNT).map((reply) => (
+              previewDisplayReplies.map((reply) => (
                 <div key={reply.cid} className={styles.replyContainer}>
                   <Reply
                     postReplyCount={replyCount}
