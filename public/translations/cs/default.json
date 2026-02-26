@@ -173,7 +173,7 @@
   "no_board_selected_warning": "Vyberte desku před odesláním.",
   "invalid_url_alert": "Poskytnutý odkaz není platná adresa URL.",
   "empty_comment_alert": "Nelze publikovat prázdný komentář.",
-  "stored_locally": "Ukládáno lokálně (v datech {{location}}), nesynchronizováno mezi zařízeními",
+  "stored_locally": "Ukládáno lokálně (v datech {{location}}), nesynchronizuje se mezi zařízeními.",
   "choose_one": "Vyberte jednu:",
   "create": "Vytvořit",
   "save_changes": "Uložit změny",

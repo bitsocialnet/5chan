@@ -173,7 +173,7 @@
   "no_board_selected_warning": "Valitse taulu ennen julkaisemista.",
   "invalid_url_alert": "Annettu linkki ei ole voimassa oleva URL.",
   "empty_comment_alert": "Ei voi julkaista tyhjää kommenttia.",
-  "stored_locally": "Tallennettu paikallisesti ({{location}}-datassa), ei synkronoidu laitteiden välillä",
+  "stored_locally": "Tallennettu paikallisesti ({{location}}-tiedoissa), ei synkronoidu laitteiden välillä.",
   "choose_one": "Valitse yksi:",
   "create": "Luo",
   "save_changes": "Tallenna muutokset",

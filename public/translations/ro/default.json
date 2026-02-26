@@ -173,7 +173,7 @@
   "no_board_selected_warning": "Vă rugăm să selectați un tablou înainte de a publica.",
   "invalid_url_alert": "Linkul furnizat nu este un URL valid.",
   "empty_comment_alert": "Nu se poate publica un comentariu gol.",
-  "stored_locally": "Stocat local (în datele {{location}}), nesincronizat între dispozitive",
+  "stored_locally": "Stocat local (în datele {{location}}), nesincronizat între dispozitive.",
   "choose_one": "Alege una:",
   "create": "Creează",
   "save_changes": "Salvează modificările",

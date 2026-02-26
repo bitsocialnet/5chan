@@ -173,7 +173,7 @@
   "no_board_selected_warning": "Vänligen välj en tavla innan du postar.",
   "invalid_url_alert": "Den angivna länken är inte en giltig URL.",
   "empty_comment_alert": "Kan inte posta tom kommentar.",
-  "stored_locally": "Lagrat lokalt (i {{location}} data), inte synkroniserat mellan enheter",
+  "stored_locally": "Lagrat lokalt (i {{location}} data), inte synkroniserat mellan enheter.",
   "choose_one": "Välj en:",
   "create": "Skapa",
   "save_changes": "Spara ändringar",

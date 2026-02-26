@@ -183,7 +183,7 @@
   "no_board_selected_warning": "Please select a board before posting.",
   "invalid_url_alert": "The provided link is not a valid URL.",
   "empty_comment_alert": "Cannot post empty comment.",
-  "stored_locally": "Stored locally (in {{location}} data), not synced across devices",
+  "stored_locally": "Stored locally (in {{location}} data), not synced across devices.",
   "choose_one": "Choose one:",
   "create": "Create",
   "save_changes": "Save Changes",

@@ -173,7 +173,7 @@
   "no_board_selected_warning": "Per favore, seleziona una board prima di pubblicare.",
   "invalid_url_alert": "Il link fornito non è un URL valido.",
   "empty_comment_alert": "Impossibile pubblicare un commento vuoto.",
-  "stored_locally": "Archiviato localmente (nei dati di {{location}}), non sincronizzato tra dispositivi",
+  "stored_locally": "Memorizzato localmente (nei dati {{location}}), non sincronizzato tra i dispositivi.",
   "choose_one": "Scegline una:",
   "create": "Crea",
   "save_changes": "Salva Modifiche",

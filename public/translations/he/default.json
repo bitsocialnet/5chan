@@ -173,7 +173,7 @@
   "no_board_selected_warning": "אנא בחר לוח לפני פרסום.",
   "invalid_url_alert": "הלינק שסופק אינו כתובת URL חוקית.",
   "empty_comment_alert": "לא ניתן לפרסם תגובה ריקה.",
-  "stored_locally": "נשמר מקומית (בנתוני {{location}}), לא מסונכרן בין מכשירים",
+  "stored_locally": "נשמר מקומית (בנתוני {{location}}), לא מסונכרן בין מכשירים.",
   "choose_one": "בחר אחת:",
   "create": "צור",
   "save_changes": "שמור שינויים",

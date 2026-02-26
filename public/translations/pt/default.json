@@ -173,7 +173,7 @@
   "no_board_selected_warning": "Por favor, selecione um quadro antes de postar.",
   "invalid_url_alert": "O link fornecido não é uma URL válida.",
   "empty_comment_alert": "Não é possível postar um comentário vazio.",
-  "stored_locally": "Armazenado localmente (nos dados de {{location}}), não sincronizado entre dispositivos",
+  "stored_locally": "Armazenado localmente (nos dados {{location}}), não sincronizado entre dispositivos.",
   "choose_one": "Escolha um:",
   "create": "Criar",
   "save_changes": "Salvar Alterações",

@@ -173,7 +173,7 @@
   "no_board_selected_warning": "Vælg en tavle, før du poster.",
   "invalid_url_alert": "Det angivne link er ikke en gyldig URL.",
   "empty_comment_alert": "Kan ikke poste en tom kommentar.",
-  "stored_locally": "Lagres lokalt (i {{location}} data), ikke synkroniseret på tværs af enheder",
+  "stored_locally": "Gemt lokalt (i {{location}} data), ikke synkroniseret på tværs af enheder.",
   "choose_one": "Vælg en:",
   "create": "Opret",
   "save_changes": "Gem ændringer",

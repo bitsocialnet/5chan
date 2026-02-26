@@ -173,7 +173,7 @@
   "no_board_selected_warning": "يرجى تحديد لوحة قبل النشر.",
   "invalid_url_alert": "الرابط المقدم ليس عنوان URL صالحًا.",
   "empty_comment_alert": "لا يمكن نشر تعليق فارغ.",
-  "stored_locally": "مُخزّن محليًا (في بيانات {{location}})، غير مُزامَن بين الأجهزة",
+  "stored_locally": "مخزن محلياً (في بيانات {{location}})، غير مزامن عبر الأجهزة.",
   "choose_one": "اختر واحدة:",
   "create": "إنشاء",
   "save_changes": "حفظ التغييرات",

@@ -173,7 +173,7 @@
   "no_board_selected_warning": "Veuillez sélectionner un tableau avant de publier.",
   "invalid_url_alert": "Le lien fourni n'est pas une URL valide.",
   "empty_comment_alert": "Impossible de publier un commentaire vide.",
-  "stored_locally": "Stocké localement (dans les données {{location}}), non synchronisé entre les appareils",
+  "stored_locally": "Stocké localement (dans les données {{location}}), non synchronisé entre les appareils.",
   "choose_one": "Choisissez-en un :",
   "create": "Créer",
   "save_changes": "Enregistrer les modifications",

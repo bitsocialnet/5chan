@@ -173,7 +173,7 @@
   "no_board_selected_warning": "Lütfen gönderimden önce bir pano seçin.",
   "invalid_url_alert": "Verilen bağlantı geçerli bir URL değildir.",
   "empty_comment_alert": "Boş yorum gönderilemez.",
-  "stored_locally": "Yerel olarak depolandı ({{location}} verisinde), cihazlar arasında senkronize değil",
+  "stored_locally": "Yerel olarak depolandı ({{location}} verilerinde), cihazlar arasında senkronize edilmedi.",
   "choose_one": "Birini seç:",
   "create": "Oluştur",
   "save_changes": "Değişiklikleri Kaydet",

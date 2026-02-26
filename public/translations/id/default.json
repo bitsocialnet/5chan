@@ -173,7 +173,7 @@
   "no_board_selected_warning": "Silakan pilih papan sebelum memposting.",
   "invalid_url_alert": "Tautan yang diberikan bukan URL yang valid.",
   "empty_comment_alert": "Tidak dapat memposting komentar kosong.",
-  "stored_locally": "Disimpan secara lokal (dalam data {{location}}), tidak disinkronkan antar perangkat",
+  "stored_locally": "Disimpan secara lokal (dalam data {{location}}), tidak disinkronkan antar perangkat.",
   "choose_one": "Pilih satu:",
   "create": "Buat",
   "save_changes": "Simpan Perubahan",

@@ -173,7 +173,7 @@
   "no_board_selected_warning": "Ju lutemi zgjidhni një bord para se të postoni.",
   "invalid_url_alert": "Lidhja e ofruar nuk është një URL e vlefshme.",
   "empty_comment_alert": "Nuk mund të postoni një koment bosh.",
-  "stored_locally": "Ruhet lokalisht (në të dhënat {{location}}), nuk sinkronizohet ndër pajisjet",
+  "stored_locally": "Ruhet lokalisht (në të dhënat {{location}}), nuk sinkronizohet midis pajisjeve.",
   "choose_one": "Zgjidhni një:",
   "create": "Krijo",
   "save_changes": "Ruaj ndryshimet",

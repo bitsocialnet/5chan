@@ -173,7 +173,7 @@
   "no_board_selected_warning": "Vui lòng chọn một bảng trước khi đăng.",
   "invalid_url_alert": "Liên kết được cung cấp không phải là một URL hợp lệ.",
   "empty_comment_alert": "Không thể đăng bình luận trống.",
-  "stored_locally": "Lưu cục bộ (trong dữ liệu {{location}}), không đồng bộ giữa thiết bị",
+  "stored_locally": "Lưu cục bộ (trong dữ liệu {{location}}), không đồng bộ giữa các thiết bị.",
   "choose_one": "Chọn một:",
   "create": "Tạo",
   "save_changes": "Lưu thay đổi",
