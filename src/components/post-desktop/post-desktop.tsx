@@ -965,7 +965,7 @@ const PostDesktop = ({
           {!isHidden && !content && !(deleted || removed) && <div className={styles.spacer} />}
           {!isHidden && <CommentContent comment={post} />}
         </div>
-        {!isHidden && !isInPendingPostView && repliesCount > 0 && !isInPostPageView && (
+        {!isHidden && !isInPendingPostView && showReplies && repliesCount > 0 && !isInPostPageView && (
           <span className={styles.summary}>
             <span
               className={`${showOmittedReplies[cid] ? styles.hideOmittedReplies : styles.showOmittedReplies} ${styles.omittedRepliesButtonWrapper}`}
