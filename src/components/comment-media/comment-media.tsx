@@ -109,6 +109,29 @@ const Thumbnail = ({ commentMediaInfo, deleted, displayHeight, displayWidth, isF
   const thumbnailDimensions = { '--width': displayWidth, '--height': displayHeight } as React.CSSProperties;
 
   const linkWithoutThumbnail = url && new URL(url);
+  const fallbackLinkLabel = url ? getHostname(url) || (url.length > 30 ? `${url.slice(0, 30)}...` : url) : '';
+  const noThumbnailLink =
+    !hasThumbnail && linkWithoutThumbnail ? (
+      canEmbed(linkWithoutThumbnail) ? (
+        <span
+          role='button'
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              setShowThumbnail(false);
+            }
+          }}
+          onClick={() => setShowThumbnail(false)}
+        >
+          {fallbackLinkLabel}
+        </span>
+      ) : (
+        <a href={url} target='_blank' rel='noreferrer'>
+          {fallbackLinkLabel}
+        </a>
+      )
+    ) : null;
 
   return deleted || removed ? (
     <img className={styles.fileDeleted} src='assets/filedeleted-res.gif' alt='File deleted' />
@@ -132,32 +155,12 @@ const Thumbnail = ({ commentMediaInfo, deleted, displayHeight, displayWidth, isF
   ) : isMobile || isReply ? (
     <span className={`${styles.thumbnailSmall} ${thumbnailSmallPadding}`} style={thumbnailDimensions}>
       {thumbnailComponent}
-      {isMobile &&
-        !hasThumbnail &&
-        linkWithoutThumbnail &&
-        (canEmbed(linkWithoutThumbnail) ? (
-          <span
-            role='button'
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                setShowThumbnail(false);
-              }
-            }}
-            onClick={() => setShowThumbnail(false)}
-          >
-            {getHostname(url)}
-          </span>
-        ) : (
-          <a href={url} target='_blank' rel='noreferrer'>
-            {getHostname(url) || (url.length > 30 ? url.slice(0, 30) + '...' : url)}
-          </a>
-        ))}
+      {noThumbnailLink}
     </span>
   ) : (
     <span className={styles.thumbnailBig} style={thumbnailDimensions}>
       {thumbnailComponent}
+      {noThumbnailLink}
     </span>
   );
 };

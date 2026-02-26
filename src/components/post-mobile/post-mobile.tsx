@@ -404,10 +404,9 @@ const PostMediaContent = ({ post, link }: { post: any; link: string }) => {
   const [showThumbnail, setShowThumbnail] = useState(true);
   const { thumbnailUrl, linkWidth, linkHeight, spoiler, deleted, removed, parentCid } = post || {};
   const commentMediaInfo = useCommentMediaInfo(link, thumbnailUrl, linkWidth, linkHeight);
-  const hasThumbnail = getHasThumbnail(commentMediaInfo, link);
 
   return (
-    hasThumbnail && (
+    commentMediaInfo && (
       <CommentMedia
         commentMediaInfo={commentMediaInfo}
         deleted={deleted}

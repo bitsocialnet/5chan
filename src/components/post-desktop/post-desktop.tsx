@@ -619,7 +619,7 @@ const PostMedia = ({
           </span>
         )}
       </div>
-      {(hasThumbnail || (!hasThumbnail && !showThumbnail) || spoiler) && (
+      {(hasThumbnail || (!hasThumbnail && !showThumbnail) || spoiler || Boolean(commentMediaInfo?.url)) && (
         <div className={styles.fileThumbnail}>
           <CommentMedia
             commentMediaInfo={commentMediaInfo}
