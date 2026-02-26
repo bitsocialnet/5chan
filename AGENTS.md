@@ -117,6 +117,7 @@ src/
 ### Security and Boundaries
 
 - Never commit secrets or API keys.
+- Never push to a remote unless the user explicitly asks.
 - Test responsive behavior on mobile viewport.
 
 ## Core SHOULD Rules
