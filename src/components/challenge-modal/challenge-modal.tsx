@@ -279,6 +279,29 @@ const Challenge = ({ challenge, closeModal }: ChallengeProps) => {
   const mobileX = isIframeVisible ? 5 : window.innerWidth / 2 - 150;
   const mobileY = isIframeVisible ? Math.max(10, (window.innerHeight - 600) / 2) : window.innerHeight / 2 - 200;
 
+  const publicationDetails = (
+    <>
+      <div className={styles.name}>
+        <input type='text' value={displayName || capitalize(t('anonymous'))} disabled />
+      </div>
+      {title && (
+        <div className={styles.subject}>
+          <input type='text' value={title} disabled />
+        </div>
+      )}
+      {content && (
+        <div className={styles.content}>
+          <textarea value={content} disabled cols={48} rows={4} wrap='soft' />
+        </div>
+      )}
+      {link && (
+        <div className={styles.link}>
+          <input type='text' value={link} disabled />
+        </div>
+      )}
+    </>
+  );
+
   return (
     <animated.div
       className={containerClasses.join(' ')}
@@ -303,49 +326,11 @@ const Challenge = ({ challenge, closeModal }: ChallengeProps) => {
             readableUrl={readableUrl}
             closeModal={closeModal}
             onDone={onIframeClose}
-            publicationDetails={
-              <>
-                <div className={styles.name}>
-                  <input type='text' value={displayName || capitalize(t('anonymous'))} disabled />
-                </div>
-                {title && (
-                  <div className={styles.subject}>
-                    <input type='text' value={title} disabled />
-                  </div>
-                )}
-                {content && (
-                  <div className={styles.content}>
-                    <textarea value={content} disabled cols={48} rows={4} wrap='soft' />
-                  </div>
-                )}
-                {link && (
-                  <div className={styles.link}>
-                    <input type='text' value={link} disabled />
-                  </div>
-                )}
-              </>
-            }
+            publicationDetails={publicationDetails}
           />
         ) : (
           <>
-            <div className={styles.name}>
-              <input type='text' value={displayName || capitalize(t('anonymous'))} disabled />
-            </div>
-            {title && (
-              <div className={styles.subject}>
-                <input type='text' value={title} disabled />
-              </div>
-            )}
-            {content && (
-              <div className={styles.content}>
-                <textarea value={content} disabled cols={48} rows={4} wrap='soft' />
-              </div>
-            )}
-            {link && (
-              <div className={styles.link}>
-                <input type='text' value={link} disabled />
-              </div>
-            )}
+            {publicationDetails}
             <div className={styles.challengeContainer}>
               <input
                 ref={inputRef}
