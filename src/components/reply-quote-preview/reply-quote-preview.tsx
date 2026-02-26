@@ -131,8 +131,12 @@ const DesktopQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, i
     if (cid && subplebbitAddress) {
       const boardPath = getBoardPath(subplebbitAddress, directories);
       const threadRoute = `/${boardPath}/thread/${cid}`;
-      if (isOpQuote && location.pathname === threadRoute) {
-        scrollToThreadCardTop(cid);
+      if (isOpQuote) {
+        if (location.pathname === threadRoute) {
+          scrollToThreadCardTop(cid);
+        } else {
+          navigate(threadRoute);
+        }
         return;
       }
       if (scrollToReplyOnPage(cid)) return;
@@ -248,8 +252,12 @@ const MobileQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, is
     if (cid && subplebbitAddress) {
       const boardPath = getBoardPath(subplebbitAddress, directories);
       const threadRoute = `/${boardPath}/thread/${cid}`;
-      if (isOpQuote && location.pathname === threadRoute) {
-        scrollToThreadCardTop(cid);
+      if (isOpQuote) {
+        if (location.pathname === threadRoute) {
+          scrollToThreadCardTop(cid);
+        } else {
+          navigate(threadRoute);
+        }
         return;
       }
       if (scrollToReplyOnPage(cid)) return;

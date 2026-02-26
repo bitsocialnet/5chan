@@ -2,7 +2,9 @@ import { create } from 'zustand';
 import type { Comment } from '@plebbit/plebbit-react-hooks';
 
 interface PostNumberState {
-  numberToCid: Record<number, string>;
+  // Post numbers are only unique within a subplebbit, so scope by address
+  // to avoid collisions in /all/ where multiple boards are shown together.
+  numberToCid: Record<string, Record<number, string>>;
   cidToNumber: Record<string, number>;
   registerComments: (comments: Comment[]) => void;
 }
@@ -21,13 +23,20 @@ const usePostNumberStore = create<PostNumberState>((set) => ({
       for (const c of comments) {
         const num = c?.number;
         const cid = c?.cid;
-        if (typeof num === 'number' && cid && (nextNumberToCid[num] !== cid || nextCidToNumber[cid] !== num)) {
+        const addr = c?.subplebbitAddress;
+        if (typeof num !== 'number' || !cid || !addr) continue;
+
+        const existingCid = nextNumberToCid[addr]?.[num];
+        if (existingCid !== cid || nextCidToNumber[cid] !== num) {
           if (!hasUpdates) {
             nextNumberToCid = { ...state.numberToCid };
             nextCidToNumber = { ...state.cidToNumber };
             hasUpdates = true;
           }
-          nextNumberToCid[num] = cid;
+          if (!nextNumberToCid[addr] || nextNumberToCid[addr] === state.numberToCid[addr]) {
+            nextNumberToCid[addr] = { ...nextNumberToCid[addr] };
+          }
+          nextNumberToCid[addr][num] = cid;
           nextCidToNumber[cid] = num;
         }
       }

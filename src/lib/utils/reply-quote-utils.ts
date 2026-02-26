@@ -1,7 +1,7 @@
 import { QUOTE_NUMBER_REGEX } from './url-utils';
 
-export const getQuotedCidsFromContent = (content: string | undefined, numberToCid: Record<number, string>) => {
-  if (!content) return undefined;
+export const getQuotedCidsFromContent = (content: string | undefined, numberToCid: Record<number, string> | undefined) => {
+  if (!content || !numberToCid) return undefined;
   const cids = new Set<string>();
   for (const match of content.matchAll(new RegExp(QUOTE_NUMBER_REGEX.source, 'g'))) {
     const num = parseInt(match[1], 10);

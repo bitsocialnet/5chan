@@ -849,7 +849,7 @@ const PostDesktop = ({
     return map;
   })();
 
-  const quotedByMap = useQuotedByMap(filteredReplies);
+  const quotedByMap = useQuotedByMap(filteredReplies, subplebbitAddress);
 
   const visibleReplies = useProgressiveRender(filteredReplies, {
     batchSize: 50,

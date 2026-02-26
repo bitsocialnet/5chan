@@ -147,7 +147,7 @@ const CommentContent = ({ comment: post }: { comment: Comment }) => {
         )
       ) : (
         <>
-          {!showOriginal && <Markdown content={displayContent} postCid={postCid} />}
+          {!showOriginal && <Markdown content={displayContent} postCid={postCid} subplebbitAddress={subplebbitAddress} />}
           {pendingApproval && (
             <>
               <br />
@@ -182,7 +182,7 @@ const CommentContent = ({ comment: post }: { comment: Comment }) => {
           )}
           {edit && original?.content !== content && (
             <span className={styles.editedInfo}>
-              {showOriginal && <Markdown content={original?.content} postCid={postCid} />}
+              {showOriginal && <Markdown content={original?.content} postCid={postCid} subplebbitAddress={subplebbitAddress} />}
               <br />
               <br />
               <Trans
