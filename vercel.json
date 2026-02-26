@@ -2,7 +2,7 @@
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ],
-  "installCommand": "HUSKY_SKIP_INSTALL=1 yarn install --network-timeout 600000 --child-concurrency 1 --force",
+  "installCommand": "HUSKY=0 YARN_CACHE_FOLDER=/tmp/yarn-cache yarn install --frozen-lockfile --network-timeout 600000 --network-concurrency 1 --child-concurrency 1",
   "buildCommand": "yarn build",
   "outputDirectory": "build",
   "framework": "vite"
