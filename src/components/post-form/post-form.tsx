@@ -5,7 +5,7 @@ import { Comment, setAccount, useAccount, useAccountComment, useAccountSubplebbi
 import getShortAddress from '../../lib/get-short-address';
 import useSubplebbitsStore from '@plebbit/plebbit-react-hooks/dist/stores/subplebbits';
 import useSubplebbitsPagesStore from '@plebbit/plebbit-react-hooks/dist/stores/subplebbits-pages';
-import { getHasThumbnail, getLinkMediaInfo } from '../../lib/utils/media-utils';
+import { getLinkMediaInfo } from '../../lib/utils/media-utils';
 import { formatMarkdown } from '../../lib/utils/post-utils';
 import { isValidURL } from '../../lib/utils/url-utils';
 import { isAllView, isCatalogView, isModQueueView, isModView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
@@ -379,18 +379,6 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
     if ((isInAllView || isInSubscriptionsView || isInModView) && !publishPostOptions.subplebbitAddress) {
       alert(t('no_board_selected_warning'));
       return;
-    }
-
-    if (!isInPostView) {
-      const linkMediaInfo = getLinkMediaInfo(currentUrl);
-      const hasThumbnail = getHasThumbnail(linkMediaInfo, currentUrl);
-
-      if (!hasThumbnail) {
-        const confirmMessage = t('missing_link_confirm');
-        if (!window.confirm(confirmMessage)) {
-          return;
-        }
-      }
     }
 
     publishPost();

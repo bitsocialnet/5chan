@@ -169,7 +169,6 @@
   "failed": "Nabigo",
   "add": "Idagdag",
   "filtered_threads": "Na-filter na mga thread",
-  "missing_link_confirm": "Ang iyong post ay hindi makikita bilang default sa 5chan, dahil kulang ito ng link sa isang larawan o ibang media. Maaari mong i-disable ang filter na ito sa settings.",
   "no_board_selected_warning": "Mangyaring pumili ng board bago mag-post.",
   "invalid_url_alert": "Ang ibinigay na link ay hindi isang wastong URL.",
   "empty_comment_alert": "Hindi makapag-post ng walang laman na komento.",

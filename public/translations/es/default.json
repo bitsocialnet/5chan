@@ -169,7 +169,6 @@
   "failed": "Fallido",
   "add": "Añadir",
   "filtered_threads": "Hilos filtrados",
-  "missing_link_confirm": "Tu publicación no será visible por defecto en 5chan, porque le falta un enlace a una imagen u otro medio. Puedes desactivar este filtro en la configuración.",
   "no_board_selected_warning": "Por favor, selecciona una tabla antes de publicar.",
   "invalid_url_alert": "El enlace proporcionado no es una URL válida.",
   "empty_comment_alert": "No se puede publicar un comentario vacío.",

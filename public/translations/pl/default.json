@@ -169,7 +169,6 @@
   "failed": "Nieudane",
   "add": "Dodaj",
   "filtered_threads": "Filtrowane wątki",
-  "missing_link_confirm": "Twój post nie będzie domyślnie widoczny na 5chan, ponieważ brakuje linku do obrazu lub innego medium. Możesz wyłączyć ten filtr w ustawieniach.",
   "no_board_selected_warning": "Proszę wybrać tablicę przed opublikowaniem.",
   "invalid_url_alert": "Podany link nie jest poprawnym adresem URL.",
   "empty_comment_alert": "Nie można opublikować pustego komentarza.",

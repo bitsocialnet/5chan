@@ -169,7 +169,6 @@
   "failed": "Sikertelen",
   "add": "Hozzáad",
   "filtered_threads": "Szűrt szálak",
-  "missing_link_confirm": "A bejegyzésed alapértelmezés szerint nem lesz látható a 5chan-on, mert hiányzik belőle egy kép vagy más média hivatkozása. Ezt a szűrőt a beállításokban tudod kikapcsolni.",
   "no_board_selected_warning": "Kérlek, válassz egy táblát a közzététel előtt.",
   "invalid_url_alert": "A megadott hivatkozás nem érvényes URL.",
   "empty_comment_alert": "Üres hozzászólást nem lehet közzétenni.",

@@ -169,7 +169,6 @@
   "failed": "Epäonnistui",
   "add": "Lisää",
   "filtered_threads": "Suodatetut ketjut",
-  "missing_link_confirm": "Viestisi ei ole oletusarvoisesti näkyvissä 5chanissa, koska siitä puuttuu linkki kuvaan tai muuhun mediaan. Voit poistaa tämän suodattimen käytöstä asetuksista.",
   "no_board_selected_warning": "Valitse taulu ennen julkaisemista.",
   "invalid_url_alert": "Annettu linkki ei ole voimassa oleva URL.",
   "empty_comment_alert": "Ei voi julkaista tyhjää kommenttia.",

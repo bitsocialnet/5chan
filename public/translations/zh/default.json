@@ -169,7 +169,6 @@
   "failed": "失败",
   "add": "添加",
   "filtered_threads": "已过滤的帖子",
-  "missing_link_confirm": "您的帖子默认不会在5chan上显示，因为它缺少指向图像或其他媒体的链接。您可以在设置中禁用此过滤器。",
   "no_board_selected_warning": "请在发布之前选择一个板块。",
   "invalid_url_alert": "提供的链接不是有效的 URL。",
   "empty_comment_alert": "无法发布空评论。",

@@ -169,7 +169,6 @@
   "failed": "Nepodařilo se",
   "add": "Přidat",
   "filtered_threads": "Filtr threads",
-  "missing_link_confirm": "Váš příspěvek nebude ve výchozím nastavení viditelný na 5chan, protože mu chybí odkaz na obrázek nebo jiné médium. Tento filtr můžete deaktivovat v nastavení.",
   "no_board_selected_warning": "Vyberte desku před odesláním.",
   "invalid_url_alert": "Poskytnutý odkaz není platná adresa URL.",
   "empty_comment_alert": "Nelze publikovat prázdný komentář.",

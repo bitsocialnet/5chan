@@ -169,7 +169,6 @@
   "failed": "失敗",
   "add": "追加",
   "filtered_threads": "フィルタリングされたスレッド",
-  "missing_link_confirm": "画像やその他のメディアへのリンクがないため、あなたの投稿は5chanでデフォルトでは表示されません。設定でこのフィルターを無効にできます。",
   "no_board_selected_warning": "投稿する前にボードを選択してください。",
   "invalid_url_alert": "提供されたリンクは有効なURLではありません。",
   "empty_comment_alert": "空のコメントは投稿できません。",

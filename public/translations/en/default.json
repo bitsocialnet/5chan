@@ -179,7 +179,6 @@
   "failed": "Failed",
   "add": "Add",
   "filtered_threads": "Filtered threads",
-  "missing_link_confirm": "Your post won't be visible by default on 5chan, because it's missing a link to an image or other media. You can disable this filter in the settings.",
   "no_board_selected_warning": "Please select a board before posting.",
   "invalid_url_alert": "The provided link is not a valid URL.",
   "empty_comment_alert": "Cannot post empty comment.",

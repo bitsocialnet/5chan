@@ -169,7 +169,6 @@
   "failed": "Mislykkedes",
   "add": "Tilføj",
   "filtered_threads": "Filtrerede tråde",
-  "missing_link_confirm": "Dit indlæg vil ikke være synligt som standard på 5chan, fordi der mangler et link til et billede eller andet medie. Du kan deaktivere dette filter i indstillingerne.",
   "no_board_selected_warning": "Vælg en tavle, før du poster.",
   "invalid_url_alert": "Det angivne link er ikke en gyldig URL.",
   "empty_comment_alert": "Kan ikke poste en tom kommentar.",

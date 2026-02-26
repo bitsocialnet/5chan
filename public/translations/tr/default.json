@@ -169,7 +169,6 @@
   "failed": "Başarısız",
   "add": "Ekle",
   "filtered_threads": "Filtrelenmiş başlıklar",
-  "missing_link_confirm": "Gönderiniz varsayılan olarak 5chan'de görünmeyecek, çünkü bir resim veya başka bir medyaya bağlantı eksik. Bu filtreyi ayarlardan devre dışı bırakabilirsiniz.",
   "no_board_selected_warning": "Lütfen gönderimden önce bir pano seçin.",
   "invalid_url_alert": "Verilen bağlantı geçerli bir URL değildir.",
   "empty_comment_alert": "Boş yorum gönderilemez.",
