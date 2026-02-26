@@ -771,7 +771,7 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
                   data={feed}
                   totalCount={feed.length}
                   endReached={loadMore}
-                  increaseViewportBy={{ bottom: 1200, top: 1200 }}
+                  increaseViewportBy={{ bottom: 600, top: 600 }}
                   itemContent={(index, comment) => <ModQueueRow key={comment.cid} comment={comment} isOdd={index % 2 === 0} />}
                   components={footerComponents}
                 />
@@ -799,7 +799,7 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
                   data={feed}
                   totalCount={feed.length}
                   endReached={loadMore}
-                  increaseViewportBy={{ bottom: 1200, top: 1200 }}
+                  increaseViewportBy={{ bottom: 600, top: 600 }}
                   itemContent={(_index, comment) => <ModQueueCard key={comment.cid} comment={comment} />}
                   components={footerComponents}
                 />
@@ -827,7 +827,7 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
                   data={feed}
                   totalCount={feed.length}
                   endReached={loadMore}
-                  increaseViewportBy={{ bottom: 1200, top: 1200 }}
+                  increaseViewportBy={{ bottom: 600, top: 600 }}
                   itemContent={(_index, comment) => <ModQueueFeedPost key={comment.cid} comment={comment} />}
                   components={footerComponents}
                 />
