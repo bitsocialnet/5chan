@@ -2,7 +2,7 @@
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ],
-  "installCommand": "npm install --legacy-peer-deps",
+  "installCommand": "yarn install --network-timeout 600000 --child-concurrency 1",
   "buildCommand": "yarn build",
   "outputDirectory": "build",
   "framework": "vite"
