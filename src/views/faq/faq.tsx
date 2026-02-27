@@ -68,6 +68,9 @@ const FAQ = () => {
                         <HashLink to='#quote'>How do I quote somebody?</HashLink>
                       </li>
                       <li>
+                        <HashLink to='#multireply'>Can I reply to multiple posts?</HashLink>
+                      </li>
+                      <li>
                         <HashLink to='#spoiler'>Can I mark a submission as a spoiler?</HashLink>
                       </li>
                     </ul>
@@ -142,9 +145,9 @@ const FAQ = () => {
                   selecting "Copy image URL", or by using tools such as <a href='https://cobalt.tools/'>cobalt</a>.<br />
                   <br />
                   The reason why uploading media directly to boards is not possible, is because 5chan is a client for the Bitsocial protocol, which is text-only
-                  (including links, from which media is embedded by clients). However, Plebbit uses IPFS, so in theory it could let users upload media to the subplebbit
-                  (board) owner's IPFS node, and then post the direct IPFS link for the media. This is not enabled because loading media from IPFS is extremely slow at
-                  the moment (because most people have slow internet).
+                  (including links, from which media is embedded by clients). However, Bitsocial uses IPFS, so in theory it could let users upload media to the board
+                  owner's IPFS node, and then post the direct IPFS link for the media. This is not enabled because loading media from IPFS is extremely slow at the moment
+                  (because most people have slow internet).
                 </dd>
                 <dt id='postimage'>Must I post an image?</dt>
                 <dd>
@@ -159,20 +162,18 @@ const FAQ = () => {
                 </dd>
                 <dt id='quote'>How do I quote somebody?</dt>
                 <dd>
-                  To quote a portion of text, simply place a pointer ("{'>'}") in front of the text you wish to highlight (ex. "
+                  To greentext-quote a portion of text, place a pointer ("{'>'}") in front of the text you wish to highlight (ex. "
                   <span className='greentext'>{'>'}This is a quote</span>").
                   <br />
                   <br />
-                  Unlike traditional imageboards, 5chan does <i>not</i> allow to quote more than one post at a time. You can only reply to one post at a time. This is
-                  because 5chan is a client for the Bitsocial protocol, which is designed to be an alternative to Reddit-like social media, in which you can only reply to
-                  one post at a time.
-                  <br />
-                  <br />
-                  Further, post numbers are not possible on 5chan, because Plebbit is fully decentralized (serverless) using IPFS, meaning there is no central database to
-                  store post numbers, and it uses CIDs to load posts directly. Retrieving the CID from an hypothetical post number from the single board's database would
-                  be far too expensive for the node to calculate.
-                  <br />
-                  <br />
+                  To quote a specific post by its number, use the {"'>>'"}number syntax (ex. "{'>>'}" followed by the post number). Clicking a post's number link will
+                  automatically open the reply box with the quote reference inserted for you. You can also select text in a post and then click reply to auto-quote the
+                  selected text.
+                </dd>
+                <dt id='multireply'>Can I reply to multiple posts?</dt>
+                <dd>
+                  Yes. You can reference multiple posts in a single reply by using multiple {"'>>'"}number quotes (ex. "{'>>'}" followed by a post number, one per line).
+                  While the reply modal is open, clicking another post's number link will insert an additional quote reference at the cursor position.
                 </dd>
                 <dt id='spoiler'>Can I mark a submission as a spoiler?</dt>
                 <dd>
