@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
-import { autoUpdate, FloatingFocusManager, offset, shift, useClick, useDismiss, useFloating, useId, useInteractions, useRole } from '@floating-ui/react';
+import { autoUpdate, FloatingFocusManager, FloatingPortal, offset, shift, useClick, useDismiss, useFloating, useId, useInteractions, useRole } from '@floating-ui/react';
 import {
   Comment,
   PublishCommentEditOptions,
@@ -271,135 +271,137 @@ const EditMenu = ({ post }: { post: Comment }) => {
         />
       </span>
       {isEditMenuOpen && (isAccountCommentAuthor || isAccountMod) && (
-        <FloatingFocusManager context={context} modal={false}>
-          <div className={styles.modal} ref={refs.setFloating} style={floatingStyles} aria-labelledby={headingId} {...getFloatingProps()}>
-            <div className={styles.editMenu}>
-              {isAccountCommentAuthor && (
-                <>
-                  <div className={styles.menuItem}>
-                    <label>
-                      [
-                      <input onChange={onCheckbox} checked={publishCommentEditOptions.deleted ?? false} type='checkbox' id='deleted' />
-                      {capitalize(t('delete'))}?]
-                    </label>
-                  </div>
-                  <div className={styles.menuItem}>
-                    <label>
-                      [
-                      <input type='checkbox' onChange={() => setIsContentEditorOpen(!isContentEditorOpen)} checked={isContentEditorOpen} />
-                      {capitalize(t('edit'))}?]
-                    </label>
-                  </div>
-                  {isContentEditorOpen && (
-                    <div>
-                      <textarea
-                        className={styles.editTextarea}
-                        value={publishCommentEditOptions.content || ''}
-                        onChange={(e) => {
-                          const newContent = e.target.value;
-                          setPublishCommentEditOptions((state) => ({ ...state, content: newContent }));
-                        }}
-                      />
-                    </div>
-                  )}
-                </>
-              )}
-              {isAccountMod && (
-                <>
-                  <div className={styles.menuItem}>
-                    <label>
-                      [
-                      <input onChange={onCheckbox} checked={publishCommentEditOptions.commentModeration?.removed ?? false} type='checkbox' id='removed' />
-                      {capitalize(t('remove'))}?]
-                    </label>{' '}
-                    <span className={styles.purgeItem}>
+        <FloatingPortal>
+          <FloatingFocusManager context={context} modal={false}>
+            <div className={styles.modal} ref={refs.setFloating} style={floatingStyles} aria-labelledby={headingId} {...getFloatingProps()}>
+              <div className={styles.editMenu}>
+                {isAccountCommentAuthor && (
+                  <>
+                    <div className={styles.menuItem}>
                       <label>
                         [
-                        <input onChange={onPurgeCheckbox} checked={publishCommentEditOptions.commentModeration?.purged ?? false} type='checkbox' id='purged' />
-                        {capitalize(t('purge'))}?]
+                        <input onChange={onCheckbox} checked={publishCommentEditOptions.deleted ?? false} type='checkbox' id='deleted' />
+                        {capitalize(t('delete'))}?]
                       </label>
-                    </span>
-                  </div>
-                  {!parentCid && (
-                    <div className={styles.menuItem}>
-                      [
-                      <label>
-                        <input onChange={onCheckbox} checked={publishCommentEditOptions.commentModeration?.locked ?? false} type='checkbox' id='locked' />
-                        {capitalize(t('close_thread'))}?
-                      </label>
-                      ]
                     </div>
-                  )}
-                  <div className={styles.menuItem}>
-                    [
-                    <label>
-                      <input onChange={onCheckbox} checked={publishCommentEditOptions.commentModeration?.spoiler ?? false} type='checkbox' id='spoiler' />
-                      {capitalize(t('spoiler'))}?
-                    </label>
-                    ]
-                  </div>
-                  <div className={styles.menuItem}>
-                    [
-                    <label>
-                      <input onChange={onCheckbox} checked={publishCommentEditOptions.commentModeration?.pinned ?? false} type='checkbox' id='pinned' />
-                      {capitalize(t('sticky'))}?
-                    </label>
-                    ]
-                  </div>
-                  {!isCommentAuthorMod && isAccountMod && !isAccountCommentAuthor && (
                     <div className={styles.menuItem}>
-                      [
                       <label>
-                        <input
-                          onChange={onCheckbox}
-                          checked={publishCommentEditOptions.commentModeration?.author?.banExpiresAt !== undefined}
-                          type='checkbox'
-                          id='banUser'
-                        />
-                        <Trans
-                          i18nKey='ban_user_for'
-                          shouldUnescape={true}
-                          components={{
-                            1: (
-                              <input
-                                key='ban-duration-input'
-                                className={styles.banInput}
-                                onChange={onBanDurationChange}
-                                type='number'
-                                min={1}
-                                max={100}
-                                value={banDuration || ''}
-                              />
-                            ),
+                        [
+                        <input type='checkbox' onChange={() => setIsContentEditorOpen(!isContentEditorOpen)} checked={isContentEditorOpen} />
+                        {capitalize(t('edit'))}?]
+                      </label>
+                    </div>
+                    {isContentEditorOpen && (
+                      <div>
+                        <textarea
+                          className={styles.editTextarea}
+                          value={publishCommentEditOptions.content || ''}
+                          onChange={(e) => {
+                            const newContent = e.target.value;
+                            setPublishCommentEditOptions((state) => ({ ...state, content: newContent }));
                           }}
                         />
-                        ?
+                      </div>
+                    )}
+                  </>
+                )}
+                {isAccountMod && (
+                  <>
+                    <div className={styles.menuItem}>
+                      <label>
+                        [
+                        <input onChange={onCheckbox} checked={publishCommentEditOptions.commentModeration?.removed ?? false} type='checkbox' id='removed' />
+                        {capitalize(t('remove'))}?]
+                      </label>{' '}
+                      <span className={styles.purgeItem}>
+                        <label>
+                          [
+                          <input onChange={onPurgeCheckbox} checked={publishCommentEditOptions.commentModeration?.purged ?? false} type='checkbox' id='purged' />
+                          {capitalize(t('purge'))}?]
+                        </label>
+                      </span>
+                    </div>
+                    {!parentCid && (
+                      <div className={styles.menuItem}>
+                        [
+                        <label>
+                          <input onChange={onCheckbox} checked={publishCommentEditOptions.commentModeration?.locked ?? false} type='checkbox' id='locked' />
+                          {capitalize(t('close_thread'))}?
+                        </label>
+                        ]
+                      </div>
+                    )}
+                    <div className={styles.menuItem}>
+                      [
+                      <label>
+                        <input onChange={onCheckbox} checked={publishCommentEditOptions.commentModeration?.spoiler ?? false} type='checkbox' id='spoiler' />
+                        {capitalize(t('spoiler'))}?
                       </label>
                       ]
                     </div>
-                  )}
-                </>
-              )}
-              <div className={`${styles.menuItem} ${styles.menuReason}`}>
-                {capitalize(t('reason'))}? ({t('optional')})
-                <input
-                  type='text'
-                  value={publishCommentEditOptions.reason || ''}
-                  onChange={(e) => {
-                    const newReason = e.target.value;
-                    setPublishCommentEditOptions((state) => ({ ...state, reason: newReason }));
-                  }}
-                  size={14}
-                />
-              </div>
-              <div className={styles.bottom}>
-                <button className={isMobile ? 'button' : ''} onClick={_publishCommentEdit}>
-                  {t('save')}
-                </button>
+                    <div className={styles.menuItem}>
+                      [
+                      <label>
+                        <input onChange={onCheckbox} checked={publishCommentEditOptions.commentModeration?.pinned ?? false} type='checkbox' id='pinned' />
+                        {capitalize(t('sticky'))}?
+                      </label>
+                      ]
+                    </div>
+                    {!isCommentAuthorMod && isAccountMod && !isAccountCommentAuthor && (
+                      <div className={styles.menuItem}>
+                        [
+                        <label>
+                          <input
+                            onChange={onCheckbox}
+                            checked={publishCommentEditOptions.commentModeration?.author?.banExpiresAt !== undefined}
+                            type='checkbox'
+                            id='banUser'
+                          />
+                          <Trans
+                            i18nKey='ban_user_for'
+                            shouldUnescape={true}
+                            components={{
+                              1: (
+                                <input
+                                  key='ban-duration-input'
+                                  className={styles.banInput}
+                                  onChange={onBanDurationChange}
+                                  type='number'
+                                  min={1}
+                                  max={100}
+                                  value={banDuration || ''}
+                                />
+                              ),
+                            }}
+                          />
+                          ?
+                        </label>
+                        ]
+                      </div>
+                    )}
+                  </>
+                )}
+                <div className={`${styles.menuItem} ${styles.menuReason}`}>
+                  {capitalize(t('reason'))}? ({t('optional')})
+                  <input
+                    type='text'
+                    value={publishCommentEditOptions.reason || ''}
+                    onChange={(e) => {
+                      const newReason = e.target.value;
+                      setPublishCommentEditOptions((state) => ({ ...state, reason: newReason }));
+                    }}
+                    size={14}
+                  />
+                </div>
+                <div className={styles.bottom}>
+                  <button className={isMobile ? 'button' : ''} onClick={_publishCommentEdit}>
+                    {t('save')}
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        </FloatingFocusManager>
+          </FloatingFocusManager>
+        </FloatingPortal>
       )}
     </>
   );
