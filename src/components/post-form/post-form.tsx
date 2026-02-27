@@ -2,10 +2,10 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Comment, setAccount, useAccount, useAccountComment, useAccountSubplebbits, useEditedComment } from '@plebbit/plebbit-react-hooks';
-import Plebbit from '@plebbit/plebbit-js';
+import getShortAddress from '../../lib/get-short-address';
 import useSubplebbitsStore from '@plebbit/plebbit-react-hooks/dist/stores/subplebbits';
 import useSubplebbitsPagesStore from '@plebbit/plebbit-react-hooks/dist/stores/subplebbits-pages';
-import { getHasThumbnail, getLinkMediaInfo } from '../../lib/utils/media-utils';
+import { getLinkMediaInfo } from '../../lib/utils/media-utils';
 import { formatMarkdown } from '../../lib/utils/post-utils';
 import { isValidURL } from '../../lib/utils/url-utils';
 import { isAllView, isCatalogView, isModQueueView, isModView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
@@ -115,6 +115,7 @@ interface PostFormFieldsProps {
   accountSubplebbitAddresses: string[];
   subscriptions: string[];
   subplebbitAddress: string | undefined;
+  requirePostLinkIsMedia: boolean;
   onPublishReply: () => void;
   onPublishPost: () => void;
   handleUpload: () => void;
@@ -146,6 +147,7 @@ const PostFormFields = ({
   accountSubplebbitAddresses,
   subscriptions,
   subplebbitAddress,
+  requirePostLinkIsMedia,
   onPublishReply,
   onPublishPost,
   handleUpload,
@@ -212,7 +214,7 @@ const PostFormFields = ({
       </td>
     </tr>
     <tr>
-      <td>{t('link')}</td>
+      <td>{requirePostLinkIsMedia ? t('link_to_file') : t('link')}</td>
       <td className={styles.linkField}>
         <input
           type='text'
@@ -280,7 +282,7 @@ const PostFormFields = ({
             {isInModView &&
               accountSubplebbitAddresses.map((address: string) => (
                 <option key={address} value={address}>
-                  {address && Plebbit.getShortAddress({ address })}
+                  {address && getShortAddress(address)}
                 </option>
               ))}
             {isInSubscriptionsView &&
@@ -322,6 +324,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
   const directoryEntry = useDirectoryByAddress(effectiveBoardAddress);
   const showSpoilerForPost = directoryEntry?.features?.noSpoilers !== true;
   const showSpoilerForReply = directoryEntry?.features?.noSpoilerReplies !== true;
+  const requirePostLinkIsMedia = directoryEntry?.features?.requirePostLinkIsMedia === true;
 
   const { accountSubplebbits } = useAccountSubplebbits();
   const accountSubplebbitAddresses = Object.keys(accountSubplebbits);
@@ -376,18 +379,6 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
     if ((isInAllView || isInSubscriptionsView || isInModView) && !publishPostOptions.subplebbitAddress) {
       alert(t('no_board_selected_warning'));
       return;
-    }
-
-    if (!isInPostView) {
-      const linkMediaInfo = getLinkMediaInfo(currentUrl);
-      const hasThumbnail = getHasThumbnail(linkMediaInfo, currentUrl);
-
-      if (!hasThumbnail) {
-        const confirmMessage = t('missing_link_confirm');
-        if (!window.confirm(confirmMessage)) {
-          return;
-        }
-      }
     }
 
     publishPost();
@@ -502,6 +493,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
           accountSubplebbitAddresses={accountSubplebbitAddresses}
           subscriptions={subscriptions}
           subplebbitAddress={subplebbitAddress}
+          requirePostLinkIsMedia={requirePostLinkIsMedia}
           onPublishReply={onPublishReply}
           onPublishPost={onPublishPost}
           handleUpload={handleUpload}

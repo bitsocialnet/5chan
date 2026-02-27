@@ -2,15 +2,33 @@ import { BOARD_REPLIES_PREVIEW_VISIBLE_COUNT } from '../constants';
 
 export interface CommentLike {
   cid?: string | null;
+  index?: number;
+  pendingApproval?: boolean;
+  state?: string;
+  timestamp?: number;
 }
 
 /**
- * From replies sorted by 'new' (newest first), returns the latest N in chronological
- * display order (oldest of those first). Handles fewer-than-N replies.
+ * Returns the latest N replies in chronological display order (oldest first).
+ *
+ * `useReplies` can append local account comments to the end of the preview array,
+ * so we normalize by reply recency first to keep pending/mod-queue items visible in
+ * board previews.
  */
 export function getPreviewDisplayReplies<T extends CommentLike>(replies: T[], visibleCount: number = BOARD_REPLIES_PREVIEW_VISIBLE_COUNT): T[] {
-  const slice = replies.slice(0, visibleCount);
-  return [...slice].reverse();
+  const getRecency = (reply: T): number => {
+    if (typeof reply?.timestamp === 'number') {
+      return reply.timestamp;
+    }
+    // Pending/local account replies can be missing timestamp early on.
+    if (typeof reply?.index === 'number' || reply?.pendingApproval || (reply?.state && reply.state !== 'succeeded')) {
+      return Number.POSITIVE_INFINITY;
+    }
+    return Number.NEGATIVE_INFINITY;
+  };
+
+  const newestFirst = [...replies].sort((a, b) => getRecency(b) - getRecency(a));
+  return newestFirst.slice(0, visibleCount).reverse();
 }
 
 export interface ComputeOmittedParams {

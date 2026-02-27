@@ -74,7 +74,7 @@
       "id": "release-0.4.0",
       "kind": "release",
       "timestamp": 1741348800,
-      "message": "v0.4.0: Catalog filters, p/mod feed, catalog search, schema adapters",
+      "message": "v0.4.0: Catalog filters, /mod/ feed, catalog search, schema adapters",
       "version": "0.4.0"
     },
     {
@@ -130,7 +130,7 @@
       "id": "release-0.2.9",
       "kind": "release",
       "timestamp": 1730203200,
-      "message": "v0.2.9: Catalog bump order, Reddit embed, p/all time filter, Java APK fix",
+      "message": "v0.2.9: Catalog bump order, Reddit embed, /all/ time filter, Java APK fix",
       "version": "0.2.9"
     },
     {
@@ -193,7 +193,7 @@
       "id": "release-0.2.0",
       "kind": "release",
       "timestamp": 1718884800,
-      "message": "v0.2.0: Major rewrite with p/all, catalog, multiboards, mod menu",
+      "message": "v0.2.0: Major rewrite with /all/, catalog, multiboards, mod menu",
       "version": "0.2.0"
     },
     {

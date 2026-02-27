@@ -1,7 +1,7 @@
 {
   "what_is_5chan": "Co je 5chan?",
   "go": "jít",
-  "5chan_description": "5chan je plně decentralizovaná a open-source alternativa k 4chanu, kde kdokoli může vytvořit a kryptograficky vlastnit neomezené množství desek. Vlastníci desek hostují a moderují své desky a nastavují jejich <1>Pravidla</1>. Všechna data jsou pouze textová a sdílejí se peer-to-peer, včetně odkazů na vložené obrázky. Podívejte se na <2>FAQ</2>, abyste se dozvěděli více. Neváhejte kliknout na desku níže, která vás zajímá, a začněte hned!",
+  "5chan_description": "5chan je plně decentralizované a open-source imageboard, kde kdokoli může vytvářet a kryptograficky vlastnit neomezený počet desek. Majitelé desek hostují a moderují svou desku a nastavují její <1>Rules</1>. Všechna data jsou pouze textová a sdílená peer-to-peer, včetně odkazů na vložené obrázky. Pro více informací se podívejte na <2>FAQs</2>. Klikněte na libovolnou desku níže a můžete začít!",
   "no_global_rules_info": "Můžete se vždy připojit k jakékoli nástěnce, plně P2P, nikdo vás nemůže zastavit. Jednoduše vložte její adresu do vyhledávacího pole výše.",
   "boards": "nástěnky",
   "popular_threads": "Oblíbená vlákna",
@@ -9,7 +9,6 @@
   "stats": "Statistiky",
   "about": "O nás",
   "whitepaper": "Bílá kniha",
-  "token": "Token",
   "start_new_thread": "Začít nové vlákno",
   "hide": "Skrýt",
   "settings": "Nastavení",
@@ -169,11 +168,10 @@
   "failed": "Nepodařilo se",
   "add": "Přidat",
   "filtered_threads": "Filtr threads",
-  "missing_link_confirm": "Váš příspěvek nebude ve výchozím nastavení viditelný na 5chan, protože mu chybí odkaz na obrázek nebo jiné médium. Tento filtr můžete deaktivovat v nastavení.",
   "no_board_selected_warning": "Vyberte desku před odesláním.",
   "invalid_url_alert": "Poskytnutý odkaz není platná adresa URL.",
   "empty_comment_alert": "Nelze publikovat prázdný komentář.",
-  "stored_locally": "Ukládáno lokálně (v datech {{location}}), nesynchronizováno mezi zařízeními",
+  "stored_locally": "Ukládáno lokálně (v datech {{location}}), nesynchronizuje se mezi zařízeními.",
   "choose_one": "Vyberte jednu:",
   "create": "Vytvořit",
   "save_changes": "Uložit změny",
@@ -295,5 +293,7 @@
   "import_account_backup": "Importovat zálohu účtu",
   "account_auto_generated": "Tento účet byl automaticky vygenerován 5chanem, registrace není nutná.",
   "download_backup": "Stáhnout zálohu",
-  "boards_you_moderate_nav": "Fóra, která moderujete"
+  "boards_you_moderate_nav": "Fóra, která moderujete",
+  "link_to_file": "Odkaz na soubor",
+  "support_5chan": "Podpořte 5chan"
 }

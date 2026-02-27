@@ -14,7 +14,7 @@ Only record items that are repo-specific, likely to recur, and have a concrete m
 
 ## Project Overview
 
-5chan is a serverless, adminless, decentralized 4chan alternative built on the Bitsocial protocol.
+5chan is a serverless, adminless, decentralized imageboard built on the Bitsocial protocol.
 
 ## Instruction Priority
 

@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import Plebbit from '@plebbit/plebbit-js';
+import getShortAddress from '../../lib/get-short-address';
 import { useAccountComment } from '@plebbit/plebbit-react-hooks';
 import useAccountsStore from '@plebbit/plebbit-react-hooks/dist/stores/accounts';
-import { isAllView, isCatalogView, isSubscriptionsView } from '../../lib/utils/view-utils';
+import { isAllView, isCatalogView, isModView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import { useDirectories, DirectoryCommunity } from '../../hooks/use-directories';
 import { useBoardPath, useResolvedSubplebbitAddress } from '../../hooks/use-resolved-subplebbit-address';
 import { getBoardPath, extractDirectoryFromTitle } from '../../lib/utils/route-utils';
@@ -200,7 +200,7 @@ const BoardsBarDesktop = () => {
   // Render a subscription link
   const renderSubscription = (address: string, index: number, total: number) => {
     const boardPath = getBoardPath(address, directories);
-    const displayText = address.endsWith('.eth') || address.endsWith('.sol') ? address : Plebbit.getShortAddress({ address });
+    const displayText = address.endsWith('.eth') || address.endsWith('.sol') ? address : getShortAddress(address);
 
     return (
       <span key={address}>
@@ -324,8 +324,9 @@ const BoardsBarMobile = ({ subplebbitAddress }: { subplebbitAddress?: string }) 
   const isInAllView = isAllView(location.pathname);
   const isInCatalogView = isCatalogView(location.pathname, params);
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, params);
+  const isInModView = isModView(location.pathname);
   const boardPath = useBoardPath(subplebbitAddress);
-  const selectValue = isInAllView ? 'all' : isInSubscriptionsView ? 'subs' : boardPath || subplebbitAddress;
+  const selectValue = isInAllView ? 'all' : isInSubscriptionsView ? 'subs' : isInModView ? 'mod' : boardPath || subplebbitAddress;
 
   const accountSubplebbitAddresses = useAccountsStore(
     (state) => {

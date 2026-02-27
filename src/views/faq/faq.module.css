@@ -46,6 +46,12 @@
   color: var(--homepage-box-bar-text-color);
 }
 
+.infoBox .boxContent a,
+.infoBox .boxContent a:visited {
+  color: var(--homepage-infobox-link-text-color);
+  text-decoration: underline;
+}
+
 .leftBox {
   float: left;
   width: 49.1%;

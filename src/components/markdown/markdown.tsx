@@ -186,12 +186,13 @@ interface MarkdownProps {
   content: string;
   title?: string;
   postCid?: string;
+  subplebbitAddress?: string;
 }
 
 const NUMBER_QUOTE_HREF_REGEX = /^#q-(\d+)$/;
 
-const NumberQuoteLink = ({ number, threadPostCid }: { number: number; threadPostCid?: string }) => {
-  const cid = usePostNumberStore((state) => state.numberToCid[number]);
+const NumberQuoteLink = ({ number, threadPostCid, subplebbitAddress }: { number: number; threadPostCid?: string; subplebbitAddress?: string }) => {
+  const cid = usePostNumberStore((state) => (subplebbitAddress ? state.numberToCid[subplebbitAddress]?.[number] : undefined));
   const commentFromStore = useSubplebbitsPagesStore((state) => (cid ? state.comments[cid] : undefined));
   const commentFromHook = useComment({ commentCid: cid, onlyIfCached: true });
   const comment = commentFromHook?.number !== undefined ? commentFromHook : commentFromStore;
@@ -204,7 +205,7 @@ const NumberQuoteLink = ({ number, threadPostCid }: { number: number; threadPost
   return <ReplyQuotePreview isQuotelinkReply={true} quotelinkReply={comment} isOP={isOP} showTrailingBreak={false} />;
 };
 
-const renderAnchorLink = (children: React.ReactNode, href: string, threadPostCid?: string) => {
+const renderAnchorLink = (children: React.ReactNode, href: string, threadPostCid?: string, subplebbitAddress?: string) => {
   if (!href) {
     return <span>{children}</span>;
   }
@@ -214,7 +215,7 @@ const renderAnchorLink = (children: React.ReactNode, href: string, threadPostCid
     const number = parseInt(numberQuoteMatch[1], 10);
     return (
       <span className={styles.inlineQuoteLink}>
-        <NumberQuoteLink number={number} threadPostCid={threadPostCid} />
+        <NumberQuoteLink number={number} threadPostCid={threadPostCid} subplebbitAddress={subplebbitAddress} />
       </span>
     );
   }
@@ -268,7 +269,7 @@ const renderAnchorLink = (children: React.ReactNode, href: string, threadPostCid
   );
 };
 
-const Markdown = ({ content, title, postCid }: MarkdownProps) => {
+const Markdown = ({ content, title, postCid, subplebbitAddress }: MarkdownProps) => {
   const remarkPlugins = useMemo(() => {
     const plugins: any[] = [[supersub]];
 
@@ -338,13 +339,13 @@ const Markdown = ({ content, title, postCid }: MarkdownProps) => {
               console.debug('Invalid URL:', href);
             }
 
-            return renderAnchorLink(children, href, postCid);
+            return renderAnchorLink(children, href, postCid, subplebbitAddress);
           }
 
-          return renderAnchorLink(children, href || '', postCid);
+          return renderAnchorLink(children, href || '', postCid, subplebbitAddress);
         },
       }) as ExtendedComponents,
-    [isInCatalogView, postCid],
+    [isInCatalogView, postCid, subplebbitAddress],
   );
 
   return (

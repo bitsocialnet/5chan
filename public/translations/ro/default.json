@@ -1,7 +1,7 @@
 {
   "what_is_5chan": "Ce este 5chan?",
   "go": "du-te",
-  "5chan_description": "5chan este o alternativă complet descentralizată și open-source la 4chan, unde oricine poate crea și deține criptografic panouri nelimitate. Proprietarii panourilor găzduiesc și modelează panoul lor și stabilesc <1>Regulile</1> acestuia. Toate datele sunt doar text și sunt partajate peer-to-peer, inclusiv link-uri către imagini încorporate. Consultă <2>Întrebările Frecvente</2> pentru a afla mai multe. Simte-te liber să dai click pe un panou de mai jos care te interesează și începe imediat!",
+  "5chan_description": "5chan este un imageboard complet descentralizat și open-source, unde oricine poate crea și deține criptografic panouri nelimitate. Proprietarii de panouri găzduiesc și moderază panoul lor și îi stabilesc <1>Rules</1>. Toate datele sunt doar text și sunt partajate peer-to-peer, inclusiv linkuri pentru imagini încorporate. Consultați <2>FAQs</2> pentru a afla mai multe. Nu ezitați să dați clic pe un panou de mai jos care vă interesează și să începeți!",
   "no_global_rules_info": "Poți să te conectezi întotdeauna la orice forum, complet P2P, nimeni nu te poate opri. Pur și simplu lipește adresa în câmpul de căutare de mai sus.",
   "boards": "forumuri",
   "popular_threads": "Threaduri populare",
@@ -9,7 +9,6 @@
   "stats": "Statistici",
   "about": "Despre",
   "whitepaper": "Whitepaper",
-  "token": "Token",
   "start_new_thread": "Începeți un nou fir de discuție",
   "hide": "Ascunde",
   "settings": "Setări",
@@ -169,11 +168,10 @@
   "failed": "Eșuat",
   "add": "Adaugă",
   "filtered_threads": "Fire filtrate",
-  "missing_link_confirm": "Postarea ta nu va fi vizibilă implicit pe 5chan, deoarece îi lipsește un link către o imagine sau alt media. Poți dezactiva acest filtru în setări.",
   "no_board_selected_warning": "Vă rugăm să selectați un tablou înainte de a publica.",
   "invalid_url_alert": "Linkul furnizat nu este un URL valid.",
   "empty_comment_alert": "Nu se poate publica un comentariu gol.",
-  "stored_locally": "Stocat local (în datele {{location}}), nesincronizat între dispozitive",
+  "stored_locally": "Stocat local (în datele {{location}}), nesincronizat între dispozitive.",
   "choose_one": "Alege una:",
   "create": "Creează",
   "save_changes": "Salvează modificările",
@@ -295,5 +293,7 @@
   "import_account_backup": "Importă backup cont",
   "account_auto_generated": "Acest cont a fost generat automat de 5chan, nu este nevoie de înregistrare.",
   "download_backup": "Descarcă backup",
-  "boards_you_moderate_nav": "Forumuri pe care le moderezi"
+  "boards_you_moderate_nav": "Forumuri pe care le moderezi",
+  "link_to_file": "Link către fișier",
+  "support_5chan": "Sprijiniți 5chan"
 }

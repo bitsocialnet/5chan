@@ -152,8 +152,8 @@ export const Footer = () => {
           </a>
         </li>
         <li>
-          <a href='https://etherscan.io/token/0xEA81DaB2e0EcBc6B5c4172DE4c22B6Ef6E55Bd8f' target='_blank' rel='noopener noreferrer'>
-            {t('token')}
+          <a href='https://github.com/sponsors/plebe1us' target='_blank' rel='noopener noreferrer'>
+            {t('support_5chan')}
           </a>
         </li>
         <li>

@@ -1,7 +1,7 @@
 {
   "what_is_5chan": "Co to jest 5chan?",
   "go": "iść",
-  "5chan_description": "5chan to w pełni zdecentralizowana i open-source alternatywa dla 4chan, gdzie każdy może tworzyć i kryptograficznie posiadać nieograniczone tablice. Właściciele tablic hostują i moderują swoje tablice oraz ustawiają ich <1>Zasady</1>. Wszystkie dane są tylko tekstem i są udostępniane peer-to-peer, w tym linki do osadzonych obrazów. Sprawdź <2>FAQ</2>, aby dowiedzieć się więcej. Śmiało kliknij na tablicę poniżej, która Cię interesuje i zacznij od razu!",
+  "5chan_description": "5chan to w pełni zdecentralizowany i open-source imageboard, gdzie każdy może tworzyć i kryptograficznie posiadać nieograniczoną liczbę tablic. Właściciele tablic hostują i moderują swoje tablice oraz ustawiają ich <1>Rules</1>. Wszystkie dane są wyłącznie tekstowe i udostępniane peer-to-peer, w tym linki do osadzania obrazów. Sprawdź <2>FAQs</2>, aby dowiedzieć się więcej. Kliknij dowolną tablicę poniżej, która Cię interesuje, i dołącz!",
   "no_global_rules_info": "Zawsze możesz połączyć się z dowolnym forum, w pełni P2P, nikt nie może cię zatrzymać. Po prostu wklej jego adres w polu wyszukiwania powyżej.",
   "boards": "fora",
   "popular_threads": "Popularne wątki",
@@ -9,7 +9,6 @@
   "stats": "Statystyki",
   "about": "O",
   "whitepaper": "Whitepaper",
-  "token": "Token",
   "start_new_thread": "Rozpocznij nowy wątek",
   "hide": "Ukryj",
   "settings": "Ustawienia",
@@ -169,11 +168,10 @@
   "failed": "Nieudane",
   "add": "Dodaj",
   "filtered_threads": "Filtrowane wątki",
-  "missing_link_confirm": "Twój post nie będzie domyślnie widoczny na 5chan, ponieważ brakuje linku do obrazu lub innego medium. Możesz wyłączyć ten filtr w ustawieniach.",
   "no_board_selected_warning": "Proszę wybrać tablicę przed opublikowaniem.",
   "invalid_url_alert": "Podany link nie jest poprawnym adresem URL.",
   "empty_comment_alert": "Nie można opublikować pustego komentarza.",
-  "stored_locally": "Przechowywane lokalnie (w danych {{location}}), nie synchronizowane między urządzeniami",
+  "stored_locally": "Przechowywane lokalnie (w danych {{location}}), nie synchronizowane między urządzeniami.",
   "choose_one": "Wybierz jeden:",
   "create": "Utwórz",
   "save_changes": "Zapisz zmiany",
@@ -295,5 +293,7 @@
   "import_account_backup": "Importuj kopię zapasową konta",
   "account_auto_generated": "To konto zostało automatycznie wygenerowane przez 5chan, rejestracja nie jest wymagana.",
   "download_backup": "Pobierz kopię zapasową",
-  "boards_you_moderate_nav": "Tablice, które moderujesz"
+  "boards_you_moderate_nav": "Tablice, które moderujesz",
+  "link_to_file": "Link do pliku",
+  "support_5chan": "Wspieraj 5chan"
 }

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useLocation, useNavigate, useNavigationType, useParams } from 'react-router-dom';
 import { Comment, useAccount, useAccountComments, useAccountSubplebbits, useFeed, useSubplebbit } from '@plebbit/plebbit-react-hooks';
 import { useSubplebbitField } from '../../hooks/use-stable-subplebbit';
@@ -291,6 +291,8 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, i
   const virtuosoStateKey = feedCacheKey ? `${feedCacheKey}-${BOARD_SORT_TYPE}` : `${location.pathname}-${BOARD_SORT_TYPE}`;
   const navigationType = useNavigationType();
 
+  const boardItemContent = useCallback((index: number, post: Comment | undefined) => <Post index={index} post={post} />, []);
+
   const hasBeenVisibleRef = useRef(false);
   useEffect(() => {
     if (isVisible && !hasBeenVisibleRef.current) {
@@ -353,11 +355,11 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, i
         {effectiveInfiniteScroll ? (
           <Virtuoso
             defaultItemHeight={300}
-            increaseViewportBy={{ bottom: 1200, top: 1200 }}
+            increaseViewportBy={isInAllView || isInSubscriptionsView || isInModView ? { bottom: 600, top: 600 } : { bottom: 1200, top: 1200 }}
             totalCount={displayFeed.length}
             data={displayFeed}
             computeItemKey={(index, post) => post?.cid || `post-${index}`}
-            itemContent={(index, post) => <Post index={index} post={post} />}
+            itemContent={boardItemContent}
             useWindowScroll={true}
             components={footerComponents}
             endReached={hasMore ? loadMore : undefined}

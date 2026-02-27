@@ -1,7 +1,7 @@
 {
   "what_is_5chan": "Qu'est-ce que 5chan?",
   "go": "aller",
-  "5chan_description": "5chan est une alternative entièrement décentralisée et open-source à 4chan, où n'importe qui peut créer et posséder cryptographiquement des tableaux illimités. Les propriétaires de tableaux hébergent et modèrent leur tableau et définissent ses <1>Règles</1>. Toutes les données sont uniquement du texte et sont partagées en peer-to-peer, y compris les liens vers les images intégrées. Consultez les <2>FAQ</2> pour en savoir plus. N'hésitez pas à cliquer sur un tableau ci-dessous qui vous intéresse et à commencer tout de suite!",
+  "5chan_description": "5chan est un imageboard entièrement décentralisé et open-source, où chacun peut créer et posséder cryptographiquement des boards illimités. Les propriétaires de boards hébergent et modèrent leur board et définissent ses <1>Rules</1>. Toutes les données sont en texte uniquement et partagées en peer-to-peer, y compris les liens pour intégrer des images. Consultez les <2>FAQs</2> pour en savoir plus. N'hésitez pas à cliquer sur un board ci-dessous qui vous intéresse et à vous lancer !",
   "no_global_rules_info": "Vous pouvez toujours vous connecter à n'importe quel forum, entièrement P2P, personne ne peut vous arrêter. Collez simplement son adresse dans le champ de recherche ci-dessus.",
   "boards": "forums",
   "popular_threads": "Fils populaires",
@@ -9,7 +9,6 @@
   "stats": "Statistiques",
   "about": "À propos de",
   "whitepaper": "Livre blanc",
-  "token": "Jeton",
   "start_new_thread": "Démarrer un nouveau fil",
   "hide": "masquer",
   "settings": "Paramètres",
@@ -169,11 +168,10 @@
   "failed": "Échoué",
   "add": "Ajouter",
   "filtered_threads": "Threads filtrés",
-  "missing_link_confirm": "Votre publication ne sera pas visible par défaut sur 5chan, car il manque un lien vers une image ou un autre média. Vous pouvez désactiver ce filtre dans les paramètres.",
   "no_board_selected_warning": "Veuillez sélectionner un tableau avant de publier.",
   "invalid_url_alert": "Le lien fourni n'est pas une URL valide.",
   "empty_comment_alert": "Impossible de publier un commentaire vide.",
-  "stored_locally": "Stocké localement (dans les données {{location}}), non synchronisé entre les appareils",
+  "stored_locally": "Stocké localement (dans les données {{location}}), non synchronisé entre les appareils.",
   "choose_one": "Choisissez-en un :",
   "create": "Créer",
   "save_changes": "Enregistrer les modifications",
@@ -295,5 +293,7 @@
   "import_account_backup": "Importer la sauvegarde du compte",
   "account_auto_generated": "Ce compte a été généré automatiquement par 5chan, aucune inscription requise.",
   "download_backup": "Télécharger la sauvegarde",
-  "boards_you_moderate_nav": "Tableaux que vous modérez"
+  "boards_you_moderate_nav": "Tableaux que vous modérez",
+  "link_to_file": "Lien vers le fichier",
+  "support_5chan": "Soutenir 5chan"
 }

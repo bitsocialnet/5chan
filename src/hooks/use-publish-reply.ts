@@ -56,8 +56,8 @@ const usePublishReply = ({ cid, subplebbitAddress, postCid }: { cid: string; sub
 
   const resetPublishReplyOptions = useCallback(() => resetPublishReplyStore(parentCid), [parentCid, resetPublishReplyStore]);
 
-  const numberToCid = usePostNumberStore((state) => state.numberToCid);
-  const quotedCids = useMemo(() => getQuotedCidsFromContent(content, numberToCid), [content, numberToCid]);
+  const scopedNumberToCid = usePostNumberStore((state) => (subplebbitAddress ? state.numberToCid[subplebbitAddress] : undefined));
+  const quotedCids = useMemo(() => getQuotedCidsFromContent(content, scopedNumberToCid), [content, scopedNumberToCid]);
 
   const publishOptions = useMemo(() => mergeQuotedCids(publishCommentOptions, quotedCids), [publishCommentOptions, quotedCids]);
 

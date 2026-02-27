@@ -1,7 +1,7 @@
 {
   "what_is_5chan": "Hvad er 5chan?",
   "go": "gå",
-  "5chan_description": "5chan er en fuldt decentraliseret og open-source 4chan-alternativ, hvor alle kan oprette og kryptografisk eje ubegrænsede boards. Board-ejere hoster og modererer deres board og sætter dets <1>Regler</1>. Alle data er kun tekst og deles peer-to-peer, inklusive links til indlejrede billeder. Tjek <2>FAQ</2> for at lære mere. Du er velkommen til at klikke på et board nedenfor, der interesserer dig, og komme i gang med det samme!",
+  "5chan_description": "5chan er et fuldt decentraliseret og open-source imageboard, hvor alle kan oprette og kryptografisk eje ubegrænsede boards. Board-ejere hoster og modererer deres board og sætter dets <1>Rules</1>. Alle data er kun tekst og deles peer-to-peer, inklusiv links til indlejrede billeder. Tjek <2>FAQs</2> for at lære mere. Klik gerne på et board nedenfor der interesserer dig og kom i gang!",
   "no_global_rules_info": "Du kan altid forbinde til enhver opslagstavle, fuldt P2P, ingen kan stoppe dig. Indsæt simpelthen dens adresse i søgefeltet ovenfor.",
   "boards": "opslagstavler",
   "popular_threads": "Populære tråde",
@@ -9,7 +9,6 @@
   "stats": "Statistik",
   "about": "Om",
   "whitepaper": "Whitepaper",
-  "token": "Token",
   "start_new_thread": "Start en ny tråd",
   "hide": "Skjul",
   "settings": "Indstillinger",
@@ -169,11 +168,10 @@
   "failed": "Mislykkedes",
   "add": "Tilføj",
   "filtered_threads": "Filtrerede tråde",
-  "missing_link_confirm": "Dit indlæg vil ikke være synligt som standard på 5chan, fordi der mangler et link til et billede eller andet medie. Du kan deaktivere dette filter i indstillingerne.",
   "no_board_selected_warning": "Vælg en tavle, før du poster.",
   "invalid_url_alert": "Det angivne link er ikke en gyldig URL.",
   "empty_comment_alert": "Kan ikke poste en tom kommentar.",
-  "stored_locally": "Lagres lokalt (i {{location}} data), ikke synkroniseret på tværs af enheder",
+  "stored_locally": "Gemt lokalt (i {{location}} data), ikke synkroniseret på tværs af enheder.",
   "choose_one": "Vælg en:",
   "create": "Opret",
   "save_changes": "Gem ændringer",
@@ -295,5 +293,7 @@
   "import_account_backup": "Importer kontobackup",
   "account_auto_generated": "Denne konto blev automatisk oprettet af 5chan, ingen tilmelding påkrævet.",
   "download_backup": "Download sikkerhedskopi",
-  "boards_you_moderate_nav": "Boards du modererer"
+  "boards_you_moderate_nav": "Boards du modererer",
+  "link_to_file": "Link til fil",
+  "support_5chan": "Støt 5chan"
 }

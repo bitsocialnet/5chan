@@ -3,10 +3,6 @@ import react from '@vitejs/plugin-react';
 import { resolve } from 'path';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import { VitePWA } from 'vite-plugin-pwa';
-import reactScan from '@react-scan/vite-plugin-react-scan';
-
-const isProduction = process.env.NODE_ENV === 'production';
-const isDevelopment = process.env.NODE_ENV === 'development';
 
 export default defineConfig({
   plugins: [
@@ -22,12 +18,6 @@ export default defineConfig({
         ],
       },
     }),
-    // Only include React Scan in development mode - never in production builds
-    (isDevelopment || (!isProduction && process.env.NODE_ENV !== 'production')) &&
-      reactScan({
-        showToolbar: true,
-        playSound: true,
-      }),
     nodePolyfills({
       globals: {
         Buffer: true,
@@ -53,7 +43,7 @@ export default defineConfig({
       manifest: {
         name: '5chan',
         short_name: '5chan',
-        description: 'A serverless, adminless, decentralized 4chan alternative',
+        description: 'A serverless, adminless, decentralized imageboard',
         theme_color: '#ffffff',
         background_color: '#ffffee',
         display: 'standalone',
@@ -179,6 +169,15 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
+          if (/[\\/]node_modules[\\/](@plebbit[\\/]plebbit-js)[\\/]/.test(id)) {
+            return 'plebbit-js';
+          }
+          if (/[\\/]node_modules[\\/](@plebbit[\\/]plebbit-react-hooks)[\\/]/.test(id)) {
+            return 'plebbit-react-hooks';
+          }
+          if (/[\\/]node_modules[\\/](@react-spring|@use-gesture)[\\/]/.test(id)) {
+            return 'spring-gesture';
+          }
           if (/[\\/]node_modules[\\/](react|react-dom|react-router-dom|react-i18next|i18next|i18next-browser-languagedetector|i18next-http-backend)[\\/]/.test(id)) {
             return 'vendor';
           }

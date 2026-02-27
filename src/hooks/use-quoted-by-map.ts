@@ -61,32 +61,40 @@ const extractReplyQuoteTargets = (replies: Comment[]) => {
   };
 };
 
-const useQuotedByMap = (replies: Comment[] = []) => {
+const useQuotedByMap = (replies: Comment[] = [], subplebbitAddress?: string) => {
   const stableQuotedByMapRef = useRef<Map<string, Comment[]>>(new Map());
   const { replyQuoteTargets, quotedPostNumbers } = useMemo(() => extractReplyQuoteTargets(replies), [replies]);
 
-  // Subscribe only to post numbers referenced in this thread to avoid unrelated global store churn.
   const quotedNumbersSignature = usePostNumberStore(
-    useCallback((state) => quotedPostNumbers.map((postNumber) => `${postNumber}:${state.numberToCid[postNumber] ?? ''}`).join('|'), [quotedPostNumbers]),
+    useCallback(
+      (state) => {
+        const scoped = subplebbitAddress ? state.numberToCid[subplebbitAddress] : undefined;
+        return quotedPostNumbers.map((postNumber) => `${postNumber}:${scoped?.[postNumber] ?? ''}`).join('|');
+      },
+      [quotedPostNumbers, subplebbitAddress],
+    ),
   );
 
   const quotedNumberToCid = useMemo(() => {
-    if (quotedPostNumbers.length === 0) {
+    if (quotedPostNumbers.length === 0 || !subplebbitAddress) {
       return {} as Record<number, string>;
     }
 
     const { numberToCid } = usePostNumberStore.getState();
+    const scoped = numberToCid[subplebbitAddress];
+    if (!scoped) return {} as Record<number, string>;
+
     const nextQuotedNumberToCid: Record<number, string> = {};
 
     for (const postNumber of quotedPostNumbers) {
-      const quotedCid = numberToCid[postNumber];
+      const quotedCid = scoped[postNumber];
       if (quotedCid) {
         nextQuotedNumberToCid[postNumber] = quotedCid;
       }
     }
 
     return nextQuotedNumberToCid;
-  }, [quotedPostNumbers, quotedNumbersSignature]);
+  }, [quotedPostNumbers, subplebbitAddress, quotedNumbersSignature]);
 
   return useMemo(() => {
     const map = new Map<string, Comment[]>();

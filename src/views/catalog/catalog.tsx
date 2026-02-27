@@ -503,7 +503,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
           <>
             <Virtuoso
               defaultItemHeight={imageSize === 'Large' ? 320 : 200}
-              increaseViewportBy={{ bottom: 1200, top: 1200 }}
+              increaseViewportBy={isInAllView || isInSubscriptionsView || isInModView ? { bottom: 600, top: 600 } : { bottom: 1200, top: 1200 }}
               totalCount={rows?.length || 0}
               data={rows}
               itemContent={(index, row) => <CatalogRow index={index} row={row} />}

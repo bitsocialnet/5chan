@@ -1,5 +1,5 @@
 import { setAccount, useAccount, useSubscribe } from '@plebbit/plebbit-react-hooks';
-import Plebbit from '@plebbit/plebbit-js';
+import getShortAddress from '../../../lib/get-short-address';
 import styles from './subscriptions-setting.module.css';
 import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
@@ -79,7 +79,7 @@ const SubscriptionsSetting = () => {
           <ul className={styles.subscriptions}>
             {subscriptions?.map((address: string) => (
               <li key={address} className={styles.subscription}>
-                {address && Plebbit.getShortAddress({ address })} <SubscriptionButton address={address} />
+                {address && getShortAddress(address)} <SubscriptionButton address={address} />
               </li>
             ))}
           </ul>

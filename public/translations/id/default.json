@@ -1,7 +1,7 @@
 {
   "what_is_5chan": "Apa itu 5chan?",
   "go": "pergi",
-  "5chan_description": "5chan adalah alternatif 4chan yang sepenuhnya terdesentralisasi dan open-source, di mana siapa pun dapat membuat dan secara kriptografis memiliki papan tak terbatas. Pemilik papan menghosting dan memoderasi papan mereka, dan menetapkan <1>Aturannya</1>. Semua data hanya teks dan dibagikan peer-to-peer, termasuk tautan ke gambar yang disematkan. Lihat <2>FAQ</2> untuk mempelajari lebih lanjut. Jangan ragu untuk mengklik papan di bawah yang menarik minat Anda dan langsung mulai!",
+  "5chan_description": "5chan adalah imageboard yang sepenuhnya terdesentralisasi dan open-source, di mana siapa pun dapat membuat dan secara kriptografis memiliki board tanpa batas. Pemilik board menghosting dan memoderasi board mereka serta menetapkan <1>Rules</1>-nya. Semua data hanya berupa teks dan dibagikan peer-to-peer, termasuk tautan untuk menyematkan gambar. Lihat <2>FAQs</2> untuk mempelajari lebih lanjut. Silakan klik board di bawah yang menarik minat Anda dan mulai!",
   "no_global_rules_info": "Anda selalu dapat terhubung ke papan mana pun, sepenuhnya P2P, tidak ada yang bisa menghentikan Anda. Cukup tempelkan alamatnya di bidang pencarian di atas.",
   "boards": "papan pesan",
   "popular_threads": "Benang populer",
@@ -9,7 +9,6 @@
   "stats": "Statistik",
   "about": "Tentang",
   "whitepaper": "Whitepaper",
-  "token": "Token",
   "start_new_thread": "Mulai Thread Baru",
   "hide": "Sembunyikan",
   "settings": "Pengaturan",
@@ -169,11 +168,10 @@
   "failed": "Gagal",
   "add": "Tambahkan",
   "filtered_threads": "Thread yang difilter",
-  "missing_link_confirm": "Postingan Anda tidak akan terlihat secara default di 5chan, karena tidak ada tautan ke gambar atau media lain. Anda dapat menonaktifkan filter ini di pengaturan.",
   "no_board_selected_warning": "Silakan pilih papan sebelum memposting.",
   "invalid_url_alert": "Tautan yang diberikan bukan URL yang valid.",
   "empty_comment_alert": "Tidak dapat memposting komentar kosong.",
-  "stored_locally": "Disimpan secara lokal (dalam data {{location}}), tidak disinkronkan antar perangkat",
+  "stored_locally": "Disimpan secara lokal (dalam data {{location}}), tidak disinkronkan antar perangkat.",
   "choose_one": "Pilih satu:",
   "create": "Buat",
   "save_changes": "Simpan Perubahan",
@@ -295,5 +293,7 @@
   "import_account_backup": "Impor Cadangan Akun",
   "account_auto_generated": "Akun ini dibuat secara otomatis oleh 5chan, tidak perlu mendaftar.",
   "download_backup": "Unduh cadangan",
-  "boards_you_moderate_nav": "Papan yang Anda moderasi"
+  "boards_you_moderate_nav": "Papan yang Anda moderasi",
+  "link_to_file": "Tautan ke File",
+  "support_5chan": "Dukung 5chan"
 }

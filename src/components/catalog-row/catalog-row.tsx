@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import { useFloating, offset, size, Placement } from '@floating-ui/react';
 import { Comment, useReplies } from '@plebbit/plebbit-react-hooks';
-import Plebbit from '@plebbit/plebbit-js';
+import getShortAddress from '../../lib/get-short-address';
 import { shouldShowSnow } from '../../lib/snow';
 import { getHasThumbnail } from '../../lib/utils/media-utils';
 import { getFormattedTimeAgo } from '../../lib/utils/time-utils';
@@ -57,8 +57,8 @@ export const CatalogPostMedia = ({ cid, commentMediaInfo, linkWidth, linkHeight 
   }
 
   if (type === 'audio') {
-    displayWidth = 'unset';
-    displayHeight = 'unset';
+    displayWidth = `${maxThumbnailSize}px`;
+    displayHeight = '54px';
   }
 
   const numericWidth = parseInt(displayWidth) || undefined;
@@ -128,6 +128,8 @@ const CatalogPost = memo(
     const isInAllView = isAllView(location.pathname);
     const isInSubscriptionsView = isSubscriptionsView(location.pathname, params);
     const directories = useDirectories();
+    const directoryEntry = directories?.find((c) => c.address === subplebbitAddress);
+    const requirePostLinkIsMedia = directoryEntry?.features?.requirePostLinkIsMedia === true;
     const boardPath = subplebbitAddress ? getBoardPath(subplebbitAddress, directories) : '';
     const postMenuProps = useMemo(() => selectPostMenuProps(post), [post]);
 
@@ -257,12 +259,12 @@ const CatalogPost = memo(
             ) : (
               threadIcons
             )}
-            <div className={styles.meta} title='(R)eplies / (L)ink Replies'>
+            <div className={styles.meta} title={requirePostLinkIsMedia ? '(R)eplies / (I)mage Replies' : '(R)eplies / (L)ink Replies'}>
               R: <b>{replyCount || '0'}</b>
               {linkCount > 0 && (
                 <span>
                   {' '}
-                  / L: <b>{linkCount}</b>
+                  / {requirePostLinkIsMedia ? 'I' : 'L'}: <b>{linkCount}</b>
                 </span>
               )}
               <span className={`${styles.postMenu} ${hoveredCid && styles.postMenuVisible}`}>
@@ -288,7 +290,7 @@ const CatalogPost = memo(
                 {author?.displayName || capitalize(t('anonymous'))}
                 {isCatalogPostAuthorMod && <span className='capitalize'>{` ## Board ${catalogPostAuthorRole}`}</span>}
               </span>
-              {(isInAllView || isInSubscriptionsView) && subplebbitAddress && ` to p/${Plebbit.getShortAddress({ address: subplebbitAddress })}`}
+              {(isInAllView || isInSubscriptionsView) && subplebbitAddress && ` to p/${getShortAddress(subplebbitAddress)}`}
               <span className={styles.postAgo}> {getFormattedTimeAgo(timestamp)}</span>
               {replyCount > 0 && (
                 <div className={styles.postLast}>

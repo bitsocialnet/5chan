@@ -27,9 +27,7 @@ import PendingPost from './views/pending-post';
 import Post from './views/post';
 import Rules from './views/rules';
 import BoardHeader from './components/board-header';
-import ChallengeModal from './components/challenge-modal';
 import FeedCacheContainer from './components/feed-cache-container';
-import ReplyModal from './components/reply-modal';
 import PostForm from './components/post-form';
 import BoardBlotter from './components/board-blotter';
 import BoardsBar from './components/boardsbar';
@@ -37,8 +35,10 @@ import BoardsBar from './components/boardsbar';
 const AccountDataEditor = lazy(() => import('./views/account-data-editor'));
 const BoardsBarEditModal = lazy(() => import('./components/boardsbar-edit-modal'));
 const CreateBoardModal = lazy(() => import('./components/create-board-modal'));
+const ChallengeModal = lazy(() => import('./components/challenge-modal'));
 const DirectoryModal = lazy(() => import('./components/directory-modal'));
 const DisclaimerModal = lazy(() => import('./components/disclaimer-modal'));
+const ReplyModal = lazy(() => import('./components/reply-modal'));
 const SettingsModal = lazy(() => import('./components/settings-modal'));
 
 // Preload all theme assets (buttons, backgrounds) immediately on app load
@@ -134,18 +134,22 @@ const GlobalLayout = () => {
 
   return (
     <>
-      <ChallengeModal />
+      <Suspense fallback={null}>
+        <ChallengeModal />
+      </Suspense>
       {activeCid && threadCid && subplebbitAddress && (
-        <ReplyModal
-          closeModal={closeModal}
-          parentCid={activeCid}
-          parentNumber={parentNumber}
-          threadNumber={threadNumber}
-          postCid={threadCid}
-          scrollY={scrollY}
-          showReplyModal={showReplyModal}
-          subplebbitAddress={subplebbitAddress}
-        />
+        <Suspense fallback={null}>
+          <ReplyModal
+            closeModal={closeModal}
+            parentCid={activeCid}
+            parentNumber={parentNumber}
+            threadNumber={threadNumber}
+            postCid={threadCid}
+            scrollY={scrollY}
+            showReplyModal={showReplyModal}
+            subplebbitAddress={subplebbitAddress}
+          />
+        </Suspense>
       )}
       {isInSettingsView && (
         <Suspense fallback={null}>

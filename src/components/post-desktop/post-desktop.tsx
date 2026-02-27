@@ -3,7 +3,7 @@ import { Trans, useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigationType, useParams } from 'react-router-dom';
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
 import { Comment, useEditedComment, useReplies, useAccount, useAccountComment } from '@plebbit/plebbit-react-hooks';
-import Plebbit from '@plebbit/plebbit-js';
+import getShortAddress from '../../lib/get-short-address';
 import styles from '../../views/post/post.module.css';
 import { CommentMediaInfo, getDisplayMediaInfoType, getHasThumbnail, getMediaDimensions } from '../../lib/utils/media-utils';
 import { hashStringToColor, getTextColorForBackground } from '../../lib/utils/post-utils';
@@ -211,7 +211,7 @@ const PostInfo = ({
   const alertThresholdSeconds = getAlertThresholdSeconds();
   const isOverThreshold = isAwaitingApproval && timeWaiting > alertThresholdSeconds;
 
-  const userID = address && Plebbit.getShortAddress({ address }); // shortened to 8 chars for display; users can verify the full user ID via "Copy user ID" in the post menu to guard against spoofing
+  const userID = address && getShortAddress(address); // shortened to 8 chars for display; users can verify the full user ID via "Copy user ID" in the post menu to guard against spoofing
   const userIDBackgroundColor = hashStringToColor(userID);
   const userIDTextColor = getTextColorForBackground(userIDBackgroundColor);
 
@@ -556,13 +556,15 @@ const PostMedia = ({
   const [showThumbnail, setShowThumbnail] = useState(true);
 
   const mediaDimensions = getMediaDimensions(commentMediaInfo);
+  const directoryEntry = directories?.find((c) => c.address === subplebbitAddress);
+  const requirePostLinkIsMedia = directoryEntry?.features?.requirePostLinkIsMedia === true;
   const boardPath = getBoardPath(subplebbitAddress, directories);
   const displayBoardPath =
     boardPath !== subplebbitAddress
       ? boardPath
       : subplebbitAddress.endsWith('.eth') || subplebbitAddress.endsWith('.sol')
         ? subplebbitAddress
-        : Plebbit.getShortAddress({ address: subplebbitAddress });
+        : getShortAddress(subplebbitAddress);
 
   return (
     <div className={styles.file}>
@@ -572,9 +574,18 @@ const PostMedia = ({
             {t('board')}: <Link to={`/${boardPath}`}>{displayBoardPath}</Link>{' '}
           </>
         )}
-        {t('link')}:{' '}
+        {requirePostLinkIsMedia ? t('file') : t('link')}:{' '}
         <a href={url} target='_blank' rel='noopener noreferrer'>
-          {spoiler ? capitalize(t('spoiler')) : url && url.length > 30 ? url.slice(0, 30) + '...' : url}
+          {(() => {
+            if (spoiler) return capitalize(t('spoiler'));
+            if (requirePostLinkIsMedia && url) {
+              try {
+                const filename = new URL(url).pathname.split('/').pop();
+                if (filename && /\.\w+$/.test(filename)) return filename;
+              } catch {}
+            }
+            return url && url.length > 30 ? url.slice(0, 30) + '...' : url;
+          })()}
         </a>{' '}
         ({type && lowerCase(getDisplayMediaInfoType(type, t))}
         {mediaDimensions && `, ${mediaDimensions}`})
@@ -619,7 +630,7 @@ const PostMedia = ({
           </span>
         )}
       </div>
-      {(hasThumbnail || (!hasThumbnail && !showThumbnail) || spoiler) && (
+      {(hasThumbnail || (!hasThumbnail && !showThumbnail) || spoiler || Boolean(commentMediaInfo?.url)) && (
         <div className={styles.fileThumbnail}>
           <CommentMedia
             commentMediaInfo={commentMediaInfo}
@@ -741,7 +752,7 @@ const PostDesktop = ({
         ? boardPath
         : subplebbitAddress.endsWith('.eth') || subplebbitAddress.endsWith('.sol')
           ? subplebbitAddress
-          : Plebbit.getShortAddress({ address: subplebbitAddress })
+          : getShortAddress(subplebbitAddress)
       : undefined;
 
   const { hidden, unhide, hide } = useHide({ cid });
@@ -849,7 +860,7 @@ const PostDesktop = ({
     return map;
   })();
 
-  const quotedByMap = useQuotedByMap(filteredReplies);
+  const quotedByMap = useQuotedByMap(filteredReplies, subplebbitAddress);
 
   const visibleReplies = useProgressiveRender(filteredReplies, {
     batchSize: 50,
@@ -965,7 +976,7 @@ const PostDesktop = ({
           {!isHidden && !content && !(deleted || removed) && <div className={styles.spacer} />}
           {!isHidden && <CommentContent comment={post} />}
         </div>
-        {!isHidden && !isInPendingPostView && repliesCount > 0 && !isInPostPageView && (
+        {!isHidden && !isInPendingPostView && showReplies && repliesCount > 0 && !isInPostPageView && (
           <span className={styles.summary}>
             <span
               className={`${showOmittedReplies[cid] ? styles.hideOmittedReplies : styles.showOmittedReplies} ${styles.omittedRepliesButtonWrapper}`}

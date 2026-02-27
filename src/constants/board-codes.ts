@@ -1,5 +1,5 @@
 /**
- * Board code groups matching 4chan's bracket structure
+ * Board code groups matching the classic imageboard bracket structure
  * Each group represents boards displayed together in brackets
  */
 export const BOARD_CODE_GROUPS: string[][] = [

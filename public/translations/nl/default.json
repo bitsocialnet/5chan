@@ -1,7 +1,7 @@
 {
   "what_is_5chan": "Wat is 5chan?",
   "go": "gaan",
-  "5chan_description": "5chan is een volledig gedecentraliseerd en open-source alternatief voor 4chan, waar iedereen onbeperkt boards kan maken en cryptografisch bezitten. Board-eigenaren hosten en modereren hun board en stellen de <1>Regels</1> ervan in. Alle gegevens zijn alleen tekst en worden peer-to-peer gedeeld, inclusief links naar ingesloten afbeeldingen. Bekijk de <2>FAQ</2> voor meer informatie. Voel je vrij om op een board hieronder te klikken dat je interesseert en begin meteen!",
+  "5chan_description": "5chan is een volledig gedecentraliseerd en open-source imageboard, waar iedereen onbeperkt boards kan aanmaken en cryptografisch bezitten. Board-eigenaren hosten en modereren hun board en stellen de <1>Rules</1> in. Alle data is alleen tekst en wordt peer-to-peer gedeeld, inclusief links voor ingesloten afbeeldingen. Bekijk de <2>FAQs</2> voor meer informatie. Klik gerust op een board hieronder dat je interesseert en begin!",
   "no_global_rules_info": "Je kunt altijd verbinden met elk forum, volledig P2P, niemand kan je stoppen. Plak gewoon het adres in het zoekveld hierboven.",
   "boards": "forums",
   "popular_threads": "Populaire threads",
@@ -9,7 +9,6 @@
   "stats": "Statistieken",
   "about": "Over",
   "whitepaper": "Whitepaper",
-  "token": "Token",
   "start_new_thread": "Start een nieuw onderwerp",
   "hide": "Verbergen",
   "settings": "Instellingen",
@@ -169,11 +168,10 @@
   "failed": "Mislukt",
   "add": "Toevoegen",
   "filtered_threads": "Gefilterde threads",
-  "missing_link_confirm": "Je bericht zal standaard niet zichtbaar zijn op 5chan, omdat er een link naar een afbeelding of ander media ontbreekt. Je kunt dit filter uitschakelen in de instellingen.",
   "no_board_selected_warning": "Selecteer een bord voordat je plaatst.",
   "invalid_url_alert": "De opgegeven link is geen geldige URL.",
   "empty_comment_alert": "Kan geen lege opmerking plaatsen.",
-  "stored_locally": "Lokaal opgeslagen (in {{location}} gegevens), niet gesynchroniseerd tussen apparaten",
+  "stored_locally": "Lokaal opgeslagen (in {{location}} gegevens), niet gesynchroniseerd tussen apparaten.",
   "choose_one": "Kies er een:",
   "create": "Maak aan",
   "save_changes": "Wijzigingen opslaan",
@@ -295,5 +293,7 @@
   "import_account_backup": "Accountback-up importeren",
   "account_auto_generated": "Dit account is automatisch gegenereerd door 5chan, geen aanmelding vereist.",
   "download_backup": "Back-up downloaden",
-  "boards_you_moderate_nav": "Boards die je beheert"
+  "boards_you_moderate_nav": "Boards die je beheert",
+  "link_to_file": "Link naar bestand",
+  "support_5chan": "Steun 5chan"
 }

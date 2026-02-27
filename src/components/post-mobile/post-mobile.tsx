@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigationType, useParams } from 'react-router-dom';
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
 import { Comment, useEditedComment, useReplies, useAccount, usePublishCommentModeration, useAccountComment } from '@plebbit/plebbit-react-hooks';
-import Plebbit from '@plebbit/plebbit-js';
+import getShortAddress from '../../lib/get-short-address';
 import styles from '../../views/post/post.module.css';
 import { shouldShowSnow } from '../../lib/snow';
 import { getHasThumbnail } from '../../lib/utils/media-utils';
@@ -40,6 +40,7 @@ import { alertChallengeVerificationFailed } from '../../lib/utils/challenge-util
 import useQuotedByMap from '../../hooks/use-quoted-by-map';
 import useProgressiveRender from '../../hooks/use-progressive-render';
 import { BOARD_REPLIES_PREVIEW_FETCH_SIZE, BOARD_REPLIES_PREVIEW_VISIBLE_COUNT, REPLIES_PER_PAGE } from '../../lib/constants';
+import { getPreviewDisplayReplies } from '../../lib/utils/replies-preview-utils';
 
 const { addChallenge } = useChallengesStore.getState();
 
@@ -65,7 +66,7 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
         ? boardPath
         : subplebbitAddress.endsWith('.eth') || subplebbitAddress.endsWith('.sol')
           ? subplebbitAddress
-          : Plebbit.getShortAddress({ address: subplebbitAddress })
+          : getShortAddress(subplebbitAddress)
       : undefined;
   const isReply = parentCid;
   const title = post?.title?.trim();
@@ -202,7 +203,7 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
     return Math.max(domCount, 1);
   })();
 
-  const userID = address && Plebbit.getShortAddress({ address }); // shortened to 8 chars for display; users can verify the full user ID via "Copy user ID" in the post menu to guard against spoofing
+  const userID = address && getShortAddress(address); // shortened to 8 chars for display; users can verify the full user ID via "Copy user ID" in the post menu to guard against spoofing
   const userIDBackgroundColor = hashStringToColor(userID);
   const userIDTextColor = getTextColorForBackground(userIDBackgroundColor);
 
@@ -403,10 +404,9 @@ const PostMediaContent = ({ post, link }: { post: any; link: string }) => {
   const [showThumbnail, setShowThumbnail] = useState(true);
   const { thumbnailUrl, linkWidth, linkHeight, spoiler, deleted, removed, parentCid } = post || {};
   const commentMediaInfo = useCommentMediaInfo(link, thumbnailUrl, linkWidth, linkHeight);
-  const hasThumbnail = getHasThumbnail(commentMediaInfo, link);
 
   return (
-    hasThumbnail && (
+    commentMediaInfo && (
       <CommentMedia
         commentMediaInfo={commentMediaInfo}
         deleted={deleted}
@@ -537,6 +537,8 @@ const PostMobile = ({
   const isInPendingPostView = isPendingPostView(location.pathname, params);
   const isInPostView = isPostPageView(location.pathname, params);
   const directories = useDirectories();
+  const directoryEntry = directories?.find((c) => c.address === subplebbitAddress);
+  const requirePostLinkIsMedia = directoryEntry?.features?.requirePostLinkIsMedia === true;
   const boardPath = subplebbitAddress ? getBoardPath(subplebbitAddress, directories) : undefined;
   const linksCount = useCountLinksInReplies(post);
   const shouldFetchReplies = showReplies && !isModQueue;
@@ -590,6 +592,7 @@ const PostMobile = ({
 
   // Filter out deleted replies with no children for both virtuoso and non-virtuoso rendering
   const filteredReplies = repliesForRender.filter((reply) => !(reply.deleted && (reply.replyCount === 0 || !reply.replyCount)));
+  const previewDisplayReplies = getPreviewDisplayReplies(filteredReplies, BOARD_REPLIES_PREVIEW_VISIBLE_COUNT);
 
   const directRepliesByParentCid = (() => {
     const map = new Map<string, Comment[]>();
@@ -606,7 +609,7 @@ const PostMobile = ({
     return map;
   })();
 
-  const quotedByMap = useQuotedByMap(filteredReplies);
+  const quotedByMap = useQuotedByMap(filteredReplies, subplebbitAddress);
 
   const visibleReplies = useProgressiveRender(filteredReplies, {
     batchSize: 50,
@@ -694,7 +697,7 @@ const PostMobile = ({
                 <div className={styles.postLink}>
                   <span className={styles.info}>
                     {replyCount > 0 && `${replyCount} Replies`}
-                    {linksCount > 0 && ` / ${linksCount} Links`}
+                    {linksCount > 0 && ` / ${linksCount} ${requirePostLinkIsMedia ? 'Images' : 'Links'}`}
                   </span>
                   {isModQueue ? (
                     <div className={styles.modQueueActions}>
@@ -778,7 +781,7 @@ const PostMobile = ({
               !isInPendingPostView &&
               repliesForRender &&
               showReplies &&
-              filteredReplies.slice(-BOARD_REPLIES_PREVIEW_VISIBLE_COUNT).map((reply) => (
+              previewDisplayReplies.map((reply) => (
                 <div key={reply.cid} className={styles.replyContainer}>
                   <Reply
                     postReplyCount={replyCount}

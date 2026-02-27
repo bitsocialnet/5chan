@@ -6,6 +6,8 @@ import { useDirectories, DirectoryCommunity } from '../../hooks/use-directories'
 import { getSubplebbitAddress, getBoardPath } from '../../lib/utils/route-utils';
 import Markdown from '../../components/markdown';
 import styles from './rules.module.css';
+import { useTranslation } from 'react-i18next';
+import lowerCase from 'lodash/lowerCase';
 
 const getBoardShortCode = (title?: string): string => {
   if (!title) return '';
@@ -118,6 +120,8 @@ const BoardSelector = ({
     }
   };
 
+  const { t } = useTranslation();
+
   return (
     <div className={`${styles.box} ${styles.selectorBox}`}>
       <div className={styles.boxBar}>
@@ -142,7 +146,7 @@ const BoardSelector = ({
           <form onSubmit={handleCustomSubmit} className={styles.customAddressForm}>
             <input
               type='text'
-              placeholder='enter board address'
+              placeholder={lowerCase(t('enter_board_address'))}
               value={customAddress}
               onChange={(e) => setCustomAddress(e.target.value)}
               className={styles.addressInput}
@@ -183,8 +187,8 @@ const Rules = () => {
             <h2>Rules</h2>
           </div>
           <div className={styles.boxContent}>
-            5chan is a serverless and adminless tool to browse and post to decentralized imageboards. 5chan does not have global rules or moderators. Each board is
-            independently owned and moderated, with its own set of rules determined by the board owner.
+            5chan does <i>not</i> have global rules or moderators. It is a serverless, adminless, static tool for browsing and posting to decentralized imageboards.{' '}
+            <strong>Each board sets its own rules independently</strong>, determined by the board owner and board admins, and enforced by the board moderators.
             <br />
             <br />
             Please read and respect the rules of whatever board you decide to post to.
