@@ -576,7 +576,16 @@ const PostMedia = ({
         )}
         {requirePostLinkIsMedia ? t('file') : t('link')}:{' '}
         <a href={url} target='_blank' rel='noopener noreferrer'>
-          {spoiler ? capitalize(t('spoiler')) : url && url.length > 30 ? url.slice(0, 30) + '...' : url}
+          {(() => {
+            if (spoiler) return capitalize(t('spoiler'));
+            if (requirePostLinkIsMedia && url) {
+              try {
+                const filename = new URL(url).pathname.split('/').pop();
+                if (filename && /\.\w+$/.test(filename)) return filename;
+              } catch {}
+            }
+            return url && url.length > 30 ? url.slice(0, 30) + '...' : url;
+          })()}
         </a>{' '}
         ({type && lowerCase(getDisplayMediaInfoType(type, t))}
         {mediaDimensions && `, ${mediaDimensions}`})
