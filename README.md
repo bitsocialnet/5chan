@@ -9,7 +9,7 @@ _Telegram group for this repo https://t.me/fivechandev_
 
 # 5chan
 
-5chan is a serverless, adminless, decentralized and open-source 4chan alternative built on the [Bitsocial protocol](https://bitsocial.net). It features the same directory structure as 4chan, but with a crucial difference: **anyone can create and own boards, and multiple boards can compete for each directory slot**.
+5chan is a serverless, adminless, decentralized and open-source imageboard built on the [Bitsocial protocol](https://bitsocial.net). It features the classic imageboard directory structure, but with a crucial difference: **anyone can create and own boards, and multiple boards can compete for each directory slot**.
 
 ## Key Features
 
@@ -17,7 +17,7 @@ _Telegram group for this repo https://t.me/fivechandev_
 Unlike traditional imageboards, 5chan has no global admins or central authority. Anyone can create unlimited boards using their own [bitsocial node](https://github.com/bitsocialhq/bitsocial-cli). Each board owner runs their own P2P node that users connect to peer-to-peer, giving them complete control over their board's content, moderation, and rules.
 
 ### Competitive Directory System
-5chan maintains the familiar 4chan directory structure (Japanese Culture, Video Games, Interests, Creative, etc.), but introduces competition: **multiple boards can compete for each directory slot**. For example, there can be unlimited "Business & Finance" boards, but only the highest-voted one appears in the directory on the homepage.
+5chan maintains the familiar imageboard directory structure (Japanese Culture, Video Games, Interests, Creative, etc.), but introduces competition: **multiple boards can compete for each directory slot**. For example, there can be unlimited "Business & Finance" boards, but only the highest-voted one appears in the directory on the homepage.
 
 Currently, directory assignments are temporarily handpicked by developers through GitHub pull requests. In the future, this will be fully automated through **gasless pubsub voting** (see [Future Roadmap](#future-roadmap) below), making the process completely decentralized and community-driven.
 
@@ -77,7 +77,7 @@ To have your board appear in a directory on the 5chan homepage:
 3. Add your board's entry with:
    - Title: in the format `/directoryCode/ - Title`, e.g. "/biz/ - Business & Finance";
    - Address: the bitsocial community address, whether IPNS key (`12KooW...`) or readable crypto address (`mydomain.eth`);
-   - NSFW status: `true` or `false`, must be the same as 4chan.
+   - NSFW status: `true` or `false`, must match the standard classification for the directory code.
 
 4. The developers will review your PR and merge it if approved
 

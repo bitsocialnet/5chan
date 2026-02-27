@@ -43,7 +43,7 @@ export default defineConfig({
       manifest: {
         name: '5chan',
         short_name: '5chan',
-        description: 'A serverless, adminless, decentralized 4chan alternative',
+        description: 'A serverless, adminless, decentralized imageboard',
         theme_color: '#ffffff',
         background_color: '#ffffee',
         display: 'standalone',

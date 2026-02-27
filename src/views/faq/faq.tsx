@@ -86,9 +86,9 @@ const FAQ = () => {
                   What is 5chan?
                 </dt>
                 <dd>
-                  5chan is a serverless, adminless, decentralized 4chan alternative where anyone can create and own unlimited boards. All data comes from the Bitsocial
-                  protocol, it's all text including links from which media is embedded, shared peer-to-peer. Users do not need to register an account before participating
-                  in the community.
+                  5chan is a serverless, adminless, decentralized imageboard where anyone can create and own unlimited boards. All data comes from the Bitsocial protocol,
+                  it's all text including links from which media is embedded, shared peer-to-peer. Users do not need to register an account before participating in the
+                  community.
                 </dd>
                 <dt id='howaccess'>How do I access the boards?</dt>
                 <dd>
@@ -163,7 +163,7 @@ const FAQ = () => {
                   <span className='greentext'>{'>'}This is a quote</span>").
                   <br />
                   <br />
-                  Unlike 4chan and other imageboards, 5chan does <i>not</i> allow to quote more than one post at a time. You can only reply to one post at a time. This is
+                  Unlike traditional imageboards, 5chan does <i>not</i> allow to quote more than one post at a time. You can only reply to one post at a time. This is
                   because 5chan is a client for the Bitsocial protocol, which is designed to be an alternative to Reddit-like social media, in which you can only reply to
                   one post at a time.
                   <br />
