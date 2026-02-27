@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import getShortAddress from '../../lib/get-short-address';
 import { useAccountComment } from '@plebbit/plebbit-react-hooks';
 import useAccountsStore from '@plebbit/plebbit-react-hooks/dist/stores/accounts';
-import { isAllView, isCatalogView, isSubscriptionsView } from '../../lib/utils/view-utils';
+import { isAllView, isCatalogView, isModView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import { useDirectories, DirectoryCommunity } from '../../hooks/use-directories';
 import { useBoardPath, useResolvedSubplebbitAddress } from '../../hooks/use-resolved-subplebbit-address';
 import { getBoardPath, extractDirectoryFromTitle } from '../../lib/utils/route-utils';
@@ -324,8 +324,9 @@ const BoardsBarMobile = ({ subplebbitAddress }: { subplebbitAddress?: string }) 
   const isInAllView = isAllView(location.pathname);
   const isInCatalogView = isCatalogView(location.pathname, params);
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, params);
+  const isInModView = isModView(location.pathname);
   const boardPath = useBoardPath(subplebbitAddress);
-  const selectValue = isInAllView ? 'all' : isInSubscriptionsView ? 'subs' : boardPath || subplebbitAddress;
+  const selectValue = isInAllView ? 'all' : isInSubscriptionsView ? 'subs' : isInModView ? 'mod' : boardPath || subplebbitAddress;
 
   const accountSubplebbitAddresses = useAccountsStore(
     (state) => {
