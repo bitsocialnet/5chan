@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect, useCallback } from 'react';
+import React, { useMemo, useState, useEffect, useCallback, memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, Link } from 'react-router-dom';
 import { useFeed, Comment, usePublishCommentModeration, useEditedComment, useSubplebbit, useComment } from '@plebbit/plebbit-react-hooks';
@@ -6,13 +6,13 @@ import useAccountsStore from '@plebbit/plebbit-react-hooks/dist/stores/accounts'
 import { Virtuoso } from 'react-virtuoso';
 import styles from './mod-queue.module.css';
 import useModQueueStore from '../../stores/use-mod-queue-store';
-import { useAccountSubplebbitsWithMetadata } from '../../hooks/use-account-subplebbits-with-metadata';
 import LoadingEllipsis from '../../components/loading-ellipsis';
 import ErrorDisplay from '../../components/error-display/error-display';
 import { useFeedStateString } from '../../hooks/use-state-string';
-import { getSubplebbitAddress, getBoardPath } from '../../lib/utils/route-utils';
+import { getSubplebbitAddress, getBoardPath, extractDirectoryFromTitle } from '../../lib/utils/route-utils';
 import { useDirectories, DirectoryCommunity } from '../../hooks/use-directories';
-import { useBoardPath } from '../../hooks/use-resolved-subplebbit-address';
+import getShortAddress from '../../lib/get-short-address';
+import { BOARD_CODE_GROUPS } from '../../constants/board-codes';
 import { getHasThumbnail, getCommentMediaInfo } from '../../lib/utils/media-utils';
 import { getFormattedDate, getFormattedTimeAgo } from '../../lib/utils/time-utils';
 import useFeedResetStore from '../../stores/use-feed-reset-store';
@@ -53,6 +53,9 @@ const ModQueueFooter = ({ hasMore, subplebbitAddresses }: ModQueueFooterProps) =
 interface ModQueueRowProps {
   comment: Comment;
   isOdd?: boolean;
+  showBoard?: boolean;
+  /** Precomputed board path from parent (avoids per-row useBoardPath lookup) */
+  boardPath: string | undefined;
 }
 
 // Track which action was initiated to show appropriate completion message
@@ -222,7 +225,7 @@ const useModQueueActions = (comment: Comment): ModQueueActionState => {
   return { status, errorMessage, isPublishing, handleApprove, handleReject };
 };
 
-const ModQueueRow = ({ comment, isOdd = false }: ModQueueRowProps) => {
+const ModQueueRow = memo(({ comment, isOdd = false, showBoard = false, boardPath }: ModQueueRowProps) => {
   const { t } = useTranslation();
   const { getAlertThresholdSeconds } = useModQueueStore();
   const isMobile = useIsMobile();
@@ -248,8 +251,6 @@ const ModQueueRow = ({ comment, isOdd = false }: ModQueueRowProps) => {
   const isAwaitingApproval = !alreadyApproved && !alreadyRejected;
 
   const { status, errorMessage, isPublishing, handleApprove, handleReject } = useModQueueActions(displayComment);
-
-  const boardPath = useBoardPath(subplebbitAddress);
   const hasTitle = title && title.trim().length > 0;
   const hasContent = content && content.trim().length > 0;
   const hasLink = link && link.length > 0;
@@ -268,9 +269,12 @@ const ModQueueRow = ({ comment, isOdd = false }: ModQueueRowProps) => {
   const threadTargetCid = threadCid || cid;
   const postUrl = boardPath && threadTargetCid ? `/${boardPath}/thread/${threadTargetCid}` : undefined;
 
+  const modQueueUrl = boardPath ? `/${boardPath}/modqueue` : undefined;
+
   return (
     <div className={`${styles.row} ${isOdd ? styles.rowOdd : ''}`}>
       <div className={styles.number}>{number ?? 'N/A'}</div>
+      {showBoard && <div className={styles.board}>{modQueueUrl ? <Link to={modQueueUrl}>/{boardPath}/</Link> : <span>/{boardPath ?? '—'}/</span>}</div>}
       <div className={styles.excerpt}>
         {postUrl ? (
           <Link to={postUrl} title={excerpt}>
@@ -319,13 +323,17 @@ const ModQueueRow = ({ comment, isOdd = false }: ModQueueRowProps) => {
       </div>
     </div>
   );
-};
+});
+ModQueueRow.displayName = 'ModQueueRow';
 
 interface ModQueueCardProps {
   comment: Comment;
+  showBoard?: boolean;
+  /** Precomputed board path from parent (avoids per-row useBoardPath lookup) */
+  boardPath: string | undefined;
 }
 
-const ModQueueCard = ({ comment }: ModQueueCardProps) => {
+const ModQueueCard = memo(({ comment, showBoard = false, boardPath }: ModQueueCardProps) => {
   const { t } = useTranslation();
   const { getAlertThresholdSeconds } = useModQueueStore();
   const currentTime = useCurrentTime();
@@ -345,8 +353,6 @@ const ModQueueCard = ({ comment }: ModQueueCardProps) => {
   const isAwaitingApproval = !alreadyApproved && !alreadyRejected;
 
   const { status, errorMessage, isPublishing, handleApprove, handleReject } = useModQueueActions(displayComment);
-
-  const boardPath = useBoardPath(subplebbitAddress);
   const hasTitle = title && title.trim().length > 0;
   const hasContent = content && content.trim().length > 0;
   const hasLink = link && link.length > 0;
@@ -364,10 +370,13 @@ const ModQueueCard = ({ comment }: ModQueueCardProps) => {
   const threadTargetCid = threadCid || cid;
   const postUrl = boardPath && threadTargetCid ? `/${boardPath}/thread/${threadTargetCid}` : undefined;
 
+  const modQueueUrl = boardPath ? `/${boardPath}/modqueue` : undefined;
+
   return (
     <div className={styles.mobileCard}>
       <div className={styles.cardHeader}>
         <span className={styles.cardNumber}>No. {number ?? 'N/A'}</span>
+        {showBoard && boardPath && <span className={styles.cardBoard}>{modQueueUrl ? <Link to={modQueueUrl}>/{boardPath}/</Link> : <span>/{boardPath}/</span>}</span>}
         <span className={styles.cardTime}>
           {isAwaitingApproval && isOverThreshold ? (
             <>
@@ -392,7 +401,8 @@ const ModQueueCard = ({ comment }: ModQueueCardProps) => {
       <ModQueueActions status={status} errorMessage={errorMessage} isPublishing={isPublishing} handleApprove={handleApprove} handleReject={handleReject} variant='card' />
     </div>
   );
-};
+});
+ModQueueCard.displayName = 'ModQueueCard';
 
 const ModQueueFeedPost = ({ comment }: { comment: Comment }) => {
   const { editedComment } = useEditedComment({ comment });
@@ -425,49 +435,145 @@ const ModQueueFeedPost = ({ comment }: { comment: Comment }) => {
   );
 };
 
-interface ModQueueBoardFilterProps {
-  communities: DirectoryCommunity[];
+interface ModQueueBoardSummaryProps {
+  feed: Comment[];
+  directories: DirectoryCommunity[];
+  accountSubplebbitAddresses: string[];
 }
 
-const ModQueueBoardFilter = ({ communities }: ModQueueBoardFilterProps) => {
+const findBoardAddressByCode = (code: string, dirs: DirectoryCommunity[]): string | null => {
+  const entry = dirs.find((sub) => {
+    if (!sub.title) return false;
+    const directory = extractDirectoryFromTitle(sub.title);
+    return directory === code;
+  });
+  return entry?.address || null;
+};
+
+const ModQueueBoardSummary = ({ feed, directories, accountSubplebbitAddresses }: ModQueueBoardSummaryProps) => {
   const { t } = useTranslation();
-  const { selectedBoardFilter, setSelectedBoardFilter } = useModQueueStore();
+  const { selectedBoardFilter, setSelectedBoardFilter, getAlertThresholdSeconds } = useModQueueStore();
+  const currentTime = useCurrentTime();
+  const alertThresholdSeconds = getAlertThresholdSeconds();
+  const modAddressSet = useMemo(() => new Set(accountSubplebbitAddresses), [accountSubplebbitAddresses]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value;
-    setSelectedBoardFilter(value);
-  };
-
-  // Compute derived values before any early return so hooks run unconditionally
-  const firstBoardAddress = communities?.find((sub) => sub.address)?.address;
-  const currentFilter = selectedBoardFilter || firstBoardAddress || '';
-
-  // Auto-select first board if none is selected (must run before early return)
-  useEffect(() => {
-    if (!selectedBoardFilter && firstBoardAddress) {
-      setSelectedBoardFilter(firstBoardAddress);
+  const boardCounts = useMemo(() => {
+    const counts = new Map<string, { normal: number; urgent: number }>();
+    for (const address of accountSubplebbitAddresses) {
+      counts.set(address, { normal: 0, urgent: 0 });
     }
-  }, [selectedBoardFilter, firstBoardAddress, setSelectedBoardFilter]);
+    for (const item of feed) {
+      const addr = item.subplebbitAddress;
+      if (!addr) continue;
+      const entry = counts.get(addr);
+      if (!entry) continue;
+      const isAwaiting = item.approved !== true && item.removed !== true;
+      if (!isAwaiting) continue;
+      const timeWaiting = currentTime - (item.timestamp ?? 0);
+      const isUrgent = timeWaiting > alertThresholdSeconds;
+      if (isUrgent) entry.urgent++;
+      else entry.normal++;
+    }
+    return counts;
+  }, [feed, accountSubplebbitAddresses, currentTime, alertThresholdSeconds]);
 
-  if (!communities || communities.length === 0) {
+  const { totalNormal, totalUrgent } = useMemo(() => {
+    let normal = 0;
+    let urgent = 0;
+    for (const entry of boardCounts.values()) {
+      normal += entry.normal;
+      urgent += entry.urgent;
+    }
+    return { totalNormal: normal, totalUrgent: urgent };
+  }, [boardCounts]);
+
+  // Order: All first, then BOARD_CODE_GROUPS order (directory boards), then non-directory boards
+  const orderedAddresses = useMemo(() => {
+    const ordered: string[] = [];
+    const seen = new Set<string>();
+
+    for (const group of BOARD_CODE_GROUPS) {
+      for (const code of group) {
+        const address = findBoardAddressByCode(code, directories);
+        if (address && modAddressSet.has(address) && !seen.has(address)) {
+          ordered.push(address);
+          seen.add(address);
+        }
+      }
+    }
+    // Directory boards not in BOARD_CODE_GROUPS (custom dirs)
+    for (const addr of accountSubplebbitAddresses) {
+      const path = getBoardPath(addr, directories);
+      if (path !== addr && !seen.has(addr)) {
+        ordered.push(addr);
+        seen.add(addr);
+      }
+    }
+    // Non-directory boards (own category, like subscriptions in boardsbar)
+    for (const addr of accountSubplebbitAddresses) {
+      if (!seen.has(addr)) {
+        ordered.push(addr);
+      }
+    }
+    return ordered;
+  }, [accountSubplebbitAddresses, directories, modAddressSet]);
+
+  const handleSelectAll = useCallback(() => setSelectedBoardFilter(null), [setSelectedBoardFilter]);
+  const handleSelectBoard = useCallback((address: string) => setSelectedBoardFilter(address), [setSelectedBoardFilter]);
+
+  if (accountSubplebbitAddresses.length === 0) {
     return null;
   }
 
+  const renderCount = (normal: number, urgent: number) => {
+    const total = normal + urgent;
+    if (total === 0) return null;
+    return (
+      <strong>
+        (
+        {urgent > 0 && normal > 0 ? (
+          <>
+            <span className={styles.modQueueButtonCount}>{normal}</span>
+            <span className={`${styles.modQueueButtonCount} ${styles.modQueueButtonCountAlert}`}>+{urgent}</span>
+          </>
+        ) : urgent > 0 ? (
+          <span className={`${styles.modQueueButtonCount} ${styles.modQueueButtonCountAlert}`}>{urgent}</span>
+        ) : (
+          <span className={styles.modQueueButtonCount}>{total}</span>
+        )}
+        )
+      </strong>
+    );
+  };
+
   return (
-    <div className={styles.filterContainer}>
-      <label>{t('filter_by_board')}:</label>
-      <select value={currentFilter} onChange={handleChange}>
-        {communities.map((sub) => {
-          const address = sub.address;
-          if (!address) return null;
-          return (
-            <option key={address} value={address}>
-              /{getBoardPath(address, communities)}/
-            </option>
-          );
-        })}
-      </select>
-    </div>
+    <span className={styles.boardSummary}>
+      <button type='button' className={`${styles.boardSummaryLink} ${!selectedBoardFilter ? styles.boardSummaryLinkSelected : ''}`} onClick={handleSelectAll}>
+        {t('all')}
+        {totalNormal + totalUrgent > 0 && <> {renderCount(totalNormal, totalUrgent)}</>}
+      </button>
+      {orderedAddresses.map((address) => {
+        const boardPath = getBoardPath(address, directories);
+        const isInDirectory = boardPath !== address;
+        const displayText = isInDirectory ? boardPath : address.endsWith('.eth') || address.endsWith('.sol') ? address : getShortAddress(address) || address;
+        const isSelected = selectedBoardFilter === address;
+        const { normal, urgent } = boardCounts.get(address) ?? { normal: 0, urgent: 0 };
+
+        return (
+          <React.Fragment key={address}>
+            {' / '}
+            <button
+              type='button'
+              className={`${styles.boardSummaryLink} ${isSelected ? styles.boardSummaryLinkSelected : ''}`}
+              onClick={() => handleSelectBoard(address)}
+            >
+              {displayText}
+              {normal + urgent > 0 && <> {renderCount(normal, urgent)}</>}
+            </button>
+          </React.Fragment>
+        );
+      })}
+    </span>
   );
 };
 
@@ -674,26 +780,10 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
     return undefined;
   }, [boardIdentifier, directories]);
 
-  const communitiesWithMetadata = useAccountSubplebbitsWithMetadata();
-
   const subplebbitAddresses = useMemo(() => {
-    if (resolvedAddress) {
-      return [resolvedAddress];
-    }
-
-    // Always require a board filter when viewing /mod/modqueue (no boardIdentifier)
-    if (selectedBoardFilter) {
-      return [selectedBoardFilter];
-    }
-
-    // Default to first board if none selected
-    const firstBoardAddress = accountSubplebbitAddresses[0];
-    if (firstBoardAddress) {
-      return [firstBoardAddress];
-    }
-
-    return [];
-  }, [resolvedAddress, selectedBoardFilter, accountSubplebbitAddresses]);
+    if (resolvedAddress) return [resolvedAddress];
+    return accountSubplebbitAddresses;
+  }, [resolvedAddress, accountSubplebbitAddresses]);
 
   const subplebbitAddress = subplebbitAddresses[0];
   const subplebbit = useSubplebbit({ subplebbitAddress });
@@ -709,18 +799,48 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
   );
   const { feed, hasMore, loadMore, reset } = useFeed(feedOptions);
 
+  const filteredFeed = useMemo(() => {
+    if (!selectedBoardFilter) return feed;
+    return feed.filter((item) => item.subplebbitAddress === selectedBoardFilter);
+  }, [feed, selectedBoardFilter]);
+
+  const addressToPathMap = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const addr of subplebbitAddresses) {
+      map.set(addr, getBoardPath(addr, directories));
+    }
+    return map;
+  }, [subplebbitAddresses, directories]);
+
+  const showBoardColumn = !resolvedAddress;
+  const compactRowItemContent = useCallback(
+    (index: number, comment: Comment) => (
+      <ModQueueRow
+        key={comment.cid}
+        comment={comment}
+        isOdd={index % 2 === 0}
+        showBoard={showBoardColumn}
+        boardPath={addressToPathMap.get(comment.subplebbitAddress) ?? comment.subplebbitAddress}
+      />
+    ),
+    [addressToPathMap, showBoardColumn],
+  );
+  const compactCardItemContent = useCallback(
+    (_index: number, comment: Comment) => (
+      <ModQueueCard
+        key={comment.cid}
+        comment={comment}
+        showBoard={showBoardColumn}
+        boardPath={addressToPathMap.get(comment.subplebbitAddress) ?? comment.subplebbitAddress}
+      />
+    ),
+    [addressToPathMap, showBoardColumn],
+  );
+
   const setResetFunction = useFeedResetStore((state) => state.setResetFunction);
   useEffect(() => {
     setResetFunction(reset);
   }, [reset, setResetFunction]);
-
-  // Auto-select first board if viewing /mod/modqueue without a boardIdentifier and no filter is set
-  useEffect(() => {
-    if (!resolvedAddress && !selectedBoardFilter && accountSubplebbitAddresses.length > 0) {
-      const { setSelectedBoardFilter } = useModQueueStore.getState();
-      setSelectedBoardFilter(accountSubplebbitAddresses[0]);
-    }
-  }, [resolvedAddress, selectedBoardFilter, accountSubplebbitAddresses]);
 
   // Memoize footer components object to preserve identity across renders (Virtuoso optimization)
   // Note: useFeedStateString is called inside ModQueueFooter to isolate re-renders from backend state changes
@@ -745,12 +865,12 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
       {!resolvedAddress && (
         <div className={styles.controls}>
           <div className={styles.controlsLeft}>
-            <ModQueueBoardFilter communities={communitiesWithMetadata} />
+            <ModQueueBoardSummary feed={feed} directories={directories} accountSubplebbitAddresses={accountSubplebbitAddresses} />
           </div>
         </div>
       )}
 
-      {feed.length === 0 && !hasMore ? (
+      {filteredFeed.length === 0 && !hasMore ? (
         <div className={styles.empty}>{t('queue_is_empty')}</div>
       ) : (
         <>
@@ -758,6 +878,7 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
             <>
               <div className={styles.tableHeader}>
                 <div className={styles.numberHeader}>No.</div>
+                {!resolvedAddress && <div className={styles.boardHeader}>{t('board')}</div>}
                 <div className={styles.excerptHeader}>{t('excerpt')}</div>
                 <div className={styles.timeHeader}>{t('submitted')}</div>
                 <div className={styles.typeHeader}>{t('type')}</div>
@@ -768,17 +889,23 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
               {hasMore ? (
                 <Virtuoso
                   useWindowScroll
-                  data={feed}
-                  totalCount={feed.length}
+                  data={filteredFeed}
+                  totalCount={filteredFeed.length}
                   endReached={loadMore}
                   increaseViewportBy={{ bottom: 600, top: 600 }}
-                  itemContent={(index, comment) => <ModQueueRow key={comment.cid} comment={comment} isOdd={index % 2 === 0} />}
+                  itemContent={compactRowItemContent}
                   components={footerComponents}
                 />
               ) : (
                 <>
-                  {feed.map((comment, index) => (
-                    <ModQueueRow key={comment.cid} comment={comment} isOdd={index % 2 === 0} />
+                  {filteredFeed.map((comment, index) => (
+                    <ModQueueRow
+                      key={comment.cid}
+                      comment={comment}
+                      isOdd={index % 2 === 0}
+                      showBoard={showBoardColumn}
+                      boardPath={addressToPathMap.get(comment.subplebbitAddress) ?? comment.subplebbitAddress}
+                    />
                   ))}
                   {subplebbitError?.message && feed.length === 0 && (
                     <div className={styles.error}>
@@ -796,17 +923,22 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
               {hasMore ? (
                 <Virtuoso
                   useWindowScroll
-                  data={feed}
-                  totalCount={feed.length}
+                  data={filteredFeed}
+                  totalCount={filteredFeed.length}
                   endReached={loadMore}
                   increaseViewportBy={{ bottom: 600, top: 600 }}
-                  itemContent={(_index, comment) => <ModQueueCard key={comment.cid} comment={comment} />}
+                  itemContent={compactCardItemContent}
                   components={footerComponents}
                 />
               ) : (
                 <>
-                  {feed.map((comment) => (
-                    <ModQueueCard key={comment.cid} comment={comment} />
+                  {filteredFeed.map((comment) => (
+                    <ModQueueCard
+                      key={comment.cid}
+                      comment={comment}
+                      showBoard={showBoardColumn}
+                      boardPath={addressToPathMap.get(comment.subplebbitAddress) ?? comment.subplebbitAddress}
+                    />
                   ))}
                   {subplebbitError?.message && feed.length === 0 && (
                     <div className={styles.error}>
@@ -824,8 +956,8 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
               {hasMore ? (
                 <Virtuoso
                   useWindowScroll
-                  data={feed}
-                  totalCount={feed.length}
+                  data={filteredFeed}
+                  totalCount={filteredFeed.length}
                   endReached={loadMore}
                   increaseViewportBy={{ bottom: 600, top: 600 }}
                   itemContent={(_index, comment) => <ModQueueFeedPost key={comment.cid} comment={comment} />}
@@ -833,7 +965,7 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
                 />
               ) : (
                 <>
-                  {feed.map((comment) => (
+                  {filteredFeed.map((comment) => (
                     <ModQueueFeedPost key={comment.cid} comment={comment} />
                   ))}
                   {subplebbitError?.message && feed.length === 0 && (

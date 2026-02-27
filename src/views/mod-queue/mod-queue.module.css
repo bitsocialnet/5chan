@@ -149,6 +149,7 @@
 
 /* Odd rows - theme-specific background colors applied to cells */
 :global(body.yotsuba) .rowOdd .number,
+:global(body.yotsuba) .rowOdd .board,
 :global(body.yotsuba) .rowOdd .excerpt,
 :global(body.yotsuba) .rowOdd .time,
 :global(body.yotsuba) .rowOdd .type,
@@ -158,6 +159,7 @@
 }
 
 :global(body.yotsuba-b) .rowOdd .number,
+:global(body.yotsuba-b) .rowOdd .board,
 :global(body.yotsuba-b) .rowOdd .excerpt,
 :global(body.yotsuba-b) .rowOdd .time,
 :global(body.yotsuba-b) .rowOdd .type,
@@ -167,6 +169,7 @@
 }
 
 :global(body.futaba) .rowOdd .number,
+:global(body.futaba) .rowOdd .board,
 :global(body.futaba) .rowOdd .excerpt,
 :global(body.futaba) .rowOdd .time,
 :global(body.futaba) .rowOdd .type,
@@ -176,6 +179,7 @@
 }
 
 :global(body.burichan) .rowOdd .number,
+:global(body.burichan) .rowOdd .board,
 :global(body.burichan) .rowOdd .excerpt,
 :global(body.burichan) .rowOdd .time,
 :global(body.burichan) .rowOdd .type,
@@ -185,6 +189,7 @@
 }
 
 :global(body.tomorrow) .rowOdd .number,
+:global(body.tomorrow) .rowOdd .board,
 :global(body.tomorrow) .rowOdd .excerpt,
 :global(body.tomorrow) .rowOdd .time,
 :global(body.tomorrow) .rowOdd .type,
@@ -194,6 +199,7 @@
 }
 
 :global(body.photon) .rowOdd .number,
+:global(body.photon) .rowOdd .board,
 :global(body.photon) .rowOdd .excerpt,
 :global(body.photon) .rowOdd .time,
 :global(body.photon) .rowOdd .type,
@@ -368,7 +374,84 @@ span.reject:hover {
   color: red;
 }
 
-/* ModQueueBoardFilter styles */
+/* ModQueueBoardSummary styles - match boardsbar "/ dir / dir / dir /" format */
+.boardSummary {
+  font-size: var(--boardsbar-font-size);
+  color: var(--boardsbar-separator-color);
+}
+
+@media (max-width: 640px) {
+  .boardSummary {
+    font-size: var(--body-font-size);
+  }
+
+  .boardSummary .boardSummaryLink {
+    padding: 0 0.12em;
+  }
+}
+
+.boardSummaryLink {
+  all: unset;
+  cursor: pointer;
+  color: var(--boardsbar-desktop-link-text-color);
+  text-decoration: var(--boardsbar-desktop-link-text-decoration);
+}
+
+.boardSummaryLink:hover {
+  color: var(--boardsbar-desktop-link-text-color-hover);
+  text-decoration: var(--boardsbar-desktop-link-text-decoration-hover);
+  cursor: pointer;
+}
+
+.boardSummaryLinkSelected {
+  font-weight: bold;
+}
+
+/* Board column in table */
+.boardHeader {
+  width: 80px;
+  min-width: 80px;
+  flex-shrink: 0;
+  background: var(--mod-queue-header-background-color);
+  padding: 5px;
+}
+
+.board {
+  width: 80px;
+  min-width: 80px;
+  flex-shrink: 0;
+  padding: 2px 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.board a {
+  text-decoration: var(--post-link-text-decoration);
+  color: var(--post-link-text-color);
+}
+
+.board a:hover {
+  text-decoration: var(--post-link-text-decoration-hover);
+  color: var(--post-link-text-color-hover);
+}
+
+.cardBoard {
+  font-size: 8pt;
+  margin-right: 8px;
+}
+
+.cardBoard a {
+  text-decoration: var(--post-link-text-decoration);
+  color: var(--post-link-text-color);
+}
+
+.cardBoard a:hover {
+  text-decoration: var(--post-link-text-decoration-hover);
+  color: var(--post-link-text-color-hover);
+}
+
+/* ModQueueBoardFilter styles (legacy, kept for reference) */
 .filterContainer {
   display: flex;
   align-items: center;
@@ -435,36 +518,42 @@ span.reject:hover {
 
   /* Remove background colors for rows on mobile */
   :global(body.yotsuba) .rowOdd .number,
+  :global(body.yotsuba) .rowOdd .board,
   :global(body.yotsuba) .rowOdd .excerpt,
   :global(body.yotsuba) .rowOdd .time,
   :global(body.yotsuba) .rowOdd .type,
   :global(body.yotsuba) .rowOdd .image,
   :global(body.yotsuba) .rowOdd .actions,
   :global(body.yotsuba-b) .rowOdd .number,
+  :global(body.yotsuba-b) .rowOdd .board,
   :global(body.yotsuba-b) .rowOdd .excerpt,
   :global(body.yotsuba-b) .rowOdd .time,
   :global(body.yotsuba-b) .rowOdd .type,
   :global(body.yotsuba-b) .rowOdd .image,
   :global(body.yotsuba-b) .rowOdd .actions,
   :global(body.futaba) .rowOdd .number,
+  :global(body.futaba) .rowOdd .board,
   :global(body.futaba) .rowOdd .excerpt,
   :global(body.futaba) .rowOdd .time,
   :global(body.futaba) .rowOdd .type,
   :global(body.futaba) .rowOdd .image,
   :global(body.futaba) .rowOdd .actions,
   :global(body.burichan) .rowOdd .number,
+  :global(body.burichan) .rowOdd .board,
   :global(body.burichan) .rowOdd .excerpt,
   :global(body.burichan) .rowOdd .time,
   :global(body.burichan) .rowOdd .type,
   :global(body.burichan) .rowOdd .image,
   :global(body.burichan) .rowOdd .actions,
   :global(body.tomorrow) .rowOdd .number,
+  :global(body.tomorrow) .rowOdd .board,
   :global(body.tomorrow) .rowOdd .excerpt,
   :global(body.tomorrow) .rowOdd .time,
   :global(body.tomorrow) .rowOdd .type,
   :global(body.tomorrow) .rowOdd .image,
   :global(body.tomorrow) .rowOdd .actions,
   :global(body.photon) .rowOdd .number,
+  :global(body.photon) .rowOdd .board,
   :global(body.photon) .rowOdd .excerpt,
   :global(body.photon) .rowOdd .time,
   :global(body.photon) .rowOdd .type,

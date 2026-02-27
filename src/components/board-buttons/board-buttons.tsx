@@ -531,8 +531,7 @@ export const DesktopBoardButtons = () => {
       <div className={styles.desktopBoardButtons}>
         {isInPostView || isInPendingPostPage ? (
           <>
-            [
-            <ReturnButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />] [
+            [<ReturnButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />] [
             <CatalogButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />]
             {showBottomButton && (
               <>
@@ -555,8 +554,7 @@ export const DesktopBoardButtons = () => {
               isInModView={isInModView}
               isInModQueueView={isInModQueueView}
             />
-            ] [
-            <RefreshButton />]
+            ] [<RefreshButton />]
             <span className={styles.rightSideButtons}>
               <ModQueueAlertThreshold />
               <ModQueueViewSelector />
@@ -566,14 +564,12 @@ export const DesktopBoardButtons = () => {
           <>
             {isInCatalogView ? (
               <>
-                [
-                <ReturnButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />]{' '}
+                [<ReturnButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />]{' '}
               </>
             ) : (
               <>
                 <SearchOPsBar />
-                [
-                <CatalogButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />]{' '}
+                [<CatalogButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />]{' '}
               </>
             )}
             {showVoteButton && (
@@ -620,8 +616,7 @@ export const DesktopBoardButtons = () => {
               {isInAllView && <AllFeedFilter />}
               {!(isInAllView || isInSubscriptionsView || isInModView) && (
                 <>
-                  [
-                  <SubscribeButton address={subplebbitAddress} />]
+                  [<SubscribeButton address={subplebbitAddress} />]
                 </>
               )}{' '}
               {isInCatalogView && (
