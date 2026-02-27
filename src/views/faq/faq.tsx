@@ -18,8 +18,8 @@ const FAQ = () => {
             <h2>Frequently Asked Questions</h2>
           </div>
           <div className={styles.boxContent}>
-            Welcome to 5chan's <strong>F</strong>requently <strong>A</strong>sked <strong>Q</strong>uestions page. Please remember that 5chan does <i>not</i> have global
-            admins or rules.
+            Welcome to 5chan's <strong>F</strong>requently <strong>A</strong>sked <strong>Q</strong>uestions page. After reading the FAQ, be sure to familiarize yourself
+            with the <a href='/rules'>Rules</a>!
           </div>
         </div>
         <div className={styles.columns}>
