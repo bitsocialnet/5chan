@@ -128,6 +128,8 @@ const CatalogPost = memo(
     const isInAllView = isAllView(location.pathname);
     const isInSubscriptionsView = isSubscriptionsView(location.pathname, params);
     const directories = useDirectories();
+    const directoryEntry = directories?.find((c) => c.address === subplebbitAddress);
+    const requirePostLinkIsMedia = directoryEntry?.features?.requirePostLinkIsMedia === true;
     const boardPath = subplebbitAddress ? getBoardPath(subplebbitAddress, directories) : '';
     const postMenuProps = useMemo(() => selectPostMenuProps(post), [post]);
 
@@ -257,12 +259,12 @@ const CatalogPost = memo(
             ) : (
               threadIcons
             )}
-            <div className={styles.meta} title='(R)eplies / (L)ink Replies'>
+            <div className={styles.meta} title={requirePostLinkIsMedia ? '(R)eplies / (I)mage Replies' : '(R)eplies / (L)ink Replies'}>
               R: <b>{replyCount || '0'}</b>
               {linkCount > 0 && (
                 <span>
                   {' '}
-                  / L: <b>{linkCount}</b>
+                  / {requirePostLinkIsMedia ? 'I' : 'L'}: <b>{linkCount}</b>
                 </span>
               )}
               <span className={`${styles.postMenu} ${hoveredCid && styles.postMenuVisible}`}>

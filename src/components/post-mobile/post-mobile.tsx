@@ -537,6 +537,8 @@ const PostMobile = ({
   const isInPendingPostView = isPendingPostView(location.pathname, params);
   const isInPostView = isPostPageView(location.pathname, params);
   const directories = useDirectories();
+  const directoryEntry = directories?.find((c) => c.address === subplebbitAddress);
+  const requirePostLinkIsMedia = directoryEntry?.features?.requirePostLinkIsMedia === true;
   const boardPath = subplebbitAddress ? getBoardPath(subplebbitAddress, directories) : undefined;
   const linksCount = useCountLinksInReplies(post);
   const shouldFetchReplies = showReplies && !isModQueue;
@@ -695,7 +697,7 @@ const PostMobile = ({
                 <div className={styles.postLink}>
                   <span className={styles.info}>
                     {replyCount > 0 && `${replyCount} Replies`}
-                    {linksCount > 0 && ` / ${linksCount} Links`}
+                    {linksCount > 0 && ` / ${linksCount} ${requirePostLinkIsMedia ? 'Images' : 'Links'}`}
                   </span>
                   {isModQueue ? (
                     <div className={styles.modQueueActions}>

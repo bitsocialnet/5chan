@@ -556,6 +556,8 @@ const PostMedia = ({
   const [showThumbnail, setShowThumbnail] = useState(true);
 
   const mediaDimensions = getMediaDimensions(commentMediaInfo);
+  const directoryEntry = directories?.find((c) => c.address === subplebbitAddress);
+  const requirePostLinkIsMedia = directoryEntry?.features?.requirePostLinkIsMedia === true;
   const boardPath = getBoardPath(subplebbitAddress, directories);
   const displayBoardPath =
     boardPath !== subplebbitAddress
@@ -572,7 +574,7 @@ const PostMedia = ({
             {t('board')}: <Link to={`/${boardPath}`}>{displayBoardPath}</Link>{' '}
           </>
         )}
-        {t('link')}:{' '}
+        {requirePostLinkIsMedia ? t('file') : t('link')}:{' '}
         <a href={url} target='_blank' rel='noopener noreferrer'>
           {spoiler ? capitalize(t('spoiler')) : url && url.length > 30 ? url.slice(0, 30) + '...' : url}
         </a>{' '}

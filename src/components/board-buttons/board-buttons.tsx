@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useAccountComment, useComment, useSubscribe } from '@plebbit/plebbit-react-hooks';
 import { isAllView, isCatalogView, isModView, isModQueueView, isPendingPostView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import { usePostPageNumber } from '../../hooks/use-post-page-number';
-import { useDirectories } from '../../hooks/use-directories';
+import { useDirectories, useDirectoryByAddress } from '../../hooks/use-directories';
 import { getBoardPath, isDirectoryBoard } from '../../lib/utils/route-utils';
 import { useResolvedSubplebbitAddress } from '../../hooks/use-resolved-subplebbit-address';
 import useCatalogFiltersStore from '../../stores/use-catalog-filters-store';
@@ -470,6 +470,8 @@ export const PostPageStats = () => {
 
   const { closed, pinned, replyCount } = post || {};
   const linkCount = useCountLinksInReplies(post);
+  const directoryEntry = useDirectoryByAddress(subplebbitAddress);
+  const requirePostLinkIsMedia = directoryEntry?.features?.requirePostLinkIsMedia === true;
 
   const isThreadView = isPostPageView(location.pathname, params);
   const pageNumber = usePostPageNumber({
@@ -485,7 +487,8 @@ export const PostPageStats = () => {
     <span>
       {pinned && `${capitalize(t('sticky'))} / `}
       {closed && `${capitalize(t('closed'))} / `}
-      <Tooltip content={replyCountTooltip}>{displayReplyCount}</Tooltip> / <Tooltip content={capitalize(t('links'))}>{linkCount?.toString()}</Tooltip>
+      <Tooltip content={replyCountTooltip}>{displayReplyCount}</Tooltip> /{' '}
+      <Tooltip content={capitalize(requirePostLinkIsMedia ? t('images') : t('links'))}>{linkCount?.toString()}</Tooltip>
       {isThreadView && (
         <>
           {' '}
