@@ -1,7 +1,7 @@
 {
   "what_is_5chan": "Was ist 5chan?",
   "go": "gehen",
-  "5chan_description": "5chan ist eine vollständig dezentralisierte und quelloffene Alternative zu 4chan, bei der jeder unbegrenzt Boards erstellen und kryptografisch besitzen kann. Board-Besitzer hosten und moderieren ihr Board und legen dessen <1>Regeln</1> fest. Alle Daten sind nur Text und werden Peer-to-Peer geteilt, einschließlich Links zu eingebetteten Bildern. Schauen Sie sich die <2>FAQs</2> an, um mehr zu erfahren. Klicken Sie gerne auf ein Board unten, das Sie interessiert, und steigen Sie direkt ein!",
+  "5chan_description": "5chan ist ein vollständig dezentrales und quelloffenes Imageboard, auf dem jeder unbegrenzt Boards erstellen und kryptografisch besitzen kann. Board-Inhaber hosten und moderieren ihr Board und legen dessen <1>Rules</1> fest. Alle Daten sind rein textbasiert und werden peer-to-peer geteilt, inklusive Links zu eingebetteten Bildern. Schau dir die <2>FAQs</2> an, um mehr zu erfahren. Klicke einfach auf ein Board unten, das dich interessiert, und leg los!",
   "no_global_rules_info": "Sie können sich jederzeit mit jedem Forum verbinden, vollständig P2P, niemand kann Sie aufhalten. Fügen Sie einfach seine Adresse in das Suchfeld oben ein.",
   "boards": "Foren",
   "popular_threads": "Beliebte Threads",
@@ -9,7 +9,6 @@
   "stats": "Statistiken",
   "about": "Über",
   "whitepaper": "Whitepaper",
-  "token": "Token",
   "start_new_thread": "Starte einen neuen Thread",
   "hide": "Ausblenden",
   "settings": "Einstellungen",
@@ -295,5 +294,6 @@
   "account_auto_generated": "Dieses Konto wurde automatisch von 5chan erstellt, keine Anmeldung erforderlich.",
   "download_backup": "Sicherung herunterladen",
   "boards_you_moderate_nav": "Von dir moderierte Boards",
-  "link_to_file": "Link zur Datei"
+  "link_to_file": "Link zur Datei",
+  "support_5chan": "5chan unterstützen"
 }

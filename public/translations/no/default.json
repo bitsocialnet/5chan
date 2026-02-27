@@ -1,7 +1,7 @@
 {
   "what_is_5chan": "Hva er 5chan?",
   "go": "gå",
-  "5chan_description": "5chan er et fullstendig desentralisert og åpen kildekode-alternativ til 4chan, hvor hvem som helst kan opprette og kryptografisk eie ubegrensede boards. Board-eiere hoster og modererer sitt board og setter dets <1>Regler</1>. Alle data er kun tekst og deles peer-to-peer, inkludert lenker til innebygde bilder. Sjekk ut <2>FAQ</2> for å lære mer. Ta gjerne en titt på et board nedenfor som interesserer deg og kom i gang med en gang!",
+  "5chan_description": "5chan er et fullstendig desentralisert og åpen kildekode-imageboard, hvor hvem som helst kan opprette og kryptografisk eie ubegrensede boards. Board-eiere hoster og modererer sitt board og setter dets <1>Rules</1>. Alle data er kun tekst og deles peer-to-peer, inkludert lenker for å bygge inn bilder. Sjekk <2>FAQs</2> for å lære mer. Klikk gjerne på et board nedenfor som interesserer deg og kom i gang!",
   "no_global_rules_info": "Du kan alltid koble til hvilket som helst forum, fullt P2P, ingen kan stoppe deg. Lim bare adressen i søkefeltet ovenfor.",
   "boards": "fora",
   "popular_threads": "Populære tråder",
@@ -9,7 +9,6 @@
   "stats": "Statistikk",
   "about": "Om",
   "whitepaper": "Whitepaper",
-  "token": "Token",
   "start_new_thread": "Start en ny tråd",
   "hide": "Skjul",
   "settings": "Innstillinger",
@@ -295,5 +294,6 @@
   "account_auto_generated": "Denne kontoen ble automatisk opprettet av 5chan, ingen registrering nødvendig.",
   "download_backup": "Last ned sikkerhetskopi",
   "boards_you_moderate_nav": "Boards du modererer",
-  "link_to_file": "Lenke til fil"
+  "link_to_file": "Lenke til fil",
+  "support_5chan": "Støtt 5chan"
 }

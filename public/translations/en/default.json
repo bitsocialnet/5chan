@@ -1,7 +1,7 @@
 {
   "what_is_5chan": "What is 5chan?",
   "go": "go",
-  "5chan_description": "5chan is a fully decentralized and open-source 4chan alternative, where anyone can create and cryptographically own unlimited boards. Board owners host and moderate their board, and set its <1>Rules</1>. All data is text-only and it's shared peer-to-peer, including links to embed images. Check out the <2>FAQs</2> to learn more. Feel free to click on a board below that interests you and jump right in!",
+  "5chan_description": "5chan is a fully decentralized and open-source imageboard, where anyone can create and cryptographically own unlimited boards. Board owners host and moderate their board, and set its <1>Rules</1>. All data is text-only and it's shared peer-to-peer, including links to embed images. Check out the <2>FAQs</2> to learn more. Feel free to click on a board below that interests you and jump right in!",
   "no_global_rules_info": "You can always connect to any board, fully P2P, nobody can stop you. Simply paste its address in the search field above.",
   "boards": "boards",
   "popular_threads": "Popular threads",
@@ -9,7 +9,7 @@
   "stats": "Stats",
   "about": "About",
   "whitepaper": "Whitepaper",
-  "token": "Token",
+  "support_5chan": "Support 5chan",
   "start_new_thread": "Start a New Thread",
   "hide": "hide",
   "settings": "Settings",

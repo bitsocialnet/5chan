@@ -1,7 +1,7 @@
 {
   "what_is_5chan": "5chan nedir?",
   "go": "git",
-  "5chan_description": "5chan, herkesin sınırsız pano oluşturabileceği ve kriptografik olarak sahip olabileceği tamamen merkezi olmayan ve açık kaynaklı bir 4chan alternatifidir. Pano sahipleri panolarını barındırır ve yönetir ve <1>Kurallarını</1> belirler. Tüm veriler yalnızca metindir ve gömülü görüntülere bağlantılar dahil olmak üzere peer-to-peer paylaşılır. Daha fazla bilgi edinmek için <2>SSS</2> bölümüne bakın. İlginizi çeken aşağıdaki bir panoya tıklamaktan çekinmeyin ve hemen başlayın!",
+  "5chan_description": "5chan, herkesin sınırsız board oluşturabileceği ve kriptografik olarak sahip olabileceği tamamen merkeziyetsiz ve açık kaynaklı bir imageboard'dur. Board sahipleri boardlarını barındırır ve moderatörlük yapar, <1>Rules</1> ayarlar. Tüm veriler yalnızca metindir ve gömülü resimlerin bağlantıları dahil peer-to-peer paylaşılır. Daha fazla bilgi için <2>FAQs</2> bölümüne bakın. İlginizi çeken bir boarda tıklayıp hemen başlayın!",
   "no_global_rules_info": "Her zaman herhangi bir foruma bağlanabilirsiniz, tamamen P2P, kimse sizi durduramaz. Adresini yukarıdaki arama alanına yapıştırmanız yeterli.",
   "boards": "forumlar",
   "popular_threads": "Popüler konular",
@@ -9,7 +9,6 @@
   "stats": "İstatistikler",
   "about": "Hakkında",
   "whitepaper": "Beyaz kağıt",
-  "token": "Jeton",
   "start_new_thread": "Yeni bir Konu Başlat",
   "hide": "Gizle",
   "settings": "Ayarlar",
@@ -295,5 +294,6 @@
   "account_auto_generated": "Bu hesap 5chan tarafından otomatik olarak oluşturuldu, kayıt gerekmez.",
   "download_backup": "Yedek indir",
   "boards_you_moderate_nav": "Yönettiğiniz panolar",
-  "link_to_file": "Dosyaya bağlantı"
+  "link_to_file": "Dosyaya bağlantı",
+  "support_5chan": "5chan'ı Destekle"
 }

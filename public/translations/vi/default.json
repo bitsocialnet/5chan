@@ -1,7 +1,7 @@
 {
   "what_is_5chan": "5chan là gì?",
   "go": "đi",
-  "5chan_description": "5chan là một giải pháp thay thế hoàn toàn phi tập trung và mã nguồn mở cho 4chan, nơi bất kỳ ai cũng có thể tạo và sở hữu mã hóa các bảng không giới hạn. Chủ sở hữu bảng lưu trữ và kiểm duyệt bảng của họ và đặt <1>Quy tắc</1> của nó. Tất cả dữ liệu chỉ là văn bản và được chia sẻ peer-to-peer, bao gồm các liên kết đến hình ảnh nhúng. Xem <2>FAQ</2> để tìm hiểu thêm. Hãy thoải mái nhấp vào một bảng bên dưới mà bạn quan tâm và bắt đầu ngay!",
+  "5chan_description": "5chan là một imageboard hoàn toàn phi tập trung và mã nguồn mở, nơi bất kỳ ai cũng có thể tạo và sở hữu mật mã vô hạn các bảng. Chủ sở hữu bảng lưu trữ và kiểm duyệt bảng của họ và cài đặt <1>Rules</1>. Tất cả dữ liệu chỉ là văn bản và được chia sẻ peer-to-peer, bao gồm cả liên kết nhúng hình ảnh. Xem <2>FAQs</2> để tìm hiểu thêm. Hãy nhấp vào bất kỳ bảng nào bên dưới mà bạn quan tâm và bắt đầu!",
   "no_global_rules_info": "Bạn luôn có thể kết nối với bất kỳ diễn đàn nào, hoàn toàn P2P, không ai có thể ngăn cản bạn. Chỉ cần dán địa chỉ của nó vào trường tìm kiếm ở trên.",
   "boards": "diễn đàn",
   "popular_threads": "Chủ đề phổ biến",
@@ -9,7 +9,6 @@
   "stats": "Thống kê",
   "about": "Về",
   "whitepaper": "Bản trắng",
-  "token": "Token",
   "start_new_thread": "Bắt đầu một chủ đề mới",
   "hide": "Ẩn",
   "settings": "Cài đặt",
@@ -295,5 +294,6 @@
   "account_auto_generated": "Tài khoản này được tạo tự động bởi 5chan, không cần đăng ký.",
   "download_backup": "Tải xuống bản sao lưu",
   "boards_you_moderate_nav": "Các bảng bạn điều hành",
-  "link_to_file": "Liên kết đến tệp"
+  "link_to_file": "Liên kết đến tệp",
+  "support_5chan": "Hỗ trợ 5chan"
 }

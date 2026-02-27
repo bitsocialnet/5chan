@@ -1,7 +1,7 @@
 {
   "what_is_5chan": "Mikä on 5chan?",
   "go": "mennä",
-  "5chan_description": "5chan on täysin hajautettu ja avoimen lähdekoodin vaihtoehto 4chanille, jossa kuka tahansa voi luoda ja kryptografisesti omistaa rajattomia tauluja. Taulujen omistajat isännöivät ja moderovat tauluaan ja asettavat sen <1>Säännöt</1>. Kaikki tiedot ovat vain tekstiä ja ne jaetaan vertaisverkossa, mukaan lukien linkit upotettaviin kuviin. Tutustu <2>UKK</2> saadaksesi lisätietoja. Voit vapaasti klikata alla olevaa taulua, joka kiinnostaa sinua, ja aloittaa heti!",
+  "5chan_description": "5chan on täysin hajautettu ja avoimen lähdekoodin imageboard, jossa kuka tahansa voi luoda ja kryptografisesti omistaa rajattomasti lautia. Lautan omistajat isännöivät ja moderointavat lautaa ja asettavat sen <1>Rules</1>. Kaikki data on vain tekstiä ja jaetaan peer-to-peer -verkossa, mukaan lukien linkit upotettaviin kuviin. Lue lisää <2>FAQs</2>-osiosta. Voit vapaasti klikata alla olevaa lautaa, joka kiinnostaa sinua, ja aloittaa!",
   "no_global_rules_info": "Voit aina yhdistää mihin tahansa foorumiin, täysin P2P, kukaan ei voi pysäyttää sinua. Liitä vain sen osoite yllä olevaan hakukenttään.",
   "boards": "foorumit",
   "popular_threads": "Suositut langat",
@@ -9,7 +9,6 @@
   "stats": "Tilastot",
   "about": "Tietoa",
   "whitepaper": "Whitepaper",
-  "token": "Token",
   "start_new_thread": "Aloita uusi lanka",
   "hide": "Piilota",
   "settings": "Asetukset",
@@ -295,5 +294,6 @@
   "account_auto_generated": "Tämä tili luotiin automaattisesti 5chanissa, rekisteröitymistä ei tarvita.",
   "download_backup": "Lataa varmuuskopio",
   "boards_you_moderate_nav": "Laudat, joita moderoit",
-  "link_to_file": "Linkki tiedostoon"
+  "link_to_file": "Linkki tiedostoon",
+  "support_5chan": "Tue 5chan"
 }

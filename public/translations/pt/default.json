@@ -1,7 +1,7 @@
 {
   "what_is_5chan": "O que é 5chan?",
   "go": "vai",
-  "5chan_description": "5chan é uma alternativa totalmente descentralizada e de código aberto ao 4chan, onde qualquer pessoa pode criar e possuir criptograficamente quadros ilimitados. Os proprietários dos quadros hospedam e moderam seu quadro e definem suas <1>Regras</1>. Todos os dados são apenas texto e são compartilhados peer-to-peer, incluindo links para imagens incorporadas. Confira as <2>Perguntas Frequentes</2> para saber mais. Sinta-se à vontade para clicar em um quadro abaixo que lhe interesse e comece imediatamente!",
+  "5chan_description": "5chan é um imageboard totalmente descentralizado e de código aberto, onde qualquer pessoa pode criar e possuir criptograficamente boards ilimitados. Os proprietários de boards hospedam e moderam seu board e definem suas <1>Rules</1>. Todos os dados são apenas texto e compartilhados peer-to-peer, incluindo links para incorporar imagens. Confira as <2>FAQs</2> para saber mais. Sinta-se à vontade para clicar em um board abaixo que te interessa e comece!",
   "no_global_rules_info": "Você sempre pode se conectar a qualquer fórum, completamente P2P, ninguém pode impedi-lo. Simplesmente cole o endereço no campo de pesquisa acima.",
   "boards": "fóruns",
   "popular_threads": "Tópicos populares",
@@ -9,7 +9,6 @@
   "stats": "Estatísticas",
   "about": "Sobre",
   "whitepaper": "Whitepaper",
-  "token": "Token",
   "start_new_thread": "Iniciar um Novo Tópico",
   "hide": "ocultar",
   "settings": "Configurações",
@@ -295,5 +294,6 @@
   "account_auto_generated": "Esta conta foi gerada automaticamente pelo 5chan, sem necessidade de cadastro.",
   "download_backup": "Baixar backup",
   "boards_you_moderate_nav": "Quadros que você modera",
-  "link_to_file": "Link para o arquivo"
+  "link_to_file": "Link para o arquivo",
+  "support_5chan": "Apoiar 5chan"
 }

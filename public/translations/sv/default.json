@@ -1,7 +1,7 @@
 {
   "what_is_5chan": "Vad är 5chan?",
   "go": "gå",
-  "5chan_description": "5chan är ett helt decentraliserat och öppet källkodsalternativ till 4chan, där vem som helst kan skapa och kryptografiskt äga obegränsade tavlor. Tavlornas ägare hostar och modererar sin tavla och ställer in dess <1>Regler</1>. All data är endast text och delas peer-to-peer, inklusive länkar till inbäddade bilder. Kolla in <2>FAQ</2> för att lära dig mer. Klicka gärna på en tavla nedan som intresserar dig och börja direkt!",
+  "5chan_description": "5chan är en helt decentraliserad och öppen källkod imageboard, där vem som helst kan skapa och kryptografiskt äga obegränsade tavlor. Tavlägare hostar och modererar sin tavla och sätter dess <1>Rules</1>. All data är endast text och delas peer-to-peer, inklusive länkar för inbäddade bilder. Kolla in <2>FAQs</2> för att lära dig mer. Klicka gärna på en tavla nedan som intresserar dig och börja!",
   "no_global_rules_info": "Du kan alltid ansluta till vilket forum som helst, helt P2P, ingen kan stoppa dig. Klistra bara in adressen i sökfältet ovan.",
   "boards": "forum",
   "popular_threads": "Populära trådar",
@@ -9,7 +9,6 @@
   "stats": "Statistik",
   "about": "Om",
   "whitepaper": "Whitepaper",
-  "token": "Token",
   "start_new_thread": "Starta en ny tråd",
   "hide": "Dölj",
   "settings": "Inställningar",
@@ -295,5 +294,6 @@
   "account_auto_generated": "Detta konto skapades automatiskt av 5chan, ingen registrering krävs.",
   "download_backup": "Ladda ner säkerhetskopia",
   "boards_you_moderate_nav": "Boards du modererar",
-  "link_to_file": "Länk till fil"
+  "link_to_file": "Länk till fil",
+  "support_5chan": "Stöd 5chan"
 }

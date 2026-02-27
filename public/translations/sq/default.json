@@ -1,7 +1,7 @@
 {
   "what_is_5chan": "Çfarë është 5chan?",
   "go": "shko",
-  "5chan_description": "5chan është një alternativë plotësisht e decentralizuar dhe me burim të hapur për 4chan, ku kushdo mund të krijojë dhe të zotërojë kriptografikisht bordet e pakufizuara. Pronarët e bordit hostojnë dhe moderojnë bordin e tyre dhe vendosin <1>Rregullat</1> e tij. Të gjitha të dhënat janë vetëm tekst dhe shpërndahen peer-to-peer, duke përfshirë lidhjet me imazhet e integruara. Shikoni <2>Pyetjet e Shpeshta</2> për të mësuar më shumë. Mos hezitoni të klikoni në një bord më poshtë që ju intereson dhe filloni menjëherë!",
+  "5chan_description": "5chan është një imageboard plotësisht i decentralizuar dhe me burim të hapur, ku kushdo mund të krijojë dhe të zotërojë kriptografikisht borda të pakufizuara. Pronarët e bordave hostojnë dhe moderojnë bordin e tyre dhe vendosin <1>Rules</1> e tij. Të gjitha të dhënat janë vetëm teksti dhe ndahen peer-to-peer, duke përfshirë lidhjet për imazhe të ngulitura. Shikoni <2>FAQs</2> për të mësuar më shumë. Mos ngurroni të klikoni në një bord më poshtë që ju intereson dhe filloni!",
   "no_global_rules_info": "Mund të lidheni gjithmonë me çdo forum, plotësisht P2P, askush nuk mund t'ju ndalojë. Thjesht ngjisni adresën në fushën e kërkimit më sipër.",
   "boards": "forume",
   "popular_threads": "Threadet e njohur",
@@ -9,7 +9,6 @@
   "stats": "Statistikat",
   "about": "Rreth",
   "whitepaper": "Whitepaper",
-  "token": "Token",
   "start_new_thread": "Filloni një temë të re",
   "hide": "Fshih",
   "settings": "Parametrat",
@@ -295,5 +294,6 @@
   "account_auto_generated": "Ky llogari u krijua automatikisht nga 5chan, nuk kërkohet regjistrim.",
   "download_backup": "Shkarko kopjen e rezervë",
   "boards_you_moderate_nav": "Bordet që moderoni",
-  "link_to_file": "Lidhje me skedarin"
+  "link_to_file": "Lidhje me skedarin",
+  "support_5chan": "Mbështetni 5chan"
 }

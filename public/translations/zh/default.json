@@ -1,7 +1,7 @@
 {
   "what_is_5chan": "5chan是什么?",
   "go": "去",
-  "5chan_description": "5chan是一个完全去中心化和开源的4chan替代品，任何人都可以创建并加密拥有无限板块。板块所有者托管和审核他们的板块，并设置其<1>规则</1>。所有数据都是纯文本，并通过点对点共享，包括嵌入图像的链接。查看<2>常见问题</2>以了解更多信息。请随时点击下面您感兴趣的板块并立即开始！",
+  "5chan_description": "5chan 是一个完全去中心化和开源的图像板，任何人都可以创建并以加密方式拥有无限数量的板块。板块所有者托管和审核其板块，并设置其 <1>Rules</1>。所有数据均为纯文本，且以点对点方式共享，包括嵌入图片的链接。查看 <2>FAQs</2> 了解更多。欢迎点击下方任意感兴趣的板块，立即开始！",
   "no_global_rules_info": "您始终可以连接到任何论坛，完全P2P，没有人能阻止您。只需将其地址粘贴到上面的搜索字段中即可。",
   "boards": "论坛",
   "popular_threads": "热门主题",
@@ -9,7 +9,6 @@
   "stats": "统计",
   "about": "关于",
   "whitepaper": "白皮书",
-  "token": "代币",
   "start_new_thread": "开始新主题",
   "hide": "隐藏",
   "settings": "设置",
@@ -295,5 +294,6 @@
   "account_auto_generated": "此账户由 5chan 自动生成，无需注册。",
   "download_backup": "下载备份",
   "boards_you_moderate_nav": "您管理的板块",
-  "link_to_file": "链接到文件"
+  "link_to_file": "链接到文件",
+  "support_5chan": "支持 5chan"
 }

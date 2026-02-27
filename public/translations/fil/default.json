@@ -1,7 +1,7 @@
 {
   "what_is_5chan": "Ano ang 5chan?",
   "go": "pumunta",
-  "5chan_description": "Ang 5chan ay isang ganap na desentralisado at open-source na alternatibo sa 4chan, kung saan sinuman ay maaaring lumikha at kriptograpikong magmay-ari ng walang limitasyong boards. Ang mga may-ari ng board ay nagho-host at nagmo-moderate ng kanilang board, at nagtatakda ng <1>Mga Patakaran</1> nito. Ang lahat ng data ay teksto lamang at ibinabahagi nang peer-to-peer, kasama ang mga link sa embed na mga larawan. Tingnan ang <2>Mga FAQ</2> para matuto pa. Huwag mag-atubiling i-click ang isang board sa ibaba na interesado ka at magsimula kaagad!",
+  "5chan_description": "Ang 5chan ay isang ganap na desentralisado at open-source na imageboard, kung saan sinuman ay maaaring lumikha at kriptograpikong magmay-ari ng walang limitasyong mga board. Ang mga may-ari ng board ay nagho-host at nagmo-moderate ng kanilang board, at nagtatakda ng <1>Rules</1> nito. Lahat ng data ay text-only at ibinabahagi peer-to-peer, kasama ang mga link para sa embed na mga larawan. Tingnan ang <2>FAQs</2> para matuto pa. Huwag mag-atubiling i-click ang anumang board sa ibaba na interesado ka at sumali na!",
   "no_global_rules_info": "Maaari mong palaging kumonekta sa anumang board, ganap na P2P, walang makakapigil sa iyo. Ilagay lamang ang address nito sa search field sa itaas.",
   "boards": "mga board",
   "popular_threads": "Mga popular na thread",
@@ -9,7 +9,6 @@
   "stats": "Estadistika",
   "about": "Tungkol sa",
   "whitepaper": "Whitepaper",
-  "token": "Token",
   "start_new_thread": "Magsimula ng Bagong Thread",
   "hide": "Itago",
   "settings": "Mga Setting",
@@ -295,5 +294,6 @@
   "account_auto_generated": "Ang account na ito ay awtomatikong nilikha ng 5chan, walang kailangang signup.",
   "download_backup": "I-download ang Backup",
   "boards_you_moderate_nav": "Mga board na minomodera mo",
-  "link_to_file": "Link sa File"
+  "link_to_file": "Link sa File",
+  "support_5chan": "Suportahan ang 5chan"
 }

@@ -1,7 +1,7 @@
 {
   "what_is_5chan": "Cos'è 5chan?",
   "go": "vai",
-  "5chan_description": "5chan è un'alternativa completamente decentralizzata e open-source a 4chan, dove chiunque può creare e possedere criptograficamente board illimitati. I proprietari dei board ospitano e moderano il loro board e ne stabiliscono le <1>Regole</1>. Tutti i dati sono solo testo e vengono condivisi peer-to-peer, inclusi i link alle immagini incorporate. Consulta le <2>FAQ</2> per saperne di più. Sentiti libero di cliccare su un board qui sotto che ti interessa e inizia subito!",
+  "5chan_description": "5chan è un imageboard completamente decentralizzato e open-source, dove chiunque può creare e possedere criptograficamente board illimitati. I proprietari dei board ospitano e moderano il proprio board e ne impostano le <1>Rules</1>. Tutti i dati sono solo testuali e condivisi peer-to-peer, inclusi i link per incorporare immagini. Consulta le <2>FAQs</2> per saperne di più. Clicca pure su un board qui sotto che ti interessa e inizia!",
   "no_global_rules_info": "Puoi sempre connetterti a qualsiasi board, completamente P2P, nessuno può fermarti. Basta incollare il suo indirizzo nel campo di ricerca sopra.",
   "boards": "board",
   "popular_threads": "Thread popolari",
@@ -9,7 +9,6 @@
   "stats": "Statistiche",
   "about": "Info",
   "whitepaper": "Libro bianco",
-  "token": "Token",
   "start_new_thread": "Invia un Nuovo Thread",
   "hide": "nascondi",
   "settings": "Impostazioni",
@@ -295,5 +294,6 @@
   "account_auto_generated": "Questo account è stato generato automaticamente da 5chan, nessuna registrazione richiesta.",
   "download_backup": "Scarica backup",
   "boards_you_moderate_nav": "Board che moderi",
-  "link_to_file": "Link al file"
+  "link_to_file": "Link al file",
+  "support_5chan": "Supporta 5chan"
 }
