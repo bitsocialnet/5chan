@@ -126,6 +126,8 @@ const DesktopQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, i
   const navigate = useNavigate();
   const location = useLocation();
 
+  const isOnThreadPage = location.pathname.includes('/thread/');
+
   const handleClick = (e: React.MouseEvent, cid: string | undefined, subplebbitAddress: string | undefined, isOpQuote = false) => {
     e.preventDefault();
     if (cid && subplebbitAddress) {
@@ -139,7 +141,7 @@ const DesktopQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, i
         }
         return;
       }
-      if (scrollToReplyOnPage(cid)) return;
+      if (isOnThreadPage && scrollToReplyOnPage(cid)) return;
       navigate(threadRoute);
     }
   };
@@ -246,6 +248,7 @@ const MobileQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, is
 
   const navigate = useNavigate();
   const location = useLocation();
+  const isOnThreadPage = location.pathname.includes('/thread/');
 
   const handleClick = (e: React.MouseEvent, cid: string | undefined, subplebbitAddress: string | undefined, isOpQuote = false) => {
     e.preventDefault();
@@ -260,7 +263,7 @@ const MobileQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, is
         }
         return;
       }
-      if (scrollToReplyOnPage(cid)) return;
+      if (isOnThreadPage && scrollToReplyOnPage(cid)) return;
       navigate(threadRoute);
     }
   };
