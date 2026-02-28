@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { Comment } from '@plebbit/plebbit-react-hooks';
-import { flattenCommentsPages } from '@plebbit/plebbit-react-hooks/dist/lib/utils';
+import { Comment } from '@bitsocialhq/pkc-react-hooks';
+import { flattenCommentsPages } from '@bitsocialhq/pkc-react-hooks/dist/lib/utils';
 
 const useCountLinksInReplies = (comment: Comment, firstXReplies?: number) => {
   let linkCount = 0;

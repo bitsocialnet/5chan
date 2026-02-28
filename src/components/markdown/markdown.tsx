@@ -16,8 +16,8 @@ import { Link, useLocation, useParams } from 'react-router-dom';
 import { canEmbed } from '../embed';
 import { is5chanLink, transform5chanLinkToInternal, preprocess5chanPatterns } from '../../lib/utils/url-utils';
 import usePostNumberStore from '../../stores/use-post-number-store';
-import useSubplebbitsPagesStore from '@plebbit/plebbit-react-hooks/dist/stores/subplebbits-pages';
-import { useComment } from '@plebbit/plebbit-react-hooks';
+import useSubplebbitsPagesStore from '@bitsocialhq/pkc-react-hooks/dist/stores/subplebbits-pages';
+import { useComment } from '@bitsocialhq/pkc-react-hooks';
 import ReplyQuotePreview from '../reply-quote-preview';
 
 const safeParseUrl = (href: string): URL | null => {

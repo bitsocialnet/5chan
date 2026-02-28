@@ -1,5 +1,5 @@
-import { Comment } from '@plebbit/plebbit-react-hooks';
-import useSubplebbitsStore from '@plebbit/plebbit-react-hooks/dist/stores/subplebbits';
+import { Comment } from '@bitsocialhq/pkc-react-hooks';
+import useSubplebbitsStore from '@bitsocialhq/pkc-react-hooks/dist/stores/subplebbits';
 
 /**
  * Checks if a text matches a pattern according to various pattern matching rules:

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Comment } from '@plebbit/plebbit-react-hooks';
+import { Comment } from '@bitsocialhq/pkc-react-hooks';
 import { commentMatchesPattern } from '../lib/utils/pattern-utils';
 
 interface FilterItem {

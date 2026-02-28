@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useRef } from 'react';
-import { Comment } from '@plebbit/plebbit-react-hooks';
+import { Comment } from '@bitsocialhq/pkc-react-hooks';
 import { QUOTE_NUMBER_REGEX } from '../lib/utils/url-utils';
 import usePostNumberStore from '../stores/use-post-number-store';
 

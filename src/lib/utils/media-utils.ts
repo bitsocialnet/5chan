@@ -1,4 +1,4 @@
-import localForageLru from '@plebbit/plebbit-react-hooks/dist/lib/localforage-lru/index.js';
+import localForageLru from '@bitsocialhq/pkc-react-hooks/dist/lib/localforage-lru/index.js';
 import { canEmbed } from '../../components/embed';
 import memoize from 'memoizee';
 import { isValidURL } from './url-utils';

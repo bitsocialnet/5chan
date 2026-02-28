@@ -1,4 +1,4 @@
-import { ChallengeVerification, Comment, PublishCommentOptions } from '@plebbit/plebbit-react-hooks';
+import { ChallengeVerification, Comment, PublishCommentOptions } from '@bitsocialhq/pkc-react-hooks';
 import { create } from 'zustand';
 import { alertChallengeVerificationFailed } from '../lib/utils/challenge-utils';
 import useChallengesStore from './use-challenges-store';

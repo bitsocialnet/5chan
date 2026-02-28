@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import useAccountsStore from '@plebbit/plebbit-react-hooks/dist/stores/accounts';
+import useAccountsStore from '@bitsocialhq/pkc-react-hooks/dist/stores/accounts';
 import { useDirectoriesState, useDirectories, DirectoryCommunity } from '../../../hooks/use-directories';
 import { getBoardPath } from '../../../lib/utils/route-utils';
 import useDisclaimerModalStore from '../../../stores/use-disclaimer-modal-store';

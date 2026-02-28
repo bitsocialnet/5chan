@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useAccount, setAccount, useResolvedAuthorAddress } from '@plebbit/plebbit-react-hooks';
+import { useAccount, setAccount, useResolvedAuthorAddress } from '@bitsocialhq/pkc-react-hooks';
 import styles from './crypto-address-setting.module.css';
 
 const withErrorHandling = async <T,>(fn: () => Promise<T>, onError: (e: unknown) => void): Promise<T | undefined> => {

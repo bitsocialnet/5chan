@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { useFeed } from '@plebbit/plebbit-react-hooks';
-import useFeedsStore from '@plebbit/plebbit-react-hooks/dist/stores/feeds';
+import { useFeed } from '@bitsocialhq/pkc-react-hooks';
+import useFeedsStore from '@bitsocialhq/pkc-react-hooks/dist/stores/feeds';
 import { useDirectoryByAddress } from './use-directories';
 import { useBoardFeedPageSize } from './use-board-feed-page-size';
 import { findPostPageInFeed, findPostPageInLoadedBoardFeeds, type FeedsOptionsLike, type LoadedFeedsLike } from '../lib/utils/post-page-resolution';

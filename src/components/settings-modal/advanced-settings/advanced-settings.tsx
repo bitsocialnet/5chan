@@ -1,5 +1,5 @@
 import { RefObject, useRef, useState } from 'react';
-import { setAccount, useAccount, usePlebbitRpcSettings } from '@plebbit/plebbit-react-hooks';
+import { setAccount, useAccount, usePlebbitRpcSettings } from '@bitsocialhq/pkc-react-hooks';
 import { useTranslation } from 'react-i18next';
 import styles from './advanced-settings.module.css';
 

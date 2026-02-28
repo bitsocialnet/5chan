@@ -1,7 +1,7 @@
 import { memo, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Comment, Role, useComment, useEditedComment, useSubplebbit } from '@plebbit/plebbit-react-hooks';
-import useSubplebbitsPagesStore from '@plebbit/plebbit-react-hooks/dist/stores/subplebbits-pages';
+import { Comment, Role, useComment, useEditedComment, useSubplebbit } from '@bitsocialhq/pkc-react-hooks';
+import useSubplebbitsPagesStore from '@bitsocialhq/pkc-react-hooks/dist/stores/subplebbits-pages';
 import { useSubplebbitField } from '../../hooks/use-stable-subplebbit';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { isAllView } from '../../lib/utils/view-utils';

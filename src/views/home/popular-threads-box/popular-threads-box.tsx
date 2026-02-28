@@ -1,7 +1,7 @@
 import { memo, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Comment, Subplebbit } from '@plebbit/plebbit-react-hooks';
+import { Comment, Subplebbit } from '@bitsocialhq/pkc-react-hooks';
 import styles from '../home.module.css';
 import usePopularPosts from '../../../hooks/use-popular-posts';
 import usePopularThreadsOptionsStore from '../../../stores/use-popular-threads-options-store';

@@ -172,8 +172,8 @@ export default defineConfig({
           if (/[\\/]node_modules[\\/](@plebbit[\\/]plebbit-js)[\\/]/.test(id)) {
             return 'plebbit-js';
           }
-          if (/[\\/]node_modules[\\/](@plebbit[\\/]plebbit-react-hooks)[\\/]/.test(id)) {
-            return 'plebbit-react-hooks';
+          if (/[\\/]node_modules[\\/](@bitsocialhq[\\/]pkc-react-hooks)[\\/]/.test(id)) {
+            return 'pkc-react-hooks';
           }
           if (/[\\/]node_modules[\\/](@react-spring|@use-gesture)[\\/]/.test(id)) {
             return 'spring-gesture';

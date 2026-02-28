@@ -4,7 +4,7 @@ import { isAllView, isSubscriptionsView, isModView } from '../lib/utils/view-uti
 import useThemeStore from '../stores/use-theme-store';
 import { useDirectories } from './use-directories';
 import { useResolvedSubplebbitAddress } from './use-resolved-subplebbit-address';
-import { useAccountComment } from '@plebbit/plebbit-react-hooks';
+import { useAccountComment } from '@bitsocialhq/pkc-react-hooks';
 import useSpecialThemeStore from '../stores/use-special-theme-store';
 import { isChristmas } from '../lib/utils/time-utils';
 

@@ -7,11 +7,11 @@
   "license": "GPL-2.0-only",
   "private": true,
   "dependencies": {
+    "@bitsocialhq/pkc-react-hooks": "https://github.com/bitsocialhq/pkc-react-hooks.git#8d93bb78eb570f0769904cb6ce5cb83ab8b277d4",
     "@capacitor/app": "7.0.1",
     "@capacitor/status-bar": "7.0.1",
     "@capawesome/capacitor-android-edge-to-edge-support": "7.2.2",
     "@floating-ui/react": "0.26.1",
-    "@plebbit/plebbit-react-hooks": "https://github.com/plebbit/plebbit-react-hooks.git#a828bd598bcc392ed379136feaee0a7b1c8cd23f",
     "@react-spring/web": "9.7.5",
     "@types/node": "20.8.2",
     "@types/react": "18.2.25",

@@ -1,4 +1,4 @@
-import useAccountsStore from '@plebbit/plebbit-react-hooks/dist/stores/accounts';
+import useAccountsStore from '@bitsocialhq/pkc-react-hooks/dist/stores/accounts';
 import { DirectoryCommunity } from './use-directories';
 
 export const useAccountSubplebbitsWithMetadata = (): DirectoryCommunity[] => {

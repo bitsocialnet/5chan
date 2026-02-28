@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { deleteAccount, exportAccount, importAccount, setActiveAccount, useAccount, useAccounts } from '@plebbit/plebbit-react-hooks';
+import { deleteAccount, exportAccount, importAccount, setActiveAccount, useAccount, useAccounts } from '@bitsocialhq/pkc-react-hooks';
 import styles from './account-settings.module.css';
 import { Capacitor } from '@capacitor/core';
 import { useLocation, useNavigate } from 'react-router-dom';

@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react';
-import { Comment, useAccount, usePublishComment } from '@plebbit/plebbit-react-hooks';
+import { Comment, useAccount, usePublishComment } from '@bitsocialhq/pkc-react-hooks';
 import usePublishReplyStore from '../stores/use-publish-reply-store';
 import usePostNumberStore from '../stores/use-post-number-store';
 import { getQuotedCidsFromContent, mergeQuotedCids } from '../lib/utils/reply-quote-utils';
