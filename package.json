@@ -46,6 +46,10 @@
     "remark-supersub": "1.0.0",
     "tcp-port-used": "1.0.2",
     "typescript": "5.1.6",
+    "workbox-build": "7.4.0",
+    "workbox-core": "7.4.0",
+    "workbox-precaching": "7.4.0",
+    "workbox-window": "7.4.0",
     "zustand": "4.4.3"
   },
   "scripts": {
@@ -152,7 +156,7 @@
     "stream-browserify": "3.0.0",
     "vite": "npm:rolldown-vite@7.3.1",
     "vite-plugin-node-polyfills": "0.24.0",
-    "vite-plugin-pwa": "0.21.1",
+    "vite-plugin-pwa": "1.2.0",
     "vitest": "4.0.15",
     "wait-on": "9.0.3"
   },
@@ -177,7 +181,9 @@
     "diff": "^8.0.3",
     "lodash": "4.17.23",
     "seroval": "1.4.1",
-    "tar": "7.5.9"
+    "tar": "7.5.9",
+    "rollup": "2.80.0",
+    "@electron/asar": "4.0.1"
   },
   "main": "electron/main.js",
   "lint-staged": {

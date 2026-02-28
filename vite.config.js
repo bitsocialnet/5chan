@@ -200,6 +200,7 @@ export default defineConfig({
   },
   define: {
     'process.env.VITE_COMMIT_REF': JSON.stringify(process.env.COMMIT_REF),
+    'process.version': JSON.stringify(''),
     global: 'globalThis',
     __dirname: '""',
   },
