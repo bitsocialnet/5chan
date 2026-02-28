@@ -3,7 +3,6 @@ package fivechan.android;
 import static org.junit.Assert.*;
 
 import android.content.Context;
-import android.net.Uri;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 import java.util.concurrent.CountDownLatch;
@@ -16,9 +15,9 @@ import org.junit.runner.RunWith;
 
 /**
  * Instrumentation tests for MediaUploadAutomationRunner against controlled HTML fixtures.
- * Simulates: delayed DOM, missing selectors, chooser callback, success URL extraction, blocked.
- * Validates timeout/error classification (input_not_found, chooser_not_triggered, blocked/captcha,
- * upload_timed_out). Runs on emulator or device; fixtures are deterministic.
+ * Uses DataTransfer injection (no chooser). Simulates: delayed DOM, missing selectors,
+ * success URL extraction, blocked. Validates timeout/error classification (input_not_found,
+ * blocked/captcha, upload_timed_out). Runs on emulator or device; fixtures are deterministic.
  */
 @RunWith(AndroidJUnit4.class)
 public class MediaUploadAutomationRunnerTest {
@@ -26,13 +25,25 @@ public class MediaUploadAutomationRunnerTest {
     private static final String FIXTURE_BASE = "file:///android_asset/fixtures/";
     private static final long TEST_TIMEOUT_SEC = 15;
 
+    /** Minimal 1x1 PNG for fixture tests (DataTransfer injection). */
+    private static final byte[] SAMPLE_FILE_BYTES =
+            new byte[] {
+                (byte) 0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
+                0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52,
+                0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
+                0x08, 0x02, 0x00, 0x00, 0x00, (byte) 0x90, 0x77, 0x53,
+                (byte) 0xde, 0x00, 0x00, 0x00, 0x0c, 0x49, 0x44, 0x41, 0x54,
+                0x08, (byte) 0xd7, 0x63, (byte) 0xf8, (byte) 0xff, (byte) 0xff, 0x3f, 0x03,
+                0x00, 0x05, (byte) 0xfe, 0x02, (byte) 0xfe, (byte) 0xa8, 0x4c, 0x21,
+                0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4e, 0x44,
+                (byte) 0xae, 0x42, 0x60, (byte) 0x82
+            };
+
     private Context appContext;
-    private Uri dummyFileUri;
 
     @Before
     public void setUp() {
         appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        dummyFileUri = Uri.parse("content://test/sample.jpg");
     }
 
     @After
@@ -52,8 +63,9 @@ public class MediaUploadAutomationRunnerTest {
         MediaUploadAutomationRunner runner =
                 new MediaUploadAutomationRunner(
                         appContext,
-                        dummyFileUri,
-                        "sample.jpg",
+                        SAMPLE_FILE_BYTES,
+                        "sample.png",
+                        "image/png",
                         provider,
                         callback,
                         fixtureUrl);
@@ -82,14 +94,14 @@ public class MediaUploadAutomationRunnerTest {
     }
 
     @Test
-    public void fixtureFakeTrigger_triggersChooserNotTriggered() throws Exception {
+    public void fixtureFakeTrigger_noRealInput_triggersInputNotFound() throws Exception {
         MediaUploadResult result =
                 runWithFixture("fixture_fake_trigger.html", MediaUploadRecipes.PROVIDER_IMGUR);
 
         assertFalse(result.success);
-        assertEquals("chooser_not_triggered", result.stage);
+        assertEquals("No real input[type=file] to inject into", "input_not_found", result.stage);
         assertNotNull(result.error);
-        assertTrue(result.error.contains("File chooser not triggered"));
+        assertTrue(result.error.contains("File input not found"));
     }
 
     @Test
@@ -141,55 +153,4 @@ public class MediaUploadAutomationRunnerTest {
         assertEquals("no_recipe", result.stage);
     }
 
-    // --- Postimages provider tests ---
-
-    @Test
-    public void postimages_containerFirstInputLater_successUnderDelay() throws Exception {
-        MediaUploadResult result =
-                runWithFixture(
-                        "postimages_container_first_input_later.html",
-                        MediaUploadRecipes.PROVIDER_POSTIMAGES);
-
-        assertTrue(
-                "Delayed DOM: container first, input at 600ms; retries find it; got stage="
-                        + result.stage
-                        + " error="
-                        + result.error,
-                result.success);
-        assertNotNull(result.url);
-        assertTrue(result.url.contains("postimg"));
-    }
-
-    @Test
-    public void postimages_nonInputTrap_deterministicFailureInputNotFound() throws Exception {
-        MediaUploadResult result =
-                runWithFixture(
-                        "postimages_non_input_trap.html",
-                        MediaUploadRecipes.PROVIDER_POSTIMAGES);
-
-        assertFalse(result.success);
-        assertEquals(
-                "Guard must skip non-input trap; expect input_not_found not chooser_not_triggered",
-                "input_not_found",
-                result.stage);
-        assertNotNull(result.error);
-        assertTrue(
-                result.error.contains("File input not found")
-                        || result.error.contains("input not found"));
-        assertNull(
-                "Should not match trap element (non-input); matchedSelectors must be null",
-                result.matchedSelectors);
-    }
-
-    @Test
-    public void postimages_labelToInput_successExtractsUrl() throws Exception {
-        MediaUploadResult result =
-                runWithFixture(
-                        "postimages_label_to_input.html",
-                        MediaUploadRecipes.PROVIDER_POSTIMAGES);
-
-        assertTrue("Label-associated input: full flow success; got " + result.error, result.success);
-        assertNotNull(result.url);
-        assertTrue(result.url.contains("postimg"));
-    }
 }

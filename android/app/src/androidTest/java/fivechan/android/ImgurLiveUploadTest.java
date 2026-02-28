@@ -20,11 +20,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Live provider integration test (emulator/device) for postimages.
- * Creates a white 100x100 PNG at runtime, then runs real WebView automation against postimages.org.
+ * Live provider integration test (emulator/device) for imgur.
+ * Creates a white 100x100 PNG at runtime, then runs real WebView automation against imgur.com.
  */
 @RunWith(AndroidJUnit4.class)
-public class PostimagesLiveUploadTest {
+public class ImgurLiveUploadTest {
     private static final long TEST_TIMEOUT_SEC = 120;
     private static final String GENERATED_FILE_NAME = "white-100x100.png";
 
@@ -38,7 +38,7 @@ public class PostimagesLiveUploadTest {
     }
 
     @Test
-    public void postimages_liveUpload_fromGeneratedPng_succeeds() throws Exception {
+    public void imgur_liveUpload_fromGeneratedPng_succeeds() throws Exception {
         AtomicReference<MediaUploadResult> resultRef = new AtomicReference<>();
         CountDownLatch latch = new CountDownLatch(1);
         MediaUploadCallback callback =
@@ -52,7 +52,7 @@ public class PostimagesLiveUploadTest {
                         appContext,
                         uploadUri,
                         GENERATED_FILE_NAME,
-                        MediaUploadRecipes.PROVIDER_POSTIMAGES,
+                        MediaUploadRecipes.PROVIDER_IMGUR,
                         callback);
 
         runner.run();
@@ -64,7 +64,7 @@ public class PostimagesLiveUploadTest {
         MediaUploadResult result = resultRef.get();
         assertNotNull("Callback did not receive result", result);
         assertTrue(
-                "Expected live postimages upload success, got error="
+                "Expected live imgur upload success, got error="
                         + result.error
                         + " stage="
                         + result.stage
@@ -77,7 +77,14 @@ public class PostimagesLiveUploadTest {
                 result.success);
         assertNotNull("Expected uploaded URL", result.url);
         assertTrue("Expected HTTP URL, got: " + result.url, result.url.startsWith("http"));
-        assertTrue("Expected postimages URL, got: " + result.url, result.url.contains("postimg"));
+        String normalizedUrl = result.url.toLowerCase();
+        assertTrue(
+                "Expected direct i.imgur.com URL, got: " + result.url,
+                normalizedUrl.contains("://i.imgur.com/"));
+        assertTrue(
+                "Expected direct image URL with extension, got: " + result.url,
+                normalizedUrl.matches(
+                        "https?://i\\.imgur\\.com/.+\\.(jpg|jpeg|png|gif|webp|bmp|avif|mp4|webm)(?:[?#].*)?"));
     }
 
     private static Uri createWhiteSquarePngUri(Context context) throws IOException {

@@ -35,12 +35,12 @@ vi.mock('../../lib/media-hosting/provider-order', () => ({
   getProviderOrder: vi.fn((opts: { mode: string; preferredProvider: string; runtime: string }) => {
     if (opts.mode === 'none') return [];
     if (opts.runtime === 'web') return opts.preferredProvider === 'catbox' ? ['catbox'] : [];
-    return opts.mode === 'preferred' ? [opts.preferredProvider] : ['catbox', 'imgur', 'postimages'];
+    return opts.mode === 'preferred' ? [opts.preferredProvider] : ['catbox', 'imgur'];
   }),
 }));
 
 const uploadModeRef = vi.hoisted(() => ({ value: 'random' as 'random' | 'preferred' | 'none' }));
-const preferredProviderRef = vi.hoisted(() => ({ value: 'catbox' as 'catbox' | 'imgur' | 'postimages' }));
+const preferredProviderRef = vi.hoisted(() => ({ value: 'catbox' as 'catbox' | 'imgur' }));
 vi.mock('../../stores/use-media-hosting-store', () => ({
   default: (selector: (s: { uploadMode: string; preferredProvider: string }) => unknown) =>
     selector({ uploadMode: uploadModeRef.value, preferredProvider: preferredProviderRef.value }),

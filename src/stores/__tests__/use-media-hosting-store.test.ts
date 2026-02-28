@@ -19,7 +19,7 @@ describe('useMediaHostingStore', () => {
 
   it('exports MEDIA_HOSTING_PROVIDERS with ids, labels, homepage URLs, runtime metadata', () => {
     expect(MEDIA_HOSTING_PROVIDERS).toBeDefined();
-    expect(MEDIA_HOSTING_PROVIDERS.length).toBe(3);
+    expect(MEDIA_HOSTING_PROVIDERS.length).toBe(2);
     const catbox = MEDIA_HOSTING_PROVIDERS.find((p) => p.id === 'catbox');
     expect(catbox).toEqual({
       id: 'catbox',

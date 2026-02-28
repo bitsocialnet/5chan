@@ -4,13 +4,12 @@
  * Selectors are candidate-based: try each until one matches. Fail fast on blocked indicators.
  *
  * Android vs Electron differences (documented to prevent drift):
- * - Android (MediaUploadRecipes.java): imgur/postimages only; no catbox (uses different flow).
- *   Uses WebChromeClient file chooser interception; trigger JS clicks file input.
- * - Electron: catbox/imgur/postimages. Uses CDP DOM.setFileInputFiles + submit button click.
+ * - Android (MediaUploadRecipes.java): imgur only; no catbox (uses different flow).
+ *   Uses DataTransfer JS injection.
+ * - Electron: catbox/imgur. Uses CDP DOM.setFileInputFiles + submit button click.
  *   Catbox: Electron-only; keep behavior unchanged.
- * - Blocked/success selectors: reconciled with Android for imgur/postimages; Electron may add
- *   extra candidates (e.g. [data-captcha], .login-form) where DOM differs.
- * - Timeouts: imgur/postimages 45s (parity); catbox 30s (Electron-only).
+ * - Blocked/success selectors: reconciled with Android for imgur.
+ * - Timeouts: imgur 45s; catbox 30s (Electron-only).
  *
  * @typedef {Object} ProviderRecipe
  * @property {string} uploadUrl - Full URL of the provider's upload page
@@ -47,18 +46,6 @@ export const MEDIA_UPLOAD_RECIPES = Object.freeze({
     }),
     /* Android: .signin, .login. Electron adds: [data-captcha], .login-form for DOM variations. */
     blockedIndicators: Object.freeze(['#challenge', '.captcha', '[data-captcha]', '.g-recaptcha', '#recaptcha', '.login-form', '.signin', '.login']),
-    timeoutMs: 45_000,
-  }),
-  /* Reconciled with Android MediaUploadRecipes (postimages): file input, success extractors, blocked indicators. */
-  postimages: Object.freeze({
-    uploadUrl: 'https://postimages.org',
-    fileInputSelectorCandidates: Object.freeze(['input[type="file"]', 'input[type=file]', '#uploadFile', '.fileinput']),
-    submitSelectorCandidates: Object.freeze(['button[type="submit"]', '[type="submit"]', '.btn-upload']),
-    successExtractor: Object.freeze({
-      selectorCandidates: Object.freeze(['input[readonly][value*="postimg"]', 'a[href*="i.postimg.cc"]', '[class*="direct-link"]', 'textarea']),
-      attribute: 'value',
-    }),
-    blockedIndicators: Object.freeze(['#challenge', '.captcha', '.g-recaptcha', '#recaptcha']),
     timeoutMs: 45_000,
   }),
 });

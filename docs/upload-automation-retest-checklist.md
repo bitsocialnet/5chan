@@ -22,34 +22,16 @@ yarn retest:quality
 
 ---
 
-## Postimages chooser contract (required local gate)
+## Imgur chooser contract (required local gate)
 
-Runs postimages-specific emulator contract tests against deterministic fixtures. **Emulator required.** Must pass before merge.
+Runs imgur-specific emulator contract tests against deterministic fixtures. **Emulator required.** Must pass before merge.
 
 ```bash
-yarn contract:postimages
+yarn contract:imgur
 ```
 
 - **Prereq:** Android emulator running or USB device connected.
-- **Interpretation:** Exit 0 = contract tests pass. Runs `MediaUploadAutomationRunnerTest` (postimages chooser contract + imgur/generic fixtures). Uses deterministic fixtures in `android/app/src/main/assets/fixtures/`.
-
----
-
-## Live postimages test (fully automated, real provider)
-
-Runs a real provider upload test with no manual taps. The script will:
-- install missing Android SDK components when `sdkmanager` is available
-- create/start an emulator AVD when needed
-- run `PostimagesLiveUploadTest` on a booted emulator/device
-- generate a blank white `100x100` PNG at runtime inside the instrumentation test
-
-```bash
-yarn live:postimages:auto
-```
-
-- **Prereq:** Android command-line tools installed (`sdkmanager`, `avdmanager`, `adb`, `emulator`) or available in `ANDROID_SDK_ROOT` / `ANDROID_HOME`.
-- **Interpretation:** Exit 0 = real upload to `postimages.org` succeeded end-to-end.
-- **Note:** This is a live-provider check (network/captcha/rate-limit dependent), so it can be flaky compared to fixture contracts.
+- **Interpretation:** Exit 0 = contract tests pass. Runs `MediaUploadAutomationRunnerTest` (imgur chooser contract + generic fixtures). Uses deterministic fixtures in `android/app/src/main/assets/fixtures/`.
 
 ---
 
@@ -99,7 +81,7 @@ androidTestImplementation("androidx.test.espresso:espresso-core:3.3.0") {
 
 ## Upload Selector Smoke Run (report-only, non-blocking)
 
-Probes live upload sites (Imgur, PostImages) to verify selectors in `media-upload-recipes` still match. **Always exits 0**; intended for CI report-only and local triage. **Not a merge gate**—check report for selector drift but do not block.
+Probes live upload sites (Imgur) to verify selectors in `media-upload-recipes` still match. **Always exits 0**; intended for CI report-only and local triage. **Not a merge gate**—check report for selector drift but do not block.
 
 ```bash
 yarn smoke:upload-selectors
@@ -133,8 +115,7 @@ node electron/media-upload-recipes.test.js
 | Check | Blocking? | Command |
 |-------|-----------|---------|
 | Quality gate | Yes | `yarn retest:quality` |
-| Postimages chooser contract | Yes | `yarn contract:postimages` |
-| Postimages live provider automation | No (recommended local) | `yarn live:postimages:auto` |
+| Imgur chooser contract | Yes | `yarn contract:imgur` |
 | Android instrumentation | No (report-only) | `yarn android:connectedTest` |
 | Upload selector smoke | No (report-only) | `yarn smoke:upload-selectors` |
 | Electron unit tests | No (report-only) | `node electron/media-upload-*.test.js` |

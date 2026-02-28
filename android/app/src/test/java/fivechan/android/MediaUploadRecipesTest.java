@@ -34,13 +34,6 @@ public class MediaUploadRecipesTest {
     }
 
     @Test
-    public void getUploadUrl_postimages() {
-        assertEquals(
-                "https://postimages.org",
-                MediaUploadRecipes.getUploadUrl(MediaUploadRecipes.PROVIDER_POSTIMAGES));
-    }
-
-    @Test
     public void getUploadUrl_unknownProvider_returnsNull() {
         assertNull(MediaUploadRecipes.getUploadUrl("catbox"));
         assertNull(MediaUploadRecipes.getUploadUrl("unknown"));
@@ -53,14 +46,6 @@ public class MediaUploadRecipesTest {
         assertNotNull(js);
         assertTrue(js.contains("input[type=\"file\"]") || js.contains("input[type=file]"));
         assertTrue(js.contains("data-file-input"));
-    }
-
-    @Test
-    public void getTriggerFileInputJs_postimages_containsSelectors() {
-        String js = MediaUploadRecipes.getTriggerFileInputJs(MediaUploadRecipes.PROVIDER_POSTIMAGES);
-        assertNotNull(js);
-        assertTrue(js.contains("input[type=\"file\"]") || js.contains("input[type=file]"));
-        assertTrue(js.contains("uploadFile") || js.contains("fileinput"));
     }
 
     @Test
@@ -77,13 +62,6 @@ public class MediaUploadRecipesTest {
     }
 
     @Test
-    public void getSubmitClickJs_postimages_returnsValidJs() {
-        String js = MediaUploadRecipes.getSubmitClickJs(MediaUploadRecipes.PROVIDER_POSTIMAGES);
-        assertNotNull(js);
-        assertTrue(js.contains("querySelector"));
-    }
-
-    @Test
     public void getSuccessJs_imgur_containsImgurSelectors() {
         String js = MediaUploadRecipes.getSuccessJs(MediaUploadRecipes.PROVIDER_IMGUR);
         assertNotNull(js);
@@ -91,24 +69,10 @@ public class MediaUploadRecipesTest {
     }
 
     @Test
-    public void getSuccessJs_postimages_containsPostimgSelectors() {
-        String js = MediaUploadRecipes.getSuccessJs(MediaUploadRecipes.PROVIDER_POSTIMAGES);
-        assertNotNull(js);
-        assertTrue(js.contains("postimg"));
-    }
-
-    @Test
     public void getBlockedJs_imgur_containsChallengeSelectors() {
         String js = MediaUploadRecipes.getBlockedJs(MediaUploadRecipes.PROVIDER_IMGUR);
         assertNotNull(js);
         assertTrue(js.contains("challenge") || js.contains("captcha") || js.contains("recaptcha"));
-    }
-
-    @Test
-    public void getBlockedJs_postimages_containsBlockedIndicators() {
-        String js = MediaUploadRecipes.getBlockedJs(MediaUploadRecipes.PROVIDER_POSTIMAGES);
-        assertNotNull(js);
-        assertTrue(js.contains("challenge") || js.contains("captcha"));
     }
 
     @Test
@@ -138,26 +102,4 @@ public class MediaUploadRecipesTest {
         assertTrue(js.contains("JSON.stringify") || js.contains("return"));
     }
 
-    /** Postimages selector contract: no broad non-input fallback; strict INPUT type=file guard. */
-    @Test
-    public void postimages_triggerJs_hasStrictInputOnlyGuard() {
-        String js = MediaUploadRecipes.getTriggerFileInputJs(MediaUploadRecipes.PROVIDER_POSTIMAGES);
-        assertNotNull(js);
-        assertTrue(
-                "Postimages must enforce actual file input; guard rejects non-input elements",
-                js.contains("tagName") && js.contains("INPUT") && js.contains("type") && js.contains("file"));
-    }
-
-    @Test
-    public void postimages_triggerJs_stricterThanImgur() {
-        String imgurJs = MediaUploadRecipes.getTriggerFileInputJs(MediaUploadRecipes.PROVIDER_IMGUR);
-        String postimagesJs =
-                MediaUploadRecipes.getTriggerFileInputJs(MediaUploadRecipes.PROVIDER_POSTIMAGES);
-        assertNotNull(imgurJs);
-        assertNotNull(postimagesJs);
-        assertFalse("Imgur has no strict input guard", imgurJs.contains("tagName"));
-        assertTrue(
-                "Postimages must enforce strict input-only; no broad non-input fallback",
-                postimagesJs.contains("tagName"));
-    }
 }

@@ -29,7 +29,6 @@ describe('media-upload-automation', () => {
     it('returns false for non-direct URLs (guards against non-media pages)', () => {
       expect(isDirectMediaUrl('https://imgur.com/abc123')).toBe(false);
       expect(isDirectMediaUrl('https://imgur.com/upload')).toBe(false);
-      expect(isDirectMediaUrl('https://postimages.org')).toBe(false);
       expect(isDirectMediaUrl('')).toBe(false);
     });
 
@@ -41,12 +40,9 @@ describe('media-upload-automation', () => {
 });
 
 describe('media-upload-automation + recipes integration', () => {
-  it('imgur and postimages success extractors target direct-media domains', () => {
+  it('imgur success extractor targets direct-media domain', () => {
     const imgurSelectors = MEDIA_UPLOAD_RECIPES.imgur.successExtractor.selectorCandidates;
     expect(imgurSelectors.some((s) => s.includes('i.imgur.com'))).toBe(true);
-
-    const postimagesSelectors = MEDIA_UPLOAD_RECIPES.postimages.successExtractor.selectorCandidates;
-    expect(postimagesSelectors.some((s) => s.includes('postimg') || s.includes('i.postimg'))).toBe(true);
   });
 
   it('all providers have fallback selector chains for file input and submit', () => {

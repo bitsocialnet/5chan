@@ -1,9 +1,13 @@
 package fivechan.android;
 
 import android.app.Activity;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.net.Uri;
 import android.util.Log;
+
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 
 import androidx.activity.result.ActivityResult;
 import androidx.appcompat.app.AppCompatActivity;
@@ -63,8 +67,7 @@ public class FileUploaderPlugin extends Plugin {
                     if (o instanceof String) {
                         String p = (String) o;
                         if (PROVIDER_CATBOX.equals(p)
-                                || MediaUploadRecipes.PROVIDER_IMGUR.equals(p)
-                                || MediaUploadRecipes.PROVIDER_POSTIMAGES.equals(p)) {
+                                || MediaUploadRecipes.PROVIDER_IMGUR.equals(p)) {
                             order.add(p);
                         }
                     }
@@ -140,8 +143,7 @@ public class FileUploaderPlugin extends Plugin {
                 }
                 attempt.put("error", res.error);
                 errorSummary.append(provider).append(": ").append(res.error).append("; ");
-            } else if (MediaUploadRecipes.PROVIDER_IMGUR.equals(provider)
-                    || MediaUploadRecipes.PROVIDER_POSTIMAGES.equals(provider)) {
+            } else if (MediaUploadRecipes.PROVIDER_IMGUR.equals(provider)) {
                 MediaUploadResult res = uploadViaWebViewSync(fileUri, provider);
                 attempt.put("success", res.success);
                 if (res.success) {
@@ -243,6 +245,32 @@ public class FileUploaderPlugin extends Plugin {
     }
 
     private MediaUploadResult uploadViaWebViewSync(Uri fileUri, String provider) {
+        ContentResolver resolver = getContext().getContentResolver();
+        byte[] fileBytes;
+        String mimeType;
+        try {
+            try (InputStream is = resolver.openInputStream(fileUri)) {
+                if (is == null) {
+                    return new MediaUploadResult(false, null, "Could not open file stream");
+                }
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                byte[] buf = new byte[8192];
+                int n;
+                while ((n = is.read(buf)) != -1) {
+                    baos.write(buf, 0, n);
+                }
+                fileBytes = baos.toByteArray();
+            }
+            String resolvedMime = resolver.getType(fileUri);
+            mimeType = (resolvedMime == null || resolvedMime.isEmpty())
+                    ? "application/octet-stream" : resolvedMime;
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to read file", e);
+            return new MediaUploadResult(false, null, "Could not read file: " + e.getMessage());
+        }
+
+        final byte[] finalFileBytes = fileBytes;
+        final String finalMimeType = mimeType;
         CountDownLatch latch = new CountDownLatch(1);
         AtomicReference<MediaUploadResult> resultRef = new AtomicReference<>();
 
@@ -262,12 +290,21 @@ public class FileUploaderPlugin extends Plugin {
                 () -> {
                     MediaUploadAutomationRunner runner =
                             new MediaUploadAutomationRunner(
-                                    getContext(), fileUri, fileName, provider, callback);
+                                    getContext(),
+                                    finalFileBytes,
+                                    fileName,
+                                    finalMimeType,
+                                    provider,
+                                    callback,
+                                    null);
                     runner.run();
                 });
 
         try {
-            boolean ok = latch.await(MediaUploadRecipes.UPLOAD_TIMEOUT_MS + 5000, TimeUnit.MILLISECONDS);
+            boolean ok =
+                    latch.await(
+                            MediaUploadRecipes.getUploadTimeoutMs(provider) + 5000,
+                            TimeUnit.MILLISECONDS);
             if (!ok) {
                 return new MediaUploadResult(false, null, "WebView upload timeout");
             }

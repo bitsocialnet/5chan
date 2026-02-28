@@ -226,7 +226,7 @@ const DesktopQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, i
   return isBacklinkReply ? replyBacklink : isQuotelinkReply && replyQuotelink;
 };
 
-const MobileQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, isQuotelinkReply, isOP }: ReplyQuotePreviewProps) => {
+const MobileQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, isQuotelinkReply, isOP, showTrailingBreak = true }: ReplyQuotePreviewProps) => {
   const [hoveredCid, setHoveredCid] = useState<string | null>(null);
   const [outOfViewCid, setOutOfViewCid] = useState<string | null>(null);
   const directories = useDirectories();
@@ -348,6 +348,7 @@ const MobileQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, is
             </Link>
           );
         })()}
+      {showTrailingBreak && <br />}
       {hoveredCid === quotelinkReply?.cid &&
         outOfViewCid === quotelinkReply?.cid &&
         createPortal(
@@ -366,7 +367,14 @@ const ReplyQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, isQ
   const isMobile = useIsMobile();
 
   return isMobile ? (
-    <MobileQuotePreview backlinkReply={backlinkReply} quotelinkReply={quotelinkReply} isBacklinkReply={isBacklinkReply} isQuotelinkReply={isQuotelinkReply} isOP={isOP} />
+    <MobileQuotePreview
+      backlinkReply={backlinkReply}
+      quotelinkReply={quotelinkReply}
+      isBacklinkReply={isBacklinkReply}
+      isQuotelinkReply={isQuotelinkReply}
+      isOP={isOP}
+      showTrailingBreak={showTrailingBreak}
+    />
   ) : (
     <DesktopQuotePreview
       backlinkReply={backlinkReply}

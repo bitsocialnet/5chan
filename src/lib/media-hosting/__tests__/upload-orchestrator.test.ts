@@ -56,14 +56,14 @@ describe('orchestrateElectronUpload', () => {
     const file = new File(['z'], 'z.png', { type: 'image/png' });
 
     try {
-      await orchestrateElectronUpload(file, ['postimages']);
+      await orchestrateElectronUpload(file, ['imgur']);
       throw new Error('Expected orchestrateElectronUpload to throw');
     } catch (error) {
       const typedError = error as Error & {
         attempts?: Array<{ provider: string; error?: string; elapsedMs?: number; stage?: string }>;
       };
       expect(typedError.message).toBe('All providers failed');
-      expect(typedError.attempts?.[0]?.provider).toBe('postimages');
+      expect(typedError.attempts?.[0]?.provider).toBe('imgur');
       expect(typedError.attempts?.[0]?.error).toContain('File path required for Electron automation');
       expect(typedError.attempts?.[0]?.elapsedMs).toBeGreaterThanOrEqual(0);
       expect(typedError.attempts?.[0]?.stage).toBeDefined();
@@ -115,21 +115,19 @@ describe('orchestrateElectronUpload', () => {
 
   it('parses timeout stage when upload or URL extraction times out', async () => {
     const electronApi = createElectronApiMock();
-    electronApi.automateUploadMedia = vi
-      .fn()
-      .mockRejectedValue(new Error('Upload timeout or no direct URL extracted for postimages (elapsed: 45000ms, timeout: 45000ms)'));
+    electronApi.automateUploadMedia = vi.fn().mockRejectedValue(new Error('Upload timeout or no direct URL extracted for imgur (elapsed: 45000ms, timeout: 45000ms)'));
     window.electronApi = electronApi;
 
     const file = new File(['x'], 'x.png', { type: 'image/png' });
 
     try {
-      await orchestrateElectronUpload(file, ['postimages']);
+      await orchestrateElectronUpload(file, ['imgur']);
       throw new Error('Expected orchestrateElectronUpload to throw');
     } catch (error) {
       const typedError = error as Error & {
         attempts?: Array<{ provider: string; stage?: string }>;
       };
-      expect(typedError.attempts?.[0]?.provider).toBe('postimages');
+      expect(typedError.attempts?.[0]?.provider).toBe('imgur');
       expect(typedError.attempts?.[0]?.stage).toBe('timeout');
     }
   });

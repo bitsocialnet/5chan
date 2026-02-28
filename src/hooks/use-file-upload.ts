@@ -26,7 +26,7 @@ const ANDROID_STAGE_MAP: Record<string, UploadAttemptStage> = {
 
 const FILE_SELECTION_CANCELLED_ERROR = 'File selection cancelled';
 
-const VALID_PROVIDERS: ProviderId[] = ['catbox', 'imgur', 'postimages'];
+const VALID_PROVIDERS: ProviderId[] = ['catbox', 'imgur'];
 
 /** Raw attempt shape from Android plugin rejection payload */
 interface RawAttempt {
