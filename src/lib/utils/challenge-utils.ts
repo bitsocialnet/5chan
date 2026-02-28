@@ -38,7 +38,7 @@ export const alertChallengeVerificationFailed = (challengeVerification: Challeng
 
     alert(`Error from ${resolveBoardIdentifier(publication?.subplebbitAddress)}: ${finalMessage || 'unknown error'}`);
   } else {
-    console.warn('Challenge verification succeeded but no action taken:', challengeVerification);
+    console.log('Challenge verification succeeded:', challengeVerification);
   }
 };
 
