@@ -8,7 +8,7 @@ import {
   usePublishCommentEdit,
   usePublishCommentModeration,
   PublishCommentModerationOptions,
-} from '@plebbit/plebbit-react-hooks';
+} from '@bitsocialhq/pkc-react-hooks';
 import styles from './edit-menu.module.css';
 import { alertChallengeVerificationFailed } from '../../lib/utils/challenge-utils';
 import useChallengesStore from '../../stores/use-challenges-store';

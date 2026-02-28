@@ -7,11 +7,11 @@
   "license": "GPL-2.0-only",
   "private": true,
   "dependencies": {
+    "@bitsocialhq/pkc-react-hooks": "https://github.com/bitsocialhq/pkc-react-hooks.git#8d93bb78eb570f0769904cb6ce5cb83ab8b277d4",
     "@capacitor/app": "7.0.1",
     "@capacitor/status-bar": "7.0.1",
     "@capawesome/capacitor-android-edge-to-edge-support": "7.2.2",
     "@floating-ui/react": "0.26.1",
-    "@plebbit/plebbit-react-hooks": "https://github.com/plebbit/plebbit-react-hooks.git#a828bd598bcc392ed379136feaee0a7b1c8cd23f",
     "@react-spring/web": "9.7.5",
     "@types/node": "20.8.2",
     "@types/react": "18.2.25",
@@ -46,6 +46,10 @@
     "remark-supersub": "1.0.0",
     "tcp-port-used": "1.0.2",
     "typescript": "5.1.6",
+    "workbox-build": "7.4.0",
+    "workbox-core": "7.4.0",
+    "workbox-precaching": "7.4.0",
+    "workbox-window": "7.4.0",
     "zustand": "4.4.3"
   },
   "scripts": {
@@ -152,7 +156,7 @@
     "stream-browserify": "3.0.0",
     "vite": "npm:rolldown-vite@7.3.1",
     "vite-plugin-node-polyfills": "0.24.0",
-    "vite-plugin-pwa": "0.21.1",
+    "vite-plugin-pwa": "1.2.0",
     "vitest": "4.0.15",
     "wait-on": "9.0.3"
   },
@@ -177,7 +181,9 @@
     "diff": "^8.0.3",
     "lodash": "4.17.23",
     "seroval": "1.4.1",
-    "tar": "7.5.9"
+    "tar": "7.5.9",
+    "rollup": "2.80.0",
+    "@electron/asar": "4.0.1"
   },
   "main": "electron/main.js",
   "lint-staged": {

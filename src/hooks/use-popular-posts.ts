@@ -1,5 +1,5 @@
 import { useMemo, useRef } from 'react';
-import { Comment, Subplebbit } from '@plebbit/plebbit-react-hooks';
+import { Comment, Subplebbit } from '@bitsocialhq/pkc-react-hooks';
 import { getCommentMediaInfo, getHasThumbnail } from '../lib/utils/media-utils';
 
 const MAX_POSTS = 8;

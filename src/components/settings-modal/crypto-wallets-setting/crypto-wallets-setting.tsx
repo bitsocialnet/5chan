@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Account, setAccount, useAccount } from '@plebbit/plebbit-react-hooks';
+import { Account, setAccount, useAccount } from '@bitsocialhq/pkc-react-hooks';
 import styles from './crypto-wallets-setting.module.css';
 import { Trans, useTranslation } from 'react-i18next';
 import capitalize from 'lodash/capitalize';

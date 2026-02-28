@@ -1,4 +1,4 @@
-import { Comment } from '@plebbit/plebbit-react-hooks';
+import { Comment } from '@bitsocialhq/pkc-react-hooks';
 
 export type PostMenuProps = {
   cid?: string;

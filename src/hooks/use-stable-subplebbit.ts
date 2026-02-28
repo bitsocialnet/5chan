@@ -1,4 +1,4 @@
-import useSubplebbitsStore from '@plebbit/plebbit-react-hooks/dist/stores/subplebbits';
+import useSubplebbitsStore from '@bitsocialhq/pkc-react-hooks/dist/stores/subplebbits';
 
 /**
  * Shallow compare two objects by keys and values.

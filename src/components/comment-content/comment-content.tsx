@@ -1,8 +1,8 @@
 import { Fragment, useMemo, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import { Trans, useTranslation } from 'react-i18next';
-import { Comment, useComment } from '@plebbit/plebbit-react-hooks';
-import useSubplebbitsPagesStore from '@plebbit/plebbit-react-hooks/dist/stores/subplebbits-pages';
+import { Comment, useComment } from '@bitsocialhq/pkc-react-hooks';
+import useSubplebbitsPagesStore from '@bitsocialhq/pkc-react-hooks/dist/stores/subplebbits-pages';
 import usePostNumberStore from '../../stores/use-post-number-store';
 import getShortAddress from '../../lib/get-short-address';
 import { getFormattedDate, getFormattedTimeAgo } from '../../lib/utils/time-utils';

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Comment } from '@plebbit/plebbit-react-hooks';
+import type { Comment } from '@bitsocialhq/pkc-react-hooks';
 
 interface PostNumberState {
   // Post numbers are only unique within a subplebbit, so scope by address

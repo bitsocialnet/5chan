@@ -28,7 +28,7 @@ vi.mock('../../../lib/utils/account-editor-utils', () => ({
   buildSavePayload: vi.fn((parsed: { account: Record<string, unknown> }, id: string) => ({ ...parsed.account, id })),
 }));
 
-vi.mock('@plebbit/plebbit-react-hooks', () => ({
+vi.mock('@bitsocialhq/pkc-react-hooks', () => ({
   useAccount: () => ({ id: 'test-id', name: 'Account 1', author: { address: '0x123', shortAddress: '0x1...3' } }),
   setAccount: vi.fn(),
 }));

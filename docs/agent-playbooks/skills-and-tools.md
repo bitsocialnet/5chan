@@ -6,7 +6,7 @@ Use this playbook when setting up/adjusting skills and external tooling.
 
 ### Context7 (library docs)
 
-For up-to-date docs on libraries like `plebbit-react-hooks` and `plebbit-js`.
+For up-to-date docs on libraries.
 
 ```bash
 npx skills add https://github.com/intellectronica/agent-skills --skill context7

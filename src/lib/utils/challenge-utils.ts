@@ -1,4 +1,4 @@
-import { ChallengeVerification } from '@plebbit/plebbit-react-hooks';
+import { ChallengeVerification } from '@bitsocialhq/pkc-react-hooks';
 import directoriesData from '../../data/5chan-directories.json';
 import { getBoardPath } from './route-utils';
 

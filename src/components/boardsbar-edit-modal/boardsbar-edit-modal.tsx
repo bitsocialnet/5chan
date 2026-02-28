@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { useAccount } from '@plebbit/plebbit-react-hooks';
+import { useAccount } from '@bitsocialhq/pkc-react-hooks';
 import useBoardsBarEditModalStore from '../../stores/use-boardsbar-edit-modal-store';
 import useBoardsBarVisibilityStore from '../../stores/use-boardsbar-visibility-store';
 import { getAllBoardCodes } from '../../constants/board-codes';

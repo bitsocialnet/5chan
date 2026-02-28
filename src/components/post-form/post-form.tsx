@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { Comment, setAccount, useAccount, useAccountComment, useAccountSubplebbits, useEditedComment } from '@plebbit/plebbit-react-hooks';
+import { Comment, setAccount, useAccount, useAccountComment, useAccountSubplebbits, useEditedComment } from '@bitsocialhq/pkc-react-hooks';
 import getShortAddress from '../../lib/get-short-address';
-import useSubplebbitsStore from '@plebbit/plebbit-react-hooks/dist/stores/subplebbits';
-import useSubplebbitsPagesStore from '@plebbit/plebbit-react-hooks/dist/stores/subplebbits-pages';
+import useSubplebbitsStore from '@bitsocialhq/pkc-react-hooks/dist/stores/subplebbits';
+import useSubplebbitsPagesStore from '@bitsocialhq/pkc-react-hooks/dist/stores/subplebbits-pages';
 import { getLinkMediaInfo } from '../../lib/utils/media-utils';
 import { formatMarkdown } from '../../lib/utils/post-utils';
 import { isValidURL } from '../../lib/utils/url-utils';

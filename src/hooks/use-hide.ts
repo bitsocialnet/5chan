@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import { create } from 'zustand';
-import localForageLru from '@plebbit/plebbit-react-hooks/dist/lib/localforage-lru/index.js';
+import localForageLru from '@bitsocialhq/pkc-react-hooks/dist/lib/localforage-lru/index.js';
 
 interface HideStoreState {
   hiddenCids: { [key: string]: boolean };
