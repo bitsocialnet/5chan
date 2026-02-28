@@ -22,12 +22,6 @@ export const MEDIA_HOSTING_PROVIDERS: readonly ProviderDefinition[] = [
     homepageUrl: 'https://imgur.com',
     supportedRuntimes: ['electron', 'android'],
   },
-  {
-    id: 'postimages',
-    label: 'Postimages',
-    homepageUrl: 'https://postimages.org',
-    supportedRuntimes: ['electron', 'android'],
-  },
 ] as const;
 
 /** Provider IDs for ordering */

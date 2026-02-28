@@ -9,7 +9,6 @@ describe('media-upload-recipes', () => {
   it('exports MEDIA_UPLOAD_RECIPES with expected providers', () => {
     expect(Object.keys(MEDIA_UPLOAD_RECIPES)).toContain('catbox');
     expect(Object.keys(MEDIA_UPLOAD_RECIPES)).toContain('imgur');
-    expect(Object.keys(MEDIA_UPLOAD_RECIPES)).toContain('postimages');
   });
 
   it('validateRecipes passes for current recipes', () => {
@@ -28,9 +27,8 @@ describe('media-upload-recipes', () => {
     }
   });
 
-  it('imgur and postimages have 45s timeout (parity with Android)', () => {
+  it('imgur has 45s timeout (parity with Android)', () => {
     expect(MEDIA_UPLOAD_RECIPES.imgur.timeoutMs).toBe(45_000);
-    expect(MEDIA_UPLOAD_RECIPES.postimages.timeoutMs).toBe(45_000);
   });
 
   it('selector fallback order: generic file input before provider-specific', () => {

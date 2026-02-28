@@ -5,7 +5,7 @@
  *
  * Diagnostics (parity with Android): selector match/timeout info included in errors
  * for debugging. Poll interval 500ms, timeout per recipe matches Android where
- * providers overlap (imgur/postimages: 45s).
+ * providers overlap (imgur: 45s).
  */
 import { BrowserWindow } from 'electron';
 import { MEDIA_UPLOAD_RECIPES } from './media-upload-recipes.js';
@@ -29,7 +29,7 @@ export function isDirectMediaUrl(url) {
 /**
  * Run automated upload for a provider.
  * @param {Object} options
- * @param {string} options.provider - Provider id (catbox, imgur, postimages)
+ * @param {string} options.provider - Provider id (catbox, imgur)
  * @param {string} options.filePath - Absolute path to the file to upload
  * @returns {Promise<{ url: string; provider: string }>}
  * @throws {Error} On missing recipe, blocked indicators, timeout, or invalid URL

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Live smoke probe for imgur/postimages upload selectors.
+ * Live smoke probe for imgur upload selectors.
  * Probes current DOM and reports which configured selectors still match.
  * Non-blocking: always exits 0. Intended for CI report-only and local triage.
  *
@@ -20,7 +20,7 @@ const REPO_ROOT = join(__dirname, '..');
 const REPORT_PATH = join(REPO_ROOT, 'scripts', 'upload-selectors-smoke-report.json');
 const SNAPSHOTS_DIR = join(REPO_ROOT, 'scripts', 'upload-selectors-smoke-snapshots');
 
-const PROVIDERS = ['imgur', 'postimages'];
+const PROVIDERS = ['imgur'];
 
 /** Selectors to probe (from recipes). Loaded dynamically to avoid circular deps. */
 async function loadRecipes() {

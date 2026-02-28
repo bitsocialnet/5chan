@@ -6,25 +6,24 @@ describe('provider-order', () => {
     it('returns single-element array with preferred provider', () => {
       expect(getPreferredOrder('catbox')).toEqual(['catbox']);
       expect(getPreferredOrder('imgur')).toEqual(['imgur']);
-      expect(getPreferredOrder('postimages')).toEqual(['postimages']);
     });
   });
 
   describe('getRandomOrder', () => {
     it('returns shuffled copy (Fisher-Yates) with default rng', () => {
-      const providers = ['catbox', 'imgur', 'postimages'] as const;
+      const providers = ['catbox', 'imgur'] as const;
       const result = getRandomOrder(providers);
-      expect(result).toHaveLength(3);
-      expect([...result].sort()).toEqual(['catbox', 'imgur', 'postimages']);
+      expect(result).toHaveLength(2);
+      expect([...result].sort()).toEqual(['catbox', 'imgur']);
       expect(result).not.toBe(providers);
     });
 
     it('uses provided rng for deterministic shuffle', () => {
-      const providers = ['catbox', 'imgur', 'postimages'] as const;
+      const providers = ['catbox', 'imgur'] as const;
       const rng = vi.fn().mockReturnValue(0.5);
       const result = getRandomOrder(providers, rng);
       expect(rng).toHaveBeenCalled();
-      expect(result).toHaveLength(3);
+      expect(result).toHaveLength(2);
     });
 
     it('handles empty array', () => {
@@ -80,8 +79,8 @@ describe('provider-order', () => {
         preferredProvider: 'catbox',
         runtime: 'electron',
       });
-      expect(order).toHaveLength(3);
-      expect([...order].sort()).toEqual(['catbox', 'imgur', 'postimages']);
+      expect(order).toHaveLength(2);
+      expect([...order].sort()).toEqual(['catbox', 'imgur']);
     });
 
     it('filters by runtime for random mode', () => {

@@ -21,7 +21,7 @@ const mockSetUploadMode = vi.fn();
 const mockSetPreferredProvider = vi.fn();
 const uploadModeRef = vi.hoisted(() => ({ value: 'random' as 'random' | 'preferred' | 'none' }));
 const preferredProviderRef = vi.hoisted(() => ({
-  value: 'catbox' as 'catbox' | 'imgur' | 'postimages',
+  value: 'catbox' as 'catbox' | 'imgur',
 }));
 vi.mock('../../../../stores/use-media-hosting-store', async (importOriginal) => {
   const mod = await importOriginal<typeof import('../../../../stores/use-media-hosting-store')>();
