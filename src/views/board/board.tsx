@@ -206,20 +206,21 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, i
 
   // Redirect multiboard paths with page-number segments to normalized path (infinite-scroll only)
   useEffect(() => {
-    if (!isForcedInfiniteScroll) return;
+    if (!isVisible || !isForcedInfiniteScroll) return;
     const normalized = normalizeMultiboardFeedPath(location.pathname);
     if (normalized !== location.pathname) {
       navigate(normalized, { replace: true });
     }
-  }, [isForcedInfiniteScroll, location.pathname, navigate]);
+  }, [isVisible, isForcedInfiniteScroll, location.pathname, navigate]);
 
   useEffect(() => {
+    if (!isVisible) return;
     if (!effectiveInfiniteScroll && currentPage > totalPages && totalPages > 0) {
       const targetPage = totalPages;
       const targetPath = targetPage === 1 ? paginationBasePath : `${paginationBasePath}/${targetPage}`;
       navigate(targetPath, { replace: true });
     }
-  }, [effectiveInfiniteScroll, currentPage, totalPages, paginationBasePath, navigate]);
+  }, [isVisible, effectiveInfiniteScroll, currentPage, totalPages, paginationBasePath, navigate]);
 
   // Scroll to top instantly when page changes in pagination mode
   useEffect(() => {
