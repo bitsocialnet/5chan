@@ -27,8 +27,12 @@ export function getPreviewDisplayReplies<T extends CommentLike>(replies: T[], vi
     return Number.NEGATIVE_INFINITY;
   };
 
-  const newestFirst = [...replies].sort((a, b) => getRecency(b) - getRecency(a));
-  return newestFirst.slice(0, visibleCount).reverse();
+  const tagged = replies.map((reply, i) => ({ reply, recency: getRecency(reply), i }));
+  tagged.sort((a, b) => (a.recency !== b.recency ? b.recency - a.recency : a.i - b.i));
+  return tagged
+    .slice(0, visibleCount)
+    .reverse()
+    .map((t) => t.reply);
 }
 
 export interface ComputeOmittedParams {
