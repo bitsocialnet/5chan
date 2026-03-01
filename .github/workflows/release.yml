@@ -9,6 +9,9 @@ on:
     tags:
       - 'v*'
 
+env:
+  HUSKY: '0'
+
 jobs:
   linux:
     strategy:
@@ -29,7 +32,13 @@ jobs:
         with:
           node-version: 22
       - name: Install dependencies (with Node v22)
-        run: yarn install --frozen-lockfile --ignore-engines
+        run: |
+          for i in 1 2 3; do
+            echo "yarn install attempt $i"
+            yarn install --frozen-lockfile --ignore-engines --network-timeout 100000 --network-concurrency 1 && break
+            sleep 5
+            [ "$i" = "3" ] && exit 1
+          done
       # make sure the ipfs executable is executable
       - name: Download IPFS and set permissions (with Node v22)
         run: BUILD_ARCH=${{ matrix.arch }} node electron/download-ipfs && sudo chmod +x bin/linux/ipfs
@@ -102,9 +111,10 @@ jobs:
       - name: Install dependencies (with Node v22)
         run: |
           for i in 1 2 3; do
-            yarn install --frozen-lockfile --ignore-engines && break
-            echo "Retry $i..."
-            sleep 10
+            echo "yarn install attempt $i"
+            yarn install --frozen-lockfile --ignore-engines --network-timeout 100000 --network-concurrency 1 && break
+            sleep 5
+            [ "$i" = "3" ] && exit 1
           done
       # make sure the ipfs executable is executable
       - name: Download IPFS and set permissions (with Node v22)
@@ -157,7 +167,14 @@ jobs:
         with:
           node-version: 22
       - name: Install dependencies (with Node v22) # --network-timeout and --network-concurrency are yarn v1 flags.
-        run: yarn install --frozen-lockfile --network-timeout 100000 --network-concurrency 1
+        shell: bash
+        run: |
+          for i in 1 2 3; do
+            echo "yarn install attempt $i"
+            yarn install --frozen-lockfile --ignore-engines --network-timeout 100000 --network-concurrency 1 && break
+            sleep 5
+            [ "$i" = "3" ] && exit 1
+          done
       - name: Build React app (with Node v22)
         run: npx cross-env NODE_ENV=production yarn build
       - name: Build Electron app for Windows (x64)
@@ -199,7 +216,13 @@ jobs:
 
       # install all dependencies (including devDependencies needed for React build)
       - name: Install dependencies (with Node v22)
-        run: yarn install --frozen-lockfile --ignore-engines
+        run: |
+          for i in 1 2 3; do
+            echo "yarn install attempt $i"
+            yarn install --frozen-lockfile --ignore-engines --network-timeout 100000 --network-concurrency 1 && break
+            sleep 5
+            [ "$i" = "3" ] && exit 1
+          done
       # build react app
       - run: CI='' NODE_ENV=production yarn build
       # set android versionCode and versionName
@@ -243,7 +266,13 @@ jobs:
         with:
           node-version: 22
       - name: Install dependencies
-        run: yarn install --frozen-lockfile --ignore-engines
+        run: |
+          for i in 1 2 3; do
+            echo "yarn install attempt $i"
+            yarn install --frozen-lockfile --ignore-engines --network-timeout 100000 --network-concurrency 1 && break
+            sleep 5
+            [ "$i" = "3" ] && exit 1
+          done
       - name: Generate final release body from GitHub assets
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
