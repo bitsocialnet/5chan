@@ -54,10 +54,10 @@
     </script>
 
     <title>5chan — Decentralized Imageboard</title>
-    <!-- React Grab: Hold ⌘C and click any element to provide visual context to AI coding agents (dev only) -->
+    <!-- React Grab: toolbar-only activation; keyboard shortcut disabled to avoid copy/paste conflicts (dev only) -->
     <script type="module">
       if (import.meta.env.DEV) {
-        import("react-grab");
+        import("react-grab/core").then((m) => m.init({ activationShortcut: () => false }));
       }
     </script>
     <script>
