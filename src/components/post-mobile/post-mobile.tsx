@@ -732,7 +732,7 @@ const PostMobile = ({
               )}
             </div>
             {/* Virtuoso infinite scroll for post page view when there's more content to paginate */}
-            {!(pinned && !isInPostView) && showAllReplies && !isInPendingPostView && showReplies && hasMore && (
+            {showAllReplies && !isInPendingPostView && showReplies && hasMore && (
               <Virtuoso
                 increaseViewportBy={{ bottom: 1200, top: 1200 }}
                 totalCount={filteredReplies.length}
@@ -758,8 +758,7 @@ const PostMobile = ({
               />
             )}
             {/* Non-virtualized rendering for post page view when all replies fit on one page */}
-            {!(pinned && !isInPostView) &&
-              showAllReplies &&
+            {showAllReplies &&
               !isInPendingPostView &&
               showReplies &&
               !hasMore &&
@@ -776,8 +775,7 @@ const PostMobile = ({
                 </div>
               ))}
             {/* Non-virtualized rendering for board view (last 5 replies) */}
-            {!(pinned && !isInPostView) &&
-              !showAllReplies &&
+            {!showAllReplies &&
               !isInPendingPostView &&
               repliesForRender &&
               showReplies &&

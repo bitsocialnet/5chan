@@ -34,18 +34,14 @@ export function getPreviewDisplayReplies<T extends CommentLike>(replies: T[], vi
 export interface ComputeOmittedParams {
   totalReplyCount: number;
   visibleCount: number;
-  pinned?: boolean;
 }
 
 /**
- * Computes omitted reply count for board view. For pinned threads, collapsed view
- * shows 0 replies, so omitted = total. For non-pinned, omitted = total - visible.
+ * Computes omitted reply count for board view. All threads (pinned or not) show
+ * the last `visibleCount` replies when collapsed; omitted = total - visible.
  * Result is always clamped at zero.
  */
-export function computeOmittedCount({ totalReplyCount, visibleCount, pinned = false }: ComputeOmittedParams): number {
-  if (pinned) {
-    return Math.max(0, totalReplyCount);
-  }
+export function computeOmittedCount({ totalReplyCount, visibleCount }: ComputeOmittedParams): number {
   return Math.max(0, totalReplyCount - visibleCount);
 }
 

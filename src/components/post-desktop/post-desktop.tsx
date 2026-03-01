@@ -831,9 +831,8 @@ const PostDesktop = ({
   const repliesCount = computeOmittedCount({
     totalReplyCount,
     visibleCount: BOARD_REPLIES_PREVIEW_VISIBLE_COUNT,
-    pinned,
   });
-  const linksCount = pinned ? totalLinksCount : totalLinksCount - visiblelinksCount;
+  const linksCount = totalLinksCount - visiblelinksCount;
 
   const stateString = useStateString(post) || t('downloading_board');
   const hasFailedState = state === 'failed';
@@ -1056,7 +1055,6 @@ const PostDesktop = ({
         {/* Non-virtualized rendering for board view (preview replies when collapsed, full when expanded) */}
         {!isHidden &&
           !showAllReplies &&
-          !(pinned && !isInPostPageView && !showOmittedReplies[cid]) &&
           !isInPendingPostView &&
           repliesForRender &&
           showReplies &&
