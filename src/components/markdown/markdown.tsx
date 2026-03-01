@@ -233,10 +233,14 @@ const renderAnchorLink = (children: React.ReactNode, href: string, threadPostCid
         shouldReplaceText = children[0] === href || children[0].trim() === href.trim();
       }
 
-      // For display purposes, remove leading slash from paths like "/biz" or board identifiers
       let displayText: React.ReactNode = children;
-      if (shouldReplaceText && internalPath.match(/^\/[^/]+$/)) {
-        displayText = internalPath.substring(1); // Remove leading slash
+      const childrenText = typeof children === 'string' ? children : Array.isArray(children) ? children[0] : '';
+      const isAutolinkedUrl = shouldReplaceText && typeof childrenText === 'string' && childrenText.startsWith('http');
+
+      if (isAutolinkedUrl) {
+        // Keep the full URL as display text for autolinked URLs (e.g. https://5chan.app/pass → "https://5chan.app/pass")
+      } else if (shouldReplaceText && internalPath.match(/^\/[^/]+$/)) {
+        displayText = internalPath.substring(1);
       } else if (shouldReplaceText) {
         displayText = internalPath;
       }
