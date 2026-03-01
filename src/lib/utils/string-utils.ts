@@ -28,6 +28,8 @@ export function formatUserIDForDisplay(userID: string | undefined, maxDomainLeng
 export function truncateWithEllipsisInMiddle(str: string, maxLength: number = 50): string {
   if (!str || str.length <= maxLength) return str;
   const ellipsis = '...';
+  if (maxLength <= ellipsis.length) return str.slice(0, maxLength);
   const half = Math.floor((maxLength - ellipsis.length) / 2);
-  return str.slice(0, half) + ellipsis + str.slice(-half);
+  const right = half > 0 ? str.slice(-half) : '';
+  return str.slice(0, half) + ellipsis + right;
 }
