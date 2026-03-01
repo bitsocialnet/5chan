@@ -103,7 +103,7 @@ const downloads = [macSection, winSection, linuxSection, androidSection, htmlSec
 
 // One-liner summary of what changed in this release. Update before each release.
 const oneLinerDescription =
-  'This version syncs board directories from GitHub on start and build, adds the macOS app icon, improves reply rendering performance with progressive loading, enforces mod queue role access, adds board address and vote tooltips, and includes several bug fixes.';
+  'This version adds default board pagination with optional infinite scroll, multi-provider media uploads, a redesigned mod queue, catalog reply-count sorting, performance optimizations, and many bug fixes.';
 
 const releaseBody = `${oneLinerDescription}
 

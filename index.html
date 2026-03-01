@@ -6,10 +6,54 @@
     <link rel="icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
     <meta name="theme-color" content="#000000" />
-    <meta name="description" content="serverless, adminless, decentralized imageboard" />
+    <meta name="description" content="5chan is a free, open-source, decentralized imageboard built on the Bitsocial protocol. No servers, no admins — all content is shared peer-to-peer via IPFS." />
+    <meta name="author" content="bitsocialhq" />
+    <link rel="canonical" href="https://5chan.app/" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.json" />
-    <title>5chan</title>
+
+    <!-- OpenGraph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="5chan" />
+    <meta property="og:title" content="5chan — Decentralized Imageboard" />
+    <meta property="og:description" content="Free, open-source, serverless imageboard built on the Bitsocial protocol. No servers, no admins — peer-to-peer via IPFS." />
+    <meta property="og:url" content="https://5chan.app/" />
+    <meta property="og:image" content="https://5chan.app/manifest-icon-512x512.png" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="5chan — Decentralized Imageboard" />
+    <meta name="twitter:description" content="Free, open-source, serverless imageboard built on the Bitsocial protocol. Peer-to-peer via IPFS." />
+    <meta name="twitter:image" content="https://5chan.app/manifest-icon-512x512.png" />
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "5chan",
+      "url": "https://5chan.app",
+      "description": "Free, open-source, decentralized imageboard built on the Bitsocial protocol. No servers, no admins — all content is shared peer-to-peer via IPFS.",
+      "applicationCategory": "SocialNetworkingApplication",
+      "operatingSystem": "Any",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+      "author": {
+        "@type": "Organization",
+        "name": "bitsocialhq",
+        "url": "https://github.com/bitsocialhq"
+      },
+      "license": "https://www.gnu.org/licenses/old-licenses/gpl-2.0.html",
+      "sourceOrganization": {
+        "@type": "Organization",
+        "name": "bitsocialhq",
+        "url": "https://github.com/bitsocialhq"
+      },
+      "isAccessibleForFree": true,
+      "codeRepository": "https://github.com/bitsocialhq/5chan"
+    }
+    </script>
+
+    <title>5chan — Decentralized Imageboard</title>
     <!-- React Grab: Hold ⌘C and click any element to provide visual context to AI coding agents (dev only) -->
     <script type="module">
       if (import.meta.env.DEV) {
