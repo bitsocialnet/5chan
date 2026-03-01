@@ -35,9 +35,14 @@ interface ReplyModalProps {
 
 const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threadNumber, postCid, scrollY, subplebbitAddress }: ReplyModalProps) => {
   const { t } = useTranslation();
+  const location = useLocation();
+  const params = useParams();
+  const isInAllView = isAllView(location.pathname);
+  const isInSubscriptionsView = isSubscriptionsView(location.pathname, params);
   const directoryEntry = useDirectoryByAddress(subplebbitAddress);
   const showSpoilerForReply = directoryEntry?.features?.noSpoilerReplies !== true;
-  const requirePostLinkIsMedia = directoryEntry?.features?.requirePostLinkIsMedia === true;
+  const requirePostLinkIsMediaFeature = directoryEntry?.features?.requirePostLinkIsMedia;
+  const requirePostLinkIsMedia = requirePostLinkIsMediaFeature === true || (requirePostLinkIsMediaFeature === undefined && (isInAllView || isInSubscriptionsView));
   const { setPublishReplyOptions, publishReply, resetPublishReplyOptions, replyIndex } = usePublishReply({
     cid: parentCid,
     subplebbitAddress,
@@ -148,9 +153,6 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
     }
   }, [parentCid]);
 
-  const location = useLocation();
-  const isInAllView = isAllView(location.pathname);
-  const isInSubscriptionsView = isSubscriptionsView(location.pathname, useParams());
   const currentTime = useCurrentTime();
   // Only subscribe to updatedAt to avoid rerenders from updatingState changes
   const updatedAt = useSubplebbitField(subplebbitAddress, (subplebbit) => subplebbit?.updatedAt);
