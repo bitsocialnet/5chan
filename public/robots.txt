@@ -1,3 +1,6 @@
 # https://www.robotstxt.org/robotstxt.html
 User-agent: *
 Disallow:
+
+# 5chan — open-source decentralized imageboard
+# Source: https://github.com/bitsocialhq/5chan

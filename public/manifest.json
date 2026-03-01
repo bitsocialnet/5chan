@@ -1,6 +1,7 @@
 {
   "short_name": "5chan",
-  "name": "5chan",
+  "name": "5chan — Decentralized Imageboard",
+  "description": "Free, open-source, decentralized imageboard built on the Bitsocial protocol. No servers, no admins — peer-to-peer via IPFS.",
   "icons": [
     {
       "src": "manifest-icon-192x192.png",
@@ -14,5 +15,6 @@
     }
   ],
   "start_url": ".",
-  "display": "standalone"
+  "display": "standalone",
+  "categories": ["social", "news"]
 }
