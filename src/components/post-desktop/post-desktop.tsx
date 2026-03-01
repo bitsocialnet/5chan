@@ -10,7 +10,7 @@ import { hashStringToColor, getTextColorForBackground } from '../../lib/utils/po
 import { getFormattedDate, getFormattedTimeAgo } from '../../lib/utils/time-utils';
 import { isValidURL } from '../../lib/utils/url-utils';
 import { isAllView, isModQueueView, isModView, isPendingPostView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
-import { formatUserIDForDisplay } from '../../lib/utils/string-utils';
+import { formatUserIDForDisplay, truncateWithEllipsisInMiddle } from '../../lib/utils/string-utils';
 import useModQueueStore from '../../stores/use-mod-queue-store';
 import { useDirectories } from '../../hooks/use-directories';
 import { getBoardPath } from '../../lib/utils/route-utils';
@@ -581,10 +581,10 @@ const PostMedia = ({
             if (requirePostLinkIsMedia && url) {
               try {
                 const filename = new URL(url).pathname.split('/').pop();
-                if (filename && /\.\w+$/.test(filename)) return filename;
+                if (filename && /\.\w+$/.test(filename)) return truncateWithEllipsisInMiddle(filename);
               } catch {}
             }
-            return url && url.length > 30 ? url.slice(0, 30) + '...' : url;
+            return truncateWithEllipsisInMiddle(url ?? '');
           })()}
         </a>{' '}
         ({type && lowerCase(getDisplayMediaInfoType(type, t))}
