@@ -149,3 +149,19 @@ export const ThreadFooterFirstRow = ({ postCid, threadNumber, subplebbitAddress,
     </div>
   );
 };
+
+/* -----------------------------------------------------------------------------
+ * PageFooterMobile
+ * Mobile-only page footer with content slot and footer links.
+ * -------------------------------------------------------------------------- */
+
+export const PageFooterMobile = ({ children }: { children: React.ReactNode }) => (
+  <footer className={styles.mobileFooter}>
+    <hr />
+    {children}
+    <hr />
+    <div className={styles.mobileFooterLinks}>
+      <SiteLegalMeta order='license-first' />
+    </div>
+  </footer>
+);
