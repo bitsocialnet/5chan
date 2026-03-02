@@ -398,7 +398,10 @@ const BoardsBarMobile = ({ subplebbitAddress }: { subplebbitAddress?: string }) 
 
     window.addEventListener('scroll', debouncedHandleScroll, { passive: true });
 
-    return () => window.removeEventListener('scroll', debouncedHandleScroll);
+    return () => {
+      window.removeEventListener('scroll', debouncedHandleScroll);
+      debouncedHandleScroll.cancel();
+    };
   }, []);
 
   return (
