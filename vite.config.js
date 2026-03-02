@@ -39,7 +39,7 @@ export default defineConfig({
         enabled: true,
         type: 'module',
       },
-      includeAssets: ['favicon.ico', 'robots.txt', 'apple-touch-icon.png'],
+      includeAssets: ['favicon.ico', 'favicon2.ico', 'robots.txt', 'apple-touch-icon.png'],
       manifest: {
         name: '5chan',
         short_name: '5chan',
