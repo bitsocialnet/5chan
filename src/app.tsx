@@ -30,10 +30,10 @@ import BoardHeader from './components/board-header';
 import FeedCacheContainer from './components/feed-cache-container';
 import PostForm from './components/post-form';
 import BoardBlotter from './components/board-blotter';
-import BoardsBar from './components/boardsbar';
+import BoardsBar from './components/boards-bar';
 
 const AccountDataEditor = lazy(() => import('./views/account-data-editor'));
-const BoardsBarEditModal = lazy(() => import('./components/boardsbar-edit-modal'));
+const BoardsBarEditModal = lazy(() => import('./components/boards-bar-edit-modal'));
 const CreateBoardModal = lazy(() => import('./components/create-board-modal'));
 const ChallengeModal = lazy(() => import('./components/challenge-modal'));
 const DirectoryModal = lazy(() => import('./components/directory-modal'));

@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { useLocation, useParams } from 'react-router-dom';
-import BoardsBar from '../boardsbar';
+import BoardsBar from '../boards-bar';
 import SiteLegalMeta from '../site-legal-meta';
 import StyleSelector from '../style-selector/style-selector';
 import { ReturnButton, CatalogButton, TopButton, UpdateButton, AutoButton, PostPageStats, RefreshButton } from '../board-buttons/board-buttons';

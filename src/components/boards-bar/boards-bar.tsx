@@ -9,11 +9,11 @@ import { useDirectories, DirectoryCommunity } from '../../hooks/use-directories'
 import { useBoardPath, useResolvedSubplebbitAddress } from '../../hooks/use-resolved-subplebbit-address';
 import { getBoardPath, extractDirectoryFromTitle } from '../../lib/utils/route-utils';
 import useCreateBoardModalStore from '../../stores/use-create-board-modal-store';
-import useBoardsBarEditModalStore from '../../stores/use-boardsbar-edit-modal-store';
-import useBoardsBarVisibilityStore from '../../stores/use-boardsbar-visibility-store';
+import useBoardsBarEditModalStore from '../../stores/use-boards-bar-edit-modal-store';
+import useBoardsBarVisibilityStore from '../../stores/use-boards-bar-visibility-store';
 import useDirectoryModalStore from '../../stores/use-directory-modal-store';
 import { BOARD_CODE_GROUPS, getAllBoardCodes } from '../../constants/board-codes';
-import styles from './boardsbar.module.css';
+import styles from './boards-bar.module.css';
 import capitalize from 'lodash/capitalize';
 import debounce from 'lodash/debounce';
 import lowerCase from 'lodash/lowerCase';
