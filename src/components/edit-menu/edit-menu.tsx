@@ -190,14 +190,9 @@ const EditMenu = ({ post }: { post: Comment }) => {
   const onPurgeCheckbox = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { checked } = e.target;
 
-    // Double confirmation for purge action
     if (checked) {
-      const firstConfirm = window.confirm(t('purge_confirm'));
-      if (!firstConfirm) {
-        return;
-      }
-      const secondConfirm = window.confirm(t('double_confirm'));
-      if (!secondConfirm) {
+      const confirmed = window.confirm(t('purge_confirm'));
+      if (!confirmed) {
         return;
       }
     }
