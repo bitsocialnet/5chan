@@ -98,7 +98,8 @@
     "blotter:check": "node scripts/update-blotter.js check",
     "blotter:release": "node scripts/update-blotter.js release",
     "blotter:manual": "node scripts/update-blotter.js manual",
-    "android:connectedTest": "cd android && ./gradlew :app:connectedDebugAndroidTest -Pandroid.experimental.androidTest.useUnifiedTestPlatform=false"
+    "android:connectedTest": "cd android && ./gradlew :app:connectedDebugAndroidTest -Pandroid.experimental.androidTest.useUnifiedTestPlatform=false",
+    "release": "node scripts/release.js"
   },
   "browserslist": {
     "production": [
