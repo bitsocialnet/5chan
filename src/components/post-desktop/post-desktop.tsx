@@ -216,7 +216,7 @@ const PostInfo = ({
   const userIDTextColor = getTextColorForBackground(userIDBackgroundColor);
 
   const pseudonymityMode = useSubplebbitField(subplebbitAddress, (sub) => sub?.features?.pseudonymityMode);
-  const showUserID = pseudonymityMode !== 'per-reply';
+  const showUserID = pseudonymityMode === 'per-post';
 
   const handleUserAddressClick = useAuthorAddressClick();
   const numberOfPostsByAuthor = (() => {
