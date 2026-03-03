@@ -27,25 +27,25 @@ export function getPreviewDisplayReplies<T extends CommentLike>(replies: T[], vi
     return Number.NEGATIVE_INFINITY;
   };
 
-  const newestFirst = [...replies].sort((a, b) => getRecency(b) - getRecency(a));
-  return newestFirst.slice(0, visibleCount).reverse();
+  const tagged = replies.map((reply, i) => ({ reply, recency: getRecency(reply), i }));
+  tagged.sort((a, b) => (a.recency !== b.recency ? b.recency - a.recency : a.i - b.i));
+  return tagged
+    .slice(0, visibleCount)
+    .reverse()
+    .map((t) => t.reply);
 }
 
 export interface ComputeOmittedParams {
   totalReplyCount: number;
   visibleCount: number;
-  pinned?: boolean;
 }
 
 /**
- * Computes omitted reply count for board view. For pinned threads, collapsed view
- * shows 0 replies, so omitted = total. For non-pinned, omitted = total - visible.
+ * Computes omitted reply count for board view. All threads (pinned or not) show
+ * the last `visibleCount` replies when collapsed; omitted = total - visible.
  * Result is always clamped at zero.
  */
-export function computeOmittedCount({ totalReplyCount, visibleCount, pinned = false }: ComputeOmittedParams): number {
-  if (pinned) {
-    return Math.max(0, totalReplyCount);
-  }
+export function computeOmittedCount({ totalReplyCount, visibleCount }: ComputeOmittedParams): number {
   return Math.max(0, totalReplyCount - visibleCount);
 }
 

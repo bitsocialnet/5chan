@@ -16,6 +16,10 @@
   text-decoration: var(--boardsbar-desktop-link-text-decoration);
 }
 
+.boardList a, .boardList .placeholder, .boardList .temporaryButton {
+  padding: 0 1px;
+}
+
 .boardNavDesktop a:hover, .navTopRight span:hover {
   color: var(--boardsbar-desktop-link-text-color-hover);
   text-decoration: var(--boardsbar-desktop-link-text-decoration-hover);

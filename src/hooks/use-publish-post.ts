@@ -1,10 +1,8 @@
 import { useCallback } from 'react';
-import { Comment, useAccount, usePublishComment } from '@bitsocialhq/pkc-react-hooks';
+import { Comment, usePublishComment } from '@bitsocialhq/pkc-react-hooks';
 import usePublishPostStore from '../stores/use-publish-post-store';
 
 const usePublishPost = ({ subplebbitAddress }: { subplebbitAddress?: string }) => {
-  const account = useAccount();
-
   const { author, title, content, link, spoiler, publishCommentOptions } = usePublishPostStore((state) => ({
     author: state.author,
     title: state.title || undefined,
@@ -26,13 +24,13 @@ const usePublishPost = ({ subplebbitAddress }: { subplebbitAddress?: string }) =
       spoiler,
     };
 
-    baseOptions.author = {
-      ...account?.author,
-      displayName: author?.displayName || account?.author?.displayName,
-    };
+    const displayName = author?.displayName;
+    if (displayName) {
+      baseOptions.author = { displayName };
+    }
 
     return baseOptions;
-  }, [author, content, link, spoiler, subplebbitAddress, title, account]);
+  }, [author, content, link, spoiler, subplebbitAddress, title]);
 
   const setPublishPostOptions = useCallback(
     (options: Partial<Comment>) => {

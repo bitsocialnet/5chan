@@ -1,10 +1,10 @@
 import { useState, useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAccount } from '@bitsocialhq/pkc-react-hooks';
-import useBoardsBarEditModalStore from '../../stores/use-boardsbar-edit-modal-store';
-import useBoardsBarVisibilityStore from '../../stores/use-boardsbar-visibility-store';
+import useBoardsBarEditModalStore from '../../stores/use-boards-bar-edit-modal-store';
+import useBoardsBarVisibilityStore from '../../stores/use-boards-bar-visibility-store';
 import { getAllBoardCodes } from '../../constants/board-codes';
-import styles from './boardsbar-edit-modal.module.css';
+import styles from './boards-bar-edit-modal.module.css';
 
 const directoriesToString = (dirs: Set<string>): string => Array.from(dirs).sort().join(' ');
 

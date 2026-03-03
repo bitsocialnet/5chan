@@ -57,6 +57,20 @@ export const CatalogButton = ({ address, isInAllView, isInSubscriptionsView, isI
   );
 };
 
+const ArchiveButton = ({ address, isInAllView, isInSubscriptionsView, isInModView }: BoardButtonsProps) => {
+  const { t } = useTranslation();
+
+  const handleClick = () => {
+    window.alert('Work in progress');
+  };
+
+  return (
+    <button className='button' onClick={handleClick}>
+      {t('archive')}
+    </button>
+  );
+};
+
 const SubscribeButton = ({ address }: BoardButtonsProps) => {
   const { t } = useTranslation();
   const { subscribed, subscribe, unsubscribe } = useSubscribe({ subplebbitAddress: address });
@@ -370,7 +384,7 @@ export const MobileBoardButtons = () => {
   const enableInfiniteScroll = useFeedViewSettingsStore((state) => state.enableInfiniteScroll);
   const isMultiboard = isInAllView || isInSubscriptionsView || isInModView;
   const effectiveInfiniteScroll = isMultiboard || enableInfiniteScroll;
-  const showBottomButton = (isInCatalogView || isInPostView || isInPendingPostPage) && !effectiveInfiniteScroll;
+  const showBottomButton = !effectiveInfiniteScroll;
 
   // Check if we should show the vote button (only for directory boards)
   const directories = useDirectories();
@@ -402,25 +416,18 @@ export const MobileBoardButtons = () => {
           <ModQueueAlertThreshold />
           <ModQueueViewSelector />
         </>
-      ) : (
+      ) : isInCatalogView ? (
         <>
-          {isInCatalogView ? (
-            <ReturnButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
-          ) : (
-            <CatalogButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
-          )}
-          {showVoteButton && <VoteButton />}
-          {!(isInAllView || isInSubscriptionsView || isInModView) && <SubscribeButton address={subplebbitAddress} />}
-          {!(isInAllView || isInSubscriptionsView) && <ModQueueButton boardIdentifier={boardIdentifier} isMobile={true} />}
+          <ReturnButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
+          <ArchiveButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
           {showBottomButton && <BottomButton />}
           <RefreshButton />
-          {isInCatalogView && searchText ? (
+          {searchText ? (
             <span className={styles.filteredThreadsCount}>
               {' '}
               — {t('search_results_for')}: <strong>{searchText}</strong>
             </span>
           ) : (
-            isInCatalogView &&
             filteredCount > 0 && (
               <span className={styles.filteredThreadsCount}>
                 {' '}
@@ -449,6 +456,17 @@ export const MobileBoardButtons = () => {
               </div>
             </>
           )}
+        </>
+      ) : (
+        <>
+          {showBottomButton && <BottomButton />}
+          <CatalogButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
+          <RefreshButton />
+          <div className={styles.secondRow}>
+            {showVoteButton && <VoteButton />}
+            {!(isInAllView || isInSubscriptionsView || isInModView) && <SubscribeButton address={subplebbitAddress} />}
+            {!(isInAllView || isInSubscriptionsView) && <ModQueueButton boardIdentifier={boardIdentifier} isMobile={true} />}
+          </div>
         </>
       )}
     </div>
@@ -564,18 +582,14 @@ export const DesktopBoardButtons = () => {
           <>
             {isInCatalogView ? (
               <>
-                [<ReturnButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />]{' '}
+                [<ReturnButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />] [
+                <ArchiveButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />]{' '}
               </>
             ) : (
               <>
                 <SearchOPsBar />
-                [<CatalogButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />]{' '}
-              </>
-            )}
-            {showVoteButton && (
-              <>
-                {' '}
-                [<VoteButton />]
+                [<CatalogButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />] [
+                <ArchiveButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />]{' '}
               </>
             )}
             {showBottomButton && (
@@ -614,6 +628,12 @@ export const DesktopBoardButtons = () => {
                 </>
               )}
               {isInAllView && <AllFeedFilter />}
+              {showVoteButton && (
+                <>
+                  [<VoteButton />]
+                </>
+              )}
+              {showVoteButton && !(isInAllView || isInSubscriptionsView || isInModView) && ' '}
               {!(isInAllView || isInSubscriptionsView || isInModView) && (
                 <>
                   [<SubscribeButton address={subplebbitAddress} />]

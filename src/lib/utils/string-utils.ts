@@ -20,3 +20,16 @@ export function formatUserIDForDisplay(userID: string | undefined, maxDomainLeng
   // Otherwise, shorten to 8 characters
   return userID.slice(0, 8);
 }
+
+/**
+ * Truncate a string with "..." in the middle when it exceeds maxLength.
+ * Preserves the start and end of the string for readability (e.g. URLs, filenames).
+ */
+export function truncateWithEllipsisInMiddle(str: string, maxLength: number = 50): string {
+  if (!str || str.length <= maxLength) return str;
+  const ellipsis = '...';
+  if (maxLength <= ellipsis.length) return str.slice(0, maxLength);
+  const half = Math.floor((maxLength - ellipsis.length) / 2);
+  const right = half > 0 ? str.slice(-half) : '';
+  return str.slice(0, half) + ellipsis + right;
+}

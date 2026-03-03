@@ -9,7 +9,7 @@ const LOCALSTORAGE_KEY_SUBSCRIPTIONS_OLD = '5chan-topbar-subscriptions-visible';
 interface BoardsBarVisibilityState {
   // Directory codes that are visible (all visible by default)
   visibleDirectories: Set<string>;
-  // If true, show all account subscriptions in boardsbar (default: false)
+  // If true, show all account subscriptions in boards bar (default: false)
   showSubscriptionsInBoardsBar: boolean;
   // Actions
   toggleDirectory: (code: string) => void;

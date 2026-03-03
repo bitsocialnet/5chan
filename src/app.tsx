@@ -3,7 +3,7 @@ import { Navigate, Outlet, Route, Routes, useLocation, useParams } from 'react-r
 import { useAccount, useAccountComment, useSubplebbit } from '@bitsocialhq/pkc-react-hooks';
 import useAccountsStore from '@bitsocialhq/pkc-react-hooks/dist/stores/accounts';
 import { initSnow, removeSnow } from './lib/snow';
-import { isAllView, isModView, isSubscriptionsView } from './lib/utils/view-utils';
+import { isAllView, isCatalogView, isModView, isSubscriptionsView } from './lib/utils/view-utils';
 import { preloadThemeAssets } from './lib/utils/preload-utils';
 import useReplyModalStore from './stores/use-reply-modal-store';
 import useCreateBoardModalStore from './stores/use-create-board-modal-store';
@@ -30,10 +30,10 @@ import BoardHeader from './components/board-header';
 import FeedCacheContainer from './components/feed-cache-container';
 import PostForm from './components/post-form';
 import BoardBlotter from './components/board-blotter';
-import BoardsBar from './components/boardsbar';
+import BoardsBar from './components/boards-bar';
 
 const AccountDataEditor = lazy(() => import('./views/account-data-editor'));
-const BoardsBarEditModal = lazy(() => import('./components/boardsbar-edit-modal'));
+const BoardsBarEditModal = lazy(() => import('./components/boards-bar-edit-modal'));
 const CreateBoardModal = lazy(() => import('./components/create-board-modal'));
 const ChallengeModal = lazy(() => import('./components/challenge-modal'));
 const DirectoryModal = lazy(() => import('./components/directory-modal'));
@@ -48,7 +48,8 @@ preloadThemeAssets();
 const hasModQueueAccessRole = (role?: string): boolean => role === 'admin' || role === 'owner' || role === 'moderator';
 
 const BoardLayout = () => {
-  const { accountCommentIndex, boardIdentifier, pageNumber } = useParams();
+  const params = useParams();
+  const { accountCommentIndex, boardIdentifier, pageNumber } = params;
   const location = useLocation();
   const isMobile = useIsMobile();
   const isInAllView = isAllView(location.pathname);
@@ -62,6 +63,7 @@ const BoardLayout = () => {
   const isOnPendingPostRoute = isPendingPostRoute(location.pathname);
   const isOnModQueueRoute = isModQueueRoute(location.pathname);
   const shouldRenderOutlet = isOnPostRoute || isOnPendingPostRoute || isOnModQueueRoute;
+  const isInCatalogView = isCatalogView(location.pathname, params);
 
   // Christmas theme
   const { isEnabled: isSpecialEnabled } = useSpecialThemeStore();
@@ -105,12 +107,18 @@ const BoardLayout = () => {
       </Suspense>
       <BoardHeader />
       {isMobile
-        ? (subplebbitAddress || isInAllView || isInModView || isInSubscriptionsView || pendingPost?.subplebbitAddress || isOnModQueueRoute) && (
+        ? (subplebbitAddress || isInAllView || isInModView || isInSubscriptionsView || pendingPost?.subplebbitAddress || isOnModQueueRoute) &&
+          (isInCatalogView ? (
             <>
               <PostForm key={key} />
               <MobileBoardButtons />
             </>
-          )
+          ) : (
+            <>
+              <MobileBoardButtons />
+              <PostForm key={key} />
+            </>
+          ))
         : (subplebbitAddress || isInAllView || isInModView || isInSubscriptionsView || pendingPost?.subplebbitAddress || isOnModQueueRoute) && (
             <>
               <PostForm key={key} />

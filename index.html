@@ -32,7 +32,7 @@
       "@context": "https://schema.org",
       "@type": "WebApplication",
       "name": "5chan",
-      "url": "https://5chan.app",
+      "url": "https://5chan.app/",
       "description": "Free, open-source, decentralized imageboard built on the Bitsocial protocol. No servers, no admins — all content is shared peer-to-peer via IPFS.",
       "applicationCategory": "SocialNetworkingApplication",
       "operatingSystem": "Any",
@@ -54,10 +54,10 @@
     </script>
 
     <title>5chan — Decentralized Imageboard</title>
-    <!-- React Grab: Hold ⌘C and click any element to provide visual context to AI coding agents (dev only) -->
+    <!-- React Grab: toolbar-only activation; keyboard shortcut disabled to avoid copy/paste conflicts (dev only) -->
     <script type="module">
       if (import.meta.env.DEV) {
-        import("react-grab");
+        import("react-grab/core").then((m) => m.init({ activationShortcut: () => false }));
       }
     </script>
     <script>

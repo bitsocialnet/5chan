@@ -5,18 +5,19 @@ import getShortAddress from '../../lib/get-short-address';
 import { useAccountComment } from '@bitsocialhq/pkc-react-hooks';
 import useAccountsStore from '@bitsocialhq/pkc-react-hooks/dist/stores/accounts';
 import { isAllView, isCatalogView, isModView, isSubscriptionsView } from '../../lib/utils/view-utils';
-import { useDirectories, DirectoryCommunity } from '../../hooks/use-directories';
+import { useDirectories, useDirectoriesMetadata, DirectoryCommunity } from '../../hooks/use-directories';
 import { useBoardPath, useResolvedSubplebbitAddress } from '../../hooks/use-resolved-subplebbit-address';
 import { getBoardPath, extractDirectoryFromTitle } from '../../lib/utils/route-utils';
 import useCreateBoardModalStore from '../../stores/use-create-board-modal-store';
-import useBoardsBarEditModalStore from '../../stores/use-boardsbar-edit-modal-store';
-import useBoardsBarVisibilityStore from '../../stores/use-boardsbar-visibility-store';
+import useBoardsBarEditModalStore from '../../stores/use-boards-bar-edit-modal-store';
+import useBoardsBarVisibilityStore from '../../stores/use-boards-bar-visibility-store';
 import useDirectoryModalStore from '../../stores/use-directory-modal-store';
 import { BOARD_CODE_GROUPS, getAllBoardCodes } from '../../constants/board-codes';
-import styles from './boardsbar.module.css';
+import styles from './boards-bar.module.css';
 import capitalize from 'lodash/capitalize';
 import debounce from 'lodash/debounce';
 import lowerCase from 'lodash/lowerCase';
+import startCase from 'lodash/startCase';
 
 const SearchBar = ({ setShowSearchBar }: { setShowSearchBar: (show: boolean) => void }) => {
   const { t } = useTranslation();
@@ -313,6 +314,7 @@ const BoardsBarMobile = ({ subplebbitAddress }: { subplebbitAddress?: string }) 
   const { t } = useTranslation();
   const navigate = useNavigate();
   const directories = useDirectories();
+  const directoriesMetadata = useDirectoriesMetadata();
   const displaySubplebbitAddress = subplebbitAddress && subplebbitAddress.length > 30 ? subplebbitAddress.slice(0, 30).concat('...') : subplebbitAddress;
   const [showSearchBar, setShowSearchBar] = useState(false);
 
@@ -344,32 +346,40 @@ const BoardsBarMobile = ({ subplebbitAddress }: { subplebbitAddress?: string }) 
   // Check if current subplebbit is a directory board
   const currentIsDirectoryBoard = directoryBoards.some((board) => board.address === subplebbitAddress);
 
+  // Build multiboards with full titles, then combine with directory boards and sort alphabetically
+  const sortedBoardOptions = useMemo(() => {
+    const allTitle = directoriesMetadata?.title || '/all/ - All 5chan Directories';
+    const subsTitle = '/subs/ - Subscriptions';
+    const modTitle = `/mod/ - ${startCase(t('boards_you_moderate'))}`;
+
+    const multiboards: Array<{ value: string; label: string }> = [
+      { value: 'all', label: allTitle },
+      { value: 'subs', label: subsTitle },
+      ...(accountSubplebbitAddresses.length > 0 ? [{ value: 'mod', label: modTitle }] : []),
+    ];
+
+    const directoryOptions = directoryBoards.map((board) => {
+      const directoryCode = extractDirectoryFromTitle(board.title!);
+      return { value: directoryCode!, label: board.title! };
+    });
+
+    return [...multiboards, ...directoryOptions].sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: 'base' }));
+  }, [directoriesMetadata?.title, t, accountSubplebbitAddresses.length, directoryBoards]);
+
   const boardSelect = (
     <select
       value={selectValue}
       onChange={(e) => {
         const value = e.target.value;
-        // If it's a special route, use it directly
-        if (value === 'all' || value === 'subs' || value === 'mod') {
-          navigate(`/${value}${isInCatalogView ? '/catalog' : ''}`);
-        } else {
-          // Otherwise, it's a directory code, use it directly
-          navigate(`/${value}${isInCatalogView ? '/catalog' : ''}`);
-        }
+        navigate(`/${value}${isInCatalogView ? '/catalog' : ''}`);
       }}
     >
       {!currentIsDirectoryBoard && subplebbitAddress && <option value={subplebbitAddress}>{displaySubplebbitAddress}</option>}
-      <option value='all'>all</option>
-      <option value='subs'>subs</option>
-      {accountSubplebbitAddresses.length > 0 && <option value='mod'>mod</option>}
-      {directoryBoards.map((board, index) => {
-        const directoryCode = extractDirectoryFromTitle(board.title!);
-        return (
-          <option key={board.address} value={directoryCode!}>
-            {board.title}
-          </option>
-        );
-      })}
+      {sortedBoardOptions.map((opt) => (
+        <option key={opt.value} value={opt.value}>
+          {opt.label}
+        </option>
+      ))}
     </select>
   );
 
@@ -388,7 +398,10 @@ const BoardsBarMobile = ({ subplebbitAddress }: { subplebbitAddress?: string }) 
 
     window.addEventListener('scroll', debouncedHandleScroll, { passive: true });
 
-    return () => window.removeEventListener('scroll', debouncedHandleScroll);
+    return () => {
+      window.removeEventListener('scroll', debouncedHandleScroll);
+      debouncedHandleScroll.cancel();
+    };
   }, []);
 
   return (

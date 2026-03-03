@@ -1,12 +1,11 @@
 import { useCallback, useMemo } from 'react';
-import { Comment, useAccount, usePublishComment } from '@bitsocialhq/pkc-react-hooks';
+import { Comment, usePublishComment } from '@bitsocialhq/pkc-react-hooks';
 import usePublishReplyStore from '../stores/use-publish-reply-store';
 import usePostNumberStore from '../stores/use-post-number-store';
 import { getQuotedCidsFromContent, mergeQuotedCids } from '../lib/utils/reply-quote-utils';
 
 const usePublishReply = ({ cid, subplebbitAddress, postCid }: { cid: string; subplebbitAddress: string; postCid?: string }) => {
   const parentCid = cid;
-  const account = useAccount();
 
   const { author, content, link, spoiler, publishCommentOptions } = usePublishReplyStore((state) => ({
     author: state.author[parentCid],
@@ -29,13 +28,13 @@ const usePublishReply = ({ cid, subplebbitAddress, postCid }: { cid: string; sub
       spoiler,
     };
 
-    baseOptions.author = {
-      ...account?.author,
-      displayName: author?.displayName || account?.author?.displayName,
-    };
+    const displayName = author?.displayName;
+    if (displayName) {
+      baseOptions.author = { displayName };
+    }
 
     return baseOptions;
-  }, [author, content, link, parentCid, postCid, spoiler, subplebbitAddress, account]);
+  }, [author, content, link, parentCid, postCid, spoiler, subplebbitAddress]);
 
   const setPublishReplyOptions = useCallback(
     (options: Partial<Comment>) => {

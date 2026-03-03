@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
-import { useLocation, useNavigate, useNavigationType, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useNavigationType, useParams } from 'react-router-dom';
 import { Comment, useAccount, useAccountComments, useAccountSubplebbits, useFeed, useSubplebbit } from '@bitsocialhq/pkc-react-hooks';
 import { useSubplebbitField } from '../../hooks/use-stable-subplebbit';
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
 import { useTranslation } from 'react-i18next';
 import styles from './board.module.css';
+import mobileFooterStyles from '../../components/footer/footer.module.css';
 import { shouldShowSnow } from '../../lib/snow';
 import { useDirectoryAddresses, useDirectories, useDirectoryByAddress } from '../../hooks/use-directories';
 import { useFilteredDirectoryAddresses } from '../../hooks/use-filtered-directory-addresses';
@@ -18,7 +19,7 @@ import { getPageFromFeedPath, getSubplebbitAddress, isDirectoryBoard, normalizeM
 import ErrorDisplay from '../../components/error-display/error-display';
 import LoadingEllipsis from '../../components/loading-ellipsis';
 import BoardPagination from '../../components/board-pagination';
-import { PageFooterDesktop } from '../../components/footer';
+import { PageFooterDesktop, PageFooterMobile } from '../../components/footer';
 import { Post } from '../post';
 
 const lastVirtuosoStates: { [key: string]: StateSnapshot } = {};
@@ -131,6 +132,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, i
   }, [isInAllView, isInSubscriptionsView, isInModView, subplebbitAddress, directoryAddresses, filteredDirectoryAddresses, subscriptions, accountSubplebbitAddresses]);
 
   const enableInfiniteScroll = useFeedViewSettingsStore((state) => state.enableInfiniteScroll);
+  const setEnableInfiniteScroll = useFeedViewSettingsStore((state) => state.setEnableInfiniteScroll);
   const isForcedInfiniteScroll = isInAllView || isInSubscriptionsView || isInModView;
   const effectiveInfiniteScroll = enableInfiniteScroll || isForcedInfiniteScroll;
   const community = useDirectoryByAddress(isInAllView || isInSubscriptionsView || isInModView ? undefined : subplebbitAddress);
@@ -267,6 +269,56 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, i
               <BoardPagination basePath={paginationBasePath} currentPage={currentPage} totalPages={totalPages} footerStyle isMultiboard={isForcedInfiniteScroll} />
             }
           />
+          <PageFooterMobile>
+            <div>
+              {!isForcedInfiniteScroll && (
+                <div className={mobileFooterStyles.mobileFooterButtons}>
+                  <button className='button' onClick={() => window.scrollTo({ top: 0, left: 0, behavior: 'instant' })}>
+                    {t('start_new_thread')}
+                  </button>
+                </div>
+              )}
+              <div className={mobileFooterStyles.mobileFooterButtons}>
+                <button className='button' onClick={() => window.scrollTo({ top: 0, left: 0, behavior: 'instant' })}>
+                  {t('top')}
+                </button>
+                <button className='button' onClick={() => reset && reset()}>
+                  {t('refresh')}
+                </button>
+              </div>
+              <hr />
+              {!isForcedInfiniteScroll && !effectiveInfiniteScroll && (
+                <>
+                  <div className={mobileFooterStyles.mobileFooterPagination}>
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                      <span key={page}>
+                        [
+                        <Link
+                          to={page === 1 ? paginationBasePath : `${paginationBasePath}/${page}`}
+                          className={page === currentPage ? mobileFooterStyles.mobileFooterPaginationCurrent : undefined}
+                        >
+                          {page}
+                        </Link>
+                        ]
+                      </span>
+                    ))}
+                  </div>
+                  <div className={mobileFooterStyles.mobileFooterButtons}>
+                    <Link to={`${paginationBasePath}/catalog`} className='button'>
+                      {t('catalog')}
+                    </Link>
+                  </div>
+                </>
+              )}
+              {hasMore && !effectiveInfiniteScroll && (
+                <div className={mobileFooterStyles.mobileFooterButtons}>
+                  <button className='button' onClick={() => setEnableInfiniteScroll(true)}>
+                    {t('load_more')}
+                  </button>
+                </div>
+              )}
+            </div>
+          </PageFooterMobile>
         </>
       ),
     }),
@@ -285,6 +337,9 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, i
       paginationBasePath,
       currentPage,
       totalPages,
+      setEnableInfiniteScroll,
+      reset,
+      t,
     ],
   );
 

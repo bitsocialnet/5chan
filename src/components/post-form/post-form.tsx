@@ -324,7 +324,8 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
   const directoryEntry = useDirectoryByAddress(effectiveBoardAddress);
   const showSpoilerForPost = directoryEntry?.features?.noSpoilers !== true;
   const showSpoilerForReply = directoryEntry?.features?.noSpoilerReplies !== true;
-  const requirePostLinkIsMedia = directoryEntry?.features?.requirePostLinkIsMedia === true;
+  const requirePostLinkIsMediaFeature = directoryEntry?.features?.requirePostLinkIsMedia;
+  const requirePostLinkIsMedia = requirePostLinkIsMediaFeature === true || (requirePostLinkIsMediaFeature === undefined && (isInAllView || isInSubscriptionsView));
 
   const { accountSubplebbits } = useAccountSubplebbits();
   const accountSubplebbitAddresses = Object.keys(accountSubplebbits);

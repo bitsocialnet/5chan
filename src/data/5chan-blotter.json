@@ -1,6 +1,13 @@
 {
   "entries": [
     {
+      "id": "release-0.6.7",
+      "kind": "release",
+      "timestamp": 1772280000,
+      "message": "v0.6.7: Board pagination, multi-provider uploads, mod queue redesign, catalog sorting",
+      "version": "0.6.7"
+    },
+    {
       "id": "release-0.6.6",
       "kind": "release",
       "timestamp": 1771243200,

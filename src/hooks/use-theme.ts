@@ -7,6 +7,7 @@ import { useResolvedSubplebbitAddress } from './use-resolved-subplebbit-address'
 import { useAccountComment } from '@bitsocialhq/pkc-react-hooks';
 import useSpecialThemeStore from '../stores/use-special-theme-store';
 import { isChristmas } from '../lib/utils/time-utils';
+import { updateFavicon, isSfwBoard } from '../lib/update-favicon';
 
 const themeClasses = ['yotsuba', 'yotsuba-b', 'futaba', 'burichan', 'tomorrow', 'photon'];
 
@@ -80,10 +81,25 @@ const useTheme = (): [string, (theme: string) => void] => {
     return storedTheme || 'yotsuba';
   }, [location.pathname, isEnabled, isInAllView, isInSubscriptionsView, isInModView, subplebbitAddress, directories, themes]);
 
+  const sfw = isSfwBoard({
+    pathname: location.pathname,
+    isSpecialTheme: !!isEnabled,
+    isInAllView,
+    isInSubscriptionsView,
+    isInModView,
+    subplebbitAddress,
+    directories,
+  });
+
   // Update DOM class when theme changes
   useEffect(() => {
     updateThemeClass(currentTheme);
   }, [currentTheme]);
+
+  // Update favicon when SFW status changes (separate effect for independent lifecycle)
+  useEffect(() => {
+    updateFavicon(sfw);
+  }, [sfw]);
 
   const setSubplebbitTheme = useCallback(
     async (newTheme: string) => {
