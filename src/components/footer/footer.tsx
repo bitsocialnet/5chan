@@ -1,11 +1,16 @@
 import { useTranslation } from 'react-i18next';
 import { useLocation, useParams } from 'react-router-dom';
+import { useComment } from '@bitsocialhq/pkc-react-hooks';
 import BoardsBar from '../boards-bar';
 import SiteLegalMeta from '../site-legal-meta';
 import StyleSelector from '../style-selector/style-selector';
 import { ReturnButton, CatalogButton, TopButton, UpdateButton, AutoButton, PostPageStats, RefreshButton } from '../board-buttons/board-buttons';
 import { isAllView, isSubscriptionsView, isModView } from '../../lib/utils/view-utils';
 import useReplyModalStore from '../../stores/use-reply-modal-store';
+import useCountLinksInReplies from '../../hooks/use-count-links-in-replies';
+import { usePostPageNumber } from '../../hooks/use-post-page-number';
+import { useDirectoryByAddress } from '../../hooks/use-directories';
+import capitalize from 'lodash/capitalize';
 import styles from './footer.module.css';
 
 /* -----------------------------------------------------------------------------
@@ -165,3 +170,63 @@ export const PageFooterMobile = ({ children }: { children: React.ReactNode }) =>
     </div>
   </footer>
 );
+
+/* -----------------------------------------------------------------------------
+ * ThreadFooterMobile
+ * Mobile thread page footer: Post a Reply, Return/Catalog/Top, Update/Auto, stats.
+ * -------------------------------------------------------------------------- */
+
+export interface ThreadFooterMobileProps {
+  postCid: string;
+  threadNumber: number | undefined;
+  subplebbitAddress: string;
+  isThreadClosed?: boolean;
+}
+
+export const ThreadFooterMobile = ({ postCid, threadNumber, subplebbitAddress, isThreadClosed = false }: ThreadFooterMobileProps) => {
+  const { t } = useTranslation();
+  const location = useLocation();
+  const params = useParams();
+  const { openReplyModalEmpty } = useReplyModalStore();
+
+  const isInAllView = isAllView(location.pathname);
+  const isInSubscriptionsView = isSubscriptionsView(location.pathname, params);
+  const isInModView = isModView(location.pathname);
+
+  const post = useComment({ commentCid: postCid });
+  const { replyCount } = post || {};
+  const linkCount = useCountLinksInReplies(post);
+  const directoryEntry = useDirectoryByAddress(subplebbitAddress);
+  const requirePostLinkIsMedia = directoryEntry?.features?.requirePostLinkIsMedia === true;
+  const pageNumber = usePostPageNumber({ subplebbitAddress, postCid, enabled: true });
+
+  const handlePostReplyClick = () => {
+    if (isThreadClosed) return;
+    openReplyModalEmpty(postCid, threadNumber, subplebbitAddress);
+  };
+
+  return (
+    <PageFooterMobile>
+      <div className={styles.threadMobileFooterContent}>
+        <div className={styles.mobileFooterButtons}>
+          <button className='button' onClick={handlePostReplyClick} disabled={isThreadClosed}>
+            {t('post_a_reply')}
+          </button>
+        </div>
+        <div className={styles.mobileFooterButtons}>
+          <ReturnButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
+          <CatalogButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
+          <TopButton />
+        </div>
+        <div className={styles.mobileFooterButtons}>
+          <UpdateButton />
+          <AutoButton />
+        </div>
+        <div className={styles.mobileFooterStats}>
+          {capitalize(t('replies'))}: {replyCount ?? '?'} / {capitalize(requirePostLinkIsMedia ? t('images') : t('links'))}: {linkCount ?? '?'} /{' '}
+          {t('pagination.pageLabel')}: {pageNumber ?? '?'}
+        </div>
+      </div>
+    </PageFooterMobile>
+  );
+};

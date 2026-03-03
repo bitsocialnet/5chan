@@ -10,7 +10,7 @@ import { useDirectories } from '../../hooks/use-directories';
 import { isDirectoryBoard } from '../../lib/utils/route-utils';
 import useIsMobile from '../../hooks/use-is-mobile';
 import ErrorDisplay from '../../components/error-display/error-display';
-import { PageFooterDesktop, ThreadFooterFirstRow, ThreadFooterStyleRow } from '../../components/footer';
+import { PageFooterDesktop, ThreadFooterFirstRow, ThreadFooterStyleRow, ThreadFooterMobile } from '../../components/footer';
 import PostDesktop from '../../components/post-desktop';
 import PostMobile from '../../components/post-mobile';
 import styles from './post.module.css';
@@ -203,10 +203,13 @@ const PostPage = () => {
         </div>
       )}
       {post?.cid && subplebbitAddress ? (
-        <PageFooterDesktop
-          firstRow={<ThreadFooterFirstRow postCid={post.cid} threadNumber={post?.number} subplebbitAddress={subplebbitAddress} isThreadClosed={!!post?.locked} />}
-          styleRow={<ThreadFooterStyleRow />}
-        />
+        <>
+          <PageFooterDesktop
+            firstRow={<ThreadFooterFirstRow postCid={post.cid} threadNumber={post?.number} subplebbitAddress={subplebbitAddress} isThreadClosed={!!post?.locked} />}
+            styleRow={<ThreadFooterStyleRow />}
+          />
+          <ThreadFooterMobile postCid={post.cid} threadNumber={post?.number} subplebbitAddress={subplebbitAddress} isThreadClosed={!!post?.locked} />
+        </>
       ) : null}
     </div>
   );
