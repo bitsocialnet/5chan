@@ -1,4 +1,42 @@
-## [0.6.7](https://github.com/plebbit/plebchan/compare/v0.6.6...v0.6.7) (2026-02-28)
+## [0.6.8](https://github.com/plebbit/plebchan/compare/v0.6.7...v0.6.8) (2026-03-04)
+
+
+### Bug Fixes
+
+* **boards-bar:** cancel debounced scroll handler on cleanup ([ea0789f](https://github.com/plebbit/plebchan/commit/ea0789faa1ef1d33e3e8b2ab425145b379fdb15e))
+* **ci:** make portless optional for windows installs ([e484f96](https://github.com/plebbit/plebchan/commit/e484f96e3a3103f274d8d89252a42b33b9ad95ca))
+* **comment-content:** prevent doubled >>postnumber quote when cidToNumber resolves late ([1aabe7a](https://github.com/plebbit/plebchan/commit/1aabe7a6b2569ae16f86b42407b3dbc3c8f70743))
+* **edit-menu:** remove redundant double confirm for purge ([17afdc7](https://github.com/plebbit/plebchan/commit/17afdc7502160790f34b29d490162f257c10a4e8))
+* **markdown:** preserve full URL display text for autolinked 5chan links ([27b2d6f](https://github.com/plebbit/plebchan/commit/27b2d6fd8a9d1bb9d6ac3a1f45de17056cc2f954))
+* **popular-posts:** rank by time-decayed popularity instead of raw reply count ([9216791](https://github.com/plebbit/plebchan/commit/921679150576a4f25ff225fd07c1a6411afc8b71))
+* **post form:** default link label to 'link to file' on /all/ and /subs/ ([2bc2827](https://github.com/plebbit/plebchan/commit/2bc2827f835213d26c368e9fc45b845117fd4c0e))
+* **posts:** default to hiding user IDs when pseudonymityMode is undefined ([822b6c9](https://github.com/plebbit/plebchan/commit/822b6c937a561aa0eccae062d2d47a75f5ee2a7d))
+* **publish:** use active account at publish time instead of baking stale author data at typing time ([422eacc](https://github.com/plebbit/plebchan/commit/422eacc5c1c8a3983eaec97c4d0f4967700d0d27))
+* **react-grab:** disable Cmd+C shortcut to avoid copy/paste conflicts ([dfa203a](https://github.com/plebbit/plebchan/commit/dfa203a5065980aa9e90ab4c764a9c068631bb7a))
+* **replies-preview:** stable sort when recency yields identical Infinity values ([c9e9506](https://github.com/plebbit/plebchan/commit/c9e9506ebdd2599b2ee3cb9bce773a311b93b89a))
+* **string-utils:** guard truncateWithEllipsisInMiddle for small maxLength and slice(-0) ([8296d70](https://github.com/plebbit/plebchan/commit/8296d70fd6aaff25d092f6fa3e0428e9e8db3b62))
+
+
+### Features
+
+* **board-buttons:** reorganize button layout on mobile and desktop ([3a9b5ab](https://github.com/plebbit/plebchan/commit/3a9b5ab75ff94ca50a5d11258302177be456dd06))
+* **board:** add mobile footer with Start a New Thread, Top, Refresh, pagination, Catalog, Load More ([1a4e8a6](https://github.com/plebbit/plebchan/commit/1a4e8a624b9fcd0485b4a7dcee1a175f73f3c08b))
+* **boards-bar:** alphabetize mobile board select and show full multiboard titles ([efd1526](https://github.com/plebbit/plebchan/commit/efd152609dcd253933a560a71293cb2d84d71484))
+* **favicon:** swap tab favicon for SFW vs NSFW boards ([3bd1c0a](https://github.com/plebbit/plebchan/commit/3bd1c0ad4f16a70f50b5f4e0e06d71e9466bb97e))
+* **home:** clarify 5chan is serverless app, use current hostname for share links ([5fe2024](https://github.com/plebbit/plebchan/commit/5fe2024a490381207f9d0afc3d8d518d5ba30d41))
+* **meta:** add OpenGraph, JSON-LD, security headers for crawler identity ([6bc135a](https://github.com/plebbit/plebchan/commit/6bc135aa6a02729e94882668139ad9a61166815d))
+* **post-desktop:** truncate long file links with ellipsis in middle ([f2264ba](https://github.com/plebbit/plebchan/commit/f2264ba60c043c80d7ef724c6067bb8c45179c23))
+* **post:** add mobile footer to thread view ([84e6057](https://github.com/plebbit/plebchan/commit/84e6057bb84422e41d89dc9b822d8621140c7fe8))
+
+
+### Performance Improvements
+
+* **media:** restrict gif frame extraction to gif media types ([7644d59](https://github.com/plebbit/plebchan/commit/7644d595990581fff721194435ff85a6b22d583f))
+* **settings:** fix navigate-in-setState, memo sections, defer crypto resolution ([df1bc20](https://github.com/plebbit/plebchan/commit/df1bc2071ddc07e12e6509a51ff8abcbfcf3c41e))
+
+
+
+## [0.6.7](https://github.com/plebbit/plebchan/compare/v0.6.6...v0.6.7) (2026-03-01)
 
 
 ### Bug Fixes
@@ -42,6 +80,7 @@
 * **post:** show Pending for user ID when reply pending on pseudonymity boards ([21d2146](https://github.com/plebbit/plebchan/commit/21d214685da130134d5edd65bd24b3a4f8486a36))
 * **post:** use feed cache fallback for instant post content on catalog navigation ([609436a](https://github.com/plebbit/plebchan/commit/609436a0fb56aa7f7471874a6ff9333b4fe1509e))
 * **quotes:** scope post-number lookup by subplebbit, OP quote always navigates to thread ([216073a](https://github.com/plebbit/plebchan/commit/216073aee39396d6a8ce6a36fe4c3d70c453df29))
+* **release:** harden release workflow installs ([ca2e024](https://github.com/plebbit/plebchan/commit/ca2e024c736659b9675ef540f12db868b41c774b))
 * **reply modal:** keep textarea empty when opened from Post a Reply footer button ([bb02779](https://github.com/plebbit/plebchan/commit/bb027794ee0dea00f553660bd6f6279b14165409))
 * **reply-modal:** remove link type previewer that displaces UI ([2733ab2](https://github.com/plebbit/plebchan/commit/2733ab260b149139a9b380b3ab075750258b3b2b))
 * **reply-quote-preview:** add trailing break to mobile quotelinks so each >>N appears on its own line ([ec9ee6f](https://github.com/plebbit/plebchan/commit/ec9ee6ff43b21fcb6527600b6026d19659af25fa))
