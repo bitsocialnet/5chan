@@ -1,11 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import type { Placement } from '@floating-ui/react';
 import { useTranslation } from 'react-i18next';
-import ReactMarkdown, { Components } from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import supersub from 'remark-supersub';
-import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
-import rehypeRaw from 'rehype-raw';
 import { useDismiss, useFloating, useFocus, useHover, useInteractions, offset, shift, size, autoUpdate, FloatingPortal } from '@floating-ui/react';
 import { getLinkMediaInfo, getHasThumbnail } from '../../lib/utils/media-utils';
 import { isCatalogView } from '../../lib/utils/view-utils';
@@ -14,7 +9,7 @@ import CommentMedia from '../comment-media';
 import styles from './markdown.module.css';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import { canEmbed } from '../embed';
-import { is5chanLink, transform5chanLinkToInternal, preprocess5chanPatterns } from '../../lib/utils/url-utils';
+import { is5chanLink, transform5chanLinkToInternal, isValidCrossboardPattern } from '../../lib/utils/url-utils';
 import usePostNumberStore from '../../stores/use-post-number-store';
 import useSubplebbitsPagesStore from '@bitsocialhq/pkc-react-hooks/dist/stores/subplebbits-pages';
 import { useComment } from '@bitsocialhq/pkc-react-hooks';
@@ -32,10 +27,6 @@ interface ContentLinkEmbedProps {
   children: any;
   href: string;
   linkMediaInfo: any;
-}
-
-interface ExtendedComponents extends Components {
-  spoiler: React.ComponentType<{ children: React.ReactNode }>;
 }
 
 const ContentLinkEmbed = ({ children, href, linkMediaInfo }: ContentLinkEmbedProps) => {
@@ -139,48 +130,137 @@ const ContentLinkEmbed = ({ children, href, linkMediaInfo }: ContentLinkEmbedPro
   );
 };
 
-const MAX_LENGTH_FOR_GFM = 10000; // remarkGfm lags with large content
+const normalizeContent = (content: string): string => {
+  if (!content) return '';
+  let normalized = content.replace(/\n&nbsp;\n/g, '\n\n');
+  normalized = normalized.replace(/\n{3,}/g, '\n\n');
+  return normalized;
+};
 
-const blockquoteToGreentext = () => (tree: any) => {
-  tree.children.forEach((node: any) => {
-    if (node.type === 'blockquote') {
-      node.children.forEach((child: any) => {
-        if (child.type === 'paragraph' && child.children.length > 0) {
-          const prefix = {
-            type: 'text',
-            value: '>',
-          };
-          child.children.unshift(prefix);
+type Token =
+  | { type: 'text'; value: string }
+  | { type: 'url'; href: string }
+  | { type: 'quoteLink'; number: number }
+  | { type: 'crossBoardLink'; display: string; route: string }
+  | { type: 'spoiler'; tokens: Token[] };
+
+const SPOILER_REGEX = /<spoiler>([\s\S]*?)<\/spoiler>/;
+const CROSSBOARD_REGEX = />>>\/((?:[a-zA-Z0-9]{1,10}\/(?:[a-zA-Z0-9]{46})?|[a-zA-Z0-9\-.]+(?:\/[a-zA-Z0-9]{46})?))[.,:;!?]*/;
+const QUOTE_LINK_REGEX = /(?<![>/\w])>>(\d+)(?![\d/])/;
+const URL_REGEX = /https?:\/\/[^\s<\[\]]*[^\s<\[\].,;:!?\"'\)\]>]/;
+
+const COMBINED_REGEX = new RegExp(`(${SPOILER_REGEX.source})|(${CROSSBOARD_REGEX.source})|(${QUOTE_LINK_REGEX.source})|(${URL_REGEX.source})`, 'g');
+
+function getCrossboardRoute(fullPattern: string): string | null {
+  const pathPart = fullPattern.replace(/^>>>\//, '').replace(/[.,:;!?]+$/, '');
+  if (!isValidCrossboardPattern(`>>>/${pathPart}`)) {
+    return null;
+  }
+  if (/^[a-zA-Z0-9]{1,10}\/$/.test(pathPart)) {
+    return `/${pathPart.slice(0, -1)}`;
+  }
+  if (/^[a-zA-Z0-9]{1,10}\/[a-zA-Z0-9]{46}$/.test(pathPart)) {
+    const [code, cid] = pathPart.split('/');
+    return `/${code}/thread/${cid}`;
+  }
+  if (/^[^/]+\/[a-zA-Z0-9]{46}$/.test(pathPart)) {
+    const [address, cid] = pathPart.split('/');
+    return `/${address}/thread/${cid}`;
+  }
+  return `/${pathPart}`;
+}
+
+function tokenize(text: string): Token[] {
+  const tokens: Token[] = [];
+  let lastIndex = 0;
+
+  const regex = new RegExp(COMBINED_REGEX.source, 'g');
+  let match: RegExpExecArray | null;
+
+  while ((match = regex.exec(text)) !== null) {
+    const fullMatch = match[0];
+    const matchStart = match.index;
+
+    if (matchStart > lastIndex) {
+      tokens.push({ type: 'text', value: text.slice(lastIndex, matchStart) });
+    }
+
+    if (match[1] !== undefined) {
+      const innerContent = match[2];
+      tokens.push({ type: 'spoiler', tokens: tokenize(innerContent) });
+    } else if (match[3] !== undefined) {
+      const pathPart = match[4];
+      const fullPattern = `>>>/${pathPart}`;
+      const route = getCrossboardRoute(fullPattern);
+      if (route) {
+        tokens.push({ type: 'crossBoardLink', display: fullPattern, route });
+      } else {
+        tokens.push({ type: 'text', value: fullMatch });
+      }
+    } else if (match[5] !== undefined) {
+      const number = parseInt(match[6], 10);
+      tokens.push({ type: 'quoteLink', number });
+    } else if (match[7] !== undefined) {
+      tokens.push({ type: 'url', href: fullMatch });
+    }
+
+    lastIndex = regex.lastIndex;
+  }
+
+  if (lastIndex < text.length) {
+    tokens.push({ type: 'text', value: text.slice(lastIndex) });
+  }
+
+  return tokens;
+}
+
+interface RenderContext {
+  isInCatalogView: boolean;
+  postCid?: string;
+  subplebbitAddress?: string;
+}
+
+function renderTokens(tokens: Token[], context: RenderContext): React.ReactNode[] {
+  const { isInCatalogView, postCid, subplebbitAddress } = context;
+
+  return tokens.map((token, i) => {
+    switch (token.type) {
+      case 'text':
+        return <React.Fragment key={i}>{token.value}</React.Fragment>;
+      case 'url': {
+        const href = token.href;
+        const linkMediaInfo = getLinkMediaInfo(href);
+        const embedUrl = safeParseUrl(href);
+        if (!isInCatalogView && ((embedUrl && canEmbed(embedUrl)) || getHasThumbnail(linkMediaInfo, href))) {
+          return (
+            <ContentLinkEmbed key={i} href={href} linkMediaInfo={linkMediaInfo}>
+              {href}
+            </ContentLinkEmbed>
+          );
         }
-      });
-      node.type = 'div';
-      node.data = {
-        hName: 'div',
-        hProperties: {
-          className: 'greentext',
-        },
-      };
+        return <React.Fragment key={i}>{renderAnchorLink(href, href, postCid, subplebbitAddress)}</React.Fragment>;
+      }
+      case 'quoteLink':
+        return (
+          <span key={i} className={styles.inlineQuoteLink}>
+            <NumberQuoteLink number={token.number} threadPostCid={postCid} subplebbitAddress={subplebbitAddress} />
+          </span>
+        );
+      case 'crossBoardLink':
+        return (
+          <Link key={i} to={token.route}>
+            {token.display}
+          </Link>
+        );
+      case 'spoiler':
+        return (
+          <span key={i} className='spoilertext'>
+            {renderTokens(token.tokens, context)}
+          </span>
+        );
     }
   });
-};
-
-const spoilerTransform = () => (tree: any) => {
-  const visit = (node: any) => {
-    if (node.tagName === 'spoiler') {
-      node.tagName = 'span';
-      node.properties = node.properties || {};
-      node.properties.className = 'spoilertext';
-    }
-
-    if (node.children) {
-      node.children.forEach(visit);
-    }
-  };
-
-  if (tree.children) {
-    tree.children.forEach(visit);
-  }
-};
+}
 
 interface MarkdownProps {
   content: string;
@@ -188,8 +268,6 @@ interface MarkdownProps {
   postCid?: string;
   subplebbitAddress?: string;
 }
-
-const NUMBER_QUOTE_HREF_REGEX = /^#q-(\d+)$/;
 
 const NumberQuoteLink = ({ number, threadPostCid, subplebbitAddress }: { number: number; threadPostCid?: string; subplebbitAddress?: string }) => {
   const cid = usePostNumberStore((state) => (subplebbitAddress ? state.numberToCid[subplebbitAddress]?.[number] : undefined));
@@ -210,21 +288,9 @@ const renderAnchorLink = (children: React.ReactNode, href: string, threadPostCid
     return <span>{children}</span>;
   }
 
-  const numberQuoteMatch = href.match(NUMBER_QUOTE_HREF_REGEX);
-  if (numberQuoteMatch) {
-    const number = parseInt(numberQuoteMatch[1], 10);
-    return (
-      <span className={styles.inlineQuoteLink}>
-        <NumberQuoteLink number={number} threadPostCid={threadPostCid} subplebbitAddress={subplebbitAddress} />
-      </span>
-    );
-  }
-
-  // Check if this is a valid 5chan link that should be handled internally
   if (is5chanLink(href)) {
     const internalPath = transform5chanLinkToInternal(href);
     if (internalPath) {
-      // Check if the link text should be replaced with the internal path
       let shouldReplaceText = false;
 
       if (typeof children === 'string') {
@@ -238,7 +304,7 @@ const renderAnchorLink = (children: React.ReactNode, href: string, threadPostCid
       const isAutolinkedUrl = shouldReplaceText && typeof childrenText === 'string' && childrenText.startsWith('http');
 
       if (isAutolinkedUrl) {
-        // Keep the full URL as display text for autolinked URLs (e.g. https://5chan.app/pass → "https://5chan.app/pass")
+        displayText = children;
       } else if (shouldReplaceText && internalPath.match(/^\/[^/]+$/)) {
         displayText = internalPath.substring(1);
       } else if (shouldReplaceText) {
@@ -252,8 +318,6 @@ const renderAnchorLink = (children: React.ReactNode, href: string, threadPostCid
     }
   }
 
-  // Handle hash routes and internal patterns (including routes that start with /#/)
-  // Support both old format (/p/...) for backward compatibility and new format (/{boardIdentifier}/...)
   if (
     href.startsWith('#/') ||
     href.startsWith('/#/') ||
@@ -265,7 +329,6 @@ const renderAnchorLink = (children: React.ReactNode, href: string, threadPostCid
     return <Link to={href}>{children}</Link>;
   }
 
-  // External links
   return (
     <a href={href} target='_blank' rel='noopener noreferrer'>
       {children}
@@ -274,83 +337,40 @@ const renderAnchorLink = (children: React.ReactNode, href: string, threadPostCid
 };
 
 const Markdown = ({ content, title, postCid, subplebbitAddress }: MarkdownProps) => {
-  const remarkPlugins = useMemo(() => {
-    const plugins: any[] = [[supersub]];
-
-    if (content && content.length <= MAX_LENGTH_FOR_GFM) {
-      plugins.push([remarkGfm, { singleTilde: false }]);
-    }
-
-    plugins.push([blockquoteToGreentext]);
-    plugins.push([spoilerTransform]);
-
-    return plugins;
-  }, [content]);
-
-  const customSchema = useMemo(
-    () => ({
-      ...defaultSchema,
-      tagNames: [...(defaultSchema.tagNames || []), 'div', 'span', 'spoiler'],
-      attributes: {
-        ...defaultSchema.attributes,
-        div: ['className'],
-        span: ['className'],
-        spoiler: [],
-      },
-    }),
-    [],
-  );
-
   const location = useLocation();
   const params = useParams();
   const isInCatalogView = isCatalogView(location.pathname, params);
 
-  const rehypePlugins = useMemo(() => [[rehypeRaw as any], [rehypeSanitize, customSchema]] as any[], [customSchema]);
+  const rendered = useMemo(() => {
+    const normalized = normalizeContent(content || '');
+    const lines = normalized.split('\n');
+    const elements: React.ReactNode[] = [];
 
-  // Preprocess content to convert plain text 5chan patterns to markdown links
-  const processedContent = useMemo(() => preprocess5chanPatterns(content || ''), [content]);
+    lines.forEach((line, lineIndex) => {
+      if (lineIndex > 0) {
+        elements.push(<br key={`br-${lineIndex}`} />);
+      }
 
-  const components = useMemo(
-    () =>
-      ({
-        p: ({ children }) => <p className={isInCatalogView ? styles.inline : ''}>{children}</p>,
-        h1: ({ children }) => <p className={styles.header}>{children}</p>,
-        h2: ({ children }) => <p className={styles.header}>{children}</p>,
-        h3: ({ children }) => <p className={styles.header}>{children}</p>,
-        h4: ({ children }) => <p className={styles.header}>{children}</p>,
-        h5: ({ children }) => <p className={styles.header}>{children}</p>,
-        h6: ({ children }) => <p className={styles.header}>{children}</p>,
-        img: ({ src, alt }) => {
-          const displayText = src || alt || 'image';
-          return <span>{displayText}</span>;
-        },
-        video: ({ src }) => <span>{src}</span>,
-        iframe: ({ src }) => <span>{src}</span>,
-        source: ({ src }) => <span>{src}</span>,
-        spoiler: ({ children }) => <span className='spoilertext'>{children}</span>,
-        a: ({ href, children }) => {
-          if (href && !isInCatalogView) {
-            const linkMediaInfo = getLinkMediaInfo(href);
-            const embedUrl = safeParseUrl(href);
-            if ((embedUrl && canEmbed(embedUrl)) || getHasThumbnail(linkMediaInfo, href)) {
-              return (
-                <ContentLinkEmbed href={href} linkMediaInfo={linkMediaInfo}>
-                  {children}
-                </ContentLinkEmbed>
-              );
-            }
-            if (!embedUrl && href.startsWith('http')) {
-              console.debug('Invalid URL:', href);
-            }
+      if (line.length === 0) return;
 
-            return renderAnchorLink(children, href, postCid, subplebbitAddress);
-          }
+      const isGreentext = /^>[^>]/.test(line) || line === '>';
 
-          return renderAnchorLink(children, href || '', postCid, subplebbitAddress);
-        },
-      }) as ExtendedComponents,
-    [isInCatalogView, postCid, subplebbitAddress],
-  );
+      const tokens = tokenize(line);
+      const lineElements = renderTokens(tokens, { isInCatalogView, postCid, subplebbitAddress });
+
+      if (isGreentext) {
+        elements.push(
+          <span key={`line-${lineIndex}`} className='greentext'>
+            {lineElements}
+          </span>,
+        );
+      } else {
+        elements.push(<React.Fragment key={`line-${lineIndex}`}>{lineElements}</React.Fragment>);
+      }
+    });
+
+    return elements;
+  }, [content, isInCatalogView, postCid, subplebbitAddress]);
 
   return (
     <span className={styles.markdown}>
@@ -360,9 +380,7 @@ const Markdown = ({ content, title, postCid, subplebbitAddress }: MarkdownProps)
           {content ? ': ' : ''}
         </span>
       )}
-      <ReactMarkdown remarkPlugins={remarkPlugins} rehypePlugins={rehypePlugins} components={components}>
-        {processedContent}
-      </ReactMarkdown>
+      {rendered}
     </span>
   );
 };

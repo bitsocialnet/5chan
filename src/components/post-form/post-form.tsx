@@ -6,7 +6,6 @@ import getShortAddress from '../../lib/get-short-address';
 import useSubplebbitsStore from '@bitsocialhq/pkc-react-hooks/dist/stores/subplebbits';
 import useSubplebbitsPagesStore from '@bitsocialhq/pkc-react-hooks/dist/stores/subplebbits-pages';
 import { getLinkMediaInfo } from '../../lib/utils/media-utils';
-import { formatMarkdown } from '../../lib/utils/post-utils';
 import { isValidURL } from '../../lib/utils/url-utils';
 import { isAllView, isCatalogView, isModQueueView, isModView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import { useDirectories, useDirectoryByAddress } from '../../hooks/use-directories';
@@ -401,9 +400,9 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
   const { setPublishReplyOptions, resetPublishReplyOptions, replyIndex, publishReply } = usePublishReply({ cid, subplebbitAddress });
 
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const formattedContent = formatMarkdown(e.target.value);
-    isInPostView ? setPublishReplyOptions({ content: formattedContent }) : setPublishPostOptions({ content: formattedContent });
-    checkContentLength(formattedContent, t);
+    const content = e.target.value;
+    isInPostView ? setPublishReplyOptions({ content }) : setPublishPostOptions({ content });
+    checkContentLength(content, t);
   };
 
   const onPublishReply = () => {
