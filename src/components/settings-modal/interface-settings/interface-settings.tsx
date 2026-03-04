@@ -41,7 +41,7 @@ const fetchLatestVersionInfo = async (t: (key: string, opts?: Record<string, unk
     if (!updateAvailable) {
       alert(
         commitRef
-          ? `${t('latest_development_version', { commit: commitRef.slice(0, 7), link: 'https://5chan.app/#/', interpolation: { escapeValue: false } })}`
+          ? `${t('latest_development_version', { commit: commitRef.slice(0, 7), link: `${window.location.origin}/#/`, interpolation: { escapeValue: false } })}`
           : `${t('latest_stable_version', { version: packageJson.version })}`,
       );
     }
