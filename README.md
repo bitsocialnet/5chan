@@ -89,7 +89,7 @@ To have your board appear in a directory on the 5chan homepage:
 
 - Node.js v22 (Download from https://nodejs.org)
 - Yarn: `npm install -g yarn`
-- [Portless](https://github.com/vercel-labs/portless): `npm install -g portless`
+- Portless is installed with project dependencies via `yarn install`
 
 ### Setup
 
