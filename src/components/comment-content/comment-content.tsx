@@ -104,11 +104,13 @@ const CommentContent = ({ comment: post }: { comment: Comment }) => {
     if (!quotedCids?.length) return [];
     return quotedCids.filter((cid: string) => {
       const num = cidToNumber[cid];
-      return num === undefined || !contentNumbers.has(num);
+      if (num === undefined) return false;
+      return !contentNumbers.has(num);
     });
   }, [quotedCids, cidToNumber, contentNumbers]);
 
-  const shouldShowReplyingToReply = isReplyingToReply && (parentCid ? !contentNumbers.has(cidToNumber[parentCid] ?? -1) : true);
+  const parentNumber = parentCid ? cidToNumber[parentCid] : undefined;
+  const shouldShowReplyingToReply = isReplyingToReply && parentNumber !== undefined && !contentNumbers.has(parentNumber);
 
   const stateString = useStateString(post);
   const hasFailedState = state === 'failed';
