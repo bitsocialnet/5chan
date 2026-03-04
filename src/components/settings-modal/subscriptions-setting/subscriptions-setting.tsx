@@ -2,7 +2,7 @@ import { setAccount, useAccount, useSubscribe } from '@bitsocialhq/pkc-react-hoo
 import getShortAddress from '../../../lib/get-short-address';
 import styles from './subscriptions-setting.module.css';
 import { useTranslation } from 'react-i18next';
-import { useState } from 'react';
+import { memo, useState } from 'react';
 
 const SubscriptionButton = ({ address }: { address: string }) => {
   const { t } = useTranslation();
@@ -91,4 +91,4 @@ const SubscriptionsSetting = () => {
   );
 };
 
-export default SubscriptionsSetting;
+export default memo(SubscriptionsSetting);

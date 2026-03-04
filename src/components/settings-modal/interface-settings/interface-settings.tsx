@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import packageJson from '../../../../package.json';
 import styles from './interface-settings.module.css';
@@ -41,7 +41,7 @@ const fetchLatestVersionInfo = async (t: (key: string, opts?: Record<string, unk
     if (!updateAvailable) {
       alert(
         commitRef
-          ? `${t('latest_development_version', { commit: commitRef.slice(0, 7), link: 'https://5chan.app/#/', interpolation: { escapeValue: false } })}`
+          ? `${t('latest_development_version', { commit: commitRef.slice(0, 7), link: `${window.location.origin}/#/`, interpolation: { escapeValue: false } })}`
           : `${t('latest_stable_version', { version: packageJson.version })}`,
       );
     }
@@ -125,4 +125,4 @@ const InterfaceSettings = () => {
   );
 };
 
-export default InterfaceSettings;
+export default memo(InterfaceSettings);

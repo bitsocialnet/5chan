@@ -543,7 +543,7 @@ const PostMedia = ({
   const { t } = useTranslation();
   const { url } = commentMediaInfo || {};
   let type = commentMediaInfo?.type;
-  const gifFrameUrl = useFetchGifFirstFrame(url);
+  const gifFrameUrl = useFetchGifFirstFrame(type === 'gif' ? url : undefined);
   const directories = useDirectories();
 
   if (type === 'gif' && gifFrameUrl !== null) {

@@ -67,7 +67,13 @@ const InfoBox = () => {
         />
         <br />
         <br />
-        {t('no_global_rules_info')}
+        <Trans
+          i18nKey='no_global_rules_info'
+          shouldUnescape={true}
+          components={{
+            1: <a key='releases-link' href='https://github.com/bitsocialhq/5chan/releases/latest' target='_blank' rel='noopener noreferrer' />,
+          }}
+        />
       </div>
     </div>
   );

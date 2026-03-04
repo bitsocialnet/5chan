@@ -19,6 +19,17 @@ export const isValidURL = (url: string) => {
   }
 };
 
+const CHAN_5_HOSTNAMES = ['5chan.app', '5chan.eth.limo', '5chan.eth.link', '5chan.eth.sucks', '5chan.netlify.app'];
+
+function getShareBaseUrl(): string {
+  const { protocol, hostname, origin } = window.location;
+  if ((protocol === 'https:' || protocol === 'http:') && hostname !== 'localhost' && hostname !== '127.0.0.1') {
+    return origin;
+  }
+  // Electron / Capacitor / local dev fallback
+  return `https://${CHAN_5_HOSTNAMES[0]}`;
+}
+
 export type ShareLinkType = 'thread' | 'catalog';
 
 // Copies a share link to clipboard for a board, thread, description, or rules page
@@ -29,16 +40,14 @@ export async function copyShareLinkToClipboard(boardIdentifier: string, linkType
     if (!cid) {
       throw new Error('copyShareLinkToClipboard: thread links require a cid');
     }
-    const shareLink = `https://5chan.app/#/${boardIdentifier}/thread/${cid}`;
+    const shareLink = `${getShareBaseUrl()}/#/${boardIdentifier}/thread/${cid}`;
     await copyToClipboard(shareLink);
     return;
   }
 
-  const shareLink = `https://5chan.app/#/${boardIdentifier}/${linkType}`;
+  const shareLink = `${getShareBaseUrl()}/#/${boardIdentifier}/${linkType}`;
   await copyToClipboard(shareLink);
 }
-
-const CHAN_5_HOSTNAMES = ['pleb.bz', '5chan.app', '5chan.eth.limo', '5chan.eth.link', '5chan.eth.sucks', '5chan.netlify.app'];
 
 // Check if a URL is a valid 5chan link that should be handled internally
 export const is5chanLink = (url: string): boolean => {
@@ -180,55 +189,4 @@ export const isValidCrossboardPattern = (pattern: string): boolean => {
 
   // Check if it's just a full address pattern: >>>/board.eth
   return isValidDomain(pathPart) || isValidIPNSKey(pathPart);
-};
-
-// Transform >>{number} post number patterns to markdown links with special anchor
-const preprocessPostNumberPatterns = (content: string): string => {
-  // Match >> followed by digits, avoid overlap with greentext (>>>), cross-board (>>>/), URLs, CID-like patterns
-  return content.replace(QUOTE_NUMBER_REGEX, (_, num) => `[>>${num}](#q-${num})`);
-};
-
-// Preprocess content to convert plain text 5chan cross-board patterns to markdown links
-export const preprocess5chanPatterns = (content: string): string => {
-  const withPostNumbers = preprocessPostNumberPatterns(content);
-  // Pattern to match ">>>/something" or ">>>/something/cid"
-  // Negative lookbehind prevents matching patterns that are already part of URLs
-  // Matches: >>>/directory/, >>>/directory/cid (46 chars), >>>/address, >>>/address/cid (46 chars)
-  const pattern = /(?<!https?:\/\/[^\s]*)>>>\/([a-zA-Z0-9]{1,10}\/(?:[a-zA-Z0-9]{46})?|[a-zA-Z0-9\-.]+(?:\/[a-zA-Z0-9]{46})?)[.,:;!?]*/g;
-
-  return withPostNumbers.replace(pattern, (match, capturedPath) => {
-    // Remove any trailing punctuation from the captured path
-    const cleanPath = capturedPath.replace(/[.,:;!?]+$/, '');
-    const fullPattern = `>>>/${cleanPath}`;
-
-    if (isValidCrossboardPattern(fullPattern)) {
-      // Generate internal route based on pattern type
-      let internalRoute: string;
-
-      // Directory with trailing slash: >>>/biz/ → /biz
-      if (/^[a-zA-Z0-9]{1,10}\/$/.test(cleanPath)) {
-        internalRoute = `/${cleanPath.slice(0, -1)}`;
-      }
-      // Directory + CID: >>>/biz/cid → /biz/thread/cid (CID is 46 chars)
-      else if (/^[a-zA-Z0-9]{1,10}\/[a-zA-Z0-9]{46}$/.test(cleanPath)) {
-        const [code, cid] = cleanPath.split('/');
-        internalRoute = `/${code}/thread/${cid}`;
-      }
-      // Full address + CID: >>>/board.eth/cid → /board.eth/thread/cid (CID is 46 chars)
-      else if (/^[^/]+\/[a-zA-Z0-9]{46}$/.test(cleanPath)) {
-        const [address, cid] = cleanPath.split('/');
-        internalRoute = `/${address}/thread/${cid}`;
-      }
-      // Just a full address: >>>/board.eth → /board.eth
-      else {
-        internalRoute = `/${cleanPath}`;
-      }
-
-      // Preserve trailing punctuation outside the link
-      const trailingPunctuation = match.slice(fullPattern.length);
-      return `[${fullPattern}](${internalRoute})${trailingPunctuation}`;
-    }
-
-    return match;
-  });
 };

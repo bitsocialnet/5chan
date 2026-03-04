@@ -3,7 +3,6 @@ import { useLocation, useParams } from 'react-router-dom';
 import { Trans, useTranslation } from 'react-i18next';
 import { setAccount, useAccount } from '@bitsocialhq/pkc-react-hooks';
 import { useSubplebbitField } from '../../hooks/use-stable-subplebbit';
-import { formatMarkdown } from '../../lib/utils/post-utils';
 import { getFormattedTimeAgo } from '../../lib/utils/time-utils';
 import { isValidURL } from '../../lib/utils/url-utils';
 import { isAllView, isSubscriptionsView } from '../../lib/utils/view-utils';
@@ -203,9 +202,9 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
       const len = textRef.current.value.length;
       lastSelectionStartRef.current = len;
       lastSelectionEndRef.current = len;
-      const formattedContent = formatMarkdown(textRef.current.value);
-      setPublishReplyOptions({ content: formattedContent });
-      checkContentLengthRef.current(formattedContent, t);
+      const content = textRef.current.value;
+      setPublishReplyOptions({ content });
+      checkContentLengthRef.current(content, t);
 
       setTimeout(() => {
         if (textRef.current) {
@@ -221,9 +220,9 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
   };
 
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const formattedContent = formatMarkdown(e.target.value);
-    setPublishReplyOptions({ content: formattedContent });
-    checkContentLengthRef.current(formattedContent, t);
+    const content = e.target.value;
+    setPublishReplyOptions({ content });
+    checkContentLengthRef.current(content, t);
   };
 
   useEffect(() => {
@@ -265,9 +264,8 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
     lastSelectionStartRef.current = nextCursor;
     lastSelectionEndRef.current = nextCursor;
 
-    const formattedContent = formatMarkdown(nextValue);
-    setPublishReplyOptions({ content: formattedContent });
-    checkContentLengthRef.current(formattedContent, t);
+    setPublishReplyOptions({ content: nextValue });
+    checkContentLengthRef.current(nextValue, t);
   }, [showReplyModal, quoteInsertRequestId, quoteInsertNumber, quoteInsertSelectedText, setPublishReplyOptions, t]);
 
   const { isUploading, uploadedFileName, handleUpload } = useFileUpload({

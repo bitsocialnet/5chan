@@ -391,7 +391,7 @@ const CommentMedia = ({
   const isMobile = useIsMobile();
   const { thumbnailHeight, thumbnailWidth, url } = commentMediaInfo || {};
   let type = commentMediaInfo?.type;
-  const gifFrameUrl = useFetchGifFirstFrame(url);
+  const gifFrameUrl = useFetchGifFirstFrame(type === 'gif' ? url : undefined);
 
   if (type === 'gif' && gifFrameUrl) {
     type = 'animated gif';

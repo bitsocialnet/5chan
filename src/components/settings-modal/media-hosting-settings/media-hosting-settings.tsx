@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import useMediaHostingStore, { MEDIA_HOSTING_PROVIDERS } from '../../../stores/use-media-hosting-store';
 import type { ProviderId } from '../../../lib/media-hosting/types';
@@ -73,4 +74,4 @@ const MediaHostingSettings = () => {
   );
 };
 
-export default MediaHostingSettings;
+export default memo(MediaHostingSettings);

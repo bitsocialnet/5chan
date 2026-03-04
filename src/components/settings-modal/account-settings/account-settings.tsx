@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { deleteAccount, exportAccount, importAccount, setActiveAccount, useAccount, useAccounts } from '@bitsocialhq/pkc-react-hooks';
 import styles from './account-settings.module.css';
@@ -189,4 +190,4 @@ const AccountSettings = () => {
   return <AccountSettingsEditor key={account?.id} account={account} />;
 };
 
-export default AccountSettings;
+export default memo(AccountSettings);

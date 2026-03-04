@@ -65,24 +65,23 @@ const SettingsModal = () => {
   }, [hash]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleCategoryClick = (categoryId: string) => {
-    setExpandedSections((prev) => {
-      const next = new Set(prev);
-      const isOpening = !next.has(categoryId);
-      if (isOpening) {
-        next.add(categoryId);
-      } else {
-        next.delete(categoryId);
-      }
-      if (isOpening) {
-        navigate(`${basePath}#${categoryId}`, { replace: true });
-      } else if (next.size === 1) {
-        const remaining = next.values().next().value;
-        navigate(`${basePath}#${remaining}`, { replace: true });
-      } else {
-        navigate(basePath, { replace: true });
-      }
-      return next;
-    });
+    const isOpening = !expandedSections.has(categoryId);
+    const next = new Set(expandedSections);
+    if (isOpening) {
+      next.add(categoryId);
+    } else {
+      next.delete(categoryId);
+    }
+    setExpandedSections(next);
+
+    if (isOpening) {
+      navigate(`${basePath}#${categoryId}`, { replace: true });
+    } else if (next.size === 1) {
+      const remaining = next.values().next().value;
+      navigate(`${basePath}#${remaining}`, { replace: true });
+    } else {
+      navigate(basePath, { replace: true });
+    }
   };
 
   const handleExpandAll = () => {
