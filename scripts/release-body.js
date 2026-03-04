@@ -103,7 +103,7 @@ const downloads = [macSection, winSection, linuxSection, androidSection, htmlSec
 
 // One-liner summary of what changed in this release. Update before each release.
 const oneLinerDescription =
-  'This version adds default board pagination with optional infinite scroll, multi-provider media uploads, a redesigned mod queue, catalog reply-count sorting, performance optimizations, and many bug fixes.';
+  'This version adds the release agent skill for automated releases, mobile thread footer, reorganized board buttons, favicon swap for SFW/NSFW boards, OpenGraph and security headers, purge confirmation fix, publish-time author fix, popular posts ranking improvements, and several bug fixes.';
 
 const releaseBody = `${oneLinerDescription}
 
