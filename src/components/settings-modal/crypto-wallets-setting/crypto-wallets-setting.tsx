@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { Account, setAccount, useAccount } from '@bitsocialhq/pkc-react-hooks';
 import styles from './crypto-wallets-setting.module.css';
 import { Trans, useTranslation } from 'react-i18next';
@@ -200,4 +200,4 @@ const CryptoWalletsSetting = () => {
   );
 };
 
-export default CryptoWalletsSetting;
+export default memo(CryptoWalletsSetting);

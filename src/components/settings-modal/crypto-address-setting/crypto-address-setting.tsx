@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAccount, setAccount, useResolvedAuthorAddress } from '@bitsocialhq/pkc-react-hooks';
 import styles from './crypto-address-setting.module.css';
@@ -25,13 +25,15 @@ const CryptoAddressSetting = () => {
   });
 
   const [savedCryptoAddress, setSavedCryptoAddress] = useState(false);
+  const [shouldResolve, setShouldResolve] = useState(false);
 
-  const author = { ...account?.author, address: cryptoState.cryptoAddress };
-  const { resolvedAddress, state, error, chainProvider } = useResolvedAuthorAddress({ author, cache: false });
+  const authorToResolve = shouldResolve ? { ...account?.author, address: cryptoState.cryptoAddress } : undefined;
+  const { resolvedAddress, state, error, chainProvider } = useResolvedAuthorAddress({ author: authorToResolve, cache: false });
 
   const [inputValue, setInputValue] = useState(account?.author?.shortAddress.includes('.') ? account.author.shortAddress : '');
 
   const checkCryptoAddress = () => {
+    setShouldResolve(true);
     const addressToCheck = inputValue || cryptoState.cryptoAddress;
     if (!addressToCheck || !addressToCheck.includes('.')) {
       alert(t('enter_crypto_address'));
@@ -96,6 +98,7 @@ const CryptoAddressSetting = () => {
         },
       );
       if (result !== undefined) {
+        setShouldResolve(false);
         setSavedCryptoAddress(true);
         setTimeout(() => setSavedCryptoAddress(false), 2000);
         setCryptoState((prevState) => ({
@@ -179,4 +182,4 @@ const CryptoAddressSetting = () => {
   );
 };
 
-export default CryptoAddressSetting;
+export default memo(CryptoAddressSetting);

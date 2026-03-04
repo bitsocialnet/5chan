@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import packageJson from '../../../../package.json';
 import styles from './interface-settings.module.css';
@@ -125,4 +125,4 @@ const InterfaceSettings = () => {
   );
 };
 
-export default InterfaceSettings;
+export default memo(InterfaceSettings);
