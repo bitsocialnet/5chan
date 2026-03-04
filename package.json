@@ -53,7 +53,7 @@
     "postinstall": "node scripts/patch-capacitor-cli-tar.cjs",
     "prebuild": "yarn sync:directories && yarn generate:assets",
     "prestart": "yarn sync:directories && yarn generate:assets",
-    "start": "portless 5chan vite",
+    "start": "node scripts/start-dev.js",
     "build": "cross-env PUBLIC_URL=./ GENERATE_SOURCEMAP=false vite build",
     "build:preload": "vite build --config electron/vite.preload.config.js",
     "build-vercel": "cross-env NODE_OPTIONS=\"--max_old_space_size=4096\" PUBLIC_URL=./ GENERATE_SOURCEMAP=true VITE_COMMIT_REF=$COMMIT_REF CI='' vite build",
@@ -144,7 +144,6 @@
     "oxfmt": "0.20.0",
     "oxlint": "1.35.0",
     "playwright": "1.56.1",
-    "portless": "0.5.2",
     "progress": "2.0.3",
     "react-doctor": "0.0.28",
     "react-grab": "0.0.98",
@@ -155,6 +154,9 @@
     "vite-plugin-pwa": "1.2.0",
     "vitest": "4.0.15",
     "wait-on": "9.0.3"
+  },
+  "optionalDependencies": {
+    "portless": "0.5.2"
   },
   "resolutions": {
     "axios": "1.13.5",
