@@ -38,7 +38,7 @@ export const LinkTypePreviewer = ({ link }: { link: string }) => {
   const { t } = useTranslation();
   const mediaInfo = getLinkMediaInfo(link);
   let type = mediaInfo?.type;
-  const gifFrameUrl = useFetchGifFirstFrame(mediaInfo?.url);
+  const gifFrameUrl = useFetchGifFirstFrame(type === 'gif' ? mediaInfo?.url : undefined);
 
   if (type === 'gif' && gifFrameUrl !== null) {
     type = t('animated_gif');
