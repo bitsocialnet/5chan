@@ -12421,10 +12421,10 @@ plist@^3.0.0, plist@^3.0.5, plist@^3.1.0:
     base64-js "^1.5.1"
     xmlbuilder "^15.1.1"
 
-portless@0.5.1:
-  version "0.5.1"
-  resolved "https://registry.yarnpkg.com/portless/-/portless-0.5.1.tgz#0e07d5f9005f8bbbf2160c4f1f633437c9a05da7"
-  integrity sha512-F2DHd2reRx0iwbZW8O4LT3Fu8haM6OFR4AYh3vmanM0WihASaBy6+GKP8lzmcL6knD9vU5WNI+9c6Z77G5gd/A==
+portless@0.5.2:
+  version "0.5.2"
+  resolved "https://registry.yarnpkg.com/portless/-/portless-0.5.2.tgz#ee405277721e54119c191f13fc6434a1dc06c42a"
+  integrity sha512-LnJvnFUduG4QSIDqc4og9WCLRA6L0+btA96nn6icY6cxyEAR44cnWaIxVzmw7y74KQ+R7zJM1HpenankphympA==
   dependencies:
     chalk "^5.3.0"
 
