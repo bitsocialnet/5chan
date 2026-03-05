@@ -1,8 +1,8 @@
 import React, { useMemo, useState, useEffect, useCallback, memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, Link } from 'react-router-dom';
-import { useFeed, Comment, usePublishCommentModeration, useEditedComment, useSubplebbit, useComment } from '@bitsocialhq/pkc-react-hooks';
-import useAccountsStore from '@bitsocialhq/pkc-react-hooks/dist/stores/accounts';
+import { useFeed, Comment, usePublishCommentModeration, useEditedComment, useSubplebbit, useComment } from '@bitsocialhq/bitsocial-react-hooks';
+import useAccountsStore from '@bitsocialhq/bitsocial-react-hooks/dist/stores/accounts';
 import { Virtuoso } from 'react-virtuoso';
 import styles from './mod-queue.module.css';
 import useModQueueStore from '../../stores/use-mod-queue-store';

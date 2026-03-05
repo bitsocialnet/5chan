@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { useLocation, useParams } from 'react-router-dom';
-import { useComment } from '@bitsocialhq/pkc-react-hooks';
+import { useComment } from '@bitsocialhq/bitsocial-react-hooks';
 import BoardsBar from '../boards-bar';
 import SiteLegalMeta from '../site-legal-meta';
 import StyleSelector from '../style-selector/style-selector';

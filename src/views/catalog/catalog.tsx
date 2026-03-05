@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useLocation, useNavigate, useNavigationType, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Comment, useAccount, useFeed, useSubplebbit, useAccountComments } from '@bitsocialhq/pkc-react-hooks';
+import { Comment, useAccount, useFeed, useSubplebbit, useAccountComments } from '@bitsocialhq/bitsocial-react-hooks';
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
 import useCatalogFeedRows from '../../hooks/use-catalog-feed-rows';
 import { useDirectories, useDirectoryByAddress } from '../../hooks/use-directories';

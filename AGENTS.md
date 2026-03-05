@@ -42,7 +42,7 @@ Only record items that are repo-specific, likely to recur, and have a concrete m
 - Zustand for shared state
 - React Router v6
 - Vite
-- pkc-react-hooks
+- bitsocial-react-hooks
 - i18next
 - yarn
 - oxlint
@@ -72,7 +72,7 @@ src/
 ### React Architecture Rules
 
 - Do not use `useState` for shared/global state. Use Zustand stores in `src/stores/`.
-- Do not use `useEffect` for data fetching. Use `pkc-react-hooks`.
+- Do not use `useEffect` for data fetching. Use `bitsocial-react-hooks`.
 - Do not sync derived state with effects. Compute during render.
 - Avoid copy-paste logic across components. Extract custom hooks in `src/hooks/`.
 - Avoid boolean flag soup for complex flows; model state clearly in Zustand.

@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { Comment, usePublishComment } from '@bitsocialhq/pkc-react-hooks';
+import { Comment, usePublishComment } from '@bitsocialhq/bitsocial-react-hooks';
 import usePublishPostStore from '../stores/use-publish-post-store';
 
 const usePublishPost = ({ subplebbitAddress }: { subplebbitAddress?: string }) => {

@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Challenge as ChallengeType, useAccount, useComment } from '@bitsocialhq/pkc-react-hooks';
+import { Challenge as ChallengeType, useAccount, useComment } from '@bitsocialhq/bitsocial-react-hooks';
 import { getPublicationPreview, getPublicationType, getVotePreview } from '../../lib/utils/challenge-utils';
 import useIsMobile from '../../hooks/use-is-mobile';
 import useChallengesStore from '../../stores/use-challenges-store';

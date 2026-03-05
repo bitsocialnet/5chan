@@ -15,7 +15,7 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
-vi.mock('@bitsocialhq/pkc-react-hooks', () => ({
+vi.mock('@bitsocialhq/bitsocial-react-hooks', () => ({
   useAccount: () => ({ id: 'test-id', name: 'Account 1', author: { address: '0x123', shortAddress: '0x1...3' } }),
   useAccounts: () => ({ accounts: [{ id: 'test-id', name: 'Account 1', author: { shortAddress: '0x1...3' } }] }),
   deleteAccount: vi.fn(),

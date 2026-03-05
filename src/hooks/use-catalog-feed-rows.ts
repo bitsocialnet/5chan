@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useAccountComments, Subplebbit } from '@bitsocialhq/pkc-react-hooks';
+import { useAccountComments, Subplebbit } from '@bitsocialhq/bitsocial-react-hooks';
 const useCatalogFeedRows = (columnCount: number, feed: any, isFeedLoaded: boolean, subplebbit: Subplebbit) => {
   const { address } = subplebbit || {};
 

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Challenge } from '@bitsocialhq/pkc-react-hooks';
+import { Challenge } from '@bitsocialhq/bitsocial-react-hooks';
 
 let nextChallengeId = 0;
 

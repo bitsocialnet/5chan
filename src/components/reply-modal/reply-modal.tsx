@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import { Trans, useTranslation } from 'react-i18next';
-import { setAccount, useAccount } from '@bitsocialhq/pkc-react-hooks';
+import { setAccount, useAccount } from '@bitsocialhq/bitsocial-react-hooks';
 import { useSubplebbitField } from '../../hooks/use-stable-subplebbit';
 import { getFormattedTimeAgo } from '../../lib/utils/time-utils';
 import { isValidURL } from '../../lib/utils/url-utils';
