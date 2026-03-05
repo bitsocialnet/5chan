@@ -1,6 +1,13 @@
 {
   "entries": [
     {
+      "id": "release-0.6.8",
+      "kind": "release",
+      "timestamp": 1772625600,
+      "message": "v0.6.8: Mobile footer, board buttons, favicon swap, metadata headers, purge fix, publish fix",
+      "version": "0.6.8"
+    },
+    {
       "id": "release-0.6.7",
       "kind": "release",
       "timestamp": 1772280000,

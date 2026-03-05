@@ -1023,6 +1023,22 @@
     "@babel/helper-string-parser" "^7.27.1"
     "@babel/helper-validator-identifier" "^7.28.5"
 
+"@bitsocialhq/pkc-react-hooks@https://github.com/bitsocialhq/pkc-react-hooks.git#00743c41a0cbbb88d29dccf21f45b69c16b8850c":
+  version "0.1.0"
+  resolved "https://github.com/bitsocialhq/pkc-react-hooks.git#00743c41a0cbbb88d29dccf21f45b69c16b8850c"
+  dependencies:
+    "@plebbit/plebbit-js" "https://github.com/plebbit/plebbit-js.git#ca9288c42f4b9a3d7ab6928ba03da6931c24e519"
+    "@plebbit/plebbit-logger" "https://github.com/plebbit/plebbit-logger.git"
+    assert "2.0.0"
+    ethers "5.6.9"
+    localforage "1.10.0"
+    lodash.isequal "4.5.0"
+    memoizee "0.4.15"
+    quick-lru "5.1.1"
+    uint8arrays "3.1.1"
+    uuid "11.1.0"
+    zustand "4.0.0"
+
 "@bitsocialhq/pkc-react-hooks@https://github.com/bitsocialhq/pkc-react-hooks.git#8d93bb78eb570f0769904cb6ce5cb83ab8b277d4":
   version "0.1.0"
   resolved "https://github.com/bitsocialhq/pkc-react-hooks.git#8d93bb78eb570f0769904cb6ce5cb83ab8b277d4"
