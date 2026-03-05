@@ -1009,7 +1009,7 @@ const PostDesktop = ({
           </span>
         )}
         {/* Virtuoso infinite scroll for post page view when there's more content to paginate */}
-        {!isHidden && showAllReplies && !isInPendingPostView && showReplies && hasMore && (
+        {!isHidden && showAllReplies && !isInPendingPostView && showReplies && hasMore && !!post?.replyCount && (
           <Virtuoso
             increaseViewportBy={{ bottom: 1200, top: 1200 }}
             totalCount={filteredReplies.length}
@@ -1076,7 +1076,13 @@ const PostDesktop = ({
           </div>
         )}
       </div>
-      {!isInPendingPostView && stateString && !hasFailedState && state !== 'succeeded' && isInPostPageView && !(!showReplies && !showAllReplies) ? (
+      {!isInPendingPostView &&
+      stateString &&
+      !hasFailedState &&
+      state !== 'succeeded' &&
+      !(post?.timestamp && !post?.updatedAt) &&
+      isInPostPageView &&
+      !(!showReplies && !showAllReplies) ? (
         <div className={styles.stateString}>
           <br />
           <LoadingEllipsis string={stateString} />

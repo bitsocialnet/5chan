@@ -732,7 +732,7 @@ const PostMobile = ({
               )}
             </div>
             {/* Virtuoso infinite scroll for post page view when there's more content to paginate */}
-            {showAllReplies && !isInPendingPostView && showReplies && hasMore && (
+            {showAllReplies && !isInPendingPostView && showReplies && hasMore && !!post?.replyCount && (
               <Virtuoso
                 increaseViewportBy={{ bottom: 1200, top: 1200 }}
                 totalCount={filteredReplies.length}
@@ -792,7 +792,13 @@ const PostMobile = ({
                 </div>
               ))}
           </div>
-          {!isInPendingPostView && stateString && !hasFailedState && state !== 'succeeded' && isInPostPageView && !(!showReplies && !showAllReplies) ? (
+          {!isInPendingPostView &&
+          stateString &&
+          !hasFailedState &&
+          state !== 'succeeded' &&
+          !(post?.timestamp && !post?.updatedAt) &&
+          isInPostPageView &&
+          !(!showReplies && !showAllReplies) ? (
             <div className={styles.stateString}>
               <LoadingEllipsis string={stateString} />
             </div>
