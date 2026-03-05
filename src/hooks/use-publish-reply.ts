@@ -20,6 +20,9 @@ const usePublishReply = ({ cid, subplebbitAddress, postCid }: { cid: string; sub
   const resetPublishReplyStore = usePublishReplyStore((state) => state.resetPublishReplyStore);
   const addChallenge = useChallengesStore((state) => state.addChallenge);
   const abandonPublishRef = useRef<(() => Promise<void>) | undefined>();
+  const abandonCurrentPublish = useCallback(async () => {
+    await abandonPublishRef.current?.();
+  }, []);
 
   const createBaseOptions = useCallback(() => {
     const baseOptions: Comment = {
@@ -66,12 +69,10 @@ const usePublishReply = ({ cid, subplebbitAddress, postCid }: { cid: string; sub
     () => ({
       ...mergedPublishOptions,
       onChallenge: async (...args: any[]) => {
-        addChallenge(args, async () => {
-          await abandonPublishRef.current?.();
-        });
+        addChallenge(args, abandonCurrentPublish);
       },
     }),
-    [addChallenge, mergedPublishOptions],
+    [abandonCurrentPublish, addChallenge, mergedPublishOptions],
   );
 
   const { index, publishComment, abandonPublish } = usePublishComment(publishOptionsWithAbandon);

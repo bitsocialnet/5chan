@@ -26,12 +26,11 @@ const useChallengesStore = create<State>((set, get) => ({
   },
   abandonCurrentChallenge: async () => {
     const currentChallenge = get().challenges[0];
+    get().removeChallenge();
     try {
       await currentChallenge?.onAbandon?.();
     } catch (error) {
       console.error('Failed to abandon challenge publication:', error);
-    } finally {
-      get().removeChallenge();
     }
   },
 }));
