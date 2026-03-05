@@ -1,6 +1,7 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import { Comment, usePublishComment } from '@bitsocialhq/bitsocial-react-hooks';
 import usePublishPostStore from '../stores/use-publish-post-store';
+import useChallengesStore from '../stores/use-challenges-store';
 
 const usePublishPost = ({ subplebbitAddress }: { subplebbitAddress?: string }) => {
   const { author, title, content, link, spoiler, publishCommentOptions } = usePublishPostStore((state) => ({
@@ -14,6 +15,8 @@ const usePublishPost = ({ subplebbitAddress }: { subplebbitAddress?: string }) =
 
   const setPublishPostStore = usePublishPostStore((state) => state.setPublishPostStore);
   const resetPublishPostStore = usePublishPostStore((state) => state.resetPublishPostStore);
+  const addChallenge = useChallengesStore((state) => state.addChallenge);
+  const abandonPublishRef = useRef<(() => Promise<void>) | undefined>();
 
   const createBaseOptions = useCallback(() => {
     const baseOptions: Comment = {
@@ -51,7 +54,20 @@ const usePublishPost = ({ subplebbitAddress }: { subplebbitAddress?: string }) =
 
   const resetPublishPostOptions = useCallback(() => resetPublishPostStore(), [resetPublishPostStore]);
 
-  const { index, publishComment } = usePublishComment(publishCommentOptions);
+  const publishOptionsWithAbandon = useMemo(
+    () => ({
+      ...publishCommentOptions,
+      onChallenge: async (...args: any[]) => {
+        addChallenge(args, async () => {
+          await abandonPublishRef.current?.();
+        });
+      },
+    }),
+    [addChallenge, publishCommentOptions],
+  );
+
+  const { index, publishComment, abandonPublish } = usePublishComment(publishOptionsWithAbandon);
+  abandonPublishRef.current = abandonPublish;
 
   return {
     setPublishPostOptions,

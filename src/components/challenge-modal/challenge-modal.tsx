@@ -18,6 +18,7 @@ const useParentAddress = (parentCid?: string) => {
 interface ChallengeProps {
   challenge: ChallengeType;
   closeModal: () => void;
+  abandonModal: () => void;
 }
 
 const TextChallenge = ({ challenge }: { challenge: string }) => <div className={styles.challengeMedia}>{challenge}</div>;
@@ -29,12 +30,12 @@ interface IframeChallengeProps {
   shortSubplebbitAddress?: string;
   subplebbitAddress?: string;
   readableUrl: string;
-  closeModal: () => void;
+  onCancel: () => void;
   onDone: () => void;
   publicationDetails: React.ReactNode;
 }
 
-const IframeChallenge = ({ challenge, shortSubplebbitAddress, subplebbitAddress, readableUrl, closeModal, onDone, publicationDetails }: IframeChallengeProps) => {
+const IframeChallenge = ({ challenge, shortSubplebbitAddress, subplebbitAddress, readableUrl, onCancel, onDone, publicationDetails }: IframeChallengeProps) => {
   const account = useAccount();
   const [theme] = useTheme();
   const [showIframeConfirmation, setShowIframeConfirmation] = useState(true);
@@ -71,9 +72,9 @@ const IframeChallenge = ({ challenge, shortSubplebbitAddress, subplebbitAddress,
     } catch (error) {
       console.error('Invalid iframe challenge URL', { error });
       alert('Error: Invalid URL for authentication challenge');
-      closeModal();
+      onCancel();
     }
-  }, [account, challenge, closeModal, theme]);
+  }, [account, challenge, onCancel, theme]);
 
   const sendThemeToIframe = useCallback(() => {
     if (!iframeRef.current || !iframeOrigin) return;
@@ -106,7 +107,7 @@ const IframeChallenge = ({ challenge, shortSubplebbitAddress, subplebbitAddress,
         <div className={`${styles.challengeFooter} ${styles.iframeFooter}`}>
           <span className={styles.buttons}>
             <button onClick={handleLoadIframe}>Open</button>
-            <button onClick={closeModal}>Cancel</button>
+            <button onClick={onCancel}>Cancel</button>
           </span>
         </div>
       </>
@@ -134,7 +135,7 @@ const IframeChallenge = ({ challenge, shortSubplebbitAddress, subplebbitAddress,
   );
 };
 
-const Challenge = ({ challenge, closeModal }: ChallengeProps) => {
+const Challenge = ({ challenge, closeModal, abandonModal }: ChallengeProps) => {
   const { t } = useTranslation();
 
   const challenges = challenge?.[0]?.challenges;
@@ -207,7 +208,7 @@ const Challenge = ({ challenge, closeModal }: ChallengeProps) => {
     closeModal();
   };
 
-  const onIframeClose = useCallback(() => {
+  const onIframeDone = useCallback(() => {
     if (!publication) return;
     publication.publishChallengeAnswers(['']);
     closeModal();
@@ -226,16 +227,12 @@ const Challenge = ({ challenge, closeModal }: ChallengeProps) => {
   useEffect(() => {
     const onEscapeKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        if (isIframeChallenge) {
-          onIframeClose();
-        } else {
-          closeModal();
-        }
+        abandonModal();
       }
     };
     document.addEventListener('keydown', onEscapeKey);
     return () => document.removeEventListener('keydown', onEscapeKey);
-  }, [closeModal, isIframeChallenge, onIframeClose]);
+  }, [abandonModal]);
 
   const getChallengeUrl = useCallback(() => {
     try {
@@ -314,7 +311,7 @@ const Challenge = ({ challenge, closeModal }: ChallengeProps) => {
     >
       <div className={`challengeHandle ${styles.title}`} {...(!isMobile ? bind() : {})}>
         Challenge for {publicationType}
-        <button className={styles.closeIcon} onClick={closeModal} title='close' />
+        <button className={styles.closeIcon} onClick={abandonModal} title='close' />
       </div>
       <div className={styles.publication}>
         {isIframeChallenge ? (
@@ -324,8 +321,8 @@ const Challenge = ({ challenge, closeModal }: ChallengeProps) => {
             shortSubplebbitAddress={shortSubplebbitAddress}
             subplebbitAddress={subplebbitAddress}
             readableUrl={readableUrl}
-            closeModal={closeModal}
-            onDone={onIframeClose}
+            onCancel={abandonModal}
+            onDone={onIframeDone}
             publicationDetails={publicationDetails}
           />
         ) : (
@@ -357,7 +354,7 @@ const Challenge = ({ challenge, closeModal }: ChallengeProps) => {
                     {t('submit')}
                   </button>
                 )}
-                <button onClick={closeModal}>Cancel</button>
+                <button onClick={abandonModal}>Cancel</button>
                 {challenges?.length > 1 && (
                   <button disabled={!challenges?.[currentChallengeIndex - 1]} onClick={() => setCurrentChallengeIndex((prev) => prev - 1)}>
                     {t('previous')}
@@ -374,14 +371,17 @@ const Challenge = ({ challenge, closeModal }: ChallengeProps) => {
 };
 
 const ChallengeModal = () => {
-  const { challenges, removeChallenge } = useChallengesStore();
+  const { challenges, removeChallenge, abandonCurrentChallenge } = useChallengesStore();
   const isOpen = !!challenges.length;
   const closeModal = () => removeChallenge();
+  const abandonModal = () => {
+    void abandonCurrentChallenge();
+  };
   const current = challenges[0];
   const challenge = current?.challenge;
   const challengeId = current?.id ?? 0;
 
-  return isOpen && challenge ? <Challenge key={challengeId} challenge={challenge} closeModal={closeModal} /> : null;
+  return isOpen && challenge ? <Challenge key={challengeId} challenge={challenge} closeModal={closeModal} abandonModal={abandonModal} /> : null;
 };
 
 export default ChallengeModal;

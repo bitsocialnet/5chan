@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigationType, useParams } from 'react-router-dom';
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
-import { Comment, useEditedComment, useReplies, useAccount, useAccountComment } from '@bitsocialhq/bitsocial-react-hooks';
+import { Comment, deleteComment, useEditedComment, useReplies, useAccount, useAccountComment } from '@bitsocialhq/bitsocial-react-hooks';
 import getShortAddress from '../../lib/get-short-address';
 import styles from '../../views/post/post.module.css';
 import { CommentMediaInfo, getDisplayMediaInfoType, getHasThumbnail, getMediaDimensions } from '../../lib/utils/media-utils';
@@ -98,6 +98,7 @@ const PostInfo = ({
   const displayName = author?.displayName?.trim();
   const authorRole = roles?.[address]?.role?.replace('moderator', 'mod');
   const hasFailedState = state === 'failed';
+  const canDeleteFailedPost = hasFailedState && typeof post?.index === 'number';
   const isReply = parentCid;
   const { showOmittedReplies } = useShowOmittedReplies();
   const directories = useDirectories();
@@ -161,6 +162,7 @@ const PostInfo = ({
   });
 
   const [initiatedPendingAction, setInitiatedPendingAction] = useState<'approve' | 'reject' | null>(null);
+  const [isDeletingFailedPost, setIsDeletingFailedPost] = useState(false);
 
   const handlePendingApprove = useCallback(async () => {
     const confirm = window.confirm(t('double_confirm'));
@@ -242,6 +244,23 @@ const PostInfo = ({
           ? alert(t('this_reply_was_removed'))
           : alert(t('this_thread_was_removed'))
         : openReplyModal && openReplyModal(cid, post?.number, postCid, threadNumber, subplebbitAddress);
+  };
+
+  const onDeleteFailedPost = () => {
+    if (isDeletingFailedPost || !canDeleteFailedPost) {
+      return;
+    }
+
+    setIsDeletingFailedPost(true);
+    deleteComment(post?.cid || post.index)
+      .then(() => {
+        setIsDeletingFailedPost(false);
+      })
+      .catch((error) => {
+        console.error('Failed to delete failed post:', error);
+        alert(`Failed to delete post: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        setIsDeletingFailedPost(false);
+      });
   };
 
   return (
@@ -450,6 +469,15 @@ const PostInfo = ({
                   </span>
                 </>
               )}
+            </span>
+          )}
+          {canDeleteFailedPost && (
+            <span className={styles.failedPublishNotice}>
+              this post failed to publish, it's not visible to other users [{' '}
+              <button type='button' className={styles.failedDeletePostButton} disabled={isDeletingFailedPost} onClick={onDeleteFailedPost}>
+                Delete Post
+              </button>{' '}
+              ]
             </span>
           )}
         </span>

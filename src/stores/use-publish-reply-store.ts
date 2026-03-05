@@ -1,7 +1,6 @@
 import { ChallengeVerification, Comment, PublishCommentOptions } from '@bitsocialhq/bitsocial-react-hooks';
 import { create } from 'zustand';
 import { alertChallengeVerificationFailed } from '../lib/utils/challenge-utils';
-import useChallengesStore from './use-challenges-store';
 
 type ReplyState = {
   author: { [parentCid: string]: any | undefined };
@@ -13,8 +12,6 @@ type ReplyState = {
   setPublishReplyStore: (comment: Comment) => void;
   resetPublishReplyStore: (parentCid: string) => void;
 };
-
-const { addChallenge } = useChallengesStore.getState();
 
 const usePublishReplyStore = create<ReplyState>((set) => ({
   author: {},
@@ -42,7 +39,6 @@ const usePublishReplyStore = create<ReplyState>((set) => ({
         content,
         link,
         spoiler,
-        onChallenge: (...args: any) => addChallenge(args),
         onChallengeVerification: (challengeVerification: ChallengeVerification, comment: Comment) => {
           alertChallengeVerificationFailed(challengeVerification, comment);
         },

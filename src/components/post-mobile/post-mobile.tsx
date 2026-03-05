@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigationType, useParams } from 'react-router-dom';
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
-import { Comment, useEditedComment, useReplies, useAccount, usePublishCommentModeration, useAccountComment } from '@bitsocialhq/bitsocial-react-hooks';
+import { Comment, deleteComment, useEditedComment, useReplies, useAccount, usePublishCommentModeration, useAccountComment } from '@bitsocialhq/bitsocial-react-hooks';
 import getShortAddress from '../../lib/get-short-address';
 import styles from '../../views/post/post.module.css';
 import { shouldShowSnow } from '../../lib/snow';
@@ -188,6 +188,7 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
   const isOverThreshold = isAwaitingApproval && timeWaiting > alertThresholdSeconds;
 
   const hasFailedState = state === 'failed';
+  const canDeleteFailedPost = hasFailedState && typeof post?.index === 'number';
   const postMenuProps = selectPostMenuProps(post);
 
   const pseudonymityMode = useSubplebbitField(subplebbitAddress, (sub) => sub?.features?.pseudonymityMode);
@@ -221,6 +222,24 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
           ? alert(t('this_reply_was_removed'))
           : alert(t('this_thread_was_removed'))
         : openReplyModal && openReplyModal(cid, post?.number, postCid, threadNumber, subplebbitAddress);
+  };
+
+  const [isDeletingFailedPost, setIsDeletingFailedPost] = useState(false);
+  const onDeleteFailedPost = () => {
+    if (isDeletingFailedPost || !canDeleteFailedPost) {
+      return;
+    }
+
+    setIsDeletingFailedPost(true);
+    deleteComment(post?.cid || post.index)
+      .then(() => {
+        setIsDeletingFailedPost(false);
+      })
+      .catch((error) => {
+        console.error('Failed to delete failed post:', error);
+        alert(`Failed to delete post: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        setIsDeletingFailedPost(false);
+      });
   };
 
   return (
@@ -393,6 +412,15 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
               </div>
             )}
           </span>
+          {canDeleteFailedPost && (
+            <span className={styles.failedPublishNotice}>
+              this post failed to publish, it's not visible to other users [{' '}
+              <button type='button' className={styles.failedDeletePostButton} disabled={isDeletingFailedPost} onClick={onDeleteFailedPost}>
+                Delete Post
+              </button>{' '}
+              ]
+            </span>
+          )}
         </span>
       </div>
       {(hasThumbnail || link) && !(deleted || removed) && <PostMediaContent key={cid} post={post} link={link} />}

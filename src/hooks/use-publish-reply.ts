@@ -1,8 +1,9 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import { Comment, usePublishComment } from '@bitsocialhq/bitsocial-react-hooks';
 import usePublishReplyStore from '../stores/use-publish-reply-store';
 import usePostNumberStore from '../stores/use-post-number-store';
 import { getQuotedCidsFromContent, mergeQuotedCids } from '../lib/utils/reply-quote-utils';
+import useChallengesStore from '../stores/use-challenges-store';
 
 const usePublishReply = ({ cid, subplebbitAddress, postCid }: { cid: string; subplebbitAddress: string; postCid?: string }) => {
   const parentCid = cid;
@@ -17,6 +18,8 @@ const usePublishReply = ({ cid, subplebbitAddress, postCid }: { cid: string; sub
 
   const setPublishReplyStore = usePublishReplyStore((state) => state.setPublishReplyStore);
   const resetPublishReplyStore = usePublishReplyStore((state) => state.resetPublishReplyStore);
+  const addChallenge = useChallengesStore((state) => state.addChallenge);
+  const abandonPublishRef = useRef<(() => Promise<void>) | undefined>();
 
   const createBaseOptions = useCallback(() => {
     const baseOptions: Comment = {
@@ -58,9 +61,21 @@ const usePublishReply = ({ cid, subplebbitAddress, postCid }: { cid: string; sub
   const scopedNumberToCid = usePostNumberStore((state) => (subplebbitAddress ? state.numberToCid[subplebbitAddress] : undefined));
   const quotedCids = useMemo(() => getQuotedCidsFromContent(content, scopedNumberToCid), [content, scopedNumberToCid]);
 
-  const publishOptions = useMemo(() => mergeQuotedCids(publishCommentOptions, quotedCids), [publishCommentOptions, quotedCids]);
+  const mergedPublishOptions = useMemo(() => mergeQuotedCids(publishCommentOptions, quotedCids), [publishCommentOptions, quotedCids]);
+  const publishOptionsWithAbandon = useMemo(
+    () => ({
+      ...mergedPublishOptions,
+      onChallenge: async (...args: any[]) => {
+        addChallenge(args, async () => {
+          await abandonPublishRef.current?.();
+        });
+      },
+    }),
+    [addChallenge, mergedPublishOptions],
+  );
 
-  const { index, publishComment } = usePublishComment(publishOptions);
+  const { index, publishComment, abandonPublish } = usePublishComment(publishOptionsWithAbandon);
+  abandonPublishRef.current = abandonPublish;
 
   return {
     setPublishReplyOptions,
