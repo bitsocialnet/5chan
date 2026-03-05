@@ -1023,9 +1023,9 @@
     "@babel/helper-string-parser" "^7.27.1"
     "@babel/helper-validator-identifier" "^7.28.5"
 
-"@bitsocialhq/bitsocial-react-hooks@https://github.com/bitsocialhq/bitsocial-react-hooks.git#6dc27da29debfb9c0144b445132bae4cfd975c4f":
+"@bitsocialhq/bitsocial-react-hooks@https://github.com/bitsocialhq/bitsocial-react-hooks.git#c9e56de2307f5bd5db0c2b7958a3ecad6ea0a724":
   version "0.1.0"
-  resolved "https://github.com/bitsocialhq/bitsocial-react-hooks.git#6dc27da29debfb9c0144b445132bae4cfd975c4f"
+  resolved "https://github.com/bitsocialhq/bitsocial-react-hooks.git#c9e56de2307f5bd5db0c2b7958a3ecad6ea0a724"
   dependencies:
     "@plebbit/plebbit-js" "https://github.com/plebbit/plebbit-js.git#10ed04e3866dd986a7f802bc9efd027f0e7d465b"
     "@plebbit/plebbit-logger" "https://github.com/plebbit/plebbit-logger.git"

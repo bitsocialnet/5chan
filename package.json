@@ -7,7 +7,7 @@
   "license": "GPL-2.0-only",
   "private": true,
   "dependencies": {
-    "@bitsocialhq/bitsocial-react-hooks": "https://github.com/bitsocialhq/bitsocial-react-hooks.git#6dc27da29debfb9c0144b445132bae4cfd975c4f",
+    "@bitsocialhq/bitsocial-react-hooks": "https://github.com/bitsocialhq/bitsocial-react-hooks.git#c9e56de2307f5bd5db0c2b7958a3ecad6ea0a724",
     "@capacitor/app": "7.0.1",
     "@capacitor/status-bar": "7.0.1",
     "@capawesome/capacitor-android-edge-to-edge-support": "7.2.2",
