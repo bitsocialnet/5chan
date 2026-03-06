@@ -100,8 +100,8 @@ const FAQ = () => {
                 <dd>
                   No. 5chan is a client app for the Bitsocial protocol. This website is just one place to open it — the domain could change, disappear, or be blocked
                   without affecting the Bitsocial network or any boards. We recommend installing the app when your browser offers it, so you keep a local copy that works
-                  independently. You can also <a href='https://github.com/bitsocialhq/5chan/releases/latest'>download a desktop or Android release</a> from GitHub. If you
-                  know a board's address, you can connect from any host or installed copy.
+                  independently. You can also <a href='https://github.com/bitsocialhq/5chan/releases/latest'>download the app</a> from GitHub. If you know a board's
+                  address, you can connect from any host or installed copy.
                 </dd>
                 <dt id='howaccess'>How do I access the boards?</dt>
                 <dd>
