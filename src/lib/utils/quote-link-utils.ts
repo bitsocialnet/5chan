@@ -1,8 +1,18 @@
 import type { Comment } from '@bitsocialhq/bitsocial-react-hooks';
 
+type QuoteTargetAvailability = 'available' | 'unresolved' | 'unavailable';
+
 export const formatQuoteNumber = (number?: number) => `>>${number ?? '?'}`;
 
-export const isUnavailableQuoteTarget = (comment?: Partial<Pick<Comment, 'deleted' | 'removed'>> | null) => Boolean(comment?.deleted || comment?.removed);
+export const getQuoteTargetAvailability = (comment?: Partial<Pick<Comment, 'deleted' | 'removed'>> | null): QuoteTargetAvailability => {
+  if (!comment) {
+    return 'unresolved';
+  }
+
+  return comment.deleted || comment.removed ? 'unavailable' : 'available';
+};
+
+export const isUnavailableQuoteTarget = (comment?: Partial<Pick<Comment, 'deleted' | 'removed'>> | null) => getQuoteTargetAvailability(comment) === 'unavailable';
 
 export const shouldShowFloatingQuotePreview = ({
   hoveredCid,

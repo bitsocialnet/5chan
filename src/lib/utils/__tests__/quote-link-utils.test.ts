@@ -1,10 +1,17 @@
 import { describe, expect, it } from 'vitest';
-import { formatQuoteNumber, isUnavailableQuoteTarget, shouldShowFloatingQuotePreview } from '../quote-link-utils';
+import { formatQuoteNumber, getQuoteTargetAvailability, isUnavailableQuoteTarget, shouldShowFloatingQuotePreview } from '../quote-link-utils';
 
 describe('quote-link-utils', () => {
   it('formats quote numbers with the expected prefix', () => {
     expect(formatQuoteNumber(123)).toBe('>>123');
     expect(formatQuoteNumber()).toBe('>>?');
+  });
+
+  it('distinguishes unresolved and unavailable quote targets', () => {
+    expect(getQuoteTargetAvailability(undefined)).toBe('unresolved');
+    expect(getQuoteTargetAvailability({ deleted: true, removed: false })).toBe('unavailable');
+    expect(getQuoteTargetAvailability({ deleted: false, removed: true })).toBe('unavailable');
+    expect(getQuoteTargetAvailability({ deleted: false, removed: false })).toBe('available');
   });
 
   it('marks deleted and removed comments as unavailable quote targets', () => {

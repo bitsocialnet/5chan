@@ -5,7 +5,7 @@ import { Comment, useAccount } from '@bitsocialhq/bitsocial-react-hooks';
 import { useFloating, offset, shift, size, autoUpdate, Placement } from '@floating-ui/react';
 import { useDirectories } from '../../hooks/use-directories';
 import { getBoardPath } from '../../lib/utils/route-utils';
-import { formatQuoteNumber, isUnavailableQuoteTarget, shouldShowFloatingQuotePreview } from '../../lib/utils/quote-link-utils';
+import { formatQuoteNumber, getQuoteTargetAvailability, shouldShowFloatingQuotePreview } from '../../lib/utils/quote-link-utils';
 import useIsMobile from '../../hooks/use-is-mobile';
 import styles from '../../views/post/post.module.css';
 import { Post } from '../../views/post';
@@ -209,7 +209,9 @@ const DesktopQuotePreview = ({
   const resolvedQuotelinkNumber = quotelinkReply?.number ?? quotelinkNumber;
   const resolvedQuotelinkCid = quotelinkReply?.cid;
   const resolvedQuotelinkSubplebbitAddress = quotelinkReply?.subplebbitAddress;
-  const quotelinkUnavailable = Boolean(isQuotelinkUnavailable || isUnavailableQuoteTarget(quotelinkReply));
+  const quoteTargetAvailability = getQuoteTargetAvailability(quotelinkReply);
+  const quotelinkUnavailable = Boolean(isQuotelinkUnavailable || quoteTargetAvailability === 'unavailable');
+  const quotelinkPendingResolution = !quotelinkUnavailable && quoteTargetAvailability === 'unresolved';
   const quotelinkClassName = quotelinkUnavailable ? `${styles.quoteLink} ${styles.quoteLinkUnavailable}` : styles.quoteLink;
   const quotelinkBoardPath = quotelinkReply?.subplebbitAddress ? getBoardPath(quotelinkReply.subplebbitAddress, directories) : undefined;
   const quotelinkRoute = quotelinkReply?.cid ? (quotelinkBoardPath ? `/${quotelinkBoardPath}/thread/${quotelinkReply.cid}` : `/thread/${quotelinkReply.cid}`) : '#';
@@ -231,6 +233,8 @@ const DesktopQuotePreview = ({
     <>
       {quotelinkUnavailable ? (
         <span className={quotelinkClassName}>{quotelinkLabel}</span>
+      ) : quotelinkPendingResolution ? (
+        <span className={styles.quoteLink}>{quotelinkLabel}</span>
       ) : (
         <Link
           to={quotelinkRoute}
@@ -363,7 +367,9 @@ const MobileQuotePreview = ({
   const resolvedQuotelinkNumber = quotelinkReply?.number ?? quotelinkNumber;
   const resolvedQuotelinkCid = quotelinkReply?.cid;
   const resolvedQuotelinkSubplebbitAddress = quotelinkReply?.subplebbitAddress;
-  const quotelinkUnavailable = Boolean(isQuotelinkUnavailable || isUnavailableQuoteTarget(quotelinkReply));
+  const quoteTargetAvailability = getQuoteTargetAvailability(quotelinkReply);
+  const quotelinkUnavailable = Boolean(isQuotelinkUnavailable || quoteTargetAvailability === 'unavailable');
+  const quotelinkPendingResolution = !quotelinkUnavailable && quoteTargetAvailability === 'unresolved';
   const quotelinkClassName = quotelinkUnavailable ? `${styles.quoteLink} ${styles.quoteLinkUnavailable}` : styles.quoteLink;
   const shouldShowQuotelinkPreview = shouldShowFloatingQuotePreview({
     hoveredCid,
@@ -375,16 +381,17 @@ const MobileQuotePreview = ({
   const replyQuotelink = (
     <>
       <span
-        ref={quotelinkUnavailable ? undefined : refs.setReference}
-        className={quotelinkClassName}
-        onMouseOver={quotelinkUnavailable ? undefined : () => handleMouseOver(resolvedQuotelinkCid)}
-        onMouseLeave={quotelinkUnavailable ? undefined : () => handleMouseLeave(resolvedQuotelinkCid)}
+        ref={quotelinkUnavailable || quotelinkPendingResolution ? undefined : refs.setReference}
+        className={quotelinkPendingResolution ? styles.quoteLink : quotelinkClassName}
+        onMouseOver={quotelinkUnavailable || quotelinkPendingResolution ? undefined : () => handleMouseOver(resolvedQuotelinkCid)}
+        onMouseLeave={quotelinkUnavailable || quotelinkPendingResolution ? undefined : () => handleMouseLeave(resolvedQuotelinkCid)}
       >
         {formatQuoteNumber(resolvedQuotelinkNumber)}
         {isOP && ' (OP)'}
         {quotelinkReply?.author?.address === account?.author?.address && ' (You)'}
       </span>
       {!quotelinkUnavailable &&
+        !quotelinkPendingResolution &&
         resolvedQuotelinkNumber &&
         (() => {
           const quotelinkBoardPath = resolvedQuotelinkSubplebbitAddress ? getBoardPath(resolvedQuotelinkSubplebbitAddress, directories) : undefined;

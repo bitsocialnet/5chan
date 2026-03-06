@@ -277,13 +277,13 @@ const NumberQuoteLink = ({ number, threadPostCid, subplebbitAddress }: { number:
   const comment = commentFromHook?.number !== undefined ? commentFromHook : commentFromStore;
   const isOP = Boolean(threadPostCid && cid === threadPostCid);
 
-  if (!comment || isUnavailableQuoteTarget(comment)) {
+  if (isUnavailableQuoteTarget(comment)) {
     return (
       <ReplyQuotePreview isQuotelinkReply={true} quotelinkReply={comment} quotelinkNumber={number} isQuotelinkUnavailable={true} isOP={isOP} showTrailingBreak={false} />
     );
   }
 
-  return <ReplyQuotePreview isQuotelinkReply={true} quotelinkReply={comment} isOP={isOP} showTrailingBreak={false} />;
+  return <ReplyQuotePreview isQuotelinkReply={true} quotelinkReply={comment} quotelinkNumber={number} isOP={isOP} showTrailingBreak={false} />;
 };
 
 const renderAnchorLink = (children: React.ReactNode, href: string, threadPostCid?: string, subplebbitAddress?: string) => {

@@ -6,6 +6,7 @@ import useSubplebbitsPagesStore from '@bitsocialhq/bitsocial-react-hooks/dist/st
 import usePostNumberStore from '../../stores/use-post-number-store';
 import getShortAddress from '../../lib/get-short-address';
 import { getFormattedDate, getFormattedTimeAgo } from '../../lib/utils/time-utils';
+import { isUnavailableQuoteTarget } from '../../lib/utils/quote-link-utils';
 import { isPostPageView } from '../../lib/utils/view-utils';
 import useIsMobile from '../../hooks/use-is-mobile';
 import useStateString from '../../hooks/use-state-string';
@@ -23,7 +24,7 @@ const QuotedCidLink = ({ cid, postCid }: { cid: string; postCid: string }) => {
   // Prefer hook version to ensure 'number' property is populated for deeper nested replies in Virtuoso
   const quotedComment = commentFromHook?.number !== undefined ? commentFromHook : commentFromStore;
   const isOP = cid === postCid;
-  const isUnavailable = !quotedComment || quotedComment.deleted || quotedComment.removed;
+  const isUnavailable = isUnavailableQuoteTarget(quotedComment);
 
   return <ReplyQuotePreview isQuotelinkReply={true} quotelinkReply={quotedComment} quotelinkNumber={quotedNumber} isQuotelinkUnavailable={isUnavailable} isOP={isOP} />;
 };
@@ -129,7 +130,7 @@ const CommentContent = ({ comment: post }: { comment: Comment }) => {
         !(deleted || removed) &&
         (filteredQuotedCids.length > 0
           ? filteredQuotedCids.map((cid: string) => <QuotedCidLink key={cid} cid={cid} postCid={postCid} />)
-          : shouldShowReplyingToReply && <ReplyQuotePreview isQuotelinkReply={true} quotelinkReply={quotelinkReply} />)}
+          : shouldShowReplyingToReply && <ReplyQuotePreview isQuotelinkReply={true} quotelinkReply={quotelinkReply} quotelinkNumber={parentNumber} />)}
       {removed ? (
         reason ? (
           <>
