@@ -1039,22 +1039,6 @@
     uuid "11.1.0"
     zustand "4.0.0"
 
-"@bitsocialhq/bitsocial-react-hooks@https://github.com/bitsocialhq/bitsocial-react-hooks.git#c9e56de2307f5bd5db0c2b7958a3ecad6ea0a724":
-  version "0.1.0"
-  resolved "https://github.com/bitsocialhq/bitsocial-react-hooks.git#c9e56de2307f5bd5db0c2b7958a3ecad6ea0a724"
-  dependencies:
-    "@plebbit/plebbit-js" "https://github.com/plebbit/plebbit-js.git#10ed04e3866dd986a7f802bc9efd027f0e7d465b"
-    "@plebbit/plebbit-logger" "https://github.com/plebbit/plebbit-logger.git"
-    assert "2.0.0"
-    ethers "5.8.0"
-    localforage "1.10.0"
-    lodash.isequal "4.5.0"
-    memoizee "0.4.15"
-    quick-lru "5.1.1"
-    uint8arrays "3.1.1"
-    uuid "11.1.0"
-    zustand "4.0.0"
-
 "@bonfida/sns-records@0.0.1":
   version "0.0.1"
   resolved "https://registry.yarnpkg.com/@bonfida/sns-records/-/sns-records-0.0.1.tgz#e178dece0aeeb1670c57703568ae3e1218e7e5fe"
