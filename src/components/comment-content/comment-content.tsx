@@ -17,12 +17,15 @@ import styles from '../../views/post/post.module.css';
 import capitalize from 'lodash/capitalize';
 
 const QuotedCidLink = ({ cid, postCid }: { cid: string; postCid: string }) => {
+  const quotedNumber = usePostNumberStore((state) => state.cidToNumber[cid]);
   const commentFromStore = useSubplebbitsPagesStore((state) => state.comments[cid]);
   const commentFromHook = useComment({ commentCid: cid, onlyIfCached: true });
   // Prefer hook version to ensure 'number' property is populated for deeper nested replies in Virtuoso
   const quotedComment = commentFromHook?.number !== undefined ? commentFromHook : commentFromStore;
   const isOP = cid === postCid;
-  return <ReplyQuotePreview isQuotelinkReply={true} quotelinkReply={quotedComment} isOP={isOP} />;
+  const isUnavailable = !quotedComment || quotedComment.deleted || quotedComment.removed;
+
+  return <ReplyQuotePreview isQuotelinkReply={true} quotelinkReply={quotedComment} quotelinkNumber={quotedNumber} isQuotelinkUnavailable={isUnavailable} isOP={isOP} />;
 };
 
 const useScopedCidToNumber = (cids: string[]) => {

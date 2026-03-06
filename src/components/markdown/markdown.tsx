@@ -10,6 +10,7 @@ import styles from './markdown.module.css';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import { canEmbed } from '../embed';
 import { is5chanLink, transform5chanLinkToInternal, isValidCrossboardPattern } from '../../lib/utils/url-utils';
+import { isUnavailableQuoteTarget } from '../../lib/utils/quote-link-utils';
 import usePostNumberStore from '../../stores/use-post-number-store';
 import useSubplebbitsPagesStore from '@bitsocialhq/bitsocial-react-hooks/dist/stores/subplebbits-pages';
 import { useComment } from '@bitsocialhq/bitsocial-react-hooks';
@@ -276,8 +277,10 @@ const NumberQuoteLink = ({ number, threadPostCid, subplebbitAddress }: { number:
   const comment = commentFromHook?.number !== undefined ? commentFromHook : commentFromStore;
   const isOP = Boolean(threadPostCid && cid === threadPostCid);
 
-  if (!comment) {
-    return <span>{`>>${number}`}</span>;
+  if (!comment || isUnavailableQuoteTarget(comment)) {
+    return (
+      <ReplyQuotePreview isQuotelinkReply={true} quotelinkReply={comment} quotelinkNumber={number} isQuotelinkUnavailable={true} isOP={isOP} showTrailingBreak={false} />
+    );
   }
 
   return <ReplyQuotePreview isQuotelinkReply={true} quotelinkReply={comment} isOP={isOP} showTrailingBreak={false} />;

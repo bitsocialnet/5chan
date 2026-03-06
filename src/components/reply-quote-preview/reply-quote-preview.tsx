@@ -5,6 +5,7 @@ import { Comment, useAccount } from '@bitsocialhq/bitsocial-react-hooks';
 import { useFloating, offset, shift, size, autoUpdate, Placement } from '@floating-ui/react';
 import { useDirectories } from '../../hooks/use-directories';
 import { getBoardPath } from '../../lib/utils/route-utils';
+import { formatQuoteNumber, isUnavailableQuoteTarget, shouldShowFloatingQuotePreview } from '../../lib/utils/quote-link-utils';
 import useIsMobile from '../../hooks/use-is-mobile';
 import styles from '../../views/post/post.module.css';
 import { Post } from '../../views/post';
@@ -14,6 +15,8 @@ interface ReplyQuotePreviewProps {
   backlinkReply?: Comment;
   isQuotelinkReply?: boolean;
   quotelinkReply?: Comment;
+  quotelinkNumber?: number;
+  isQuotelinkUnavailable?: boolean;
   isOP?: boolean;
   showTrailingBreak?: boolean;
 }
@@ -80,7 +83,16 @@ const scrollToReplyOnPage = (cid: string) => {
   return true;
 };
 
-const DesktopQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, isQuotelinkReply, isOP, showTrailingBreak = true }: ReplyQuotePreviewProps) => {
+const DesktopQuotePreview = ({
+  backlinkReply,
+  quotelinkReply,
+  quotelinkNumber,
+  isBacklinkReply,
+  isQuotelinkReply,
+  isQuotelinkUnavailable,
+  isOP,
+  showTrailingBreak = true,
+}: ReplyQuotePreviewProps) => {
   const [hoveredCid, setHoveredCid] = useState<string | null>(null);
   const [outOfViewCid, setOutOfViewCid] = useState<string | null>(null);
   const [placement, setPlacement] = useState<Placement>('right');
@@ -194,26 +206,45 @@ const DesktopQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, i
 
   const account = useAccount();
 
+  const resolvedQuotelinkNumber = quotelinkReply?.number ?? quotelinkNumber;
+  const resolvedQuotelinkCid = quotelinkReply?.cid;
+  const resolvedQuotelinkSubplebbitAddress = quotelinkReply?.subplebbitAddress;
+  const quotelinkUnavailable = Boolean(isQuotelinkUnavailable || isUnavailableQuoteTarget(quotelinkReply));
+  const quotelinkClassName = quotelinkUnavailable ? `${styles.quoteLink} ${styles.quoteLinkUnavailable}` : styles.quoteLink;
   const quotelinkBoardPath = quotelinkReply?.subplebbitAddress ? getBoardPath(quotelinkReply.subplebbitAddress, directories) : undefined;
   const quotelinkRoute = quotelinkReply?.cid ? (quotelinkBoardPath ? `/${quotelinkBoardPath}/thread/${quotelinkReply.cid}` : `/thread/${quotelinkReply.cid}`) : '#';
+  const shouldShowQuotelinkPreview = shouldShowFloatingQuotePreview({
+    hoveredCid,
+    outOfViewCid,
+    quoteCid: resolvedQuotelinkCid,
+    isUnavailable: quotelinkUnavailable,
+  });
+  const quotelinkLabel = (
+    <>
+      {formatQuoteNumber(resolvedQuotelinkNumber)}
+      {isOP && ' (OP)'}
+      {quotelinkReply?.author?.address === account?.author?.address && ' (You)'}
+    </>
+  );
 
   const replyQuotelink = (
     <>
-      <Link
-        to={quotelinkRoute}
-        ref={refs.setReference}
-        className={styles.quoteLink}
-        onMouseOver={() => handleMouseOver(quotelinkReply?.cid)}
-        onMouseLeave={() => handleMouseLeave(quotelinkReply?.cid)}
-        onClick={(e) => handleClick(e, quotelinkReply?.cid, quotelinkReply?.subplebbitAddress, !!isOP)}
-      >
-        {`>>${quotelinkReply?.number ?? '?'}`}
-        {isOP && ' (OP)'}
-        {quotelinkReply?.author?.address === account?.author?.address && ' (You)'}
-      </Link>
+      {quotelinkUnavailable ? (
+        <span className={quotelinkClassName}>{quotelinkLabel}</span>
+      ) : (
+        <Link
+          to={quotelinkRoute}
+          ref={refs.setReference}
+          className={quotelinkClassName}
+          onMouseOver={() => handleMouseOver(resolvedQuotelinkCid)}
+          onMouseLeave={() => handleMouseLeave(resolvedQuotelinkCid)}
+          onClick={(e) => handleClick(e, resolvedQuotelinkCid, resolvedQuotelinkSubplebbitAddress, !!isOP)}
+        >
+          {quotelinkLabel}
+        </Link>
+      )}
       {showTrailingBreak && <br />}
-      {hoveredCid === quotelinkReply?.cid &&
-        outOfViewCid === quotelinkReply?.cid &&
+      {shouldShowQuotelinkPreview &&
         createPortal(
           <div className={styles.replyQuotePreview} ref={refs.setFloating} style={floatingStyles}>
             <Post post={quotelinkReply} showReplies={false} />
@@ -226,7 +257,16 @@ const DesktopQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, i
   return isBacklinkReply ? replyBacklink : isQuotelinkReply && replyQuotelink;
 };
 
-const MobileQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, isQuotelinkReply, isOP, showTrailingBreak = true }: ReplyQuotePreviewProps) => {
+const MobileQuotePreview = ({
+  backlinkReply,
+  quotelinkReply,
+  quotelinkNumber,
+  isBacklinkReply,
+  isQuotelinkReply,
+  isQuotelinkUnavailable,
+  isOP,
+  showTrailingBreak = true,
+}: ReplyQuotePreviewProps) => {
   const [hoveredCid, setHoveredCid] = useState<string | null>(null);
   const [outOfViewCid, setOutOfViewCid] = useState<string | null>(null);
   const directories = useDirectories();
@@ -320,37 +360,48 @@ const MobileQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, is
   );
 
   const account = useAccount();
+  const resolvedQuotelinkNumber = quotelinkReply?.number ?? quotelinkNumber;
+  const resolvedQuotelinkCid = quotelinkReply?.cid;
+  const resolvedQuotelinkSubplebbitAddress = quotelinkReply?.subplebbitAddress;
+  const quotelinkUnavailable = Boolean(isQuotelinkUnavailable || isUnavailableQuoteTarget(quotelinkReply));
+  const quotelinkClassName = quotelinkUnavailable ? `${styles.quoteLink} ${styles.quoteLinkUnavailable}` : styles.quoteLink;
+  const shouldShowQuotelinkPreview = shouldShowFloatingQuotePreview({
+    hoveredCid,
+    outOfViewCid,
+    quoteCid: resolvedQuotelinkCid,
+    isUnavailable: quotelinkUnavailable,
+  });
 
   const replyQuotelink = (
     <>
       <span
-        ref={refs.setReference}
-        className={styles.quoteLink}
-        onMouseOver={() => handleMouseOver(quotelinkReply?.cid)}
-        onMouseLeave={() => handleMouseLeave(quotelinkReply?.cid)}
+        ref={quotelinkUnavailable ? undefined : refs.setReference}
+        className={quotelinkClassName}
+        onMouseOver={quotelinkUnavailable ? undefined : () => handleMouseOver(resolvedQuotelinkCid)}
+        onMouseLeave={quotelinkUnavailable ? undefined : () => handleMouseLeave(resolvedQuotelinkCid)}
       >
-        {`>>${quotelinkReply?.number ?? '?'}`}
+        {formatQuoteNumber(resolvedQuotelinkNumber)}
         {isOP && ' (OP)'}
         {quotelinkReply?.author?.address === account?.author?.address && ' (You)'}
       </span>
-      {quotelinkReply?.number &&
+      {!quotelinkUnavailable &&
+        resolvedQuotelinkNumber &&
         (() => {
-          const quotelinkBoardPath = quotelinkReply?.subplebbitAddress ? getBoardPath(quotelinkReply.subplebbitAddress, directories) : undefined;
-          const quotelinkRoute = quotelinkReply?.cid
+          const quotelinkBoardPath = resolvedQuotelinkSubplebbitAddress ? getBoardPath(resolvedQuotelinkSubplebbitAddress, directories) : undefined;
+          const quotelinkRoute = resolvedQuotelinkCid
             ? quotelinkBoardPath
-              ? `/${quotelinkBoardPath}/thread/${quotelinkReply.cid}`
-              : `/thread/${quotelinkReply.cid}`
+              ? `/${quotelinkBoardPath}/thread/${resolvedQuotelinkCid}`
+              : `/thread/${resolvedQuotelinkCid}`
             : '#';
           return (
-            <Link className={styles.quoteLink} to={quotelinkRoute} onClick={(e) => handleClick(e, quotelinkReply?.cid, quotelinkReply?.subplebbitAddress, !!isOP)}>
+            <Link className={quotelinkClassName} to={quotelinkRoute} onClick={(e) => handleClick(e, resolvedQuotelinkCid, resolvedQuotelinkSubplebbitAddress, !!isOP)}>
               {' '}
               #
             </Link>
           );
         })()}
       {showTrailingBreak && <br />}
-      {hoveredCid === quotelinkReply?.cid &&
-        outOfViewCid === quotelinkReply?.cid &&
+      {shouldShowQuotelinkPreview &&
         createPortal(
           <div className={styles.replyQuotePreview} ref={refs.setFloating} style={floatingStyles}>
             <Post post={quotelinkReply} showReplies={false} />
@@ -363,15 +414,26 @@ const MobileQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, is
   return isBacklinkReply ? replyBacklink : isQuotelinkReply && replyQuotelink;
 };
 
-const ReplyQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, isQuotelinkReply, isOP, showTrailingBreak }: ReplyQuotePreviewProps) => {
+const ReplyQuotePreview = ({
+  backlinkReply,
+  quotelinkReply,
+  quotelinkNumber,
+  isBacklinkReply,
+  isQuotelinkReply,
+  isQuotelinkUnavailable,
+  isOP,
+  showTrailingBreak,
+}: ReplyQuotePreviewProps) => {
   const isMobile = useIsMobile();
 
   return isMobile ? (
     <MobileQuotePreview
       backlinkReply={backlinkReply}
       quotelinkReply={quotelinkReply}
+      quotelinkNumber={quotelinkNumber}
       isBacklinkReply={isBacklinkReply}
       isQuotelinkReply={isQuotelinkReply}
+      isQuotelinkUnavailable={isQuotelinkUnavailable}
       isOP={isOP}
       showTrailingBreak={showTrailingBreak}
     />
@@ -379,8 +441,10 @@ const ReplyQuotePreview = ({ backlinkReply, quotelinkReply, isBacklinkReply, isQ
     <DesktopQuotePreview
       backlinkReply={backlinkReply}
       quotelinkReply={quotelinkReply}
+      quotelinkNumber={quotelinkNumber}
       isBacklinkReply={isBacklinkReply}
       isQuotelinkReply={isQuotelinkReply}
+      isQuotelinkUnavailable={isQuotelinkUnavailable}
       isOP={isOP}
       showTrailingBreak={showTrailingBreak}
     />

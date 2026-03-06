@@ -490,6 +490,13 @@
   cursor: pointer;
 }
 
+.quoteLinkUnavailable,
+.quoteLinkUnavailable:hover {
+  color: var(--post-quotelink-text-color);
+  text-decoration: line-through;
+  cursor: default;
+}
+
 .replyMobile {
   padding-top: 7px;
   content-visibility: auto;
