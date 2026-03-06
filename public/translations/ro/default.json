@@ -297,5 +297,7 @@
   "link_to_file": "Link către fișier",
   "support_5chan": "Sprijiniți 5chan",
   "images": "imagini",
-  "load_more": "Încarcă mai mult"
+  "load_more": "Încarcă mai mult",
+  "purged": "purged",
+  "this_post_was_purged": "Purging from board database — this process is irreversible."
 }

@@ -297,5 +297,7 @@
   "link_to_file": "ফাইলের লিংক",
   "support_5chan": "5chan সমর্থন করুন",
   "images": "ছবি",
-  "load_more": "আরও লোড করুন"
+  "load_more": "আরও লোড করুন",
+  "purged": "purged",
+  "this_post_was_purged": "Purging from board database — this process is irreversible."
 }

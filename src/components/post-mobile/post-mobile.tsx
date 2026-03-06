@@ -59,6 +59,7 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
   const directories = useDirectories();
   const { author, cid, deleted, link, linkHeight, linkWidth, locked, parentCid, pinned, postCid, reason, removed, state, subplebbitAddress, timestamp, thumbnailUrl } =
     post || {};
+  const purged = post?.commentModeration?.purged;
   const boardPath = subplebbitAddress ? getBoardPath(subplebbitAddress, directories) : undefined;
   const displayBoardPath =
     boardPath && subplebbitAddress
@@ -217,7 +218,7 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
       ? isReply
         ? alert(t('this_reply_was_deleted'))
         : alert(t('this_thread_was_deleted'))
-      : removed
+      : removed || purged
         ? isReply
           ? alert(t('this_reply_was_removed'))
           : alert(t('this_thread_was_removed'))
@@ -246,13 +247,15 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
     <>
       <div className={styles.postInfo}>
         <PostMenuMobile postMenu={postMenuProps} editMenuPost={post} />
-        <span className={(hidden || ((removed || deleted) && !reason)) && parentCid ? styles.postDesktopHidden : ''}>
+        <span className={(hidden || ((removed || deleted || purged) && !reason)) && parentCid ? styles.postDesktopHidden : ''}>
           <span className={styles.nameBlock}>
-            <span className={`${styles.name} ${authorRole && !(deleted || removed) && (authorRole === 'mod' ? styles.capcodeMod : styles.capcodeAdmin)}`}>
+            <span className={`${styles.name} ${authorRole && !(deleted || removed || purged) && (authorRole === 'mod' ? styles.capcodeMod : styles.capcodeAdmin)}`}>
               {removed ? (
                 capitalize(t('removed'))
               ) : deleted ? (
                 capitalize(t('deleted'))
+              ) : purged ? (
+                capitalize(t('purged'))
               ) : displayName ? (
                 displayName.length <= 20 ? (
                   displayName
@@ -264,7 +267,7 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
               ) : (
                 capitalize(t('anonymous'))
               )}{' '}
-              {!(deleted || removed) && authorRole && (
+              {!(deleted || removed || purged) && authorRole && (
                 <span className='capitalize'>
                   {' '}
                   ## Board {authorRole}{' '}
@@ -285,6 +288,8 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
                   lowerCase(t('removed'))
                 ) : deleted ? (
                   lowerCase(t('deleted'))
+                ) : purged ? (
+                  lowerCase(t('purged'))
                 ) : !cid && pseudonymityMode ? (
                   <span className={styles.pendingCid}>{hasFailedState ? capitalize(t('failed')) : capitalize(t('pending'))}</span>
                 ) : (
@@ -423,7 +428,7 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
           )}
         </span>
       </div>
-      {(hasThumbnail || link) && !(deleted || removed) && <PostMediaContent key={cid} post={post} link={link} />}
+      {(hasThumbnail || link) && !(deleted || removed || purged) && <PostMediaContent key={cid} post={post} link={link} />}
     </>
   );
 };
@@ -431,6 +436,7 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
 const PostMediaContent = ({ post, link }: { post: any; link: string }) => {
   const [showThumbnail, setShowThumbnail] = useState(true);
   const { thumbnailUrl, linkWidth, linkHeight, spoiler, deleted, removed, parentCid } = post || {};
+  const purged = post?.commentModeration?.purged;
   const commentMediaInfo = useCommentMediaInfo(link, thumbnailUrl, linkWidth, linkHeight);
 
   return (
@@ -438,6 +444,7 @@ const PostMediaContent = ({ post, link }: { post: any; link: string }) => {
       <CommentMedia
         commentMediaInfo={commentMediaInfo}
         deleted={deleted}
+        purged={purged}
         removed={removed}
         linkHeight={linkHeight}
         linkWidth={linkWidth}
@@ -519,6 +526,7 @@ const Reply = ({
     post = editedComment;
   }
   const { author, cid, deleted, postCid, reason, removed, subplebbitAddress } = post || {};
+  const purged = post?.commentModeration?.purged;
   const directories = useDirectories();
   const boardPath = subplebbitAddress ? getBoardPath(subplebbitAddress, directories) : undefined;
   const location = useLocation();
@@ -536,7 +544,7 @@ const Reply = ({
           data-post-cid={postCid}
         >
           <PostInfoAndMedia post={post} postReplyCount={postReplyCount} roles={roles} threadNumber={threadNumber} />
-          {!hidden && (!(removed || deleted) || ((removed || deleted) && reason)) && <CommentContent comment={post} />}
+          {!hidden && (!(removed || deleted || purged) || ((removed || deleted) && reason)) && <CommentContent comment={post} />}
           <ReplyBacklinks post={post} quotedByMap={quotedByMap} directRepliesByParentCid={directRepliesByParentCid} />
         </div>
       </div>

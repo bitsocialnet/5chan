@@ -297,5 +297,7 @@
   "link_to_file": "Σύνδεσμος προς αρχείο",
   "support_5chan": "Υποστηρίξτε το 5chan",
   "images": "εικόνες",
-  "load_more": "Φόρτωση περισσότερων"
+  "load_more": "Φόρτωση περισσότερων",
+  "purged": "purged",
+  "this_post_was_purged": "Purging from board database — this process is irreversible."
 }

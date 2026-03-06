@@ -297,5 +297,7 @@
   "link_to_file": "Linkki tiedostoon",
   "support_5chan": "Tue 5chan",
   "images": "kuvat",
-  "load_more": "Lataa lisää"
+  "load_more": "Lataa lisää",
+  "purged": "purged",
+  "this_post_was_purged": "Purging from board database — this process is irreversible."
 }

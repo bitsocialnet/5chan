@@ -297,5 +297,7 @@
   "link_to_file": "Länk till fil",
   "support_5chan": "Stöd 5chan",
   "images": "bilder",
-  "load_more": "Ladda mer"
+  "load_more": "Ladda mer",
+  "purged": "purged",
+  "this_post_was_purged": "Purging from board database — this process is irreversible."
 }

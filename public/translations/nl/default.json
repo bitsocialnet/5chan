@@ -297,5 +297,7 @@
   "link_to_file": "Link naar bestand",
   "support_5chan": "Steun 5chan",
   "images": "afbeeldingen",
-  "load_more": "Meer laden"
+  "load_more": "Meer laden",
+  "purged": "purged",
+  "this_post_was_purged": "Purging from board database — this process is irreversible."
 }

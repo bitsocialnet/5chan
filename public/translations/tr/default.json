@@ -297,5 +297,7 @@
   "link_to_file": "Dosyaya bağlantı",
   "support_5chan": "5chan'ı Destekle",
   "images": "görseller",
-  "load_more": "Daha fazla yükle"
+  "load_more": "Daha fazla yükle",
+  "purged": "purged",
+  "this_post_was_purged": "Purging from board database — this process is irreversible."
 }

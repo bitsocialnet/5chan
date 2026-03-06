@@ -228,6 +228,8 @@
   "bitsocial_account": "Bitsocial Account",
   "purge": "purge",
   "purge_confirm": "Purging permanently removes this content and all its replies from the database. Continue?",
+  "purged": "purged",
+  "this_post_was_purged": "Purging from board database — this process is irreversible.",
   "mod_queue": "Mod Queue",
   "moderation_queue": "Moderation Queue",
   "queue_is_empty": "Queue is empty",

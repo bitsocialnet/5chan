@@ -297,5 +297,7 @@
   "link_to_file": "Link zur Datei",
   "support_5chan": "5chan unterstützen",
   "images": "Bilder",
-  "load_more": "Mehr laden"
+  "load_more": "Mehr laden",
+  "purged": "purged",
+  "this_post_was_purged": "Purging from board database — this process is irreversible."
 }

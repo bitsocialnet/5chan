@@ -297,5 +297,7 @@
   "link_to_file": "फाइलची लिंक",
   "support_5chan": "5chan चे समर्थन करा",
   "images": "प्रतिमा",
-  "load_more": "अधिक लोड करा"
+  "load_more": "अधिक लोड करा",
+  "purged": "purged",
+  "this_post_was_purged": "Purging from board database — this process is irreversible."
 }

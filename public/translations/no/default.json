@@ -297,5 +297,7 @@
   "link_to_file": "Lenke til fil",
   "support_5chan": "Støtt 5chan",
   "images": "bilder",
-  "load_more": "Last inn mer"
+  "load_more": "Last inn mer",
+  "purged": "purged",
+  "this_post_was_purged": "Purging from board database — this process is irreversible."
 }

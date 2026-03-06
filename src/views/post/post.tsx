@@ -110,6 +110,7 @@ export const Post = memo(
       prev?.pinned === next?.pinned &&
       prev?.removed === next?.removed &&
       prev?.deleted === next?.deleted &&
+      prev?.commentModeration?.purged === next?.commentModeration?.purged &&
       prevProps.showAllReplies === nextProps.showAllReplies &&
       prevProps.showReplies === nextProps.showReplies &&
       prevProps.targetReplyCid === nextProps.targetReplyCid &&

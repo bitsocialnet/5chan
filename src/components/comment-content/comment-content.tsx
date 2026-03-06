@@ -71,6 +71,7 @@ const CommentContent = ({ comment: post }: { comment: Comment }) => {
   const isMobile = useIsMobile();
 
   const { cid, content, deleted, edit, original, parentCid, postCid, pendingApproval, quotedCids, reason, removed, state, subplebbitAddress } = post || {};
+  const purged = post?.commentModeration?.purged;
   const banned = !!post?.author?.subplebbit?.banExpiresAt;
 
   const [showFullComment, setShowFullComment] = useState(false);
@@ -127,11 +128,13 @@ const CommentContent = ({ comment: post }: { comment: Comment }) => {
     <blockquote className={`${styles.postMessage} ${!isReply && isMobile && styles.clampLines}`}>
       {isReply &&
         !hasFailedState &&
-        !(deleted || removed) &&
+        !(deleted || removed || purged) &&
         (filteredQuotedCids.length > 0
           ? filteredQuotedCids.map((cid: string) => <QuotedCidLink key={cid} cid={cid} postCid={postCid} />)
           : shouldShowReplyingToReply && <ReplyQuotePreview isQuotelinkReply={true} quotelinkReply={quotelinkReply} quotelinkNumber={parentNumber} />)}
-      {removed ? (
+      {purged ? (
+        <span className={styles.redEditMessage}>{capitalize(t('this_post_was_purged'))}</span>
+      ) : removed ? (
         reason ? (
           <>
             <span className={styles.redEditMessage}>({t('this_post_was_removed')})</span>

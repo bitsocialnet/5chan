@@ -297,5 +297,7 @@
   "link_to_file": "Lidhje me skedarin",
   "support_5chan": "Mbështetni 5chan",
   "images": "imazhe",
-  "load_more": "Ngarko më shumë"
+  "load_more": "Ngarko më shumë",
+  "purged": "purged",
+  "this_post_was_purged": "Purging from board database — this process is irreversible."
 }

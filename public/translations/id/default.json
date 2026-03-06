@@ -297,5 +297,7 @@
   "link_to_file": "Tautan ke File",
   "support_5chan": "Dukung 5chan",
   "images": "gambar",
-  "load_more": "Muat lebih banyak"
+  "load_more": "Muat lebih banyak",
+  "purged": "purged",
+  "this_post_was_purged": "Purging from board database — this process is irreversible."
 }

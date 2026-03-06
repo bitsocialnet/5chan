@@ -297,5 +297,7 @@
   "link_to_file": "파일 링크",
   "support_5chan": "5chan 지원",
   "images": "이미지",
-  "load_more": "더 보기"
+  "load_more": "더 보기",
+  "purged": "purged",
+  "this_post_was_purged": "Purging from board database — this process is irreversible."
 }

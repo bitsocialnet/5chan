@@ -297,5 +297,7 @@
   "link_to_file": "קישור לקובץ",
   "support_5chan": "תמוך ב-5chan",
   "images": "תמונות",
-  "load_more": "טען עוד"
+  "load_more": "טען עוד",
+  "purged": "purged",
+  "this_post_was_purged": "Purging from board database — this process is irreversible."
 }

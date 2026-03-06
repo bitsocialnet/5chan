@@ -20,13 +20,26 @@ interface MediaProps {
   linkHeight?: number;
   linkWidth?: number;
   parentCid?: string;
+  purged?: boolean;
   removed?: boolean;
   spoiler?: boolean;
   showThumbnail?: boolean;
   setShowThumbnail: (showThumbnail: boolean) => void;
 }
 
-const Thumbnail = ({ commentMediaInfo, deleted, displayHeight, displayWidth, isFloatingEmbed, isOutOfFeed, isReply, removed, spoiler, setShowThumbnail }: MediaProps) => {
+const Thumbnail = ({
+  commentMediaInfo,
+  deleted,
+  displayHeight,
+  displayWidth,
+  isFloatingEmbed,
+  isOutOfFeed,
+  isReply,
+  purged,
+  removed,
+  spoiler,
+  setShowThumbnail,
+}: MediaProps) => {
   const isMobile = useIsMobile();
   const { patternThumbnailUrl, thumbnail, type, url } = commentMediaInfo || {};
 
@@ -133,7 +146,7 @@ const Thumbnail = ({ commentMediaInfo, deleted, displayHeight, displayWidth, isF
       )
     ) : null;
 
-  return deleted || removed ? (
+  return deleted || removed || purged ? (
     <img className={styles.fileDeleted} src='assets/filedeleted-res.gif' alt='File deleted' />
   ) : spoiler ? (
     <img
@@ -381,6 +394,7 @@ const CommentMedia = ({
   linkHeight,
   linkWidth,
   parentCid,
+  purged,
   removed,
   showThumbnail,
   setShowThumbnail,
@@ -450,6 +464,7 @@ const CommentMedia = ({
                 isFloatingEmbed={isFloatingEmbed}
                 isOutOfFeed={isOutOfFeed}
                 deleted={deleted}
+                purged={purged}
                 removed={removed}
                 spoiler={spoiler}
                 setShowThumbnail={setShowThumbnail}

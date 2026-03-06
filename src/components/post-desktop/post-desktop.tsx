@@ -93,6 +93,7 @@ const PostInfo = ({
 }: PostProps & { directRepliesByParentCid?: Map<string, Comment[]> }) => {
   const { t } = useTranslation();
   const { author, cid, deleted, locked, pinned, parentCid, postCid, reason, removed, state, subplebbitAddress, timestamp } = post || {};
+  const purged = post?.commentModeration?.purged;
   const title = post?.title?.trim();
   const { address, shortAddress } = author || {};
   const displayName = author?.displayName?.trim();
@@ -222,7 +223,7 @@ const PostInfo = ({
 
   const handleUserAddressClick = useAuthorAddressClick();
   const numberOfPostsByAuthor = (() => {
-    if (!showUserID || deleted || removed || !shortAddress || !postCid || typeof document === 'undefined') {
+    if (!showUserID || deleted || removed || purged || !shortAddress || !postCid || typeof document === 'undefined') {
       return 0;
     }
 
@@ -239,7 +240,7 @@ const PostInfo = ({
       ? isReply
         ? alert(t('this_reply_was_deleted'))
         : alert(t('this_thread_was_deleted'))
-      : removed
+      : removed || purged
         ? isReply
           ? alert(t('this_reply_was_removed'))
           : alert(t('this_thread_was_removed'))
@@ -266,7 +267,7 @@ const PostInfo = ({
   return (
     <div className={styles.postInfo}>
       {isHidden ? parentCid && <span className={styles.hiddenReplyEditMenuSpacer} /> : <EditMenu post={post} />}
-      <span className={(hidden || ((removed || deleted) && !reason)) && parentCid ? styles.postDesktopHidden : ''}>
+      <span className={(hidden || ((removed || deleted || purged) && !reason)) && parentCid ? styles.postDesktopHidden : ''}>
         {title &&
           (title.length <= 75 ? (
             <span className={styles.subject}>{title} </span>
@@ -276,11 +277,13 @@ const PostInfo = ({
             </Tooltip>
           ))}
         <span className={styles.nameBlock}>
-          <span className={`${styles.name} ${authorRole && !(deleted || removed) && (authorRole === 'mod' ? styles.capcodeMod : styles.capcodeAdmin)}`}>
+          <span className={`${styles.name} ${authorRole && !(deleted || removed || purged) && (authorRole === 'mod' ? styles.capcodeMod : styles.capcodeAdmin)}`}>
             {deleted ? (
               capitalize(t('deleted'))
             ) : removed ? (
               capitalize(t('removed'))
+            ) : purged ? (
+              capitalize(t('purged'))
             ) : displayName ? (
               displayName.length <= 20 ? (
                 displayName
@@ -292,7 +295,7 @@ const PostInfo = ({
             ) : (
               capitalize(t('anonymous'))
             )}
-            {!(deleted || removed) && authorRole && (
+            {!(deleted || removed || purged) && authorRole && (
               <span className='capitalize'>
                 {' '}
                 ## Board {authorRole}{' '}
@@ -310,6 +313,8 @@ const PostInfo = ({
                 t('deleted')
               ) : removed ? (
                 t('removed')
+              ) : purged ? (
+                t('purged')
               ) : !cid && pseudonymityMode ? (
                 <span className={styles.pendingCid}>{hasFailedState ? capitalize(t('failed')) : capitalize(t('pending'))}</span>
               ) : (
@@ -481,7 +486,7 @@ const PostInfo = ({
             </span>
           )}
         </span>
-        {!(removed || deleted) && !isModQueue && <PostMenuDesktop postMenu={postMenuProps} />}
+        {!(removed || deleted || purged) && !isModQueue && <PostMenuDesktop postMenu={postMenuProps} />}
         {cid && parentCid && <ReplyBacklinks post={post} quotedByMap={quotedByMap} directRepliesByParentCid={directRepliesByParentCid} />}
         {cid && !parentCid && <OpBacklinks cid={cid} quotedByMap={quotedByMap} />}
       </span>
@@ -544,6 +549,7 @@ interface PostMediaProps {
   hasThumbnail: boolean;
   spoiler: boolean;
   deleted: boolean;
+  purged: boolean;
   removed: boolean;
   linkHeight: number;
   linkWidth: number;
@@ -559,6 +565,7 @@ const PostMedia = ({
   hasThumbnail,
   spoiler,
   deleted,
+  purged,
   removed,
   linkHeight,
   linkWidth,
@@ -663,6 +670,7 @@ const PostMedia = ({
           <CommentMedia
             commentMediaInfo={commentMediaInfo}
             deleted={deleted}
+            purged={purged}
             removed={removed}
             linkHeight={linkHeight}
             linkWidth={linkWidth}
@@ -697,6 +705,7 @@ const Reply = ({
   }
 
   const { author, cid, deleted, link, linkHeight, linkWidth, postCid, reason, removed, spoiler, subplebbitAddress, thumbnailUrl, parentCid } = post || {};
+  const purged = post?.commentModeration?.purged;
   const directories = useDirectories();
   const boardPath = subplebbitAddress ? getBoardPath(subplebbitAddress, directories) : undefined;
 
@@ -726,12 +735,13 @@ const Reply = ({
           quotedByMap={quotedByMap}
           directRepliesByParentCid={directRepliesByParentCid}
         />
-        {link && !hidden && !(deleted || removed) && isValidURL(link) && (
+        {link && !hidden && !(deleted || removed || purged) && isValidURL(link) && (
           <PostMedia
             commentMediaInfo={commentMediaInfo}
             hasThumbnail={hasThumbnail}
             spoiler={spoiler}
             deleted={deleted}
+            purged={!!purged}
             removed={removed}
             linkHeight={linkHeight}
             linkWidth={linkWidth}
@@ -742,7 +752,7 @@ const Reply = ({
             isInModView={isInModView}
           />
         )}
-        {!hidden && (!(removed || deleted) || ((removed || deleted) && reason)) && <CommentContent comment={post} />}
+        {!hidden && (!(removed || deleted || purged) || ((removed || deleted) && reason)) && <CommentContent comment={post} />}
       </div>
     </div>
   );
@@ -763,6 +773,7 @@ const PostDesktop = ({
 }: PostProps) => {
   const { t } = useTranslation();
   const { author, cid, content, deleted, link, linkHeight, linkWidth, pinned, postCid, removed, spoiler, state, subplebbitAddress, thumbnailUrl, parentCid } = post || {};
+  const purged = post?.commentModeration?.purged;
   const params = useParams();
   const location = useLocation();
   const navigationType = useNavigationType();
@@ -969,12 +980,13 @@ const PostDesktop = ({
               </div>
             </div>
           )}
-          {link && !isHidden && !(deleted || removed) && isValidURL(link) && (
+          {link && !isHidden && !(deleted || removed || purged) && isValidURL(link) && (
             <PostMedia
               commentMediaInfo={commentMediaInfo}
               hasThumbnail={hasThumbnail}
               spoiler={spoiler}
               deleted={deleted}
+              purged={!!purged}
               removed={removed}
               linkHeight={linkHeight}
               linkWidth={linkWidth}
@@ -1000,7 +1012,7 @@ const PostDesktop = ({
             quotedByMap={quotedByMap}
             directRepliesByParentCid={directRepliesByParentCid}
           />
-          {!isHidden && !content && !(deleted || removed) && <div className={styles.spacer} />}
+          {!isHidden && !content && !(deleted || removed || purged) && <div className={styles.spacer} />}
           {!isHidden && <CommentContent comment={post} />}
         </div>
         {!isHidden && !isInPendingPostView && showReplies && repliesCount > 0 && !isInPostPageView && (

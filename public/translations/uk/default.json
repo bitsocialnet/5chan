@@ -297,5 +297,7 @@
   "link_to_file": "Посилання на файл",
   "support_5chan": "Підтримати 5chan",
   "images": "зображення",
-  "load_more": "Завантажити ще"
+  "load_more": "Завантажити ще",
+  "purged": "purged",
+  "this_post_was_purged": "Purging from board database — this process is irreversible."
 }
