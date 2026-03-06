@@ -5,7 +5,7 @@
   "updatedAt": 1771140295,
   "communities": [
     {
-      "address": "anime-and-manga.eth",
+      "address": "anime-and-manga.bso",
       "title": "/a/ - Anime & Manga",
       "directoryCode": "a",
       "features": {
@@ -21,7 +21,7 @@
       }
     },
     {
-      "address": "food-and-cooking.eth",
+      "address": "food-and-cooking.bso",
       "title": "/ck/ - Food & Cooking",
       "directoryCode": "ck",
       "features": {
@@ -37,7 +37,7 @@
       }
     },
     {
-      "address": "politically-incorrect.eth",
+      "address": "politically-incorrect.bso",
       "title": "/pol/ - Politically Incorrect",
       "directoryCode": "pol",
       "features": {
@@ -53,7 +53,7 @@
       }
     },
     {
-      "address": "business-and-finance.eth",
+      "address": "business-and-finance.bso",
       "title": "/biz/ - Business & Finance",
       "directoryCode": "biz",
       "features": {
@@ -69,7 +69,7 @@
       }
     },
     {
-      "address": "science-and-math.eth",
+      "address": "science-and-math.bso",
       "title": "/sci/ - Science & Math",
       "directoryCode": "sci",
       "features": {
@@ -85,7 +85,7 @@
       }
     },
     {
-      "address": "technology-posting.eth",
+      "address": "technology-posting.bso",
       "title": "/g/ - Technology",
       "directoryCode": "g",
       "features": {
@@ -101,7 +101,7 @@
       }
     },
     {
-      "address": "videogame-generals.eth",
+      "address": "videogame-generals.bso",
       "title": "/vg/ - Video Game Generals",
       "directoryCode": "vg",
       "features": {
@@ -117,7 +117,7 @@
       }
     },
     {
-      "address": "fitness-posting.eth",
+      "address": "fitness-posting.bso",
       "title": "/fit/ - Fitness",
       "directoryCode": "fit",
       "features": {
@@ -133,7 +133,7 @@
       }
     },
     {
-      "address": "advice-posting.eth",
+      "address": "advice-posting.bso",
       "title": "/adv/ - Advice",
       "directoryCode": "adv",
       "features": {
@@ -149,7 +149,7 @@
       }
     },
     {
-      "address": "worksafe-gif.eth",
+      "address": "worksafe-gif.bso",
       "title": "/wsg/ - Worksafe GIF",
       "directoryCode": "wsg",
       "features": {
@@ -165,7 +165,7 @@
       }
     },
     {
-      "address": "do-it-yourself.eth",
+      "address": "do-it-yourself.bso",
       "title": "/diy/ - Do It Yourself",
       "directoryCode": "diy",
       "features": {
@@ -181,7 +181,7 @@
       }
     },
     {
-      "address": "outdoors-posting.eth",
+      "address": "outdoors-posting.bso",
       "title": "/out/ - Outdoors",
       "directoryCode": "out",
       "features": {
@@ -197,7 +197,7 @@
       }
     },
     {
-      "address": "artwork-critique.eth",
+      "address": "artwork-critique.bso",
       "title": "/ic/ - Artwork/Critique",
       "directoryCode": "ic",
       "features": {
@@ -213,7 +213,7 @@
       }
     },
     {
-      "address": "music-posting.eth",
+      "address": "music-posting.bso",
       "title": "/mu/ - Music",
       "directoryCode": "mu",
       "features": {
@@ -229,7 +229,7 @@
       }
     },
     {
-      "address": "international-sfw.eth",
+      "address": "international-sfw.bso",
       "title": "/int/ - International",
       "directoryCode": "int",
       "features": {
@@ -245,7 +245,7 @@
       }
     },
     {
-      "address": "literature-posting.eth",
+      "address": "literature-posting.bso",
       "title": "/lit/ - Literature",
       "directoryCode": "lit",
       "features": {
@@ -261,7 +261,7 @@
       }
     },
     {
-      "address": "television-and-film.eth",
+      "address": "television-and-film.bso",
       "title": "/tv/ - Television & Film",
       "directoryCode": "tv",
       "features": {
@@ -277,7 +277,7 @@
       }
     },
     {
-      "address": "very-important-posts.eth",
+      "address": "very-important-posts.bso",
       "title": "/vip/ - Very Important Posts",
       "directoryCode": "vip",
       "features": {
@@ -293,7 +293,7 @@
       }
     },
     {
-      "address": "adult-gif.eth",
+      "address": "adult-gif.bso",
       "title": "/gif/ - Adult GIF",
       "directoryCode": "gif",
       "features": {
@@ -309,7 +309,7 @@
       }
     },
     {
-      "address": "international-nsfw.eth",
+      "address": "international-nsfw.bso",
       "title": "/bant/ - International/Random",
       "directoryCode": "bant",
       "features": {
@@ -325,7 +325,7 @@
       }
     },
     {
-      "address": "random-nsfw.eth",
+      "address": "random-nsfw.bso",
       "title": "/b/ - Random",
       "directoryCode": "b",
       "features": {
