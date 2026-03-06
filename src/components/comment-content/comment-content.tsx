@@ -133,7 +133,7 @@ const CommentContent = ({ comment: post }: { comment: Comment }) => {
           ? filteredQuotedCids.map((cid: string) => <QuotedCidLink key={cid} cid={cid} postCid={postCid} />)
           : shouldShowReplyingToReply && <ReplyQuotePreview isQuotelinkReply={true} quotelinkReply={quotelinkReply} quotelinkNumber={parentNumber} />)}
       {purged ? (
-        <span className={styles.redEditMessage}>{capitalize(t('this_post_was_purged'))}</span>
+        <span className={styles.grayEditMessage}>{capitalize(t('this_post_was_purged'))}</span>
       ) : removed ? (
         reason ? (
           <>
