@@ -1,12 +1,47 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { resolve } from 'path';
-import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import { VitePWA } from 'vite-plugin-pwa';
+
+function adaptReactPluginForRolldown(plugin) {
+  if (!plugin?.config || plugin.name !== 'vite:react-babel') {
+    return plugin;
+  }
+
+  return {
+    ...plugin,
+    async config(userConfig, configEnv) {
+      const config = await plugin.config.call(this, userConfig, configEnv);
+      const optimizeDeps = config?.optimizeDeps;
+
+      if (optimizeDeps?.esbuildOptions?.jsx !== 'automatic') {
+        return config;
+      }
+
+      const { esbuildOptions, ...remainingOptimizeDeps } = optimizeDeps;
+
+      return {
+        ...config,
+        optimizeDeps: {
+          ...remainingOptimizeDeps,
+          rolldownOptions: {
+            ...optimizeDeps.rolldownOptions,
+            transform: {
+              ...optimizeDeps.rolldownOptions?.transform,
+              jsx: optimizeDeps.rolldownOptions?.transform?.jsx ?? {
+                runtime: 'automatic',
+              },
+            },
+          },
+        },
+      };
+    },
+  };
+}
 
 export default defineConfig({
   plugins: [
-    react({
+    ...react({
       babel: {
         plugins: [
           [
@@ -17,16 +52,7 @@ export default defineConfig({
           ],
         ],
       },
-    }),
-    nodePolyfills({
-      globals: {
-        Buffer: true,
-        global: true,
-        process: true,
-      },
-      protocolImports: true,
-      include: ['crypto', 'stream', 'util', 'buffer', 'events'],
-    }),
+    }).map(adaptReactPluginForRolldown),
     VitePWA({
       registerType: 'autoUpdate',
       strategies: 'injectManifest',
@@ -146,6 +172,14 @@ export default defineConfig({
       stream: 'stream-browserify',
       crypto: 'crypto-browserify',
       buffer: 'buffer',
+      events: 'events',
+      process: 'process',
+      'node:buffer': 'buffer',
+      'node:crypto': 'crypto-browserify',
+      'node:events': 'events',
+      'node:process': 'process',
+      'node:stream': 'stream-browserify',
+      'node:util': 'util',
       'util/': 'util',
       util: 'util',
     },
