@@ -188,8 +188,8 @@ const FAQ = () => {
                 <dt id='spoiler'>Can I mark a submission as a spoiler?</dt>
                 <dd>
                   All boards allow you to mask plot-spoiling content. To mark your image as a spoiler, check the [x Spoiler?] box before submission. Spoilerizing text
-                  makes it unreadable to others until they mouse over it. To spoilerize a comment, place {`<spoiler>`} tags around the text you wish to hide (ex. "
-                  {`<spoiler>`}SPIKE DIES!{`</spoiler>`}").
+                  makes it unreadable to others until they mouse over it. To spoilerize a comment, place {`[spoiler][/spoiler]`} tags around the text you wish to hide
+                  (ex. "{`[spoiler]`}SPIKE DIES!{`[/spoiler]`}").
                 </dd>
               </dl>
             </div>

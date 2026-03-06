@@ -23,7 +23,7 @@ export function getTextColorForBackground(rgb: string): string {
 
 export function removeMarkdown(md: string): string {
   return md
-    .replace(/<spoiler>(.*?)<\/spoiler>/gs, '$1') // spoiler tags - keep inner text
+    .replace(/\[spoiler\](.*?)\[\/spoiler\]/gs, '$1') // spoiler tags - keep inner text
     .replace(/\[([^\]]*?)\]\([^)]*\)/g, '$1') // [text](url) -> text
     .replace(/&nbsp;/g, ' ') // &nbsp; -> space
     .replace(/^>\s*/gm, '') // greentext at line start
