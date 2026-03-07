@@ -22,7 +22,7 @@ import useHide from '../../hooks/use-hide';
 import useStateString from '../../hooks/use-state-string';
 import useScrollToReply from '../../hooks/use-scroll-to-reply';
 import { useCurrentTime } from '../../hooks/use-current-time';
-import { useSubplebbitField } from '../../hooks/use-stable-subplebbit';
+import { useBoardPseudonymityMode } from '../../hooks/use-board-pseudonymity-mode';
 import CommentContent from '../comment-content';
 import CommentMedia from '../comment-media';
 import EditMenu from '../edit-menu/edit-menu';
@@ -214,11 +214,11 @@ const PostInfo = ({
   const alertThresholdSeconds = getAlertThresholdSeconds();
   const isOverThreshold = isAwaitingApproval && timeWaiting > alertThresholdSeconds;
 
-  const userID = address && getShortAddress(address); // shortened to 8 chars for display; users can verify the full user ID via "Copy user ID" in the post menu to guard against spoofing
+  const userID = address ? getShortAddress(address) : shortAddress;
   const userIDBackgroundColor = hashStringToColor(userID);
   const userIDTextColor = getTextColorForBackground(userIDBackgroundColor);
 
-  const pseudonymityMode = useSubplebbitField(subplebbitAddress, (sub) => sub?.features?.pseudonymityMode);
+  const pseudonymityMode = useBoardPseudonymityMode(subplebbitAddress);
   const showUserID = pseudonymityMode === 'per-post';
 
   const handleUserAddressClick = useAuthorAddressClick();
