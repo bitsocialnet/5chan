@@ -37,3 +37,13 @@ If uncertain, ask the developer before adding an entry.
 - **Impact:** Windows CI fails before build steps run, even though the app does not need `portless` there.
 - **Mitigation:** Keep `portless` in `optionalDependencies` and make `yarn start` fall back to direct `vite` startup when `portless` is unavailable.
 - **Status:** confirmed
+
+### Do not add plebbit-js directly for Electron RPC
+
+- **Date:** 2026-03-07
+- **Observed by:** Codex
+- **Context:** Adding `knip` exposed `electron/start-plebbit-rpc.js` importing `@plebbit/plebbit-js/rpc` as an unlisted dependency.
+- **What was surprising:** Even though that file imports `@plebbit/plebbit-js` directly, repository policy is to depend only on `@bitsocialhq/bitsocial-react-hooks` and use its transitive copy of `plebbit-js`.
+- **Impact:** Agents may “fix” the unlisted import by adding `@plebbit/plebbit-js` to `package.json`, which violates project policy.
+- **Mitigation:** Do not add `@plebbit/plebbit-js` to `package.json` for this repo. If `knip` flags `electron/start-plebbit-rpc.js`, handle it with a targeted `ignoreIssues` entry instead.
+- **Status:** confirmed

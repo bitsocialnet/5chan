@@ -1,0 +1,15 @@
+{
+  "$schema": "https://unpkg.com/knip@5.86.0/schema-jsonc.json",
+  "ignoreDependencies": [
+    // These packages are consumed by native Capacitor/Gradle config rather than JS imports.
+    "@capacitor/status-bar",
+    "@capawesome/capacitor-android-edge-to-edge-support",
+    // The PWA service worker entry is injected by vite-plugin-pwa, which Knip does not trace here.
+    "workbox-core",
+    "workbox-precaching"
+  ],
+  "ignoreIssues": {
+    // This import is intentionally satisfied transitively through bitsocial-react-hooks.
+    "electron/start-plebbit-rpc.js": ["unlisted"]
+  }
+}

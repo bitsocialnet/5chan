@@ -28,6 +28,7 @@ Only record items that are repo-specific, likely to recur, and have a concrete m
 |---|---|
 | React UI logic changed (`src/components`, `src/views`, `src/hooks`, UI stores) | Follow React architecture rules below and run `yarn doctor` |
 | `package.json` changed | Run `yarn install` to keep `yarn.lock` in sync |
+| Dependencies or import graph changed | Run `yarn knip` as an advisory manifest/import audit |
 | Translation key/value changed | Use `docs/agent-playbooks/translations.md` |
 | Bug report in a specific file/line | Start with git history scan from `docs/agent-playbooks/bug-investigation.md` before editing |
 | `CHANGELOG.md` or package version changed | Run `yarn blotter:check`; if needed add a concise release one-liner |
@@ -94,9 +95,11 @@ src/
 
 - Never mark work complete without verification.
 - After code changes, run: `yarn build`, `yarn lint`, `yarn type-check`.
+- After adding or changing tests, run `yarn test`.
 - After React UI logic changes, run: `yarn doctor`.
 - Treat React Doctor output as actionable guidance; prioritize `error` then `warning`.
 - For UI/visual changes, verify with `playwright-cli` on desktop and mobile viewport.
+- Use `yarn test:coverage` as an advisory check when expanding test coverage or auditing risky logic; do not invent a repo-wide coverage gate unless the user asks for one.
 - If verification fails, fix and re-run until passing.
 
 ### Tooling Constraints
@@ -124,6 +127,8 @@ src/
 
 - Keep context lean: delegate heavy/verbose tasks to subprocesses when available.
 - For complex work, parallelize independent checks.
+- Add or update tests for bug fixes and non-trivial logic changes when the code is reasonably testable.
+- Use `yarn knip` when adding/removing dependencies or introducing new direct imports; treat findings as advisory, but resolve real issues before finishing.
 - When proposing or implementing meaningful code changes, include both:
   - a Conventional Commit title suggestion
   - a short GitHub issue suggestion
@@ -144,6 +149,9 @@ yarn install
 yarn start                # http://5chan.localhost:1355
 yarn build
 yarn test
+yarn test:coverage
+yarn knip
+yarn knip:full
 yarn prettier
 yarn electron
 yarn doctor
