@@ -35,7 +35,7 @@ interface CatalogPostMediaProps {
 export const CatalogPostMedia = ({ cid, commentMediaInfo, linkWidth, linkHeight }: CatalogPostMediaProps) => {
   const { patternThumbnailUrl, thumbnail, type, url } = commentMediaInfo || {};
   const iframeThumbnail = patternThumbnailUrl || thumbnail;
-  const gifFrameUrl = useFetchGifFirstFrame(type === 'gif' ? url : undefined);
+  const { frameUrl: gifFrameUrl, status: gifFrameStatus } = useFetchGifFirstFrame(type === 'gif' ? url : undefined);
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
   const handleLoad = () => setIsLoaded(true);
@@ -76,8 +76,10 @@ export const CatalogPostMedia = ({ cid, commentMediaInfo, linkWidth, linkHeight 
 
   let thumbnailComponent: React.ReactNode = null;
 
-  if (type === 'gif' && gifFrameUrl && !hasError) {
+  if (type === 'gif' && gifFrameStatus === 'ready' && gifFrameUrl && !hasError) {
     thumbnailComponent = <img src={gifFrameUrl} alt='' onLoad={handleLoad} onError={handleError} style={loadingStyle} width={numericWidth} height={numericHeight} />;
+  } else if (type === 'gif' && gifFrameStatus === 'failed' && !hasError) {
+    thumbnailComponent = <img src={url} alt='' onLoad={handleLoad} onError={handleError} style={loadingStyle} width={numericWidth} height={numericHeight} />;
   } else if (type === 'image' && !hasError) {
     thumbnailComponent = <img src={url} alt='' onLoad={handleLoad} onError={handleError} style={loadingStyle} width={numericWidth} height={numericHeight} />;
   } else if (type === 'video' && !hasError) {

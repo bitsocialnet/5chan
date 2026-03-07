@@ -590,12 +590,12 @@ const PostMedia = ({
   const { t } = useTranslation();
   const { url } = commentMediaInfo || {};
   let type = commentMediaInfo?.type;
-  const gifFrameUrl = useFetchGifFirstFrame(type === 'gif' ? url : undefined);
+  const { status: gifFrameStatus } = useFetchGifFirstFrame(type === 'gif' ? url : undefined);
   const directories = useDirectories();
 
-  if (type === 'gif' && gifFrameUrl !== null) {
+  if (type === 'gif' && gifFrameStatus === 'ready') {
     type = 'animated gif';
-  } else if (type === 'gif' && gifFrameUrl === null) {
+  } else if (type === 'gif' && gifFrameStatus === 'failed') {
     type = 'static gif';
   }
 

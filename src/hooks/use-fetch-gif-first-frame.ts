@@ -4,6 +4,13 @@ import localForageLru from '@bitsocialhq/bitsocial-react-hooks/dist/lib/localfor
 const gifFrameDb = localForageLru.createInstance({ name: '5chanGifFrames', size: 500 });
 const failedUrls = new Set<string>();
 
+type GifFirstFrameStatus = 'idle' | 'loading' | 'ready' | 'failed';
+
+interface GifFirstFrameState {
+  frameUrl: string | null;
+  status: GifFirstFrameStatus;
+}
+
 const getCachedGifFrame = async (url: string): Promise<string | null> => {
   return await gifFrameDb.getItem(url);
 };
@@ -40,10 +47,20 @@ export const readImage = (file: File): Promise<ArrayBuffer> => {
 
 const parseGif = async (buf: ArrayBuffer): Promise<Blob> => {
   const image = new Image();
-  await new Promise((resolve) => {
-    image.src = URL.createObjectURL(new Blob([buf]));
-    image.onload = resolve;
+  const sourceUrl = URL.createObjectURL(new Blob([buf]));
+
+  await new Promise((resolve, reject) => {
+    image.onload = () => {
+      URL.revokeObjectURL(sourceUrl);
+      resolve(undefined);
+    };
+    image.onerror = () => {
+      URL.revokeObjectURL(sourceUrl);
+      reject(new Error('Failed to parse GIF'));
+    };
+    image.src = sourceUrl;
   });
+
   const canvas = document.createElement('canvas');
   canvas.width = image.width;
   canvas.height = image.height;
@@ -62,28 +79,30 @@ const parseGif = async (buf: ArrayBuffer): Promise<Blob> => {
 };
 
 const useFetchGifFirstFrame = (url: string | undefined) => {
-  const [frameUrl, setFrameUrl] = useState<string | null>(null);
+  const [gifFirstFrame, setGifFirstFrame] = useState<GifFirstFrameState>({ frameUrl: null, status: 'idle' });
 
   useEffect(() => {
     if (!url) {
-      setFrameUrl(null);
+      setGifFirstFrame({ frameUrl: null, status: 'idle' });
       return;
     }
 
     let isActive = true;
+    setGifFirstFrame({ frameUrl: null, status: 'loading' });
 
     const fetchFrame = async () => {
       if (failedUrls.has(url)) {
-        if (isActive) setFrameUrl(null);
+        if (isActive) setGifFirstFrame({ frameUrl: null, status: 'failed' });
         return;
       }
+
       try {
         const cachedFrame = await getCachedGifFrame(url);
         if (cachedFrame) {
           try {
             const response = await fetch(cachedFrame);
             if (response.ok) {
-              if (isActive) setFrameUrl(cachedFrame);
+              if (isActive) setGifFirstFrame({ frameUrl: cachedFrame, status: 'ready' });
               return;
             }
           } catch {}
@@ -92,13 +111,15 @@ const useFetchGifFirstFrame = (url: string | undefined) => {
         const blob = typeof url === 'string' ? await parseGif(await fetchImage(url)) : await parseGif(await readImage(url as File));
         const objectUrl = URL.createObjectURL(blob);
         if (isActive) {
-          setFrameUrl(objectUrl);
+          setGifFirstFrame({ frameUrl: objectUrl, status: 'ready' });
           await setCachedGifFrame(url, objectUrl);
+        } else {
+          URL.revokeObjectURL(objectUrl);
         }
       } catch (error) {
         failedUrls.add(url);
         console.error('Failed to load GIF frame:', error);
-        if (isActive) setFrameUrl(null);
+        if (isActive) setGifFirstFrame({ frameUrl: null, status: 'failed' });
       }
     };
 
@@ -109,7 +130,7 @@ const useFetchGifFirstFrame = (url: string | undefined) => {
     };
   }, [url]);
 
-  return frameUrl;
+  return gifFirstFrame;
 };
 
 export default useFetchGifFirstFrame;

@@ -45,25 +45,42 @@ const Thumbnail = ({
 
   let thumbnailComponent: React.ReactNode = null;
   const iframeThumbnail = patternThumbnailUrl || thumbnail;
-  const gifFrameUrl = useFetchGifFirstFrame(type === 'gif' ? url : undefined);
+  const { frameUrl: gifFrameUrl, status: gifFrameStatus } = useFetchGifFirstFrame(type === 'gif' ? url : undefined);
   const hasThumbnail = getHasThumbnail(commentMediaInfo, url);
+  const gifThumbnailButtonProps =
+    gifFrameStatus === 'loading'
+      ? {
+          role: 'button' as const,
+          tabIndex: 0,
+          onKeyDown: (e: React.KeyboardEvent<HTMLSpanElement>) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              setShowThumbnail(false);
+            }
+          },
+          onClick: () => setShowThumbnail(false),
+        }
+      : {};
 
   if (type === 'gif') {
-    thumbnailComponent = (
-      <img
-        src={gifFrameUrl || url}
-        alt=''
-        role='button'
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            setShowThumbnail(false);
-          }
-        }}
-        onClick={() => setShowThumbnail(false)}
-      />
-    );
+    thumbnailComponent =
+      gifFrameStatus === 'loading' ? (
+        <span className={styles.gifPlaceholder} aria-label='Loading GIF thumbnail' {...gifThumbnailButtonProps} />
+      ) : (
+        <img
+          src={gifFrameUrl || url}
+          alt=''
+          role='button'
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              setShowThumbnail(false);
+            }
+          }}
+          onClick={() => setShowThumbnail(false)}
+        />
+      );
   } else if (type === 'video') {
     thumbnailComponent = thumbnail ? (
       <img src={thumbnail} alt='' />
@@ -405,11 +422,11 @@ const CommentMedia = ({
   const isMobile = useIsMobile();
   const { thumbnailHeight, thumbnailWidth, url } = commentMediaInfo || {};
   let type = commentMediaInfo?.type;
-  const gifFrameUrl = useFetchGifFirstFrame(type === 'gif' ? url : undefined);
+  const { status: gifFrameStatus } = useFetchGifFirstFrame(type === 'gif' ? url : undefined);
 
-  if (type === 'gif' && gifFrameUrl) {
+  if (type === 'gif' && gifFrameStatus === 'ready') {
     type = 'animated gif';
-  } else if (type === 'gif' && !gifFrameUrl) {
+  } else if (type === 'gif' && gifFrameStatus === 'failed') {
     type = 'static gif';
   }
 
