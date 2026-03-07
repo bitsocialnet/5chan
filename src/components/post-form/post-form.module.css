@@ -24,6 +24,12 @@
   padding: 10px 0;
 }
 
+@media (max-width: 639px) {
+  .modQueueTitle {
+    padding-top: 24px;
+  }
+}
+
 @media (min-width: 640px) {
   .modQueueTitle {
     font-size: 1em;

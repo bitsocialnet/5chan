@@ -24,8 +24,17 @@ import { useCurrentTime } from '../../hooks/use-current-time';
 import { Post } from '../post/post';
 import capitalize from 'lodash/capitalize';
 import lowerCase from 'lodash/lowerCase';
+import { PageFooterDesktop, PageFooterMobile, StyleOnlyFooterFirstRow } from '../../components/footer';
+import footerStyles from '../../components/footer/footer.module.css';
 
 const { addChallenge } = useChallengesStore.getState();
+
+/** Path for display: directory code, or full address if has TLD, or shortened for long IPNS keys (no dot) */
+const getBoardDisplayPath = (address: string, path: string): string => {
+  if (path !== address) return path;
+  if (address.includes('.')) return address;
+  return getShortAddress(address) || address;
+};
 
 interface ModQueueViewProps {
   boardIdentifier?: string; // If provided, shows queue for single board
@@ -54,8 +63,10 @@ interface ModQueueRowProps {
   comment: Comment;
   isOdd?: boolean;
   showBoard?: boolean;
-  /** Precomputed board path from parent (avoids per-row useBoardPath lookup) */
+  /** Board path for URLs (directory code or full address) */
   boardPath: string | undefined;
+  /** Board path for display (shortened when long IPNS key with no TLD) */
+  boardDisplayPath: string | undefined;
 }
 
 // Track which action was initiated to show appropriate completion message
@@ -123,10 +134,10 @@ const ModQueueActions = ({ status, errorMessage, isPublishing, handleApprove, ha
       </div>
     ) : (
       <div className={styles.cardActions}>
-        <button className={styles.button} onClick={handleApprove} disabled={isPublishing}>
+        <button className={`button ${styles.cardApproveButton}`} onClick={handleApprove} disabled={isPublishing}>
           {t('approve')}
         </button>
-        <button className={styles.button} onClick={handleReject} disabled={isPublishing}>
+        <button className={`button ${styles.cardRejectButton}`} onClick={handleReject} disabled={isPublishing}>
           {t('reject')}
         </button>
       </div>
@@ -225,7 +236,7 @@ const useModQueueActions = (comment: Comment): ModQueueActionState => {
   return { status, errorMessage, isPublishing, handleApprove, handleReject };
 };
 
-const ModQueueRow = memo(({ comment, isOdd = false, showBoard = false, boardPath }: ModQueueRowProps) => {
+const ModQueueRow = memo(({ comment, isOdd = false, showBoard = false, boardPath, boardDisplayPath }: ModQueueRowProps) => {
   const { t } = useTranslation();
   const { getAlertThresholdSeconds } = useModQueueStore();
   const isMobile = useIsMobile();
@@ -257,13 +268,14 @@ const ModQueueRow = memo(({ comment, isOdd = false, showBoard = false, boardPath
   const isReply = !!parentCid;
   const commentMediaInfo = getCommentMediaInfo(link, thumbnailUrl, linkWidth, linkHeight);
   const hasThumbnail = getHasThumbnail(commentMediaInfo, link);
-  const rawExcerpt =
+  const rawExcerpt = (
     (hasTitle && hasContent ? `${title}: ${content}` : null) ||
     (hasTitle ? title : null) ||
     (hasContent ? content : null) ||
     (hasLink ? link : null) ||
     (hasThumbnail ? t('image') : null) ||
-    t('no_content');
+    t('no_content')
+  ).trim();
   // Only truncate excerpt on desktop, allow wrapping on mobile
   const excerpt = !isMobile && rawExcerpt.length > 101 ? rawExcerpt.slice(0, 98) + '...' : rawExcerpt;
   const threadTargetCid = threadCid || cid;
@@ -274,7 +286,9 @@ const ModQueueRow = memo(({ comment, isOdd = false, showBoard = false, boardPath
   return (
     <div className={`${styles.row} ${isOdd ? styles.rowOdd : ''}`}>
       <div className={styles.number}>{number ?? 'N/A'}</div>
-      {showBoard && <div className={styles.board}>{modQueueUrl ? <Link to={modQueueUrl}>/{boardPath}/</Link> : <span>/{boardPath ?? '—'}/</span>}</div>}
+      {showBoard && (
+        <div className={styles.board}>{modQueueUrl ? <Link to={modQueueUrl}>/{boardDisplayPath ?? '—'}/</Link> : <span>/{boardDisplayPath ?? '—'}/</span>}</div>
+      )}
       <div className={styles.excerpt}>
         {postUrl ? (
           <Link to={postUrl} title={excerpt}>
@@ -329,11 +343,13 @@ ModQueueRow.displayName = 'ModQueueRow';
 interface ModQueueCardProps {
   comment: Comment;
   showBoard?: boolean;
-  /** Precomputed board path from parent (avoids per-row useBoardPath lookup) */
+  /** Board path for URLs (directory code or full address) */
   boardPath: string | undefined;
+  /** Board path for display (shortened when long IPNS key with no TLD) */
+  boardDisplayPath: string | undefined;
 }
 
-const ModQueueCard = memo(({ comment, showBoard = false, boardPath }: ModQueueCardProps) => {
+const ModQueueCard = memo(({ comment, showBoard = false, boardPath, boardDisplayPath }: ModQueueCardProps) => {
   const { t } = useTranslation();
   const { getAlertThresholdSeconds } = useModQueueStore();
   const currentTime = useCurrentTime();
@@ -359,13 +375,14 @@ const ModQueueCard = memo(({ comment, showBoard = false, boardPath }: ModQueueCa
   const isReply = !!parentCid;
   const commentMediaInfo = getCommentMediaInfo(link, thumbnailUrl, linkWidth, linkHeight);
   const hasThumbnail = getHasThumbnail(commentMediaInfo, link);
-  const rawExcerpt =
+  const rawExcerpt = (
     (hasTitle && hasContent ? `${title}: ${content}` : null) ||
     (hasTitle ? title : null) ||
     (hasContent ? content : null) ||
     (hasLink ? link : null) ||
     (hasThumbnail ? t('image') : null) ||
-    t('no_content');
+    t('no_content')
+  ).trim();
   const excerpt = rawExcerpt.length > 140 ? rawExcerpt.slice(0, 137) + '...' : rawExcerpt;
   const threadTargetCid = threadCid || cid;
   const postUrl = boardPath && threadTargetCid ? `/${boardPath}/thread/${threadTargetCid}` : undefined;
@@ -375,8 +392,15 @@ const ModQueueCard = memo(({ comment, showBoard = false, boardPath }: ModQueueCa
   return (
     <div className={styles.mobileCard}>
       <div className={styles.cardHeader}>
-        <span className={styles.cardNumber}>No. {number ?? 'N/A'}</span>
-        {showBoard && boardPath && <span className={styles.cardBoard}>{modQueueUrl ? <Link to={modQueueUrl}>/{boardPath}/</Link> : <span>/{boardPath}/</span>}</span>}
+        <span className={styles.cardHeaderLeft}>
+          <span className={styles.cardNumber}>No. {number ?? 'N/A'}</span>
+          {showBoard && boardPath && (
+            <>
+              <span className={styles.cardBoardSeparator}> — </span>
+              <span className={styles.cardBoard}>{modQueueUrl ? <Link to={modQueueUrl}>/{boardDisplayPath}/</Link> : <span>/{boardDisplayPath}/</span>}</span>
+            </>
+          )}
+        </span>
         <span className={styles.cardTime}>
           {isAwaitingApproval && isOverThreshold ? (
             <>
@@ -792,27 +816,35 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
 
   const showBoardColumn = !resolvedAddress;
   const compactRowItemContent = useCallback(
-    (index: number, comment: Comment) => (
-      <ModQueueRow
-        key={comment.cid}
-        comment={comment}
-        isOdd={index % 2 === 0}
-        showBoard={showBoardColumn}
-        boardPath={addressToPathMap.get(comment.subplebbitAddress) ?? comment.subplebbitAddress}
-      />
-    ),
-    [addressToPathMap, showBoardColumn],
+    (index: number, comment: Comment) => {
+      const path = addressToPathMap.get(comment.subplebbitAddress) ?? getBoardPath(comment.subplebbitAddress, directories);
+      return (
+        <ModQueueRow
+          key={comment.cid}
+          comment={comment}
+          isOdd={index % 2 === 0}
+          showBoard={showBoardColumn}
+          boardPath={path}
+          boardDisplayPath={path ? getBoardDisplayPath(comment.subplebbitAddress, path) : undefined}
+        />
+      );
+    },
+    [addressToPathMap, showBoardColumn, directories],
   );
   const compactCardItemContent = useCallback(
-    (_index: number, comment: Comment) => (
-      <ModQueueCard
-        key={comment.cid}
-        comment={comment}
-        showBoard={showBoardColumn}
-        boardPath={addressToPathMap.get(comment.subplebbitAddress) ?? comment.subplebbitAddress}
-      />
-    ),
-    [addressToPathMap, showBoardColumn],
+    (_index: number, comment: Comment) => {
+      const path = addressToPathMap.get(comment.subplebbitAddress) ?? getBoardPath(comment.subplebbitAddress, directories);
+      return (
+        <ModQueueCard
+          key={comment.cid}
+          comment={comment}
+          showBoard={showBoardColumn}
+          boardPath={path}
+          boardDisplayPath={path ? getBoardDisplayPath(comment.subplebbitAddress, path) : undefined}
+        />
+      );
+    },
+    [addressToPathMap, showBoardColumn, directories],
   );
 
   const setResetFunction = useFeedResetStore((state) => state.setResetFunction);
@@ -838,127 +870,156 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
     [hasMore, subplebbitAddresses, subplebbitError, feed.length],
   );
 
-  return (
-    <div className={styles.container}>
-      {!resolvedAddress && (
-        <div className={styles.controls}>
-          <div className={styles.controlsLeft}>
-            <ModQueueBoardSummary feed={feed} directories={directories} accountSubplebbitAddresses={accountSubplebbitAddresses} />
+  const pageFooter = (
+    <>
+      <PageFooterDesktop firstRow={<StyleOnlyFooterFirstRow />} />
+      <PageFooterMobile>
+        <div>
+          <div className={footerStyles.mobileFooterButtons}>
+            <button type='button' className='button' onClick={() => window.scrollTo({ top: 0, left: 0, behavior: 'instant' })}>
+              {t('top')}
+            </button>
+            <button type='button' className='button' onClick={() => reset?.()}>
+              {t('refresh')}
+            </button>
           </div>
         </div>
-      )}
+      </PageFooterMobile>
+    </>
+  );
 
-      {filteredFeed.length === 0 && !hasMore ? (
-        <div className={styles.empty}>{t('queue_is_empty')}</div>
-      ) : (
-        <>
-          {viewMode === 'compact' && !isMobile && (
-            <>
-              <div className={styles.tableHeader}>
-                <div className={styles.numberHeader}>No.</div>
-                {!resolvedAddress && <div className={styles.boardHeader}>{t('board')}</div>}
-                <div className={styles.excerptHeader}>{t('excerpt')}</div>
-                <div className={styles.timeHeader}>{t('submitted')}</div>
-                <div className={styles.typeHeader}>{t('type')}</div>
-                <div className={styles.imageHeader}>{t('image')}</div>
-                <div className={styles.actionsHeader}>{t('actions')}</div>
-              </div>
+  return (
+    <>
+      <div className={styles.container}>
+        {!resolvedAddress && (
+          <div className={styles.controls}>
+            <div className={styles.controlsLeft}>
+              <ModQueueBoardSummary feed={feed} directories={directories} accountSubplebbitAddresses={accountSubplebbitAddresses} />
+            </div>
+          </div>
+        )}
 
-              {hasMore ? (
-                <Virtuoso
-                  useWindowScroll
-                  data={filteredFeed}
-                  totalCount={filteredFeed.length}
-                  endReached={loadMore}
-                  increaseViewportBy={{ bottom: 600, top: 600 }}
-                  itemContent={compactRowItemContent}
-                  components={footerComponents}
-                />
-              ) : (
-                <>
-                  {filteredFeed.map((comment, index) => (
-                    <ModQueueRow
-                      key={comment.cid}
-                      comment={comment}
-                      isOdd={index % 2 === 0}
-                      showBoard={showBoardColumn}
-                      boardPath={addressToPathMap.get(comment.subplebbitAddress) ?? comment.subplebbitAddress}
-                    />
-                  ))}
-                  {subplebbitError?.message && feed.length === 0 && (
-                    <div className={styles.error}>
-                      <ErrorDisplay error={subplebbitError} />
-                    </div>
-                  )}
-                  <ModQueueFooter hasMore={hasMore} subplebbitAddresses={subplebbitAddresses} />
-                </>
-              )}
-            </>
-          )}
+        {filteredFeed.length === 0 && !hasMore ? (
+          <div className={styles.empty}>{t('queue_is_empty')}</div>
+        ) : (
+          <>
+            {viewMode === 'compact' && !isMobile && (
+              <>
+                <div className={styles.tableHeader}>
+                  <div className={styles.numberHeader}>No.</div>
+                  {!resolvedAddress && <div className={styles.boardHeader}>{t('board')}</div>}
+                  <div className={styles.excerptHeader}>{t('excerpt')}</div>
+                  <div className={styles.timeHeader}>{t('submitted')}</div>
+                  <div className={styles.typeHeader}>{t('type')}</div>
+                  <div className={styles.imageHeader}>{t('image')}</div>
+                  <div className={styles.actionsHeader}>{t('actions')}</div>
+                </div>
 
-          {viewMode === 'compact' && isMobile && (
-            <>
-              {hasMore ? (
-                <Virtuoso
-                  useWindowScroll
-                  data={filteredFeed}
-                  totalCount={filteredFeed.length}
-                  endReached={loadMore}
-                  increaseViewportBy={{ bottom: 600, top: 600 }}
-                  itemContent={compactCardItemContent}
-                  components={footerComponents}
-                />
-              ) : (
-                <>
-                  {filteredFeed.map((comment) => (
-                    <ModQueueCard
-                      key={comment.cid}
-                      comment={comment}
-                      showBoard={showBoardColumn}
-                      boardPath={addressToPathMap.get(comment.subplebbitAddress) ?? comment.subplebbitAddress}
-                    />
-                  ))}
-                  {subplebbitError?.message && feed.length === 0 && (
-                    <div className={styles.error}>
-                      <ErrorDisplay error={subplebbitError} />
-                    </div>
-                  )}
-                  <ModQueueFooter hasMore={hasMore} subplebbitAddresses={subplebbitAddresses} />
-                </>
-              )}
-            </>
-          )}
+                {hasMore ? (
+                  <Virtuoso
+                    useWindowScroll
+                    data={filteredFeed}
+                    totalCount={filteredFeed.length}
+                    endReached={loadMore}
+                    increaseViewportBy={{ bottom: 600, top: 600 }}
+                    itemContent={compactRowItemContent}
+                    components={footerComponents}
+                  />
+                ) : (
+                  <>
+                    {filteredFeed.map((comment, index) => {
+                      const path = addressToPathMap.get(comment.subplebbitAddress) ?? getBoardPath(comment.subplebbitAddress, directories);
+                      return (
+                        <ModQueueRow
+                          key={comment.cid}
+                          comment={comment}
+                          isOdd={index % 2 === 0}
+                          showBoard={showBoardColumn}
+                          boardPath={path}
+                          boardDisplayPath={path ? getBoardDisplayPath(comment.subplebbitAddress, path) : undefined}
+                        />
+                      );
+                    })}
+                    {subplebbitError?.message && feed.length === 0 && (
+                      <div className={styles.error}>
+                        <ErrorDisplay error={subplebbitError} />
+                      </div>
+                    )}
+                    <ModQueueFooter hasMore={hasMore} subplebbitAddresses={subplebbitAddresses} />
+                  </>
+                )}
+              </>
+            )}
 
-          {viewMode === 'feed' && (
-            <>
-              {hasMore ? (
-                <Virtuoso
-                  useWindowScroll
-                  data={filteredFeed}
-                  totalCount={filteredFeed.length}
-                  endReached={loadMore}
-                  increaseViewportBy={{ bottom: 600, top: 600 }}
-                  itemContent={(_index, comment) => <ModQueueFeedPost key={comment.cid} comment={comment} />}
-                  components={footerComponents}
-                />
-              ) : (
-                <>
-                  {filteredFeed.map((comment) => (
-                    <ModQueueFeedPost key={comment.cid} comment={comment} />
-                  ))}
-                  {subplebbitError?.message && feed.length === 0 && (
-                    <div className={styles.error}>
-                      <ErrorDisplay error={subplebbitError} />
-                    </div>
-                  )}
-                  <ModQueueFooter hasMore={hasMore} subplebbitAddresses={subplebbitAddresses} />
-                </>
-              )}
-            </>
-          )}
-        </>
-      )}
-    </div>
+            {viewMode === 'compact' && isMobile && (
+              <>
+                {hasMore ? (
+                  <Virtuoso
+                    useWindowScroll
+                    data={filteredFeed}
+                    totalCount={filteredFeed.length}
+                    endReached={loadMore}
+                    increaseViewportBy={{ bottom: 600, top: 600 }}
+                    itemContent={compactCardItemContent}
+                    components={footerComponents}
+                  />
+                ) : (
+                  <>
+                    {filteredFeed.map((comment) => {
+                      const path = addressToPathMap.get(comment.subplebbitAddress) ?? getBoardPath(comment.subplebbitAddress, directories);
+                      return (
+                        <ModQueueCard
+                          key={comment.cid}
+                          comment={comment}
+                          showBoard={showBoardColumn}
+                          boardPath={path}
+                          boardDisplayPath={path ? getBoardDisplayPath(comment.subplebbitAddress, path) : undefined}
+                        />
+                      );
+                    })}
+                    {subplebbitError?.message && feed.length === 0 && (
+                      <div className={styles.error}>
+                        <ErrorDisplay error={subplebbitError} />
+                      </div>
+                    )}
+                    <ModQueueFooter hasMore={hasMore} subplebbitAddresses={subplebbitAddresses} />
+                  </>
+                )}
+              </>
+            )}
+
+            {viewMode === 'feed' && (
+              <>
+                {hasMore ? (
+                  <Virtuoso
+                    useWindowScroll
+                    data={filteredFeed}
+                    totalCount={filteredFeed.length}
+                    endReached={loadMore}
+                    increaseViewportBy={{ bottom: 600, top: 600 }}
+                    itemContent={(_index, comment) => <ModQueueFeedPost key={comment.cid} comment={comment} />}
+                    components={footerComponents}
+                  />
+                ) : (
+                  <>
+                    {filteredFeed.map((comment) => (
+                      <ModQueueFeedPost key={comment.cid} comment={comment} />
+                    ))}
+                    {subplebbitError?.message && feed.length === 0 && (
+                      <div className={styles.error}>
+                        <ErrorDisplay error={subplebbitError} />
+                      </div>
+                    )}
+                    <ModQueueFooter hasMore={hasMore} subplebbitAddresses={subplebbitAddresses} />
+                  </>
+                )}
+              </>
+            )}
+          </>
+        )}
+      </div>
+      {pageFooter}
+    </>
   );
 };
 

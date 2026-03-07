@@ -292,16 +292,31 @@
 .cardHeader {
   display: flex;
   justify-content: space-between;
+  align-items: baseline;
   font-size: 9pt;
   font-weight: bold;
 }
 
+.cardHeaderLeft {
+  display: flex;
+  align-items: baseline;
+  gap: 0;
+  min-width: 0;
+}
+
 .cardNumber {
   color: var(--body-font-color);
+  flex-shrink: 0;
+}
+
+.cardBoardSeparator {
+  color: var(--body-font-color);
+  margin: 0 4px;
 }
 
 .cardTime {
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .cardContent {
@@ -323,6 +338,17 @@
   display: flex;
   justify-content: flex-end;
   gap: 8px;
+}
+
+/* Mobile compact view: match feed view approve/reject button styling */
+.cardApproveButton {
+  background-color: #3fa96b;
+  color: #fff;
+}
+
+.cardRejectButton {
+  background-color: #d9534f;
+  color: #fff;
 }
 
 /* Desktop: buttons styled as text links (same as board buttons) */
@@ -438,7 +464,7 @@ span.reject:hover {
 
 .cardBoard {
   font-size: 8pt;
-  margin-right: 8px;
+  flex-shrink: 0;
 }
 
 .cardBoard a {
@@ -614,7 +640,7 @@ span.reject:hover {
     text-decoration: var(--button-text-decoration);
     display: inline;
     font-family: inherit;
-    font-size: 8pt;
+    font-size: var(--button-font-size-mobile);
   }
 
   .button:hover {

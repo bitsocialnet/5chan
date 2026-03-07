@@ -40,6 +40,23 @@ export const PageFooterDesktop = ({ firstRow, styleRow }: PageFooterDesktopProps
 );
 
 /* -----------------------------------------------------------------------------
+ * StyleOnlyFooterFirstRow
+ * Footer first row with only the style selector (right-aligned). Used by mod queue.
+ * -------------------------------------------------------------------------- */
+
+export const StyleOnlyFooterFirstRow = () => {
+  const { t } = useTranslation();
+  return (
+    <div className={`${styles.footerRow} ${styles.footerRowRightOnly}`}>
+      <div className={styles.footerRight}>
+        <span className={styles.styleLabel}>{t('style')}:</span>
+        <StyleSelector />
+      </div>
+    </div>
+  );
+};
+
+/* -----------------------------------------------------------------------------
  * CatalogFooterFirstRow
  * Catalog footer first row: Return, Archive, Top, Refresh on left; Style selector on right.
  * -------------------------------------------------------------------------- */
