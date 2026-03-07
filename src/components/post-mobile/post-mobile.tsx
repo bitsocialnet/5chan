@@ -566,7 +566,7 @@ const PostMobile = ({
   onReject,
 }: PostProps) => {
   const { t } = useTranslation();
-  const { author, cid, pinned, postCid, replyCount, state, subplebbitAddress } = post || {};
+  const { author, cid, parentCid, pinned, postCid, replyCount, state, subplebbitAddress } = post || {};
   const params = useParams();
   const location = useLocation();
   const navigationType = useNavigationType();
@@ -625,6 +625,7 @@ const PostMobile = ({
 
   const stateString = useStateString(post) || t('loading_post');
   const hasFailedState = state === 'failed';
+  const isReply = !!parentCid;
 
   // Filter out deleted replies with no children for both virtuoso and non-virtuoso rendering
   const filteredReplies = repliesForRender.filter((reply) => !(reply.deleted && (reply.replyCount === 0 || !reply.replyCount)));
@@ -732,8 +733,13 @@ const PostMobile = ({
               {!isInPostView && !isInPendingPostView && (showReplies || isModQueue) && (
                 <div className={styles.postLink}>
                   <span className={styles.info}>
-                    {replyCount > 0 && `${replyCount} Replies`}
-                    {linksCount > 0 && ` / ${linksCount} ${requirePostLinkIsMedia ? 'Images' : 'Links'}`}
+                    {[
+                      isModQueue ? `${capitalize(t('type'))}: ${capitalize(t(isReply ? 'reply' : 'post'))}` : null,
+                      replyCount > 0 ? `${replyCount} Replies` : null,
+                      linksCount > 0 ? `${linksCount} ${requirePostLinkIsMedia ? 'Images' : 'Links'}` : null,
+                    ]
+                      .filter(Boolean)
+                      .join(' / ')}
                   </span>
                   {isModQueue ? (
                     <div className={styles.modQueueActions}>
@@ -750,6 +756,11 @@ const PostMobile = ({
                         <LoadingEllipsis string={t('publishing')} />
                       ) : (
                         <>
+                          {isReply && boardPath && (post?.threadCid || post?.parentCid) && (
+                            <Link to={`/${boardPath}/thread/${post.threadCid || post.parentCid}`} className={`button ${styles.approveButton}`}>
+                              {t('view_thread')}
+                            </Link>
+                          )}
                           <button className={`button ${styles.approveButton}`} onClick={onApprove} disabled={isPublishing}>
                             {t('approve')}
                           </button>

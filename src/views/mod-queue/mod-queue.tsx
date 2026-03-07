@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect, useCallback, memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, Link } from 'react-router-dom';
-import { useFeed, Comment, usePublishCommentModeration, useEditedComment, useSubplebbit, useComment } from '@bitsocialhq/bitsocial-react-hooks';
+import { useFeed, Comment, usePublishCommentModeration, useEditedComment, useSubplebbit } from '@bitsocialhq/bitsocial-react-hooks';
 import { Virtuoso } from 'react-virtuoso';
 import styles from './mod-queue.module.css';
 import useModQueueStore from '../../stores/use-mod-queue-store';
@@ -432,30 +432,19 @@ const ModQueueFeedPost = ({ comment }: { comment: Comment }) => {
   const { editedComment } = useEditedComment({ comment });
   const displayComment = editedComment || comment;
   const { status, errorMessage, isPublishing, handleApprove, handleReject } = useModQueueActions(displayComment);
-  const { parentCid } = displayComment;
-
-  // Fetch parent comment if this is a reply
-  const parentComment = useComment({ commentCid: parentCid });
 
   return (
-    <>
-      {parentCid && parentComment && (
-        <div style={{ marginBottom: '10px', paddingLeft: '20px', borderLeft: '2px solid var(--mod-queue-alert-color, #ccc)' }}>
-          <Post post={parentComment} showAllReplies={false} showReplies={false} isModQueue={false} />
-        </div>
-      )}
-      <Post
-        post={displayComment}
-        showAllReplies={false}
-        showReplies={false}
-        isModQueue={true}
-        modQueueStatus={status}
-        modQueueError={errorMessage}
-        isPublishing={isPublishing}
-        onApprove={handleApprove}
-        onReject={handleReject}
-      />
-    </>
+    <Post
+      post={displayComment}
+      showAllReplies={false}
+      showReplies={false}
+      isModQueue={true}
+      modQueueStatus={status}
+      modQueueError={errorMessage}
+      isPublishing={isPublishing}
+      onApprove={handleApprove}
+      onReject={handleReject}
+    />
   );
 };
 

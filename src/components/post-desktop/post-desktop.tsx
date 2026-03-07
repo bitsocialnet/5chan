@@ -412,6 +412,9 @@ const PostInfo = ({
           )}
           {isModQueue && (
             <span className={styles.modQueueActions}>
+              <span className={styles.modQueueTypeField}>
+                {capitalize(t('type'))}: {capitalize(t(isReply ? 'reply' : 'post'))}
+              </span>
               {modQueueStatus === 'approved' ? (
                 <span className={styles.modQueueStatusApproved}>{t('approved')}</span>
               ) : modQueueStatus === 'rejected' ? (
@@ -425,6 +428,15 @@ const PostInfo = ({
                 <LoadingEllipsis string={t('publishing')} />
               ) : (
                 <>
+                  {isReply && boardPath && (post?.threadCid || post?.parentCid) && (
+                    <span className={styles.modQueueButtonWrapper}>
+                      [
+                      <Link to={`/${boardPath}/thread/${post.threadCid || post.parentCid}`} className={styles.modQueueActionButton}>
+                        {t('view_thread')}
+                      </Link>
+                      ]
+                    </span>
+                  )}
                   <span className={styles.modQueueButtonWrapper}>
                     [
                     <button className={styles.modQueueActionButton} onClick={onApprove} disabled={isPublishing}>
