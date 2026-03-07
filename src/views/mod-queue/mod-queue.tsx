@@ -269,7 +269,7 @@ const ModQueueRow = memo(({ comment, isOdd = false, showBoard = false, boardPath
   const threadTargetCid = threadCid || cid;
   const postUrl = boardPath && threadTargetCid ? `/${boardPath}/thread/${threadTargetCid}` : undefined;
 
-  const modQueueUrl = boardPath ? `/${boardPath}/modqueue` : undefined;
+  const modQueueUrl = boardPath ? `/${boardPath}/mod/queue` : undefined;
 
   return (
     <div className={`${styles.row} ${isOdd ? styles.rowOdd : ''}`}>
@@ -370,7 +370,7 @@ const ModQueueCard = memo(({ comment, showBoard = false, boardPath }: ModQueueCa
   const threadTargetCid = threadCid || cid;
   const postUrl = boardPath && threadTargetCid ? `/${boardPath}/thread/${threadTargetCid}` : undefined;
 
-  const modQueueUrl = boardPath ? `/${boardPath}/modqueue` : undefined;
+  const modQueueUrl = boardPath ? `/${boardPath}/mod/queue` : undefined;
 
   return (
     <div className={styles.mobileCard}>
@@ -651,7 +651,7 @@ const ModQueueButtonContent = ({ feed, alertThresholdSeconds, boardIdentifier, i
   }, [statusMap]);
 
   const totalCount = normalCount + urgentCount;
-  const to = boardIdentifier ? `/${boardIdentifier}/modqueue` : '/mod/modqueue';
+  const to = boardIdentifier ? `/${boardIdentifier}/mod/queue` : '/mod/queue';
 
   const buttonContent = (
     <button className='button'>

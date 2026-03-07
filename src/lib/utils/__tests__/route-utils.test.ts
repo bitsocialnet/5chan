@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isFeedRoute, normalizeMultiboardFeedPath } from '../route-utils';
+import { isBoardModRoute, isFeedRoute, isLegacyBoardModQueueRoute, isModQueueRoute, isValidBoardModRoute, normalizeMultiboardFeedPath } from '../route-utils';
 
 describe('normalizeMultiboardFeedPath', () => {
   it('normalizes /all/3 -> /all', () => {
@@ -40,5 +40,42 @@ describe('isFeedRoute', () => {
     expect(isFeedRoute('/all/24h')).toBe(false);
     expect(isFeedRoute('/subs/catalog/1w')).toBe(false);
     expect(isFeedRoute('/all/1w/3')).toBe(false);
+  });
+
+  it('returns false for board-scoped mod namespace paths', () => {
+    expect(isFeedRoute('/biz/mod')).toBe(false);
+    expect(isFeedRoute('/biz/mod/queue')).toBe(false);
+  });
+});
+
+describe('board mod routes', () => {
+  it('recognizes canonical mod queue routes', () => {
+    expect(isModQueueRoute('/mod/queue')).toBe(true);
+    expect(isModQueueRoute('/biz/mod/queue')).toBe(true);
+    expect(isModQueueRoute('/biz/mod/queue/settings')).toBe(true);
+  });
+
+  it('does not recognize legacy board modqueue routes', () => {
+    expect(isModQueueRoute('/biz/modqueue')).toBe(false);
+  });
+
+  it('recognizes legacy board modqueue routes for rejection', () => {
+    expect(isLegacyBoardModQueueRoute('/biz/modqueue')).toBe(true);
+    expect(isLegacyBoardModQueueRoute('/biz/modqueue/settings')).toBe(true);
+    expect(isLegacyBoardModQueueRoute('/biz/mod/queue')).toBe(false);
+  });
+
+  it('recognizes board mod namespace paths', () => {
+    expect(isBoardModRoute('/biz/mod')).toBe(true);
+    expect(isBoardModRoute('/biz/mod/queue')).toBe(true);
+    expect(isBoardModRoute('/mod/queue')).toBe(false);
+  });
+
+  it('validates allowed board mod routes', () => {
+    expect(isValidBoardModRoute('/biz/mod/queue')).toBe(true);
+    expect(isValidBoardModRoute('/biz/mod/queue/settings')).toBe(true);
+    expect(isValidBoardModRoute('/biz/mod')).toBe(false);
+    expect(isValidBoardModRoute('/biz/mod/log')).toBe(false);
+    expect(isValidBoardModRoute('/biz/modqueue')).toBe(false);
   });
 });

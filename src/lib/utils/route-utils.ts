@@ -120,7 +120,7 @@ export const isFeedRoute = (pathname: string): boolean => {
 
   if (normalizedPath.includes('/thread/')) return false;
   if (normalizedPath.startsWith('/pending/')) return false;
-  if (normalizedPath.includes('/modqueue')) return false;
+  if (isBoardModRoute(normalizedPath) || isModQueueRoute(normalizedPath)) return false;
 
   const pathWithoutSettings = normalizedPath.replace(/\/settings$/, '');
   const segments = pathWithoutSettings.split('/').filter(Boolean);
@@ -147,9 +147,38 @@ export const isPendingPostRoute = (pathname: string): boolean => {
   return normalizedPath.startsWith('/pending/');
 };
 
+export const isBoardModRoute = (pathname: string): boolean => {
+  const normalizedPath = pathname.replace(/\/$/, '');
+  return /^\/[^/]+\/mod(?:\/.*)?$/.test(normalizedPath);
+};
+
+export const isLegacyBoardModQueueRoute = (pathname: string): boolean => {
+  const normalizedPath = pathname.replace(/\/$/, '');
+  return /^\/[^/]+\/modqueue(?:\/settings)?$/.test(normalizedPath);
+};
+
 export const isModQueueRoute = (pathname: string): boolean => {
-  const normalizedPath = pathname.replace(/\/settings$/, '');
-  return normalizedPath.includes('/modqueue');
+  const normalizedPath = pathname.replace(/\/settings$/, '').replace(/\/$/, '');
+  return normalizedPath === '/mod/queue' || /^\/[^/]+\/mod\/queue$/.test(normalizedPath);
+};
+
+const VALID_MOD_PATHS = ['/mod', '/mod/settings', '/mod/catalog', '/mod/catalog/settings', '/mod/queue', '/mod/queue/settings'];
+const VALID_BOARD_MOD_SUBPATHS = ['queue', 'queue/settings'];
+
+export const isValidModRoute = (pathname: string): boolean => {
+  const normalized = pathname.replace(/\/$/, '');
+  return VALID_MOD_PATHS.includes(normalized);
+};
+
+export const isValidBoardModRoute = (pathname: string): boolean => {
+  const normalizedPath = pathname.replace(/\/$/, '');
+  const match = normalizedPath.match(/^\/[^/]+\/mod(?:\/(.*))?$/);
+  if (!match) {
+    return false;
+  }
+
+  const subpath = match[1] ?? '';
+  return VALID_BOARD_MOD_SUBPATHS.includes(subpath);
 };
 
 /** Page numbers 1–10 for board feed pagination */
@@ -228,7 +257,7 @@ export const getFeedCacheKey = (pathname: string): string | null => {
     return null;
   }
 
-  if (normalizedPath.includes('/modqueue')) {
+  if (isBoardModRoute(normalizedPath) || isModQueueRoute(normalizedPath)) {
     return null;
   }
 

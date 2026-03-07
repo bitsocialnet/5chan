@@ -12,7 +12,18 @@ import useIsMobile from './hooks/use-is-mobile';
 import useTheme from './hooks/use-theme';
 import { useDirectories } from './hooks/use-directories';
 import { useResolvedSubplebbitAddress } from './hooks/use-resolved-subplebbit-address';
-import { getBoardPath, getSubplebbitAddress, isDirectoryBoard, isPostRoute, isPendingPostRoute, isModQueueRoute } from './lib/utils/route-utils';
+import {
+  getBoardPath,
+  getSubplebbitAddress,
+  isBoardModRoute,
+  isDirectoryBoard,
+  isLegacyBoardModQueueRoute,
+  isPostRoute,
+  isPendingPostRoute,
+  isModQueueRoute,
+  isValidBoardModRoute,
+  isValidModRoute,
+} from './lib/utils/route-utils';
 import styles from './app.module.css';
 import { DesktopBoardButtons, MobileBoardButtons } from './components/board-buttons';
 import Board from './views/board';
@@ -87,6 +98,20 @@ const BoardLayout = () => {
     : `${subplebbitAddress}-${location.pathname}`;
 
   if (pageNumber === '1') {
+    return <Navigate to='/not-found' replace />;
+  }
+
+  // Invalid /mod/ paths (e.g. /mod/modqueue, /mod/asdoijasd) -> not-found
+  if (location.pathname.startsWith('/mod/') && !isValidModRoute(location.pathname)) {
+    return <Navigate to='/not-found' replace />;
+  }
+
+  if (isLegacyBoardModQueueRoute(location.pathname)) {
+    return <Navigate to='/not-found' replace />;
+  }
+
+  // Invalid board-scoped mod paths (e.g. /biz/mod, /biz/mod/asdoijasd) -> not-found
+  if (isBoardModRoute(location.pathname) && !isValidBoardModRoute(location.pathname)) {
     return <Navigate to='/not-found' replace />;
   }
 
@@ -287,10 +312,12 @@ const App = () => {
             <Route path='/mod/catalog' element={catalogFeedElement} />
             <Route path='/mod/catalog/settings' element={catalogFeedElement} />
 
-            <Route path='/mod/modqueue' element={<ModQueueRoute />} />
-            <Route path='/mod/modqueue/settings' element={<ModQueueRoute />} />
+            <Route path='/mod/queue' element={<ModQueueRoute />} />
+            <Route path='/mod/queue/settings' element={<ModQueueRoute />} />
 
-            {/* Invalid subpaths: old time-filter URLs (e.g. /all/24h) -> not-found */}
+            {/* Invalid subpaths: old URLs and unknown paths -> not-found */}
+            <Route path='/mod/modqueue' element={<Navigate to='/not-found' replace />} />
+            <Route path='/mod/modqueue/settings' element={<Navigate to='/not-found' replace />} />
             <Route path='/all/*' element={<Navigate to='/not-found' replace />} />
             <Route path='/subs/*' element={<Navigate to='/not-found' replace />} />
             <Route path='/mod/*' element={<Navigate to='/not-found' replace />} />
@@ -302,8 +329,13 @@ const App = () => {
             <Route path='/:boardIdentifier/catalog' element={catalogFeedElement} />
             <Route path='/:boardIdentifier/catalog/settings' element={catalogFeedElement} />
 
-            <Route path='/:boardIdentifier/modqueue' element={<ModQueueRoute />} />
-            <Route path='/:boardIdentifier/modqueue/settings' element={<ModQueueRoute />} />
+            <Route path='/:boardIdentifier/mod/queue' element={<ModQueueRoute />} />
+            <Route path='/:boardIdentifier/mod/queue/settings' element={<ModQueueRoute />} />
+
+            <Route path='/:boardIdentifier/modqueue' element={<Navigate to='/not-found' replace />} />
+            <Route path='/:boardIdentifier/modqueue/settings' element={<Navigate to='/not-found' replace />} />
+            <Route path='/:boardIdentifier/mod' element={<Navigate to='/not-found' replace />} />
+            <Route path='/:boardIdentifier/mod/*' element={<Navigate to='/not-found' replace />} />
 
             <Route path='/:boardIdentifier/thread/:commentCid' element={<Post />} />
             <Route path='/:boardIdentifier/thread/:commentCid/settings' element={<Post />} />

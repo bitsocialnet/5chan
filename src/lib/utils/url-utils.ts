@@ -82,10 +82,11 @@ export const is5chanLink = (url: string): boolean => {
     // - /{boardIdentifier} (directory code or address)
     // - /{boardIdentifier}/thread/{commentCid}
     // - /{boardIdentifier}/catalog
+    // - /{boardIdentifier}/mod/queue
     // - /all, /subs, /mod, /pending/{index}
     return (
       /^\/p\/[^/]+(\/c\/[^/]+)?$/.test(routePath) ||
-      /^\/[^/]+(\/thread\/[^/]+|\/catalog)?$/.test(routePath) ||
+      /^\/[^/]+(\/thread\/[^/]+|\/catalog|\/mod\/queue)?$/.test(routePath) ||
       /^\/(all|subscriptions|mod)(\/catalog|\/thread\/[^/]+)?(\/[^/]+)?$/.test(routePath) ||
       /^\/pending\/[^/]+$/.test(routePath)
     );

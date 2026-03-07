@@ -1,3 +1,5 @@
+import { isBoardModRoute, isModQueueRoute } from './route-utils';
+
 export type ParamsType = {
   accountCommentIndex?: string;
   boardIdentifier?: string;
@@ -17,6 +19,7 @@ export const isBoardView = (pathname: string, params: ParamsType): boolean => {
     pathname.startsWith('/all') ||
     pathname.startsWith('/subs') ||
     pathname.startsWith('/mod') ||
+    isBoardModRoute(pathname) ||
     pathname.startsWith('/pending') ||
     pathname === '/' ||
     pathname.startsWith('/faq') ||
@@ -53,7 +56,7 @@ export const isModView = (pathname: string): boolean => {
 };
 
 export const isModQueueView = (pathname: string): boolean => {
-  return pathname.includes('/modqueue');
+  return isModQueueRoute(pathname);
 };
 
 export const isPendingPostView = (pathname: string, params: ParamsType): boolean => {
