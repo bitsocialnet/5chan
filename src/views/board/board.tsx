@@ -20,6 +20,7 @@ import { getPageFromFeedPath, getSubplebbitAddress, isDirectoryBoard, normalizeM
 import ErrorDisplay from '../../components/error-display/error-display';
 import LoadingEllipsis from '../../components/loading-ellipsis';
 import BoardPagination from '../../components/board-pagination';
+import { CatalogButton } from '../../components/board-buttons/board-buttons';
 import { PageFooterDesktop, PageFooterMobile } from '../../components/footer';
 import { Post } from '../post';
 
@@ -304,9 +305,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, i
                     ))}
                   </div>
                   <div className={mobileFooterStyles.mobileFooterButtons}>
-                    <Link to={`${paginationBasePath}/catalog`} className='button'>
-                      {t('catalog')}
-                    </Link>
+                    <CatalogButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
                   </div>
                 </>
               )}
@@ -330,6 +329,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, i
       isInSubscriptionsView,
       isInModView,
       subplebbitState,
+      subplebbitAddress,
       subscriptions?.length,
       accountSubplebbitAddresses?.length,
       effectiveInfiniteScroll,
