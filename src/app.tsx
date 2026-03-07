@@ -12,7 +12,7 @@ import useIsMobile from './hooks/use-is-mobile';
 import useTheme from './hooks/use-theme';
 import { useDirectories } from './hooks/use-directories';
 import { useResolvedSubplebbitAddress } from './hooks/use-resolved-subplebbit-address';
-import { getSubplebbitAddress, isPostRoute, isPendingPostRoute, isModQueueRoute } from './lib/utils/route-utils';
+import { getBoardPath, getSubplebbitAddress, isDirectoryBoard, isPostRoute, isPendingPostRoute, isModQueueRoute } from './lib/utils/route-utils';
 import styles from './app.module.css';
 import { DesktopBoardButtons, MobileBoardButtons } from './components/board-buttons';
 import Board from './views/board';
@@ -88,6 +88,15 @@ const BoardLayout = () => {
 
   if (pageNumber === '1') {
     return <Navigate to='/not-found' replace />;
+  }
+
+  // Normalize address URLs to directory codes: /anime-and-manga.eth/thread/xxx -> /a/thread/xxx
+  if (boardIdentifier && !isDirectoryBoard(boardIdentifier, directories)) {
+    const canonicalBoardIdentifier = getBoardPath(boardIdentifier, directories);
+    if (canonicalBoardIdentifier !== boardIdentifier) {
+      const canonicalPath = location.pathname.replace(`/${boardIdentifier}`, `/${canonicalBoardIdentifier}`);
+      return <Navigate to={canonicalPath + (location.search || '')} replace />;
+    }
   }
 
   return (

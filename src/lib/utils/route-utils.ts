@@ -1,4 +1,4 @@
-import { DirectoryCommunity } from '../../hooks/use-directories';
+import { DirectoryCommunity, findDirectoryByAddress, normalizeBoardAddress } from '../../hooks/use-directories';
 
 /**
  * Extract directory short code from title (e.g., "/biz/ - Business & Finance" -> "biz")
@@ -16,6 +16,8 @@ let cachedDirectoryToAddressMap: Map<string, string> | null = null;
 let cachedCommunitiesForAddress: DirectoryCommunity[] | null = null;
 let cachedAddressToDirectoryMap: Map<string, string> | null = null;
 
+const getDirectoryCode = (community: DirectoryCommunity): string | null => community.directoryCode ?? extractDirectoryFromTitle(community.title ?? '');
+
 /**
  * Create a map from directory codes to community addresses
  * Uses caching to avoid recreating the map when communities array hasn't changed
@@ -28,11 +30,10 @@ const getDirectoryToAddressMap = (communities: DirectoryCommunity[]): Map<string
 
   const map = new Map<string, string>();
   for (const community of communities) {
-    if (community.title) {
-      const directory = extractDirectoryFromTitle(community.title);
-      if (directory && community.address) {
-        map.set(directory, community.address);
-      }
+    if (!community.address) continue;
+    const directory = getDirectoryCode(community);
+    if (directory) {
+      map.set(directory, community.address);
     }
   }
 
@@ -54,11 +55,10 @@ const getAddressToDirectoryMap = (communities: DirectoryCommunity[]): Map<string
 
   const map = new Map<string, string>();
   for (const community of communities) {
-    if (community.title && community.address) {
-      const directory = extractDirectoryFromTitle(community.title);
-      if (directory) {
-        map.set(community.address, directory);
-      }
+    if (!community.address) continue;
+    const directory = getDirectoryCode(community);
+    if (directory) {
+      map.set(community.address, directory);
     }
   }
 
@@ -69,11 +69,16 @@ const getAddressToDirectoryMap = (communities: DirectoryCommunity[]): Map<string
 };
 
 /**
- * Convert community address to URL path (directory code if available, otherwise full address)
+ * Convert community address to URL path (directory code if available, otherwise full address).
+ * Uses findDirectoryByAddress for alias resolution (.bso/.eth) so music-posting.eth maps to mu.
  */
 export const getBoardPath = (communityAddress: string, communities: DirectoryCommunity[]): string => {
   const addressToDirectory = getAddressToDirectoryMap(communities);
-  const directory = addressToDirectory.get(communityAddress);
+  let directory = addressToDirectory.get(communityAddress);
+  if (!directory) {
+    const entry = findDirectoryByAddress(communities, communityAddress);
+    directory = entry ? (getDirectoryCode(entry) ?? undefined) : undefined;
+  }
   return directory || communityAddress;
 };
 
@@ -91,6 +96,15 @@ export const getSubplebbitAddress = (boardIdentifier: string, communities: Direc
 
   // Otherwise, assume it's already an address
   return boardIdentifier;
+};
+
+/**
+ * Compare two addresses; returns true if they refer to the same board (handles .bso/.eth aliases).
+ */
+export const areSameBoardAddress = (a: string | undefined, b: string | undefined): boolean => {
+  if (!a || !b) return false;
+  if (a === b) return true;
+  return normalizeBoardAddress(a) === normalizeBoardAddress(b);
 };
 
 /**

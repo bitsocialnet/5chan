@@ -135,7 +135,7 @@ const adaptV2Directories = (value: Record<string, unknown>): DirectoryCommunity[
   return dedupeCommunities(communities);
 };
 
-const getDirectoryAddressLookupKey = (address: string): string => {
+export const normalizeBoardAddress = (address: string): string => {
   for (const suffix of DIRECTORY_ALIAS_SUFFIXES) {
     if (address.endsWith(suffix)) {
       return address.slice(0, -suffix.length);
@@ -145,7 +145,7 @@ const getDirectoryAddressLookupKey = (address: string): string => {
   return address;
 };
 
-const findDirectoryByAddress = (directories: DirectoryCommunity[], address: string | undefined): DirectoryCommunity | undefined => {
+export const findDirectoryByAddress = (directories: DirectoryCommunity[], address: string | undefined): DirectoryCommunity | undefined => {
   if (!address) {
     return undefined;
   }
@@ -155,8 +155,8 @@ const findDirectoryByAddress = (directories: DirectoryCommunity[], address: stri
     return exactMatch;
   }
 
-  const addressLookupKey = getDirectoryAddressLookupKey(address);
-  return directories.find((community) => getDirectoryAddressLookupKey(community.address) === addressLookupKey);
+  const normalizedAddress = normalizeBoardAddress(address);
+  return directories.find((community) => normalizeBoardAddress(community.address) === normalizedAddress);
 };
 
 const adaptV1Communities = (value: Record<string, unknown>): DirectoryCommunity[] => {

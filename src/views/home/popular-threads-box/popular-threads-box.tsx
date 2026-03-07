@@ -9,7 +9,7 @@ import { getCommentMediaInfo } from '../../../lib/utils/media-utils';
 import { CatalogPostMedia } from '../../../components/catalog-row';
 import LoadingEllipsis from '../../../components/loading-ellipsis';
 import BoxModal from '../box-modal';
-import { DirectoryCommunity } from '../../../hooks/use-directories';
+import { DirectoryCommunity, findDirectoryByAddress } from '../../../hooks/use-directories';
 import { getBoardPath } from '../../../lib/utils/route-utils';
 import { removeMarkdown } from '../../../lib/utils/post-utils';
 
@@ -51,30 +51,28 @@ const PopularThreadCard = memo(
       </div>
     );
   },
-  (prevProps, nextProps) => prevProps.post?.cid === nextProps.post?.cid && prevProps.boardTitle === nextProps.boardTitle,
+  (prevProps, nextProps) => prevProps.post?.cid === nextProps.post?.cid && prevProps.boardTitle === nextProps.boardTitle && prevProps.boardPath === nextProps.boardPath,
 );
 
 const PopularThreadsBox = ({ directories, subplebbits }: { directories: DirectoryCommunity[]; subplebbits: any }) => {
   const { t } = useTranslation();
   const { showWorksafeContentOnly, showNsfwContentOnly } = usePopularThreadsOptionsStore();
 
-  const directoryByAddress = useMemo(() => new Map(directories.map((d) => [d.address, d])), [directories]);
-
   const filteredSubplebbits = useMemo(() => {
     if (showWorksafeContentOnly) {
       return subplebbits.filter((sub: Subplebbit) => {
-        const entry = directoryByAddress.get(sub?.address);
-        return entry ? !entry.nsfw : true;
+        const directoryEntry = findDirectoryByAddress(directories, sub?.address);
+        return directoryEntry ? !directoryEntry.nsfw : true;
       });
     }
     if (showNsfwContentOnly) {
       return subplebbits.filter((sub: Subplebbit) => {
-        const entry = directoryByAddress.get(sub?.address);
-        return entry ? entry.nsfw : false;
+        const directoryEntry = findDirectoryByAddress(directories, sub?.address);
+        return directoryEntry ? directoryEntry.nsfw : false;
       });
     }
     return subplebbits;
-  }, [subplebbits, showWorksafeContentOnly, showNsfwContentOnly, directoryByAddress]);
+  }, [subplebbits, showWorksafeContentOnly, showNsfwContentOnly, directories]);
 
   const { popularPosts } = usePopularPosts(filteredSubplebbits);
   const isLoading = popularPosts.length === 0;
@@ -90,8 +88,8 @@ const PopularThreadsBox = ({ directories, subplebbits }: { directories: Director
           <LoadingEllipsis string={t('loading')} />
         ) : (
           popularPosts.map((post: Comment) => {
-            const entry = directoryByAddress.get(post.subplebbitAddress);
-            const boardTitle = entry?.title?.replace(/^\/[^/]+\/\s*-\s*/, '') || '';
+            const directoryEntry = findDirectoryByAddress(directories, post.subplebbitAddress);
+            const boardTitle = directoryEntry?.title?.replace(/^\/[^/]+\/\s*-\s*/, '') || '';
             const boardPath = post.subplebbitAddress ? getBoardPath(post.subplebbitAddress, directories) : '';
             return <PopularThreadCard key={post.cid} post={post} boardTitle={boardTitle} boardPath={boardPath} />;
           })

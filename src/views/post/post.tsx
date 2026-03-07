@@ -7,7 +7,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { isAllView } from '../../lib/utils/view-utils';
 import { useResolvedSubplebbitAddress } from '../../hooks/use-resolved-subplebbit-address';
 import { useDirectories } from '../../hooks/use-directories';
-import { isDirectoryBoard } from '../../lib/utils/route-utils';
+import { areSameBoardAddress, isDirectoryBoard } from '../../lib/utils/route-utils';
 import useIsMobile from '../../hooks/use-is-mobile';
 import ErrorDisplay from '../../components/error-display/error-display';
 import { PageFooterDesktop, ThreadFooterFirstRow, ThreadFooterStyleRow, ThreadFooterMobile } from '../../components/footer';
@@ -136,7 +136,7 @@ const PostPage = () => {
 
   const navigate = useNavigate();
   useEffect(() => {
-    if (comment?.subplebbitAddress && subplebbitAddress && comment.subplebbitAddress !== subplebbitAddress) {
+    if (comment?.subplebbitAddress && subplebbitAddress && !areSameBoardAddress(comment.subplebbitAddress, subplebbitAddress)) {
       navigate('/not-found', { replace: true });
     }
   }, [comment?.subplebbitAddress, subplebbitAddress, navigate]);
