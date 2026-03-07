@@ -298,6 +298,6 @@
   "support_5chan": "支持 5chan",
   "images": "图片",
   "load_more": "加载更多",
-  "purged": "purged",
-  "this_post_was_purged": "Purging from board database — this process is irreversible."
+  "purged": "已清除",
+  "this_post_was_purged": "正在从版面数据库中清除 — 此操作不可逆。"
 }

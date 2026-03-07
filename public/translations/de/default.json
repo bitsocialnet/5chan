@@ -298,6 +298,6 @@
   "support_5chan": "5chan unterstützen",
   "images": "Bilder",
   "load_more": "Mehr laden",
-  "purged": "purged",
-  "this_post_was_purged": "Purging from board database — this process is irreversible."
+  "purged": "gelöscht",
+  "this_post_was_purged": "Wird aus der Board-Datenbank gelöscht — dieser Vorgang ist unwiderruflich."
 }

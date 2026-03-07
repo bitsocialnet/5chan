@@ -298,6 +298,6 @@
   "support_5chan": "Podpořte 5chan",
   "images": "obrázky",
   "load_more": "Načíst více",
-  "purged": "purged",
-  "this_post_was_purged": "Purging from board database — this process is irreversible."
+  "purged": "vymazáno",
+  "this_post_was_purged": "Mažeme z databáze desky — tento proces je nevratný."
 }

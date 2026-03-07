@@ -298,6 +298,6 @@
   "support_5chan": "5chan সমর্থন করুন",
   "images": "ছবি",
   "load_more": "আরও লোড করুন",
-  "purged": "purged",
-  "this_post_was_purged": "Purging from board database — this process is irreversible."
+  "purged": "অপসারিত",
+  "this_post_was_purged": "বোর্ড ডাটাবেস থেকে মুছে ফেলা হচ্ছে — এই প্রক্রিয়া অপরিবর্তনীয়।"
 }

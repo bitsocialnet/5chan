@@ -298,6 +298,6 @@
   "support_5chan": "Sprijiniți 5chan",
   "images": "imagini",
   "load_more": "Încarcă mai mult",
-  "purged": "purged",
-  "this_post_was_purged": "Purging from board database — this process is irreversible."
+  "purged": "șters",
+  "this_post_was_purged": "Ștergere din baza de date a board-ului — acest proces este ireversibil."
 }

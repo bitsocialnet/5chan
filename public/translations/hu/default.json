@@ -298,6 +298,6 @@
   "support_5chan": "5chan támogatása",
   "images": "képek",
   "load_more": "További betöltése",
-  "purged": "purged",
-  "this_post_was_purged": "Purging from board database — this process is irreversible."
+  "purged": "törölve",
+  "this_post_was_purged": "Törlés a tábla adatbázisából — ez a folyamat visszafordíthatatlan."
 }

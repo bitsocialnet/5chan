@@ -298,6 +298,6 @@
   "support_5chan": "5chan चे समर्थन करा",
   "images": "प्रतिमा",
   "load_more": "अधिक लोड करा",
-  "purged": "purged",
-  "this_post_was_purged": "Purging from board database — this process is irreversible."
+  "purged": "काढून टाकले",
+  "this_post_was_purged": "बोर्ड डेटाबेसमधून काढून टाकत आहे — ही प्रक्रिया अपरिवर्तनीय आहे."
 }

@@ -298,6 +298,6 @@
   "support_5chan": "สนับสนุน 5chan",
   "images": "รูปภาพ",
   "load_more": "โหลดเพิ่มเติม",
-  "purged": "purged",
-  "this_post_was_purged": "Purging from board database — this process is irreversible."
+  "purged": "ถูกลบ",
+  "this_post_was_purged": "กำลังลบออกจากฐานข้อมูลบอร์ด — ขั้นตอนนี้ไม่สามารถย้อนกลับได้"
 }

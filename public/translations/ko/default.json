@@ -298,6 +298,6 @@
   "support_5chan": "5chan 지원",
   "images": "이미지",
   "load_more": "더 보기",
-  "purged": "purged",
-  "this_post_was_purged": "Purging from board database — this process is irreversible."
+  "purged": "삭제됨",
+  "this_post_was_purged": "보드 데이터베이스에서 삭제 중 — 이 작업은 되돌릴 수 없습니다."
 }

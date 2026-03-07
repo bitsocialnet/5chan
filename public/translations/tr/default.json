@@ -298,6 +298,6 @@
   "support_5chan": "5chan'ı Destekle",
   "images": "görseller",
   "load_more": "Daha fazla yükle",
-  "purged": "purged",
-  "this_post_was_purged": "Purging from board database — this process is irreversible."
+  "purged": "silindi",
+  "this_post_was_purged": "Pano veritabanından siliniyor — bu işlem geri alınamaz."
 }
