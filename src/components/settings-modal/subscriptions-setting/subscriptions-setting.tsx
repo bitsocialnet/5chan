@@ -1,4 +1,4 @@
-import { setAccount, useAccount, useSubscribe } from '@bitsocialhq/pkc-react-hooks';
+import { setAccount, useAccount, useSubscribe } from '@bitsocialhq/bitsocial-react-hooks';
 import getShortAddress from '../../../lib/get-short-address';
 import styles from './subscriptions-setting.module.css';
 import { useTranslation } from 'react-i18next';

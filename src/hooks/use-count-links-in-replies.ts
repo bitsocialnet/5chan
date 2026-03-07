@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { Comment } from '@bitsocialhq/pkc-react-hooks';
-import { flattenCommentsPages } from '@bitsocialhq/pkc-react-hooks/dist/lib/utils';
+import { Comment } from '@bitsocialhq/bitsocial-react-hooks';
+import { flattenCommentsPages } from '@bitsocialhq/bitsocial-react-hooks/dist/lib/utils';
 
 const useCountLinksInReplies = (comment: Comment, firstXReplies?: number) => {
   let linkCount = 0;

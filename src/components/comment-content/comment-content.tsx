@@ -1,11 +1,12 @@
 import { Fragment, useMemo, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import { Trans, useTranslation } from 'react-i18next';
-import { Comment, useComment } from '@bitsocialhq/pkc-react-hooks';
-import useSubplebbitsPagesStore from '@bitsocialhq/pkc-react-hooks/dist/stores/subplebbits-pages';
+import { Comment, useComment } from '@bitsocialhq/bitsocial-react-hooks';
+import useSubplebbitsPagesStore from '@bitsocialhq/bitsocial-react-hooks/dist/stores/subplebbits-pages';
 import usePostNumberStore from '../../stores/use-post-number-store';
 import getShortAddress from '../../lib/get-short-address';
 import { getFormattedDate, getFormattedTimeAgo } from '../../lib/utils/time-utils';
+import { isUnavailableQuoteTarget } from '../../lib/utils/quote-link-utils';
 import { isPostPageView } from '../../lib/utils/view-utils';
 import useIsMobile from '../../hooks/use-is-mobile';
 import useStateString from '../../hooks/use-state-string';
@@ -17,12 +18,15 @@ import styles from '../../views/post/post.module.css';
 import capitalize from 'lodash/capitalize';
 
 const QuotedCidLink = ({ cid, postCid }: { cid: string; postCid: string }) => {
+  const quotedNumber = usePostNumberStore((state) => state.cidToNumber[cid]);
   const commentFromStore = useSubplebbitsPagesStore((state) => state.comments[cid]);
   const commentFromHook = useComment({ commentCid: cid, onlyIfCached: true });
   // Prefer hook version to ensure 'number' property is populated for deeper nested replies in Virtuoso
   const quotedComment = commentFromHook?.number !== undefined ? commentFromHook : commentFromStore;
   const isOP = cid === postCid;
-  return <ReplyQuotePreview isQuotelinkReply={true} quotelinkReply={quotedComment} isOP={isOP} />;
+  const isUnavailable = isUnavailableQuoteTarget(quotedComment);
+
+  return <ReplyQuotePreview isQuotelinkReply={true} quotelinkReply={quotedComment} quotelinkNumber={quotedNumber} isQuotelinkUnavailable={isUnavailable} isOP={isOP} />;
 };
 
 const useScopedCidToNumber = (cids: string[]) => {
@@ -67,6 +71,7 @@ const CommentContent = ({ comment: post }: { comment: Comment }) => {
   const isMobile = useIsMobile();
 
   const { cid, content, deleted, edit, original, parentCid, postCid, pendingApproval, quotedCids, reason, removed, state, subplebbitAddress } = post || {};
+  const purged = post?.commentModeration?.purged;
   const banned = !!post?.author?.subplebbit?.banExpiresAt;
 
   const [showFullComment, setShowFullComment] = useState(false);
@@ -123,11 +128,13 @@ const CommentContent = ({ comment: post }: { comment: Comment }) => {
     <blockquote className={`${styles.postMessage} ${!isReply && isMobile && styles.clampLines}`}>
       {isReply &&
         !hasFailedState &&
-        !(deleted || removed) &&
+        !(deleted || removed || purged) &&
         (filteredQuotedCids.length > 0
           ? filteredQuotedCids.map((cid: string) => <QuotedCidLink key={cid} cid={cid} postCid={postCid} />)
-          : shouldShowReplyingToReply && <ReplyQuotePreview isQuotelinkReply={true} quotelinkReply={quotelinkReply} />)}
-      {removed ? (
+          : shouldShowReplyingToReply && <ReplyQuotePreview isQuotelinkReply={true} quotelinkReply={quotelinkReply} quotelinkNumber={parentNumber} />)}
+      {purged ? (
+        <span className={styles.grayEditMessage}>{capitalize(t('this_post_was_purged'))}</span>
+      ) : removed ? (
         reason ? (
           <>
             <span className={styles.redEditMessage}>({t('this_post_was_removed')})</span>

@@ -7,7 +7,7 @@ export type SiteLegalMetaProps = {
   order?: SiteLegalMetaOrder;
 };
 
-const LicenseText = () => <span>5chan is free and open source software under GPLv2 license.</span>;
+const LicenseText = () => <span>5chan is free and open-source software under GPLv2 license.</span>;
 
 const VersionFeedbackContact = () => (
   <>

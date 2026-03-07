@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useAccountComment, useAccountComments } from '@bitsocialhq/pkc-react-hooks';
+import { useAccountComment, useAccountComments } from '@bitsocialhq/bitsocial-react-hooks';
 import { useDirectories } from '../../hooks/use-directories';
 import { getBoardPath } from '../../lib/utils/route-utils';
 import { Post } from '../post';

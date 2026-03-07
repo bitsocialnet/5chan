@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { Link, useLocation, useNavigate, useNavigationType, useParams } from 'react-router-dom';
-import { Comment, useAccount, useAccountComments, useAccountSubplebbits, useFeed, useSubplebbit } from '@bitsocialhq/pkc-react-hooks';
+import { Comment, useAccount, useAccountComments, useAccountSubplebbits, useFeed, useSubplebbit } from '@bitsocialhq/bitsocial-react-hooks';
 import { useSubplebbitField } from '../../hooks/use-stable-subplebbit';
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
 import { useTranslation } from 'react-i18next';

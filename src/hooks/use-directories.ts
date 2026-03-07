@@ -50,6 +50,7 @@ const CACHE_MAX_AGE_MS = 60 * 60 * 1000; // 1 hour
 let cacheCommunities: DirectoryCommunity[] | null = null;
 let cacheMetadata: DirectoriesMetadata | null = null;
 let inFlightGitHubFetch: Promise<DirectoriesData> | null = null;
+const DIRECTORY_ALIAS_SUFFIXES = ['.bso', '.eth'] as const;
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null;
 
@@ -132,6 +133,30 @@ const adaptV2Directories = (value: Record<string, unknown>): DirectoryCommunity[
     .filter((community): community is DirectoryCommunity => community !== null);
 
   return dedupeCommunities(communities);
+};
+
+const getDirectoryAddressLookupKey = (address: string): string => {
+  for (const suffix of DIRECTORY_ALIAS_SUFFIXES) {
+    if (address.endsWith(suffix)) {
+      return address.slice(0, -suffix.length);
+    }
+  }
+
+  return address;
+};
+
+const findDirectoryByAddress = (directories: DirectoryCommunity[], address: string | undefined): DirectoryCommunity | undefined => {
+  if (!address) {
+    return undefined;
+  }
+
+  const exactMatch = directories.find((community) => community.address === address);
+  if (exactMatch) {
+    return exactMatch;
+  }
+
+  const addressLookupKey = getDirectoryAddressLookupKey(address);
+  return directories.find((community) => getDirectoryAddressLookupKey(community.address) === addressLookupKey);
 };
 
 const adaptV1Communities = (value: Record<string, unknown>): DirectoryCommunity[] => {
@@ -376,7 +401,7 @@ export const useDirectoryAddresses = () => {
 
 export const useDirectoryByAddress = (address: string | undefined) => {
   const directories = useDirectories();
-  return useMemo(() => (address ? directories.find((c) => c.address === address) : undefined), [directories, address]);
+  return useMemo(() => findDirectoryByAddress(directories, address), [directories, address]);
 };
 
 export const useDirectoriesMetadata = () => {

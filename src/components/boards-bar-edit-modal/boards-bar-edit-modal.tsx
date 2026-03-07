@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { useAccount } from '@bitsocialhq/pkc-react-hooks';
+import { useAccount } from '@bitsocialhq/bitsocial-react-hooks';
 import useBoardsBarEditModalStore from '../../stores/use-boards-bar-edit-modal-store';
 import useBoardsBarVisibilityStore from '../../stores/use-boards-bar-visibility-store';
 import { getAllBoardCodes } from '../../constants/board-codes';

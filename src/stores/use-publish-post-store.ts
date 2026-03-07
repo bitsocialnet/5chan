@@ -1,7 +1,6 @@
-import { ChallengeVerification, Comment, PublishCommentOptions } from '@bitsocialhq/pkc-react-hooks';
+import { ChallengeVerification, Comment, PublishCommentOptions } from '@bitsocialhq/bitsocial-react-hooks';
 import { create } from 'zustand';
 import { alertChallengeVerificationFailed } from '../lib/utils/challenge-utils';
-import useChallengesStore from './use-challenges-store';
 
 type SubmitState = {
   author?: any | undefined;
@@ -15,8 +14,6 @@ type SubmitState = {
   setPublishPostStore: (data: Partial<SubmitState>) => void;
   resetPublishPostStore: () => void;
 };
-
-const { addChallenge } = useChallengesStore.getState();
 
 const usePublishPostStore = create<SubmitState>((set) => ({
   author: undefined,
@@ -44,7 +41,6 @@ const usePublishPostStore = create<SubmitState>((set) => ({
         content,
         link,
         spoiler,
-        onChallenge: (...args: any) => addChallenge(args),
         onChallengeVerification: (challengeVerification: ChallengeVerification, comment: Comment) => {
           alertChallengeVerificationFailed(challengeVerification, comment);
         },

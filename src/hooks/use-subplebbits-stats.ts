@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useSubplebbitStats } from '@bitsocialhq/pkc-react-hooks';
+import { useSubplebbitStats } from '@bitsocialhq/bitsocial-react-hooks';
 import { create } from 'zustand';
 
 export type SubplebbitsStatsState = {

@@ -10,9 +10,10 @@ import styles from './markdown.module.css';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import { canEmbed } from '../embed';
 import { is5chanLink, transform5chanLinkToInternal, isValidCrossboardPattern } from '../../lib/utils/url-utils';
+import { isUnavailableQuoteTarget } from '../../lib/utils/quote-link-utils';
 import usePostNumberStore from '../../stores/use-post-number-store';
-import useSubplebbitsPagesStore from '@bitsocialhq/pkc-react-hooks/dist/stores/subplebbits-pages';
-import { useComment } from '@bitsocialhq/pkc-react-hooks';
+import useSubplebbitsPagesStore from '@bitsocialhq/bitsocial-react-hooks/dist/stores/subplebbits-pages';
+import { useComment } from '@bitsocialhq/bitsocial-react-hooks';
 import ReplyQuotePreview from '../reply-quote-preview';
 
 const safeParseUrl = (href: string): URL | null => {
@@ -144,7 +145,7 @@ type Token =
   | { type: 'crossBoardLink'; display: string; route: string }
   | { type: 'spoiler'; tokens: Token[] };
 
-const SPOILER_REGEX = /<spoiler>([\s\S]*?)<\/spoiler>/;
+const SPOILER_REGEX = /\[spoiler\]([\s\S]*?)\[\/spoiler\]/;
 const CROSSBOARD_REGEX = />>>\/((?:[a-zA-Z0-9]{1,10}\/(?:[a-zA-Z0-9]{46})?|[a-zA-Z0-9\-.]+(?:\/[a-zA-Z0-9]{46})?))[.,:;!?]*/;
 const QUOTE_LINK_REGEX = /(?<![>/\w])>>(\d+)(?![\d/])/;
 const URL_REGEX = /https?:\/\/[^\s<\[\]]*[^\s<\[\].,;:!?\"'\)\]>]/;
@@ -276,11 +277,13 @@ const NumberQuoteLink = ({ number, threadPostCid, subplebbitAddress }: { number:
   const comment = commentFromHook?.number !== undefined ? commentFromHook : commentFromStore;
   const isOP = Boolean(threadPostCid && cid === threadPostCid);
 
-  if (!comment) {
-    return <span>{`>>${number}`}</span>;
+  if (isUnavailableQuoteTarget(comment)) {
+    return (
+      <ReplyQuotePreview isQuotelinkReply={true} quotelinkReply={comment} quotelinkNumber={number} isQuotelinkUnavailable={true} isOP={isOP} showTrailingBreak={false} />
+    );
   }
 
-  return <ReplyQuotePreview isQuotelinkReply={true} quotelinkReply={comment} isOP={isOP} showTrailingBreak={false} />;
+  return <ReplyQuotePreview isQuotelinkReply={true} quotelinkReply={comment} quotelinkNumber={number} isOP={isOP} showTrailingBreak={false} />;
 };
 
 const renderAnchorLink = (children: React.ReactNode, href: string, threadPostCid?: string, subplebbitAddress?: string) => {

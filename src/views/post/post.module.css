@@ -490,6 +490,13 @@
   cursor: pointer;
 }
 
+.quoteLinkUnavailable,
+.quoteLinkUnavailable:hover {
+  color: var(--post-quotelink-text-color);
+  text-decoration: line-through;
+  cursor: default;
+}
+
 .replyMobile {
   padding-top: 7px;
   content-visibility: auto;
@@ -580,6 +587,32 @@
 .pendingApproval {
   color: red;
   font-weight: 700;
+}
+
+.failedPublishNotice {
+  display: block;
+  margin-top: 4px;
+  color: red;
+  font-weight: 700;
+}
+
+.failedDeletePostButton {
+  all: unset;
+  color: red;
+  cursor: pointer;
+  font-weight: 700;
+  text-decoration: underline;
+  text-transform: uppercase;
+}
+
+.failedDeletePostButton:hover:not(:disabled) {
+  color: #b30000;
+}
+
+.failedDeletePostButton:disabled {
+  cursor: wait;
+  opacity: 0.7;
+  text-decoration: none;
 }
 
 .grayEditMessage {

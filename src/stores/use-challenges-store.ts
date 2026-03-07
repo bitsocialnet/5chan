@@ -1,19 +1,20 @@
 import { create } from 'zustand';
-import { Challenge } from '@bitsocialhq/pkc-react-hooks';
+import { Challenge } from '@bitsocialhq/bitsocial-react-hooks';
 
 let nextChallengeId = 0;
 
 interface State {
-  challenges: Array<{ challenge: Challenge; id: number }>;
-  addChallenge: (challenge: Challenge) => void;
+  challenges: Array<{ challenge: Challenge; id: number; onAbandon?: () => Promise<void> | void }>;
+  addChallenge: (challenge: Challenge, onAbandon?: () => Promise<void> | void) => void;
   removeChallenge: () => void;
+  abandonCurrentChallenge: () => Promise<void>;
 }
 
-const useChallengesStore = create<State>((set) => ({
+const useChallengesStore = create<State>((set, get) => ({
   challenges: [],
-  addChallenge: (challenge: Challenge) => {
+  addChallenge: (challenge: Challenge, onAbandon?: () => Promise<void> | void) => {
     set((state) => ({
-      challenges: [...state.challenges, { challenge, id: nextChallengeId++ }],
+      challenges: [...state.challenges, { challenge, id: nextChallengeId++, onAbandon }],
     }));
   },
   removeChallenge: () => {
@@ -22,6 +23,15 @@ const useChallengesStore = create<State>((set) => ({
       challenges.shift();
       return { challenges };
     });
+  },
+  abandonCurrentChallenge: async () => {
+    const currentChallenge = get().challenges[0];
+    get().removeChallenge();
+    try {
+      await currentChallenge?.onAbandon?.();
+    } catch (error) {
+      console.error('Failed to abandon challenge publication:', error);
+    }
   },
 }));
 

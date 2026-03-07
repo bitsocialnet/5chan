@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigationType, useParams } from 'react-router-dom';
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
-import { Comment, useEditedComment, useReplies, useAccount, useAccountComment } from '@bitsocialhq/pkc-react-hooks';
+import { Comment, deleteComment, useEditedComment, useReplies, useAccount, useAccountComment } from '@bitsocialhq/bitsocial-react-hooks';
 import getShortAddress from '../../lib/get-short-address';
 import styles from '../../views/post/post.module.css';
 import { CommentMediaInfo, getDisplayMediaInfoType, getHasThumbnail, getMediaDimensions } from '../../lib/utils/media-utils';
@@ -22,7 +22,7 @@ import useHide from '../../hooks/use-hide';
 import useStateString from '../../hooks/use-state-string';
 import useScrollToReply from '../../hooks/use-scroll-to-reply';
 import { useCurrentTime } from '../../hooks/use-current-time';
-import { useSubplebbitField } from '../../hooks/use-stable-subplebbit';
+import { useBoardPseudonymityMode } from '../../hooks/use-board-pseudonymity-mode';
 import CommentContent from '../comment-content';
 import CommentMedia from '../comment-media';
 import EditMenu from '../edit-menu/edit-menu';
@@ -42,7 +42,7 @@ import useChallengesStore from '../../stores/use-challenges-store';
 import useFeedResetStore from '../../stores/use-feed-reset-store';
 import usePostNumberStore from '../../stores/use-post-number-store';
 import { alertChallengeVerificationFailed } from '../../lib/utils/challenge-utils';
-import { usePublishCommentModeration } from '@bitsocialhq/pkc-react-hooks';
+import { usePublishCommentModeration } from '@bitsocialhq/bitsocial-react-hooks';
 import useQuotedByMap from '../../hooks/use-quoted-by-map';
 import useProgressiveRender from '../../hooks/use-progressive-render';
 import { BOARD_REPLIES_PREVIEW_FETCH_SIZE, BOARD_REPLIES_PREVIEW_VISIBLE_COUNT, REPLIES_PER_PAGE } from '../../lib/constants';
@@ -93,11 +93,13 @@ const PostInfo = ({
 }: PostProps & { directRepliesByParentCid?: Map<string, Comment[]> }) => {
   const { t } = useTranslation();
   const { author, cid, deleted, locked, pinned, parentCid, postCid, reason, removed, state, subplebbitAddress, timestamp } = post || {};
+  const purged = post?.commentModeration?.purged;
   const title = post?.title?.trim();
   const { address, shortAddress } = author || {};
   const displayName = author?.displayName?.trim();
   const authorRole = roles?.[address]?.role?.replace('moderator', 'mod');
   const hasFailedState = state === 'failed';
+  const canDeleteFailedPost = hasFailedState && typeof post?.index === 'number';
   const isReply = parentCid;
   const { showOmittedReplies } = useShowOmittedReplies();
   const directories = useDirectories();
@@ -161,6 +163,7 @@ const PostInfo = ({
   });
 
   const [initiatedPendingAction, setInitiatedPendingAction] = useState<'approve' | 'reject' | null>(null);
+  const [isDeletingFailedPost, setIsDeletingFailedPost] = useState(false);
 
   const handlePendingApprove = useCallback(async () => {
     const confirm = window.confirm(t('double_confirm'));
@@ -211,16 +214,16 @@ const PostInfo = ({
   const alertThresholdSeconds = getAlertThresholdSeconds();
   const isOverThreshold = isAwaitingApproval && timeWaiting > alertThresholdSeconds;
 
-  const userID = address && getShortAddress(address); // shortened to 8 chars for display; users can verify the full user ID via "Copy user ID" in the post menu to guard against spoofing
+  const userID = address ? getShortAddress(address) : shortAddress;
   const userIDBackgroundColor = hashStringToColor(userID);
   const userIDTextColor = getTextColorForBackground(userIDBackgroundColor);
 
-  const pseudonymityMode = useSubplebbitField(subplebbitAddress, (sub) => sub?.features?.pseudonymityMode);
+  const pseudonymityMode = useBoardPseudonymityMode(subplebbitAddress);
   const showUserID = pseudonymityMode === 'per-post';
 
   const handleUserAddressClick = useAuthorAddressClick();
   const numberOfPostsByAuthor = (() => {
-    if (!showUserID || deleted || removed || !shortAddress || !postCid || typeof document === 'undefined') {
+    if (!showUserID || deleted || removed || purged || !shortAddress || !postCid || typeof document === 'undefined') {
       return 0;
     }
 
@@ -237,17 +240,34 @@ const PostInfo = ({
       ? isReply
         ? alert(t('this_reply_was_deleted'))
         : alert(t('this_thread_was_deleted'))
-      : removed
+      : removed || purged
         ? isReply
           ? alert(t('this_reply_was_removed'))
           : alert(t('this_thread_was_removed'))
         : openReplyModal && openReplyModal(cid, post?.number, postCid, threadNumber, subplebbitAddress);
   };
 
+  const onDeleteFailedPost = () => {
+    if (isDeletingFailedPost || !canDeleteFailedPost) {
+      return;
+    }
+
+    setIsDeletingFailedPost(true);
+    deleteComment(post?.cid || post.index)
+      .then(() => {
+        setIsDeletingFailedPost(false);
+      })
+      .catch((error) => {
+        console.error('Failed to delete failed post:', error);
+        alert(`Failed to delete post: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        setIsDeletingFailedPost(false);
+      });
+  };
+
   return (
     <div className={styles.postInfo}>
       {isHidden ? parentCid && <span className={styles.hiddenReplyEditMenuSpacer} /> : <EditMenu post={post} />}
-      <span className={(hidden || ((removed || deleted) && !reason)) && parentCid ? styles.postDesktopHidden : ''}>
+      <span className={(hidden || ((removed || deleted || purged) && !reason)) && parentCid ? styles.postDesktopHidden : ''}>
         {title &&
           (title.length <= 75 ? (
             <span className={styles.subject}>{title} </span>
@@ -257,11 +277,13 @@ const PostInfo = ({
             </Tooltip>
           ))}
         <span className={styles.nameBlock}>
-          <span className={`${styles.name} ${authorRole && !(deleted || removed) && (authorRole === 'mod' ? styles.capcodeMod : styles.capcodeAdmin)}`}>
+          <span className={`${styles.name} ${authorRole && !(deleted || removed || purged) && (authorRole === 'mod' ? styles.capcodeMod : styles.capcodeAdmin)}`}>
             {deleted ? (
               capitalize(t('deleted'))
             ) : removed ? (
               capitalize(t('removed'))
+            ) : purged ? (
+              capitalize(t('purged'))
             ) : displayName ? (
               displayName.length <= 20 ? (
                 displayName
@@ -273,7 +295,7 @@ const PostInfo = ({
             ) : (
               capitalize(t('anonymous'))
             )}
-            {!(deleted || removed) && authorRole && (
+            {!(deleted || removed || purged) && authorRole && (
               <span className='capitalize'>
                 {' '}
                 ## Board {authorRole}{' '}
@@ -291,6 +313,8 @@ const PostInfo = ({
                 t('deleted')
               ) : removed ? (
                 t('removed')
+              ) : purged ? (
+                t('purged')
               ) : !cid && pseudonymityMode ? (
                 <span className={styles.pendingCid}>{hasFailedState ? capitalize(t('failed')) : capitalize(t('pending'))}</span>
               ) : (
@@ -452,8 +476,17 @@ const PostInfo = ({
               )}
             </span>
           )}
+          {canDeleteFailedPost && (
+            <span className={styles.failedPublishNotice}>
+              this post failed to publish, it's not visible to other users [{' '}
+              <button type='button' className={styles.failedDeletePostButton} disabled={isDeletingFailedPost} onClick={onDeleteFailedPost}>
+                Delete Post
+              </button>{' '}
+              ]
+            </span>
+          )}
         </span>
-        {!(removed || deleted) && !isModQueue && <PostMenuDesktop postMenu={postMenuProps} />}
+        {!(removed || deleted || purged) && !isModQueue && <PostMenuDesktop postMenu={postMenuProps} />}
         {cid && parentCid && <ReplyBacklinks post={post} quotedByMap={quotedByMap} directRepliesByParentCid={directRepliesByParentCid} />}
         {cid && !parentCid && <OpBacklinks cid={cid} quotedByMap={quotedByMap} />}
       </span>
@@ -516,6 +549,7 @@ interface PostMediaProps {
   hasThumbnail: boolean;
   spoiler: boolean;
   deleted: boolean;
+  purged: boolean;
   removed: boolean;
   linkHeight: number;
   linkWidth: number;
@@ -531,6 +565,7 @@ const PostMedia = ({
   hasThumbnail,
   spoiler,
   deleted,
+  purged,
   removed,
   linkHeight,
   linkWidth,
@@ -635,6 +670,7 @@ const PostMedia = ({
           <CommentMedia
             commentMediaInfo={commentMediaInfo}
             deleted={deleted}
+            purged={purged}
             removed={removed}
             linkHeight={linkHeight}
             linkWidth={linkWidth}
@@ -669,6 +705,7 @@ const Reply = ({
   }
 
   const { author, cid, deleted, link, linkHeight, linkWidth, postCid, reason, removed, spoiler, subplebbitAddress, thumbnailUrl, parentCid } = post || {};
+  const purged = post?.commentModeration?.purged;
   const directories = useDirectories();
   const boardPath = subplebbitAddress ? getBoardPath(subplebbitAddress, directories) : undefined;
 
@@ -698,12 +735,13 @@ const Reply = ({
           quotedByMap={quotedByMap}
           directRepliesByParentCid={directRepliesByParentCid}
         />
-        {link && !hidden && !(deleted || removed) && isValidURL(link) && (
+        {link && !hidden && !(deleted || removed || purged) && isValidURL(link) && (
           <PostMedia
             commentMediaInfo={commentMediaInfo}
             hasThumbnail={hasThumbnail}
             spoiler={spoiler}
             deleted={deleted}
+            purged={!!purged}
             removed={removed}
             linkHeight={linkHeight}
             linkWidth={linkWidth}
@@ -714,7 +752,7 @@ const Reply = ({
             isInModView={isInModView}
           />
         )}
-        {!hidden && (!(removed || deleted) || ((removed || deleted) && reason)) && <CommentContent comment={post} />}
+        {!hidden && (!(removed || deleted || purged) || ((removed || deleted) && reason)) && <CommentContent comment={post} />}
       </div>
     </div>
   );
@@ -735,6 +773,7 @@ const PostDesktop = ({
 }: PostProps) => {
   const { t } = useTranslation();
   const { author, cid, content, deleted, link, linkHeight, linkWidth, pinned, postCid, removed, spoiler, state, subplebbitAddress, thumbnailUrl, parentCid } = post || {};
+  const purged = post?.commentModeration?.purged;
   const params = useParams();
   const location = useLocation();
   const navigationType = useNavigationType();
@@ -941,12 +980,13 @@ const PostDesktop = ({
               </div>
             </div>
           )}
-          {link && !isHidden && !(deleted || removed) && isValidURL(link) && (
+          {link && !isHidden && !(deleted || removed || purged) && isValidURL(link) && (
             <PostMedia
               commentMediaInfo={commentMediaInfo}
               hasThumbnail={hasThumbnail}
               spoiler={spoiler}
               deleted={deleted}
+              purged={!!purged}
               removed={removed}
               linkHeight={linkHeight}
               linkWidth={linkWidth}
@@ -972,7 +1012,7 @@ const PostDesktop = ({
             quotedByMap={quotedByMap}
             directRepliesByParentCid={directRepliesByParentCid}
           />
-          {!isHidden && !content && !(deleted || removed) && <div className={styles.spacer} />}
+          {!isHidden && !content && !(deleted || removed || purged) && <div className={styles.spacer} />}
           {!isHidden && <CommentContent comment={post} />}
         </div>
         {!isHidden && !isInPendingPostView && showReplies && repliesCount > 0 && !isInPostPageView && (
@@ -1009,7 +1049,7 @@ const PostDesktop = ({
           </span>
         )}
         {/* Virtuoso infinite scroll for post page view when there's more content to paginate */}
-        {!isHidden && showAllReplies && !isInPendingPostView && showReplies && hasMore && (
+        {!isHidden && showAllReplies && !isInPendingPostView && showReplies && hasMore && !!post?.replyCount && (
           <Virtuoso
             increaseViewportBy={{ bottom: 1200, top: 1200 }}
             totalCount={filteredReplies.length}
@@ -1076,7 +1116,13 @@ const PostDesktop = ({
           </div>
         )}
       </div>
-      {!isInPendingPostView && stateString && !hasFailedState && state !== 'succeeded' && isInPostPageView && !(!showReplies && !showAllReplies) ? (
+      {!isInPendingPostView &&
+      stateString &&
+      !hasFailedState &&
+      state !== 'succeeded' &&
+      !(post?.timestamp && !post?.updatedAt) &&
+      isInPostPageView &&
+      !(!showReplies && !showAllReplies) ? (
         <div className={styles.stateString}>
           <br />
           <LoadingEllipsis string={stateString} />

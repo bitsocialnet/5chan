@@ -1,4 +1,4 @@
-import { Comment } from '@bitsocialhq/pkc-react-hooks';
+import { Comment } from '@bitsocialhq/bitsocial-react-hooks';
 
 export type PostMenuProps = {
   cid?: string;

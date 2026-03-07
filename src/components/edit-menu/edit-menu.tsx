@@ -8,7 +8,7 @@ import {
   usePublishCommentEdit,
   usePublishCommentModeration,
   PublishCommentModerationOptions,
-} from '@bitsocialhq/pkc-react-hooks';
+} from '@bitsocialhq/bitsocial-react-hooks';
 import styles from './edit-menu.module.css';
 import { alertChallengeVerificationFailed } from '../../lib/utils/challenge-utils';
 import useChallengesStore from '../../stores/use-challenges-store';

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Trans, useTranslation } from 'react-i18next';
-import { useSubplebbits } from '@bitsocialhq/pkc-react-hooks';
+import { useSubplebbits } from '@bitsocialhq/bitsocial-react-hooks';
 import styles from './home.module.css';
 import { useDirectories, useDirectoryAddresses } from '../../hooks/use-directories';
 import { SubplebbitStatsCollector, useSubplebbitsStatsStore } from '../../hooks/use-subplebbits-stats';
