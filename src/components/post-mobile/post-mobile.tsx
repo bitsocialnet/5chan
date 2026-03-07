@@ -544,7 +544,7 @@ const Reply = ({
           data-post-cid={postCid}
         >
           <PostInfoAndMedia post={post} postReplyCount={postReplyCount} roles={roles} threadNumber={threadNumber} />
-          {!hidden && (!(removed || deleted || purged) || ((removed || deleted) && reason)) && <CommentContent comment={post} />}
+          {!hidden && (!(removed || deleted || purged) || ((removed || deleted) && reason) || purged) && <CommentContent comment={post} />}
           <ReplyBacklinks post={post} quotedByMap={quotedByMap} directRepliesByParentCid={directRepliesByParentCid} />
         </div>
       </div>

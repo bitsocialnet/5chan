@@ -752,7 +752,7 @@ const Reply = ({
             isInModView={isInModView}
           />
         )}
-        {!hidden && (!(removed || deleted || purged) || ((removed || deleted) && reason)) && <CommentContent comment={post} />}
+        {!hidden && (!(removed || deleted || purged) || ((removed || deleted) && reason) || purged) && <CommentContent comment={post} />}
       </div>
     </div>
   );
