@@ -11,13 +11,15 @@ describe('quote-link-utils', () => {
     expect(getQuoteTargetAvailability(undefined)).toBe('unresolved');
     expect(getQuoteTargetAvailability({ deleted: true, removed: false })).toBe('unavailable');
     expect(getQuoteTargetAvailability({ deleted: false, removed: true })).toBe('unavailable');
+    expect(getQuoteTargetAvailability({ deleted: false, removed: false, commentModeration: { purged: true } })).toBe('unavailable');
     expect(getQuoteTargetAvailability({ deleted: false, removed: false })).toBe('available');
   });
 
-  it('marks deleted and removed comments as unavailable quote targets', () => {
+  it('marks deleted, removed, and purged comments as unavailable quote targets', () => {
     expect(isUnavailableQuoteTarget(undefined)).toBe(false);
     expect(isUnavailableQuoteTarget({ deleted: true, removed: false })).toBe(true);
     expect(isUnavailableQuoteTarget({ deleted: false, removed: true })).toBe(true);
+    expect(isUnavailableQuoteTarget({ deleted: false, removed: false, commentModeration: { purged: true } })).toBe(true);
     expect(isUnavailableQuoteTarget({ deleted: false, removed: false })).toBe(false);
   });
 

@@ -4,15 +4,17 @@ type QuoteTargetAvailability = 'available' | 'unresolved' | 'unavailable';
 
 export const formatQuoteNumber = (number?: number) => `>>${number ?? '?'}`;
 
-export const getQuoteTargetAvailability = (comment?: Partial<Pick<Comment, 'deleted' | 'removed'>> | null): QuoteTargetAvailability => {
+type QuoteTargetComment = Partial<Pick<Comment, 'deleted' | 'removed' | 'commentModeration'>>;
+
+export const getQuoteTargetAvailability = (comment?: QuoteTargetComment | null): QuoteTargetAvailability => {
   if (!comment) {
     return 'unresolved';
   }
 
-  return comment.deleted || comment.removed ? 'unavailable' : 'available';
+  return comment.deleted || comment.removed || comment.commentModeration?.purged ? 'unavailable' : 'available';
 };
 
-export const isUnavailableQuoteTarget = (comment?: Partial<Pick<Comment, 'deleted' | 'removed'>> | null) => getQuoteTargetAvailability(comment) === 'unavailable';
+export const isUnavailableQuoteTarget = (comment?: QuoteTargetComment | null) => getQuoteTargetAvailability(comment) === 'unavailable';
 
 export const shouldShowFloatingQuotePreview = ({
   hoveredCid,

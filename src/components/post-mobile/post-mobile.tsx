@@ -197,7 +197,7 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
 
   const handleUserAddressClick = useAuthorAddressClick();
   const numberOfPostsByAuthor = (() => {
-    if (!showUserID || deleted || removed || !shortAddress || !postCid || typeof document === 'undefined') {
+    if (!showUserID || deleted || removed || purged || !shortAddress || !postCid || typeof document === 'undefined') {
       return 0;
     }
 
