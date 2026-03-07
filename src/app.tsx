@@ -1,7 +1,6 @@
 import { lazy, Suspense, useEffect } from 'react';
 import { Navigate, Outlet, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { useAccount, useAccountComment, useSubplebbit } from '@bitsocialhq/bitsocial-react-hooks';
-import useAccountsStore from '@bitsocialhq/bitsocial-react-hooks/dist/stores/accounts';
 import { initSnow, removeSnow } from './lib/snow';
 import { isAllView, isCatalogView, isModView, isSubscriptionsView } from './lib/utils/view-utils';
 import { preloadThemeAssets } from './lib/utils/preload-utils';
@@ -9,6 +8,7 @@ import useReplyModalStore from './stores/use-reply-modal-store';
 import useCreateBoardModalStore from './stores/use-create-board-modal-store';
 import useSpecialThemeStore from './stores/use-special-theme-store';
 import useIsMobile from './hooks/use-is-mobile';
+import { useAccountSubplebbitAddresses } from './hooks/use-account-subplebbit-addresses';
 import useTheme from './hooks/use-theme';
 import { useDirectories } from './hooks/use-directories';
 import { useResolvedSubplebbitAddress } from './hooks/use-resolved-subplebbit-address';
@@ -237,19 +237,7 @@ const ModQueueRoute = () => {
   const accountAddress = account?.author?.address;
   const subplebbitAddress = useResolvedSubplebbitAddress();
   const subplebbit = useSubplebbit({ subplebbitAddress });
-
-  const accountSubplebbitAddresses = useAccountsStore(
-    (state) => {
-      const activeAccountId = state.activeAccountId;
-      const activeAccount = activeAccountId ? state.accounts[activeAccountId] : undefined;
-      const accountSubplebbits = activeAccount?.subplebbits || {};
-      return Object.keys(accountSubplebbits);
-    },
-    (prev, next) => {
-      if (prev.length !== next.length) return false;
-      return prev.every((val, idx) => val === next[idx]);
-    },
-  );
+  const accountSubplebbitAddresses = useAccountSubplebbitAddresses();
 
   if (!account) {
     return null;

@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { Comment, setAccount, useAccount, useAccountComment, useAccountSubplebbits, useEditedComment } from '@bitsocialhq/bitsocial-react-hooks';
+import { Comment, setAccount, useAccount, useAccountComment, useEditedComment } from '@bitsocialhq/bitsocial-react-hooks';
 import getShortAddress from '../../lib/get-short-address';
 import useSubplebbitsStore from '@bitsocialhq/bitsocial-react-hooks/dist/stores/subplebbits';
 import useSubplebbitsPagesStore from '@bitsocialhq/bitsocial-react-hooks/dist/stores/subplebbits-pages';
 import { getLinkMediaInfo } from '../../lib/utils/media-utils';
 import { isValidURL } from '../../lib/utils/url-utils';
 import { isAllView, isCatalogView, isModQueueView, isModView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
+import { useAccountSubplebbitAddresses } from '../../hooks/use-account-subplebbit-addresses';
 import { useDirectories, useDirectoryByAddress } from '../../hooks/use-directories';
 import { useResolvedSubplebbitAddress } from '../../hooks/use-resolved-subplebbit-address';
 import useFetchGifFirstFrame from '../../hooks/use-fetch-gif-first-frame';
@@ -326,8 +327,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
   const requirePostLinkIsMediaFeature = directoryEntry?.features?.requirePostLinkIsMedia;
   const requirePostLinkIsMedia = requirePostLinkIsMediaFeature === true || (requirePostLinkIsMediaFeature === undefined && (isInAllView || isInSubscriptionsView));
 
-  const { accountSubplebbits } = useAccountSubplebbits();
-  const accountSubplebbitAddresses = Object.keys(accountSubplebbits);
+  const accountSubplebbitAddresses = useAccountSubplebbitAddresses();
 
   const [lengthError, setLengthError] = useState<string | null>(null);
 

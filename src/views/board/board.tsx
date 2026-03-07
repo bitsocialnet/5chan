@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { Link, useLocation, useNavigate, useNavigationType, useParams } from 'react-router-dom';
-import { Comment, useAccount, useAccountComments, useAccountSubplebbits, useFeed, useSubplebbit } from '@bitsocialhq/bitsocial-react-hooks';
+import { Comment, useAccount, useAccountComments, useFeed, useSubplebbit } from '@bitsocialhq/bitsocial-react-hooks';
 import { useSubplebbitField } from '../../hooks/use-stable-subplebbit';
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
 import { useTranslation } from 'react-i18next';
 import styles from './board.module.css';
 import mobileFooterStyles from '../../components/footer/footer.module.css';
 import { shouldShowSnow } from '../../lib/snow';
+import { useAccountSubplebbitAddresses } from '../../hooks/use-account-subplebbit-addresses';
 import { useDirectoryAddresses, useDirectories, useDirectoryByAddress } from '../../hooks/use-directories';
 import { useFilteredDirectoryAddresses } from '../../hooks/use-filtered-directory-addresses';
 import { useResolvedSubplebbitAddress } from '../../hooks/use-resolved-subplebbit-address';
@@ -115,8 +116,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, i
   const account = useAccount();
   const subscriptions = account?.subscriptions;
 
-  const { accountSubplebbits } = useAccountSubplebbits();
-  const accountSubplebbitAddresses = Object.keys(accountSubplebbits);
+  const accountSubplebbitAddresses = useAccountSubplebbitAddresses();
 
   const subplebbitAddresses = useMemo(() => {
     if (isInAllView) {

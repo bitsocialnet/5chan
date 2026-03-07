@@ -5,6 +5,7 @@ import getShortAddress from '../../lib/get-short-address';
 import { useAccountComment } from '@bitsocialhq/bitsocial-react-hooks';
 import useAccountsStore from '@bitsocialhq/bitsocial-react-hooks/dist/stores/accounts';
 import { isAllView, isCatalogView, isModView, isSubscriptionsView } from '../../lib/utils/view-utils';
+import { useAccountSubplebbitAddresses } from '../../hooks/use-account-subplebbit-addresses';
 import { useDirectories, useDirectoriesMetadata, DirectoryCommunity } from '../../hooks/use-directories';
 import { useBoardPath, useResolvedSubplebbitAddress } from '../../hooks/use-resolved-subplebbit-address';
 import { getBoardPath, extractDirectoryFromTitle } from '../../lib/utils/route-utils';
@@ -116,18 +117,7 @@ const BoardsBarDesktop = () => {
     },
   );
 
-  const accountSubplebbitAddresses = useAccountsStore(
-    (state) => {
-      const activeAccountId = state.activeAccountId;
-      const activeAccount = activeAccountId ? state.accounts[activeAccountId] : undefined;
-      const accountSubplebbits = activeAccount?.subplebbits || {};
-      return Object.keys(accountSubplebbits);
-    },
-    (prev, next) => {
-      if (prev.length !== next.length) return false;
-      return prev.every((val, idx) => val === next[idx]);
-    },
-  );
+  const accountSubplebbitAddresses = useAccountSubplebbitAddresses();
 
   // Show all subscriptions when enabled; no separate per-address tracking (avoids drift when subscribing from board-buttons)
   const visibleSubscriptionAddresses = showSubscriptionsInBoardsBar ? subscriptions : [];
@@ -330,18 +320,7 @@ const BoardsBarMobile = ({ subplebbitAddress }: { subplebbitAddress?: string }) 
   const boardPath = useBoardPath(subplebbitAddress);
   const selectValue = isInAllView ? 'all' : isInSubscriptionsView ? 'subs' : isInModView ? 'mod' : boardPath || subplebbitAddress;
 
-  const accountSubplebbitAddresses = useAccountsStore(
-    (state) => {
-      const activeAccountId = state.activeAccountId;
-      const activeAccount = activeAccountId ? state.accounts[activeAccountId] : undefined;
-      const accountSubplebbits = activeAccount?.subplebbits || {};
-      return Object.keys(accountSubplebbits);
-    },
-    (prev, next) => {
-      if (prev.length !== next.length) return false;
-      return prev.every((val, idx) => val === next[idx]);
-    },
-  );
+  const accountSubplebbitAddresses = useAccountSubplebbitAddresses();
 
   // Check if current subplebbit is a directory board
   const currentIsDirectoryBoard = directoryBoards.some((board) => board.address === subplebbitAddress);

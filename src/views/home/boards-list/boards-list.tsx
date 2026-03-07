@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import useAccountsStore from '@bitsocialhq/bitsocial-react-hooks/dist/stores/accounts';
+import { useAccountSubplebbitAddresses } from '../../../hooks/use-account-subplebbit-addresses';
 import { useDirectoriesState, useDirectories, DirectoryCommunity } from '../../../hooks/use-directories';
 import { getBoardPath } from '../../../lib/utils/route-utils';
 import useDisclaimerModalStore from '../../../stores/use-disclaimer-modal-store';
@@ -64,14 +64,7 @@ const BoardsList = ({ multisub }: { multisub: DirectoryCommunity[] }) => {
   const { useCatalogLinks, boardFilter } = useBoardsFilterStore();
   const directories = useDirectories();
 
-  const accountSubplebbitAddresses = useAccountsStore(
-    (state) => {
-      const activeAccountId = state.activeAccountId;
-      const activeAccount = activeAccountId ? state.accounts[activeAccountId] : undefined;
-      return Object.keys(activeAccount?.subplebbits || {});
-    },
-    (prev, next) => prev.length === next.length && prev.every((val, idx) => val === next[idx]),
-  );
+  const accountSubplebbitAddresses = useAccountSubplebbitAddresses();
 
   const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, address: string) => {
     e.preventDefault();

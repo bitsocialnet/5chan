@@ -1,22 +1,16 @@
-import useAccountsStore from '@bitsocialhq/bitsocial-react-hooks/dist/stores/accounts';
+import { useMemo } from 'react';
+import { useAccountSubplebbits } from '@bitsocialhq/bitsocial-react-hooks';
 import { DirectoryCommunity } from './use-directories';
 
 export const useAccountSubplebbitsWithMetadata = (): DirectoryCommunity[] => {
-  const subplebbitsWithMetadata = useAccountsStore(
-    (state) => {
-      const activeAccountId = state.activeAccountId;
-      const activeAccount = activeAccountId ? state.accounts[activeAccountId] : undefined;
-      const accountSubplebbits = activeAccount?.subplebbits || {};
-      return Object.entries(accountSubplebbits).map(([address, sub]) => ({
-        address,
-        title: (sub as any).title,
-      }));
-    },
-    (prev, next) => {
-      if (prev.length !== next.length) return false;
-      return prev.every((item, idx) => item.address === next[idx].address && item.title === next[idx].title);
-    },
-  );
+  const { accountSubplebbits } = useAccountSubplebbits({ onlyIfCached: true });
 
-  return subplebbitsWithMetadata;
+  return useMemo(
+    () =>
+      Object.values(accountSubplebbits).map((sub) => ({
+        address: (sub as any).address,
+        title: (sub as any).title,
+      })),
+    [accountSubplebbits],
+  );
 };

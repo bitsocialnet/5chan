@@ -2,7 +2,6 @@ import React, { useMemo, useState, useEffect, useCallback, memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, Link } from 'react-router-dom';
 import { useFeed, Comment, usePublishCommentModeration, useEditedComment, useSubplebbit, useComment } from '@bitsocialhq/bitsocial-react-hooks';
-import useAccountsStore from '@bitsocialhq/bitsocial-react-hooks/dist/stores/accounts';
 import { Virtuoso } from 'react-virtuoso';
 import styles from './mod-queue.module.css';
 import useModQueueStore from '../../stores/use-mod-queue-store';
@@ -19,6 +18,7 @@ import useFeedResetStore from '../../stores/use-feed-reset-store';
 import useChallengesStore from '../../stores/use-challenges-store';
 import { alertChallengeVerificationFailed } from '../../lib/utils/challenge-utils';
 import Tooltip from '../../components/tooltip';
+import { useAccountSubplebbitAddresses } from '../../hooks/use-account-subplebbit-addresses';
 import useIsMobile from '../../hooks/use-is-mobile';
 import { useCurrentTime } from '../../hooks/use-current-time';
 import { Post } from '../post/post';
@@ -693,18 +693,7 @@ const ModQueueButtonContent = ({ feed, alertThresholdSeconds, boardIdentifier, i
 export const ModQueueButton = ({ boardIdentifier, isMobile }: ModQueueButtonProps) => {
   const { getAlertThresholdSeconds } = useModQueueStore();
 
-  const accountSubplebbitAddresses = useAccountsStore(
-    (state) => {
-      const activeAccountId = state.activeAccountId;
-      const activeAccount = activeAccountId ? state.accounts[activeAccountId] : undefined;
-      const accountSubplebbits = activeAccount?.subplebbits || {};
-      return Object.keys(accountSubplebbits);
-    },
-    (prev, next) => {
-      if (prev.length !== next.length) return false;
-      return prev.every((val, idx) => val === next[idx]);
-    },
-  );
+  const accountSubplebbitAddresses = useAccountSubplebbitAddresses();
 
   const directories = useDirectories();
 
@@ -756,18 +745,7 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
   const { selectedBoardFilter, viewMode } = useModQueueStore();
   const isMobile = useIsMobile();
 
-  const accountSubplebbitAddresses = useAccountsStore(
-    (state) => {
-      const activeAccountId = state.activeAccountId;
-      const activeAccount = activeAccountId ? state.accounts[activeAccountId] : undefined;
-      const accountSubplebbits = activeAccount?.subplebbits || {};
-      return Object.keys(accountSubplebbits);
-    },
-    (prev, next) => {
-      if (prev.length !== next.length) return false;
-      return prev.every((val, idx) => val === next[idx]);
-    },
-  );
+  const accountSubplebbitAddresses = useAccountSubplebbitAddresses();
 
   const directories = useDirectories();
 
