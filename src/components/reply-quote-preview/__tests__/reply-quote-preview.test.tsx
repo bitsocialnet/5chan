@@ -1,0 +1,332 @@
+import * as React from 'react';
+import { createElement } from 'react';
+import { createRoot, type Root } from 'react-dom/client';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import ReplyQuotePreview from '../reply-quote-preview';
+
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
+
+type TestComment = {
+  author?: {
+    address?: string;
+  };
+  cid?: string;
+  number?: number;
+  subplebbitAddress?: string;
+};
+
+const testState = vi.hoisted(() => ({
+  account: {
+    author: {
+      address: '0xme',
+    },
+  },
+  directories: [{ address: 'music-posting.eth', title: '/mu/ - Music' }] as Array<{ address: string; title?: string }>,
+  isMobile: false,
+  locationPath: '/mu/thread/thread-cid',
+  navigateMock: vi.fn(),
+  quoteAvailability: 'available' as 'available' | 'unavailable' | 'unresolved',
+  updateMock: vi.fn(),
+}));
+
+vi.mock('react-router-dom', async () => {
+  const ReactModule = await vi.importActual<typeof import('react')>('react');
+
+  return {
+    Link: ReactModule.forwardRef(
+      (
+        {
+          children,
+          to,
+          ...props
+        }: {
+          children?: React.ReactNode;
+          to: string;
+          [key: string]: unknown;
+        },
+        ref,
+      ) => ReactModule.createElement('a', { ...props, href: to, ref }, children),
+    ),
+    useLocation: () => ({
+      pathname: testState.locationPath,
+    }),
+    useNavigate: () => testState.navigateMock,
+  };
+});
+
+vi.mock('@bitsocialhq/bitsocial-react-hooks', () => ({
+  useAccount: () => testState.account,
+}));
+
+vi.mock('@floating-ui/react', () => ({
+  autoUpdate: vi.fn(),
+  offset: vi.fn(),
+  shift: vi.fn(),
+  size: vi.fn(),
+  useFloating: () => ({
+    floatingStyles: { position: 'fixed' },
+    refs: {
+      setFloating: () => undefined,
+      setReference: () => undefined,
+    },
+    update: testState.updateMock,
+  }),
+}));
+
+vi.mock('../../../hooks/use-directories', () => ({
+  useDirectories: () => testState.directories,
+}));
+
+vi.mock('../../../lib/utils/route-utils', () => ({
+  getBoardPath: (address: string) => (address === 'music-posting.eth' ? 'mu' : address),
+}));
+
+vi.mock('../../../lib/utils/quote-link-utils', () => ({
+  formatQuoteNumber: (number?: number) => `>>${number ?? '?'}`,
+  getQuoteTargetAvailability: () => testState.quoteAvailability,
+  shouldShowFloatingQuotePreview: ({
+    hoveredCid,
+    isUnavailable,
+    outOfViewCid,
+    quoteCid,
+  }: {
+    hoveredCid: string | null;
+    isUnavailable?: boolean;
+    outOfViewCid: string | null;
+    quoteCid?: string;
+  }) => Boolean(quoteCid && !isUnavailable && hoveredCid === quoteCid && outOfViewCid === quoteCid),
+}));
+
+vi.mock('../../../hooks/use-is-mobile', () => ({
+  default: () => testState.isMobile,
+}));
+
+vi.mock('../../../views/post', () => ({
+  Post: ({ post }: { post?: TestComment }) => createElement('div', { 'data-testid': 'post-preview' }, post?.cid),
+}));
+
+let container: HTMLDivElement;
+let root: Root;
+
+const renderPreview = async (props: Record<string, unknown>) => {
+  await act(async () => {
+    root.render(createElement(ReplyQuotePreview, props as any));
+  });
+};
+
+const queryAnchorByText = (text: string) => Array.from(container.querySelectorAll<HTMLAnchorElement>('a')).find((anchor) => anchor.textContent === text) ?? null;
+
+const appendReplyElement = ({
+  cid,
+  inViewport = true,
+  isThreadCard = false,
+  withHighlight = false,
+}: {
+  cid: string;
+  inViewport?: boolean;
+  isThreadCard?: boolean;
+  withHighlight?: boolean;
+}) => {
+  const element = document.createElement('div');
+  element.dataset.cid = cid;
+  element.dataset.postCid = isThreadCard ? cid : 'thread-cid';
+  if (withHighlight) {
+    element.classList.add('highlight');
+  }
+  element.scrollIntoView = vi.fn();
+  element.getBoundingClientRect = () =>
+    ({
+      bottom: inViewport ? 100 : window.innerHeight + 500,
+      left: 0,
+      right: 100,
+      top: inViewport ? 0 : -500,
+    }) as DOMRect;
+  document.body.appendChild(element);
+  return element;
+};
+
+describe('ReplyQuotePreview', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    testState.account = {
+      author: {
+        address: '0xme',
+      },
+    };
+    testState.directories = [{ address: 'music-posting.eth', title: '/mu/ - Music' }];
+    testState.isMobile = false;
+    testState.locationPath = '/mu/thread/thread-cid';
+    testState.navigateMock.mockReset();
+    testState.quoteAvailability = 'available';
+    testState.updateMock.mockReset();
+
+    container = document.createElement('div');
+    document.body.appendChild(container);
+    root = createRoot(container);
+  });
+
+  afterEach(() => {
+    act(() => root.unmount());
+    container.remove();
+    document.querySelectorAll('[data-cid]').forEach((node) => node.remove());
+    document.querySelectorAll('.scroll-highlight').forEach((node) => node.remove());
+  });
+
+  it('scrolls to an in-thread reply instead of navigating on desktop quotelinks', async () => {
+    const target = appendReplyElement({ cid: 'reply-cid' });
+    const previous = document.createElement('div');
+    previous.classList.add('scroll-highlight');
+    document.body.appendChild(previous);
+
+    await renderPreview({
+      isQuotelinkReply: true,
+      quotelinkReply: {
+        cid: 'reply-cid',
+        number: 7,
+        subplebbitAddress: 'music-posting.eth',
+      },
+    });
+
+    const link = queryAnchorByText('>>7');
+    expect(link).toBeTruthy();
+
+    await act(async () => {
+      link?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    expect(target.scrollIntoView as any).toHaveBeenCalledWith({ behavior: 'auto', block: 'center' });
+    expect(target.classList.contains('scroll-highlight')).toBe(true);
+    expect(previous.classList.contains('scroll-highlight')).toBe(false);
+    expect(testState.navigateMock).not.toHaveBeenCalled();
+  });
+
+  it('scrolls to the thread card top for OP quotes on the current desktop thread page', async () => {
+    const threadCard = appendReplyElement({ cid: 'thread-cid', isThreadCard: true });
+
+    await renderPreview({
+      isOP: true,
+      isQuotelinkReply: true,
+      quotelinkReply: {
+        cid: 'thread-cid',
+        number: 1,
+        subplebbitAddress: 'music-posting.eth',
+      },
+    });
+
+    const link = queryAnchorByText('>>1 (OP)');
+    expect(link).toBeTruthy();
+
+    await act(async () => {
+      link?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    expect(threadCard.scrollIntoView as any).toHaveBeenCalledWith({ behavior: 'auto', block: 'start' });
+    expect(testState.navigateMock).not.toHaveBeenCalled();
+  });
+
+  it('handles desktop hover highlights and floating previews for quotelinks', async () => {
+    const inView = appendReplyElement({ cid: 'reply-cid', inViewport: true });
+
+    await renderPreview({
+      isQuotelinkReply: true,
+      quotelinkReply: {
+        cid: 'reply-cid',
+        number: 9,
+        subplebbitAddress: 'music-posting.eth',
+      },
+    });
+
+    const link = queryAnchorByText('>>9');
+    expect(link).toBeTruthy();
+
+    await act(async () => {
+      link?.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+    });
+
+    expect(inView.classList.contains('highlight')).toBe(true);
+    expect(document.querySelector('[data-testid="post-preview"]')).toBeNull();
+
+    await act(async () => {
+      link?.dispatchEvent(new MouseEvent('mouseout', { bubbles: true }));
+    });
+
+    expect(inView.classList.contains('highlight')).toBe(false);
+
+    inView.remove();
+    const outOfView = appendReplyElement({ cid: 'reply-cid', inViewport: false });
+
+    await act(async () => {
+      link?.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+    });
+
+    expect(document.querySelector('[data-testid="post-preview"]')?.textContent).toBe('reply-cid');
+
+    await act(async () => {
+      link?.dispatchEvent(new MouseEvent('mouseout', { bubbles: true }));
+    });
+
+    expect(document.querySelector('[data-testid="post-preview"]')).toBeNull();
+    outOfView.remove();
+  });
+
+  it('renders unavailable desktop quotelinks without navigation and includes OP/You labels', async () => {
+    testState.quoteAvailability = 'unavailable';
+
+    await renderPreview({
+      isOP: true,
+      isQuotelinkReply: true,
+      quotelinkReply: {
+        author: {
+          address: '0xme',
+        },
+        cid: 'reply-cid',
+        number: 10,
+        subplebbitAddress: 'music-posting.eth',
+      },
+      showTrailingBreak: false,
+    });
+
+    expect(container.textContent).toContain('>>10 (OP) (You)');
+    expect(queryAnchorByText('>>10 (OP) (You)')).toBeNull();
+    expect(container.querySelector('br')).toBeNull();
+  });
+
+  it('renders mobile backlinks with a hash link that navigates to the target thread', async () => {
+    testState.isMobile = true;
+
+    await renderPreview({
+      backlinkReply: {
+        cid: 'reply-cid',
+        number: 5,
+        subplebbitAddress: 'music-posting.eth',
+      },
+      isBacklinkReply: true,
+    });
+
+    expect(container.textContent).toContain('>>5');
+
+    const hashLink = queryAnchorByText(' #');
+    expect(hashLink).toBeTruthy();
+
+    await act(async () => {
+      hashLink?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    expect(testState.navigateMock).toHaveBeenCalledWith('/mu/thread/reply-cid');
+  });
+
+  it('renders unresolved mobile quotelinks as plain text without a hash link', async () => {
+    testState.isMobile = true;
+    testState.quoteAvailability = 'unresolved';
+
+    await renderPreview({
+      isQuotelinkReply: true,
+      quotelinkNumber: 42,
+      quotelinkReply: undefined,
+    });
+
+    expect(container.textContent).toContain('>>42');
+    expect(Array.from(container.querySelectorAll('a')).some((anchor) => anchor.textContent?.includes('#'))).toBe(false);
+  });
+});
