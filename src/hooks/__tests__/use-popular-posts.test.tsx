@@ -69,6 +69,21 @@ const renderHook = async (addresses: string[], subplebbits: Array<unknown>) => {
   });
 };
 
+const resetHookRoot = () => {
+  act(() => root.unmount());
+  container.remove();
+
+  container = document.createElement('div');
+  document.body.appendChild(container);
+  root = createRoot(container);
+};
+
+const mockRandomSequence = (values: number[]) => {
+  let index = 0;
+
+  return vi.spyOn(Math, 'random').mockImplementation(() => values[index++] ?? values.at(-1) ?? 0);
+};
+
 describe('usePopularPosts', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -168,5 +183,29 @@ describe('usePopularPosts', () => {
 
     expect(latestValue.isLoading).toBe(true);
     expect(latestValue.popularPosts).toEqual([]);
+  });
+
+  it('reshuffles the selected boards on each mount while keeping one top thread per board', async () => {
+    const addresses = Array.from({ length: 10 }, (_, index) => `board-${index}.eth`);
+    const subplebbits = addresses.map((address, index) => createSubplebbit(address, [createPost(address, 'top', 30 - index), createPost(address, 'backup', 10 - index)]));
+    const keepOrderRandom = mockRandomSequence(Array.from({ length: addresses.length - 1 }, () => 0.999_999));
+
+    await renderHook(addresses, subplebbits);
+
+    expect(latestValue.isLoading).toBe(false);
+    expect(latestValue.popularPosts.map((post) => post.subplebbitAddress)).toEqual(addresses.slice(0, 8));
+    expect(latestValue.popularPosts.every((post) => post.cid.endsWith('-top'))).toBe(true);
+
+    keepOrderRandom.mockRestore();
+    resetHookRoot();
+
+    const rotateOrderRandom = mockRandomSequence(Array.from({ length: addresses.length - 1 }, () => 0));
+    await renderHook(addresses, subplebbits);
+
+    expect(latestValue.isLoading).toBe(false);
+    expect(latestValue.popularPosts.map((post) => post.subplebbitAddress)).toEqual(addresses.slice(1, 9));
+    expect(latestValue.popularPosts.every((post) => post.cid.endsWith('-top'))).toBe(true);
+
+    rotateOrderRandom.mockRestore();
   });
 });

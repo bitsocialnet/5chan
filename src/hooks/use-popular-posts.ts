@@ -16,8 +16,6 @@ type PopularPostCandidate = {
 };
 
 type CommittedPopularPosts = {
-  boardAddresses: Set<string>;
-  cids: Set<string>;
   posts: Comment[];
   revealed: boolean;
 };
@@ -46,9 +44,20 @@ function isBoardStillLoading(subplebbit: Subplebbit | undefined, loadingStartTim
   return nowSeconds - loadingStartTimestamp < BOARD_LOADING_TIMEOUT_SECONDS;
 }
 
+function shuffleBoardAddresses(boardAddresses: string[]): string[] {
+  const shuffledBoardAddresses = [...boardAddresses];
+
+  for (let index = shuffledBoardAddresses.length - 1; index > 0; index -= 1) {
+    const randomIndex = Math.floor(Math.random() * (index + 1));
+    [shuffledBoardAddresses[index], shuffledBoardAddresses[randomIndex]] = [shuffledBoardAddresses[randomIndex], shuffledBoardAddresses[index]];
+  }
+
+  return shuffledBoardAddresses;
+}
+
 /**
- * Ranked by time-decayed popularity so the box surfaces posts with
- * recent engagement rather than stale all-time reply leaders.
+ * Each board contributes at most one time-decayed popular thread, but the
+ * board order is shuffled on mount so repeat visits surface different boards.
  *
  * The first revealed set is frozen until the user refreshes or changes
  * the board filter, so threads never disappear during background loads.
@@ -56,20 +65,18 @@ function isBoardStillLoading(subplebbit: Subplebbit | undefined, loadingStartTim
 const usePopularPosts = (subplebbits: Array<Subplebbit | undefined>, subplebbitAddresses: string[]) => {
   const inputKey = [...subplebbitAddresses].sort().join(',');
   const committedRef = useRef<CommittedPopularPosts>({
-    boardAddresses: new Set(),
     posts: [],
-    cids: new Set(),
     revealed: false,
   });
   const prevInputKeyRef = useRef('');
+  const randomizedBoardAddressesRef = useRef<string[]>([]);
 
-  // Reset committed when the requested board set changes (e.g. NSFW filter toggle).
+  // Reset committed and reshuffle when the requested board set changes (e.g. NSFW filter toggle).
   if (prevInputKeyRef.current !== inputKey) {
     prevInputKeyRef.current = inputKey;
+    randomizedBoardAddressesRef.current = shuffleBoardAddresses(subplebbitAddresses);
     committedRef.current = {
-      boardAddresses: new Set(),
       posts: [],
-      cids: new Set(),
       revealed: false,
     };
   }
@@ -86,9 +93,10 @@ const usePopularPosts = (subplebbits: Array<Subplebbit | undefined>, subplebbitA
     try {
       const selectedLinks = new Set<string>();
       const allPosts: PopularPostCandidate[] = [];
+      const subplebbitsByAddress = new Map(subplebbitAddresses.map((boardAddress, index) => [boardAddress, subplebbits[index]]));
 
-      subplebbitAddresses.forEach((boardAddress, index) => {
-        const subplebbit = subplebbits[index];
+      randomizedBoardAddressesRef.current.forEach((boardAddress) => {
+        const subplebbit = subplebbitsByAddress.get(boardAddress);
         if (!boardAddress || !subplebbit?.posts?.pages?.hot?.comments) {
           return;
         }
@@ -118,8 +126,6 @@ const usePopularPosts = (subplebbits: Array<Subplebbit | undefined>, subplebbitA
         }
       });
 
-      allPosts.sort((a, b) => popularityScore(b.post, nowSeconds) - popularityScore(a.post, nowSeconds));
-
       return allPosts;
     } catch (err) {
       console.error('Error in usePopularPosts:', err);
@@ -127,28 +133,16 @@ const usePopularPosts = (subplebbits: Array<Subplebbit | undefined>, subplebbitA
     }
   }, [nowSeconds, subplebbits, subplebbitAddresses]);
 
-  const { boardAddresses, posts, cids } = committedRef.current;
-  for (const candidate of candidates) {
-    if (posts.length >= MAX_POSTS || committedRef.current.revealed) {
-      break;
-    }
-
-    const { boardAddress, post } = candidate;
-    if (post.cid && !cids.has(post.cid) && !boardAddresses.has(boardAddress)) {
-      posts.push(post);
-      cids.add(post.cid);
-      boardAddresses.add(boardAddress);
-    }
-  }
-
   const hasPendingBoards = subplebbitAddresses.some((_, index) => isBoardStillLoading(subplebbits[index], loadingStartTimestamps[index], nowSeconds));
-  if (!committedRef.current.revealed && (posts.length >= MAX_POSTS || (!hasPendingBoards && posts.length > 0))) {
+
+  if (!committedRef.current.revealed && (candidates.length >= MAX_POSTS || (!hasPendingBoards && candidates.length > 0))) {
+    committedRef.current.posts = candidates.slice(0, MAX_POSTS).map(({ post }) => post);
     committedRef.current.revealed = true;
   }
 
   const isLoading = !committedRef.current.revealed;
 
-  return { popularPosts: committedRef.current.revealed ? posts : [], isLoading, error: null as string | null };
+  return { popularPosts: committedRef.current.revealed ? committedRef.current.posts : [], isLoading, error: null as string | null };
 };
 
 export default usePopularPosts;
