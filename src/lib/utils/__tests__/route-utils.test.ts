@@ -1,5 +1,56 @@
 import { describe, it, expect } from 'vitest';
-import { isBoardModRoute, isFeedRoute, isLegacyBoardModQueueRoute, isModQueueRoute, isValidBoardModRoute, normalizeMultiboardFeedPath } from '../route-utils';
+import {
+  areSameBoardAddress,
+  extractDirectoryFromTitle,
+  getBoardPath,
+  getFeedCacheKey,
+  getFeedType,
+  getPageFromFeedPath,
+  getSubplebbitAddress,
+  isBoardModRoute,
+  isDirectoryBoard,
+  isFeedRoute,
+  isLegacyBoardModQueueRoute,
+  isModQueueRoute,
+  isPendingPostRoute,
+  isPostRoute,
+  isValidBoardModRoute,
+  isValidModRoute,
+  normalizeMultiboardFeedPath,
+  stripPageFromFeedPath,
+} from '../route-utils';
+
+const communities = [
+  { address: 'business.eth', title: '/biz/ - Business & Finance' },
+  { address: 'music-posting.bso', title: '/mu/ - Music' },
+  { address: 'random.eth', directoryCode: 'b', title: 'Random' },
+];
+
+describe('directory mapping helpers', () => {
+  it('extracts short codes from titled directories', () => {
+    expect(extractDirectoryFromTitle('/biz/ - Business & Finance')).toBe('biz');
+    expect(extractDirectoryFromTitle('Business & Finance')).toBeNull();
+  });
+
+  it('maps addresses to canonical board paths and back', () => {
+    expect(getBoardPath('business.eth', communities)).toBe('biz');
+    expect(getBoardPath('music-posting.eth', communities)).toBe('mu');
+    expect(getBoardPath('unknown.example', communities)).toBe('unknown.example');
+
+    expect(getSubplebbitAddress('biz', communities)).toBe('business.eth');
+    expect(getSubplebbitAddress('b', communities)).toBe('random.eth');
+    expect(getSubplebbitAddress('unknown.example', communities)).toBe('unknown.example');
+  });
+
+  it('compares aliases and directory identifiers correctly', () => {
+    expect(areSameBoardAddress('music-posting.eth', 'music-posting.bso')).toBe(true);
+    expect(areSameBoardAddress('music-posting.eth', 'business.eth')).toBe(false);
+    expect(areSameBoardAddress(undefined, 'business.eth')).toBe(false);
+
+    expect(isDirectoryBoard('biz', communities)).toBe(true);
+    expect(isDirectoryBoard('business.eth', communities)).toBe(false);
+  });
+});
 
 describe('normalizeMultiboardFeedPath', () => {
   it('normalizes /all/3 -> /all', () => {
@@ -46,6 +97,11 @@ describe('isFeedRoute', () => {
     expect(isFeedRoute('/biz/mod')).toBe(false);
     expect(isFeedRoute('/biz/mod/queue')).toBe(false);
   });
+
+  it('returns false for posts and pending items', () => {
+    expect(isFeedRoute('/biz/thread/abc')).toBe(false);
+    expect(isFeedRoute('/pending/4')).toBe(false);
+  });
 });
 
 describe('board mod routes', () => {
@@ -77,5 +133,59 @@ describe('board mod routes', () => {
     expect(isValidBoardModRoute('/biz/mod')).toBe(false);
     expect(isValidBoardModRoute('/biz/mod/log')).toBe(false);
     expect(isValidBoardModRoute('/biz/modqueue')).toBe(false);
+  });
+
+  it('validates allowed top-level mod routes', () => {
+    expect(isValidModRoute('/mod')).toBe(true);
+    expect(isValidModRoute('/mod/catalog/settings')).toBe(true);
+    expect(isValidModRoute('/mod/modqueue')).toBe(false);
+  });
+});
+
+describe('route kind helpers', () => {
+  it('recognizes post and pending routes with optional settings suffixes', () => {
+    expect(isPostRoute('/biz/thread/abc')).toBe(true);
+    expect(isPostRoute('/biz/thread/abc/settings')).toBe(true);
+    expect(isPostRoute('/biz')).toBe(false);
+
+    expect(isPendingPostRoute('/pending/3')).toBe(true);
+    expect(isPendingPostRoute('/pending/3/settings')).toBe(true);
+    expect(isPendingPostRoute('/biz')).toBe(false);
+  });
+});
+
+describe('feed pagination helpers', () => {
+  it('strips trailing page numbers from feed paths', () => {
+    expect(stripPageFromFeedPath('/biz/3')).toBe('/biz');
+    expect(stripPageFromFeedPath('/biz/catalog/4')).toBe('/biz/catalog');
+    expect(stripPageFromFeedPath('/biz/catalog')).toBe('/biz/catalog');
+  });
+
+  it('parses page numbers and defaults to page 1', () => {
+    expect(getPageFromFeedPath('/biz/3')).toBe(3);
+    expect(getPageFromFeedPath('/biz/catalog/4/settings')).toBe(4);
+    expect(getPageFromFeedPath('/biz/11')).toBe(1);
+    expect(getPageFromFeedPath('/biz')).toBe(1);
+  });
+});
+
+describe('feed cache helpers', () => {
+  it('derives cache keys for feeds and threads', () => {
+    expect(getFeedCacheKey('/biz')).toBe('/biz');
+    expect(getFeedCacheKey('/biz/3/settings')).toBe('/biz');
+    expect(getFeedCacheKey('/biz/catalog/4')).toBe('/biz/catalog');
+    expect(getFeedCacheKey('/biz/thread/abc')).toBe('/biz');
+  });
+
+  it('returns null cache keys for non-feed routes', () => {
+    expect(getFeedCacheKey('/pending/3')).toBeNull();
+    expect(getFeedCacheKey('/biz/mod/queue')).toBeNull();
+  });
+
+  it('classifies board, catalog, and non-feed routes', () => {
+    expect(getFeedType('/biz')).toBe('board');
+    expect(getFeedType('/biz/thread/abc')).toBe('board');
+    expect(getFeedType('/biz/catalog/settings')).toBe('catalog');
+    expect(getFeedType('/pending/3')).toBeNull();
   });
 });

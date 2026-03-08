@@ -130,6 +130,7 @@ const AccountSettingsEditor = ({
             if (accountData.account?.name) {
               await setActiveAccount(accountData.account.name);
             }
+            return true;
           },
           (error) => {
             if (error instanceof Error) {

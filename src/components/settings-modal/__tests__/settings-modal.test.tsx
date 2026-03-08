@@ -1,0 +1,180 @@
+import * as React from 'react';
+import { createElement } from 'react';
+import { createRoot, Root } from 'react-dom/client';
+import { MemoryRouter, useLocation } from 'react-router-dom';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import SettingsModal from '../settings-modal';
+
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
+
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string) => key,
+  }),
+}));
+
+vi.mock('../account-settings', () => ({
+  default: () => <div data-testid='account-settings'>account-settings</div>,
+}));
+
+vi.mock('../crypto-address-setting', () => ({
+  default: () => <div data-testid='crypto-address-setting'>crypto-address-setting</div>,
+}));
+
+vi.mock('../crypto-wallets-setting', () => ({
+  default: () => <div data-testid='crypto-wallets-setting'>crypto-wallets-setting</div>,
+}));
+
+vi.mock('../interface-settings', () => ({
+  default: () => <div data-testid='interface-settings-panel'>interface-settings</div>,
+}));
+
+vi.mock('../media-hosting-settings', () => ({
+  default: () => <div data-testid='media-hosting-settings-panel'>media-hosting-settings</div>,
+}));
+
+vi.mock('../advanced-settings', () => ({
+  default: () => <div data-testid='advanced-settings-panel'>advanced-settings</div>,
+}));
+
+vi.mock('../subscriptions-setting', () => ({
+  default: () => <div data-testid='subscriptions-settings-panel'>subscriptions-settings</div>,
+}));
+
+const LocationProbe = () => {
+  const location = useLocation();
+  return <div data-testid='location'>{location.pathname + location.hash}</div>;
+};
+
+let root: Root;
+let container: HTMLDivElement;
+
+const render = (initialEntry = '/all/settings') => {
+  act(() => {
+    root.render(
+      createElement(MemoryRouter, { initialEntries: [initialEntry] }, createElement(React.Fragment, {}, createElement(SettingsModal), createElement(LocationProbe))),
+    );
+  });
+};
+
+const getLocationText = () => container.querySelector('[data-testid="location"]')?.textContent ?? '';
+
+const getLabelByText = (text: string) => {
+  const label = Array.from(container.querySelectorAll('label')).find((candidate) => (candidate.textContent ?? '').includes(text));
+  if (!label) {
+    throw new Error(`Label containing "${text}" not found`);
+  }
+  return label;
+};
+
+describe('SettingsModal', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    container = document.createElement('div');
+    document.body.appendChild(container);
+    root = createRoot(container);
+  });
+
+  afterEach(() => {
+    act(() => root.unmount());
+    container.remove();
+  });
+
+  it('opens the account section for crypto subsection hashes', () => {
+    render('/all/settings#crypto-wallet-settings');
+
+    expect(container.querySelector('[data-testid="account-settings"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="crypto-address-setting"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="crypto-wallets-setting"]')).not.toBeNull();
+  });
+
+  it('updates the hash when sections open and close', async () => {
+    render('/all/settings#account-settings');
+
+    expect(getLocationText()).toBe('/all/settings#account-settings');
+
+    await act(async () => {
+      getLabelByText('interface').click();
+    });
+
+    expect(getLocationText()).toBe('/all/settings#interface-settings');
+    expect(container.querySelector('[data-testid="interface-settings-panel"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="account-settings"]')).not.toBeNull();
+
+    await act(async () => {
+      getLabelByText('interface').click();
+    });
+
+    expect(getLocationText()).toBe('/all/settings#account-settings');
+    expect(container.querySelector('[data-testid="interface-settings-panel"]')).toBeNull();
+
+    await act(async () => {
+      getLabelByText('bitsocial_account').click();
+    });
+
+    expect(getLocationText()).toBe('/all/settings');
+    expect(container.querySelector('[data-testid="account-settings"]')).toBeNull();
+  });
+
+  it('expands and collapses all settings sections', async () => {
+    render('/all/settings');
+
+    const expandAllControl = Array.from(container.querySelectorAll('[role="button"]')).find((candidate) => (candidate.textContent ?? '').includes('expand_all_settings'));
+    if (!expandAllControl) {
+      throw new Error('expand_all_settings control not found');
+    }
+
+    await act(async () => {
+      expandAllControl.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    expect(container.querySelector('[data-testid="interface-settings-panel"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="media-hosting-settings-panel"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="account-settings"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="subscriptions-settings-panel"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="advanced-settings-panel"]')).not.toBeNull();
+
+    const collapseAllControl = Array.from(container.querySelectorAll('[role="button"]')).find((candidate) =>
+      (candidate.textContent ?? '').includes('collapse_all_settings'),
+    );
+    if (!collapseAllControl) {
+      throw new Error('collapse_all_settings control not found');
+    }
+
+    await act(async () => {
+      collapseAllControl.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    expect(container.querySelector('[data-testid="interface-settings-panel"]')).toBeNull();
+    expect(container.querySelector('[data-testid="media-hosting-settings-panel"]')).toBeNull();
+    expect(container.querySelector('[data-testid="account-settings"]')).toBeNull();
+    expect(container.querySelector('[data-testid="subscriptions-settings-panel"]')).toBeNull();
+    expect(container.querySelector('[data-testid="advanced-settings-panel"]')).toBeNull();
+  });
+
+  it('closes the modal when the overlay is clicked', async () => {
+    render('/all/settings#interface-settings');
+
+    const overlay = container.querySelector('[role="button"]');
+    if (!overlay) {
+      throw new Error('overlay not found');
+    }
+
+    await act(async () => {
+      overlay.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    expect(getLocationText()).toBe('/all');
+  });
+
+  it('closes the modal when Escape is pressed', async () => {
+    render('/all/settings');
+
+    await act(async () => {
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    });
+
+    expect(getLocationText()).toBe('/all');
+  });
+});
