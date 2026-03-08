@@ -157,12 +157,16 @@ export const useFeedStateString = (subplebbitAddresses?: string[]): string | und
       }
     }
 
+    if (!stateString && subplebbitAddresses?.length) {
+      stateString = `downloading ${subplebbitAddresses.length} boards`;
+    }
+
     // capitalize first letter
     stateString = stateString.charAt(0).toUpperCase() + stateString.slice(1);
 
     // if string is empty, return undefined instead
     return stateString === '' ? undefined : stateString;
-  }, [states, subplebbitAddress]);
+  }, [states, subplebbitAddress, subplebbitAddresses]);
 
   if (singleSubplebbitFeedStateString) {
     return singleSubplebbitFeedStateString;

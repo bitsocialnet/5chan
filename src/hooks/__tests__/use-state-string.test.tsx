@@ -139,4 +139,12 @@ describe('use-state-string', () => {
 
     expect(latestValue).toBe('Resolving 2 addresses from ens.example.com, downloading 2 boards, 1 threads, 1 page from gateway.example.com, ipfs.io');
   });
+
+  it('shows an immediate board-specific loading string before detailed multi-board states arrive', () => {
+    act(() => {
+      root.render(createElement(FeedStateStringHarness, { addresses: ['music-posting.eth', 'tech-posting.eth'] }));
+    });
+
+    expect(latestValue).toBe('Downloading 2 boards');
+  });
 });
