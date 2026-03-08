@@ -11,7 +11,6 @@ const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise
 const testState = vi.hoisted(() => ({
   account: { author: { displayName: 'Alice' } } as { author?: { displayName?: string } },
   closeModalMock: vi.fn(),
-  currentTime: 10_000,
   directoryByAddress: {
     'music-posting.eth': {
       address: 'music-posting.eth',
@@ -21,6 +20,9 @@ const testState = vi.hoisted(() => ({
   handleUploadMock: vi.fn(),
   isMobile: false,
   isUploading: false,
+  offlineTitle: '' as string | false,
+  offlineStatusLoading: false,
+  offlineWarningVisible: false,
   openEmpty: false,
   publishReplyMock: vi.fn(),
   quoteInsertNumber: undefined as number | undefined,
@@ -32,8 +34,12 @@ const testState = vi.hoisted(() => ({
   setAccountMock: vi.fn(),
   setPublishReplyOptionsMock: vi.fn(),
   springStartMock: vi.fn(),
+  subplebbits: {
+    'music-posting.eth': {
+      address: 'music-posting.eth',
+    },
+  } as Record<string, { address: string }>,
   showUploadControls: true,
-  updatedAt: undefined as number | undefined,
   uploadComplete: undefined as ((url: string) => void) | undefined,
   uploadedFileName: null as string | null,
   uploadMode: 'always',
@@ -63,8 +69,19 @@ vi.mock('@bitsocialhq/bitsocial-react-hooks', () => ({
   useAccount: () => testState.account,
 }));
 
-vi.mock('../../../hooks/use-stable-subplebbit', () => ({
-  useSubplebbitField: () => testState.updatedAt,
+vi.mock('@bitsocialhq/bitsocial-react-hooks/dist/stores/subplebbits', () => ({
+  default: <T,>(selector: (state: { subplebbits: typeof testState.subplebbits }) => T) =>
+    selector({
+      subplebbits: testState.subplebbits,
+    }),
+}));
+
+vi.mock('../../../hooks/use-is-subplebbit-offline', () => ({
+  default: () => ({
+    isOffline: testState.offlineWarningVisible,
+    isOnlineStatusLoading: testState.offlineStatusLoading,
+    offlineTitle: testState.offlineTitle,
+  }),
 }));
 
 vi.mock('../../../stores/use-selected-text-store', () => ({
@@ -114,10 +131,6 @@ vi.mock('../../../hooks/use-is-mobile', () => ({
   default: () => testState.isMobile,
 }));
 
-vi.mock('../../../hooks/use-current-time', () => ({
-  useCurrentTime: () => testState.currentTime,
-}));
-
 vi.mock('../../../hooks/use-file-upload', () => ({
   useFileUpload: ({ onUploadComplete }: { onUploadComplete: (url: string) => void }) => {
     testState.uploadComplete = onUploadComplete;
@@ -158,10 +171,6 @@ vi.mock('@react-spring/web', async () => {
 
 vi.mock('@use-gesture/react', () => ({
   useDrag: () => () => ({}),
-}));
-
-vi.mock('../../../lib/utils/time-utils', () => ({
-  getFormattedTimeAgo: (time: number) => `ago:${time}`,
 }));
 
 let container: HTMLDivElement;
@@ -224,7 +233,6 @@ describe('ReplyModal', () => {
     vi.clearAllMocks();
     testState.account = { author: { displayName: 'Alice' } };
     testState.closeModalMock.mockReset();
-    testState.currentTime = 10_000;
     testState.directoryByAddress = {
       'music-posting.eth': {
         address: 'music-posting.eth',
@@ -234,6 +242,9 @@ describe('ReplyModal', () => {
     testState.handleUploadMock.mockReset();
     testState.isMobile = false;
     testState.isUploading = false;
+    testState.offlineTitle = '';
+    testState.offlineStatusLoading = false;
+    testState.offlineWarningVisible = false;
     testState.openEmpty = false;
     testState.publishReplyMock.mockReset();
     testState.quoteInsertNumber = undefined;
@@ -245,8 +256,12 @@ describe('ReplyModal', () => {
     testState.setAccountMock.mockReset();
     testState.setPublishReplyOptionsMock.mockReset();
     testState.springStartMock.mockReset();
+    testState.subplebbits = {
+      'music-posting.eth': {
+        address: 'music-posting.eth',
+      },
+    };
     testState.showUploadControls = true;
-    testState.updatedAt = undefined;
     testState.uploadComplete = undefined;
     testState.uploadedFileName = null;
     testState.uploadMode = 'always';
@@ -260,8 +275,9 @@ describe('ReplyModal', () => {
     container.remove();
   });
 
-  it('initializes quoted content, display name, upload controls, and offline warning on board routes', async () => {
-    testState.updatedAt = 1_000;
+  it('initializes quoted content, display name, upload controls, and shared offline warning on board routes', async () => {
+    testState.offlineTitle = 'posts_last_synced_info:{"time":"ago:1000"}';
+    testState.offlineWarningVisible = true;
 
     await renderReplyModal('/mu/thread/post-1');
 
@@ -274,10 +290,16 @@ describe('ReplyModal', () => {
     expect(textarea?.value).toBe('>>42\nselected text');
     expect(container.textContent).toContain('choose_file');
     expect(container.textContent).toContain('Spoiler?');
-    expect(container.textContent).toContain('warning');
     expect(container.textContent).toContain('posts_last_synced_info:{"time":"ago:1000"}');
     expect(testState.setPublishReplyOptionsMock).toHaveBeenCalledWith({ content: '>>42\nselected text' });
     expect(testState.setPublishReplyOptionsMock).toHaveBeenCalledWith({ displayName: 'Alice' });
+  });
+
+  it('does not render an offline warning when the shared offline hook reports the board as online', async () => {
+    await renderReplyModal('/mu/thread/post-1');
+
+    expect(container.querySelector('[class*="offlineBoard"]')).toBeNull();
+    expect(container.textContent).not.toContain('subplebbit_offline_info');
   });
 
   it('validates empty and invalid replies, then publishes once the payload is valid', async () => {

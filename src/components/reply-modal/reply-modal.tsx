@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
-import { Trans, useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import { setAccount, useAccount } from '@bitsocialhq/bitsocial-react-hooks';
-import { useSubplebbitField } from '../../hooks/use-stable-subplebbit';
-import { getFormattedTimeAgo } from '../../lib/utils/time-utils';
+import useSubplebbitsStore from '@bitsocialhq/bitsocial-react-hooks/dist/stores/subplebbits';
 import { isValidURL } from '../../lib/utils/url-utils';
 import { isAllView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import useSelectedTextStore from '../../stores/use-selected-text-store';
@@ -12,8 +11,8 @@ import { getShowUploadControls, isWebRuntime } from '../../lib/media-hosting/sho
 import useMediaHostingStore from '../../stores/use-media-hosting-store';
 import { useDirectoryByAddress } from '../../hooks/use-directories';
 import usePublishReply from '../../hooks/use-publish-reply';
+import useIsSubplebbitOffline from '../../hooks/use-is-subplebbit-offline';
 import useIsMobile from '../../hooks/use-is-mobile';
-import { useCurrentTime } from '../../hooks/use-current-time';
 import { useFileUpload } from '../../hooks/use-file-upload';
 import styles from './reply-modal.module.css';
 import capitalize from 'lodash/capitalize';
@@ -31,6 +30,17 @@ interface ReplyModalProps {
   scrollY: number;
   subplebbitAddress: string;
 }
+
+const ReplyModalOfflineAlert = ({ hidden, subplebbitAddress }: { hidden: boolean; subplebbitAddress: string }) => {
+  const subplebbit = useSubplebbitsStore((state) => state.subplebbits[subplebbitAddress]);
+  const { isOffline, isOnlineStatusLoading, offlineTitle } = useIsSubplebbitOffline(subplebbit);
+
+  if (hidden || (!isOffline && !isOnlineStatusLoading)) {
+    return null;
+  }
+
+  return <div className={styles.offlineBoard}>{offlineTitle}</div>;
+};
 
 const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threadNumber, postCid, scrollY, subplebbitAddress }: ReplyModalProps) => {
   const { t } = useTranslation();
@@ -151,18 +161,6 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
       parentCidRef.current.style.width = `${cidWidth}px`;
     }
   }, [parentCid]);
-
-  const currentTime = useCurrentTime();
-  // Only subscribe to updatedAt to avoid rerenders from updatingState changes
-  const updatedAt = useSubplebbitField(subplebbitAddress, (subplebbit) => subplebbit?.updatedAt);
-  const isBoardOffline = updatedAt && updatedAt < currentTime - 60 * 60;
-  const offlineAlert = updatedAt
-    ? isBoardOffline && (
-        <div className={styles.offlineBoard}>
-          {t('warning')}: <Trans i18nKey='posts_last_synced_info' values={{ time: getFormattedTimeAgo(updatedAt) }} />
-        </div>
-      )
-    : t('subplebbit_offline_info');
 
   useEffect(() => {
     if (showReplyModal && !isMobile) {
@@ -378,7 +376,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
           </button>
         </div>
         {lengthError ? <div className={styles.error}>{lengthError}</div> : error && <div className={styles.error}>{error}</div>}
-        {!(isInAllView || isInSubscriptionsView) && offlineAlert}
+        <ReplyModalOfflineAlert hidden={isInAllView || isInSubscriptionsView} subplebbitAddress={subplebbitAddress} />
       </div>
     </animated.div>
   );
