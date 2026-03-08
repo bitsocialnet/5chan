@@ -6,7 +6,7 @@ import org.junit.Test;
 
 /**
  * Unit tests for MediaUploadRecipes: recipe generation, selector arrays, timeouts,
- * and failure classification semantics (input_not_found, chooser_not_triggered,
+ * and failure classification semantics (input_not_found, file_payload_unavailable,
  * blocked/captcha, upload_timed_out).
  */
 public class MediaUploadRecipesTest {
@@ -81,8 +81,10 @@ public class MediaUploadRecipesTest {
     }
 
     @Test
-    public void failureClassification_chooserNotTriggered_stageConstant() {
-        assertEquals(MediaUploadAutomationRunner.STAGE_CHOOSER_NOT_TRIGGERED, "chooser_not_triggered");
+    public void failureClassification_filePayloadUnavailable_stageConstant() {
+        assertEquals(
+                MediaUploadAutomationRunner.STAGE_FILE_PAYLOAD_UNAVAILABLE,
+                "file_payload_unavailable");
     }
 
     @Test
