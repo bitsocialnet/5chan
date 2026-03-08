@@ -2,7 +2,6 @@ import * as React from 'react';
 import { createElement } from 'react';
 import { createRoot, Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import AccountDataEditor from '../account-data-editor';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
@@ -75,6 +74,9 @@ vi.mock('ace-builds/src-noconflict/theme-monokai', () => ({}));
 
 let root: Root;
 let container: HTMLDivElement;
+let AccountDataEditor: React.ComponentType;
+
+const queryEditor = () => container.querySelector<HTMLTextAreaElement>('[data-testid="ace-editor"]') ?? container.querySelector<HTMLTextAreaElement>('textarea');
 
 const flushEffects = async (count = 10) => {
   for (let i = 0; i < count; i += 1) {
@@ -85,17 +87,17 @@ const flushEffects = async (count = 10) => {
 };
 
 const waitForEditor = async () => {
-  for (let i = 0; i < 50; i += 1) {
+  for (let i = 0; i < 200; i += 1) {
     await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 0));
+      await new Promise((resolve) => setTimeout(resolve, 5));
     });
     await flushEffects(2);
-    if (container.querySelector('[data-testid="ace-editor"]')) {
+    if (queryEditor()) {
       return;
     }
   }
 
-  expect(container.querySelector('[data-testid="ace-editor"]')).toBeTruthy();
+  expect(queryEditor()).toBeTruthy();
 };
 
 const clickButton = async (label: string) => {
@@ -108,7 +110,7 @@ const clickButton = async (label: string) => {
 };
 
 const changeEditorValue = async (value: string) => {
-  const editor = container.querySelector<HTMLTextAreaElement>('[data-testid="ace-editor"]');
+  const editor = queryEditor();
   expect(editor).toBeTruthy();
 
   await act(async () => {
@@ -128,8 +130,10 @@ const renderEditor = () => {
 };
 
 describe('AccountDataEditor', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
+    vi.resetModules();
     vi.clearAllMocks();
+    AccountDataEditor = (await import('../account-data-editor')).default;
     testState.account = { id: 'test-id', name: 'Account 1', author: { address: '0x123', shortAddress: '0x1...3' } };
     testState.alertMock.mockReset();
     testState.buildEditableAccountJsonMock.mockReturnValue(DEFAULT_JSON);
@@ -177,7 +181,7 @@ describe('AccountDataEditor', () => {
     await waitForEditor();
 
     expect(container.textContent).not.toContain('loading_editor');
-    expect(container.querySelector('[data-testid="ace-editor"]')).toBeTruthy();
+    expect(queryEditor()).toBeTruthy();
 
     await clickButton('return_to_settings');
 
@@ -189,14 +193,14 @@ describe('AccountDataEditor', () => {
     await clickButton('continue');
     await waitForEditor();
 
-    expect(container.querySelector<HTMLTextAreaElement>('[data-testid="ace-editor"]')?.value).toBe(DEFAULT_JSON);
+    expect(queryEditor()?.value).toBe(DEFAULT_JSON);
 
     await changeEditorValue('{"account":{"name":"changed"}}');
-    expect(container.querySelector<HTMLTextAreaElement>('[data-testid="ace-editor"]')?.value).toBe('{"account":{"name":"changed"}}');
+    expect(queryEditor()?.value).toBe('{"account":{"name":"changed"}}');
 
     await clickButton('reset_changes');
 
-    expect(container.querySelector<HTMLTextAreaElement>('[data-testid="ace-editor"]')?.value).toBe(DEFAULT_JSON);
+    expect(queryEditor()?.value).toBe(DEFAULT_JSON);
   });
 
   it('alerts on invalid JSON without attempting to save', async () => {

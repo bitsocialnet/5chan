@@ -10,6 +10,7 @@ import { isValidURL } from '../../lib/utils/url-utils';
 import { isAllView, isCatalogView, isModQueueView, isModView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import { useAccountSubplebbitAddresses } from '../../hooks/use-account-subplebbit-addresses';
 import { useDirectories, useDirectoryByAddress } from '../../hooks/use-directories';
+import useIsMobile from '../../hooks/use-is-mobile';
 import { useResolvedSubplebbitAddress } from '../../hooks/use-resolved-subplebbit-address';
 import useFetchGifFirstFrame from '../../hooks/use-fetch-gif-first-frame';
 import useIsSubplebbitOffline from '../../hooks/use-is-subplebbit-offline';
@@ -513,6 +514,7 @@ const PostForm = () => {
   const isInModQueueView = isModQueueView(location.pathname);
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, params);
   const isInCatalogView = isCatalogView(location.pathname, params);
+  const isMobile = useIsMobile();
 
   const commentCid = params?.commentCid;
   const post = useSubplebbitsPagesStore((state) => state.comments[commentCid as string]);
@@ -532,32 +534,12 @@ const PostForm = () => {
   const resolvedAddress = useResolvedSubplebbitAddress();
   const subplebbitAddress = resolvedAddress || accountComment?.subplebbitAddress;
 
-  return (
-    <>
-      <div className={styles.postFormDesktop}>
-        {!(isInAllView || isInSubscriptionsView || isInModView) && showForm && <OfflineAlert subplebbitAddress={subplebbitAddress} />}
-        {isInModQueueView ? (
-          <div className={styles.modQueueTitle}>{t('moderation_queue')}</div>
-        ) : isThreadClosed ? (
-          <div className={styles.closed}>
-            {t('thread_closed')}
-            <br />
-            {t('may_not_reply')}
-          </div>
-        ) : !showForm ? (
-          <div>
-            [
-            <button className='button' onClick={() => setShowForm(true)}>
-              {isInPostView ? t('post_a_reply') : t('start_new_thread')}
-            </button>
-            ]
-          </div>
-        ) : (
-          <PostFormTable closeForm={() => setShowForm(false)} postCid={postCid} />
-        )}
-      </div>
+  const shouldShowOfflineAlert = !(isInAllView || isInSubscriptionsView || isInModView) && showForm;
+
+  if (isMobile) {
+    return (
       <div className={styles.postFormMobile}>
-        {!(isInAllView || isInSubscriptionsView || isInModView) && showForm && <OfflineAlert subplebbitAddress={subplebbitAddress} />}
+        {shouldShowOfflineAlert && <OfflineAlert subplebbitAddress={subplebbitAddress} />}
         {isInModQueueView ? (
           <div className={styles.modQueueTitle}>{t('moderation_queue')}</div>
         ) : isThreadClosed ? (
@@ -576,7 +558,32 @@ const PostForm = () => {
         )}
         {isInCatalogView && <hr />}
       </div>
-    </>
+    );
+  }
+
+  return (
+    <div className={styles.postFormDesktop}>
+      {shouldShowOfflineAlert && <OfflineAlert subplebbitAddress={subplebbitAddress} />}
+      {isInModQueueView ? (
+        <div className={styles.modQueueTitle}>{t('moderation_queue')}</div>
+      ) : isThreadClosed ? (
+        <div className={styles.closed}>
+          {t('thread_closed')}
+          <br />
+          {t('may_not_reply')}
+        </div>
+      ) : !showForm ? (
+        <div>
+          [
+          <button className='button' onClick={() => setShowForm(true)}>
+            {isInPostView ? t('post_a_reply') : t('start_new_thread')}
+          </button>
+          ]
+        </div>
+      ) : (
+        <PostFormTable closeForm={() => setShowForm(false)} postCid={postCid} />
+      )}
+    </div>
   );
 };
 
