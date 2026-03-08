@@ -211,7 +211,7 @@ const Home = () => {
         <SearchBar />
         <InfoBox />
         <BoardsList multisub={directories} />
-        <PopularThreadsBox directories={directories} subplebbits={subplebbits} />
+        <PopularThreadsBox directories={directories} directoryAddresses={directoryAddresses} subplebbits={subplebbits} />
         <Stats directoryAddresses={directoryAddresses} />
         <Footer />
       </div>
