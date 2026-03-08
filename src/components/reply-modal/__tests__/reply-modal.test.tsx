@@ -1,0 +1,376 @@
+import * as React from 'react';
+import { createElement } from 'react';
+import { createRoot, type Root } from 'react-dom/client';
+import { MemoryRouter } from 'react-router-dom';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import ReplyModal from '../reply-modal';
+
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
+
+const testState = vi.hoisted(() => ({
+  account: { author: { displayName: 'Alice' } } as { author?: { displayName?: string } },
+  closeModalMock: vi.fn(),
+  currentTime: 10_000,
+  directoryByAddress: {
+    'music-posting.eth': {
+      address: 'music-posting.eth',
+      features: {},
+    },
+  } as Record<string, { address: string; features?: Record<string, unknown> }>,
+  handleUploadMock: vi.fn(),
+  isMobile: false,
+  isUploading: false,
+  openEmpty: false,
+  publishReplyMock: vi.fn(),
+  quoteInsertNumber: undefined as number | undefined,
+  quoteInsertRequestId: 0,
+  quoteInsertSelectedText: '',
+  replyIndex: undefined as number | undefined,
+  resetPublishReplyOptionsMock: vi.fn(),
+  selectedText: 'selected text',
+  setAccountMock: vi.fn(),
+  setPublishReplyOptionsMock: vi.fn(),
+  springStartMock: vi.fn(),
+  showUploadControls: true,
+  updatedAt: undefined as number | undefined,
+  uploadComplete: undefined as ((url: string) => void) | undefined,
+  uploadedFileName: null as string | null,
+  uploadMode: 'always',
+}));
+
+vi.mock('react-i18next', () => ({
+  Trans: ({ i18nKey, values }: { i18nKey: string; values?: Record<string, unknown> }) =>
+    createElement('span', { 'data-testid': `trans-${i18nKey}` }, `${i18nKey}:${JSON.stringify(values || {})}`),
+  useTranslation: () => ({
+    t: (key: string, options?: Record<string, unknown>) => {
+      if (!options) {
+        return key;
+      }
+      if (typeof options.no !== 'undefined') {
+        return `${key}:${options.no}`;
+      }
+      if (typeof options.length !== 'undefined') {
+        return `${key}:${options.length}`;
+      }
+      return `${key}:${JSON.stringify(options)}`;
+    },
+  }),
+}));
+
+vi.mock('@bitsocialhq/bitsocial-react-hooks', () => ({
+  setAccount: (account: unknown) => testState.setAccountMock(account),
+  useAccount: () => testState.account,
+}));
+
+vi.mock('../../../hooks/use-stable-subplebbit', () => ({
+  useSubplebbitField: () => testState.updatedAt,
+}));
+
+vi.mock('../../../stores/use-selected-text-store', () => ({
+  default: () => ({
+    selectedText: testState.selectedText,
+  }),
+}));
+
+vi.mock('../../../stores/use-reply-modal-store', () => ({
+  default: <T,>(selector?: (state: { openEmpty: boolean; quoteInsertNumber?: number; quoteInsertRequestId: number; quoteInsertSelectedText: string }) => T) => {
+    const state = {
+      openEmpty: testState.openEmpty,
+      quoteInsertNumber: testState.quoteInsertNumber,
+      quoteInsertRequestId: testState.quoteInsertRequestId,
+      quoteInsertSelectedText: testState.quoteInsertSelectedText,
+    };
+    return selector ? selector(state) : (state as T);
+  },
+}));
+
+vi.mock('../../../lib/media-hosting/show-upload-controls', () => ({
+  getShowUploadControls: () => testState.showUploadControls,
+  isWebRuntime: () => true,
+}));
+
+vi.mock('../../../stores/use-media-hosting-store', () => ({
+  default: (selector: (state: { uploadMode: string }) => unknown) =>
+    selector({
+      uploadMode: testState.uploadMode,
+    }),
+}));
+
+vi.mock('../../../hooks/use-directories', () => ({
+  useDirectoryByAddress: (address: string) => testState.directoryByAddress[address],
+}));
+
+vi.mock('../../../hooks/use-publish-reply', () => ({
+  default: () => ({
+    publishReply: testState.publishReplyMock,
+    replyIndex: testState.replyIndex,
+    resetPublishReplyOptions: testState.resetPublishReplyOptionsMock,
+    setPublishReplyOptions: (options: Record<string, unknown>) => testState.setPublishReplyOptionsMock(options),
+  }),
+}));
+
+vi.mock('../../../hooks/use-is-mobile', () => ({
+  default: () => testState.isMobile,
+}));
+
+vi.mock('../../../hooks/use-current-time', () => ({
+  useCurrentTime: () => testState.currentTime,
+}));
+
+vi.mock('../../../hooks/use-file-upload', () => ({
+  useFileUpload: ({ onUploadComplete }: { onUploadComplete: (url: string) => void }) => {
+    testState.uploadComplete = onUploadComplete;
+    return {
+      handleUpload: testState.handleUploadMock,
+      isUploading: testState.isUploading,
+      uploadedFileName: testState.uploadedFileName,
+    };
+  },
+}));
+
+vi.mock('lodash/debounce', () => ({
+  default: <T extends (...args: any[]) => void>(fn: T) => {
+    const wrapped = ((...args: Parameters<T>) => fn(...args)) as T & { cancel: () => void };
+    wrapped.cancel = () => undefined;
+    return wrapped;
+  },
+}));
+
+vi.mock('@react-spring/web', async () => {
+  const React = await vi.importActual<typeof import('react')>('react');
+
+  return {
+    animated: {
+      div: React.forwardRef(({ style, ...props }: any, ref) => React.createElement('div', { ...props, ref, style: { touchAction: style?.touchAction } })),
+    },
+    useSpring: () => [
+      {
+        x: { get: () => 120 },
+        y: { get: () => 80 },
+      },
+      {
+        start: testState.springStartMock,
+      },
+    ],
+  };
+});
+
+vi.mock('@use-gesture/react', () => ({
+  useDrag: () => () => ({}),
+}));
+
+vi.mock('../../../lib/utils/time-utils', () => ({
+  getFormattedTimeAgo: (time: number) => `ago:${time}`,
+}));
+
+let container: HTMLDivElement;
+let root: Root;
+
+const flushEffects = async (count = 4) => {
+  for (let i = 0; i < count; i += 1) {
+    await act(async () => {
+      await Promise.resolve();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+  }
+};
+
+const renderReplyModal = async (initialEntry = '/mu/thread/post-1') => {
+  await act(async () => {
+    root.render(
+      createElement(
+        MemoryRouter,
+        { initialEntries: [initialEntry] },
+        createElement(ReplyModal, {
+          closeModal: testState.closeModalMock,
+          parentCid: 'parent-cid',
+          parentNumber: 42,
+          postCid: 'post-cid',
+          scrollY: 120,
+          showReplyModal: true,
+          subplebbitAddress: 'music-posting.eth',
+          threadNumber: 42,
+        }),
+      ),
+    );
+  });
+  await flushEffects();
+};
+
+const rerenderReplyModal = async (initialEntry = '/mu/thread/post-1') => {
+  await renderReplyModal(initialEntry);
+};
+
+const dispatchInput = async (element: HTMLInputElement | HTMLTextAreaElement, value: string) => {
+  await act(async () => {
+    const prototype = element instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
+    const descriptor = Object.getOwnPropertyDescriptor(prototype, 'value');
+    descriptor?.set?.call(element, value);
+    element.dispatchEvent(new Event('input', { bubbles: true }));
+    element.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+};
+
+const clickButtonByText = async (text: string) => {
+  const button = Array.from(container.querySelectorAll('button')).find((candidate) => candidate.textContent === text);
+  await act(async () => {
+    button?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+  });
+};
+
+describe('ReplyModal', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    testState.account = { author: { displayName: 'Alice' } };
+    testState.closeModalMock.mockReset();
+    testState.currentTime = 10_000;
+    testState.directoryByAddress = {
+      'music-posting.eth': {
+        address: 'music-posting.eth',
+        features: {},
+      },
+    };
+    testState.handleUploadMock.mockReset();
+    testState.isMobile = false;
+    testState.isUploading = false;
+    testState.openEmpty = false;
+    testState.publishReplyMock.mockReset();
+    testState.quoteInsertNumber = undefined;
+    testState.quoteInsertRequestId = 0;
+    testState.quoteInsertSelectedText = '';
+    testState.replyIndex = undefined;
+    testState.resetPublishReplyOptionsMock.mockReset();
+    testState.selectedText = 'selected text';
+    testState.setAccountMock.mockReset();
+    testState.setPublishReplyOptionsMock.mockReset();
+    testState.springStartMock.mockReset();
+    testState.showUploadControls = true;
+    testState.updatedAt = undefined;
+    testState.uploadComplete = undefined;
+    testState.uploadedFileName = null;
+    testState.uploadMode = 'always';
+    container = document.createElement('div');
+    document.body.appendChild(container);
+    root = createRoot(container);
+  });
+
+  afterEach(() => {
+    act(() => root.unmount());
+    container.remove();
+  });
+
+  it('initializes quoted content, display name, upload controls, and offline warning on board routes', async () => {
+    testState.updatedAt = 1_000;
+
+    await renderReplyModal('/mu/thread/post-1');
+
+    const nameInput = container.querySelectorAll<HTMLInputElement>('input[type="text"]')[0];
+    const linkInput = container.querySelectorAll<HTMLInputElement>('input[type="text"]')[1];
+    const textarea = container.querySelector<HTMLTextAreaElement>('textarea');
+
+    expect(nameInput?.value).toBe('Alice');
+    expect(linkInput?.getAttribute('placeholder')).toContain('Link');
+    expect(textarea?.value).toBe('>>42\nselected text');
+    expect(container.textContent).toContain('choose_file');
+    expect(container.textContent).toContain('Spoiler?');
+    expect(container.textContent).toContain('warning');
+    expect(container.textContent).toContain('posts_last_synced_info:{"time":"ago:1000"}');
+    expect(testState.setPublishReplyOptionsMock).toHaveBeenCalledWith({ content: '>>42\nselected text' });
+    expect(testState.setPublishReplyOptionsMock).toHaveBeenCalledWith({ displayName: 'Alice' });
+  });
+
+  it('validates empty and invalid replies, then publishes once the payload is valid', async () => {
+    testState.openEmpty = true;
+    testState.selectedText = '';
+
+    await renderReplyModal('/mu/thread/post-1');
+
+    await clickButtonByText('post');
+    expect(container.textContent).toContain('error: empty_comment_alert');
+    expect(testState.publishReplyMock).not.toHaveBeenCalled();
+
+    const linkInput = container.querySelectorAll<HTMLInputElement>('input[type="text"]')[1];
+    const spoilerCheckbox = container.querySelector<HTMLInputElement>('input[type="checkbox"]');
+    await dispatchInput(linkInput, 'not-a-url');
+    await act(async () => {
+      spoilerCheckbox?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+    await clickButtonByText('post');
+
+    expect(container.textContent).toContain('error: invalid_url_alert');
+    expect(testState.setPublishReplyOptionsMock).toHaveBeenCalledWith({ spoiler: true });
+
+    await dispatchInput(linkInput, 'https://example.com/file.png');
+    await clickButtonByText('post');
+
+    expect(testState.setPublishReplyOptionsMock).toHaveBeenCalledWith({ link: 'https://example.com/file.png' });
+    expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('updates account state, applies upload completions, and closes once publishing succeeds', async () => {
+    await renderReplyModal('/mu/thread/post-1');
+
+    const nameInput = container.querySelectorAll<HTMLInputElement>('input[type="text"]')[0];
+    const linkInput = container.querySelectorAll<HTMLInputElement>('input[type="text"]')[1];
+
+    await dispatchInput(nameInput, 'Alicia');
+    expect(testState.setAccountMock).toHaveBeenCalledWith({
+      author: { displayName: 'Alicia' },
+    });
+    expect(testState.setPublishReplyOptionsMock).toHaveBeenCalledWith({ displayName: 'Alicia' });
+
+    await act(async () => {
+      testState.uploadComplete?.('https://cdn.example/uploaded.png');
+    });
+
+    expect(linkInput?.value).toBe('https://cdn.example/uploaded.png');
+    expect(testState.setPublishReplyOptionsMock).toHaveBeenCalledWith({ link: 'https://cdn.example/uploaded.png' });
+
+    testState.replyIndex = 3;
+    await rerenderReplyModal('/mu/thread/post-1');
+
+    expect(testState.resetPublishReplyOptionsMock).toHaveBeenCalledTimes(1);
+    expect(testState.closeModalMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('inserts quote requests only once and keeps the textarea content stable across rerenders', async () => {
+    testState.isMobile = true;
+    testState.openEmpty = true;
+    testState.selectedText = 'Existing line';
+
+    await renderReplyModal('/mu/thread/post-1');
+
+    const textarea = container.querySelector<HTMLTextAreaElement>('textarea');
+    expect(textarea?.value).toBe('Existing line');
+
+    testState.quoteInsertNumber = 77;
+    testState.quoteInsertRequestId = 1;
+    testState.quoteInsertSelectedText = 'Quoted line';
+    await rerenderReplyModal('/mu/thread/post-1');
+
+    expect(textarea?.value).toBe('Existing line\n>>77\nQuoted line\n');
+    expect(testState.setPublishReplyOptionsMock).toHaveBeenCalledWith({
+      content: 'Existing line\n>>77\nQuoted line\n',
+    });
+
+    await rerenderReplyModal('/mu/thread/post-1');
+    expect(textarea?.value).toBe('Existing line\n>>77\nQuoted line\n');
+  });
+
+  it('uses file-link placeholder defaults in all view and hides board-specific warnings or spoiler controls when disabled', async () => {
+    testState.directoryByAddress = {
+      'music-posting.eth': {
+        address: 'music-posting.eth',
+        features: { noSpoilerReplies: true },
+      },
+    };
+
+    await renderReplyModal('/all/thread/post-1');
+
+    const linkInput = container.querySelectorAll<HTMLInputElement>('input[type="text"]')[1];
+    expect(linkInput?.getAttribute('placeholder')).toContain('Link_to_file');
+    expect(container.textContent).not.toContain('warning');
+    expect(container.textContent).not.toContain('Spoiler?');
+  });
+});
