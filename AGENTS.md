@@ -128,6 +128,7 @@ src/
 - Keep context lean: delegate heavy/verbose tasks to subprocesses when available.
 - For complex work, parallelize independent checks.
 - Add or update tests for bug fixes and non-trivial logic changes when the code is reasonably testable.
+- When touching already-covered code, prefer extending nearby tests so measured coverage does not regress without a clear reason.
 - Use `yarn knip` when adding/removing dependencies or introducing new direct imports; treat findings as advisory, but resolve real issues before finishing.
 - When proposing or implementing meaningful code changes, include both:
   - a Conventional Commit title suggestion
