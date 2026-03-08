@@ -52,6 +52,14 @@ let cacheMetadata: DirectoriesMetadata | null = null;
 let inFlightGitHubFetch: Promise<DirectoriesData> | null = null;
 const DIRECTORY_ALIAS_SUFFIXES = ['.bso', '.eth'] as const;
 
+// Exposed for deterministic unit tests around module-level cache state.
+export const __resetDirectoriesModuleStateForTests = () => {
+  cacheCommunities = null;
+  cacheMetadata = null;
+  inFlightGitHubFetch = null;
+  fallbackDirectoriesData = null;
+};
+
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null;
 
 const normalizeFeatures = (value: unknown): DirectoryFeatures | undefined => {
@@ -319,8 +327,16 @@ export const useDirectories = () => {
         hydrateCommunities(directories);
       } catch (e) {
         console.warn('Failed to fetch directories from GitHub:', e);
-        // Only fall back if we don't already have memory/localStorage data
-        if (!cacheCommunities) {
+        // Keep each hook instance in sync even if a sibling hook populated the module cache first.
+        if (cacheCommunities) {
+          if (isMounted) {
+            setState({
+              communities: cacheCommunities,
+              loading: false,
+              error: null,
+            });
+          }
+        } else {
           hydrateCommunities(getFallbackDirectoriesData());
         }
       }
@@ -379,8 +395,16 @@ export const useDirectoriesState = () => {
         hydrateCommunities(directories);
       } catch (e) {
         console.warn('Failed to fetch directories from GitHub:', e);
-        // Only fall back if we don't already have memory/localStorage data
-        if (!cacheCommunities) {
+        // Keep each hook instance in sync even if a sibling hook populated the module cache first.
+        if (cacheCommunities) {
+          if (isMounted) {
+            setState({
+              communities: cacheCommunities,
+              loading: false,
+              error: null,
+            });
+          }
+        } else {
           hydrateCommunities(getFallbackDirectoriesData());
         }
       }
@@ -439,8 +463,12 @@ export const useDirectoriesMetadata = () => {
         hydrateMetadata(directories);
       } catch (e) {
         console.warn('Failed to fetch directory metadata from GitHub:', e);
-        // Only fall back if we don't already have memory/localStorage data
-        if (!cacheMetadata) {
+        // Keep each hook instance in sync even if a sibling hook populated the module cache first.
+        if (cacheMetadata) {
+          if (isMounted) {
+            setMetadata(cacheMetadata);
+          }
+        } else {
           hydrateMetadata(getFallbackDirectoriesData());
         }
       }
