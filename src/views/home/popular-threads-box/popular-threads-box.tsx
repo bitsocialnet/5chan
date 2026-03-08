@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Comment, Subplebbit } from '@bitsocialhq/bitsocial-react-hooks';
 import styles from '../home.module.css';
 import usePopularPosts from '../../../hooks/use-popular-posts';
+import { useFeedStateString } from '../../../hooks/use-state-string';
 import usePopularThreadsOptionsStore from '../../../stores/use-popular-threads-options-store';
 import { getCommentMediaInfo } from '../../../lib/utils/media-utils';
 import { CatalogPostMedia } from '../../../components/catalog-row';
@@ -86,6 +87,7 @@ const PopularThreadsBox = ({
   }, [directories, directoryAddresses, showNsfwContentOnly, showWorksafeContentOnly, subplebbits]);
 
   const { popularPosts, isLoading } = usePopularPosts(filteredSubplebbits, filteredBoardAddresses);
+  const loadingStateString = useFeedStateString(filteredBoardAddresses) || t('loading');
 
   return (
     <div className={styles.box}>
@@ -95,7 +97,7 @@ const PopularThreadsBox = ({
       </div>
       <div className={`${styles.boxContent} ${styles.popularThreads} ${isLoading ? styles.popularThreadsLoading : ''}`}>
         {isLoading ? (
-          <LoadingEllipsis string={t('loading')} />
+          <LoadingEllipsis string={loadingStateString} />
         ) : (
           popularPosts.map((post: Comment) => {
             const directoryEntry = findDirectoryByAddress(directories, post.subplebbitAddress);
