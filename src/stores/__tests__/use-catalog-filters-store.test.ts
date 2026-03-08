@@ -7,6 +7,10 @@ const testState = vi.hoisted(() => ({
   }),
 }));
 
+vi.mock('../../lib/utils/pattern-utils', () => ({
+  commentMatchesPattern: (comment: unknown, pattern: string) => testState.commentMatchesPatternMock(comment as never, pattern),
+}));
+
 type CatalogFiltersStoreModule = typeof import('../use-catalog-filters-store');
 type CatalogFiltersStore = Awaited<ReturnType<typeof loadStore>>;
 
@@ -14,10 +18,6 @@ const STORAGE_KEY = 'catalog-filters-storage';
 
 const loadStore = async () => {
   vi.resetModules();
-  vi.doMock('../../lib/utils/pattern-utils', () => ({
-    commentMatchesPattern: (comment: unknown, pattern: string) => testState.commentMatchesPatternMock(comment as never, pattern),
-  }));
-
   const module = (await import('../use-catalog-filters-store')) as CatalogFiltersStoreModule;
   await Promise.resolve();
   return module.default;
@@ -48,7 +48,6 @@ describe('useCatalogFiltersStore', () => {
 
   afterEach(() => {
     vi.useRealTimers();
-    vi.doUnmock('../../lib/utils/pattern-utils');
     consoleWarnSpy.mockRestore();
   });
 

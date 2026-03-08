@@ -1,4 +1,4 @@
-import { Comment } from '@bitsocialhq/bitsocial-react-hooks';
+import type { Comment } from '@bitsocialhq/bitsocial-react-hooks';
 import useSubplebbitsStore from '@bitsocialhq/bitsocial-react-hooks/dist/stores/subplebbits';
 
 /**
