@@ -2,18 +2,17 @@ import { useEffect, useRef, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { setAccount, useAccount } from '@bitsocialhq/bitsocial-react-hooks';
-import useSubplebbitsStore from '@bitsocialhq/bitsocial-react-hooks/dist/stores/subplebbits';
 import { isValidURL } from '../../lib/utils/url-utils';
-import { isAllView, isSubscriptionsView } from '../../lib/utils/view-utils';
+import { isAllView, isModView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import useSelectedTextStore from '../../stores/use-selected-text-store';
 import useReplyModalStore from '../../stores/use-reply-modal-store';
 import { getShowUploadControls, isWebRuntime } from '../../lib/media-hosting/show-upload-controls';
 import useMediaHostingStore from '../../stores/use-media-hosting-store';
 import { useDirectoryByAddress } from '../../hooks/use-directories';
 import usePublishReply from '../../hooks/use-publish-reply';
-import useIsSubplebbitOffline from '../../hooks/use-is-subplebbit-offline';
 import useIsMobile from '../../hooks/use-is-mobile';
 import { useFileUpload } from '../../hooks/use-file-upload';
+import BoardOfflineAlert from '../board-offline-alert/board-offline-alert';
 import styles from './reply-modal.module.css';
 import capitalize from 'lodash/capitalize';
 import debounce from 'lodash/debounce';
@@ -31,22 +30,12 @@ interface ReplyModalProps {
   subplebbitAddress: string;
 }
 
-const ReplyModalOfflineAlert = ({ hidden, subplebbitAddress }: { hidden: boolean; subplebbitAddress: string }) => {
-  const subplebbit = useSubplebbitsStore((state) => state.subplebbits[subplebbitAddress]);
-  const { isOffline, isOnlineStatusLoading, offlineTitle } = useIsSubplebbitOffline(subplebbit);
-
-  if (hidden || (!isOffline && !isOnlineStatusLoading)) {
-    return null;
-  }
-
-  return <div className={styles.offlineBoard}>{offlineTitle}</div>;
-};
-
 const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threadNumber, postCid, scrollY, subplebbitAddress }: ReplyModalProps) => {
   const { t } = useTranslation();
   const location = useLocation();
   const params = useParams();
   const isInAllView = isAllView(location.pathname);
+  const isInModView = isModView(location.pathname);
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, params);
   const directoryEntry = useDirectoryByAddress(subplebbitAddress);
   const showSpoilerForReply = directoryEntry?.features?.noSpoilerReplies !== true;
@@ -376,7 +365,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
           </button>
         </div>
         {lengthError ? <div className={styles.error}>{lengthError}</div> : error && <div className={styles.error}>{error}</div>}
-        <ReplyModalOfflineAlert hidden={isInAllView || isInSubscriptionsView} subplebbitAddress={subplebbitAddress} />
+        <BoardOfflineAlert className={styles.offlineBoard} hidden={isInAllView || isInSubscriptionsView || isInModView} subplebbitAddress={subplebbitAddress} />
       </div>
     </animated.div>
   );

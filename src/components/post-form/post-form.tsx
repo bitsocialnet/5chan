@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Comment, setAccount, useAccount, useAccountComment, useEditedComment } from '@bitsocialhq/bitsocial-react-hooks';
 import getShortAddress from '../../lib/get-short-address';
-import useSubplebbitsStore from '@bitsocialhq/bitsocial-react-hooks/dist/stores/subplebbits';
 import useSubplebbitsPagesStore from '@bitsocialhq/bitsocial-react-hooks/dist/stores/subplebbits-pages';
 import { getLinkMediaInfo } from '../../lib/utils/media-utils';
 import { isValidURL } from '../../lib/utils/url-utils';
@@ -13,28 +12,15 @@ import { useDirectories, useDirectoryByAddress } from '../../hooks/use-directori
 import useIsMobile from '../../hooks/use-is-mobile';
 import { useResolvedSubplebbitAddress } from '../../hooks/use-resolved-subplebbit-address';
 import useFetchGifFirstFrame from '../../hooks/use-fetch-gif-first-frame';
-import useIsSubplebbitOffline from '../../hooks/use-is-subplebbit-offline';
 import usePublishPost from '../../hooks/use-publish-post';
 import usePublishReply from '../../hooks/use-publish-reply';
 import { useFileUpload } from '../../hooks/use-file-upload';
 import { getShowUploadControls, isWebRuntime } from '../../lib/media-hosting/show-upload-controls';
 import useMediaHostingStore from '../../stores/use-media-hosting-store';
+import BoardOfflineAlert from '../board-offline-alert/board-offline-alert';
 import styles from './post-form.module.css';
 import capitalize from 'lodash/capitalize';
 import debounce from 'lodash/debounce';
-
-// Separate component for offline alert to isolate rerenders from updatingState
-// Only this component will rerender when updatingState changes, not the whole PostForm
-const OfflineAlert = ({ subplebbitAddress }: { subplebbitAddress: string | undefined }) => {
-  const subplebbit = useSubplebbitsStore((state) => (subplebbitAddress ? state.subplebbits[subplebbitAddress] : undefined));
-  const { isOffline, isOnlineStatusLoading, offlineTitle } = useIsSubplebbitOffline(subplebbit);
-
-  if (!isOffline && !isOnlineStatusLoading) {
-    return null;
-  }
-
-  return <div className={styles.offlineBoard}>{offlineTitle}</div>;
-};
 
 export const LinkTypePreviewer = ({ link }: { link: string }) => {
   const { t } = useTranslation();
@@ -539,7 +525,7 @@ const PostForm = () => {
   if (isMobile) {
     return (
       <div className={styles.postFormMobile}>
-        {shouldShowOfflineAlert && <OfflineAlert subplebbitAddress={subplebbitAddress} />}
+        {shouldShowOfflineAlert && <BoardOfflineAlert className={styles.offlineBoard} subplebbitAddress={subplebbitAddress} />}
         {isInModQueueView ? (
           <div className={styles.modQueueTitle}>{t('moderation_queue')}</div>
         ) : isThreadClosed ? (
@@ -563,7 +549,7 @@ const PostForm = () => {
 
   return (
     <div className={styles.postFormDesktop}>
-      {shouldShowOfflineAlert && <OfflineAlert subplebbitAddress={subplebbitAddress} />}
+      {shouldShowOfflineAlert && <BoardOfflineAlert className={styles.offlineBoard} subplebbitAddress={subplebbitAddress} />}
       {isInModQueueView ? (
         <div className={styles.modQueueTitle}>{t('moderation_queue')}</div>
       ) : isThreadClosed ? (

@@ -21,6 +21,7 @@ const testState = vi.hoisted(() => ({
   isMobile: false,
   isUploading: false,
   offlineTitle: '' as string | false,
+  offlineStates: {} as Record<string, { isOffline: boolean; isOnlineStatusLoading: boolean; offlineTitle: string | false }>,
   offlineStatusLoading: false,
   offlineWarningVisible: false,
   openEmpty: false,
@@ -30,6 +31,7 @@ const testState = vi.hoisted(() => ({
   quoteInsertSelectedText: '',
   replyIndex: undefined as number | undefined,
   resetPublishReplyOptionsMock: vi.fn(),
+  resolvedSubplebbitAddress: undefined as string | undefined,
   selectedText: 'selected text',
   setAccountMock: vi.fn(),
   setPublishReplyOptionsMock: vi.fn(),
@@ -77,11 +79,12 @@ vi.mock('@bitsocialhq/bitsocial-react-hooks/dist/stores/subplebbits', () => ({
 }));
 
 vi.mock('../../../hooks/use-is-subplebbit-offline', () => ({
-  default: () => ({
-    isOffline: testState.offlineWarningVisible,
-    isOnlineStatusLoading: testState.offlineStatusLoading,
-    offlineTitle: testState.offlineTitle,
-  }),
+  default: (subplebbit?: { address?: string }) =>
+    (subplebbit?.address ? testState.offlineStates[subplebbit.address] : undefined) || {
+      isOffline: testState.offlineWarningVisible,
+      isOnlineStatusLoading: testState.offlineStatusLoading,
+      offlineTitle: testState.offlineTitle,
+    },
 }));
 
 vi.mock('../../../stores/use-selected-text-store', () => ({
@@ -116,6 +119,11 @@ vi.mock('../../../stores/use-media-hosting-store', () => ({
 
 vi.mock('../../../hooks/use-directories', () => ({
   useDirectoryByAddress: (address: string) => testState.directoryByAddress[address],
+  normalizeBoardAddress: (address: string) => address.replace(/\.(bso|eth)$/, ''),
+}));
+
+vi.mock('../../../hooks/use-resolved-subplebbit-address', () => ({
+  useResolvedSubplebbitAddress: () => testState.resolvedSubplebbitAddress,
 }));
 
 vi.mock('../../../hooks/use-publish-reply', () => ({
@@ -185,7 +193,7 @@ const flushEffects = async (count = 4) => {
   }
 };
 
-const renderReplyModal = async (initialEntry = '/mu/thread/post-1') => {
+const renderReplyModal = async (initialEntry = '/mu/thread/post-1', subplebbitAddress = 'music-posting.eth') => {
   await act(async () => {
     root.render(
       createElement(
@@ -198,7 +206,7 @@ const renderReplyModal = async (initialEntry = '/mu/thread/post-1') => {
           postCid: 'post-cid',
           scrollY: 120,
           showReplyModal: true,
-          subplebbitAddress: 'music-posting.eth',
+          subplebbitAddress,
           threadNumber: 42,
         }),
       ),
@@ -243,6 +251,7 @@ describe('ReplyModal', () => {
     testState.isMobile = false;
     testState.isUploading = false;
     testState.offlineTitle = '';
+    testState.offlineStates = {};
     testState.offlineStatusLoading = false;
     testState.offlineWarningVisible = false;
     testState.openEmpty = false;
@@ -252,6 +261,7 @@ describe('ReplyModal', () => {
     testState.quoteInsertSelectedText = '';
     testState.replyIndex = undefined;
     testState.resetPublishReplyOptionsMock.mockReset();
+    testState.resolvedSubplebbitAddress = undefined;
     testState.selectedText = 'selected text';
     testState.setAccountMock.mockReset();
     testState.setPublishReplyOptionsMock.mockReset();
@@ -297,6 +307,29 @@ describe('ReplyModal', () => {
 
   it('does not render an offline warning when the shared offline hook reports the board as online', async () => {
     await renderReplyModal('/mu/thread/post-1');
+
+    expect(container.querySelector('[class*="offlineBoard"]')).toBeNull();
+    expect(container.textContent).not.toContain('subplebbit_offline_info');
+  });
+
+  it('prefers the resolved board entry when the modal prop address uses a different alias', async () => {
+    testState.offlineTitle = 'subplebbit_offline_info';
+    testState.offlineWarningVisible = true;
+    testState.resolvedSubplebbitAddress = 'music-posting.eth';
+    testState.subplebbits = {
+      'music-posting.eth': {
+        address: 'music-posting.eth',
+      },
+    };
+    testState.offlineStates = {
+      'music-posting.eth': {
+        isOffline: false,
+        isOnlineStatusLoading: false,
+        offlineTitle: '',
+      },
+    };
+
+    await renderReplyModal('/mu/thread/post-1', 'music-posting.bso');
 
     expect(container.querySelector('[class*="offlineBoard"]')).toBeNull();
     expect(container.textContent).not.toContain('subplebbit_offline_info');

@@ -82,6 +82,7 @@ vi.mock('../../../hooks/use-account-subplebbit-addresses', () => ({
 vi.mock('../../../hooks/use-directories', () => ({
   useDirectories: () => testState.directories,
   useDirectoryByAddress: (address: string | undefined) => testState.directories.find((entry) => entry.address === address),
+  normalizeBoardAddress: (address: string) => address.replace(/\.(bso|eth)$/, ''),
 }));
 
 vi.mock('../../../hooks/use-resolved-subplebbit-address', () => ({
