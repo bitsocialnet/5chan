@@ -1,4 +1,4 @@
-[![Build Status](https://img.shields.io/github/actions/workflow/status/bitsocialhq/5chan/test.yml?branch=master)](https://github.com/bitsocialhq/5chan/actions/workflows/test.yml)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/bitsocialhq/5chan/ci.yml?branch=master)](https://github.com/bitsocialhq/5chan/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/bitsocialhq/5chan)](https://github.com/bitsocialhq/5chan/releases/latest)
 [![License](https://img.shields.io/badge/license-GPL--2.0--only-red.svg)](https://github.com/bitsocialhq/5chan/blob/master/LICENSE)
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
