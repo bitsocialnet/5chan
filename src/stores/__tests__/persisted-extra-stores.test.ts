@@ -9,11 +9,10 @@ const loadBlotterVisibilityStore = async () => (await import('../use-blotter-vis
 const loadModQueueStore = async () => (await import('../use-mod-queue-store')).default;
 const loadPopularThreadsOptionsStore = async () => (await import('../use-popular-threads-options-store')).default;
 
-const loadSpecialThemeStore = async (isChristmas: boolean) => {
+const loadSpecialThemeStore = async (isoDate: string) => {
   vi.resetModules();
-  vi.doMock('../../lib/utils/time-utils', () => ({
-    isChristmas: () => isChristmas,
-  }));
+  vi.useFakeTimers();
+  vi.setSystemTime(new Date(isoDate));
   const module = await import('../use-special-theme-store');
   await flushMicrotasks();
   return module.default;
@@ -24,10 +23,11 @@ describe('persisted extra stores', () => {
     localStorage.clear();
     vi.resetModules();
     vi.clearAllMocks();
+    vi.useRealTimers();
   });
 
   afterEach(() => {
-    vi.doUnmock('../../lib/utils/time-utils');
+    vi.useRealTimers();
   });
 
   it('toggles blotter visibility and persists the hidden flag', async () => {
@@ -102,7 +102,7 @@ describe('persisted extra stores', () => {
       }),
     );
 
-    const useSpecialThemeStore = await loadSpecialThemeStore(false);
+    const useSpecialThemeStore = await loadSpecialThemeStore('2024-07-04T00:00:00Z');
 
     expect(useSpecialThemeStore.getState().isEnabled).toBeNull();
 
@@ -111,7 +111,7 @@ describe('persisted extra stores', () => {
   });
 
   it('allows opting into the special theme during christmas', async () => {
-    const useSpecialThemeStore = await loadSpecialThemeStore(true);
+    const useSpecialThemeStore = await loadSpecialThemeStore('2024-12-24T00:00:00Z');
 
     expect(useSpecialThemeStore.getState().isEnabled).toBeNull();
 
