@@ -5,7 +5,7 @@ import StyleSelector from '../style-selector/style-selector';
 import footerStyles from '../footer/footer.module.css';
 import styles from './board-pagination.module.css';
 
-export interface BoardPaginationProps {
+interface BoardPaginationProps {
   basePath: string;
   currentPage: number;
   totalPages: number;

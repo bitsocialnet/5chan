@@ -1,18 +1,18 @@
 import { registerPlugin } from '@capacitor/core';
 import type { ProviderAttempt, ProviderId } from '../lib/media-hosting/types';
 
-export interface PickAndUploadMediaOptions {
+interface PickAndUploadMediaOptions {
   providerOrder: ProviderId[];
 }
 
-export interface PickAndUploadMediaResult {
+interface PickAndUploadMediaResult {
   url: string;
   fileName: string;
   provider: ProviderId;
   attempts?: ProviderAttempt[];
 }
 
-export interface FileUploaderPlugin {
+interface FileUploaderPlugin {
   pickAndUploadMedia(options?: PickAndUploadMediaOptions): Promise<PickAndUploadMediaResult>;
 }
 

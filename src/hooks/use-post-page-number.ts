@@ -5,7 +5,7 @@ import { useDirectoryByAddress } from './use-directories';
 import { useBoardFeedPageSize } from './use-board-feed-page-size';
 import { findPostPageInFeed, findPostPageInLoadedBoardFeeds, type FeedsOptionsLike, type LoadedFeedsLike } from '../lib/utils/post-page-resolution';
 
-export interface UsePostPageNumberOptions {
+interface UsePostPageNumberOptions {
   subplebbitAddress: string | undefined;
   postCid: string | undefined;
   /** When false, page segment is excluded (e.g. pending-post view). When true, resolve and show page. */

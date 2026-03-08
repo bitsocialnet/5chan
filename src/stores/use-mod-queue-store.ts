@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-export type AlertThresholdUnit = 'hours' | 'minutes';
-export type ModQueueViewMode = 'compact' | 'feed';
+type AlertThresholdUnit = 'hours' | 'minutes';
+type ModQueueViewMode = 'compact' | 'feed';
 
 interface ModQueueState {
   alertThresholdValue: number;

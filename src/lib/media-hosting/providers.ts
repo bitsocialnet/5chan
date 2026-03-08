@@ -1,6 +1,6 @@
 import type { MediaHostingRuntime, ProviderId } from './types';
 
-export interface ProviderDefinition {
+interface ProviderDefinition {
   id: ProviderId;
   label: string;
   homepageUrl: string;
@@ -23,6 +23,3 @@ export const MEDIA_HOSTING_PROVIDERS: readonly ProviderDefinition[] = [
     supportedRuntimes: ['electron', 'android'],
   },
 ] as const;
-
-/** Provider IDs for ordering */
-export const PROVIDER_IDS: readonly ProviderId[] = MEDIA_HOSTING_PROVIDERS.map((p) => p.id);

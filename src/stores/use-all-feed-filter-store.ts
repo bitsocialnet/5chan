@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-export type AllFeedFilter = 'all' | 'nsfw' | 'sfw';
+type AllFeedFilter = 'all' | 'nsfw' | 'sfw';
 
 interface AllFeedFilterStore {
   filter: AllFeedFilter;

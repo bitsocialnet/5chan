@@ -19,7 +19,7 @@ const setCachedGifFrame = async (url: string, frameUrl: string): Promise<void> =
   await gifFrameDb.setItem(url, frameUrl);
 };
 
-export const fetchImage = (url: string): Promise<ArrayBuffer> => {
+const fetchImage = (url: string): Promise<ArrayBuffer> => {
   return new Promise((resolve, reject) => {
     const request = new XMLHttpRequest();
     request.open('GET', url, true);
@@ -35,7 +35,7 @@ export const fetchImage = (url: string): Promise<ArrayBuffer> => {
   });
 };
 
-export const readImage = (file: File): Promise<ArrayBuffer> => {
+const readImage = (file: File): Promise<ArrayBuffer> => {
   return new Promise((resolve) => {
     const reader = new FileReader();
     reader.onload = () => {

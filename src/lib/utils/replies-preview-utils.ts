@@ -1,6 +1,6 @@
 import { BOARD_REPLIES_PREVIEW_VISIBLE_COUNT } from '../constants';
 
-export interface CommentLike {
+interface CommentLike {
   cid?: string | null;
   index?: number;
   pendingApproval?: boolean;
@@ -35,7 +35,7 @@ export function getPreviewDisplayReplies<T extends CommentLike>(replies: T[], vi
     .map((t) => t.reply);
 }
 
-export interface ComputeOmittedParams {
+interface ComputeOmittedParams {
   totalReplyCount: number;
   visibleCount: number;
 }
@@ -49,7 +49,7 @@ export function computeOmittedCount({ totalReplyCount, visibleCount }: ComputeOm
   return Math.max(0, totalReplyCount - visibleCount);
 }
 
-export interface GetTotalReplyCountParams {
+interface GetTotalReplyCountParams {
   replyCount: number | undefined;
   fullLoadedCount: number;
   previewLoadedCount: number;

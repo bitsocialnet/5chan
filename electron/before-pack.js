@@ -147,7 +147,3 @@ export const downloadIpfsClients = async () => {
     await downloadAndExtract(url, ipfsClientLinuxPath);
   }
 };
-
-export default async (_context) => {
-  await downloadIpfsClients();
-};

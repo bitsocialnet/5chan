@@ -92,7 +92,7 @@ function getRuntime(): 'web' | 'electron' | 'android' {
   return 'web';
 }
 
-export interface UseFileUploadOptions {
+interface UseFileUploadOptions {
   onUploadComplete: (url: string, fileName: string) => void;
 }
 

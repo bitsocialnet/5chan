@@ -276,11 +276,11 @@ export const getMediaDimensions = memoize(
 
 const thumbnailUrlsDb = localForageLru.createInstance({ name: '5chanThumbnailUrls', size: 500 });
 
-export const getCachedThumbnail = async (url: string): Promise<string | null> => {
+const getCachedThumbnail = async (url: string): Promise<string | null> => {
   return await thumbnailUrlsDb.getItem(url);
 };
 
-export const setCachedThumbnail = async (url: string, thumbnail: string): Promise<void> => {
+const setCachedThumbnail = async (url: string, thumbnail: string): Promise<void> => {
   await thumbnailUrlsDb.setItem(url, thumbnail);
 };
 

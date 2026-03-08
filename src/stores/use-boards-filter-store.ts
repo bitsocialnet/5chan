@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-export type BoardFilter = 'all' | 'nsfw' | 'worksafe';
+type BoardFilter = 'all' | 'nsfw' | 'worksafe';
 
 interface BoardsFilterStore {
   useCatalogLinks: boolean;

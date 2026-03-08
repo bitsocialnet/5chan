@@ -1,1 +1,1 @@
-export { LinkTypePreviewer, default } from './post-form';
+export { default } from './post-form';

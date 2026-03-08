@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import type { DirectoryCommunity } from './use-directories';
 import { computeGuiPostsPerPage, getBoardFeedPageSizeConstants, type CommunityWithPostsPerPage } from '../lib/utils/board-feed-pagination';
 
-export type BoardFeedPageSize = ReturnType<typeof getBoardFeedPageSizeConstants>;
+type BoardFeedPageSize = ReturnType<typeof getBoardFeedPageSizeConstants>;
 
 /**
  * Compute board feed page-size values from directory community.

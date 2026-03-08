@@ -13,7 +13,7 @@ export interface CatalogPost {
 }
 
 /** Sort types supported by the catalog feed */
-export type CatalogSortType = 'active' | 'new' | 'replyCount';
+type CatalogSortType = 'active' | 'new' | 'replyCount';
 
 /**
  * Sort catalog feed for display.

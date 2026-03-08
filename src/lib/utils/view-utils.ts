@@ -1,6 +1,6 @@
 import { isBoardModRoute, isModQueueRoute } from './route-utils';
 
-export type ParamsType = {
+type ParamsType = {
   accountCommentIndex?: string;
   boardIdentifier?: string;
   commentCid?: string;

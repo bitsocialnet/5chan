@@ -2,7 +2,7 @@ import type { ProviderAttempt } from './types';
 
 export type { ProviderAttempt } from './types';
 
-export type TranslateFn = (key: string) => string;
+type TranslateFn = (key: string) => string;
 
 function formatSingleAttempt(a: ProviderAttempt): string {
   const base = `${a.provider}: ${a.error ?? 'unknown'}`;

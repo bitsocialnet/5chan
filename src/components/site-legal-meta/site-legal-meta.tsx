@@ -1,8 +1,8 @@
 import Version from '../version';
 
-export type SiteLegalMetaOrder = 'version-first' | 'license-first';
+type SiteLegalMetaOrder = 'version-first' | 'license-first';
 
-export type SiteLegalMetaProps = {
+type SiteLegalMetaProps = {
   /** Order of blocks: version-first (homepage) or license-first (board/post footer) */
   order?: SiteLegalMetaOrder;
 };

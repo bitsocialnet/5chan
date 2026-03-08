@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useSubplebbitStats } from '@bitsocialhq/bitsocial-react-hooks';
 import { create } from 'zustand';
 
-export type SubplebbitsStatsState = {
+type SubplebbitsStatsState = {
   subplebbitsStats: { [subplebbitAddress: string]: any };
   setSubplebbitStats: (subplebbitAddress: string, stats: any) => void;
 };

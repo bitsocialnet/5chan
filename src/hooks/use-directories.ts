@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import directoriesData from '../data/5chan-directories.json';
 
-export interface DirectoriesMetadata {
+interface DirectoriesMetadata {
   title: string;
   description: string;
   createdAt: number;
@@ -36,7 +36,7 @@ export interface DirectoriesData {
   communities: DirectoryCommunity[];
 }
 
-export interface DirectoriesState {
+interface DirectoriesState {
   communities: DirectoryCommunity[];
   loading: boolean;
   error: Error | null;

@@ -54,28 +54,38 @@ const PopularThreadCard = memo(
   (prevProps, nextProps) => prevProps.post?.cid === nextProps.post?.cid && prevProps.boardTitle === nextProps.boardTitle && prevProps.boardPath === nextProps.boardPath,
 );
 
-const PopularThreadsBox = ({ directories, subplebbits }: { directories: DirectoryCommunity[]; subplebbits: any }) => {
+const PopularThreadsBox = ({
+  directories,
+  directoryAddresses,
+  subplebbits,
+}: {
+  directories: DirectoryCommunity[];
+  directoryAddresses: string[];
+  subplebbits: Array<Subplebbit | undefined>;
+}) => {
   const { t } = useTranslation();
   const { showWorksafeContentOnly, showNsfwContentOnly } = usePopularThreadsOptionsStore();
 
-  const filteredSubplebbits = useMemo(() => {
-    if (showWorksafeContentOnly) {
-      return subplebbits.filter((sub: Subplebbit) => {
-        const directoryEntry = findDirectoryByAddress(directories, sub?.address);
-        return directoryEntry ? !directoryEntry.nsfw : true;
-      });
-    }
-    if (showNsfwContentOnly) {
-      return subplebbits.filter((sub: Subplebbit) => {
-        const directoryEntry = findDirectoryByAddress(directories, sub?.address);
-        return directoryEntry ? directoryEntry.nsfw : false;
-      });
-    }
-    return subplebbits;
-  }, [subplebbits, showWorksafeContentOnly, showNsfwContentOnly, directories]);
+  const { filteredBoardAddresses, filteredSubplebbits } = useMemo(() => {
+    const filteredEntries = directoryAddresses.flatMap((address, index) => {
+      const directoryEntry = findDirectoryByAddress(directories, address);
+      if (showWorksafeContentOnly && directoryEntry?.nsfw) {
+        return [];
+      }
+      if (showNsfwContentOnly && !directoryEntry?.nsfw) {
+        return [];
+      }
 
-  const { popularPosts } = usePopularPosts(filteredSubplebbits);
-  const isLoading = popularPosts.length === 0;
+      return [{ address, subplebbit: subplebbits[index] }];
+    });
+
+    return {
+      filteredBoardAddresses: filteredEntries.map((entry) => entry.address),
+      filteredSubplebbits: filteredEntries.map((entry) => entry.subplebbit),
+    };
+  }, [directories, directoryAddresses, showNsfwContentOnly, showWorksafeContentOnly, subplebbits]);
+
+  const { popularPosts, isLoading } = usePopularPosts(filteredSubplebbits, filteredBoardAddresses);
 
   return (
     <div className={styles.box}>

@@ -18,7 +18,7 @@ import styles from './footer.module.css';
  * Main page footer wrapper: hr, first row slot, BoardsBar, SiteLegalMeta.
  * -------------------------------------------------------------------------- */
 
-export interface PageFooterDesktopProps {
+interface PageFooterDesktopProps {
   /** Mode-specific first row content (e.g. board pagination or thread controls) */
   firstRow: React.ReactNode;
   /** Optional row between first row and BoardsBar (e.g. style selector on thread page) */
@@ -61,7 +61,7 @@ export const StyleOnlyFooterFirstRow = () => {
  * Catalog footer first row: Return, Archive, Top, Refresh on left; Style selector on right.
  * -------------------------------------------------------------------------- */
 
-export interface CatalogFooterFirstRowProps {
+interface CatalogFooterFirstRowProps {
   subplebbitAddress?: string;
   isInAllView?: boolean;
   isInSubscriptionsView?: boolean;
@@ -114,7 +114,7 @@ export const ThreadFooterStyleRow = () => {
  * Thread page footer first row: Return, Catalog, Top, Update, Auto, Post a Reply, stats.
  * -------------------------------------------------------------------------- */
 
-export interface ThreadFooterFirstRowProps {
+interface ThreadFooterFirstRowProps {
   postCid: string;
   threadNumber: number | undefined;
   subplebbitAddress: string;
@@ -193,7 +193,7 @@ export const PageFooterMobile = ({ children }: { children: React.ReactNode }) =>
  * Mobile thread page footer: Post a Reply, Return/Catalog/Top, Update/Auto, stats.
  * -------------------------------------------------------------------------- */
 
-export interface ThreadFooterMobileProps {
+interface ThreadFooterMobileProps {
   postCid: string;
   threadNumber: number | undefined;
   subplebbitAddress: string;
