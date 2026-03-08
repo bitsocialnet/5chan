@@ -1,0 +1,344 @@
+import * as React from 'react';
+import { createElement } from 'react';
+import { createRoot, type Root } from 'react-dom/client';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import CommentContent from '../comment-content';
+
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
+
+type TestComment = {
+  author?: {
+    subplebbit?: {
+      banExpiresAt?: number;
+    };
+  };
+  cid?: string;
+  commentModeration?: {
+    purged?: boolean;
+  };
+  content?: string;
+  deleted?: boolean;
+  edit?: {
+    timestamp: number;
+  };
+  number?: number;
+  original?: {
+    content?: string;
+  };
+  parentCid?: string;
+  pendingApproval?: boolean;
+  postCid?: string;
+  quotedCids?: string[];
+  reason?: string;
+  removed?: boolean;
+  state?: string;
+  subplebbitAddress?: string;
+};
+
+const testState = vi.hoisted(() => ({
+  commentsByCid: {} as Record<string, TestComment>,
+  formattedDate: '2024-01-01 12:00:00',
+  formattedTimeAgo: '2 hours ago',
+  isMobile: false,
+  params: {} as Record<string, string>,
+  pathname: '/mu',
+  postNumbers: {} as Record<string, number>,
+  stateString: 'Publishing',
+  unavailableCids: new Set<string>(),
+}));
+
+vi.mock('react-i18next', () => ({
+  Trans: ({ components, i18nKey, values }: { components?: Record<number, React.ReactElement>; i18nKey: string; values?: Record<string, unknown> }) =>
+    createElement(
+      'span',
+      { 'data-testid': `trans-${i18nKey}` },
+      values?.timestamp ? `${i18nKey}:${values.timestamp}` : i18nKey,
+      components?.[1]
+        ? React.cloneElement(components[1], {
+            'data-testid': `trans-action-${i18nKey}`,
+            children: i18nKey,
+          })
+        : null,
+    ),
+  useTranslation: () => ({
+    t: (key: string, options?: Record<string, unknown>) => {
+      if (key === 'reason_reason') {
+        return `reason:${options?.reason}`;
+      }
+      if (key === 'ban_expires_at') {
+        return `ban:${options?.address}:${options?.timestamp}`;
+      }
+      return key;
+    },
+  }),
+}));
+
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom');
+  return {
+    ...actual,
+    useLocation: () => ({ pathname: testState.pathname }),
+    useParams: () => testState.params,
+  };
+});
+
+vi.mock('@bitsocialhq/bitsocial-react-hooks', () => ({
+  useComment: ({ commentCid }: { commentCid?: string }) => (commentCid ? testState.commentsByCid[commentCid] : undefined),
+}));
+
+vi.mock('@bitsocialhq/bitsocial-react-hooks/dist/stores/subplebbits-pages', () => ({
+  default: (selector: (state: { comments: Record<string, TestComment> }) => unknown) =>
+    selector({
+      comments: testState.commentsByCid,
+    }),
+}));
+
+vi.mock('../../../stores/use-post-number-store', () => ({
+  default: (selector: (state: { cidToNumber: Record<string, number> }) => unknown) =>
+    selector({
+      cidToNumber: testState.postNumbers,
+    }),
+}));
+
+vi.mock('../../../lib/get-short-address', () => ({
+  default: (address?: string) => `short:${address}`,
+}));
+
+vi.mock('../../../lib/utils/time-utils', () => ({
+  getFormattedDate: () => testState.formattedDate,
+  getFormattedTimeAgo: () => testState.formattedTimeAgo,
+}));
+
+vi.mock('../../../lib/utils/quote-link-utils', () => ({
+  isUnavailableQuoteTarget: (comment?: TestComment) => Boolean(comment?.cid && testState.unavailableCids.has(comment.cid)),
+}));
+
+vi.mock('../../../hooks/use-is-mobile', () => ({
+  default: () => testState.isMobile,
+}));
+
+vi.mock('../../../hooks/use-state-string', () => ({
+  default: () => testState.stateString,
+}));
+
+vi.mock('../../loading-ellipsis', () => ({
+  default: ({ string }: { string: string }) => createElement('span', { 'data-testid': 'loading-ellipsis' }, string),
+}));
+
+vi.mock('../../reply-quote-preview', () => ({
+  default: ({
+    isOP,
+    isQuotelinkReply,
+    isQuotelinkUnavailable,
+    quotelinkNumber,
+    quotelinkReply,
+  }: {
+    isOP?: boolean;
+    isQuotelinkReply?: boolean;
+    isQuotelinkUnavailable?: boolean;
+    quotelinkNumber?: number;
+    quotelinkReply?: TestComment;
+  }) =>
+    createElement(
+      'span',
+      {
+        'data-number': quotelinkNumber,
+        'data-op': String(Boolean(isOP)),
+        'data-testid': isQuotelinkReply ? 'reply-quote-preview' : 'quote-preview',
+        'data-unavailable': String(Boolean(isQuotelinkUnavailable)),
+      },
+      quotelinkReply?.cid || `quote:${quotelinkNumber}`,
+    ),
+}));
+
+vi.mock('../../markdown', () => ({
+  default: ({ content }: { content?: string }) => createElement('div', { 'data-testid': 'markdown' }, content),
+}));
+
+vi.mock('../../tooltip', () => ({
+  default: ({ children, content }: { children?: React.ReactNode; content: string }) => createElement('span', { 'data-testid': 'tooltip', title: content }, children),
+}));
+
+let container: HTMLDivElement;
+let root: Root;
+
+const renderContent = async (comment: TestComment) => {
+  await act(async () => {
+    root.render(createElement(CommentContent, { comment } as any));
+  });
+};
+
+const queryMarkdownText = () => Array.from(container.querySelectorAll('[data-testid="markdown"]')).map((node) => node.textContent ?? '');
+
+describe('CommentContent', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    testState.commentsByCid = {};
+    testState.formattedDate = '2024-01-01 12:00:00';
+    testState.formattedTimeAgo = '2 hours ago';
+    testState.isMobile = false;
+    testState.params = {};
+    testState.pathname = '/mu';
+    testState.postNumbers = {};
+    testState.stateString = 'Publishing';
+    testState.unavailableCids = new Set<string>();
+
+    container = document.createElement('div');
+    document.body.appendChild(container);
+    root = createRoot(container);
+  });
+
+  afterEach(() => {
+    act(() => root.unmount());
+    container.remove();
+  });
+
+  it('renders quote previews for replies and filters out inline quoted numbers', async () => {
+    testState.commentsByCid = {
+      'quoted-1': { cid: 'quoted-1', number: 11 },
+      'quoted-2': { cid: 'quoted-2', number: 12 },
+    };
+    testState.postNumbers = {
+      'quoted-1': 11,
+      'quoted-2': 12,
+    };
+
+    await renderContent({
+      cid: 'reply-1',
+      content: '>>11 already referenced inline',
+      parentCid: 'quoted-1',
+      postCid: 'post-1',
+      quotedCids: ['quoted-1', 'quoted-2'],
+    });
+
+    const previews = container.querySelectorAll('[data-testid="reply-quote-preview"]');
+    expect(previews).toHaveLength(1);
+    expect(previews[0]?.textContent).toBe('quoted-2');
+  });
+
+  it('truncates long comments outside the post view and expands them on demand', async () => {
+    const longComment = 'x'.repeat(1105);
+
+    await renderContent({
+      cid: 'post-1',
+      content: longComment,
+      postCid: 'post-1',
+    });
+
+    expect(queryMarkdownText()[0]).toHaveLength(1000);
+
+    const expandButton = container.querySelector('[data-testid="trans-action-comment_too_long"]');
+    expect(expandButton).toBeTruthy();
+
+    await act(async () => {
+      expandButton?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    expect(queryMarkdownText()[0]).toHaveLength(1105);
+  });
+
+  it('shows and hides the original content for edited comments', async () => {
+    await renderContent({
+      cid: 'post-1',
+      content: 'edited body',
+      edit: {
+        timestamp: 1_704_067_200,
+      },
+      original: {
+        content: 'original body',
+      },
+      postCid: 'post-1',
+      reason: 'typo',
+    });
+
+    expect(queryMarkdownText()).toEqual(['edited body']);
+    expect(container.textContent).toContain('comment_edited_at_timestamp:2024-01-01 12:00:00');
+    expect(container.textContent).toContain('reason:typo');
+
+    const showOriginal = container.querySelector('[data-testid="trans-action-click_here_to_show_original"]');
+    expect(showOriginal).toBeTruthy();
+
+    await act(async () => {
+      showOriginal?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    expect(queryMarkdownText()).toEqual(['original body']);
+
+    const hideOriginal = container.querySelector('[data-testid="trans-action-click_here_to_hide_original"]');
+    await act(async () => {
+      hideOriginal?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    expect(queryMarkdownText()).toEqual(['edited body']);
+  });
+
+  it('renders moderation and deletion states with the expected messaging', async () => {
+    await renderContent({
+      cid: 'post-1',
+      commentModeration: {
+        purged: true,
+      },
+      content: 'ignored',
+      postCid: 'post-1',
+    });
+    expect(container.textContent).toContain('This_post_was_purged');
+
+    await renderContent({
+      cid: 'post-2',
+      content: 'ignored',
+      postCid: 'post-2',
+      reason: 'spam',
+      removed: true,
+    });
+    expect(container.textContent).toContain('this_post_was_removed');
+    expect(container.textContent).toContain('Reason: "spam"');
+
+    await renderContent({
+      cid: 'post-3',
+      content: 'ignored',
+      deleted: true,
+      postCid: 'post-3',
+      reason: 'self-delete',
+    });
+    expect(container.textContent).toContain('user_deleted_this_post');
+    expect(container.textContent).toContain('Reason: "self-delete"');
+  });
+
+  it('renders pending approval, ban details, and loading or failed states', async () => {
+    await renderContent({
+      author: {
+        subplebbit: {
+          banExpiresAt: 1_704_067_200,
+        },
+      },
+      cid: 'post-1',
+      content: 'queued body',
+      pendingApproval: true,
+      postCid: 'post-1',
+      reason: 'rules violation',
+      subplebbitAddress: 'music-posting.eth',
+    });
+
+    expect(container.textContent).toContain('pending_mod_approval');
+    const tooltip = container.querySelector('[data-testid="tooltip"]');
+    expect(tooltip?.getAttribute('title')).toContain('ban:short:music-posting.eth:2024-01-01 12:00:00');
+
+    testState.stateString = 'Failed to publish';
+    await renderContent({
+      content: 'still pending',
+      postCid: 'post-2',
+      state: 'failed',
+    });
+    expect(container.textContent).toContain('Failed to publish');
+    expect(container.querySelector('[data-testid="loading-ellipsis"]')).toBeNull();
+
+    testState.stateString = 'Publishing';
+    await renderContent({
+      content: 'still pending',
+      postCid: 'post-3',
+      state: 'publishing',
+    });
+    expect(container.querySelector('[data-testid="loading-ellipsis"]')?.textContent).toBe('Publishing');
+  });
+});

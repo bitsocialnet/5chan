@@ -271,7 +271,7 @@ const CommentContent = ({ comment: post }: { comment: Comment }) => {
           </Tooltip>
         </span>
       )}
-      {!cid && !hasFailedState && (
+      {!cid && (
         <>
           <br />
           <br />
