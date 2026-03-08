@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import packageJson from '../../../../../package.json';
 import InterfaceSettings from '../interface-settings';
 import useFeedViewSettingsStore from '../../../../stores/use-feed-view-settings-store';
+import { INTERFACE_LANGUAGE_STORAGE_KEY } from '../../../../lib/constants';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
@@ -155,6 +156,7 @@ describe('InterfaceSettings', () => {
     });
 
     expect(testState.changeLanguageMock).toHaveBeenCalledWith('fr');
+    expect(localStorage.getItem(INTERFACE_LANGUAGE_STORAGE_KEY)).toBe('fr');
   });
 
   it('disables the update button while fetching and restores it afterward', async () => {

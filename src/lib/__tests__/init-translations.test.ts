@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { DEFAULT_INTERFACE_LANGUAGE, INTERFACE_LANGUAGE_STORAGE_KEY } from '../constants';
 
 const testState = vi.hoisted(() => {
   const i18next = {
@@ -47,10 +48,15 @@ describe('init-translations', () => {
     expect(testState.i18next.use).toHaveBeenNthCalledWith(3, testState.reactPlugin);
     expect(testState.i18next.init).toHaveBeenCalledWith(
       expect.objectContaining({
-        fallbackLng: 'en',
+        fallbackLng: DEFAULT_INTERFACE_LANGUAGE,
         ns: ['default'],
         defaultNS: 'default',
         backend: { loadPath: './translations/{{lng}}/{{ns}}.json' },
+        detection: {
+          order: ['localStorage'],
+          caches: ['localStorage'],
+          lookupLocalStorage: INTERFACE_LANGUAGE_STORAGE_KEY,
+        },
       }),
     );
     expect(testState.i18next.init.mock.calls[0]?.[0]?.supportedLngs).toContain('en');

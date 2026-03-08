@@ -6,6 +6,7 @@ import capitalize from 'lodash/capitalize';
 import useExpandedMediaStore from '../../../stores/use-expanded-media-store';
 import useFeedViewSettingsStore from '../../../stores/use-feed-view-settings-store';
 import Version from '../../version';
+import { INTERFACE_LANGUAGE_STORAGE_KEY, SUPPORTED_INTERFACE_LANGUAGES } from '../../../lib/constants';
 
 const commitRef = process.env.VITE_COMMIT_REF;
 const isElectron = window.electronApi?.isElectron === true;
@@ -67,21 +68,20 @@ const CheckForUpdates = () => {
   );
 };
 
-// prettier-ignore
-const availableLanguages = ['ar', 'bn', 'cs', 'da', 'de', 'el', 'en', 'es', 'fa', 'fi', 'fil', 'fr', 'he', 'hi', 'hu', 'id', 'it', 'ja', 'ko', 'mr', 'nl', 'no', 'pl', 'pt', 'ro', 'ru', 'sq', 'sv', 'te', 'th', 'tr', 'uk', 'ur', 'vi', 'zh'];
-
 const InterfaceLanguage = () => {
   const { i18n } = useTranslation();
   const { changeLanguage, language } = i18n;
 
   const onSelectLanguage = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    changeLanguage(e.target.value);
+    const selectedLanguage = e.target.value;
+    localStorage.setItem(INTERFACE_LANGUAGE_STORAGE_KEY, selectedLanguage);
+    changeLanguage(selectedLanguage);
   };
 
   return (
     <div className={styles.languageSettings}>
       <select value={language} onChange={onSelectLanguage}>
-        {availableLanguages.map((lang) => (
+        {SUPPORTED_INTERFACE_LANGUAGES.map((lang) => (
           <option key={lang} value={lang}>
             {lang}
           </option>
