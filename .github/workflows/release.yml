@@ -13,12 +13,49 @@ env:
   HUSKY: '0'
 
 jobs:
+  preflight:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Node.js v22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'yarn'
+      - name: Install dependencies
+        run: |
+          for i in 1 2 3; do
+            echo "yarn install attempt $i"
+            yarn install --frozen-lockfile --ignore-engines --network-timeout 100000 --network-concurrency 1 && break
+            sleep 5
+            [ "$i" = "3" ] && exit 1
+          done
+      - name: Run Vitest
+        run: yarn test --run
+      - name: Lint
+        run: yarn lint
+      - name: Type check
+        run: yarn type-check
+      - name: Build React app
+        run: CI='' NODE_ENV=production yarn build
+      - name: Run React Doctor
+        run: yarn doctor
+      - name: Install Chromium for smoke tests
+        run: npx playwright install --with-deps chromium
+      - name: Smoke test built web app
+        run: node scripts/smoke-web-app.js --start-preview
+
   linux:
     strategy:
       fail-fast: false
       matrix:
         arch: [x64, arm64]
     runs-on: ubuntu-22.04
+    needs: preflight
     permissions:
       contents: write
     steps:
@@ -85,6 +122,7 @@ jobs:
           - runner: macos-latest # Apple Silicon arm64
             arch: arm64
     runs-on: ${{ matrix.runner }}
+    needs: preflight
     permissions:
       contents: write
     steps:
@@ -154,6 +192,7 @@ jobs:
 
   windows:
     runs-on: windows-2022
+    needs: preflight
     permissions:
       contents: write
     steps:
@@ -195,6 +234,7 @@ jobs:
 
   android:
     runs-on: ubuntu-22.04
+    needs: preflight
     permissions:
       contents: write
     steps:
