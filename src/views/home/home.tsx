@@ -132,13 +132,8 @@ export const Footer = () => {
     <>
       <ul className={styles.footer}>
         <li>
-          <a href='https://github.com/bitsocialhq/5chan/blob/master/README.md' target='_blank' rel='noopener noreferrer'>
+          <a href='https://bitsocial.net' target='_blank' rel='noopener noreferrer'>
             {t('about')}
-          </a>
-        </li>
-        <li>
-          <a href='https://t.me/fivechandev' target='_blank' rel='noopener noreferrer'>
-            {t('updates')}
           </a>
         </li>
         <li>
@@ -148,13 +143,13 @@ export const Footer = () => {
           <Link to='/rules'>Rules</Link>
         </li>
         <li>
-          <a href='https://t.me/plebbit' target='_blank' rel='noopener noreferrer'>
-            Telegram
+          <a href='https://x.com/5chanapp' target='_blank' rel='noopener noreferrer'>
+            Twitter/X
           </a>
         </li>
         <li>
-          <a href='https://github.com/bitsocialhq/5chan' target='_blank' rel='noopener noreferrer'>
-            GitHub
+          <a href='https://t.me/bitsocial' target='_blank' rel='noopener noreferrer'>
+            Telegram
           </a>
         </li>
         <li>
@@ -163,8 +158,8 @@ export const Footer = () => {
           </a>
         </li>
         <li>
-          <a href='https://github.com/plebbit/whitepaper/discussions/2' target='_blank' rel='noopener noreferrer'>
-            {t('whitepaper')}
+          <a href='https://github.com/bitsocialhq/5chan' target='_blank' rel='noopener noreferrer'>
+            Source Code
           </a>
         </li>
       </ul>
