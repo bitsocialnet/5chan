@@ -75,7 +75,7 @@ describe('use-state-string', () => {
     container.remove();
   });
 
-  it('formats client state strings with normalized hostnames', () => {
+  it('formats client state strings with friendly names and via IPFS', () => {
     testState.clientsStates = {
       'fetching-ipns': ['https://rpc.example.com/path', 'https://ipfs.io/api'],
       'resolving-address': ['https://ens.example.com'],
@@ -85,19 +85,19 @@ describe('use-state-string', () => {
       root.render(createElement(StateStringHarness, { value: { state: 'updating' } }));
     });
 
-    expect(latestValue).toBe('Fetching IPNS from rpc.example.com, ipfs.io, resolving address from ens.example.com');
+    expect(latestValue).toBe('Resolving address, downloading board via IPFS');
   });
 
   it('falls back to publishing and updating states when no client states are available', () => {
     act(() => {
       root.render(createElement(StateStringHarness, { value: { publishingState: 'fetching-ipfs', state: 'publishing' } }));
     });
-    expect(latestValue).toBe('Downloading thread');
+    expect(latestValue).toBe('Downloading thread via IPFS');
 
     act(() => {
       root.render(createElement(StateStringHarness, { value: { state: 'updating', updatingState: 'fetching-ipns' } }));
     });
-    expect(latestValue).toBe('Downloading board');
+    expect(latestValue).toBe('Downloading board via IPFS');
   });
 
   it('sanitizes single-board feed state strings to board wording', () => {
@@ -110,7 +110,7 @@ describe('use-state-string', () => {
       root.render(createElement(FeedStateStringHarness, { addresses: ['music-posting.eth'] }));
     });
 
-    expect(latestValue).toBe('Downloading board');
+    expect(latestValue).toBe('Downloading board via IPFS');
   });
 
   it('aggregates multi-board feed states across address resolution, threads, and pages', () => {
@@ -137,7 +137,7 @@ describe('use-state-string', () => {
       root.render(createElement(FeedStateStringHarness, { addresses: ['music-posting.eth', 'tech-posting.eth'] }));
     });
 
-    expect(latestValue).toBe('Resolving 2 addresses from ens.example.com, downloading 2 boards, 1 threads, 1 page from gateway.example.com, ipfs.io');
+    expect(latestValue).toBe('Resolving 2 board addresses, downloading 2 boards (music-posting.eth, tech-posting.eth), 1 thread, 1 page via IPFS');
   });
 
   it('shows an immediate board-specific loading string before detailed multi-board states arrive', () => {
@@ -145,6 +145,17 @@ describe('use-state-string', () => {
       root.render(createElement(FeedStateStringHarness, { addresses: ['music-posting.eth', 'tech-posting.eth'] }));
     });
 
-    expect(latestValue).toBe('Downloading 2 boards');
+    expect(latestValue).toBe('Downloading 2 boards (music-posting.eth, tech-posting.eth)');
+  });
+
+  it('shortens long hash addresses in board list using getShortAddress', () => {
+    const longAddr1 = 'AdnytMQQMvAkG3XbzoVyAE6YLmHuG3UDigUC';
+    const longAddr2 = 'NFgjQWX2EUEsZbzoVyAE6YLmHuG3UDigUCxx';
+
+    act(() => {
+      root.render(createElement(FeedStateStringHarness, { addresses: [longAddr1, longAddr2] }));
+    });
+
+    expect(latestValue).toBe('Downloading 2 boards (MvAkG3XbzoVy, EUEsZbzoVyAE)');
   });
 });
