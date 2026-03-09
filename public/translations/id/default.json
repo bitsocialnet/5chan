@@ -211,7 +211,6 @@
   "moderator_of_this_board": "Pengguna ini adalah moderator papan ini",
   "administrator_of_this_board": "Pengguna ini adalah administrator papan ini",
   "copy_content_id": "salin ID konten",
-  "updates": "Pembaruan",
   "downloading_board": "mengunduh forum",
   "subscriptions_subtitle": "Anda berlangganan {{count}} boards",
   "all_boards": "Semua papan",
@@ -299,5 +298,6 @@
   "images": "gambar",
   "load_more": "Muat lebih banyak",
   "purged": "dihapus",
-  "this_post_was_purged": "Menghapus dari database board — proses ini tidak dapat dibatalkan."
+  "this_post_was_purged": "Menghapus dari database board — proses ini tidak dapat dibatalkan.",
+  "news": "Berita"
 }

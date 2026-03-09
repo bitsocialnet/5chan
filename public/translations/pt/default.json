@@ -211,7 +211,6 @@
   "moderator_of_this_board": "Este usuário é moderador deste quadro",
   "administrator_of_this_board": "Este usuário é administrador deste quadro",
   "copy_content_id": "Copiar ID do conteúdo",
-  "updates": "Atualizações",
   "downloading_board": "baixando fórum",
   "subscriptions_subtitle": "Você está inscrito em {{count}} boards",
   "all_boards": "Todos os quadros",
@@ -299,5 +298,6 @@
   "images": "imagens",
   "load_more": "Carregar mais",
   "purged": "purgado",
-  "this_post_was_purged": "Removendo do banco de dados do board — este processo é irreversível."
+  "this_post_was_purged": "Removendo do banco de dados do board — este processo é irreversível.",
+  "news": "Notícias"
 }

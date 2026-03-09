@@ -211,7 +211,6 @@
   "moderator_of_this_board": "Acest utilizator este moderator al acestui forum",
   "administrator_of_this_board": "Acest utilizator este administrator al acestui forum",
   "copy_content_id": "copiați ID-ul conținutului",
-  "updates": "Actualizări",
   "downloading_board": "se descarcă forumul",
   "subscriptions_subtitle": "Ești abonat la {{count}} boards",
   "all_boards": "Toate panourile",
@@ -299,5 +298,6 @@
   "images": "imagini",
   "load_more": "Încarcă mai mult",
   "purged": "șters",
-  "this_post_was_purged": "Ștergere din baza de date a board-ului — acest proces este ireversibil."
+  "this_post_was_purged": "Ștergere din baza de date a board-ului — acest proces este ireversibil.",
+  "news": "Știri"
 }

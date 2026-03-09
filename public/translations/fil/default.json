@@ -211,7 +211,6 @@
   "moderator_of_this_board": "Ang user na ito ay moderator ng board na ito",
   "administrator_of_this_board": "Ang user na ito ay administrator ng board na ito",
   "copy_content_id": "kopyahin ang content ID",
-  "updates": "Mga Update",
   "downloading_board": "nagda-download ng board",
   "subscriptions_subtitle": "Naka-subscribe ka sa {{count}} na boards",
   "all_boards": "Lahat ng boards",
@@ -299,5 +298,6 @@
   "images": "mga larawan",
   "load_more": "Mag-load ng higit pa",
   "purged": "nabura",
-  "this_post_was_purged": "Tinatanggal sa database ng board — hindi na mababawi ang prosesong ito."
+  "this_post_was_purged": "Tinatanggal sa database ng board — hindi na mababawi ang prosesong ito.",
+  "news": "Balita"
 }

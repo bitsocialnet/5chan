@@ -211,7 +211,6 @@
   "moderator_of_this_board": "Denne bruger er moderator for dette board",
   "administrator_of_this_board": "Denne bruger er administrator for dette board",
   "copy_content_id": "kopier indhold-ID",
-  "updates": "Opdateringer",
   "downloading_board": "downloader forum",
   "subscriptions_subtitle": "Du er abonneret på {{count}} boards",
   "all_boards": "Alle tavler",
@@ -299,5 +298,6 @@
   "images": "billeder",
   "load_more": "Indlæs mere",
   "purged": "slettet",
-  "this_post_was_purged": "Sletter fra board-databasen — denne proces er irreversibel."
+  "this_post_was_purged": "Sletter fra board-databasen — denne proces er irreversibel.",
+  "news": "Nyheder"
 }

@@ -211,7 +211,6 @@
   "moderator_of_this_board": "Tämä käyttäjä on tämän taulun moderaattori",
   "administrator_of_this_board": "Tämä käyttäjä on tämän taulun järjestelmänvalvoja",
   "copy_content_id": "kopioi sisältö-ID",
-  "updates": "Päivitykset",
   "downloading_board": "ladataan foorumia",
   "subscriptions_subtitle": "Olet tilannut {{count}} boards",
   "all_boards": "Kaikki taulut",
@@ -299,5 +298,6 @@
   "images": "kuvat",
   "load_more": "Lataa lisää",
   "purged": "tyhjennetty",
-  "this_post_was_purged": "Poistetaan taulun tietokannasta — tämä prosessi on peruuttamaton."
+  "this_post_was_purged": "Poistetaan taulun tietokannasta — tämä prosessi on peruuttamaton.",
+  "news": "Uutiset"
 }

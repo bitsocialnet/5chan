@@ -211,7 +211,6 @@
   "moderator_of_this_board": "Deze gebruiker is moderator van dit bord",
   "administrator_of_this_board": "Deze gebruiker is beheerder van dit bord",
   "copy_content_id": "kopieer inhoud-ID",
-  "updates": "Updates",
   "downloading_board": "board downloaden",
   "subscriptions_subtitle": "Je bent geabonneerd op {{count}} boards",
   "all_boards": "Alle borden",
@@ -299,5 +298,6 @@
   "images": "afbeeldingen",
   "load_more": "Meer laden",
   "purged": "verwijderd",
-  "this_post_was_purged": "Verwijderen uit board-database — dit proces is onomkeerbaar."
+  "this_post_was_purged": "Verwijderen uit board-database — dit proces is onomkeerbaar.",
+  "news": "Nieuws"
 }

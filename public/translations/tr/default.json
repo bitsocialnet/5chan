@@ -211,7 +211,6 @@
   "moderator_of_this_board": "Bu kullanıcı bu panonun moderatörüdür",
   "administrator_of_this_board": "Bu kullanıcı bu panonun yöneticisidir",
   "copy_content_id": "içerik ID'sini kopyala",
-  "updates": "Güncellemeler",
   "downloading_board": "forum indiriliyor",
   "subscriptions_subtitle": "{{count}} board'a abonesiniz",
   "all_boards": "Tüm panolar",
@@ -299,5 +298,6 @@
   "images": "görseller",
   "load_more": "Daha fazla yükle",
   "purged": "silindi",
-  "this_post_was_purged": "Pano veritabanından siliniyor — bu işlem geri alınamaz."
+  "this_post_was_purged": "Pano veritabanından siliniyor — bu işlem geri alınamaz.",
+  "news": "Haberler"
 }

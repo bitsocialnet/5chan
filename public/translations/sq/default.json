@@ -211,7 +211,6 @@
   "moderator_of_this_board": "Ky përdorues është moderator i këtij bordi",
   "administrator_of_this_board": "Ky përdorues është administrator i këtij bordi",
   "copy_content_id": "kopjo ID e përmbajtjes",
-  "updates": "Përditësime",
   "downloading_board": "duke shkarkuar forum",
   "subscriptions_subtitle": "Jeni abonuar në {{count}} boards",
   "all_boards": "Të gjitha tabelat",
@@ -299,5 +298,6 @@
   "images": "imazhe",
   "load_more": "Ngarko më shumë",
   "purged": "fshirë",
-  "this_post_was_purged": "Duke fshirë nga baza e të dhënave të tabelës — ky proces është i pakthyeshëm."
+  "this_post_was_purged": "Duke fshirë nga baza e të dhënave të tabelës — ky proces është i pakthyeshëm.",
+  "news": "Lajme"
 }

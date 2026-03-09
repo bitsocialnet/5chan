@@ -211,7 +211,6 @@
   "moderator_of_this_board": "משתמש זה הוא מנהל של הלוח הזה",
   "administrator_of_this_board": "משתמש זה הוא מנהל מערכת של הלוח הזה",
   "copy_content_id": "העתק מזהה תוכן",
-  "updates": "עדכונים",
   "downloading_board": "מוריד פורום",
   "subscriptions_subtitle": "נרשמת ל-{{count}} boards",
   "all_boards": "כל הלוחות",
@@ -299,5 +298,6 @@
   "images": "תמונות",
   "load_more": "טען עוד",
   "purged": "נוקה",
-  "this_post_was_purged": "מנקה ממסד הנתונים של הלוח — תהליך זה אינו הפיך."
+  "this_post_was_purged": "מנקה ממסד הנתונים של הלוח — תהליך זה אינו הפיך.",
+  "news": "חדשות"
 }

@@ -211,7 +211,6 @@
   "moderator_of_this_board": "ผู้ใช้รายนี้เป็นผู้ดูแลของบอร์ดนี้",
   "administrator_of_this_board": "ผู้ใช้รายนี้เป็นผู้ดูแลระบบของบอร์ดนี้",
   "copy_content_id": "คัดลอก ID เนื้อหา",
-  "updates": "อัปเดต",
   "downloading_board": "กำลังดาวน์โหลดกระดาน",
   "subscriptions_subtitle": "คุณกำลังสมัครสมาชิก {{count}} boards",
   "all_boards": "บอร์ดทั้งหมด",
@@ -299,5 +298,6 @@
   "images": "รูปภาพ",
   "load_more": "โหลดเพิ่มเติม",
   "purged": "ถูกลบ",
-  "this_post_was_purged": "กำลังลบออกจากฐานข้อมูลบอร์ด — ขั้นตอนนี้ไม่สามารถย้อนกลับได้"
+  "this_post_was_purged": "กำลังลบออกจากฐานข้อมูลบอร์ด — ขั้นตอนนี้ไม่สามารถย้อนกลับได้",
+  "news": "ข่าว"
 }

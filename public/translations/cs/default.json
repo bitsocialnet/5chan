@@ -211,7 +211,6 @@
   "moderator_of_this_board": "Tento uživatel je moderátorem tohoto fóra",
   "administrator_of_this_board": "Tento uživatel je administrátorem tohoto fóra",
   "copy_content_id": "kopírovat ID obsahu",
-  "updates": "Aktualizace",
   "downloading_board": "stahování fóra",
   "subscriptions_subtitle": "Jste přihlášeni k {{count}} boards",
   "all_boards": "Všechny desky",
@@ -299,5 +298,6 @@
   "images": "obrázky",
   "load_more": "Načíst více",
   "purged": "vymazáno",
-  "this_post_was_purged": "Mažeme z databáze desky — tento proces je nevratný."
+  "this_post_was_purged": "Mažeme z databáze desky — tento proces je nevratný.",
+  "news": "Novinky"
 }

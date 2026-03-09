@@ -211,7 +211,6 @@
   "moderator_of_this_board": "이 사용자는 이 게시판의 관리자입니다",
   "administrator_of_this_board": "이 사용자는 이 게시판의 관리자입니다",
   "copy_content_id": "콘텐츠 ID 복사",
-  "updates": "업데이트",
   "downloading_board": "게시판 다운로드 중",
   "subscriptions_subtitle": "{{count}}개의 board를 구독 중입니다",
   "all_boards": "모든 게시판",
@@ -299,5 +298,6 @@
   "images": "이미지",
   "load_more": "더 보기",
   "purged": "삭제됨",
-  "this_post_was_purged": "보드 데이터베이스에서 삭제 중 — 이 작업은 되돌릴 수 없습니다."
+  "this_post_was_purged": "보드 데이터베이스에서 삭제 중 — 이 작업은 되돌릴 수 없습니다.",
+  "news": "뉴스"
 }

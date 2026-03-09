@@ -211,7 +211,6 @@
   "moderator_of_this_board": "このユーザーはこのボードのモデレーターです",
   "administrator_of_this_board": "このユーザーはこのボードの管理者です",
   "copy_content_id": "コンテンツIDをコピー",
-  "updates": "更新",
   "downloading_board": "掲示板をダウンロード中",
   "subscriptions_subtitle": "{{count}}個のboardを購読しています",
   "all_boards": "すべてのボード",
@@ -299,5 +298,6 @@
   "images": "画像",
   "load_more": "さらに読み込む",
   "purged": "削除済み",
-  "this_post_was_purged": "ボードデータベースから削除中 — この操作は取り消せません。"
+  "this_post_was_purged": "ボードデータベースから削除中 — この操作は取り消せません。",
+  "news": "ニュース"
 }

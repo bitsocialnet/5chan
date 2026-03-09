@@ -211,7 +211,6 @@
   "moderator_of_this_board": "এই ব্যবহারকারী এই বোর্ডের একজন মডারেটর",
   "administrator_of_this_board": "এই ব্যবহারকারী এই বোর্ডের একজন প্রশাসক",
   "copy_content_id": "কনটেন্ট আইডি কপি করুন",
-  "updates": "আপডেট",
   "downloading_board": "বোর্ড ডাউনলোড করা হচ্ছে",
   "subscriptions_subtitle": "আপনি {{count}}টি board-এ সাবস্ক্রাইব করছেন",
   "all_boards": "সব বোর্ড",
@@ -299,5 +298,6 @@
   "images": "ছবি",
   "load_more": "আরও লোড করুন",
   "purged": "অপসারিত",
-  "this_post_was_purged": "বোর্ড ডাটাবেস থেকে মুছে ফেলা হচ্ছে — এই প্রক্রিয়া অপরিবর্তনীয়।"
+  "this_post_was_purged": "বোর্ড ডাটাবেস থেকে মুছে ফেলা হচ্ছে — এই প্রক্রিয়া অপরিবর্তনীয়।",
+  "news": "সংবাদ"
 }

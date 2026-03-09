@@ -211,7 +211,6 @@
   "moderator_of_this_board": "此用户是此版块的版主",
   "administrator_of_this_board": "此用户是此版块的管理员",
   "copy_content_id": "复制内容ID",
-  "updates": "更新",
   "downloading_board": "正在下载论坛",
   "subscriptions_subtitle": "您已订阅 {{count}} 个 boards",
   "all_boards": "所有板块",
@@ -299,5 +298,6 @@
   "images": "图片",
   "load_more": "加载更多",
   "purged": "已清除",
-  "this_post_was_purged": "正在从版面数据库中清除 — 此操作不可逆。"
+  "this_post_was_purged": "正在从版面数据库中清除 — 此操作不可逆。",
+  "news": "新闻"
 }

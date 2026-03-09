@@ -211,7 +211,6 @@
   "moderator_of_this_board": "این کاربر مدیر این انجمن است",
   "administrator_of_this_board": "این کاربر مدیرکل این انجمن است",
   "copy_content_id": "کپی شناسه محتوا",
-  "updates": "به‌روزرسانی‌ها",
   "downloading_board": "در حال دانلود تالار",
   "subscriptions_subtitle": "شما به {{count}} board مشترک هستید",
   "all_boards": "همه تابلوها",
@@ -299,5 +298,6 @@
   "images": "تصاویر",
   "load_more": "بارگذاری بیشتر",
   "purged": "پاک‌شده",
-  "this_post_was_purged": "در حال حذف از پایگاه داده تابلو — این فرآیند برگشت‌ناپذیر است."
+  "this_post_was_purged": "در حال حذف از پایگاه داده تابلو — این فرآیند برگشت‌ناپذیر است.",
+  "news": "اخبار"
 }

@@ -211,7 +211,6 @@
   "moderator_of_this_board": "Ez a felhasználó ennek a táblának a moderátora",
   "administrator_of_this_board": "Ez a felhasználó ennek a táblának a rendszergazdája",
   "copy_content_id": "tartalom ID másolása",
-  "updates": "Frissítések",
   "downloading_board": "fórum letöltése",
   "subscriptions_subtitle": "Fel vagy iratkozva {{count}} boardra",
   "all_boards": "Minden tábla",
@@ -299,5 +298,6 @@
   "images": "képek",
   "load_more": "További betöltése",
   "purged": "törölve",
-  "this_post_was_purged": "Törlés a tábla adatbázisából — ez a folyamat visszafordíthatatlan."
+  "this_post_was_purged": "Törlés a tábla adatbázisából — ez a folyamat visszafordíthatatlan.",
+  "news": "Hírek"
 }

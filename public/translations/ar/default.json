@@ -211,7 +211,6 @@
   "moderator_of_this_board": "هذا المستخدم هو مشرف على هذا المنتدى",
   "administrator_of_this_board": "هذا المستخدم هو مسؤول عن هذا المنتدى",
   "copy_content_id": "نسخ معرف المحتوى",
-  "updates": "التحديثات",
   "downloading_board": "جارٍ تنزيل المنتدى",
   "subscriptions_subtitle": "أنت مشترك في {{count}} لوحة",
   "all_boards": "جميع اللوحات",
@@ -299,5 +298,6 @@
   "images": "صور",
   "load_more": "تحميل المزيد",
   "purged": "مُزال",
-  "this_post_was_purged": "جارٍ الحذف من قاعدة بيانات اللوحة — هذه العملية لا يمكن التراجع عنها."
+  "this_post_was_purged": "جارٍ الحذف من قاعدة بيانات اللوحة — هذه العملية لا يمكن التراجع عنها.",
+  "news": "الأخبار"
 }

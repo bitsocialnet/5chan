@@ -211,7 +211,6 @@
   "moderator_of_this_board": "यह उपयोगकर्ता इस बोर्ड का मॉडरेटर है",
   "administrator_of_this_board": "यह उपयोगकर्ता इस बोर्ड का प्रशासक है",
   "copy_content_id": "कंटेंट ID कॉपी करें",
-  "updates": "अपडेट",
   "downloading_board": "फोरम डाउनलोड हो रहा है",
   "subscriptions_subtitle": "आप {{count}} boards की सदस्यता ले रहे हैं",
   "all_boards": "सभी बोर्ड",
@@ -299,5 +298,6 @@
   "images": "छवियाँ",
   "load_more": "और लोड करें",
   "purged": "हटाया गया",
-  "this_post_was_purged": "बोर्ड डेटाबेस से हटाया जा रहा है — यह प्रक्रिया अपरिवर्तनीय है।"
+  "this_post_was_purged": "बोर्ड डेटाबेस से हटाया जा रहा है — यह प्रक्रिया अपरिवर्तनीय है।",
+  "news": "समाचार"
 }

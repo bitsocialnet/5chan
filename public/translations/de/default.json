@@ -211,7 +211,6 @@
   "moderator_of_this_board": "Dieser Benutzer ist Moderator dieses Boards",
   "administrator_of_this_board": "Dieser Benutzer ist Administrator dieses Boards",
   "copy_content_id": "Inhalts-ID kopieren",
-  "updates": "Aktualisierungen",
   "downloading_board": "Forum wird heruntergeladen",
   "subscriptions_subtitle": "Sie sind {{count}} Board abonniert",
   "all_boards": "Alle Boards",
@@ -299,5 +298,6 @@
   "images": "Bilder",
   "load_more": "Mehr laden",
   "purged": "gelöscht",
-  "this_post_was_purged": "Wird aus der Board-Datenbank gelöscht — dieser Vorgang ist unwiderruflich."
+  "this_post_was_purged": "Wird aus der Board-Datenbank gelöscht — dieser Vorgang ist unwiderruflich.",
+  "news": "Nachrichten"
 }

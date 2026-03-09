@@ -211,7 +211,6 @@
   "moderator_of_this_board": "Цей користувач є модератором цього форуму",
   "administrator_of_this_board": "Цей користувач є адміністратором цього форуму",
   "copy_content_id": "копіювати ID контенту",
-  "updates": "Оновлення",
   "downloading_board": "завантаження форуму",
   "subscriptions_subtitle": "Ви підписані на {{count}} boards",
   "all_boards": "Всі дошки",
@@ -299,5 +298,6 @@
   "images": "зображення",
   "load_more": "Завантажити ще",
   "purged": "видалено",
-  "this_post_was_purged": "Видалення з бази даних дошки — цей процес незворотний."
+  "this_post_was_purged": "Видалення з бази даних дошки — цей процес незворотний.",
+  "news": "Новини"
 }

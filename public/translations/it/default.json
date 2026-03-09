@@ -211,7 +211,6 @@
   "moderator_of_this_board": "Questo utente è moderatore di questa bacheca",
   "administrator_of_this_board": "Questo utente è amministratore di questa bacheca",
   "copy_content_id": "Copia ID contenuto",
-  "updates": "Aggiornamenti",
   "downloading_board": "scaricando board",
   "subscriptions_subtitle": "Sei iscritto a {{count}} board",
   "all_boards": "Tutte le bacheche",
@@ -299,5 +298,6 @@
   "images": "immagini",
   "load_more": "Carica altro",
   "purged": "eliminato",
-  "this_post_was_purged": "Eliminazione dal database del board — questo processo è irreversibile."
+  "this_post_was_purged": "Eliminazione dal database del board — questo processo è irreversibile.",
+  "news": "Notizie"
 }

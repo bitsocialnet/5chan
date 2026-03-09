@@ -211,7 +211,6 @@
   "moderator_of_this_board": "Ten użytkownik jest moderatorem tego forum",
   "administrator_of_this_board": "Ten użytkownik jest administratorem tego forum",
   "copy_content_id": "skopiuj ID treści",
-  "updates": "Aktualizacje",
   "downloading_board": "pobieranie forum",
   "subscriptions_subtitle": "Subskrybujesz {{count}} boards",
   "all_boards": "Wszystkie tablice",
@@ -299,5 +298,6 @@
   "images": "obrazy",
   "load_more": "Załaduj więcej",
   "purged": "usunięty",
-  "this_post_was_purged": "Usuwanie z bazy danych tablicy — ten proces jest nieodwracalny."
+  "this_post_was_purged": "Usuwanie z bazy danych tablicy — ten proces jest nieodwracalny.",
+  "news": "Aktualności"
 }

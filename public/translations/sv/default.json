@@ -211,7 +211,6 @@
   "moderator_of_this_board": "Denna användare är moderator för detta forum",
   "administrator_of_this_board": "Denna användare är administratör för detta forum",
   "copy_content_id": "kopiera innehålls-ID",
-  "updates": "Uppdateringar",
   "downloading_board": "laddar ner forum",
   "subscriptions_subtitle": "Du är prenumerant på {{count}} boards",
   "all_boards": "Alla tavlor",
@@ -299,5 +298,6 @@
   "images": "bilder",
   "load_more": "Ladda mer",
   "purged": "rensad",
-  "this_post_was_purged": "Rensar från board-databasen — denna process är oåterkallelig."
+  "this_post_was_purged": "Rensar från board-databasen — denna process är oåterkallelig.",
+  "news": "Nyheter"
 }

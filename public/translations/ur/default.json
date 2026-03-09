@@ -211,7 +211,6 @@
   "moderator_of_this_board": "یہ صارف اس بورڈ کا ماڈریٹر ہے",
   "administrator_of_this_board": "یہ صارف اس بورڈ کا منتظم ہے",
   "copy_content_id": "مواد کی شناخت کاپی کریں",
-  "updates": "اپڈیٹس",
   "downloading_board": "فورم ڈاؤن لوڈ ہو رہا ہے",
   "subscriptions_subtitle": "آپ {{count}} boards کی سبسکرپشن لے رہے ہیں",
   "all_boards": "تمام بورڈز",
@@ -299,5 +298,6 @@
   "images": "تصاویر",
   "load_more": "مزید لوڈ کریں",
   "purged": "ہٹا دیا گیا",
-  "this_post_was_purged": "بورڈ ڈیٹا بیس سے حذف کیا جا رہا ہے — یہ عمل ناقابل واپسی ہے۔"
+  "this_post_was_purged": "بورڈ ڈیٹا بیس سے حذف کیا جا رہا ہے — یہ عمل ناقابل واپسی ہے۔",
+  "news": "خبریں"
 }
