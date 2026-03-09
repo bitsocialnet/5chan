@@ -1,3 +1,53 @@
+## [0.6.9](https://github.com/plebbit/plebchan/compare/v0.6.8...v0.6.9) (2026-03-09)
+
+
+### Bug Fixes
+
+* **android tests:** align runner stage assertions ([045bea7](https://github.com/plebbit/plebchan/commit/045bea7ff9da0e1e19ec9703035c5528178da663))
+* **challenge flow:** abandon publish immediately on modal close ([9cc6876](https://github.com/plebbit/plebchan/commit/9cc68768872940bfca272fb29a28d0fae9611a30))
+* **comment-content:** use info text style for purge message instead of red caps ([affea1b](https://github.com/plebbit/plebchan/commit/affea1b3ed867e2da3a9f5d1c7323c41fc346323))
+* erase runtime Comment import in catalog filters store ([a8ef232](https://github.com/plebbit/plebchan/commit/a8ef232b1df11346a92ca6e3c0c4dd301af3ee37))
+* handle purged posts in quote availability and mobile author counts ([58abae7](https://github.com/plebbit/plebchan/commit/58abae7e38d47e672ed3949f8d71e4c5b67b45e6))
+* hold gif thumbnails until first frame is ready ([34e2c2b](https://github.com/plebbit/plebchan/commit/34e2c2bc4da23a3f739192dc081640bfb0ef829d))
+* **home:** stabilize initial popular threads box ([824c14f](https://github.com/plebbit/plebchan/commit/824c14f5384715757c32326652410b3d64028928))
+* **i18n:** default interface language to english ([9c79bf2](https://github.com/plebbit/plebchan/commit/9c79bf2198ef27f29fc8f1f84a78f2f33bd7e7be))
+* **markdown:** handle unavailable reply quote links ([65731ce](https://github.com/plebbit/plebchan/commit/65731ceb3a6cb03445cc3898f1a688994161497a))
+* **mod-queue:** preserve pending reject state after refresh ([a20f131](https://github.com/plebbit/plebchan/commit/a20f131201399f7849d81d5dfbdf87402795b823))
+* patch bitsocial-react-hooks esm imports on install ([5d77a33](https://github.com/plebbit/plebchan/commit/5d77a33c38272989e494ffdcb733530b01133a7d))
+* **popular-posts:** randomize popular thread board selection on mount ([c275903](https://github.com/plebbit/plebchan/commit/c27590372cf95b5f71100f9d7733d8eb4aee5d87))
+* **post:** hide stuck Loading and Downloading board for pending comments ([980b5ca](https://github.com/plebbit/plebchan/commit/980b5ca57276322b7838dad19d40208f37403c50))
+* **posts:** render per-post IDs on initial board load ([08d929b](https://github.com/plebbit/plebchan/commit/08d929bb9713374b7c6715e1f0d79558151f8985))
+* **publishing:** abandon challenge close and clean failed local posts ([59851a4](https://github.com/plebbit/plebchan/commit/59851a4b01ba9ef356d4f081163f490c26443694))
+* **quotes:** avoid striking unresolved quote links ([ec40456](https://github.com/plebbit/plebchan/commit/ec404569e78622d4f1b8500dd1ffcc94eb398a85))
+* **replies:** hide author-deleted replies from thread views ([6954b5b](https://github.com/plebbit/plebchan/commit/6954b5bcc91a22e5d400b675a28513aaa7c737a2))
+* **replies:** render CommentContent for purged replies so purge message displays ([27a294f](https://github.com/plebbit/plebchan/commit/27a294f949194110aa67d4e600a3c263b53a7796))
+* **reply-modal:** align offline warning with post form ([08ec9f3](https://github.com/plebbit/plebchan/commit/08ec9f31ff5f47f1e86e45585e0df6e322b227a7))
+* **routing:** canonicalize board aliases in thread routes ([1b9f698](https://github.com/plebbit/plebchan/commit/1b9f69839dfea13698ab1b7b9a26921258552bce))
+* **seo:** serve sitemap and preserve static metadata files ([92eed04](https://github.com/plebbit/plebchan/commit/92eed04eb1324052e6ef1c0658d9a2aa7642d476))
+* **settings:** restore style selector to interface settings ([892e6e8](https://github.com/plebbit/plebchan/commit/892e6e824ac4dbf1e56a75897387518070bd30dd))
+* share board offline state between post form and reply modal ([723a2de](https://github.com/plebbit/plebchan/commit/723a2dee5270b6cf48974228073ab7d43cbfda27))
+* stabilize catalog filter coverage imports ([fabdd0e](https://github.com/plebbit/plebchan/commit/fabdd0efe51763d22b7eadbc6da8603b2c8fa301))
+* stabilize special theme coverage test ([0a392a3](https://github.com/plebbit/plebchan/commit/0a392a3f021847a3a1a8bb0073d540d0db367a0b))
+* **tests:** mock board-buttons and style-selector to avoid Solana import crash ([3b34192](https://github.com/plebbit/plebchan/commit/3b341922c4266f7370a58ab8aa7b23bcb1beac8e))
+* **vite.config.js:** remove deprecated rolldown dep optimizer config ([ca9f743](https://github.com/plebbit/plebchan/commit/ca9f743cefd66ef31953d7b7060f68d808983306))
+
+
+### Features
+
+* **catalog:** add mobile footer with Return, Archive, Top, Refresh buttons ([c3cfc7d](https://github.com/plebbit/plebchan/commit/c3cfc7d63a3ad6377f4454e0955b312428930a60))
+* **markdown:** make spoiler tags case-insensitive like BBCode ([cf55eaa](https://github.com/plebbit/plebchan/commit/cf55eaa781fc736f700a51b4c7dd938ee781b21f))
+* **markdown:** use BBCode-style [spoiler][/spoiler] tags ([91615db](https://github.com/plebbit/plebchan/commit/91615dbf4768e319cf50eb347b3138724445254d))
+* **popular-threads:** show actual feed state string instead of generic loading ([04b98b8](https://github.com/plebbit/plebchan/commit/04b98b84a4b858960b7120ca2054fc46526d8dde))
+* **posts:** add purge UI feedback for mods ([ae744d0](https://github.com/plebbit/plebchan/commit/ae744d0f78207fb5b14d82b122e5386226764f29))
+* **subscriptions:** use useAccountSubplebbitAddresses for deduplicated addresses ([e80a736](https://github.com/plebbit/plebchan/commit/e80a73663faa50a1d83ed6bdae4e146b76ccbdf9)), closes [bitsocial-react-hooks#16](https://github.com/bitsocial-react-hooks/issues/16)
+
+
+### Performance Improvements
+
+* **popular-threads:** show board-count loading state for popular threads ([71b0b0f](https://github.com/plebbit/plebchan/commit/71b0b0fa42dc3dd2c742956735b97f5b0e56841c))
+
+
+
 ## [0.6.8](https://github.com/plebbit/plebchan/compare/v0.6.7...v0.6.8) (2026-03-04)
 
 
@@ -27,12 +77,18 @@
 * **meta:** add OpenGraph, JSON-LD, security headers for crawler identity ([6bc135a](https://github.com/plebbit/plebchan/commit/6bc135aa6a02729e94882668139ad9a61166815d))
 * **post-desktop:** truncate long file links with ellipsis in middle ([f2264ba](https://github.com/plebbit/plebchan/commit/f2264ba60c043c80d7ef724c6067bb8c45179c23))
 * **post:** add mobile footer to thread view ([84e6057](https://github.com/plebbit/plebchan/commit/84e6057bb84422e41d89dc9b822d8621140c7fe8))
+* **release:** add yarn release script and v0.6.7 blotter entry ([064d341](https://github.com/plebbit/plebchan/commit/064d3414f1de308c8b2c65cd2a9e0e028d8e44d1))
 
 
 ### Performance Improvements
 
 * **media:** restrict gif frame extraction to gif media types ([7644d59](https://github.com/plebbit/plebchan/commit/7644d595990581fff721194435ff85a6b22d583f))
 * **settings:** fix navigate-in-setState, memo sections, defer crypto resolution ([df1bc20](https://github.com/plebbit/plebchan/commit/df1bc2071ddc07e12e6509a51ff8abcbfcf3c41e))
+
+
+### Reverts
+
+* Revert "chore(release): v0.6.8" ([d8a003e](https://github.com/plebbit/plebchan/commit/d8a003ed1daf668adddcd5de63a8d7d61a8e9ead))
 
 
 

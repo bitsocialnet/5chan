@@ -103,7 +103,7 @@ const downloads = [macSection, winSection, linuxSection, androidSection, htmlSec
 
 // One-liner summary of what changed in this release. Update before each release.
 const oneLinerDescription =
-  'This version adds mobile thread footer, reorganized board buttons, favicon swap for SFW/NSFW boards, OpenGraph and security headers, purge confirmation fix, publish-time author fix, popular posts ranking improvements, and several bug fixes.';
+  'This version adds BBCode-style spoiler tags, a mobile catalog footer, purge UI feedback for mods, user-friendly loading state strings, and fixes for deleted replies, challenge flow, popular threads stability, and mod queue UX.';
 
 const releaseBody = `${oneLinerDescription}
 
