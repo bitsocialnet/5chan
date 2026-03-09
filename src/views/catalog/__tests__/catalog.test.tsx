@@ -195,6 +195,14 @@ vi.mock('../../../components/footer', () => ({
   CatalogFooterFirstRow: ({ subplebbitAddress }: { subplebbitAddress?: string }) =>
     createElement('div', { 'data-testid': 'catalog-first-row' }, subplebbitAddress || 'multi'),
   PageFooterDesktop: ({ firstRow }: { firstRow: React.ReactNode }) => createElement('div', { 'data-testid': 'catalog-footer-desktop' }, firstRow),
+  PageFooterMobile: ({ children }: { children: React.ReactNode }) => createElement('div', { 'data-testid': 'catalog-footer-mobile' }, children),
+}));
+
+vi.mock('../../../components/board-buttons/board-buttons', () => ({
+  ReturnButton: () => createElement('button', {}, 'Return'),
+  ArchiveButton: () => createElement('button', {}, 'Archive'),
+  TopButton: () => createElement('button', {}, 'Top'),
+  RefreshButton: () => createElement('button', {}, 'Refresh'),
 }));
 
 vi.mock('../../../components/loading-ellipsis', () => ({

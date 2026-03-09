@@ -37,6 +37,10 @@ vi.mock('../../version', () => ({
   default: () => null,
 }));
 
+vi.mock('../../../style-selector/style-selector', () => ({
+  default: () => null,
+}));
+
 /** Minimal component that subscribes to feed view settings (like Board) to verify re-renders. */
 const BoardModeIndicator = () => {
   const enableInfiniteScroll = useFeedViewSettingsStore((state) => state.enableInfiniteScroll);
