@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 /** Catalog-only sort state. Used by catalog view sort selector. */
-export type CatalogSortType = 'active' | 'new' | 'replyCount';
+type CatalogSortType = 'active' | 'new' | 'replyCount';
 
 interface SortingStore {
   sortType: CatalogSortType;
