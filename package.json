@@ -3,7 +3,7 @@
   "version": "0.6.8",
   "description": "A Bitsocial client with an imageboard UI",
   "type": "module",
-  "author": "Bitsocial Labs",
+  "author": "Bitsocial Forge",
   "license": "GPL-2.0-only",
   "private": true,
   "dependencies": {
