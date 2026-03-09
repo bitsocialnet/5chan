@@ -57,7 +57,7 @@ export const CatalogButton = ({ address, isInAllView, isInSubscriptionsView, isI
   );
 };
 
-const ArchiveButton = ({ address, isInAllView, isInSubscriptionsView, isInModView }: BoardButtonsProps) => {
+export const ArchiveButton = ({ address, isInAllView, isInSubscriptionsView, isInModView }: BoardButtonsProps) => {
   const { t } = useTranslation();
 
   const handleClick = () => {

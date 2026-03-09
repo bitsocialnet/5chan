@@ -16,7 +16,9 @@ import useSortingStore from '../../stores/use-sorting-store';
 import useCatalogFiltersStore from '../../stores/use-catalog-filters-store';
 import { getSubplebbitAddress, isDirectoryBoard, normalizeMultiboardFeedPath } from '../../lib/utils/route-utils';
 import CatalogRow from '../../components/catalog-row';
-import { CatalogFooterFirstRow, PageFooterDesktop } from '../../components/footer';
+import { CatalogFooterFirstRow, PageFooterDesktop, PageFooterMobile } from '../../components/footer';
+import { ReturnButton, ArchiveButton, TopButton, RefreshButton } from '../../components/board-buttons/board-buttons';
+import mobileFooterStyles from '../../components/footer/footer.module.css';
 import LoadingEllipsis from '../../components/loading-ellipsis';
 import ErrorDisplay from '../../components/error-display/error-display';
 import styles from './catalog.module.css';
@@ -373,6 +375,14 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
               />
             }
           />
+          <PageFooterMobile>
+            <div className={mobileFooterStyles.mobileFooterButtons}>
+              <ReturnButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
+              <ArchiveButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
+              <TopButton />
+              <RefreshButton />
+            </div>
+          </PageFooterMobile>
         </>
       ),
     }),
@@ -537,6 +547,14 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
                 />
               }
             />
+            <PageFooterMobile>
+              <div className={mobileFooterStyles.mobileFooterButtons}>
+                <ReturnButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
+                <ArchiveButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
+                <TopButton />
+                <RefreshButton />
+              </div>
+            </PageFooterMobile>
           </>
         )}
       </div>
