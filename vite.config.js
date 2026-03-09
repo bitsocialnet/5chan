@@ -206,7 +206,7 @@ export default defineConfig({
           if (/[\\/]node_modules[\\/](@plebbit[\\/]plebbit-js)[\\/]/.test(id)) {
             return 'plebbit-js';
           }
-          if (/[\\/]node_modules[\\/](@bitsocialhq[\\/]bitsocial-react-hooks)[\\/]/.test(id)) {
+          if (/[\\/]node_modules[\\/](@bitsocialnet[\\/]bitsocial-react-hooks)[\\/]/.test(id)) {
             return 'bitsocial-react-hooks';
           }
           if (/[\\/]node_modules[\\/](@react-spring|@use-gesture)[\\/]/.test(id)) {

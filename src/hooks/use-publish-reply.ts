@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useRef } from 'react';
-import { Comment, usePublishComment } from '@bitsocialhq/bitsocial-react-hooks';
+import { Comment, usePublishComment } from '@bitsocialnet/bitsocial-react-hooks';
 import usePublishReplyStore from '../stores/use-publish-reply-store';
 import usePostNumberStore from '../stores/use-post-number-store';
 import { getQuotedCidsFromContent, mergeQuotedCids } from '../lib/utils/reply-quote-utils';

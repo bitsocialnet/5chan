@@ -42,7 +42,7 @@ interface DirectoriesState {
   error: Error | null;
 }
 
-const GITHUB_URL = 'https://raw.githubusercontent.com/bitsocialhq/lists/master/5chan-directories.json';
+const GITHUB_URL = 'https://raw.githubusercontent.com/bitsocialnet/lists/master/5chan-directories.json';
 const LOCALSTORAGE_KEY = '5chan-directories-cache';
 const LOCALSTORAGE_TIMESTAMP_KEY = '5chan-directories-cache-timestamp';
 const CACHE_MAX_AGE_MS = 60 * 60 * 1000; // 1 hour

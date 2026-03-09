@@ -1,5 +1,5 @@
 import { memo, useState } from 'react';
-import { Account, setAccount, useAccount } from '@bitsocialhq/bitsocial-react-hooks';
+import { Account, setAccount, useAccount } from '@bitsocialnet/bitsocial-react-hooks';
 import styles from './crypto-wallets-setting.module.css';
 import { Trans, useTranslation } from 'react-i18next';
 import capitalize from 'lodash/capitalize';

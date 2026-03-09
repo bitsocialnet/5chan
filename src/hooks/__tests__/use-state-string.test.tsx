@@ -19,7 +19,7 @@ const testState = vi.hoisted(() => ({
   subplebbitsStates: {} as Record<string, { clientUrls: string[]; subplebbitAddresses: string[] }>,
 }));
 
-vi.mock('@bitsocialhq/bitsocial-react-hooks', () => ({
+vi.mock('@bitsocialnet/bitsocial-react-hooks', () => ({
   useClientsStates: () => ({
     states: testState.clientsStates,
   }),

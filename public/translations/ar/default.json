@@ -248,7 +248,7 @@
   "vote_button_unavailable_intro": "غير متاح حتى الآن. سيتمكن المستخدمون من إرسال لوحاتهم الخاصة والتصويت عليها للمنافسة على فتحات الدليل، مثل /{{boardIdentifier}}/.",
   "vote_button_unavailable_outro": "تصبح /{{boardIdentifier}}/ الأكثر تصويتاً هي /{{boardIdentifier}}/ الرسمية.",
   "upload_failed": "فشل التحميل",
-  "upload_not_supported_web": "رفع الوسائط غير مدعوم من متصفحك بسبب قيود تقنية (CORS). إنه مدعوم في تطبيق 5chan لـ Android والتطبيق المكتبي لـ Mac/Linux/Windows. التحميل من صفحة الإصدار الرسمية: https://github.com/bitsocialhq/5chan/releases/latest",
+  "upload_not_supported_web": "رفع الوسائط غير مدعوم من متصفحك بسبب قيود تقنية (CORS). إنه مدعوم في تطبيق 5chan لـ Android والتطبيق المكتبي لـ Mac/Linux/Windows. التحميل من صفحة الإصدار الرسمية: https://github.com/bitsocialnet/5chan/releases/latest",
   "file": "ملف",
   "media_hosting_none": "لا شيء",
   "media_hosting_none_tip": "إخفاء زر تحميل الملف من نماذج المنشورات والردود",

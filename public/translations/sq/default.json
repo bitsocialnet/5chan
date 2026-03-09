@@ -248,7 +248,7 @@
   "vote_button_unavailable_intro": "Ende jo i disponueshëm. Përdoruesit do të jenë në gjendje të dërgojnë bordet e tyre dhe të votojnë për to për të konkurruar për vende në drejtori, si /{{boardIdentifier}}/.",
   "vote_button_unavailable_outro": "/{{boardIdentifier}}/ me më shumë vota bëhet /{{boardIdentifier}}/ zyrtare.",
   "upload_failed": "Ngarkimi dështoi",
-  "upload_not_supported_web": "Ngarkimi i mediave nuk mbështetet nga shfletuesi juaj për shkak të kufizimeve teknike (CORS). Mbështetet në aplikacionin 5chan për Android dhe aplikacionin desktop për Mac/Linux/Windows. Shkarkoni nga faqja zyrtare e publikimeve: https://github.com/bitsocialhq/5chan/releases/latest",
+  "upload_not_supported_web": "Ngarkimi i mediave nuk mbështetet nga shfletuesi juaj për shkak të kufizimeve teknike (CORS). Mbështetet në aplikacionin 5chan për Android dhe aplikacionin desktop për Mac/Linux/Windows. Shkarkoni nga faqja zyrtare e publikimeve: https://github.com/bitsocialnet/5chan/releases/latest",
   "file": "Skedar",
   "media_hosting_none": "Asnjë",
   "media_hosting_none_tip": "Fsheh butonin e ngarkimit të skedarit nga formularët e postimit dhe përgjigjes",

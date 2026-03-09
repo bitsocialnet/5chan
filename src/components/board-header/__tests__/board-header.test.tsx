@@ -49,11 +49,11 @@ vi.mock('react-router-dom', async () => {
   };
 });
 
-vi.mock('@bitsocialhq/bitsocial-react-hooks', () => ({
+vi.mock('@bitsocialnet/bitsocial-react-hooks', () => ({
   useAccountComment: () => testState.accountComment,
 }));
 
-vi.mock('@bitsocialhq/bitsocial-react-hooks/dist/stores/accounts', () => ({
+vi.mock('@bitsocialnet/bitsocial-react-hooks/dist/stores/accounts', () => ({
   default: (selector: (state: { activeAccountId?: string; accounts: Record<string, { subscriptions?: string[] }> }) => unknown) =>
     selector({
       accounts: {
@@ -65,7 +65,7 @@ vi.mock('@bitsocialhq/bitsocial-react-hooks/dist/stores/accounts', () => ({
     }),
 }));
 
-vi.mock('@bitsocialhq/bitsocial-react-hooks/dist/stores/subplebbits', () => ({
+vi.mock('@bitsocialnet/bitsocial-react-hooks/dist/stores/subplebbits', () => ({
   default: (selector: (state: { subplebbits: typeof testState.subplebbits }) => unknown) =>
     selector({
       subplebbits: testState.subplebbits,

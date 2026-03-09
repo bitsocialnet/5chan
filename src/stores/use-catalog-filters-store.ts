@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { Comment } from '@bitsocialhq/bitsocial-react-hooks';
+import type { Comment } from '@bitsocialnet/bitsocial-react-hooks';
 import { commentMatchesPattern } from '../lib/utils/pattern-utils';
 
 interface FilterItem {

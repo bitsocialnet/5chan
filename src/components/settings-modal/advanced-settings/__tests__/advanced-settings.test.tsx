@@ -37,7 +37,7 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
-vi.mock('@bitsocialhq/bitsocial-react-hooks', () => ({
+vi.mock('@bitsocialnet/bitsocial-react-hooks', () => ({
   setAccount: (account: unknown) => testState.setAccountMock(account),
   useAccount: () => testState.account,
   usePlebbitRpcSettings: () => testState.rpcSettings,

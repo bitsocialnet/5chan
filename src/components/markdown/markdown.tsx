@@ -12,8 +12,8 @@ import { canEmbed } from '../embed';
 import { is5chanLink, transform5chanLinkToInternal, isValidCrossboardPattern } from '../../lib/utils/url-utils';
 import { isUnavailableQuoteTarget } from '../../lib/utils/quote-link-utils';
 import usePostNumberStore from '../../stores/use-post-number-store';
-import useSubplebbitsPagesStore from '@bitsocialhq/bitsocial-react-hooks/dist/stores/subplebbits-pages';
-import { useComment } from '@bitsocialhq/bitsocial-react-hooks';
+import useSubplebbitsPagesStore from '@bitsocialnet/bitsocial-react-hooks/dist/stores/subplebbits-pages';
+import { useComment } from '@bitsocialnet/bitsocial-react-hooks';
 import ReplyQuotePreview from '../reply-quote-preview';
 
 const safeParseUrl = (href: string): URL | null => {

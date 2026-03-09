@@ -1,4 +1,4 @@
-import { ChallengeVerification } from '@bitsocialhq/bitsocial-react-hooks';
+import { ChallengeVerification } from '@bitsocialnet/bitsocial-react-hooks';
 import directoriesData from '../../data/5chan-directories.json';
 import { getBoardPath } from './route-utils';
 

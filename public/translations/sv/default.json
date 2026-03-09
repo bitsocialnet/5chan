@@ -248,7 +248,7 @@
   "vote_button_unavailable_intro": "Inte tillgänglig ännu. Användare kommer att kunna skicka in sina egna kort och rösta för dem för att konkurrera om katalogplatser, som /{{boardIdentifier}}/.",
   "vote_button_unavailable_outro": "Det /{{boardIdentifier}}/ med flest röster blir det officiella /{{boardIdentifier}}/.",
   "upload_failed": "Uppladdning misslyckades",
-  "upload_not_supported_web": "Uppladdning av media stöds inte av din webbläsare på grund av tekniska begränsningar (CORS). Det stöds i 5chan Android-appen och Mac/Linux/Windows desktop-appen. Ladda ner från den officiella utgivningssidan: https://github.com/bitsocialhq/5chan/releases/latest",
+  "upload_not_supported_web": "Uppladdning av media stöds inte av din webbläsare på grund av tekniska begränsningar (CORS). Det stöds i 5chan Android-appen och Mac/Linux/Windows desktop-appen. Ladda ner från den officiella utgivningssidan: https://github.com/bitsocialnet/5chan/releases/latest",
   "file": "Fil",
   "media_hosting_none": "Ingen",
   "media_hosting_none_tip": "Döljer knappen för filöverföring från inläggs- och svarsformulär",

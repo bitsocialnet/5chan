@@ -83,11 +83,11 @@ vi.mock('react-router-dom', async () => {
   };
 });
 
-vi.mock('@bitsocialhq/bitsocial-react-hooks', () => ({
+vi.mock('@bitsocialnet/bitsocial-react-hooks', () => ({
   useComment: ({ commentCid }: { commentCid?: string }) => (commentCid ? testState.commentsByCid[commentCid] : undefined),
 }));
 
-vi.mock('@bitsocialhq/bitsocial-react-hooks/dist/stores/subplebbits-pages', () => ({
+vi.mock('@bitsocialnet/bitsocial-react-hooks/dist/stores/subplebbits-pages', () => ({
   default: (selector: (state: { comments: Record<string, TestComment> }) => unknown) =>
     selector({
       comments: testState.commentsByCid,

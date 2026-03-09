@@ -248,7 +248,7 @@
   "vote_button_unavailable_intro": "Ikke tilgjengelig ennå. Brukere vil kunne sende sine egne brett og stemme for dem for å konkurrere om katalogplasser, som /{{boardIdentifier}}/.",
   "vote_button_unavailable_outro": "Det /{{boardIdentifier}}/ med flest stemmer blir det offisielle /{{boardIdentifier}}/.",
   "upload_failed": "Opplasting mislyktes",
-  "upload_not_supported_web": "Opplasting av media støttes ikke av nettleseren din på grunn av tekniske begrensninger (CORS). Det støttes i 5chan Android-appen og Mac/Linux/Windows desktop-appen. Last ned fra den offisielle utgivelsessiden: https://github.com/bitsocialhq/5chan/releases/latest",
+  "upload_not_supported_web": "Opplasting av media støttes ikke av nettleseren din på grunn av tekniske begrensninger (CORS). Det støttes i 5chan Android-appen og Mac/Linux/Windows desktop-appen. Last ned fra den offisielle utgivelsessiden: https://github.com/bitsocialnet/5chan/releases/latest",
   "file": "Fil",
   "media_hosting_none": "Ingen",
   "media_hosting_none_tip": "Skjuler filoverføringknappen fra post- og svarskjemaer",

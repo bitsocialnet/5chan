@@ -1,6 +1,6 @@
 import { useEffect, useState, FormEvent } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useSubplebbit } from '@bitsocialhq/bitsocial-react-hooks';
+import { useSubplebbit } from '@bitsocialnet/bitsocial-react-hooks';
 import { Footer, HomeLogo } from '../home';
 import { useDirectories, DirectoryCommunity } from '../../hooks/use-directories';
 import { getSubplebbitAddress, getBoardPath } from '../../lib/utils/route-utils';

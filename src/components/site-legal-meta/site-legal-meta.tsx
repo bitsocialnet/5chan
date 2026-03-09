@@ -12,11 +12,11 @@ const LicenseText = () => <span>5chan is free and open-source software under GPL
 const VersionFeedbackContact = () => (
   <>
     <Version /> •{' '}
-    <a href='https://github.com/bitsocialhq/5chan/issues/new' target='_blank' rel='noopener noreferrer'>
+    <a href='https://github.com/bitsocialnet/5chan/issues/new' target='_blank' rel='noopener noreferrer'>
       Feedback
     </a>{' '}
     •{' '}
-    <a href='https://github.com/bitsocialhq/5chan/graphs/contributors' target='_blank' rel='noopener noreferrer'>
+    <a href='https://github.com/bitsocialnet/5chan/graphs/contributors' target='_blank' rel='noopener noreferrer'>
       Contact
     </a>
   </>

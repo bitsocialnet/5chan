@@ -16,7 +16,7 @@ const testState = vi.hoisted(() => ({
   publishCommentMock: vi.fn(),
 }));
 
-vi.mock('@bitsocialhq/bitsocial-react-hooks', () => ({
+vi.mock('@bitsocialnet/bitsocial-react-hooks', () => ({
   usePublishComment: (options: Record<string, any>) => {
     testState.lastPublishOptions = options;
     return {

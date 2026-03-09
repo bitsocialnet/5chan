@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import useSubplebbitsStore from '@bitsocialhq/bitsocial-react-hooks/dist/stores/subplebbits';
+import useSubplebbitsStore from '@bitsocialnet/bitsocial-react-hooks/dist/stores/subplebbits';
 import { normalizeBoardAddress, useDirectoryByAddress } from '../../hooks/use-directories';
 import useIsSubplebbitOffline from '../../hooks/use-is-subplebbit-offline';
 import { useResolvedSubplebbitAddress } from '../../hooks/use-resolved-subplebbit-address';

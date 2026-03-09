@@ -47,7 +47,7 @@ const testState = vi.hoisted(() => ({
   useThemeMock: vi.fn(),
 }));
 
-vi.mock('@bitsocialhq/bitsocial-react-hooks', () => ({
+vi.mock('@bitsocialnet/bitsocial-react-hooks', () => ({
   useAccount: () => testState.account,
   useAccountComment: ({ commentIndex }: { commentIndex?: number }) => (typeof commentIndex === 'number' ? testState.accountComments[commentIndex] : undefined),
   useSubplebbit: ({ subplebbitAddress }: { subplebbitAddress?: string }) => (subplebbitAddress ? testState.subplebbits[subplebbitAddress] : undefined),

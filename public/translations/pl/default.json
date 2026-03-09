@@ -248,7 +248,7 @@
   "vote_button_unavailable_intro": "Niedostępne. Użytkownicy będą mogli przesyłać własne tablice i głosować na nie, aby konkurować o miejsca w katalogu, takie jak /{{boardIdentifier}}/.",
   "vote_button_unavailable_outro": "Tablica /{{boardIdentifier}}/ z największą liczbą głosów staje się oficjalną /{{boardIdentifier}}/.",
   "upload_failed": "Przesyłanie nie powiodło się",
-  "upload_not_supported_web": "Przesyłanie multimediów nie jest obsługiwane przez twoją przeglądarkę ze względu na ograniczenia techniczne (CORS). Jest obsługiwane w aplikacji 5chan na Androida i w aplikacji desktopowej Mac/Linux/Windows. Pobierz ze strony oficjalnych wydań: https://github.com/bitsocialhq/5chan/releases/latest",
+  "upload_not_supported_web": "Przesyłanie multimediów nie jest obsługiwane przez twoją przeglądarkę ze względu na ograniczenia techniczne (CORS). Jest obsługiwane w aplikacji 5chan na Androida i w aplikacji desktopowej Mac/Linux/Windows. Pobierz ze strony oficjalnych wydań: https://github.com/bitsocialnet/5chan/releases/latest",
   "file": "Plik",
   "media_hosting_none": "Brak",
   "media_hosting_none_tip": "Ukrywa przycisk przesyłania pliku z formularzy postów i odpowiedzi",

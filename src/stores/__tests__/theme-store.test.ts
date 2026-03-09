@@ -5,7 +5,7 @@ const testState = vi.hoisted(() => ({
   setItemMock: vi.fn(async () => undefined),
 }));
 
-vi.mock('@bitsocialhq/bitsocial-react-hooks/dist/lib/localforage-lru/index.js', () => ({
+vi.mock('@bitsocialnet/bitsocial-react-hooks/dist/lib/localforage-lru/index.js', () => ({
   default: {
     createInstance: () => ({
       entries: testState.entriesMock,

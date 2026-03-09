@@ -248,7 +248,7 @@
   "vote_button_unavailable_intro": "Nu este disponibil deocamdată. Utilizatorii vor putea trimite propriile tablouri și vota pentru ele pentru a concura pentru locuri în director, cum ar fi /{{boardIdentifier}}/.",
   "vote_button_unavailable_outro": "Tabloul /{{boardIdentifier}}/ cu cele mai multe voturi devine /{{boardIdentifier}}/ oficial.",
   "upload_failed": "Încărcarea a eșuat",
-  "upload_not_supported_web": "Încărcarea mediilor nu este suportată de browserul tău din cauza limitărilor tehnice (CORS). Este suportată în aplicația 5chan pentru Android și aplicația de desktop pentru Mac/Linux/Windows. Descarcă de pe pagina oficială de release: https://github.com/bitsocialhq/5chan/releases/latest",
+  "upload_not_supported_web": "Încărcarea mediilor nu este suportată de browserul tău din cauza limitărilor tehnice (CORS). Este suportată în aplicația 5chan pentru Android și aplicația de desktop pentru Mac/Linux/Windows. Descarcă de pe pagina oficială de release: https://github.com/bitsocialnet/5chan/releases/latest",
   "file": "Fișier",
   "media_hosting_none": "Niciunul",
   "media_hosting_none_tip": "Ascunde butonul de încărcare a fișierelor din formularele de postare și răspuns",

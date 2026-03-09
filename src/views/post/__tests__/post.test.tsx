@@ -59,7 +59,7 @@ vi.mock('react-router-dom', async () => {
   };
 });
 
-vi.mock('@bitsocialhq/bitsocial-react-hooks', () => ({
+vi.mock('@bitsocialnet/bitsocial-react-hooks', () => ({
   useComment: ({ commentCid }: { commentCid?: string }) => (commentCid ? testState.commentsByCid[commentCid] : undefined),
   useEditedComment: ({ comment }: { comment?: TestComment }) => ({
     editedComment: comment?.cid ? testState.editedCommentsByCid[comment.cid] : undefined,
@@ -67,7 +67,7 @@ vi.mock('@bitsocialhq/bitsocial-react-hooks', () => ({
   useSubplebbit: () => testState.subplebbit,
 }));
 
-vi.mock('@bitsocialhq/bitsocial-react-hooks/dist/stores/subplebbits-pages', () => ({
+vi.mock('@bitsocialnet/bitsocial-react-hooks/dist/stores/subplebbits-pages', () => ({
   default: (selector: (state: { comments: typeof testState.cachedComments }) => unknown) =>
     selector({
       comments: testState.cachedComments,

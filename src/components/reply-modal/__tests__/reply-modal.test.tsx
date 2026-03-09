@@ -66,12 +66,12 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
-vi.mock('@bitsocialhq/bitsocial-react-hooks', () => ({
+vi.mock('@bitsocialnet/bitsocial-react-hooks', () => ({
   setAccount: (account: unknown) => testState.setAccountMock(account),
   useAccount: () => testState.account,
 }));
 
-vi.mock('@bitsocialhq/bitsocial-react-hooks/dist/stores/subplebbits', () => ({
+vi.mock('@bitsocialnet/bitsocial-react-hooks/dist/stores/subplebbits', () => ({
   default: <T,>(selector: (state: { subplebbits: typeof testState.subplebbits }) => T) =>
     selector({
       subplebbits: testState.subplebbits,

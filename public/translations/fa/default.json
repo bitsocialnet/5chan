@@ -248,7 +248,7 @@
   "vote_button_unavailable_intro": "هنوز در دسترس نیست. کاربران می‌توانند بوردهای خود را ارسال کنند و برای آنها رای دهند تا برای شکاف‌های دایرکتوری رقابت کنند، مانند /{{boardIdentifier}}/.",
   "vote_button_unavailable_outro": "بیشترین رای‌شده /{{boardIdentifier}}/ به /{{boardIdentifier}}/ رسمی تبدیل می‌شود.",
   "upload_failed": "آپلود ناموفق بود",
-  "upload_not_supported_web": "آپلود رسانه توسط مرورگر شما به دلیل محدودیت‌های فنی (CORS) پشتیبانی نمی‌شود. در اپلیکیشن 5chan اندروید و اپلیکیشن دسکتاپ Mac/Linux/Windows پشتیبانی می‌شود. از صفحه انتشار رسمی دانلود کنید: https://github.com/bitsocialhq/5chan/releases/latest",
+  "upload_not_supported_web": "آپلود رسانه توسط مرورگر شما به دلیل محدودیت‌های فنی (CORS) پشتیبانی نمی‌شود. در اپلیکیشن 5chan اندروید و اپلیکیشن دسکتاپ Mac/Linux/Windows پشتیبانی می‌شود. از صفحه انتشار رسمی دانلود کنید: https://github.com/bitsocialnet/5chan/releases/latest",
   "file": "فایل",
   "media_hosting_none": "هیچ کدام",
   "media_hosting_none_tip": "دکمه بارگذاری فایل را از فرم‌های پست و پاسخ مخفی می‌کند",

@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useAccount } from '@bitsocialhq/bitsocial-react-hooks';
+import { useAccount } from '@bitsocialnet/bitsocial-react-hooks';
 import { useSubplebbitField } from './use-stable-subplebbit';
 
 interface AuthorPrivilegesProps {

@@ -248,7 +248,7 @@
   "vote_button_unavailable_intro": "Δεν είναι διαθέσιμο ακόμα. Οι χρήστες θα μπορούν να υποβάλουν τις δικές τους σανίδες και να ψηφίσουν γι' αυτές ώστε να ανταγωνίζονται για θέσεις σε φακέλους, όπως /{{boardIdentifier}}/.",
   "vote_button_unavailable_outro": "Η /{{boardIdentifier}}/ με τους περισσότερους ψήφους γίνεται η επίσημη /{{boardIdentifier}}/.",
   "upload_failed": "Αποτυχία μεταφόρτωσης",
-  "upload_not_supported_web": "Η μεταφόρτωση πολυμέσων δεν υποστηρίζεται από το πρόγραμμα περιήγησής σας λόγω τεχνικών περιορισμών (CORS). Υποστηρίζεται στην εφαρμογή 5chan για Android και την εφαρμογή επιφάνειας εργασίας Mac/Linux/Windows. Λήψη από τη σελίδα επίσημης έκδοσης: https://github.com/bitsocialhq/5chan/releases/latest",
+  "upload_not_supported_web": "Η μεταφόρτωση πολυμέσων δεν υποστηρίζεται από το πρόγραμμα περιήγησής σας λόγω τεχνικών περιορισμών (CORS). Υποστηρίζεται στην εφαρμογή 5chan για Android και την εφαρμογή επιφάνειας εργασίας Mac/Linux/Windows. Λήψη από τη σελίδα επίσημης έκδοσης: https://github.com/bitsocialnet/5chan/releases/latest",
   "file": "Αρχείο",
   "media_hosting_none": "Κανένα",
   "media_hosting_none_tip": "Αποκρύπτει το κουμπί μεταφόρτωσης αρχείου από τις φόρμες δημοσίευσης και απάντησης",

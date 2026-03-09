@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useParams, useNavigate } from 'react-router-dom';
-import { useAccountComment } from '@bitsocialhq/bitsocial-react-hooks';
-import useAccountsStore from '@bitsocialhq/bitsocial-react-hooks/dist/stores/accounts';
-import useSubplebbitsStore from '@bitsocialhq/bitsocial-react-hooks/dist/stores/subplebbits';
+import { useAccountComment } from '@bitsocialnet/bitsocial-react-hooks';
+import useAccountsStore from '@bitsocialnet/bitsocial-react-hooks/dist/stores/accounts';
+import useSubplebbitsStore from '@bitsocialnet/bitsocial-react-hooks/dist/stores/subplebbits';
 import getShortAddress from '../../lib/get-short-address';
 import { useStableSubplebbit } from '../../hooks/use-stable-subplebbit';
 import { isAllView, isSubscriptionsView, isModView } from '../../lib/utils/view-utils';

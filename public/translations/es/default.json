@@ -248,7 +248,7 @@
   "vote_button_unavailable_intro": "Aún no disponible. Los usuarios podrán enviar sus propios tableros y votar por ellos para competir por espacios de directorio, como /{{boardIdentifier}}/.",
   "vote_button_unavailable_outro": "El tablero /{{boardIdentifier}}/ más votado se convierte en el oficial /{{boardIdentifier}}/.",
   "upload_failed": "Error al subir",
-  "upload_not_supported_web": "La subida de medios no está soportada por tu navegador debido a limitaciones técnicas (CORS). Sí está soportada en la app 5chan para Android y en la app de escritorio para Mac/Linux/Windows. Descarga desde la página oficial de releases: https://github.com/bitsocialhq/5chan/releases/latest",
+  "upload_not_supported_web": "La subida de medios no está soportada por tu navegador debido a limitaciones técnicas (CORS). Sí está soportada en la app 5chan para Android y en la app de escritorio para Mac/Linux/Windows. Descarga desde la página oficial de releases: https://github.com/bitsocialnet/5chan/releases/latest",
   "file": "Archivo",
   "media_hosting_none": "Ninguno",
   "media_hosting_none_tip": "Oculta el botón de carga de archivos de los formularios de publicación y respuesta",

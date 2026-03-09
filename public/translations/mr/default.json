@@ -248,7 +248,7 @@
   "vote_button_unavailable_intro": "अद्याप उपलब्ध नाही. वापरकर्ते त्यांचे स्वतःचे बोर्ड सबमिट करू शकतील आणि /{{boardIdentifier}}/ सारख्या डायरेक्टरी स्लॉटसाठी स्पर्धा करण्यासाठी त्यांच्यासाठी व्होट करू शकतील.",
   "vote_button_unavailable_outro": "सर्वाधिक मतदान केलेले /{{boardIdentifier}}/ अधिकृत /{{boardIdentifier}}/ बन जाते.",
   "upload_failed": "अपलोड अयशस्वी",
-  "upload_not_supported_web": "तांत्रिक मर्यादांमुळे (CORS) तुमचा ब्राउझर मीडिया अपलोडला समर्थन देत नाही. 5chan Android अॅप आणि Mac/Linux/Windows डेस्कटॉप अॅपमध्ये ते समर्थित आहे. अधिकृत रिलीझ पेजवरून डाउनलोड करा: https://github.com/bitsocialhq/5chan/releases/latest",
+  "upload_not_supported_web": "तांत्रिक मर्यादांमुळे (CORS) तुमचा ब्राउझर मीडिया अपलोडला समर्थन देत नाही. 5chan Android अॅप आणि Mac/Linux/Windows डेस्कटॉप अॅपमध्ये ते समर्थित आहे. अधिकृत रिलीझ पेजवरून डाउनलोड करा: https://github.com/bitsocialnet/5chan/releases/latest",
   "file": "फाइल",
   "media_hosting_none": "काहीही नाही",
   "media_hosting_none_tip": "पोस्ट आणि उत्तर फॉर्मवरून फाइल अपलोड बटन लपवते",

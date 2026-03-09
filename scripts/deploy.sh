@@ -24,7 +24,7 @@ SCRIPT="
 cd ~
 rm $FIVECHAN_HTML_NAME.zip
 rm -fr $FIVECHAN_HTML_NAME
-wget https://github.com/bitsocialhq/5chan/releases/download/v$FIVECHAN_VERSION/$FIVECHAN_HTML_NAME.zip || exit
+wget https://github.com/bitsocialnet/5chan/releases/download/v$FIVECHAN_VERSION/$FIVECHAN_HTML_NAME.zip || exit
 
 # extract html
 unzip $FIVECHAN_HTML_NAME.zip || exit

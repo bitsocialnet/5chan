@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useRef } from 'react';
-import { Comment, usePublishComment } from '@bitsocialhq/bitsocial-react-hooks';
+import { Comment, usePublishComment } from '@bitsocialnet/bitsocial-react-hooks';
 import usePublishPostStore from '../stores/use-publish-post-store';
 import useChallengesStore from '../stores/use-challenges-store';
 

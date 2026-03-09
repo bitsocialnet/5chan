@@ -5,7 +5,7 @@ const testState = vi.hoisted(() => ({
   subplebbits: {} as Record<string, { roles?: Record<string, { role?: string }> }>,
 }));
 
-vi.mock('@bitsocialhq/bitsocial-react-hooks/dist/stores/subplebbits', () => ({
+vi.mock('@bitsocialnet/bitsocial-react-hooks/dist/stores/subplebbits', () => ({
   default: {
     getState: () => ({
       subplebbits: testState.subplebbits,

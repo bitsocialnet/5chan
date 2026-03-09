@@ -1,4 +1,4 @@
-import { ChallengeVerification, Comment, PublishCommentOptions } from '@bitsocialhq/bitsocial-react-hooks';
+import { ChallengeVerification, Comment, PublishCommentOptions } from '@bitsocialnet/bitsocial-react-hooks';
 import { create } from 'zustand';
 import { alertChallengeVerificationFailed } from '../lib/utils/challenge-utils';
 

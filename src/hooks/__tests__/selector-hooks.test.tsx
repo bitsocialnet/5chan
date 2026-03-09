@@ -23,12 +23,12 @@ const testState = vi.hoisted(() => ({
   subplebbitSnapshot: undefined as unknown,
 }));
 
-vi.mock('@bitsocialhq/bitsocial-react-hooks', () => ({
+vi.mock('@bitsocialnet/bitsocial-react-hooks', () => ({
   useAccount: () => testState.account,
   useAccountSubplebbits: () => ({ accountSubplebbits: testState.accountSubplebbits }),
 }));
 
-vi.mock('@bitsocialhq/bitsocial-react-hooks/dist/lib/utils', () => ({
+vi.mock('@bitsocialnet/bitsocial-react-hooks/dist/lib/utils', () => ({
   flattenCommentsPages: () => testState.flattenedReplies,
 }));
 

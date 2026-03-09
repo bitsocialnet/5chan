@@ -248,7 +248,7 @@
   "vote_button_unavailable_intro": "Nog niet beschikbaar. Gebruikers kunnen hun eigen borden indienen en erop stemmen om te concurreren voor directorysleuven, zoals /{{boardIdentifier}}/.",
   "vote_button_unavailable_outro": "Het /{{boardIdentifier}}/ met de meeste stemmen wordt het officiële /{{boardIdentifier}}/.",
   "upload_failed": "Upload mislukt",
-  "upload_not_supported_web": "Het uploaden van media wordt niet ondersteund door je browser vanwege technische beperkingen (CORS). Het wordt wel ondersteund in de 5chan Android-app en de Mac/Linux/Windows desktop-app. Download van de officiële releasespagina: https://github.com/bitsocialhq/5chan/releases/latest",
+  "upload_not_supported_web": "Het uploaden van media wordt niet ondersteund door je browser vanwege technische beperkingen (CORS). Het wordt wel ondersteund in de 5chan Android-app en de Mac/Linux/Windows desktop-app. Download van de officiële releasespagina: https://github.com/bitsocialnet/5chan/releases/latest",
   "file": "Bestand",
   "media_hosting_none": "Geen",
   "media_hosting_none_tip": "Verbergt de knop voor bestandsupload uit post- en antwoordformulieren",

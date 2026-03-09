@@ -248,7 +248,7 @@
   "vote_button_unavailable_intro": "Zatím není k dispozici. Uživatelé budou moci odesílat vlastní desky a hlasovat pro ně, aby konkurovali o místa v adresáři, jako je /{{boardIdentifier}}/.",
   "vote_button_unavailable_outro": "Nejvíce hlasovaná /{{boardIdentifier}}/ se stane oficiální /{{boardIdentifier}}/.",
   "upload_failed": "Nahrávání se nezdařilo",
-  "upload_not_supported_web": "Nahrávání médií není vaším prohlížečem podporováno z důvodu technických omezení (CORS). Je podporováno v aplikaci 5chan pro Android a desktopové aplikaci pro Mac/Linux/Windows. Stáhněte si z oficiální stránky vydání: https://github.com/bitsocialhq/5chan/releases/latest",
+  "upload_not_supported_web": "Nahrávání médií není vaším prohlížečem podporováno z důvodu technických omezení (CORS). Je podporováno v aplikaci 5chan pro Android a desktopové aplikaci pro Mac/Linux/Windows. Stáhněte si z oficiální stránky vydání: https://github.com/bitsocialnet/5chan/releases/latest",
   "file": "Soubor",
   "media_hosting_none": "Žádné",
   "media_hosting_none_tip": "Skrývá tlačítko pro nahrávání souborů z formulářů příspěvků a odpovědí",

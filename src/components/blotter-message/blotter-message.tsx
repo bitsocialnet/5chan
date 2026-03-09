@@ -1,7 +1,7 @@
 import type { BlotterEntry } from '../../lib/utils/blotter-utils';
 import styles from './blotter-message.module.css';
 
-const RELEASES_BASE = 'https://github.com/bitsocialhq/5chan/releases/tag/v';
+const RELEASES_BASE = 'https://github.com/bitsocialnet/5chan/releases/tag/v';
 
 function normalizeMessage(text: string): string {
   return text.replace(/subplebbit/gi, 'board').replace(/plebchan/gi, '5chan');

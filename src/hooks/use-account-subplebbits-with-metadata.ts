@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useAccountSubplebbits } from '@bitsocialhq/bitsocial-react-hooks';
+import { useAccountSubplebbits } from '@bitsocialnet/bitsocial-react-hooks';
 import { DirectoryCommunity } from './use-directories';
 
 export const useAccountSubplebbitsWithMetadata = (): DirectoryCommunity[] => {

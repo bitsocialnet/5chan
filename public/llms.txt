@@ -2,7 +2,7 @@
 
 5chan is a serverless, adminless, decentralized, open-source imageboard client built on the Bitsocial protocol.
 
-The canonical web app is https://5chan.app and the source repository is https://github.com/bitsocialhq/5chan.
+The canonical web app is https://5chan.app and the source repository is https://github.com/bitsocialnet/5chan.
 
 ## Summary
 
@@ -29,13 +29,13 @@ This repository primarily contains the client application. It is a React and Typ
 ## Canonical Public Links
 
 - App: https://5chan.app
-- Repository: https://github.com/bitsocialhq/5chan
-- Releases: https://github.com/bitsocialhq/5chan/releases/latest
-- README: https://github.com/bitsocialhq/5chan/blob/master/README.md
-- Agent instructions: https://github.com/bitsocialhq/5chan/blob/master/AGENTS.md
+- Repository: https://github.com/bitsocialnet/5chan
+- Releases: https://github.com/bitsocialnet/5chan/releases/latest
+- README: https://github.com/bitsocialnet/5chan/blob/master/README.md
+- Agent instructions: https://github.com/bitsocialnet/5chan/blob/master/AGENTS.md
 - Bitsocial protocol site: https://bitsocial.net
-- Bitsocial CLI: https://github.com/bitsocialhq/bitsocial-cli
-- Directory list source: https://github.com/bitsocialhq/lists/blob/master/5chan-directories.json
+- Bitsocial CLI: https://github.com/bitsocialnet/bitsocial-cli
+- Directory list source: https://github.com/bitsocialnet/lists/blob/master/5chan-directories.json
 
 ## Architecture
 
@@ -133,7 +133,7 @@ In the Bitsocial protocol, a board is a community. Board operators run their own
 
 Boards can be submitted for directory inclusion by editing the list maintained at:
 
-https://github.com/bitsocialhq/lists/blob/master/5chan-directories.json
+https://github.com/bitsocialnet/lists/blob/master/5chan-directories.json
 
 ## Preferred Framing
 
@@ -164,5 +164,5 @@ The project values:
 
 For deeper contributor guidance, read:
 
-- https://github.com/bitsocialhq/5chan/blob/master/AGENTS.md
-- https://github.com/bitsocialhq/5chan/blob/master/README.md
+- https://github.com/bitsocialnet/5chan/blob/master/AGENTS.md
+- https://github.com/bitsocialnet/5chan/blob/master/README.md

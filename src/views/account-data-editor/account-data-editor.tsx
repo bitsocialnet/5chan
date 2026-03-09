@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { setAccount, useAccount } from '@bitsocialhq/bitsocial-react-hooks';
+import { setAccount, useAccount } from '@bitsocialnet/bitsocial-react-hooks';
 import { buildEditableAccountJson, safeParseAccountJson, buildSavePayload } from '../../lib/utils/account-editor-utils';
 import styles from './account-data-editor.module.css';
 

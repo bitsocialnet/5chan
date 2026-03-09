@@ -248,7 +248,7 @@
   "vote_button_unavailable_intro": "Ainda não disponível. Os usuários poderão enviar seus próprios boards e votar neles para competir por slots de diretório, como /{{boardIdentifier}}/.",
   "vote_button_unavailable_outro": "O /{{boardIdentifier}}/ mais votado se torna o /{{boardIdentifier}}/ oficial.",
   "upload_failed": "Falha no envio",
-  "upload_not_supported_web": "O envio de mídia não é suportado pelo seu navegador devido a limitações técnicas (CORS). É suportado no app 5chan para Android e no app de desktop para Mac/Linux/Windows. Baixe na página oficial de releases: https://github.com/bitsocialhq/5chan/releases/latest",
+  "upload_not_supported_web": "O envio de mídia não é suportado pelo seu navegador devido a limitações técnicas (CORS). É suportado no app 5chan para Android e no app de desktop para Mac/Linux/Windows. Baixe na página oficial de releases: https://github.com/bitsocialnet/5chan/releases/latest",
   "file": "Arquivo",
   "media_hosting_none": "Nenhum",
   "media_hosting_none_tip": "Oculta o botão de envio de arquivo dos formulários de postagem e resposta",

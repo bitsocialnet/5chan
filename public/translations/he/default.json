@@ -248,7 +248,7 @@
   "vote_button_unavailable_intro": "עדיין לא זמין. משתמשים יוכלו להגיש לוחות משלהם ולהצביע עליהם כדי להתחרות על משבצות בספרייה, כגון /{{boardIdentifier}}/.",
   "vote_button_unavailable_outro": "/{{boardIdentifier}}/ בעל ההצבעות הרבות ביותר הופך ל- /{{boardIdentifier}}/ הרשמי.",
   "upload_failed": "ההעלאה נכשלה",
-  "upload_not_supported_web": "העלאת מדיה אינה נתמכת בדפדפן שלך בשל מגבלות טכניות (CORS). היא נתמכת באפליקציית 5chan ל-Android ובאפליקציית הדסקטופ ל-Mac/Linux/Windows. הורד מדף השחרור הרשמי: https://github.com/bitsocialhq/5chan/releases/latest",
+  "upload_not_supported_web": "העלאת מדיה אינה נתמכת בדפדפן שלך בשל מגבלות טכניות (CORS). היא נתמכת באפליקציית 5chan ל-Android ובאפליקציית הדסקטופ ל-Mac/Linux/Windows. הורד מדף השחרור הרשמי: https://github.com/bitsocialnet/5chan/releases/latest",
   "file": "קובץ",
   "media_hosting_none": "ללא",
   "media_hosting_none_tip": "מסתיר את כפתור העלאת הקבצים מטפסי פוסט ותשובה",

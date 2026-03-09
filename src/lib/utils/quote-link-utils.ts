@@ -1,4 +1,4 @@
-import type { Comment } from '@bitsocialhq/bitsocial-react-hooks';
+import type { Comment } from '@bitsocialnet/bitsocial-react-hooks';
 
 type QuoteTargetAvailability = 'available' | 'unresolved' | 'unavailable';
 

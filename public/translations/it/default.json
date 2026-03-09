@@ -248,7 +248,7 @@
   "vote_button_unavailable_intro": "Non ancora disponibile. Gli utenti potranno inviare i loro board e votarli per competere per gli slot della directory, come /{{boardIdentifier}}/.",
   "vote_button_unavailable_outro": "Il /{{boardIdentifier}}/ più votato diventa il /{{boardIdentifier}}/ ufficiale.",
   "upload_failed": "Caricamento fallito",
-  "upload_not_supported_web": "Il caricamento di file multimediali non è supportato dal tuo browser a causa di limitazioni tecniche (CORS). È supportato nell'app 5chan per Android e nell'app desktop per Mac/Linux/Windows. Scarica dalla pagina ufficiale delle release: https://github.com/bitsocialhq/5chan/releases/latest",
+  "upload_not_supported_web": "Il caricamento di file multimediali non è supportato dal tuo browser a causa di limitazioni tecniche (CORS). È supportato nell'app 5chan per Android e nell'app desktop per Mac/Linux/Windows. Scarica dalla pagina ufficiale delle release: https://github.com/bitsocialnet/5chan/releases/latest",
   "file": "File",
   "media_hosting_none": "Nessuno",
   "media_hosting_none_tip": "Nasconde il pulsante di caricamento del file dai moduli di post e risposta",

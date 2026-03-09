@@ -44,7 +44,7 @@ const DirectoryModal = () => {
             <h3>Creating Your Board</h3>
             <p>
               <strong>Anyone can create a board</strong> using the official CLI:{' '}
-              <a href='https://github.com/bitsocialhq/bitsocial-cli' target='_blank' rel='noopener noreferrer'>
+              <a href='https://github.com/bitsocialnet/bitsocial-cli' target='_blank' rel='noopener noreferrer'>
                 bitsocial-cli
               </a>
               . Users can access it anytime via the search bar, direct links, or by subscribing with the &quot;[Subscribe]&quot; button—
@@ -57,7 +57,7 @@ const DirectoryModal = () => {
             <h3>Directory Submission</h3>
             <p>
               To submit your board, open a PR editing{' '}
-              <a href='https://github.com/bitsocialhq/lists/blob/master/5chan-directories.json' target='_blank' rel='noopener noreferrer'>
+              <a href='https://github.com/bitsocialnet/lists/blob/master/5chan-directories.json' target='_blank' rel='noopener noreferrer'>
                 5chan-directories.json
               </a>{' '}
               with your board&apos;s title, address, and NSFW status. Requirements: 99% uptime (they&apos;re P2P nodes), active, well-moderated, and relevant to the

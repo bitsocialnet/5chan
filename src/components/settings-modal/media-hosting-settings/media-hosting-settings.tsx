@@ -6,7 +6,7 @@ import { isWebRuntime } from '../../../lib/media-hosting/show-upload-controls';
 import styles from '../interface-settings/interface-settings.module.css';
 
 const RADIO_NAME = 'media-hosting-provider';
-const RELEASES_URL = 'https://github.com/bitsocialhq/5chan/releases/latest';
+const RELEASES_URL = 'https://github.com/bitsocialnet/5chan/releases/latest';
 
 const MediaHostingSettings = () => {
   const { t } = useTranslation();

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { setAccount, useAccount } from '@bitsocialhq/bitsocial-react-hooks';
+import { setAccount, useAccount } from '@bitsocialnet/bitsocial-react-hooks';
 import { isValidURL } from '../../lib/utils/url-utils';
 import { isAllView, isModView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import useSelectedTextStore from '../../stores/use-selected-text-store';

@@ -248,7 +248,7 @@
   "vote_button_unavailable_intro": "尚不可用。用户将能够提交自己的板块，投票支持他们，以竞争目录插槽，如 /{{boardIdentifier}}/。",
   "vote_button_unavailable_outro": "投票最多的 /{{boardIdentifier}}/ 将成为官方 /{{boardIdentifier}}/。",
   "upload_failed": "上传失败",
-  "upload_not_supported_web": "由于技术限制（CORS），您的浏览器不支持上传媒体。5chan Android 应用和 Mac/Linux/Windows 桌面应用支持此功能。请从官方发布页面下载：https://github.com/bitsocialhq/5chan/releases/latest",
+  "upload_not_supported_web": "由于技术限制（CORS），您的浏览器不支持上传媒体。5chan Android 应用和 Mac/Linux/Windows 桌面应用支持此功能。请从官方发布页面下载：https://github.com/bitsocialnet/5chan/releases/latest",
   "file": "文件",
   "media_hosting_none": "无",
   "media_hosting_none_tip": "隐藏帖子和回复表单中的文件上传按钮",

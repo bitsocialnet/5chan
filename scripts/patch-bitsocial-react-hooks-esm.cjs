@@ -3,11 +3,11 @@
 const fs = require('fs');
 const path = require('path');
 
-const packageDistPath = path.join(__dirname, '..', 'node_modules', '@bitsocialhq', 'bitsocial-react-hooks', 'dist');
+const packageDistPath = path.join(__dirname, '..', 'node_modules', '@bitsocialnet', 'bitsocial-react-hooks', 'dist');
 const logPrefix = '[patch-bitsocial-react-hooks-esm]';
 
 if (!fs.existsSync(packageDistPath)) {
-  console.log(`${logPrefix} Skip: @bitsocialhq/bitsocial-react-hooks dist not found.`);
+  console.log(`${logPrefix} Skip: @bitsocialnet/bitsocial-react-hooks dist not found.`);
   process.exit(0);
 }
 

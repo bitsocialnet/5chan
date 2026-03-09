@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect, useCallback, memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, Link } from 'react-router-dom';
-import { useFeed, Comment, usePublishCommentModeration, useEditedComment, useSubplebbit } from '@bitsocialhq/bitsocial-react-hooks';
+import { useFeed, Comment, usePublishCommentModeration, useEditedComment, useSubplebbit } from '@bitsocialnet/bitsocial-react-hooks';
 import { Virtuoso } from 'react-virtuoso';
 import styles from './mod-queue.module.css';
 import useModQueueStore from '../../stores/use-mod-queue-store';

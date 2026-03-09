@@ -51,7 +51,7 @@ vi.mock('../../../lib/utils/account-editor-utils', () => ({
   safeParseAccountJson: (text: string) => testState.safeParseAccountJsonMock(text),
 }));
 
-vi.mock('@bitsocialhq/bitsocial-react-hooks', () => ({
+vi.mock('@bitsocialnet/bitsocial-react-hooks', () => ({
   setAccount: (payload: Record<string, unknown>) => testState.setAccountMock(payload),
   useAccount: () => testState.account,
 }));

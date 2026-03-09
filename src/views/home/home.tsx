@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Trans, useTranslation } from 'react-i18next';
-import { useSubplebbits } from '@bitsocialhq/bitsocial-react-hooks';
+import { useSubplebbits } from '@bitsocialnet/bitsocial-react-hooks';
 import styles from './home.module.css';
 import { useDirectories, useDirectoryAddresses } from '../../hooks/use-directories';
 import { SubplebbitStatsCollector, useSubplebbitsStatsStore } from '../../hooks/use-subplebbits-stats';
@@ -14,7 +14,7 @@ import DirectoryModal from '../../components/directory-modal';
 import { getBoardPath } from '../../lib/utils/route-utils';
 import lowerCase from 'lodash/lowerCase';
 
-// https://github.com/bitsocialhq/lists/blob/master/5chan-directories.json
+// https://github.com/bitsocialnet/lists/blob/master/5chan-directories.json
 
 const SearchBar = () => {
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -71,7 +71,7 @@ const InfoBox = () => {
           i18nKey='no_global_rules_info'
           shouldUnescape={true}
           components={{
-            1: <a key='releases-link' href='https://github.com/bitsocialhq/5chan/releases/latest' target='_blank' rel='noopener noreferrer' />,
+            1: <a key='releases-link' href='https://github.com/bitsocialnet/5chan/releases/latest' target='_blank' rel='noopener noreferrer' />,
           }}
         />
       </div>
@@ -158,7 +158,7 @@ export const Footer = () => {
           </a>
         </li>
         <li>
-          <a href='https://github.com/bitsocialhq/5chan' target='_blank' rel='noopener noreferrer'>
+          <a href='https://github.com/bitsocialnet/5chan' target='_blank' rel='noopener noreferrer'>
             Source Code
           </a>
         </li>

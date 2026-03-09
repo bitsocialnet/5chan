@@ -248,7 +248,7 @@
   "vote_button_unavailable_intro": "Noch nicht verfügbar. Benutzer können ihre eigenen Boards einreichen und dafür abstimmen, um um Verzeichnisplätze zu konkurrieren, wie /{{boardIdentifier}}/.",
   "vote_button_unavailable_outro": "Das am meisten abgestimmte /{{boardIdentifier}}/ wird zum offiziellen /{{boardIdentifier}}/.",
   "upload_failed": "Upload fehlgeschlagen",
-  "upload_not_supported_web": "Das Hochladen von Medien wird von Ihrem Browser aufgrund technischer Einschränkungen (CORS) nicht unterstützt. Es wird in der 5chan-Android-App und der Mac/Linux/Windows-Desktop-App unterstützt. Download von der offiziellen Release-Seite: https://github.com/bitsocialhq/5chan/releases/latest",
+  "upload_not_supported_web": "Das Hochladen von Medien wird von Ihrem Browser aufgrund technischer Einschränkungen (CORS) nicht unterstützt. Es wird in der 5chan-Android-App und der Mac/Linux/Windows-Desktop-App unterstützt. Download von der offiziellen Release-Seite: https://github.com/bitsocialnet/5chan/releases/latest",
   "file": "Datei",
   "media_hosting_none": "Keine",
   "media_hosting_none_tip": "Verbirgt die Datei-Upload-Schaltfläche aus Post- und Antwortformularen",

@@ -248,7 +248,7 @@
   "vote_button_unavailable_intro": "Henüz mevcut değil. Kullanıcılar kendi panolarını gönderebilecek ve /{{boardIdentifier}}/ gibi dizin yuvaları için rekabet etmek üzere oy verebilecekler.",
   "vote_button_unavailable_outro": "En çok oy alan /{{boardIdentifier}}/ resmi /{{boardIdentifier}}/ olur.",
   "upload_failed": "Yükleme başarısız",
-  "upload_not_supported_web": "Teknik kısıtlamalar (CORS) nedeniyle tarayıcınız medya yüklemeyi desteklemiyor. 5chan Android uygulamasında ve Mac/Linux/Windows masaüstü uygulamasında destekleniyor. Resmi sürüm sayfasından indirin: https://github.com/bitsocialhq/5chan/releases/latest",
+  "upload_not_supported_web": "Teknik kısıtlamalar (CORS) nedeniyle tarayıcınız medya yüklemeyi desteklemiyor. 5chan Android uygulamasında ve Mac/Linux/Windows masaüstü uygulamasında destekleniyor. Resmi sürüm sayfasından indirin: https://github.com/bitsocialnet/5chan/releases/latest",
   "file": "Dosya",
   "media_hosting_none": "Yok",
   "media_hosting_none_tip": "Yazı ve yanıt formlarından dosya yükleme düğmesini gizler",

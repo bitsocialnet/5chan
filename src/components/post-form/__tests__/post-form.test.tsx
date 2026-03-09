@@ -60,18 +60,18 @@ vi.mock('react-router-dom', async () => {
   };
 });
 
-vi.mock('@bitsocialhq/bitsocial-react-hooks', () => ({
+vi.mock('@bitsocialnet/bitsocial-react-hooks', () => ({
   setAccount: (account: unknown) => testState.setAccountMock(account),
   useAccount: () => testState.account,
   useAccountComment: () => testState.accountComment,
   useEditedComment: () => ({ editedComment: testState.editedComment }),
 }));
 
-vi.mock('@bitsocialhq/bitsocial-react-hooks/dist/stores/subplebbits', () => ({
+vi.mock('@bitsocialnet/bitsocial-react-hooks/dist/stores/subplebbits', () => ({
   default: (selector: (state: { subplebbits: typeof testState.subplebbits }) => unknown) => selector({ subplebbits: testState.subplebbits }),
 }));
 
-vi.mock('@bitsocialhq/bitsocial-react-hooks/dist/stores/subplebbits-pages', () => ({
+vi.mock('@bitsocialnet/bitsocial-react-hooks/dist/stores/subplebbits-pages', () => ({
   default: (selector: (state: { comments: typeof testState.comments }) => unknown) => selector({ comments: testState.comments }),
 }));
 

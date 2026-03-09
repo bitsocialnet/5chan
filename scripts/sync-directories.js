@@ -9,7 +9,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const GITHUB_URL = 'https://raw.githubusercontent.com/bitsocialhq/lists/master/5chan-directories.json';
+const GITHUB_URL = 'https://raw.githubusercontent.com/bitsocialnet/lists/master/5chan-directories.json';
 const OUTPUT_PATH = join(__dirname, '..', 'src', 'data', '5chan-directories.json');
 const TIMEOUT_MS = 5000;
 const DEFAULT_METADATA = {

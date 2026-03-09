@@ -248,7 +248,7 @@
   "vote_button_unavailable_intro": "Még nem érhető el. A felhasználók majd küldhetnek saját táblákat és szavazhatnak rájuk, hogy versenyezzenek a könyvtári helyekért, például /{{boardIdentifier}}/ esetén.",
   "vote_button_unavailable_outro": "A legtöbb szavazatot kapott /{{boardIdentifier}}/ lesz a hivatalos /{{boardIdentifier}}/.",
   "upload_failed": "A feltöltés sikertelen",
-  "upload_not_supported_web": "A média feltöltése nem támogatott a böngésződben technikai korlátozások miatt (CORS). A 5chan Android alkalmazásban és a Mac/Linux/Windows asztali alkalmazásban támogatott. Töltse le a hivatalos kiadási oldalról: https://github.com/bitsocialhq/5chan/releases/latest",
+  "upload_not_supported_web": "A média feltöltése nem támogatott a böngésződben technikai korlátozások miatt (CORS). A 5chan Android alkalmazásban és a Mac/Linux/Windows asztali alkalmazásban támogatott. Töltse le a hivatalos kiadási oldalról: https://github.com/bitsocialnet/5chan/releases/latest",
   "file": "Fájl",
   "media_hosting_none": "Nincs",
   "media_hosting_none_tip": "Elrejti a fájlfeltöltés gombot a poszt- és válaszűrlapokból",

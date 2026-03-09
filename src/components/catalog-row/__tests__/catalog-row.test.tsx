@@ -62,13 +62,13 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
-vi.mock('@bitsocialhq/bitsocial-react-hooks', () => ({
+vi.mock('@bitsocialnet/bitsocial-react-hooks', () => ({
   useReplies: ({ comment }: { comment?: TestComment }) => ({
     replies: comment ? testState.replies : [],
   }),
 }));
 
-vi.mock('@bitsocialhq/bitsocial-react-hooks/dist/lib/localforage-lru/index.js', () => ({
+vi.mock('@bitsocialnet/bitsocial-react-hooks/dist/lib/localforage-lru/index.js', () => ({
   default: {
     createInstance: () => ({
       entries: vi.fn().mockResolvedValue([]),

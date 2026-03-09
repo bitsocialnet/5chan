@@ -248,7 +248,7 @@
   "vote_button_unavailable_intro": "ยังไม่พร้อมใช้งาน ผู้ใช้จะสามารถส่งบอร์ดของตนเองและโหวตเพื่อแข่งขันเพื่อช่องในไดเรกทอรี เช่น /{{boardIdentifier}}/ ได้",
   "vote_button_unavailable_outro": "/{{boardIdentifier}}/ ที่ได้โหวตมากที่สุดจะกลายเป็น /{{boardIdentifier}}/ อย่างเป็นทางการ",
   "upload_failed": "อัปโหลดล้มเหลว",
-  "upload_not_supported_web": "การอัปโหลดสื่อไม่รองรับโดยเบราว์เซอร์ของคุณเนื่องจากข้อจำกัดทางเทคนิค (CORS) รองรับในแอป 5chan สำหรับ Android และแอปเดสก์ท็อปสำหรับ Mac/Linux/Windows ดาวน์โหลดจากหน้าปล่อยอย่างเป็นทางการ: https://github.com/bitsocialhq/5chan/releases/latest",
+  "upload_not_supported_web": "การอัปโหลดสื่อไม่รองรับโดยเบราว์เซอร์ของคุณเนื่องจากข้อจำกัดทางเทคนิค (CORS) รองรับในแอป 5chan สำหรับ Android และแอปเดสก์ท็อปสำหรับ Mac/Linux/Windows ดาวน์โหลดจากหน้าปล่อยอย่างเป็นทางการ: https://github.com/bitsocialnet/5chan/releases/latest",
   "file": "ไฟล์",
   "media_hosting_none": "ไม่มี",
   "media_hosting_none_tip": "ซ่อนปุ่มอัปโหลดไฟล์จากแบบฟอร์มโพสต์และตอบกลับ",

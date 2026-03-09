@@ -4,4 +4,4 @@ Disallow:
 Sitemap: https://5chan.app/sitemap.xml
 
 # 5chan — open-source decentralized imageboard
-# Source: https://github.com/bitsocialhq/5chan
+# Source: https://github.com/bitsocialnet/5chan

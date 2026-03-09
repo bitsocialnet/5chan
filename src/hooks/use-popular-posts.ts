@@ -1,5 +1,5 @@
 import { useMemo, useRef } from 'react';
-import { Comment, Subplebbit } from '@bitsocialhq/bitsocial-react-hooks';
+import { Comment, Subplebbit } from '@bitsocialnet/bitsocial-react-hooks';
 import { getCommentMediaInfo, getHasThumbnail } from '../lib/utils/media-utils';
 import useSubplebbitsLoadingStartTimestamps from '../stores/use-subplebbits-loading-start-timestamps-store';
 import { useCurrentTime } from './use-current-time';

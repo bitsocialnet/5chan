@@ -14,21 +14,21 @@ const isElectron = window.electronApi?.isElectron === true;
 
 const fetchLatestVersionInfo = async (t: (key: string, opts?: Record<string, unknown>) => string): Promise<void> => {
   try {
-    const packageRes = await fetch('https://raw.githubusercontent.com/bitsocialhq/5chan/master/package.json', { cache: 'no-cache' });
+    const packageRes = await fetch('https://raw.githubusercontent.com/bitsocialnet/5chan/master/package.json', { cache: 'no-cache' });
     const packageData = await packageRes.json();
     let updateAvailable = false;
 
     if (packageJson.version !== packageData.version) {
       const newVersionText = t('new_stable_version', { newVersion: packageData.version, oldVersion: packageJson.version });
       const updateActionText = isElectron
-        ? t('download_latest_desktop', { link: 'https://github.com/bitsocialhq/5chan/releases/latest', interpolation: { escapeValue: false } })
+        ? t('download_latest_desktop', { link: 'https://github.com/bitsocialnet/5chan/releases/latest', interpolation: { escapeValue: false } })
         : t('refresh_to_update');
       alert(newVersionText + ' ' + updateActionText);
       updateAvailable = true;
     }
 
     if (commitRef && commitRef.length > 0) {
-      const commitRes = await fetch('https://api.github.com/repos/bitsocialhq/5chan/commits?per_page=1&sha=development', { cache: 'no-cache' });
+      const commitRes = await fetch('https://api.github.com/repos/bitsocialnet/5chan/commits?per_page=1&sha=development', { cache: 'no-cache' });
       const commitData = await commitRes.json();
 
       const latestCommitHash = commitData[0].sha;

@@ -1,5 +1,5 @@
-import type { Comment } from '@bitsocialhq/bitsocial-react-hooks';
-import useSubplebbitsStore from '@bitsocialhq/bitsocial-react-hooks/dist/stores/subplebbits';
+import type { Comment } from '@bitsocialnet/bitsocial-react-hooks';
+import useSubplebbitsStore from '@bitsocialnet/bitsocial-react-hooks/dist/stores/subplebbits';
 
 /**
  * Checks if a text matches a pattern according to various pattern matching rules:

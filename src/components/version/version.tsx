@@ -10,7 +10,7 @@ const Version = () => {
   return (
     <>
       <a
-        href={commitRef ? `https://github.com/bitsocialhq/5chan/commit/${commitRef}` : `https://github.com/bitsocialhq/5chan/releases/tag/v${version}`}
+        href={commitRef ? `https://github.com/bitsocialnet/5chan/commit/${commitRef}` : `https://github.com/bitsocialnet/5chan/releases/tag/v${version}`}
         target='_blank'
         rel='noopener noreferrer'
       >
