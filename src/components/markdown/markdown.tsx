@@ -145,7 +145,7 @@ type Token =
   | { type: 'crossBoardLink'; display: string; route: string }
   | { type: 'spoiler'; tokens: Token[] };
 
-const SPOILER_REGEX = /\[spoiler\]([\s\S]*?)\[\/spoiler\]/;
+const SPOILER_REGEX = /\[[sS][pP][oO][iI][lL][eE][rR]\]([\s\S]*?)\[\/[sS][pP][oO][iI][lL][eE][rR]\]/;
 const CROSSBOARD_REGEX = />>>\/((?:[a-zA-Z0-9]{1,10}\/(?:[a-zA-Z0-9]{46})?|[a-zA-Z0-9\-.]+(?:\/[a-zA-Z0-9]{46})?))[.,:;!?]*/;
 const QUOTE_LINK_REGEX = /(?<![>/\w])>>(\d+)(?![\d/])/;
 const URL_REGEX = /https?:\/\/[^\s<\[\]]*[^\s<\[\].,;:!?\"'\)\]>]/;
