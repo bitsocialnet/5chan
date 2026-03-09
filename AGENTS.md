@@ -96,6 +96,7 @@ src/
 - Never mark work complete without verification.
 - After code changes, run: `yarn build`, `yarn lint`, `yarn type-check`.
 - After adding or changing tests, run `yarn test`.
+- Do not commit or force-add local rebuild output. `build/` is the main generated build output in this repo; remove or restore generated output directories after local verification before committing.
 - After React UI logic changes, run: `yarn doctor`.
 - Treat React Doctor output as actionable guidance; prioritize `error` then `warning`.
 - For UI/visual changes, verify with `playwright-cli` on desktop and mobile viewport.
