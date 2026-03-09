@@ -6,6 +6,7 @@ import capitalize from 'lodash/capitalize';
 import useExpandedMediaStore from '../../../stores/use-expanded-media-store';
 import useFeedViewSettingsStore from '../../../stores/use-feed-view-settings-store';
 import Version from '../../version';
+import StyleSelector from '../../style-selector/style-selector';
 import { INTERFACE_LANGUAGE_STORAGE_KEY, SUPPORTED_INTERFACE_LANGUAGES } from '../../../lib/constants';
 
 const commitRef = process.env.VITE_COMMIT_REF;
@@ -106,6 +107,9 @@ const InterfaceSettings = () => {
       </div>
       <div className={styles.setting}>
         {capitalize(t('interface_language'))}: <InterfaceLanguage />
+      </div>
+      <div className={styles.setting}>
+        {capitalize(t('style'))}: <StyleSelector />
       </div>
       <div className={styles.setting}>
         <label>
