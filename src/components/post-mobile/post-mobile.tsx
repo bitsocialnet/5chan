@@ -41,7 +41,7 @@ import { alertChallengeVerificationFailed } from '../../lib/utils/challenge-util
 import useQuotedByMap from '../../hooks/use-quoted-by-map';
 import useProgressiveRender from '../../hooks/use-progressive-render';
 import { BOARD_REPLIES_PREVIEW_FETCH_SIZE, BOARD_REPLIES_PREVIEW_VISIBLE_COUNT, REPLIES_PER_PAGE } from '../../lib/constants';
-import { getPreviewDisplayReplies } from '../../lib/utils/replies-preview-utils';
+import { filterRepliesForDisplay, getPreviewDisplayReplies } from '../../lib/utils/replies-preview-utils';
 
 const { addChallenge } = useChallengesStore.getState();
 
@@ -628,8 +628,8 @@ const PostMobile = ({
   const hasFailedState = state === 'failed';
   const isReply = !!parentCid;
 
-  // Filter out deleted replies with no children for both virtuoso and non-virtuoso rendering
-  const filteredReplies = repliesForRender.filter((reply) => !(reply.deleted && (reply.replyCount === 0 || !reply.replyCount)));
+  // Author-deleted replies are hidden from thread replies; moderator removals still render their placeholder.
+  const filteredReplies = filterRepliesForDisplay(repliesForRender);
   const previewDisplayReplies = getPreviewDisplayReplies(filteredReplies, BOARD_REPLIES_PREVIEW_VISIBLE_COUNT);
 
   const directRepliesByParentCid = (() => {

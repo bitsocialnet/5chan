@@ -2,10 +2,15 @@ import { BOARD_REPLIES_PREVIEW_VISIBLE_COUNT } from '../constants';
 
 interface CommentLike {
   cid?: string | null;
+  deleted?: boolean;
   index?: number;
   pendingApproval?: boolean;
   state?: string;
   timestamp?: number;
+}
+
+export function filterRepliesForDisplay<T extends CommentLike>(replies: T[]): T[] {
+  return replies.filter((reply) => !reply.deleted);
 }
 
 /**

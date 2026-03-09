@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { copyToClipboard } from '../clipboard-utils';
 import { hashStringToColor, getTextColorForBackground, removeMarkdown } from '../post-utils';
 import { preloadThemeAssets } from '../preload-utils';
-import { computeOmittedCount, getPreviewDisplayReplies, getTotalReplyCount } from '../replies-preview-utils';
+import { computeOmittedCount, filterRepliesForDisplay, getPreviewDisplayReplies, getTotalReplyCount } from '../replies-preview-utils';
 import { getQuotedCidsFromContent, mergeQuotedCids } from '../reply-quote-utils';
 import { formatUserIDForDisplay, truncateWithEllipsisInMiddle } from '../string-utils';
 import { getFormattedDate, getFormattedTimeAgo, isChristmas } from '../time-utils';
@@ -120,6 +120,11 @@ describe('misc utils', () => {
   });
 
   it('builds reply previews, omitted counts, and fallback reply totals', () => {
+    expect(filterRepliesForDisplay([{ cid: 'visible' }, { cid: 'deleted', deleted: true }, { cid: 'removed', deleted: false }])).toEqual([
+      { cid: 'visible' },
+      { cid: 'removed', deleted: false },
+    ]);
+
     expect(
       getPreviewDisplayReplies(
         [
