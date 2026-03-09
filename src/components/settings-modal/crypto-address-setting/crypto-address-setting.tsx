@@ -126,7 +126,7 @@ const CryptoAddressSetting = () => {
       <div className={styles.cryptoAddressInput}>
         <input
           type='text'
-          placeholder='address.eth/.sol'
+          placeholder='myaddress.eth'
           value={cryptoState.cryptoAddress}
           onChange={(e) => {
             setInputValue(e.target.value);
@@ -152,21 +152,7 @@ const CryptoAddressSetting = () => {
                 and search the address
               </li>
               <li>once you own the address, go to its page, click on "records", then "edit records"</li>
-              <li>add a new text record with name "plebbit-author-address" and value: {account?.signer?.address}</li>
-            </ol>
-            steps to set a .sol address as your ID:
-            <br />
-            <ol>
-              <li>
-                go to{' '}
-                <a href='https://www.sns.id/' target='_blank' rel='noopener noreferrer'>
-                  sns.id
-                </a>{' '}
-                and search the address
-              </li>
-              <li>once you own the address, go to your profile, click the address menu "...", then "create subdomain"</li>
-              <li>enter subdomain "plebbit-author-address" and create</li>
-              <li>go to subdomain, "content", change content to: {account?.signer?.address}</li>
+              <li>add a new text record with name "bitsocial" and value: {account?.signer?.address}</li>
             </ol>
           </div>
         )}
