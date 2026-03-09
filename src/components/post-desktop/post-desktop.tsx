@@ -8,6 +8,7 @@ import styles from '../../views/post/post.module.css';
 import { CommentMediaInfo, getDisplayMediaInfoType, getHasThumbnail, getMediaDimensions } from '../../lib/utils/media-utils';
 import { hashStringToColor, getTextColorForBackground } from '../../lib/utils/post-utils';
 import { getFormattedDate, getFormattedTimeAgo } from '../../lib/utils/time-utils';
+import { approvePendingCommentModeration, isPendingApprovalRejected, rejectPendingCommentModeration } from '../../lib/utils/pending-approval-moderation';
 import { isValidURL } from '../../lib/utils/url-utils';
 import { isAllView, isModQueueView, isModView, isPendingPostView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import { formatUserIDForDisplay, truncateWithEllipsisInMiddle } from '../../lib/utils/string-utils';
@@ -131,7 +132,7 @@ const PostInfo = ({
   } = usePublishCommentModeration({
     commentCid: cid,
     subplebbitAddress: shouldShowPendingApprovalButtons ? subplebbitAddress : undefined,
-    commentModeration: { approved: true },
+    commentModeration: approvePendingCommentModeration,
     onChallenge: async (...args: any) => {
       addChallenge([...args, post]);
     },
@@ -150,7 +151,7 @@ const PostInfo = ({
   } = usePublishCommentModeration({
     commentCid: cid,
     subplebbitAddress: shouldShowPendingApprovalButtons ? subplebbitAddress : undefined,
-    commentModeration: { removed: true },
+    commentModeration: rejectPendingCommentModeration,
     onChallenge: async (...args: any) => {
       addChallenge([...args, post]);
     },
@@ -208,7 +209,7 @@ const PostInfo = ({
   // Check if post is awaiting approval and over threshold (for mod queue view)
   const approved = post?.approved;
   const alreadyApproved = approved === true;
-  const alreadyRejected = removed === true;
+  const alreadyRejected = isPendingApprovalRejected(post);
   const isAwaitingApproval = isInModQueueView && !alreadyApproved && !alreadyRejected;
   const timeWaiting = timestamp ? currentTime - timestamp : 0;
   const alertThresholdSeconds = getAlertThresholdSeconds();

@@ -13,6 +13,12 @@ import { useDirectories, DirectoryCommunity } from '../../hooks/use-directories'
 import getShortAddress from '../../lib/get-short-address';
 import { BOARD_CODE_GROUPS } from '../../constants/board-codes';
 import { getHasThumbnail, getCommentMediaInfo } from '../../lib/utils/media-utils';
+import {
+  approvePendingCommentModeration,
+  isPendingApprovalAwaiting,
+  isPendingApprovalRejected,
+  rejectPendingCommentModeration,
+} from '../../lib/utils/pending-approval-moderation';
 import { getFormattedDate, getFormattedTimeAgo } from '../../lib/utils/time-utils';
 import useFeedResetStore from '../../stores/use-feed-reset-store';
 import useChallengesStore from '../../stores/use-challenges-store';
@@ -148,11 +154,11 @@ const ModQueueActions = ({ status, errorMessage, isPublishing, handleApprove, ha
 
 const useModQueueActions = (comment: Comment): ModQueueActionState => {
   const { t } = useTranslation();
-  const { cid, subplebbitAddress, approved, removed } = comment || {};
+  const { cid, subplebbitAddress, approved, removed, pendingApproval } = comment || {};
   const [initiatedAction, setInitiatedAction] = useState<ModerationAction>(null);
 
   const alreadyApproved = approved === true;
-  const alreadyRejected = removed === true;
+  const alreadyRejected = isPendingApprovalRejected({ approved, removed, pendingApproval });
 
   const {
     publishCommentModeration: approve,
@@ -161,7 +167,7 @@ const useModQueueActions = (comment: Comment): ModQueueActionState => {
   } = usePublishCommentModeration({
     commentCid: cid,
     subplebbitAddress,
-    commentModeration: { approved: true },
+    commentModeration: approvePendingCommentModeration,
     onChallenge: async (...args: any) => {
       addChallenge([...args, comment]);
     },
@@ -180,7 +186,7 @@ const useModQueueActions = (comment: Comment): ModQueueActionState => {
   } = usePublishCommentModeration({
     commentCid: cid,
     subplebbitAddress,
-    commentModeration: { removed: true },
+    commentModeration: rejectPendingCommentModeration,
     onChallenge: async (...args: any) => {
       addChallenge([...args, comment]);
     },
@@ -245,21 +251,36 @@ const ModQueueRow = memo(({ comment, isOdd = false, showBoard = false, boardPath
   const { editedComment } = useEditedComment({ comment });
   const displayComment = editedComment || comment;
 
-  const { content, title, timestamp, subplebbitAddress, cid, threadCid, link, thumbnailUrl, linkWidth, linkHeight, removed, approved, number, parentCid } =
-    displayComment;
+  const {
+    content,
+    title,
+    timestamp,
+    subplebbitAddress,
+    cid,
+    threadCid,
+    link,
+    thumbnailUrl,
+    linkWidth,
+    linkHeight,
+    removed,
+    approved,
+    pendingApproval,
+    number,
+    parentCid,
+  } = displayComment;
 
   // Check if already moderated (from previous session or API update)
   // Note: `approved` and `removed` are direct fields on the comment from CommentUpdate,
   // not nested under commentModeration (which is the options object for publishing moderation actions)
   const alreadyApproved = approved === true;
-  const alreadyRejected = removed === true;
+  const alreadyRejected = isPendingApprovalRejected({ approved, removed, pendingApproval });
 
   const timeWaiting = currentTime - timestamp;
   const alertThresholdSeconds = getAlertThresholdSeconds();
   const isOverThreshold = timeWaiting > alertThresholdSeconds;
 
   // Only show alert animation for comments awaiting approval (not approved or rejected)
-  const isAwaitingApproval = !alreadyApproved && !alreadyRejected;
+  const isAwaitingApproval = isPendingApprovalAwaiting(displayComment);
 
   const { status, errorMessage, isPublishing, handleApprove, handleReject } = useModQueueActions(displayComment);
   const hasTitle = title && title.trim().length > 0;
@@ -357,16 +378,31 @@ const ModQueueCard = memo(({ comment, showBoard = false, boardPath, boardDisplay
   const { editedComment } = useEditedComment({ comment });
   const displayComment = editedComment || comment;
 
-  const { content, title, timestamp, subplebbitAddress, cid, threadCid, link, thumbnailUrl, linkWidth, linkHeight, removed, approved, number, parentCid } =
-    displayComment;
+  const {
+    content,
+    title,
+    timestamp,
+    subplebbitAddress,
+    cid,
+    threadCid,
+    link,
+    thumbnailUrl,
+    linkWidth,
+    linkHeight,
+    removed,
+    approved,
+    pendingApproval,
+    number,
+    parentCid,
+  } = displayComment;
 
   const alreadyApproved = approved === true;
-  const alreadyRejected = removed === true;
+  const alreadyRejected = isPendingApprovalRejected({ approved, removed, pendingApproval });
 
   const timeWaiting = currentTime - timestamp;
   const alertThresholdSeconds = getAlertThresholdSeconds();
   const isOverThreshold = timeWaiting > alertThresholdSeconds;
-  const isAwaitingApproval = !alreadyApproved && !alreadyRejected;
+  const isAwaitingApproval = isPendingApprovalAwaiting(displayComment);
 
   const { status, errorMessage, isPublishing, handleApprove, handleReject } = useModQueueActions(displayComment);
   const hasTitle = title && title.trim().length > 0;
@@ -480,7 +516,7 @@ const ModQueueBoardSummary = ({ feed, directories, accountSubplebbitAddresses }:
       if (!addr) continue;
       const entry = counts.get(addr);
       if (!entry) continue;
-      const isAwaiting = item.approved !== true && item.removed !== true;
+      const isAwaiting = isPendingApprovalAwaiting(item);
       if (!isAwaiting) continue;
       const timeWaiting = currentTime - (item.timestamp ?? 0);
       const isUrgent = timeWaiting > alertThresholdSeconds;
@@ -606,8 +642,8 @@ const ModQueueCountItem = ({ comment, alertThresholdSeconds, onStatusChange }: M
   const displayComment = editedComment || comment;
   const currentTime = useCurrentTime();
 
-  const { cid, approved, removed, timestamp } = displayComment;
-  const isAwaiting = approved !== true && removed !== true;
+  const { cid, timestamp } = displayComment;
+  const isAwaiting = isPendingApprovalAwaiting(displayComment);
   const timeWaiting = currentTime - timestamp;
   const isUrgent = isAwaiting && timeWaiting > alertThresholdSeconds;
 

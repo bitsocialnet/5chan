@@ -9,6 +9,7 @@ import { shouldShowSnow } from '../../lib/snow';
 import { getHasThumbnail } from '../../lib/utils/media-utils';
 import { getTextColorForBackground, hashStringToColor } from '../../lib/utils/post-utils';
 import { getFormattedDate, getFormattedTimeAgo } from '../../lib/utils/time-utils';
+import { approvePendingCommentModeration, isPendingApprovalRejected, rejectPendingCommentModeration } from '../../lib/utils/pending-approval-moderation';
 import { isAllView, isModQueueView, isModView, isPendingPostView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import { formatUserIDForDisplay } from '../../lib/utils/string-utils';
 import useModQueueStore from '../../stores/use-mod-queue-store';
@@ -103,7 +104,7 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
   } = usePublishCommentModeration({
     commentCid: cid,
     subplebbitAddress: shouldShowPendingApprovalButtons ? subplebbitAddress : undefined,
-    commentModeration: { approved: true },
+    commentModeration: approvePendingCommentModeration,
     onChallenge: async (...args: any) => {
       addChallenge([...args, post]);
     },
@@ -122,7 +123,7 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
   } = usePublishCommentModeration({
     commentCid: cid,
     subplebbitAddress: shouldShowPendingApprovalButtons ? subplebbitAddress : undefined,
-    commentModeration: { removed: true },
+    commentModeration: rejectPendingCommentModeration,
     onChallenge: async (...args: any) => {
       addChallenge([...args, post]);
     },
@@ -182,7 +183,7 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
   // Check if post is awaiting approval and over threshold (for mod queue view)
   const approved = post?.approved;
   const alreadyApproved = approved === true;
-  const alreadyRejected = removed === true;
+  const alreadyRejected = isPendingApprovalRejected(post);
   const isAwaitingApproval = isInModQueueView && !alreadyApproved && !alreadyRejected;
   const timeWaiting = timestamp ? currentTime - timestamp : 0;
   const alertThresholdSeconds = getAlertThresholdSeconds();
