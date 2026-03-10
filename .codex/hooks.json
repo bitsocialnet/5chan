@@ -13,6 +13,10 @@
     ],
     "stop": [
       {
+        "command": ".codex/hooks/sync-git-branches.sh",
+        "timeout": 60
+      },
+      {
         "command": ".codex/hooks/verify.sh",
         "timeout": 60
       }
