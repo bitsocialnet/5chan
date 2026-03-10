@@ -180,7 +180,9 @@
     "diff": "^8.0.3",
     "lodash": "4.17.23",
     "seroval": "1.4.1",
-    "tar": "7.5.9",
+    "tar": "7.5.10",
+    "serialize-javascript": "7.0.3",
+    "@tootallnate/once": "3.0.1",
     "rollup": "2.80.0",
     "@electron/asar": "4.0.1"
   },
