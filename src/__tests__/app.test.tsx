@@ -95,6 +95,7 @@ vi.mock('../lib/snow', () => ({
 }));
 
 vi.mock('../lib/utils/preload-utils', () => ({
+  preloadReplyModal: vi.fn(),
   preloadThemeAssets: vi.fn(),
 }));
 

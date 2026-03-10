@@ -128,12 +128,24 @@ vi.mock('../../../components/footer', () => ({
 
 vi.mock('../../../components/post-desktop', () => ({
   default: ({ post, roles, targetReplyCid }: { post?: TestComment; roles?: Record<string, unknown>; targetReplyCid?: string }) =>
-    createElement('div', { 'data-testid': 'post-desktop' }, `${post?.cid || 'missing'}:${targetReplyCid || 'none'}:${Object.keys(roles || {}).length}`),
+    createElement(
+      'div',
+      { 'data-testid': 'post-desktop' },
+      createElement('div', { 'data-thread-container-cid': post?.cid }),
+      createElement('div', { 'data-post-info-cid': post?.cid }),
+      `${post?.cid || 'missing'}:${targetReplyCid || 'none'}:${Object.keys(roles || {}).length}`,
+    ),
 }));
 
 vi.mock('../../../components/post-mobile', () => ({
   default: ({ post, roles, targetReplyCid }: { post?: TestComment; roles?: Record<string, unknown>; targetReplyCid?: string }) =>
-    createElement('div', { 'data-testid': 'post-mobile' }, `${post?.cid || 'missing'}:${targetReplyCid || 'none'}:${Object.keys(roles || {}).length}`),
+    createElement(
+      'div',
+      { 'data-testid': 'post-mobile' },
+      createElement('div', { 'data-thread-container-cid': post?.cid }),
+      createElement('div', { 'data-post-info-cid': post?.cid }),
+      `${post?.cid || 'missing'}:${targetReplyCid || 'none'}:${Object.keys(roles || {}).length}`,
+    ),
 }));
 
 let container: HTMLDivElement;
@@ -186,6 +198,11 @@ describe('Post', () => {
       },
     };
     Object.defineProperty(window, 'scrollTo', {
+      configurable: true,
+      value: vi.fn(),
+      writable: true,
+    });
+    Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
       configurable: true,
       value: vi.fn(),
       writable: true,
@@ -244,7 +261,12 @@ describe('Post', () => {
     expect(container.querySelector('[data-testid="thread-footer-first-row"]')?.textContent).toBe('cached-cid:42:music-posting.eth:false');
     expect(container.querySelector('[data-testid="thread-footer-mobile"]')?.textContent).toBe('cached-cid:42:music-posting.eth:false');
     expect(document.title).toBe('/mu/ - Cached thread... - 5chan');
-    expect(window.scrollTo).toHaveBeenCalledWith(0, 0);
+    expect(window.scrollTo).toHaveBeenCalledWith({
+      behavior: 'auto',
+      left: 0,
+      top: 0,
+    });
+    expect(HTMLElement.prototype.scrollIntoView).not.toHaveBeenCalled();
   });
 
   it('redirects thread routes whose fetched comment belongs to a different board', async () => {

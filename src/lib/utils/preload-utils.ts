@@ -19,3 +19,33 @@ export const preloadThemeAssets = (): void => {
   preloadImages(THEME_BUTTON_IMAGES);
   preloadImages(THEME_BACKGROUND_IMAGES);
 };
+
+const scheduleIdlePreload = (callback: () => void): void => {
+  if (typeof globalThis === 'undefined') {
+    callback();
+    return;
+  }
+
+  const requestIdle = (
+    globalThis as typeof globalThis & {
+      requestIdleCallback?: (callback: IdleRequestCallback, options?: IdleRequestOptions) => number;
+    }
+  ).requestIdleCallback;
+
+  if (typeof requestIdle === 'function') {
+    requestIdle(() => callback(), { timeout: 1500 });
+    return;
+  }
+
+  globalThis.setTimeout(callback, 500);
+};
+
+/**
+ * Preloads the reply modal chunk during idle time so the first `No.` click
+ * doesn't have to wait for the lazy import to resolve.
+ */
+export const preloadReplyModal = (): void => {
+  scheduleIdlePreload(() => {
+    void import('../../components/reply-modal');
+  });
+};

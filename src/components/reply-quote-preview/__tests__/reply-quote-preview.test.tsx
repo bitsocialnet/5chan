@@ -3,6 +3,7 @@ import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import ReplyQuotePreview from '../reply-quote-preview';
+import styles from '../../../views/post/post.module.css';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
@@ -122,11 +123,13 @@ const appendReplyElement = ({
   inViewport = true,
   isThreadCard = false,
   withHighlight = false,
+  parent = document.body,
 }: {
   cid: string;
   inViewport?: boolean;
   isThreadCard?: boolean;
   withHighlight?: boolean;
+  parent?: HTMLElement;
 }) => {
   const element = document.createElement('div');
   element.dataset.cid = cid;
@@ -141,6 +144,21 @@ const appendReplyElement = ({
       left: 0,
       right: 100,
       top: inViewport ? 0 : -500,
+    }) as DOMRect;
+  parent.appendChild(element);
+  return element;
+};
+
+const appendPostInfoAnchor = (cid: string) => {
+  const element = document.createElement('div');
+  element.dataset.postInfoCid = cid;
+  element.scrollIntoView = vi.fn();
+  element.getBoundingClientRect = () =>
+    ({
+      bottom: 100,
+      left: 0,
+      right: 100,
+      top: 0,
     }) as DOMRect;
   document.body.appendChild(element);
   return element;
@@ -170,6 +188,8 @@ describe('ReplyQuotePreview', () => {
     act(() => root.unmount());
     container.remove();
     document.querySelectorAll('[data-cid]').forEach((node) => node.remove());
+    document.querySelectorAll('[data-post-info-cid]').forEach((node) => node.remove());
+    document.querySelectorAll(`.${styles.replyQuotePreview}`).forEach((node) => node.remove());
     document.querySelectorAll('.scroll-highlight').forEach((node) => node.remove());
   });
 
@@ -201,8 +221,9 @@ describe('ReplyQuotePreview', () => {
     expect(testState.navigateMock).not.toHaveBeenCalled();
   });
 
-  it('scrolls to the thread card top for OP quotes on the current desktop thread page', async () => {
+  it('scrolls to the OP post info for quotes on the current desktop thread page', async () => {
     const threadCard = appendReplyElement({ cid: 'thread-cid', isThreadCard: true });
+    const postInfo = appendPostInfoAnchor('thread-cid');
 
     await renderPreview({
       isOP: true,
@@ -221,8 +242,35 @@ describe('ReplyQuotePreview', () => {
       link?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
 
-    expect(threadCard.scrollIntoView as any).toHaveBeenCalledWith({ behavior: 'auto', block: 'start' });
+    expect(postInfo.scrollIntoView as any).toHaveBeenCalledWith({ behavior: 'auto', block: 'start' });
+    expect(threadCard.scrollIntoView as any).not.toHaveBeenCalled();
     expect(testState.navigateMock).not.toHaveBeenCalled();
+  });
+
+  it('navigates to the reply route when only a floating preview copy matches the CID', async () => {
+    const previewWrapper = document.createElement('div');
+    previewWrapper.className = styles.replyQuotePreview;
+    document.body.appendChild(previewWrapper);
+    const previewTarget = appendReplyElement({ cid: 'reply-cid', parent: previewWrapper });
+
+    await renderPreview({
+      backlinkReply: {
+        cid: 'reply-cid',
+        number: 7,
+        subplebbitAddress: 'music-posting.eth',
+      },
+      isBacklinkReply: true,
+    });
+
+    const link = queryAnchorByText('>>7');
+    expect(link).toBeTruthy();
+
+    await act(async () => {
+      link?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    expect(previewTarget.scrollIntoView as any).not.toHaveBeenCalled();
+    expect(testState.navigateMock).toHaveBeenCalledWith('/mu/thread/reply-cid');
   });
 
   it('handles desktop hover highlights and floating previews for quotelinks', async () => {
@@ -313,6 +361,30 @@ describe('ReplyQuotePreview', () => {
       hashLink?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
 
+    expect(testState.navigateMock).toHaveBeenCalledWith('/mu/thread/reply-cid');
+  });
+
+  it('navigates mobile reply hash links even when the reply is already on the current thread page', async () => {
+    testState.isMobile = true;
+    const target = appendReplyElement({ cid: 'reply-cid' });
+
+    await renderPreview({
+      backlinkReply: {
+        cid: 'reply-cid',
+        number: 5,
+        subplebbitAddress: 'music-posting.eth',
+      },
+      isBacklinkReply: true,
+    });
+
+    const hashLink = queryAnchorByText(' #');
+    expect(hashLink).toBeTruthy();
+
+    await act(async () => {
+      hashLink?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    expect(target.scrollIntoView as any).not.toHaveBeenCalled();
     expect(testState.navigateMock).toHaveBeenCalledWith('/mu/thread/reply-cid');
   });
 
