@@ -104,7 +104,7 @@ const downloads = [macSection, winSection, linuxSection, androidSection, htmlSec
 
 // One-liner summary of what changed in this release. Update before each release.
 const oneLinerDescription =
-  'This version adds BBCode-style spoiler tags, a mobile catalog footer, purge UI feedback for mods, user-friendly loading state strings, and fixes for deleted replies, challenge flow, popular threads stability, and mod queue UX.';
+  'This version fixes OP permalinks and aliased board metadata, improves reply-scroll stability, and includes dependency and security maintenance updates.';
 
 const releaseBody = `${oneLinerDescription}
 

@@ -1,3 +1,16 @@
+## [0.6.10](https://github.com/plebbit/plebchan/compare/v0.6.9...v0.6.10) (2026-03-10)
+
+
+### Bug Fixes
+
+* **ai-workflow:** delete merged local task branches ([f27a823](https://github.com/plebbit/plebchan/commit/f27a8233bc8217ea8470579e077b57e5bbc49c65))
+* **ai-workflow:** finalize linked issue after PR merge ([#1047](https://github.com/plebbit/plebchan/issues/1047)) ([248a38d](https://github.com/plebbit/plebchan/commit/248a38d71c1b89dfaf8198fc04fa8b3732169e48))
+* **ai-workflow:** scan full project item list before add ([4cb5c4a](https://github.com/plebbit/plebchan/commit/4cb5c4a83362cf2b4a758822c4fa9f416334c4f1))
+* **post:** align op permalinks to the outer thread container ([#1050](https://github.com/plebbit/plebchan/issues/1050)) ([6ed3708](https://github.com/plebbit/plebchan/commit/6ed3708322b43dcbd17444883e36ebdbb3eab778))
+* **subplebbit:** resolve aliased board metadata in subplebbit selectors ([a862852](https://github.com/plebbit/plebchan/commit/a862852e536324f0c0c09cdc59936ed3e9a4f122))
+
+
+
 ## [0.6.9](https://github.com/plebbit/plebchan/compare/v0.6.8...v0.6.9) (2026-03-10)
 
 
