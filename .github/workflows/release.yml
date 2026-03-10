@@ -1,6 +1,10 @@
 # docs https://github.com/marketplace/actions/create-release
 # docs https://github.com/ncipollo/release-action
 # docs https://docs.github.com/en/actions/using-jobs/choosing-the-runner-for-a-job#choosing-github-hosted-runners
+#
+# Architecture: build jobs upload workflow artifacts only. A single
+# finalize-release job creates the GitHub release with all assets + body.
+# If ANY build job fails, finalize-release is skipped and no release appears.
 
 name: release
 
@@ -57,18 +61,17 @@ jobs:
     runs-on: ubuntu-22.04
     needs: preflight
     permissions:
-      contents: write
+      contents: read
     steps:
-      # electron build
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
-          # needed for git commit history changelog
           fetch-depth: 0
       - name: Setup Node.js v22
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Install dependencies (with Node v22)
+          cache: 'yarn'
+      - name: Install dependencies
         run: |
           for i in 1 2 3; do
             echo "yarn install attempt $i"
@@ -76,41 +79,35 @@ jobs:
             sleep 5
             [ "$i" = "3" ] && exit 1
           done
-      # make sure the ipfs executable is executable
-      - name: Download IPFS and set permissions (with Node v22)
+      - name: Download IPFS and set permissions
         run: BUILD_ARCH=${{ matrix.arch }} node electron/download-ipfs && sudo chmod +x bin/linux/ipfs
-      - name: Build React app (with Node v22)
+      - name: Build React app
         run: CI='' NODE_ENV=production yarn build
       - name: Build Electron app for Linux (arm64)
-        if: ${{ matrix.arch == 'arm64' }}
+        if: matrix.arch == 'arm64'
         run: yarn electron:build:linux:arm64
       - name: Build Electron app for Linux (x64)
-        if: ${{ matrix.arch == 'x64' }}
+        if: matrix.arch == 'x64'
         run: yarn electron:build:linux:x64
-      - name: List out directory
-        run: ls -laR out/make
+      - name: Stage release artifacts
+        run: |
+          mkdir -p release-assets
+          cp out/make/AppImage/**/*.AppImage release-assets/
       - name: Create static HTML release archive
+        if: matrix.arch == 'x64'
         run: |
           VERSION=$(node -e "console.log(require('./package.json').version)")
           HTML_ARCHIVE_DIR="5chan-html-$VERSION"
-          mkdir -p dist
           rm -rf "$HTML_ARCHIVE_DIR"
           cp -R build "$HTML_ARCHIVE_DIR"
-          zip -r "dist/${HTML_ARCHIVE_DIR}.zip" "$HTML_ARCHIVE_DIR"
+          zip -r "release-assets/${HTML_ARCHIVE_DIR}.zip" "$HTML_ARCHIVE_DIR"
           rm -rf "$HTML_ARCHIVE_DIR"
-      - name: List dist directory
-        run: ls -la dist
-
-      # publish version release
-      - name: Generate release body
-        run: node scripts/release-body > release-body.txt
-      - uses: ncipollo/release-action@v1
+      - name: List release assets
+        run: ls -la release-assets
+      - uses: actions/upload-artifact@v4
         with:
-          artifacts: 'out/make/AppImage/**/*.AppImage,dist/5chan-html*.zip'
-          token: ${{ secrets.GITHUB_TOKEN }}
-          replacesArtifacts: true
-          omitBody: true
-          allowUpdates: true
+          name: release-linux-${{ matrix.arch }}
+          path: release-assets/
 
   mac:
     strategy:
@@ -124,187 +121,21 @@ jobs:
     runs-on: ${{ matrix.runner }}
     needs: preflight
     permissions:
-      contents: write
+      contents: read
     steps:
-      # electron build
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
-          # needed for git commit history changelog
           fetch-depth: 0
       - name: Setup Node.js v22
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: 'yarn'
       - name: Setup Python 3.12
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-
-      # install missing dep for sqlite (use setup-python to avoid PEP 668 externally-managed-environment error)
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
       - run: pip install setuptools
-
-      - name: Install dependencies (with Node v22)
-        run: |
-          for i in 1 2 3; do
-            echo "yarn install attempt $i"
-            yarn install --frozen-lockfile --ignore-engines --network-timeout 100000 --network-concurrency 1 && break
-            sleep 5
-            [ "$i" = "3" ] && exit 1
-          done
-      # make sure the ipfs executable is executable
-      - name: Download IPFS and set permissions (with Node v22)
-        run: node electron/download-ipfs && sudo chmod +x bin/mac/ipfs
-      - name: Build React app (with Node v22)
-        run: CI='' NODE_ENV=production yarn build
-      - name: Build Electron app for Mac (with Node v22)
-        env:
-          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
-        run: |
-          if [ "${{ matrix.arch }}" = "arm64" ]; then
-            yarn electron:build:mac:arm64
-          else
-            yarn electron:build:mac:x64
-          fi
-      - name: List out directory
-        run: ls -laR out/make
-      # Rename DMG to include architecture (ZIPs already include arch from Forge)
-      - name: Rename DMG with architecture suffix
-        run: |
-          for f in out/make/*.dmg; do
-            [ -f "$f" ] || continue
-            base=$(basename "$f" .dmg)
-            mv "$f" "out/make/${base}-${{ matrix.arch }}.dmg"
-          done
-
-      # publish version release
-      - name: Generate release body
-        run: node scripts/release-body > release-body.txt
-      - uses: ncipollo/release-action@v1
-        with:
-          artifacts: 'out/make/*.dmg,out/make/zip/**/*.zip'
-          token: ${{ secrets.GITHUB_TOKEN }}
-          replacesArtifacts: true
-          omitBody: true
-          allowUpdates: true
-
-  windows:
-    runs-on: windows-2022
-    needs: preflight
-    permissions:
-      contents: write
-    steps:
-      # electron build
-      - uses: actions/checkout@v2
-        with:
-          # needed for git commit history changelog
-          fetch-depth: 0
-      - name: Setup Node.js v22
-        uses: actions/setup-node@v2
-        with:
-          node-version: 22
-      - name: Install dependencies (with Node v22) # --network-timeout and --network-concurrency are yarn v1 flags.
-        shell: bash
-        run: |
-          for i in 1 2 3; do
-            echo "yarn install attempt $i"
-            yarn install --frozen-lockfile --ignore-engines --network-timeout 100000 --network-concurrency 1 && break
-            sleep 5
-            [ "$i" = "3" ] && exit 1
-          done
-      - name: Build React app (with Node v22)
-        run: npx cross-env NODE_ENV=production yarn build
-      - name: Build Electron app for Windows (x64)
-        run: yarn electron:build:windows
-      - name: List out directory
-        run: dir out\make\squirrel.windows\x64
-
-      # publish version release
-      - name: Generate release body
-        run: node scripts/release-body > release-body.txt
-      - uses: ncipollo/release-action@v1
-        with:
-          artifacts: 'out/make/squirrel.windows/x64/*.exe'
-          token: ${{ secrets.GITHUB_TOKEN }}
-          replacesArtifacts: true
-          omitBody: true
-          allowUpdates: true
-
-  android:
-    runs-on: ubuntu-22.04
-    needs: preflight
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          # needed to use 'git tag' and get all tags and for git commit history changelog
-          fetch-depth: 0
-      - uses: actions/setup-java@v3
-        with:
-          distribution: 'zulu'
-          java-version: '17'
-      - uses: gradle/gradle-build-action@v2
-        with:
-          gradle-version: 8.9
-      - uses: actions/setup-node@v2
-        with:
-          node-version: 22
-      - run: sudo apt install -y apksigner zipalign
-
-      # install all dependencies (including devDependencies needed for React build)
-      - name: Install dependencies (with Node v22)
-        run: |
-          for i in 1 2 3; do
-            echo "yarn install attempt $i"
-            yarn install --frozen-lockfile --ignore-engines --network-timeout 100000 --network-concurrency 1 && break
-            sleep 5
-            [ "$i" = "3" ] && exit 1
-          done
-      # build react app
-      - run: CI='' NODE_ENV=production yarn build
-      # set android versionCode and versionName
-      - run: sed -i "s/versionCode 1/versionCode $(git tag | wc -l)/" ./android/app/build.gradle
-      - run: sed -i "s/versionName \"1.0\"/versionName \"$(node -e "console.log(require('./package.json').version)")\"/" ./android/app/build.gradle
-      - run: cat ./android/app/build.gradle
-      # build apk
-      - run: npx cap sync android
-      - run: cd android && gradle bundle
-      - run: cd android && ./gradlew assembleRelease --stacktrace
-      # optimize apk
-      - run: cd android/app/build/outputs/apk/release && zipalign 4 app-release-unsigned.apk app-release-unsigned-zip.apk
-      # sign apk
-      # to create keystore: keytool -genkey -v -keystore plebbit.keystore -keyalg RSA -keysize 2048 -validity 10000 -alias release
-      - run: cd android/app/build/outputs/apk/release && apksigner sign --ks ../../../../../plebbit.keystore --ks-pass pass:${{ secrets.PLEBBIT_REACT_KEYSTORE_PASSWORD }} --ks-key-alias release --out app-release-signed.apk app-release-unsigned-zip.apk
-      # move apk to dist folder
-      - run: mkdir -p dist && mv android/app/build/outputs/apk/release/app-release-signed.apk dist/5chan-$(node -e "console.log(require('./package.json').version)").apk
-      - run: ls dist
-
-      # publish version release
-      - run: node scripts/release-body > release-body.txt
-      - uses: ncipollo/release-action@v1
-        with:
-          artifacts: 'dist/5chan*.apk'
-          token: ${{ secrets.GITHUB_TOKEN }}
-          replacesArtifacts: true
-          omitBody: true
-          allowUpdates: true
-
-  finalize-release:
-    runs-on: ubuntu-22.04
-    needs: [linux, mac, windows, android]
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - name: Setup Node.js v22
-        uses: actions/setup-node@v2
-        with:
-          node-version: 22
       - name: Install dependencies
         run: |
           for i in 1 2 3; do
@@ -313,15 +144,180 @@ jobs:
             sleep 5
             [ "$i" = "3" ] && exit 1
           done
-      - name: Generate final release body from GitHub assets
+      - name: Download IPFS and set permissions
+        run: node electron/download-ipfs && sudo chmod +x bin/mac/ipfs
+      - name: Build React app
+        run: CI='' NODE_ENV=production yarn build
+      - name: Build Electron app for Mac
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+        run: |
+          if [ "${{ matrix.arch }}" = "arm64" ]; then
+            yarn electron:build:mac:arm64
+          else
+            yarn electron:build:mac:x64
+          fi
+      - name: Rename DMG with architecture suffix
+        run: |
+          for f in out/make/*.dmg; do
+            [ -f "$f" ] || continue
+            base=$(basename "$f" .dmg)
+            mv "$f" "out/make/${base}-${{ matrix.arch }}.dmg"
+          done
+      - name: Stage release artifacts
+        run: |
+          mkdir -p release-assets
+          cp out/make/*.dmg release-assets/ 2>/dev/null || true
+          find out/make/zip -name '*.zip' -exec cp {} release-assets/ \; 2>/dev/null || true
+      - name: List release assets
+        run: ls -la release-assets
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-mac-${{ matrix.arch }}
+          path: release-assets/
+
+  windows:
+    runs-on: windows-2022
+    needs: preflight
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Node.js v22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'yarn'
+      - name: Install dependencies
+        shell: bash
+        run: |
+          for i in 1 2 3; do
+            echo "yarn install attempt $i"
+            yarn install --frozen-lockfile --ignore-engines --network-timeout 100000 --network-concurrency 1 && break
+            sleep 5
+            [ "$i" = "3" ] && exit 1
+          done
+      - name: Build React app
+        run: npx cross-env NODE_ENV=production yarn build
+      - name: Build Electron app for Windows (x64)
+        run: yarn electron:build:windows
+      - name: Stage release artifacts
+        shell: bash
+        run: |
+          mkdir -p release-assets
+          cp out/make/squirrel.windows/x64/*.exe release-assets/
+      - name: List release assets
+        shell: bash
+        run: ls -la release-assets
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-windows
+          path: release-assets/
+
+  android:
+    runs-on: ubuntu-22.04
+    needs: preflight
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'yarn'
+      - run: sudo apt-get install -y apksigner zipalign
+      - name: Install dependencies
+        run: |
+          for i in 1 2 3; do
+            echo "yarn install attempt $i"
+            yarn install --frozen-lockfile --ignore-engines --network-timeout 100000 --network-concurrency 1 && break
+            sleep 5
+            [ "$i" = "3" ] && exit 1
+          done
+      - name: Build React app
+        run: CI='' NODE_ENV=production yarn build
+      - name: Set Android versionCode and versionName
+        run: |
+          sed -i "s/versionCode 1/versionCode $(git tag | wc -l)/" ./android/app/build.gradle
+          sed -i "s/versionName \"1.0\"/versionName \"$(node -e "console.log(require('./package.json').version)")\"/" ./android/app/build.gradle
+          cat ./android/app/build.gradle
+      - name: Sync Capacitor
+        run: npx cap sync android
+      - name: Build APK
+        run: |
+          for i in 1 2 3; do
+            echo "gradlew assembleRelease attempt $i"
+            (cd android && ./gradlew assembleRelease --stacktrace) && break
+            sleep 10
+            [ "$i" = "3" ] && exit 1
+          done
+      - name: Optimize APK
+        run: cd android/app/build/outputs/apk/release && zipalign 4 app-release-unsigned.apk app-release-unsigned-zip.apk
+      - name: Sign APK
+        run: cd android/app/build/outputs/apk/release && apksigner sign --ks ../../../../../plebbit.keystore --ks-pass pass:${{ secrets.PLEBBIT_REACT_KEYSTORE_PASSWORD }} --ks-key-alias release --out app-release-signed.apk app-release-unsigned-zip.apk
+      - name: Stage release artifacts
+        run: |
+          mkdir -p release-assets
+          VERSION=$(node -e "console.log(require('./package.json').version)")
+          mv android/app/build/outputs/apk/release/app-release-signed.apk "release-assets/5chan-${VERSION}.apk"
+      - name: List release assets
+        run: ls -la release-assets
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-android
+          path: release-assets/
+
+  finalize-release:
+    runs-on: ubuntu-22.04
+    needs: [linux, mac, windows, android]
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Node.js v22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'yarn'
+      - name: Install dependencies
+        run: |
+          for i in 1 2 3; do
+            echo "yarn install attempt $i"
+            yarn install --frozen-lockfile --ignore-engines --network-timeout 100000 --network-concurrency 1 && break
+            sleep 5
+            [ "$i" = "3" ] && exit 1
+          done
+      - name: Download all release artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: release-*
+          path: release-assets
+          merge-multiple: true
+      - name: List all release assets
+        run: ls -la release-assets
+      - name: Populate dist for release-body script
+        run: |
+          mkdir -p dist
+          cp release-assets/* dist/
+      - name: Generate release body
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           GITHUB_REF_NAME: ${{ github.ref_name }}
         run: node scripts/release-body > release-body.txt
-      - name: Update release body only
+      - name: Create GitHub release
         uses: ncipollo/release-action@v1
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          allowUpdates: true
+          artifacts: 'release-assets/*'
           bodyFile: "release-body.txt"
+          token: ${{ secrets.GITHUB_TOKEN }}

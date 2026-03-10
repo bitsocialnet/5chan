@@ -21,7 +21,8 @@ try {
   files = readdirSync(distDir);
 } catch {}
 
-// In CI finalization, dist is empty. Prefer GitHub release assets when available.
+// In CI finalization, dist is populated from downloaded workflow artifacts.
+// Falls back to GitHub release assets for local/manual runs.
 const getReleaseAssetNames = async () => {
   try {
     const token = process.env.GITHUB_TOKEN;
