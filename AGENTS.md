@@ -33,6 +33,7 @@ Only record items that are repo-specific, likely to recur, and have a concrete m
 | Bug report in a specific file/line | Start with git history scan from `docs/agent-playbooks/bug-investigation.md` before editing |
 | `CHANGELOG.md` or package version changed | Run `yarn blotter:check`; if needed add a concise release one-liner |
 | UI/visual behavior changed | Verify in browser with `playwright-cli`; test desktop and mobile viewport |
+| New reviewable feature/fix started while on `master` | Create a short-lived `feature/*`, `fix/*`, or `docs/*` branch from `master` before editing; use a separate worktree only for parallel tasks |
 | GitHub operation needed | Use `gh` CLI, not GitHub MCP |
 | User asks for commit/issue phrasing | Use `docs/agent-playbooks/commit-issue-format.md` |
 | Surprising/ambiguous repo behavior encountered | Alert developer and, once confirmed, document in `docs/agent-playbooks/known-surprises.md` |
@@ -84,6 +85,16 @@ src/
 - Keep components focused; split large components.
 - Follow DRY: shared UI in `src/components/`, shared logic in `src/hooks/`.
 - Add comments for complex/non-obvious code; skip obvious comments.
+
+### Git Workflow Rules
+
+- Keep `master` releasable. Do not treat `master` as a scratch branch.
+- If the user asks for a reviewable feature/fix and the current branch is `master`, create a short-lived task branch before making code changes unless the user explicitly asks to work directly on `master`.
+- Name short-lived branches by intent: `feature/*`, `fix/*`, `docs/*`, `chore/*`.
+- Open PRs from task branches into `master` so review bots can run against the actual change.
+- Prefer short-lived task branches over a long-lived `develop` branch unless the user explicitly asks for a staging branch workflow.
+- Use worktrees only when parallel tasks need isolated checkouts. One active task branch per worktree.
+- After a reviewed branch is merged, prefer deleting it to keep branch drift and merge conflicts low.
 
 ### Bug Investigation Rules
 
