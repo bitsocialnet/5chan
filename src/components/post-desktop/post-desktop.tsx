@@ -48,7 +48,7 @@ import useQuotedByMap from '../../hooks/use-quoted-by-map';
 import useProgressiveRender from '../../hooks/use-progressive-render';
 import { BOARD_REPLIES_PREVIEW_FETCH_SIZE, BOARD_REPLIES_PREVIEW_VISIBLE_COUNT, REPLIES_PER_PAGE } from '../../lib/constants';
 import { computeOmittedCount, filterRepliesForDisplay, getPreviewDisplayReplies, getTotalReplyCount } from '../../lib/utils/replies-preview-utils';
-import { scrollThreadContainerToTop } from '../../lib/utils/thread-scroll-utils';
+import { openThreadAtTop } from '../../lib/utils/thread-scroll-utils';
 
 const { addChallenge } = useChallengesStore.getState();
 
@@ -277,10 +277,11 @@ const PostInfo = ({
 
     if (isInPostPageView && !isReply) {
       e.preventDefault();
-      navigate(threadRoute);
-      scrollThreadContainerToTop(cid);
-      window.requestAnimationFrame(() => {
-        scrollThreadContainerToTop(cid);
+      openThreadAtTop({
+        cid,
+        currentPathname: location.pathname,
+        navigate,
+        threadRoute,
       });
     }
   };

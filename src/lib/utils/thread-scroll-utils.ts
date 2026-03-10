@@ -46,3 +46,28 @@ export const scrollThreadContainerToTop = (cid?: string) => {
 
   return true;
 };
+
+export const openThreadAtTop = ({
+  cid,
+  currentPathname,
+  navigate,
+  threadRoute,
+}: {
+  cid?: string;
+  currentPathname?: string;
+  navigate: (route: string) => void;
+  threadRoute?: string;
+}) => {
+  if (!cid || !threadRoute) return false;
+
+  if (currentPathname !== threadRoute) {
+    navigate(threadRoute);
+  }
+
+  scrollThreadContainerToTop(cid);
+  window.requestAnimationFrame(() => {
+    scrollThreadContainerToTop(cid);
+  });
+
+  return true;
+};
