@@ -4,7 +4,7 @@
       "id": "release-0.6.10",
       "kind": "release",
       "timestamp": 1773144000,
-      "message": "v0.6.10: OP permalink fix, board metadata fix, reply scroll stability, security patches",
+      "message": "v0.6.10: OP permalink fix, back-button fix, board metadata fix, reply scroll stability",
       "version": "0.6.10"
     },
     {

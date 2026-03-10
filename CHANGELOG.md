@@ -7,6 +7,7 @@
 * **ai-workflow:** finalize linked issue after PR merge ([#1047](https://github.com/plebbit/plebchan/issues/1047)) ([248a38d](https://github.com/plebbit/plebchan/commit/248a38d71c1b89dfaf8198fc04fa8b3732169e48))
 * **ai-workflow:** scan full project item list before add ([4cb5c4a](https://github.com/plebbit/plebchan/commit/4cb5c4a83362cf2b4a758822c4fa9f416334c4f1))
 * **post:** align op permalinks to the outer thread container ([#1050](https://github.com/plebbit/plebchan/issues/1050)) ([6ed3708](https://github.com/plebbit/plebchan/commit/6ed3708322b43dcbd17444883e36ebdbb3eab778))
+* **post:** avoid duplicate history entries on OP permalinks ([773debe](https://github.com/plebbit/plebchan/commit/773debece336e5f70979fd9e5bb2236878e61ed6))
 * **subplebbit:** resolve aliased board metadata in subplebbit selectors ([a862852](https://github.com/plebbit/plebchan/commit/a862852e536324f0c0c09cdc59936ed3e9a4f122))
 
 

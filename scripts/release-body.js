@@ -104,7 +104,7 @@ const downloads = [macSection, winSection, linuxSection, androidSection, htmlSec
 
 // One-liner summary of what changed in this release. Update before each release.
 const oneLinerDescription =
-  'This version fixes OP permalinks and aliased board metadata, improves reply-scroll stability, and includes dependency and security maintenance updates.';
+  'This version fixes OP permalinks, avoids duplicate back-button history entries when reopening a thread, improves reply-scroll stability, and includes board metadata plus dependency and security fixes.';
 
 const releaseBody = `${oneLinerDescription}
 
