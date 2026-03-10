@@ -67,15 +67,18 @@ const handleQuoteHover = (cid: string, onElementOutOfView: () => void) => {
   }
 };
 
-const scrollToThreadCardTop = (threadCid: string) => {
-  const threadCard = document.querySelector<HTMLElement>(`[data-cid="${threadCid}"][data-post-cid="${threadCid}"]`);
-  if (!threadCard) return false;
-  threadCard.scrollIntoView({ behavior: 'auto', block: 'start' });
+const getInPageScrollTarget = (selector: string) =>
+  Array.from(document.querySelectorAll<HTMLElement>(selector)).find((element) => !element.closest(`.${styles.replyQuotePreview}`));
+
+const scrollToThreadPostInfoTop = (threadCid: string) => {
+  const postInfo = getInPageScrollTarget(`[data-post-info-cid="${threadCid}"]`);
+  if (!postInfo) return false;
+  postInfo.scrollIntoView({ behavior: 'auto', block: 'start' });
   return true;
 };
 
 const scrollToReplyOnPage = (cid: string) => {
-  const el = document.querySelector<HTMLElement>(`[data-cid="${cid}"][data-post-cid]`);
+  const el = getInPageScrollTarget(`[data-cid="${cid}"][data-post-cid]`);
   if (!el) return false;
   document.querySelectorAll('.scroll-highlight').forEach((prev) => prev.classList.remove('scroll-highlight'));
   el.scrollIntoView({ behavior: 'auto', block: 'center' });
@@ -147,7 +150,7 @@ const DesktopQuotePreview = ({
       const threadRoute = `/${boardPath}/thread/${cid}`;
       if (isOpQuote) {
         if (location.pathname === threadRoute) {
-          scrollToThreadCardTop(cid);
+          scrollToThreadPostInfoTop(cid);
         } else {
           navigate(threadRoute);
         }
@@ -292,7 +295,6 @@ const MobileQuotePreview = ({
 
   const navigate = useNavigate();
   const location = useLocation();
-  const isOnThreadPage = location.pathname.includes('/thread/');
 
   const handleClick = (e: React.MouseEvent, cid: string | undefined, subplebbitAddress: string | undefined, isOpQuote = false) => {
     e.preventDefault();
@@ -301,13 +303,12 @@ const MobileQuotePreview = ({
       const threadRoute = `/${boardPath}/thread/${cid}`;
       if (isOpQuote) {
         if (location.pathname === threadRoute) {
-          scrollToThreadCardTop(cid);
+          scrollToThreadPostInfoTop(cid);
         } else {
           navigate(threadRoute);
         }
         return;
       }
-      if (isOnThreadPage && scrollToReplyOnPage(cid)) return;
       navigate(threadRoute);
     }
   };

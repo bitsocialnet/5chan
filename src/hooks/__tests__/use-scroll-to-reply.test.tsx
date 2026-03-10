@@ -75,39 +75,69 @@ describe('useScrollToReply', () => {
       targetReplyCid: 'reply-2',
     });
 
-    act(() => {
-      vi.advanceTimersByTime(350);
-    });
-
     expect(testState.scrollToIndexMock).toHaveBeenCalledWith({
       align: 'center',
-      behavior: 'smooth',
+      behavior: 'auto',
       index: 1,
     });
     expect(testState.loadMoreMock).not.toHaveBeenCalled();
   });
 
-  it('scrolls to the latest loaded reply and schedules loadMore while searching', async () => {
+  it('centers a mounted target immediately even when it is already visible', async () => {
+    const replyElement = document.createElement('div');
+    const scrollIntoViewMock = vi.fn();
+    replyElement.dataset.cid = 'reply-2';
+    replyElement.dataset.postCid = 'post-1';
+    replyElement.scrollIntoView = scrollIntoViewMock;
+    document.body.appendChild(replyElement);
+
+    await renderHook({
+      hasMore: true,
+      replies: [{ cid: 'reply-1' }, { cid: 'reply-2' }],
+      targetReplyCid: 'reply-2',
+    });
+
+    expect(scrollIntoViewMock).toHaveBeenCalledWith({
+      behavior: 'auto',
+      block: 'center',
+    });
+    expect(testState.scrollToIndexMock).not.toHaveBeenCalled();
+    expect(testState.loadMoreMock).not.toHaveBeenCalled();
+  });
+
+  it('scrolls a mounted offscreen target into view immediately', async () => {
+    const replyElement = document.createElement('div');
+    const scrollIntoViewMock = vi.fn();
+    replyElement.dataset.cid = 'reply-3';
+    replyElement.dataset.postCid = 'post-1';
+    replyElement.scrollIntoView = scrollIntoViewMock;
+    document.body.appendChild(replyElement);
+
+    await renderHook({
+      hasMore: true,
+      replies: [{ cid: 'reply-1' }, { cid: 'reply-3' }],
+      targetReplyCid: 'reply-3',
+    });
+
+    expect(scrollIntoViewMock).toHaveBeenCalledWith({
+      behavior: 'auto',
+      block: 'center',
+    });
+    expect(testState.scrollToIndexMock).not.toHaveBeenCalled();
+  });
+
+  it('scrolls to the latest loaded reply and triggers loadMore immediately while searching', async () => {
     await renderHook({
       hasMore: true,
       replies: [{ cid: 'reply-1' }, { cid: 'reply-2' }],
       targetReplyCid: 'reply-3',
     });
 
-    act(() => {
-      vi.advanceTimersByTime(350);
-    });
-
     expect(testState.scrollToIndexMock).toHaveBeenCalledWith({
       align: 'end',
-      behavior: 'smooth',
+      behavior: 'auto',
       index: 1,
     });
-
-    act(() => {
-      vi.advanceTimersByTime(300);
-    });
-
     expect(testState.loadMoreMock).toHaveBeenCalledTimes(1);
   });
 
@@ -115,6 +145,7 @@ describe('useScrollToReply', () => {
     const replyElement = document.createElement('div');
     const scrollIntoViewMock = vi.fn();
     replyElement.dataset.cid = 'reply-3';
+    replyElement.dataset.postCid = 'post-1';
     replyElement.scrollIntoView = scrollIntoViewMock;
     document.body.appendChild(replyElement);
 
@@ -124,12 +155,8 @@ describe('useScrollToReply', () => {
       targetReplyCid: 'reply-3',
     });
 
-    act(() => {
-      vi.advanceTimersByTime(350);
-    });
-
     expect(scrollIntoViewMock).toHaveBeenCalledWith({
-      behavior: 'smooth',
+      behavior: 'auto',
       block: 'center',
     });
     expect(testState.scrollToIndexMock).not.toHaveBeenCalled();
@@ -140,10 +167,6 @@ describe('useScrollToReply', () => {
       hasMore: false,
       replies: [{ cid: 'reply-1' }],
       targetReplyCid: 'reply-404',
-    });
-
-    act(() => {
-      vi.advanceTimersByTime(350);
     });
 
     expect(warnSpy).toHaveBeenCalledWith('[scroll-to-reply] Could not find reply with CID "reply-404" in the feed.');

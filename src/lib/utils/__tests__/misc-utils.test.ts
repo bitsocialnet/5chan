@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { copyToClipboard } from '../clipboard-utils';
 import { hashStringToColor, getTextColorForBackground, removeMarkdown } from '../post-utils';
-import { preloadThemeAssets } from '../preload-utils';
+import { preloadReplyModal, preloadThemeAssets } from '../preload-utils';
 import { computeOmittedCount, filterRepliesForDisplay, getPreviewDisplayReplies, getTotalReplyCount } from '../replies-preview-utils';
 import { getQuotedCidsFromContent, mergeQuotedCids } from '../reply-quote-utils';
 import { formatUserIDForDisplay, truncateWithEllipsisInMiddle } from '../string-utils';
@@ -117,6 +117,38 @@ describe('misc utils', () => {
     preloadThemeAssets();
 
     expect(loadedSources).toEqual(['/buttons/default.png', '/buttons/hover.png', '/backgrounds/wallpaper.png']);
+  });
+
+  it('schedules reply modal preload with requestIdleCallback when available', () => {
+    const requestIdleCallback = vi.fn();
+
+    Object.defineProperty(window, 'requestIdleCallback', {
+      configurable: true,
+      value: requestIdleCallback,
+    });
+
+    preloadReplyModal();
+
+    expect(requestIdleCallback).toHaveBeenCalledWith(expect.any(Function), { timeout: 1500 });
+  });
+
+  it('falls back to setTimeout for reply modal preload when requestIdleCallback is unavailable', () => {
+    const originalRequestIdleCallback = window.requestIdleCallback;
+    // @ts-expect-error test fallback path
+    delete window.requestIdleCallback;
+    vi.useFakeTimers();
+    const setTimeoutSpy = vi.spyOn(window, 'setTimeout');
+
+    preloadReplyModal();
+
+    expect(setTimeoutSpy).toHaveBeenCalledWith(expect.any(Function), 500);
+
+    if (originalRequestIdleCallback) {
+      Object.defineProperty(window, 'requestIdleCallback', {
+        configurable: true,
+        value: originalRequestIdleCallback,
+      });
+    }
   });
 
   it('builds reply previews, omitted counts, and fallback reply totals', () => {

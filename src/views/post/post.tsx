@@ -13,6 +13,7 @@ import ErrorDisplay from '../../components/error-display/error-display';
 import { PageFooterDesktop, ThreadFooterFirstRow, ThreadFooterStyleRow, ThreadFooterMobile } from '../../components/footer';
 import PostDesktop from '../../components/post-desktop';
 import PostMobile from '../../components/post-mobile';
+import { clearThreadScrollSpacer, scrollThreadContainerToTop } from '../../lib/utils/thread-scroll-utils';
 import styles from './post.module.css';
 
 // useComment may not return cached feed data immediately due to its updatedAt comparison logic.
@@ -156,10 +157,20 @@ const PostPage = () => {
 
   const { error } = post || {};
 
+  useEffect(() => () => clearThreadScrollSpacer(), []);
+
   useEffect(() => {
-    if (!comment?.cid || comment.parentCid) return;
+    if (!commentCid || post?.cid === commentCid) return;
+    clearThreadScrollSpacer();
+  }, [commentCid, post?.cid]);
+
+  useEffect(() => {
+    if (!commentCid || post?.cid !== commentCid) return;
+    if (scrollThreadContainerToTop(commentCid)) {
+      return;
+    }
     window.scrollTo(0, 0);
-  }, [comment?.cid, comment?.parentCid]);
+  }, [commentCid, post?.cid]);
 
   useEffect(() => {
     const boardIdentifier = params.boardIdentifier;

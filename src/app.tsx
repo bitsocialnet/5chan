@@ -3,7 +3,7 @@ import { Navigate, Outlet, Route, Routes, useLocation, useParams } from 'react-r
 import { useAccount, useAccountComment, useSubplebbit } from '@bitsocialnet/bitsocial-react-hooks';
 import { initSnow, removeSnow } from './lib/snow';
 import { isAllView, isCatalogView, isModView, isSubscriptionsView } from './lib/utils/view-utils';
-import { preloadThemeAssets } from './lib/utils/preload-utils';
+import { preloadReplyModal, preloadThemeAssets } from './lib/utils/preload-utils';
 import useReplyModalStore from './stores/use-reply-modal-store';
 import useCreateBoardModalStore from './stores/use-create-board-modal-store';
 import useSpecialThemeStore from './stores/use-special-theme-store';
@@ -55,6 +55,7 @@ const SettingsModal = lazy(() => import('./components/settings-modal'));
 // Preload all theme assets (buttons, backgrounds) immediately on app load
 // to prevent visible loading delays when switching themes
 preloadThemeAssets();
+preloadReplyModal();
 
 const hasModQueueAccessRole = (role?: string): boolean => role === 'admin' || role === 'owner' || role === 'moderator';
 

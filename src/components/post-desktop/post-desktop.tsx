@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
-import { Link, useLocation, useNavigationType, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useNavigationType, useParams } from 'react-router-dom';
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
 import { Comment, deleteComment, useEditedComment, useReplies, useAccount, useAccountComment } from '@bitsocialnet/bitsocial-react-hooks';
 import getShortAddress from '../../lib/get-short-address';
@@ -48,6 +48,7 @@ import useQuotedByMap from '../../hooks/use-quoted-by-map';
 import useProgressiveRender from '../../hooks/use-progressive-render';
 import { BOARD_REPLIES_PREVIEW_FETCH_SIZE, BOARD_REPLIES_PREVIEW_VISIBLE_COUNT, REPLIES_PER_PAGE } from '../../lib/constants';
 import { computeOmittedCount, filterRepliesForDisplay, getPreviewDisplayReplies, getTotalReplyCount } from '../../lib/utils/replies-preview-utils';
+import { scrollThreadContainerToTop } from '../../lib/utils/thread-scroll-utils';
 
 const { addChallenge } = useChallengesStore.getState();
 
@@ -109,6 +110,7 @@ const PostInfo = ({
 
   const params = useParams();
   const location = useLocation();
+  const navigate = useNavigate();
   const isInPostPageView = isPostPageView(location.pathname, params);
   const isInModQueueView = isModQueueView(location.pathname);
   const { getAlertThresholdSeconds } = useModQueueStore();
@@ -265,8 +267,26 @@ const PostInfo = ({
       });
   };
 
+  const threadRoute = cid ? (boardPath ? `/${boardPath}/thread/${cid}` : `/thread/${cid}`) : undefined;
+
+  const onLinkToPostClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (!cid || !threadRoute) {
+      e.preventDefault();
+      return;
+    }
+
+    if (isInPostPageView && !isReply) {
+      e.preventDefault();
+      navigate(threadRoute);
+      scrollThreadContainerToTop(cid);
+      window.requestAnimationFrame(() => {
+        scrollThreadContainerToTop(cid);
+      });
+    }
+  };
+
   return (
-    <div className={styles.postInfo}>
+    <div className={styles.postInfo} data-post-info-cid={cid}>
       {isHidden ? parentCid && <span className={styles.hiddenReplyEditMenuSpacer} /> : <EditMenu post={post} />}
       <span className={(hidden || ((removed || deleted || purged) && !reason)) && parentCid ? styles.postDesktopHidden : ''}>
         {title &&
@@ -362,12 +382,7 @@ const PostInfo = ({
         <span className={styles.postNum}>
           {cid ? (
             <span className={styles.postNumLink}>
-              <Link
-                to={boardPath ? `/${boardPath}/thread/${cid}` : `/thread/${cid}`}
-                className={styles.linkToPost}
-                title={t('link_to_post')}
-                onClick={(e) => !cid && e.preventDefault()}
-              >
+              <Link to={threadRoute || '#'} className={styles.linkToPost} title={t('link_to_post')} onClick={onLinkToPostClick}>
                 No.
               </Link>
               <span
@@ -980,6 +995,7 @@ const PostDesktop = ({
           </span>
         )}
         <div
+          data-thread-container-cid={cid}
           data-cid={cid}
           data-author-address={author?.shortAddress}
           data-post-cid={postCid}
