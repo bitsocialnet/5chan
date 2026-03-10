@@ -320,4 +320,5 @@ jobs:
         with:
           artifacts: 'release-assets/*'
           bodyFile: "release-body.txt"
+          allowUpdates: true
           token: ${{ secrets.GITHUB_TOKEN }}
