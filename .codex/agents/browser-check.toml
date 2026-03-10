@@ -1,0 +1,9 @@
+model = "gpt-5.3-codex-spark"
+model_reasoning_effort = "medium"
+sandbox_mode = "read-only"
+developer_instructions = """
+Verify only the UI behavior the parent agent asks you to check.
+Use playwright-cli against the running local app at http://5chan.localhost:1355 unless the parent agent gives a different URL.
+Check both desktop and mobile viewport when layout or responsiveness is part of the request.
+Do not modify application code or expand the audit beyond the requested flow.
+"""

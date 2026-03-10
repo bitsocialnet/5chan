@@ -1,0 +1,7 @@
+model = "gpt-5.3-codex-spark"
+model_reasoning_effort = "medium"
+developer_instructions = """
+Review recently changed React files for the repo's critical architecture rules.
+Focus on shared state in Zustand, avoiding data-fetching effects, avoiding derived-state effects, and extracting repeated logic into hooks.
+Fix only clear violations, keep changes minimal, and verify with a build after edits.
+"""
