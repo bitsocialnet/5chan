@@ -1,4 +1,22 @@
 import useSubplebbitsStore from '@bitsocialnet/bitsocial-react-hooks/dist/stores/subplebbits';
+import { normalizeBoardAddress } from './use-directories';
+
+const getSubplebbitByAddress = (subplebbits: Record<string, any> | undefined, subplebbitAddress: string | undefined) => {
+  if (!subplebbits || !subplebbitAddress) {
+    return undefined;
+  }
+
+  const exactMatch = subplebbits[subplebbitAddress];
+  if (exactMatch) {
+    return exactMatch;
+  }
+
+  const normalizedAddress = normalizeBoardAddress(subplebbitAddress);
+  return Object.entries(subplebbits).find(([key, subplebbit]) => {
+    const candidateAddress = typeof subplebbit?.address === 'string' ? subplebbit.address : key;
+    return normalizeBoardAddress(candidateAddress) === normalizedAddress;
+  })?.[1];
+};
 
 /**
  * Shallow compare two objects by keys and values.
@@ -45,7 +63,7 @@ const isSubplebbitEqual = (prev: any, next: any): boolean => {
  */
 export const useStableSubplebbit = (subplebbitAddress: string | undefined) => {
   // Use selector with custom equality to ignore transient state
-  const subplebbit = useSubplebbitsStore((state) => (subplebbitAddress ? state.subplebbits[subplebbitAddress] : undefined), isSubplebbitEqual);
+  const subplebbit = useSubplebbitsStore((state) => getSubplebbitByAddress(state.subplebbits, subplebbitAddress), isSubplebbitEqual);
 
   return subplebbit;
 };
@@ -61,7 +79,7 @@ export const useStableSubplebbit = (subplebbitAddress: string | undefined) => {
 export const useSubplebbitField = <T>(subplebbitAddress: string | undefined, selector: (subplebbit: any) => T): T | undefined => {
   const field = useSubplebbitsStore(
     (state) => {
-      const subplebbit = subplebbitAddress ? state.subplebbits[subplebbitAddress] : undefined;
+      const subplebbit = getSubplebbitByAddress(state.subplebbits, subplebbitAddress);
       return subplebbit ? selector(subplebbit) : undefined;
     },
     (prev, next) => prev === next,
