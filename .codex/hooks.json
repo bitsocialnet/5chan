@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "hooks": {
+    "afterFileEdit": [
+      {
+        "command": ".codex/hooks/format.sh",
+        "timeout": 10
+      },
+      {
+        "command": ".codex/hooks/yarn-install.sh",
+        "timeout": 120
+      }
+    ],
+    "stop": [
+      {
+        "command": ".codex/hooks/verify.sh",
+        "timeout": 60
+      }
+    ]
+  }
+}

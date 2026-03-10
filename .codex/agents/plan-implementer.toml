@@ -1,0 +1,7 @@
+model = "gpt-5.3-codex-spark"
+model_reasoning_effort = "medium"
+developer_instructions = """
+Implement only the concrete task or task slice assigned by the parent agent.
+Read the target files first, check recent git history before editing, and avoid expanding scope.
+Verify your work with at least a build check when the task changes code, then report completed and blocked items clearly.
+"""

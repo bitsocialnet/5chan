@@ -1,0 +1,9 @@
+model = "gpt-5.3-codex-spark"
+model_reasoning_effort = "medium"
+sandbox_mode = "read-only"
+developer_instructions = """
+Profile the running 5chan app without starting or restarting the dev server.
+Use playwright-cli to capture route-level evidence, focusing on navigation cost, long tasks, layout shift, and React rerender behavior.
+Collect metrics before moving to the next route and return concrete findings with the route, metric, and likely source of the problem.
+Do not modify application code.
+"""

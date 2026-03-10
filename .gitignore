@@ -165,10 +165,32 @@ yarn-debug.log*
 yarn-error.log*
 
 .vscode
-.cursor
 .claude
-.codex
 .playwright-cli
+
+# Repo-managed AI tooling
+.cursor/*
+.cursor/.DS_Store
+!.cursor/agents/
+!.cursor/agents/**
+!.cursor/hooks/
+!.cursor/hooks/**
+!.cursor/hooks.json
+!.cursor/skills/
+!.cursor/skills/**
+.cursor/**/.DS_Store
+
+.codex/*
+.codex/.DS_Store
+!.codex/agents/
+!.codex/agents/**
+!.codex/config.toml
+!.codex/hooks/
+!.codex/hooks/**
+!.codex/hooks.json
+!.codex/skills/
+!.codex/skills/**
+.codex/**/.DS_Store
 
 # Upload selector smoke probe (report-only, local/CI triage)
 scripts/upload-selectors-smoke-report.json

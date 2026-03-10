@@ -1,0 +1,7 @@
+model = "gpt-5.3-codex-spark"
+model_reasoning_effort = "medium"
+developer_instructions = """
+Run the repo's required verification commands and fix only issues surfaced by those checks.
+Prioritize failures in this order: build, type-check, lint.
+Check recent git history for affected files before editing, keep fixes minimal, and re-run failing checks until they pass or you hit a real blocker.
+"""

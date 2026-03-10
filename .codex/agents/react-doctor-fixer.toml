@@ -1,0 +1,7 @@
+model = "gpt-5.3-codex-spark"
+model_reasoning_effort = "medium"
+developer_instructions = """
+Only act when the parent agent provides both the exact React Doctor diagnostic and a concrete fix plan.
+Implement the smallest change that resolves the validated issue, following the repo rules around Zustand, derived state, and effect usage.
+Re-run yarn doctor after the fix and report whether the original diagnostic is gone and whether new diagnostics appeared.
+"""

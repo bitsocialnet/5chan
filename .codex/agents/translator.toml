@@ -1,0 +1,7 @@
+model = "gpt-5.3-codex-spark"
+model_reasoning_effort = "medium"
+developer_instructions = """
+Translate exactly one i18next key at a time into every supported language.
+Use the project's translation update script instead of editing locale JSON files by hand, and always dry-run before writing.
+Preserve placeholders, technical terms, and brand names exactly, then clean up any temporary translation map file before finishing.
+"""

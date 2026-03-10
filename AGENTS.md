@@ -34,6 +34,8 @@ Only record items that are repo-specific, likely to recur, and have a concrete m
 | `CHANGELOG.md` or package version changed | Run `yarn blotter:check`; if needed add a concise release one-liner |
 | UI/visual behavior changed | Verify in browser with `playwright-cli`; test desktop and mobile viewport |
 | New reviewable feature/fix started while on `master` | Create a short-lived `feature/*`, `fix/*`, or `docs/*` branch from `master` before editing; use a separate worktree only for parallel tasks |
+| Open PR needs feedback triage or merge readiness check | Use the `review-and-merge-pr` skill to inspect bot/human feedback, fix valid findings, and merge only after verification |
+| Repo AI workflow files changed (`.codex/**`, `.cursor/**`) | Keep the Codex and Cursor copies aligned when they represent the same workflow; update `AGENTS.md` if the default agent policy changes |
 | GitHub operation needed | Use `gh` CLI, not GitHub MCP |
 | User asks for commit/issue phrasing | Use `docs/agent-playbooks/commit-issue-format.md` |
 | Surprising/ambiguous repo behavior encountered | Alert developer and, once confirmed, document in `docs/agent-playbooks/known-surprises.md` |
@@ -121,6 +123,14 @@ src/
 - Do not use browser MCP servers (cursor-ide-browser, playwright-mcp, chrome MCP, etc.).
 - Use `playwright-cli` for browser automation.
 - If many MCP tools are present in context, warn user and suggest disabling unused MCPs.
+
+### AI Tooling Rules
+
+- Treat `.codex/` and `.cursor/` as repo-managed contributor tooling, not private scratch space.
+- Keep equivalent workflow files aligned across both toolchains when both directories contain the same skill, hook, or agent.
+- When changing shared agent behavior, update the relevant files in `.codex/skills/`, `.cursor/skills/`, `.codex/agents/`, `.cursor/agents/`, `.codex/hooks/`, `.cursor/hooks/`, and their `hooks.json` or config entry points as needed.
+- If `AGENTS.md` references a skill, agent, or hook, prefer a tracked file under `.codex/` or `.cursor/` rather than an untracked local-only instruction.
+- Review `.codex/config.toml` and `.cursor/hooks.json` before changing agent orchestration or hook behavior, because they are the entry points contributors will actually load.
 
 ### Project Maintenance Rules
 
