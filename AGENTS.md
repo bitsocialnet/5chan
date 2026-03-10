@@ -33,7 +33,7 @@ Only record items that are repo-specific, likely to recur, and have a concrete m
 | Bug report in a specific file/line | Start with git history scan from `docs/agent-playbooks/bug-investigation.md` before editing |
 | `CHANGELOG.md` or package version changed | Run `yarn blotter:check`; if needed add a concise release one-liner |
 | UI/visual behavior changed | Verify in browser with `playwright-cli`; test desktop and mobile viewport |
-| New reviewable feature/fix started while on `master` | Create a short-lived `feature/*`, `fix/*`, or `docs/*` branch from `master` before editing; use a separate worktree only for parallel tasks |
+| New reviewable feature/fix started while on `master` | Create a short-lived `feature/*`, `fix/*`, `docs/*`, or `chore/*` branch from `master` before editing; use a separate worktree only for parallel tasks |
 | Open PR needs feedback triage or merge readiness check | Use the `review-and-merge-pr` skill to inspect bot/human feedback, fix valid findings, and merge only after verification |
 | Repo AI workflow files changed (`.codex/**`, `.cursor/**`) | Keep the Codex and Cursor copies aligned when they represent the same workflow; update `AGENTS.md` if the default agent policy changes |
 | GitHub operation needed | Use `gh` CLI, not GitHub MCP |

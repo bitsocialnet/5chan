@@ -46,8 +46,8 @@ Copy and adapt this prompt when spawning the subagent. Replace `{TEST_DESCRIPTIO
 You are testing the 5chan Android APK on a local emulator.
 
 ## Environment
-- ANDROID_HOME: /Users/Tommaso/Library/Android/sdk
-- Project root: /Users/Tommaso/Desktop/bitsocial/5chan
+- ANDROID_HOME: use the contributor's local Android SDK path from the environment
+- Project root: the current repository root from `git rev-parse --show-toplevel`
 - Capacitor app (appId: fivechan.android, webDir: build)
 - System image installed: system-images;android-35;google_apis;arm64-v8a
 - AVD name to use: fivechan-test-api35
@@ -88,7 +88,7 @@ adb shell settings put global animator_duration_scale 0
 ## Build & Install APK
 
 ### Only rebuild if user asked to, or if this is the first run:
-cd /Users/Tommaso/Desktop/bitsocial/5chan
+cd "$(git rev-parse --show-toplevel)"
 yarn build && npx cap sync android
 cd android && ./gradlew assembleDebug
 adb install -r app/build/outputs/apk/debug/app-debug.apk
@@ -127,7 +127,7 @@ Return a structured summary:
 ```text
 {TEST_COMMANDS} =
 # Run fixture-based contract tests first
-cd /Users/Tommaso/Desktop/bitsocial/5chan/android
+cd "$(git rev-parse --show-toplevel)/android"
 ANDROID_SERIAL=$(adb devices | awk '/^emulator/ {print $1; exit}') \
   ./gradlew :app:connectedDebugAndroidTest \
   -Pandroid.experimental.androidTest.useUnifiedTestPlatform=false \
@@ -148,7 +148,7 @@ adb logcat -d -s chromium:* | tail -100
 
 ```text
 {TEST_COMMANDS} =
-cd /Users/Tommaso/Desktop/bitsocial/5chan/android
+cd "$(git rev-parse --show-toplevel)/android"
 ANDROID_SERIAL=$(adb devices | awk '/^emulator/ {print $1; exit}') \
   ./gradlew :app:connectedDebugAndroidTest
 ```

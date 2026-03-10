@@ -16,6 +16,9 @@ fi
 # Only format JS/TS files
 case "$file_path" in
   *.js|*.ts|*.tsx|*.mjs)
+    # Match the other hooks by resolving relative paths from the repo root.
+    cd "$(dirname "$0")/../.." || exit 0
+
     # Run oxfmt on the file (silent on success)
     npx oxfmt "$file_path" 2>/dev/null || true
     ;;
