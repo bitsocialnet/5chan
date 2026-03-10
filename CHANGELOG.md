@@ -1,10 +1,11 @@
-## [0.6.9](https://github.com/plebbit/plebchan/compare/v0.6.8...v0.6.9) (2026-03-09)
+## [0.6.9](https://github.com/plebbit/plebchan/compare/v0.6.8...v0.6.9) (2026-03-10)
 
 
 ### Bug Fixes
 
 * **android tests:** align runner stage assertions ([045bea7](https://github.com/plebbit/plebchan/commit/045bea7ff9da0e1e19ec9703035c5528178da663))
 * **challenge flow:** abandon publish immediately on modal close ([9cc6876](https://github.com/plebbit/plebchan/commit/9cc68768872940bfca272fb29a28d0fae9611a30))
+* **ci:** prevent partial releases when a build job fails ([10cd995](https://github.com/plebbit/plebchan/commit/10cd99545e2ec062786d83a899b4738df3f5e6b6))
 * **comment-content:** use info text style for purge message instead of red caps ([affea1b](https://github.com/plebbit/plebchan/commit/affea1b3ed867e2da3a9f5d1c7323c41fc346323))
 * erase runtime Comment import in catalog filters store ([a8ef232](https://github.com/plebbit/plebchan/commit/a8ef232b1df11346a92ca6e3c0c4dd301af3ee37))
 * handle purged posts in quote availability and mobile author counts ([58abae7](https://github.com/plebbit/plebchan/commit/58abae7e38d47e672ed3949f8d71e4c5b67b45e6))
