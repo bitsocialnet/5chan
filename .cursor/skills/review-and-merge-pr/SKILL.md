@@ -152,6 +152,7 @@ After the PR is merged:
 git switch master
 git pull --ff-only
 git branch -D <head-branch> 2>/dev/null || true
+git branch -D "pr/<pr-number>" 2>/dev/null || true
 ```
 
 If the PR branch lived in a dedicated worktree, remove that worktree after leaving it:
@@ -171,4 +172,4 @@ Tell the user:
 - whether the PR was merged
 - whether the linked issue was confirmed closed
 - whether the linked project item was confirmed `Done`
-- whether the branch and any worktree were cleaned up
+- whether the feature branch, local `pr/<number>` alias, and any worktree were cleaned up

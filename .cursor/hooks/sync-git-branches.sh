@@ -38,6 +38,31 @@ branch_is_integrated() {
   return 0
 }
 
+branch_has_live_upstream() {
+  local upstream="$1"
+  [ -n "$upstream" ] && git show-ref --verify --quiet "refs/remotes/$upstream"
+}
+
+merged_pr_number_for_branch() {
+  local branch="$1"
+  local pr_number=""
+
+  if ! command -v gh >/dev/null 2>&1; then
+    return 0
+  fi
+
+  case "$branch" in
+    pr/*)
+      pr_number="${branch#pr/}"
+      gh pr view "$pr_number" --repo bitsocialnet/5chan --json mergedAt --jq 'select(.mergedAt != null) | .mergedAt' >/dev/null 2>&1 || return 0
+      echo "$pr_number"
+      return 0
+      ;;
+  esac
+
+  gh pr list --repo bitsocialnet/5chan --state merged --head "$branch" --json number --jq '.[0].number // empty' 2>/dev/null || true
+}
+
 echo "Syncing git refs and temporary branches..."
 echo ""
 
@@ -54,15 +79,26 @@ git fetch --prune origin 2>&1 || true
 echo ""
 
 while IFS='|' read -r branch upstream; do
+  local_pr_number=""
+
   [ -z "$branch" ] && continue
   [ "$branch" = "$current_branch" ] && continue
   [ "$branch" = "$default_branch" ] && continue
 
   branch_looks_temporary "$branch" || continue
-  branch_is_integrated "$branch" || continue
+  local_pr_number="$(merged_pr_number_for_branch "$branch")"
 
-  if [ -n "$upstream" ] && git show-ref --verify --quiet "refs/remotes/$upstream"; then
+  if branch_has_live_upstream "$upstream"; then
     continue
+  fi
+
+  if ! branch_is_integrated "$branch" && [ -z "$local_pr_number" ]; then
+    continue
+  fi
+
+  if [ -n "$local_pr_number" ]; then
+    echo "=== merged PR #$local_pr_number allows deleting $branch ==="
+    echo ""
   fi
 
   echo "=== git branch -D $branch ==="
