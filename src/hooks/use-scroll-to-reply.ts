@@ -85,7 +85,9 @@ const useScrollToReply = ({ targetReplyCid, replies, hasMore, loadMore, virtuoso
 
       const loadDuration = Date.now() - loadStartAtRef.current;
       if (loadAttemptsRef.current >= DEFAULT_MAX_LOAD_ATTEMPTS || loadDuration >= MAX_LOAD_DURATION_MS) {
-        return false;
+        console.warn(`[scroll-to-reply] Gave up scrolling to reply "${targetReplyCid}" after ${loadAttemptsRef.current} attempts / ${loadDuration}ms.`);
+        hasScrolledRef.current = true;
+        return true;
       }
 
       const now = Date.now();
