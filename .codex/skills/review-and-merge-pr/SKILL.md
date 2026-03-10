@@ -130,7 +130,7 @@ if [ -n "$ISSUE_NUMBER" ]; then
     gh issue close "$ISSUE_NUMBER" --repo bitsocialnet/5chan
   fi
 
-  ITEM_ID=$(gh project item-list 1 --owner bitsocialnet --format json --jq ".items[] | select(.content.number == $ISSUE_NUMBER) | .id" | head -n1)
+  ITEM_ID=$(gh project item-list 1 --owner bitsocialnet --limit 1000 --format json --jq ".items[] | select(.content.number == $ISSUE_NUMBER) | .id" | head -n1)
   if [ -z "$ITEM_ID" ]; then
     ITEM_JSON=$(gh project item-add 1 --owner bitsocialnet --url "https://github.com/bitsocialnet/5chan/issues/$ISSUE_NUMBER" --format json)
     ITEM_ID=$(echo "$ITEM_JSON" | jq -r '.id')
