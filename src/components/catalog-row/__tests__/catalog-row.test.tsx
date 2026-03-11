@@ -111,8 +111,16 @@ vi.mock('../../../lib/utils/post-menu-props', () => ({
 }));
 
 vi.mock('../../../hooks/use-directories', () => ({
-  findDirectoryByAddress: (directories: typeof testState.directories, address?: string) => directories.find((entry) => entry.address === address),
-  normalizeBoardAddress: (address: string) => address,
+  findDirectoryByAddress: (directories: typeof testState.directories, address?: string) => {
+    if (!address) {
+      return undefined;
+    }
+
+    const normalizeBoardAddress = (value: string) => value.replace(/\.(bso|eth)$/, '');
+
+    return directories.find((entry) => entry.address === address) ?? directories.find((entry) => normalizeBoardAddress(entry.address) === normalizeBoardAddress(address));
+  },
+  normalizeBoardAddress: (address: string) => address.replace(/\.(bso|eth)$/, ''),
   useDirectories: () => testState.directories,
 }));
 
@@ -314,6 +322,30 @@ describe('CatalogRow', () => {
     expect(document.body.textContent).toContain('last_reply_by Bob ## Board Janitor');
     expect(document.body.textContent).toContain('ago:100');
     expect(document.body.textContent).toContain('ago:200');
+  });
+
+  it('uses alias-aware board features when deciding whether reply links are media', async () => {
+    testState.directories = [{ address: 'music-posting.bso', features: { requirePostLinkIsMedia: true }, title: '/mu/ - Music' }];
+    testState.linkCount = 3;
+    testState.mediaInfoByLink['https://example.com/media.png'] = { type: 'image', url: 'https://example.com/media.png' };
+
+    const post: TestComment = {
+      author: { address: 'author-1', displayName: 'Alice' },
+      cid: 'post-alias',
+      content: 'Alias test',
+      link: 'https://example.com/media.png',
+      replyCount: 4,
+      subplebbitAddress: 'music-posting.eth',
+      title: 'Alias title',
+    };
+
+    await renderWithRouter(createElement(CatalogRow, { row: [post] }), '/mu/catalog');
+
+    expect(container.textContent).toContain('R: 4');
+    expect(container.textContent).toContain('/ I: 3');
+    expect(container.textContent).not.toContain('/ L: 3');
+    expect(document.body.querySelector('a[href="/mu/thread/post-alias"]')).toBeTruthy();
+    expect(container.querySelector('[title=\"(R)eplies / (I)mage Replies\"]')).toBeTruthy();
   });
 
   it('renders hidden and text-only threads with canonical board thread links', async () => {

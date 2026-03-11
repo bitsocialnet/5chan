@@ -13,7 +13,7 @@ import { approvePendingCommentModeration, isPendingApprovalRejected, rejectPendi
 import { isAllView, isModQueueView, isModView, isPendingPostView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import { formatUserIDForDisplay } from '../../lib/utils/string-utils';
 import useModQueueStore from '../../stores/use-mod-queue-store';
-import { useDirectories } from '../../hooks/use-directories';
+import { findDirectoryByAddress, useDirectories } from '../../hooks/use-directories';
 import { getBoardPath } from '../../lib/utils/route-utils';
 import useAuthorAddressClick from '../../hooks/use-author-address-click';
 import { useCommentMediaInfo } from '../../hooks/use-comment-media-info';
@@ -585,7 +585,7 @@ const PostMobile = ({
   const isInPendingPostView = isPendingPostView(location.pathname, params);
   const isInPostView = isPostPageView(location.pathname, params);
   const directories = useDirectories();
-  const directoryEntry = directories?.find((c) => c.address === subplebbitAddress);
+  const directoryEntry = findDirectoryByAddress(directories, subplebbitAddress);
   const requirePostLinkIsMedia = directoryEntry?.features?.requirePostLinkIsMedia === true;
   const boardPath = subplebbitAddress ? getBoardPath(subplebbitAddress, directories) : undefined;
   const linksCount = useCountLinksInReplies(post);
