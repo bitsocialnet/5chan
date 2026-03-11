@@ -153,7 +153,7 @@ export const Footer = () => {
           </a>
         </li>
         <li>
-          <a href='https://github.com/sponsors/plebe1us' target='_blank' rel='noopener noreferrer'>
+          <a href='https://github.com/sponsors/tomcasaburi' target='_blank' rel='noopener noreferrer'>
             {t('support_5chan')}
           </a>
         </li>

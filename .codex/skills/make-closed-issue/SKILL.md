@@ -71,7 +71,7 @@ gh issue create \
   --title "ISSUE_TITLE" \
   --body "ISSUE_DESCRIPTION" \
   --label "LABEL1,LABEL2" \
-  --assignee plebe1us
+  --assignee tomcasaburi
 ```
 
 Capture the issue number from the output.
