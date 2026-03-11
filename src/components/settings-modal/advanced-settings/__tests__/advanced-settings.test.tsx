@@ -150,7 +150,7 @@ describe('AdvancedSettings', () => {
     await dispatchInput(textareas[4], ' https://sol.one.example \n');
     await dispatchInput(textInputs[1], ' ws://127.0.0.1:9138/secret ');
     await dispatchInput(textInputs[2], ' /tmp/next-plebbit ');
-    await clickButton('save_options');
+    await clickButton('save_advanced_settings');
 
     expect(testState.setAccountMock).toHaveBeenCalledWith({
       mediaIpfsGatewayUrl: 'https://media.new.example',
@@ -206,7 +206,7 @@ describe('AdvancedSettings', () => {
     testState.setAccountMock.mockRejectedValueOnce(new Error('boom'));
 
     await renderSettings(false);
-    await clickButton('save_options');
+    await clickButton('save_advanced_settings');
 
     expect(alertSpy).toHaveBeenCalledWith('Error saving options: boom');
     expect(consoleLogSpy).toHaveBeenCalledWith(expect.objectContaining({ message: 'boom' }));
@@ -216,7 +216,7 @@ describe('AdvancedSettings', () => {
     testState.setAccountMock.mockRejectedValueOnce('bad');
 
     await renderSettings(false);
-    await clickButton('save_options');
+    await clickButton('save_advanced_settings');
 
     expect(alertSpy).toHaveBeenCalledWith('Error');
   });
