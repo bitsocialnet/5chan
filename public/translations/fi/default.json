@@ -299,5 +299,6 @@
   "load_more": "Lataa lisää",
   "purged": "tyhjennetty",
   "this_post_was_purged": "Poistetaan taulun tietokannasta — tämä prosessi on peruuttamaton.",
-  "news": "Uutiset"
+  "news": "Uutiset",
+  "save_advanced_settings": "Tallenna lisäasetukset"
 }

@@ -299,5 +299,6 @@
   "load_more": "Charger plus",
   "purged": "purgé",
   "this_post_was_purged": "Suppression de la base de données du board — ce processus est irréversible.",
-  "news": "Actualités"
+  "news": "Actualités",
+  "save_advanced_settings": "Enregistrer les paramètres avancés"
 }

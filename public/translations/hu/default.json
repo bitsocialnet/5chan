@@ -299,5 +299,6 @@
   "load_more": "További betöltése",
   "purged": "törölve",
   "this_post_was_purged": "Törlés a tábla adatbázisából — ez a folyamat visszafordíthatatlan.",
-  "news": "Hírek"
+  "news": "Hírek",
+  "save_advanced_settings": "Speciális beállítások mentése"
 }

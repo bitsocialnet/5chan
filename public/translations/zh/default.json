@@ -299,5 +299,6 @@
   "load_more": "加载更多",
   "purged": "已清除",
   "this_post_was_purged": "正在从版面数据库中清除 — 此操作不可逆。",
-  "news": "新闻"
+  "news": "新闻",
+  "save_advanced_settings": "保存高级设置"
 }

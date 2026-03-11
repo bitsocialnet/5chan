@@ -262,9 +262,6 @@ const AdvancedSettings = () => {
 
   return (
     <div className={styles.content}>
-      <button className={styles.saveOptions} onClick={handleSave}>
-        {t('save_options')}
-      </button>
       <div className={styles.category}>
         <span className={styles.categoryTitle}>IPFS gateways:</span>
         <span className={styles.categorySettings}>
@@ -305,6 +302,9 @@ const AdvancedSettings = () => {
           </span>
         </div>
       )}
+      <button className={styles.saveOptions} onClick={handleSave}>
+        {t('save_advanced_settings')}
+      </button>
     </div>
   );
 };

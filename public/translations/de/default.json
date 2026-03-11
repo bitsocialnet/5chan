@@ -299,5 +299,6 @@
   "load_more": "Mehr laden",
   "purged": "gelöscht",
   "this_post_was_purged": "Wird aus der Board-Datenbank gelöscht — dieser Vorgang ist unwiderruflich.",
-  "news": "Nachrichten"
+  "news": "Nachrichten",
+  "save_advanced_settings": "Erweiterte Einstellungen speichern"
 }

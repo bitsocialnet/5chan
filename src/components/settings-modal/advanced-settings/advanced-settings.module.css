@@ -48,9 +48,8 @@
 }
 
 .saveOptions {
-  float: right;
-  margin-top: -27px;
-  margin-right: 10px;
+  display: block;
+  margin: 15px auto 15px;
   text-transform: capitalize;
 }
 

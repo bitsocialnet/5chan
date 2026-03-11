@@ -299,5 +299,6 @@
   "load_more": "Carregar mais",
   "purged": "purgado",
   "this_post_was_purged": "Removendo do banco de dados do board — este processo é irreversível.",
-  "news": "Notícias"
+  "news": "Notícias",
+  "save_advanced_settings": "Salvar configurações avançadas"
 }
