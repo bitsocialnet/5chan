@@ -25,7 +25,21 @@ Ask the user using AskQuestion (multi-select):
 | `bug` + `enhancement` | New feature that also fixes a bug |
 | `documentation` | README, AGENTS.md, docs-only changes |
 
-### 2. Ensure branch workflow is reviewable
+### 2. Resolve the current GitHub assignee
+
+Before creating or editing any issue assignee, determine the current contributor's GitHub username from the authenticated `gh` session.
+If `gh` is not signed in or cannot resolve the login, stop and ask the contributor for their GitHub username before proceeding.
+
+```bash
+GH_LOGIN=$(gh api user --jq '.login' 2>/dev/null || true)
+
+if [ -z "$GH_LOGIN" ]; then
+  echo "GitHub username could not be determined from gh auth. Ask the contributor for their GitHub username before proceeding."
+  exit 1
+fi
+```
+
+### 3. Ensure branch workflow is reviewable
 
 - If already on a short-lived task branch such as `feature/*`, `fix/*`, `docs/*`, or `chore/*`, stay on it.
 - If on `master`, create a task branch before staging or committing.
@@ -44,7 +58,7 @@ Example:
 git switch -c fix/reply-editor-stuck
 ```
 
-### 3. Review diffs for relevance
+### 4. Review diffs for relevance
 
 ```bash
 git status
@@ -56,14 +70,14 @@ Identify which files relate to the work done in this conversation. Only relevant
 
 **Important**: `git add -p` and `git add -i` are not available (interactive mode unsupported). If a file has mixed relevant/irrelevant changes, include the entire file and note the caveat to the user.
 
-### 4. Generate issue title and description
+### 5. Generate issue title and description
 
 From the conversation context:
 
 - **Title**: Short, present-tense, describes the **problem** (not the solution). Use backticks for UI elements, code, or literal strings (e.g. Post page `` `Update` `` button disabled and `` `Auto` `` alert unclear).
 - **Description**: 2-3 sentences about the problem. Use backticks for UI element names (`Update`, `Auto`), function/code references (`useReplies().reset()`), and literal text strings. Write as if the issue hasn't been fixed yet.
 
-### 5. Create the issue
+### 6. Create the issue
 
 ```bash
 gh issue create \
@@ -71,12 +85,12 @@ gh issue create \
   --title "ISSUE_TITLE" \
   --body "ISSUE_DESCRIPTION" \
   --label "LABEL1,LABEL2" \
-  --assignee tomcasaburi
+  --assignee "$GH_LOGIN"
 ```
 
 Capture the issue number from the output.
 
-### 6. Commit relevant changes
+### 7. Commit relevant changes
 
 Stage only the relevant files:
 
@@ -99,7 +113,7 @@ EOF
 - **Scope**: area of the codebase (e.g., `reply-modal`, `markdown`, `routing`)
 - Prefer title-only commits — skip description when the title is exhaustive
 
-### 7. Push branch and open PR
+### 8. Push branch and open PR
 
 Push the current task branch to origin and open a PR into `master`.
 
@@ -131,7 +145,7 @@ If the user later explicitly asks to merge after reviews pass, a separate merge 
 gh pr merge --squash --delete-branch
 ```
 
-### 8. Add to project board
+### 9. Add to project board
 
 Use **gh CLI** for project operations (never GitHub MCP).
 
@@ -154,9 +168,9 @@ DONE_OPTION_ID=$(echo "$FIELD_JSON" | jq -r '.fields[] | select(.name=="Status")
 gh project item-edit --id "$ITEM_ID" --project-id PVT_kwDODohK7M4BM4wg --field-id "$STATUS_FIELD_ID" --single-select-option-id "$DONE_OPTION_ID"
 ```
 
-Assignees and labels are inherited from the issue (set in step 5) — no separate project update needed.
+Assignees and labels are inherited from the issue (set in step 6) — no separate project update needed.
 
-### 9. Report summary
+### 10. Report summary
 
 Print a summary to the user:
 

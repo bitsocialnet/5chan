@@ -1,6 +1,6 @@
 ---
 name: review-and-merge-pr
-description: Review an open GitHub pull request, inspect feedback from Cursor Bugbot, CodeRabbit, CI, and human reviewers, decide which findings are valid, implement fixes on the PR branch, merge the PR into master when it is ready, and finalize the linked GitHub issue and project status after merge. Use when the user says "check the PR", "address bugbot comments", "handle CodeRabbit feedback", "review PR feedback", or "merge this PR".
+description: Review an open GitHub pull request, inspect feedback from Cursor Bugbot, CodeRabbit, CI, and human reviewers, decide which findings are valid, implement fixes on the PR branch, merge the PR into master when it is ready, and finalize any linked GitHub issue so it matches the make-closed-issue workflow after merge. Use when the user says "check the PR", "address bugbot comments", "handle CodeRabbit feedback", "review PR feedback", or "merge this PR".
 ---
 
 # Review And Merge Pr
@@ -113,34 +113,55 @@ Preferred merge command:
 gh pr merge <pr-number> --repo bitsocialnet/5chan --squash --delete-branch
 ```
 
-### 7. Finalize the linked issue and project item
+### 7. Finalize linked issues to match `make-closed-issue`
 
-After merge, inspect the PR's linked closing issue.
-If the merge did not close the issue automatically, close it manually.
-Then ensure the linked issue is on the `5chan` project and its status is `Done`.
+After merge, inspect the PR's linked closing issues.
+For every linked issue, bring it into the same final state expected from `make-closed-issue`:
+
+- closed
+- assigned to the current GitHub user
+- added to the `5chan` project if missing
+- project status `Done`
+
+Before editing issue assignees, determine the current contributor's GitHub username from the authenticated `gh` session.
+If `gh` is not signed in or cannot resolve the login, stop and ask the contributor for their GitHub username before proceeding.
+If the PR has no linked issue, explicitly tell the user that there was no associated issue to finalize.
 
 Useful commands:
 
 ```bash
-ISSUE_NUMBER=$(gh pr view <pr-number> --repo bitsocialnet/5chan --json closingIssuesReferences --jq '.closingIssuesReferences[0].number // empty')
+GH_LOGIN=$(gh api user --jq '.login' 2>/dev/null || true)
 
-if [ -n "$ISSUE_NUMBER" ]; then
-  ISSUE_STATE=$(gh issue view "$ISSUE_NUMBER" --repo bitsocialnet/5chan --json state --jq '.state')
-  if [ "$ISSUE_STATE" != "CLOSED" ]; then
-    gh issue close "$ISSUE_NUMBER" --repo bitsocialnet/5chan
-  fi
+if [ -z "$GH_LOGIN" ]; then
+  echo "GitHub username could not be determined from gh auth. Ask the contributor for their GitHub username before proceeding."
+  exit 1
+fi
 
-  ITEM_ID=$(gh project item-list 1 --owner bitsocialnet --limit 1000 --format json --jq ".items[] | select(.content.number == $ISSUE_NUMBER) | .id" | head -n1)
-  if [ -z "$ITEM_ID" ]; then
-    ITEM_JSON=$(gh project item-add 1 --owner bitsocialnet --url "https://github.com/bitsocialnet/5chan/issues/$ISSUE_NUMBER" --format json)
-    ITEM_ID=$(echo "$ITEM_JSON" | jq -r '.id')
-  fi
+ISSUE_NUMBERS=$(gh pr view <pr-number> --repo bitsocialnet/5chan --json closingIssuesReferences --jq '.closingIssuesReferences[].number')
 
+if [ -n "$ISSUE_NUMBERS" ]; then
   FIELD_JSON=$(gh project field-list 1 --owner bitsocialnet --format json)
   STATUS_FIELD_ID=$(echo "$FIELD_JSON" | jq -r '.fields[] | select(.name=="Status") | .id')
   DONE_OPTION_ID=$(echo "$FIELD_JSON" | jq -r '.fields[] | select(.name=="Status") | .options[] | select(.name=="Done") | .id')
 
-  gh project item-edit --id "$ITEM_ID" --project-id PVT_kwDODohK7M4BM4wg --field-id "$STATUS_FIELD_ID" --single-select-option-id "$DONE_OPTION_ID"
+  for ISSUE_NUMBER in $ISSUE_NUMBERS; do
+    ISSUE_STATE=$(gh issue view "$ISSUE_NUMBER" --repo bitsocialnet/5chan --json state --jq '.state')
+    if [ "$ISSUE_STATE" != "CLOSED" ]; then
+      gh issue close "$ISSUE_NUMBER" --repo bitsocialnet/5chan
+    fi
+
+    if ! gh issue view "$ISSUE_NUMBER" --repo bitsocialnet/5chan --json assignees --jq '.assignees[].login' | grep -qx "$GH_LOGIN"; then
+      gh issue edit "$ISSUE_NUMBER" --repo bitsocialnet/5chan --add-assignee "$GH_LOGIN"
+    fi
+
+    ITEM_ID=$(gh project item-list 1 --owner bitsocialnet --limit 1000 --format json --jq ".items[] | select(.content.number == $ISSUE_NUMBER) | .id" | head -n1)
+    if [ -z "$ITEM_ID" ]; then
+      ITEM_JSON=$(gh project item-add 1 --owner bitsocialnet --url "https://github.com/bitsocialnet/5chan/issues/$ISSUE_NUMBER" --format json)
+      ITEM_ID=$(echo "$ITEM_JSON" | jq -r '.id')
+    fi
+
+    gh project item-edit --id "$ITEM_ID" --project-id PVT_kwDODohK7M4BM4wg --field-id "$STATUS_FIELD_ID" --single-select-option-id "$DONE_OPTION_ID"
+  done
 fi
 ```
 
@@ -170,6 +191,7 @@ Tell the user:
 - which findings were declined and why
 - which verification commands ran
 - whether the PR was merged
-- whether the linked issue was confirmed closed
-- whether the linked project item was confirmed `Done`
+- whether linked issues were confirmed closed
+- whether linked issues were assigned to the current GitHub user
+- whether linked project items were confirmed `Done`
 - whether the feature branch, local `pr/<number>` alias, and any worktree were cleaned up
