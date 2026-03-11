@@ -1,4 +1,4 @@
-import { memo, useEffect, useMemo } from 'react';
+import { memo, useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Comment, Role, useComment, useEditedComment, useSubplebbit } from '@bitsocialnet/bitsocial-react-hooks';
 import useSubplebbitsPagesStore from '@bitsocialnet/bitsocial-react-hooks/dist/stores/subplebbits-pages';
@@ -13,7 +13,7 @@ import ErrorDisplay from '../../components/error-display/error-display';
 import { PageFooterDesktop, ThreadFooterFirstRow, ThreadFooterStyleRow, ThreadFooterMobile } from '../../components/footer';
 import PostDesktop from '../../components/post-desktop';
 import PostMobile from '../../components/post-mobile';
-import { clearThreadScrollSpacer, scrollThreadContainerToTop } from '../../lib/utils/thread-scroll-utils';
+import { getRequestedThreadTopCid, scrollThreadContainerToTop } from '../../lib/utils/thread-scroll-utils';
 import styles from './post.module.css';
 
 // useComment may not return cached feed data immediately due to its updatedAt comparison logic.
@@ -134,6 +134,7 @@ const PostPage = () => {
   const isInAllView = isAllView(location.pathname);
 
   const comment = useCommentWithFeedCache({ commentCid });
+  const consumedThreadTopScrollRef = useRef<string | null>(null);
 
   const navigate = useNavigate();
   useEffect(() => {
@@ -154,23 +155,32 @@ const PostPage = () => {
   } else {
     post = comment;
   }
+  const requestedThreadTopCid = getRequestedThreadTopCid(location.state);
 
   const { error } = post || {};
 
-  useEffect(() => () => clearThreadScrollSpacer(), []);
-
+  // These two effects split normal opens from explicit OP-top intents:
+  // the first keeps ordinary thread visits on `window.scrollTo(0, 0)`, while the
+  // second consumes `requestedThreadTopCid` once per `location.key` via
+  // `consumedThreadTopScrollRef` so `scrollThreadContainerToTop(commentCid)` only
+  // replays for deliberate OP-link clicks and never for route-driven thread opens.
   useEffect(() => {
-    if (!commentCid || post?.cid === commentCid) return;
-    clearThreadScrollSpacer();
-  }, [commentCid, post?.cid]);
+    if (!comment?.cid || comment.parentCid) return;
+    if (requestedThreadTopCid === comment.cid) return;
+    window.scrollTo(0, 0);
+  }, [comment?.cid, comment?.parentCid, requestedThreadTopCid]);
 
   useEffect(() => {
     if (!commentCid || post?.cid !== commentCid) return;
+    if (requestedThreadTopCid !== commentCid) return;
+
+    const consumedKey = `${location.key}:${commentCid}`;
+    if (consumedThreadTopScrollRef.current === consumedKey) return;
+
     if (scrollThreadContainerToTop(commentCid)) {
-      return;
+      consumedThreadTopScrollRef.current = consumedKey;
     }
-    window.scrollTo(0, 0);
-  }, [commentCid, post?.cid]);
+  }, [commentCid, location.key, post?.cid, requestedThreadTopCid]);
 
   useEffect(() => {
     const boardIdentifier = params.boardIdentifier;

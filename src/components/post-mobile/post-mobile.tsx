@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useLocation, useNavigate, useNavigationType, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigationType, useParams } from 'react-router-dom';
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
 import { Comment, deleteComment, useEditedComment, useReplies, useAccount, usePublishCommentModeration, useAccountComment } from '@bitsocialnet/bitsocial-react-hooks';
 import getShortAddress from '../../lib/get-short-address';
@@ -42,7 +42,7 @@ import useQuotedByMap from '../../hooks/use-quoted-by-map';
 import useProgressiveRender from '../../hooks/use-progressive-render';
 import { BOARD_REPLIES_PREVIEW_FETCH_SIZE, BOARD_REPLIES_PREVIEW_VISIBLE_COUNT, REPLIES_PER_PAGE } from '../../lib/constants';
 import { filterRepliesForDisplay, getPreviewDisplayReplies } from '../../lib/utils/replies-preview-utils';
-import { openThreadAtTop } from '../../lib/utils/thread-scroll-utils';
+import { getThreadTopNavigationState, scrollThreadContainerToTop } from '../../lib/utils/thread-scroll-utils';
 
 const { addChallenge } = useChallengesStore.getState();
 
@@ -79,7 +79,6 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
 
   const params = useParams();
   const location = useLocation();
-  const navigate = useNavigate();
   const isInAllView = isAllView(location.pathname);
   const isInPostPageView = isPostPageView(location.pathname, params);
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, params);
@@ -247,6 +246,7 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
   };
 
   const threadRoute = cid ? (boardPath ? `/${boardPath}/thread/${cid}` : `/thread/${cid}`) : undefined;
+  const threadTopNavigationState = !isReply ? getThreadTopNavigationState(cid) : undefined;
 
   const onLinkToPostClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (!cid || !threadRoute) {
@@ -254,15 +254,10 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
       return;
     }
 
-    if (isInPostPageView && !isReply) {
-      e.preventDefault();
-      openThreadAtTop({
-        cid,
-        currentPathname: location.pathname,
-        navigate,
-        threadRoute,
-      });
-    }
+    if (!isInPostPageView || isReply) return;
+
+    e.preventDefault();
+    scrollThreadContainerToTop(cid);
   };
 
   return (
@@ -383,7 +378,7 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
             )}{' '}
             {cid ? (
               <span className={styles.postNumLink}>
-                <Link to={threadRoute || '#'} className={styles.linkToPost} title={t('link_to_post')} onClick={onLinkToPostClick}>
+                <Link to={threadRoute || '#'} state={threadTopNavigationState} className={styles.linkToPost} title={t('link_to_post')} onClick={onLinkToPostClick}>
                   No.
                 </Link>
                 <span
