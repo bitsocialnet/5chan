@@ -299,5 +299,6 @@
   "load_more": "Încarcă mai mult",
   "purged": "șters",
   "this_post_was_purged": "Ștergere din baza de date a board-ului — acest proces este ireversibil.",
-  "news": "Știri"
+  "news": "Știri",
+  "save_advanced_settings": "Salvează setările avansate"
 }

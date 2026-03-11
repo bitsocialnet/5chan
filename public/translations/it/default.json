@@ -299,5 +299,6 @@
   "load_more": "Carica altro",
   "purged": "eliminato",
   "this_post_was_purged": "Eliminazione dal database del board — questo processo è irreversibile.",
-  "news": "Notizie"
+  "news": "Notizie",
+  "save_advanced_settings": "Salva impostazioni avanzate"
 }

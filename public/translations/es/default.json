@@ -299,5 +299,6 @@
   "load_more": "Cargar más",
   "purged": "purgado",
   "this_post_was_purged": "Eliminando de la base de datos del tablón — este proceso es irreversible.",
-  "news": "Noticias"
+  "news": "Noticias",
+  "save_advanced_settings": "Guardar configuración avanzada"
 }

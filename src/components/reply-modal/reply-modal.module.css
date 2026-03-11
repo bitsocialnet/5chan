@@ -141,6 +141,10 @@
   .title {
     cursor: default;
   }
+
+  .container input[type="text"], .container textarea {
+    font-size: 16px;
+  }
 }
 
 .error {

@@ -299,5 +299,6 @@
   "load_more": "Załaduj więcej",
   "purged": "usunięty",
   "this_post_was_purged": "Usuwanie z bazy danych tablicy — ten proces jest nieodwracalny.",
-  "news": "Aktualności"
+  "news": "Aktualności",
+  "save_advanced_settings": "Zapisz ustawienia zaawansowane"
 }

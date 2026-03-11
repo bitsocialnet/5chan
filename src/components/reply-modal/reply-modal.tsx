@@ -152,23 +152,25 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
   }, [parentCid]);
 
   useEffect(() => {
-    if (showReplyModal && !isMobile) {
+    if (showReplyModal) {
       setTimeout(() => {
         if (textRef.current) {
           textRef.current.focus();
         }
       }, 0);
 
-      const handleEscape = (e: KeyboardEvent) => {
-        if (e.key === 'Escape') {
-          closeModal();
-        }
-      };
-      document.addEventListener('keydown', handleEscape);
+      if (!isMobile) {
+        const handleEscape = (e: KeyboardEvent) => {
+          if (e.key === 'Escape') {
+            closeModal();
+          }
+        };
+        document.addEventListener('keydown', handleEscape);
 
-      return () => {
-        document.removeEventListener('keydown', handleEscape);
-      };
+        return () => {
+          document.removeEventListener('keydown', handleEscape);
+        };
+      }
     }
   }, [showReplyModal, closeModal, isMobile]);
 

@@ -299,5 +299,6 @@
   "load_more": "Muat lebih banyak",
   "purged": "dihapus",
   "this_post_was_purged": "Menghapus dari database board — proses ini tidak dapat dibatalkan.",
-  "news": "Berita"
+  "news": "Berita",
+  "save_advanced_settings": "Simpan Pengaturan Lanjutan"
 }

@@ -299,5 +299,6 @@
   "load_more": "Načíst více",
   "purged": "vymazáno",
   "this_post_was_purged": "Mažeme z databáze desky — tento proces je nevratný.",
-  "news": "Novinky"
+  "news": "Novinky",
+  "save_advanced_settings": "Uložit pokročilá nastavení"
 }

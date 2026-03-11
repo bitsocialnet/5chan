@@ -299,5 +299,6 @@
   "load_more": "Last inn mer",
   "purged": "slettet",
   "this_post_was_purged": "Sletter fra board-databasen — denne prosessen er irreversibel.",
-  "news": "Nyheter"
+  "news": "Nyheter",
+  "save_advanced_settings": "Lagre avanserte innstillinger"
 }

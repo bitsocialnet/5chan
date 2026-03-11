@@ -299,5 +299,6 @@
   "load_more": "Meer laden",
   "purged": "verwijderd",
   "this_post_was_purged": "Verwijderen uit board-database — dit proces is onomkeerbaar.",
-  "news": "Nieuws"
+  "news": "Nieuws",
+  "save_advanced_settings": "Geavanceerde instellingen opslaan"
 }
