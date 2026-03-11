@@ -2,6 +2,7 @@
 [![Release](https://img.shields.io/github/v/release/bitsocialnet/5chan)](https://github.com/bitsocialnet/5chan/releases/latest)
 [![License](https://img.shields.io/badge/license-GPL--2.0--only-red.svg)](https://github.com/bitsocialnet/5chan/blob/master/LICENSE)
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/bitsocialnet/5chan)
 
 <img src="https://github.com/plebeius-eth/assets/blob/main/5chan-logo.jpg" width="378" height="123">
 
