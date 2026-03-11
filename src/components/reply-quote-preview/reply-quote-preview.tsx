@@ -6,7 +6,7 @@ import { useFloating, offset, shift, size, autoUpdate, Placement } from '@floati
 import { useDirectories } from '../../hooks/use-directories';
 import { getBoardPath } from '../../lib/utils/route-utils';
 import { formatQuoteNumber, getQuoteTargetAvailability, shouldShowFloatingQuotePreview } from '../../lib/utils/quote-link-utils';
-import { getThreadTopNavigationState, scrollThreadContainerToTop } from '../../lib/utils/thread-scroll-utils';
+import { findPreferredScrollTarget, getThreadTopNavigationState, scrollThreadContainerToTop } from '../../lib/utils/thread-scroll-utils';
 import useIsMobile from '../../hooks/use-is-mobile';
 import styles from '../../views/post/post.module.css';
 import { Post } from '../../views/post';
@@ -68,17 +68,7 @@ const handleQuoteHover = (cid: string, onElementOutOfView: () => void) => {
   }
 };
 
-const isVisibleScrollTarget = (element: HTMLElement) => {
-  const style = window.getComputedStyle(element);
-  const rect = element.getBoundingClientRect();
-
-  return style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0' && rect.width > 0 && rect.height > 0;
-};
-
-const getInPageScrollTarget = (selector: string) => {
-  const candidates = Array.from(document.querySelectorAll<HTMLElement>(selector)).filter((element) => !element.closest('[data-thread-scroll-preview="true"]'));
-  return candidates.find(isVisibleScrollTarget) || candidates[0];
-};
+const getInPageScrollTarget = (selector: string) => findPreferredScrollTarget(selector, '[data-thread-scroll-preview="true"]');
 
 const scrollToReplyOnPage = (cid: string) => {
   const el = getInPageScrollTarget(`[data-cid="${cid}"][data-post-cid]`);
@@ -152,11 +142,8 @@ const DesktopQuotePreview = ({
       const boardPath = getBoardPath(subplebbitAddress, directories);
       const threadRoute = `/${boardPath}/thread/${cid}`;
       if (isOpQuote) {
-        if (location.pathname === threadRoute) {
-          scrollThreadContainerToTop(cid);
-        } else {
-          navigate(threadRoute, { state: getThreadTopNavigationState(cid) });
-        }
+        if (isOnThreadPage && scrollThreadContainerToTop(cid)) return;
+        navigate(threadRoute, { state: getThreadTopNavigationState(cid) });
         return;
       }
       if (isOnThreadPage && scrollToReplyOnPage(cid)) return;
@@ -298,6 +285,7 @@ const MobileQuotePreview = ({
 
   const navigate = useNavigate();
   const location = useLocation();
+  const isOnThreadPage = location.pathname.includes('/thread/');
 
   const handleClick = (e: React.MouseEvent, cid: string | undefined, subplebbitAddress: string | undefined, isOpQuote = false) => {
     e.preventDefault();
@@ -305,11 +293,8 @@ const MobileQuotePreview = ({
       const boardPath = getBoardPath(subplebbitAddress, directories);
       const threadRoute = `/${boardPath}/thread/${cid}`;
       if (isOpQuote) {
-        if (location.pathname === threadRoute) {
-          scrollThreadContainerToTop(cid);
-        } else {
-          navigate(threadRoute, { state: getThreadTopNavigationState(cid) });
-        }
+        if (isOnThreadPage && scrollThreadContainerToTop(cid)) return;
+        navigate(threadRoute, { state: getThreadTopNavigationState(cid) });
         return;
       }
       navigate(threadRoute);

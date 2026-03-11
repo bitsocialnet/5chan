@@ -90,9 +90,11 @@ describe('thread-scroll-utils', () => {
   });
 
   it('serializes and reads thread-top navigation state', () => {
+    expect(getThreadTopNavigationState()).toBeUndefined();
     expect(getThreadTopNavigationState('thread-cid')).toEqual({
       scrollThreadContainerCid: 'thread-cid',
     });
+    expect(getRequestedThreadTopCid(getThreadTopNavigationState())).toBeUndefined();
     expect(getRequestedThreadTopCid({ scrollThreadContainerCid: 'thread-cid' })).toBe('thread-cid');
     expect(getRequestedThreadTopCid({ scrollThreadContainerCid: 42 })).toBeUndefined();
     expect(getRequestedThreadTopCid(null)).toBeUndefined();

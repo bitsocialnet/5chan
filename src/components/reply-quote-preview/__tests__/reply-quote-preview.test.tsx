@@ -199,7 +199,9 @@ describe('ReplyQuotePreview', () => {
     act(() => root.unmount());
     container.remove();
     document.querySelectorAll('[data-cid]').forEach((node) => node.remove());
-    document.querySelectorAll('[data-thread-container-cid]').forEach((node) => node.remove());
+    document.querySelectorAll('[data-thread-container-cid]').forEach((node) => {
+      node.remove();
+    });
     document.querySelectorAll(`.${styles.replyQuotePreview}`).forEach((node) => node.remove());
     document.querySelectorAll('.scroll-highlight').forEach((node) => node.remove());
   });
@@ -257,6 +259,35 @@ describe('ReplyQuotePreview', () => {
       behavior: 'auto',
       left: 0,
       top: 180,
+    });
+    expect(testState.navigateMock).not.toHaveBeenCalled();
+  });
+
+  it('scrolls to the OP thread container on all-thread routes too', async () => {
+    testState.locationPath = '/all/thread/thread-cid';
+    appendThreadContainer({ cid: 'thread-cid', top: 140 });
+
+    await renderPreview({
+      isOP: true,
+      isQuotelinkReply: true,
+      quotelinkReply: {
+        cid: 'thread-cid',
+        number: 1,
+        subplebbitAddress: 'music-posting.eth',
+      },
+    });
+
+    const link = queryAnchorByText('>>1 (OP)');
+    expect(link).toBeTruthy();
+
+    await act(async () => {
+      link?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    expect(window.scrollTo).toHaveBeenCalledWith({
+      behavior: 'auto',
+      left: 0,
+      top: 140,
     });
     expect(testState.navigateMock).not.toHaveBeenCalled();
   });
@@ -404,6 +435,36 @@ describe('ReplyQuotePreview', () => {
     });
 
     expect(testState.navigateMock).toHaveBeenCalledWith('/mu/thread/reply-cid');
+  });
+
+  it('scrolls mobile OP quotelinks on all-thread routes too', async () => {
+    testState.isMobile = true;
+    testState.locationPath = '/all/thread/thread-cid';
+    appendThreadContainer({ cid: 'thread-cid', top: 90 });
+
+    await renderPreview({
+      isOP: true,
+      isQuotelinkReply: true,
+      quotelinkReply: {
+        cid: 'thread-cid',
+        number: 1,
+        subplebbitAddress: 'music-posting.eth',
+      },
+    });
+
+    const hashLink = queryAnchorByText(' #');
+    expect(hashLink).toBeTruthy();
+
+    await act(async () => {
+      hashLink?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    expect(window.scrollTo).toHaveBeenCalledWith({
+      behavior: 'auto',
+      left: 0,
+      top: 90,
+    });
+    expect(testState.navigateMock).not.toHaveBeenCalled();
   });
 
   it('navigates mobile reply hash links even when the reply is already on the current thread page', async () => {

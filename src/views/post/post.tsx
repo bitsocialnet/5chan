@@ -159,6 +159,11 @@ const PostPage = () => {
 
   const { error } = post || {};
 
+  // These two effects split normal opens from explicit OP-top intents:
+  // the first keeps ordinary thread visits on `window.scrollTo(0, 0)`, while the
+  // second consumes `requestedThreadTopCid` once per `location.key` via
+  // `consumedThreadTopScrollRef` so `scrollThreadContainerToTop(commentCid)` only
+  // replays for deliberate OP-link clicks and never for route-driven thread opens.
   useEffect(() => {
     if (!comment?.cid || comment.parentCid) return;
     if (requestedThreadTopCid === comment.cid) return;

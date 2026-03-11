@@ -25,13 +25,15 @@ const isVisibleScrollTarget = (element: HTMLElement) => {
   return style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0' && rect.width > 0 && rect.height > 0;
 };
 
+export const findPreferredScrollTarget = (selector: string, excludedAncestorSelector = THREAD_SCROLL_PREVIEW_SELECTOR) => {
+  const candidates = Array.from(document.querySelectorAll<HTMLElement>(selector)).filter((element) => !element.closest(excludedAncestorSelector));
+  return candidates.find(isVisibleScrollTarget) ?? candidates[0];
+};
+
 export const scrollThreadContainerToTop = (cid?: string) => {
   if (!cid) return false;
 
-  const candidates = Array.from(document.querySelectorAll<HTMLElement>(`[data-thread-container-cid="${cid}"]`)).filter(
-    (element) => !element.closest(THREAD_SCROLL_PREVIEW_SELECTOR),
-  );
-  const threadContainer = candidates.find(isVisibleScrollTarget) ?? candidates[0];
+  const threadContainer = findPreferredScrollTarget(`[data-thread-container-cid="${cid}"]`);
   if (!threadContainer) return false;
 
   const desiredTop = window.scrollY + threadContainer.getBoundingClientRect().top;

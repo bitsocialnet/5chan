@@ -275,14 +275,10 @@ const PostInfo = ({
       return;
     }
 
-    if (isReply || location.pathname !== threadRoute) {
-      return;
-    }
+    if (!isInPostPageView || isReply) return;
 
-    if (isInPostPageView) {
-      e.preventDefault();
-      scrollThreadContainerToTop(cid);
-    }
+    e.preventDefault();
+    scrollThreadContainerToTop(cid);
   };
 
   return (
