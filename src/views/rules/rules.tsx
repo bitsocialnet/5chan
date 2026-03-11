@@ -131,15 +131,17 @@ const BoardSelector = ({
         <div className={styles.selectorRow}>
           <select value={selectedAddress} onChange={handleSelectChange} className={styles.boardSelect}>
             <option value=''>Select board...</option>
-            {directories.map((sub) => {
-              const shortCode = getBoardShortCode(sub.title);
-              const boardName = getBoardName(sub.title);
-              return (
-                <option key={sub.address} value={sub.address}>
-                  /{shortCode}/ - {boardName}
-                </option>
-              );
-            })}
+            {[...directories]
+              .sort((a, b) => getBoardShortCode(a.title).localeCompare(getBoardShortCode(b.title)))
+              .map((sub) => {
+                const shortCode = getBoardShortCode(sub.title);
+                const boardName = getBoardName(sub.title);
+                return (
+                  <option key={sub.address} value={sub.address}>
+                    /{shortCode}/ - {boardName}
+                  </option>
+                );
+              })}
             {selectedAddress && !directories.some((sub) => sub.address === selectedAddress) && <option value={selectedAddress}>{selectedAddress}</option>}
           </select>
           <span className={styles.orSeparator}>or</span>
