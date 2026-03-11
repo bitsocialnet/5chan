@@ -9,7 +9,7 @@ import { shouldShowSnow } from '../../lib/snow';
 import { getHasThumbnail } from '../../lib/utils/media-utils';
 import { getFormattedTimeAgo } from '../../lib/utils/time-utils';
 import { isAllView, isSubscriptionsView } from '../../lib/utils/view-utils';
-import { useDirectories } from '../../hooks/use-directories';
+import { findDirectoryByAddress, useDirectories } from '../../hooks/use-directories';
 import { getBoardPath } from '../../lib/utils/route-utils';
 import useCatalogFiltersStore from '../../stores/use-catalog-filters-store';
 import useCatalogStyleStore from '../../stores/use-catalog-style-store';
@@ -130,7 +130,7 @@ const CatalogPost = memo(
     const isInAllView = isAllView(location.pathname);
     const isInSubscriptionsView = isSubscriptionsView(location.pathname, params);
     const directories = useDirectories();
-    const directoryEntry = directories?.find((c) => c.address === subplebbitAddress);
+    const directoryEntry = findDirectoryByAddress(directories, subplebbitAddress);
     const requirePostLinkIsMedia = directoryEntry?.features?.requirePostLinkIsMedia === true;
     const boardPath = subplebbitAddress ? getBoardPath(subplebbitAddress, directories) : '';
     const postMenuProps = useMemo(() => selectPostMenuProps(post), [post]);

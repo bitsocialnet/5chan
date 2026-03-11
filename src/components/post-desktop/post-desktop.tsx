@@ -13,7 +13,7 @@ import { isValidURL } from '../../lib/utils/url-utils';
 import { isAllView, isModQueueView, isModView, isPendingPostView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import { formatUserIDForDisplay, truncateWithEllipsisInMiddle } from '../../lib/utils/string-utils';
 import useModQueueStore from '../../stores/use-mod-queue-store';
-import { useDirectories } from '../../hooks/use-directories';
+import { findDirectoryByAddress, useDirectories } from '../../hooks/use-directories';
 import { getBoardPath } from '../../lib/utils/route-utils';
 import useAuthorAddressClick from '../../hooks/use-author-address-click';
 import { useCommentMediaInfo } from '../../hooks/use-comment-media-info';
@@ -615,7 +615,7 @@ const PostMedia = ({
   const [showThumbnail, setShowThumbnail] = useState(true);
 
   const mediaDimensions = getMediaDimensions(commentMediaInfo);
-  const directoryEntry = directories?.find((c) => c.address === subplebbitAddress);
+  const directoryEntry = findDirectoryByAddress(directories, subplebbitAddress);
   const requirePostLinkIsMedia = directoryEntry?.features?.requirePostLinkIsMedia === true;
   const boardPath = getBoardPath(subplebbitAddress, directories);
   const displayBoardPath =
