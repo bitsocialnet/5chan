@@ -149,18 +149,19 @@ const appendReplyElement = ({
   return element;
 };
 
-const appendPostInfoAnchor = (cid: string) => {
+const appendThreadContainer = ({ cid, top = 240, parent = document.body }: { cid: string; top?: number; parent?: HTMLElement }) => {
   const element = document.createElement('div');
-  element.dataset.postInfoCid = cid;
-  element.scrollIntoView = vi.fn();
+  element.dataset.threadContainerCid = cid;
   element.getBoundingClientRect = () =>
     ({
-      bottom: 100,
+      bottom: top + 100,
+      height: 100,
       left: 0,
       right: 100,
-      top: 0,
+      top,
+      width: 100,
     }) as DOMRect;
-  document.body.appendChild(element);
+  parent.appendChild(element);
   return element;
 };
 
@@ -178,6 +179,16 @@ describe('ReplyQuotePreview', () => {
     testState.navigateMock.mockReset();
     testState.quoteAvailability = 'available';
     testState.updateMock.mockReset();
+    Object.defineProperty(window, 'scrollTo', {
+      configurable: true,
+      value: vi.fn(),
+      writable: true,
+    });
+    Object.defineProperty(window, 'scrollY', {
+      configurable: true,
+      value: 0,
+      writable: true,
+    });
 
     container = document.createElement('div');
     document.body.appendChild(container);
@@ -188,7 +199,7 @@ describe('ReplyQuotePreview', () => {
     act(() => root.unmount());
     container.remove();
     document.querySelectorAll('[data-cid]').forEach((node) => node.remove());
-    document.querySelectorAll('[data-post-info-cid]').forEach((node) => node.remove());
+    document.querySelectorAll('[data-thread-container-cid]').forEach((node) => node.remove());
     document.querySelectorAll(`.${styles.replyQuotePreview}`).forEach((node) => node.remove());
     document.querySelectorAll('.scroll-highlight').forEach((node) => node.remove());
   });
@@ -221,9 +232,9 @@ describe('ReplyQuotePreview', () => {
     expect(testState.navigateMock).not.toHaveBeenCalled();
   });
 
-  it('scrolls to the OP post info for quotes on the current desktop thread page', async () => {
-    const threadCard = appendReplyElement({ cid: 'thread-cid', isThreadCard: true });
-    const postInfo = appendPostInfoAnchor('thread-cid');
+  it('scrolls to the OP thread container for quotes on the current desktop thread page', async () => {
+    appendReplyElement({ cid: 'thread-cid', isThreadCard: true });
+    appendThreadContainer({ cid: 'thread-cid', top: 180 });
 
     await renderPreview({
       isOP: true,
@@ -242,14 +253,45 @@ describe('ReplyQuotePreview', () => {
       link?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
 
-    expect(postInfo.scrollIntoView as any).toHaveBeenCalledWith({ behavior: 'auto', block: 'start' });
-    expect(threadCard.scrollIntoView as any).not.toHaveBeenCalled();
+    expect(window.scrollTo).toHaveBeenCalledWith({
+      behavior: 'auto',
+      left: 0,
+      top: 180,
+    });
     expect(testState.navigateMock).not.toHaveBeenCalled();
+  });
+
+  it('navigates OP quotelinks with thread-top state when the target thread differs', async () => {
+    testState.locationPath = '/mu/thread/reply-cid';
+
+    await renderPreview({
+      isOP: true,
+      isQuotelinkReply: true,
+      quotelinkReply: {
+        cid: 'thread-cid',
+        number: 1,
+        subplebbitAddress: 'music-posting.eth',
+      },
+    });
+
+    const link = queryAnchorByText('>>1 (OP)');
+    expect(link).toBeTruthy();
+
+    await act(async () => {
+      link?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    expect(testState.navigateMock).toHaveBeenCalledWith('/mu/thread/thread-cid', {
+      state: {
+        scrollThreadContainerCid: 'thread-cid',
+      },
+    });
   });
 
   it('navigates to the reply route when only a floating preview copy matches the CID', async () => {
     const previewWrapper = document.createElement('div');
     previewWrapper.className = styles.replyQuotePreview;
+    previewWrapper.dataset.threadScrollPreview = 'true';
     document.body.appendChild(previewWrapper);
     const previewTarget = appendReplyElement({ cid: 'reply-cid', parent: previewWrapper });
 

@@ -160,12 +160,12 @@ const flushEffects = async (count = 5) => {
   }
 };
 
-const renderPostPage = async (initialEntry: string) => {
+const renderPostPage = async (initialEntry: string | { pathname: string; state?: unknown }) => {
   await act(async () => {
     root.render(
       createElement(
         MemoryRouter,
-        { initialEntries: [initialEntry] },
+        { initialEntries: [initialEntry as any] },
         createElement(
           Routes,
           {},
@@ -202,9 +202,39 @@ describe('Post', () => {
       value: vi.fn(),
       writable: true,
     });
+    Object.defineProperty(window, 'scrollY', {
+      configurable: true,
+      value: 0,
+      writable: true,
+    });
     Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
       configurable: true,
       value: vi.fn(),
+      writable: true,
+    });
+    Object.defineProperty(HTMLElement.prototype, 'getBoundingClientRect', {
+      configurable: true,
+      value: function () {
+        if ((this as HTMLElement).dataset.threadContainerCid) {
+          return {
+            bottom: 220,
+            height: 100,
+            left: 0,
+            right: 100,
+            top: 120,
+            width: 100,
+          } as DOMRect;
+        }
+
+        return {
+          bottom: 0,
+          height: 0,
+          left: 0,
+          right: 0,
+          top: 0,
+          width: 0,
+        } as DOMRect;
+      },
       writable: true,
     });
     document.title = 'before';
@@ -261,12 +291,34 @@ describe('Post', () => {
     expect(container.querySelector('[data-testid="thread-footer-first-row"]')?.textContent).toBe('cached-cid:42:music-posting.eth:false');
     expect(container.querySelector('[data-testid="thread-footer-mobile"]')?.textContent).toBe('cached-cid:42:music-posting.eth:false');
     expect(document.title).toBe('/mu/ - Cached thread... - 5chan');
+    expect(window.scrollTo).toHaveBeenCalledWith(0, 0);
+    expect(HTMLElement.prototype.scrollIntoView).not.toHaveBeenCalled();
+  });
+
+  it('only aligns the OP container when navigation explicitly requests it', async () => {
+    testState.commentsByCid = {
+      'thread-cid': {
+        cid: 'thread-cid',
+        number: 8,
+        replyCount: 0,
+        subplebbitAddress: 'music-posting.eth',
+        title: 'Thread title',
+      },
+    };
+
+    await renderPostPage({
+      pathname: '/mu/thread/thread-cid',
+      state: {
+        scrollThreadContainerCid: 'thread-cid',
+      },
+    });
+
     expect(window.scrollTo).toHaveBeenCalledWith({
       behavior: 'auto',
       left: 0,
-      top: 0,
+      top: 120,
     });
-    expect(HTMLElement.prototype.scrollIntoView).not.toHaveBeenCalled();
+    expect(window.scrollTo).not.toHaveBeenCalledWith(0, 0);
   });
 
   it('redirects thread routes whose fetched comment belongs to a different board', async () => {

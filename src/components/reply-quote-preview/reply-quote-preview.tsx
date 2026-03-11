@@ -6,6 +6,7 @@ import { useFloating, offset, shift, size, autoUpdate, Placement } from '@floati
 import { useDirectories } from '../../hooks/use-directories';
 import { getBoardPath } from '../../lib/utils/route-utils';
 import { formatQuoteNumber, getQuoteTargetAvailability, shouldShowFloatingQuotePreview } from '../../lib/utils/quote-link-utils';
+import { getThreadTopNavigationState, scrollThreadContainerToTop } from '../../lib/utils/thread-scroll-utils';
 import useIsMobile from '../../hooks/use-is-mobile';
 import styles from '../../views/post/post.module.css';
 import { Post } from '../../views/post';
@@ -67,14 +68,16 @@ const handleQuoteHover = (cid: string, onElementOutOfView: () => void) => {
   }
 };
 
-const getInPageScrollTarget = (selector: string) =>
-  Array.from(document.querySelectorAll<HTMLElement>(selector)).find((element) => !element.closest(`.${styles.replyQuotePreview}`));
+const isVisibleScrollTarget = (element: HTMLElement) => {
+  const style = window.getComputedStyle(element);
+  const rect = element.getBoundingClientRect();
 
-const scrollToThreadPostInfoTop = (threadCid: string) => {
-  const postInfo = getInPageScrollTarget(`[data-post-info-cid="${threadCid}"]`);
-  if (!postInfo) return false;
-  postInfo.scrollIntoView({ behavior: 'auto', block: 'start' });
-  return true;
+  return style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0' && rect.width > 0 && rect.height > 0;
+};
+
+const getInPageScrollTarget = (selector: string) => {
+  const candidates = Array.from(document.querySelectorAll<HTMLElement>(selector)).filter((element) => !element.closest('[data-thread-scroll-preview="true"]'));
+  return candidates.find(isVisibleScrollTarget) || candidates[0];
 };
 
 const scrollToReplyOnPage = (cid: string) => {
@@ -150,9 +153,9 @@ const DesktopQuotePreview = ({
       const threadRoute = `/${boardPath}/thread/${cid}`;
       if (isOpQuote) {
         if (location.pathname === threadRoute) {
-          scrollToThreadPostInfoTop(cid);
+          scrollThreadContainerToTop(cid);
         } else {
-          navigate(threadRoute);
+          navigate(threadRoute, { state: getThreadTopNavigationState(cid) });
         }
         return;
       }
@@ -199,7 +202,7 @@ const DesktopQuotePreview = ({
       {hoveredCid === backlinkReply?.cid &&
         outOfViewCid === backlinkReply?.cid &&
         createPortal(
-          <div className={styles.replyQuotePreview} ref={refs.setFloating} style={floatingStyles}>
+          <div className={styles.replyQuotePreview} data-thread-scroll-preview='true' ref={refs.setFloating} style={floatingStyles}>
             <Post post={backlinkReply} showReplies={false} />
           </div>,
           document.body,
@@ -253,7 +256,7 @@ const DesktopQuotePreview = ({
       {showTrailingBreak && <br />}
       {shouldShowQuotelinkPreview &&
         createPortal(
-          <div className={styles.replyQuotePreview} ref={refs.setFloating} style={floatingStyles}>
+          <div className={styles.replyQuotePreview} data-thread-scroll-preview='true' ref={refs.setFloating} style={floatingStyles}>
             <Post post={quotelinkReply} showReplies={false} />
           </div>,
           document.body,
@@ -303,9 +306,9 @@ const MobileQuotePreview = ({
       const threadRoute = `/${boardPath}/thread/${cid}`;
       if (isOpQuote) {
         if (location.pathname === threadRoute) {
-          scrollToThreadPostInfoTop(cid);
+          scrollThreadContainerToTop(cid);
         } else {
-          navigate(threadRoute);
+          navigate(threadRoute, { state: getThreadTopNavigationState(cid) });
         }
         return;
       }
@@ -356,7 +359,7 @@ const MobileQuotePreview = ({
       {hoveredCid === backlinkReply?.cid &&
         outOfViewCid === backlinkReply?.cid &&
         createPortal(
-          <div className={styles.replyQuotePreview} ref={refs.setFloating} style={floatingStyles}>
+          <div className={styles.replyQuotePreview} data-thread-scroll-preview='true' ref={refs.setFloating} style={floatingStyles}>
             <Post post={backlinkReply} showReplies={false} />
           </div>,
           document.body,
@@ -411,7 +414,7 @@ const MobileQuotePreview = ({
       {showTrailingBreak && <br />}
       {shouldShowQuotelinkPreview &&
         createPortal(
-          <div className={styles.replyQuotePreview} ref={refs.setFloating} style={floatingStyles}>
+          <div className={styles.replyQuotePreview} data-thread-scroll-preview='true' ref={refs.setFloating} style={floatingStyles}>
             <Post post={quotelinkReply} showReplies={false} />
           </div>,
           document.body,
