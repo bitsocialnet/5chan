@@ -41,11 +41,12 @@ import useReplyModalStore from '../../stores/use-reply-modal-store';
 import { selectPostMenuProps } from '../../lib/utils/post-menu-props';
 import useChallengesStore from '../../stores/use-challenges-store';
 import useFeedResetStore from '../../stores/use-feed-reset-store';
-import usePostNumberStore from '../../stores/use-post-number-store';
+import useRegisterFreshReplies from '../../hooks/use-register-fresh-replies';
 import { alertChallengeVerificationFailed } from '../../lib/utils/challenge-utils';
 import { usePublishCommentModeration } from '@bitsocialnet/bitsocial-react-hooks';
 import useQuotedByMap from '../../hooks/use-quoted-by-map';
 import useProgressiveRender from '../../hooks/use-progressive-render';
+import useFreshReplies from '../../hooks/use-fresh-replies';
 import { BOARD_REPLIES_PREVIEW_FETCH_SIZE, BOARD_REPLIES_PREVIEW_VISIBLE_COUNT, REPLIES_PER_PAGE } from '../../lib/constants';
 import { computeOmittedCount, filterRepliesForDisplay, getPreviewDisplayReplies, getTotalReplyCount } from '../../lib/utils/replies-preview-utils';
 import { getThreadTopNavigationState, scrollThreadContainerToTop } from '../../lib/utils/thread-scroll-utils';
@@ -860,6 +861,8 @@ const PostDesktop = ({
         ? fullReplies
         : previewReplies
       : getPreviewDisplayReplies(previewReplies, BOARD_REPLIES_PREVIEW_VISIBLE_COUNT);
+  const freshRepliesForRender = useFreshReplies(repliesForRender);
+  useRegisterFreshReplies(post, freshRepliesForRender);
   const setResetFunction = useFeedResetStore((s) => s.setResetFunction);
   useEffect(() => {
     if ((isInPostPageView || isInPendingPostView) && reset) {
@@ -868,23 +871,9 @@ const PostDesktop = ({
       });
     }
   }, [isInPostPageView, isInPendingPostView, reset, setResetFunction]);
-  const registerComments = usePostNumberStore((s) => s.registerComments);
-  const prevCidsRef = useRef<string>('');
-  useEffect(() => {
-    const all = post ? [post, ...repliesForRender] : repliesForRender;
-    if (!all.length) return;
-    const cidsKey = all
-      .map((c) => c?.cid)
-      .filter(Boolean)
-      .sort()
-      .join(',');
-    if (cidsKey === prevCidsRef.current) return;
-    prevCidsRef.current = cidsKey;
-    registerComments(all);
-  }, [post, repliesForRender, registerComments]);
   const visiblelinksCount = useCountLinksInReplies(post, BOARD_REPLIES_PREVIEW_VISIBLE_COUNT);
   const totalLinksCount = useCountLinksInReplies(post);
-  const replyCount = repliesForRender.length;
+  const replyCount = freshRepliesForRender.length;
 
   const totalReplyCount = getTotalReplyCount({
     replyCount: post?.replyCount,
@@ -904,7 +893,7 @@ const PostDesktop = ({
   const hasThumbnail = getHasThumbnail(commentMediaInfo, link);
 
   // Author-deleted replies are hidden from thread replies; moderator removals still render their placeholder.
-  const filteredReplies = filterRepliesForDisplay(repliesForRender);
+  const filteredReplies = filterRepliesForDisplay(freshRepliesForRender);
   const directRepliesByParentCid = (() => {
     const map = new Map<string, Comment[]>();
     for (const reply of filteredReplies) {
@@ -1121,7 +1110,7 @@ const PostDesktop = ({
         {!isHidden &&
           !showAllReplies &&
           !isInPendingPostView &&
-          repliesForRender &&
+          freshRepliesForRender &&
           showReplies &&
           filteredReplies.map((reply) => (
             <div key={reply.cid} className={styles.replyContainer}>
