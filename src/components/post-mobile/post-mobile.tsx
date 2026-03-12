@@ -43,6 +43,7 @@ import useProgressiveRender from '../../hooks/use-progressive-render';
 import useFreshReplies from '../../hooks/use-fresh-replies';
 import { BOARD_REPLIES_PREVIEW_FETCH_SIZE, BOARD_REPLIES_PREVIEW_VISIBLE_COUNT, REPLIES_PER_PAGE } from '../../lib/constants';
 import { filterRepliesForDisplay, getPreviewDisplayReplies } from '../../lib/utils/replies-preview-utils';
+import { getRenderableMobileBacklinks } from '../../lib/utils/reply-backlink-utils';
 import { getThreadTopNavigationState, scrollThreadContainerToTop } from '../../lib/utils/thread-scroll-utils';
 
 const { addChallenge } = useChallengesStore.getState();
@@ -476,46 +477,24 @@ interface ReplyBacklinksProps extends PostProps {
 
 const ReplyBacklinks = ({ post, quotedByMap, directRepliesByParentCid }: ReplyBacklinksProps) => {
   const { cid, parentCid } = post || {};
-  const directReplies = directRepliesByParentCid?.get(cid) || [];
+  const { opBacklinks, directReplyBacklinks, quotedReplyBacklinks } = getRenderableMobileBacklinks({
+    cid,
+    parentCid,
+    quotedByMap,
+    directRepliesByParentCid,
+  });
 
-  const opBacklinks =
-    cid &&
-    !parentCid &&
-    quotedByMap
-      ?.get(cid)
-      ?.map(
-        (reply: Comment) =>
-          reply?.cid &&
-          reply?.number &&
-          !(reply?.deleted || reply?.removed) && <ReplyQuotePreview key={`op-bl-${reply.cid}`} isBacklinkReply={true} backlinkReply={reply} />,
-      )
-      .filter(Boolean);
-
-  const replyBacklinks = cid && parentCid && (directReplies.length > 0 || quotedByMap?.get(cid)?.length) && (
-    <>
-      {directReplies.map(
-        (reply: Comment) =>
-          reply?.parentCid === cid &&
-          reply?.cid &&
-          reply?.number &&
-          !(reply?.deleted || reply?.removed) && <ReplyQuotePreview key={reply.cid} isBacklinkReply={true} backlinkReply={reply} />,
-      )}
-      {quotedByMap
-        ?.get(cid)
-        ?.map(
-          (reply: Comment) =>
-            reply?.parentCid !== cid &&
-            reply?.cid &&
-            reply?.number &&
-            !(reply?.deleted || reply?.removed) && <ReplyQuotePreview key={`qb-${reply.cid}`} isBacklinkReply={true} backlinkReply={reply} />,
-        )}
-    </>
-  );
-
-  return opBacklinks?.length > 0 || replyBacklinks ? (
+  return opBacklinks.length > 0 || directReplyBacklinks.length > 0 || quotedReplyBacklinks.length > 0 ? (
     <div className={styles.mobileReplyBacklinks}>
-      {opBacklinks}
-      {replyBacklinks}
+      {opBacklinks.map((reply: Comment) => (
+        <ReplyQuotePreview key={`op-bl-${reply.cid}`} isBacklinkReply={true} backlinkReply={reply} />
+      ))}
+      {directReplyBacklinks.map((reply: Comment) => (
+        <ReplyQuotePreview key={reply.cid} isBacklinkReply={true} backlinkReply={reply} />
+      ))}
+      {quotedReplyBacklinks.map((reply: Comment) => (
+        <ReplyQuotePreview key={`qb-${reply.cid}`} isBacklinkReply={true} backlinkReply={reply} />
+      ))}
     </div>
   ) : null;
 };
