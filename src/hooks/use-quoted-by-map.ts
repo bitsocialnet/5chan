@@ -9,7 +9,7 @@ interface ReplyQuoteTargets {
 }
 
 const getReplyFingerprint = (reply: Comment) =>
-  `${reply?.cid ?? ''}|${reply?.deleted ? '1' : '0'}|${reply?.removed ? '1' : '0'}|${reply?.edit?.timestamp ?? ''}|${reply?.state ?? ''}`;
+  `${reply?.cid ?? ''}|${reply?.number ?? ''}|${reply?.deleted ? '1' : '0'}|${reply?.removed ? '1' : '0'}|${reply?.edit?.timestamp ?? ''}|${reply?.state ?? ''}`;
 
 const areQuotedByMapsEquivalent = (previousMap: Map<string, Comment[]>, nextMap: Map<string, Comment[]>) => {
   if (previousMap.size !== nextMap.size) {
