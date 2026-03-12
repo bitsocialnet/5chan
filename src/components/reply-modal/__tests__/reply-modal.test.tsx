@@ -19,6 +19,7 @@ const testState = vi.hoisted(() => ({
   } as Record<string, { address: string; features?: Record<string, unknown> }>,
   handleUploadMock: vi.fn(),
   isMobile: false,
+  isResolvingExternalQuotes: false,
   isUploading: false,
   offlineTitle: '' as string | false,
   offlineStates: {} as Record<string, { isOffline: boolean; isOnlineStatusLoading: boolean; offlineTitle: string | false }>,
@@ -26,6 +27,8 @@ const testState = vi.hoisted(() => ({
   offlineWarningVisible: false,
   openEmpty: false,
   publishReplyMock: vi.fn(),
+  publishReplyError: null as string | null,
+  publishReplyStateMessage: null as string | null,
   quoteInsertNumber: undefined as number | undefined,
   quoteInsertRequestId: 0,
   quoteInsertSelectedText: '',
@@ -128,7 +131,10 @@ vi.mock('../../../hooks/use-resolved-subplebbit-address', () => ({
 
 vi.mock('../../../hooks/use-publish-reply', () => ({
   default: () => ({
+    isResolvingExternalQuotes: testState.isResolvingExternalQuotes,
     publishReply: testState.publishReplyMock,
+    publishReplyError: testState.publishReplyError,
+    publishReplyStateMessage: testState.publishReplyStateMessage,
     replyIndex: testState.replyIndex,
     resetPublishReplyOptions: testState.resetPublishReplyOptionsMock,
     setPublishReplyOptions: (options: Record<string, unknown>) => testState.setPublishReplyOptionsMock(options),
@@ -249,6 +255,7 @@ describe('ReplyModal', () => {
     };
     testState.handleUploadMock.mockReset();
     testState.isMobile = false;
+    testState.isResolvingExternalQuotes = false;
     testState.isUploading = false;
     testState.offlineTitle = '';
     testState.offlineStates = {};
@@ -256,6 +263,8 @@ describe('ReplyModal', () => {
     testState.offlineWarningVisible = false;
     testState.openEmpty = false;
     testState.publishReplyMock.mockReset();
+    testState.publishReplyError = null;
+    testState.publishReplyStateMessage = null;
     testState.quoteInsertNumber = undefined;
     testState.quoteInsertRequestId = 0;
     testState.quoteInsertSelectedText = '';

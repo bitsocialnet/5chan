@@ -1,0 +1,28 @@
+.container {
+  position: fixed;
+  left: 50%;
+  top: 18px;
+  transform: translateX(-50%);
+  z-index: 1100;
+  max-width: min(90vw, 420px);
+  padding: 8px 12px;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  border-radius: 4px;
+  background: var(--quote-preview-background);
+  color: var(--post-link-text-color);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+  font-size: 0.9rem;
+  line-height: 1.35;
+  text-align: center;
+}
+
+.error {
+  color: #a40000;
+}
+
+@media (max-width: 640px) {
+  .container {
+    top: 12px;
+    max-width: calc(100vw - 24px);
+  }
+}

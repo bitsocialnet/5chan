@@ -38,6 +38,7 @@ export const LinkTypePreviewer = ({ link }: { link: string }) => {
 };
 
 const PostFormActions = ({
+  disableReplyPublish = false,
   variant,
   t,
   isInPostView,
@@ -47,6 +48,7 @@ const PostFormActions = ({
   isUploading,
   showUploadControls,
 }: {
+  disableReplyPublish?: boolean;
   variant: 'reply' | 'post' | 'upload';
   t: (key: string) => string;
   isInPostView: boolean;
@@ -58,7 +60,7 @@ const PostFormActions = ({
 }) => {
   if (variant === 'reply' && isInPostView) {
     return (
-      <button onClick={onPublishReply} disabled={isUploading}>
+      <button onClick={onPublishReply} disabled={disableReplyPublish || isUploading}>
         {t('post')}
       </button>
     );
@@ -106,6 +108,7 @@ interface PostFormFieldsProps {
   onPublishReply: () => void;
   onPublishPost: () => void;
   handleUpload: () => void;
+  disableReplyPublish: boolean;
 }
 
 const PostFormFields = ({
@@ -138,6 +141,7 @@ const PostFormFields = ({
   onPublishReply,
   onPublishPost,
   handleUpload,
+  disableReplyPublish,
 }: PostFormFieldsProps) => (
   <>
     <tr>
@@ -164,6 +168,7 @@ const PostFormFields = ({
           onPublishReply={onPublishReply}
           onPublishPost={onPublishPost}
           handleUpload={handleUpload}
+          disableReplyPublish={disableReplyPublish}
           isUploading={isUploading}
           showUploadControls={showUploadControls}
         />
@@ -187,6 +192,7 @@ const PostFormFields = ({
             onPublishReply={onPublishReply}
             onPublishPost={onPublishPost}
             handleUpload={handleUpload}
+            disableReplyPublish={disableReplyPublish}
             isUploading={isUploading}
             showUploadControls={showUploadControls}
           />
@@ -229,6 +235,7 @@ const PostFormFields = ({
             onPublishReply={onPublishReply}
             onPublishPost={onPublishPost}
             handleUpload={handleUpload}
+            disableReplyPublish={disableReplyPublish}
             isUploading={isUploading}
             showUploadControls={showUploadControls}
           />
@@ -384,7 +391,8 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
   // in post page, publish a reply to the post
   const isInPostView = isPostPageView(location.pathname, params);
   const cid = params?.commentCid as string;
-  const { setPublishReplyOptions, resetPublishReplyOptions, replyIndex, publishReply } = usePublishReply({ cid, subplebbitAddress });
+  const { isResolvingExternalQuotes, publishReply, publishReplyError, publishReplyStateMessage, resetPublishReplyOptions, replyIndex, setPublishReplyOptions } =
+    usePublishReply({ cid, subplebbitAddress });
 
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const content = e.target.value;
@@ -452,41 +460,46 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
   }, [displayName, isInPostView, setPublishReplyOptions, setPublishPostOptions]);
 
   return (
-    <table className={styles.postFormTable}>
-      <tbody>
-        <PostFormFields
-          t={t}
-          account={account}
-          displayName={displayName}
-          isInPostView={isInPostView}
-          subjectRef={subjectRef}
-          textRef={textRef}
-          urlRef={urlRef}
-          url={url}
-          lengthError={lengthError}
-          handleContentChange={handleContentChange}
-          setPublishPostOptions={setPublishPostOptions}
-          setPublishReplyOptions={setPublishReplyOptions}
-          setUrl={setUrl}
-          isUploading={isUploading}
-          uploadedFileName={uploadedFileName}
-          showUploadControls={showUploadControls}
-          showSpoilerForPost={showSpoilerForPost}
-          showSpoilerForReply={showSpoilerForReply}
-          isInAllView={isInAllView}
-          isInSubscriptionsView={isInSubscriptionsView}
-          isInModView={isInModView}
-          directories={directories}
-          accountSubplebbitAddresses={accountSubplebbitAddresses}
-          subscriptions={subscriptions}
-          subplebbitAddress={subplebbitAddress}
-          requirePostLinkIsMedia={requirePostLinkIsMedia}
-          onPublishReply={onPublishReply}
-          onPublishPost={onPublishPost}
-          handleUpload={handleUpload}
-        />
-      </tbody>
-    </table>
+    <>
+      <table className={styles.postFormTable}>
+        <tbody>
+          <PostFormFields
+            t={t}
+            account={account}
+            displayName={displayName}
+            isInPostView={isInPostView}
+            subjectRef={subjectRef}
+            textRef={textRef}
+            urlRef={urlRef}
+            url={url}
+            lengthError={lengthError}
+            handleContentChange={handleContentChange}
+            setPublishPostOptions={setPublishPostOptions}
+            setPublishReplyOptions={setPublishReplyOptions}
+            setUrl={setUrl}
+            isUploading={isUploading}
+            uploadedFileName={uploadedFileName}
+            showUploadControls={showUploadControls}
+            showSpoilerForPost={showSpoilerForPost}
+            showSpoilerForReply={showSpoilerForReply}
+            isInAllView={isInAllView}
+            isInSubscriptionsView={isInSubscriptionsView}
+            isInModView={isInModView}
+            directories={directories}
+            accountSubplebbitAddresses={accountSubplebbitAddresses}
+            subscriptions={subscriptions}
+            subplebbitAddress={subplebbitAddress}
+            requirePostLinkIsMedia={requirePostLinkIsMedia}
+            onPublishReply={onPublishReply}
+            onPublishPost={onPublishPost}
+            handleUpload={handleUpload}
+            disableReplyPublish={isResolvingExternalQuotes}
+          />
+        </tbody>
+      </table>
+      {publishReplyError && <div className={styles.error}>{publishReplyError}</div>}
+      {publishReplyStateMessage && <div className={styles.status}>{publishReplyStateMessage}</div>}
+    </>
   );
 };
 

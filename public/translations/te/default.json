@@ -300,5 +300,12 @@
   "purged": "తొలగించబడింది",
   "this_post_was_purged": "బోర్డ్ డేటాబేస్ నుండి తొలగిస్తోంది — ఈ ప్రక్రియ తిరిగి వెనక్కి తీసుకోలేనిది.",
   "news": "వార్తలు",
-  "save_advanced_settings": "అధునాతన సెట్టింగ్‌లను భద్రపరచండి"
+  "save_advanced_settings": "అధునాతన సెట్టింగ్‌లను భద్రపరచండి",
+  "external_quote_search_board_feed": "Searching in /{{board}}/",
+  "external_quote_search_thread": "Searching thread {{current}}/{{total}} in /{{board}}/",
+  "external_quote_redirecting_to_post": "Redirecting to post in /{{board}}/",
+  "external_quote_resolution_unavailable": "External quote resolution is unavailable right now",
+  "external_quote_cannot_resolve": "Could not find {{quote}} in /{{board}}/",
+  "external_quote_unavailable": "The quoted post is unavailable",
+  "external_quote_publish_missing": "Cannot publish - could not find the quoted post for {{quote}}"
 }

@@ -25,11 +25,14 @@ const testState = vi.hoisted(() => ({
   handleUploadMock: vi.fn(),
   isOffline: false,
   isOnlineStatusLoading: false,
+  isResolvingExternalQuotes: false,
   navigateMock: vi.fn(),
   offlineTitle: 'offline board',
   postIndex: undefined as number | undefined,
   publishPostMock: vi.fn(),
   publishReplyMock: vi.fn(),
+  publishReplyError: null as string | null,
+  publishReplyStateMessage: null as string | null,
   replyIndex: undefined as number | undefined,
   resetPublishPostOptionsMock: vi.fn(),
   resetPublishReplyOptionsMock: vi.fn(),
@@ -140,7 +143,10 @@ vi.mock('../../../hooks/use-publish-reply', async () => {
       });
 
       return {
+        isResolvingExternalQuotes: testState.isResolvingExternalQuotes,
         publishReply: testState.publishReplyMock,
+        publishReplyError: testState.publishReplyError,
+        publishReplyStateMessage: testState.publishReplyStateMessage,
         replyIndex: testState.replyIndex,
         resetPublishReplyOptions: testState.resetPublishReplyOptionsMock,
         setPublishReplyOptions: (options: Record<string, unknown>) => {
@@ -273,8 +279,11 @@ describe('PostForm', () => {
     testState.gifFrameStatus = 'idle';
     testState.isOffline = false;
     testState.isOnlineStatusLoading = false;
+    testState.isResolvingExternalQuotes = false;
     testState.offlineTitle = 'offline board';
     testState.postIndex = undefined;
+    testState.publishReplyError = null;
+    testState.publishReplyStateMessage = null;
     testState.replyIndex = undefined;
     testState.resolvedSubplebbitAddress = undefined;
     testState.showUploadControls = true;

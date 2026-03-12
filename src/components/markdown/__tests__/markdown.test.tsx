@@ -128,6 +128,10 @@ vi.mock('../../reply-quote-preview', () => ({
     ),
 }));
 
+vi.mock('../external-number-quote-link', () => ({
+  default: ({ reference }: { reference: { raw: string } }) => createElement('a', { 'data-testid': 'external-number-quote-link', href: '#' }, reference.raw),
+}));
+
 let container: HTMLDivElement;
 let root: Root;
 
@@ -202,6 +206,16 @@ describe('Markdown', () => {
     expect(quotePreview?.getAttribute('data-op')).toBe('true');
     expect(quotePreview?.getAttribute('data-unavailable')).toBe('true');
     expect(quotePreview?.textContent).toBe('comment-42');
+  });
+
+  it('renders lazy same-board and cross-board number quotes when the cid is not cached', async () => {
+    await renderMarkdown({
+      content: '>>42 >>>/fit/77',
+      subplebbitAddress: 'music-posting.eth',
+    });
+
+    const lazyLinks = Array.from(container.querySelectorAll('[data-testid="external-number-quote-link"]'));
+    expect(lazyLinks.map((node) => node.textContent)).toEqual(['>>42', '>>>/fit/77']);
   });
 
   it('toggles inline media embeds for embeddable links outside catalog view', async () => {

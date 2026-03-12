@@ -300,5 +300,12 @@
   "purged": "삭제됨",
   "this_post_was_purged": "보드 데이터베이스에서 삭제 중 — 이 작업은 되돌릴 수 없습니다.",
   "news": "뉴스",
-  "save_advanced_settings": "고급 설정 저장"
+  "save_advanced_settings": "고급 설정 저장",
+  "external_quote_search_board_feed": "Searching in /{{board}}/",
+  "external_quote_search_thread": "Searching thread {{current}}/{{total}} in /{{board}}/",
+  "external_quote_redirecting_to_post": "Redirecting to post in /{{board}}/",
+  "external_quote_resolution_unavailable": "External quote resolution is unavailable right now",
+  "external_quote_cannot_resolve": "Could not find {{quote}} in /{{board}}/",
+  "external_quote_unavailable": "The quoted post is unavailable",
+  "external_quote_publish_missing": "Cannot publish - could not find the quoted post for {{quote}}"
 }

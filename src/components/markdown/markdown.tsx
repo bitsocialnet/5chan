@@ -10,11 +10,13 @@ import styles from './markdown.module.css';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import { canEmbed } from '../embed';
 import { is5chanLink, transform5chanLinkToInternal, isValidCrossboardPattern } from '../../lib/utils/url-utils';
+import { CROSSBOARD_NUMBER_QUOTE_TOKEN_REGEX, type ExternalQuoteReference } from '../../lib/utils/external-quote-utils';
 import { isUnavailableQuoteTarget } from '../../lib/utils/quote-link-utils';
 import usePostNumberStore from '../../stores/use-post-number-store';
 import useSubplebbitsPagesStore from '@bitsocialnet/bitsocial-react-hooks/dist/stores/subplebbits-pages';
 import { useComment } from '@bitsocialnet/bitsocial-react-hooks';
 import ReplyQuotePreview from '../reply-quote-preview';
+import ExternalNumberQuoteLink from './external-number-quote-link';
 
 const safeParseUrl = (href: string): URL | null => {
   try {
@@ -142,6 +144,7 @@ type Token =
   | { type: 'text'; value: string }
   | { type: 'url'; href: string }
   | { type: 'quoteLink'; number: number }
+  | { type: 'crossBoardNumberQuoteLink'; reference: ExternalQuoteReference }
   | { type: 'crossBoardLink'; display: string; route: string }
   | { type: 'spoiler'; tokens: Token[] };
 
@@ -150,7 +153,10 @@ const CROSSBOARD_REGEX = />>>\/((?:[a-zA-Z0-9]{1,10}\/(?:[a-zA-Z0-9]{46})?|[a-zA
 const QUOTE_LINK_REGEX = /(?<![>/\w])>>(\d+)(?![\d/])/;
 const URL_REGEX = /https?:\/\/[^\s<\[\]]*[^\s<\[\].,;:!?\"'\)\]>]/;
 
-const COMBINED_REGEX = new RegExp(`(${SPOILER_REGEX.source})|(${CROSSBOARD_REGEX.source})|(${QUOTE_LINK_REGEX.source})|(${URL_REGEX.source})`, 'g');
+const COMBINED_REGEX = new RegExp(
+  `(${SPOILER_REGEX.source})|(${CROSSBOARD_NUMBER_QUOTE_TOKEN_REGEX.source})|(${CROSSBOARD_REGEX.source})|(${QUOTE_LINK_REGEX.source})|(${URL_REGEX.source})`,
+  'g',
+);
 
 function getCrossboardRoute(fullPattern: string): string | null {
   const pathPart = fullPattern.replace(/^>>>\//, '').replace(/[.,:;!?]+$/, '');
@@ -190,7 +196,23 @@ function tokenize(text: string): Token[] {
       const innerContent = match[2];
       tokens.push({ type: 'spoiler', tokens: tokenize(innerContent) });
     } else if (match[3] !== undefined) {
-      const pathPart = match[4];
+      const boardIdentifier = match[4];
+      const number = parseInt(match[5], 10);
+      if (boardIdentifier && !Number.isNaN(number)) {
+        tokens.push({
+          type: 'crossBoardNumberQuoteLink',
+          reference: {
+            boardIdentifier,
+            kind: 'cross-board',
+            number,
+            raw: `>>>/${boardIdentifier}/${number}`,
+          },
+        });
+      } else {
+        tokens.push({ type: 'text', value: fullMatch });
+      }
+    } else if (match[6] !== undefined) {
+      const pathPart = match[7];
       const fullPattern = `>>>/${pathPart}`;
       const route = getCrossboardRoute(fullPattern);
       if (route) {
@@ -198,10 +220,10 @@ function tokenize(text: string): Token[] {
       } else {
         tokens.push({ type: 'text', value: fullMatch });
       }
-    } else if (match[5] !== undefined) {
-      const number = parseInt(match[6], 10);
+    } else if (match[8] !== undefined) {
+      const number = parseInt(match[9], 10);
       tokens.push({ type: 'quoteLink', number });
-    } else if (match[7] !== undefined) {
+    } else if (match[10] !== undefined) {
       tokens.push({ type: 'url', href: fullMatch });
     }
 
@@ -247,6 +269,12 @@ function renderTokens(tokens: Token[], context: RenderContext): React.ReactNode[
             <NumberQuoteLink number={token.number} threadPostCid={postCid} subplebbitAddress={subplebbitAddress} />
           </span>
         );
+      case 'crossBoardNumberQuoteLink':
+        return (
+          <span key={i} className={styles.inlineQuoteLink}>
+            <ExternalNumberQuoteLink reference={token.reference} />
+          </span>
+        );
       case 'crossBoardLink':
         return (
           <Link key={i} to={token.route}>
@@ -280,6 +308,19 @@ const NumberQuoteLink = ({ number, threadPostCid, subplebbitAddress }: { number:
   if (isUnavailableQuoteTarget(comment)) {
     return (
       <ReplyQuotePreview isQuotelinkReply={true} quotelinkReply={comment} quotelinkNumber={number} isQuotelinkUnavailable={true} isOP={isOP} showTrailingBreak={false} />
+    );
+  }
+
+  if (!cid && subplebbitAddress) {
+    return (
+      <ExternalNumberQuoteLink
+        reference={{
+          kind: 'same-board',
+          number,
+          raw: `>>${number}`,
+          subplebbitAddress,
+        }}
+      />
     );
   }
 

@@ -180,11 +180,24 @@ export const isValidCrossboardPattern = (pattern: string): boolean => {
     return true; // CID is exactly 46 alphanumeric chars
   }
 
+  // Check if it's a directory + post number pattern: >>>/biz/123
+  const directoryPostNumberMatch = pathPart.match(/^([a-zA-Z0-9]{1,10})\/(\d+)$/);
+  if (directoryPostNumberMatch) {
+    return true;
+  }
+
   // Check if it's a full address + thread pattern: >>>/board.eth/fullCid
   const addressThreadMatch = pathPart.match(/^([^/]+)\/([a-zA-Z0-9]{46})$/);
   if (addressThreadMatch) {
     const [, address] = addressThreadMatch;
     // Address must be valid domain or IPNS key
+    return isValidDomain(address) || isValidIPNSKey(address);
+  }
+
+  // Check if it's a full address + post number pattern: >>>/board.eth/123
+  const addressPostNumberMatch = pathPart.match(/^([^/]+)\/(\d+)$/);
+  if (addressPostNumberMatch) {
+    const [, address] = addressPostNumberMatch;
     return isValidDomain(address) || isValidIPNSKey(address);
   }
 
