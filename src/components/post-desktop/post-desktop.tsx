@@ -41,7 +41,7 @@ import useReplyModalStore from '../../stores/use-reply-modal-store';
 import { selectPostMenuProps } from '../../lib/utils/post-menu-props';
 import useChallengesStore from '../../stores/use-challenges-store';
 import useFeedResetStore from '../../stores/use-feed-reset-store';
-import usePostNumberStore from '../../stores/use-post-number-store';
+import useRegisterFreshReplies from '../../hooks/use-register-fresh-replies';
 import { alertChallengeVerificationFailed } from '../../lib/utils/challenge-utils';
 import { usePublishCommentModeration } from '@bitsocialnet/bitsocial-react-hooks';
 import useQuotedByMap from '../../hooks/use-quoted-by-map';
@@ -862,6 +862,7 @@ const PostDesktop = ({
         : previewReplies
       : getPreviewDisplayReplies(previewReplies, BOARD_REPLIES_PREVIEW_VISIBLE_COUNT);
   const freshRepliesForRender = useFreshReplies(repliesForRender);
+  useRegisterFreshReplies(post, freshRepliesForRender);
   const setResetFunction = useFeedResetStore((s) => s.setResetFunction);
   useEffect(() => {
     if ((isInPostPageView || isInPendingPostView) && reset) {
@@ -870,22 +871,6 @@ const PostDesktop = ({
       });
     }
   }, [isInPostPageView, isInPendingPostView, reset, setResetFunction]);
-  const registerComments = usePostNumberStore((s) => s.registerComments);
-  const prevCidsRef = useRef<string>('');
-  useEffect(() => {
-    const all = post ? [post, ...freshRepliesForRender] : freshRepliesForRender;
-    if (!all.length) return;
-    const cidsKey = all
-      .map((comment) => {
-        const commentKey = comment?.cid ?? (typeof comment?.index === 'number' ? `index:${comment.index}` : `timestamp:${comment?.timestamp ?? ''}`);
-        return `${comment?.subplebbitAddress ?? ''}:${commentKey}:${typeof comment?.number === 'number' ? comment.number : ''}`;
-      })
-      .sort()
-      .join(',');
-    if (cidsKey === prevCidsRef.current) return;
-    prevCidsRef.current = cidsKey;
-    registerComments(all);
-  }, [post, freshRepliesForRender, registerComments]);
   const visiblelinksCount = useCountLinksInReplies(post, BOARD_REPLIES_PREVIEW_VISIBLE_COUNT);
   const totalLinksCount = useCountLinksInReplies(post);
   const replyCount = freshRepliesForRender.length;
