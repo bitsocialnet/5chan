@@ -595,28 +595,31 @@
 
 .failedPublishNotice {
   display: block;
-  margin-top: 4px;
   color: red;
   font-weight: 700;
+}
+
+.failedDeletePostAction {
+  color: var(--button-desktop-text-color);
+  font-weight: 400;
 }
 
 .failedDeletePostButton {
   all: unset;
-  color: red;
+  font: inherit;
+  text-transform: capitalize;
+  color: var(--button-desktop-text-color);
+  text-decoration: var(--button-text-decoration);
   cursor: pointer;
-  font-weight: 700;
-  text-decoration: underline;
-  text-transform: uppercase;
 }
 
 .failedDeletePostButton:hover:not(:disabled) {
-  color: #b30000;
+  color: var(--button-desktop-text-color-hover);
 }
 
 .failedDeletePostButton:disabled {
-  cursor: wait;
-  opacity: 0.7;
-  text-decoration: none;
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .grayEditMessage {

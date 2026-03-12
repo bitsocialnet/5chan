@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigationType, useParams } from 'react-router-dom';
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
-import { Comment, deleteComment, useEditedComment, useReplies, useAccount, usePublishCommentModeration, useAccountComment } from '@bitsocialnet/bitsocial-react-hooks';
+import { Comment, useEditedComment, useReplies, useAccount, usePublishCommentModeration, useAccountComment } from '@bitsocialnet/bitsocial-react-hooks';
 import getShortAddress from '../../lib/get-short-address';
 import styles from '../../views/post/post.module.css';
 import { shouldShowSnow } from '../../lib/snow';
@@ -25,6 +25,7 @@ import { useCurrentTime } from '../../hooks/use-current-time';
 import { useBoardPseudonymityMode } from '../../hooks/use-board-pseudonymity-mode';
 import CommentContent from '../comment-content';
 import CommentMedia from '../comment-media';
+import FailedPublishNotice from '../failed-publish-notice';
 import LoadingEllipsis from '../loading-ellipsis';
 import PostMenuMobile from './post-menu-mobile';
 import ReplyQuotePreview from '../reply-quote-preview';
@@ -45,6 +46,7 @@ import { BOARD_REPLIES_PREVIEW_FETCH_SIZE, BOARD_REPLIES_PREVIEW_VISIBLE_COUNT, 
 import { filterRepliesForDisplay, getPreviewDisplayReplies } from '../../lib/utils/replies-preview-utils';
 import { getRenderableMobileBacklinks } from '../../lib/utils/reply-backlink-utils';
 import { getThreadTopNavigationState, scrollThreadContainerToTop } from '../../lib/utils/thread-scroll-utils';
+import useDeleteFailedPost from '../../hooks/use-delete-failed-post';
 
 const { addChallenge } = useChallengesStore.getState();
 
@@ -193,7 +195,6 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
   const isOverThreshold = isAwaitingApproval && timeWaiting > alertThresholdSeconds;
 
   const hasFailedState = state === 'failed';
-  const canDeleteFailedPost = hasFailedState && typeof post?.index === 'number';
   const postMenuProps = selectPostMenuProps(post);
 
   const pseudonymityMode = useBoardPseudonymityMode(subplebbitAddress);
@@ -227,24 +228,6 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
           ? alert(t('this_reply_was_removed'))
           : alert(t('this_thread_was_removed'))
         : openReplyModal && openReplyModal(cid, post?.number, postCid, threadNumber, subplebbitAddress);
-  };
-
-  const [isDeletingFailedPost, setIsDeletingFailedPost] = useState(false);
-  const onDeleteFailedPost = () => {
-    if (isDeletingFailedPost || !canDeleteFailedPost) {
-      return;
-    }
-
-    setIsDeletingFailedPost(true);
-    deleteComment(post?.cid || post.index)
-      .then(() => {
-        setIsDeletingFailedPost(false);
-      })
-      .catch((error) => {
-        console.error('Failed to delete failed post:', error);
-        alert(`Failed to delete post: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        setIsDeletingFailedPost(false);
-      });
   };
 
   const threadRoute = cid ? (boardPath ? `/${boardPath}/thread/${cid}` : `/thread/${cid}`) : undefined;
@@ -431,15 +414,6 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
               </div>
             )}
           </span>
-          {canDeleteFailedPost && (
-            <span className={styles.failedPublishNotice}>
-              this post failed to publish, it's not visible to other users [{' '}
-              <button type='button' className={styles.failedDeletePostButton} disabled={isDeletingFailedPost} onClick={onDeleteFailedPost}>
-                Delete Post
-              </button>{' '}
-              ]
-            </span>
-          )}
         </span>
       </div>
       {(hasThumbnail || link) && !(deleted || removed || purged) && <PostMediaContent key={cid} post={post} link={link} />}
@@ -525,6 +499,8 @@ const Reply = ({
   const route = boardPath ? `/${boardPath}/thread/${cid}` : `/thread/${cid}`;
   const isRouteLinkToReply = cid ? location.pathname.startsWith(route) : false;
   const { hidden } = useHide({ cid });
+  const { canDeleteFailedPost, isDeletingFailedPost, onDeleteFailedPost } = useDeleteFailedPost(post);
+  const failedPublishNotice = canDeleteFailedPost ? <FailedPublishNotice isDeleting={isDeletingFailedPost} onDelete={onDeleteFailedPost} /> : undefined;
 
   return (
     <div className={styles.replyMobile}>
@@ -536,7 +512,9 @@ const Reply = ({
           data-post-cid={postCid}
         >
           <PostInfoAndMedia post={post} postReplyCount={postReplyCount} roles={roles} threadNumber={threadNumber} />
-          {!hidden && (!(removed || deleted || purged) || ((removed || deleted) && reason) || purged) && <CommentContent comment={post} />}
+          {!hidden && (!(removed || deleted || purged) || ((removed || deleted) && reason) || purged) && (
+            <CommentContent comment={post} prependContent={failedPublishNotice} />
+          )}
           <ReplyBacklinks post={post} quotedByMap={quotedByMap} directRepliesByParentCid={directRepliesByParentCid} />
         </div>
       </div>
@@ -606,6 +584,8 @@ const PostMobile = ({
   const stateString = useStateString(post) || t('loading_post');
   const hasFailedState = state === 'failed';
   const isReply = !!parentCid;
+  const { canDeleteFailedPost, isDeletingFailedPost, onDeleteFailedPost } = useDeleteFailedPost(post);
+  const failedPublishNotice = canDeleteFailedPost ? <FailedPublishNotice isDeleting={isDeletingFailedPost} onDelete={onDeleteFailedPost} /> : undefined;
 
   // Author-deleted replies are hidden from thread replies; moderator removals still render their placeholder.
   const filteredReplies = filterRepliesForDisplay(freshRepliesForRender);
@@ -708,7 +688,7 @@ const PostMobile = ({
               >
                 {shouldShowSnow() && <img src='assets/xmashat.gif' className={styles.xmasHat} alt='' />}
                 <PostInfoAndMedia post={post} postReplyCount={replyCount} roles={roles} threadNumber={post?.number} />
-                <CommentContent comment={post} />
+                <CommentContent comment={post} prependContent={failedPublishNotice} />
                 <ReplyBacklinks post={post} quotedByMap={quotedByMap} directRepliesByParentCid={directRepliesByParentCid} />
               </div>
               {!isInPostView && !isInPendingPostView && (showReplies || isModQueue) && (

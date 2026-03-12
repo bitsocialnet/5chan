@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigationType, useParams } from 'react-router-dom';
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
-import { Comment, deleteComment, useEditedComment, useReplies, useAccount, useAccountComment } from '@bitsocialnet/bitsocial-react-hooks';
+import { Comment, useEditedComment, useReplies, useAccount, useAccountComment } from '@bitsocialnet/bitsocial-react-hooks';
 import getShortAddress from '../../lib/get-short-address';
 import styles from '../../views/post/post.module.css';
 import { CommentMediaInfo, getDisplayMediaInfoType, getHasThumbnail, getMediaDimensions } from '../../lib/utils/media-utils';
@@ -27,6 +27,7 @@ import { useBoardPseudonymityMode } from '../../hooks/use-board-pseudonymity-mod
 import CommentContent from '../comment-content';
 import CommentMedia from '../comment-media';
 import EditMenu from '../edit-menu/edit-menu';
+import FailedPublishNotice from '../failed-publish-notice';
 import { canEmbed } from '../embed';
 import LoadingEllipsis from '../loading-ellipsis';
 import PostMenuDesktop from './post-menu-desktop';
@@ -50,6 +51,7 @@ import useFreshReplies from '../../hooks/use-fresh-replies';
 import { BOARD_REPLIES_PREVIEW_FETCH_SIZE, BOARD_REPLIES_PREVIEW_VISIBLE_COUNT, REPLIES_PER_PAGE } from '../../lib/constants';
 import { computeOmittedCount, filterRepliesForDisplay, getPreviewDisplayReplies, getTotalReplyCount } from '../../lib/utils/replies-preview-utils';
 import { getThreadTopNavigationState, scrollThreadContainerToTop } from '../../lib/utils/thread-scroll-utils';
+import useDeleteFailedPost from '../../hooks/use-delete-failed-post';
 
 const { addChallenge } = useChallengesStore.getState();
 
@@ -102,7 +104,6 @@ const PostInfo = ({
   const displayName = author?.displayName?.trim();
   const authorRole = roles?.[address]?.role?.replace('moderator', 'mod');
   const hasFailedState = state === 'failed';
-  const canDeleteFailedPost = hasFailedState && typeof post?.index === 'number';
   const isReply = parentCid;
   const { showOmittedReplies } = useShowOmittedReplies();
   const directories = useDirectories();
@@ -166,8 +167,6 @@ const PostInfo = ({
   });
 
   const [initiatedPendingAction, setInitiatedPendingAction] = useState<'approve' | 'reject' | null>(null);
-  const [isDeletingFailedPost, setIsDeletingFailedPost] = useState(false);
-
   const handlePendingApprove = useCallback(async () => {
     const confirm = window.confirm(t('double_confirm'));
     if (!confirm) {
@@ -248,23 +247,6 @@ const PostInfo = ({
           ? alert(t('this_reply_was_removed'))
           : alert(t('this_thread_was_removed'))
         : openReplyModal && openReplyModal(cid, post?.number, postCid, threadNumber, subplebbitAddress);
-  };
-
-  const onDeleteFailedPost = () => {
-    if (isDeletingFailedPost || !canDeleteFailedPost) {
-      return;
-    }
-
-    setIsDeletingFailedPost(true);
-    deleteComment(post?.cid || post.index)
-      .then(() => {
-        setIsDeletingFailedPost(false);
-      })
-      .catch((error) => {
-        console.error('Failed to delete failed post:', error);
-        alert(`Failed to delete post: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        setIsDeletingFailedPost(false);
-      });
   };
 
   const threadRoute = cid ? (boardPath ? `/${boardPath}/thread/${cid}` : `/thread/${cid}`) : undefined;
@@ -499,15 +481,6 @@ const PostInfo = ({
                   </span>
                 </>
               )}
-            </span>
-          )}
-          {canDeleteFailedPost && (
-            <span className={styles.failedPublishNotice}>
-              this post failed to publish, it's not visible to other users [{' '}
-              <button type='button' className={styles.failedDeletePostButton} disabled={isDeletingFailedPost} onClick={onDeleteFailedPost}>
-                Delete Post
-              </button>{' '}
-              ]
             </span>
           )}
         </span>
@@ -746,6 +719,8 @@ const Reply = ({
 
   const commentMediaInfo = useCommentMediaInfo(link, thumbnailUrl, linkWidth, linkHeight);
   const hasThumbnail = getHasThumbnail(commentMediaInfo, link);
+  const { canDeleteFailedPost, isDeletingFailedPost, onDeleteFailedPost } = useDeleteFailedPost(post);
+  const failedPublishNotice = canDeleteFailedPost ? <FailedPublishNotice isDeleting={isDeletingFailedPost} onDelete={onDeleteFailedPost} /> : undefined;
 
   return (
     <div className={styles.replyDesktop}>
@@ -777,7 +752,9 @@ const Reply = ({
             isInModView={isInModView}
           />
         )}
-        {!hidden && (!(removed || deleted || purged) || ((removed || deleted) && reason) || purged) && <CommentContent comment={post} />}
+        {!hidden && (!(removed || deleted || purged) || ((removed || deleted) && reason) || purged) && (
+          <CommentContent comment={post} prependContent={failedPublishNotice} />
+        )}
       </div>
     </div>
   );
@@ -888,6 +865,8 @@ const PostDesktop = ({
 
   const stateString = useStateString(post) || t('downloading_board');
   const hasFailedState = state === 'failed';
+  const { canDeleteFailedPost, isDeletingFailedPost, onDeleteFailedPost } = useDeleteFailedPost(post);
+  const failedPublishNotice = canDeleteFailedPost ? <FailedPublishNotice isDeleting={isDeletingFailedPost} onDelete={onDeleteFailedPost} /> : undefined;
 
   const commentMediaInfo = useCommentMediaInfo(link, thumbnailUrl, linkWidth, linkHeight);
   const hasThumbnail = getHasThumbnail(commentMediaInfo, link);
@@ -1027,7 +1006,7 @@ const PostDesktop = ({
             directRepliesByParentCid={directRepliesByParentCid}
           />
           {!isHidden && !content && !(deleted || removed || purged) && <div className={styles.spacer} />}
-          {!isHidden && <CommentContent comment={post} />}
+          {!isHidden && <CommentContent comment={post} prependContent={failedPublishNotice} />}
         </div>
         {!isHidden && !isInPendingPostView && showReplies && repliesCount > 0 && !isInPostPageView && (
           <span className={styles.summary}>
