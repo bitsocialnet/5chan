@@ -50,6 +50,10 @@
   padding: 10px 0;
 }
 
+.mobileAllFeedFilterPadding {
+  padding-bottom: 15px;
+}
+
 .desktopBoardButtons {
   text-transform: capitalize;
 }

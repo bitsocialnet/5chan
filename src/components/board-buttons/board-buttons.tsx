@@ -367,7 +367,7 @@ const AllFeedFilter = () => {
 export const MobileAllFeedFilter = () => (
   <div className={styles.mobileBoardButtons}>
     <hr />
-    <div className={styles.options} style={{ paddingBottom: 15 }}>
+    <div className={`${styles.options} ${styles.mobileAllFeedFilterPadding}`}>
       <AllFeedFilter />
     </div>
   </div>
