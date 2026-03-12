@@ -1,4 +1,4 @@
-import { Fragment, useMemo, useState } from 'react';
+import { Fragment, type ReactNode, useMemo, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import { Trans, useTranslation } from 'react-i18next';
 import { Comment, useComment } from '@bitsocialnet/bitsocial-react-hooks';
@@ -62,7 +62,7 @@ const useScopedCidToNumber = (cids: string[]) => {
   return cidToNumber;
 };
 
-const CommentContent = ({ comment: post }: { comment: Comment }) => {
+const CommentContent = ({ comment: post, prependContent }: { comment: Comment; prependContent?: ReactNode }) => {
   const { t } = useTranslation();
   const params = useParams();
   const location = useLocation();
@@ -126,6 +126,12 @@ const CommentContent = ({ comment: post }: { comment: Comment }) => {
 
   return (
     <blockquote className={`${styles.postMessage} ${!isReply && isMobile && styles.clampLines}`}>
+      {prependContent && (
+        <>
+          {prependContent}
+          <br />
+        </>
+      )}
       {isReply &&
         !hasFailedState &&
         !(deleted || removed || purged) &&

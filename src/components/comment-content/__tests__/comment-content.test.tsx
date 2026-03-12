@@ -169,6 +169,12 @@ const renderContent = async (comment: TestComment) => {
   });
 };
 
+const renderContentWithProps = async (props: { comment: TestComment; prependContent?: React.ReactNode }) => {
+  await act(async () => {
+    root.render(createElement(CommentContent, props as any));
+  });
+};
+
 const queryMarkdownText = () => Array.from(container.querySelectorAll('[data-testid="markdown"]')).map((node) => node.textContent ?? '');
 
 describe('CommentContent', () => {
@@ -215,6 +221,35 @@ describe('CommentContent', () => {
     const previews = container.querySelectorAll('[data-testid="reply-quote-preview"]');
     expect(previews).toHaveLength(1);
     expect(previews[0]?.textContent).toBe('quoted-2');
+  });
+
+  it('renders prepended content before reply quote previews and markdown', async () => {
+    testState.commentsByCid = {
+      'quoted-1': { cid: 'quoted-1', number: 11 },
+    };
+    testState.postNumbers = {
+      'quoted-1': 11,
+    };
+
+    await renderContentWithProps({
+      comment: {
+        cid: 'reply-1',
+        content: 'body',
+        parentCid: 'quoted-1',
+        postCid: 'post-1',
+      },
+      prependContent: createElement('span', { 'data-testid': 'prepend' }, 'failed notice'),
+    });
+
+    const blockquote = container.querySelector('blockquote');
+    const prepend = container.querySelector('[data-testid="prepend"]');
+    const preview = container.querySelector('[data-testid="reply-quote-preview"]');
+    const markdown = container.querySelector('[data-testid="markdown"]');
+
+    expect(blockquote?.firstChild).toBe(prepend);
+    expect(preview?.textContent).toBe('quoted-1');
+    expect(markdown?.textContent).toBe('body');
+    expect(blockquote?.querySelectorAll('br')).toHaveLength(1);
   });
 
   it('truncates long comments outside the post view and expands them on demand', async () => {
