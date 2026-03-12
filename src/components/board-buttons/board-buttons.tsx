@@ -364,6 +364,15 @@ const AllFeedFilter = () => {
   );
 };
 
+export const MobileAllFeedFilter = () => (
+  <div className={styles.mobileBoardButtons}>
+    <hr />
+    <div className={styles.options} style={{ paddingBottom: 15 }}>
+      <AllFeedFilter />
+    </div>
+  </div>
+);
+
 export const MobileBoardButtons = () => {
   const { t } = useTranslation();
   const params = useParams();

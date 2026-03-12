@@ -1,1 +1,1 @@
-export { MobileBoardButtons, DesktopBoardButtons } from './board-buttons';
+export { MobileAllFeedFilter, MobileBoardButtons, DesktopBoardButtons } from './board-buttons';
