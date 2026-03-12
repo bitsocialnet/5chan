@@ -1,3 +1,30 @@
+# [0.7.0](https://github.com/plebbit/plebchan/compare/v0.6.10...v0.7.0) (2026-03-12)
+
+
+### Bug Fixes
+
+* **catalog:** use alias-aware media link labels ([#1056](https://github.com/plebbit/plebchan/issues/1056)) ([2dd7c0e](https://github.com/plebbit/plebchan/commit/2dd7c0e8d77e5572737cb48eee6498db05b56c09))
+* **ci:** URL-encode asset filenames and allow release updates ([3401ec1](https://github.com/plebbit/plebchan/commit/3401ec147f53a0c0f56d7709283b852dd074e808))
+* **mobile:** hide empty mobile reply backlink wrapper ([#1060](https://github.com/plebbit/plebchan/issues/1060)) ([ef375e3](https://github.com/plebbit/plebchan/commit/ef375e3578dd14ed9c7e8a75adcb85e8d331a29d))
+* **post:** move failed publish notice into comment body ([#1066](https://github.com/plebbit/plebchan/issues/1066)) ([0aafb7f](https://github.com/plebbit/plebchan/commit/0aafb7f538f505802495a220cc8174cbb2ee78e5))
+* **post:** stop thread navigation from forcing OP alignment ([#1052](https://github.com/plebbit/plebchan/issues/1052)) ([6c03253](https://github.com/plebbit/plebchan/commit/6c03253cb4baf480287f6ebbc3e15c98c937c725))
+* **quotes:** resolve external quote links across boards ([#1064](https://github.com/plebbit/plebchan/issues/1064)) ([fe55e6f](https://github.com/plebbit/plebchan/commit/fe55e6f33250b247c06091fd17f1f343b4095644))
+* **replies:** refresh thread backlinks from live account replies ([#1058](https://github.com/plebbit/plebchan/issues/1058)) ([ea792fe](https://github.com/plebbit/plebchan/commit/ea792fe8a89dbc738e163c20b49db34133f9b10a))
+* **settings-modal:** raise settings modal above reply and challenge modals ([#1062](https://github.com/plebbit/plebchan/issues/1062)) ([053965f](https://github.com/plebbit/plebchan/commit/053965f124543341a49c7c440e2ff75cec618054))
+* **viewport:** remove maximum-scale=1 to restore reply modal autofocus on mobile ([#1069](https://github.com/plebbit/plebchan/issues/1069)) ([aca0eef](https://github.com/plebbit/plebchan/commit/aca0eef50e3445ba272171c00d875b8adcc22b80))
+
+
+### Features
+
+* **ui:** polish advanced settings, media hosting warning, reply modal mobile UX ([#1054](https://github.com/plebbit/plebchan/issues/1054)) ([d56175a](https://github.com/plebbit/plebchan/commit/d56175a66eae012e543a4026d8f656c8c089831d))
+
+
+### Reverts
+
+* Revert "Update README.md" ([debf6cc](https://github.com/plebbit/plebchan/commit/debf6cca6b2fc2200cf82cf6f6b8d39eff754047))
+
+
+
 ## [0.6.10](https://github.com/plebbit/plebchan/compare/v0.6.9...v0.6.10) (2026-03-10)
 
 

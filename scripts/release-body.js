@@ -104,7 +104,7 @@ const downloads = [macSection, winSection, linuxSection, androidSection, htmlSec
 
 // One-liner summary of what changed in this release. Update before each release.
 const oneLinerDescription =
-  'This version fixes OP permalinks, avoids duplicate back-button history entries when reopening a thread, improves reply-scroll stability, and includes board metadata plus dependency and security fixes.';
+  'This release polishes advanced settings and reply modal UX, fixes cross-board quote links and thread navigation, surfaces failed publish notices inline, and refreshes thread backlinks from live account replies.';
 
 const releaseBody = `${oneLinerDescription}
 

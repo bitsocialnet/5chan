@@ -67,9 +67,11 @@ Rules:
 - Comma-separated key highlights, no full sentence
 - Omit "This version..." prefix — the blotter script prepends `vX.Y.Z: ` automatically
 - Aim for ~60–80 characters after the version prefix
-- Only include changes that are interesting or exciting to users — novel features, important fixes
-- Skip mundane/routine items (minor UI tweaks, footers, small layout changes, test improvements)
-- Fewer strong items beat many weak items; 3–5 highlights is ideal
+- **Only genuinely novel or noteworthy items** — things a user would find interesting or exciting
+- Skip regression fixes (restoring something that previously worked), routine bug fixes, minor z-index/modal/layout tweaks, test improvements, CI changes, and anything that isn't a new capability or a significant user-facing improvement
+- If something was already a known feature and just got fixed/restored, it does not belong in the blotter
+- Fewer strong items beat many weak items; 2–4 highlights is ideal
+- Lead with the most impressive item
 
 Good examples (the part **you** write, without the `vX.Y.Z:` prefix):
 - "Board pagination, multi-provider uploads, mod queue redesign, catalog sorting"

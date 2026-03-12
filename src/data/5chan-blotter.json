@@ -1,6 +1,13 @@
 {
   "entries": [
     {
+      "id": "release-0.7.0",
+      "kind": "release",
+      "timestamp": 1773316800,
+      "message": "v0.7.0: cross-board quote links, inline failed publish notice, reply modal polish",
+      "version": "0.7.0"
+    },
+    {
       "id": "release-0.6.10",
       "kind": "release",
       "timestamp": 1773144000,
