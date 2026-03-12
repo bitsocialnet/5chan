@@ -8,7 +8,8 @@ description: Review an open GitHub pull request, inspect feedback from Cursor Bu
 ## Overview
 
 Use this skill after a feature branch already has an open PR into `master`.
-Stay on the PR branch, treat review bots as input rather than authority, and only merge once the branch is verified and the remaining comments are either fixed or explicitly declined with a reason.
+Stay on the PR branch, treat review bots as input rather than authority, and only merge once the branch is verified and the remaining comments are either fixed, explicitly deferred, or explicitly declined with a reason.
+Do not let repeated nitpicks, speculative future-work comments, or low-value bot suggestions keep the PR open once they have been triaged as non-blocking.
 Finish the workflow by cleaning up local git state yourself; do not assume GitHub, `gh pr merge --delete-branch`, or GitHub Desktop removed the local feature branch or any local `pr/<number>` alias.
 
 ## Workflow
@@ -55,14 +56,17 @@ Sort feedback into these buckets:
 
 - `must-fix`: correctness bugs, broken behavior, crashes, security issues, test failures, reproducible regressions
 - `should-fix`: clear maintainability or edge-case issues with concrete evidence
-- `decline`: false positives, stale comments, duplicate findings, speculative style-only suggestions, or feedback already addressed in newer commits
+- `defer`: real but non-blocking follow-up work that can land later without making this PR unsafe to merge
+- `decline`: false positives, stale comments, duplicate findings, speculative style-only suggestions, feedback already addressed in newer commits, or nitpicks that are not worth blocking merge
 
 Rules:
 
 - Never merge with unresolved `must-fix` findings.
 - Do not accept a bot finding without reading the relevant code and diff.
+- `should-fix` and `defer` findings are not merge blockers by default; use judgment and prefer merging once the branch is safe, verified, and the remaining comments are low-value or future work.
 - If a finding is ambiguous but high-risk, ask the user before merging.
-- If a comment is wrong or stale, explain why in the PR rather than silently ignoring it.
+- If a comment is wrong, stale, or intentionally deferred, explain that briefly in the PR or merge summary rather than silently ignoring it.
+- After triaging a comment as `defer` or `decline`, do not keep reopening the same discussion unless new evidence appears or the user explicitly asks for a follow-up pass.
 
 ### 4. Work on the PR branch and keep the PR updated
 
@@ -89,13 +93,13 @@ After code changes, follow repo verification rules from `AGENTS.md`:
 
 ### 5. Report back on the PR before merging
 
-Summarize what was fixed and what was declined.
+Summarize what was fixed, what was deferred, and what was declined.
 Use `gh pr comment` for a concise PR update when the branch changed because of review feedback.
 
 Example:
 
 ```bash
-gh pr comment <pr-number> --repo bitsocialnet/5chan --body "Addressed the valid review findings in the latest commit. Remaining bot comments are stale or not applicable for the reasons checked locally."
+gh pr comment <pr-number> --repo bitsocialnet/5chan --body "Addressed the valid review findings in the latest commit. Remaining bot comments were triaged as stale, low-value, or follow-up work that does not block this merge."
 ```
 
 ### 6. Merge only when the PR is actually ready
@@ -106,6 +110,7 @@ Merge only if all of these are true:
 - required checks are passing
 - the branch is mergeable into `master`
 - no unresolved `must-fix` reviewer findings remain
+- any remaining `should-fix`, `defer`, or `decline` items were consciously triaged and are not worth blocking merge
 - the latest code was verified locally after the last review-driven change
 
 Preferred merge command:
@@ -194,6 +199,7 @@ git worktree remove /path/to/worktree
 Tell the user:
 
 - which findings were fixed
+- which findings were deferred and why they did not block merge
 - which findings were declined and why
 - which verification commands ran
 - whether the PR was merged
