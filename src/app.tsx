@@ -25,7 +25,7 @@ import {
   isValidModRoute,
 } from './lib/utils/route-utils';
 import styles from './app.module.css';
-import { DesktopBoardButtons, MobileBoardButtons } from './components/board-buttons';
+import { DesktopBoardButtons, MobileAllFeedFilter, MobileBoardButtons } from './components/board-buttons';
 import Board from './views/board';
 import Blotter from './views/blotter';
 import Catalog from './views/catalog';
@@ -153,6 +153,7 @@ const BoardLayout = () => {
             <>
               <MobileBoardButtons />
               <PostForm key={key} />
+              {isInAllView && <MobileAllFeedFilter />}
             </>
           ))
         : (subplebbitAddress || isInAllView || isInModView || isInSubscriptionsView || pendingPost?.subplebbitAddress || isOnModQueueRoute) && (
