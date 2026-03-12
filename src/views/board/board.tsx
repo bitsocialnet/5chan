@@ -14,6 +14,7 @@ import { useResolvedSubplebbitAddress } from '../../hooks/use-resolved-subplebbi
 import { useFeedStateString } from '../../hooks/use-state-string';
 import useFeedResetStore from '../../stores/use-feed-reset-store';
 import useFeedViewSettingsStore from '../../stores/use-feed-view-settings-store';
+import usePostNumberStore from '../../stores/use-post-number-store';
 import { useBoardFeedPageSize } from '../../hooks/use-board-feed-page-size';
 import { getPageSlice } from '../../lib/utils/board-feed-pagination';
 import { getPageFromFeedPath, getSubplebbitAddress, isDirectoryBoard, normalizeMultiboardFeedPath, stripPageFromFeedPath } from '../../lib/utils/route-utils';
@@ -199,6 +200,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, i
     () => (effectiveInfiniteScroll ? combinedFeed : combinedFeed.slice(0, guiPostsPerPage * maxGuiPages)),
     [effectiveInfiniteScroll, combinedFeed, guiPostsPerPage, maxGuiPages],
   );
+  const registerComments = usePostNumberStore((state) => state.registerComments);
   const totalPages = useMemo(() => Math.min(maxGuiPages, Math.ceil(cappedFeed.length / guiPostsPerPage) || 1), [cappedFeed.length, guiPostsPerPage, maxGuiPages]);
   const currentPageFeed = useMemo(
     () => (effectiveInfiniteScroll ? [] : getPageSlice(cappedFeed, currentPage, guiPostsPerPage, maxGuiPages)),
@@ -238,6 +240,12 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, i
       resetTriggeredRef.current = true;
     }
   }, [filteredComments, reset]);
+
+  useEffect(() => {
+    if (combinedFeed.length > 0) {
+      registerComments(combinedFeed);
+    }
+  }, [combinedFeed, registerComments]);
 
   // Use stable subplebbit fields to avoid rerenders from updatingState
   const subplebbitTitle = useSubplebbitField(subplebbitAddress, (sub) => sub?.title);

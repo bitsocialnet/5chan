@@ -41,11 +41,12 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
   const showSpoilerForReply = directoryEntry?.features?.noSpoilerReplies !== true;
   const requirePostLinkIsMediaFeature = directoryEntry?.features?.requirePostLinkIsMedia;
   const requirePostLinkIsMedia = requirePostLinkIsMediaFeature === true || (requirePostLinkIsMediaFeature === undefined && (isInAllView || isInSubscriptionsView));
-  const { setPublishReplyOptions, publishReply, resetPublishReplyOptions, replyIndex } = usePublishReply({
-    cid: parentCid,
-    subplebbitAddress,
-    postCid,
-  });
+  const { isResolvingExternalQuotes, publishReply, publishReplyError, publishReplyStateMessage, resetPublishReplyOptions, replyIndex, setPublishReplyOptions } =
+    usePublishReply({
+      cid: parentCid,
+      subplebbitAddress,
+      postCid,
+    });
   const account = useAccount();
   const { displayName } = account?.author || {};
   const textRef = useRef<HTMLTextAreaElement | null>(null);
@@ -362,11 +363,18 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
               ]
             </span>
           )}
-          <button className={styles.publishButton} onClick={onPublishReply}>
+          <button className={styles.publishButton} disabled={isResolvingExternalQuotes} onClick={onPublishReply}>
             {t('post')}
           </button>
         </div>
-        {lengthError ? <div className={styles.error}>{lengthError}</div> : error && <div className={styles.error}>{error}</div>}
+        {lengthError ? (
+          <div className={styles.error}>{lengthError}</div>
+        ) : error ? (
+          <div className={styles.error}>{error}</div>
+        ) : (
+          publishReplyError && <div className={styles.error}>{publishReplyError}</div>
+        )}
+        {publishReplyStateMessage && <div className={styles.status}>{publishReplyStateMessage}</div>}
         <BoardOfflineAlert className={styles.offlineBoard} hidden={isInAllView || isInSubscriptionsView || isInModView} subplebbitAddress={subplebbitAddress} />
       </div>
     </animated.div>

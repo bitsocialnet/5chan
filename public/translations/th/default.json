@@ -300,5 +300,12 @@
   "purged": "ถูกลบ",
   "this_post_was_purged": "กำลังลบออกจากฐานข้อมูลบอร์ด — ขั้นตอนนี้ไม่สามารถย้อนกลับได้",
   "news": "ข่าว",
-  "save_advanced_settings": "บันทึกการตั้งค่าขั้นสูง"
+  "save_advanced_settings": "บันทึกการตั้งค่าขั้นสูง",
+  "external_quote_search_board_feed": "Searching in /{{board}}/",
+  "external_quote_search_thread": "Searching thread {{current}}/{{total}} in /{{board}}/",
+  "external_quote_redirecting_to_post": "Redirecting to post in /{{board}}/",
+  "external_quote_resolution_unavailable": "External quote resolution is unavailable right now",
+  "external_quote_cannot_resolve": "Could not find {{quote}} in /{{board}}/",
+  "external_quote_unavailable": "The quoted post is unavailable",
+  "external_quote_publish_missing": "Cannot publish - could not find the quoted post for {{quote}}"
 }

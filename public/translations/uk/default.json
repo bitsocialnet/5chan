@@ -300,5 +300,12 @@
   "purged": "видалено",
   "this_post_was_purged": "Видалення з бази даних дошки — цей процес незворотний.",
   "news": "Новини",
-  "save_advanced_settings": "Зберегти розширені налаштування"
+  "save_advanced_settings": "Зберегти розширені налаштування",
+  "external_quote_search_board_feed": "Searching in /{{board}}/",
+  "external_quote_search_thread": "Searching thread {{current}}/{{total}} in /{{board}}/",
+  "external_quote_redirecting_to_post": "Redirecting to post in /{{board}}/",
+  "external_quote_resolution_unavailable": "External quote resolution is unavailable right now",
+  "external_quote_cannot_resolve": "Could not find {{quote}} in /{{board}}/",
+  "external_quote_unavailable": "The quoted post is unavailable",
+  "external_quote_publish_missing": "Cannot publish - could not find the quoted post for {{quote}}"
 }

@@ -42,6 +42,7 @@ const testState = vi.hoisted(() => ({
     paginationFeedPostsPerPage: 6,
   },
   resetMock: vi.fn(),
+  registerCommentsMock: vi.fn(),
   resolvedSubplebbitAddress: 'music-posting.eth' as string | undefined,
   setEnableInfiniteScrollMock: vi.fn(),
   setResetFunctionMock: vi.fn(),
@@ -144,6 +145,13 @@ vi.mock('../../../stores/use-feed-view-settings-store', () => ({
     selector({
       enableInfiniteScroll: false,
       setEnableInfiniteScroll: testState.setEnableInfiniteScrollMock,
+    }),
+}));
+
+vi.mock('../../../stores/use-post-number-store', () => ({
+  default: (selector: (state: { registerComments: typeof testState.registerCommentsMock }) => unknown) =>
+    selector({
+      registerComments: testState.registerCommentsMock,
     }),
 }));
 
@@ -259,6 +267,7 @@ describe('Board', () => {
     };
     testState.loadMoreMock.mockReset();
     testState.resetMock.mockReset();
+    testState.registerCommentsMock.mockReset();
     testState.setEnableInfiniteScrollMock.mockReset();
     testState.setResetFunctionMock.mockReset();
     document.title = 'before';
@@ -331,6 +340,17 @@ describe('Board', () => {
     await renderBoard({ initialEntry: '/mu/4', routePath: '/:boardIdentifier/*' });
 
     expect(latestLocation).toBe('/mu/2');
+  });
+
+  it('registers visible feed posts with the post-number store', async () => {
+    testState.feed = [
+      { cid: 'first-post', subplebbitAddress: 'music-posting.eth' },
+      { cid: 'second-post', subplebbitAddress: 'music-posting.eth' },
+    ];
+
+    await renderBoard({ initialEntry: '/mu', routePath: '/:boardIdentifier/*' });
+
+    expect(testState.registerCommentsMock).toHaveBeenCalledWith(testState.feed);
   });
 
   it('canonicalizes multiboard paths and shows the subscriptions empty state', async () => {

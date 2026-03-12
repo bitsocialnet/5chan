@@ -18,6 +18,21 @@
   text-decoration: var(--post-quotelink-text-decoration-hover);
 }
 
+.inlineQuoteLinkResolving {
+  cursor: progress;
+  opacity: 0.75;
+  pointer-events: none;
+}
+
+.externalQuotePreviewState {
+  min-width: 220px;
+  padding: 8px 12px;
+}
+
+.externalQuotePreviewError {
+  color: #a40000;
+}
+
 .embedButton {
   color: var(--button-desktop-text-color);
   text-transform: capitalize;

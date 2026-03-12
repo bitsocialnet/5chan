@@ -42,6 +42,7 @@ import FeedCacheContainer from './components/feed-cache-container';
 import PostForm from './components/post-form';
 import BoardBlotter from './components/board-blotter';
 import BoardsBar from './components/boards-bar';
+import ExternalQuoteStatus from './components/external-quote-status/external-quote-status';
 
 const AccountDataEditor = lazy(() => import('./views/account-data-editor'));
 const BoardsBarEditModal = lazy(() => import('./components/boards-bar-edit-modal'));
@@ -177,6 +178,7 @@ const GlobalLayout = () => {
 
   return (
     <>
+      <ExternalQuoteStatus />
       <Suspense fallback={null}>
         <ChallengeModal />
       </Suspense>

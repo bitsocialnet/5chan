@@ -11,13 +11,23 @@ import usePublishReplyStore from '../../stores/use-publish-reply-store';
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
 
 const testState = vi.hoisted(() => ({
+  account: { id: 'account-1' } as Record<string, any>,
   abandonPublishMock: vi.fn(async () => undefined),
+  directories: [] as Array<Record<string, unknown>>,
   index: 7,
   lastPublishOptions: undefined as Record<string, any> | undefined,
   publishCommentMock: vi.fn(),
+  resolveExternalQuoteTargetMock: vi.fn(),
+}));
+
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string, options?: Record<string, unknown>) => (options ? `${key}:${JSON.stringify(options)}` : key),
+  }),
 }));
 
 vi.mock('@bitsocialnet/bitsocial-react-hooks', () => ({
+  useAccount: () => testState.account,
   usePublishComment: (options: Record<string, any>) => {
     testState.lastPublishOptions = options;
     return {
@@ -26,6 +36,14 @@ vi.mock('@bitsocialnet/bitsocial-react-hooks', () => ({
       publishComment: testState.publishCommentMock,
     };
   },
+}));
+
+vi.mock('../../hooks/use-directories', () => ({
+  useDirectories: () => testState.directories,
+}));
+
+vi.mock('../../lib/utils/external-quote-resolver', () => ({
+  resolveExternalQuoteTarget: (...args: any[]) => testState.resolveExternalQuoteTargetMock(...args),
 }));
 
 let container: HTMLDivElement;
@@ -46,6 +64,8 @@ const renderHook = () => {
 describe('usePublishReply', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    testState.account = { id: 'account-1' };
+    testState.directories = [];
     testState.index = 7;
     testState.lastPublishOptions = undefined;
     useChallengesStore.setState({ challenges: [] });
@@ -81,7 +101,7 @@ describe('usePublishReply', () => {
     });
 
     expect(latestValue.replyIndex).toBe(7);
-    expect(latestValue.publishReply).toBe(testState.publishCommentMock);
+    expect(typeof latestValue.publishReply).toBe('function');
     expect(testState.lastPublishOptions).toMatchObject({
       author: { displayName: 'Bob' },
       content: 'Replying to >>12',
@@ -92,6 +112,66 @@ describe('usePublishReply', () => {
       spoiler: true,
       subplebbitAddress: 'music.eth',
     });
+  });
+
+  it('resolves same-board external quote references before triggering publish', async () => {
+    testState.resolveExternalQuoteTargetMock.mockResolvedValue({
+      cid: 'external-cid',
+      route: '/music/thread/external-cid',
+      subplebbitAddress: 'music.eth',
+    });
+
+    await act(async () => {
+      latestValue.setPublishReplyOptions({
+        content: 'Replying to >>44',
+      } as never);
+    });
+
+    await act(async () => {
+      await latestValue.publishReply();
+      await Promise.resolve();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(testState.resolveExternalQuoteTargetMock).toHaveBeenCalledTimes(1);
+    expect(testState.lastPublishOptions?.quotedCids).toEqual(['external-cid']);
+    expect(testState.publishCommentMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not resolve cross-board numeric quotes before publish', async () => {
+    await act(async () => {
+      latestValue.setPublishReplyOptions({
+        content: 'Replying to >>>/fit/44',
+      } as never);
+    });
+
+    await act(async () => {
+      await latestValue.publishReply();
+      await Promise.resolve();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(testState.resolveExternalQuoteTargetMock).not.toHaveBeenCalled();
+    expect(testState.lastPublishOptions?.quotedCids).toBeUndefined();
+    expect(testState.publishCommentMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('blocks publish when a same-board external quote cannot be resolved', async () => {
+    testState.resolveExternalQuoteTargetMock.mockResolvedValue(null);
+
+    await act(async () => {
+      latestValue.setPublishReplyOptions({
+        content: 'Replying to >>44',
+      } as never);
+    });
+
+    await act(async () => {
+      await latestValue.publishReply();
+      await Promise.resolve();
+    });
+
+    expect(latestValue.publishReplyError).toContain('external_quote_publish_missing');
+    expect(testState.publishCommentMock).not.toHaveBeenCalled();
   });
 
   it('queues reply challenges and clears the scoped reply store on reset', async () => {
