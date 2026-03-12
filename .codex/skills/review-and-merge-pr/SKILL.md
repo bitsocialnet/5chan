@@ -9,6 +9,7 @@ description: Review an open GitHub pull request, inspect feedback from Cursor Bu
 
 Use this skill after a feature branch already has an open PR into `master`.
 Stay on the PR branch, treat review bots as input rather than authority, and only merge once the branch is verified and the remaining comments are either fixed or explicitly declined with a reason.
+Finish the workflow by cleaning up local git state yourself; do not assume GitHub, `gh pr merge --delete-branch`, or GitHub Desktop removed the local feature branch or any local `pr/<number>` alias.
 
 ## Workflow
 
@@ -171,10 +172,15 @@ After the PR is merged:
 
 ```bash
 git switch master
+git fetch origin --prune
 git pull --ff-only
 git branch -D <head-branch> 2>/dev/null || true
 git branch -D "pr/<pr-number>" 2>/dev/null || true
 ```
+
+This cleanup is required even when the remote branch was deleted automatically or the merge happened in GitHub Desktop or the GitHub web UI.
+Remote deletion only removes the remote branch; it does not remove the local feature branch, the local `pr/<number>` checkout alias, or stale remote-tracking refs in your clone.
+Use `-D` rather than `-d` here because squash merges usually leave the local branch looking unmerged by ancestry even when the PR is already merged and safe to remove.
 
 If the PR branch lived in a dedicated worktree, remove that worktree after leaving it:
 
@@ -194,4 +200,5 @@ Tell the user:
 - whether linked issues were confirmed closed
 - whether linked issues were assigned to the current GitHub user
 - whether linked project items were confirmed `Done`
+- whether stale remote-tracking refs were pruned
 - whether the feature branch, local `pr/<number>` alias, and any worktree were cleaned up
