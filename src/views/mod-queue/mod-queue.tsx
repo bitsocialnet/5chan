@@ -1,14 +1,14 @@
 import React, { useMemo, useState, useEffect, useCallback, memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, Link } from 'react-router-dom';
-import { useFeed, Comment, usePublishCommentModeration, useEditedComment, useCommunity } from '@bitsocialnet/bitsocial-react-hooks';
+import { useFeed, Comment, usePublishCommentModeration, useEditedComment, useCommunity, useAccount } from '@bitsocialnet/bitsocial-react-hooks';
 import { Virtuoso } from 'react-virtuoso';
 import styles from './mod-queue.module.css';
 import useModQueueStore from '../../stores/use-mod-queue-store';
 import LoadingEllipsis from '../../components/loading-ellipsis';
 import ErrorDisplay from '../../components/error-display/error-display';
 import { useFeedStateString } from '../../hooks/use-state-string';
-import { getSubplebbitAddress, getBoardPath, extractDirectoryFromTitle } from '../../lib/utils/route-utils';
+import { getSubplebbitAddress, getBoardPath, extractDirectoryFromTitle, areSameBoardAddress } from '../../lib/utils/route-utils';
 import { useDirectories, DirectoryCommunity } from '../../hooks/use-directories';
 import getShortAddress from '../../lib/get-short-address';
 import { BOARD_CODE_GROUPS } from '../../constants/board-codes';
@@ -28,6 +28,7 @@ import { useAccountCommunityAddresses } from '../../hooks/use-account-community-
 import useIsMobile from '../../hooks/use-is-mobile';
 import { useCurrentTime } from '../../hooks/use-current-time';
 import { Post } from '../post/post';
+import { canAccessBoardModQueue, hasModQueueAccessRole } from '../../lib/utils/mod-access';
 import capitalize from 'lodash/capitalize';
 import lowerCase from 'lodash/lowerCase';
 import { PageFooterDesktop, PageFooterMobile, StyleOnlyFooterFirstRow } from '../../components/footer';
@@ -715,6 +716,8 @@ const ModQueueButtonContent = ({ feed, alertThresholdSeconds, boardIdentifier, i
 export const ModQueueButton = ({ boardIdentifier, isMobile }: ModQueueButtonProps) => {
   const { getAlertThresholdSeconds } = useModQueueStore();
 
+  const account = useAccount();
+  const accountAddress = account?.author?.address;
   const accountCommunityAddresses = useAccountCommunityAddresses();
 
   const directories = useDirectories();
@@ -725,6 +728,7 @@ export const ModQueueButton = ({ boardIdentifier, isMobile }: ModQueueButtonProp
     }
     return undefined;
   }, [boardIdentifier, directories]);
+  const community = useCommunity({ communityAddress: resolvedAddress });
 
   const communityAddresses = useMemo(() => {
     if (resolvedAddress) {
@@ -733,11 +737,25 @@ export const ModQueueButton = ({ boardIdentifier, isMobile }: ModQueueButtonProp
     return accountCommunityAddresses;
   }, [resolvedAddress, accountCommunityAddresses]);
 
-  // If specific board, check if user is mod using resolved address
-  const isModOfBoard = resolvedAddress ? accountCommunityAddresses.includes(resolvedAddress) : true;
+  const accountRole = accountAddress ? community?.roles?.[accountAddress]?.role : undefined;
+  const hasBoardAccessFromAccountCommunities = resolvedAddress
+    ? accountCommunityAddresses.some((address) => areSameBoardAddress(address, resolvedAddress))
+    : accountCommunityAddresses.length > 0;
+  const hasBoardAccess = canAccessBoardModQueue({
+    boardAddress: resolvedAddress,
+    accountCommunityAddresses,
+    accountRole,
+  });
+  const isBoardAccessLoading =
+    Boolean(resolvedAddress) &&
+    Boolean(accountAddress) &&
+    !hasModQueueAccessRole(accountRole) &&
+    !hasBoardAccessFromAccountCommunities &&
+    community?.state !== 'succeeded' &&
+    community?.state !== 'failed';
 
   // Only fetch if we have addresses to check and permissions
-  const shouldFetch = communityAddresses.length > 0 && isModOfBoard;
+  const shouldFetch = !isBoardAccessLoading && communityAddresses.length > 0 && hasBoardAccess;
 
   const feedAddresses = shouldFetch ? communityAddresses : [];
   const feedOptions = useMemo(
