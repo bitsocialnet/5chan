@@ -45,7 +45,7 @@ const EditMenu = ({ post }: { post: Comment }) => {
   const account = useAccount();
   const { isCommentAuthorMod, isAccountMod, isAccountCommentAuthor } = useAuthorPrivileges({
     commentAuthorAddress: author?.address,
-    subplebbitAddress: communityAddress || '',
+    communityAddress: communityAddress || '',
     postCid,
   });
   const signer = isAccountCommentAuthor ? account?.signer : null;

@@ -20,6 +20,7 @@ const testState = vi.hoisted(() => ({
   } as Record<string, any>,
   addChallengeMock: vi.fn(),
   authorOptions: undefined as Record<string, any> | undefined,
+  authorPrivilegesOptions: undefined as Record<string, any> | undefined,
   isMobile: false,
   modOptions: undefined as Record<string, any> | undefined,
   privileges: {
@@ -84,7 +85,10 @@ vi.mock('@bitsocialnet/bitsocial-react-hooks', () => ({
 }));
 
 vi.mock('../../../hooks/use-author-privileges', () => ({
-  default: () => testState.privileges,
+  default: (options: Record<string, any>) => {
+    testState.authorPrivilegesOptions = options;
+    return testState.privileges;
+  },
 }));
 
 vi.mock('../../../hooks/use-is-mobile', () => ({
@@ -177,6 +181,7 @@ describe('EditMenu', () => {
       },
     };
     testState.authorOptions = undefined;
+    testState.authorPrivilegesOptions = undefined;
     testState.isMobile = false;
     testState.modOptions = undefined;
     testState.privileges = {
@@ -250,6 +255,12 @@ describe('EditMenu', () => {
       spoiler: false,
       communityAddress: 'music-posting.eth',
     });
+    expect(testState.authorPrivilegesOptions).toMatchObject({
+      commentAuthorAddress: '0xauthor',
+      communityAddress: 'music-posting.eth',
+      postCid: 'post-1',
+    });
+    expect(testState.authorPrivilegesOptions).not.toHaveProperty('subplebbitAddress');
   });
 
   it('lets moderators change moderation flags, ban duration, and save them', async () => {
