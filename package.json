@@ -90,7 +90,7 @@
     "contract:imgur": "cd android && ./gradlew :app:connectedDebugAndroidTest -Pandroid.experimental.androidTest.useUnifiedTestPlatform=false -Pandroid.testInstrumentationRunnerArguments.class=fivechan.android.MediaUploadAutomationRunnerTest",
     "smoke:upload-selectors": "node scripts/smoke-upload-selectors.js",
     "test:coverage": "vitest run --coverage.enabled --coverage.provider=istanbul --coverage.reporter=text --coverage.reporter=json --coverage.reporter=json-summary --coverage.reportsDirectory=./coverage",
-    "test:coverage:changed": "vitest run --changed master --coverage.enabled --coverage.provider=istanbul --coverage.reporter=text --coverage.reporter=json --coverage.reporter=json-summary --coverage.reportsDirectory=./coverage --coverage.changed=master",
+    "test:coverage:changed": "vitest run --changed master --coverage.enabled --coverage.provider=istanbul --coverage.reporter=text --coverage.reporter=json --coverage.reporter=json-summary --coverage.reportsDirectory=./coverage",
     "retest:quality": "yarn test && yarn build && yarn lint && yarn type-check && yarn doctor",
     "blotter": "node scripts/update-blotter.js",
     "blotter:check": "node scripts/update-blotter.js check",
