@@ -15,6 +15,7 @@ import useChallengesStore from '../../stores/use-challenges-store';
 import capitalize from 'lodash/capitalize';
 import useIsMobile from '../../hooks/use-is-mobile';
 import useAuthorPrivileges from '../../hooks/use-author-privileges';
+import { useBoardPseudonymityMode } from '../../hooks/use-board-pseudonymity-mode';
 import { getCommentCommunityAddress, withResolvedCommentCommunityAddress } from '../../lib/utils/comment-utils';
 
 const { addChallenge } = useChallengesStore.getState();
@@ -48,7 +49,11 @@ const EditMenu = ({ post }: { post: Comment }) => {
     communityAddress: communityAddress || '',
     postCid,
   });
-  const signer = isAccountCommentAuthor ? account?.signer : null;
+  const pseudonymityMode = useBoardPseudonymityMode(communityAddress);
+  const canAttemptAuthorDelete = isAccountCommentAuthor || Boolean(pseudonymityMode);
+  const canOpenEditMenu = isAccountMod || canAttemptAuthorDelete;
+  const requiresDeleteSelection = canAttemptAuthorDelete && !isAccountCommentAuthor && !isAccountMod;
+  const signer = isAccountCommentAuthor ? account?.signer : undefined;
   const latestPostRef = useRef(resolvedPost);
   useEffect(() => {
     latestPostRef.current = resolvedPost;
@@ -61,7 +66,7 @@ const EditMenu = ({ post }: { post: Comment }) => {
       communityAddress,
       // Author edit properties
       content: isAccountCommentAuthor ? content : undefined,
-      deleted: isAccountCommentAuthor ? (deleted ?? false) : undefined,
+      deleted: canAttemptAuthorDelete ? (deleted ?? false) : undefined,
       spoiler: isAccountCommentAuthor ? (spoiler ?? false) : undefined,
       // Mod edit properties
       commentModeration: isAccountMod
@@ -82,16 +87,30 @@ const EditMenu = ({ post }: { post: Comment }) => {
         alert('Comment edit failed. ' + error.message);
       },
     };
-  }, [isAccountMod, isAccountCommentAuthor, cid, content, deleted, locked, pinned, reason, removed, purged, spoiler, communityAddress, modBanExpiresAt, onChallenge]);
+  }, [
+    isAccountMod,
+    isAccountCommentAuthor,
+    canAttemptAuthorDelete,
+    cid,
+    content,
+    deleted,
+    locked,
+    pinned,
+    reason,
+    removed,
+    purged,
+    spoiler,
+    communityAddress,
+    modBanExpiresAt,
+    onChallenge,
+  ]);
 
   const [publishCommentEditOptions, setPublishCommentEditOptions] = useState<PublishCommentEditOptions>(defaultPublishEditOptions);
 
-  const authorEditOptions = useMemo<PublishCommentEditOptions>(
-    () => ({
+  const authorEditOptions = useMemo<PublishCommentEditOptions>(() => {
+    const options: PublishCommentEditOptions = {
       commentCid: cid,
       communityAddress,
-      signer,
-      author: signer?.address === author?.address ? { address: signer?.address, displayName: authorDisplayName } : account?.author,
       content: publishCommentEditOptions.content,
       deleted: publishCommentEditOptions.deleted,
       reason: publishCommentEditOptions.reason,
@@ -102,9 +121,18 @@ const EditMenu = ({ post }: { post: Comment }) => {
         console.warn(error);
         alert('Comment edit failed. ' + error.message);
       },
-    }),
-    [publishCommentEditOptions, cid, communityAddress, signer, account?.author, author?.address, authorDisplayName, onChallenge],
-  );
+    };
+
+    if (!isAccountCommentAuthor) {
+      return options;
+    }
+
+    return {
+      ...options,
+      signer,
+      author: signer?.address === author?.address ? { address: signer?.address, displayName: authorDisplayName } : account?.author,
+    };
+  }, [publishCommentEditOptions, cid, communityAddress, isAccountCommentAuthor, signer, account?.author, author?.address, authorDisplayName, onChallenge]);
 
   const modEditOptions = useMemo<PublishCommentModerationOptions>(
     () => ({
@@ -166,7 +194,9 @@ const EditMenu = ({ post }: { post: Comment }) => {
         }
       }
 
-      if (isAccountCommentAuthor) {
+      if (id === 'deleted' && canAttemptAuthorDelete) {
+        newState.deleted = checked;
+      } else if (isAccountCommentAuthor) {
         newState[id] = checked;
       }
 
@@ -227,13 +257,20 @@ const EditMenu = ({ post }: { post: Comment }) => {
   const { getReferenceProps, getFloatingProps } = useInteractions([click, dismiss, role]);
 
   const headingId = useId();
+  const canSave = !requiresDeleteSelection || publishCommentEditOptions.deleted === true;
 
   const _publishCommentEdit = async () => {
+    if (!canSave) {
+      return;
+    }
+
+    const shouldPublishAuthorEdit = isAccountCommentAuthor || (canAttemptAuthorDelete && publishCommentEditOptions.deleted === true);
+
     try {
-      if (isAccountCommentAuthor && isAccountMod) {
+      if (shouldPublishAuthorEdit && isAccountMod) {
         await publishAuthorEdit();
         await publishCommentModeration();
-      } else if (isAccountCommentAuthor) {
+      } else if (shouldPublishAuthorEdit) {
         await publishAuthorEdit();
       } else if (isAccountMod) {
         await publishCommentModeration();
@@ -253,7 +290,7 @@ const EditMenu = ({ post }: { post: Comment }) => {
         <input
           type='checkbox'
           onChange={() => {
-            if (cid && (isAccountCommentAuthor || isAccountMod)) {
+            if (cid && canOpenEditMenu) {
               if (!isEditMenuOpen) {
                 resetMenuState();
                 setIsEditMenuOpen(true);
@@ -268,12 +305,12 @@ const EditMenu = ({ post }: { post: Comment }) => {
           checked={isEditMenuOpen}
         />
       </span>
-      {isEditMenuOpen && (isAccountCommentAuthor || isAccountMod) && (
+      {isEditMenuOpen && canOpenEditMenu && (
         <FloatingPortal>
           <FloatingFocusManager context={context} modal={false}>
             <div className={styles.modal} ref={refs.setFloating} style={floatingStyles} aria-labelledby={headingId} {...getFloatingProps()}>
               <div className={styles.editMenu}>
-                {isAccountCommentAuthor && (
+                {canAttemptAuthorDelete && (
                   <>
                     <div className={styles.menuItem}>
                       <label>
@@ -282,6 +319,10 @@ const EditMenu = ({ post }: { post: Comment }) => {
                         {capitalize(t('delete'))}?]
                       </label>
                     </div>
+                  </>
+                )}
+                {isAccountCommentAuthor && (
+                  <>
                     <div className={styles.menuItem}>
                       <label>
                         [
@@ -392,7 +433,7 @@ const EditMenu = ({ post }: { post: Comment }) => {
                   />
                 </div>
                 <div className={styles.bottom}>
-                  <button className={isMobile ? 'button' : ''} onClick={_publishCommentEdit}>
+                  <button className={isMobile ? 'button' : ''} onClick={_publishCommentEdit} disabled={!canSave}>
                     {t('save')}
                   </button>
                 </div>

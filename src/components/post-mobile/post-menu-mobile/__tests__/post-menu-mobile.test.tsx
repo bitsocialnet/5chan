@@ -14,6 +14,7 @@ const testState = vi.hoisted(() => ({
   hidden: false,
   hideMock: vi.fn(),
   mediaInfo: undefined as { thumbnail?: string; type?: string; url?: string } | undefined,
+  pseudonymityMode: undefined as string | undefined,
   privileges: {
     isAccountCommentAuthor: false,
     isAccountMod: false,
@@ -90,6 +91,10 @@ vi.mock('../../../../hooks/use-author-privileges', () => ({
   default: () => testState.privileges,
 }));
 
+vi.mock('../../../../hooks/use-board-pseudonymity-mode', () => ({
+  useBoardPseudonymityMode: () => testState.pseudonymityMode,
+}));
+
 vi.mock('../../../../hooks/use-hide', () => ({
   default: () => ({
     hidden: testState.hidden,
@@ -151,6 +156,7 @@ describe('PostMenuMobile', () => {
     vi.clearAllMocks();
     testState.hidden = false;
     testState.mediaInfo = undefined;
+    testState.pseudonymityMode = undefined;
     testState.privileges = {
       isAccountCommentAuthor: false,
       isAccountMod: false,
@@ -195,6 +201,14 @@ describe('PostMenuMobile', () => {
       hideThread?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
     expect(testState.hideMock).toHaveBeenCalled();
+  });
+
+  it('shows edit controls on pseudonymous boards even without a local author-address match', async () => {
+    testState.pseudonymityMode = 'per-post';
+
+    await renderMenu('/mu');
+
+    expect(document.body.querySelector('[data-testid="edit-menu"]')?.textContent).toBe('cid-1');
   });
 
   it('omits thread hiding on the root thread route and suppresses the menu for deleted posts', async () => {
