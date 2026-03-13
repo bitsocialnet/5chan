@@ -4,6 +4,7 @@ import { useAccount, useAccountComment, useCommunity } from '@bitsocialnet/bitso
 import { initSnow, removeSnow } from './lib/snow';
 import { isAllView, isCatalogView, isModView, isSubscriptionsView } from './lib/utils/view-utils';
 import { preloadReplyModal, preloadThemeAssets } from './lib/utils/preload-utils';
+import { hasModQueueAccessRole } from './lib/utils/mod-access';
 import useReplyModalStore from './stores/use-reply-modal-store';
 import useCreateBoardModalStore from './stores/use-create-board-modal-store';
 import useSpecialThemeStore from './stores/use-special-theme-store';
@@ -59,8 +60,6 @@ const SettingsModal = lazy(() => import('./components/settings-modal'));
 // to prevent visible loading delays when switching themes
 preloadThemeAssets();
 preloadReplyModal();
-
-const hasModQueueAccessRole = (role?: string): boolean => role === 'admin' || role === 'owner' || role === 'moderator';
 
 const BoardLayout = () => {
   const params = useParams();
