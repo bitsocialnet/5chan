@@ -239,7 +239,9 @@ const FiltersTable = ({ onSave }: { onSave: () => void }) => {
               </span>
             </td>
             <td className={styles.filterHits}>
-              {currentCommunityAddress && item.communityFilteredCids?.has(currentCommunityAddress) && `x${item.communityCounts?.get(currentCommunityAddress) ?? 0}`}
+              {currentCommunityAddressResolved &&
+                item.communityFilteredCids?.has(currentCommunityAddressResolved) &&
+                `x${item.communityCounts?.get(currentCommunityAddressResolved) ?? 0}`}
             </td>
           </tr>
         ))}

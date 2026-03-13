@@ -21,6 +21,7 @@ type FilterItem = {
 
 const testState = vi.hoisted(() => ({
   currentCommunityAddress: 'music-posting.eth' as string | null,
+  currentSubplebbitAddress: 'music-posting.eth' as string | null,
   filterItems: [] as FilterItem[],
   resetCountsMock: vi.fn(),
   resetFeedMock: vi.fn(),
@@ -43,6 +44,7 @@ const createFilterItem = (overrides: Partial<FilterItem> = {}): FilterItem => ({
 function getCatalogFiltersState() {
   return {
     currentCommunityAddress: testState.currentCommunityAddress,
+    currentSubplebbitAddress: testState.currentSubplebbitAddress,
     filterItems: testState.filterItems,
     saveAndApplyFilters: testState.saveAndApplyFiltersMock,
   };
@@ -135,6 +137,7 @@ describe('CatalogFilters', () => {
     vi.clearAllMocks();
     vi.useRealTimers();
     testState.currentCommunityAddress = 'music-posting.eth';
+    testState.currentSubplebbitAddress = 'music-posting.eth';
     testState.filterItems = [
       createFilterItem({
         count: 2,
@@ -270,5 +273,15 @@ describe('CatalogFilters', () => {
     expect(testState.resetCountsMock).toHaveBeenCalledTimes(1);
     expect(testState.resetFeedMock).toHaveBeenCalledTimes(1);
     expect(container.querySelector('[title="close"]')).toBeNull();
+  });
+
+  it('shows filter hit counts when only the legacy currentSubplebbitAddress is populated', async () => {
+    testState.currentCommunityAddress = null;
+
+    renderCatalogFilters();
+    await openModal();
+
+    expect(container.textContent).toContain('x2');
+    expect(container.textContent).toContain('x4');
   });
 });
