@@ -10,6 +10,7 @@ import { copyToClipboard } from '../../../lib/utils/clipboard-utils';
 import { getBoardPath } from '../../../lib/utils/route-utils';
 import { useDirectories } from '../../../hooks/use-directories';
 import useEditCommentPrivileges from '../../../hooks/use-author-privileges';
+import { useBoardPseudonymityMode } from '../../../hooks/use-board-pseudonymity-mode';
 import useHide from '../../../hooks/use-hide';
 import EditMenu from '../../edit-menu/edit-menu';
 import { isBoardView, isPostPageView } from '../../../lib/utils/view-utils';
@@ -198,6 +199,8 @@ const PostMenuMobile = ({ postMenu, editMenuPost }: PostMenuMobileProps) => {
     commentAuthorAddress: authorAddress || '',
     subplebbitAddress: resolvedCommunityAddress || '',
   });
+  const pseudonymityMode = useBoardPseudonymityMode(resolvedCommunityAddress);
+  const canAttemptAuthorDelete = pseudonymityMode !== undefined && pseudonymityMode !== 'none';
   const commentMediaInfo = getCommentMediaInfo(link || '', thumbnailUrl || '', linkWidth || 0, linkHeight || 0);
   const { thumbnail, type, url } = commentMediaInfo || {};
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -261,7 +264,7 @@ const PostMenuMobile = ({ postMenu, editMenuPost }: PostMenuMobileProps) => {
             )}
         </>
       )}
-      {(isAccountMod || isAccountCommentAuthor) && cid && (
+      {(isAccountMod || isAccountCommentAuthor || canAttemptAuthorDelete) && cid && (
         <span className={styles.checkbox}>
           <EditMenu post={editMenuPost} />
         </span>

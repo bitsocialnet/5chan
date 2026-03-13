@@ -23,6 +23,7 @@ const testState = vi.hoisted(() => ({
   authorPrivilegesOptions: undefined as Record<string, any> | undefined,
   isMobile: false,
   modOptions: undefined as Record<string, any> | undefined,
+  pseudonymityMode: undefined as string | undefined,
   privileges: {
     isAccountCommentAuthor: false,
     isAccountMod: false,
@@ -93,6 +94,10 @@ vi.mock('../../../hooks/use-author-privileges', () => ({
 
 vi.mock('../../../hooks/use-is-mobile', () => ({
   default: () => testState.isMobile,
+}));
+
+vi.mock('../../../hooks/use-board-pseudonymity-mode', () => ({
+  useBoardPseudonymityMode: () => testState.pseudonymityMode,
 }));
 
 vi.mock('../../../stores/use-challenges-store', () => {
@@ -187,6 +192,7 @@ describe('EditMenu', () => {
     testState.authorPrivilegesOptions = undefined;
     testState.isMobile = false;
     testState.modOptions = undefined;
+    testState.pseudonymityMode = undefined;
     testState.privileges = {
       isAccountCommentAuthor: false,
       isAccountMod: false,
@@ -264,6 +270,58 @@ describe('EditMenu', () => {
       postCid: 'post-1',
     });
     expect(testState.authorPrivilegesOptions).not.toHaveProperty('subplebbitAddress');
+  });
+
+  it('allows pseudonymous boards to attempt author-side deletion without a local author address match', async () => {
+    testState.pseudonymityMode = 'per-post';
+    testState.privileges = {
+      isAccountCommentAuthor: false,
+      isAccountMod: false,
+      isCommentAuthorMod: false,
+    };
+
+    await renderMenu(basePost);
+    await openMenu();
+
+    expect(alertSpy).not.toHaveBeenCalled();
+    expect(getCheckbox('deleted')).not.toBeNull();
+    expect(getLabelCheckbox('Edit?')).toBeNull();
+
+    const saveButton = Array.from(container.querySelectorAll('button')).find((candidate) => candidate.textContent === 'save');
+    expect(saveButton).not.toBeNull();
+    expect((saveButton as HTMLButtonElement).disabled).toBe(true);
+
+    await click(getCheckbox('deleted'));
+    expect((saveButton as HTMLButtonElement).disabled).toBe(false);
+
+    await clickButton('save');
+
+    expect(testState.publishAuthorEditMock).toHaveBeenCalledOnce();
+    expect(testState.publishCommentModerationMock).not.toHaveBeenCalled();
+    expect(testState.authorOptions).toMatchObject({
+      commentCid: 'comment-1',
+      communityAddress: 'music-posting.eth',
+      deleted: true,
+    });
+    expect(testState.authorOptions?.content).toBeUndefined();
+    expect(testState.authorOptions?.spoiler).toBeUndefined();
+    expect(testState.authorOptions).not.toHaveProperty('author');
+    expect(testState.authorOptions).not.toHaveProperty('signer');
+  });
+
+  it("does not allow delete-only access when pseudonymity mode is 'none'", async () => {
+    testState.pseudonymityMode = 'none';
+    testState.privileges = {
+      isAccountCommentAuthor: false,
+      isAccountMod: false,
+      isCommentAuthorMod: false,
+    };
+
+    await renderMenu(basePost);
+    await openMenu();
+
+    expect(alertSpy).toHaveBeenCalledWith('cannot_edit_thread');
+    expect(testState.publishAuthorEditMock).not.toHaveBeenCalled();
   });
 
   it('lets moderators change moderation flags, ban duration, and save them', async () => {
