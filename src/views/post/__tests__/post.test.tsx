@@ -21,6 +21,7 @@ type TestComment = {
   replies?: unknown[];
   state?: string;
   communityAddress?: string;
+  subplebbitAddress?: string;
   timestamp?: number;
   title?: string;
 };
@@ -334,6 +335,34 @@ describe('Post', () => {
     await renderPostPage('/mu/thread/comment-1');
 
     expect(testState.navigateMock).toHaveBeenCalledWith('/not-found', { replace: true });
+  });
+
+  it('hydrates multiboard thread pages from a legacy-only comment address', async () => {
+    testState.resolvedCommunityAddress = undefined;
+    testState.commentsByCid = {
+      'legacy-cid': {
+        cid: 'legacy-cid',
+        state: 'updating',
+        subplebbitAddress: 'music-posting.eth',
+      },
+    };
+    testState.cachedComments = {
+      'legacy-cid': {
+        cid: 'legacy-cid',
+        content: 'cached body',
+        number: 7,
+        replyCount: 0,
+        subplebbitAddress: 'music-posting.eth',
+        title: 'Legacy thread',
+      },
+    };
+
+    await renderPostPage('/all/thread/legacy-cid');
+
+    expect(container.querySelector('[data-testid="post-desktop"]')?.textContent).toBe('legacy-cid:none:1');
+    expect(container.querySelector('[data-testid="thread-footer-first-row"]')?.textContent).toBe('legacy-cid:7:music-posting.eth:false');
+    expect(document.title).toBe('all - Legacy thread... - 5chan');
+    expect(testState.navigateMock).not.toHaveBeenCalled();
   });
 
   it('renders reply pages using the root post, highlights the reply target, and shows thread errors', async () => {

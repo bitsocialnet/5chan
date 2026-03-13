@@ -316,6 +316,8 @@ const CatalogPost = memo(
   (prevProps, nextProps) => {
     const prev = prevProps.post;
     const next = nextProps.post;
+    const prevCommunityAddress = prev?.communityAddress ?? prev?.subplebbitAddress;
+    const nextCommunityAddress = next?.communityAddress ?? next?.subplebbitAddress;
     // Compare all fields that affect rendering to avoid stale displays
     return (
       prev?.cid === next?.cid &&
@@ -332,7 +334,7 @@ const CatalogPost = memo(
       prev?.thumbnailUrl === next?.thumbnailUrl &&
       prev?.linkWidth === next?.linkWidth &&
       prev?.linkHeight === next?.linkHeight &&
-      prev?.communityAddress === next?.communityAddress
+      prevCommunityAddress === nextCommunityAddress
     );
   },
 );

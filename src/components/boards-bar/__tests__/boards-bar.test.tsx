@@ -9,7 +9,7 @@ import BoardsBar from '../boards-bar';
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
 
 const testState = vi.hoisted(() => ({
-  accountComment: undefined as { communityAddress?: string } | undefined,
+  accountComment: undefined as { communityAddress?: string; subplebbitAddress?: string } | undefined,
   accountCommunityAddresses: ['music-posting.eth'] as string[],
   directories: [
     { address: 'music-posting.eth', title: '/mu/ - Music' },
@@ -257,5 +257,16 @@ describe('BoardsBar', () => {
     });
 
     expect(mobileNav?.style.transform).toBe('translateY(-23px)');
+  });
+
+  it('keeps the mobile board context for legacy account comments', async () => {
+    testState.resolvedCommunityAddress = undefined;
+    testState.accountComment = { subplebbitAddress: 'music-posting.eth' };
+
+    await renderBoardsBar('/pending/7');
+
+    const select = container.querySelector('select');
+    expect(select).toBeTruthy();
+    expect(Array.from(select?.querySelectorAll('option') ?? []).some((option) => option.value === 'mu')).toBe(true);
   });
 });

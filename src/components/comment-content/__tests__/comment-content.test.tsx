@@ -12,6 +12,9 @@ type TestComment = {
     community?: {
       banExpiresAt?: number;
     };
+    subplebbit?: {
+      banExpiresAt?: number;
+    };
   };
   cid?: string;
   commentModeration?: {
@@ -271,6 +274,23 @@ describe('CommentContent', () => {
     });
 
     expect(queryMarkdownText()[0]).toHaveLength(1105);
+  });
+
+  it('keeps the ban indicator for legacy author subplebbit data', async () => {
+    await renderContent({
+      author: {
+        subplebbit: {
+          banExpiresAt: 1700000000,
+        },
+      },
+      cid: 'post-1',
+      communityAddress: 'music-posting.eth',
+      content: 'body',
+      postCid: 'post-1',
+    });
+
+    expect(container.textContent).toContain('(user_banned)');
+    expect(container.querySelector('[data-testid="tooltip"]')?.getAttribute('title')).toContain('ban:short:music-posting.eth:2024-01-01 12:00:00');
   });
 
   it('shows and hides the original content for edited comments', async () => {

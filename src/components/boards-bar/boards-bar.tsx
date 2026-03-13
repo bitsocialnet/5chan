@@ -9,6 +9,7 @@ import { useAccountCommunityAddresses } from '../../hooks/use-account-community-
 import { useDirectories, useDirectoriesMetadata, DirectoryCommunity } from '../../hooks/use-directories';
 import { useBoardPath, useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
 import { getBoardPath, extractDirectoryFromTitle } from '../../lib/utils/route-utils';
+import { getCommentCommunityAddress } from '../../lib/utils/comment-utils';
 import useCreateBoardModalStore from '../../stores/use-create-board-modal-store';
 import useBoardsBarEditModalStore from '../../stores/use-boards-bar-edit-modal-store';
 import useBoardsBarVisibilityStore from '../../stores/use-boards-bar-visibility-store';
@@ -416,7 +417,7 @@ const BoardsBar = () => {
   const commentIndex = params?.accountCommentIndex ? parseInt(params.accountCommentIndex) : undefined;
   const accountComment = useAccountComment({ commentIndex });
   const resolvedCommunityAddress = useResolvedCommunityAddress();
-  const communityAddress = resolvedCommunityAddress || accountComment?.communityAddress;
+  const communityAddress = resolvedCommunityAddress || getCommentCommunityAddress(accountComment);
 
   return (
     <>

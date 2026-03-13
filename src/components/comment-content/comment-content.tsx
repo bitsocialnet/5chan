@@ -75,7 +75,9 @@ const CommentContent = ({ comment: post, prependContent }: { comment: Comment; p
   const { cid, content, deleted, edit, original, parentCid, postCid, pendingApproval, quotedCids, reason, removed, state } = resolvedPost || {};
   const communityAddress = getCommentCommunityAddress(resolvedPost);
   const purged = resolvedPost?.commentModeration?.purged;
-  const banned = !!resolvedPost?.author?.community?.banExpiresAt;
+  const banExpiresAt =
+    resolvedPost?.author?.community?.banExpiresAt ?? (resolvedPost?.author as { subplebbit?: { banExpiresAt?: number } } | undefined)?.subplebbit?.banExpiresAt;
+  const banned = !!banExpiresAt;
 
   const [showFullComment, setShowFullComment] = useState(false);
   const displayContent =
@@ -273,7 +275,7 @@ const CommentContent = ({ comment: post, prependContent }: { comment: Comment; p
           <Tooltip
             content={`${t('ban_expires_at', {
               address: communityAddress && getShortAddress(communityAddress),
-              timestamp: getFormattedDate(post?.author?.community?.banExpiresAt),
+              timestamp: banExpiresAt ? getFormattedDate(banExpiresAt) : '',
               interpolation: { escapeValue: false },
             })}${reason ? `. ${capitalize(t('reason'))}: "${reason}"` : ''}`}
           >

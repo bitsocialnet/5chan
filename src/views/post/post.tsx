@@ -8,6 +8,7 @@ import { isAllView } from '../../lib/utils/view-utils';
 import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
 import { useDirectories } from '../../hooks/use-directories';
 import { areSameBoardAddress, isDirectoryBoard } from '../../lib/utils/route-utils';
+import { getCommentCommunityAddress } from '../../lib/utils/comment-utils';
 import useIsMobile from '../../hooks/use-is-mobile';
 import ErrorDisplay from '../../components/error-display/error-display';
 import { PageFooterDesktop, ThreadFooterFirstRow, ThreadFooterStyleRow, ThreadFooterMobile } from '../../components/footer';
@@ -131,19 +132,20 @@ const PostPage = () => {
   const params = useParams();
   const location = useLocation();
   const { commentCid } = params;
-  const communityAddress = useResolvedCommunityAddress();
+  const resolvedCommunityAddress = useResolvedCommunityAddress();
   const isInAllView = isAllView(location.pathname);
 
   const comment = useCommentWithFeedCache({ commentCid });
+  const commentCommunityAddress = getCommentCommunityAddress(comment);
+  const communityAddress = resolvedCommunityAddress ?? commentCommunityAddress;
   const consumedThreadTopScrollRef = useRef<string | null>(null);
 
   const navigate = useNavigate();
   useEffect(() => {
-    const commentCommunityAddress = comment?.communityAddress || comment?.subplebbitAddress;
-    if (commentCommunityAddress && communityAddress && !areSameBoardAddress(commentCommunityAddress, communityAddress)) {
+    if (commentCommunityAddress && resolvedCommunityAddress && !areSameBoardAddress(commentCommunityAddress, resolvedCommunityAddress)) {
       navigate('/not-found', { replace: true });
     }
-  }, [comment?.communityAddress, comment?.subplebbitAddress, communityAddress, navigate]);
+  }, [commentCommunityAddress, resolvedCommunityAddress, navigate]);
 
   const community = useCommunity({ communityAddress });
   const { error: communityError, shortAddress, title } = community || {};
