@@ -43,6 +43,7 @@ describe('BlotterMessage', () => {
     });
 
     expect(container.textContent).toContain('Moved a board into a community spotlight');
+    expect(container.textContent).not.toContain('subplebbit');
     expect(container.textContent).not.toContain('board spotlight');
   });
 

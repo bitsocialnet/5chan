@@ -18,7 +18,7 @@ import { getRequestedThreadTopCid, scrollThreadContainerToTop } from '../../lib/
 import styles from './post.module.css';
 
 // useComment may not return cached feed data immediately due to its updatedAt comparison logic.
-// This hook falls back to the subplebbit pages store (populated by useFeed) so content
+// This hook falls back to the communities pages store (populated by useFeed) so content
 // from the catalog appears instantly instead of going through a loading phase.
 const useCommentWithFeedCache = (options: { commentCid: string | undefined }) => {
   const comment = useComment(options);

@@ -118,7 +118,7 @@ export const CatalogPostMedia = ({ cid, commentMediaInfo, linkWidth, linkHeight 
 const CatalogPost = memo(
   ({ post }: { post: Comment }) => {
     const { t } = useTranslation();
-    const resolvedPost = withResolvedCommentCommunityAddress(post);
+    const resolvedPost = useMemo(() => withResolvedCommentCommunityAddress(post), [post]);
     const { author, cid, content, link, linkHeight, linkWidth, locked, pinned, replyCount, spoiler, communityAddress, timestamp, title, thumbnailUrl } =
       resolvedPost || {};
     const linkCount = useCountLinksInReplies(resolvedPost);
@@ -193,11 +193,11 @@ const CatalogPost = memo(
 
     const { isCommentAuthorMod: isCatalogPostAuthorMod, commentAuthorRole: catalogPostAuthorRole } = useEditCommentPrivileges({
       commentAuthorAddress: author?.address,
-      subplebbitAddress: communityAddress ?? '',
+      communityAddress: communityAddress ?? '',
     });
     const { isCommentAuthorMod: isLastReplyAuthorMod, commentAuthorRole: lastReplyAuthorRole } = useEditCommentPrivileges({
       commentAuthorAddress: lastReply?.author?.address,
-      subplebbitAddress: communityAddress ?? '',
+      communityAddress: communityAddress ?? '',
     });
 
     const postContent = (

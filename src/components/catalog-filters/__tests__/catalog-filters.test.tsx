@@ -15,6 +15,8 @@ type FilterItem = {
   hide: boolean;
   communityCounts: Map<string, number>;
   communityFilteredCids: Map<string, Set<string>>;
+  subplebbitCounts?: Map<string, number>;
+  subplebbitFilteredCids?: Map<string, Set<string>>;
   text: string;
   top: boolean;
 };
@@ -36,6 +38,8 @@ const createFilterItem = (overrides: Partial<FilterItem> = {}): FilterItem => ({
   hide: true,
   communityCounts: new Map<string, number>(),
   communityFilteredCids: new Map<string, Set<string>>(),
+  subplebbitCounts: undefined,
+  subplebbitFilteredCids: undefined,
   text: '',
   top: false,
   ...overrides,
@@ -277,6 +281,32 @@ describe('CatalogFilters', () => {
 
   it('shows filter hit counts when only the legacy currentSubplebbitAddress is populated', async () => {
     testState.currentCommunityAddress = null;
+
+    renderCatalogFilters();
+    await openModal();
+
+    expect(container.textContent).toContain('x2');
+    expect(container.textContent).toContain('x4');
+  });
+
+  it('shows filter hit counts when only the legacy subplebbit count payload is populated', async () => {
+    testState.currentCommunityAddress = null;
+    testState.filterItems = [
+      createFilterItem({
+        communityCounts: new Map<string, number>(),
+        communityFilteredCids: new Map<string, Set<string>>(),
+        subplebbitCounts: new Map([['music-posting.eth', 2]]),
+        subplebbitFilteredCids: new Map([['music-posting.eth', new Set(['alpha-cid'])]]),
+        text: 'alpha',
+      }),
+      createFilterItem({
+        communityCounts: new Map<string, number>(),
+        communityFilteredCids: new Map<string, Set<string>>(),
+        subplebbitCounts: new Map([['music-posting.eth', 4]]),
+        subplebbitFilteredCids: new Map([['music-posting.eth', new Set(['beta-cid'])]]),
+        text: 'beta',
+      }),
+    ];
 
     renderCatalogFilters();
     await openModal();

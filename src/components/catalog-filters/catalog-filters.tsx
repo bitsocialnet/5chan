@@ -36,44 +36,39 @@ type CatalogFilterItemStore = {
   id?: string;
 };
 
-type CatalogFilterItem = {
-  text: string;
-  enabled: boolean;
-  count: number;
-  filteredCids: Set<string>;
-  communityCounts: Map<string, number>;
-  communityFilteredCids: Map<string, Set<string>>;
-  hide: boolean;
-  top: boolean;
-  color: string;
-  id?: string;
+const selectFilterMap = <K, V>(preferred?: Map<K, V>, legacy?: Map<K, V>) => {
+  if (preferred && preferred.size > 0) return preferred;
+  if (legacy && legacy.size > 0) return legacy;
+  return preferred || legacy || new Map<K, V>();
 };
 
-const toCatalogFilterItem = (item: CatalogFilterItemInput): CatalogFilterItemStore => ({
-  ...item,
-  count: item.count || 0,
-  filteredCids: item.filteredCids || new Set<string>(),
-  communityCounts: item.communityCounts || item.subplebbitCounts || new Map<string, number>(),
-  communityFilteredCids: item.communityFilteredCids || item.subplebbitFilteredCids || new Map<string, Set<string>>(),
-  subplebbitCounts: item.communityCounts || item.subplebbitCounts || new Map<string, number>(),
-  subplebbitFilteredCids: item.communityFilteredCids || item.subplebbitFilteredCids || new Map<string, Set<string>>(),
-  hide: item.hide ?? true,
-  top: item.top ?? false,
-  color: item.color || '',
-});
+const toCatalogFilterItem = (item: CatalogFilterItemInput): CatalogFilterItemStore => {
+  const counts = selectFilterMap(item.communityCounts, item.subplebbitCounts);
+  const filteredByCommunity = selectFilterMap(item.communityFilteredCids, item.subplebbitFilteredCids);
+
+  return {
+    ...item,
+    count: item.count || 0,
+    filteredCids: item.filteredCids || new Set<string>(),
+    communityCounts: counts,
+    communityFilteredCids: filteredByCommunity,
+    subplebbitCounts: counts,
+    subplebbitFilteredCids: filteredByCommunity,
+    hide: item.hide ?? true,
+    top: item.top ?? false,
+    color: item.color || '',
+  };
+};
 
 const FiltersTable = ({ onSave }: { onSave: () => void }) => {
   const { t } = useTranslation();
-  const { currentSubplebbitAddress, currentCommunityAddress, filterItems, saveAndApplyFilters, resetCountsForCurrentCommunity, resetCountsForCurrentSubplebbit } =
-    useCatalogFiltersStore((state) => ({
-      currentSubplebbitAddress: state.currentSubplebbitAddress,
-      // legacy fallback kept for compatibility while worker B/store migration is in progress
-      currentCommunityAddress: (state as { currentCommunityAddress?: string | null }).currentCommunityAddress ?? null,
-      filterItems: state.filterItems as CatalogFilterItemInput[],
-      saveAndApplyFilters: state.saveAndApplyFilters,
-      resetCountsForCurrentCommunity: (state as { resetCountsForCurrentCommunity?: () => void }).resetCountsForCurrentCommunity,
-      resetCountsForCurrentSubplebbit: (state as { resetCountsForCurrentSubplebbit?: () => void }).resetCountsForCurrentSubplebbit,
-    }));
+  const { currentSubplebbitAddress, currentCommunityAddress, filterItems, saveAndApplyFilters } = useCatalogFiltersStore((state) => ({
+    currentSubplebbitAddress: state.currentSubplebbitAddress,
+    // legacy fallback kept for compatibility while worker B/store migration is in progress
+    currentCommunityAddress: (state as { currentCommunityAddress?: string | null }).currentCommunityAddress ?? null,
+    filterItems: state.filterItems as CatalogFilterItemInput[],
+    saveAndApplyFilters: state.saveAndApplyFilters,
+  }));
   const currentCommunityAddressResolved = currentCommunityAddress ?? currentSubplebbitAddress;
   const resetFeed = useFeedResetStore((state) => state.reset);
 

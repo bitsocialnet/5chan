@@ -28,6 +28,7 @@ type TestComment = {
 
 const testState = vi.hoisted(() => ({
   cachedComments: {} as Record<string, TestComment>,
+  communityFieldAddress: undefined as string | undefined,
   commentsByCid: {} as Record<string, TestComment>,
   directories: [{ address: 'music-posting.eth', title: '/mu/ - Music' }] as Array<{ address: string; title?: string }>,
   editedCommentsByCid: {} as Record<string, TestComment | undefined>,
@@ -76,7 +77,10 @@ vi.mock('@bitsocialnet/bitsocial-react-hooks/dist/stores/communities-pages', () 
 }));
 
 vi.mock('../../../hooks/use-stable-community', () => ({
-  useCommunityField: (_address: string | undefined, selector: (community: typeof testState.communitySnapshot) => unknown) => selector(testState.communitySnapshot),
+  useCommunityField: (address: string | undefined, selector: (community: typeof testState.communitySnapshot) => unknown) => {
+    testState.communityFieldAddress = address;
+    return selector(testState.communitySnapshot);
+  },
 }));
 
 vi.mock('../../../hooks/use-resolved-community-address', () => ({
@@ -183,6 +187,7 @@ describe('Post', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     testState.cachedComments = {};
+    testState.communityFieldAddress = undefined;
     testState.commentsByCid = {};
     testState.directories = [{ address: 'music-posting.eth', title: '/mu/ - Music' }];
     testState.editedCommentsByCid = {};
@@ -291,6 +296,7 @@ describe('Post', () => {
     expect(container.querySelector('[data-testid="post-desktop"]')?.textContent).toBe('cached-cid:none:1');
     expect(container.querySelector('[data-testid="thread-footer-first-row"]')?.textContent).toBe('cached-cid:42:music-posting.eth:false');
     expect(container.querySelector('[data-testid="thread-footer-mobile"]')?.textContent).toBe('cached-cid:42:music-posting.eth:false');
+    expect(testState.communityFieldAddress).toBe('music-posting.eth');
     expect(document.title).toBe('/mu/ - Cached thread... - 5chan');
     expect(window.scrollTo).toHaveBeenCalledWith(0, 0);
     expect(HTMLElement.prototype.scrollIntoView).not.toHaveBeenCalled();
@@ -361,6 +367,7 @@ describe('Post', () => {
 
     expect(container.querySelector('[data-testid="post-desktop"]')?.textContent).toBe('legacy-cid:none:1');
     expect(container.querySelector('[data-testid="thread-footer-first-row"]')?.textContent).toBe('legacy-cid:7:music-posting.eth:false');
+    expect(testState.communityFieldAddress).toBe('music-posting.eth');
     expect(document.title).toBe('all - Legacy thread... - 5chan');
     expect(testState.navigateMock).not.toHaveBeenCalled();
   });
