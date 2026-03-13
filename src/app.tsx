@@ -17,6 +17,7 @@ import {
   getSubplebbitAddress,
   isBoardModRoute,
   isDirectoryBoard,
+  isArchiveRoute,
   isLegacyBoardModQueueRoute,
   isPostRoute,
   isPendingPostRoute,
@@ -31,6 +32,7 @@ import Blotter from './views/blotter';
 import Catalog from './views/catalog';
 import FAQ from './views/faq';
 import Home from './views/home';
+import Archive from './views/archive/archive';
 import ModQueueView from './views/mod-queue';
 import NotAllowed from './views/not-allowed';
 import NotFound from './views/not-found';
@@ -76,9 +78,9 @@ const BoardLayout = () => {
   const isOnPostRoute = isPostRoute(location.pathname);
   const isOnPendingPostRoute = isPendingPostRoute(location.pathname);
   const isOnModQueueRoute = isModQueueRoute(location.pathname);
-  const shouldRenderOutlet = isOnPostRoute || isOnPendingPostRoute || isOnModQueueRoute;
+  const isOnArchiveRoute = isArchiveRoute(location.pathname);
+  const shouldRenderOutlet = isOnPostRoute || isOnPendingPostRoute || isOnModQueueRoute || isOnArchiveRoute;
   const isInCatalogView = isCatalogView(location.pathname, params);
-
   // Christmas theme
   const { isEnabled: isSpecialEnabled } = useSpecialThemeStore();
   useEffect(() => {
@@ -145,6 +147,7 @@ const BoardLayout = () => {
       <BoardHeader />
       {isMobile
         ? (communityAddress || isInAllView || isInModView || isInSubscriptionsView || pendingPostCommunityAddress || isOnModQueueRoute) &&
+          !isOnArchiveRoute &&
           (isInCatalogView ? (
             <>
               <PostForm key={key} />
@@ -157,7 +160,8 @@ const BoardLayout = () => {
               {isInAllView && <MobileAllFeedFilter />}
             </>
           ))
-        : (communityAddress || isInAllView || isInModView || isInSubscriptionsView || pendingPostCommunityAddress || isOnModQueueRoute) && (
+        : (communityAddress || isInAllView || isInModView || isInSubscriptionsView || pendingPostCommunityAddress || isOnModQueueRoute) &&
+          !isOnArchiveRoute && (
             <>
               <PostForm key={key} />
               {!(isInAllView || isInSubscriptionsView || isInModView) && !isOnModQueueRoute && <BoardBlotter />}
@@ -307,6 +311,12 @@ const App = () => {
 
             <Route path='/mod/queue' element={<ModQueueRoute />} />
             <Route path='/mod/queue/settings' element={<ModQueueRoute />} />
+            <Route path='/all/archive' element={<Navigate to='/not-found' replace />} />
+            <Route path='/all/archive/settings' element={<Navigate to='/not-found' replace />} />
+            <Route path='/subs/archive' element={<Navigate to='/not-found' replace />} />
+            <Route path='/subs/archive/settings' element={<Navigate to='/not-found' replace />} />
+            <Route path='/mod/archive' element={<Navigate to='/not-found' replace />} />
+            <Route path='/mod/archive/settings' element={<Navigate to='/not-found' replace />} />
 
             {/* Invalid subpaths: old URLs and unknown paths -> not-found */}
             <Route path='/mod/modqueue' element={<Navigate to='/not-found' replace />} />
@@ -321,6 +331,8 @@ const App = () => {
             <Route path='/:boardIdentifier/settings' element={boardFeedElement} />
             <Route path='/:boardIdentifier/catalog' element={catalogFeedElement} />
             <Route path='/:boardIdentifier/catalog/settings' element={catalogFeedElement} />
+            <Route path='/:boardIdentifier/archive' element={<Archive />} />
+            <Route path='/:boardIdentifier/archive/settings' element={<Archive />} />
 
             <Route path='/:boardIdentifier/mod/queue' element={<ModQueueRoute />} />
             <Route path='/:boardIdentifier/mod/queue/settings' element={<ModQueueRoute />} />

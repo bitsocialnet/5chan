@@ -307,5 +307,12 @@
   "external_quote_resolution_unavailable": "External quote resolution is unavailable right now",
   "external_quote_cannot_resolve": "Could not find {{quote}} in /{{board}}/",
   "external_quote_unavailable": "The quoted post is unavailable",
-  "external_quote_publish_missing": "Cannot publish - could not find the quoted post for {{quote}}"
+  "external_quote_publish_missing": "Tidak dapat memublikasikan – tidak menemukan postingan yang dikutip untuk {{quote}}",
+  "displaying_x_archived_threads": "Menampilkan {{count}} thread terarsip",
+  "displaying_x_archived_threads_from_past_x_days": "Menampilkan {{count}} thread terarsip dari {{days}} hari terakhir",
+  "no_archived_threads": "Tidak ada thread yang diarsipkan",
+  "archived": "Diarsipkan",
+  "loading_archive": "Memuat arsip...",
+  "thread_archived": "Benang diarsipkan.",
+  "view": "Lihat"
 }

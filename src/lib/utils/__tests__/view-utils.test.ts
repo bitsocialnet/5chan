@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   isAllView,
+  isArchiveView,
   isBoardView,
   isCatalogView,
   isHomeView,
@@ -48,5 +49,8 @@ describe('view-utils', () => {
     expect(isPostPageView('/emoji-%F0%9F%8E%B5.eth/thread/cid-123', params)).toBe(true);
     expect(isNotFoundView('/definitely-not-a-route', params)).toBe(true);
     expect(isNotFoundView('/emoji-%F0%9F%8E%B5.eth/thread/cid-123', params)).toBe(false);
+    expect(isArchiveView('/music.eth/archive', { boardIdentifier: 'music.eth' })).toBe(true);
+    expect(isBoardView('/music.eth/archive', { boardIdentifier: 'music.eth' })).toBe(false);
+    expect(isNotFoundView('/music.eth/archive', { boardIdentifier: 'music.eth' })).toBe(false);
   });
 });

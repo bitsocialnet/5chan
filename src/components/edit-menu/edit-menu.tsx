@@ -11,6 +11,7 @@ import {
 } from '@bitsocialnet/bitsocial-react-hooks';
 import styles from './edit-menu.module.css';
 import { alertChallengeVerificationFailed } from '../../lib/utils/challenge-utils';
+import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
 import useChallengesStore from '../../stores/use-challenges-store';
 import capitalize from 'lodash/capitalize';
 import useIsMobile from '../../hooks/use-is-mobile';
@@ -37,6 +38,7 @@ const EditMenu = ({ post }: { post: Comment }) => {
   const resolvedPost = withResolvedCommentCommunityAddress(post);
   const { author, cid, content, deleted, locked, parentCid, pinned, postCid, reason, removed, spoiler } = resolvedPost || {};
   const communityAddress = getCommentCommunityAddress(resolvedPost);
+  const archived = isCommentArchived(resolvedPost);
   const authorDisplayName = resolvedPost?.author?.displayName;
   const modBanExpiresAt = resolvedPost?.commentModeration?.author?.banExpiresAt;
   const purged = resolvedPost?.commentModeration?.purged ?? false;
@@ -72,6 +74,7 @@ const EditMenu = ({ post }: { post: Comment }) => {
       commentModeration: isAccountMod
         ? {
             locked: locked ?? false,
+            archived: parentCid === undefined ? (archived ?? false) : undefined,
             pinned: pinned ?? false,
             removed: removed ?? false,
             purged: purged ?? false,
@@ -91,6 +94,7 @@ const EditMenu = ({ post }: { post: Comment }) => {
     isAccountMod,
     isAccountCommentAuthor,
     canAttemptAuthorDelete,
+    archived,
     cid,
     content,
     deleted,
@@ -140,6 +144,7 @@ const EditMenu = ({ post }: { post: Comment }) => {
       communityAddress,
       commentModeration: {
         locked: parentCid === undefined ? publishCommentEditOptions.commentModeration?.locked : undefined,
+        archived: parentCid === undefined ? publishCommentEditOptions.commentModeration?.archived : undefined,
         pinned: publishCommentEditOptions.commentModeration?.pinned,
         removed: publishCommentEditOptions.commentModeration?.removed,
         purged: publishCommentEditOptions.commentModeration?.purged,
@@ -378,6 +383,16 @@ const EditMenu = ({ post }: { post: Comment }) => {
                       </label>
                       ]
                     </div>
+                    {!parentCid && (
+                      <div className={styles.menuItem}>
+                        [
+                        <label>
+                          <input onChange={onCheckbox} checked={publishCommentEditOptions.commentModeration?.archived ?? false} type='checkbox' id='archived' />
+                          {capitalize(t('archived'))}?
+                        </label>
+                        ]
+                      </div>
+                    )}
                     <div className={styles.menuItem}>
                       [
                       <label>

@@ -19,6 +19,7 @@ import CatalogFilters from '../catalog-filters';
 import CatalogSearch from '../catalog-search';
 import Tooltip from '../tooltip';
 import { ModQueueButton } from '../../views/mod-queue/mod-queue';
+import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
 import styles from './board-buttons.module.css';
 import capitalize from 'lodash/capitalize';
 
@@ -59,13 +60,21 @@ export const CatalogButton = ({ address, isInAllView, isInSubscriptionsView, isI
 
 export const ArchiveButton = ({ address, isInAllView, isInSubscriptionsView, isInModView }: BoardButtonsProps) => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const params = useParams();
+  const directories = useDirectories();
 
-  const handleClick = () => {
-    window.alert('Work in progress');
-  };
+  const isInvalidArchiveContext = isInAllView || isInSubscriptionsView || isInModView;
+  const boardIdentifier = params.boardIdentifier || params.subplebbitAddress;
+  const archiveBoardIdentifier = address ? getBoardPath(address, directories) : boardIdentifier ? getBoardPath(boardIdentifier, directories) : '';
+  const archivePath = archiveBoardIdentifier ? `/${archiveBoardIdentifier}/archive` : '';
+
+  if (isInvalidArchiveContext || !archivePath) {
+    return null;
+  }
 
   return (
-    <button className='button' onClick={handleClick}>
+    <button className='button' onClick={() => navigate(archivePath)}>
       {t('archive')}
     </button>
   );
@@ -183,7 +192,7 @@ export const AutoButton = () => {
   );
 };
 
-const BottomButton = () => {
+export const BottomButton = () => {
   const { t } = useTranslation();
   const handleClick = () => {
     window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' });
@@ -495,6 +504,7 @@ export const PostPageStats = () => {
   const postCid = comment?.postCid ?? commentCid;
   const post = useComment({ commentCid: postCid });
 
+  const archived = isCommentArchived(post);
   const { closed, pinned, replyCount } = post || {};
   const linkCount = useCountLinksInReplies(post);
   const directoryEntry = useDirectoryByAddress(communityAddress);
@@ -513,6 +523,7 @@ export const PostPageStats = () => {
   return (
     <span>
       {pinned && `${capitalize(t('sticky'))} / `}
+      {archived && `${capitalize(t('archived'))} / `}
       {closed && `${capitalize(t('closed'))} / `}
       <Tooltip content={replyCountTooltip}>{displayReplyCount}</Tooltip> /{' '}
       <Tooltip content={capitalize(requirePostLinkIsMedia ? t('images') : t('links'))}>{linkCount?.toString()}</Tooltip>

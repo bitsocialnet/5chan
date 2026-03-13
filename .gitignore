@@ -167,6 +167,7 @@ yarn-error.log*
 .vscode
 .claude
 .playwright-cli
+.firecrawl/
 
 # Repo-managed AI tooling
 .cursor/*

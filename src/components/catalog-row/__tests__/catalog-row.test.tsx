@@ -15,6 +15,9 @@ type TestComment = {
   };
   cid: string;
   content?: string;
+  commentModeration?: {
+    archived?: boolean;
+  };
   link?: string;
   linkHeight?: number;
   linkWidth?: number;
@@ -274,6 +277,25 @@ describe('CatalogRow', () => {
     });
 
     expect(container.querySelector<HTMLImageElement>('img[src="assets/filedeleted-res.gif"]')).toBeTruthy();
+  });
+
+  it('renders the archived icon for archived threads', async () => {
+    const post: TestComment = {
+      author: { address: 'author-1', displayName: 'Alice' },
+      cid: 'post-archived',
+      commentModeration: {
+        archived: true,
+      },
+      content: 'Archived thread',
+      replyCount: 3,
+      subplebbitAddress: 'music-posting.eth',
+      title: 'Old thread',
+    };
+
+    testState.mediaInfoByLink['https://example.com/media.png'] = { type: 'image', url: 'https://example.com/media.png' };
+    await renderWithRouter(createElement(CatalogRow, { row: [post] }));
+
+    expect(container.querySelector('[title="archived"]')).toBeTruthy();
   });
 
   it('renders audio players and video first-frame fallbacks for media without thumbnails', async () => {

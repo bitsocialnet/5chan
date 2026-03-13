@@ -307,5 +307,12 @@
   "external_quote_resolution_unavailable": "External quote resolution is unavailable right now",
   "external_quote_cannot_resolve": "Could not find {{quote}} in /{{board}}/",
   "external_quote_unavailable": "The quoted post is unavailable",
-  "external_quote_publish_missing": "Cannot publish - could not find the quoted post for {{quote}}"
+  "external_quote_publish_missing": "प्रकाशित नहीं कर सकते - {{quote}} के लिए उद्धृत पोस्ट नहीं मिली",
+  "displaying_x_archived_threads": "{{count}} संग्रहीत थ्रेड प्रदर्शित हो रहे हैं",
+  "displaying_x_archived_threads_from_past_x_days": "पिछले {{days}} दिनों के {{count}} आर्काइव किए गए थ्रेड दिखाए जा रहे हैं",
+  "no_archived_threads": "कोई संग्रहीत थ्रेड नहीं",
+  "archived": "संग्रहीत",
+  "loading_archive": "संग्रह लोड हो रहा है...",
+  "thread_archived": "थ्रेड आर्काइव हो गया।",
+  "view": "देखें"
 }

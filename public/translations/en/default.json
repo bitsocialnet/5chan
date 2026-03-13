@@ -307,5 +307,12 @@
   "external_quote_resolution_unavailable": "External quote resolution is unavailable right now",
   "external_quote_cannot_resolve": "Could not find {{quote}} in /{{board}}/",
   "external_quote_unavailable": "The quoted post is unavailable",
-  "external_quote_publish_missing": "Cannot publish - could not find the quoted post for {{quote}}"
+  "external_quote_publish_missing": "Cannot publish - could not find the quoted post for {{quote}}",
+  "displaying_x_archived_threads": "Displaying {{count}} archived threads",
+  "displaying_x_archived_threads_from_past_x_days": "Displaying {{count}} archived threads from the past {{days}} days",
+  "no_archived_threads": "No archived threads",
+  "archived": "Archived",
+  "loading_archive": "Loading archive...",
+  "thread_archived": "Thread archived.",
+  "view": "View"
 }

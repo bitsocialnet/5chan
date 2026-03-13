@@ -16,6 +16,7 @@ import usePublishPost from '../../hooks/use-publish-post';
 import usePublishReply from '../../hooks/use-publish-reply';
 import { useFileUpload } from '../../hooks/use-file-upload';
 import { getShowUploadControls, isWebRuntime } from '../../lib/media-hosting/show-upload-controls';
+import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
 import useMediaHostingStore from '../../stores/use-media-hosting-store';
 import BoardOfflineAlert from '../board-offline-alert/board-offline-alert';
 import styles from './post-form.module.css';
@@ -525,7 +526,9 @@ const PostForm = () => {
   }
 
   const { deleted, locked, removed, postCid } = comment || {};
-  const isThreadClosed = deleted || locked || removed;
+  const archived = isCommentArchived(comment);
+  const isThreadClosed = deleted || locked || removed || archived;
+  const threadStateKey = archived ? 'thread_archived' : 'thread_closed';
 
   const [showForm, setShowForm] = useState(false);
 
@@ -543,7 +546,7 @@ const PostForm = () => {
           <div className={styles.modQueueTitle}>{t('moderation_queue')}</div>
         ) : isThreadClosed ? (
           <div className={styles.closed}>
-            {t('thread_closed')}
+            {t(threadStateKey)}
             <br />
             {t('may_not_reply')}
           </div>
@@ -567,7 +570,7 @@ const PostForm = () => {
         <div className={styles.modQueueTitle}>{t('moderation_queue')}</div>
       ) : isThreadClosed ? (
         <div className={styles.closed}>
-          {t('thread_closed')}
+          {t(threadStateKey)}
           <br />
           {t('may_not_reply')}
         </div>

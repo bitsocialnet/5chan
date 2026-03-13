@@ -307,5 +307,12 @@
   "external_quote_resolution_unavailable": "External quote resolution is unavailable right now",
   "external_quote_cannot_resolve": "Could not find {{quote}} in /{{board}}/",
   "external_quote_unavailable": "The quoted post is unavailable",
-  "external_quote_publish_missing": "Cannot publish - could not find the quoted post for {{quote}}"
+  "external_quote_publish_missing": "Nem lehet közzétenni – a {{quote}} idézett bejegyzése nem található",
+  "displaying_x_archived_threads": "{{count}} archivált szál megjelenítése",
+  "displaying_x_archived_threads_from_past_x_days": "{{count}} archivált szál megjelenítése az elmúlt {{days}} napból",
+  "no_archived_threads": "Nincs archivált szál",
+  "archived": "Archivált",
+  "loading_archive": "Archívum betöltése...",
+  "thread_archived": "A téma archiválva.",
+  "view": "Megtekintés"
 }

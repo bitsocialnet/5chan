@@ -307,5 +307,12 @@
   "external_quote_resolution_unavailable": "External quote resolution is unavailable right now",
   "external_quote_cannot_resolve": "Could not find {{quote}} in /{{board}}/",
   "external_quote_unavailable": "The quoted post is unavailable",
-  "external_quote_publish_missing": "Cannot publish - could not find the quoted post for {{quote}}"
+  "external_quote_publish_missing": "Kan inte publicera – kunde inte hitta det citerade inlägget för {{quote}}",
+  "displaying_x_archived_threads": "Visar {{count}} arkiverade trådar",
+  "displaying_x_archived_threads_from_past_x_days": "Visar {{count}} arkiverade trådar från de senaste {{days}} dagarna",
+  "no_archived_threads": "Inga arkiverade trådar",
+  "archived": "Arkiverad",
+  "loading_archive": "Laddar arkiv...",
+  "thread_archived": "Tråd arkiverad.",
+  "view": "Visa"
 }

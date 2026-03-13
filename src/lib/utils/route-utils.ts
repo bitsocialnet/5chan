@@ -120,11 +120,17 @@ export const isDirectoryBoard = (identifier: string, communities: DirectoryCommu
   return directoryToAddress.has(identifier);
 };
 
+export const isArchiveRoute = (pathname: string): boolean => {
+  const normalizedPath = pathname.replace(/\/settings$/, '').replace(/\/$/, '');
+  return /\/archive$/.test(normalizedPath);
+};
+
 export const isFeedRoute = (pathname: string): boolean => {
   const normalizedPath = pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
 
   if (normalizedPath.includes('/thread/')) return false;
   if (normalizedPath.startsWith('/pending/')) return false;
+  if (isArchiveRoute(normalizedPath)) return false;
   if (isBoardModRoute(normalizedPath) || isModQueueRoute(normalizedPath)) return false;
 
   const pathWithoutSettings = normalizedPath.replace(/\/settings$/, '');
@@ -262,7 +268,7 @@ export const getFeedCacheKey = (pathname: string): string | null => {
     return null;
   }
 
-  if (isBoardModRoute(normalizedPath) || isModQueueRoute(normalizedPath)) {
+  if (isArchiveRoute(normalizedPath) || isBoardModRoute(normalizedPath) || isModQueueRoute(normalizedPath)) {
     return null;
   }
 

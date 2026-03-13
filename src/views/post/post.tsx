@@ -7,6 +7,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { isAllView } from '../../lib/utils/view-utils';
 import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
 import { useDirectories } from '../../hooks/use-directories';
+import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
 import { areSameBoardAddress, isDirectoryBoard } from '../../lib/utils/route-utils';
 import { getCommentCommunityAddress } from '../../lib/utils/comment-utils';
 import useIsMobile from '../../hooks/use-is-mobile';
@@ -111,6 +112,7 @@ export const Post = memo(
       prev?.updatedAt === next?.updatedAt &&
       prev?.locked === next?.locked &&
       prev?.pinned === next?.pinned &&
+      isCommentArchived(prev) === isCommentArchived(next) &&
       prev?.removed === next?.removed &&
       prev?.deleted === next?.deleted &&
       prev?.commentModeration?.purged === next?.commentModeration?.purged &&
@@ -231,10 +233,22 @@ const PostPage = () => {
       {post?.cid && communityAddress ? (
         <>
           <PageFooterDesktop
-            firstRow={<ThreadFooterFirstRow postCid={post.cid} threadNumber={post?.number} communityAddress={communityAddress} isThreadClosed={!!post?.locked} />}
+            firstRow={
+              <ThreadFooterFirstRow
+                postCid={post.cid}
+                threadNumber={post?.number}
+                communityAddress={communityAddress}
+                isThreadClosed={!!(post?.locked || isCommentArchived(post))}
+              />
+            }
             styleRow={<ThreadFooterStyleRow />}
           />
-          <ThreadFooterMobile postCid={post.cid} threadNumber={post?.number} communityAddress={communityAddress} isThreadClosed={!!post?.locked} />
+          <ThreadFooterMobile
+            postCid={post.cid}
+            threadNumber={post?.number}
+            communityAddress={communityAddress}
+            isThreadClosed={!!(post?.locked || isCommentArchived(post))}
+          />
         </>
       ) : null}
     </div>

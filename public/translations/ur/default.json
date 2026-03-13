@@ -307,5 +307,12 @@
   "external_quote_resolution_unavailable": "External quote resolution is unavailable right now",
   "external_quote_cannot_resolve": "Could not find {{quote}} in /{{board}}/",
   "external_quote_unavailable": "The quoted post is unavailable",
-  "external_quote_publish_missing": "Cannot publish - could not find the quoted post for {{quote}}"
+  "external_quote_publish_missing": "شائع نہیں ہو سکتا - {{quote}} کے لیے اقتباس شدہ پوسٹ نہیں ملی",
+  "displaying_x_archived_threads": "{{count}} آرکائیو شدہ تھریڈز دکھائے جا رہے ہیں",
+  "displaying_x_archived_threads_from_past_x_days": "گزشتہ {{days}} دنوں کے {{count}} آرکائیو شدہ تھریڈز دکھائے جا رہے ہیں",
+  "no_archived_threads": "کوئی آرکائیو شدہ تھریڈ نہیں",
+  "archived": "محفوظ شدہ",
+  "loading_archive": "آرکائیو لوڈ ہو رہا ہے...",
+  "thread_archived": "موضوع آرکائیو کر دیا گیا ہے۔",
+  "view": "دیکھیں"
 }

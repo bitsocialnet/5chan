@@ -307,5 +307,12 @@
   "external_quote_resolution_unavailable": "External quote resolution is unavailable right now",
   "external_quote_cannot_resolve": "Could not find {{quote}} in /{{board}}/",
   "external_quote_unavailable": "The quoted post is unavailable",
-  "external_quote_publish_missing": "Cannot publish - could not find the quoted post for {{quote}}"
+  "external_quote_publish_missing": "Невозможно опубликовать – не найден цитируемый пост для {{quote}}",
+  "displaying_x_archived_threads": "Отображается {{count}} архивированных тем",
+  "displaying_x_archived_threads_from_past_x_days": "Отображается {{count}} архивных тем за последние {{days}} дней",
+  "no_archived_threads": "Нет архивных тредов",
+  "archived": "Архивировано",
+  "loading_archive": "Загрузка архива...",
+  "thread_archived": "Тема архивирована.",
+  "view": "Смотреть"
 }
