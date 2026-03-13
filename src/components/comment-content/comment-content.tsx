@@ -2,7 +2,7 @@ import { Fragment, type ReactNode, useMemo, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import { Trans, useTranslation } from 'react-i18next';
 import { Comment, useComment } from '@bitsocialnet/bitsocial-react-hooks';
-import useSubplebbitsPagesStore from '@bitsocialnet/bitsocial-react-hooks/dist/stores/subplebbits-pages';
+import useCommunitiesPagesStore from '@bitsocialnet/bitsocial-react-hooks/dist/stores/communities-pages';
 import usePostNumberStore from '../../stores/use-post-number-store';
 import getShortAddress from '../../lib/get-short-address';
 import { getFormattedDate, getFormattedTimeAgo } from '../../lib/utils/time-utils';
@@ -16,10 +16,11 @@ import Markdown from '../../components/markdown';
 import Tooltip from '../../components/tooltip';
 import styles from '../../views/post/post.module.css';
 import capitalize from 'lodash/capitalize';
+import { getCommentCommunityAddress, withResolvedCommentCommunityAddress } from '../../lib/utils/comment-utils';
 
 const QuotedCidLink = ({ cid, postCid }: { cid: string; postCid: string }) => {
   const quotedNumber = usePostNumberStore((state) => state.cidToNumber[cid]);
-  const commentFromStore = useSubplebbitsPagesStore((state) => state.comments[cid]);
+  const commentFromStore = useCommunitiesPagesStore((state) => state.comments[cid]);
   const commentFromHook = useComment({ commentCid: cid, onlyIfCached: true });
   // Prefer hook version to ensure 'number' property is populated for deeper nested replies in Virtuoso
   const quotedComment = commentFromHook?.number !== undefined ? commentFromHook : commentFromStore;
@@ -69,10 +70,14 @@ const CommentContent = ({ comment: post, prependContent }: { comment: Comment; p
   const isInPostView = isPostPageView(location.pathname, params);
   const [showOriginal, setShowOriginal] = useState(false);
   const isMobile = useIsMobile();
+  const resolvedPost = withResolvedCommentCommunityAddress(post);
 
-  const { cid, content, deleted, edit, original, parentCid, postCid, pendingApproval, quotedCids, reason, removed, state, subplebbitAddress } = post || {};
-  const purged = post?.commentModeration?.purged;
-  const banned = !!post?.author?.subplebbit?.banExpiresAt;
+  const { cid, content, deleted, edit, original, parentCid, postCid, pendingApproval, quotedCids, reason, removed, state } = resolvedPost || {};
+  const communityAddress = getCommentCommunityAddress(resolvedPost);
+  const purged = resolvedPost?.commentModeration?.purged;
+  const banExpiresAt =
+    resolvedPost?.author?.community?.banExpiresAt ?? (resolvedPost?.author as { subplebbit?: { banExpiresAt?: number } } | undefined)?.subplebbit?.banExpiresAt;
+  const banned = !!banExpiresAt;
 
   const [showFullComment, setShowFullComment] = useState(false);
   const displayContent =
@@ -83,7 +88,7 @@ const CommentContent = ({ comment: post, prependContent }: { comment: Comment; p
         ? content.slice(0, 2000)
         : content);
 
-  const quotelinkReplyFromStore = useSubplebbitsPagesStore((state) => state.comments[parentCid]);
+  const quotelinkReplyFromStore = useCommunitiesPagesStore((state) => state.comments[parentCid]);
   const quotelinkReplyFromHook = useComment({ commentCid: parentCid, onlyIfCached: true });
   // Prefer hook version to ensure 'number' property is populated for deeper nested replies in Virtuoso
   const quotelinkReply = quotelinkReplyFromHook?.number !== undefined ? quotelinkReplyFromHook : quotelinkReplyFromStore;
@@ -117,7 +122,7 @@ const CommentContent = ({ comment: post, prependContent }: { comment: Comment; p
   const parentNumber = parentCid ? cidToNumber[parentCid] : undefined;
   const shouldShowReplyingToReply = isReplyingToReply && parentNumber !== undefined && !contentNumbers.has(parentNumber);
 
-  const stateString = useStateString(post);
+  const stateString = useStateString(resolvedPost);
   const hasFailedState = state === 'failed';
 
   const loadingString = (
@@ -162,9 +167,10 @@ const CommentContent = ({ comment: post, prependContent }: { comment: Comment; p
         )
       ) : (
         <>
-          {!showOriginal && <Markdown content={displayContent} postCid={postCid} subplebbitAddress={subplebbitAddress} />}
+          {!showOriginal && <Markdown content={displayContent} postCid={postCid} communityAddress={communityAddress} />}
           {pendingApproval && (
             <>
+              <br />
               <br />
               <span className={styles.pendingApproval}>({t('pending_mod_approval')})</span>
             </>
@@ -197,7 +203,7 @@ const CommentContent = ({ comment: post, prependContent }: { comment: Comment; p
           )}
           {edit && original?.content !== content && (
             <span className={styles.editedInfo}>
-              {showOriginal && <Markdown content={original?.content} postCid={postCid} subplebbitAddress={subplebbitAddress} />}
+              {showOriginal && <Markdown content={original?.content} postCid={postCid} communityAddress={communityAddress} />}
               <br />
               <br />
               <Trans
@@ -268,8 +274,8 @@ const CommentContent = ({ comment: post, prependContent }: { comment: Comment; p
           <br />
           <Tooltip
             content={`${t('ban_expires_at', {
-              address: subplebbitAddress && getShortAddress(subplebbitAddress),
-              timestamp: getFormattedDate(post?.author?.subplebbit?.banExpiresAt),
+              address: communityAddress && getShortAddress(communityAddress),
+              timestamp: banExpiresAt ? getFormattedDate(banExpiresAt) : '',
               interpolation: { escapeValue: false },
             })}${reason ? `. ${capitalize(t('reason'))}: "${reason}"` : ''}`}
           >

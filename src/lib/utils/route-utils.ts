@@ -85,7 +85,7 @@ export const getBoardPath = (communityAddress: string, communities: DirectoryCom
 /**
  * Convert URL path (directory code or address) to community address
  */
-export const getSubplebbitAddress = (boardIdentifier: string, communities: DirectoryCommunity[]): string => {
+export const getCommunityAddress = (boardIdentifier: string, communities: DirectoryCommunity[]): string => {
   const directoryToAddress = getDirectoryToAddressMap(communities);
 
   // Check if it's a directory code
@@ -97,6 +97,11 @@ export const getSubplebbitAddress = (boardIdentifier: string, communities: Direc
   // Otherwise, assume it's already an address
   return boardIdentifier;
 };
+
+/**
+ * Back-compat alias kept for route params and comments.
+ */
+export const getSubplebbitAddress = getCommunityAddress;
 
 /**
  * Compare two addresses; returns true if they refer to the same board (handles .bso/.eth aliases).

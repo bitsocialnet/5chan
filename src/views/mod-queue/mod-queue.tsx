@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect, useCallback, memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, Link } from 'react-router-dom';
-import { useFeed, Comment, usePublishCommentModeration, useEditedComment, useSubplebbit } from '@bitsocialnet/bitsocial-react-hooks';
+import { useFeed, Comment, usePublishCommentModeration, useEditedComment, useCommunity } from '@bitsocialnet/bitsocial-react-hooks';
 import { Virtuoso } from 'react-virtuoso';
 import styles from './mod-queue.module.css';
 import useModQueueStore from '../../stores/use-mod-queue-store';
@@ -24,7 +24,7 @@ import useFeedResetStore from '../../stores/use-feed-reset-store';
 import useChallengesStore from '../../stores/use-challenges-store';
 import { alertChallengeVerificationFailed } from '../../lib/utils/challenge-utils';
 import Tooltip from '../../components/tooltip';
-import { useAccountSubplebbitAddresses } from '../../hooks/use-account-subplebbit-addresses';
+import { useAccountCommunityAddresses } from '../../hooks/use-account-community-addresses';
 import useIsMobile from '../../hooks/use-is-mobile';
 import { useCurrentTime } from '../../hooks/use-current-time';
 import { Post } from '../post/post';
@@ -42,21 +42,23 @@ const getBoardDisplayPath = (address: string, path: string): string => {
   return getShortAddress(address) || address;
 };
 
+const getCommentCommunityAddress = (comment: Comment) => comment?.communityAddress || comment?.subplebbitAddress;
+
 interface ModQueueViewProps {
   boardIdentifier?: string; // If provided, shows queue for single board
 }
 
 interface ModQueueFooterProps {
   hasMore: boolean;
-  subplebbitAddresses: string[];
+  communityAddresses: string[];
 }
 
 // Defined outside ModQueueView to preserve component identity across renders (Virtuoso optimization)
 // The useFeedStateString hook is called here instead of in ModQueueView to isolate re-renders
 // caused by backend IPFS state changes to just this footer component
-const ModQueueFooter = ({ hasMore, subplebbitAddresses }: ModQueueFooterProps) => {
+const ModQueueFooter = ({ hasMore, communityAddresses }: ModQueueFooterProps) => {
   const { t } = useTranslation();
-  const loadingStateString = useFeedStateString(subplebbitAddresses) || t('loading');
+  const loadingStateString = useFeedStateString(communityAddresses) || t('loading');
 
   return hasMore ? (
     <div className={styles.footer}>
@@ -154,7 +156,8 @@ const ModQueueActions = ({ status, errorMessage, isPublishing, handleApprove, ha
 
 const useModQueueActions = (comment: Comment): ModQueueActionState => {
   const { t } = useTranslation();
-  const { cid, subplebbitAddress, approved, removed, pendingApproval } = comment || {};
+  const { cid, approved, removed, pendingApproval } = comment || {};
+  const communityAddress = comment?.communityAddress || comment?.subplebbitAddress;
   const [initiatedAction, setInitiatedAction] = useState<ModerationAction>(null);
 
   const alreadyApproved = approved === true;
@@ -166,7 +169,7 @@ const useModQueueActions = (comment: Comment): ModQueueActionState => {
     error: approveError,
   } = usePublishCommentModeration({
     commentCid: cid,
-    subplebbitAddress,
+    communityAddress,
     commentModeration: approvePendingCommentModeration,
     onChallenge: async (...args: any) => {
       addChallenge([...args, comment]);
@@ -185,7 +188,7 @@ const useModQueueActions = (comment: Comment): ModQueueActionState => {
     error: rejectError,
   } = usePublishCommentModeration({
     commentCid: cid,
-    subplebbitAddress,
+    communityAddress,
     commentModeration: rejectPendingCommentModeration,
     onChallenge: async (...args: any) => {
       addChallenge([...args, comment]);
@@ -251,23 +254,8 @@ const ModQueueRow = memo(({ comment, isOdd = false, showBoard = false, boardPath
   const { editedComment } = useEditedComment({ comment });
   const displayComment = editedComment || comment;
 
-  const {
-    content,
-    title,
-    timestamp,
-    subplebbitAddress,
-    cid,
-    threadCid,
-    link,
-    thumbnailUrl,
-    linkWidth,
-    linkHeight,
-    removed,
-    approved,
-    pendingApproval,
-    number,
-    parentCid,
-  } = displayComment;
+  const { content, title, timestamp, cid, threadCid, link, thumbnailUrl, linkWidth, linkHeight, removed, approved, pendingApproval, number, parentCid } = displayComment;
+  const commentCommunityAddress = getCommentCommunityAddress(displayComment);
 
   // Check if already moderated (from previous session or API update)
   // Note: `approved` and `removed` are direct fields on the comment from CommentUpdate,
@@ -378,23 +366,8 @@ const ModQueueCard = memo(({ comment, showBoard = false, boardPath, boardDisplay
   const { editedComment } = useEditedComment({ comment });
   const displayComment = editedComment || comment;
 
-  const {
-    content,
-    title,
-    timestamp,
-    subplebbitAddress,
-    cid,
-    threadCid,
-    link,
-    thumbnailUrl,
-    linkWidth,
-    linkHeight,
-    removed,
-    approved,
-    pendingApproval,
-    number,
-    parentCid,
-  } = displayComment;
+  const { content, title, timestamp, cid, threadCid, link, thumbnailUrl, linkWidth, linkHeight, removed, approved, pendingApproval, number, parentCid } = displayComment;
+  const commentCommunityAddress = getCommentCommunityAddress(displayComment);
 
   const alreadyApproved = approved === true;
   const alreadyRejected = isPendingApprovalRejected({ approved, removed, pendingApproval });
@@ -487,7 +460,7 @@ const ModQueueFeedPost = ({ comment }: { comment: Comment }) => {
 interface ModQueueBoardSummaryProps {
   feed: Comment[];
   directories: DirectoryCommunity[];
-  accountSubplebbitAddresses: string[];
+  accountCommunityAddresses: string[];
 }
 
 const findBoardAddressByCode = (code: string, dirs: DirectoryCommunity[]): string | null => {
@@ -499,20 +472,20 @@ const findBoardAddressByCode = (code: string, dirs: DirectoryCommunity[]): strin
   return entry?.address || null;
 };
 
-const ModQueueBoardSummary = ({ feed, directories, accountSubplebbitAddresses }: ModQueueBoardSummaryProps) => {
+const ModQueueBoardSummary = ({ feed, directories, accountCommunityAddresses }: ModQueueBoardSummaryProps) => {
   const { t } = useTranslation();
   const { selectedBoardFilter, setSelectedBoardFilter, getAlertThresholdSeconds } = useModQueueStore();
   const currentTime = useCurrentTime();
   const alertThresholdSeconds = getAlertThresholdSeconds();
-  const modAddressSet = useMemo(() => new Set(accountSubplebbitAddresses), [accountSubplebbitAddresses]);
+  const modAddressSet = useMemo(() => new Set(accountCommunityAddresses), [accountCommunityAddresses]);
 
   const boardCounts = useMemo(() => {
     const counts = new Map<string, { normal: number; urgent: number }>();
-    for (const address of accountSubplebbitAddresses) {
+    for (const address of accountCommunityAddresses) {
       counts.set(address, { normal: 0, urgent: 0 });
     }
     for (const item of feed) {
-      const addr = item.subplebbitAddress;
+      const addr = getCommentCommunityAddress(item);
       if (!addr) continue;
       const entry = counts.get(addr);
       if (!entry) continue;
@@ -524,7 +497,7 @@ const ModQueueBoardSummary = ({ feed, directories, accountSubplebbitAddresses }:
       else entry.normal++;
     }
     return counts;
-  }, [feed, accountSubplebbitAddresses, currentTime, alertThresholdSeconds]);
+  }, [feed, accountCommunityAddresses, currentTime, alertThresholdSeconds]);
 
   const { totalNormal, totalUrgent } = useMemo(() => {
     let normal = 0;
@@ -551,7 +524,7 @@ const ModQueueBoardSummary = ({ feed, directories, accountSubplebbitAddresses }:
       }
     }
     // Directory boards not in BOARD_CODE_GROUPS (custom dirs)
-    for (const addr of accountSubplebbitAddresses) {
+    for (const addr of accountCommunityAddresses) {
       const path = getBoardPath(addr, directories);
       if (path !== addr && !seen.has(addr)) {
         ordered.push(addr);
@@ -559,18 +532,18 @@ const ModQueueBoardSummary = ({ feed, directories, accountSubplebbitAddresses }:
       }
     }
     // Non-directory boards (own category, like subscriptions in boardsbar)
-    for (const addr of accountSubplebbitAddresses) {
+    for (const addr of accountCommunityAddresses) {
       if (!seen.has(addr)) {
         ordered.push(addr);
       }
     }
     return ordered;
-  }, [accountSubplebbitAddresses, directories, modAddressSet]);
+  }, [accountCommunityAddresses, directories, modAddressSet]);
 
   const handleSelectAll = useCallback(() => setSelectedBoardFilter(null), [setSelectedBoardFilter]);
   const handleSelectBoard = useCallback((address: string) => setSelectedBoardFilter(address), [setSelectedBoardFilter]);
 
-  if (accountSubplebbitAddresses.length === 0) {
+  if (accountCommunityAddresses.length === 0) {
     return null;
   }
 
@@ -742,7 +715,7 @@ const ModQueueButtonContent = ({ feed, alertThresholdSeconds, boardIdentifier, i
 export const ModQueueButton = ({ boardIdentifier, isMobile }: ModQueueButtonProps) => {
   const { getAlertThresholdSeconds } = useModQueueStore();
 
-  const accountSubplebbitAddresses = useAccountSubplebbitAddresses();
+  const accountCommunityAddresses = useAccountCommunityAddresses();
 
   const directories = useDirectories();
 
@@ -753,23 +726,23 @@ export const ModQueueButton = ({ boardIdentifier, isMobile }: ModQueueButtonProp
     return undefined;
   }, [boardIdentifier, directories]);
 
-  const subplebbitAddresses = useMemo(() => {
+  const communityAddresses = useMemo(() => {
     if (resolvedAddress) {
       return [resolvedAddress];
     }
-    return accountSubplebbitAddresses;
-  }, [resolvedAddress, accountSubplebbitAddresses]);
+    return accountCommunityAddresses;
+  }, [resolvedAddress, accountCommunityAddresses]);
 
   // If specific board, check if user is mod using resolved address
-  const isModOfBoard = resolvedAddress ? accountSubplebbitAddresses.includes(resolvedAddress) : true;
+  const isModOfBoard = resolvedAddress ? accountCommunityAddresses.includes(resolvedAddress) : true;
 
   // Only fetch if we have addresses to check and permissions
-  const shouldFetch = subplebbitAddresses.length > 0 && isModOfBoard;
+  const shouldFetch = communityAddresses.length > 0 && isModOfBoard;
 
-  const feedAddresses = shouldFetch ? subplebbitAddresses : [];
+  const feedAddresses = shouldFetch ? communityAddresses : [];
   const feedOptions = useMemo(
     () => ({
-      subplebbitAddresses: feedAddresses,
+      communityAddresses: feedAddresses,
       modQueue: ['pendingApproval'],
       sortType: 'new' as const,
       postsPerPage: 200,
@@ -778,13 +751,13 @@ export const ModQueueButton = ({ boardIdentifier, isMobile }: ModQueueButtonProp
   );
   const { feed } = useFeed(feedOptions);
 
-  if (!shouldFetch || subplebbitAddresses.length === 0) {
+  if (!shouldFetch || communityAddresses.length === 0) {
     return null;
   }
 
   const alertThresholdSeconds = getAlertThresholdSeconds();
   // Use key to reset statusMap state when switching boards (prevents stale counts from previous board)
-  const contentKey = subplebbitAddresses.join(',');
+  const contentKey = communityAddresses.join(',');
   return <ModQueueButtonContent key={contentKey} feed={feed} alertThresholdSeconds={alertThresholdSeconds} boardIdentifier={boardIdentifier} isMobile={isMobile} />;
 };
 
@@ -794,7 +767,7 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
   const { selectedBoardFilter, viewMode } = useModQueueStore();
   const isMobile = useIsMobile();
 
-  const accountSubplebbitAddresses = useAccountSubplebbitAddresses();
+  const accountCommunityAddresses = useAccountCommunityAddresses();
 
   const directories = useDirectories();
 
@@ -807,42 +780,43 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
     return undefined;
   }, [boardIdentifier, directories]);
 
-  const subplebbitAddresses = useMemo(() => {
+  const communityAddresses = useMemo(() => {
     if (resolvedAddress) return [resolvedAddress];
-    return accountSubplebbitAddresses;
-  }, [resolvedAddress, accountSubplebbitAddresses]);
+    return accountCommunityAddresses;
+  }, [resolvedAddress, accountCommunityAddresses]);
 
-  const subplebbitAddress = subplebbitAddresses[0];
-  const subplebbit = useSubplebbit({ subplebbitAddress });
-  const { error: subplebbitError } = subplebbit || {};
+  const communityAddress = communityAddresses[0];
+  const community = useCommunity({ communityAddress });
+  const { error: communityError } = community || {};
 
   const feedOptions = useMemo(
     () => ({
-      subplebbitAddresses,
+      communityAddresses,
       modQueue: ['pendingApproval'],
       postsPerPage: 50,
     }),
-    [subplebbitAddresses],
+    [communityAddresses],
   );
   const { feed, hasMore, loadMore, reset } = useFeed(feedOptions);
 
   const filteredFeed = useMemo(() => {
     if (!selectedBoardFilter) return feed;
-    return feed.filter((item) => item.subplebbitAddress === selectedBoardFilter);
+    return feed.filter((item) => getCommentCommunityAddress(item) === selectedBoardFilter);
   }, [feed, selectedBoardFilter]);
 
   const addressToPathMap = useMemo(() => {
     const map = new Map<string, string>();
-    for (const addr of subplebbitAddresses) {
+    for (const addr of communityAddresses) {
       map.set(addr, getBoardPath(addr, directories));
     }
     return map;
-  }, [subplebbitAddresses, directories]);
+  }, [communityAddresses, directories]);
 
   const showBoardColumn = !resolvedAddress;
   const compactRowItemContent = useCallback(
     (index: number, comment: Comment) => {
-      const path = addressToPathMap.get(comment.subplebbitAddress) ?? getBoardPath(comment.subplebbitAddress, directories);
+      const commentCommunityAddress = getCommentCommunityAddress(comment);
+      const path = addressToPathMap.get(commentCommunityAddress || '') ?? (commentCommunityAddress ? getBoardPath(commentCommunityAddress, directories) : undefined);
       return (
         <ModQueueRow
           key={comment.cid}
@@ -850,7 +824,7 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
           isOdd={index % 2 === 0}
           showBoard={showBoardColumn}
           boardPath={path}
-          boardDisplayPath={path ? getBoardDisplayPath(comment.subplebbitAddress, path) : undefined}
+          boardDisplayPath={path && commentCommunityAddress ? getBoardDisplayPath(commentCommunityAddress, path) : undefined}
         />
       );
     },
@@ -858,14 +832,15 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
   );
   const compactCardItemContent = useCallback(
     (_index: number, comment: Comment) => {
-      const path = addressToPathMap.get(comment.subplebbitAddress) ?? getBoardPath(comment.subplebbitAddress, directories);
+      const commentCommunityAddress = getCommentCommunityAddress(comment);
+      const path = addressToPathMap.get(commentCommunityAddress || '') ?? (commentCommunityAddress ? getBoardPath(commentCommunityAddress, directories) : undefined);
       return (
         <ModQueueCard
           key={comment.cid}
           comment={comment}
           showBoard={showBoardColumn}
           boardPath={path}
-          boardDisplayPath={path ? getBoardDisplayPath(comment.subplebbitAddress, path) : undefined}
+          boardDisplayPath={path && commentCommunityAddress ? getBoardDisplayPath(commentCommunityAddress, path) : undefined}
         />
       );
     },
@@ -883,16 +858,16 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
     () => ({
       Footer: () => (
         <>
-          {subplebbitError?.message && feed.length === 0 && (
+          {communityError?.message && feed.length === 0 && (
             <div className={styles.error}>
-              <ErrorDisplay error={subplebbitError} />
+              <ErrorDisplay error={communityError} />
             </div>
           )}
-          <ModQueueFooter hasMore={hasMore} subplebbitAddresses={subplebbitAddresses} />
+          <ModQueueFooter hasMore={hasMore} communityAddresses={communityAddresses} />
         </>
       ),
     }),
-    [hasMore, subplebbitAddresses, subplebbitError, feed.length],
+    [hasMore, communityAddresses, communityError, feed.length],
   );
 
   const pageFooter = (
@@ -919,7 +894,7 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
         {!resolvedAddress && (
           <div className={styles.controls}>
             <div className={styles.controlsLeft}>
-              <ModQueueBoardSummary feed={feed} directories={directories} accountSubplebbitAddresses={accountSubplebbitAddresses} />
+              <ModQueueBoardSummary feed={feed} directories={directories} accountCommunityAddresses={accountCommunityAddresses} />
             </div>
           </div>
         )}
@@ -953,7 +928,9 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
                 ) : (
                   <>
                     {filteredFeed.map((comment, index) => {
-                      const path = addressToPathMap.get(comment.subplebbitAddress) ?? getBoardPath(comment.subplebbitAddress, directories);
+                      const commentCommunityAddress = getCommentCommunityAddress(comment);
+                      const path =
+                        addressToPathMap.get(commentCommunityAddress || '') ?? (commentCommunityAddress ? getBoardPath(commentCommunityAddress, directories) : undefined);
                       return (
                         <ModQueueRow
                           key={comment.cid}
@@ -961,16 +938,16 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
                           isOdd={index % 2 === 0}
                           showBoard={showBoardColumn}
                           boardPath={path}
-                          boardDisplayPath={path ? getBoardDisplayPath(comment.subplebbitAddress, path) : undefined}
+                          boardDisplayPath={path && commentCommunityAddress ? getBoardDisplayPath(commentCommunityAddress, path) : undefined}
                         />
                       );
                     })}
-                    {subplebbitError?.message && feed.length === 0 && (
+                    {communityError?.message && feed.length === 0 && (
                       <div className={styles.error}>
-                        <ErrorDisplay error={subplebbitError} />
+                        <ErrorDisplay error={communityError} />
                       </div>
                     )}
-                    <ModQueueFooter hasMore={hasMore} subplebbitAddresses={subplebbitAddresses} />
+                    <ModQueueFooter hasMore={hasMore} communityAddresses={communityAddresses} />
                   </>
                 )}
               </>
@@ -991,23 +968,25 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
                 ) : (
                   <>
                     {filteredFeed.map((comment) => {
-                      const path = addressToPathMap.get(comment.subplebbitAddress) ?? getBoardPath(comment.subplebbitAddress, directories);
+                      const commentCommunityAddress = getCommentCommunityAddress(comment);
+                      const path =
+                        addressToPathMap.get(commentCommunityAddress || '') ?? (commentCommunityAddress ? getBoardPath(commentCommunityAddress, directories) : undefined);
                       return (
                         <ModQueueCard
                           key={comment.cid}
                           comment={comment}
                           showBoard={showBoardColumn}
                           boardPath={path}
-                          boardDisplayPath={path ? getBoardDisplayPath(comment.subplebbitAddress, path) : undefined}
+                          boardDisplayPath={path && commentCommunityAddress ? getBoardDisplayPath(commentCommunityAddress, path) : undefined}
                         />
                       );
                     })}
-                    {subplebbitError?.message && feed.length === 0 && (
+                    {communityError?.message && feed.length === 0 && (
                       <div className={styles.error}>
-                        <ErrorDisplay error={subplebbitError} />
+                        <ErrorDisplay error={communityError} />
                       </div>
                     )}
-                    <ModQueueFooter hasMore={hasMore} subplebbitAddresses={subplebbitAddresses} />
+                    <ModQueueFooter hasMore={hasMore} communityAddresses={communityAddresses} />
                   </>
                 )}
               </>
@@ -1030,12 +1009,12 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
                     {filteredFeed.map((comment) => (
                       <ModQueueFeedPost key={comment.cid} comment={comment} />
                     ))}
-                    {subplebbitError?.message && feed.length === 0 && (
+                    {communityError?.message && feed.length === 0 && (
                       <div className={styles.error}>
-                        <ErrorDisplay error={subplebbitError} />
+                        <ErrorDisplay error={communityError} />
                       </div>
                     )}
-                    <ModQueueFooter hasMore={hasMore} subplebbitAddresses={subplebbitAddresses} />
+                    <ModQueueFooter hasMore={hasMore} communityAddresses={communityAddresses} />
                   </>
                 )}
               </>

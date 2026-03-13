@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect } from 'react';
 import { Navigate, Outlet, Route, Routes, useLocation, useParams } from 'react-router-dom';
-import { useAccount, useAccountComment, useSubplebbit } from '@bitsocialnet/bitsocial-react-hooks';
+import { useAccount, useAccountComment, useCommunity } from '@bitsocialnet/bitsocial-react-hooks';
 import { initSnow, removeSnow } from './lib/snow';
 import { isAllView, isCatalogView, isModView, isSubscriptionsView } from './lib/utils/view-utils';
 import { preloadReplyModal, preloadThemeAssets } from './lib/utils/preload-utils';
@@ -8,10 +8,10 @@ import useReplyModalStore from './stores/use-reply-modal-store';
 import useCreateBoardModalStore from './stores/use-create-board-modal-store';
 import useSpecialThemeStore from './stores/use-special-theme-store';
 import useIsMobile from './hooks/use-is-mobile';
-import { useAccountSubplebbitAddresses } from './hooks/use-account-subplebbit-addresses';
+import { useAccountCommunityAddresses } from './hooks/use-account-community-addresses';
 import useTheme from './hooks/use-theme';
 import { useDirectories } from './hooks/use-directories';
-import { useResolvedSubplebbitAddress } from './hooks/use-resolved-subplebbit-address';
+import { useResolvedCommunityAddress } from './hooks/use-resolved-community-address';
 import {
   getBoardPath,
   getSubplebbitAddress,
@@ -69,8 +69,9 @@ const BoardLayout = () => {
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, useParams());
   const isInModView = isModView(location.pathname);
   const directories = useDirectories();
-  const subplebbitAddress = boardIdentifier ? getSubplebbitAddress(boardIdentifier, directories) : undefined;
+  const communityAddress = boardIdentifier ? getSubplebbitAddress(boardIdentifier, directories) : undefined;
   const pendingPost = useAccountComment({ commentIndex: accountCommentIndex ? parseInt(accountCommentIndex) : undefined });
+  const pendingPostCommunityAddress = pendingPost?.communityAddress || pendingPost?.subplebbitAddress;
   const { closeCreateBoardModal } = useCreateBoardModalStore();
   const isOnPostRoute = isPostRoute(location.pathname);
   const isOnPendingPostRoute = isPendingPostRoute(location.pathname);
@@ -96,8 +97,8 @@ const BoardLayout = () => {
 
   // force rerender of post form when navigating between pages, except when opening settings modal in current view
   const key = location.pathname.endsWith('/settings')
-    ? `${subplebbitAddress}-${location.pathname.replace(/\/settings$/, '')}`
-    : `${subplebbitAddress}-${location.pathname}`;
+    ? `${communityAddress}-${location.pathname.replace(/\/settings$/, '')}`
+    : `${communityAddress}-${location.pathname}`;
 
   if (pageNumber === '1') {
     return <Navigate to='/not-found' replace />;
@@ -143,7 +144,7 @@ const BoardLayout = () => {
       </Suspense>
       <BoardHeader />
       {isMobile
-        ? (subplebbitAddress || isInAllView || isInModView || isInSubscriptionsView || pendingPost?.subplebbitAddress || isOnModQueueRoute) &&
+        ? (communityAddress || isInAllView || isInModView || isInSubscriptionsView || pendingPostCommunityAddress || isOnModQueueRoute) &&
           (isInCatalogView ? (
             <>
               <PostForm key={key} />
@@ -156,7 +157,7 @@ const BoardLayout = () => {
               {isInAllView && <MobileAllFeedFilter />}
             </>
           ))
-        : (subplebbitAddress || isInAllView || isInModView || isInSubscriptionsView || pendingPost?.subplebbitAddress || isOnModQueueRoute) && (
+        : (communityAddress || isInAllView || isInModView || isInSubscriptionsView || pendingPostCommunityAddress || isOnModQueueRoute) && (
             <>
               <PostForm key={key} />
               {!(isInAllView || isInSubscriptionsView || isInModView) && !isOnModQueueRoute && <BoardBlotter />}
@@ -172,7 +173,7 @@ const BoardLayout = () => {
 const GlobalLayout = () => {
   useTheme();
 
-  const { activeCid, parentNumber, threadNumber, threadCid, subplebbitAddress, closeModal, showReplyModal, scrollY } = useReplyModalStore();
+  const { activeCid, parentNumber, threadNumber, threadCid, subplebbitAddress: activeCommunityAddress, closeModal, showReplyModal, scrollY } = useReplyModalStore();
 
   const location = useLocation();
   const isInSettingsView = location.pathname.endsWith('/settings');
@@ -183,7 +184,7 @@ const GlobalLayout = () => {
       <Suspense fallback={null}>
         <ChallengeModal />
       </Suspense>
-      {activeCid && threadCid && subplebbitAddress && (
+      {activeCid && threadCid && activeCommunityAddress && (
         <Suspense fallback={null}>
           <ReplyModal
             closeModal={closeModal}
@@ -193,7 +194,7 @@ const GlobalLayout = () => {
             postCid={threadCid}
             scrollY={scrollY}
             showReplyModal={showReplyModal}
-            subplebbitAddress={subplebbitAddress}
+            communityAddress={activeCommunityAddress}
           />
         </Suspense>
       )}
@@ -239,9 +240,9 @@ const ModQueueRoute = () => {
   const { boardIdentifier } = useParams();
   const account = useAccount();
   const accountAddress = account?.author?.address;
-  const subplebbitAddress = useResolvedSubplebbitAddress();
-  const subplebbit = useSubplebbit({ subplebbitAddress });
-  const accountSubplebbitAddresses = useAccountSubplebbitAddresses();
+  const communityAddress = useResolvedCommunityAddress();
+  const community = useCommunity({ communityAddress });
+  const accountCommunityAddresses = useAccountCommunityAddresses();
 
   if (!account) {
     return null;
@@ -252,17 +253,17 @@ const ModQueueRoute = () => {
   }
 
   if (!boardIdentifier) {
-    return accountSubplebbitAddresses.length > 0 ? <ModQueueView /> : <Navigate to='/not-allowed' replace />;
+    return accountCommunityAddresses.length > 0 ? <ModQueueView /> : <Navigate to='/not-allowed' replace />;
   }
 
   // Wait for board role metadata before enforcing access to avoid false redirects during initial load.
-  const boardState = subplebbit?.state;
-  const isBoardLoading = !subplebbit || !boardState || (boardState !== 'succeeded' && boardState !== 'failed');
+  const boardState = community?.state;
+  const isBoardLoading = !community || !boardState || (boardState !== 'succeeded' && boardState !== 'failed');
   if (isBoardLoading) {
     return null;
   }
 
-  const accountRole = subplebbit?.roles?.[accountAddress]?.role;
+  const accountRole = community?.roles?.[accountAddress]?.role;
   return hasModQueueAccessRole(accountRole) ? <ModQueueView /> : <Navigate to='/not-allowed' replace />;
 };
 

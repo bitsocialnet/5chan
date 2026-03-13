@@ -3,7 +3,13 @@ import { Comment, usePublishComment } from '@bitsocialnet/bitsocial-react-hooks'
 import usePublishPostStore from '../stores/use-publish-post-store';
 import useChallengesStore from '../stores/use-challenges-store';
 
-const usePublishPost = ({ subplebbitAddress }: { subplebbitAddress?: string }) => {
+type UsePublishPostOptions = {
+  communityAddress?: string;
+  /** legacy compatibility */
+  subplebbitAddress?: string;
+};
+
+const usePublishPost = ({ communityAddress: requestedCommunityAddress, subplebbitAddress }: UsePublishPostOptions) => {
   const { author, title, content, link, spoiler, publishCommentOptions } = usePublishPostStore((state) => ({
     author: state.author,
     title: state.title || undefined,
@@ -21,9 +27,12 @@ const usePublishPost = ({ subplebbitAddress }: { subplebbitAddress?: string }) =
     await abandonPublishRef.current?.();
   }, []);
 
+  const communityAddress = requestedCommunityAddress ?? subplebbitAddress;
+
   const createBaseOptions = useCallback(() => {
     const baseOptions: Comment = {
-      subplebbitAddress,
+      communityAddress,
+      subplebbitAddress: communityAddress,
       title,
       content,
       link,
@@ -36,7 +45,7 @@ const usePublishPost = ({ subplebbitAddress }: { subplebbitAddress?: string }) =
     }
 
     return baseOptions;
-  }, [author, content, link, spoiler, subplebbitAddress, title]);
+  }, [author, content, link, spoiler, communityAddress, title]);
 
   const setPublishPostOptions = useCallback(
     (options: Partial<Comment>) => {

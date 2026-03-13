@@ -26,15 +26,15 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
-vi.mock('../../stores/use-subplebbit-offline-store', () => ({
+vi.mock('../../stores/use-community-offline-store', () => ({
   default: () => ({
-    initializesubplebbitOfflineState: testState.initializeMock,
-    setSubplebbitOfflineState: testState.setOfflineStateMock,
-    subplebbitOfflineState: testState.subplebbitOfflineState,
+    initializeCommunityOfflineState: testState.initializeMock,
+    setCommunityOfflineState: testState.setOfflineStateMock,
+    communityOfflineState: testState.subplebbitOfflineState,
   }),
 }));
 
-vi.mock('../../stores/use-subplebbits-loading-start-timestamps-store', () => ({
+vi.mock('../../stores/use-communities-loading-start-timestamps-store', () => ({
   default: (addresses?: string[]) => {
     testState.requestedAddresses = addresses;
     return testState.loadingTimestamps;

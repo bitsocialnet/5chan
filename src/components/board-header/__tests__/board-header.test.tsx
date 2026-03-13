@@ -9,7 +9,7 @@ import BoardHeader from '../board-header';
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
 
 const testState = vi.hoisted(() => ({
-  accountComment: undefined as { subplebbitAddress?: string } | undefined,
+  accountComment: undefined as { communityAddress?: string } | undefined,
   directories: [{ address: 'music-posting.eth', title: '/mu/ - Music' }] as Array<{ address: string; title?: string }>,
   directoriesMetadata: { title: '/all/ - Directories' } as { title?: string } | undefined,
   isMobile: false,
@@ -18,16 +18,16 @@ const testState = vi.hoisted(() => ({
   offlineTitle: 'Board offline',
   resolvedAddress: 'music-posting.eth' as string | undefined,
   shouldShowSnow: false,
-  stableSubplebbit: {
+  stableCommunity: {
     address: 'music-posting.eth',
     shortAddress: 'music-posting.eth',
     title: '/mu/ - Music',
   } as { address?: string; shortAddress?: string; title?: string } | undefined,
   subscriptionsCount: 2,
-  subplebbits: {
+  communities: {
     'music-posting.eth': { address: 'music-posting.eth' },
   } as Record<string, unknown>,
-  useIsSubplebbitOfflineValue: {
+  useIsCommunityOfflineValue: {
     isOffline: false,
     isOnlineStatusLoading: false,
     offlineIconClass: 'offline',
@@ -65,15 +65,15 @@ vi.mock('@bitsocialnet/bitsocial-react-hooks/dist/stores/accounts', () => ({
     }),
 }));
 
-vi.mock('@bitsocialnet/bitsocial-react-hooks/dist/stores/subplebbits', () => ({
-  default: (selector: (state: { subplebbits: typeof testState.subplebbits }) => unknown) =>
+vi.mock('@bitsocialnet/bitsocial-react-hooks/dist/stores/communities', () => ({
+  default: (selector: (state: { communities: typeof testState.communities }) => unknown) =>
     selector({
-      subplebbits: testState.subplebbits,
+      communities: testState.communities,
     }),
 }));
 
-vi.mock('../../../hooks/use-stable-subplebbit', () => ({
-  useStableSubplebbit: () => testState.stableSubplebbit,
+vi.mock('../../../hooks/use-stable-community', () => ({
+  useStableCommunity: () => testState.stableCommunity,
 }));
 
 vi.mock('../../../hooks/use-directories', () => ({
@@ -81,16 +81,16 @@ vi.mock('../../../hooks/use-directories', () => ({
   useDirectoriesMetadata: () => testState.directoriesMetadata,
 }));
 
-vi.mock('../../../hooks/use-resolved-subplebbit-address', () => ({
-  useResolvedSubplebbitAddress: () => testState.resolvedAddress,
+vi.mock('../../../hooks/use-resolved-community-address', () => ({
+  useResolvedCommunityAddress: () => testState.resolvedAddress,
 }));
 
 vi.mock('../../../hooks/use-is-mobile', () => ({
   default: () => testState.isMobile,
 }));
 
-vi.mock('../../../hooks/use-is-subplebbit-offline', () => ({
-  default: () => testState.useIsSubplebbitOfflineValue,
+vi.mock('../../../hooks/use-is-community-offline', () => ({
+  default: () => testState.useIsCommunityOfflineValue,
 }));
 
 vi.mock('../../../lib/snow', () => ({
@@ -129,16 +129,16 @@ describe('BoardHeader', () => {
     testState.offlineTitle = 'Board offline';
     testState.resolvedAddress = 'music-posting.eth';
     testState.shouldShowSnow = false;
-    testState.stableSubplebbit = {
+    testState.stableCommunity = {
       address: 'music-posting.eth',
       shortAddress: 'music-posting.eth',
       title: '/mu/ - Music',
     };
     testState.subscriptionsCount = 2;
-    testState.subplebbits = {
+    testState.communities = {
       'music-posting.eth': { address: 'music-posting.eth' },
     };
-    testState.useIsSubplebbitOfflineValue = {
+    testState.useIsCommunityOfflineValue = {
       isOffline: false,
       isOnlineStatusLoading: false,
       offlineIconClass: 'offline',
@@ -179,7 +179,7 @@ describe('BoardHeader', () => {
   });
 
   it('renders the board title, address subtitle, and offline indicator for board routes', async () => {
-    testState.useIsSubplebbitOfflineValue = {
+    testState.useIsCommunityOfflineValue = {
       isOffline: true,
       isOnlineStatusLoading: false,
       offlineIconClass: 'offline',

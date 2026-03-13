@@ -34,12 +34,12 @@ const testState = vi.hoisted(() => ({
   quoteInsertSelectedText: '',
   replyIndex: undefined as number | undefined,
   resetPublishReplyOptionsMock: vi.fn(),
-  resolvedSubplebbitAddress: undefined as string | undefined,
+  resolvedCommunityAddress: undefined as string | undefined,
   selectedText: 'selected text',
   setAccountMock: vi.fn(),
   setPublishReplyOptionsMock: vi.fn(),
   springStartMock: vi.fn(),
-  subplebbits: {
+  communities: {
     'music-posting.eth': {
       address: 'music-posting.eth',
     },
@@ -74,16 +74,16 @@ vi.mock('@bitsocialnet/bitsocial-react-hooks', () => ({
   useAccount: () => testState.account,
 }));
 
-vi.mock('@bitsocialnet/bitsocial-react-hooks/dist/stores/subplebbits', () => ({
-  default: <T,>(selector: (state: { subplebbits: typeof testState.subplebbits }) => T) =>
+vi.mock('@bitsocialnet/bitsocial-react-hooks/dist/stores/communities', () => ({
+  default: <T,>(selector: (state: { communities: typeof testState.communities }) => T) =>
     selector({
-      subplebbits: testState.subplebbits,
+      communities: testState.communities,
     }),
 }));
 
-vi.mock('../../../hooks/use-is-subplebbit-offline', () => ({
-  default: (subplebbit?: { address?: string }) =>
-    (subplebbit?.address ? testState.offlineStates[subplebbit.address] : undefined) || {
+vi.mock('../../../hooks/use-is-community-offline', () => ({
+  default: (community?: { address?: string }) =>
+    (community?.address ? testState.offlineStates[community.address] : undefined) || {
       isOffline: testState.offlineWarningVisible,
       isOnlineStatusLoading: testState.offlineStatusLoading,
       offlineTitle: testState.offlineTitle,
@@ -125,8 +125,8 @@ vi.mock('../../../hooks/use-directories', () => ({
   normalizeBoardAddress: (address: string) => address.replace(/\.(bso|eth)$/, ''),
 }));
 
-vi.mock('../../../hooks/use-resolved-subplebbit-address', () => ({
-  useResolvedSubplebbitAddress: () => testState.resolvedSubplebbitAddress,
+vi.mock('../../../hooks/use-resolved-community-address', () => ({
+  useResolvedCommunityAddress: () => testState.resolvedCommunityAddress,
 }));
 
 vi.mock('../../../hooks/use-publish-reply', () => ({
@@ -199,7 +199,7 @@ const flushEffects = async (count = 4) => {
   }
 };
 
-const renderReplyModal = async (initialEntry = '/mu/thread/post-1', subplebbitAddress = 'music-posting.eth') => {
+const renderReplyModal = async (initialEntry = '/mu/thread/post-1', communityAddress = 'music-posting.eth') => {
   await act(async () => {
     root.render(
       createElement(
@@ -212,7 +212,7 @@ const renderReplyModal = async (initialEntry = '/mu/thread/post-1', subplebbitAd
           postCid: 'post-cid',
           scrollY: 120,
           showReplyModal: true,
-          subplebbitAddress,
+          communityAddress,
           threadNumber: 42,
         }),
       ),
@@ -270,12 +270,12 @@ describe('ReplyModal', () => {
     testState.quoteInsertSelectedText = '';
     testState.replyIndex = undefined;
     testState.resetPublishReplyOptionsMock.mockReset();
-    testState.resolvedSubplebbitAddress = undefined;
+    testState.resolvedCommunityAddress = undefined;
     testState.selectedText = 'selected text';
     testState.setAccountMock.mockReset();
     testState.setPublishReplyOptionsMock.mockReset();
     testState.springStartMock.mockReset();
-    testState.subplebbits = {
+    testState.communities = {
       'music-posting.eth': {
         address: 'music-posting.eth',
       },
@@ -318,14 +318,14 @@ describe('ReplyModal', () => {
     await renderReplyModal('/mu/thread/post-1');
 
     expect(container.querySelector('[class*="offlineBoard"]')).toBeNull();
-    expect(container.textContent).not.toContain('subplebbit_offline_info');
+    expect(container.textContent).not.toContain('community_offline_info');
   });
 
   it('prefers the resolved board entry when the modal prop address uses a different alias', async () => {
-    testState.offlineTitle = 'subplebbit_offline_info';
+    testState.offlineTitle = 'community_offline_info';
     testState.offlineWarningVisible = true;
-    testState.resolvedSubplebbitAddress = 'music-posting.eth';
-    testState.subplebbits = {
+    testState.resolvedCommunityAddress = 'music-posting.eth';
+    testState.communities = {
       'music-posting.eth': {
         address: 'music-posting.eth',
       },
@@ -341,7 +341,7 @@ describe('ReplyModal', () => {
     await renderReplyModal('/mu/thread/post-1', 'music-posting.bso');
 
     expect(container.querySelector('[class*="offlineBoard"]')).toBeNull();
-    expect(container.textContent).not.toContain('subplebbit_offline_info');
+    expect(container.textContent).not.toContain('community_offline_info');
   });
 
   it('validates empty and invalid replies, then publishes once the payload is valid', async () => {

@@ -9,6 +9,9 @@ const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise
 
 type TestComment = {
   author?: {
+    community?: {
+      banExpiresAt?: number;
+    };
     subplebbit?: {
       banExpiresAt?: number;
     };
@@ -33,7 +36,7 @@ type TestComment = {
   reason?: string;
   removed?: boolean;
   state?: string;
-  subplebbitAddress?: string;
+  communityAddress?: string;
 };
 
 const testState = vi.hoisted(() => ({
@@ -87,7 +90,7 @@ vi.mock('@bitsocialnet/bitsocial-react-hooks', () => ({
   useComment: ({ commentCid }: { commentCid?: string }) => (commentCid ? testState.commentsByCid[commentCid] : undefined),
 }));
 
-vi.mock('@bitsocialnet/bitsocial-react-hooks/dist/stores/subplebbits-pages', () => ({
+vi.mock('@bitsocialnet/bitsocial-react-hooks/dist/stores/communities-pages', () => ({
   default: (selector: (state: { comments: Record<string, TestComment> }) => unknown) =>
     selector({
       comments: testState.commentsByCid,
@@ -273,6 +276,23 @@ describe('CommentContent', () => {
     expect(queryMarkdownText()[0]).toHaveLength(1105);
   });
 
+  it('keeps the ban indicator for legacy author subplebbit data', async () => {
+    await renderContent({
+      author: {
+        subplebbit: {
+          banExpiresAt: 1700000000,
+        },
+      },
+      cid: 'post-1',
+      communityAddress: 'music-posting.eth',
+      content: 'body',
+      postCid: 'post-1',
+    });
+
+    expect(container.textContent).toContain('(user_banned)');
+    expect(container.querySelector('[data-testid="tooltip"]')?.getAttribute('title')).toContain('ban:short:music-posting.eth:2024-01-01 12:00:00');
+  });
+
   it('shows and hides the original content for edited comments', async () => {
     await renderContent({
       cid: 'post-1',
@@ -343,7 +363,7 @@ describe('CommentContent', () => {
   it('renders pending approval, ban details, and loading or failed states', async () => {
     await renderContent({
       author: {
-        subplebbit: {
+        community: {
           banExpiresAt: 1_704_067_200,
         },
       },
@@ -352,7 +372,7 @@ describe('CommentContent', () => {
       pendingApproval: true,
       postCid: 'post-1',
       reason: 'rules violation',
-      subplebbitAddress: 'music-posting.eth',
+      communityAddress: 'music-posting.eth',
     });
 
     expect(container.textContent).toContain('pending_mod_approval');

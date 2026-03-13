@@ -3,15 +3,15 @@ import { useTranslation } from 'react-i18next';
 import { useLocation, useParams, useNavigate } from 'react-router-dom';
 import { useAccountComment } from '@bitsocialnet/bitsocial-react-hooks';
 import useAccountsStore from '@bitsocialnet/bitsocial-react-hooks/dist/stores/accounts';
-import useSubplebbitsStore from '@bitsocialnet/bitsocial-react-hooks/dist/stores/subplebbits';
+import useCommunitiesStore from '@bitsocialnet/bitsocial-react-hooks/dist/stores/communities';
 import getShortAddress from '../../lib/get-short-address';
-import { useStableSubplebbit } from '../../hooks/use-stable-subplebbit';
+import { useStableCommunity } from '../../hooks/use-stable-community';
 import { isAllView, isSubscriptionsView, isModView } from '../../lib/utils/view-utils';
 import styles from './board-header.module.css';
 import { useDirectoriesMetadata, useDirectories } from '../../hooks/use-directories';
-import { useResolvedSubplebbitAddress } from '../../hooks/use-resolved-subplebbit-address';
+import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
 import useIsMobile from '../../hooks/use-is-mobile';
-import useIsSubplebbitOffline from '../../hooks/use-is-subplebbit-offline';
+import useIsCommunityOffline from '../../hooks/use-is-community-offline';
 import { shouldShowSnow } from '../../lib/snow';
 import Tooltip from '../tooltip';
 import startCase from 'lodash/startCase';
@@ -25,10 +25,10 @@ const ImageBanner = () => {
 
 // Separate component for offline indicator to isolate rerenders from updatingState
 // Only this component will rerender when updatingState changes, not the whole BoardHeader
-const OfflineIndicator = ({ subplebbitAddress }: { subplebbitAddress: string | undefined }) => {
-  // Subscribe to full subplebbit including transient state for offline detection
-  const subplebbit = useSubplebbitsStore((state) => (subplebbitAddress ? state.subplebbits[subplebbitAddress] : undefined));
-  const { isOffline, isOnlineStatusLoading, offlineIconClass, offlineTitle } = useIsSubplebbitOffline(subplebbit);
+const OfflineIndicator = ({ communityAddress }: { communityAddress: string | undefined }) => {
+  // Subscribe to full community including transient state for offline detection
+  const community = useCommunitiesStore((state) => (communityAddress ? state.communities[communityAddress] : undefined));
+  const { isOffline, isOnlineStatusLoading, offlineIconClass, offlineTitle } = useIsCommunityOffline(community);
 
   if (!isOffline && !isOnlineStatusLoading) {
     return null;
@@ -52,18 +52,18 @@ const BoardHeader = () => {
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, useParams());
   const isInModView = isModView(location.pathname);
   const accountComment = useAccountComment({ commentIndex: params?.accountCommentIndex as any });
-  const resolvedAddress = useResolvedSubplebbitAddress();
-  const subplebbitAddress = resolvedAddress || accountComment?.subplebbitAddress;
+  const resolvedAddress = useResolvedCommunityAddress();
+  const communityAddress = resolvedAddress || accountComment?.communityAddress;
 
-  // Use stable subplebbit for display fields to avoid rerenders from updatingState
-  const stableSubplebbit = useStableSubplebbit(subplebbitAddress);
-  const { address, shortAddress } = stableSubplebbit || {};
+  // Use stable community for display fields to avoid rerenders from updatingState
+  const stableCommunity = useStableCommunity(communityAddress);
+  const { address, shortAddress } = stableCommunity || {};
 
   const directoriesMetadata = useDirectoriesMetadata();
   const directories = useDirectories();
 
-  // Find matching subplebbit from default list to get its title
-  const defaultSubplebbit = subplebbitAddress ? directories.find((s) => s.address === subplebbitAddress) : null;
+  // Find matching community from default list to get its title
+  const defaultCommunity = communityAddress ? directories.find((s) => s.address === communityAddress) : null;
 
   // Use accounts store with selector to only subscribe to subscriptions count
   const subscriptionsCount = useAccountsStore((state) => {
@@ -79,14 +79,14 @@ const BoardHeader = () => {
       ? '/subs/ - Subscriptions'
       : isInModView
         ? startCase(t('boards_you_moderate'))
-        : defaultSubplebbit?.title || stableSubplebbit?.title;
-  const subtitle = isInAllView ? '' : isInSubscriptionsView ? subscriptionsSubtitle : isInModView ? '/mod/' : `${address || subplebbitAddress || ''}`;
+        : defaultCommunity?.title || stableCommunity?.title;
+  const subtitle = isInAllView ? '' : isInSubscriptionsView ? subscriptionsSubtitle : isInModView ? '/mod/' : `${address || communityAddress || ''}`;
 
   return (
     <div className={`${styles.content} ${shouldShowSnow() ? styles.garland : ''}`}>
       {!useIsMobile() && (
         <div className={styles.bannerCnt}>
-          <ImageBanner key={isInAllView ? 'all' : isInSubscriptionsView ? 'subscriptions' : subplebbitAddress} />
+          <ImageBanner key={isInAllView ? 'all' : isInSubscriptionsView ? 'subscriptions' : communityAddress} />
         </div>
       )}
       <div className={styles.boardTitle}>
@@ -95,8 +95,8 @@ const BoardHeader = () => {
             ? shortAddress.endsWith('.eth') || shortAddress.endsWith('.sol')
               ? shortAddress.slice(0, -4)
               : shortAddress
-            : subplebbitAddress && getShortAddress(subplebbitAddress))}
-        {!isInAllView && !isInSubscriptionsView && !isInModView && <OfflineIndicator subplebbitAddress={subplebbitAddress} />}
+            : communityAddress && getShortAddress(communityAddress))}
+        {!isInAllView && !isInSubscriptionsView && !isInModView && <OfflineIndicator communityAddress={communityAddress} />}
       </div>
       <div className={styles.boardSubtitle}>
         {isInSubscriptionsView ? (

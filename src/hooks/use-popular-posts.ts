@@ -1,7 +1,7 @@
 import { useMemo, useRef } from 'react';
-import { Comment, Subplebbit } from '@bitsocialnet/bitsocial-react-hooks';
+import { Comment, type Community } from '@bitsocialnet/bitsocial-react-hooks';
 import { getCommentMediaInfo, getHasThumbnail } from '../lib/utils/media-utils';
-import useSubplebbitsLoadingStartTimestamps from '../stores/use-subplebbits-loading-start-timestamps-store';
+import useCommunitiesLoadingStartTimestamps from '../stores/use-communities-loading-start-timestamps-store';
 import { useCurrentTime } from './use-current-time';
 
 const MAX_POSTS = 8;
@@ -32,8 +32,8 @@ function popularityScore(post: Comment, nowSeconds: number): number {
   return Math.max(replies, 0.1) / (1 + ageSeconds / HALF_LIFE_SECONDS);
 }
 
-function isBoardStillLoading(subplebbit: Subplebbit | undefined, loadingStartTimestamp: number | undefined, nowSeconds: number): boolean {
-  if (subplebbit?.updatedAt) {
+function isBoardStillLoading(community: Community | undefined, loadingStartTimestamp: number | undefined, nowSeconds: number): boolean {
+  if (community?.updatedAt) {
     return false;
   }
 
@@ -62,8 +62,8 @@ function shuffleBoardAddresses(boardAddresses: string[]): string[] {
  * The first revealed set is frozen until the user refreshes or changes
  * the board filter, so threads never disappear during background loads.
  */
-const usePopularPosts = (subplebbits: Array<Subplebbit | undefined>, subplebbitAddresses: string[]) => {
-  const inputKey = [...subplebbitAddresses].sort().join(',');
+const usePopularPosts = (communities: Array<Community | undefined>, communityAddresses: string[]) => {
+  const inputKey = [...communityAddresses].sort().join(',');
   const committedRef = useRef<CommittedPopularPosts>({
     posts: [],
     revealed: false,
@@ -74,7 +74,7 @@ const usePopularPosts = (subplebbits: Array<Subplebbit | undefined>, subplebbitA
   // Reset committed and reshuffle when the requested board set changes (e.g. NSFW filter toggle).
   if (prevInputKeyRef.current !== inputKey) {
     prevInputKeyRef.current = inputKey;
-    randomizedBoardAddressesRef.current = shuffleBoardAddresses(subplebbitAddresses);
+    randomizedBoardAddressesRef.current = shuffleBoardAddresses(communityAddresses);
     committedRef.current = {
       posts: [],
       revealed: false,
@@ -83,7 +83,7 @@ const usePopularPosts = (subplebbits: Array<Subplebbit | undefined>, subplebbitA
 
   const currentTime = useCurrentTime(committedRef.current.revealed ? 300 : 5);
   const nowSeconds = Math.floor(currentTime);
-  const loadingStartTimestamps = useSubplebbitsLoadingStartTimestamps(subplebbitAddresses);
+  const loadingStartTimestamps = useCommunitiesLoadingStartTimestamps(communityAddresses);
 
   const candidates = useMemo<PopularPostCandidate[]>(() => {
     if (committedRef.current.revealed || committedRef.current.posts.length >= MAX_POSTS) {
@@ -93,16 +93,16 @@ const usePopularPosts = (subplebbits: Array<Subplebbit | undefined>, subplebbitA
     try {
       const selectedLinks = new Set<string>();
       const allPosts: PopularPostCandidate[] = [];
-      const subplebbitsByAddress = new Map(subplebbitAddresses.map((boardAddress, index) => [boardAddress, subplebbits[index]]));
+      const communitiesByAddress = new Map(communityAddresses.map((boardAddress, index) => [boardAddress, communities[index]]));
 
       randomizedBoardAddressesRef.current.forEach((boardAddress) => {
-        const subplebbit = subplebbitsByAddress.get(boardAddress);
-        if (!boardAddress || !subplebbit?.posts?.pages?.hot?.comments) {
+        const community = communitiesByAddress.get(boardAddress);
+        if (!boardAddress || !community?.posts?.pages?.hot?.comments) {
           return;
         }
 
         const subPosts: Comment[] = [];
-        for (const post of Object.values(subplebbit.posts.pages.hot.comments as Record<string, Comment>)) {
+        for (const post of Object.values(community.posts.pages.hot.comments as Record<string, Comment>)) {
           const { deleted, link, linkHeight, linkWidth, locked, pinned, removed, thumbnailUrl } = post;
 
           try {
@@ -131,9 +131,9 @@ const usePopularPosts = (subplebbits: Array<Subplebbit | undefined>, subplebbitA
       console.error('Error in usePopularPosts:', err);
       return [];
     }
-  }, [nowSeconds, subplebbits, subplebbitAddresses]);
+  }, [nowSeconds, communities, communityAddresses]);
 
-  const hasPendingBoards = subplebbitAddresses.some((_, index) => isBoardStillLoading(subplebbits[index], loadingStartTimestamps[index], nowSeconds));
+  const hasPendingBoards = communityAddresses.some((_, index) => isBoardStillLoading(communities[index], loadingStartTimestamps[index], nowSeconds));
 
   if (!committedRef.current.revealed && (candidates.length >= MAX_POSTS || (!hasPendingBoards && candidates.length > 0))) {
     committedRef.current.posts = candidates.slice(0, MAX_POSTS).map(({ post }) => post);

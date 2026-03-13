@@ -6,7 +6,10 @@ import { useBoardFeedPageSize } from './use-board-feed-page-size';
 import { findPostPageInFeed, findPostPageInLoadedBoardFeeds, type FeedsOptionsLike, type LoadedFeedsLike } from '../lib/utils/post-page-resolution';
 
 interface UsePostPageNumberOptions {
-  subplebbitAddress: string | undefined;
+  /** Canonical name. Kept for backward compatibility with older call sites. */
+  communityAddress?: string;
+  /** Legacy name kept for backwards compatibility. */
+  subplebbitAddress?: string;
   postCid: string | undefined;
   /** When false, page segment is excluded (e.g. pending-post view). When true, resolve and show page. */
   enabled?: boolean;
@@ -19,16 +22,29 @@ interface UsePostPageNumberOptions {
  *
  * @returns 1-based page number, or undefined when unresolved (render as "?")
  */
-export function usePostPageNumber({ subplebbitAddress, postCid, enabled = true }: UsePostPageNumberOptions): number | undefined {
-  const community = useDirectoryByAddress(subplebbitAddress);
+export function usePostPageNumber({
+  communityAddress: requestedCommunityAddress,
+  subplebbitAddress: legacyCommunityAddress,
+  postCid,
+  enabled = true,
+}: UsePostPageNumberOptions): number | undefined {
+  const communityAddress = requestedCommunityAddress ?? legacyCommunityAddress;
+
+  const community = useDirectoryByAddress(communityAddress);
   const { guiPostsPerPage, paginationFeedPostsPerPage } = useBoardFeedPageSize(community);
 
-  const canResolve = Boolean(enabled && subplebbitAddress && postCid && guiPostsPerPage > 0);
+  const canResolve = Boolean(enabled && communityAddress && postCid && guiPostsPerPage > 0);
 
   // Cache-first: selector returns only computed page to minimize rerenders
   const cachedPage = useFeedsStore((state) => {
     if (!canResolve) return undefined;
-    return findPostPageInLoadedBoardFeeds(state.feedsOptions as FeedsOptionsLike, state.loadedFeeds as LoadedFeedsLike, subplebbitAddress!, postCid!, guiPostsPerPage);
+    return findPostPageInLoadedBoardFeeds(
+      state.feedsOptions as unknown as FeedsOptionsLike,
+      state.loadedFeeds as unknown as LoadedFeedsLike,
+      communityAddress!,
+      postCid!,
+      guiPostsPerPage,
+    );
   });
 
   // Preload when cache miss and enabled (10 GUI pages)
@@ -36,12 +52,12 @@ export function usePostPageNumber({ subplebbitAddress, postCid, enabled = true }
     () =>
       canResolve
         ? {
-            subplebbitAddresses: [subplebbitAddress!],
+            communityAddresses: [communityAddress!],
             sortType: 'active' as const,
             postsPerPage: paginationFeedPostsPerPage,
           }
         : undefined,
-    [canResolve, subplebbitAddress, paginationFeedPostsPerPage],
+    [canResolve, communityAddress, paginationFeedPostsPerPage],
   );
 
   const { feed: preloadFeed } = useFeed(preloadOptions);

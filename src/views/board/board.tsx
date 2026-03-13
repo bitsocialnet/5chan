@@ -1,16 +1,16 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { Link, useLocation, useNavigate, useNavigationType, useParams } from 'react-router-dom';
-import { Comment, useAccount, useAccountComments, useFeed, useSubplebbit } from '@bitsocialnet/bitsocial-react-hooks';
-import { useSubplebbitField } from '../../hooks/use-stable-subplebbit';
+import { Comment, useAccount, useAccountComments, useCommunity, useFeed } from '@bitsocialnet/bitsocial-react-hooks';
+import { useCommunityField } from '../../hooks/use-stable-community';
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
 import { useTranslation } from 'react-i18next';
 import styles from './board.module.css';
 import mobileFooterStyles from '../../components/footer/footer.module.css';
 import { shouldShowSnow } from '../../lib/snow';
-import { useAccountSubplebbitAddresses } from '../../hooks/use-account-subplebbit-addresses';
+import { useAccountCommunityAddresses } from '../../hooks/use-account-community-addresses';
 import { useDirectoryAddresses, useDirectories, useDirectoryByAddress } from '../../hooks/use-directories';
 import { useFilteredDirectoryAddresses } from '../../hooks/use-filtered-directory-addresses';
-import { useResolvedSubplebbitAddress } from '../../hooks/use-resolved-subplebbit-address';
+import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
 import { useFeedStateString } from '../../hooks/use-state-string';
 import useFeedResetStore from '../../stores/use-feed-reset-store';
 import useFeedViewSettingsStore from '../../stores/use-feed-view-settings-store';
@@ -31,15 +31,15 @@ const lastVirtuosoStates: { [key: string]: StateSnapshot } = {};
 const BOARD_SORT_TYPE = 'active' as const;
 
 interface BoardFooterProps {
-  subplebbitAddresses: string[];
+  communityAddresses: string[];
   hasMore: boolean;
   combinedFeedLength: number;
   isInAllView: boolean;
   isInSubscriptionsView: boolean;
   isInModView: boolean;
-  subplebbitState: string | undefined;
+  communityState: string | undefined;
   subscriptionsLength: number;
-  accountSubplebbitAddressesLength: number;
+  accountCommunityAddressesLength: number;
   /** Show loading ellipsis. True when infinite scroll, or when pagination + empty feed (initial load). */
   showLoadingEllipsis?: boolean;
 }
@@ -48,37 +48,37 @@ interface BoardFooterProps {
 // The useFeedStateString hook is called here instead of in Board to isolate re-renders
 // caused by backend IPFS state changes to just this footer component
 const BoardFooter = ({
-  subplebbitAddresses,
+  communityAddresses,
   hasMore,
   combinedFeedLength,
   isInAllView,
   isInSubscriptionsView,
   isInModView,
-  subplebbitState,
+  communityState,
   subscriptionsLength,
-  accountSubplebbitAddressesLength,
+  accountCommunityAddressesLength,
   showLoadingEllipsis = true,
 }: BoardFooterProps) => {
   const { t } = useTranslation();
 
-  const loadingStateString = useFeedStateString(subplebbitAddresses) || (combinedFeedLength === 0 ? t('loading_feed') : t('looking_for_more_posts'));
+  const loadingStateString = useFeedStateString(communityAddresses) || (combinedFeedLength === 0 ? t('loading_feed') : t('looking_for_more_posts'));
 
   let footerContent;
   if (combinedFeedLength === 0) {
     footerContent = t('no_threads');
   }
-  if (hasMore || (subplebbitAddresses && subplebbitAddresses.length === 0)) {
+  if (hasMore || (communityAddresses && communityAddresses.length === 0)) {
     footerContent = null;
   }
   return (
     <div className={styles.footer}>
       {footerContent}
       <div>
-        {subplebbitState === 'failed' ? (
-          <span className='red'>{subplebbitState}</span>
+        {communityState === 'failed' ? (
+          <span className='red'>{communityState}</span>
         ) : isInSubscriptionsView && subscriptionsLength === 0 ? (
           <span className='red'>{t('not_subscribed_to_any_board')}</span>
-        ) : isInModView && accountSubplebbitAddressesLength === 0 ? (
+        ) : isInModView && accountCommunityAddressesLength === 0 ? (
           <span className='red'>{t('not_mod_of_any_board')}</span>
         ) : (
           showLoadingEllipsis && hasMore && <LoadingEllipsis string={loadingStateString} />
@@ -104,8 +104,8 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, i
   const isInModView = viewType ? viewType === 'mod' : false;
 
   const directories = useDirectories();
-  const resolvedAddressFromUrl = useResolvedSubplebbitAddress();
-  const subplebbitAddress = useMemo(() => {
+  const resolvedAddressFromUrl = useResolvedCommunityAddress();
+  const communityAddress = useMemo(() => {
     if (boardIdentifierProp) {
       return getSubplebbitAddress(boardIdentifierProp, directories);
     }
@@ -118,9 +118,9 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, i
   const account = useAccount();
   const subscriptions = account?.subscriptions;
 
-  const accountSubplebbitAddresses = useAccountSubplebbitAddresses();
+  const accountCommunityAddresses = useAccountCommunityAddresses();
 
-  const subplebbitAddresses = useMemo(() => {
+  const communityAddresses = useMemo(() => {
     if (isInAllView) {
       return filteredDirectoryAddresses;
     }
@@ -128,31 +128,30 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, i
       return subscriptions || [];
     }
     if (isInModView) {
-      return accountSubplebbitAddresses;
+      return accountCommunityAddresses;
     }
-    return [subplebbitAddress];
-  }, [isInAllView, isInSubscriptionsView, isInModView, subplebbitAddress, directoryAddresses, filteredDirectoryAddresses, subscriptions, accountSubplebbitAddresses]);
+    return [communityAddress];
+  }, [isInAllView, isInSubscriptionsView, isInModView, communityAddress, directoryAddresses, filteredDirectoryAddresses, subscriptions, accountCommunityAddresses]);
 
   const enableInfiniteScroll = useFeedViewSettingsStore((state) => state.enableInfiniteScroll);
   const setEnableInfiniteScroll = useFeedViewSettingsStore((state) => state.setEnableInfiniteScroll);
   const isForcedInfiniteScroll = isInAllView || isInSubscriptionsView || isInModView;
   const effectiveInfiniteScroll = enableInfiniteScroll || isForcedInfiniteScroll;
-  const community = useDirectoryByAddress(isInAllView || isInSubscriptionsView || isInModView ? undefined : subplebbitAddress);
-  const { guiPostsPerPage, maxGuiPages, paginationFeedPostsPerPage, infiniteFeedPostsPerPage } = useBoardFeedPageSize(community);
+  const communityDirectory = useDirectoryByAddress(isInAllView || isInSubscriptionsView || isInModView ? undefined : communityAddress);
+  const { guiPostsPerPage, maxGuiPages, paginationFeedPostsPerPage, infiniteFeedPostsPerPage } = useBoardFeedPageSize(communityDirectory);
 
   const feedOptions = useMemo(
     () => ({
-      subplebbitAddresses,
+      communityAddresses,
       sortType: BOARD_SORT_TYPE,
       postsPerPage: effectiveInfiniteScroll ? infiniteFeedPostsPerPage : paginationFeedPostsPerPage,
     }),
-    [subplebbitAddresses, effectiveInfiniteScroll, infiniteFeedPostsPerPage, paginationFeedPostsPerPage],
+    [communityAddresses, effectiveInfiniteScroll, infiniteFeedPostsPerPage, paginationFeedPostsPerPage],
   );
 
   const { feed, hasMore, loadMore, reset } = useFeed(feedOptions);
   const { accountComments } = useAccountComments();
 
-  const feedContextKey = `${isInAllView ? 'all' : isInSubscriptionsView ? 'subs' : isInModView ? 'mod' : (subplebbitAddress ?? 'board')}-${BOARD_SORT_TYPE}-${viewType ?? 'board'}-${effectiveInfiniteScroll}`;
   const pathWithoutSettings = location.pathname.replace(/\/settings$/, '');
   const currentPage = getPageFromFeedPath(pathWithoutSettings);
   const paginationBasePath = stripPageFromFeedPath(pathWithoutSettings);
@@ -172,6 +171,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, i
     () =>
       accountComments.filter((comment) => {
         const { cid, deleted, postCid, removed, state, timestamp } = comment || {};
+        const commentCommunityAddress = comment?.communityAddress || comment?.subplebbitAddress;
         return (
           !deleted &&
           !removed &&
@@ -179,11 +179,11 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, i
           state === 'succeeded' &&
           cid &&
           cid === postCid &&
-          comment?.subplebbitAddress === subplebbitAddress &&
+          commentCommunityAddress === communityAddress &&
           !feedCids.has(cid)
         );
       }),
-    [accountComments, subplebbitAddress, feedCids],
+    [accountComments, communityAddress, feedCids],
   );
 
   // show newest account comment at the top of the feed but after pinned posts
@@ -247,13 +247,13 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, i
     }
   }, [combinedFeed, registerComments]);
 
-  // Use stable subplebbit fields to avoid rerenders from updatingState
-  const subplebbitTitle = useSubplebbitField(subplebbitAddress, (sub) => sub?.title);
-  const shortAddress = useSubplebbitField(subplebbitAddress, (sub) => sub?.shortAddress);
-  // useSubplebbitField only reads from store, doesn't trigger fetching
-  const subplebbit = useSubplebbit({ subplebbitAddress });
-  const { error: subplebbitError, state: subplebbitState } = subplebbit || {};
-  const title = isInAllView ? t('all') : isInSubscriptionsView ? t('subscriptions') : isInModView ? t('mod') : subplebbitTitle;
+  // Use stable community fields to avoid rerenders from updatingState
+  const communityTitle = useCommunityField(communityAddress, (community) => community?.title);
+  const shortAddress = useCommunityField(communityAddress, (community) => community?.shortAddress);
+  // useCommunityField only reads from store, doesn't trigger fetching
+  const communityData = useCommunity({ communityAddress });
+  const { error: communityError, state: communityState } = communityData || {};
+  const title = isInAllView ? t('all') : isInSubscriptionsView ? t('subscriptions') : isInModView ? t('mod') : communityTitle;
 
   // Memoize footer component to preserve identity across renders (Virtuoso optimization)
   // Note: useFeedStateString is called inside BoardFooter to isolate re-renders from backend state changes
@@ -262,15 +262,15 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, i
       Footer: () => (
         <>
           <BoardFooter
-            subplebbitAddresses={subplebbitAddresses}
+            communityAddresses={communityAddresses}
             hasMore={hasMore}
             combinedFeedLength={combinedFeed.length}
             isInAllView={isInAllView}
             isInSubscriptionsView={isInSubscriptionsView}
             isInModView={isInModView}
-            subplebbitState={subplebbitState}
+            communityState={communityState}
             subscriptionsLength={subscriptions?.length || 0}
-            accountSubplebbitAddressesLength={accountSubplebbitAddresses?.length || 0}
+            accountCommunityAddressesLength={accountCommunityAddresses?.length || 0}
             showLoadingEllipsis={effectiveInfiniteScroll || combinedFeed.length === 0}
           />
           <PageFooterDesktop
@@ -313,7 +313,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, i
                     ))}
                   </div>
                   <div className={mobileFooterStyles.mobileFooterButtons}>
-                    <CatalogButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
+                    <CatalogButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
                   </div>
                 </>
               )}
@@ -330,16 +330,16 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, i
       ),
     }),
     [
-      subplebbitAddresses,
+      communityAddresses,
       hasMore,
       combinedFeed.length,
       isInAllView,
       isInSubscriptionsView,
       isInModView,
-      subplebbitState,
-      subplebbitAddress,
+      communityState,
+      communityAddress,
       subscriptions?.length,
-      accountSubplebbitAddresses?.length,
+      accountCommunityAddresses?.length,
       effectiveInfiniteScroll,
       isForcedInfiniteScroll,
       paginationBasePath,
@@ -399,12 +399,12 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, i
     } else if (isDirectory) {
       boardTitle = `/${boardIdentifier}/`;
     } else {
-      boardTitle = title ? title : shortAddress || subplebbitAddress || '';
+      boardTitle = title ? title : shortAddress || communityAddress || '';
     }
     document.title = boardTitle + ' - 5chan';
-  }, [title, shortAddress, subplebbitAddress, isVisible, params.boardIdentifier, boardIdentifierProp, directories, isInAllView, isInSubscriptionsView, isInModView, t]);
+  }, [title, shortAddress, communityAddress, isVisible, params.boardIdentifier, boardIdentifierProp, directories, isInAllView, isInSubscriptionsView, isInModView, t]);
 
-  const shouldShowErrorToUser = subplebbitError?.message && feed.length === 0;
+  const shouldShowErrorToUser = communityError?.message && feed.length === 0;
   const displayFeed = effectiveInfiniteScroll ? combinedFeed : currentPageFeed;
 
   return (
@@ -413,7 +413,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, i
       <div className={`${styles.content} ${shouldShowSnow() ? styles.garland : ''}`}>
         {shouldShowErrorToUser && (
           <div className={styles.error}>
-            <ErrorDisplay error={subplebbitError} />
+            <ErrorDisplay error={communityError} />
           </div>
         )}
         {effectiveInfiniteScroll ? (

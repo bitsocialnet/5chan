@@ -50,6 +50,10 @@ const testState = vi.hoisted(() => ({
 vi.mock('@bitsocialnet/bitsocial-react-hooks', () => ({
   useAccount: () => testState.account,
   useAccountComment: ({ commentIndex }: { commentIndex?: number }) => (typeof commentIndex === 'number' ? testState.accountComments[commentIndex] : undefined),
+  useCommunity: ({ communityAddress }: { communityAddress?: string }) => (communityAddress ? testState.subplebbits[communityAddress] : undefined),
+  useAccountCommunities: () => ({
+    accountCommunities: Object.fromEntries(testState.accountSubplebbitAddresses.map((address) => [address, { address }])),
+  }),
   useSubplebbit: ({ subplebbitAddress }: { subplebbitAddress?: string }) => (subplebbitAddress ? testState.subplebbits[subplebbitAddress] : undefined),
 }));
 

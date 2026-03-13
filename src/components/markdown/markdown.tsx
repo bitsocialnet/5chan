@@ -13,7 +13,7 @@ import { is5chanLink, transform5chanLinkToInternal, isValidCrossboardPattern } f
 import { CROSSBOARD_NUMBER_QUOTE_TOKEN_REGEX, type ExternalQuoteReference } from '../../lib/utils/external-quote-utils';
 import { isUnavailableQuoteTarget } from '../../lib/utils/quote-link-utils';
 import usePostNumberStore from '../../stores/use-post-number-store';
-import useSubplebbitsPagesStore from '@bitsocialnet/bitsocial-react-hooks/dist/stores/subplebbits-pages';
+import useCommunitiesPagesStore from '@bitsocialnet/bitsocial-react-hooks/dist/stores/communities-pages';
 import { useComment } from '@bitsocialnet/bitsocial-react-hooks';
 import ReplyQuotePreview from '../reply-quote-preview';
 import ExternalNumberQuoteLink from './external-number-quote-link';
@@ -240,11 +240,11 @@ function tokenize(text: string): Token[] {
 interface RenderContext {
   isInCatalogView: boolean;
   postCid?: string;
-  subplebbitAddress?: string;
+  communityAddress?: string;
 }
 
 function renderTokens(tokens: Token[], context: RenderContext): React.ReactNode[] {
-  const { isInCatalogView, postCid, subplebbitAddress } = context;
+  const { isInCatalogView, postCid, communityAddress } = context;
 
   return tokens.map((token, i) => {
     switch (token.type) {
@@ -261,12 +261,12 @@ function renderTokens(tokens: Token[], context: RenderContext): React.ReactNode[
             </ContentLinkEmbed>
           );
         }
-        return <React.Fragment key={i}>{renderAnchorLink(href, href, postCid, subplebbitAddress)}</React.Fragment>;
+        return <React.Fragment key={i}>{renderAnchorLink(href, href, postCid, communityAddress)}</React.Fragment>;
       }
       case 'quoteLink':
         return (
           <span key={i} className={styles.inlineQuoteLink}>
-            <NumberQuoteLink number={token.number} threadPostCid={postCid} subplebbitAddress={subplebbitAddress} />
+            <NumberQuoteLink number={token.number} threadPostCid={postCid} communityAddress={communityAddress} />
           </span>
         );
       case 'crossBoardNumberQuoteLink':
@@ -295,12 +295,12 @@ interface MarkdownProps {
   content: string;
   title?: string;
   postCid?: string;
-  subplebbitAddress?: string;
+  communityAddress?: string;
 }
 
-const NumberQuoteLink = ({ number, threadPostCid, subplebbitAddress }: { number: number; threadPostCid?: string; subplebbitAddress?: string }) => {
-  const cid = usePostNumberStore((state) => (subplebbitAddress ? state.numberToCid[subplebbitAddress]?.[number] : undefined));
-  const commentFromStore = useSubplebbitsPagesStore((state) => (cid ? state.comments[cid] : undefined));
+const NumberQuoteLink = ({ number, threadPostCid, communityAddress }: { number: number; threadPostCid?: string; communityAddress?: string }) => {
+  const cid = usePostNumberStore((state) => (communityAddress ? state.numberToCid[communityAddress]?.[number] : undefined));
+  const commentFromStore = useCommunitiesPagesStore((state) => (cid ? state.comments[cid] : undefined));
   const commentFromHook = useComment({ commentCid: cid, onlyIfCached: true });
   const comment = commentFromHook?.number !== undefined ? commentFromHook : commentFromStore;
   const isOP = Boolean(threadPostCid && cid === threadPostCid);
@@ -311,14 +311,14 @@ const NumberQuoteLink = ({ number, threadPostCid, subplebbitAddress }: { number:
     );
   }
 
-  if (!cid && subplebbitAddress) {
+  if (!cid && communityAddress) {
     return (
       <ExternalNumberQuoteLink
         reference={{
           kind: 'same-board',
           number,
           raw: `>>${number}`,
-          subplebbitAddress,
+          subplebbitAddress: communityAddress,
         }}
       />
     );
@@ -327,7 +327,7 @@ const NumberQuoteLink = ({ number, threadPostCid, subplebbitAddress }: { number:
   return <ReplyQuotePreview isQuotelinkReply={true} quotelinkReply={comment} quotelinkNumber={number} isOP={isOP} showTrailingBreak={false} />;
 };
 
-const renderAnchorLink = (children: React.ReactNode, href: string, threadPostCid?: string, subplebbitAddress?: string) => {
+const renderAnchorLink = (children: React.ReactNode, href: string, threadPostCid?: string, communityAddress?: string) => {
   if (!href) {
     return <span>{children}</span>;
   }
@@ -380,7 +380,7 @@ const renderAnchorLink = (children: React.ReactNode, href: string, threadPostCid
   );
 };
 
-const Markdown = ({ content, title, postCid, subplebbitAddress }: MarkdownProps) => {
+const Markdown = ({ content, title, postCid, communityAddress }: MarkdownProps) => {
   const location = useLocation();
   const params = useParams();
   const isInCatalogView = isCatalogView(location.pathname, params);
@@ -400,7 +400,7 @@ const Markdown = ({ content, title, postCid, subplebbitAddress }: MarkdownProps)
       const isGreentext = /^>[^>]/.test(line) || line === '>';
 
       const tokens = tokenize(line);
-      const lineElements = renderTokens(tokens, { isInCatalogView, postCid, subplebbitAddress });
+      const lineElements = renderTokens(tokens, { isInCatalogView, postCid, communityAddress });
 
       if (isGreentext) {
         elements.push(
@@ -414,7 +414,7 @@ const Markdown = ({ content, title, postCid, subplebbitAddress }: MarkdownProps)
     });
 
     return elements;
-  }, [content, isInCatalogView, postCid, subplebbitAddress]);
+  }, [content, isInCatalogView, postCid, communityAddress]);
 
   return (
     <span className={styles.markdown}>

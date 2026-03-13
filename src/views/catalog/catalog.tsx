@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useLocation, useNavigate, useNavigationType, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Comment, useAccount, useFeed, useSubplebbit, useAccountComments } from '@bitsocialnet/bitsocial-react-hooks';
+import { Comment, useAccount, useCommunity, useFeed, useAccountComments } from '@bitsocialnet/bitsocial-react-hooks';
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
 import useCatalogFeedRows from '../../hooks/use-catalog-feed-rows';
 import { useDirectories, useDirectoryByAddress } from '../../hooks/use-directories';
 import { useBoardFeedPageSize } from '../../hooks/use-board-feed-page-size';
 import { useFilteredDirectoryAddresses } from '../../hooks/use-filtered-directory-addresses';
-import { useResolvedSubplebbitAddress } from '../../hooks/use-resolved-subplebbit-address';
+import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
 import { useFeedStateString } from '../../hooks/use-state-string';
 import useWindowWidth from '../../hooks/use-window-width';
 import useCatalogStyleStore from '../../stores/use-catalog-style-store';
@@ -28,7 +28,7 @@ import { sortCatalogFeedForDisplay } from '../../lib/utils/catalog-sort';
 const lastVirtuosoStates: { [key: string]: StateSnapshot } = {};
 
 interface CatalogFooterProps {
-  subplebbitAddresses: string[];
+  communityAddresses: string[];
   hasMore: boolean;
   combinedFeedLength: number;
   isInAllView: boolean;
@@ -42,7 +42,7 @@ interface CatalogFooterProps {
 // The useFeedStateString hook is called here instead of in Catalog to isolate re-renders
 // caused by backend IPFS state changes to just this footer component
 const CatalogFooter = ({
-  subplebbitAddresses,
+  communityAddresses,
   hasMore,
   combinedFeedLength,
   isInAllView,
@@ -52,13 +52,13 @@ const CatalogFooter = ({
 }: CatalogFooterProps) => {
   const { t } = useTranslation();
 
-  const loadingStateString = useFeedStateString(subplebbitAddresses) || (combinedFeedLength === 0 ? t('loading_feed') : t('looking_for_more_posts'));
+  const loadingStateString = useFeedStateString(communityAddresses) || (combinedFeedLength === 0 ? t('loading_feed') : t('looking_for_more_posts'));
 
   let footerContent;
   if (combinedFeedLength === 0) {
     footerContent = t('no_threads');
   }
-  if (hasMore || (subplebbitAddresses && subplebbitAddresses.length === 0)) {
+  if (hasMore || (communityAddresses && communityAddresses.length === 0)) {
     footerContent = (
       <>
         {showLoadingEllipsis && (
@@ -75,7 +75,7 @@ const CatalogFooter = ({
 // Separate component for the loading state when there's no feed
 // This also calls useFeedStateString internally to isolate re-renders
 interface CatalogLoadingProps {
-  subplebbitAddresses: string[];
+  communityAddresses: string[];
   hasMore: boolean;
   combinedFeedLength: number;
   state: string | undefined;
@@ -83,10 +83,10 @@ interface CatalogLoadingProps {
   error: Error | undefined;
 }
 
-const CatalogLoading = ({ subplebbitAddresses, hasMore, combinedFeedLength, state, subscriptionsLength, error }: CatalogLoadingProps) => {
+const CatalogLoading = ({ communityAddresses, hasMore, combinedFeedLength, state, subscriptionsLength, error }: CatalogLoadingProps) => {
   const { t } = useTranslation();
 
-  const rawFeedStateString = useFeedStateString(subplebbitAddresses);
+  const rawFeedStateString = useFeedStateString(communityAddresses);
   const loadingStateString = rawFeedStateString || (combinedFeedLength === 0 ? t('loading_feed') : t('looking_for_more_posts'));
 
   return (
@@ -107,8 +107,8 @@ const CatalogLoading = ({ subplebbitAddresses, hasMore, combinedFeedLength, stat
 
 const createContentFilter = (
   filterItems: { text: string; enabled: boolean; count: number; filteredCids: Set<string>; hide: boolean; top: boolean; color?: string }[],
-  subplebbitAddress: string,
-  onFilterMatch?: (filterIndex: number, cid: string, subplebbitAddress: string) => void,
+  communityAddress: string,
+  onFilterMatch?: (filterIndex: number, cid: string, communityAddress: string) => void,
 ) => {
   // Create a unique key based on the enabled filter items
   const enabledFilters = filterItems.filter((item) => item.enabled && item.text.trim() !== '');
@@ -133,10 +133,10 @@ const createContentFilter = (
           const filterIndex = filterItems.findIndex((f) => f.text === item.text && f.enabled);
           if (filterIndex !== -1) {
             if (onFilterMatch) {
-              onFilterMatch(filterIndex, comment.cid, subplebbitAddress);
+              onFilterMatch(filterIndex, comment.cid, communityAddress);
             } else {
               // Fallback to the store method if no callback provided
-              useCatalogFiltersStore.getState().incrementFilterCount(filterIndex, comment.cid, subplebbitAddress);
+              useCatalogFiltersStore.getState().incrementFilterCount(filterIndex, comment.cid, communityAddress);
             }
 
             // If the filter has a color, track it in the matchedFilters map
@@ -164,10 +164,10 @@ const createContentFilter = (
 const createCombinedFilter = (
   filterItems: { text: string; enabled: boolean; count: number; filteredCids: Set<string>; hide: boolean; top: boolean; color?: string }[],
   searchText: string,
-  subplebbitAddress: string,
-  onFilterMatch?: (filterIndex: number, cid: string, subplebbitAddress: string) => void,
+  communityAddress: string,
+  onFilterMatch?: (filterIndex: number, cid: string, communityAddress: string) => void,
 ) => {
-  const contentFilter = createContentFilter(filterItems, subplebbitAddress, onFilterMatch);
+  const contentFilter = createContentFilter(filterItems, communityAddress, onFilterMatch);
 
   const searchFilter = {
     filter: (comment: Comment) => {
@@ -210,8 +210,8 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   const effectiveInfiniteScroll = isMultiboard;
 
   const directories = useDirectories();
-  const resolvedAddressFromUrl = useResolvedSubplebbitAddress();
-  const subplebbitAddress = useMemo(() => {
+  const resolvedAddressFromUrl = useResolvedCommunityAddress();
+  const communityAddress = useMemo(() => {
     if (boardIdentifierProp) {
       return getSubplebbitAddress(boardIdentifierProp, directories);
     }
@@ -224,16 +224,16 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   const subscriptions = account?.subscriptions;
   const filteredDirectoryAddresses = useFilteredDirectoryAddresses();
 
-  const subplebbitAddresses = useMemo(() => {
+  const communityAddresses = useMemo(() => {
     if (isInAllView) {
       return filteredDirectoryAddresses;
     }
     if (isInSubscriptionsView) {
       return (subscriptions || []).filter(Boolean); // Filter out any undefined/null values
     }
-    // Only include subplebbitAddress if it's defined
-    return subplebbitAddress ? [subplebbitAddress] : [];
-  }, [isInAllView, isInSubscriptionsView, subplebbitAddress, filteredDirectoryAddresses, subscriptions]);
+    // Only include communityAddress if it's defined
+    return communityAddress ? [communityAddress] : [];
+  }, [isInAllView, isInSubscriptionsView, communityAddress, filteredDirectoryAddresses, subscriptions]);
 
   const { imageSize } = useCatalogStyleStore();
   const columnWidth = imageSize === 'Large' ? 270 : 180;
@@ -241,8 +241,8 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   const columnCount = Math.floor(useWindowWidth() / columnWidth);
   const postsPerPage = columnCount <= 2 ? 10 : columnCount === 3 ? 15 : columnCount === 4 ? 20 : 25;
 
-  const community = useDirectoryByAddress(isInAllView || isInSubscriptionsView || isInModView ? undefined : subplebbitAddress);
-  const { guiPostsPerPage: boardPostsPerPage, maxGuiPages, paginationFeedPostsPerPage } = useBoardFeedPageSize(community);
+  const communityDirectory = useDirectoryByAddress(isInAllView || isInSubscriptionsView || isInModView ? undefined : communityAddress);
+  const { guiPostsPerPage: boardPostsPerPage, maxGuiPages, paginationFeedPostsPerPage } = useBoardFeedPageSize(communityDirectory);
 
   // Canonical redirect for multiboard catalog paths with numeric page segment (e.g. /all/catalog/1w/5 -> /all/catalog/1w)
   useEffect(() => {
@@ -257,26 +257,26 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   const feedSortType = sortType === 'new' ? 'new' : 'active';
 
   // Create a stable callback for filter matching
-  const handleFilterMatch = useCallback((filterIndex: number, cid: string, subplebbitAddress: string) => {
-    useCatalogFiltersStore.getState().incrementFilterCount(filterIndex, cid, subplebbitAddress);
+  const handleFilterMatch = useCallback((filterIndex: number, cid: string, communityAddress: string) => {
+    useCatalogFiltersStore.getState().incrementFilterCount(filterIndex, cid, communityAddress);
   }, []);
 
-  // Set the current subplebbit address
+  // Set the current community address
   useEffect(() => {
-    useCatalogFiltersStore.getState().setCurrentSubplebbitAddress(subplebbitAddress || null);
+    useCatalogFiltersStore.getState().setCurrentSubplebbitAddress(communityAddress || null);
     return () => {
       useCatalogFiltersStore.getState().setCurrentSubplebbitAddress(null);
     };
-  }, [subplebbitAddress]);
+  }, [communityAddress]);
 
   const feedOptions = useMemo(() => {
     return {
-      subplebbitAddresses,
+      communityAddresses,
       sortType: feedSortType,
       postsPerPage: isMultiboard ? 10 : paginationFeedPostsPerPage,
-      filter: createCombinedFilter(filterItems, searchText, subplebbitAddress || 'all', handleFilterMatch),
+      filter: createCombinedFilter(filterItems, searchText, communityAddress || 'all', handleFilterMatch),
     };
-  }, [subplebbitAddresses, feedSortType, isMultiboard, paginationFeedPostsPerPage, filterItems, searchText, subplebbitAddress, handleFilterMatch]);
+  }, [communityAddresses, feedSortType, isMultiboard, paginationFeedPostsPerPage, filterItems, searchText, communityAddress, handleFilterMatch]);
 
   const { feed, hasMore, loadMore, reset } = useFeed(feedOptions);
   const { accountComments } = useAccountComments();
@@ -289,6 +289,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
     () =>
       accountComments.filter((comment) => {
         const { cid, deleted, postCid, removed, state, timestamp } = comment || {};
+        const commentCommunityAddress = comment?.communityAddress || comment?.subplebbitAddress;
 
         // Basic filtering conditions
         const basicConditions =
@@ -298,7 +299,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
           state === 'succeeded' &&
           cid &&
           cid === postCid &&
-          comment?.subplebbitAddress === subplebbitAddress &&
+          commentCommunityAddress === communityAddress &&
           !feedCids.has(cid);
 
         // If search is active, also check search conditions
@@ -312,7 +313,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
 
         return basicConditions;
       }),
-    [accountComments, subplebbitAddress, feedCids, searchText],
+    [accountComments, communityAddress, feedCids, searchText],
   );
 
   // show newest account comment at the top of the feed but after pinned posts
@@ -347,8 +348,8 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
     }
   }, [reset, setResetFunction, isVisible]);
 
-  const subplebbit = useSubplebbit({ subplebbitAddress });
-  const { error, shortAddress, state, title } = subplebbit || {};
+  const community = useCommunity({ communityAddress });
+  const { error, shortAddress, state, title } = community || {};
 
   // Memoize footer component to preserve identity across renders (Virtuoso optimization)
   // Note: useFeedStateString is called inside CatalogFooter to isolate re-renders from backend state changes
@@ -357,7 +358,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
       Footer: () => (
         <>
           <CatalogFooter
-            subplebbitAddresses={subplebbitAddresses}
+            communityAddresses={communityAddresses}
             hasMore={hasMore}
             combinedFeedLength={cappedFeed.length}
             isInAllView={isInAllView}
@@ -368,7 +369,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
           <PageFooterDesktop
             firstRow={
               <CatalogFooterFirstRow
-                subplebbitAddress={subplebbitAddress}
+                communityAddress={communityAddress}
                 isInAllView={isInAllView}
                 isInSubscriptionsView={isInSubscriptionsView}
                 isInModView={isInModView}
@@ -377,8 +378,8 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
           />
           <PageFooterMobile>
             <div className={mobileFooterStyles.mobileFooterButtons}>
-              <ReturnButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
-              <ArchiveButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
+              <ReturnButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
+              <ArchiveButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
               <TopButton />
               <RefreshButton />
             </div>
@@ -386,7 +387,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
         </>
       ),
     }),
-    [subplebbitAddresses, hasMore, cappedFeed.length, subplebbitAddress, isInAllView, isInSubscriptionsView, isInModView, effectiveInfiniteScroll],
+    [communityAddresses, hasMore, cappedFeed.length, communityAddress, isInAllView, isInSubscriptionsView, isInModView, effectiveInfiniteScroll],
   );
 
   const isFeedLoaded = feed.length > 0 || state === 'failed';
@@ -424,7 +425,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
     return [...topPosts, ...regularPosts];
   }, [sortedFeed, filterItems]);
 
-  const rows = useCatalogFeedRows(columnCount, processedFeed, isFeedLoaded, subplebbit);
+  const rows = useCatalogFeedRows(columnCount, processedFeed, isFeedLoaded, community);
 
   const virtuosoRef = useRef<VirtuosoHandle | null>(null);
   const virtuosoStateKey = feedCacheKey ? `${feedCacheKey}-${sortType}` : `${location.pathname}-${sortType}-catalog`;
@@ -469,18 +470,18 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
     } else if (isDirectory) {
       documentTitle = `/${boardIdentifier}/`;
     } else {
-      documentTitle = title ? title : shortAddress || subplebbitAddress || '';
+      documentTitle = title ? title : shortAddress || communityAddress || '';
     }
     document.title = documentTitle + ` - ${t('catalog')} - 5chan`;
-  }, [title, shortAddress, subplebbitAddress, isInAllView, isInSubscriptionsView, t, isVisible, params.boardIdentifier, boardIdentifierProp, directories]);
+  }, [title, shortAddress, communityAddress, isInAllView, isInSubscriptionsView, t, isVisible, params.boardIdentifier, boardIdentifierProp, directories]);
 
-  // Clear matched filters when component mounts or when subplebbit changes
+  // Clear matched filters when component mounts or when community changes
   useEffect(() => {
     clearMatchedFilters();
     return () => {
       clearMatchedFilters();
     };
-  }, [clearMatchedFilters, subplebbitAddress]);
+  }, [clearMatchedFilters, communityAddress]);
 
   // Memoize filter color application to avoid redundant iterations
   useMemo(() => {
@@ -529,7 +530,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
           <>
             <div className={styles.footer}>
               <CatalogLoading
-                subplebbitAddresses={subplebbitAddresses}
+                communityAddresses={communityAddresses}
                 hasMore={hasMore}
                 combinedFeedLength={cappedFeed.length}
                 state={state}
@@ -540,7 +541,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
             <PageFooterDesktop
               firstRow={
                 <CatalogFooterFirstRow
-                  subplebbitAddress={subplebbitAddress}
+                  communityAddress={communityAddress}
                   isInAllView={isInAllView}
                   isInSubscriptionsView={isInSubscriptionsView}
                   isInModView={isInModView}
@@ -549,8 +550,8 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
             />
             <PageFooterMobile>
               <div className={mobileFooterStyles.mobileFooterButtons}>
-                <ReturnButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
-                <ArchiveButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
+                <ReturnButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
+                <ArchiveButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
                 <TopButton />
                 <RefreshButton />
               </div>

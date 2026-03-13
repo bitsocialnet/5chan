@@ -47,6 +47,7 @@ import { filterRepliesForDisplay, getPreviewDisplayReplies } from '../../lib/uti
 import { getRenderableMobileBacklinks } from '../../lib/utils/reply-backlink-utils';
 import { getThreadTopNavigationState, scrollThreadContainerToTop } from '../../lib/utils/thread-scroll-utils';
 import useDeleteFailedPost from '../../hooks/use-delete-failed-post';
+import { withResolvedCommentCommunityAddress } from '../../lib/utils/comment-utils';
 
 const { addChallenge } = useChallengesStore.getState();
 
@@ -63,17 +64,18 @@ const lastVirtuosoStates: { [key: string]: StateSnapshot } = {};
 const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: PostProps) => {
   const { t } = useTranslation();
   const directories = useDirectories();
-  const { author, cid, deleted, link, linkHeight, linkWidth, locked, parentCid, pinned, postCid, reason, removed, state, subplebbitAddress, timestamp, thumbnailUrl } =
-    post || {};
-  const purged = post?.commentModeration?.purged;
-  const boardPath = subplebbitAddress ? getBoardPath(subplebbitAddress, directories) : undefined;
+  const resolvedPost = withResolvedCommentCommunityAddress(post);
+  const { author, cid, deleted, link, linkHeight, linkWidth, locked, parentCid, pinned, postCid, reason, removed, state, communityAddress, timestamp, thumbnailUrl } =
+    resolvedPost || {};
+  const purged = resolvedPost?.commentModeration?.purged;
+  const boardPath = communityAddress ? getBoardPath(communityAddress, directories) : undefined;
   const displayBoardPath =
-    boardPath && subplebbitAddress
-      ? boardPath !== subplebbitAddress
+    boardPath && communityAddress
+      ? boardPath !== communityAddress
         ? boardPath
-        : subplebbitAddress.endsWith('.eth') || subplebbitAddress.endsWith('.sol')
-          ? subplebbitAddress
-          : getShortAddress(subplebbitAddress)
+        : communityAddress.endsWith('.eth') || communityAddress.endsWith('.sol')
+          ? communityAddress
+          : getShortAddress(communityAddress)
       : undefined;
   const isReply = parentCid;
   const title = post?.title?.trim();
@@ -98,8 +100,8 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
   const isAccountMod = accountRole === 'admin' || accountRole === 'owner' || accountRole === 'moderator';
 
   // Check if post is pending approval and user is mod (for post page view)
-  const pendingApproval = post?.pendingApproval;
-  const shouldShowPendingApprovalButtons = isInPostPageView && !isInModQueueView && pendingApproval && isAccountMod && subplebbitAddress;
+  const pendingApproval = resolvedPost?.pendingApproval;
+  const shouldShowPendingApprovalButtons = isInPostPageView && !isInModQueueView && pendingApproval && isAccountMod && communityAddress;
 
   // Moderation actions for pending approval posts
   const {
@@ -108,10 +110,10 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
     error: approvePendingError,
   } = usePublishCommentModeration({
     commentCid: cid,
-    subplebbitAddress: shouldShowPendingApprovalButtons ? subplebbitAddress : undefined,
+    communityAddress: shouldShowPendingApprovalButtons ? communityAddress : undefined,
     commentModeration: approvePendingCommentModeration,
     onChallenge: async (...args: any) => {
-      addChallenge([...args, post]);
+      addChallenge([...args, resolvedPost]);
     },
     onChallengeVerification: async (challengeVerification, comment) => {
       alertChallengeVerificationFailed(challengeVerification, comment);
@@ -127,10 +129,10 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
     error: rejectPendingError,
   } = usePublishCommentModeration({
     commentCid: cid,
-    subplebbitAddress: shouldShowPendingApprovalButtons ? subplebbitAddress : undefined,
+    communityAddress: shouldShowPendingApprovalButtons ? communityAddress : undefined,
     commentModeration: rejectPendingCommentModeration,
     onChallenge: async (...args: any) => {
-      addChallenge([...args, post]);
+      addChallenge([...args, resolvedPost]);
     },
     onChallengeVerification: async (challengeVerification, comment) => {
       alertChallengeVerificationFailed(challengeVerification, comment);
@@ -186,7 +188,7 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
   const hasThumbnail = getHasThumbnail(commentMediaInfo, link);
 
   // Check if post is awaiting approval and over threshold (for mod queue view)
-  const approved = post?.approved;
+  const approved = resolvedPost?.approved;
   const alreadyApproved = approved === true;
   const alreadyRejected = isPendingApprovalRejected(post);
   const isAwaitingApproval = isInModQueueView && !alreadyApproved && !alreadyRejected;
@@ -195,9 +197,9 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
   const isOverThreshold = isAwaitingApproval && timeWaiting > alertThresholdSeconds;
 
   const hasFailedState = state === 'failed';
-  const postMenuProps = selectPostMenuProps(post);
+  const postMenuProps = selectPostMenuProps(resolvedPost);
 
-  const pseudonymityMode = useBoardPseudonymityMode(subplebbitAddress);
+  const pseudonymityMode = useBoardPseudonymityMode(communityAddress);
   const showUserID = pseudonymityMode === 'per-post';
 
   const handleUserAddressClick = useAuthorAddressClick();
@@ -214,7 +216,7 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
   const userIDBackgroundColor = hashStringToColor(userID);
   const userIDTextColor = getTextColorForBackground(userIDBackgroundColor);
 
-  const { hidden } = useHide(post);
+  const { hidden } = useHide(resolvedPost);
 
   const { openReplyModal } = useReplyModalStore();
 
@@ -227,7 +229,7 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
         ? isReply
           ? alert(t('this_reply_was_removed'))
           : alert(t('this_thread_was_removed'))
-        : openReplyModal && openReplyModal(cid, post?.number, postCid, threadNumber, subplebbitAddress);
+        : openReplyModal && openReplyModal(cid, resolvedPost?.number, postCid, threadNumber, communityAddress);
   };
 
   const threadRoute = cid ? (boardPath ? `/${boardPath}/thread/${cid}` : `/thread/${cid}`) : undefined;
@@ -248,7 +250,7 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
   return (
     <>
       <div className={styles.postInfo} data-post-info-cid={cid}>
-        <PostMenuMobile postMenu={postMenuProps} editMenuPost={post} />
+        <PostMenuMobile postMenu={postMenuProps} editMenuPost={resolvedPost} />
         <span className={(hidden || ((removed || deleted || purged) && !reason)) && parentCid ? styles.postDesktopHidden : ''}>
           <span className={styles.nameBlock}>
             <span className={`${styles.name} ${authorRole && !(deleted || removed || purged) && (authorRole === 'mod' ? styles.capcodeMod : styles.capcodeAdmin)}`}>
@@ -343,7 +345,7 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
             )}
           </span>
           <span className={styles.dateTimePostNum}>
-            {subplebbitAddress && (isInAllView || isInSubscriptionsView || isInModView) && !isReply && boardPath && displayBoardPath && (
+            {communityAddress && (isInAllView || isInSubscriptionsView || isInModView) && !isReply && boardPath && displayBoardPath && (
               <div className={styles.postNumLink}>
                 {' '}
                 <Link to={`/${boardPath}`}>Board: {displayBoardPath}</Link>
@@ -379,7 +381,7 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
                     }
                   }}
                 >
-                  {post?.number || '?'}
+                  {resolvedPost?.number || '?'}
                 </span>
               </span>
             ) : (
@@ -416,7 +418,7 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
           </span>
         </span>
       </div>
-      {(hasThumbnail || link) && !(deleted || removed || purged) && <PostMediaContent key={cid} post={post} link={link} />}
+      {(hasThumbnail || link) && !(deleted || removed || purged) && <PostMediaContent key={cid} post={resolvedPost} link={link} />}
     </>
   );
 };
@@ -491,10 +493,11 @@ const Reply = ({
   if (editedComment) {
     post = editedComment;
   }
-  const { author, cid, deleted, postCid, reason, removed, subplebbitAddress } = post || {};
+  post = withResolvedCommentCommunityAddress(post);
+  const { author, cid, deleted, postCid, reason, removed, communityAddress } = post || {};
   const purged = post?.commentModeration?.purged;
   const directories = useDirectories();
-  const boardPath = subplebbitAddress ? getBoardPath(subplebbitAddress, directories) : undefined;
+  const boardPath = communityAddress ? getBoardPath(communityAddress, directories) : undefined;
   const location = useLocation();
   const route = boardPath ? `/${boardPath}/thread/${cid}` : `/thread/${cid}`;
   const isRouteLinkToReply = cid ? location.pathname.startsWith(route) : false;
@@ -536,27 +539,28 @@ const PostMobile = ({
   onReject,
 }: PostProps) => {
   const { t } = useTranslation();
-  const { author, cid, parentCid, pinned, postCid, replyCount, state, subplebbitAddress } = post || {};
+  const resolvedPost = withResolvedCommentCommunityAddress(post);
+  const { author, cid, parentCid, pinned, postCid, replyCount, state, communityAddress } = resolvedPost || {};
   const params = useParams();
   const location = useLocation();
   const navigationType = useNavigationType();
   const isInPendingPostView = isPendingPostView(location.pathname, params);
   const isInPostView = isPostPageView(location.pathname, params);
   const directories = useDirectories();
-  const directoryEntry = findDirectoryByAddress(directories, subplebbitAddress);
+  const directoryEntry = findDirectoryByAddress(directories, communityAddress);
   const requirePostLinkIsMedia = directoryEntry?.features?.requirePostLinkIsMedia === true;
-  const boardPath = subplebbitAddress ? getBoardPath(subplebbitAddress, directories) : undefined;
-  const linksCount = useCountLinksInReplies(post);
+  const boardPath = communityAddress ? getBoardPath(communityAddress, directories) : undefined;
+  const linksCount = useCountLinksInReplies(resolvedPost);
   const shouldFetchReplies = showReplies && !isModQueue;
   const previewRepliesResult = useReplies({
-    comment: shouldFetchReplies && !showAllReplies ? post : undefined,
+    comment: shouldFetchReplies && !showAllReplies ? resolvedPost : undefined,
     sortType: 'new',
     flat: true,
     repliesPerPage: BOARD_REPLIES_PREVIEW_FETCH_SIZE,
     accountComments: { newerThan: Infinity, append: true },
   });
   const fullRepliesResult = useReplies({
-    comment: shouldFetchReplies && showAllReplies ? post : undefined,
+    comment: shouldFetchReplies && showAllReplies ? resolvedPost : undefined,
     sortType: 'old',
     flat: true,
     repliesPerPage: REPLIES_PER_PAGE,
@@ -567,7 +571,7 @@ const PostMobile = ({
   const updatedReplies = (repliesResult as { updatedReplies?: Comment[] }).updatedReplies;
   const repliesForRender = updatedReplies?.length ? updatedReplies : replies || [];
   const freshRepliesForRender = useFreshReplies(repliesForRender);
-  useRegisterFreshReplies(post, freshRepliesForRender);
+  useRegisterFreshReplies(resolvedPost, freshRepliesForRender);
   const reset = (repliesResult as { reset?: () => Promise<void> }).reset;
   const setResetFunction = useFeedResetStore((s) => s.setResetFunction);
   useEffect(() => {
@@ -581,10 +585,10 @@ const PostMobile = ({
   const isInPostPageView = isPostPageView(location.pathname, params);
   const { hidden, unhide } = useHide({ cid });
 
-  const stateString = useStateString(post) || t('loading_post');
+  const stateString = useStateString(resolvedPost) || t('loading_post');
   const hasFailedState = state === 'failed';
   const isReply = !!parentCid;
-  const { canDeleteFailedPost, isDeletingFailedPost, onDeleteFailedPost } = useDeleteFailedPost(post);
+  const { canDeleteFailedPost, isDeletingFailedPost, onDeleteFailedPost } = useDeleteFailedPost(resolvedPost);
   const failedPublishNotice = canDeleteFailedPost ? <FailedPublishNotice isDeleting={isDeletingFailedPost} onDelete={onDeleteFailedPost} /> : undefined;
 
   // Author-deleted replies are hidden from thread replies; moderator removals still render their placeholder.
@@ -606,7 +610,7 @@ const PostMobile = ({
     return map;
   })();
 
-  const quotedByMap = useQuotedByMap(filteredReplies, subplebbitAddress);
+  const quotedByMap = useQuotedByMap(filteredReplies, communityAddress);
 
   const visibleReplies = useProgressiveRender(filteredReplies, {
     batchSize: 50,
@@ -687,9 +691,9 @@ const PostMobile = ({
                 data-post-cid={postCid}
               >
                 {shouldShowSnow() && <img src='assets/xmashat.gif' className={styles.xmasHat} alt='' />}
-                <PostInfoAndMedia post={post} postReplyCount={replyCount} roles={roles} threadNumber={post?.number} />
-                <CommentContent comment={post} prependContent={failedPublishNotice} />
-                <ReplyBacklinks post={post} quotedByMap={quotedByMap} directRepliesByParentCid={directRepliesByParentCid} />
+                <PostInfoAndMedia post={resolvedPost} postReplyCount={replyCount} roles={roles} threadNumber={resolvedPost?.number} />
+                <CommentContent comment={resolvedPost} prependContent={failedPublishNotice} />
+                <ReplyBacklinks post={resolvedPost} quotedByMap={quotedByMap} directRepliesByParentCid={directRepliesByParentCid} />
               </div>
               {!isInPostView && !isInPendingPostView && (showReplies || isModQueue) && (
                 <div className={styles.postLink}>
@@ -717,8 +721,8 @@ const PostMobile = ({
                         <LoadingEllipsis string={t('publishing')} />
                       ) : (
                         <>
-                          {isReply && boardPath && (post?.threadCid || post?.parentCid) && (
-                            <Link to={`/${boardPath}/thread/${post.threadCid || post.parentCid}`} className={`button ${styles.approveButton}`}>
+                          {isReply && boardPath && (resolvedPost?.threadCid || resolvedPost?.parentCid) && (
+                            <Link to={`/${boardPath}/thread/${resolvedPost.threadCid || resolvedPost.parentCid}`} className={`button ${styles.approveButton}`}>
                               {t('view_thread')}
                             </Link>
                           )}
@@ -740,7 +744,7 @@ const PostMobile = ({
               )}
             </div>
             {/* Virtuoso infinite scroll for post page view when there's more content to paginate */}
-            {showAllReplies && !isInPendingPostView && showReplies && hasMore && !!post?.replyCount && (
+            {showAllReplies && !isInPendingPostView && showReplies && hasMore && !!resolvedPost?.replyCount && (
               <Virtuoso
                 increaseViewportBy={{ bottom: 1200, top: 1200 }}
                 totalCount={filteredReplies.length}
@@ -751,7 +755,7 @@ const PostMobile = ({
                       postReplyCount={replyCount}
                       reply={reply}
                       roles={roles}
-                      threadNumber={post?.number}
+                      threadNumber={resolvedPost?.number}
                       quotedByMap={quotedByMap}
                       directRepliesByParentCid={directRepliesByParentCid}
                     />
@@ -776,7 +780,7 @@ const PostMobile = ({
                     postReplyCount={replyCount}
                     reply={reply}
                     roles={roles}
-                    threadNumber={post?.number}
+                    threadNumber={resolvedPost?.number}
                     quotedByMap={quotedByMap}
                     directRepliesByParentCid={directRepliesByParentCid}
                   />
@@ -793,7 +797,7 @@ const PostMobile = ({
                     postReplyCount={replyCount}
                     reply={reply}
                     roles={roles}
-                    threadNumber={post?.number}
+                    threadNumber={resolvedPost?.number}
                     quotedByMap={quotedByMap}
                     directRepliesByParentCid={directRepliesByParentCid}
                   />
@@ -804,7 +808,7 @@ const PostMobile = ({
           stateString &&
           !hasFailedState &&
           state !== 'succeeded' &&
-          !(post?.timestamp && !post?.updatedAt) &&
+          !(resolvedPost?.timestamp && !resolvedPost?.updatedAt) &&
           isInPostPageView &&
           !(!showReplies && !showAllReplies) ? (
             <div className={styles.stateString}>

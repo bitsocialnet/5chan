@@ -1,7 +1,7 @@
 import type { Comment } from '@bitsocialnet/bitsocial-react-hooks';
 import feedsStore from '@bitsocialnet/bitsocial-react-hooks/dist/stores/feeds';
 import repliesStore, { feedOptionsToFeedName } from '@bitsocialnet/bitsocial-react-hooks/dist/stores/replies';
-import subplebbitsPagesStore from '@bitsocialnet/bitsocial-react-hooks/dist/stores/subplebbits-pages';
+import communitiesPagesStore from '@bitsocialnet/bitsocial-react-hooks/dist/stores/communities-pages';
 import type { DirectoryCommunity } from '../../hooks/use-directories';
 import usePostNumberStore from '../../stores/use-post-number-store';
 import type { ExternalQuoteReference, ExternalQuoteSearchStatus } from './external-quote-utils';
@@ -26,7 +26,7 @@ type ResolvedExternalQuoteTarget = {
   comment?: Comment;
   isUnavailable: boolean;
   route: string;
-  subplebbitAddress: string;
+  communityAddress: string;
 };
 
 const waitFor = async <T>(callback: () => T | undefined | false, timeoutMs = WAIT_FOR_STORE_TIMEOUT_MS) => {
@@ -54,36 +54,39 @@ const isUnavailableComment = (
   } | null,
 ) => Boolean(comment?.deleted || comment?.removed || comment?.commentModeration?.purged);
 
-const getBoardFeedName = (accountId: string, subplebbitAddress: string) =>
-  `external-quote-board-${accountId}-${subplebbitAddress}-${BOARD_FEED_SORT_TYPE}-${BOARD_SEARCH_POSTS_PER_PAGE}`;
+const getBoardFeedName = (accountId: string, communityAddress: string) =>
+  `external-quote-board-${accountId}-${communityAddress}-${BOARD_FEED_SORT_TYPE}-${BOARD_SEARCH_POSTS_PER_PAGE}`;
 
-const getCachedComment = (cid?: string) => (cid ? subplebbitsPagesStore.getState().comments[cid] : undefined);
+const getCachedComment = (cid?: string) => (cid ? communitiesPagesStore.getState().comments[cid] : undefined);
 
-const findLoadedCommentByNumber = ({ number, subplebbitAddress }: { number: number; subplebbitAddress: string }) => {
-  const comments = Object.values(subplebbitsPagesStore.getState().comments) as Array<Comment | undefined>;
+const findLoadedCommentByNumber = ({ number, communityAddress }: { number: number; communityAddress: string }) => {
+  const comments = Object.values(communitiesPagesStore.getState().comments) as Array<Comment | undefined>;
 
-  return comments.find((comment) => comment?.subplebbitAddress === subplebbitAddress && comment?.number === number && comment?.cid);
+  return comments.find((comment) => {
+    const address = (comment as { communityAddress?: string }).communityAddress || comment?.subplebbitAddress;
+    return address === communityAddress && comment?.number === number && comment?.cid;
+  });
 };
 
 const buildResolvedTarget = ({
   cid,
   comment,
   directories,
-  subplebbitAddress,
+  communityAddress,
 }: {
   cid: string;
   comment?: Comment;
   directories: DirectoryCommunity[];
-  subplebbitAddress: string;
+  communityAddress: string;
 }): ResolvedExternalQuoteTarget => {
-  const boardPath = getBoardPath(subplebbitAddress, directories);
+  const boardPath = getBoardPath(communityAddress, directories);
   return {
     boardPath,
     cid,
     comment,
     isUnavailable: isUnavailableComment(comment),
     route: `/${boardPath}/thread/${cid}`,
-    subplebbitAddress,
+    communityAddress,
   };
 };
 
@@ -118,7 +121,7 @@ const loadBoardThreads = async ({
   number,
   onStatus,
   quoteDisplay,
-  subplebbitAddress,
+  communityAddress,
   directories,
 }: {
   account: ResolverAccount;
@@ -126,7 +129,7 @@ const loadBoardThreads = async ({
   number: number;
   onStatus?: (status: ExternalQuoteSearchStatus) => void;
   quoteDisplay: string;
-  subplebbitAddress: string;
+  communityAddress: string;
 }) => {
   const accountId = account.id;
   if (!accountId) {
@@ -138,7 +141,7 @@ const loadBoardThreads = async ({
       kind: 'same-board',
       number,
       raw: quoteDisplay,
-      subplebbitAddress,
+      communityAddress,
     },
     directories,
   );
@@ -149,10 +152,10 @@ const loadBoardThreads = async ({
     quoteDisplay,
   });
 
-  const feedName = getBoardFeedName(accountId, subplebbitAddress);
+  const feedName = getBoardFeedName(accountId, communityAddress);
   const feedState = feedsStore.getState();
   if (!feedState.feedsOptions[feedName]) {
-    await feedState.addFeedToStore(feedName, [subplebbitAddress], BOARD_FEED_SORT_TYPE, account, false, BOARD_SEARCH_POSTS_PER_PAGE);
+    await feedState.addFeedToStore(feedName, [communityAddress], BOARD_FEED_SORT_TYPE, account, false, BOARD_SEARCH_POSTS_PER_PAGE);
   }
 
   await waitForBoardFeedPage(feedName, 0, 1);
@@ -210,7 +213,7 @@ const searchThreadReplies = async ({
   number,
   onStatus,
   quoteDisplay,
-  subplebbitAddress,
+  communityAddress,
   threads,
 }: {
   account: ResolverAccount;
@@ -218,7 +221,7 @@ const searchThreadReplies = async ({
   number: number;
   onStatus?: (status: ExternalQuoteSearchStatus) => void;
   quoteDisplay: string;
-  subplebbitAddress: string;
+  communityAddress: string;
   threads: Comment[];
 }) => {
   const accountId = account.id;
@@ -231,7 +234,7 @@ const searchThreadReplies = async ({
       kind: 'same-board',
       number,
       raw: quoteDisplay,
-      subplebbitAddress,
+      communityAddress,
     },
     directories,
   );
@@ -302,21 +305,21 @@ export const resolveExternalQuoteTarget = async ({
     throw new Error('Missing active account while resolving external quote');
   }
 
-  const targetSubplebbitAddress = getExternalQuoteBoardAddress(reference, directories);
+  const targetCommunityAddress = getExternalQuoteBoardAddress(reference, directories);
   const quoteDisplay = reference.raw;
-  const cachedCid = usePostNumberStore.getState().numberToCid[targetSubplebbitAddress]?.[reference.number];
+  const cachedCid = usePostNumberStore.getState().numberToCid[targetCommunityAddress]?.[reference.number];
   if (cachedCid) {
     return buildResolvedTarget({
       cid: cachedCid,
       comment: getCachedComment(cachedCid),
       directories,
-      subplebbitAddress: targetSubplebbitAddress,
+      communityAddress: targetCommunityAddress,
     });
   }
 
   const loadedComment = findLoadedCommentByNumber({
     number: reference.number,
-    subplebbitAddress: targetSubplebbitAddress,
+    communityAddress: targetCommunityAddress,
   });
   if (loadedComment?.cid) {
     registerComments([loadedComment]);
@@ -324,7 +327,7 @@ export const resolveExternalQuoteTarget = async ({
       cid: loadedComment.cid,
       comment: loadedComment,
       directories,
-      subplebbitAddress: targetSubplebbitAddress,
+      communityAddress: targetCommunityAddress,
     });
   }
 
@@ -334,7 +337,7 @@ export const resolveExternalQuoteTarget = async ({
     number: reference.number,
     onStatus,
     quoteDisplay,
-    subplebbitAddress: targetSubplebbitAddress,
+    communityAddress: targetCommunityAddress,
   });
 
   if (matchingThread?.cid) {
@@ -343,7 +346,7 @@ export const resolveExternalQuoteTarget = async ({
       cid: matchingThread.cid,
       comment: matchingThread,
       directories,
-      subplebbitAddress: targetSubplebbitAddress,
+      communityAddress: targetCommunityAddress,
     });
   }
 
@@ -353,7 +356,7 @@ export const resolveExternalQuoteTarget = async ({
     number: reference.number,
     onStatus,
     quoteDisplay,
-    subplebbitAddress: targetSubplebbitAddress,
+    communityAddress: targetCommunityAddress,
     threads,
   });
 
@@ -366,6 +369,6 @@ export const resolveExternalQuoteTarget = async ({
     cid: matchingReply.cid,
     comment: matchingReply,
     directories,
-    subplebbitAddress: targetSubplebbitAddress,
+    communityAddress: targetCommunityAddress,
   });
 };

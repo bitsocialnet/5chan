@@ -3,14 +3,14 @@ import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Comment, setAccount, useAccount, useAccountComment, useEditedComment } from '@bitsocialnet/bitsocial-react-hooks';
 import getShortAddress from '../../lib/get-short-address';
-import useSubplebbitsPagesStore from '@bitsocialnet/bitsocial-react-hooks/dist/stores/subplebbits-pages';
+import useCommunitiesPagesStore from '@bitsocialnet/bitsocial-react-hooks/dist/stores/communities-pages';
 import { getLinkMediaInfo } from '../../lib/utils/media-utils';
 import { isValidURL } from '../../lib/utils/url-utils';
 import { isAllView, isCatalogView, isModQueueView, isModView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
-import { useAccountSubplebbitAddresses } from '../../hooks/use-account-subplebbit-addresses';
+import { useAccountCommunityAddresses } from '../../hooks/use-account-community-addresses';
 import { useDirectories, useDirectoryByAddress } from '../../hooks/use-directories';
 import useIsMobile from '../../hooks/use-is-mobile';
-import { useResolvedSubplebbitAddress } from '../../hooks/use-resolved-subplebbit-address';
+import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
 import useFetchGifFirstFrame from '../../hooks/use-fetch-gif-first-frame';
 import usePublishPost from '../../hooks/use-publish-post';
 import usePublishReply from '../../hooks/use-publish-reply';
@@ -101,9 +101,9 @@ interface PostFormFieldsProps {
   isInSubscriptionsView: boolean;
   isInModView: boolean;
   directories: ReturnType<typeof useDirectories>;
-  accountSubplebbitAddresses: string[];
+  accountCommunityAddresses: string[];
   subscriptions: string[];
-  subplebbitAddress: string | undefined;
+  communityAddress: string | undefined;
   requirePostLinkIsMedia: boolean;
   onPublishReply: () => void;
   onPublishPost: () => void;
@@ -134,9 +134,9 @@ const PostFormFields = ({
   isInSubscriptionsView,
   isInModView,
   directories,
-  accountSubplebbitAddresses,
+  accountCommunityAddresses,
   subscriptions,
-  subplebbitAddress,
+  communityAddress,
   requirePostLinkIsMedia,
   onPublishReply,
   onPublishPost,
@@ -263,18 +263,18 @@ const PostFormFields = ({
       <tr>
         <td>{t('board')}</td>
         <td>
-          <select onChange={(e) => setPublishPostOptions({ subplebbitAddress: e.target.value })} value={subplebbitAddress}>
+          <select onChange={(e) => setPublishPostOptions({ communityAddress: e.target.value })} value={communityAddress}>
             <option value=''>{t('choose_one')}</option>
             {isInAllView &&
               directories
-                .filter((subplebbit) => subplebbit.title && subplebbit.address)
-                .map((subplebbit) => (
-                  <option key={subplebbit.address} value={subplebbit.address}>
-                    {subplebbit.title}
+                .filter((community) => community.title && community.address)
+                .map((community) => (
+                  <option key={community.address} value={community.address}>
+                    {community.title}
                   </option>
                 ))}
             {isInModView &&
-              accountSubplebbitAddresses.map((address: string) => (
+              accountCommunityAddresses.map((address: string) => (
                 <option key={address} value={address}>
                   {address && getShortAddress(address)}
                 </option>
@@ -300,10 +300,10 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
   const author = account?.author || {};
   const { displayName } = author || {};
   const accountComment = useAccountComment({ commentIndex: params?.accountCommentIndex as any });
-  const resolvedAddress = useResolvedSubplebbitAddress();
-  const subplebbitAddress = resolvedAddress || accountComment?.subplebbitAddress;
-  const { setPublishPostOptions, postIndex, publishPost, publishPostOptions, resetPublishPostOptions } = usePublishPost({ subplebbitAddress });
-  const effectiveBoardAddress = subplebbitAddress || publishPostOptions.subplebbitAddress;
+  const resolvedAddress = useResolvedCommunityAddress();
+  const communityAddress = resolvedAddress || accountComment?.communityAddress;
+  const { setPublishPostOptions, postIndex, publishPost, publishPostOptions, resetPublishPostOptions } = usePublishPost({ subplebbitAddress: communityAddress });
+  const effectiveBoardAddress = communityAddress || publishPostOptions.communityAddress;
 
   const textRef = useRef<HTMLTextAreaElement>(null);
   const urlRef = useRef<HTMLInputElement>(null);
@@ -321,7 +321,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
   const requirePostLinkIsMediaFeature = directoryEntry?.features?.requirePostLinkIsMedia;
   const requirePostLinkIsMedia = requirePostLinkIsMediaFeature === true || (requirePostLinkIsMediaFeature === undefined && (isInAllView || isInSubscriptionsView));
 
-  const accountSubplebbitAddresses = useAccountSubplebbitAddresses();
+  const accountCommunityAddresses = useAccountCommunityAddresses();
 
   const [lengthError, setLengthError] = useState<string | null>(null);
 
@@ -370,7 +370,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
       return;
     }
 
-    if ((isInAllView || isInSubscriptionsView || isInModView) && !publishPostOptions.subplebbitAddress) {
+    if ((isInAllView || isInSubscriptionsView || isInModView) && !publishPostOptions.communityAddress) {
       alert(t('no_board_selected_warning'));
       return;
     }
@@ -392,7 +392,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
   const isInPostView = isPostPageView(location.pathname, params);
   const cid = params?.commentCid as string;
   const { isResolvingExternalQuotes, publishReply, publishReplyError, publishReplyStateMessage, resetPublishReplyOptions, replyIndex, setPublishReplyOptions } =
-    usePublishReply({ cid, subplebbitAddress });
+    usePublishReply({ cid, subplebbitAddress: communityAddress, postCid });
 
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const content = e.target.value;
@@ -486,9 +486,9 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
             isInSubscriptionsView={isInSubscriptionsView}
             isInModView={isInModView}
             directories={directories}
-            accountSubplebbitAddresses={accountSubplebbitAddresses}
+            accountCommunityAddresses={accountCommunityAddresses}
             subscriptions={subscriptions}
-            subplebbitAddress={subplebbitAddress}
+            communityAddress={communityAddress}
             requirePostLinkIsMedia={requirePostLinkIsMedia}
             onPublishReply={onPublishReply}
             onPublishPost={onPublishPost}
@@ -516,7 +516,7 @@ const PostForm = () => {
   const isMobile = useIsMobile();
 
   const commentCid = params?.commentCid;
-  const post = useSubplebbitsPagesStore((state) => state.comments[commentCid as string]);
+  const post = useCommunitiesPagesStore((state) => state.comments[commentCid as string]);
   let comment: Comment = post;
   // handle pending mod or author edit
   const { editedComment } = useEditedComment({ comment });
@@ -530,15 +530,15 @@ const PostForm = () => {
   const [showForm, setShowForm] = useState(false);
 
   const accountComment = useAccountComment({ commentIndex: params?.accountCommentIndex as any });
-  const resolvedAddress = useResolvedSubplebbitAddress();
-  const subplebbitAddress = resolvedAddress || accountComment?.subplebbitAddress;
+  const resolvedAddress = useResolvedCommunityAddress();
+  const communityAddress = resolvedAddress || accountComment?.communityAddress;
 
   const shouldShowOfflineAlert = !(isInAllView || isInSubscriptionsView || isInModView) && showForm;
 
   if (isMobile) {
     return (
       <div className={styles.postFormMobile}>
-        {shouldShowOfflineAlert && <BoardOfflineAlert className={styles.offlineBoard} subplebbitAddress={subplebbitAddress} />}
+        {shouldShowOfflineAlert && <BoardOfflineAlert className={styles.offlineBoard} communityAddress={communityAddress} />}
         {isInModQueueView ? (
           <div className={styles.modQueueTitle}>{t('moderation_queue')}</div>
         ) : isThreadClosed ? (
@@ -562,7 +562,7 @@ const PostForm = () => {
 
   return (
     <div className={styles.postFormDesktop}>
-      {shouldShowOfflineAlert && <BoardOfflineAlert className={styles.offlineBoard} subplebbitAddress={subplebbitAddress} />}
+      {shouldShowOfflineAlert && <BoardOfflineAlert className={styles.offlineBoard} communityAddress={communityAddress} />}
       {isInModQueueView ? (
         <div className={styles.modQueueTitle}>{t('moderation_queue')}</div>
       ) : isThreadClosed ? (

@@ -118,7 +118,7 @@ describe('ExternalNumberQuoteLink', () => {
       comment: { cid: 'cid-77' },
       isUnavailable: false,
       route: '/fit/thread/cid-77',
-      subplebbitAddress: 'fit',
+      communityAddress: 'fit',
     });
 
     await act(async () => {

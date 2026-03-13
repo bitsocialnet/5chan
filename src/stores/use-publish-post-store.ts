@@ -5,6 +5,7 @@ import { alertChallengeVerificationFailed } from '../lib/utils/challenge-utils';
 type SubmitState = {
   author?: any | undefined;
   displayName?: string | undefined;
+  communityAddress: string | undefined;
   subplebbitAddress: string | undefined;
   title: string | undefined;
   content: string | undefined;
@@ -18,6 +19,7 @@ type SubmitState = {
 const usePublishPostStore = create<SubmitState>((set) => ({
   author: undefined,
   displayName: undefined,
+  communityAddress: undefined,
   subplebbitAddress: undefined,
   title: undefined,
   content: undefined,
@@ -27,6 +29,7 @@ const usePublishPostStore = create<SubmitState>((set) => ({
   setPublishPostStore: (comment: Comment) =>
     set(() => {
       const { subplebbitAddress, author, content, link, spoiler, title } = comment;
+      const communityAddress = (comment as { communityAddress?: string }).communityAddress || subplebbitAddress;
 
       const displayName = 'displayName' in comment ? comment.displayName || undefined : author?.displayName;
 
@@ -36,7 +39,8 @@ const usePublishPostStore = create<SubmitState>((set) => ({
       const updatedAuthor = displayName ? { ...baseAuthor, displayName } : baseAuthor;
 
       const publishCommentOptions: PublishCommentOptions = {
-        subplebbitAddress,
+        communityAddress,
+        subplebbitAddress: communityAddress,
         title,
         content,
         link,
@@ -57,7 +61,8 @@ const usePublishPostStore = create<SubmitState>((set) => ({
       return {
         author: updatedAuthor,
         displayName,
-        subplebbitAddress,
+        communityAddress,
+        subplebbitAddress: communityAddress,
         title,
         content,
         link,
@@ -70,6 +75,7 @@ const usePublishPostStore = create<SubmitState>((set) => ({
       author: undefined,
       displayName: undefined,
       subplebbitAddress: undefined,
+      communityAddress: undefined,
       title: undefined,
       content: undefined,
       link: undefined,

@@ -27,24 +27,24 @@ interface ReplyModalProps {
   threadNumber: number | null;
   postCid: string;
   scrollY: number;
-  subplebbitAddress: string;
+  communityAddress: string;
 }
 
-const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threadNumber, postCid, scrollY, subplebbitAddress }: ReplyModalProps) => {
+const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threadNumber, postCid, scrollY, communityAddress }: ReplyModalProps) => {
   const { t } = useTranslation();
   const location = useLocation();
   const params = useParams();
   const isInAllView = isAllView(location.pathname);
   const isInModView = isModView(location.pathname);
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, params);
-  const directoryEntry = useDirectoryByAddress(subplebbitAddress);
+  const directoryEntry = useDirectoryByAddress(communityAddress);
   const showSpoilerForReply = directoryEntry?.features?.noSpoilerReplies !== true;
   const requirePostLinkIsMediaFeature = directoryEntry?.features?.requirePostLinkIsMedia;
   const requirePostLinkIsMedia = requirePostLinkIsMediaFeature === true || (requirePostLinkIsMediaFeature === undefined && (isInAllView || isInSubscriptionsView));
   const { isResolvingExternalQuotes, publishReply, publishReplyError, publishReplyStateMessage, resetPublishReplyOptions, replyIndex, setPublishReplyOptions } =
     usePublishReply({
       cid: parentCid,
-      subplebbitAddress,
+      subplebbitAddress: communityAddress,
       postCid,
     });
   const account = useAccount();
@@ -375,7 +375,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
           publishReplyError && <div className={styles.error}>{publishReplyError}</div>
         )}
         {publishReplyStateMessage && <div className={styles.status}>{publishReplyStateMessage}</div>}
-        <BoardOfflineAlert className={styles.offlineBoard} hidden={isInAllView || isInSubscriptionsView || isInModView} subplebbitAddress={subplebbitAddress} />
+        <BoardOfflineAlert className={styles.offlineBoard} hidden={isInAllView || isInSubscriptionsView || isInModView} communityAddress={communityAddress} />
       </div>
     </animated.div>
   );

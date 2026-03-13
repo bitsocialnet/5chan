@@ -27,15 +27,15 @@ const ImageChallenge = ({ challenge }: { challenge: string }) => <img alt='' cla
 
 interface IframeChallengeProps {
   challenge: string;
-  shortSubplebbitAddress?: string;
-  subplebbitAddress?: string;
+  shortCommunityAddress?: string;
+  communityAddress?: string;
   readableUrl: string;
   onCancel: () => void;
   onDone: () => void;
   publicationDetails: React.ReactNode;
 }
 
-const IframeChallenge = ({ challenge, shortSubplebbitAddress, subplebbitAddress, readableUrl, onCancel, onDone, publicationDetails }: IframeChallengeProps) => {
+const IframeChallenge = ({ challenge, shortCommunityAddress, communityAddress, readableUrl, onCancel, onDone, publicationDetails }: IframeChallengeProps) => {
   const account = useAccount();
   const [theme] = useTheme();
   const [showIframeConfirmation, setShowIframeConfirmation] = useState(true);
@@ -101,7 +101,7 @@ const IframeChallenge = ({ challenge, shortSubplebbitAddress, subplebbitAddress,
         {publicationDetails}
         <div className={styles.challengeMediaWrapper}>
           <div className={`${styles.challengeMedia} ${styles.iframeChallengeWarning}`}>
-            {shortSubplebbitAddress || subplebbitAddress || 'unknown board'} wants to open {readableUrl || 'an external site'}
+            {shortCommunityAddress || communityAddress || 'unknown board'} wants to open {readableUrl || 'an external site'}
           </div>
         </div>
         <div className={`${styles.challengeFooter} ${styles.iframeFooter}`}>
@@ -146,10 +146,10 @@ const Challenge = ({ challenge, closeModal, abandonModal }: ChallengeProps) => {
   const publicationContent = publicationType === 'vote' ? getPublicationPreview(publicationTarget) : getPublicationPreview(publication);
   const votePreview = getVotePreview(publication);
 
-  const { author, content, link, title, parentCid, shortSubplebbitAddress, subplebbitAddress } = publication || {};
+  const { author, content, link, title, parentCid, shortCommunityAddress, communityAddress } = publication || {};
   const { displayName } = author || {};
   const parentAddress = useParentAddress(parentCid);
-  const subplebbit = shortSubplebbitAddress || subplebbitAddress;
+  const community = shortCommunityAddress || communityAddress;
 
   const [currentChallengeIndex, setCurrentChallengeIndex] = useState(0);
   const [answers, setAnswers] = useState<string[]>([]);
@@ -268,7 +268,7 @@ const Challenge = ({ challenge, closeModal, abandonModal }: ChallengeProps) => {
   }
 
   const extraTitleParts: string[] = [];
-  if (subplebbit) extraTitleParts.push(`p/${subplebbit}`);
+  if (community) extraTitleParts.push(`p/${community}`);
   if (publicationType === 'vote' && votePreview) extraTitleParts.push(votePreview.trim());
   if (publication?.parentCid) extraTitleParts.push(parentAddress ? `reply ${parentAddress}` : 'reply');
   if (publicationContent && publicationType !== 'vote') extraTitleParts.push(publicationContent);
@@ -318,8 +318,8 @@ const Challenge = ({ challenge, closeModal, abandonModal }: ChallengeProps) => {
           <IframeChallenge
             key={currentChallengeIndex}
             challenge={currentChallenge?.challenge ?? ''}
-            shortSubplebbitAddress={shortSubplebbitAddress}
-            subplebbitAddress={subplebbitAddress}
+            shortCommunityAddress={shortCommunityAddress}
+            communityAddress={communityAddress}
             readableUrl={readableUrl}
             onCancel={abandonModal}
             onDone={onIframeDone}

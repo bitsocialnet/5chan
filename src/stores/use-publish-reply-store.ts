@@ -23,7 +23,8 @@ const usePublishReplyStore = create<ReplyState>((set) => ({
 
   setPublishReplyStore: (comment: Comment) =>
     set((state) => {
-      const { subplebbitAddress, parentCid, author, content, link, spoiler } = comment;
+      const { parentCid, author, content, link, spoiler } = comment;
+      const communityAddress = (comment as { communityAddress?: string }).communityAddress || (comment as { subplebbitAddress?: string }).subplebbitAddress;
 
       const displayName = 'displayName' in comment ? comment.displayName || undefined : author?.displayName;
 
@@ -33,7 +34,8 @@ const usePublishReplyStore = create<ReplyState>((set) => ({
       const updatedAuthor = displayName ? { ...baseAuthor, displayName } : baseAuthor;
 
       const publishCommentOptions: PublishCommentOptions = {
-        subplebbitAddress,
+        communityAddress,
+        subplebbitAddress: communityAddress,
         parentCid,
         postCid: comment?.postCid || parentCid,
         content,

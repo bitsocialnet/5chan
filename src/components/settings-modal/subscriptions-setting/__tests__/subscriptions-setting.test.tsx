@@ -27,8 +27,8 @@ vi.mock('react-i18next', () => ({
 
 vi.mock('@bitsocialnet/bitsocial-react-hooks', () => ({
   useAccount: () => accountState.value,
-  useSubscribe: ({ subplebbitAddress }: { subplebbitAddress: string }) =>
-    subscriptionMocks.byAddress.get(subplebbitAddress) ?? {
+  useSubscribe: ({ communityAddress }: { communityAddress: string }) =>
+    subscriptionMocks.byAddress.get(communityAddress) ?? {
       subscribed: false,
       subscribe: vi.fn(),
       unsubscribe: vi.fn(),

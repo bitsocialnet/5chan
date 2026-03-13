@@ -9,7 +9,7 @@ const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise
 
 type TestComment = {
   cid?: string;
-  subplebbitAddress?: string;
+  communityAddress?: string;
 };
 
 const testState = vi.hoisted(() => ({
@@ -98,7 +98,7 @@ describe('PendingPost', () => {
     testState.accountCommentIndex = '0';
     testState.accountComments = [{}];
     testState.post = {
-      subplebbitAddress: 'music-posting.eth',
+      communityAddress: 'music-posting.eth',
     };
 
     await renderPendingPost();
@@ -124,7 +124,7 @@ describe('PendingPost', () => {
     testState.getBoardPathMock.mockReturnValue('mu');
     testState.post = {
       cid: 'post-cid',
-      subplebbitAddress: 'music-posting.eth',
+      communityAddress: 'music-posting.eth',
     };
 
     await renderPendingPost();

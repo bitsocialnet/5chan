@@ -20,6 +20,7 @@ type TestComment = {
   replyCount?: number;
   replies?: unknown[];
   state?: string;
+  communityAddress?: string;
   subplebbitAddress?: string;
   timestamp?: number;
   title?: string;
@@ -27,18 +28,19 @@ type TestComment = {
 
 const testState = vi.hoisted(() => ({
   cachedComments: {} as Record<string, TestComment>,
+  communityFieldAddress: undefined as string | undefined,
   commentsByCid: {} as Record<string, TestComment>,
   directories: [{ address: 'music-posting.eth', title: '/mu/ - Music' }] as Array<{ address: string; title?: string }>,
   editedCommentsByCid: {} as Record<string, TestComment | undefined>,
   isMobile: false,
   navigateMock: vi.fn(),
-  resolvedSubplebbitAddress: 'music-posting.eth' as string | undefined,
-  subplebbit: {
+  resolvedCommunityAddress: 'music-posting.eth' as string | undefined,
+  community: {
     error: undefined as Error | undefined,
     shortAddress: 'music-posting.eth',
     title: '/mu/ - Music',
   },
-  subplebbitSnapshot: {
+  communitySnapshot: {
     roles: {
       '0xmod': { role: 'admin' },
     },
@@ -64,22 +66,25 @@ vi.mock('@bitsocialnet/bitsocial-react-hooks', () => ({
   useEditedComment: ({ comment }: { comment?: TestComment }) => ({
     editedComment: comment?.cid ? testState.editedCommentsByCid[comment.cid] : undefined,
   }),
-  useSubplebbit: () => testState.subplebbit,
+  useCommunity: () => testState.community,
 }));
 
-vi.mock('@bitsocialnet/bitsocial-react-hooks/dist/stores/subplebbits-pages', () => ({
+vi.mock('@bitsocialnet/bitsocial-react-hooks/dist/stores/communities-pages', () => ({
   default: (selector: (state: { comments: typeof testState.cachedComments }) => unknown) =>
     selector({
       comments: testState.cachedComments,
     }),
 }));
 
-vi.mock('../../../hooks/use-stable-subplebbit', () => ({
-  useSubplebbitField: (_address: string | undefined, selector: (subplebbit: typeof testState.subplebbitSnapshot) => unknown) => selector(testState.subplebbitSnapshot),
+vi.mock('../../../hooks/use-stable-community', () => ({
+  useCommunityField: (address: string | undefined, selector: (community: typeof testState.communitySnapshot) => unknown) => {
+    testState.communityFieldAddress = address;
+    return selector(testState.communitySnapshot);
+  },
 }));
 
-vi.mock('../../../hooks/use-resolved-subplebbit-address', () => ({
-  useResolvedSubplebbitAddress: () => testState.resolvedSubplebbitAddress,
+vi.mock('../../../hooks/use-resolved-community-address', () => ({
+  useResolvedCommunityAddress: () => testState.resolvedCommunityAddress,
 }));
 
 vi.mock('../../../hooks/use-directories', async () => {
@@ -104,25 +109,25 @@ vi.mock('../../../components/footer', () => ({
   ThreadFooterFirstRow: ({
     isThreadClosed,
     postCid,
-    subplebbitAddress,
+    communityAddress,
     threadNumber,
   }: {
     isThreadClosed: boolean;
     postCid: string;
-    subplebbitAddress: string;
+    communityAddress: string;
     threadNumber?: number;
-  }) => createElement('div', { 'data-testid': 'thread-footer-first-row' }, `${postCid}:${threadNumber}:${subplebbitAddress}:${String(isThreadClosed)}`),
+  }) => createElement('div', { 'data-testid': 'thread-footer-first-row' }, `${postCid}:${threadNumber}:${communityAddress}:${String(isThreadClosed)}`),
   ThreadFooterMobile: ({
     isThreadClosed,
     postCid,
-    subplebbitAddress,
+    communityAddress,
     threadNumber,
   }: {
     isThreadClosed: boolean;
     postCid: string;
-    subplebbitAddress: string;
+    communityAddress: string;
     threadNumber?: number;
-  }) => createElement('div', { 'data-testid': 'thread-footer-mobile' }, `${postCid}:${threadNumber}:${subplebbitAddress}:${String(isThreadClosed)}`),
+  }) => createElement('div', { 'data-testid': 'thread-footer-mobile' }, `${postCid}:${threadNumber}:${communityAddress}:${String(isThreadClosed)}`),
   ThreadFooterStyleRow: () => createElement('div', { 'data-testid': 'thread-footer-style-row' }, 'thread-footer-style-row'),
 }));
 
@@ -182,17 +187,18 @@ describe('Post', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     testState.cachedComments = {};
+    testState.communityFieldAddress = undefined;
     testState.commentsByCid = {};
     testState.directories = [{ address: 'music-posting.eth', title: '/mu/ - Music' }];
     testState.editedCommentsByCid = {};
     testState.isMobile = false;
-    testState.resolvedSubplebbitAddress = 'music-posting.eth';
-    testState.subplebbit = {
+    testState.resolvedCommunityAddress = 'music-posting.eth';
+    testState.community = {
       error: undefined,
       shortAddress: 'music-posting.eth',
       title: '/mu/ - Music',
     };
-    testState.subplebbitSnapshot = {
+    testState.communitySnapshot = {
       roles: {
         '0xmod': { role: 'admin' },
       },
@@ -251,17 +257,17 @@ describe('Post', () => {
 
   it('renders edited posts through the desktop and mobile presenters with stable role data', async () => {
     testState.editedCommentsByCid = {
-      'post-1': { cid: 'edited-post', subplebbitAddress: 'music-posting.eth' },
+      'post-1': { cid: 'edited-post', communityAddress: 'music-posting.eth' },
     };
 
     await act(async () => {
-      root.render(createElement(Post, { post: { cid: 'post-1', subplebbitAddress: 'music-posting.eth' } }));
+      root.render(createElement(Post, { post: { cid: 'post-1', communityAddress: 'music-posting.eth' } }));
     });
     expect(container.querySelector('[data-testid="post-desktop"]')?.textContent).toBe('edited-post:none:1');
 
     testState.isMobile = true;
     await act(async () => {
-      root.render(createElement(Post, { post: { cid: 'post-2', subplebbitAddress: 'music-posting.eth' } }));
+      root.render(createElement(Post, { post: { cid: 'post-2', communityAddress: 'music-posting.eth' } }));
     });
     expect(container.querySelector('[data-testid="post-mobile"]')?.textContent).toBe('post-2:none:1');
   });
@@ -271,7 +277,7 @@ describe('Post', () => {
       'cached-cid': {
         cid: 'cached-cid',
         state: 'updating',
-        subplebbitAddress: 'music-posting.eth',
+        communityAddress: 'music-posting.eth',
       },
     };
     testState.cachedComments = {
@@ -280,7 +286,7 @@ describe('Post', () => {
         content: 'cached body',
         number: 42,
         replyCount: 0,
-        subplebbitAddress: 'music-posting.eth',
+        communityAddress: 'music-posting.eth',
         title: 'Cached thread',
       },
     };
@@ -290,6 +296,7 @@ describe('Post', () => {
     expect(container.querySelector('[data-testid="post-desktop"]')?.textContent).toBe('cached-cid:none:1');
     expect(container.querySelector('[data-testid="thread-footer-first-row"]')?.textContent).toBe('cached-cid:42:music-posting.eth:false');
     expect(container.querySelector('[data-testid="thread-footer-mobile"]')?.textContent).toBe('cached-cid:42:music-posting.eth:false');
+    expect(testState.communityFieldAddress).toBe('music-posting.eth');
     expect(document.title).toBe('/mu/ - Cached thread... - 5chan');
     expect(window.scrollTo).toHaveBeenCalledWith(0, 0);
     expect(HTMLElement.prototype.scrollIntoView).not.toHaveBeenCalled();
@@ -301,7 +308,7 @@ describe('Post', () => {
         cid: 'thread-cid',
         number: 8,
         replyCount: 0,
-        subplebbitAddress: 'music-posting.eth',
+        communityAddress: 'music-posting.eth',
         title: 'Thread title',
       },
     };
@@ -326,7 +333,7 @@ describe('Post', () => {
       'comment-1': {
         cid: 'comment-1',
         postCid: 'comment-1',
-        subplebbitAddress: 'other.eth',
+        communityAddress: 'other.eth',
         title: 'Other board thread',
       },
     };
@@ -336,13 +343,42 @@ describe('Post', () => {
     expect(testState.navigateMock).toHaveBeenCalledWith('/not-found', { replace: true });
   });
 
+  it('hydrates multiboard thread pages from a legacy-only comment address', async () => {
+    testState.resolvedCommunityAddress = undefined;
+    testState.commentsByCid = {
+      'legacy-cid': {
+        cid: 'legacy-cid',
+        state: 'updating',
+        subplebbitAddress: 'music-posting.eth',
+      },
+    };
+    testState.cachedComments = {
+      'legacy-cid': {
+        cid: 'legacy-cid',
+        content: 'cached body',
+        number: 7,
+        replyCount: 0,
+        subplebbitAddress: 'music-posting.eth',
+        title: 'Legacy thread',
+      },
+    };
+
+    await renderPostPage('/all/thread/legacy-cid');
+
+    expect(container.querySelector('[data-testid="post-desktop"]')?.textContent).toBe('legacy-cid:none:1');
+    expect(container.querySelector('[data-testid="thread-footer-first-row"]')?.textContent).toBe('legacy-cid:7:music-posting.eth:false');
+    expect(testState.communityFieldAddress).toBe('music-posting.eth');
+    expect(document.title).toBe('all - Legacy thread... - 5chan');
+    expect(testState.navigateMock).not.toHaveBeenCalled();
+  });
+
   it('renders reply pages using the root post, highlights the reply target, and shows thread errors', async () => {
     testState.commentsByCid = {
       'reply-cid': {
         cid: 'reply-cid',
         parentCid: 'root-cid',
         postCid: 'root-cid',
-        subplebbitAddress: 'music-posting.eth',
+        communityAddress: 'music-posting.eth',
       },
       'root-cid': {
         cid: 'root-cid',
@@ -351,7 +387,7 @@ describe('Post', () => {
         number: 99,
         replies: [],
         replyCount: 4,
-        subplebbitAddress: 'music-posting.eth',
+        communityAddress: 'music-posting.eth',
         title: 'Root thread',
       },
     };
@@ -369,7 +405,7 @@ describe('Post', () => {
         error: new Error('missing comment'),
       },
     };
-    testState.subplebbit = {
+    testState.community = {
       error: new Error('board failed'),
       shortAddress: 'music-posting.eth',
       title: '/mu/ - Music',

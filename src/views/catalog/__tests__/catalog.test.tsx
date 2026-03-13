@@ -13,7 +13,7 @@ type TestComment = {
   content?: string;
   title?: string;
   pinned?: boolean;
-  subplebbitAddress?: string;
+  communityAddress?: string;
   deleted?: boolean;
   postCid?: string;
   removed?: boolean;
@@ -54,13 +54,13 @@ const testState = vi.hoisted(() => ({
     paginationFeedPostsPerPage: 6,
   },
   resetMock: vi.fn(),
-  resolvedSubplebbitAddress: 'music-posting.eth' as string | undefined,
+  resolvedCommunityAddress: 'music-posting.eth' as string | undefined,
   searchText: '',
-  setCurrentSubplebbitAddressMock: vi.fn(),
+  setCurrentCommunityAddressMock: vi.fn(),
   setMatchedFilterMock: vi.fn(),
   setResetFunctionMock: vi.fn(),
   sortType: 'new' as 'active' | 'new',
-  subplebbit: {
+  community: {
     error: undefined as Error | undefined,
     shortAddress: 'music-posting.eth',
     state: 'ready',
@@ -74,7 +74,7 @@ function getCatalogFiltersState() {
     filterItems: testState.filterItems,
     incrementFilterCount: testState.incrementFilterCountMock,
     searchText: testState.searchText,
-    setCurrentSubplebbitAddress: testState.setCurrentSubplebbitAddressMock,
+    setCurrentSubplebbitAddress: testState.setCurrentCommunityAddressMock,
     setMatchedFilter: testState.setMatchedFilterMock,
   };
 }
@@ -101,7 +101,7 @@ vi.mock('@bitsocialnet/bitsocial-react-hooks', () => ({
     loadMore: testState.loadMoreMock,
     reset: testState.resetMock,
   }),
-  useSubplebbit: () => testState.subplebbit,
+  useCommunity: () => testState.community,
 }));
 
 vi.mock('react-virtuoso', () => ({
@@ -152,8 +152,8 @@ vi.mock('../../../hooks/use-filtered-directory-addresses', () => ({
   useFilteredDirectoryAddresses: () => testState.filteredDirectoryAddresses,
 }));
 
-vi.mock('../../../hooks/use-resolved-subplebbit-address', () => ({
-  useResolvedSubplebbitAddress: () => testState.resolvedSubplebbitAddress,
+vi.mock('../../../hooks/use-resolved-community-address', () => ({
+  useResolvedCommunityAddress: () => testState.resolvedCommunityAddress,
 }));
 
 vi.mock('../../../hooks/use-state-string', () => ({
@@ -192,8 +192,8 @@ vi.mock('../../../components/catalog-row', () => ({
 }));
 
 vi.mock('../../../components/footer', () => ({
-  CatalogFooterFirstRow: ({ subplebbitAddress }: { subplebbitAddress?: string }) =>
-    createElement('div', { 'data-testid': 'catalog-first-row' }, subplebbitAddress || 'multi'),
+  CatalogFooterFirstRow: ({ communityAddress }: { communityAddress?: string }) =>
+    createElement('div', { 'data-testid': 'catalog-first-row' }, communityAddress || 'multi'),
   PageFooterDesktop: ({ firstRow }: { firstRow: React.ReactNode }) => createElement('div', { 'data-testid': 'catalog-footer-desktop' }, firstRow),
   PageFooterMobile: ({ children }: { children: React.ReactNode }) => createElement('div', { 'data-testid': 'catalog-footer-mobile' }, children),
 }));
@@ -287,10 +287,10 @@ describe('Catalog', () => {
       maxGuiPages: 3,
       paginationFeedPostsPerPage: 6,
     };
-    testState.resolvedSubplebbitAddress = 'music-posting.eth';
+    testState.resolvedCommunityAddress = 'music-posting.eth';
     testState.searchText = '';
     testState.sortType = 'new';
-    testState.subplebbit = {
+    testState.community = {
       error: undefined,
       shortAddress: 'music-posting.eth',
       state: 'ready',
@@ -300,7 +300,7 @@ describe('Catalog', () => {
     testState.incrementFilterCountMock.mockReset();
     testState.loadMoreMock.mockReset();
     testState.resetMock.mockReset();
-    testState.setCurrentSubplebbitAddressMock.mockReset();
+    testState.setCurrentCommunityAddressMock.mockReset();
     testState.setMatchedFilterMock.mockReset();
     testState.setResetFunctionMock.mockReset();
     document.title = 'before';
@@ -317,9 +317,9 @@ describe('Catalog', () => {
 
   it('applies catalog filters, promotes top matches, and clears board filter state on unmount', async () => {
     testState.feed = [
-      { cid: 'boring-post', title: 'plain talk', content: 'nothing special', subplebbitAddress: 'music-posting.eth' },
-      { cid: 'hidden-post', title: 'cats and spoilers', content: 'spoiler content', subplebbitAddress: 'music-posting.eth' },
-      { cid: 'top-post', title: 'cats forever', content: 'hello world', subplebbitAddress: 'music-posting.eth' },
+      { cid: 'boring-post', title: 'plain talk', content: 'nothing special', communityAddress: 'music-posting.eth' },
+      { cid: 'hidden-post', title: 'cats and spoilers', content: 'spoiler content', communityAddress: 'music-posting.eth' },
+      { cid: 'top-post', title: 'cats forever', content: 'hello world', communityAddress: 'music-posting.eth' },
     ];
     testState.filterItems = [
       { count: 0, enabled: true, filteredCids: new Set(), hide: true, text: 'spoiler', top: false },
@@ -329,7 +329,7 @@ describe('Catalog', () => {
     await renderCatalog({ initialEntry: '/mu/catalog', routePath: '/:boardIdentifier/catalog' });
 
     expect(document.title).toBe('/mu/ - catalog - 5chan');
-    expect(testState.setCurrentSubplebbitAddressMock).toHaveBeenCalledWith('music-posting.eth');
+    expect(testState.setCurrentCommunityAddressMock).toHaveBeenCalledWith('music-posting.eth');
     expect(testState.clearMatchedFiltersMock).toHaveBeenCalled();
     expect(Array.from(container.querySelectorAll('[data-testid="catalog-row"]')).map((element) => element.textContent)).toEqual(['row:top-post', 'row:boring-post']);
     expect(testState.incrementFilterCountMock).toHaveBeenCalledWith(0, 'hidden-post', 'music-posting.eth');
@@ -338,14 +338,14 @@ describe('Catalog', () => {
 
     act(() => root.unmount());
 
-    expect(testState.setCurrentSubplebbitAddressMock).toHaveBeenLastCalledWith(null);
+    expect(testState.setCurrentCommunityAddressMock).toHaveBeenLastCalledWith(null);
     expect(testState.clearMatchedFiltersMock).toHaveBeenCalledTimes(3);
 
     root = createRoot(container);
   });
 
   it('canonicalizes multiboard catalog paths and keeps load-more wired for infinite scrolling', async () => {
-    testState.feed = [{ cid: 'all-post', title: 'one', subplebbitAddress: 'music-posting.eth' }];
+    testState.feed = [{ cid: 'all-post', title: 'one', communityAddress: 'music-posting.eth' }];
     testState.hasMore = true;
 
     await renderCatalog({

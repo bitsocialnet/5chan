@@ -1,7 +1,9 @@
 import { useMemo } from 'react';
-import { useAccountComments, Subplebbit } from '@bitsocialnet/bitsocial-react-hooks';
-const useCatalogFeedRows = (columnCount: number, feed: any, isFeedLoaded: boolean, subplebbit: Subplebbit) => {
-  const { address } = subplebbit || {};
+import { useAccountComments, type Community } from '@bitsocialnet/bitsocial-react-hooks';
+import { getCommentCommunityAddress } from '../lib/utils/comment-utils';
+
+const useCatalogFeedRows = (columnCount: number, feed: any, isFeedLoaded: boolean, community: Community) => {
+  const { address } = community || {};
 
   const { accountComments } = useAccountComments();
 
@@ -14,7 +16,8 @@ const useCatalogFeedRows = (columnCount: number, feed: any, isFeedLoaded: boolea
 
     // show account comments instantly in the feed once published (cid defined), instead of waiting for the feed to update
     const filteredComments = accountComments.filter((comment) => {
-      const { cid, deleted, postCid, removed, state, subplebbitAddress, timestamp } = comment || {};
+      const { cid, deleted, postCid, removed, state, timestamp } = comment || {};
+      const communityAddress = getCommentCommunityAddress(comment);
 
       return (
         !deleted &&
@@ -23,7 +26,7 @@ const useCatalogFeedRows = (columnCount: number, feed: any, isFeedLoaded: boolea
         state === 'succeeded' &&
         cid &&
         cid === postCid &&
-        subplebbitAddress === address &&
+        communityAddress === address &&
         !_feed.some((feedItem) => feedItem.cid === cid)
       );
     });

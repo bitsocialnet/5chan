@@ -181,7 +181,7 @@ const Thumbnail = ({
       onClick={() => setShowThumbnail(false)}
     />
   ) : isOutOfFeed ? (
-    <span className={`${isFloatingEmbed ? styles.floatingEmbed : styles.subplebbitAvatar}`}>{thumbnailComponent}</span>
+    <span className={`${isFloatingEmbed ? styles.floatingEmbed : styles.communityAvatar}`}>{thumbnailComponent}</span>
   ) : isMobile || isReply ? (
     <span className={`${styles.thumbnailSmall} ${thumbnailSmallPadding}`} style={thumbnailDimensions}>
       {thumbnailComponent}
@@ -311,7 +311,7 @@ const Image = ({ commentMediaInfo, disableToggle = false, displayHeight, display
     const spoilerDimensions = { '--width': '150px', '--height': '150px' } as React.CSSProperties;
     return (
       <span
-        className={`${isOutOfFeed ? styles.subplebbitAvatar : styles.thumbnailBig} ${styles.thumbnail} ${isImageExpanded && isMobile ? styles.removeFloat : ''}`}
+        className={`${isOutOfFeed ? styles.communityAvatar : styles.thumbnailBig} ${styles.thumbnail} ${isImageExpanded && isMobile ? styles.removeFloat : ''}`}
         style={spoilerDimensions}
       >
         <img
@@ -335,7 +335,7 @@ const Image = ({ commentMediaInfo, disableToggle = false, displayHeight, display
   return isMobile ? (
     <span className={`${styles.thumbnail} ${isImageExpanded && isMobile ? styles.removeFloat : ''}`}>
       <span
-        className={isImageExpanded ? mediaClass : `${isOutOfFeed ? styles.subplebbitAvatar : styles.thumbnailSmall} ${thumbnailSmallPadding}`}
+        className={isImageExpanded ? mediaClass : `${isOutOfFeed ? styles.communityAvatar : styles.thumbnailSmall} ${thumbnailSmallPadding}`}
         style={isImageExpanded ? {} : thumbnailDimensions}
       >
         {hasError ? (
@@ -374,7 +374,7 @@ const Image = ({ commentMediaInfo, disableToggle = false, displayHeight, display
     </span>
   ) : (
     <span
-      className={isImageExpanded ? mediaClass : `${isOutOfFeed ? styles.subplebbitAvatar : styles.thumbnailBig} ${styles.thumbnail}`}
+      className={isImageExpanded ? mediaClass : `${isOutOfFeed ? styles.communityAvatar : styles.thumbnailBig} ${styles.thumbnail}`}
       style={isImageExpanded ? {} : thumbnailDimensions}
     >
       {hasError ? (

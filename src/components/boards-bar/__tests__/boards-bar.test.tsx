@@ -9,8 +9,8 @@ import BoardsBar from '../boards-bar';
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
 
 const testState = vi.hoisted(() => ({
-  accountComment: undefined as { subplebbitAddress?: string } | undefined,
-  accountSubplebbitAddresses: ['music-posting.eth'] as string[],
+  accountComment: undefined as { communityAddress?: string; subplebbitAddress?: string } | undefined,
+  accountCommunityAddresses: ['music-posting.eth'] as string[],
   directories: [
     { address: 'music-posting.eth', title: '/mu/ - Music' },
     { address: 'tech-posting.eth', title: '/g/ - Technology' },
@@ -21,7 +21,7 @@ const testState = vi.hoisted(() => ({
   openBoardsBarEditModalMock: vi.fn(),
   openCreateBoardModalMock: vi.fn(),
   openDirectoryModalMock: vi.fn(),
-  resolvedSubplebbitAddress: 'music-posting.eth' as string | undefined,
+  resolvedCommunityAddress: 'music-posting.eth' as string | undefined,
   showSubscriptionsInBoardsBar: true,
   subscriptions: ['custom.eth'] as string[],
   visibleDirectories: new Set<string>(['mu']),
@@ -68,8 +68,8 @@ vi.mock('@bitsocialnet/bitsocial-react-hooks/dist/stores/accounts', () => ({
     }),
 }));
 
-vi.mock('../../../hooks/use-account-subplebbit-addresses', () => ({
-  useAccountSubplebbitAddresses: () => testState.accountSubplebbitAddresses,
+vi.mock('../../../hooks/use-account-community-addresses', () => ({
+  useAccountCommunityAddresses: () => testState.accountCommunityAddresses,
 }));
 
 vi.mock('../../../hooks/use-directories', async () => {
@@ -81,13 +81,13 @@ vi.mock('../../../hooks/use-directories', async () => {
   };
 });
 
-vi.mock('../../../hooks/use-resolved-subplebbit-address', () => ({
-  useBoardPath: (subplebbitAddress: string | undefined) => {
-    if (subplebbitAddress === 'music-posting.eth') return 'mu';
-    if (subplebbitAddress === 'tech-posting.eth') return 'g';
-    return subplebbitAddress;
+vi.mock('../../../hooks/use-resolved-community-address', () => ({
+  useBoardPath: (communityAddress: string | undefined) => {
+    if (communityAddress === 'music-posting.eth') return 'mu';
+    if (communityAddress === 'tech-posting.eth') return 'g';
+    return communityAddress;
   },
-  useResolvedSubplebbitAddress: () => testState.resolvedSubplebbitAddress,
+  useResolvedCommunityAddress: () => testState.resolvedCommunityAddress,
 }));
 
 vi.mock('../../../stores/use-create-board-modal-store', () => ({
@@ -150,7 +150,7 @@ describe('BoardsBar', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     testState.accountComment = undefined;
-    testState.accountSubplebbitAddresses = ['music-posting.eth'];
+    testState.accountCommunityAddresses = ['music-posting.eth'];
     testState.directories = [
       { address: 'music-posting.eth', title: '/mu/ - Music' },
       { address: 'tech-posting.eth', title: '/g/ - Technology' },
@@ -161,7 +161,7 @@ describe('BoardsBar', () => {
     testState.openCreateBoardModalMock.mockReset();
     testState.openDirectoryModalMock.mockReset();
     testState.initializeVisibilityMock.mockReset();
-    testState.resolvedSubplebbitAddress = 'music-posting.eth';
+    testState.resolvedCommunityAddress = 'music-posting.eth';
     testState.showSubscriptionsInBoardsBar = true;
     testState.subscriptions = ['custom.eth'];
     testState.visibleDirectories = new Set(['mu']);
@@ -257,5 +257,16 @@ describe('BoardsBar', () => {
     });
 
     expect(mobileNav?.style.transform).toBe('translateY(-23px)');
+  });
+
+  it('keeps the mobile board context for legacy account comments', async () => {
+    testState.resolvedCommunityAddress = undefined;
+    testState.accountComment = { subplebbitAddress: 'music-posting.eth' };
+
+    await renderBoardsBar('/pending/7');
+
+    const select = container.querySelector('select');
+    expect(select).toBeTruthy();
+    expect(Array.from(select?.querySelectorAll('option') ?? []).some((option) => option.value === 'mu')).toBe(true);
   });
 });

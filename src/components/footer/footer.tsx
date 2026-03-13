@@ -62,22 +62,22 @@ export const StyleOnlyFooterFirstRow = () => {
  * -------------------------------------------------------------------------- */
 
 interface CatalogFooterFirstRowProps {
-  subplebbitAddress?: string;
+  communityAddress?: string;
   isInAllView?: boolean;
   isInSubscriptionsView?: boolean;
   isInModView?: boolean;
 }
 
-export const CatalogFooterFirstRow = ({ subplebbitAddress, isInAllView = false, isInSubscriptionsView = false, isInModView = false }: CatalogFooterFirstRowProps) => {
+export const CatalogFooterFirstRow = ({ communityAddress, isInAllView = false, isInSubscriptionsView = false, isInModView = false }: CatalogFooterFirstRowProps) => {
   const { t } = useTranslation();
   return (
     <div className={styles.footerRow}>
       <div className={styles.footerLeft}>
         <span>
-          [<ReturnButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />]
+          [<ReturnButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />]
         </span>
         <span>
-          [<CatalogButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />]
+          [<CatalogButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />]
         </span>
         <span>
           [<TopButton />]
@@ -117,12 +117,12 @@ export const ThreadFooterStyleRow = () => {
 interface ThreadFooterFirstRowProps {
   postCid: string;
   threadNumber: number | undefined;
-  subplebbitAddress: string;
+  communityAddress: string;
   /** Thread closed - disable Post a Reply */
   isThreadClosed?: boolean;
 }
 
-export const ThreadFooterFirstRow = ({ postCid, threadNumber, subplebbitAddress, isThreadClosed = false }: ThreadFooterFirstRowProps) => {
+export const ThreadFooterFirstRow = ({ postCid, threadNumber, communityAddress, isThreadClosed = false }: ThreadFooterFirstRowProps) => {
   const { t } = useTranslation();
   const location = useLocation();
   const params = useParams();
@@ -134,17 +134,17 @@ export const ThreadFooterFirstRow = ({ postCid, threadNumber, subplebbitAddress,
 
   const handlePostReplyClick = () => {
     if (isThreadClosed) return;
-    openReplyModalEmpty(postCid, threadNumber, subplebbitAddress);
+    openReplyModalEmpty(postCid, threadNumber, communityAddress);
   };
 
   return (
     <div className={styles.threadRow}>
       <div className={styles.threadLeft}>
         <span>
-          [<ReturnButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />]
+          [<ReturnButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />]
         </span>
         <span>
-          [<CatalogButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />]
+          [<CatalogButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />]
         </span>
         <span>
           [<TopButton />]
@@ -196,11 +196,11 @@ export const PageFooterMobile = ({ children }: { children: React.ReactNode }) =>
 interface ThreadFooterMobileProps {
   postCid: string;
   threadNumber: number | undefined;
-  subplebbitAddress: string;
+  communityAddress: string;
   isThreadClosed?: boolean;
 }
 
-export const ThreadFooterMobile = ({ postCid, threadNumber, subplebbitAddress, isThreadClosed = false }: ThreadFooterMobileProps) => {
+export const ThreadFooterMobile = ({ postCid, threadNumber, communityAddress, isThreadClosed = false }: ThreadFooterMobileProps) => {
   const { t } = useTranslation();
   const location = useLocation();
   const params = useParams();
@@ -213,13 +213,13 @@ export const ThreadFooterMobile = ({ postCid, threadNumber, subplebbitAddress, i
   const post = useComment({ commentCid: postCid });
   const { replyCount } = post || {};
   const linkCount = useCountLinksInReplies(post);
-  const directoryEntry = useDirectoryByAddress(subplebbitAddress);
+  const directoryEntry = useDirectoryByAddress(communityAddress);
   const requirePostLinkIsMedia = directoryEntry?.features?.requirePostLinkIsMedia === true;
-  const pageNumber = usePostPageNumber({ subplebbitAddress, postCid, enabled: true });
+  const pageNumber = usePostPageNumber({ subplebbitAddress: communityAddress, postCid, enabled: true });
 
   const handlePostReplyClick = () => {
     if (isThreadClosed) return;
-    openReplyModalEmpty(postCid, threadNumber, subplebbitAddress);
+    openReplyModalEmpty(postCid, threadNumber, communityAddress);
   };
 
   return (
@@ -231,8 +231,8 @@ export const ThreadFooterMobile = ({ postCid, threadNumber, subplebbitAddress, i
           </button>
         </div>
         <div className={styles.mobileFooterButtons}>
-          <ReturnButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
-          <CatalogButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
+          <ReturnButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
+          <CatalogButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
           <TopButton />
         </div>
         <div className={styles.mobileFooterButtons}>

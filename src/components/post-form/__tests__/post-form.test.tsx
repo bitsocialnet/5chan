@@ -13,8 +13,8 @@ const testState = vi.hoisted(() => ({
     author: { displayName: 'Alice' },
     subscriptions: ['music-posting.eth'],
   },
-  accountComment: undefined as { subplebbitAddress?: string } | undefined,
-  accountSubplebbitAddresses: ['mod.eth'] as string[],
+  accountComment: undefined as { communityAddress?: string } | undefined,
+  accountCommunityAddresses: ['mod.eth'] as string[],
   comments: {} as Record<string, { deleted?: boolean; locked?: boolean; postCid?: string; removed?: boolean }>,
   directories: [
     { address: 'music-posting.eth', features: {}, title: '/mu/ - Music' },
@@ -36,12 +36,12 @@ const testState = vi.hoisted(() => ({
   replyIndex: undefined as number | undefined,
   resetPublishPostOptionsMock: vi.fn(),
   resetPublishReplyOptionsMock: vi.fn(),
-  resolvedSubplebbitAddress: undefined as string | undefined,
+  resolvedCommunityAddress: undefined as string | undefined,
   setAccountMock: vi.fn(),
   setPublishPostOptionsMock: vi.fn(),
   setPublishReplyOptionsMock: vi.fn(),
   showUploadControls: true,
-  subplebbits: {
+  communities: {
     'music-posting.eth': { address: 'music-posting.eth' },
   } as Record<string, unknown>,
   uploadComplete: undefined as ((uploadedUrl: string) => void) | undefined,
@@ -70,16 +70,16 @@ vi.mock('@bitsocialnet/bitsocial-react-hooks', () => ({
   useEditedComment: () => ({ editedComment: testState.editedComment }),
 }));
 
-vi.mock('@bitsocialnet/bitsocial-react-hooks/dist/stores/subplebbits', () => ({
-  default: (selector: (state: { subplebbits: typeof testState.subplebbits }) => unknown) => selector({ subplebbits: testState.subplebbits }),
+vi.mock('@bitsocialnet/bitsocial-react-hooks/dist/stores/communities', () => ({
+  default: (selector: (state: { communities: typeof testState.communities }) => unknown) => selector({ communities: testState.communities }),
 }));
 
-vi.mock('@bitsocialnet/bitsocial-react-hooks/dist/stores/subplebbits-pages', () => ({
+vi.mock('@bitsocialnet/bitsocial-react-hooks/dist/stores/communities-pages', () => ({
   default: (selector: (state: { comments: typeof testState.comments }) => unknown) => selector({ comments: testState.comments }),
 }));
 
-vi.mock('../../../hooks/use-account-subplebbit-addresses', () => ({
-  useAccountSubplebbitAddresses: () => testState.accountSubplebbitAddresses,
+vi.mock('../../../hooks/use-account-community-addresses', () => ({
+  useAccountCommunityAddresses: () => testState.accountCommunityAddresses,
 }));
 
 vi.mock('../../../hooks/use-directories', () => ({
@@ -88,8 +88,8 @@ vi.mock('../../../hooks/use-directories', () => ({
   normalizeBoardAddress: (address: string) => address.replace(/\.(bso|eth)$/, ''),
 }));
 
-vi.mock('../../../hooks/use-resolved-subplebbit-address', () => ({
-  useResolvedSubplebbitAddress: () => testState.resolvedSubplebbitAddress,
+vi.mock('../../../hooks/use-resolved-community-address', () => ({
+  useResolvedCommunityAddress: () => testState.resolvedCommunityAddress,
 }));
 
 vi.mock('../../../hooks/use-fetch-gif-first-frame', () => ({
@@ -98,7 +98,7 @@ vi.mock('../../../hooks/use-fetch-gif-first-frame', () => ({
   }),
 }));
 
-vi.mock('../../../hooks/use-is-subplebbit-offline', () => ({
+vi.mock('../../../hooks/use-is-community-offline', () => ({
   default: () => ({
     isOffline: testState.isOffline,
     isOnlineStatusLoading: testState.isOnlineStatusLoading,
@@ -114,8 +114,8 @@ vi.mock('../../../hooks/use-publish-post', async () => {
   const React = await vi.importActual<typeof import('react')>('react');
 
   return {
-    default: ({ subplebbitAddress }: { subplebbitAddress?: string }) => {
-      const [publishPostOptions, setPublishPostOptionsState] = React.useState<Record<string, unknown>>(subplebbitAddress ? { subplebbitAddress } : {});
+    default: ({ communityAddress }: { communityAddress?: string }) => {
+      const [publishPostOptions, setPublishPostOptionsState] = React.useState<Record<string, unknown>>(communityAddress ? { communityAddress } : {});
 
       return {
         postIndex: testState.postIndex,
@@ -135,11 +135,11 @@ vi.mock('../../../hooks/use-publish-reply', async () => {
   const React = await vi.importActual<typeof import('react')>('react');
 
   return {
-    default: ({ cid, postCid, subplebbitAddress }: { cid: string; postCid?: string; subplebbitAddress: string }) => {
+    default: ({ cid, postCid, communityAddress }: { cid: string; postCid?: string; communityAddress: string }) => {
       const [publishReplyOptions, setPublishReplyOptionsState] = React.useState<Record<string, unknown>>({
         parentCid: cid,
         postCid: postCid ?? cid,
-        subplebbitAddress,
+        communityAddress,
       });
 
       return {
@@ -269,7 +269,7 @@ describe('PostForm', () => {
       subscriptions: ['music-posting.eth'],
     };
     testState.accountComment = undefined;
-    testState.accountSubplebbitAddresses = ['mod.eth'];
+    testState.accountCommunityAddresses = ['mod.eth'];
     testState.comments = {};
     testState.directories = [
       { address: 'music-posting.eth', features: {}, title: '/mu/ - Music' },
@@ -285,12 +285,12 @@ describe('PostForm', () => {
     testState.publishReplyError = null;
     testState.publishReplyStateMessage = null;
     testState.replyIndex = undefined;
-    testState.resolvedSubplebbitAddress = undefined;
+    testState.resolvedCommunityAddress = undefined;
     testState.showUploadControls = true;
     testState.uploadComplete = undefined;
     testState.uploadMode = 'always';
     testState.uploadedFileName = 'picked.png';
-    testState.subplebbits = {
+    testState.communities = {
       'music-posting.eth': { address: 'music-posting.eth' },
     };
     testState.handleUploadMock.mockReset();
@@ -382,12 +382,12 @@ describe('PostForm', () => {
     await clickByText(table as HTMLTableElement, 'post');
 
     expect(testState.publishPostMock).toHaveBeenCalledTimes(1);
-    expect(testState.setPublishPostOptionsMock).toHaveBeenCalledWith({ subplebbitAddress: 'music-posting.eth' });
+    expect(testState.setPublishPostOptionsMock).toHaveBeenCalledWith({ communityAddress: 'music-posting.eth' });
   });
 
   it('redirects to the pending route when a post publish index is already available on mount', async () => {
     testState.postIndex = 7;
-    testState.resolvedSubplebbitAddress = 'music-posting.eth';
+    testState.resolvedCommunityAddress = 'music-posting.eth';
 
     await renderPostForm('/mu');
     await clickByText(container, 'start_new_thread');
@@ -404,7 +404,7 @@ describe('PostForm', () => {
       },
     };
     testState.replyIndex = 4;
-    testState.resolvedSubplebbitAddress = 'music-posting.eth';
+    testState.resolvedCommunityAddress = 'music-posting.eth';
 
     await renderPostForm('/mu/thread/thread-cid');
     await clickByText(container, 'post_a_reply');
@@ -421,7 +421,7 @@ describe('PostForm', () => {
       },
     };
     testState.isOffline = true;
-    testState.resolvedSubplebbitAddress = 'music-posting.eth';
+    testState.resolvedCommunityAddress = 'music-posting.eth';
 
     await renderPostForm('/mu/thread/thread-cid');
     await clickByText(container, 'post_a_reply');

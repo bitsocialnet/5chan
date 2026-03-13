@@ -9,23 +9,23 @@ const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise
 
 const testState = vi.hoisted(() => ({
   clientsStates: {} as Record<string, string[]>,
-  subplebbit: undefined as
+  community: undefined as
     | {
         publishingState?: string;
         state?: string;
         updatingState?: string;
       }
     | undefined,
-  subplebbitsStates: {} as Record<string, { clientUrls: string[]; subplebbitAddresses: string[] }>,
+  communitiesStates: {} as Record<string, { clientUrls: string[]; communityAddresses: string[] }>,
 }));
 
 vi.mock('@bitsocialnet/bitsocial-react-hooks', () => ({
   useClientsStates: () => ({
     states: testState.clientsStates,
   }),
-  useSubplebbit: () => testState.subplebbit,
-  useSubplebbitsStates: () => ({
-    states: testState.subplebbitsStates,
+  useCommunity: () => testState.community,
+  useCommunitiesStates: () => ({
+    states: testState.communitiesStates,
   }),
 }));
 
@@ -63,8 +63,8 @@ describe('use-state-string', () => {
   beforeEach(() => {
     latestValue = undefined;
     testState.clientsStates = {};
-    testState.subplebbit = undefined;
-    testState.subplebbitsStates = {};
+    testState.community = undefined;
+    testState.communitiesStates = {};
     container = document.createElement('div');
     document.body.appendChild(container);
     root = createRoot(container);
@@ -101,7 +101,7 @@ describe('use-state-string', () => {
   });
 
   it('sanitizes single-board feed state strings to board wording', () => {
-    testState.subplebbit = {
+    testState.community = {
       state: 'updating',
       updatingState: 'fetching-ipfs',
     };
@@ -114,22 +114,22 @@ describe('use-state-string', () => {
   });
 
   it('aggregates multi-board feed states across address resolution, threads, and pages', () => {
-    testState.subplebbitsStates = {
+    testState.communitiesStates = {
       'fetching-ipfs': {
         clientUrls: ['https://ipfs.io'],
-        subplebbitAddresses: ['music-posting.eth'],
+        communityAddresses: ['music-posting.eth'],
       },
       'fetching-ipns': {
         clientUrls: ['https://gateway.example.com'],
-        subplebbitAddresses: ['music-posting.eth', 'tech-posting.eth'],
+        communityAddresses: ['music-posting.eth', 'tech-posting.eth'],
       },
       'page-1': {
         clientUrls: ['https://gateway.example.com', 'https://ipfs.io'],
-        subplebbitAddresses: ['music-posting.eth'],
+        communityAddresses: ['music-posting.eth'],
       },
       'resolving-address': {
         clientUrls: ['https://ens.example.com'],
-        subplebbitAddresses: ['music-posting.eth', 'tech-posting.eth'],
+        communityAddresses: ['music-posting.eth', 'tech-posting.eth'],
       },
     };
 

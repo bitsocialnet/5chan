@@ -13,8 +13,8 @@ const testState = vi.hoisted(() => ({
   directories: [] as Array<{ address: string; title?: string }>,
   directoryAddresses: [] as string[],
   navigateMock: vi.fn(),
-  subplebbits: {} as Record<string, unknown>,
-  subplebbitsStats: {} as Record<string, { allPostCount?: number; weekActiveUserCount?: number }>,
+  communities: {} as Record<string, unknown>,
+  communityStats: {} as Record<string, { allPostCount?: number; weekActiveUserCount?: number }>,
 }));
 
 vi.mock('react-i18next', () => ({
@@ -33,7 +33,7 @@ vi.mock('react-router-dom', async () => {
 });
 
 vi.mock('@bitsocialnet/bitsocial-react-hooks', () => ({
-  useSubplebbits: () => ({ subplebbits: testState.subplebbits }),
+  useCommunities: () => ({ communities: testState.communities }),
 }));
 
 vi.mock('../../../hooks/use-directories', () => ({
@@ -41,11 +41,10 @@ vi.mock('../../../hooks/use-directories', () => ({
   useDirectoryAddresses: () => testState.directoryAddresses,
 }));
 
-vi.mock('../../../hooks/use-subplebbits-stats', () => ({
-  SubplebbitStatsCollector: ({ subplebbitAddress }: { subplebbitAddress: string }) =>
-    createElement('div', { 'data-testid': 'stats-collector', 'data-address': subplebbitAddress }),
-  useSubplebbitsStatsStore: (selector: (state: { subplebbitsStats: typeof testState.subplebbitsStats }) => unknown) =>
-    selector({ subplebbitsStats: testState.subplebbitsStats }),
+vi.mock('../../../hooks/use-communities-stats', () => ({
+  CommunityStatsCollector: ({ communityAddress }: { communityAddress: string }) =>
+    createElement('div', { 'data-testid': 'stats-collector', 'data-address': communityAddress }),
+  useCommunitiesStatsStore: (selector: (state: { communityStats: typeof testState.communityStats }) => unknown) => selector({ communityStats: testState.communityStats }),
 }));
 
 vi.mock('../../../stores/use-directory-modal-store', () => ({
@@ -59,8 +58,8 @@ vi.mock('../boards-list', () => ({
 }));
 
 vi.mock('../popular-threads-box', () => ({
-  default: ({ directories, subplebbits }: { directories: unknown[]; subplebbits: Record<string, unknown> }) =>
-    createElement('div', { 'data-testid': 'popular-threads-box' }, `popular:${directories.length}:${Object.keys(subplebbits).length}`),
+  default: ({ directories, communities }: { directories: unknown[]; communities: Record<string, unknown> }) =>
+    createElement('div', { 'data-testid': 'popular-threads-box' }, `popular:${directories.length}:${Object.keys(communities).length}`),
 }));
 
 vi.mock('../../../components/site-legal-meta', () => ({
@@ -95,11 +94,11 @@ describe('Home', () => {
       { address: 'tech-posting.eth', title: '/g/ - Technology' },
     ];
     testState.directoryAddresses = ['music-posting.eth', 'tech-posting.eth'];
-    testState.subplebbits = {
+    testState.communities = {
       'music-posting.eth': { address: 'music-posting.eth' },
       'tech-posting.eth': { address: 'tech-posting.eth' },
     };
-    testState.subplebbitsStats = {
+    testState.communityStats = {
       'music-posting.eth': { allPostCount: 5, weekActiveUserCount: 2 },
       'tech-posting.eth': { allPostCount: 7, weekActiveUserCount: 5 },
     };

@@ -143,7 +143,7 @@ describe('footer', () => {
         createElement(StyleOnlyFooterFirstRow),
         createElement(CatalogFooterFirstRow, {
           isInAllView: true,
-          subplebbitAddress: 'music-posting.eth',
+          communityAddress: 'music-posting.eth',
         }),
         createElement(ThreadFooterStyleRow),
         createElement(PageFooterMobile, {
@@ -165,7 +165,7 @@ describe('footer', () => {
     await renderWithRouter(
       createElement(ThreadFooterFirstRow, {
         postCid: 'post-cid',
-        subplebbitAddress: 'music-posting.eth',
+        communityAddress: 'music-posting.eth',
         threadNumber: 42,
       }),
       '/all/thread/post-cid',
@@ -184,7 +184,7 @@ describe('footer', () => {
       createElement(ThreadFooterFirstRow, {
         isThreadClosed: true,
         postCid: 'post-cid',
-        subplebbitAddress: 'music-posting.eth',
+        communityAddress: 'music-posting.eth',
         threadNumber: 42,
       }),
       '/all/thread/post-cid',
@@ -204,7 +204,7 @@ describe('footer', () => {
     await renderWithRouter(
       createElement(ThreadFooterMobile, {
         postCid: 'post-cid',
-        subplebbitAddress: 'music-posting.eth',
+        communityAddress: 'music-posting.eth',
         threadNumber: 55,
       }),
     );
@@ -229,7 +229,7 @@ describe('footer', () => {
       createElement(ThreadFooterMobile, {
         isThreadClosed: true,
         postCid: 'post-cid',
-        subplebbitAddress: 'music-posting.eth',
+        communityAddress: 'music-posting.eth',
         threadNumber: 55,
       }),
     );

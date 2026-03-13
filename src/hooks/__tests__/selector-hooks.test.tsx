@@ -25,7 +25,7 @@ const testState = vi.hoisted(() => ({
 
 vi.mock('@bitsocialnet/bitsocial-react-hooks', () => ({
   useAccount: () => testState.account,
-  useAccountSubplebbits: () => ({ accountSubplebbits: testState.accountSubplebbits }),
+  useAccountCommunities: () => ({ accountCommunities: testState.accountSubplebbits }),
 }));
 
 vi.mock('@bitsocialnet/bitsocial-react-hooks/dist/lib/utils', () => ({
@@ -37,8 +37,8 @@ vi.mock('../use-directories', () => ({
   useDirectoryByAddress: (address: string | undefined) => (address ? testState.directoryLookup[address] : undefined),
 }));
 
-vi.mock('../use-stable-subplebbit', () => ({
-  useSubplebbitField: (_address: string | undefined, selector: (subplebbit: unknown) => unknown) => selector(testState.subplebbitSnapshot),
+vi.mock('../use-stable-community', () => ({
+  useCommunityField: (_address: string | undefined, selector: (community: unknown) => unknown) => selector(testState.subplebbitSnapshot),
 }));
 
 let latestValue: unknown;

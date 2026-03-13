@@ -1,6 +1,6 @@
 import { useEffect, useState, FormEvent } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useSubplebbit } from '@bitsocialnet/bitsocial-react-hooks';
+import { useCommunity } from '@bitsocialnet/bitsocial-react-hooks';
 import { Footer, HomeLogo } from '../home';
 import { useDirectories, DirectoryCommunity } from '../../hooks/use-directories';
 import { getSubplebbitAddress, getBoardPath } from '../../lib/utils/route-utils';
@@ -21,12 +21,12 @@ const getBoardName = (title?: string): string => {
   return match ? match[1] : title;
 };
 
-const BoardRulesDisplay = ({ subplebbitAddress, directories }: { subplebbitAddress: string; directories: DirectoryCommunity[] }) => {
-  const subplebbit = useSubplebbit({ subplebbitAddress });
-  const { rules, state, title, shortAddress } = subplebbit || {};
+const BoardRulesDisplay = ({ communityAddress, directories }: { communityAddress: string; directories: DirectoryCommunity[] }) => {
+  const community = useCommunity({ communityAddress });
+  const { rules, state, title, shortAddress } = community || {};
 
   let loadingText: string | null = null;
-  if (!subplebbit) {
+  if (!community) {
     loadingText = 'connecting...';
   } else {
     switch (state) {
@@ -47,7 +47,7 @@ const BoardRulesDisplay = ({ subplebbitAddress, directories }: { subplebbitAddre
 
   const isLoaded = state === 'succeeded';
 
-  const defaultSub = directories.find((sub) => sub.address === subplebbitAddress);
+  const defaultSub = directories.find((sub) => sub.address === communityAddress);
   let displayTitle: string;
   if (defaultSub?.title) {
     const shortCode = getBoardShortCode(defaultSub.title);
@@ -59,10 +59,10 @@ const BoardRulesDisplay = ({ subplebbitAddress, directories }: { subplebbitAddre
     if (shortCode && boardName && boardName !== title) {
       displayTitle = `Rules for: /${shortCode}/ - ${boardName}`;
     } else {
-      displayTitle = `Rules for: ${shortAddress || subplebbitAddress}`;
+      displayTitle = `Rules for: ${shortAddress || communityAddress}`;
     }
   } else {
-    displayTitle = `Rules for: ${shortAddress || subplebbitAddress}`;
+    displayTitle = `Rules for: ${shortAddress || communityAddress}`;
   }
 
   return (
@@ -197,7 +197,7 @@ const Rules = () => {
           </div>
         </div>
         <BoardSelector directories={directories} selectedAddress={selectedAddress} onSelect={handleBoardSelect} />
-        {selectedAddress && <BoardRulesDisplay subplebbitAddress={selectedAddress} directories={directories} />}
+        {selectedAddress && <BoardRulesDisplay communityAddress={selectedAddress} directories={directories} />}
         <Footer />
       </div>
     </div>

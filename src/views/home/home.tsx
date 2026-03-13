@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef, FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Trans, useTranslation } from 'react-i18next';
-import { useSubplebbits } from '@bitsocialnet/bitsocial-react-hooks';
+import { useCommunities } from '@bitsocialnet/bitsocial-react-hooks';
 import styles from './home.module.css';
 import { useDirectories, useDirectoryAddresses } from '../../hooks/use-directories';
-import { SubplebbitStatsCollector, useSubplebbitsStatsStore } from '../../hooks/use-subplebbits-stats';
+import { CommunityStatsCollector, useCommunitiesStatsStore } from '../../hooks/use-communities-stats';
 import PopularThreadsBox from './popular-threads-box';
 import BoardsList from './boards-list';
 import SiteLegalMeta from '../../components/site-legal-meta';
@@ -81,7 +81,7 @@ const InfoBox = () => {
 
 const Stats = ({ directoryAddresses }: { directoryAddresses: string[] }) => {
   const { t } = useTranslation();
-  const subplebbitsStats = useSubplebbitsStatsStore((state) => state.subplebbitsStats);
+  const communitiesStats = useCommunitiesStatsStore((state) => state.communityStats);
 
   const { totalPosts, currentUsers, boardsTracked } = useMemo(() => {
     let totalPosts = 0;
@@ -89,7 +89,7 @@ const Stats = ({ directoryAddresses }: { directoryAddresses: string[] }) => {
     let boardsTracked = 0;
 
     directoryAddresses.forEach((address) => {
-      const stat = subplebbitsStats[address];
+      const stat = communitiesStats[address];
       if (stat) {
         totalPosts += stat.allPostCount || 0;
         currentUsers += stat.weekActiveUserCount || 0;
@@ -98,13 +98,13 @@ const Stats = ({ directoryAddresses }: { directoryAddresses: string[] }) => {
     });
 
     return { totalPosts, currentUsers, boardsTracked };
-  }, [subplebbitsStats, directoryAddresses]);
+  }, [communitiesStats, directoryAddresses]);
 
   return (
     <>
-      {/* Render collectors to fetch stats for each subplebbit */}
+      {/* Render collectors to fetch stats for each community */}
       {directoryAddresses.map((address) => (
-        <SubplebbitStatsCollector key={address} subplebbitAddress={address} />
+        <CommunityStatsCollector key={address} communityAddress={address} />
       ))}
       <div className={styles.box}>
         <div className={`${styles.boxBar} ${styles.color2ColorBar}`}>
@@ -183,7 +183,7 @@ export const HomeLogo = () => {
 const Home = () => {
   const directories = useDirectories();
   const directoryAddresses = useDirectoryAddresses();
-  const { subplebbits } = useSubplebbits({ subplebbitAddresses: directoryAddresses });
+  const { communities } = useCommunities({ communityAddresses: directoryAddresses });
   const { closeDirectoryModal } = useDirectoryModalStore();
 
   useEffect(() => {
@@ -206,7 +206,7 @@ const Home = () => {
         <SearchBar />
         <InfoBox />
         <BoardsList multisub={directories} />
-        <PopularThreadsBox directories={directories} directoryAddresses={directoryAddresses} subplebbits={subplebbits} />
+        <PopularThreadsBox directories={directories} directoryAddresses={directoryAddresses} communities={communities} />
         <Stats directoryAddresses={directoryAddresses} />
         <Footer />
       </div>

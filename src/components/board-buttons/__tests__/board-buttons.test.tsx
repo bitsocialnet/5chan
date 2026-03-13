@@ -15,7 +15,7 @@ type DirectoryEntry = {
 };
 
 const testState = vi.hoisted(() => ({
-  accountComment: undefined as { subplebbitAddress?: string } | undefined,
+  accountComment: undefined as { communityAddress?: string } | undefined,
   alertThresholdUnit: 'minutes' as 'hours' | 'minutes',
   alertThresholdValue: 5,
   commentsByCid: {} as Record<string, any>,
@@ -32,7 +32,7 @@ const testState = vi.hoisted(() => ({
   navigateMock: vi.fn(),
   pageNumber: 7 as number | null,
   resetMock: vi.fn(),
-  resolvedSubplebbitAddress: 'music-posting.eth' as string | undefined,
+  resolvedCommunityAddress: 'music-posting.eth' as string | undefined,
   searchText: '',
   setAlertThresholdMock: vi.fn(),
   setFilterMock: vi.fn(),
@@ -89,8 +89,8 @@ vi.mock('../../../hooks/use-directories', () => ({
   useDirectoryByAddress: (address: string | undefined) => testState.directories.find((entry) => entry.address === address),
 }));
 
-vi.mock('../../../hooks/use-resolved-subplebbit-address', () => ({
-  useResolvedSubplebbitAddress: () => testState.resolvedSubplebbitAddress,
+vi.mock('../../../hooks/use-resolved-community-address', () => ({
+  useResolvedCommunityAddress: () => testState.resolvedCommunityAddress,
 }));
 
 vi.mock('../../../stores/use-catalog-filters-store', () => ({
@@ -230,7 +230,7 @@ describe('BoardButtons', () => {
     testState.isMobile = true;
     testState.linkCount = 3;
     testState.pageNumber = 7;
-    testState.resolvedSubplebbitAddress = 'music-posting.eth';
+    testState.resolvedCommunityAddress = 'music-posting.eth';
     testState.searchText = '';
     testState.showOPComment = false;
     testState.sortType = 'active';

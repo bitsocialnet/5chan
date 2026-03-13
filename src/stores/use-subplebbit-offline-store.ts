@@ -1,51 +1,39 @@
-import { create } from 'zustand';
+import useCommunityOfflineStore from './use-community-offline-store';
 
-interface SubplebbitOfflineState {
+type LegacySubplebbitOfflineState = {
+  initialLoad: boolean;
   state?: string;
   updatedAt?: number;
   updatingState?: string;
-  initialLoad: boolean;
-}
+};
 
-interface SubplebbitOfflineStore {
-  subplebbitOfflineState: Record<string, SubplebbitOfflineState>;
-  setSubplebbitOfflineState: (address: string, state: Partial<SubplebbitOfflineState>) => void;
+type LegacySubplebbitOfflineStore = {
+  subplebbitOfflineState: Record<string, LegacySubplebbitOfflineState>;
+  setSubplebbitOfflineState: (address: string, state: Partial<LegacySubplebbitOfflineState>) => void;
   initializesubplebbitOfflineState: (address: string) => void;
-}
+};
 
-const useSubplebbitOfflineStore = create<SubplebbitOfflineStore>((set) => ({
-  subplebbitOfflineState: {},
-  setSubplebbitOfflineState: (address, newState) =>
-    set((state) => ({
-      subplebbitOfflineState: {
-        ...state.subplebbitOfflineState,
-        [address]: {
-          ...state.subplebbitOfflineState[address],
-          ...newState,
-        },
-      },
-    })),
-  initializesubplebbitOfflineState: (address) => {
-    set((state) => ({
-      subplebbitOfflineState: {
-        ...state.subplebbitOfflineState,
-        [address]: {
-          initialLoad: true,
-        },
-      },
-    }));
-    setTimeout(() => {
-      set((state) => ({
-        subplebbitOfflineState: {
-          ...state.subplebbitOfflineState,
-          [address]: {
-            ...state.subplebbitOfflineState[address],
-            initialLoad: false,
-          },
-        },
-      }));
-    }, 30000);
-  },
-}));
+type CommunityOfflineStoreState = {
+  communityOfflineState: Record<string, LegacySubplebbitOfflineState>;
+  setCommunityOfflineState: (address: string, state: Partial<LegacySubplebbitOfflineState>) => void;
+  initializeCommunityOfflineState: (address: string) => void;
+};
 
-export default useSubplebbitOfflineStore;
+const toLegacyState = (state: CommunityOfflineStoreState) => ({
+  subplebbitOfflineState: state.communityOfflineState,
+  setSubplebbitOfflineState: state.setCommunityOfflineState,
+  initializesubplebbitOfflineState: state.initializeCommunityOfflineState,
+});
+
+const useSubplebbitOfflineStore = (): LegacySubplebbitOfflineStore => {
+  const state = useCommunityOfflineStore();
+  return toLegacyState(state);
+};
+
+const useSubplebbitOfflineStoreWithState = useSubplebbitOfflineStore as typeof useSubplebbitOfflineStore & {
+  getState: () => LegacySubplebbitOfflineStore;
+};
+useSubplebbitOfflineStoreWithState.getState = () => toLegacyState(useCommunityOfflineStore.getState());
+
+export { useSubplebbitOfflineStore };
+export default useSubplebbitOfflineStoreWithState;
