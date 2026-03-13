@@ -309,6 +309,21 @@ describe('EditMenu', () => {
     expect(testState.authorOptions).not.toHaveProperty('signer');
   });
 
+  it("does not allow delete-only access when pseudonymity mode is 'none'", async () => {
+    testState.pseudonymityMode = 'none';
+    testState.privileges = {
+      isAccountCommentAuthor: false,
+      isAccountMod: false,
+      isCommentAuthorMod: false,
+    };
+
+    await renderMenu(basePost);
+    await openMenu();
+
+    expect(alertSpy).toHaveBeenCalledWith('cannot_edit_thread');
+    expect(testState.publishAuthorEditMock).not.toHaveBeenCalled();
+  });
+
   it('lets moderators change moderation flags, ban duration, and save them', async () => {
     testState.privileges = {
       isAccountCommentAuthor: false,

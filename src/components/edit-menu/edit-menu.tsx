@@ -52,7 +52,8 @@ const EditMenu = ({ post }: { post: Comment }) => {
     postCid,
   });
   const pseudonymityMode = useBoardPseudonymityMode(communityAddress);
-  const canAttemptAuthorDelete = isAccountCommentAuthor || Boolean(pseudonymityMode);
+  const allowsPseudonymousDelete = pseudonymityMode !== undefined && pseudonymityMode !== 'none';
+  const canAttemptAuthorDelete = isAccountCommentAuthor || allowsPseudonymousDelete;
   const canOpenEditMenu = isAccountMod || canAttemptAuthorDelete;
   const requiresDeleteSelection = canAttemptAuthorDelete && !isAccountCommentAuthor && !isAccountMod;
   const signer = isAccountCommentAuthor ? account?.signer : undefined;

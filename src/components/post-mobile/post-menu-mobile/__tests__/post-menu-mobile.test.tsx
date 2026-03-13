@@ -211,6 +211,14 @@ describe('PostMenuMobile', () => {
     expect(document.body.querySelector('[data-testid="edit-menu"]')?.textContent).toBe('cid-1');
   });
 
+  it("does not show edit controls when pseudonymity mode is 'none' and the user lacks privileges", async () => {
+    testState.pseudonymityMode = 'none';
+
+    await renderMenu('/mu');
+
+    expect(document.body.querySelector('[data-testid="edit-menu"]')).toBeNull();
+  });
+
   it('omits thread hiding on the root thread route and suppresses the menu for deleted posts', async () => {
     await renderMenu('/mu/thread/cid-1');
     await openMenu();

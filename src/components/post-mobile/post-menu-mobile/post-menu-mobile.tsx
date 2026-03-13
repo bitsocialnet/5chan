@@ -200,7 +200,7 @@ const PostMenuMobile = ({ postMenu, editMenuPost }: PostMenuMobileProps) => {
     subplebbitAddress: resolvedCommunityAddress || '',
   });
   const pseudonymityMode = useBoardPseudonymityMode(resolvedCommunityAddress);
-  const canAttemptAuthorDelete = Boolean(pseudonymityMode);
+  const canAttemptAuthorDelete = pseudonymityMode !== undefined && pseudonymityMode !== 'none';
   const commentMediaInfo = getCommentMediaInfo(link || '', thumbnailUrl || '', linkWidth || 0, linkHeight || 0);
   const { thumbnail, type, url } = commentMediaInfo || {};
   const [isMenuOpen, setIsMenuOpen] = useState(false);
