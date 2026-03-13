@@ -310,5 +310,9 @@
   "external_quote_publish_missing": "Nu se poate publica – nu s-a găsit postarea citată pentru {{quote}}",
   "displaying_x_archived_threads": "Se afișează {{count}} subiecte arhivate",
   "displaying_x_archived_threads_from_past_x_days": "Se afișează {{count}} subiecte arhivate din ultimele {{days}} zile",
-  "no_archived_threads": "Niciun fir arhivat"
+  "no_archived_threads": "Niciun fir arhivat",
+  "archived": "Arhivat",
+  "loading_archive": "Încărcare arhivă...",
+  "thread_archived": "Thread arhivat.",
+  "view": "Vizualizare"
 }

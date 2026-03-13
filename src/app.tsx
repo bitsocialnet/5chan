@@ -332,6 +332,7 @@ const App = () => {
             <Route path='/:boardIdentifier/catalog' element={catalogFeedElement} />
             <Route path='/:boardIdentifier/catalog/settings' element={catalogFeedElement} />
             <Route path='/:boardIdentifier/archive' element={<Archive />} />
+            <Route path='/:boardIdentifier/archive/settings' element={<Archive />} />
 
             <Route path='/:boardIdentifier/mod/queue' element={<ModQueueRoute />} />
             <Route path='/:boardIdentifier/mod/queue/settings' element={<ModQueueRoute />} />

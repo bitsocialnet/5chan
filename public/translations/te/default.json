@@ -310,5 +310,9 @@
   "external_quote_publish_missing": "ప్రచురించలేము - {{quote}} కోసం ఉదహరించిన పోస్ట్ కనుగొనబడలేదు",
   "displaying_x_archived_threads": "{{count}} ఆర్కైవ్ చేయబడిన థ్రెడ్‌లు చూపిస్తోంది",
   "displaying_x_archived_threads_from_past_x_days": "గత {{days}} రోజుల నుండి {{count}} ఆర్కైవ్ చేయబడిన థ్రెడ్‌లను ప్రదర్శిస్తోంది",
-  "no_archived_threads": "ఆర్కైవ్ చేయబడిన థ్రెడ్‌లు లేవు"
+  "no_archived_threads": "ఆర్కైవ్ చేయబడిన థ్రెడ్‌లు లేవు",
+  "archived": "ఆర్కైవ్ చేయబడింది",
+  "loading_archive": "ఆర్కైవ్ లోడ్ అవుతోంది...",
+  "thread_archived": "థ్రెడ్ ఆర్కైవ్ చేయబడింది.",
+  "view": "చూడు"
 }

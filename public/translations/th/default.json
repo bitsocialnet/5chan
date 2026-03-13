@@ -310,5 +310,9 @@
   "external_quote_publish_missing": "ไม่สามารถเผยแพร่ได้ - ไม่พบโพสต์ที่อ้างถึงสำหรับ {{quote}}",
   "displaying_x_archived_threads": "กำลังแสดง {{count}} หัวข้อที่เก็บถาวร",
   "displaying_x_archived_threads_from_past_x_days": "กำลังแสดง {{count}} หัวข้อที่เก็บถาวรจาก {{days}} วันที่ผ่านมา",
-  "no_archived_threads": "ไม่มีเธรดที่เก็บถาวร"
+  "no_archived_threads": "ไม่มีเธรดที่เก็บถาวร",
+  "archived": "เก็บถาวร",
+  "loading_archive": "กำลังโหลดเก็บถาวร...",
+  "thread_archived": "เธรดถูกเก็บถาวร",
+  "view": "ดู"
 }

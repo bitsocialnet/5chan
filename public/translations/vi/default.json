@@ -310,5 +310,9 @@
   "external_quote_publish_missing": "Không thể xuất bản – không tìm thấy bài viết được trích dẫn cho {{quote}}",
   "displaying_x_archived_threads": "Đang hiển thị {{count}} chủ đề đã lưu trữ",
   "displaying_x_archived_threads_from_past_x_days": "Đang hiển thị {{count}} chủ đề đã lưu trữ trong {{days}} ngày qua",
-  "no_archived_threads": "Không có chủ đề nào được lưu trữ"
+  "no_archived_threads": "Không có chủ đề nào được lưu trữ",
+  "archived": "Đã lưu trữ",
+  "loading_archive": "Đang tải lưu trữ...",
+  "thread_archived": "Chủ đề đã được lưu trữ.",
+  "view": "Xem"
 }

@@ -310,5 +310,9 @@
   "external_quote_publish_missing": "게시할 수 없음 - {{quote}}에 대한 인용된 게시물을 찾을 수 없습니다",
   "displaying_x_archived_threads": "{{count}}개의 보관된 스레드 표시 중",
   "displaying_x_archived_threads_from_past_x_days": "지난 {{days}}일간의 아카이브된 스레드 {{count}}개 표시 중",
-  "no_archived_threads": "보관된 스레드 없음"
+  "no_archived_threads": "보관된 스레드 없음",
+  "archived": "보관됨",
+  "loading_archive": "아카이브 로딩 중...",
+  "thread_archived": "스레드가 아카이브되었습니다.",
+  "view": "보기"
 }

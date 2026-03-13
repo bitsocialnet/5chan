@@ -213,7 +213,7 @@ const Archive = () => {
         <hr className={styles.desktopDivider} />
         <ArchiveDesktopTopControls subplebbitAddress={subplebbitAddress} />
         <hr className={styles.divider} />
-        <h4 className={styles.archiveSummary}>Loading archive...</h4>
+        <h4 className={styles.archiveSummary}>{t('loading_archive')}</h4>
         <PageFooterDesktop firstRow={<ArchiveDesktopFooterControls subplebbitAddress={subplebbitAddress} />} styleRow={<ThreadFooterStyleRow />} />
         <PageFooterMobile>
           <ArchiveMobileFooterControls subplebbitAddress={subplebbitAddress} />
@@ -272,7 +272,7 @@ const Archive = () => {
                       <>
                         [
                         <Link to={threadLink} className={styles.viewLink}>
-                          View
+                          {t('view')}
                         </Link>
                         ]
                       </>

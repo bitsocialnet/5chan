@@ -310,5 +310,9 @@
   "external_quote_publish_missing": "Nelze publikovat – nebyl nalezen citovaný příspěvek pro {{quote}}",
   "displaying_x_archived_threads": "Zobrazeno {{count}} archivovaných vláken",
   "displaying_x_archived_threads_from_past_x_days": "Zobrazeno {{count}} archivovaných vláken z posledních {{days}} dnů",
-  "no_archived_threads": "Žádná archivovaná vlákna"
+  "no_archived_threads": "Žádná archivovaná vlákna",
+  "archived": "Archivováno",
+  "loading_archive": "Načítání archivu...",
+  "thread_archived": "Vlákno archivováno.",
+  "view": "Zobrazit"
 }

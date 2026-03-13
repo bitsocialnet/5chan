@@ -310,5 +310,9 @@
   "external_quote_publish_missing": "Αδυναμία δημοσίευσης – δεν βρέθηκε το αναφερόμενο ανάρτημα για {{quote}}",
   "displaying_x_archived_threads": "Εμφάνιση {{count}} αρχειοθετημένων νημάτων",
   "displaying_x_archived_threads_from_past_x_days": "Εμφάνιση {{count}} αρχειοθετημένων νημάτων των τελευταίων {{days}} ημερών",
-  "no_archived_threads": "Δεν υπάρχουν αρχειοθετημένα νήματα"
+  "no_archived_threads": "Δεν υπάρχουν αρχειοθετημένα νήματα",
+  "archived": "Αρχειοθετημένο",
+  "loading_archive": "Φόρτωση αρχείου...",
+  "thread_archived": "Το νήμα αρχειοθετήθηκε.",
+  "view": "Προβολή"
 }

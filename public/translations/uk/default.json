@@ -310,5 +310,9 @@
   "external_quote_publish_missing": "Неможливо опублікувати – не знайдено цитований пост для {{quote}}",
   "displaying_x_archived_threads": "Відображення {{count}} архівованих тем",
   "displaying_x_archived_threads_from_past_x_days": "Відображення {{count}} архівованих тем за останні {{days}} днів",
-  "no_archived_threads": "Немає архівованих тредів"
+  "no_archived_threads": "Немає архівованих тредів",
+  "archived": "Архівовано",
+  "loading_archive": "Завантаження архіву...",
+  "thread_archived": "Тему архівовано.",
+  "view": "Переглянути"
 }

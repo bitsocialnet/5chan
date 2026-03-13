@@ -310,5 +310,9 @@
   "external_quote_publish_missing": "Impossibile pubblicare – non è stato trovato il messaggio citato per {{quote}}",
   "displaying_x_archived_threads": "Visualizzazione di {{count}} thread archiviati",
   "displaying_x_archived_threads_from_past_x_days": "Visualizzazione di {{count}} thread archiviati degli ultimi {{days}} giorni",
-  "no_archived_threads": "Nessun thread archiviato"
+  "no_archived_threads": "Nessun thread archiviato",
+  "archived": "Archiviato",
+  "loading_archive": "Caricamento archivio...",
+  "thread_archived": "Thread archiviato.",
+  "view": "Visualizza"
 }

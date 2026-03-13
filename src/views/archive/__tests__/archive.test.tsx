@@ -204,6 +204,7 @@ describe('Archive', () => {
   });
 
   it('renders the shared archive table and mobile nav actions when mobile hook is set', async () => {
+    testState.isMobile = true;
     testState.feed = [
       { cid: 'a', archived: true, threadCid: '111', title: 'Archived one', content: 'mobile excerpt' },
       { cid: 'b', archived: true, threadCid: '222', title: 'Archived two', content: 'other excerpt' },

@@ -310,5 +310,9 @@
   "external_quote_publish_missing": "Impossible de publier – le message cité pour {{quote}} est introuvable",
   "displaying_x_archived_threads": "Affichage de {{count}} fils archivés",
   "displaying_x_archived_threads_from_past_x_days": "Affichage de {{count}} fils archivés des {{days}} derniers jours",
-  "no_archived_threads": "Aucun fil archivé"
+  "no_archived_threads": "Aucun fil archivé",
+  "archived": "Archivé",
+  "loading_archive": "Chargement des archives...",
+  "thread_archived": "Fil archivé.",
+  "view": "Voir"
 }

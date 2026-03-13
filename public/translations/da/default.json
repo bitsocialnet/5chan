@@ -310,5 +310,9 @@
   "external_quote_publish_missing": "Kan ikke publicere – kunne ikke finde det citerede indlæg for {{quote}}",
   "displaying_x_archived_threads": "Viser {{count}} arkiverede tråde",
   "displaying_x_archived_threads_from_past_x_days": "Viser {{count}} arkiverede tråde fra de sidste {{days}} dage",
-  "no_archived_threads": "Ingen arkiverede tråde"
+  "no_archived_threads": "Ingen arkiverede tråde",
+  "archived": "Arkiveret",
+  "loading_archive": "Indlæser arkiv...",
+  "thread_archived": "Tråd arkiveret.",
+  "view": "Se"
 }

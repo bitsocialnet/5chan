@@ -355,6 +355,13 @@ describe('App', () => {
     expect(container.querySelector('[data-testid="boards-bar"]')).toBeTruthy();
   });
 
+  it('renders archive settings route as archive view', async () => {
+    await renderApp('/mu/archive/settings');
+
+    expect(latestLocation).toBe('/mu/archive/settings');
+    expect(container.querySelector('[data-testid="archive-view"]')).toBeTruthy();
+  });
+
   it('does not route /all/archive to a board archive page', async () => {
     await renderApp('/all/archive');
 

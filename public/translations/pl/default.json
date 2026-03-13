@@ -310,5 +310,9 @@
   "external_quote_publish_missing": "Nie można opublikować – nie znaleziono cytowanego wpisu dla {{quote}}",
   "displaying_x_archived_threads": "Wyświetlanie {{count}} zarchiwizowanych wątków",
   "displaying_x_archived_threads_from_past_x_days": "Wyświetlanie {{count}} zarchiwizowanych wątków z ostatnich {{days}} dni",
-  "no_archived_threads": "Brak zarchiwizowanych wątków"
+  "no_archived_threads": "Brak zarchiwizowanych wątków",
+  "archived": "Zarchiwizowany",
+  "loading_archive": "Ładowanie archiwum...",
+  "thread_archived": "Wątek zarchiwizowany.",
+  "view": "Zobacz"
 }

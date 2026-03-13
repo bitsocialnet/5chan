@@ -310,5 +310,9 @@
   "external_quote_publish_missing": "无法发布 - 找不到 {{quote}} 的引用帖子",
   "displaying_x_archived_threads": "正在显示 {{count}} 个已归档主题",
   "displaying_x_archived_threads_from_past_x_days": "正在显示过去 {{days}} 天的 {{count}} 个已归档主题",
-  "no_archived_threads": "没有已归档的主题"
+  "no_archived_threads": "没有已归档的主题",
+  "archived": "已归档",
+  "loading_archive": "正在加载归档...",
+  "thread_archived": "主题已归档。",
+  "view": "查看"
 }
