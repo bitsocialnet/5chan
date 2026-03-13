@@ -7,6 +7,7 @@ import {
   getFeedType,
   getPageFromFeedPath,
   getSubplebbitAddress,
+  isArchiveRoute,
   isBoardModRoute,
   isDirectoryBoard,
   isFeedRoute,
@@ -98,6 +99,13 @@ describe('isFeedRoute', () => {
     expect(isFeedRoute('/biz/mod/queue')).toBe(false);
   });
 
+  it('returns false for board archive paths', () => {
+    expect(isFeedRoute('/biz/archive')).toBe(false);
+    expect(isFeedRoute('/biz/archive/settings')).toBe(false);
+    expect(isArchiveRoute('/biz/archive')).toBe(true);
+    expect(isArchiveRoute('/biz/archive/settings')).toBe(true);
+  });
+
   it('returns false for posts and pending items', () => {
     expect(isFeedRoute('/biz/thread/abc')).toBe(false);
     expect(isFeedRoute('/pending/4')).toBe(false);
@@ -175,6 +183,7 @@ describe('feed cache helpers', () => {
     expect(getFeedCacheKey('/biz/3/settings')).toBe('/biz');
     expect(getFeedCacheKey('/biz/catalog/4')).toBe('/biz/catalog');
     expect(getFeedCacheKey('/biz/thread/abc')).toBe('/biz');
+    expect(getFeedCacheKey('/biz/archive')).toBeNull();
   });
 
   it('returns null cache keys for non-feed routes', () => {
@@ -187,5 +196,6 @@ describe('feed cache helpers', () => {
     expect(getFeedType('/biz/thread/abc')).toBe('board');
     expect(getFeedType('/biz/catalog/settings')).toBe('catalog');
     expect(getFeedType('/pending/3')).toBeNull();
+    expect(getFeedType('/biz/archive')).toBeNull();
   });
 });

@@ -127,6 +127,9 @@ const basePost = {
   removed: false,
   spoiler: false,
   communityAddress: 'music-posting.eth',
+  commentModeration: {
+    archived: false,
+  },
 } as Record<string, any>;
 
 const renderMenu = async (post = basePost) => {
@@ -276,6 +279,7 @@ describe('EditMenu', () => {
     await click(getCheckbox('removed'));
     await click(getCheckbox('purged'));
     await click(getCheckbox('locked'));
+    await click(getCheckbox('archived'));
     await click(getCheckbox('spoiler'));
     await click(getCheckbox('pinned'));
     await click(getCheckbox('banUser'));
@@ -302,6 +306,7 @@ describe('EditMenu', () => {
     });
     expect(testState.modOptions?.commentModeration).toMatchObject({
       reason: 'rule violation',
+      archived: true,
       locked: true,
       pinned: true,
       purged: true,
@@ -327,6 +332,26 @@ describe('EditMenu', () => {
 
     expect(getCheckbox('purged')?.checked).toBe(false);
     expect(testState.modOptions?.commentModeration?.purged).toBe(false);
+  });
+
+  it('shows archive control only for top-level comments', async () => {
+    testState.privileges = {
+      isAccountCommentAuthor: false,
+      isAccountMod: true,
+      isCommentAuthorMod: false,
+    };
+
+    await renderMenu(basePost);
+    await openMenu();
+    expect(getCheckbox('archived')).not.toBeNull();
+
+    await renderMenu({
+      ...basePost,
+      cid: 'reply-comment',
+      parentCid: 'parent-cid',
+    });
+    await openMenu();
+    expect(getCheckbox('archived')).toBeNull();
   });
 
   it('runs both the author edit and moderation publication paths when the user has both privileges', async () => {

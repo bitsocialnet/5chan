@@ -15,12 +15,12 @@ const testState = vi.hoisted(() => ({
   },
   accountComment: undefined as { communityAddress?: string } | undefined,
   accountCommunityAddresses: ['mod.eth'] as string[],
-  comments: {} as Record<string, { deleted?: boolean; locked?: boolean; postCid?: string; removed?: boolean }>,
+  comments: {} as Record<string, { commentModeration?: { archived?: boolean }; deleted?: boolean; locked?: boolean; postCid?: string; removed?: boolean }>,
   directories: [
     { address: 'music-posting.eth', features: {}, title: '/mu/ - Music' },
     { address: 'mod.eth', features: {}, title: '/mod/ - Moderation' },
   ] as Array<{ address: string; features?: Record<string, unknown>; title?: string }>,
-  editedComment: undefined as { deleted?: boolean; locked?: boolean; postCid?: string; removed?: boolean } | undefined,
+  editedComment: undefined as { commentModeration?: { archived?: boolean }; deleted?: boolean; locked?: boolean; postCid?: string; removed?: boolean } | undefined,
   gifFrameStatus: 'idle' as 'idle' | 'ready',
   handleUploadMock: vi.fn(),
   isOffline: false,
@@ -329,6 +329,22 @@ describe('PostForm', () => {
     await renderPostForm('/mu/thread/thread-cid');
 
     expect(container.textContent).toContain('thread_closed');
+    expect(container.textContent).toContain('may_not_reply');
+  });
+
+  it('shows the closed-thread notice for archived threads', async () => {
+    testState.comments = {
+      'thread-cid': {
+        postCid: 'thread-cid',
+        commentModeration: {
+          archived: true,
+        },
+      },
+    };
+
+    await renderPostForm('/mu/thread/thread-cid');
+
+    expect(container.textContent).toContain('thread_archived');
     expect(container.textContent).toContain('may_not_reply');
   });
 

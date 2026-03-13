@@ -307,5 +307,12 @@
   "external_quote_resolution_unavailable": "External quote resolution is unavailable right now",
   "external_quote_cannot_resolve": "Could not find {{quote}} in /{{board}}/",
   "external_quote_unavailable": "The quoted post is unavailable",
-  "external_quote_publish_missing": "Cannot publish - could not find the quoted post for {{quote}}"
+  "external_quote_publish_missing": "Julkaisu epäonnistui – lainattua viestiä ei löytynyt kohteelle {{quote}}",
+  "displaying_x_archived_threads": "Näytetään {{count}} arkistoitua ketjua",
+  "displaying_x_archived_threads_from_past_x_days": "Näytetään {{count}} arkistoitua ketjua viimeisen {{days}} päivän ajalta",
+  "no_archived_threads": "Ei arkistoituja ketjuja",
+  "archived": "Arkistoitu",
+  "loading_archive": "Ladataan arkistoa...",
+  "thread_archived": "Keskustelu arkistoitu.",
+  "view": "Katso"
 }

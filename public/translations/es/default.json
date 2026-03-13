@@ -307,5 +307,12 @@
   "external_quote_resolution_unavailable": "External quote resolution is unavailable right now",
   "external_quote_cannot_resolve": "Could not find {{quote}} in /{{board}}/",
   "external_quote_unavailable": "The quoted post is unavailable",
-  "external_quote_publish_missing": "Cannot publish - could not find the quoted post for {{quote}}"
+  "external_quote_publish_missing": "No se puede publicar: no se encontró la publicación citada para {{quote}}",
+  "displaying_x_archived_threads": "Mostrando {{count}} hilos archivados",
+  "displaying_x_archived_threads_from_past_x_days": "Mostrando {{count}} hilos archivados de los últimos {{days}} días",
+  "no_archived_threads": "No hay hilos archivados",
+  "archived": "Archivado",
+  "loading_archive": "Cargando archivo...",
+  "thread_archived": "Hilo archivado.",
+  "view": "Ver"
 }

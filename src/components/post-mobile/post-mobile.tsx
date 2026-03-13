@@ -43,6 +43,7 @@ import useQuotedByMap from '../../hooks/use-quoted-by-map';
 import useProgressiveRender from '../../hooks/use-progressive-render';
 import useFreshReplies from '../../hooks/use-fresh-replies';
 import { BOARD_REPLIES_PREVIEW_FETCH_SIZE, BOARD_REPLIES_PREVIEW_VISIBLE_COUNT, REPLIES_PER_PAGE } from '../../lib/constants';
+import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
 import { filterRepliesForDisplay, getPreviewDisplayReplies } from '../../lib/utils/replies-preview-utils';
 import { getRenderableMobileBacklinks } from '../../lib/utils/reply-backlink-utils';
 import { getThreadTopNavigationState, scrollThreadContainerToTop } from '../../lib/utils/thread-scroll-utils';
@@ -67,6 +68,7 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
   const resolvedPost = withResolvedCommentCommunityAddress(post);
   const { author, cid, deleted, link, linkHeight, linkWidth, locked, parentCid, pinned, postCid, reason, removed, state, communityAddress, timestamp, thumbnailUrl } =
     resolvedPost || {};
+  const archived = isCommentArchived(resolvedPost);
   const purged = resolvedPost?.commentModeration?.purged;
   const boardPath = communityAddress ? getBoardPath(communityAddress, directories) : undefined;
   const displayBoardPath =
@@ -229,7 +231,9 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
         ? isReply
           ? alert(t('this_reply_was_removed'))
           : alert(t('this_thread_was_removed'))
-        : openReplyModal && openReplyModal(cid, resolvedPost?.number, postCid, threadNumber, communityAddress);
+        : archived && !isReply
+          ? alert(t('thread_archived'))
+          : openReplyModal && openReplyModal(cid, resolvedPost?.number, postCid, threadNumber, communityAddress);
   };
 
   const threadRoute = cid ? (boardPath ? `/${boardPath}/thread/${cid}` : `/thread/${cid}`) : undefined;
@@ -330,6 +334,13 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber }: Pos
             {locked && (
               <span className={`${styles.closedIconWrapper} ${pinned && styles.addPaddingInBetween}`}>
                 <img src='assets/icons/closed.gif' alt='' className={styles.closedIcon} title={t('closed')} />
+              </span>
+            )}
+            {archived && (
+              <span
+                className={`${styles.closedIconWrapper} ${!locked && !pinned ? styles.addPaddingBeforeReply : ''} ${pinned || locked ? styles.addPaddingInBetween : ''}`}
+              >
+                <img src='assets/icons/archived.gif' alt='' className={styles.closedIcon} title={t('archived')} />
               </span>
             )}
             {title && (

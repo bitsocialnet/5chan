@@ -50,6 +50,7 @@ import useProgressiveRender from '../../hooks/use-progressive-render';
 import useFreshReplies from '../../hooks/use-fresh-replies';
 import { BOARD_REPLIES_PREVIEW_FETCH_SIZE, BOARD_REPLIES_PREVIEW_VISIBLE_COUNT, REPLIES_PER_PAGE } from '../../lib/constants';
 import { computeOmittedCount, filterRepliesForDisplay, getPreviewDisplayReplies, getTotalReplyCount } from '../../lib/utils/replies-preview-utils';
+import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
 import { getThreadTopNavigationState, scrollThreadContainerToTop } from '../../lib/utils/thread-scroll-utils';
 import useDeleteFailedPost from '../../hooks/use-delete-failed-post';
 import { withResolvedCommentCommunityAddress } from '../../lib/utils/comment-utils';
@@ -99,6 +100,7 @@ const PostInfo = ({
 }: PostProps & { directRepliesByParentCid?: Map<string, Comment[]> }) => {
   const { t } = useTranslation();
   const { author, cid, deleted, locked, pinned, parentCid, postCid, reason, removed, state, communityAddress, timestamp } = post || {};
+  const archived = isCommentArchived(post);
   const purged = post?.commentModeration?.purged;
   const title = post?.title?.trim();
   const { address, shortAddress } = author || {};
@@ -247,7 +249,9 @@ const PostInfo = ({
         ? isReply
           ? alert(t('this_reply_was_removed'))
           : alert(t('this_thread_was_removed'))
-        : openReplyModal && openReplyModal(cid, post?.number, postCid, threadNumber, communityAddress);
+        : archived && !isReply
+          ? alert(t('thread_archived'))
+          : openReplyModal && openReplyModal(cid, post?.number, postCid, threadNumber, communityAddress);
   };
 
   const threadRoute = cid ? (boardPath ? `/${boardPath}/thread/${cid}` : `/thread/${cid}`) : undefined;
@@ -395,6 +399,13 @@ const PostInfo = ({
           {locked && (
             <span className={`${styles.closedIconWrapper} ${styles.addPaddingBeforeReply} ${pinned && styles.addPaddingInBetween}`}>
               <img src='assets/icons/closed.gif' alt='' className={styles.closedIcon} title={t('closed')} />
+            </span>
+          )}
+          {archived && (
+            <span
+              className={`${styles.closedIconWrapper} ${!locked && !pinned ? styles.addPaddingBeforeReply : ''} ${pinned || locked ? styles.addPaddingInBetween : ''}`}
+            >
+              <img src='assets/icons/archived.gif' alt='' className={styles.closedIcon} title={t('archived')} />
             </span>
           )}
           {!isInPostPageView && !isReply && !isHidden && !isModQueue && (
