@@ -18,6 +18,7 @@ import { useCommentMediaInfo } from '../../hooks/use-comment-media-info';
 import useCountLinksInReplies from '../../hooks/use-count-links-in-replies';
 import useFetchGifFirstFrame from '../../hooks/use-fetch-gif-first-frame';
 import useHide from '../../hooks/use-hide';
+import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
 import { removeMarkdown } from '../../lib/utils/post-utils';
 import PostMenuDesktop from '../post-desktop/post-menu-desktop';
 import styles from './catalog-row.module.css';
@@ -121,6 +122,7 @@ const CatalogPost = memo(
     const resolvedPost = useMemo(() => withResolvedCommentCommunityAddress(post), [post]);
     const { author, cid, content, link, linkHeight, linkWidth, locked, pinned, replyCount, spoiler, communityAddress, timestamp, title, thumbnailUrl } =
       resolvedPost || {};
+    const archived = isCommentArchived(resolvedPost);
     const linkCount = useCountLinksInReplies(resolvedPost);
 
     const commentMediaInfo = useCommentMediaInfo(link, thumbnailUrl, linkWidth, linkHeight);
@@ -144,6 +146,7 @@ const CatalogPost = memo(
       <div className={styles.threadIcons}>
         {pinned && <span className={styles.stickyIcon} title={t('sticky')} />}
         {locked && <span className={styles.closedIcon} title={t('closed')} />}
+        {archived && <span className={styles.archivedIcon} title={t('archived')} />}
       </div>
     );
 
@@ -324,6 +327,7 @@ const CatalogPost = memo(
       prev?.replyCount === next?.replyCount &&
       prev?.locked === next?.locked &&
       prev?.pinned === next?.pinned &&
+      isCommentArchived(prev) === isCommentArchived(next) &&
       prev?.title === next?.title &&
       prev?.content === next?.content &&
       prev?.spoiler === next?.spoiler &&

@@ -1,4 +1,4 @@
-import { isBoardModRoute, isModQueueRoute } from './route-utils';
+import { isArchiveRoute, isBoardModRoute, isModQueueRoute } from './route-utils';
 
 type ParamsType = {
   accountCommentIndex?: string;
@@ -19,6 +19,7 @@ export const isBoardView = (pathname: string, params: ParamsType): boolean => {
     pathname.startsWith('/all') ||
     pathname.startsWith('/subs') ||
     pathname.startsWith('/mod') ||
+    isArchiveRoute(pathname) ||
     isBoardModRoute(pathname) ||
     pathname.startsWith('/pending') ||
     pathname === '/' ||
@@ -82,10 +83,19 @@ export const isSubscriptionsView = (pathname: string, params: ParamsType): boole
   return pathname === '/subs' || pathname === '/subs/settings' || pathname === '/subs/catalog' || pathname === '/subs/catalog/settings';
 };
 
+export const isArchiveView = (pathname: string, params: ParamsType): boolean => {
+  const { boardIdentifier, subplebbitAddress } = params;
+  const identifier = boardIdentifier || subplebbitAddress;
+  const decodedPathname = decodeURIComponent(pathname);
+
+  return Boolean(identifier && isArchiveRoute(decodedPathname) && decodedPathname === `/${identifier}/archive`);
+};
+
 export const isNotFoundView = (pathname: string, params: ParamsType): boolean => {
   return (
     !isAllView(pathname) &&
     !isBoardView(pathname, params) &&
+    !isArchiveView(pathname, params) &&
     !isCatalogView(pathname, params) &&
     !isHomeView(pathname) &&
     !isPendingPostView(pathname, params) &&

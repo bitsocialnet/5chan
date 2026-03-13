@@ -307,5 +307,8 @@
   "external_quote_resolution_unavailable": "External quote resolution is unavailable right now",
   "external_quote_cannot_resolve": "Could not find {{quote}} in /{{board}}/",
   "external_quote_unavailable": "The quoted post is unavailable",
-  "external_quote_publish_missing": "Cannot publish - could not find the quoted post for {{quote}}"
+  "external_quote_publish_missing": "Kan ikke publicere – kunne ikke finde det citerede indlæg for {{quote}}",
+  "displaying_x_archived_threads": "Viser {{count}} arkiverede tråde",
+  "displaying_x_archived_threads_from_past_x_days": "Viser {{count}} arkiverede tråde fra de sidste {{days}} dage",
+  "no_archived_threads": "Ingen arkiverede tråde"
 }

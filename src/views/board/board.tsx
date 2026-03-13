@@ -18,6 +18,7 @@ import usePostNumberStore from '../../stores/use-post-number-store';
 import { useBoardFeedPageSize } from '../../hooks/use-board-feed-page-size';
 import { getPageSlice } from '../../lib/utils/board-feed-pagination';
 import { getPageFromFeedPath, getSubplebbitAddress, isDirectoryBoard, normalizeMultiboardFeedPath, stripPageFromFeedPath } from '../../lib/utils/route-utils';
+import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
 import ErrorDisplay from '../../components/error-display/error-display';
 import LoadingEllipsis from '../../components/loading-ellipsis';
 import BoardPagination from '../../components/board-pagination';
@@ -140,13 +141,22 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, i
   const communityDirectory = useDirectoryByAddress(isInAllView || isInSubscriptionsView || isInModView ? undefined : communityAddress);
   const { guiPostsPerPage, maxGuiPages, paginationFeedPostsPerPage, infiniteFeedPostsPerPage } = useBoardFeedPageSize(communityDirectory);
 
+  const excludeArchivedFilter = useMemo(
+    () => ({
+      filter: (comment: Comment) => !isCommentArchived(comment),
+      key: 'exclude-archived',
+    }),
+    [],
+  );
+
   const feedOptions = useMemo(
     () => ({
       communityAddresses,
       sortType: BOARD_SORT_TYPE,
       postsPerPage: effectiveInfiniteScroll ? infiniteFeedPostsPerPage : paginationFeedPostsPerPage,
+      filter: excludeArchivedFilter,
     }),
-    [communityAddresses, effectiveInfiniteScroll, infiniteFeedPostsPerPage, paginationFeedPostsPerPage],
+    [communityAddresses, effectiveInfiniteScroll, infiniteFeedPostsPerPage, paginationFeedPostsPerPage, excludeArchivedFilter],
   );
 
   const { feed, hasMore, loadMore, reset } = useFeed(feedOptions);

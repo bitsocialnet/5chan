@@ -7,6 +7,7 @@ import useCommunitiesStore from '@bitsocialnet/bitsocial-react-hooks/dist/stores
 import getShortAddress from '../../lib/get-short-address';
 import { useStableCommunity } from '../../hooks/use-stable-community';
 import { isAllView, isSubscriptionsView, isModView } from '../../lib/utils/view-utils';
+import { isArchiveRoute } from '../../lib/utils/route-utils';
 import styles from './board-header.module.css';
 import { useDirectoriesMetadata, useDirectories } from '../../hooks/use-directories';
 import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
@@ -51,6 +52,7 @@ const BoardHeader = () => {
   const isInAllView = isAllView(location.pathname);
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, useParams());
   const isInModView = isModView(location.pathname);
+  const isInArchiveView = isArchiveRoute(location.pathname);
   const accountComment = useAccountComment({ commentIndex: params?.accountCommentIndex as any });
   const resolvedAddress = useResolvedCommunityAddress();
   const communityAddress = resolvedAddress || accountComment?.communityAddress;
@@ -120,7 +122,7 @@ const BoardHeader = () => {
           subtitle
         )}
       </div>
-      <hr />
+      {!isInArchiveView && <hr />}
     </div>
   );
 };

@@ -307,5 +307,8 @@
   "external_quote_resolution_unavailable": "External quote resolution is unavailable right now",
   "external_quote_cannot_resolve": "Could not find {{quote}} in /{{board}}/",
   "external_quote_unavailable": "The quoted post is unavailable",
-  "external_quote_publish_missing": "Cannot publish - could not find the quoted post for {{quote}}"
+  "external_quote_publish_missing": "Não é possível publicar – não foi encontrada a publicação citada para {{quote}}",
+  "displaying_x_archived_threads": "Exibindo {{count}} tópicos arquivados",
+  "displaying_x_archived_threads_from_past_x_days": "Exibindo {{count}} tópicos arquivados dos últimos {{days}} dias",
+  "no_archived_threads": "Nenhum tópico arquivado"
 }

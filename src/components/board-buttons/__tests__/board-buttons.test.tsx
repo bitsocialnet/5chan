@@ -185,6 +185,7 @@ const renderWithRoute = async (element: React.ReactElement, initialEntry: string
           createElement(Route, { path: '/all/catalog', element }),
           createElement(Route, { path: '/mod/queue', element }),
           createElement(Route, { path: '/:boardIdentifier/catalog', element }),
+          createElement(Route, { path: '/:boardIdentifier/archive', element }),
           createElement(Route, { path: '/:boardIdentifier/thread/:commentCid', element }),
           createElement(Route, { path: '/:boardIdentifier', element }),
         ),
@@ -288,8 +289,9 @@ describe('BoardButtons', () => {
 
     expect(testState.resetMock).toHaveBeenCalledTimes(1);
     expect(testState.subscribeMock).toHaveBeenCalledTimes(1);
+    expect(testState.navigateMock).toHaveBeenCalledWith('/mu/archive');
     expect(globalThis.alert).toHaveBeenNthCalledWith(1, 'vote_button_unavailable_intro\n\nvote_button_unavailable_outro');
-    expect(globalThis.alert).toHaveBeenNthCalledWith(2, 'Work in progress');
+    expect(globalThis.alert).toHaveBeenCalledTimes(1);
   });
 
   it('renders desktop catalog controls and wires sort, style, filter, and refresh updates', async () => {
@@ -299,6 +301,7 @@ describe('BoardButtons', () => {
 
     expect(container.textContent).toContain('filtered_threads');
     expect(container.textContent).toContain('4');
+    expect(container.textContent).not.toContain('archive');
     expect(container.querySelector('[data-testid="catalog-filters"]')?.textContent).toBe('catalog-filters');
     expect(container.querySelector('[data-testid="catalog-search"]')?.textContent).toBe('catalog-search');
 
@@ -322,6 +325,7 @@ describe('BoardButtons', () => {
     testState.commentsByCid = {
       'comment-1': {
         cid: 'comment-1',
+        archived: true,
         closed: true,
         number: 99,
         pinned: true,
@@ -335,6 +339,7 @@ describe('BoardButtons', () => {
     const tooltips = Array.from(container.querySelectorAll<HTMLElement>('[data-testid="tooltip"]'));
     expect(tooltips.map((tooltip) => tooltip.dataset.content)).toEqual(['Replies', 'Links', 'pagination.pageLabel']);
     expect(tooltips.map((tooltip) => tooltip.textContent)).toEqual(['9', '3', '7']);
+    expect(container.textContent).toContain('Archived /');
     expect(container.textContent).toContain('Sticky /');
     expect(container.textContent).toContain('Closed /');
 

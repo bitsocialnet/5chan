@@ -66,6 +66,10 @@
   background-image: url("/assets/icons/closed.gif");
 }
 
+.threadIcons .archivedIcon {
+  background-image: url("/assets/icons/archived.gif");
+}
+
 .mediaWrapper {
   background-color: var(--media-thumbnail-background-color);
   width: var(--width);

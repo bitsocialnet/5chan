@@ -307,5 +307,8 @@
   "external_quote_resolution_unavailable": "External quote resolution is unavailable right now",
   "external_quote_cannot_resolve": "Could not find {{quote}} in /{{board}}/",
   "external_quote_unavailable": "The quoted post is unavailable",
-  "external_quote_publish_missing": "Cannot publish - could not find the quoted post for {{quote}}"
+  "external_quote_publish_missing": "Yayınlanamıyor – {{quote}} için alıntılanan gönderi bulunamadı",
+  "displaying_x_archived_threads": "{{count}} arşivlenmiş konu gösteriliyor",
+  "displaying_x_archived_threads_from_past_x_days": "Son {{days}} gündeki {{count}} arşivlenmiş konular gösteriliyor",
+  "no_archived_threads": "Arşivlenmiş konu yok"
 }

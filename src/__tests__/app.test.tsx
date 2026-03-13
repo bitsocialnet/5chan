@@ -3,8 +3,6 @@ import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { MemoryRouter, useLocation } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import App from '../app';
-
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
 
@@ -63,6 +61,8 @@ vi.mock('../hooks/use-account-subplebbit-addresses', () => ({
 
 vi.mock('../hooks/use-directories', () => ({
   useDirectories: () => testState.directories,
+  findDirectoryByAddress: (directories: Array<{ address: string; title?: string; directoryCode?: string }>, address: string) =>
+    directories.find((entry) => entry.address === address || entry.directoryCode === address || entry.title === address),
 }));
 
 vi.mock('../hooks/use-is-mobile', () => ({
@@ -180,6 +180,10 @@ vi.mock('../views/account-data-editor', () => ({
   default: makeNamedComponent('account-data-editor-view'),
 }));
 
+vi.mock('../views/archive/archive', () => ({
+  default: makeNamedComponent('archive-view'),
+}));
+
 vi.mock('../components/boards-bar-edit-modal', () => ({
   default: makeNamedComponent('boards-bar-edit-modal'),
 }));
@@ -211,6 +215,7 @@ vi.mock('../components/reply-modal', () => ({
 let latestLocation = '';
 let container: HTMLDivElement;
 let root: Root;
+let App: typeof import('../app').default | null = null;
 
 const LocationProbe = () => {
   const location = useLocation();
@@ -230,9 +235,13 @@ const flushEffects = async (count = 8) => {
 };
 
 const renderApp = async (initialEntry: string) => {
+  if (!App) {
+    App = (await import('../app')).default;
+  }
+
   latestLocation = initialEntry;
   await act(async () => {
-    root.render(createElement(MemoryRouter, { initialEntries: [initialEntry] }, createElement(App), createElement(LocationProbe)));
+    root.render(createElement(MemoryRouter, { initialEntries: [initialEntry] }, createElement(App!), createElement(LocationProbe)));
   });
   await flushEffects();
 };
@@ -334,6 +343,23 @@ describe('App', () => {
 
     expect(latestLocation).toBe('/not-allowed');
     expect(container.querySelector('[data-testid="not-allowed-view"]')).toBeTruthy();
+  });
+
+  it('renders board archive routes and hides board form/buttons on that dedicated page', async () => {
+    await renderApp('/mu/archive');
+
+    expect(latestLocation).toBe('/mu/archive');
+    expect(container.querySelector('[data-testid="post-form"]')).toBeNull();
+    expect(container.querySelector('[data-testid="board-blotter"]')).toBeNull();
+    expect(container.querySelector('[data-testid="desktop-board-buttons"]')).toBeNull();
+    expect(container.querySelector('[data-testid="boards-bar"]')).toBeTruthy();
+  });
+
+  it('does not route /all/archive to a board archive page', async () => {
+    await renderApp('/all/archive');
+
+    expect(container.querySelector('[data-testid="archive-view"]')).toBeNull();
+    expect(container.querySelector('[data-testid="not-found-view"]')).toBeTruthy();
   });
 
   it('enforces board-scoped mod queue access by account role', async () => {

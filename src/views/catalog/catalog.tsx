@@ -23,6 +23,7 @@ import LoadingEllipsis from '../../components/loading-ellipsis';
 import ErrorDisplay from '../../components/error-display/error-display';
 import styles from './catalog.module.css';
 import { commentMatchesPattern } from '../../lib/utils/pattern-utils';
+import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
 import { sortCatalogFeedForDisplay } from '../../lib/utils/catalog-sort';
 
 const lastVirtuosoStates: { [key: string]: StateSnapshot } = {};
@@ -179,12 +180,13 @@ const createCombinedFilter = (
 
   return {
     filter: (comment: Comment) => {
+      if (isCommentArchived(comment)) return false;
       if (!contentFilter.filter(comment)) return false;
       if (!searchFilter.filter(comment)) return false;
 
       return true;
     },
-    key: `${contentFilter.key}-${searchFilter.key}`,
+    key: `${contentFilter.key}-${searchFilter.key}-exclude-archived`,
   };
 };
 

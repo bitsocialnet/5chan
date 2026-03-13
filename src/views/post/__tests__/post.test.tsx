@@ -12,6 +12,9 @@ type TestComment = {
   cid?: string;
   content?: string;
   error?: Error;
+  commentModeration?: {
+    archived?: boolean;
+  };
   locked?: boolean;
   number?: number;
   parentCid?: string;
@@ -300,6 +303,27 @@ describe('Post', () => {
     expect(document.title).toBe('/mu/ - Cached thread... - 5chan');
     expect(window.scrollTo).toHaveBeenCalledWith(0, 0);
     expect(HTMLElement.prototype.scrollIntoView).not.toHaveBeenCalled();
+  });
+
+  it('passes archived OP state through to thread footers as closed', async () => {
+    testState.commentsByCid = {
+      'archived-thread': {
+        cid: 'archived-thread',
+        content: 'thread',
+        commentModeration: {
+          archived: true,
+        },
+        number: 777,
+        replyCount: 0,
+        subplebbitAddress: 'music-posting.eth',
+        title: 'Archived thread',
+      },
+    };
+
+    await renderPostPage('/mu/thread/archived-thread');
+
+    expect(container.querySelector('[data-testid="thread-footer-first-row"]')?.textContent).toBe('archived-thread:777:music-posting.eth:true');
+    expect(container.querySelector('[data-testid="thread-footer-mobile"]')?.textContent).toBe('archived-thread:777:music-posting.eth:true');
   });
 
   it('only aligns the OP container when navigation explicitly requests it', async () => {

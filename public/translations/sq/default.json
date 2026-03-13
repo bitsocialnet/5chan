@@ -307,5 +307,8 @@
   "external_quote_resolution_unavailable": "External quote resolution is unavailable right now",
   "external_quote_cannot_resolve": "Could not find {{quote}} in /{{board}}/",
   "external_quote_unavailable": "The quoted post is unavailable",
-  "external_quote_publish_missing": "Cannot publish - could not find the quoted post for {{quote}}"
+  "external_quote_publish_missing": "Nuk mund të publikojë – nuk u gjet postimi i cituar për {{quote}}",
+  "displaying_x_archived_threads": "Duke shfaqur {{count}} tema të arkivuara",
+  "displaying_x_archived_threads_from_past_x_days": "Duke shfaqur {{count}} tema të arkivuara nga {{days}} ditët e fundit",
+  "no_archived_threads": "Nuk ka tema të arkivuara"
 }

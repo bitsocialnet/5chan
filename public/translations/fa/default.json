@@ -307,5 +307,8 @@
   "external_quote_resolution_unavailable": "External quote resolution is unavailable right now",
   "external_quote_cannot_resolve": "Could not find {{quote}} in /{{board}}/",
   "external_quote_unavailable": "The quoted post is unavailable",
-  "external_quote_publish_missing": "Cannot publish - could not find the quoted post for {{quote}}"
+  "external_quote_publish_missing": "امکان انتشار وجود ندارد - پست نقل‌قول‌شده برای {{quote}} یافت نشد",
+  "displaying_x_archived_threads": "نمایش {{count}} موضوع آرشیو شده",
+  "displaying_x_archived_threads_from_past_x_days": "نمایش {{count}} موضوع آرشیوشده از {{days}} روز گذشته",
+  "no_archived_threads": "هیچ موضوعی آرشیو نشده"
 }
