@@ -15,6 +15,22 @@ describe('hasModQueueAccessRole', () => {
 });
 
 describe('canAccessBoardModQueue', () => {
+  it('allows access to the global queue when at least one moderated board is cached', () => {
+    expect(
+      canAccessBoardModQueue({
+        accountCommunityAddresses: ['music-posting.eth'],
+      }),
+    ).toBe(true);
+  });
+
+  it('rejects access to the global queue when no moderated boards are cached', () => {
+    expect(
+      canAccessBoardModQueue({
+        accountCommunityAddresses: [],
+      }),
+    ).toBe(false);
+  });
+
   it('allows access when the current board role is moderator even without cached board membership', () => {
     expect(
       canAccessBoardModQueue({
@@ -25,13 +41,13 @@ describe('canAccessBoardModQueue', () => {
     ).toBe(true);
   });
 
-  it('allows access when the cached moderated board matches by alias', () => {
+  it('rejects board-scoped access when only the cached moderated board matches by alias', () => {
     expect(
       canAccessBoardModQueue({
         boardAddress: 'music-posting.eth',
         accountCommunityAddresses: ['music-posting.bso'],
       }),
-    ).toBe(true);
+    ).toBe(false);
   });
 
   it('rejects access when neither the role nor moderated board list matches', () => {

@@ -1,5 +1,3 @@
-import { areSameBoardAddress } from './route-utils';
-
 export const hasModQueueAccessRole = (role?: string): boolean => role === 'admin' || role === 'owner' || role === 'moderator';
 
 interface BoardModQueueAccessArgs {
@@ -17,5 +15,5 @@ export const canAccessBoardModQueue = ({ boardAddress, accountCommunityAddresses
     return accountCommunityAddresses.length > 0;
   }
 
-  return accountCommunityAddresses.some((address) => areSameBoardAddress(address, boardAddress));
+  return false;
 };
