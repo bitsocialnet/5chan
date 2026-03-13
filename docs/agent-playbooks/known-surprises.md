@@ -35,7 +35,7 @@ If uncertain, ask the developer before adding an entry.
 - **Context:** Evaluating Vitest 4.1 `--changed`, targeted file runs, and `--detectAsyncLeaks` after the Vite 8 / Vitest 4.1 upgrade
 - **What was surprising:** On Node 22, some Vitest worker runs print `--localstorage-file was provided without a valid path` and replace jsdom `localStorage` with a broken object, so targeted store and jsdom tests fail even though the full suite passes.
 - **Impact:** Agents may think Vitest 4.1 changed runs are incompatible with this repo, or chase fake regressions like `localStorage.clear/removeItem/setItem is not a function`.
-- **Mitigation:** For Vitest targeted runs that use `--changed`, coverage-on-changed, or async leak detection, run with `NODE_OPTIONS=--no-webstorage` so jsdom keeps control of `localStorage`.
+- **Mitigation:** For Vitest runs in this repo, pass `--execArgv=--no-webstorage` to Vitest so its worker processes keep jsdom in control of `localStorage`. Do not put `--no-webstorage` in `NODE_OPTIONS`, because GitHub Actions rejects it there.
 - **Status:** confirmed
 
 ### Portless breaks Windows installs
