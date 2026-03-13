@@ -17,7 +17,7 @@ vi.mock('../use-current-time', () => ({
   useCurrentTime: () => testState.currentTime,
 }));
 
-vi.mock('../../stores/use-subplebbits-loading-start-timestamps-store', () => ({
+vi.mock('../../stores/use-communities-loading-start-timestamps-store', () => ({
   default: (addresses?: string[]) => {
     testState.requestedAddresses = addresses;
     return testState.loadingTimestamps;

@@ -9,7 +9,7 @@ const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise
 
 type TestComment = {
   author?: {
-    subplebbit?: {
+    community?: {
       banExpiresAt?: number;
     };
   };
@@ -33,7 +33,7 @@ type TestComment = {
   reason?: string;
   removed?: boolean;
   state?: string;
-  subplebbitAddress?: string;
+  communityAddress?: string;
 };
 
 const testState = vi.hoisted(() => ({
@@ -87,7 +87,7 @@ vi.mock('@bitsocialnet/bitsocial-react-hooks', () => ({
   useComment: ({ commentCid }: { commentCid?: string }) => (commentCid ? testState.commentsByCid[commentCid] : undefined),
 }));
 
-vi.mock('@bitsocialnet/bitsocial-react-hooks/dist/stores/subplebbits-pages', () => ({
+vi.mock('@bitsocialnet/bitsocial-react-hooks/dist/stores/communities-pages', () => ({
   default: (selector: (state: { comments: Record<string, TestComment> }) => unknown) =>
     selector({
       comments: testState.commentsByCid,
@@ -343,7 +343,7 @@ describe('CommentContent', () => {
   it('renders pending approval, ban details, and loading or failed states', async () => {
     await renderContent({
       author: {
-        subplebbit: {
+        community: {
           banExpiresAt: 1_704_067_200,
         },
       },
@@ -352,7 +352,7 @@ describe('CommentContent', () => {
       pendingApproval: true,
       postCid: 'post-1',
       reason: 'rules violation',
-      subplebbitAddress: 'music-posting.eth',
+      communityAddress: 'music-posting.eth',
     });
 
     expect(container.textContent).toContain('pending_mod_approval');

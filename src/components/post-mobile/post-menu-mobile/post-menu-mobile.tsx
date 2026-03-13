@@ -52,13 +52,13 @@ type HideButtonProps = {
 };
 
 type CopyLinkButtonProps =
-  | { cid: string; subplebbitAddress: string; linkType: 'thread'; onClose: () => void }
-  | { subplebbitAddress: string; linkType: Exclude<ShareLinkType, 'thread'>; onClose: () => void; cid?: undefined };
+  | { cid: string; communityAddress: string; linkType: 'thread'; onClose: () => void }
+  | { communityAddress: string; linkType: Exclude<ShareLinkType, 'thread'>; onClose: () => void; cid?: undefined };
 
-const CopyLinkButton = ({ cid, subplebbitAddress, linkType, onClose }: CopyLinkButtonProps) => {
+const CopyLinkButton = ({ cid, communityAddress, linkType, onClose }: CopyLinkButtonProps) => {
   const { t } = useTranslation();
   const directories = useDirectories();
-  const boardIdentifier = getBoardPath(subplebbitAddress, directories);
+  const boardIdentifier = getBoardPath(communityAddress, directories);
   const handleClick = async () => {
     await copyShareLinkSafe(boardIdentifier, linkType, linkType === 'thread' ? cid : undefined);
     onClose();
@@ -188,11 +188,15 @@ type PostMenuMobileProps = {
   editMenuPost: Comment;
 };
 
+type PostMenuLegacyAddress = Pick<PostMenuProps, 'subplebbitAddress'> & { communityAddress?: string };
+
 const PostMenuMobile = ({ postMenu, editMenuPost }: PostMenuMobileProps) => {
-  const { authorAddress, cid, deleted, link, linkHeight, linkWidth, parentCid, postCid, removed, subplebbitAddress, thumbnailUrl } = postMenu || {};
+  const { authorAddress, cid, deleted, link, linkHeight, linkWidth, parentCid, postCid, removed, thumbnailUrl } = postMenu || {};
+  const postMenuLegacyAddress = (postMenu as PostMenuLegacyAddress) || {};
+  const resolvedCommunityAddress = postMenuLegacyAddress.communityAddress || postMenuLegacyAddress.subplebbitAddress;
   const { isAccountMod, isAccountCommentAuthor } = useEditCommentPrivileges({
     commentAuthorAddress: authorAddress || '',
-    subplebbitAddress: subplebbitAddress || '',
+    subplebbitAddress: resolvedCommunityAddress || '',
   });
   const commentMediaInfo = getCommentMediaInfo(link || '', thumbnailUrl || '', linkWidth || 0, linkHeight || 0);
   const { thumbnail, type, url } = commentMediaInfo || {};
@@ -246,10 +250,10 @@ const PostMenuMobile = ({ postMenu, editMenuPost }: PostMenuMobileProps) => {
             createPortal(
               <FloatingFocusManager context={context} modal={false}>
                 <div className={styles.postMenu} ref={refs.setFloating} style={floatingStyles} aria-labelledby={headingId} {...getFloatingProps()}>
-                  {cid && subplebbitAddress && <CopyLinkButton cid={cid} subplebbitAddress={subplebbitAddress} linkType='thread' onClose={handleClose} />}
+                  {cid && resolvedCommunityAddress && <CopyLinkButton cid={cid} communityAddress={resolvedCommunityAddress} linkType='thread' onClose={handleClose} />}
                   {cid && <CopyContentIdButton cid={cid} onClose={handleClose} />}
                   {authorAddress && <CopyUserIdButton address={authorAddress} onClose={handleClose} />}
-                  {cid && subplebbitAddress && <HidePostButton cid={cid} isReply={!!parentCid} postCid={postCid} onClose={handleClose} />}
+                  {cid && resolvedCommunityAddress && <HidePostButton cid={cid} isReply={!!parentCid} postCid={postCid} onClose={handleClose} />}
                   {link && isValidURL(link) && (type === 'image' || type === 'gif' || thumbnail) && url && <ImageSearchButtons url={url} onClose={handleClose} />}
                 </div>
               </FloatingFocusManager>,

@@ -99,20 +99,20 @@ const AccountSettingsEditor = ({
         }
 
         const accountData = safeParseJSON<{
-          account?: { subplebbits?: Record<string, unknown>; subscriptions?: string[]; author?: { address?: string }; name?: string };
+          account?: { communities?: Record<string, unknown>; subscriptions?: string[]; author?: { address?: string }; name?: string };
         }>(fileContent);
         if (!accountData) {
           alert('Invalid JSON in file.');
           return;
         }
 
-        if (accountData.account?.subplebbits) {
-          const subplebbitAddresses = Object.keys(accountData.account.subplebbits);
+        if (accountData.account?.communities) {
+          const communityAddresses = Object.keys(accountData.account.communities);
           if (!accountData.account.subscriptions) {
             accountData.account.subscriptions = [];
           }
           const uniqueSubscriptions = [...accountData.account.subscriptions];
-          for (const address of subplebbitAddresses) {
+          for (const address of communityAddresses) {
             if (!uniqueSubscriptions.includes(address)) {
               uniqueSubscriptions.push(address);
             }

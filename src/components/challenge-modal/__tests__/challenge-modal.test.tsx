@@ -94,8 +94,8 @@ const createPublication = () => ({
   link: 'https://example.com/link',
   parentCid: 'parent-1',
   publishChallengeAnswers: vi.fn(),
-  shortSubplebbitAddress: 'mu',
-  subplebbitAddress: 'music-posting.eth',
+  shortCommunityAddress: 'mu',
+  communityAddress: 'music-posting.eth',
   title: 'Subject',
 });
 

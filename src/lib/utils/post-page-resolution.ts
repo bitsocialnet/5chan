@@ -10,8 +10,18 @@ export interface CommentWithCid {
 }
 
 /** Minimal FeedOptions shape for board-feed filtering */
+type LegacyFeedOptionsLike = {
+  subplebbitAddresses?: string[];
+  sortType: string;
+  postsPerPage?: number;
+  filter?: unknown;
+  newerThan?: number;
+  modQueue?: unknown;
+  accountComments?: unknown;
+};
+
 export interface FeedOptionsLike {
-  subplebbitAddresses: string[];
+  communityAddresses?: string[];
   sortType: string;
   postsPerPage?: number;
   filter?: unknown;
@@ -21,7 +31,7 @@ export interface FeedOptionsLike {
 }
 
 /** FeedsOptions-like map */
-export type FeedsOptionsLike = Record<string, FeedOptionsLike>;
+export type FeedsOptionsLike = Record<string, FeedOptionsLike | LegacyFeedOptionsLike>;
 
 /** Loaded feeds map: feedName -> Comment[] */
 export type LoadedFeedsLike = Record<string, CommentWithCid[]>;
@@ -46,14 +56,29 @@ export function findPostPageInFeed(feed: CommentWithCid[], postCid: string, guiP
  * Strict board-feed filter criteria.
  * A feed is a "board feed" iff:
  * - sortType === 'active'
- * - single-sub feed (subplebbitAddresses.length === 1)
+ * - single-board feed (one community)
  * - no filter, no newerThan, no modQueue, no accountComments
  */
-export function isBoardFeedOptions(opts: FeedOptionsLike, subplebbitAddress: string): boolean {
+const getCommunityAddresses = (opts: FeedOptionsLike | LegacyFeedOptionsLike): string[] => {
+  if ('communityAddresses' in opts && Array.isArray(opts.communityAddresses)) {
+    return opts.communityAddresses;
+  }
+  if ('subplebbitAddresses' in opts && Array.isArray(opts.subplebbitAddresses)) {
+    return opts.subplebbitAddresses;
+  }
+  return [];
+};
+
+/**
+ * Supports both canonical `communityAddresses` and legacy `subplebbitAddresses`.
+ */
+export function isBoardFeedOptions(opts: FeedOptionsLike | LegacyFeedOptionsLike, communityAddress: string): boolean {
+  const communityAddresses = getCommunityAddresses(opts);
+
   return (
     opts.sortType === 'active' &&
-    opts.subplebbitAddresses?.length === 1 &&
-    opts.subplebbitAddresses[0] === subplebbitAddress &&
+    communityAddresses.length === 1 &&
+    communityAddresses[0] === communityAddress &&
     !opts.filter &&
     opts.newerThan == null &&
     !opts.modQueue &&
@@ -67,7 +92,7 @@ export function isBoardFeedOptions(opts: FeedOptionsLike, subplebbitAddress: str
  *
  * @param feedsOptions - Feeds store feedsOptions
  * @param loadedFeeds - Feeds store loadedFeeds
- * @param subplebbitAddress - Board subplebbit address
+ * @param communityAddress - Board community address
  * @param postCid - CID of the post (OP) to locate
  * @param guiPostsPerPage - Posts per GUI page
  * @returns 1-based page number, or undefined if not found in any matching feed
@@ -75,15 +100,15 @@ export function isBoardFeedOptions(opts: FeedOptionsLike, subplebbitAddress: str
 export function findPostPageInLoadedBoardFeeds(
   feedsOptions: FeedsOptionsLike,
   loadedFeeds: LoadedFeedsLike,
-  subplebbitAddress: string,
+  communityAddress: string,
   postCid: string,
   guiPostsPerPage: number,
 ): number | undefined {
-  if (!subplebbitAddress || !postCid || guiPostsPerPage <= 0) return undefined;
+  if (!communityAddress || !postCid || guiPostsPerPage <= 0) return undefined;
 
   for (const feedName of Object.keys(feedsOptions)) {
     const opts = feedsOptions[feedName];
-    if (!opts || !isBoardFeedOptions(opts, subplebbitAddress)) continue;
+    if (!opts || !isBoardFeedOptions(opts as FeedOptionsLike, communityAddress)) continue;
 
     const feed = loadedFeeds[feedName];
     if (!feed || !Array.isArray(feed)) continue;

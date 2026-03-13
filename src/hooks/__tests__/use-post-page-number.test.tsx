@@ -86,7 +86,7 @@ describe('usePostPageNumber', () => {
     testState.feedsOptions = {
       boardFeed: {
         sortType: 'active',
-        subplebbitAddresses: ['music.eth'],
+        communityAddresses: ['music.eth'],
       },
     };
     testState.loadedFeeds = {
@@ -97,7 +97,7 @@ describe('usePostPageNumber', () => {
     expect(testState.preloadOptions).toEqual({
       postsPerPage: 20,
       sortType: 'active',
-      subplebbitAddresses: ['music.eth'],
+      communityAddresses: ['music.eth'],
     });
   });
 
@@ -108,7 +108,7 @@ describe('usePostPageNumber', () => {
     expect(testState.preloadOptions).toEqual({
       postsPerPage: 20,
       sortType: 'active',
-      subplebbitAddresses: ['music.eth'],
+      communityAddresses: ['music.eth'],
     });
   });
 

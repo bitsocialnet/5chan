@@ -1,11 +1,11 @@
 import { memo, useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Comment, Role, useComment, useEditedComment, useSubplebbit } from '@bitsocialnet/bitsocial-react-hooks';
-import useSubplebbitsPagesStore from '@bitsocialnet/bitsocial-react-hooks/dist/stores/subplebbits-pages';
-import { useSubplebbitField } from '../../hooks/use-stable-subplebbit';
+import { Comment, Role, useComment, useEditedComment, useCommunity } from '@bitsocialnet/bitsocial-react-hooks';
+import useCommunitiesPagesStore from '@bitsocialnet/bitsocial-react-hooks/dist/stores/communities-pages';
+import { useCommunityField } from '../../hooks/use-stable-community';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { isAllView } from '../../lib/utils/view-utils';
-import { useResolvedSubplebbitAddress } from '../../hooks/use-resolved-subplebbit-address';
+import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
 import { useDirectories } from '../../hooks/use-directories';
 import { areSameBoardAddress, isDirectoryBoard } from '../../lib/utils/route-utils';
 import useIsMobile from '../../hooks/use-is-mobile';
@@ -21,7 +21,7 @@ import styles from './post.module.css';
 // from the catalog appears instantly instead of going through a loading phase.
 const useCommentWithFeedCache = (options: { commentCid: string | undefined }) => {
   const comment = useComment(options);
-  const cachedComment = useSubplebbitsPagesStore((state) => state.comments[options?.commentCid || '']);
+  const cachedComment = useCommunitiesPagesStore((state) => state.comments[options?.commentCid || '']);
 
   return useMemo(() => {
     if (!cachedComment || comment?.timestamp) return comment;
@@ -53,7 +53,8 @@ export interface PostProps {
 export const Post = memo(
   ({ post, showAllReplies = false, showReplies = true, targetReplyCid, isModQueue, modQueueStatus, modQueueError, isPublishing, onApprove, onReject }: PostProps) => {
     // Only subscribe to roles field to avoid rerenders from updatingState changes
-    const roles = useSubplebbitField(post?.subplebbitAddress, (subplebbit) => subplebbit?.roles);
+    const communityAddress = post?.communityAddress || post?.subplebbitAddress;
+    const roles = useCommunityField(communityAddress, (community) => community?.roles);
     const isMobile = useIsMobile();
 
     let comment = post;
@@ -130,7 +131,7 @@ const PostPage = () => {
   const params = useParams();
   const location = useLocation();
   const { commentCid } = params;
-  const subplebbitAddress = useResolvedSubplebbitAddress();
+  const communityAddress = useResolvedCommunityAddress();
   const isInAllView = isAllView(location.pathname);
 
   const comment = useCommentWithFeedCache({ commentCid });
@@ -138,13 +139,14 @@ const PostPage = () => {
 
   const navigate = useNavigate();
   useEffect(() => {
-    if (comment?.subplebbitAddress && subplebbitAddress && !areSameBoardAddress(comment.subplebbitAddress, subplebbitAddress)) {
+    const commentCommunityAddress = comment?.communityAddress || comment?.subplebbitAddress;
+    if (commentCommunityAddress && communityAddress && !areSameBoardAddress(commentCommunityAddress, communityAddress)) {
       navigate('/not-found', { replace: true });
     }
-  }, [comment?.subplebbitAddress, subplebbitAddress, navigate]);
+  }, [comment?.communityAddress, comment?.subplebbitAddress, communityAddress, navigate]);
 
-  const subplebbit = useSubplebbit({ subplebbitAddress });
-  const { error: subplebbitError, shortAddress, title } = subplebbit || {};
+  const community = useCommunity({ communityAddress });
+  const { error: communityError, shortAddress, title } = community || {};
   const directories = useDirectories();
 
   // if the comment is a reply, return the post comment instead, then the reply will be highlighted in the thread
@@ -192,17 +194,17 @@ const PostPage = () => {
     } else if (isDirectory) {
       boardTitle = `/${boardIdentifier}/`;
     } else {
-      boardTitle = title ? title : shortAddress || subplebbitAddress || '';
+      boardTitle = title ? title : shortAddress || communityAddress || '';
     }
 
     const postTitle = post?.title?.slice(0, 30) || post?.content?.slice(0, 30);
     const postTitlePart = postTitle ? ` - ${postTitle.trim()}...` : '';
     document.title = `${boardTitle}${postTitlePart} - 5chan`;
-  }, [title, shortAddress, subplebbitAddress, post?.title, post?.content, isInAllView, t, params.boardIdentifier, directories]);
+  }, [title, shortAddress, communityAddress, post?.title, post?.content, isInAllView, t, params.boardIdentifier, directories]);
 
   const shouldShowCommentError = comment?.error?.message && !comment?.cid;
   const shouldShowPostError = post?.error && post?.replyCount > 0 && post?.replies?.length === 0;
-  const shouldShowSubplebbitError = subplebbitError?.message && !post?.cid;
+  const shouldShowCommunityError = communityError?.message && !post?.cid;
 
   const targetReplyCid = comment?.parentCid ? comment?.cid : undefined;
 
@@ -214,9 +216,9 @@ const PostPage = () => {
         </div>
       )}
       <Post post={post} showAllReplies={true} targetReplyCid={targetReplyCid} />
-      {shouldShowSubplebbitError && (
+      {shouldShowCommunityError && (
         <div className={styles.error}>
-          <ErrorDisplay error={subplebbitError} />
+          <ErrorDisplay error={communityError} />
         </div>
       )}
       {shouldShowCommentError && (
@@ -224,13 +226,13 @@ const PostPage = () => {
           <ErrorDisplay error={comment?.error} />
         </div>
       )}
-      {post?.cid && subplebbitAddress ? (
+      {post?.cid && communityAddress ? (
         <>
           <PageFooterDesktop
-            firstRow={<ThreadFooterFirstRow postCid={post.cid} threadNumber={post?.number} subplebbitAddress={subplebbitAddress} isThreadClosed={!!post?.locked} />}
+            firstRow={<ThreadFooterFirstRow postCid={post.cid} threadNumber={post?.number} communityAddress={communityAddress} isThreadClosed={!!post?.locked} />}
             styleRow={<ThreadFooterStyleRow />}
           />
-          <ThreadFooterMobile postCid={post.cid} threadNumber={post?.number} subplebbitAddress={subplebbitAddress} isThreadClosed={!!post?.locked} />
+          <ThreadFooterMobile postCid={post.cid} threadNumber={post?.number} communityAddress={communityAddress} isThreadClosed={!!post?.locked} />
         </>
       ) : null}
     </div>

@@ -122,7 +122,7 @@ const basePost = {
   reason: '',
   removed: false,
   spoiler: false,
-  subplebbitAddress: 'music-posting.eth',
+  communityAddress: 'music-posting.eth',
 } as Record<string, any>;
 
 const renderMenu = async (post = basePost) => {
@@ -248,7 +248,7 @@ describe('EditMenu', () => {
       deleted: true,
       reason: 'cleanup',
       spoiler: false,
-      subplebbitAddress: 'music-posting.eth',
+      communityAddress: 'music-posting.eth',
     });
   });
 
@@ -287,7 +287,7 @@ describe('EditMenu', () => {
         shortAddress: '0xmod',
       },
       commentCid: 'comment-1',
-      subplebbitAddress: 'music-posting.eth',
+      communityAddress: 'music-posting.eth',
     });
     expect(testState.modOptions?.commentModeration).toMatchObject({
       reason: 'rule violation',

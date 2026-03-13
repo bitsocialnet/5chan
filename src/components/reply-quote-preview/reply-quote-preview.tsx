@@ -10,6 +10,7 @@ import { findPreferredScrollTarget, getThreadTopNavigationState, scrollThreadCon
 import useIsMobile from '../../hooks/use-is-mobile';
 import styles from '../../views/post/post.module.css';
 import { Post } from '../../views/post';
+import { getCommentCommunityAddress, withResolvedCommentCommunityAddress } from '../../lib/utils/comment-utils';
 
 interface ReplyQuotePreviewProps {
   isBacklinkReply?: boolean;
@@ -133,13 +134,15 @@ const DesktopQuotePreview = ({
 
   const navigate = useNavigate();
   const location = useLocation();
+  const normalizedBacklinkReply = withResolvedCommentCommunityAddress(backlinkReply);
+  const normalizedQuotelinkReply = withResolvedCommentCommunityAddress(quotelinkReply);
 
   const isOnThreadPage = location.pathname.includes('/thread/');
 
-  const handleClick = (e: React.MouseEvent, cid: string | undefined, subplebbitAddress: string | undefined, isOpQuote = false) => {
+  const handleClick = (e: React.MouseEvent, cid: string | undefined, communityAddress: string | undefined, isOpQuote = false) => {
     e.preventDefault();
-    if (cid && subplebbitAddress) {
-      const boardPath = getBoardPath(subplebbitAddress, directories);
+    if (cid && communityAddress) {
+      const boardPath = getBoardPath(communityAddress, directories);
       const threadRoute = `/${boardPath}/thread/${cid}`;
       if (isOpQuote) {
         if (isOnThreadPage && scrollThreadContainerToTop(cid)) return;
@@ -170,8 +173,13 @@ const DesktopQuotePreview = ({
     setOutOfViewCid(null);
   };
 
-  const backlinkBoardPath = backlinkReply?.subplebbitAddress ? getBoardPath(backlinkReply.subplebbitAddress, directories) : undefined;
-  const backlinkRoute = backlinkReply?.cid ? (backlinkBoardPath ? `/${backlinkBoardPath}/thread/${backlinkReply.cid}` : `/thread/${backlinkReply.cid}`) : '#';
+  const backlinkCommunityAddress = getCommentCommunityAddress(normalizedBacklinkReply);
+  const backlinkBoardPath = backlinkCommunityAddress ? getBoardPath(backlinkCommunityAddress, directories) : undefined;
+  const backlinkRoute = normalizedBacklinkReply?.cid
+    ? backlinkBoardPath
+      ? `/${backlinkBoardPath}/thread/${normalizedBacklinkReply.cid}`
+      : `/thread/${normalizedBacklinkReply.cid}`
+    : '#';
 
   const replyBacklink = (
     <>
@@ -179,18 +187,18 @@ const DesktopQuotePreview = ({
         className={styles.backlink}
         to={backlinkRoute}
         ref={refs.setReference}
-        onMouseOver={() => handleMouseOver(backlinkReply?.cid)}
-        onMouseLeave={() => handleMouseLeave(backlinkReply?.cid)}
-        onClick={(e) => handleClick(e, backlinkReply?.cid, backlinkReply?.subplebbitAddress)}
+        onMouseOver={() => handleMouseOver(normalizedBacklinkReply?.cid)}
+        onMouseLeave={() => handleMouseLeave(normalizedBacklinkReply?.cid)}
+        onClick={(e) => handleClick(e, normalizedBacklinkReply?.cid, backlinkCommunityAddress)}
       >
         {'>>'}
-        {backlinkReply?.number ?? '?'}
+        {normalizedBacklinkReply?.number ?? '?'}
       </Link>
-      {hoveredCid === backlinkReply?.cid &&
-        outOfViewCid === backlinkReply?.cid &&
+      {hoveredCid === normalizedBacklinkReply?.cid &&
+        outOfViewCid === normalizedBacklinkReply?.cid &&
         createPortal(
           <div className={styles.replyQuotePreview} data-thread-scroll-preview='true' ref={refs.setFloating} style={floatingStyles}>
-            <Post post={backlinkReply} showReplies={false} />
+            <Post post={normalizedBacklinkReply} showReplies={false} />
           </div>,
           document.body,
         )}
@@ -199,15 +207,19 @@ const DesktopQuotePreview = ({
 
   const account = useAccount();
 
-  const resolvedQuotelinkNumber = quotelinkReply?.number ?? quotelinkNumber;
-  const resolvedQuotelinkCid = quotelinkReply?.cid;
-  const resolvedQuotelinkSubplebbitAddress = quotelinkReply?.subplebbitAddress;
-  const quoteTargetAvailability = getQuoteTargetAvailability(quotelinkReply);
+  const resolvedQuotelinkNumber = normalizedQuotelinkReply?.number ?? quotelinkNumber;
+  const resolvedQuotelinkCid = normalizedQuotelinkReply?.cid;
+  const resolvedQuotelinkCommunityAddress = getCommentCommunityAddress(normalizedQuotelinkReply);
+  const quoteTargetAvailability = getQuoteTargetAvailability(normalizedQuotelinkReply);
   const quotelinkUnavailable = Boolean(isQuotelinkUnavailable || quoteTargetAvailability === 'unavailable');
   const quotelinkPendingResolution = !quotelinkUnavailable && quoteTargetAvailability === 'unresolved';
   const quotelinkClassName = quotelinkUnavailable ? `${styles.quoteLink} ${styles.quoteLinkUnavailable}` : styles.quoteLink;
-  const quotelinkBoardPath = quotelinkReply?.subplebbitAddress ? getBoardPath(quotelinkReply.subplebbitAddress, directories) : undefined;
-  const quotelinkRoute = quotelinkReply?.cid ? (quotelinkBoardPath ? `/${quotelinkBoardPath}/thread/${quotelinkReply.cid}` : `/thread/${quotelinkReply.cid}`) : '#';
+  const quotelinkBoardPath = resolvedQuotelinkCommunityAddress ? getBoardPath(resolvedQuotelinkCommunityAddress, directories) : undefined;
+  const quotelinkRoute = normalizedQuotelinkReply?.cid
+    ? quotelinkBoardPath
+      ? `/${quotelinkBoardPath}/thread/${normalizedQuotelinkReply.cid}`
+      : `/thread/${normalizedQuotelinkReply.cid}`
+    : '#';
   const shouldShowQuotelinkPreview = shouldShowFloatingQuotePreview({
     hoveredCid,
     outOfViewCid,
@@ -218,7 +230,7 @@ const DesktopQuotePreview = ({
     <>
       {formatQuoteNumber(resolvedQuotelinkNumber)}
       {isOP && ' (OP)'}
-      {quotelinkReply?.author?.address === account?.author?.address && ' (You)'}
+      {normalizedQuotelinkReply?.author?.address === account?.author?.address && ' (You)'}
     </>
   );
 
@@ -235,7 +247,7 @@ const DesktopQuotePreview = ({
           className={quotelinkClassName}
           onMouseOver={() => handleMouseOver(resolvedQuotelinkCid)}
           onMouseLeave={() => handleMouseLeave(resolvedQuotelinkCid)}
-          onClick={(e) => handleClick(e, resolvedQuotelinkCid, resolvedQuotelinkSubplebbitAddress, !!isOP)}
+          onClick={(e) => handleClick(e, resolvedQuotelinkCid, resolvedQuotelinkCommunityAddress, !!isOP)}
         >
           {quotelinkLabel}
         </Link>
@@ -244,7 +256,7 @@ const DesktopQuotePreview = ({
       {shouldShowQuotelinkPreview &&
         createPortal(
           <div className={styles.replyQuotePreview} data-thread-scroll-preview='true' ref={refs.setFloating} style={floatingStyles}>
-            <Post post={quotelinkReply} showReplies={false} />
+            <Post post={normalizedQuotelinkReply} showReplies={false} />
           </div>,
           document.body,
         )}
@@ -267,6 +279,8 @@ const MobileQuotePreview = ({
   const [hoveredCid, setHoveredCid] = useState<string | null>(null);
   const [outOfViewCid, setOutOfViewCid] = useState<string | null>(null);
   const directories = useDirectories();
+  const normalizedBacklinkReply = withResolvedCommentCommunityAddress(backlinkReply);
+  const normalizedQuotelinkReply = withResolvedCommentCommunityAddress(quotelinkReply);
 
   const { refs, floatingStyles, update } = useFloating({
     placement: 'bottom',
@@ -287,10 +301,10 @@ const MobileQuotePreview = ({
   const location = useLocation();
   const isOnThreadPage = location.pathname.includes('/thread/');
 
-  const handleClick = (e: React.MouseEvent, cid: string | undefined, subplebbitAddress: string | undefined, isOpQuote = false) => {
+  const handleClick = (e: React.MouseEvent, cid: string | undefined, communityAddress: string | undefined, isOpQuote = false) => {
     e.preventDefault();
-    if (cid && subplebbitAddress) {
-      const boardPath = getBoardPath(subplebbitAddress, directories);
+    if (cid && communityAddress) {
+      const boardPath = getBoardPath(communityAddress, directories);
       const threadRoute = `/${boardPath}/thread/${cid}`;
       if (isOpQuote) {
         if (isOnThreadPage && scrollThreadContainerToTop(cid)) return;
@@ -325,27 +339,32 @@ const MobileQuotePreview = ({
       <span
         className={styles.backlink}
         ref={refs.setReference}
-        onMouseOver={() => handleMouseOver(backlinkReply?.cid)}
-        onMouseLeave={() => handleMouseLeave(backlinkReply?.cid)}
+        onMouseOver={() => handleMouseOver(normalizedBacklinkReply?.cid)}
+        onMouseLeave={() => handleMouseLeave(normalizedBacklinkReply?.cid)}
       >
-        {`>>${backlinkReply?.number ?? '?'}`}
+        {`>>${normalizedBacklinkReply?.number ?? '?'}`}
       </span>
-      {backlinkReply?.number &&
+      {normalizedBacklinkReply?.number &&
         (() => {
-          const backlinkBoardPath = backlinkReply?.subplebbitAddress ? getBoardPath(backlinkReply.subplebbitAddress, directories) : undefined;
-          const backlinkRoute = backlinkReply?.cid ? (backlinkBoardPath ? `/${backlinkBoardPath}/thread/${backlinkReply.cid}` : `/thread/${backlinkReply.cid}`) : '#';
+          const backlinkCommunityAddress = getCommentCommunityAddress(normalizedBacklinkReply);
+          const backlinkBoardPath = backlinkCommunityAddress ? getBoardPath(backlinkCommunityAddress, directories) : undefined;
+          const backlinkRoute = normalizedBacklinkReply?.cid
+            ? backlinkBoardPath
+              ? `/${backlinkBoardPath}/thread/${normalizedBacklinkReply.cid}`
+              : `/thread/${normalizedBacklinkReply.cid}`
+            : '#';
           return (
-            <Link to={backlinkRoute} className={styles.backlinkHash} onClick={(e) => handleClick(e, backlinkReply?.cid, backlinkReply?.subplebbitAddress)}>
+            <Link to={backlinkRoute} className={styles.backlinkHash} onClick={(e) => handleClick(e, normalizedBacklinkReply?.cid, backlinkCommunityAddress)}>
               {' '}
               #
             </Link>
           );
         })()}
-      {hoveredCid === backlinkReply?.cid &&
-        outOfViewCid === backlinkReply?.cid &&
+      {hoveredCid === normalizedBacklinkReply?.cid &&
+        outOfViewCid === normalizedBacklinkReply?.cid &&
         createPortal(
           <div className={styles.replyQuotePreview} data-thread-scroll-preview='true' ref={refs.setFloating} style={floatingStyles}>
-            <Post post={backlinkReply} showReplies={false} />
+            <Post post={normalizedBacklinkReply} showReplies={false} />
           </div>,
           document.body,
         )}
@@ -353,10 +372,10 @@ const MobileQuotePreview = ({
   );
 
   const account = useAccount();
-  const resolvedQuotelinkNumber = quotelinkReply?.number ?? quotelinkNumber;
-  const resolvedQuotelinkCid = quotelinkReply?.cid;
-  const resolvedQuotelinkSubplebbitAddress = quotelinkReply?.subplebbitAddress;
-  const quoteTargetAvailability = getQuoteTargetAvailability(quotelinkReply);
+  const resolvedQuotelinkNumber = normalizedQuotelinkReply?.number ?? quotelinkNumber;
+  const resolvedQuotelinkCid = normalizedQuotelinkReply?.cid;
+  const resolvedQuotelinkCommunityAddress = getCommentCommunityAddress(normalizedQuotelinkReply);
+  const quoteTargetAvailability = getQuoteTargetAvailability(normalizedQuotelinkReply);
   const quotelinkUnavailable = Boolean(isQuotelinkUnavailable || quoteTargetAvailability === 'unavailable');
   const quotelinkPendingResolution = !quotelinkUnavailable && quoteTargetAvailability === 'unresolved';
   const quotelinkClassName = quotelinkUnavailable ? `${styles.quoteLink} ${styles.quoteLinkUnavailable}` : styles.quoteLink;
@@ -377,20 +396,20 @@ const MobileQuotePreview = ({
       >
         {formatQuoteNumber(resolvedQuotelinkNumber)}
         {isOP && ' (OP)'}
-        {quotelinkReply?.author?.address === account?.author?.address && ' (You)'}
+        {normalizedQuotelinkReply?.author?.address === account?.author?.address && ' (You)'}
       </span>
       {!quotelinkUnavailable &&
         !quotelinkPendingResolution &&
         resolvedQuotelinkNumber &&
         (() => {
-          const quotelinkBoardPath = resolvedQuotelinkSubplebbitAddress ? getBoardPath(resolvedQuotelinkSubplebbitAddress, directories) : undefined;
+          const quotelinkBoardPath = resolvedQuotelinkCommunityAddress ? getBoardPath(resolvedQuotelinkCommunityAddress, directories) : undefined;
           const quotelinkRoute = resolvedQuotelinkCid
             ? quotelinkBoardPath
               ? `/${quotelinkBoardPath}/thread/${resolvedQuotelinkCid}`
               : `/thread/${resolvedQuotelinkCid}`
             : '#';
           return (
-            <Link className={quotelinkClassName} to={quotelinkRoute} onClick={(e) => handleClick(e, resolvedQuotelinkCid, resolvedQuotelinkSubplebbitAddress, !!isOP)}>
+            <Link className={quotelinkClassName} to={quotelinkRoute} onClick={(e) => handleClick(e, resolvedQuotelinkCid, resolvedQuotelinkCommunityAddress, !!isOP)}>
               {' '}
               #
             </Link>
@@ -400,7 +419,7 @@ const MobileQuotePreview = ({
       {shouldShowQuotelinkPreview &&
         createPortal(
           <div className={styles.replyQuotePreview} data-thread-scroll-preview='true' ref={refs.setFloating} style={floatingStyles}>
-            <Post post={quotelinkReply} showReplies={false} />
+            <Post post={normalizedQuotelinkReply} showReplies={false} />
           </div>,
           document.body,
         )}

@@ -24,7 +24,16 @@ type TestComment = {
   postCid?: string;
   removed?: boolean;
   replyCount?: number;
+  replies?: {
+    pages?: Record<
+      string,
+      {
+        comments?: TestComment[];
+      }
+    >;
+  };
   spoiler?: boolean;
+  communityAddress?: string;
   subplebbitAddress?: string;
   thumbnailUrl?: string;
   timestamp?: number;
@@ -44,6 +53,7 @@ const testState = vi.hoisted(() => ({
   linkCount: 0,
   matchedFilters: new Map<string, string>(),
   mediaInfoByLink: {} as Record<string, { patternThumbnailUrl?: string; thumbnail?: string; type: string; url: string }>,
+  lastRepliesComment: undefined as TestComment | undefined,
   replies: [] as TestComment[],
   roleByAddress: {} as Record<string, { commentAuthorRole?: string; isCommentAuthorMod: boolean }>,
   showOPComment: true,
@@ -63,9 +73,28 @@ vi.mock('react-i18next', () => ({
 }));
 
 vi.mock('@bitsocialnet/bitsocial-react-hooks', () => ({
-  useReplies: ({ comment }: { comment?: TestComment }) => ({
-    replies: comment ? testState.replies : [],
-  }),
+  useReplies: ({ comment, sortType }: { comment?: TestComment; sortType?: string }) => {
+    if (comment) {
+      testState.lastRepliesComment = comment;
+    }
+
+    const preloadedReplies =
+      comment?.replies?.pages?.[sortType || 'best']?.comments ?? Object.values(comment?.replies?.pages ?? {}).find((page) => page?.comments?.length)?.comments;
+
+    const compatiblePreloadedReplies: TestComment[] = [];
+    if (preloadedReplies?.length && comment?.communityAddress) {
+      for (const reply of preloadedReplies) {
+        if (!reply?.communityAddress || reply.communityAddress !== comment.communityAddress) {
+          break;
+        }
+        compatiblePreloadedReplies.push(reply);
+      }
+    }
+
+    return {
+      replies: comment ? (compatiblePreloadedReplies.length ? compatiblePreloadedReplies : testState.replies) : [],
+    };
+  },
 }));
 
 vi.mock('@bitsocialnet/bitsocial-react-hooks/dist/lib/localforage-lru/index.js', () => ({
@@ -202,6 +231,7 @@ describe('CatalogRow', () => {
     testState.linkCount = 0;
     testState.matchedFilters = new Map<string, string>();
     testState.mediaInfoByLink = {};
+    testState.lastRepliesComment = undefined;
     testState.replies = [];
     testState.roleByAddress = {};
     testState.showOPComment = true;
@@ -296,7 +326,7 @@ describe('CatalogRow', () => {
       locked: true,
       pinned: true,
       replyCount: 5,
-      subplebbitAddress: 'music-posting.eth',
+      communityAddress: 'music-posting.eth',
       timestamp: 100,
       title: 'Thread title',
     };
@@ -335,7 +365,7 @@ describe('CatalogRow', () => {
       content: 'Alias test',
       link: 'https://example.com/media.png',
       replyCount: 4,
-      subplebbitAddress: 'music-posting.eth',
+      communityAddress: 'music-posting.eth',
       title: 'Alias title',
     };
 
@@ -348,6 +378,52 @@ describe('CatalogRow', () => {
     expect(container.querySelector('[title=\"(R)eplies / (I)mage Replies\"]')).toBeTruthy();
   });
 
+  it('normalizes legacy board addresses before fetching hover preview replies', async () => {
+    testState.directories = [{ address: 'music-posting.eth', features: {}, title: '/mu/ - Music' }];
+    testState.mediaInfoByLink['https://example.com/legacy.png'] = { type: 'image', url: 'https://example.com/legacy.png' };
+    testState.replies = [];
+
+    const post: TestComment = {
+      author: { address: 'author-1', displayName: 'Alice' },
+      cid: 'post-legacy',
+      content: 'Legacy address thread',
+      link: 'https://example.com/legacy.png',
+      replyCount: 1,
+      replies: {
+        pages: {
+          new: {
+            comments: [
+              {
+                author: { address: 'author-2', displayName: 'Bob' },
+                cid: 'reply-legacy',
+                subplebbitAddress: 'music-posting.eth',
+                timestamp: 200,
+              },
+            ],
+          },
+        },
+      },
+      subplebbitAddress: 'music-posting.eth',
+      timestamp: 100,
+      title: 'Legacy title',
+    };
+
+    await renderWithRouter(createElement(CatalogRow, { row: [post] }), '/all/catalog');
+    vi.useFakeTimers();
+
+    const previewTrigger = document.body.querySelector('a[href="/mu/thread/post-legacy"] > div');
+    await act(async () => {
+      previewTrigger?.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+      vi.advanceTimersByTime(260);
+      await Promise.resolve();
+    });
+
+    expect(testState.lastRepliesComment?.communityAddress).toBe('music-posting.eth');
+    expect(testState.lastRepliesComment?.replies?.pages?.new?.comments?.[0]?.communityAddress).toBe('music-posting.eth');
+    expect(document.body.textContent).toContain('Legacy title by Alice');
+    expect(document.body.textContent).toContain('last_reply_by Bob');
+  });
+
   it('renders hidden and text-only threads with canonical board thread links', async () => {
     testState.hiddenCids = new Set(['hidden-1']);
     testState.showOPComment = false;
@@ -358,14 +434,14 @@ describe('CatalogRow', () => {
         cid: 'hidden-1',
         content: 'hidden text',
         link: 'https://example.com/hidden.png',
-        subplebbitAddress: 'music-posting.eth',
+        communityAddress: 'music-posting.eth',
       },
       {
         author: { address: 'text-author', displayName: 'Anon' },
         cid: 'text-1',
         content: 'Plain thread body',
         replyCount: 1,
-        subplebbitAddress: 'music-posting.eth',
+        communityAddress: 'music-posting.eth',
         title: 'Text title',
       },
     ];

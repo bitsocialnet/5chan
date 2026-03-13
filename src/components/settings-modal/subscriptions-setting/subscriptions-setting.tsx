@@ -6,7 +6,7 @@ import { memo, useState } from 'react';
 
 const SubscriptionButton = ({ address }: { address: string }) => {
   const { t } = useTranslation();
-  const { subscribed, subscribe, unsubscribe } = useSubscribe({ subplebbitAddress: address });
+  const { subscribed, subscribe, unsubscribe } = useSubscribe({ communityAddress: address });
   const [recentlyUnsubscribed, setRecentlyUnsubscribed] = useState(false);
 
   const handleClick = () => {

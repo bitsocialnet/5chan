@@ -120,7 +120,7 @@ const basePostMenu = {
   parentCid: undefined as string | undefined,
   postCid: 'cid-1',
   removed: false,
-  subplebbitAddress: 'music-posting.eth',
+  communityAddress: 'music-posting.eth',
   thumbnailUrl: undefined as string | undefined,
 };
 

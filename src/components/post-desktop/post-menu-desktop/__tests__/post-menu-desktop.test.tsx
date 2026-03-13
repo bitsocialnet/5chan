@@ -106,7 +106,7 @@ const basePostMenu = {
   linkHeight: 0,
   linkWidth: 0,
   postCid: 'cid-1',
-  subplebbitAddress: 'music-posting.eth',
+  communityAddress: 'music-posting.eth',
   thumbnailUrl: undefined as string | undefined,
 };
 

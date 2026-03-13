@@ -9,7 +9,17 @@ import { extractUnresolvedExternalQuoteReferences, getExternalQuoteStatusMessage
 import { resolveExternalQuoteTarget } from '../lib/utils/external-quote-resolver';
 import useChallengesStore from '../stores/use-challenges-store';
 
-const usePublishReply = ({ cid, subplebbitAddress, postCid }: { cid: string; subplebbitAddress: string; postCid?: string }) => {
+type UsePublishReplyOptions = {
+  cid: string;
+  communityAddress?: string;
+  /** legacy compatibility */
+  subplebbitAddress?: string;
+  postCid?: string;
+};
+
+const usePublishReply = ({ cid, communityAddress: requestedCommunityAddress, subplebbitAddress, postCid }: UsePublishReplyOptions) => {
+  const communityAddress = requestedCommunityAddress ?? subplebbitAddress;
+
   const { t } = useTranslation();
   const parentCid = cid;
   const account = useAccount();
@@ -39,7 +49,8 @@ const usePublishReply = ({ cid, subplebbitAddress, postCid }: { cid: string; sub
 
   const createBaseOptions = useCallback(() => {
     const baseOptions: Comment = {
-      subplebbitAddress,
+      communityAddress,
+      subplebbitAddress: communityAddress,
       parentCid,
       postCid: postCid ?? parentCid,
       content,
@@ -53,7 +64,7 @@ const usePublishReply = ({ cid, subplebbitAddress, postCid }: { cid: string; sub
     }
 
     return baseOptions;
-  }, [author, content, link, parentCid, postCid, spoiler, subplebbitAddress]);
+  }, [author, content, link, parentCid, postCid, spoiler, communityAddress]);
 
   const setPublishReplyOptions = useCallback(
     (options: Partial<Comment>) => {
@@ -74,16 +85,16 @@ const usePublishReply = ({ cid, subplebbitAddress, postCid }: { cid: string; sub
 
   const resetPublishReplyOptions = useCallback(() => resetPublishReplyStore(parentCid), [parentCid, resetPublishReplyStore]);
 
-  const scopedNumberToCid = usePostNumberStore((state) => (subplebbitAddress ? state.numberToCid[subplebbitAddress] : undefined));
+  const scopedNumberToCid = usePostNumberStore((state) => (communityAddress ? state.numberToCid[communityAddress] : undefined));
   const quotedCids = useMemo(() => getQuotedCidsFromContent(content, scopedNumberToCid), [content, scopedNumberToCid]);
   const unresolvedExternalQuoteReferences = useMemo(
     () =>
       extractUnresolvedExternalQuoteReferences({
         content,
         scopedNumberToCid,
-        subplebbitAddress,
+        communityAddress,
       }),
-    [content, scopedNumberToCid, subplebbitAddress],
+    [content, scopedNumberToCid, communityAddress],
   );
   const publishResolvableQuoteReferences = useMemo(
     () => unresolvedExternalQuoteReferences.filter((reference) => reference.kind === 'same-board'),
@@ -123,7 +134,7 @@ const usePublishReply = ({ cid, subplebbitAddress, postCid }: { cid: string; sub
     setPublishReplyError(null);
     setPublishReplyStateMessage(null);
     setIsResolvingExternalQuotes(false);
-  }, [content, subplebbitAddress]);
+  }, [content, communityAddress]);
 
   useEffect(() => {
     if (pendingPublishRequestId === 0 || pendingPublishRequestId === startedPublishRequestIdRef.current) {

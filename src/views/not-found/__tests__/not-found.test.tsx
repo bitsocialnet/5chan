@@ -14,7 +14,7 @@ const testState = vi.hoisted(() => ({
   },
   resolvedAddress: 'music-posting.eth',
   shortAddress: 'mu',
-  subplebbitAddress: 'music-posting.eth',
+  communityAddress: 'music-posting.eth',
 }));
 
 vi.mock('react-router-dom', async () => {
@@ -26,8 +26,8 @@ vi.mock('react-router-dom', async () => {
   };
 });
 
-vi.mock('../../../hooks/use-stable-subplebbit', () => ({
-  useSubplebbitField: (_address: string, selector: (subplebbit: { address?: string; shortAddress?: string }) => string | undefined) =>
+vi.mock('../../../hooks/use-stable-community', () => ({
+  useCommunityField: (_address: string, selector: (community: { address?: string; shortAddress?: string }) => string | undefined) =>
     selector({
       address: testState.resolvedAddress,
       shortAddress: testState.shortAddress,
@@ -39,7 +39,7 @@ vi.mock('../../../hooks/use-directories', () => ({
 }));
 
 vi.mock('../../../lib/utils/route-utils', () => ({
-  getSubplebbitAddress: () => testState.subplebbitAddress,
+  getSubplebbitAddress: () => testState.communityAddress,
 }));
 
 vi.mock('../../home', () => ({
@@ -68,7 +68,7 @@ describe('NotFound', () => {
     };
     testState.resolvedAddress = 'music-posting.eth';
     testState.shortAddress = 'mu';
-    testState.subplebbitAddress = 'music-posting.eth';
+    testState.communityAddress = 'music-posting.eth';
 
     container = document.createElement('div');
     document.body.appendChild(container);
@@ -96,7 +96,7 @@ describe('NotFound', () => {
     };
     testState.resolvedAddress = '';
     testState.shortAddress = '';
-    testState.subplebbitAddress = '';
+    testState.communityAddress = '';
 
     await renderNotFound();
 

@@ -29,8 +29,9 @@ const PendingPost = () => {
   }, [isValidAccountCommentIndex, navigate]);
 
   useEffect(() => {
-    if (post?.cid && post?.subplebbitAddress) {
-      const boardPath = getBoardPath(post.subplebbitAddress, directories);
+    const postCommunityAddress = post?.communityAddress || post?.subplebbitAddress;
+    if (post?.cid && postCommunityAddress) {
+      const boardPath = getBoardPath(postCommunityAddress, directories);
       navigate(`/${boardPath}/thread/${post.cid}`, { replace: true });
     }
   }, [post, navigate, directories]);

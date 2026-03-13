@@ -2,13 +2,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const testState = vi.hoisted(() => ({
   consoleErrorMock: vi.fn(),
-  subplebbits: {} as Record<string, { roles?: Record<string, { role?: string }> }>,
+  communities: {} as Record<string, { roles?: Record<string, { role?: string }> }>,
 }));
 
-vi.mock('@bitsocialnet/bitsocial-react-hooks/dist/stores/subplebbits', () => ({
+vi.mock('@bitsocialnet/bitsocial-react-hooks/dist/stores/communities', () => ({
   default: {
     getState: () => ({
-      subplebbits: testState.subplebbits,
+      communities: testState.communities,
     }),
   },
 }));
@@ -20,7 +20,7 @@ describe('pattern-utils', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    testState.subplebbits = {
+    testState.communities = {
       'music-posting.eth': {
         roles: {
           'author-1': { role: 'moderator' },

@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
-import { useClientsStates, useSubplebbit, useSubplebbitsStates } from '@bitsocialnet/bitsocial-react-hooks';
+import { useClientsStates, useCommunity, useCommunitiesStates } from '@bitsocialnet/bitsocial-react-hooks';
 import debounce from 'lodash/debounce';
 import getShortAddress from '../lib/get-short-address';
 
-interface CommentOrSubplebbit {
+interface CommentOrCommunity {
   state?: string;
   publishingState?: string;
   updatingState?: string;
@@ -13,13 +13,24 @@ interface States {
   [key: string]: string[];
 }
 
+type CommunityLoadingState = {
+  communityAddresses: string[];
+  clientUrls: string[];
+};
+
+const isCommunityLoadingState = (state: string[] | CommunityLoadingState | undefined): state is CommunityLoadingState =>
+  Boolean(state && !Array.isArray(state) && 'communityAddresses' in state && 'clientUrls' in state);
+
 const friendlyStateNames: Record<string, string> = {
   'fetching-ipns': 'downloading board',
   'fetching-ipfs': 'downloading thread',
+  'fetching-community-ipns': 'downloading board',
+  'fetching-community-ipfs': 'downloading board',
   'fetching-subplebbit-ipns': 'downloading board',
   'fetching-subplebbit-ipfs': 'downloading board',
   'fetching-update-ipfs': 'downloading update',
   'resolving-address': 'resolving address',
+  'resolving-community-address': 'resolving board address',
   'resolving-subplebbit-address': 'resolving board address',
   'resolving-author-address': 'resolving author address',
 };
@@ -38,8 +49,8 @@ const sanitizeSingleFeedLoadingState = (stateString?: string): string | undefine
     .replace(/\bloading thread\b/g, 'loading board');
 };
 
-const useStateString = (commentOrSubplebbit: CommentOrSubplebbit): string | undefined => {
-  const { states: rawStates } = useClientsStates({ comment: commentOrSubplebbit }) as { states: States };
+const useStateString = (commentOrCommunity: CommentOrCommunity): string | undefined => {
+  const { states: rawStates } = useClientsStates({ comment: commentOrCommunity }) as { states: States };
 
   const debouncedStates = useMemo(() => {
     const debouncedValue = debounce((value: States) => value, 300);
@@ -69,21 +80,21 @@ const useStateString = (commentOrSubplebbit: CommentOrSubplebbit): string | unde
       stateString += downloadingParts.join(', ') + ' via IPFS';
     }
 
-    if (!stateString && commentOrSubplebbit?.state !== 'succeeded') {
-      if (commentOrSubplebbit?.publishingState && commentOrSubplebbit?.publishingState !== 'stopped' && commentOrSubplebbit?.publishingState !== 'succeeded') {
-        stateString = commentOrSubplebbit.publishingState;
-      } else if (commentOrSubplebbit?.updatingState !== 'stopped' && commentOrSubplebbit?.updatingState !== 'succeeded') {
-        stateString = commentOrSubplebbit?.updatingState;
+    if (!stateString && commentOrCommunity?.state !== 'succeeded') {
+      if (commentOrCommunity?.publishingState && commentOrCommunity?.publishingState !== 'stopped' && commentOrCommunity?.publishingState !== 'succeeded') {
+        stateString = commentOrCommunity.publishingState;
+      } else if (commentOrCommunity?.updatingState !== 'stopped' && commentOrCommunity?.updatingState !== 'succeeded') {
+        stateString = commentOrCommunity?.updatingState;
       }
       if (stateString) {
         const isIpfsRelated = stateString.includes('ipfs') || stateString.includes('ipns');
         stateString = stateString
           .replaceAll('-', ' ')
           .replace('ipfs', 'thread')
-          .replace('ipns', 'subplebbit')
+          .replace('ipns', 'community')
           .replace('fetching', 'downloading')
-          .replace('subplebbit subplebbit', 'board')
-          .replace('downloading subplebbit', 'downloading board');
+          .replace('community community', 'board')
+          .replace('downloading community', 'downloading board');
         if (isIpfsRelated) {
           stateString += ' via IPFS';
         }
@@ -95,68 +106,83 @@ const useStateString = (commentOrSubplebbit: CommentOrSubplebbit): string | unde
     }
 
     return stateString === '' ? undefined : stateString;
-  }, [debouncedStates, commentOrSubplebbit]);
+  }, [debouncedStates, commentOrCommunity]);
 };
 
-export const useFeedStateString = (subplebbitAddresses?: string[]): string | undefined => {
-  // single subplebbit feed state string
-  const subplebbitAddress = subplebbitAddresses?.length === 1 ? subplebbitAddresses[0] : undefined;
-  const subplebbit = useSubplebbit({ subplebbitAddress });
-  const singleSubplebbitFeedStateString = sanitizeSingleFeedLoadingState(useStateString(subplebbit));
+export const useFeedStateString = (communityAddresses?: string[]): string | undefined => {
+  // single community feed state string
+  const communityAddress = communityAddresses?.length === 1 ? communityAddresses[0] : undefined;
+  const community = useCommunity(communityAddress ? { communityAddress } : undefined);
+  const singleCommunityFeedStateString = sanitizeSingleFeedLoadingState(useStateString(community));
 
-  // multiple subplebbit feed state string
-  const { states } = useSubplebbitsStates({ subplebbitAddresses });
+  // multiple community feed state string
+  const { states } = useCommunitiesStates({ communityAddresses });
 
-  const multipleSubplebbitsFeedStateString = useMemo(() => {
-    if (subplebbitAddress) {
+  const multipleCommunitiesFeedStateString = useMemo(() => {
+    if (communityAddress) {
       return;
     }
 
     let stateString = '';
 
     if (states['resolving-address']) {
-      const { subplebbitAddresses, clientUrls } = states['resolving-address'];
-      if (subplebbitAddresses.length && clientUrls.length) {
-        const count = subplebbitAddresses.length;
+      const resolvingState = states['resolving-address'];
+      if (isCommunityLoadingState(resolvingState)) {
+        const { communityAddresses } = resolvingState;
+        const count = communityAddresses.length;
         stateString += `resolving ${count} board ${count === 1 ? 'address' : 'addresses'}`;
       }
     }
 
-    const pagesStatesSubplebbitAddresses = new Set<string>();
+    const pagesStatesCommunityAddresses = new Set<string>();
     for (const state in states) {
       if (state.match('page')) {
-        states[state].subplebbitAddresses.forEach((subplebbitAddress: string) => pagesStatesSubplebbitAddresses.add(subplebbitAddress));
+        const communityState = states[state];
+        if (isCommunityLoadingState(communityState)) {
+          communityState.communityAddresses.forEach((address: string) => pagesStatesCommunityAddresses.add(address));
+        }
       }
     }
 
-    if (states['fetching-ipns'] || states['fetching-ipfs'] || pagesStatesSubplebbitAddresses.size) {
+    if (states['fetching-ipns'] || states['fetching-ipfs'] || pagesStatesCommunityAddresses.size) {
       if (stateString) stateString += ', ';
       stateString += 'downloading ';
       if (states['fetching-ipns']) {
-        const count = states['fetching-ipns'].subplebbitAddresses.length;
-        stateString += `${count} ${count === 1 ? 'board' : 'boards'}`;
-        if (count <= 5) {
-          stateString += ` (${states['fetching-ipns'].subplebbitAddresses.map((a: string) => getShortAddress(a) || a).join(', ')})`;
+        const fetchingIpnsState = states['fetching-ipns'];
+        if (isCommunityLoadingState(fetchingIpnsState)) {
+          const count = fetchingIpnsState.communityAddresses.length;
+          stateString += `${count} ${count === 1 ? 'board' : 'boards'}`;
+          if (count <= 5) {
+            stateString += ` (${fetchingIpnsState.communityAddresses.map((a: string) => getShortAddress(a) || a).join(', ')})`;
+          }
         }
       }
+
       if (states['fetching-ipfs']) {
-        if (states['fetching-ipns']) stateString += ', ';
-        const count = states['fetching-ipfs'].subplebbitAddresses.length;
-        stateString += `${count} ${count === 1 ? 'thread' : 'threads'}`;
+        const fetchingIpfsState = states['fetching-ipfs'];
+        if (isCommunityLoadingState(fetchingIpfsState)) {
+          if (stateString[stateString.length - 1] !== ' ') {
+            stateString += ', ';
+          }
+          const count = fetchingIpfsState.communityAddresses.length;
+          stateString += `${count} ${count === 1 ? 'thread' : 'threads'}`;
+        }
       }
-      if (pagesStatesSubplebbitAddresses.size) {
+
+      if (pagesStatesCommunityAddresses.size) {
         if (states['fetching-ipns'] || states['fetching-ipfs']) stateString += ', ';
-        const count = pagesStatesSubplebbitAddresses.size;
+        const count = pagesStatesCommunityAddresses.size;
         stateString += `${count} ${count === 1 ? 'page' : 'pages'}`;
       }
+
       stateString += ' via IPFS';
     }
 
-    if (!stateString && subplebbitAddresses?.length) {
-      const count = subplebbitAddresses.length;
+    if (!stateString && communityAddresses?.length) {
+      const count = communityAddresses.length;
       stateString = `downloading ${count} ${count === 1 ? 'board' : 'boards'}`;
       if (count <= 5) {
-        stateString += ` (${subplebbitAddresses.map((a) => getShortAddress(a) || a).join(', ')})`;
+        stateString += ` (${communityAddresses.map((a) => getShortAddress(a) || a).join(', ')})`;
       }
     }
 
@@ -165,12 +191,12 @@ export const useFeedStateString = (subplebbitAddresses?: string[]): string | und
 
     // if string is empty, return undefined instead
     return stateString === '' ? undefined : stateString;
-  }, [states, subplebbitAddress, subplebbitAddresses]);
+  }, [states, communityAddress, communityAddresses]);
 
-  if (singleSubplebbitFeedStateString) {
-    return singleSubplebbitFeedStateString;
+  if (singleCommunityFeedStateString) {
+    return singleCommunityFeedStateString;
   }
-  return multipleSubplebbitsFeedStateString;
+  return multipleCommunitiesFeedStateString;
 };
 
 export default useStateString;

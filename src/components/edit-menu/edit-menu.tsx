@@ -15,6 +15,7 @@ import useChallengesStore from '../../stores/use-challenges-store';
 import capitalize from 'lodash/capitalize';
 import useIsMobile from '../../hooks/use-is-mobile';
 import useAuthorPrivileges from '../../hooks/use-author-privileges';
+import { getCommentCommunityAddress, withResolvedCommentCommunityAddress } from '../../lib/utils/comment-utils';
 
 const { addChallenge } = useChallengesStore.getState();
 
@@ -32,30 +33,32 @@ const timestampToDays = (timestamp: number) => {
 const EditMenu = ({ post }: { post: Comment }) => {
   const { t } = useTranslation();
   const isMobile = useIsMobile();
-  const { author, cid, content, deleted, locked, parentCid, pinned, postCid, reason, removed, spoiler, subplebbitAddress } = post || {};
-  const authorDisplayName = post?.author?.displayName;
-  const modBanExpiresAt = post?.commentModeration?.author?.banExpiresAt;
-  const purged = post?.commentModeration?.purged ?? false;
+  const resolvedPost = withResolvedCommentCommunityAddress(post);
+  const { author, cid, content, deleted, locked, parentCid, pinned, postCid, reason, removed, spoiler } = resolvedPost || {};
+  const communityAddress = getCommentCommunityAddress(resolvedPost);
+  const authorDisplayName = resolvedPost?.author?.displayName;
+  const modBanExpiresAt = resolvedPost?.commentModeration?.author?.banExpiresAt;
+  const purged = resolvedPost?.commentModeration?.purged ?? false;
   const [isEditMenuOpen, setIsEditMenuOpen] = useState(false);
   const [isContentEditorOpen, setIsContentEditorOpen] = useState(false);
 
   const account = useAccount();
   const { isCommentAuthorMod, isAccountMod, isAccountCommentAuthor } = useAuthorPrivileges({
     commentAuthorAddress: author?.address,
-    subplebbitAddress,
+    subplebbitAddress: communityAddress || '',
     postCid,
   });
   const signer = isAccountCommentAuthor ? account?.signer : null;
-  const latestPostRef = useRef(post);
+  const latestPostRef = useRef(resolvedPost);
   useEffect(() => {
-    latestPostRef.current = post;
-  }, [post]);
+    latestPostRef.current = resolvedPost;
+  }, [resolvedPost]);
   const onChallenge = useCallback((...args: any) => addChallenge([...args, latestPostRef.current]), []);
 
   const defaultPublishEditOptions = useMemo(() => {
     return {
       commentCid: cid,
-      subplebbitAddress,
+      communityAddress,
       // Author edit properties
       content: isAccountCommentAuthor ? content : undefined,
       deleted: isAccountCommentAuthor ? (deleted ?? false) : undefined,
@@ -79,14 +82,14 @@ const EditMenu = ({ post }: { post: Comment }) => {
         alert('Comment edit failed. ' + error.message);
       },
     };
-  }, [isAccountMod, isAccountCommentAuthor, cid, content, deleted, locked, pinned, reason, removed, purged, spoiler, subplebbitAddress, modBanExpiresAt, onChallenge]);
+  }, [isAccountMod, isAccountCommentAuthor, cid, content, deleted, locked, pinned, reason, removed, purged, spoiler, communityAddress, modBanExpiresAt, onChallenge]);
 
   const [publishCommentEditOptions, setPublishCommentEditOptions] = useState<PublishCommentEditOptions>(defaultPublishEditOptions);
 
   const authorEditOptions = useMemo<PublishCommentEditOptions>(
     () => ({
       commentCid: cid,
-      subplebbitAddress,
+      communityAddress,
       signer,
       author: signer?.address === author?.address ? { address: signer?.address, displayName: authorDisplayName } : account?.author,
       content: publishCommentEditOptions.content,
@@ -100,13 +103,13 @@ const EditMenu = ({ post }: { post: Comment }) => {
         alert('Comment edit failed. ' + error.message);
       },
     }),
-    [publishCommentEditOptions, cid, subplebbitAddress, signer, account?.author, author?.address, authorDisplayName, onChallenge],
+    [publishCommentEditOptions, cid, communityAddress, signer, account?.author, author?.address, authorDisplayName, onChallenge],
   );
 
   const modEditOptions = useMemo<PublishCommentModerationOptions>(
     () => ({
       commentCid: cid,
-      subplebbitAddress,
+      communityAddress,
       commentModeration: {
         locked: parentCid === undefined ? publishCommentEditOptions.commentModeration?.locked : undefined,
         pinned: publishCommentEditOptions.commentModeration?.pinned,
@@ -124,7 +127,7 @@ const EditMenu = ({ post }: { post: Comment }) => {
         alert('Comment moderation failed. ' + error.message);
       },
     }),
-    [publishCommentEditOptions, cid, subplebbitAddress, account?.author, parentCid, onChallenge],
+    [publishCommentEditOptions, cid, communityAddress, account?.author, parentCid, onChallenge],
   );
 
   const { publishCommentEdit: publishAuthorEdit } = usePublishCommentEdit(authorEditOptions);

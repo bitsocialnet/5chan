@@ -14,7 +14,7 @@ type TestComment = {
   };
   cid?: string;
   number?: number;
-  subplebbitAddress?: string;
+  communityAddress?: string;
 };
 
 const testState = vi.hoisted(() => ({
@@ -217,7 +217,7 @@ describe('ReplyQuotePreview', () => {
       quotelinkReply: {
         cid: 'reply-cid',
         number: 7,
-        subplebbitAddress: 'music-posting.eth',
+        communityAddress: 'music-posting.eth',
       },
     });
 
@@ -244,7 +244,7 @@ describe('ReplyQuotePreview', () => {
       quotelinkReply: {
         cid: 'thread-cid',
         number: 1,
-        subplebbitAddress: 'music-posting.eth',
+        communityAddress: 'music-posting.eth',
       },
     });
 
@@ -273,7 +273,7 @@ describe('ReplyQuotePreview', () => {
       quotelinkReply: {
         cid: 'thread-cid',
         number: 1,
-        subplebbitAddress: 'music-posting.eth',
+        communityAddress: 'music-posting.eth',
       },
     });
 
@@ -301,7 +301,7 @@ describe('ReplyQuotePreview', () => {
       quotelinkReply: {
         cid: 'thread-cid',
         number: 1,
-        subplebbitAddress: 'music-posting.eth',
+        communityAddress: 'music-posting.eth',
       },
     });
 
@@ -330,7 +330,7 @@ describe('ReplyQuotePreview', () => {
       backlinkReply: {
         cid: 'reply-cid',
         number: 7,
-        subplebbitAddress: 'music-posting.eth',
+        communityAddress: 'music-posting.eth',
       },
       isBacklinkReply: true,
     });
@@ -354,7 +354,7 @@ describe('ReplyQuotePreview', () => {
       quotelinkReply: {
         cid: 'reply-cid',
         number: 9,
-        subplebbitAddress: 'music-posting.eth',
+        communityAddress: 'music-posting.eth',
       },
     });
 
@@ -403,7 +403,7 @@ describe('ReplyQuotePreview', () => {
         },
         cid: 'reply-cid',
         number: 10,
-        subplebbitAddress: 'music-posting.eth',
+        communityAddress: 'music-posting.eth',
       },
       showTrailingBreak: false,
     });
@@ -420,7 +420,7 @@ describe('ReplyQuotePreview', () => {
       backlinkReply: {
         cid: 'reply-cid',
         number: 5,
-        subplebbitAddress: 'music-posting.eth',
+        communityAddress: 'music-posting.eth',
       },
       isBacklinkReply: true,
     });
@@ -448,7 +448,7 @@ describe('ReplyQuotePreview', () => {
       quotelinkReply: {
         cid: 'thread-cid',
         number: 1,
-        subplebbitAddress: 'music-posting.eth',
+        communityAddress: 'music-posting.eth',
       },
     });
 
@@ -475,7 +475,7 @@ describe('ReplyQuotePreview', () => {
       backlinkReply: {
         cid: 'reply-cid',
         number: 5,
-        subplebbitAddress: 'music-posting.eth',
+        communityAddress: 'music-posting.eth',
       },
       isBacklinkReply: true,
     });

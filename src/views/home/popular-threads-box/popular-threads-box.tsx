@@ -1,7 +1,7 @@
 import { memo, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Comment, Subplebbit } from '@bitsocialnet/bitsocial-react-hooks';
+import { Comment, Community } from '@bitsocialnet/bitsocial-react-hooks';
 import styles from '../home.module.css';
 import usePopularPosts from '../../../hooks/use-popular-posts';
 import { useFeedStateString } from '../../../hooks/use-state-string';
@@ -58,16 +58,17 @@ const PopularThreadCard = memo(
 const PopularThreadsBox = ({
   directories,
   directoryAddresses,
-  subplebbits,
+  communities,
 }: {
   directories: DirectoryCommunity[];
   directoryAddresses: string[];
-  subplebbits: Array<Subplebbit | undefined>;
+  communities: Array<Community | undefined>;
 }) => {
   const { t } = useTranslation();
   const { showWorksafeContentOnly, showNsfwContentOnly } = usePopularThreadsOptionsStore();
+  const getCommentCommunityAddress = (post: Comment) => post.communityAddress || post.subplebbitAddress;
 
-  const { filteredBoardAddresses, filteredSubplebbits } = useMemo(() => {
+  const { filteredBoardAddresses, filteredCommunities } = useMemo(() => {
     const filteredEntries = directoryAddresses.flatMap((address, index) => {
       const directoryEntry = findDirectoryByAddress(directories, address);
       if (showWorksafeContentOnly && directoryEntry?.nsfw) {
@@ -77,16 +78,16 @@ const PopularThreadsBox = ({
         return [];
       }
 
-      return [{ address, subplebbit: subplebbits[index] }];
+      return [{ address, community: communities[index] }];
     });
 
     return {
       filteredBoardAddresses: filteredEntries.map((entry) => entry.address),
-      filteredSubplebbits: filteredEntries.map((entry) => entry.subplebbit),
+      filteredCommunities: filteredEntries.map((entry) => entry.community),
     };
-  }, [directories, directoryAddresses, showNsfwContentOnly, showWorksafeContentOnly, subplebbits]);
+  }, [directories, directoryAddresses, showNsfwContentOnly, showWorksafeContentOnly, communities]);
 
-  const { popularPosts, isLoading } = usePopularPosts(filteredSubplebbits, filteredBoardAddresses);
+  const { popularPosts, isLoading } = usePopularPosts(filteredCommunities, filteredBoardAddresses);
   const loadingStateString = useFeedStateString(filteredBoardAddresses) || t('loading');
 
   return (
@@ -100,9 +101,10 @@ const PopularThreadsBox = ({
           <LoadingEllipsis string={loadingStateString} />
         ) : (
           popularPosts.map((post: Comment) => {
-            const directoryEntry = findDirectoryByAddress(directories, post.subplebbitAddress);
+            const communityAddress = getCommentCommunityAddress(post);
+            const directoryEntry = findDirectoryByAddress(directories, communityAddress);
             const boardTitle = directoryEntry?.title?.replace(/^\/[^/]+\/\s*-\s*/, '') || '';
-            const boardPath = post.subplebbitAddress ? getBoardPath(post.subplebbitAddress, directories) : '';
+            const boardPath = communityAddress ? getBoardPath(communityAddress, directories) : '';
             return <PopularThreadCard key={post.cid} post={post} boardTitle={boardTitle} boardPath={boardPath} />;
           })
         )}

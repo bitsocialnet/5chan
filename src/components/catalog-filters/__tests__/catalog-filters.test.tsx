@@ -13,14 +13,14 @@ type FilterItem = {
   enabled: boolean;
   filteredCids: Set<string>;
   hide: boolean;
-  subplebbitCounts: Map<string, number>;
-  subplebbitFilteredCids: Map<string, Set<string>>;
+  communityCounts: Map<string, number>;
+  communityFilteredCids: Map<string, Set<string>>;
   text: string;
   top: boolean;
 };
 
 const testState = vi.hoisted(() => ({
-  currentSubplebbitAddress: 'music-posting.eth' as string | null,
+  currentCommunityAddress: 'music-posting.eth' as string | null,
   filterItems: [] as FilterItem[],
   resetCountsMock: vi.fn(),
   resetFeedMock: vi.fn(),
@@ -33,8 +33,8 @@ const createFilterItem = (overrides: Partial<FilterItem> = {}): FilterItem => ({
   enabled: true,
   filteredCids: new Set<string>(),
   hide: true,
-  subplebbitCounts: new Map<string, number>(),
-  subplebbitFilteredCids: new Map<string, Set<string>>(),
+  communityCounts: new Map<string, number>(),
+  communityFilteredCids: new Map<string, Set<string>>(),
   text: '',
   top: false,
   ...overrides,
@@ -42,7 +42,7 @@ const createFilterItem = (overrides: Partial<FilterItem> = {}): FilterItem => ({
 
 function getCatalogFiltersState() {
   return {
-    currentSubplebbitAddress: testState.currentSubplebbitAddress,
+    currentCommunityAddress: testState.currentCommunityAddress,
     filterItems: testState.filterItems,
     saveAndApplyFilters: testState.saveAndApplyFiltersMock,
   };
@@ -54,7 +54,7 @@ function useCatalogFiltersStoreMock<T>(selector?: (state: ReturnType<typeof getC
 }
 
 useCatalogFiltersStoreMock.getState = () => ({
-  resetCountsForCurrentSubplebbit: testState.resetCountsMock,
+  resetCountsForCurrentCommunity: testState.resetCountsMock,
 });
 
 vi.mock('react-i18next', () => ({
@@ -134,19 +134,19 @@ describe('CatalogFilters', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.useRealTimers();
-    testState.currentSubplebbitAddress = 'music-posting.eth';
+    testState.currentCommunityAddress = 'music-posting.eth';
     testState.filterItems = [
       createFilterItem({
         count: 2,
-        subplebbitCounts: new Map([['music-posting.eth', 2]]),
-        subplebbitFilteredCids: new Map([['music-posting.eth', new Set(['alpha-cid'])]]),
+        communityCounts: new Map([['music-posting.eth', 2]]),
+        communityFilteredCids: new Map([['music-posting.eth', new Set(['alpha-cid'])]]),
         text: 'alpha',
       }),
       createFilterItem({
         count: 4,
         hide: false,
-        subplebbitCounts: new Map([['music-posting.eth', 4]]),
-        subplebbitFilteredCids: new Map([['music-posting.eth', new Set(['beta-cid'])]]),
+        communityCounts: new Map([['music-posting.eth', 4]]),
+        communityFilteredCids: new Map([['music-posting.eth', new Set(['beta-cid'])]]),
         text: 'beta',
         top: true,
       }),

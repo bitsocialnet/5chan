@@ -5,7 +5,7 @@ import { isAllView, isCatalogView, isModView, isModQueueView, isPendingPostView,
 import { usePostPageNumber } from '../../hooks/use-post-page-number';
 import { useDirectories, useDirectoryByAddress } from '../../hooks/use-directories';
 import { getBoardPath, isDirectoryBoard } from '../../lib/utils/route-utils';
-import { useResolvedSubplebbitAddress } from '../../hooks/use-resolved-subplebbit-address';
+import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
 import useCatalogFiltersStore from '../../stores/use-catalog-filters-store';
 import useCatalogStyleStore from '../../stores/use-catalog-style-store';
 import useFeedResetStore from '../../stores/use-feed-reset-store';
@@ -73,7 +73,7 @@ export const ArchiveButton = ({ address, isInAllView, isInSubscriptionsView, isI
 
 const SubscribeButton = ({ address }: BoardButtonsProps) => {
   const { t } = useTranslation();
-  const { subscribed, subscribe, unsubscribe } = useSubscribe({ subplebbitAddress: address });
+  const { subscribed, subscribe, unsubscribe } = useSubscribe({ communityAddress: address });
 
   return (
     <button className='button' onClick={subscribed ? unsubscribe : subscribe}>
@@ -119,8 +119,8 @@ const VoteButton = () => {
   const params = useParams();
   const directories = useDirectories();
 
-  // Get the boardIdentifier from params (try boardIdentifier first, then subplebbitAddress for backward compatibility)
-  const boardIdentifier = params.boardIdentifier || params.subplebbitAddress;
+  // Get the boardIdentifier from params (try boardIdentifier first, then communityAddress for backward compatibility)
+  const boardIdentifier = params.boardIdentifier || params.communityAddress;
 
   // Only render the vote button if we're on a directory board route
   if (!boardIdentifier || !isDirectoryBoard(boardIdentifier, directories)) {
@@ -386,8 +386,8 @@ export const MobileBoardButtons = () => {
   const isInModQueueView = isModQueueView(location.pathname);
 
   const accountComment = useAccountComment({ commentIndex: params?.accountCommentIndex as any });
-  const resolvedAddress = useResolvedSubplebbitAddress();
-  const subplebbitAddress = resolvedAddress || accountComment?.subplebbitAddress;
+  const resolvedAddress = useResolvedCommunityAddress();
+  const communityAddress = resolvedAddress || accountComment?.communityAddress;
 
   const { filteredCount, searchText } = useCatalogFiltersStore();
   const enableInfiniteScroll = useFeedViewSettingsStore((state) => state.enableInfiniteScroll);
@@ -397,15 +397,15 @@ export const MobileBoardButtons = () => {
 
   // Check if we should show the vote button (only for directory boards)
   const directories = useDirectories();
-  const boardIdentifier = params.boardIdentifier || params.subplebbitAddress;
+  const boardIdentifier = params.boardIdentifier || params.communityAddress;
   const showVoteButton = boardIdentifier && isDirectoryBoard(boardIdentifier, directories);
 
   return (
     <div className={`${styles.mobileBoardButtons} ${!isInCatalogView ? styles.addMargin : ''}`}>
       {isInPostView || isInPendingPostPage ? (
         <>
-          <ReturnButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
-          <CatalogButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
+          <ReturnButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
+          <CatalogButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
           {showBottomButton && <BottomButton />}
           <div className={styles.secondRow}>
             <UpdateButton />
@@ -415,7 +415,7 @@ export const MobileBoardButtons = () => {
       ) : isInModQueueView ? (
         <>
           <ReturnButton
-            address={subplebbitAddress}
+            address={communityAddress}
             isInAllView={isInAllView}
             isInSubscriptionsView={isInSubscriptionsView}
             isInModView={isInModView}
@@ -427,8 +427,8 @@ export const MobileBoardButtons = () => {
         </>
       ) : isInCatalogView ? (
         <>
-          <ReturnButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
-          <ArchiveButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
+          <ReturnButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
+          <ArchiveButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
           {showBottomButton && <BottomButton />}
           <RefreshButton />
           {searchText ? (
@@ -469,11 +469,11 @@ export const MobileBoardButtons = () => {
       ) : (
         <>
           {showBottomButton && <BottomButton />}
-          <CatalogButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
+          <CatalogButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
           <RefreshButton />
           <div className={styles.secondRow}>
             {showVoteButton && <VoteButton />}
-            {!(isInAllView || isInSubscriptionsView || isInModView) && <SubscribeButton address={subplebbitAddress} />}
+            {!(isInAllView || isInSubscriptionsView || isInModView) && <SubscribeButton address={communityAddress} />}
             {!(isInAllView || isInSubscriptionsView) && <ModQueueButton boardIdentifier={boardIdentifier} isMobile={true} />}
           </div>
         </>
@@ -487,9 +487,9 @@ export const PostPageStats = () => {
   const params = useParams();
   const location = useLocation();
   const commentCid = params?.commentCid as string | undefined;
-  const resolvedAddress = useResolvedSubplebbitAddress();
+  const resolvedAddress = useResolvedCommunityAddress();
   const accountComment = useAccountComment({ commentIndex: params?.accountCommentIndex as any });
-  const subplebbitAddress = resolvedAddress || accountComment?.subplebbitAddress;
+  const communityAddress = resolvedAddress || accountComment?.communityAddress;
 
   const comment = useComment({ commentCid });
   const postCid = comment?.postCid ?? commentCid;
@@ -497,12 +497,12 @@ export const PostPageStats = () => {
 
   const { closed, pinned, replyCount } = post || {};
   const linkCount = useCountLinksInReplies(post);
-  const directoryEntry = useDirectoryByAddress(subplebbitAddress);
+  const directoryEntry = useDirectoryByAddress(communityAddress);
   const requirePostLinkIsMedia = directoryEntry?.features?.requirePostLinkIsMedia === true;
 
   const isThreadView = isPostPageView(location.pathname, params);
   const pageNumber = usePostPageNumber({
-    subplebbitAddress,
+    subplebbitAddress: communityAddress,
     postCid,
     enabled: isThreadView,
   });
@@ -531,8 +531,8 @@ export const DesktopBoardButtons = () => {
   const params = useParams();
   const location = useLocation();
   const accountComment = useAccountComment({ commentIndex: params?.accountCommentIndex as any });
-  const resolvedAddress = useResolvedSubplebbitAddress();
-  const subplebbitAddress = resolvedAddress || accountComment?.subplebbitAddress;
+  const resolvedAddress = useResolvedCommunityAddress();
+  const communityAddress = resolvedAddress || accountComment?.communityAddress;
   const isInCatalogView = isCatalogView(location.pathname, params);
   const isInAllView = isAllView(location.pathname);
   const isInPendingPostPage = isPendingPostView(location.pathname, params);
@@ -549,7 +549,7 @@ export const DesktopBoardButtons = () => {
 
   // Check if we should show the vote button (only for directory boards)
   const directories = useDirectories();
-  const boardIdentifier = params.boardIdentifier || params.subplebbitAddress;
+  const boardIdentifier = params.boardIdentifier || params.communityAddress;
   const showVoteButton = boardIdentifier && isDirectoryBoard(boardIdentifier, directories);
 
   return (
@@ -558,8 +558,8 @@ export const DesktopBoardButtons = () => {
       <div className={styles.desktopBoardButtons}>
         {isInPostView || isInPendingPostPage ? (
           <>
-            [<ReturnButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />] [
-            <CatalogButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />]
+            [<ReturnButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />] [
+            <CatalogButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />]
             {showBottomButton && (
               <>
                 {' '}
@@ -575,7 +575,7 @@ export const DesktopBoardButtons = () => {
           <>
             [
             <ReturnButton
-              address={subplebbitAddress}
+              address={communityAddress}
               isInAllView={isInAllView}
               isInSubscriptionsView={isInSubscriptionsView}
               isInModView={isInModView}
@@ -591,14 +591,14 @@ export const DesktopBoardButtons = () => {
           <>
             {isInCatalogView ? (
               <>
-                [<ReturnButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />] [
-                <ArchiveButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />]{' '}
+                [<ReturnButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />] [
+                <ArchiveButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />]{' '}
               </>
             ) : (
               <>
                 <SearchOPsBar />
-                [<CatalogButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />] [
-                <ArchiveButton address={subplebbitAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />]{' '}
+                [<CatalogButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />] [
+                <ArchiveButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />]{' '}
               </>
             )}
             {showBottomButton && (
@@ -645,7 +645,7 @@ export const DesktopBoardButtons = () => {
               {showVoteButton && !(isInAllView || isInSubscriptionsView || isInModView) && ' '}
               {!(isInAllView || isInSubscriptionsView || isInModView) && (
                 <>
-                  [<SubscribeButton address={subplebbitAddress} />]
+                  [<SubscribeButton address={communityAddress} />]
                 </>
               )}{' '}
               {isInCatalogView && (
@@ -670,8 +670,8 @@ const SearchOPsBar = () => {
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, useParams());
   const isInModView = isModView(location.pathname);
   const directories = useDirectories();
-  const resolvedAddress = useResolvedSubplebbitAddress();
-  const boardPath = resolvedAddress ? getBoardPath(resolvedAddress, directories) : params?.boardIdentifier || params?.subplebbitAddress;
+  const resolvedAddress = useResolvedCommunityAddress();
+  const boardPath = resolvedAddress ? getBoardPath(resolvedAddress, directories) : params?.boardIdentifier || params?.communityAddress;
 
   const handleSearch = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter') {

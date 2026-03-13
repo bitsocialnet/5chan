@@ -8,13 +8,13 @@ import { useStableSubplebbit, useSubplebbitField } from '../use-stable-subplebbi
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
 
 const testState = vi.hoisted(() => ({
-  subplebbits: {} as Record<string, unknown>,
+  communities: {} as Record<string, unknown>,
 }));
 
-vi.mock('@bitsocialnet/bitsocial-react-hooks/dist/stores/subplebbits', () => ({
-  default: (selector: (state: { subplebbits: typeof testState.subplebbits }) => unknown) =>
+vi.mock('@bitsocialnet/bitsocial-react-hooks/dist/stores/communities', () => ({
+  default: (selector: (state: { communities: typeof testState.communities }) => unknown) =>
     selector({
-      subplebbits: testState.subplebbits,
+      communities: testState.communities,
     }),
 }));
 
@@ -40,7 +40,7 @@ describe('use-stable-subplebbit', () => {
   beforeEach(() => {
     latestValue = undefined;
     renderCount = 0;
-    testState.subplebbits = {};
+    testState.communities = {};
 
     container = document.createElement('div');
     document.body.appendChild(container);
@@ -53,7 +53,7 @@ describe('use-stable-subplebbit', () => {
   });
 
   it('resolves alias board addresses when the store key uses a different suffix', () => {
-    testState.subplebbits = {
+    testState.communities = {
       'international-sfw.bso': {
         address: 'international-sfw.bso',
         roles: {
@@ -74,7 +74,7 @@ describe('use-stable-subplebbit', () => {
   });
 
   it('prefers an exact key match when both exact and alias variants are present', () => {
-    testState.subplebbits = {
+    testState.communities = {
       'business.eth': {
         address: 'business.eth',
         title: '/biz/ - Exact',

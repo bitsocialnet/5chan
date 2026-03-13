@@ -5,9 +5,9 @@ import getShortAddress from '../../lib/get-short-address';
 import { useAccountComment } from '@bitsocialnet/bitsocial-react-hooks';
 import useAccountsStore from '@bitsocialnet/bitsocial-react-hooks/dist/stores/accounts';
 import { isAllView, isCatalogView, isModView, isSubscriptionsView } from '../../lib/utils/view-utils';
-import { useAccountSubplebbitAddresses } from '../../hooks/use-account-subplebbit-addresses';
+import { useAccountCommunityAddresses } from '../../hooks/use-account-community-addresses';
 import { useDirectories, useDirectoriesMetadata, DirectoryCommunity } from '../../hooks/use-directories';
-import { useBoardPath, useResolvedSubplebbitAddress } from '../../hooks/use-resolved-subplebbit-address';
+import { useBoardPath, useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
 import { getBoardPath, extractDirectoryFromTitle } from '../../lib/utils/route-utils';
 import useCreateBoardModalStore from '../../stores/use-create-board-modal-store';
 import useBoardsBarEditModalStore from '../../stores/use-boards-bar-edit-modal-store';
@@ -81,9 +81,9 @@ const SearchBar = ({ setShowSearchBar }: { setShowSearchBar: (show: boolean) => 
 
 // Helper function to find board address by directory code
 const findBoardAddressByCode = (code: string, directories: DirectoryCommunity[]): string | null => {
-  const entry = directories.find((subplebbit) => {
-    if (!subplebbit.title) return false;
-    const directory = extractDirectoryFromTitle(subplebbit.title);
+  const entry = directories.find((community) => {
+    if (!community.title) return false;
+    const directory = extractDirectoryFromTitle(community.title);
     return directory === code;
   });
   return entry?.address || null;
@@ -117,7 +117,7 @@ const BoardsBarDesktop = () => {
     },
   );
 
-  const accountSubplebbitAddresses = useAccountSubplebbitAddresses();
+  const accountCommunityAddresses = useAccountCommunityAddresses();
 
   // Show all subscriptions when enabled; no separate per-address tracking (avoids drift when subscribing from board-buttons)
   const visibleSubscriptionAddresses = showSubscriptionsInBoardsBar ? subscriptions : [];
@@ -205,7 +205,7 @@ const BoardsBarDesktop = () => {
     <div className={styles.boardNavDesktop}>
       <span className={styles.boardList}>
         [<Link to='/all'>all</Link> / <Link to='/subs'>subs</Link>
-        {accountSubplebbitAddresses.length > 0 && (
+        {accountCommunityAddresses.length > 0 && (
           <>
             {' '}
             / <Link to='/mod'>mod</Link>
@@ -300,12 +300,12 @@ const BoardsBarDesktop = () => {
   );
 };
 
-const BoardsBarMobile = ({ subplebbitAddress }: { subplebbitAddress?: string }) => {
+const BoardsBarMobile = ({ communityAddress }: { communityAddress?: string }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const directories = useDirectories();
   const directoriesMetadata = useDirectoriesMetadata();
-  const displaySubplebbitAddress = subplebbitAddress && subplebbitAddress.length > 30 ? subplebbitAddress.slice(0, 30).concat('...') : subplebbitAddress;
+  const displayCommunityAddress = communityAddress && communityAddress.length > 30 ? communityAddress.slice(0, 30).concat('...') : communityAddress;
   const [showSearchBar, setShowSearchBar] = useState(false);
 
   // Filter to only show directory boards (those with titles)
@@ -317,13 +317,13 @@ const BoardsBarMobile = ({ subplebbitAddress }: { subplebbitAddress?: string }) 
   const isInCatalogView = isCatalogView(location.pathname, params);
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, params);
   const isInModView = isModView(location.pathname);
-  const boardPath = useBoardPath(subplebbitAddress);
-  const selectValue = isInAllView ? 'all' : isInSubscriptionsView ? 'subs' : isInModView ? 'mod' : boardPath || subplebbitAddress;
+  const boardPath = useBoardPath(communityAddress);
+  const selectValue = isInAllView ? 'all' : isInSubscriptionsView ? 'subs' : isInModView ? 'mod' : boardPath || communityAddress;
 
-  const accountSubplebbitAddresses = useAccountSubplebbitAddresses();
+  const accountCommunityAddresses = useAccountCommunityAddresses();
 
-  // Check if current subplebbit is a directory board
-  const currentIsDirectoryBoard = directoryBoards.some((board) => board.address === subplebbitAddress);
+  // Check if current community is a directory board
+  const currentIsDirectoryBoard = directoryBoards.some((board) => board.address === communityAddress);
 
   // Build multiboards with full titles, then combine with directory boards and sort alphabetically
   const sortedBoardOptions = useMemo(() => {
@@ -334,7 +334,7 @@ const BoardsBarMobile = ({ subplebbitAddress }: { subplebbitAddress?: string }) 
     const multiboards: Array<{ value: string; label: string }> = [
       { value: 'all', label: allTitle },
       { value: 'subs', label: subsTitle },
-      ...(accountSubplebbitAddresses.length > 0 ? [{ value: 'mod', label: modTitle }] : []),
+      ...(accountCommunityAddresses.length > 0 ? [{ value: 'mod', label: modTitle }] : []),
     ];
 
     const directoryOptions = directoryBoards.map((board) => {
@@ -343,7 +343,7 @@ const BoardsBarMobile = ({ subplebbitAddress }: { subplebbitAddress?: string }) 
     });
 
     return [...multiboards, ...directoryOptions].sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: 'base' }));
-  }, [directoriesMetadata?.title, t, accountSubplebbitAddresses.length, directoryBoards]);
+  }, [directoriesMetadata?.title, t, accountCommunityAddresses.length, directoryBoards]);
 
   const boardSelect = (
     <select
@@ -353,7 +353,7 @@ const BoardsBarMobile = ({ subplebbitAddress }: { subplebbitAddress?: string }) 
         navigate(`/${value}${isInCatalogView ? '/catalog' : ''}`);
       }}
     >
-      {!currentIsDirectoryBoard && subplebbitAddress && <option value={subplebbitAddress}>{displaySubplebbitAddress}</option>}
+      {!currentIsDirectoryBoard && communityAddress && <option value={communityAddress}>{displayCommunityAddress}</option>}
       {sortedBoardOptions.map((opt) => (
         <option key={opt.value} value={opt.value}>
           {opt.label}
@@ -415,13 +415,13 @@ const BoardsBar = () => {
   const params = useParams();
   const commentIndex = params?.accountCommentIndex ? parseInt(params.accountCommentIndex) : undefined;
   const accountComment = useAccountComment({ commentIndex });
-  const resolvedSubplebbitAddress = useResolvedSubplebbitAddress();
-  const subplebbitAddress = resolvedSubplebbitAddress || accountComment?.subplebbitAddress;
+  const resolvedCommunityAddress = useResolvedCommunityAddress();
+  const communityAddress = resolvedCommunityAddress || accountComment?.communityAddress;
 
   return (
     <>
       <BoardsBarDesktop />
-      <BoardsBarMobile subplebbitAddress={subplebbitAddress} />
+      <BoardsBarMobile communityAddress={communityAddress} />
     </>
   );
 };

@@ -1,18 +1,20 @@
 import { useMemo } from 'react';
 import { useAccount } from '@bitsocialnet/bitsocial-react-hooks';
-import { useSubplebbitField } from './use-stable-subplebbit';
+import { useCommunityField } from './use-stable-community';
 
 interface AuthorPrivilegesProps {
   commentAuthorAddress: string;
-  subplebbitAddress: string;
+  subplebbitAddress?: string;
+  communityAddress?: string;
   postCid?: string;
 }
 
-const useAuthorPrivileges = ({ commentAuthorAddress, subplebbitAddress }: AuthorPrivilegesProps) => {
+const useAuthorPrivileges = ({ commentAuthorAddress, subplebbitAddress, communityAddress }: AuthorPrivilegesProps) => {
   const account = useAccount();
+  const targetAddress = communityAddress ?? subplebbitAddress;
   const accountAuthorAddress = account?.author?.address;
   // Only subscribe to roles field to avoid rerenders from updatingState changes
-  const roles = useSubplebbitField(subplebbitAddress, (subplebbit) => subplebbit?.roles);
+  const roles = useCommunityField(targetAddress, (community) => community?.roles);
   const { isCommentAuthorMod, isAccountMod, isAccountCommentAuthor, commentAuthorRole, accountAuthorRole } = useMemo(() => {
     const commentAuthorRole = roles?.[commentAuthorAddress]?.role;
     const isCommentAuthorMod = commentAuthorRole === 'admin' || commentAuthorRole === 'owner' || commentAuthorRole === 'moderator';

@@ -11,7 +11,7 @@ const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise
 type TestComment = {
   cid: string;
   pinned?: boolean;
-  subplebbitAddress?: string;
+  communityAddress?: string;
   deleted?: boolean;
   postCid?: string;
   removed?: boolean;
@@ -22,7 +22,7 @@ type TestComment = {
 const testState = vi.hoisted(() => ({
   account: { subscriptions: [] as string[] },
   accountComments: [] as TestComment[],
-  accountSubplebbitAddresses: [] as string[],
+  accountCommunityAddresses: [] as string[],
   directories: [{ address: 'music-posting.eth', title: '/mu/ - Music' }] as Array<{ address: string; title?: string }>,
   directoryByAddress: {
     'music-posting.eth': {
@@ -43,16 +43,16 @@ const testState = vi.hoisted(() => ({
   },
   resetMock: vi.fn(),
   registerCommentsMock: vi.fn(),
-  resolvedSubplebbitAddress: 'music-posting.eth' as string | undefined,
+  resolvedCommunityAddress: 'music-posting.eth' as string | undefined,
   setEnableInfiniteScrollMock: vi.fn(),
   setResetFunctionMock: vi.fn(),
-  subplebbit: {
+  community: {
     error: undefined as Error | undefined,
     shortAddress: 'music-posting.eth',
     state: 'ready',
     title: '/mu/ - Music',
   },
-  subplebbitSnapshot: {
+  communitySnapshot: {
     shortAddress: 'music-posting.eth',
     title: '/mu/ - Music',
   } as { shortAddress?: string; title?: string },
@@ -73,11 +73,11 @@ vi.mock('@bitsocialnet/bitsocial-react-hooks', () => ({
     loadMore: testState.loadMoreMock,
     reset: testState.resetMock,
   }),
-  useSubplebbit: () => testState.subplebbit,
+  useCommunity: () => testState.community,
 }));
 
-vi.mock('../../../hooks/use-stable-subplebbit', () => ({
-  useSubplebbitField: (_address: string | undefined, selector: (subplebbit: typeof testState.subplebbitSnapshot) => unknown) => selector(testState.subplebbitSnapshot),
+vi.mock('../../../hooks/use-stable-community', () => ({
+  useCommunityField: (_address: string | undefined, selector: (community: typeof testState.communitySnapshot) => unknown) => selector(testState.communitySnapshot),
 }));
 
 vi.mock('react-virtuoso', () => ({
@@ -111,8 +111,8 @@ vi.mock('react-virtuoso', () => ({
   ),
 }));
 
-vi.mock('../../../hooks/use-account-subplebbit-addresses', () => ({
-  useAccountSubplebbitAddresses: () => testState.accountSubplebbitAddresses,
+vi.mock('../../../hooks/use-account-community-addresses', () => ({
+  useAccountCommunityAddresses: () => testState.accountCommunityAddresses,
 }));
 
 vi.mock('../../../hooks/use-directories', () => ({
@@ -125,8 +125,8 @@ vi.mock('../../../hooks/use-filtered-directory-addresses', () => ({
   useFilteredDirectoryAddresses: () => testState.filteredDirectoryAddresses,
 }));
 
-vi.mock('../../../hooks/use-resolved-subplebbit-address', () => ({
-  useResolvedSubplebbitAddress: () => testState.resolvedSubplebbitAddress,
+vi.mock('../../../hooks/use-resolved-community-address', () => ({
+  useResolvedCommunityAddress: () => testState.resolvedCommunityAddress,
 }));
 
 vi.mock('../../../hooks/use-state-string', () => ({
@@ -236,7 +236,7 @@ describe('Board', () => {
     latestLocation = '';
     testState.account = { subscriptions: [] };
     testState.accountComments = [];
-    testState.accountSubplebbitAddresses = [];
+    testState.accountCommunityAddresses = [];
     testState.directories = [{ address: 'music-posting.eth', title: '/mu/ - Music' }];
     testState.directoryByAddress = {
       'music-posting.eth': {
@@ -254,14 +254,14 @@ describe('Board', () => {
       maxGuiPages: 3,
       paginationFeedPostsPerPage: 6,
     };
-    testState.resolvedSubplebbitAddress = 'music-posting.eth';
-    testState.subplebbit = {
+    testState.resolvedCommunityAddress = 'music-posting.eth';
+    testState.community = {
       error: undefined,
       shortAddress: 'music-posting.eth',
       state: 'ready',
       title: '/mu/ - Music',
     };
-    testState.subplebbitSnapshot = {
+    testState.communitySnapshot = {
       shortAddress: 'music-posting.eth',
       title: '/mu/ - Music',
     };
@@ -290,16 +290,16 @@ describe('Board', () => {
   it('renders the current page feed, inserts recent account comments, and wires footer actions', async () => {
     const currentTimestamp = Math.floor(Date.now() / 1000);
     testState.feed = [
-      { cid: 'pinned-post', pinned: true, subplebbitAddress: 'music-posting.eth' },
-      { cid: 'older-post', subplebbitAddress: 'music-posting.eth' },
-      { cid: 'oldest-post', subplebbitAddress: 'music-posting.eth' },
+      { cid: 'pinned-post', pinned: true, communityAddress: 'music-posting.eth' },
+      { cid: 'older-post', communityAddress: 'music-posting.eth' },
+      { cid: 'oldest-post', communityAddress: 'music-posting.eth' },
     ];
     testState.accountComments = [
       {
         cid: 'fresh-post',
         postCid: 'fresh-post',
         state: 'succeeded',
-        subplebbitAddress: 'music-posting.eth',
+        communityAddress: 'music-posting.eth',
         timestamp: currentTimestamp,
       },
     ];
@@ -332,9 +332,9 @@ describe('Board', () => {
 
   it('redirects oversized board pages back to the last available page', async () => {
     testState.feed = [
-      { cid: 'first-post', subplebbitAddress: 'music-posting.eth' },
-      { cid: 'second-post', subplebbitAddress: 'music-posting.eth' },
-      { cid: 'third-post', subplebbitAddress: 'music-posting.eth' },
+      { cid: 'first-post', communityAddress: 'music-posting.eth' },
+      { cid: 'second-post', communityAddress: 'music-posting.eth' },
+      { cid: 'third-post', communityAddress: 'music-posting.eth' },
     ];
 
     await renderBoard({ initialEntry: '/mu/4', routePath: '/:boardIdentifier/*' });
@@ -344,8 +344,8 @@ describe('Board', () => {
 
   it('registers visible feed posts with the post-number store', async () => {
     testState.feed = [
-      { cid: 'first-post', subplebbitAddress: 'music-posting.eth' },
-      { cid: 'second-post', subplebbitAddress: 'music-posting.eth' },
+      { cid: 'first-post', communityAddress: 'music-posting.eth' },
+      { cid: 'second-post', communityAddress: 'music-posting.eth' },
     ];
 
     await renderBoard({ initialEntry: '/mu', routePath: '/:boardIdentifier/*' });
@@ -368,7 +368,7 @@ describe('Board', () => {
   });
 
   it('surfaces board load errors when the feed is empty', async () => {
-    testState.subplebbit = {
+    testState.community = {
       error: new Error('board failed'),
       shortAddress: 'music-posting.eth',
       state: 'failed',

@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
-import useSubplebbitsStore from '@bitsocialnet/bitsocial-react-hooks/dist/stores/subplebbits';
+import useCommunitiesStore from '@bitsocialnet/bitsocial-react-hooks/dist/stores/communities';
 import { normalizeBoardAddress, useDirectoryByAddress } from '../../hooks/use-directories';
-import useIsSubplebbitOffline from '../../hooks/use-is-subplebbit-offline';
-import { useResolvedSubplebbitAddress } from '../../hooks/use-resolved-subplebbit-address';
+import useIsCommunityOffline from '../../hooks/use-is-community-offline';
+import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
 
 const BOARD_ALIAS_SUFFIXES = ['.bso', '.eth'] as const;
 
@@ -33,29 +33,29 @@ const getBoardAddressCandidates = (addresses: Array<string | undefined>) => {
 interface BoardOfflineAlertProps {
   className: string;
   hidden?: boolean;
-  subplebbitAddress?: string;
+  communityAddress?: string;
 }
 
-const BoardOfflineAlert = ({ className, hidden = false, subplebbitAddress }: BoardOfflineAlertProps) => {
-  const resolvedSubplebbitAddress = useResolvedSubplebbitAddress();
-  const directoryEntry = useDirectoryByAddress(resolvedSubplebbitAddress || subplebbitAddress);
+const BoardOfflineAlert = ({ className, hidden = false, communityAddress }: BoardOfflineAlertProps) => {
+  const resolvedCommunityAddress = useResolvedCommunityAddress();
+  const directoryEntry = useDirectoryByAddress(resolvedCommunityAddress || communityAddress);
   const addressCandidates = useMemo(
-    () => getBoardAddressCandidates([resolvedSubplebbitAddress, directoryEntry?.address, subplebbitAddress]),
-    [directoryEntry?.address, resolvedSubplebbitAddress, subplebbitAddress],
+    () => getBoardAddressCandidates([resolvedCommunityAddress, directoryEntry?.address, communityAddress]),
+    [directoryEntry?.address, resolvedCommunityAddress, communityAddress],
   );
 
   // Probe common aliases first so loading/offline state stays consistent across route and post payload address formats.
-  const subplebbit = useSubplebbitsStore((state) => {
+  const community = useCommunitiesStore((state) => {
     for (const candidate of addressCandidates) {
-      const matchedSubplebbit = state.subplebbits[candidate];
-      if (matchedSubplebbit) {
-        return matchedSubplebbit;
+      const matchedCommunity = state.communities[candidate];
+      if (matchedCommunity) {
+        return matchedCommunity;
       }
     }
 
     return undefined;
   });
-  const { isOffline, isOnlineStatusLoading, offlineTitle } = useIsSubplebbitOffline(subplebbit);
+  const { isOffline, isOnlineStatusLoading, offlineTitle } = useIsCommunityOffline(community);
 
   if (hidden || (!isOffline && !isOnlineStatusLoading)) {
     return null;

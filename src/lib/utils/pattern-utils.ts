@@ -1,5 +1,9 @@
 import type { Comment } from '@bitsocialnet/bitsocial-react-hooks';
-import useSubplebbitsStore from '@bitsocialnet/bitsocial-react-hooks/dist/stores/subplebbits';
+import communitiesStore from '@bitsocialnet/bitsocial-react-hooks/dist/stores/communities';
+
+type CommunityLike = {
+  roles?: Record<string, { role?: string }>;
+};
 
 /**
  * Checks if a text matches a pattern according to various pattern matching rules:
@@ -138,12 +142,14 @@ export const displayNameMatchesPattern = (comment: Comment, pattern: string): bo
  * @returns True if the user has the specified role, false otherwise
  */
 export const userHasRole = (comment: Comment, role: string): boolean => {
-  if (!role || !comment?.author?.address || !comment?.subplebbitAddress) {
+  const communityAddress = (comment as { communityAddress?: string }).communityAddress ?? comment?.subplebbitAddress;
+
+  if (!role || !comment?.author?.address || !communityAddress) {
     return false;
   }
 
-  const subplebbits = useSubplebbitsStore.getState().subplebbits;
-  const subplebbit = subplebbits[comment.subplebbitAddress];
+  const communities = communitiesStore.getState().communities;
+  const subplebbit = communities[communityAddress] as CommunityLike | undefined;
 
   if (!subplebbit?.roles) {
     return false;

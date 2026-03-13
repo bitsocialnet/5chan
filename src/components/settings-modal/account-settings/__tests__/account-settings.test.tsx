@@ -289,7 +289,7 @@ describe('AccountSettings', () => {
         name: 'Imported',
         author: { address: '0x999' },
         subscriptions: ['business.eth'],
-        subplebbits: {
+        communities: {
           'business.eth': { title: '/biz/' },
           'music-posting.bso': { title: '/mu/' },
         },

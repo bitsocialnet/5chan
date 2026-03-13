@@ -57,7 +57,7 @@ vi.mock('@bitsocialnet/bitsocial-react-hooks', () => ({
   useComment: ({ commentCid }: { commentCid?: string }) => (commentCid ? testState.comments[commentCid] : undefined),
 }));
 
-vi.mock('@bitsocialnet/bitsocial-react-hooks/dist/stores/subplebbits-pages', () => ({
+vi.mock('@bitsocialnet/bitsocial-react-hooks/dist/stores/communities-pages', () => ({
   default: (selector: (state: { comments: typeof testState.comments }) => unknown) =>
     selector({
       comments: testState.comments,
@@ -135,7 +135,7 @@ vi.mock('../external-number-quote-link', () => ({
 let container: HTMLDivElement;
 let root: Root;
 
-const renderMarkdown = async (props: { content: string; postCid?: string; subplebbitAddress?: string; title?: string }, initialEntry = '/mu/thread/post-1') => {
+const renderMarkdown = async (props: { content: string; postCid?: string; communityAddress?: string; title?: string }, initialEntry = '/mu/thread/post-1') => {
   await act(async () => {
     root.render(createElement(MemoryRouter, { initialEntries: [initialEntry] }, createElement(Markdown, props)));
   });
@@ -198,7 +198,7 @@ describe('Markdown', () => {
     await renderMarkdown({
       content: '>>42',
       postCid: 'comment-42',
-      subplebbitAddress: 'music-posting.eth',
+      communityAddress: 'music-posting.eth',
     });
 
     const quotePreview = container.querySelector('[data-testid="reply-quote-preview"]');
@@ -211,7 +211,7 @@ describe('Markdown', () => {
   it('renders lazy same-board and cross-board number quotes when the cid is not cached', async () => {
     await renderMarkdown({
       content: '>>42 >>>/fit/77',
-      subplebbitAddress: 'music-posting.eth',
+      communityAddress: 'music-posting.eth',
     });
 
     const lazyLinks = Array.from(container.querySelectorAll('[data-testid="external-number-quote-link"]'));

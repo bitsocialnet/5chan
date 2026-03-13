@@ -23,6 +23,7 @@ import PostMenuDesktop from '../post-desktop/post-menu-desktop';
 import styles from './catalog-row.module.css';
 import capitalize from 'lodash/capitalize';
 import { selectPostMenuProps } from '../../lib/utils/post-menu-props';
+import { withResolvedCommentCommunityAddress } from '../../lib/utils/comment-utils';
 
 interface CatalogPostMediaProps {
   cid: string;
@@ -117,8 +118,10 @@ export const CatalogPostMedia = ({ cid, commentMediaInfo, linkWidth, linkHeight 
 const CatalogPost = memo(
   ({ post }: { post: Comment }) => {
     const { t } = useTranslation();
-    const { author, cid, content, link, linkHeight, linkWidth, locked, pinned, replyCount, spoiler, subplebbitAddress, timestamp, title, thumbnailUrl } = post || {};
-    const linkCount = useCountLinksInReplies(post);
+    const resolvedPost = withResolvedCommentCommunityAddress(post);
+    const { author, cid, content, link, linkHeight, linkWidth, locked, pinned, replyCount, spoiler, communityAddress, timestamp, title, thumbnailUrl } =
+      resolvedPost || {};
+    const linkCount = useCountLinksInReplies(resolvedPost);
 
     const commentMediaInfo = useCommentMediaInfo(link, thumbnailUrl, linkWidth, linkHeight);
     const hasThumbnail = getHasThumbnail(commentMediaInfo, link);
@@ -130,10 +133,10 @@ const CatalogPost = memo(
     const isInAllView = isAllView(location.pathname);
     const isInSubscriptionsView = isSubscriptionsView(location.pathname, params);
     const directories = useDirectories();
-    const directoryEntry = findDirectoryByAddress(directories, subplebbitAddress);
+    const directoryEntry = findDirectoryByAddress(directories, communityAddress);
     const requirePostLinkIsMedia = directoryEntry?.features?.requirePostLinkIsMedia === true;
-    const boardPath = subplebbitAddress ? getBoardPath(subplebbitAddress, directories) : '';
-    const postMenuProps = useMemo(() => selectPostMenuProps(post), [post]);
+    const boardPath = communityAddress ? getBoardPath(communityAddress, directories) : '';
+    const postMenuProps = useMemo(() => selectPostMenuProps(resolvedPost), [resolvedPost]);
 
     const postLink = boardPath ? `/${boardPath}/thread/${cid}` : `/thread/${cid}`;
 
@@ -185,16 +188,16 @@ const CatalogPost = memo(
       if (showPortal) update();
     }, [showPortal, update]);
 
-    const { replies } = useReplies({ comment: showPortal ? post : undefined, flat: true });
+    const { replies } = useReplies({ comment: showPortal ? resolvedPost : undefined, flat: true });
     const lastReply = replies?.length > 0 ? replies[replies.length - 1] : null;
 
     const { isCommentAuthorMod: isCatalogPostAuthorMod, commentAuthorRole: catalogPostAuthorRole } = useEditCommentPrivileges({
       commentAuthorAddress: author?.address,
-      subplebbitAddress,
+      subplebbitAddress: communityAddress ?? '',
     });
     const { isCommentAuthorMod: isLastReplyAuthorMod, commentAuthorRole: lastReplyAuthorRole } = useEditCommentPrivileges({
       commentAuthorAddress: lastReply?.author?.address,
-      subplebbitAddress,
+      subplebbitAddress: communityAddress ?? '',
     });
 
     const postContent = (
@@ -292,7 +295,7 @@ const CatalogPost = memo(
                 {author?.displayName || capitalize(t('anonymous'))}
                 {isCatalogPostAuthorMod && <span className='capitalize'>{` ## Board ${catalogPostAuthorRole}`}</span>}
               </span>
-              {(isInAllView || isInSubscriptionsView) && subplebbitAddress && ` to p/${getShortAddress(subplebbitAddress)}`}
+              {(isInAllView || isInSubscriptionsView) && communityAddress && ` to p/${getShortAddress(communityAddress)}`}
               <span className={styles.postAgo}> {getFormattedTimeAgo(timestamp)}</span>
               {replyCount > 0 && (
                 <div className={styles.postLast}>
@@ -329,7 +332,7 @@ const CatalogPost = memo(
       prev?.thumbnailUrl === next?.thumbnailUrl &&
       prev?.linkWidth === next?.linkWidth &&
       prev?.linkHeight === next?.linkHeight &&
-      prev?.subplebbitAddress === next?.subplebbitAddress
+      prev?.communityAddress === next?.communityAddress
     );
   },
 );
