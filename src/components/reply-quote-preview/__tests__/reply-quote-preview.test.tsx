@@ -23,6 +23,7 @@ const testState = vi.hoisted(() => ({
       address: '0xme',
     },
   },
+  accountComments: [] as Array<{ cid?: string }>,
   directories: [{ address: 'music-posting.eth', title: '/mu/ - Music' }] as Array<{ address: string; title?: string }>,
   isMobile: false,
   locationPath: '/mu/thread/thread-cid',
@@ -58,6 +59,7 @@ vi.mock('react-router-dom', async () => {
 
 vi.mock('@bitsocialnet/bitsocial-react-hooks', () => ({
   useAccount: () => testState.account,
+  useAccountComments: () => ({ accountComments: testState.accountComments }),
 }));
 
 vi.mock('@floating-ui/react', () => ({
@@ -173,6 +175,7 @@ describe('ReplyQuotePreview', () => {
         address: '0xme',
       },
     };
+    testState.accountComments = [];
     testState.directories = [{ address: 'music-posting.eth', title: '/mu/ - Music' }];
     testState.isMobile = false;
     testState.locationPath = '/mu/thread/thread-cid';
