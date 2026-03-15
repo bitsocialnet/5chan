@@ -5671,6 +5671,13 @@ bippy@^0.5.28:
   dependencies:
     "@types/react-reconciler" "^0.28.9"
 
+bippy@^0.5.32:
+  version "0.5.32"
+  resolved "https://registry.yarnpkg.com/bippy/-/bippy-0.5.32.tgz#60cbed767572e7cecda2f7b7d860f7f0ae6b0874"
+  integrity sha512-yt1mC8eReTxjfg41YBZdN4PvsDwHFWxltoiQX0Q+Htlbf41aSniopb7ECZits01HwNAvXEh69RGk/ImlswDTEw==
+  dependencies:
+    "@types/react-reconciler" "^0.28.9"
+
 bl@^1.0.0:
   version "1.2.3"
   resolved "https://registry.yarnpkg.com/bl/-/bl-1.2.3.tgz#1e8dd80142eac80d7158c9dccc047fb620e035e7"
@@ -7329,6 +7336,13 @@ electron@36.9.5:
     "@electron/get" "^2.0.0"
     "@types/node" "^22.7.7"
     extract-zip "^2.0.1"
+
+element-source@0.0.4:
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/element-source/-/element-source-0.0.4.tgz#6594b5bce4cedc0ed99213aa47b532a8803110f8"
+  integrity sha512-4feZB3FhezD6UBGj6h8OO8axyPaz8kcJrpJzGTCWyLeZ0ldHgiE2z6i7Th0d5V2IlHUFNoXR7Tb2dfbZIgih0A==
+  dependencies:
+    bippy "^0.5.32"
 
 elementtree@^0.1.7:
   version "0.1.7"

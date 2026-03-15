@@ -121,6 +121,16 @@ Collect structured output from each subagent and merge:
 | react-scan: component with >30 renders | Missing memoization or unstable references | `useMemo`/`useCallback`, check parent renders |
 | react-scan: component with >50ms time | Expensive render function | Split component, move work out of render |
 
+## Element-source follow-up
+
+When `react-scan` identifies a rerender hotspot but you still need the exact file behind a concrete DOM node, hand off to `$inspect-elements`.
+
+```bash
+playwright-cli -s=prof-followup eval "async el => JSON.stringify(await window.__ELEMENT_SOURCE__.resolve(el))" e7
+```
+
+Use `source.filePath` as the direct edit target and `stack` to understand which parent components own the node.
+
 ## Step 5: Cleanup
 
 After profiling is complete and the report is delivered, verify no orphaned processes were left behind:
