@@ -464,7 +464,7 @@
   "trash": "زباله‌دان",
   "site_legal_meta_powered_by": "قدرت‌گرفته از",
   "archive_search_title": "/search/ - جست‌وجو در بایگانی",
-  "search_posts_or_board": "جست‌وجوی پست‌ها یا وارد کردن نشانی برد",
+  "search_posts_or_board": "جست‌وجوی پست‌ها یا بردها",
   "archive_search_subtitle": "پست‌های نمایه‌شده را در بردهای 5chan جست‌وجو کنید.",
   "search_no_results": "هیچ پست نمایه‌شده‌ای مطابقت نداشت. عبارت‌های کلی‌تری را امتحان کنید.",
   "change_provider": "تغییر ارائه‌دهنده",
@@ -477,5 +477,8 @@
   "auto": "خودکار",
   "directory_submit_provider": "ثبت یک ارائه‌دهنده",
   "directory_winner_subtitle": "برنده فعلی /{{boardIdentifier}}/: {{address}}",
-  "image_cannot_be_embedded": "تصویر از {{host}} قابل جاسازی نیست"
+  "image_cannot_be_embedded": "تصویر از {{host}} قابل جاسازی نیست",
+  "search_board_title": "عنوان",
+  "search_board_address": "نشانی",
+  "search_more_boards": "نمایش {{count}} مورد دیگر"
 }

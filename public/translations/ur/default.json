@@ -464,7 +464,7 @@
   "trash": "ردی",
   "site_legal_meta_powered_by": "کے ذریعے تقویت یافتہ",
   "archive_search_title": "/search/ - آرکائیو میں تلاش",
-  "search_posts_or_board": "پوسٹس تلاش کریں یا بورڈ کا پتہ درج کریں",
+  "search_posts_or_board": "پوسٹس یا بورڈز تلاش کریں",
   "archive_search_subtitle": "5chan بورڈز پر انڈیکس شدہ پوسٹس تلاش کریں۔",
   "search_no_results": "کوئی انڈیکس شدہ پوسٹ مماثل نہیں تھی۔ مزید عمومی اصطلاحات آزمائیں۔",
   "change_provider": "فراہم کنندہ تبدیل کریں",
@@ -477,5 +477,8 @@
   "auto": "خودکار",
   "directory_submit_provider": "فراہم کنندہ جمع کریں",
   "directory_winner_subtitle": "موجودہ /{{boardIdentifier}}/ فاتح: {{address}}",
-  "image_cannot_be_embedded": "{{host}} سے تصویر ایمبیڈ نہیں کی جا سکتی"
+  "image_cannot_be_embedded": "{{host}} سے تصویر ایمبیڈ نہیں کی جا سکتی",
+  "search_board_title": "عنوان",
+  "search_board_address": "پتہ",
+  "search_more_boards": "{{count}} مزید دکھائیں"
 }

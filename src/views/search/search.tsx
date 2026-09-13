@@ -8,7 +8,9 @@ import { BottomButton, RefreshButton, TopButton } from '../../components/board-b
 import { PageFooterDesktop, PageFooterMobile } from '../../components/footer/footer';
 import mobileFooterStyles from '../../components/footer/footer.module.css';
 import LoadingEllipsis from '../../components/loading-ellipsis/loading-ellipsis';
-import useSearchMatchHighlight from '../../hooks/use-search-match-highlight';
+import { useBoardSearch } from '../../hooks/use-board-search';
+import { retryIndexedBoards } from '../../hooks/use-indexed-boards';
+import useSearchMatchHighlight, { SEARCH_HIGHLIGHT_REGION_ATTRIBUTE } from '../../hooks/use-search-match-highlight';
 import { clearIndexerSearch, getIndexedPostComment, getIndexerSearch } from '../../lib/search-indexer';
 import {
   DEFAULT_SEARCH_QUERY,
@@ -24,6 +26,7 @@ import { isSearchCatalogRoute } from '../../lib/utils/route-utils';
 import useFeedResetStore from '../../stores/use-feed-reset-store';
 import useSearchProviderStore from '../../stores/use-search-provider-store';
 import { Post } from '../post/post';
+import SearchBoardResults from './search-board-results';
 import SearchCatalog from './search-catalog';
 import styles from './search.module.css';
 
@@ -164,7 +167,6 @@ const SearchFooter = ({ isCatalogView, page, query, totalPages }: SearchControls
 const SearchResults = ({ isCatalogView, page, providers, query }: SearchControlsProps & { page: number; providers: SearchProvider[] }) => {
   const { t } = useTranslation();
   const result = use(getIndexerSearch(providers, query, page));
-  const resultsRef = useRef<HTMLDivElement>(null);
   // A matched reply is shown in its thread: the OP, then that one reply.
   const matches = useMemo(
     () =>
@@ -192,16 +194,14 @@ const SearchResults = ({ isCatalogView, page, providers, query }: SearchControls
   }, [matches]);
   const totalPages = Math.min(MAX_SEARCH_PAGES, Math.max(1, Math.ceil(result.total / result.limit)));
 
-  useSearchMatchHighlight(resultsRef, query);
-
   return (
     <>
       {matches.length === 0 ? (
         <div className={styles.empty}>{t('search_no_results')}</div>
       ) : isCatalogView ? (
-        <SearchCatalog ref={resultsRef} threads={threads} />
+        <SearchCatalog threads={threads} />
       ) : (
-        <div className={styles.results} ref={resultsRef}>
+        <div className={styles.results} {...{ [SEARCH_HIGHLIGHT_REGION_ATTRIBUTE]: '' }}>
           {matches.map(({ comment, replyPaginationOverride, threadComment }) =>
             threadComment ? (
               <Post key={comment.cid} post={threadComment} replyPaginationOverride={replyPaginationOverride} />
@@ -214,6 +214,17 @@ const SearchResults = ({ isCatalogView, page, providers, query }: SearchControls
       <SearchFooter isCatalogView={isCatalogView} page={page} query={query} totalPages={totalPages} />
     </>
   );
+};
+
+/**
+ * The results area, which the highlight paints as a whole: the board table and the post feed, whichever
+ * arrives first. It only mounts once the page has a query, so the paint is never set up against the
+ * redirect that /search without one renders first.
+ */
+const SearchScope = ({ children, query }: { children: ReactNode; query: string }) => {
+  const scopeRef = useRef<HTMLDivElement>(null);
+  useSearchMatchHighlight(scopeRef, query);
+  return <div ref={scopeRef}>{children}</div>;
 };
 
 interface SearchErrorBoundaryProps {
@@ -247,6 +258,8 @@ const Search = () => {
   const selectedProviderId = useSearchProviderStore((state) => state.selectedProviderId);
   const providers = useMemo(() => getSearchProviderChain(selectedProviderId), [selectedProviderId]);
   const setResetFunction = useFeedResetStore((state) => state.setResetFunction);
+  // Board matches are local and immediate, so they show while the indexer is still answering.
+  const boardSearch = useBoardSearch(query, selectedProviderId);
 
   useEffect(() => {
     const title = `${query} - ${t('archive_search_title')}`;
@@ -261,8 +274,9 @@ const Search = () => {
 
   const retry = useCallback(() => {
     clearIndexerSearch(providers, query, page);
+    retryIndexedBoards(selectedProviderId);
     setRetryKey((value) => value + 1);
-  }, [page, providers, query]);
+  }, [page, providers, query, selectedProviderId]);
 
   // The shared refresh button reruns whichever feed is on screen.
   useEffect(() => {
@@ -295,34 +309,42 @@ const Search = () => {
       <SearchMobileTopControls isCatalogView={isCatalogView} query={query} />
       <hr className={styles.desktopDivider} />
       <SearchDesktopTopControls isCatalogView={isCatalogView} query={query} />
-      <SearchErrorBoundary
-        key={`${providers.map((entry) => entry.id).join(',')}:${query}:${page}:${retryKey}`}
-        fallback={
+      <SearchScope query={query}>
+        {boardSearch.boards.length > 0 && (
           <>
-            <div className={styles.error} role='alert'>
-              {t('search_provider_unavailable')} [
-              <button type='button' onClick={retry}>
-                {t('refresh')}
-              </button>
-              ]
-            </div>
-            <SearchFooter isCatalogView={isCatalogView} page={page} query={query} totalPages={1} />
+            <SearchBoardResults key={query} boards={boardSearch.boards} loading={boardSearch.loading} />
+            <hr className={styles.divider} />
           </>
-        }
-      >
-        <Suspense
+        )}
+        <SearchErrorBoundary
+          key={`${providers.map((entry) => entry.id).join(',')}:${query}:${page}:${retryKey}`}
           fallback={
             <>
-              <div className={styles.loading}>
-                <LoadingEllipsis string={t('loading')} />
+              <div className={styles.error} role='alert'>
+                {t('search_provider_unavailable')} [
+                <button type='button' onClick={retry}>
+                  {t('refresh')}
+                </button>
+                ]
               </div>
               <SearchFooter isCatalogView={isCatalogView} page={page} query={query} totalPages={1} />
             </>
           }
         >
-          <SearchResults isCatalogView={isCatalogView} page={page} providers={providers} query={query} />
-        </Suspense>
-      </SearchErrorBoundary>
+          <Suspense
+            fallback={
+              <>
+                <div className={styles.loading}>
+                  <LoadingEllipsis string={t('loading')} />
+                </div>
+                <SearchFooter isCatalogView={isCatalogView} page={page} query={query} totalPages={1} />
+              </>
+            }
+          >
+            <SearchResults isCatalogView={isCatalogView} page={page} providers={providers} query={query} />
+          </Suspense>
+        </SearchErrorBoundary>
+      </SearchScope>
     </main>
   );
 };

@@ -464,7 +464,7 @@
   "trash": "Papierkorb",
   "site_legal_meta_powered_by": "Unterstützt von",
   "archive_search_title": "/search/ - Archivsuche",
-  "search_posts_or_board": "Beiträge durchsuchen oder Board-Adresse eingeben",
+  "search_posts_or_board": "Beiträge oder Boards durchsuchen",
   "archive_search_subtitle": "Durchsuche indexierte Beiträge auf 5chan-Boards.",
   "search_no_results": "Keine indexierten Beiträge entsprechen der Suche. Versuche es mit allgemeineren Suchbegriffen.",
   "change_provider": "Anbieter wechseln",
@@ -477,5 +477,8 @@
   "auto": "auto",
   "directory_submit_provider": "Anbieter einreichen",
   "directory_winner_subtitle": "Aktueller /{{boardIdentifier}}/-Sieger: {{address}}",
-  "image_cannot_be_embedded": "Das Bild von {{host}} kann nicht eingebettet werden"
+  "image_cannot_be_embedded": "Das Bild von {{host}} kann nicht eingebettet werden",
+  "search_board_title": "Titel",
+  "search_board_address": "Adresse",
+  "search_more_boards": "{{count}} weitere anzeigen"
 }

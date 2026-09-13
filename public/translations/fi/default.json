@@ -464,7 +464,7 @@
   "trash": "Roskakori",
   "site_legal_meta_powered_by": "Palvelun tarjoaa",
   "archive_search_title": "/search/ - Arkistohaku",
-  "search_posts_or_board": "Hae viestejä tai syötä laudan osoite",
+  "search_posts_or_board": "Hae viestejä tai lautoja",
   "archive_search_subtitle": "Hae indeksoituja viestejä 5chan-foorumeilta.",
   "search_no_results": "Indeksoituja julkaisuja ei löytynyt. Kokeile yleisempiä hakusanoja.",
   "change_provider": "Vaihda palveluntarjoajaa",
@@ -477,5 +477,8 @@
   "auto": "auto",
   "directory_submit_provider": "Lähetä palveluntarjoaja",
   "directory_winner_subtitle": "Nykyinen /{{boardIdentifier}}/ voittaja: {{address}}",
-  "image_cannot_be_embedded": "Kuvaa kohteesta {{host}} ei voi upottaa"
+  "image_cannot_be_embedded": "Kuvaa kohteesta {{host}} ei voi upottaa",
+  "search_board_title": "Otsikko",
+  "search_board_address": "Osoite",
+  "search_more_boards": "näytä {{count}} lisää"
 }

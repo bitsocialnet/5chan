@@ -691,6 +691,16 @@ If uncertain, ask the developer before adding an entry.
 
 ## Entries
 
+### 5archive rejects branch-scoped dev origins
+
+- **Date:** 2026-09-13
+- **Observed by:** Tommaso + Claude
+- **Context:** Browser-verifying `/search/` changes from a task worktree, which the launcher served at a branch-scoped route (`https://codex-feature-search-board-results.5chan.localhost`).
+- **What was surprising:** Every `api.5archive.org` request failed in the browser with `net::ERR_FAILED` and `/search/` showed "The search provider is unavailable", while `curl` from the shell answered normally. The indexer only sends `access-control-allow-origin` for `https://5chan.localhost` and `https://5chan.app`, and the launcher picks a branch-scoped portless name for any non-master branch, so a worktree never gets an allowed origin.
+- **Impact:** Anything that calls the indexer looks broken in every worktree browser check; an agent can burn time debugging the client or report a working change as failing.
+- **Mitigation:** Confirm the cause with `curl -s -D - -o /dev/null -H "Origin: https://<host>" https://api.5archive.org/api/communities | grep -i access-control`. For the browser check, serve the worktree on the canonical route when it is free (`NODE_EXTRA_CA_CERTS=~/.portless/ca.pem corepack yarn exec portless 5chan vite` from the worktree) and open `https://5chan.localhost`; stop that server afterwards. Do not treat the failure as a client bug.
+- **Status:** confirmed
+
 ### `yarn changelog` regenerates every release and reverts the changelog rebrand
 
 - **Date:** 2026-09-12

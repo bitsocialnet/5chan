@@ -464,7 +464,7 @@
   "trash": "Kuka",
   "site_legal_meta_powered_by": "Működteti:",
   "archive_search_title": "/search/ - Keresés az archívumban",
-  "search_posts_or_board": "Bejegyzések keresése vagy board-cím megadása",
+  "search_posts_or_board": "Bejegyzések vagy boardok keresése",
   "archive_search_subtitle": "Keressen indexelt bejegyzéseket a 5chan tábláin.",
   "search_no_results": "Egy indexelt bejegyzés sem egyezett. Próbáljon általánosabb kifejezéseket.",
   "change_provider": "Szolgáltató váltása",
@@ -477,5 +477,8 @@
   "auto": "auto",
   "directory_submit_provider": "Szolgáltató beküldése",
   "directory_winner_subtitle": "Jelenlegi /{{boardIdentifier}}/ nyertes: {{address}}",
-  "image_cannot_be_embedded": "A(z) {{host}} webhelyről származó kép nem ágyazható be"
+  "image_cannot_be_embedded": "A(z) {{host}} webhelyről származó kép nem ágyazható be",
+  "search_board_title": "Név",
+  "search_board_address": "Cím",
+  "search_more_boards": "{{count}} további megjelenítése"
 }

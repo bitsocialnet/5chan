@@ -464,7 +464,7 @@
   "trash": "Kosz",
   "site_legal_meta_powered_by": "Obsługiwane przez",
   "archive_search_title": "/search/ - Wyszukiwanie w archiwum",
-  "search_posts_or_board": "Szukaj postów lub wpisz adres boardu",
+  "search_posts_or_board": "Szukaj postów lub boardów",
   "archive_search_subtitle": "Przeszukuj zindeksowane posty na tablicach 5chan.",
   "search_no_results": "Nie znaleziono pasujących zindeksowanych postów. Spróbuj użyć bardziej ogólnych haseł.",
   "change_provider": "Zmień dostawcę",
@@ -477,5 +477,8 @@
   "auto": "auto",
   "directory_submit_provider": "Zgłoś dostawcę",
   "directory_winner_subtitle": "Obecny zwycięzca /{{boardIdentifier}}/: {{address}}",
-  "image_cannot_be_embedded": "Nie można osadzić obrazu z {{host}}"
+  "image_cannot_be_embedded": "Nie można osadzić obrazu z {{host}}",
+  "search_board_title": "Tytuł",
+  "search_board_address": "Adres",
+  "search_more_boards": "pokaż {{count}} więcej"
 }

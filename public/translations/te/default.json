@@ -464,7 +464,7 @@
   "trash": "ట్రాష్",
   "site_legal_meta_powered_by": "ద్వారా ఆధారితం",
   "archive_search_title": "/search/ - ఆర్కైవ్ శోధన",
-  "search_posts_or_board": "పోస్ట్‌లను వెతకండి లేదా బోర్డు చిరునామాను నమోదు చేయండి",
+  "search_posts_or_board": "పోస్ట్‌లు లేదా బోర్డులను వెతకండి",
   "archive_search_subtitle": "5chan బోర్డులలో ఇండెక్స్ చేసిన పోస్ట్‌లను వెతకండి.",
   "search_no_results": "ఇండెక్స్ చేసిన పోస్ట్‌లేవీ సరిపోలలేదు. మరింత సాధారణ పదాలతో ప్రయత్నించండి.",
   "change_provider": "ప్రొవైడర్‌ను మార్చండి",
@@ -477,5 +477,8 @@
   "auto": "ఆటో",
   "directory_submit_provider": "ఒక ప్రొవైడర్‌ను సమర్పించండి",
   "directory_winner_subtitle": "ప్రస్తుత /{{boardIdentifier}}/ విజేత: {{address}}",
-  "image_cannot_be_embedded": "{{host}} నుండి చిత్రాన్ని ఎంబెడ్ చేయడం సాధ్యం కాదు"
+  "image_cannot_be_embedded": "{{host}} నుండి చిత్రాన్ని ఎంబెడ్ చేయడం సాధ్యం కాదు",
+  "search_board_title": "శీర్షిక",
+  "search_board_address": "చిరునామా",
+  "search_more_boards": "మరో {{count}} చూపించు"
 }
