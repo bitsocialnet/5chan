@@ -93,6 +93,14 @@ describe('searchBoards', () => {
     expect(searchBoards(sources, '/biz/ - Business & Finance')[0]).toMatchObject({ address: 'business-and-finance.bso' });
   });
 
+  it('lists a board subscribed only by peer id once when that id is searched', () => {
+    const peerId = '12D3KooWQdQ6TkVA1Xe9zzaFP6vXBgsLeMAewpLpLwbsAYKivnQy';
+    const results = searchBoards({ subscriptions: [peerId] }, peerId);
+
+    // The subscription is the exact match, so no unlisted row is added for the same id.
+    expect(results).toEqual([{ address: peerId, exact: true, nsfw: false, publicKey: peerId }]);
+  });
+
   it('offers a typed address as spelled above the boards its name resembles', () => {
     // "mu.eth" is an address, not the /mu/ code, so it is not an exact match for /mu/.
     expect(searchBoards(sources, 'mu.eth').map((board) => [board.address, board.exact, board.unlisted])).toEqual([

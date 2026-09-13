@@ -69,7 +69,8 @@ const mergeInto = (merged: Map<string, MergedBoard>, keysByPublicKey: Map<string
 
   const existing = merged.get(key);
   if (!existing) {
-    merged.set(key, entry);
+    // Stored with the key it was derived from, so a later exact peer-id query still finds it.
+    merged.set(key, publicKey ? { ...entry, publicKey } : entry);
     return;
   }
 
