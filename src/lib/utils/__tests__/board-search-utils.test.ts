@@ -93,6 +93,51 @@ describe('searchBoards', () => {
     expect(searchBoards(sources, '/biz/ - Business & Finance')[0]).toMatchObject({ address: 'business-and-finance.bso' });
   });
 
+  it('keeps a .sol name apart from the same name under .bso', () => {
+    const results = searchBoards({ directories: [{ address: 'music.bso', directoryCode: 'mu', title: '/mu/ - Music' }] }, 'music.sol');
+
+    // No list carries music.sol, so it is offered as typed; music.bso is only the name it resembles.
+    expect(results.map((board) => [board.address, board.exact, board.unlisted])).toEqual([
+      ['music.sol', true, true],
+      ['music.bso', false, undefined],
+    ]);
+    expect(mergeBoardSources({ subscriptions: ['music.sol', 'music.bso'] })).toHaveLength(2);
+  });
+
+  it('lets a curated nsfw verdict beat the indexer, and takes the indexer where nothing local declares one', () => {
+    const merged = mergeBoardSources({
+      directories: [
+        { address: 'business-and-finance.bso', directoryCode: 'biz', nsfw: false, title: '/biz/ - Business & Finance' },
+        { address: 'random.bso', directoryCode: 'b', title: '/b/ - Random' },
+      ],
+      indexed: [
+        { address: 'business-and-finance.bso', nsfw: 1, post_count: 1, title: null },
+        { address: 'random.bso', nsfw: 1, post_count: 1, title: null },
+      ],
+    });
+
+    expect(merged.find((board) => board.address === 'business-and-finance.bso')?.nsfw).toBe(false);
+    expect(merged.find((board) => board.address === 'random.bso')?.nsfw).toBe(true);
+    // A row nothing declares is shown as safe.
+    expect(searchBoards({ subscriptions: ['quiet-board.bso'] }, 'quiet')).toMatchObject([{ address: 'quiet-board.bso', nsfw: false }]);
+  });
+
+  it('folds an address-only row into the keyed row once a public key connects them', () => {
+    const publicKey = '12D3KooWKXimxiZWtgF3LoTdaW3btHhDzJN7P3qrsgHwRkow186x';
+    const merged = mergeBoardSources({
+      // The directory names the board without its key, a candidate list keys another alias of it,
+      // and a later candidate keys the directory's alias: one board, one row.
+      directories: [{ address: 'literature.bso', directoryCode: 'lit', title: '/lit/ - Literature' }],
+      candidates: [
+        { directoryCode: 'lit', boards: [{ address: 'lit-posting.bso', publicKey }] },
+        { directoryCode: 'lit', boards: [{ address: 'literature.bso', publicKey }] },
+      ],
+    });
+
+    expect(merged).toHaveLength(1);
+    expect(merged[0]).toMatchObject({ directoryCode: 'lit', publicKey, title: 'Literature' });
+  });
+
   it('lists a board subscribed only by peer id once when that id is searched', () => {
     const peerId = '12D3KooWQdQ6TkVA1Xe9zzaFP6vXBgsLeMAewpLpLwbsAYKivnQy';
     const results = searchBoards({ subscriptions: [peerId] }, peerId);

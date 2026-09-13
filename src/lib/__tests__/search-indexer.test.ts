@@ -268,10 +268,11 @@ describe('getIndexedPostComment', () => {
     expect(fetchMock.mock.calls[0][0]).toBe('https://api.5archive.org/api/communities');
   });
 
-  it('answers with an empty board list when every provider fails, instead of throwing', async () => {
-    const fetchMock = vi.fn().mockResolvedValue({ ok: false, status: 503 });
-    vi.stubGlobal('fetch', fetchMock);
+  it('answers null when every provider fails, instead of throwing, and an empty list when the provider has none', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 503 }));
+    await expect(fetchIndexedBoardsFromChain(providers)).resolves.toBeNull();
 
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => ({ communities: [] }) }));
     await expect(fetchIndexedBoardsFromChain(providers)).resolves.toEqual([]);
   });
 });

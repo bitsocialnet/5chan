@@ -35,9 +35,11 @@ export interface BoardSearchSources {
   subscriptions?: string[];
 }
 
-type MergedBoard = Omit<BoardSearchResult, 'exact' | 'unlisted'> & {
+type MergedBoard = Omit<BoardSearchResult, 'exact' | 'nsfw' | 'unlisted'> & {
   /** Indexer descriptions are searched but never shown; the rows stay as compact as a directory's. */
   description?: string;
+  /** Undeclared until a list says so; the first list to declare it wins, so a curated verdict beats a crawled one. */
+  nsfw?: boolean;
 };
 
 const ADDRESS_SUFFIX = /\.(?:bso|eth|sol)$/i;
@@ -45,8 +47,12 @@ const ADDRESS_SUFFIX = /\.(?:bso|eth|sol)$/i;
 const BOARD_PUBLIC_KEY = /^12D3Koo[1-9A-HJ-NP-Za-km-z]{40,}$/;
 const DIRECTORY_TITLE = /^\/[^/]+\/\s*-\s*(.+)$/;
 
-/** Case-insensitive dedupe key that treats a board's .bso, .eth and .sol aliases as one board. */
-const getAddressKey = (address: string): string => normalizeBoardAddress(address.trim()).replace(ADDRESS_SUFFIX, '').toLowerCase();
+/**
+ * Case-insensitive dedupe key that treats a board's .bso and .eth aliases as one board, the way
+ * `normalizeBoardAddress` does everywhere else. A .sol name is a different board from the same
+ * name under .bso, so it keeps its suffix.
+ */
+const getAddressKey = (address: string): string => normalizeBoardAddress(address.trim().toLowerCase());
 
 /** "/mu/ - Music" -> "Music"; a title with no code part is kept whole. */
 const getBoardTitle = (title: string | null | undefined): string | undefined => {
@@ -60,6 +66,20 @@ const withField = <T>(current: T | undefined, incoming: T | undefined): T | unde
 /** A list can name a board by its peer id instead of its address; that is the same board. */
 const getPublicKey = (entry: MergedBoard): string | undefined => entry.publicKey ?? (BOARD_PUBLIC_KEY.test(entry.address) ? entry.address : undefined);
 
+/** Two records of one board; the one serving a directory keeps its address, as that is what /code/ resolves to. */
+const combine = (current: MergedBoard, incoming: MergedBoard): MergedBoard => {
+  const [first, second] = !current.directoryCode && incoming.directoryCode ? [incoming, current] : [current, incoming];
+  return {
+    address: first.address,
+    description: withField(first.description, second.description),
+    directoryCode: withField(first.directoryCode, second.directoryCode),
+    indexedPostCount: withField(first.indexedPostCount, second.indexedPostCount),
+    nsfw: withField(first.nsfw, second.nsfw),
+    publicKey: withField(first.publicKey, second.publicKey),
+    title: withField(first.title, second.title),
+  };
+};
+
 const mergeInto = (merged: Map<string, MergedBoard>, keysByPublicKey: Map<string, string>, entry: MergedBoard): void => {
   const addressKey = getAddressKey(entry.address);
   if (!addressKey) return;
@@ -67,22 +87,20 @@ const mergeInto = (merged: Map<string, MergedBoard>, keysByPublicKey: Map<string
   const key = (publicKey && keysByPublicKey.get(publicKey)) || addressKey;
   if (publicKey) keysByPublicKey.set(publicKey, key);
 
-  const existing = merged.get(key);
-  if (!existing) {
-    // Stored with the key it was derived from, so a later exact peer-id query still finds it.
-    merged.set(key, publicKey ? { ...entry, publicKey } : entry);
-    return;
+  // Stored with the key it was derived from, so a later exact peer-id query still finds it.
+  let combined = publicKey ? { ...entry, publicKey } : entry;
+  // The public key just connected this address to a row kept under another alias: fold in the
+  // address-only row that alias had, so the board does not show twice.
+  if (key !== addressKey) {
+    const orphan = merged.get(addressKey);
+    if (orphan) {
+      merged.delete(addressKey);
+      combined = combine(orphan, combined);
+    }
   }
 
-  merged.set(key, {
-    address: existing.address,
-    description: withField(existing.description, entry.description),
-    directoryCode: withField(existing.directoryCode, entry.directoryCode),
-    indexedPostCount: withField(existing.indexedPostCount, entry.indexedPostCount),
-    nsfw: existing.nsfw || entry.nsfw,
-    publicKey: withField(existing.publicKey, publicKey),
-    title: withField(existing.title, entry.title),
-  });
+  const existing = merged.get(key);
+  merged.set(key, existing ? combine(existing, combined) : combined);
 };
 
 /**
@@ -100,29 +118,29 @@ export const mergeBoardSources = (sources: BoardSearchSources): MergedBoard[] =>
     add({
       address: directory.address,
       directoryCode: directory.directoryCode,
-      nsfw: directory.nsfw === true,
+      nsfw: directory.nsfw,
       publicKey: directory.publicKey,
       title: getBoardTitle(directory.title),
     });
   }
   for (const board of sources.specialBoards ?? []) {
-    add({ address: board.address, directoryCode: board.directoryCode, nsfw: board.nsfw === true, publicKey: board.publicKey, title: getBoardTitle(board.title) });
+    add({ address: board.address, directoryCode: board.directoryCode, nsfw: board.nsfw, publicKey: board.publicKey, title: getBoardTitle(board.title) });
   }
   // A candidate that is not serving its directory keeps the directory's name but gets no code.
   for (const list of sources.candidates ?? []) {
     for (const board of list.boards) {
-      add({ address: board.address, nsfw: board.nsfw === true, publicKey: board.publicKey, title: getBoardTitle(list.title) });
+      add({ address: board.address, nsfw: board.nsfw, publicKey: board.publicKey, title: getBoardTitle(list.title) });
     }
   }
   for (const address of sources.subscriptions ?? []) {
-    if (typeof address === 'string') add({ address: address.trim(), nsfw: false });
+    if (typeof address === 'string') add({ address: address.trim() });
   }
   for (const board of sources.indexed ?? []) {
     add({
       address: board.address,
       description: board.description ?? undefined,
       indexedPostCount: board.post_count,
-      nsfw: board.nsfw === 1,
+      nsfw: board.nsfw === undefined ? undefined : board.nsfw === 1,
       title: getBoardTitle(board.title),
     });
   }
@@ -211,7 +229,7 @@ export const searchBoards = (sources: BoardSearchSources, query: string): BoardS
         (b.board.indexedPostCount ?? 0) - (a.board.indexedPostCount ?? 0) ||
         a.board.address.localeCompare(b.board.address),
     )
-    .map(({ board: { description: _description, ...board }, rank }) => ({ ...board, exact: rank === RANK_EXACT }));
+    .map(({ board: { description: _description, ...board }, rank }) => ({ ...board, exact: rank === RANK_EXACT, nsfw: board.nsfw ?? false }));
 
   // The address that was typed is offered as spelled, above whatever its name resembles.
   if (isAddressQuery && !matches.some((board) => board.exact)) {

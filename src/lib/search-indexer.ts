@@ -255,10 +255,10 @@ const fetchIndexedBoards = async (provider: SearchProvider): Promise<IndexedBoar
 
 /**
  * The indexer's own board list, searched alongside 5chan's lists so a board none of them carry can
- * still be found. Unlike a search, a chain that is entirely down yields an empty list rather than an
- * error: the local lists answer on their own.
+ * still be found. Unlike a search, a chain that is entirely down yields null rather than an error:
+ * the local lists answer on their own, and null is distinct from an indexer that lists no boards.
  */
-export const fetchIndexedBoardsFromChain = async (providers: SearchProvider[]): Promise<IndexedBoard[]> => {
+export const fetchIndexedBoardsFromChain = async (providers: SearchProvider[]): Promise<IndexedBoard[] | null> => {
   for (const provider of providers) {
     try {
       return await fetchIndexedBoards(provider);
@@ -266,7 +266,7 @@ export const fetchIndexedBoardsFromChain = async (providers: SearchProvider[]): 
       // Hand over to the next indexer in the directory.
     }
   }
-  return [];
+  return null;
 };
 
 type RawCommentPayload = {

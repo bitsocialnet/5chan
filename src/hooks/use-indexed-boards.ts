@@ -59,9 +59,13 @@ const revalidate = (selectedProviderId: string | null): Promise<void> | null => 
 
   const request = fetchIndexedBoardsFromChain(getSearchProviderChain(selectedProviderId))
     .then((boards) => {
-      // An empty answer means every indexer was unreachable: keep what we have.
-      if (boards.length > 0) store.lastSuccessAt = Date.now();
-      setSnapshot(store, { boards: boards.length > 0 ? boards : store.snapshot.boards, loading: false });
+      // Nobody answered: keep what we have and try again after the retry delay.
+      if (boards === null) {
+        setSnapshot(store, { ...store.snapshot, loading: false });
+        return;
+      }
+      store.lastSuccessAt = Date.now();
+      setSnapshot(store, { boards, loading: false });
     })
     .finally(() => {
       store.inFlight = null;

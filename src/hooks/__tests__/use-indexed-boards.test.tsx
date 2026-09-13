@@ -107,6 +107,26 @@ describe('useIndexedBoards', () => {
     expect(latest?.boards).toEqual([board]);
   });
 
+  it('replaces a stale list when the provider answers that it has no boards', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ communities: [board] }) });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await render(null);
+    await flush();
+    expect(latest?.boards).toEqual([board]);
+
+    // An hour later the provider lists nothing: that is an answer, not an outage, so the list empties.
+    fetchMock.mockResolvedValue({ ok: true, json: async () => ({ communities: [] }) });
+    vi.advanceTimersByTime(60 * 60 * 1000 + 1);
+    act(() => root.unmount());
+    root = createRoot(container);
+    await render(null);
+    await flush();
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(latest).toEqual({ boards: [], loading: false });
+  });
+
   it('reads a pinned indexer through its own list', async () => {
     const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ communities: [board] }) });
     vi.stubGlobal('fetch', fetchMock);
