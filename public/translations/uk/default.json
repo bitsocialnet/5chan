@@ -464,7 +464,7 @@
   "trash": "Кошик",
   "site_legal_meta_powered_by": "Працює на базі",
   "archive_search_title": "/search/ - Пошук в архіві",
-  "search_posts_or_board": "Пошук дописів або введення адреси дошки",
+  "search_posts_or_board": "Пошук дописів або дошок",
   "archive_search_subtitle": "Шукайте проіндексовані дописи на дошках 5chan.",
   "search_no_results": "Не знайдено відповідних проіндексованих дописів. Спробуйте загальніші пошукові терміни.",
   "change_provider": "Змінити провайдера",
@@ -477,5 +477,8 @@
   "auto": "авто",
   "directory_submit_provider": "Надіслати провайдера",
   "directory_winner_subtitle": "Поточний переможець /{{boardIdentifier}}/: {{address}}",
-  "image_cannot_be_embedded": "Зображення з {{host}} неможливо вбудувати"
+  "image_cannot_be_embedded": "Зображення з {{host}} неможливо вбудувати",
+  "search_board_title": "Назва",
+  "search_board_address": "Адреса",
+  "search_more_boards": "показати ще {{count}}"
 }

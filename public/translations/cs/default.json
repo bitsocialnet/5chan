@@ -464,7 +464,7 @@
   "trash": "Koš",
   "site_legal_meta_powered_by": "Používá technologii",
   "archive_search_title": "/search/ - Vyhledávání v archivu",
-  "search_posts_or_board": "Hledat příspěvky nebo zadat adresu boardu",
+  "search_posts_or_board": "Hledat příspěvky nebo boardy",
   "archive_search_subtitle": "Prohledávejte indexované příspěvky napříč nástěnkami 5chan.",
   "search_no_results": "Žádné indexované příspěvky neodpovídají. Zkuste obecnější výrazy.",
   "change_provider": "Změnit poskytovatele",
@@ -477,5 +477,8 @@
   "auto": "auto",
   "directory_submit_provider": "Přidat poskytovatele",
   "directory_winner_subtitle": "Aktuální vítěz /{{boardIdentifier}}/: {{address}}",
-  "image_cannot_be_embedded": "Obrázek z {{host}} nelze vložit"
+  "image_cannot_be_embedded": "Obrázek z {{host}} nelze vložit",
+  "search_board_title": "Název",
+  "search_board_address": "Adresa",
+  "search_more_boards": "zobrazit dalších {{count}}"
 }

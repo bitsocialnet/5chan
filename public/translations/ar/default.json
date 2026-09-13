@@ -464,7 +464,7 @@
   "trash": "سلة المهملات",
   "site_legal_meta_powered_by": "مدعوم من",
   "archive_search_title": "/search/ - البحث في الأرشيف",
-  "search_posts_or_board": "ابحث في المنشورات أو أدخل عنوان لوحة",
+  "search_posts_or_board": "ابحث في المنشورات أو اللوحات",
   "archive_search_subtitle": "ابحث في المنشورات المفهرسة عبر لوحات 5chan.",
   "search_no_results": "لم تتطابق أي منشورات مفهرسة. جرّب مصطلحات أوسع نطاقًا.",
   "change_provider": "تغيير مزود الخدمة",
@@ -477,5 +477,8 @@
   "auto": "تلقائي",
   "directory_submit_provider": "أضف مزودًا",
   "directory_winner_subtitle": "المتصدر الحالي لـ /{{boardIdentifier}}/: {{address}}",
-  "image_cannot_be_embedded": "لا يمكن تضمين الصورة من {{host}}"
+  "image_cannot_be_embedded": "لا يمكن تضمين الصورة من {{host}}",
+  "search_board_title": "الاسم",
+  "search_board_address": "العنوان",
+  "search_more_boards": "عرض {{count}} أخرى"
 }

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { clearIndexerSearch, getIndexedPostComment, getIndexerSearch, type IndexedPost } from '../search-indexer';
+import { clearIndexerSearch, fetchIndexedBoardsFromChain, getIndexedPostComment, getIndexerSearch, type IndexedPost } from '../search-indexer';
 import { getSearchProvider } from '../search-providers';
 
 const provider = getSearchProvider('5archive');
@@ -255,5 +255,24 @@ describe('getIndexedPostComment', () => {
     expect(comment.deleted).toBe(true);
     expect(comment.link).toBe('https://example.com/fallback.png');
     expect(comment.content).toBe('archived reply');
+  });
+
+  it('lists the boards the provider indexed, dropping malformed rows', async () => {
+    const board = { address: 'music-posting.bso', description: null, nsfw: 0, post_count: 50, title: '/mu/ - Music' };
+    // A path or URL as the address is dropped too: it would become an off-site link on the results page.
+    const malformed = [{ title: 'no address' }, { address: 'bad.bso', post_count: -1, title: null }, { address: '/evil.example', post_count: 1, title: null }];
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ communities: [board, ...malformed] }) });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(fetchIndexedBoardsFromChain(providers)).resolves.toEqual([board]);
+    expect(fetchMock.mock.calls[0][0]).toBe('https://api.5archive.org/api/communities');
+  });
+
+  it('answers null when every provider fails, instead of throwing, and an empty list when the provider has none', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 503 }));
+    await expect(fetchIndexedBoardsFromChain(providers)).resolves.toBeNull();
+
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => ({ communities: [] }) }));
+    await expect(fetchIndexedBoardsFromChain(providers)).resolves.toEqual([]);
   });
 });

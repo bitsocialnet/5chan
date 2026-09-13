@@ -464,7 +464,7 @@
   "trash": "Papirkurv",
   "site_legal_meta_powered_by": "Drevet af",
   "archive_search_title": "/search/ - Arkivsøgning",
-  "search_posts_or_board": "Søg i indlæg eller indtast board-adresse",
+  "search_posts_or_board": "Søg i indlæg eller boards",
   "archive_search_subtitle": "Søg i indekserede indlæg på tværs af 5chan-boards.",
   "search_no_results": "Ingen indekserede opslag matchede. Prøv mere generelle søgeord.",
   "change_provider": "Skift udbyder",
@@ -477,5 +477,8 @@
   "auto": "auto",
   "directory_submit_provider": "Indsend en udbyder",
   "directory_winner_subtitle": "Nuværende /{{boardIdentifier}}/ vinder: {{address}}",
-  "image_cannot_be_embedded": "Billedet fra {{host}} kan ikke indlejres"
+  "image_cannot_be_embedded": "Billedet fra {{host}} kan ikke indlejres",
+  "search_board_title": "Titel",
+  "search_board_address": "Adresse",
+  "search_more_boards": "vis {{count}} mere"
 }

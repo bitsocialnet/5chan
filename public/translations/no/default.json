@@ -464,7 +464,7 @@
   "trash": "Papirkurv",
   "site_legal_meta_powered_by": "Drevet av",
   "archive_search_title": "/search/ - Arkivsøk",
-  "search_posts_or_board": "Søk i innlegg eller skriv inn board-adresse",
+  "search_posts_or_board": "Søk i innlegg eller boards",
   "archive_search_subtitle": "Søk i indekserte innlegg på tvers av 5chan-forumene.",
   "search_no_results": "Ingen indekserte innlegg samsvarte. Prøv mer generelle søkeord.",
   "change_provider": "Bytt leverandør",
@@ -477,5 +477,8 @@
   "auto": "auto",
   "directory_submit_provider": "Send inn en leverandør",
   "directory_winner_subtitle": "Nåværende /{{boardIdentifier}}/ vinner: {{address}}",
-  "image_cannot_be_embedded": "Bildet fra {{host}} kan ikke bygges inn"
+  "image_cannot_be_embedded": "Bildet fra {{host}} kan ikke bygges inn",
+  "search_board_title": "Tittel",
+  "search_board_address": "Adresse",
+  "search_more_boards": "vis {{count}} til"
 }

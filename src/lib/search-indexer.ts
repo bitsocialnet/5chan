@@ -2,6 +2,7 @@ import type { Comment } from '@bitsocial/bitsocial-react-hooks';
 import useSearchSummaryStore from '../stores/use-search-summary-store';
 import getShortAddress from './get-short-address';
 import type { SearchProvider } from './search-providers';
+import { isBoardAddressShape } from './utils/directory-list-lookup-utils';
 
 export interface IndexedPost {
   archived: 0 | 1;
@@ -215,6 +216,57 @@ export const getIndexerSearch = (providers: SearchProvider[], query: string, pag
 
 export const clearIndexerSearch = (providers: SearchProvider[], query: string, page: number): void => {
   clearCachedRequest(getSearchCacheKey(providers, query, page));
+};
+
+/**
+ * A board as the indexer knows it. `post_count` is what the indexer has archived, not the board's
+ * real size, so it only ever breaks ranking ties.
+ */
+export interface IndexedBoard {
+  address: string;
+  description?: string | null;
+  /** Absent on an indexer too old to track it. */
+  nsfw?: 0 | 1;
+  post_count: number;
+  title: string | null;
+}
+
+const isIndexedBoard = (value: unknown): value is IndexedBoard => {
+  if (!value || typeof value !== 'object') return false;
+  const board = value as Partial<IndexedBoard>;
+  // The address becomes a link on the results page, so only an address shape is accepted from the provider.
+  return (
+    typeof board.address === 'string' &&
+    isBoardAddressShape(board.address) &&
+    isNullableString(board.title) &&
+    isOptionalNullableString(board.description) &&
+    isNonNegativeInteger(board.post_count) &&
+    (board.nsfw === undefined || isFlag(board.nsfw))
+  );
+};
+
+const fetchIndexedBoards = async (provider: SearchProvider): Promise<IndexedBoard[]> => {
+  const result: unknown = await fetchProviderJson(getApiUrl(provider, 'api/communities').toString());
+  const boards = (result as { communities?: unknown } | null)?.communities;
+  if (!Array.isArray(boards)) throw new Error('Search provider returned an invalid board list');
+  // One malformed row is dropped rather than failing the whole list.
+  return boards.filter(isIndexedBoard);
+};
+
+/**
+ * The indexer's own board list, searched alongside 5chan's lists so a board none of them carry can
+ * still be found. Unlike a search, a chain that is entirely down yields null rather than an error:
+ * the local lists answer on their own, and null is distinct from an indexer that lists no boards.
+ */
+export const fetchIndexedBoardsFromChain = async (providers: SearchProvider[]): Promise<IndexedBoard[] | null> => {
+  for (const provider of providers) {
+    try {
+      return await fetchIndexedBoards(provider);
+    } catch {
+      // Hand over to the next indexer in the directory.
+    }
+  }
+  return null;
 };
 
 type RawCommentPayload = {

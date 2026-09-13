@@ -464,7 +464,7 @@
   "trash": "Çöp",
   "site_legal_meta_powered_by": "Şununla desteklenmektedir:",
   "archive_search_title": "/search/ - Arşiv Arama",
-  "search_posts_or_board": "Gönderilerde ara veya pano adresi gir",
+  "search_posts_or_board": "Gönderilerde veya panolarda ara",
   "archive_search_subtitle": "5chan panolarındaki dizine eklenmiş gönderileri arayın.",
   "search_no_results": "Dizine alınmış hiçbir gönderi eşleşmedi. Daha genel terimler deneyin.",
   "change_provider": "Sağlayıcıyı değiştir",
@@ -477,5 +477,8 @@
   "auto": "otomatik",
   "directory_submit_provider": "Sağlayıcı gönder",
   "directory_winner_subtitle": "Mevcut /{{boardIdentifier}}/ kazananı: {{address}}",
-  "image_cannot_be_embedded": "{{host}} kaynağındaki görsel yerleştirilemiyor"
+  "image_cannot_be_embedded": "{{host}} kaynağındaki görsel yerleştirilemiyor",
+  "search_board_title": "Başlık",
+  "search_board_address": "Adres",
+  "search_more_boards": "{{count}} tane daha göster"
 }

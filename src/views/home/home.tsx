@@ -15,7 +15,7 @@ import useHomepageStatsOptionsStore, { type HomepageStatsScope } from '../../sto
 import DisclaimerModal from '../../components/disclaimer-modal';
 import DirectoryModal from '../../components/directory-modal';
 import { extractDirectoryFromTitle } from '../../lib/utils/route-utils';
-import { getSearchDestination } from '../../lib/search-navigation';
+import { getSearchSubmitPath } from '../../lib/search-navigation';
 import { isWebRuntime } from '../../lib/media-hosting/show-upload-controls';
 import { useFeedStateString } from '../../hooks/use-state-string';
 
@@ -25,11 +25,10 @@ const SearchBar = () => {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const directories = useDirectories();
 
   const handleSearchSubmit = (e: FormEvent) => {
     e.preventDefault();
-    const destination = getSearchDestination(searchInputRef.current?.value ?? '', directories);
+    const destination = getSearchSubmitPath(searchInputRef.current?.value ?? '');
     if (destination) navigate(destination);
   };
 

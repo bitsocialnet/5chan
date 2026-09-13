@@ -464,7 +464,7 @@
   "trash": "ถังขยะ",
   "site_legal_meta_powered_by": "ขับเคลื่อนโดย",
   "archive_search_title": "/search/ - ค้นหาในคลังเก็บถาวร",
-  "search_posts_or_board": "ค้นหาโพสต์หรือใส่ที่อยู่บอร์ด",
+  "search_posts_or_board": "ค้นหาโพสต์หรือบอร์ด",
   "archive_search_subtitle": "ค้นหาโพสต์ที่จัดทำดัชนีในบอร์ดต่าง ๆ ของ 5chan",
   "search_no_results": "ไม่พบโพสต์ที่จัดทำดัชนีซึ่งตรงกัน ลองใช้คำค้นที่กว้างขึ้น",
   "change_provider": "เปลี่ยนผู้ให้บริการ",
@@ -477,5 +477,8 @@
   "auto": "อัตโนมัติ",
   "directory_submit_provider": "ส่งผู้ให้บริการ",
   "directory_winner_subtitle": "ผู้ชนะปัจจุบัน /{{boardIdentifier}}/: {{address}}",
-  "image_cannot_be_embedded": "ไม่สามารถฝังรูปภาพจาก {{host}} ได้"
+  "image_cannot_be_embedded": "ไม่สามารถฝังรูปภาพจาก {{host}} ได้",
+  "search_board_title": "ชื่อ",
+  "search_board_address": "ที่อยู่",
+  "search_more_boards": "แสดงเพิ่มอีก {{count}}"
 }

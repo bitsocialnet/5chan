@@ -464,7 +464,7 @@
   "trash": "Corbeille",
   "site_legal_meta_powered_by": "Propulsé par",
   "archive_search_title": "/search/ - Recherche dans les archives",
-  "search_posts_or_board": "Rechercher des messages ou saisir l'adresse d'un board",
+  "search_posts_or_board": "Rechercher des messages ou des boards",
   "archive_search_subtitle": "Recherchez des publications indexées sur les forums de 5chan.",
   "search_no_results": "Aucune publication indexée ne correspond. Essayez des termes plus généraux.",
   "change_provider": "Changer de fournisseur",
@@ -477,5 +477,8 @@
   "auto": "auto",
   "directory_submit_provider": "Proposer un fournisseur",
   "directory_winner_subtitle": "Gagnant actuel de /{{boardIdentifier}}/: {{address}}",
-  "image_cannot_be_embedded": "Impossible d’intégrer l’image de {{host}}"
+  "image_cannot_be_embedded": "Impossible d’intégrer l’image de {{host}}",
+  "search_board_title": "Titre",
+  "search_board_address": "Adresse",
+  "search_more_boards": "afficher {{count}} de plus"
 }

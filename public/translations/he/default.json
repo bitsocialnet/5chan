@@ -464,7 +464,7 @@
   "trash": "אשפה",
   "site_legal_meta_powered_by": "מופעל על ידי",
   "archive_search_title": "/search/ - חיפוש בארכיון",
-  "search_posts_or_board": "חיפוש פוסטים או הזנת כתובת לוח",
+  "search_posts_or_board": "חיפוש פוסטים או לוחות",
   "archive_search_subtitle": "חפשו פוסטים שנוספו לאינדקס בלוחות של 5chan.",
   "search_no_results": "לא נמצאו פוסטים באינדקס שתואמים. נסו מונחים כלליים יותר.",
   "change_provider": "החלפת ספק",
@@ -477,5 +477,8 @@
   "auto": "אוטומטי",
   "directory_submit_provider": "הגשת ספק",
   "directory_winner_subtitle": "הזוכה הנוכחי של /{{boardIdentifier}}/: {{address}}",
-  "image_cannot_be_embedded": "לא ניתן להטמיע תמונה מהאתר {{host}}"
+  "image_cannot_be_embedded": "לא ניתן להטמיע תמונה מהאתר {{host}}",
+  "search_board_title": "כותרת",
+  "search_board_address": "כתובת",
+  "search_more_boards": "הצג עוד {{count}}"
 }

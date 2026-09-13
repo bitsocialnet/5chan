@@ -464,7 +464,7 @@
   "trash": "ट्रैश",
   "site_legal_meta_powered_by": "द्वारा संचालित",
   "archive_search_title": "/search/ - संग्रह खोज",
-  "search_posts_or_board": "पोस्ट खोजें या बोर्ड का पता डालें",
+  "search_posts_or_board": "पोस्ट या बोर्ड खोजें",
   "archive_search_subtitle": "5chan बोर्डों पर इंडेक्स की गई पोस्ट खोजें।",
   "search_no_results": "कोई इंडेक्स की गई पोस्ट मेल नहीं खाई। ज़्यादा सामान्य शब्द आज़माएँ।",
   "change_provider": "प्रदाता बदलें",
@@ -477,5 +477,8 @@
   "auto": "स्वतः",
   "directory_submit_provider": "एक प्रदाता सबमिट करें",
   "directory_winner_subtitle": "वर्तमान /{{boardIdentifier}}/ विजेता: {{address}}",
-  "image_cannot_be_embedded": "{{host}} से इमेज एम्बेड नहीं की जा सकती"
+  "image_cannot_be_embedded": "{{host}} से इमेज एम्बेड नहीं की जा सकती",
+  "search_board_title": "शीर्षक",
+  "search_board_address": "पता",
+  "search_more_boards": "{{count}} और दिखाएं"
 }

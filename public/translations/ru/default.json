@@ -464,7 +464,7 @@
   "trash": "Корзина",
   "site_legal_meta_powered_by": "Работает на базе",
   "archive_search_title": "/search/ - Поиск по архиву",
-  "search_posts_or_board": "Поиск постов или ввод адреса доски",
+  "search_posts_or_board": "Поиск постов или досок",
   "archive_search_subtitle": "Ищите проиндексированные посты на досках 5chan.",
   "search_no_results": "Подходящих проиндексированных постов не найдено. Попробуйте использовать более общие запросы.",
   "change_provider": "Сменить провайдера",
@@ -477,5 +477,8 @@
   "auto": "авто",
   "directory_submit_provider": "Добавить провайдера",
   "directory_winner_subtitle": "Текущий победитель /{{boardIdentifier}}/: {{address}}",
-  "image_cannot_be_embedded": "Изображение с {{host}} нельзя встроить"
+  "image_cannot_be_embedded": "Изображение с {{host}} нельзя встроить",
+  "search_board_title": "Название",
+  "search_board_address": "Адрес",
+  "search_more_boards": "показать ещё {{count}}"
 }

@@ -464,7 +464,7 @@
   "trash": "Prullenbak",
   "site_legal_meta_powered_by": "Mogelijk gemaakt door",
   "archive_search_title": "/search/ - Zoeken in het archief",
-  "search_posts_or_board": "Zoek posts of voer een board-adres in",
+  "search_posts_or_board": "Zoek posts of boards",
   "archive_search_subtitle": "Doorzoek geïndexeerde berichten op 5chan-boards.",
   "search_no_results": "Er zijn geen overeenkomende geïndexeerde berichten gevonden. Probeer algemenere zoektermen.",
   "change_provider": "Provider wijzigen",
@@ -477,5 +477,8 @@
   "auto": "auto",
   "directory_submit_provider": "Aanbieder indienen",
   "directory_winner_subtitle": "Huidige /{{boardIdentifier}}/ winnaar: {{address}}",
-  "image_cannot_be_embedded": "De afbeelding van {{host}} kan niet worden ingesloten"
+  "image_cannot_be_embedded": "De afbeelding van {{host}} kan niet worden ingesloten",
+  "search_board_title": "Titel",
+  "search_board_address": "Adres",
+  "search_more_boards": "toon {{count}} meer"
 }
