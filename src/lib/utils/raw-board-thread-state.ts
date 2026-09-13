@@ -1,4 +1,4 @@
-import { resolvePostSortType, type Comment, type CommunitiesPages, type Community, type CommunityPage } from '@bitsocial/bitsocial-react-hooks';
+import { getPostPageSortType, resolvePostSortType, type Comment, type CommunitiesPages, type Community, type CommunityPage } from '@bitsocial/bitsocial-react-hooks';
 
 export type RawBoardThreadState = {
   hasExplicitEmptyPageCids: boolean;
@@ -85,12 +85,16 @@ export const getRawBoardThreadState = ({
     return EMPTY_RAW_BOARD_THREAD_STATE;
   }
 
+  // A single-page community serves the standard sorts from its preloaded page (e.g. `active` from
+  // `posts.pages.hot`), so index pages by the sort that stores them, not by the resolved sort name.
+  const pageSortType = getPostPageSortType(community, sortType) ?? resolvedSortType;
+
   const rootThreadCids = new Set<string>();
-  const preloadedSortPage = community.posts?.pages?.[resolvedSortType];
+  const preloadedSortPage = community.posts?.pages?.[pageSortType];
   addRootThreadCids(rootThreadCids, preloadedSortPage?.comments);
 
-  const firstPageCid = getPostsFirstPageCid(community, resolvedSortType);
-  const pages = firstPageCid ? getPostsPages(community, resolvedSortType, communitiesPages) : [];
+  const firstPageCid = getPostsFirstPageCid(community, pageSortType);
+  const pages = firstPageCid ? getPostsPages(community, pageSortType, communitiesPages) : [];
   for (const page of pages) {
     addRootThreadCids(rootThreadCids, page?.comments);
   }
@@ -103,7 +107,7 @@ export const getRawBoardThreadState = ({
     };
   }
 
-  const hasPageCid = Boolean(community.posts?.pageCids?.[resolvedSortType]);
+  const hasPageCid = Boolean(community.posts?.pageCids?.[pageSortType]);
   const hasExplicitEmptyPageCids = hasFetchedCommunityUpdate && Boolean(community.posts?.pageCids && !hasPageCid);
   const preloadedPages = (preloadedSortPage ? [preloadedSortPage] : []) as Array<{ comments?: Comment[]; nextCid?: string }>;
   const hasCompletePreloadedChain = !hasPageCid && preloadedPages.some((page) => Array.isArray(page?.comments)) && preloadedPages.every((page) => !page?.nextCid);

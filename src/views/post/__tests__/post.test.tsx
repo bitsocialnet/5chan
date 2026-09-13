@@ -113,29 +113,34 @@ vi.mock('react-router-dom', async () => {
   };
 });
 
-vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
-  resolveReplySortType: () => undefined,
-  useAccount: () => activeAccount,
-  useAccountComment: ({ commentCid }: { commentCid?: string }) => (commentCid ? enrichAccountCommentAuthor(testState.accountCommentsByCid[commentCid]) : undefined),
-  useComment: ({ commentCid, autoUpdate, community }: { commentCid?: string; autoUpdate?: boolean; community?: { name?: string; publicKey?: string } }) => {
-    testState.useCommentCalls.push({ commentCid, autoUpdate, community });
-    return commentCid ? testState.commentsByCid[commentCid] : undefined;
-  },
-  useEditedComment: ({ comment }: { comment?: TestComment }) => ({
-    editedComment: comment?.cid ? testState.editedCommentsByCid[comment.cid] : undefined,
-  }),
-  useReplies: ({ comment }: { comment?: TestComment }) => {
-    const replies = comment?.cid ? testState.repliesByCommentCid[comment.cid] || [] : [];
-    return {
-      hasMore: false,
-      loadMore: vi.fn(),
-      replies,
-      reset: vi.fn(),
-      updatedReplies: replies,
-    };
-  },
-  useCommunity: () => testState.community,
-}));
+vi.mock('@bitsocial/bitsocial-react-hooks', async () => {
+  const { resolveReplySortType } = await vi.importActual<typeof import('@bitsocial/bitsocial-react-hooks/dist/lib/page-sorts.js')>(
+    '@bitsocial/bitsocial-react-hooks/dist/lib/page-sorts.js',
+  );
+  return {
+    resolveReplySortType,
+    useAccount: () => activeAccount,
+    useAccountComment: ({ commentCid }: { commentCid?: string }) => (commentCid ? enrichAccountCommentAuthor(testState.accountCommentsByCid[commentCid]) : undefined),
+    useComment: ({ commentCid, autoUpdate, community }: { commentCid?: string; autoUpdate?: boolean; community?: { name?: string; publicKey?: string } }) => {
+      testState.useCommentCalls.push({ commentCid, autoUpdate, community });
+      return commentCid ? testState.commentsByCid[commentCid] : undefined;
+    },
+    useEditedComment: ({ comment }: { comment?: TestComment }) => ({
+      editedComment: comment?.cid ? testState.editedCommentsByCid[comment.cid] : undefined,
+    }),
+    useReplies: ({ comment }: { comment?: TestComment }) => {
+      const replies = comment?.cid ? testState.repliesByCommentCid[comment.cid] || [] : [];
+      return {
+        hasMore: false,
+        loadMore: vi.fn(),
+        replies,
+        reset: vi.fn(),
+        updatedReplies: replies,
+      };
+    },
+    useCommunity: () => testState.community,
+  };
+});
 
 vi.mock('@bitsocial/bitsocial-react-hooks/dist/stores/communities-pages', () => ({
   default: (selector: (state: { comments: typeof testState.cachedComments }) => unknown) =>

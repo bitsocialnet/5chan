@@ -78,7 +78,6 @@ const testState = vi.hoisted(() => ({
   setResetFunctionMock: vi.fn(),
   showOPComment: true,
   sortType: 'new' as 'active' | 'new',
-  compatiblePostSortType: 'preferred' as string | undefined,
   unblockCidMock: vi.fn(),
   virtuosoInitialScrollTops: [] as Array<number | undefined>,
   windowWidth: 900,
@@ -159,34 +158,42 @@ const getScopedFeed = (options?: { filter?: FeedFilter; newerThan?: number; post
   return scopedFeed;
 };
 
-vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
-  useAccount: () => testState.account,
-  useAccountComments: (options?: { commentIndices?: number[]; communityAddress?: string; newerThan?: number; sortType?: 'new' | 'old' }) => {
-    testState.accountCommentsCalls.push(options);
-    return { accountComments: getScopedAccountComments(options) };
-  },
-  useFeed: (options: { communities?: unknown[]; filter?: FeedFilter; newerThan?: number; postsPerPage?: number; sortType?: string }) => {
-    testState.feedOptionsCalls.push({
-      communitiesLength: options.communities?.length,
-      filterKey: options.filter?.key,
-      newerThan: options.newerThan,
-      postsPerPage: options.postsPerPage,
-      sortType: options.sortType,
-    });
-    return {
-      feed: getScopedFeed(options),
-      hasMore: testState.hasMore,
-      expandTimeWindow: testState.expandTimeWindowMock,
-      loadMore: testState.loadMoreMock,
-      reset: testState.resetMock,
-    };
-  },
-  useCommunity: () => testState.community,
-  useComments: ({ commentCids = [] }: { commentCids?: string[] } = {}) => ({
-    comments: commentCids.map((cid) => testState.commentsByCid[cid]),
-    state: 'succeeded',
-  }),
-}));
+vi.mock('@bitsocial/bitsocial-react-hooks', async () => {
+  // Real sort helpers for the raw board state read by usePruneHiddenCatalogThreads.
+  const { getPostPageSortType, resolvePostSortType } = await vi.importActual<typeof import('@bitsocial/bitsocial-react-hooks/dist/lib/page-sorts.js')>(
+    '@bitsocial/bitsocial-react-hooks/dist/lib/page-sorts.js',
+  );
+  return {
+    getPostPageSortType,
+    resolvePostSortType,
+    useAccount: () => testState.account,
+    useAccountComments: (options?: { commentIndices?: number[]; communityAddress?: string; newerThan?: number; sortType?: 'new' | 'old' }) => {
+      testState.accountCommentsCalls.push(options);
+      return { accountComments: getScopedAccountComments(options) };
+    },
+    useFeed: (options: { communities?: unknown[]; filter?: FeedFilter; newerThan?: number; postsPerPage?: number; sortType?: string }) => {
+      testState.feedOptionsCalls.push({
+        communitiesLength: options.communities?.length,
+        filterKey: options.filter?.key,
+        newerThan: options.newerThan,
+        postsPerPage: options.postsPerPage,
+        sortType: options.sortType,
+      });
+      return {
+        feed: getScopedFeed(options),
+        hasMore: testState.hasMore,
+        expandTimeWindow: testState.expandTimeWindowMock,
+        loadMore: testState.loadMoreMock,
+        reset: testState.resetMock,
+      };
+    },
+    useCommunity: () => testState.community,
+    useComments: ({ commentCids = [] }: { commentCids?: string[] } = {}) => ({
+      comments: commentCids.map((cid) => testState.commentsByCid[cid]),
+      state: 'succeeded',
+    }),
+  };
+});
 
 vi.mock('@bitsocial/bitsocial-react-hooks/dist/stores/accounts', () => ({
   default: {
@@ -273,11 +280,6 @@ vi.mock('../../../hooks/use-resolved-community-address', () => ({
 
 vi.mock('../../../hooks/use-state-string', () => ({
   useFeedStateString: () => 'loading_feed',
-}));
-
-vi.mock('../../../hooks/use-compatible-post-sort-type', () => ({
-  useCompatiblePostSortType: (_communities: unknown[], preferredSortType: string) =>
-    testState.compatiblePostSortType === 'preferred' ? preferredSortType : testState.compatiblePostSortType,
 }));
 
 vi.mock('../../../hooks/use-window-width', () => ({
@@ -452,7 +454,6 @@ describe('Catalog', () => {
     testState.searchText = '';
     testState.showOPComment = true;
     testState.sortType = 'new';
-    testState.compatiblePostSortType = 'preferred';
     testState.unblockCidMock.mockReset();
     testState.unblockCidMock.mockResolvedValue(undefined);
     testState.virtuosoInitialScrollTops = [];
@@ -512,8 +513,8 @@ describe('Catalog', () => {
     root = createRoot(container);
   });
 
-  it('uses the preloaded page when a board does not publish the selected sort', async () => {
-    testState.compatiblePostSortType = undefined;
+  it('requests the selected sort directly on a single board', async () => {
+    testState.sortType = 'active';
 
     await renderCatalog({ initialEntry: '/mu/catalog', routePath: '/:boardIdentifier/catalog' });
 
@@ -522,7 +523,7 @@ describe('Catalog', () => {
         expect.objectContaining({
           communitiesLength: 1,
           newerThan: undefined,
-          sortType: undefined,
+          sortType: 'active',
         }),
       ]),
     );

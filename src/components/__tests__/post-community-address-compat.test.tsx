@@ -3,6 +3,8 @@ import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { MemoryRouter, useLocation, useNavigate } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { Comment } from '@bitsocial/bitsocial-react-hooks';
+import { getReplyPageSortType } from '@bitsocial/bitsocial-react-hooks/dist/lib/page-sorts.js';
 import PostDesktop from '../post-desktop';
 import PostMobile from '../post-mobile';
 
@@ -69,10 +71,9 @@ const getMockPreloadedReplies = (comment?: TestComment, sortType?: string) => {
     return [];
   }
 
-  const preloadedReplies =
-    sortType === undefined
-      ? (Object.values(comment.replies?.pages ?? {}).find((page) => page?.comments?.length)?.comments ?? [])
-      : (comment.replies?.pages?.[sortType]?.comments ?? []);
+  // Like the hooks, serve a sort from the page that stores it (a complete preloaded page serves every standard sort).
+  const pageSortType = getReplyPageSortType(comment as unknown as Comment, sortType);
+  const preloadedReplies = pageSortType ? (comment.replies?.pages?.[pageSortType]?.comments ?? []) : [];
 
   const compatibleReplies: TestComment[] = [];
   for (const reply of preloadedReplies) {
@@ -93,26 +94,30 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
-vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
-  resolveReplySortType: (comment?: TestComment, requestedSortType?: string) =>
-    requestedSortType && Object.hasOwn(comment?.replies?.pages ?? {}, requestedSortType) ? requestedSortType : undefined,
-  useAccount: () => ({ id: 'viewer-account', author: { address: '0xviewer' } }),
-  useAccountComment: (options?: { commentCid?: string }) => (options?.commentCid ? testState.accountCommentsByCid[options.commentCid] : undefined),
-  useEditedComment: () => ({ editedComment: undefined }),
-  usePublishCommentModeration: () => ({
-    error: undefined,
-    publishCommentModeration: vi.fn(),
-    state: 'initializing',
-  }),
-  useReplies: ({ comment, sortType }: { comment?: TestComment; sortType?: string }) => {
-    testState.replyComments.push(comment);
-    return {
-      hasMore: testState.hasMoreReplies,
-      loadMore: vi.fn(),
-      replies: getMockPreloadedReplies(comment, sortType),
-    };
-  },
-}));
+vi.mock('@bitsocial/bitsocial-react-hooks', async () => {
+  const { resolveReplySortType } = await vi.importActual<typeof import('@bitsocial/bitsocial-react-hooks/dist/lib/page-sorts.js')>(
+    '@bitsocial/bitsocial-react-hooks/dist/lib/page-sorts.js',
+  );
+  return {
+    resolveReplySortType,
+    useAccount: () => ({ id: 'viewer-account', author: { address: '0xviewer' } }),
+    useAccountComment: (options?: { commentCid?: string }) => (options?.commentCid ? testState.accountCommentsByCid[options.commentCid] : undefined),
+    useEditedComment: () => ({ editedComment: undefined }),
+    usePublishCommentModeration: () => ({
+      error: undefined,
+      publishCommentModeration: vi.fn(),
+      state: 'initializing',
+    }),
+    useReplies: ({ comment, sortType }: { comment?: TestComment; sortType?: string }) => {
+      testState.replyComments.push(comment);
+      return {
+        hasMore: testState.hasMoreReplies,
+        loadMore: vi.fn(),
+        replies: getMockPreloadedReplies(comment, sortType),
+      };
+    },
+  };
+});
 
 vi.mock('react-virtuoso', () => ({
   Virtuoso: React.forwardRef(
