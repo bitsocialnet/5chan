@@ -17,7 +17,7 @@ export default defineConfig({
         'src/globals.d.ts',
         'src/modules.d.ts',
         'src/sw.ts',
-        'src/lib/react-scan.ts',
+        'src/lib/dev-tools.ts',
         'electron/**/*.test.js',
         'electron/vite-config.js',
         'electron/vite.preload.config.js',

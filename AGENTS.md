@@ -95,6 +95,12 @@ For an unexpected repo-specific issue, tell the contributor and continue indepen
 - Prefer existing tools and local CLIs. Use external documentation when versions matter. Do not search for or install additional skills merely because a normal coding task mentions their domain.
 - Keep tool catalogs relevant. Deferred MCP loading can reduce context overhead, but unnecessary integrations still add choices; disable unused tools when their overhead is observable. Playwright CLI remains the project browser verification path.
 
+## React diagnostics and visual feedback
+
+Use the pinned React Doctor through `yarn doctor --scope changed --base <base> --blocking none --no-parallel` to investigate the actual task diff. Use `HEAD` for uncommitted work, or the task's starting commit after committing. Run `yarn doctor:scan --help` and follow `profile-browsing` for runtime Chrome traces; serialize its browser with other browser work. React Doctor manages its own isolated Chrome, an exception to the Playwright wrapper; first close owned Playwright sessions, defer if the wrapper reports another active owner, and confirm the scan browser exits before continuing. Diagnose measured costs and relevant new findings without chasing a score.
+
+Development builds expose Agentation for visual annotations and retain `window.__ELEMENT_SOURCE__` for source inspection. Set `window.__PROFILING__ = true` before navigation to suppress the toolbar during automated measurements. Production builds must contain neither inspector.
+
 ## Local commands and playbooks
 
 Canonical dev URL: `https://5chan.localhost`; other worktrees may use branch-scoped `*.5chan.localhost`. Preserve the launcher's HTTPS proxy on port 443. Direct Vite fallback: `PORTLESS=0 yarn start`. USB Android: `yarn start:android-usb` (`ANDROID_USB_OPEN_BROWSER=0` skips opening the phone browser).

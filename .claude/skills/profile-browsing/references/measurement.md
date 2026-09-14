@@ -25,7 +25,7 @@ async page => {
 }
 ```
 
-`__PROFILING__` suppresses the app's react-scan toolbar. Preserve the installed React DevTools hook; do not replace or wrap it merely to count commits. Unsupported observer types are unavailable measurements, not zero values.
+`__PROFILING__` suppresses the app's Agentation toolbar. Preserve the installed React DevTools hook; do not replace or wrap it merely to count commits. Unsupported observer types are unavailable measurements, not zero values.
 
 - **Document load:** navigate to the full hash URL, explicitly reloading if the preceding navigation changed only the hash. Read `performance.getEntriesByType("navigation")` and measure when the actual feed/control becomes ready. The document load event can finish before peer content arrives; a reload is not automatically a cold-cache test.
 - **Hash transition or interaction:** mark phase start, perform the action, wait for its observable completion, then mark phase end in the same document. Put those operations in one `run-code` invocation to avoid including idle time between CLI calls. Do not compare marks across reloads.
@@ -41,15 +41,17 @@ Raw layout-shift events, even with recent-input events excluded, are not the com
 
 Use a [Playwright trace](../../playwright-cli/references/tracing.md) to correlate actions with requests/DOM state when useful; it is not a CPU sampling profile. Record missing peer content, dynamic tooling readiness, background activity, and instrumentation overhead as limitations.
 
-## 5chan React evidence
+## React diagnostics and runtime traces
 
-In a dev build, `src/lib/react-scan.ts` aggregates react-scan `onRender` events by component name. `window.__getReactScanReport()` returns `{ ComponentName: { count, time } }`; `window.__resetReactScanReport()` clears it between phases. These functions arrive through a dynamic import. If absent, wait for readiness within a bounded check; if still unavailable, report that limit.
+Run `corepack yarn doctor --scope changed --base <base> --blocking none --no-parallel` for static diagnostics on the actual task diff. Use `HEAD` while changes are uncommitted, or the task's starting commit after committing. Use `--scope full` for a deliberate full baseline. Fix relevant new findings; do not chase a score or suppress unrelated rules to clear the report.
+
+For a React runtime trace, inspect `corepack yarn doctor:scan --help`, then supply the running app's full hash URL explicitly. React Doctor records Chrome performance and React render evidence; static diagnostics alone do not measure runtime cost.
 
 ```bash
-playwright-cli -s=profile-task eval '() => typeof window.__getReactScanReport === "function" ? window.__getReactScanReport() : null'
-playwright-cli -s=profile-task eval '() => window.__resetReactScanReport?.()'
+corepack yarn doctor:scan 'http://localhost:5173/#/all' --format json
 ```
 
-Capture a phase's report before resetting or reloading. Reset just before the next measured action, or calculate deltas when retaining a cumulative report. Counts are aggregated across instances sharing a name, timing comes from react-scan, and early renders can precede collector readiness. Neither counts nor missing timing establish the user's observed latency by themselves.
+Substitute the actual app URL. The task owner coordinates this serialized browser pass: close owned Playwright sessions first and check `./scripts/pw-session.sh status`; defer when another task holds the browser slot. React Doctor manages its own temporary isolated Chrome profile, so it is the exception to the Playwright session wrapper. Do not run another browser or heavy check until the scan exits. Use an interactive terminal, perform the scoped interaction, then press Enter to stop (the command caps recording at five minutes). Confirm its browser closes before the next browser task. Prefer a production preview for representative timing without dev inspectors.
 
-Do not substitute react-scan's raw `getReport()` for this collector. To resolve a specific visible component to source, use the `inspect-elements` skill and its `__ELEMENT_SOURCE__` helper; a display name alone is not an exact source location.
+`--cdp <endpoint>` is optional for an explicitly task-owned dedicated Chrome debugging profile. It requires no nonblank tabs and leaves the attached browser running afterward; retain ownership and close that exact browser yourself. Do not attach to a personal browser.
+Capture the specific route/interaction, stop the recording when it completes, and retain the returned trace and summary paths. Record build mode, tooling overhead, and missing content. For automated observer measurements, set `window.__PROFILING__ = true` before app navigation to suppress Agentation; a separate Doctor scan must account for any visible toolbar in its capture. Component render counts are supporting evidence, not proof of a bottleneck. To resolve a visible component to source, use `inspect-elements` and its retained `__ELEMENT_SOURCE__` helper.

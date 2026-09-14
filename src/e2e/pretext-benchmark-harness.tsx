@@ -60,7 +60,6 @@ declare global {
       count: number;
       reset: () => void;
     };
-    __getReactScanReport?: () => unknown;
   }
 }
 
@@ -280,18 +279,6 @@ const getBacklinkLabels = (reply: SyntheticReply, directRepliesByParentCid: Map<
   const directReplies = directRepliesByParentCid.get(reply.cid || '') || [];
   const quotedReplies = quotedByMap.get(reply.cid || '') || [];
   return [...directReplies, ...quotedReplies].map((candidateReply) => `>>${candidateReply.number}`);
-};
-
-const summarizeRenderReport = () => {
-  const report = window.__getReactScanReport?.();
-  if (!report || typeof report !== 'object') {
-    return null;
-  }
-
-  const reportValues = Array.isArray(report) ? report : Object.values(report as Record<string, unknown>);
-  return {
-    componentCount: reportValues.length,
-  };
 };
 
 const buildThreadRoot = (replies: SyntheticReply[]): SyntheticReply =>
@@ -703,7 +690,6 @@ const Harness = () => {
         viewportHeight: window.innerHeight,
       } satisfies BenchmarkMetrics;
 
-      summarizeRenderReport();
       setLatestMetrics(nextMetrics);
       return nextMetrics;
     };

@@ -7,6 +7,8 @@ description: Map a visible 5chan DOM node to its React source when file or compo
 
 # Inspect Elements
 
+For human visual feedback, the development build includes [Agentation](https://github.com/benjitaylor/agentation). Activate its toolbar, select elements, add notes, and copy the resulting selectors and context into the task. Inspect the referenced code before changing it. The toolbar is suppressed when `window.__PROFILING__` is set before navigation and is absent from production builds.
+
 Map the requested live DOM node to source using the dev-only `window.__ELEMENT_SOURCE__` helper. Use an existing compatible dev server in this worktree or record ownership of one started for the task; production does not expose the helper.
 
 Reuse a compatible session supplied by the calling task when it already owns the browser slot; use its exact name and leave its lifecycle with that caller. Otherwise open an owned session through `./scripts/pw-session.sh`. Use `-s=<session>` on every command. The examples use `inspect`; substitute the actual name and URL, and skip `open` when reusing a session:

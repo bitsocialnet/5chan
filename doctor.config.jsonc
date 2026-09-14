@@ -1,6 +1,6 @@
 {
   // react-doctor configuration.
-  "diff": false,
+  "scope": "full",
   "ignore": {
     // Exclude test files from scoring. NOTE: ignore.files is broken in react-doctor 0.4.0
     // (any non-empty value collapses the scan scope and drops product files); ignore.overrides
