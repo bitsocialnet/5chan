@@ -8,9 +8,9 @@ Choose checks that establish the requested behavior. Finish the authorized imple
 |---|---|
 | Prose, comments, or formatting | Inspect the diff and relevant links/output; run required generators. No application build for documentation alone |
 | Isolated logic or automation | Affected behavior tests or a focused invocation; lint/type-check when the edited language or interface warrants it |
-| Shared runtime behavior, dependencies, build/package configuration, or substantial integration | Focused behavior tests plus `corepack yarn agent:verify` for build, lint, and type-check |
+| Shared runtime behavior, dependencies, build/package configuration, or substantial integration | Focused behavior tests plus `corepack yarn agent:verify` for build, lint, type-check, Doctor diagnostics, and runtime scenarios |
 | CSS, themes, or layout only | Affected browser/viewport/theme checks below; add a build for CSS processing, assets/import wiring, or integration uncertainty. Styling alone does not require React Doctor |
-| React state/effects/data flow or rendering performance | Inspect the relevant architecture; run `yarn doctor` when diagnostics would resolve a concern or a check explicitly requires it |
+| React state/effects/data flow or rendering performance | Inspect the relevant architecture; run `yarn doctor:check` and affected `yarn perf:check` scenarios |
 | Dependencies or import graph | Advisory `yarn knip`; resolve relevant new findings |
 | Release, CI, or explicitly requested full verification | Run that workflow's required checks even when a smaller local edit would normally need less |
 
@@ -28,7 +28,7 @@ For loading, navigation, or interaction performance, add a Chromium low-spec pas
 
 ## Full verification and ownership
 
-Before heavy work, inspect existing workloads; never stop an unfamiliar process. One owner runs `corepack yarn agent:verify` when a full pass is needed. It serializes build, lint, and type-check behind a machine-wide lock and reports contention. Installs, tests, browser work, and directly launched builds still require coordination.
+Before heavy work, inspect existing workloads; never stop an unfamiliar process. One owner runs `corepack yarn agent:verify` when a full pass is needed. It serializes build, lint, type-check, Doctor diagnostics, and runtime scenarios behind a machine-wide lock and reports contention. Installs, tests, browser work, and directly launched builds still require coordination.
 
 Builds may refresh generated assets and create `build/`. Inspect status before and after, preserve preexisting artifacts and changes, and remove only output created by this task. The verifier never restores or deletes output for you. No lifecycle hook runs builds, installs, audits, or Git cleanup.
 
@@ -41,3 +41,11 @@ For shared skills, roles, or hooks run `yarn ai-workflow:sync`, `yarn ai-workflo
 After substantial prompt changes, try representative requests for skill selection, scope, completion, and check choice. Use isolated fixtures for actions where possible; a read-only scenario review is useful evidence but does not prove live execution behavior.
 
 Record commands, outcomes, and limits in the task report. Use the [long-running workflow](long-running-agent-workflow.md) only when a durable handoff is needed.
+
+## Automated React performance evidence
+
+Run `yarn perf:install` once for the pinned browser, then `yarn perf:check` (three samples at 4x CPU by default). Scope a rerun with `--scenario <name>` when the change affects one covered flow. CI runs the compatibility self-test and scenarios; local `agent:verify` runs scenarios and Doctor automatically. After React/Bippy/collector upgrades, run `yarn perf:test` before relying on the counts. Keep these heavy checks out of per-edit hooks.
+
+`yarn perf:record` keeps JSON and native trace evidence under `.react-perf/`; use `--url <origin>` to reuse a compatible instrumented server. The runner owns its processes and browser lock; run it separately from manual browser sessions. Scenario configuration lives in `scripts/react-perf/config.mjs`. Exact update limits follow the tested interaction; timing caps are deliberately generous smoke limits and must not be relaxed merely to silence a failure. Diagnose a failed phase from its component-instance/commit evidence and visible completion.
+
+Read the `profile-browsing` measurement reference for interpretation and coverage limits. Root Profiler duration measures the subtree, not the self time of each component. A normal production preview lacks this React instrumentation; build and serve `build-profile/` for production-like React timing, leaving the release output untouched.

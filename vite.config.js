@@ -12,7 +12,8 @@ const appVersion = `${process.env.VITE_APP_VERSION || packageVersion}`.trim() ||
 process.env.VITE_APP_VERSION = appVersion;
 const releaseTag = `v${appVersion.replace(/^v/i, '').split('-')[0]}`;
 const publicBase = process.env.PUBLIC_URL || '/';
-const buildOutDir = 'build';
+const isProfilingBuild = process.env.REACT_PERF_PROFILE === '1';
+const buildOutDir = isProfilingBuild ? 'build-profile' : 'build';
 const basePathPrefix = (() => {
   const pathname = new URL(publicBase, 'https://example.invalid/').pathname;
   return pathname === '/' ? '' : pathname.replace(/^\/+|\/+$/g, '');
@@ -337,6 +338,7 @@ export default defineConfig({
     react(),
     babel({ presets: [reactCompilerPreset()] }),
     VitePWA({
+      disable: isProfilingBuild,
       registerType: 'autoUpdate',
       strategies: 'injectManifest',
       injectManifest: {
@@ -440,6 +442,7 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
+      ...(isProfilingBuild ? { 'react-dom/client': 'react-dom/profiling' } : {}),
       '@': resolve(__dirname, 'src'),
       // bitsocial-react-hooks imports zustand/shallow's deprecated default export and
       // passes it as a store equality fn, so its console.warn fires on every comparator
@@ -464,7 +467,7 @@ export default defineConfig({
   },
   server: {
     port: 3000,
-    open: process.env.PORTLESS_URL ? false : true,
+    open: process.env.REACT_PERF_RUN === '1' || process.env.PORTLESS_URL ? false : true,
     watch: {
       usePolling: true,
     },
@@ -474,7 +477,8 @@ export default defineConfig({
     // Use 'build' to match what electron/main.js expects (../build/index.html)
     outDir: buildOutDir,
     emptyOutDir: true,
-    sourcemap: process.env.GENERATE_SOURCEMAP === 'true',
+    sourcemap: isProfilingBuild || process.env.GENERATE_SOURCEMAP === 'true',
+    ...(isProfilingBuild ? { minify: false } : {}),
     target: process.env.ELECTRON ? 'electron-renderer' : 'esnext',
     rollupOptions: {
       output: {

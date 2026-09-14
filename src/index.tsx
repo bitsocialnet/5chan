@@ -16,7 +16,8 @@ const isVercelDeployment =
   typeof window !== 'undefined' && (window.location.hostname === '5chan.app' || window.location.hostname === 'www.5chan.app') && !window.isElectron;
 const shouldLoadAnalytics = import.meta.env.VITE_APP_DISTRIBUTION !== 'fdroid' && isVercelDeployment;
 const e2eStartHash = import.meta.env.VITE_E2E_START_HASH?.trim();
-const requestedE2EHarness = import.meta.env.DEV && typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('e2e') : null;
+const requestedE2EHarness =
+  (import.meta.env.DEV || import.meta.env.MODE === 'profiling') && typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('e2e') : null;
 
 if (typeof window !== 'undefined') {
   const canonicalHash = canonicalizeNestedHashRoute(window.location.hash);
@@ -32,6 +33,18 @@ if (typeof window !== 'undefined' && e2eStartHash && window.location.hash.length
 configureP2PBrowserPkcOptions();
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
+const renderApp = (tree: React.ReactNode) => {
+  root.render(
+    (import.meta.env.DEV || import.meta.env.MODE === 'profiling') && window.__REACT_PERF__ ? (
+      <React.Profiler id='app' onRender={window.__REACT_PERF__.onProfilerRender}>
+        {tree}
+      </React.Profiler>
+    ) : (
+      tree
+    ),
+  );
+};
+
 const renderRoot = async () => {
   let e2eHarness: React.ComponentType | null = null;
   let Analytics: React.ComponentType | null = null;
@@ -43,7 +56,7 @@ const renderRoot = async () => {
   }
 
   if (e2eHarness) {
-    root.render(<React.StrictMode>{React.createElement(e2eHarness)}</React.StrictMode>);
+    renderApp(<React.StrictMode>{React.createElement(e2eHarness)}</React.StrictMode>);
     return;
   }
 
@@ -52,7 +65,7 @@ const renderRoot = async () => {
     Analytics = (await import('@vercel/analytics/react')).Analytics;
   }
 
-  root.render(
+  renderApp(
     <React.StrictMode>
       <Router useTransitions={false}>
         <AppUpdateRegistration />

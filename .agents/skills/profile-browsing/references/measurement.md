@@ -41,17 +41,30 @@ Raw layout-shift events, even with recent-input events excluded, are not the com
 
 Use a [Playwright trace](../../playwright-cli/references/tracing.md) to correlate actions with requests/DOM state when useful; it is not a CPU sampling profile. Record missing peer content, dynamic tooling readiness, background activity, and instrumentation overhead as limitations.
 
-## React diagnostics and runtime traces
+## Automated React evidence
 
-Run `corepack yarn doctor --scope changed --base <base> --blocking none --no-parallel` for static diagnostics on the actual task diff. Use `HEAD` while changes are uncommitted, or the task's starting commit after committing. Use `--scope full` for a deliberate full baseline. Fix relevant new findings; do not chase a score or suppress unrelated rules to clear the report.
-
-For a React runtime trace, inspect `corepack yarn doctor:scan --help`, then supply the running app's full hash URL explicitly. React Doctor records Chrome performance and React render evidence; static diagnostics alone do not measure runtime cost.
+The configured `perf:check` scenarios run three samples at 4x CPU by default. `perf:record` defaults to one sample at normal CPU; pass explicit `--cpu` and `--samples` for a comparable before/after study. Use `--target`, `--scenario`, `--url`, and `--output` to select the flow, reuse an instrumented server, or choose artifact storage. Output includes JSON and native Chrome performance traces. The runner waits for observable scenario readiness and a bounded quiet period for the targeted components before each phase; this does not imply global quiescence. It resets the collector, records all commits during the action, and checks the phase against its budgets.
 
 ```bash
-corepack yarn doctor:scan 'http://localhost:5173/#/all' --format json
+corepack yarn perf:check --scenario crypto-address-draft
+corepack yarn perf:record --scenario crypto-address-draft --cpu 4 --samples 3
+corepack yarn doctor:check --base HEAD
 ```
 
-Substitute the actual app URL. The task owner coordinates this serialized browser pass: close owned Playwright sessions first and check `./scripts/pw-session.sh status`; defer when another task holds the browser slot. React Doctor manages its own temporary isolated Chrome profile, so it is the exception to the Playwright session wrapper. Do not run another browser or heavy check until the scan exits. Use an interactive terminal, perform the scoped interaction, then press Enter to stop (the command caps recording at five minutes). Confirm its browser closes before the next browser task. Prefer a production preview for representative timing without dev inspectors.
+The runner owns its browser/server cleanup and coordinates the shared browser resource lock. Do not launch it while a manual browser session is owned elsewhere; defer on contention. `perf:install` installs the pinned browser once. `perf:test` validates collector compatibility and deliberately exercises failure cases; run it after React, Bippy, or collector changes.
 
-`--cdp <endpoint>` is optional for an explicitly task-owned dedicated Chrome debugging profile. It requires no nonblank tabs and leaves the attached browser running afterward; retain ownership and close that exact browser yourself. Do not attach to a personal browser.
-Capture the specific route/interaction, stop the recording when it completes, and retain the returned trace and summary paths. Record build mode, tooling overhead, and missing content. For automated observer measurements, set `window.__PROFILING__ = true` before app navigation to suppress Agentation; a separate Doctor scan must account for any visible toolbar in its capture. Component render counts are supporting evidence, not proof of a bottleneck. To resolve a visible component to source, use `inspect-elements` and its retained `__ELEMENT_SOURCE__` helper.
+### Collector and timing semantics
+
+Development and explicit profiling builds load `scripts/react-perf/collector.mjs` before ReactDOM. `window.__REACT_PERF__.reset()` starts a bounded phase; `.snapshot()` returns schema-versioned evidence with instance/commit identity, lifecycle phase, and overflow/unavailable counters. Preserve React DevTools' hook. Count committed updates; StrictMode function replays and aborted render attempts are not additional committed updates. Same-named components remain distinct instances. Missing instrumentation or dropped events must fail a check, never become a zero-count success.
+
+The app's root `<Profiler>` feeds `onProfilerRender` so timings are actual subtree render durations. These are not per-component self times; do not sum ancestor/descendant spans to claim total CPU cost. Use the native trace for effects, cascading updates, and the phase's main-thread work. Neither Bippy counts nor Doctor's runtime JSON establish that a render was avoidable.
+
+Normal production builds exclude both the collector and Profiler wrapper. For optimized React timing use `yarn build:profile` then `yarn preview:profile`, and pass that origin via `--url`. This separate `build-profile/` uses `react-dom/profiling`, preserves component names and sourcemaps, and disables PWA registration. Regular production previews remain appropriate for page-level timing only. Record capture/build overhead and retain equivalent settings in comparisons.
+
+### Covered scenarios and budgets
+
+5chan covers unsaved crypto-address typing/clearing, an interface checkbox toggle, and the existing populated catalog benchmark. Settings scenarios use `/#/subs/settings` with a fresh, empty subscription list and wait for its empty-state message, isolating live all-feed footer updates; the separate catalog scenario supplies populated-content coverage. The catalog fixture exercises real CatalogRow/virtualizer components with seeded content and intercepted fixture media; it is not evidence of live peer transport latency. The typing scenarios require exactly five committed local updates for five keystrokes and one for clearing. The catalog bounds runaway commits and requires populated output; its detailed instance counts stay in the report.
+
+`scripts/react-perf/config.mjs` owns the budgets. Exact component-update limits reflect each tested state change; timing caps are generous smoke limits rather than calibrated performance targets. Diagnose any failing sample from its trace and component/commit data before changing a limit. Establish tighter latency/render budgets from repeated baselines with fixed content and throttling.
+
+Return scenario/action, URL, build type, viewport/browser/CPU, sample count, lifecycle/instance and commit counts, root render duration, action latency, dropped/unavailable data, budget results, and JSON/trace paths. For a visible component's source, use `inspect-elements` and the retained `__ELEMENT_SOURCE__` helper in a development build.

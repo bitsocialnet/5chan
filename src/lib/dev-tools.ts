@@ -1,4 +1,4 @@
-// Loaded only through the import.meta.env.DEV guard in index.html. Production builds omit this
+// Loaded only through the import.meta.env.DEV guard in src/bootstrap.ts. Production builds omit this
 // module and its inspector packages. Keep this entry point out of application imports.
 type ElementSourceApi = NonNullable<Window['__ELEMENT_SOURCE__']>;
 type ElementSourceResult = Awaited<ReturnType<ElementSourceApi['resolve']>>;

@@ -214,7 +214,7 @@ For an unexpected repo-specific issue, tell the contributor and continue indepen
 | Visual design, layout, CSS, or themes | Read the relevant guidance in [DESIGN.md](DESIGN.md); review against its Do/Don't list |
 | Files under `src/` or `scripts/` | Read the directory's `AGENTS.md` |
 | Code or automation changed | Select affected checks using [verification.md](docs/agent-playbooks/verification.md); use `agent:verify` for integration/build changes or an explicitly requested full pass |
-| React state, effects, data flow, or rendering performance changed | Review relevant React guidance; use `yarn doctor` when architecture/performance diagnostics would resolve a concern |
+| React state, effects, data flow, or rendering performance changed | Review relevant React guidance; run `yarn doctor:check` and affected `yarn perf:check` scenarios |
 | UI behavior/layout changed | Verify the affected flow; select browsers/viewports using [verification.md](docs/agent-playbooks/verification.md) |
 | Loading/navigation/performance work | Add a throttled Chromium pass; see [low-spec-verification.md](docs/agent-playbooks/low-spec-verification.md) |
 | Translation keys/values | Use the `translate` skill; one process applies locale changes at a time |
@@ -279,11 +279,15 @@ For an unexpected repo-specific issue, tell the contributor and continue indepen
 - Prefer existing tools and local CLIs. Use external documentation when versions matter. Do not search for or install additional skills merely because a normal coding task mentions their domain.
 - Keep tool catalogs relevant. Deferred MCP loading can reduce context overhead, but unnecessary integrations still add choices; disable unused tools when their overhead is observable. Playwright CLI remains the project browser verification path.
 
-## React diagnostics and visual feedback
+## React diagnostics and runtime performance
 
-Use the pinned React Doctor through `yarn doctor --scope changed --base <base> --blocking none --no-parallel` to investigate the actual task diff. Use `HEAD` for uncommitted work, or the task's starting commit after committing. Run `yarn doctor:scan --help` and follow `profile-browsing` for runtime Chrome traces; serialize its browser with other browser work. React Doctor manages its own isolated Chrome, an exception to the Playwright wrapper; first close owned Playwright sessions, defer if the wrapper reports another active owner, and confirm the scan browser exits before continuing. Diagnose measured costs and relevant new findings without chasing a score.
+`yarn agent:verify` and CI run `yarn doctor:check` for task-diff source diagnostics and `yarn perf:check` for deterministic runtime scenarios. Doctor remains advisory for relevant new findings; a score is not a target. Run affected scenarios after React state/effect/subscription/rendering changes, and `yarn perf:test` after React, Bippy, or collector upgrades. Install the pinned browser once with `yarn perf:install`; ordinary edit hooks still only format files.
 
-Development builds expose Agentation for visual annotations and retain `window.__ELEMENT_SOURCE__` for source inspection. Set `window.__PROFILING__ = true` before navigation to suppress the toolbar during automated measurements. Production builds must contain neither inspector.
+Development builds initialize the bounded Bippy collector before React and expose `window.__REACT_PERF__.reset()` / `.snapshot()`. It counts committed component updates by instance; it does not identify wasted work or count aborted renders. A root React Profiler supplies measured render duration. Missing instrumentation, dropped events, and exceeded scenario budgets fail the runtime check. Use `yarn perf:record --scenario <name>` for JSON and native Chrome traces; use `profile-browsing` for the evidence contract and broader investigations.
+
+`yarn build:profile` creates a separate `build-profile/` output with `react-dom/profiling` and sourcemaps; `yarn preview:profile` serves it. Ordinary production excludes the collector and Profiler boundary. A normal production preview can measure page timing but cannot provide these React timing/count checks.
+
+Development builds retain Agentation and `window.__ELEMENT_SOURCE__` for visual feedback/source inspection. The runner suppresses Agentation during capture. Run browser tools and heavy checks serially; the performance runner owns its browser/server lifecycle and uses the shared browser resource lock. Stop or wait for an existing browser owner before starting another capture.
 
 ## Local commands and playbooks
 
@@ -1150,9 +1154,9 @@ Choose checks that establish the requested behavior. Finish the authorized imple
 |---|---|
 | Prose, comments, or formatting | Inspect the diff and relevant links/output; run required generators. No application build for documentation alone |
 | Isolated logic or automation | Affected behavior tests or a focused invocation; lint/type-check when the edited language or interface warrants it |
-| Shared runtime behavior, dependencies, build/package configuration, or substantial integration | Focused behavior tests plus `corepack yarn agent:verify` for build, lint, and type-check |
+| Shared runtime behavior, dependencies, build/package configuration, or substantial integration | Focused behavior tests plus `corepack yarn agent:verify` for build, lint, type-check, Doctor diagnostics, and runtime scenarios |
 | CSS, themes, or layout only | Affected browser/viewport/theme checks below; add a build for CSS processing, assets/import wiring, or integration uncertainty. Styling alone does not require React Doctor |
-| React state/effects/data flow or rendering performance | Inspect the relevant architecture; run `yarn doctor` when diagnostics would resolve a concern or a check explicitly requires it |
+| React state/effects/data flow or rendering performance | Inspect the relevant architecture; run `yarn doctor:check` and affected `yarn perf:check` scenarios |
 | Dependencies or import graph | Advisory `yarn knip`; resolve relevant new findings |
 | Release, CI, or explicitly requested full verification | Run that workflow's required checks even when a smaller local edit would normally need less |
 
@@ -1170,7 +1174,7 @@ For loading, navigation, or interaction performance, add a Chromium low-spec pas
 
 ## Full verification and ownership
 
-Before heavy work, inspect existing workloads; never stop an unfamiliar process. One owner runs `corepack yarn agent:verify` when a full pass is needed. It serializes build, lint, and type-check behind a machine-wide lock and reports contention. Installs, tests, browser work, and directly launched builds still require coordination.
+Before heavy work, inspect existing workloads; never stop an unfamiliar process. One owner runs `corepack yarn agent:verify` when a full pass is needed. It serializes build, lint, type-check, Doctor diagnostics, and runtime scenarios behind a machine-wide lock and reports contention. Installs, tests, browser work, and directly launched builds still require coordination.
 
 Builds may refresh generated assets and create `build/`. Inspect status before and after, preserve preexisting artifacts and changes, and remove only output created by this task. The verifier never restores or deletes output for you. No lifecycle hook runs builds, installs, audits, or Git cleanup.
 
@@ -1183,6 +1187,14 @@ For shared skills, roles, or hooks run `yarn ai-workflow:sync`, `yarn ai-workflo
 After substantial prompt changes, try representative requests for skill selection, scope, completion, and check choice. Use isolated fixtures for actions where possible; a read-only scenario review is useful evidence but does not prove live execution behavior.
 
 Record commands, outcomes, and limits in the task report. Use the [long-running workflow](long-running-agent-workflow.md) only when a durable handoff is needed.
+
+## Automated React performance evidence
+
+Run `yarn perf:install` once for the pinned browser, then `yarn perf:check` (three samples at 4x CPU by default). Scope a rerun with `--scenario <name>` when the change affects one covered flow. CI runs the compatibility self-test and scenarios; local `agent:verify` runs scenarios and Doctor automatically. After React/Bippy/collector upgrades, run `yarn perf:test` before relying on the counts. Keep these heavy checks out of per-edit hooks.
+
+`yarn perf:record` keeps JSON and native trace evidence under `.react-perf/`; use `--url <origin>` to reuse a compatible instrumented server. The runner owns its processes and browser lock; run it separately from manual browser sessions. Scenario configuration lives in `scripts/react-perf/config.mjs`. Exact update limits follow the tested interaction; timing caps are deliberately generous smoke limits and must not be relaxed merely to silence a failure. Diagnose a failed phase from its component-instance/commit evidence and visible completion.
+
+Read the `profile-browsing` measurement reference for interpretation and coverage limits. Root Profiler duration measures the subtree, not the self time of each component. A normal production preview lacks this React instrumentation; build and serve `build-profile/` for production-like React timing, leaving the release output untouched.
 ```
 
 ---

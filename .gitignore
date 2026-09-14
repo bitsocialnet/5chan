@@ -212,3 +212,7 @@ scripts/upload-selectors-smoke-snapshots/
 android/app/build/
 .vercel
 /.claude/worktrees
+
+# Local React performance captures and separate instrumented builds
+/.react-perf/
+/build-profile/
