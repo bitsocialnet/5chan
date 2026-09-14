@@ -115,7 +115,6 @@ const testState = vi.hoisted(() => ({
     shortAddress: 'music-posting.eth',
     title: '/mu/ - Music',
   } as { shortAddress?: string; title?: string },
-  compatiblePostSortType: 'preferred' as string | undefined,
 }));
 
 vi.mock('react-i18next', () => ({
@@ -184,41 +183,45 @@ const getScopedFeed = (options?: { filter?: { filter: (comment: TestComment) => 
   return scopedFeed;
 };
 
-vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
-  resolvePostSortType: (community: TestCommunity | undefined, requestedSortType?: string) => {
-    const publishedSortTypes = [...Object.keys(community?.posts?.pages || {}), ...Object.keys(community?.posts?.pageCids || {})];
-    return requestedSortType ? (publishedSortTypes.includes(requestedSortType) ? requestedSortType : undefined) : publishedSortTypes[0];
-  },
-  useAccount: () => testState.account,
-  useAccountComments: (options?: { commentIndices?: number[]; communityAddress?: string; newerThan?: number; sortType?: 'new' | 'old' }) => {
-    testState.accountCommentsCalls.push(options);
-    return { accountComments: getScopedAccountComments(options).map(enrichAccountCommentAuthor) };
-  },
-  useFeed: (options?: {
-    communities?: unknown[];
-    filter?: { filter: (comment: TestComment) => boolean };
-    newerThan?: number;
-    postsPerPage?: number;
-    sortType?: string;
-  }) => {
-    testState.feedOptionsCalls.push({
-      communities: options?.communities,
-      communitiesLength: options?.communities?.length,
-      newerThan: options?.newerThan,
-      postsPerPage: options?.postsPerPage,
-      sortType: options?.sortType,
-    });
-    return {
-      feed: getScopedFeed(options),
-      hasMore: testState.hasMore,
-      state: testState.feedState ?? (testState.hasMore ? 'fetching-ipns' : 'succeeded'),
-      expandTimeWindow: testState.expandTimeWindowMock,
-      loadMore: testState.loadMoreMock,
-      reset: testState.resetMock,
-    };
-  },
-  useCommunity: () => testState.community,
-}));
+vi.mock('@bitsocial/bitsocial-react-hooks', async () => {
+  // Real sort helpers so the raw board state follows the package's single-page contract.
+  const { getPostPageSortType, resolvePostSortType } = await vi.importActual<typeof import('@bitsocial/bitsocial-react-hooks/dist/lib/page-sorts.js')>(
+    '@bitsocial/bitsocial-react-hooks/dist/lib/page-sorts.js',
+  );
+  return {
+    getPostPageSortType,
+    resolvePostSortType,
+    useAccount: () => testState.account,
+    useAccountComments: (options?: { commentIndices?: number[]; communityAddress?: string; newerThan?: number; sortType?: 'new' | 'old' }) => {
+      testState.accountCommentsCalls.push(options);
+      return { accountComments: getScopedAccountComments(options).map(enrichAccountCommentAuthor) };
+    },
+    useFeed: (options?: {
+      communities?: unknown[];
+      filter?: { filter: (comment: TestComment) => boolean };
+      newerThan?: number;
+      postsPerPage?: number;
+      sortType?: string;
+    }) => {
+      testState.feedOptionsCalls.push({
+        communities: options?.communities,
+        communitiesLength: options?.communities?.length,
+        newerThan: options?.newerThan,
+        postsPerPage: options?.postsPerPage,
+        sortType: options?.sortType,
+      });
+      return {
+        feed: getScopedFeed(options),
+        hasMore: testState.hasMore,
+        state: testState.feedState ?? (testState.hasMore ? 'fetching-ipns' : 'succeeded'),
+        expandTimeWindow: testState.expandTimeWindowMock,
+        loadMore: testState.loadMoreMock,
+        reset: testState.resetMock,
+      };
+    },
+    useCommunity: () => testState.community,
+  };
+});
 
 vi.mock('../../../hooks/use-stable-community', () => ({
   useCommunityField: (_address: string | undefined, selector: (community: typeof testState.communitySnapshot) => unknown) => selector(testState.communitySnapshot),
@@ -292,11 +295,6 @@ vi.mock('../../../hooks/use-resolved-community-address', () => ({
 
 vi.mock('../../../hooks/use-state-string', () => ({
   useFeedStateString: () => testState.feedStateString,
-}));
-
-vi.mock('../../../hooks/use-compatible-post-sort-type', () => ({
-  useCompatiblePostSortType: (_communities: unknown[], preferredSortType: string) =>
-    testState.compatiblePostSortType === 'preferred' ? preferredSortType : testState.compatiblePostSortType,
 }));
 
 vi.mock('../../../stores/use-feed-reset-store', () => ({
@@ -477,7 +475,6 @@ describe('Board', () => {
       shortAddress: 'music-posting.eth',
       title: '/mu/ - Music',
     };
-    testState.compatiblePostSortType = 'preferred';
     testState.loadMoreMock.mockReset();
     testState.resetMock.mockReset();
     testState.registerCommentsMock.mockReset();
@@ -530,8 +527,11 @@ describe('Board', () => {
     ]);
   });
 
-  it('uses the preloaded page when a board does not publish the active sort', async () => {
-    testState.compatiblePostSortType = undefined;
+  it('requests the active sort on a board that only preloads its hot page', async () => {
+    testState.community = {
+      ...testState.community,
+      posts: { pageCids: {}, pages: { hot: { comments: [] } } },
+    };
 
     await renderBoard({
       boardProps: { boardIdentifier: 'mu', viewType: 'board' },
@@ -544,7 +544,7 @@ describe('Board', () => {
         expect.objectContaining({
           communitiesLength: 1,
           newerThan: undefined,
-          sortType: undefined,
+          sortType: 'active',
         }),
       ]),
     );

@@ -24,7 +24,6 @@ const testState = vi.hoisted(() => ({
   isMobile: false,
   loadMoreMock: vi.fn(),
   feedOptions: undefined as { sortType?: string } | undefined,
-  compatiblePostSortType: 'preferred' as string | undefined,
   resolvedCommunityAddress: 'music-posting.eth' as string | undefined,
   community: {
     error: undefined as Error | undefined,
@@ -73,11 +72,6 @@ vi.mock('../../../hooks/use-resolved-community-address', () => ({
 
 vi.mock('../../../hooks/use-state-string', () => ({
   useFeedStateString: () => 'loading_feed',
-}));
-
-vi.mock('../../../hooks/use-compatible-post-sort-type', () => ({
-  useCompatiblePostSortType: (_communities: unknown[], preferredSortType: string) =>
-    testState.compatiblePostSortType === 'preferred' ? preferredSortType : testState.compatiblePostSortType,
 }));
 
 vi.mock('../../../hooks/use-stable-community', () => ({
@@ -143,7 +137,6 @@ describe('Archive', () => {
     };
     testState.loadMoreMock = vi.fn();
     testState.feedOptions = undefined;
-    testState.compatiblePostSortType = 'preferred';
 
     container = document.createElement('div');
     document.body.appendChild(container);
@@ -173,12 +166,10 @@ describe('Archive', () => {
     expect(rows[0]!.textContent).not.toContain('222');
   });
 
-  it('uses the preloaded page when a board does not publish the active sort', async () => {
-    testState.compatiblePostSortType = undefined;
-
+  it('requests the active sort for the archive feed', async () => {
     await renderArchiveRoute({ root, element: createElement(Archive), initialEntry: '/mu/archive', routePath: '/:boardIdentifier/archive' });
 
-    expect(testState.feedOptions?.sortType).toBeUndefined();
+    expect(testState.feedOptions?.sortType).toBe('active');
   });
 
   it('shows the archived summary window using the oldest archived timestamp', async () => {

@@ -15,7 +15,6 @@ import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
 import { removeMarkdown } from '../../lib/utils/post-utils';
 import { useDirectories } from '../../hooks/use-directories';
 import { useCommunityIdentifier, useCommunityIdentifiers } from '../../hooks/use-community-identifiers';
-import { useCompatiblePostSortType } from '../../hooks/use-compatible-post-sort-type';
 import styles from './archive.module.css';
 
 type BoardFeedComment = {
@@ -169,16 +168,15 @@ const Archive = () => {
 
   const communityAddresses = useMemo(() => (communityAddress ? [communityAddress] : []), [communityAddress]);
   const communities = useCommunityIdentifiers(communityAddresses);
-  const feedSortType = useCompatiblePostSortType(communities, BOARD_SORT_TYPE);
   const communityIdentifier = useCommunityIdentifier(communityAddress);
 
   const feedOptions = useMemo(
     () => ({
       communities,
-      sortType: feedSortType,
+      sortType: BOARD_SORT_TYPE,
       filter: archiveFilter,
     }),
-    [communities, feedSortType, archiveFilter],
+    [communities, archiveFilter],
   );
 
   const { feed, hasMore, loadMore } = useFeed(feedOptions);

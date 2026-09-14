@@ -91,6 +91,25 @@ const setRawBoardPage = (comments: Comment[], nextCid?: string) => {
   });
 };
 
+const setPreloadedBoardPage = (comments: Comment[]) => {
+  communitiesStore.setState({
+    communities: {
+      'music-posting.eth': {
+        address: 'music-posting.eth',
+        posts: {
+          pageCids: {},
+          pages: {
+            hot: {
+              comments,
+            },
+          },
+        },
+        updatedAt: 1,
+      },
+    },
+  });
+};
+
 const flushEffects = async () => {
   await act(async () => {
     await Promise.resolve();
@@ -138,6 +157,18 @@ describe('usePruneHiddenCatalogThreads', () => {
 
   it('unhides a stale hidden thread when a fully loaded raw board page proves it is gone', async () => {
     setRawBoardPage([visibleThread]);
+
+    await act(async () => {
+      root.render(createElement(PruneHarness));
+    });
+    await flushEffects();
+
+    expect(testState.unblockCidMock).toHaveBeenCalledWith(hiddenThread.cid);
+    expect(testState.account.blockedCids).toEqual({});
+  });
+
+  it('prunes against the complete preloaded page of a single-page board', async () => {
+    setPreloadedBoardPage([visibleThread]);
 
     await act(async () => {
       root.render(createElement(PruneHarness));
