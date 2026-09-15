@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { waitForAccountReady } from './account-ready.mjs';
 
 export default {
   name: 'reply-draft-isolation',
@@ -8,6 +9,7 @@ export default {
   },
   async run({ page, measure }) {
     await page.getByText('You have not subscribed to any board yet.', { exact: true }).waitFor();
+    await waitForAccountReady(page);
     // Open a local draft through the real store; no publish action is invoked.
     await page.evaluate(async () => {
       const { default: store } = await import('/src/stores/use-reply-modal-store.ts');
