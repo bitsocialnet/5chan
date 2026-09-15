@@ -127,6 +127,17 @@ export default {
           async run({ page, measure }) {
             await page.waitForFunction(() => typeof window.__PRETEXT_BENCH__?.runScenario === 'function');
             await page.locator('[data-pretext-height]').first().waitFor();
+            // Account creation updates every mounted post's hide/menu controls.
+            // Finish initialization before capturing a warmed scroll traversal.
+            await page.waitForFunction(async () => {
+              const { accountsStore } = await import('/src/lib/bitsocial-internals/stores.ts');
+              const state = accountsStore.getState();
+              return (
+                !window.BITSOCIAL_REACT_HOOKS_ACCOUNTS_STORE_INITIALIZING &&
+                state.accountIds.includes(state.activeAccountId) &&
+                Boolean(state.accounts[state.activeAccountId] && state.accountsCommentsReplies[state.activeAccountId])
+              );
+            });
             // Warm the existing real CatalogRow/virtualizer path before measuring another traversal.
             const warmup = await page.evaluate(() => window.__PRETEXT_BENCH__.runScenario());
             assert.ok(warmup.itemCount > 0 && warmup.renderedItems > 0, 'Catalog fixture must contain rendered content');
