@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState, useCallback, useMemo } fr
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigationType, useParams } from 'react-router-dom';
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
-import { Comment, resolveReplySortType, useAccount, useAccountComment, useEditedComment, useReplies } from '@bitsocial/bitsocial-react-hooks';
+import { Comment, resolveReplySortType, useAccountComment, useEditedComment, useReplies } from '@bitsocial/bitsocial-react-hooks';
 import getShortAddress from '../../lib/get-short-address';
 import styles from '../../views/post/post.module.css';
 import { shouldShowSnow } from '../../lib/snow';
@@ -20,6 +20,7 @@ import useAuthorAddressClick from '../../hooks/use-author-address-click';
 import { useCommentMediaInfo } from '../../hooks/use-comment-media-info';
 import useCountLinksInReplies from '../../hooks/use-count-links-in-replies';
 import useHide from '../../hooks/use-hide';
+import { useActiveAccountField } from '../../hooks/use-active-account-field';
 import useStateString from '../../hooks/use-state-string';
 import useScrollToReply from '../../hooks/use-scroll-to-reply';
 import { useCurrentTime } from '../../hooks/use-current-time';
@@ -119,8 +120,7 @@ const PostInfoAndMedia = ({
   const isInModQueueView = isModQueueView(location.pathname);
   const getAlertThresholdSeconds = useModQueueStore((state) => state.getAlertThresholdSeconds);
   const currentTime = useCurrentTime(isInModQueueView ? 60 : false);
-  const account = useAccount();
-  const accountAddress = account?.author?.address;
+  const accountAddress = useActiveAccountField((account) => account?.author?.address);
 
   // Check if user is mod of this board
   const accountRole = roles?.[accountAddress]?.role;

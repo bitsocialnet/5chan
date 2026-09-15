@@ -86,6 +86,10 @@ const getMockPreloadedReplies = (comment?: TestComment, sortType?: string) => {
   return compatibleReplies;
 };
 
+vi.mock('../../hooks/use-active-account-field', () => ({
+  useActiveAccountField: (selector: (account: unknown) => unknown) => selector({ id: 'viewer-account', author: { address: '0xviewer' } }),
+}));
+
 vi.mock('react-i18next', () => ({
   Trans: ({ i18nKey, values }: { i18nKey?: string; values?: Record<string, unknown> }) =>
     createElement('span', {}, `${i18nKey ?? 'trans'}:${JSON.stringify(values ?? {})}`),

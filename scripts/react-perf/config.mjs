@@ -1,4 +1,8 @@
 import assert from 'node:assert/strict';
+import populatedBoard from './scenarios/populated-board.mjs';
+import populatedCatalog from './scenarios/populated-catalog.mjs';
+import populatedReplies from './scenarios/populated-replies.mjs';
+import replyDraft from './scenarios/reply-draft.mjs';
 
 const settle = (page) => page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
 
@@ -27,6 +31,10 @@ export default {
         env: { REACT_PERF_RUN: '1', PORTLESS: '0', BROWSER: 'none' },
       },
       scenarios: [
+        populatedBoard,
+        populatedCatalog,
+        populatedReplies,
+        replyDraft,
         {
           name: 'crypto-address-draft',
           path: '/#/subs/settings',

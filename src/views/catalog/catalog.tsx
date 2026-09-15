@@ -792,6 +792,8 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
     return nextRows;
   }, [catalogRenderFeed, columnCount, isFeedLoaded]);
 
+  const isMultiboardView = isInAllView || isInSubscriptionsView || isInModView;
+  const shouldVirtualizeCatalog = isMultiboardView;
   const catalogMetrics = useMemo(() => {
     void themeKey;
     void windowWidth;
@@ -799,7 +801,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   }, [themeKey, windowWidth]);
   const rowHeightEstimates = useMemo(
     () =>
-      catalogVirtualizationMode === 'off'
+      !shouldVirtualizeCatalog || catalogVirtualizationMode === 'off'
         ? []
         : getCatalogRowHeightEstimates({
             imageSize,
@@ -807,14 +809,12 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
             rows,
             showOPComment,
           }),
-    [catalogMetrics, catalogVirtualizationMode, imageSize, rows, showOPComment],
+    [catalogMetrics, catalogVirtualizationMode, imageSize, rows, shouldVirtualizeCatalog, showOPComment],
   );
   const defaultCatalogRowHeight = useMemo(() => getTypicalCatalogRowHeight(rowHeightEstimates, imageSize), [imageSize, rowHeightEstimates]);
   // Omit the prop entirely in fallback mode. Passing `itemSize={undefined}` overrides
   // Virtuoso's default DOM measurement path and leaves rows on the fallback height.
   const catalogSizingProps = useMemo(() => (catalogVirtualizationMode === 'item-size' ? { itemSize: getPretextItemSizeFromElement } : {}), [catalogVirtualizationMode]);
-  const isMultiboardView = isInAllView || isInSubscriptionsView || isInModView;
-  const shouldVirtualizeCatalog = isMultiboardView;
   const catalogViewportBuffer = isMultiboardView ? (isMobile ? { bottom: 2400, top: 1200 } : { bottom: 900, top: 600 }) : { bottom: 1200, top: 1200 };
 
   const virtuosoRef = useRef<VirtuosoHandle | null>(null);

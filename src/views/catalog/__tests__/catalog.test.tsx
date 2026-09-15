@@ -7,6 +7,12 @@ import Catalog, { type CatalogProps } from '../catalog';
 import { getCatalogRenderFeed } from '../catalog-render-feed';
 import { clearStableLastVisitTimeFilterName, LAST_VISIT_STORAGE_KEY } from '../../../lib/utils/time-filter-utils';
 import useHiddenCatalogThreadsStore from '../../../stores/use-hidden-catalog-threads-store';
+import { getCatalogRowHeightEstimates } from '../../../lib/utils/pretext-height-estimates';
+
+vi.mock('../../../lib/utils/pretext-height-estimates', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../lib/utils/pretext-height-estimates')>();
+  return { ...actual, getCatalogRowHeightEstimates: vi.fn(actual.getCatalogRowHeightEstimates) };
+});
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
@@ -195,18 +201,19 @@ vi.mock('@bitsocial/bitsocial-react-hooks', async () => {
   };
 });
 
-vi.mock('@bitsocial/bitsocial-react-hooks/dist/stores/accounts', () => ({
-  default: {
-    getState: () => ({
-      accounts: { account: testState.account },
-      accountsActions: {
-        blockCid: testState.blockCidMock,
-        unblockCid: testState.unblockCidMock,
-      },
-      activeAccountId: 'account',
-    }),
-  },
-}));
+vi.mock('@bitsocial/bitsocial-react-hooks/dist/stores/accounts', () => {
+  const getState = () => ({
+    accounts: { account: testState.account },
+    accountsActions: {
+      blockCid: testState.blockCidMock,
+      unblockCid: testState.unblockCidMock,
+    },
+    activeAccountId: 'account',
+  });
+  return {
+    default: Object.assign(<T,>(selector: (state: ReturnType<typeof getState>) => T) => selector(getState()), { getState }),
+  };
+});
 
 vi.mock('react-virtuoso', () => ({
   Virtuoso: React.forwardRef(
@@ -530,6 +537,7 @@ describe('Catalog', () => {
   });
 
   it('renders single-board catalogs without Virtuoso virtualization', async () => {
+    vi.mocked(getCatalogRowHeightEstimates).mockClear();
     testState.feed = [
       { cid: 'board-post-1', title: 'one', communityAddress: 'music-posting.eth' },
       { cid: 'board-post-2', title: 'two', communityAddress: 'music-posting.eth' },
@@ -538,6 +546,8 @@ describe('Catalog', () => {
     await renderCatalog({ initialEntry: '/mu/catalog', routePath: '/:boardIdentifier/catalog' });
 
     expect(container.querySelector('[data-testid="virtuoso"]')).toBeNull();
+    expect(getCatalogRowHeightEstimates).not.toHaveBeenCalled();
+    expect(container.querySelector('[data-pretext-height]')).toBeNull();
     expect(Array.from(container.querySelectorAll('[data-testid="catalog-row"]')).map((element) => element.textContent)).toEqual(['row:board-post-1,board-post-2']);
   });
 
@@ -734,6 +744,7 @@ describe('Catalog', () => {
   });
 
   it('canonicalizes multiboard catalog paths and keeps load-more wired for infinite scrolling', async () => {
+    vi.mocked(getCatalogRowHeightEstimates).mockClear();
     testState.feed = [{ cid: 'all-post', title: 'one', communityAddress: 'music-posting.eth' }];
     testState.hasMore = true;
 
@@ -744,6 +755,7 @@ describe('Catalog', () => {
     });
 
     expect(latestLocation).toBe('/all/catalog');
+    expect(getCatalogRowHeightEstimates).toHaveBeenCalled();
     expect(testState.feedOptionsCalls).toEqual(expect.arrayContaining([expect.objectContaining({ postsPerPage: 24 })]));
     const loadMoreCallCountBeforeEndReached = testState.loadMoreMock.mock.calls.length;
 

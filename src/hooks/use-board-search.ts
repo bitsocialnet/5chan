@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useAccount } from '@bitsocial/bitsocial-react-hooks';
+import { useActiveAccountField } from './use-active-account-field';
 import { SPECIAL_BOARDS } from '../lib/special-boards';
 import { searchBoards, type BoardSearchResult } from '../lib/utils/board-search-utils';
 import { getVendoredDirectoryLists } from '../lib/utils/directory-list-lookup-utils';
@@ -27,8 +27,7 @@ const EMPTY_SUBSCRIPTIONS: string[] = [];
  */
 export const useBoardSearch = (query: string, selectedProviderId: string | null): BoardSearchState => {
   const directories = useDirectories();
-  const account = useAccount();
-  const subscriptions = account?.subscriptions ?? EMPTY_SUBSCRIPTIONS;
+  const subscriptions = useActiveAccountField((account) => account?.subscriptions ?? EMPTY_SUBSCRIPTIONS);
   const { boards: indexed, loading } = useIndexedBoards(selectedProviderId);
 
   const boards = useMemo(

@@ -1,5 +1,5 @@
 import { useCallback, useSyncExternalStore } from 'react';
-import { useAccount } from '@bitsocial/bitsocial-react-hooks';
+import { useActiveAccountField } from './use-active-account-field';
 
 type PkcWithCidFetch = {
   fetchCid: (options: { cid: string }) => Promise<unknown>;
@@ -144,8 +144,8 @@ const subscribe = (pkc: PkcWithCidFetch, cid: string, listener: () => void) => {
 const isPkcWithCidFetch = (value: unknown): value is PkcWithCidFetch => isRecord(value) && typeof value.fetchCid === 'function';
 
 export const useCommentCidPayload = (commentCid: string | undefined): CommentCidPayloadSnapshot => {
-  const account = useAccount();
-  const pkc = isPkcWithCidFetch(account?.pkc) ? account.pkc : undefined;
+  const accountPkc = useActiveAccountField((account) => account?.pkc);
+  const pkc = isPkcWithCidFetch(accountPkc) ? accountPkc : undefined;
 
   const subscribeToPayload = useCallback((listener: () => void) => (pkc && commentCid ? subscribe(pkc, commentCid, listener) : () => {}), [commentCid, pkc]);
   const getSnapshot = useCallback(() => (pkc && commentCid ? getEntry(pkc, commentCid).snapshot : IDLE_SNAPSHOT), [commentCid, pkc]);

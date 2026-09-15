@@ -103,6 +103,7 @@ let latestDirectoryBoardPath: { boardPath: string | undefined; isDirectoryCandid
 let container: HTMLDivElement;
 let root: Root;
 let hookRenderCount: number;
+let hookCommitCount: number;
 
 const HookHarness = () => {
   hookRenderCount += 1;
@@ -111,9 +112,15 @@ const HookHarness = () => {
   return null;
 };
 
-const renderHook = async () => {
+const renderHook = async (readers = 1) => {
   await act(async () => {
-    root.render(createElement(HookHarness));
+    root.render(
+      createElement(
+        React.Profiler,
+        { id: 'directory-resolver', onRender: () => hookCommitCount++ },
+        Array.from({ length: readers }, (_, index) => createElement(HookHarness, { key: index })),
+      ),
+    );
   });
 };
 
@@ -136,6 +143,7 @@ describe('useResolvedCommunityAddress', () => {
     testState.communityStoreListeners = [];
     testState.offlineStoreListeners = [];
     hookRenderCount = 0;
+    hookCommitCount = 0;
 
     container = document.createElement('div');
     document.body.appendChild(container);
@@ -145,6 +153,9 @@ describe('useResolvedCommunityAddress', () => {
   afterEach(() => {
     act(() => root.unmount());
     container.remove();
+    expect(testState.communityStoreListeners).toHaveLength(0);
+    expect(testState.offlineStoreListeners).toHaveLength(0);
+    expect(vi.getTimerCount()).toBe(0);
     vi.useRealTimers();
   });
 
@@ -253,6 +264,63 @@ describe('useResolvedCommunityAddress', () => {
     expect(latestValue).toBe('business-and-finance.bso');
   });
 
+  it('preserves direct public-key sync precedence over address and cached alias statuses', async () => {
+    testState.communities = {
+      'business-and-finance.eth': {
+        name: 'business-and-finance.eth',
+        publicKey: 'cached-alias-key',
+      },
+    };
+    testState.syncStatuses = {
+      '12D3KooWBusiness': { syncState: 'loading' },
+      'business-and-finance.bso': { syncState: 'failed' },
+      'cached-alias-key': { syncState: 'failed' },
+    };
+
+    await renderHook();
+
+    expect(latestValue).toBe('business-and-finance.bso');
+
+    testState.syncStatuses = {
+      'business-and-finance.bso': { syncState: 'failed' },
+      'cached-alias-key': { syncState: 'loading' },
+    };
+    await act(async () => {
+      testState.communityStoreListeners.forEach((listener) => listener());
+    });
+
+    expect(latestValue).toBe('bizraelis.bso');
+  });
+
+  it('matches normalized aliases and preserves their first matching sync status', async () => {
+    testState.list.boards = [
+      { address: 'business-and-finance.bso', score: 100 },
+      { address: 'bizraelis.bso', score: 10 },
+    ];
+    testState.communities = {
+      'business-and-finance.eth': { name: 'business-and-finance.eth', publicKey: 'first-key' },
+      'second-key': { name: 'business-and-finance.bso', publicKey: 'second-key' },
+    };
+    testState.syncStatuses = {
+      'first-key': { syncState: 'loading' },
+      'second-key': { syncState: 'failed' },
+    };
+
+    await renderHook();
+
+    expect(latestValue).toBe('business-and-finance.bso');
+
+    testState.syncStatuses = {
+      'first-key': { syncState: 'failed' },
+      'second-key': { syncState: 'loading' },
+    };
+    await act(async () => {
+      testState.communityStoreListeners.forEach((listener) => listener());
+    });
+
+    expect(latestValue).toBe('bizraelis.bso');
+  });
+
   it('treats a zero cached timestamp as stale while synchronization retries', async () => {
     testState.communities = {
       '12D3KooWBusiness': {
@@ -333,6 +401,7 @@ describe('useResolvedCommunityAddress', () => {
   it('does not rerender when an unrelated community publishes lifecycle progress', async () => {
     await renderHook();
     const rendersBeforeUnrelatedUpdate = hookRenderCount;
+    const commitsBeforeUnrelatedUpdate = hookCommitCount;
 
     testState.communities = {
       unrelated: {
@@ -347,6 +416,94 @@ describe('useResolvedCommunityAddress', () => {
 
     expect(latestValue).toBe('business-and-finance.bso');
     expect(hookRenderCount).toBe(rendersBeforeUnrelatedUpdate);
+    expect(hookCommitCount).toBe(commitsBeforeUnrelatedUpdate);
+  });
+
+  it.each(['biz', 'business-and-finance.bso'])('does not commit unchanged freshness ticks or offline updates on %s', async (boardIdentifier) => {
+    testState.boardIdentifier = boardIdentifier;
+    testState.offlineStates = { 'business-and-finance.bso': { updatedAt: Date.now() / 1000 } };
+    await renderHook();
+    const rendersBeforeUpdates = hookRenderCount;
+    const commitsBeforeUpdates = hookCommitCount;
+
+    await act(async () => {
+      vi.advanceTimersByTime(60_000);
+    });
+    testState.offlineStates = { ...testState.offlineStates, unrelated: { state: 'failed' } };
+    await act(async () => {
+      testState.offlineStoreListeners.forEach((listener) => listener());
+    });
+
+    expect(latestValue).toBe('business-and-finance.bso');
+    expect(hookRenderCount).toBe(rendersBeforeUpdates);
+    expect(hookCommitCount).toBe(commitsBeforeUpdates);
+  });
+
+  it('shares the source subscriptions and clock, then refreshes immediately after all readers re-enable', async () => {
+    testState.offlineStates = { 'business-and-finance.bso': { updatedAt: Date.now() / 1000 } };
+    await renderHook(3);
+
+    expect(testState.communityStoreListeners).toHaveLength(1);
+    expect(testState.offlineStoreListeners).toHaveLength(1);
+    expect(vi.getTimerCount()).toBe(1);
+
+    await renderHook();
+
+    expect(testState.communityStoreListeners).toHaveLength(1);
+    expect(testState.offlineStoreListeners).toHaveLength(1);
+    expect(vi.getTimerCount()).toBe(1);
+
+    testState.boardIdentifier = 'custom-board.bso';
+    await renderHook();
+
+    expect(testState.communityStoreListeners).toHaveLength(0);
+    expect(testState.offlineStoreListeners).toHaveLength(0);
+    expect(vi.getTimerCount()).toBe(0);
+
+    await act(async () => {
+      vi.advanceTimersByTime(31 * 60_000);
+    });
+    testState.boardIdentifier = 'biz';
+    await renderHook();
+
+    expect(latestValue).toBe('bizraelis.bso');
+    expect(testState.communityStoreListeners).toHaveLength(1);
+    expect(testState.offlineStoreListeners).toHaveLength(1);
+    expect(vi.getTimerCount()).toBe(1);
+  });
+
+  it('shares alias scans across directory readers and invalidates them when lifecycle maps change', async () => {
+    const readAddress = vi.fn(() => 'business-and-finance.bso');
+    testState.communities = {
+      '12D3KooWBusiness': {
+        get address() {
+          return readAddress();
+        },
+      },
+    };
+    await renderHook(3);
+
+    expect(readAddress).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      vi.advanceTimersByTime(30_000);
+    });
+    expect(readAddress).toHaveBeenCalledTimes(1);
+
+    testState.syncStatuses = { '12D3KooWBusiness': { syncState: 'loading' } };
+    await act(async () => {
+      testState.communityStoreListeners.forEach((listener) => listener());
+    });
+    expect(readAddress).toHaveBeenCalledTimes(2);
+
+    testState.communities = {
+      '12D3KooWBusiness': { address: 'business-and-finance.bso', updatedAt: 0 },
+    };
+    await act(async () => {
+      testState.communityStoreListeners.forEach((listener) => listener());
+    });
+
+    expect(latestValue).toBe('bizraelis.bso');
   });
 
   it('rerenders when lifecycle progress changes the directory winner', async () => {
@@ -382,6 +539,31 @@ describe('useResolvedCommunityAddress', () => {
     });
 
     expect(latestValue).toBe('bizraelis.bso');
+  });
+
+  it('removes the canonical directory path when its winner becomes stale while mounted', async () => {
+    testState.boardIdentifier = 'business-and-finance.bso';
+    testState.offlineStates = { 'business-and-finance.bso': { updatedAt: Date.now() / 1000 - 29 * 60 } };
+    await renderHook();
+
+    expect(latestDirectoryBoardPath).toEqual({ boardPath: 'biz', isDirectoryCandidate: true });
+
+    await act(async () => {
+      vi.advanceTimersByTime(60_000);
+    });
+
+    expect(latestDirectoryBoardPath).toEqual({ boardPath: undefined, isDirectoryCandidate: true });
+  });
+
+  it('falls back to the highest-ranked candidate when every directory board is offline', async () => {
+    testState.offlineStates = {
+      'business-and-finance.bso': { updatedAt: 0 },
+      'bizraelis.bso': { state: 'failed' },
+    };
+
+    await renderHook();
+
+    expect(latestValue).toBe('business-and-finance.bso');
   });
 
   it('uses an explicit directory identifier for cached board feeds', async () => {

@@ -159,7 +159,7 @@ export const ThreadFooterFirstRow = ({ postCid, threadNumber, communityAddress, 
   const { t } = useTranslation();
   const location = useLocation();
   const params = useParams();
-  const { openReplyModalEmpty } = useReplyModalStore();
+  const openReplyModalEmpty = useReplyModalStore((state) => state.openReplyModalEmpty);
 
   const isInAllView = isAllView(location.pathname);
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, params);
@@ -241,7 +241,7 @@ export const ThreadFooterMobile = ({ postCid, threadNumber, communityAddress, is
   const { t } = useTranslation();
   const location = useLocation();
   const params = useParams();
-  const { openReplyModalEmpty } = useReplyModalStore();
+  const openReplyModalEmpty = useReplyModalStore((state) => state.openReplyModalEmpty);
   const autoUpdateEnabled = useThreadLiveUpdatesStore((state) => state.enabled);
 
   const isInAllView = isAllView(location.pathname);

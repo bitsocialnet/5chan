@@ -93,9 +93,8 @@ vi.mock('../../board-buttons/catalog-button-utils', () => ({
 }));
 
 vi.mock('../../../stores/use-reply-modal-store', () => ({
-  default: () => ({
-    openReplyModalEmpty: testState.openReplyModalEmptyMock,
-  }),
+  default: <T,>(selector: (state: { openReplyModalEmpty: typeof testState.openReplyModalEmptyMock }) => T) =>
+    selector({ openReplyModalEmpty: testState.openReplyModalEmptyMock }),
 }));
 
 vi.mock('../../../hooks/use-count-links-in-replies', () => ({
