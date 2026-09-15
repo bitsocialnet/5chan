@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
+import { useReplies } from '@bitsocial/bitsocial-react-hooks';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import CatalogRow, { CatalogPostMedia } from '../catalog-row';
@@ -57,6 +58,7 @@ const testState = vi.hoisted(() => ({
   mediaInfoByLink: {} as Record<string, { patternThumbnailUrl?: string; thumbnail?: string; type: string; url: string }>,
   lastRepliesComment: undefined as TestComment | undefined,
   replies: [] as TestComment[],
+  replyListeners: new Set<() => void>(),
   roleByAddress: {} as Record<string, { commentAuthorRole?: string; isCommentAuthorMod: boolean }>,
   showOPComment: true,
   showSnow: false,
@@ -69,7 +71,14 @@ vi.mock('react-i18next', () => ({
 }));
 
 vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
-  useReplies: ({ comment, sortType }: { comment?: TestComment; sortType?: string }) => {
+  useReplies: vi.fn(({ comment, sortType }: { comment?: TestComment; sortType?: string }) => {
+    const replies = React.useSyncExternalStore(
+      (listener) => {
+        testState.replyListeners.add(listener);
+        return () => testState.replyListeners.delete(listener);
+      },
+      () => testState.replies,
+    );
     if (comment) {
       testState.lastRepliesComment = comment;
     }
@@ -88,9 +97,9 @@ vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
     }
 
     return {
-      replies: comment ? (compatiblePreloadedReplies.length ? compatiblePreloadedReplies : testState.replies) : [],
+      replies: comment ? (compatiblePreloadedReplies.length ? compatiblePreloadedReplies : replies) : [],
     };
-  },
+  }),
 }));
 
 vi.mock('@bitsocial/bitsocial-react-hooks/dist/lib/localforage-lru/index.js', () => ({
@@ -221,6 +230,7 @@ describe('CatalogRow', () => {
     testState.mediaInfoByLink = {};
     testState.lastRepliesComment = undefined;
     testState.replies = [];
+    testState.replyListeners.clear();
     testState.roleByAddress = {};
     testState.showOPComment = true;
     testState.showSnow = false;
@@ -366,10 +376,15 @@ describe('CatalogRow', () => {
     expect(container.textContent).toContain('/ I: 2');
     expect(container.querySelector('[data-testid="post-menu-post-1"]')?.textContent).toBe('menu');
 
+    expect(useReplies).not.toHaveBeenCalled();
     const previewTrigger = document.body.querySelector('a[href="/mu/thread/post-1"] > div');
     await act(async () => {
       previewTrigger?.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
-      vi.advanceTimersByTime(260);
+      vi.advanceTimersByTime(249);
+    });
+    expect(useReplies).not.toHaveBeenCalled();
+    await act(async () => {
+      vi.advanceTimersByTime(1);
       await Promise.resolve();
     });
 
@@ -378,6 +393,94 @@ describe('CatalogRow', () => {
     expect(document.body.textContent).toContain('last_reply_by Bob ## Board Janitor');
     expect(document.body.textContent).toContain('ago:100');
     expect(document.body.textContent).toContain('ago:200');
+    expect(useReplies).toHaveBeenCalledWith({ comment: post, flat: true });
+
+    await act(async () => {
+      testState.replies = [{ author: { address: 'author-3', displayName: 'Carol' }, cid: 'reply-2', timestamp: 300 }];
+      testState.roleByAddress['author-3'] = { commentAuthorRole: 'Moderator', isCommentAuthorMod: true };
+      testState.replyListeners.forEach((listener) => listener());
+    });
+    expect(document.body.textContent).toContain('last_reply_by Carol ## Board mod');
+    expect(document.body.textContent).toContain('ago:300');
+    expect(document.body.textContent).not.toContain('last_reply_by Bob');
+
+    await act(async () => {
+      previewTrigger?.dispatchEvent(new MouseEvent('mouseout', { bubbles: true, relatedTarget: document.body }));
+    });
+    expect(document.body.textContent).not.toContain('last_reply_by');
+    expect(testState.replyListeners.size).toBe(0);
+  });
+
+  it('waits for a loaded last reply before showing its metadata', async () => {
+    testState.mediaInfoByLink['https://example.com/pending.png'] = { type: 'image', url: 'https://example.com/pending.png' };
+    const post: TestComment = {
+      author: { address: 'author-1', displayName: 'Alice' },
+      cid: 'post-pending',
+      link: 'https://example.com/pending.png',
+      communityAddress: 'music-posting.eth',
+      replyCount: 1,
+      timestamp: 100,
+    };
+    await renderWithRouter(createElement(CatalogRow, { row: [post] }), '/all/catalog');
+    vi.useFakeTimers();
+    const postLink = container.querySelector<HTMLAnchorElement>('a[href="/mu/thread/post-pending"]');
+    await act(async () => {
+      postLink?.focus();
+      vi.advanceTimersByTime(250);
+    });
+    expect(container.textContent).toContain('R: 1');
+    expect(document.body.textContent).toContain('posted_by Alice');
+    expect(document.body.textContent).not.toContain('last_reply_by');
+    expect(document.body.textContent).not.toContain('ago:undefined');
+
+    await act(async () => {
+      testState.replies = [{ author: { displayName: 'Bob' }, cid: 'reply-loaded', timestamp: 200 }];
+      testState.replyListeners.forEach((listener) => listener());
+    });
+    expect(document.body.textContent).toContain('last_reply_by Bob');
+    expect(document.body.textContent).toContain('ago:200');
+
+    await act(async () => {
+      root.render(createElement(MemoryRouter, { initialEntries: ['/all/catalog'] }, createElement(CatalogRow, { row: [{ ...post, replyCount: 0 }] })));
+    });
+    expect(container.textContent).toContain('R: 0');
+    expect(document.body.textContent).toContain('posted_by Alice');
+    expect(document.body.textContent).not.toContain('last_reply_by');
+  });
+
+  it('opens keyboard previews after the same delay and releases reply subscriptions on blur', async () => {
+    testState.mediaInfoByLink['https://example.com/focus.png'] = { type: 'image', url: 'https://example.com/focus.png' };
+    testState.roleByAddress = { 'author-1': { commentAuthorRole: 'Owner', isCommentAuthorMod: true } };
+    const post: TestComment = {
+      author: { address: 'author-1', displayName: 'Alice' },
+      cid: 'post-focus',
+      link: 'https://example.com/focus.png',
+      communityAddress: 'music-posting.eth',
+      replyCount: 0,
+      timestamp: 100,
+    };
+    await renderWithRouter(createElement(CatalogRow, { row: [post] }), '/subs/catalog');
+    vi.useFakeTimers();
+    const postLink = container.querySelector<HTMLAnchorElement>('a[href="/mu/thread/post-focus"]');
+    await act(async () => {
+      postLink?.focus();
+      vi.advanceTimersByTime(249);
+    });
+    expect(useReplies).not.toHaveBeenCalled();
+    await act(async () => {
+      vi.advanceTimersByTime(1);
+    });
+    expect(document.activeElement).toBe(postLink);
+    expect(document.body.textContent).toContain('posted_by Alice ## Board Owner to p/mu');
+    expect(document.body.textContent).toContain('ago:100');
+    expect(document.body.textContent).not.toContain('last_reply_by');
+    expect(useReplies).toHaveBeenCalledWith({ comment: post, flat: true });
+
+    await act(async () => {
+      postLink?.blur();
+    });
+    expect(document.body.textContent).not.toContain('posted_by');
+    expect(testState.replyListeners.size).toBe(0);
   });
 
   it('uses developer badges and keeps anonymous as the default name in hover previews', async () => {

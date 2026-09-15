@@ -139,13 +139,69 @@ export const CatalogPostMedia = ({ cid, commentMediaInfo, linkWidth, linkHeight,
   );
 };
 
+interface CatalogPostPreviewProps {
+  post: Comment;
+  visible: boolean;
+  showCommunityAddress: boolean;
+  floatingRef: (node: HTMLElement | null) => void;
+  floatingStyles: React.CSSProperties;
+}
+
+const CatalogPostPreview = ({ post, visible, showCommunityAddress, floatingRef, floatingStyles }: CatalogPostPreviewProps) => {
+  const { t } = useTranslation();
+  const { author, communityAddress, replyCount, timestamp, title } = post;
+  const { replies } = useReplies({ comment: post, flat: true });
+  const lastReply = replies?.length > 0 ? replies[replies.length - 1] : null;
+
+  const { commentAuthorRole: catalogPostAuthorRole } = useEditCommentPrivileges({
+    commentAuthorAddress: author?.address,
+    communityAddress: communityAddress ?? '',
+  });
+  const { commentAuthorRole: lastReplyAuthorRole } = useEditCommentPrivileges({
+    commentAuthorAddress: lastReply?.author?.address,
+    communityAddress: communityAddress ?? '',
+  });
+  const catalogPostAuthorBadge = getAuthorBadge({ address: author?.address, role: catalogPostAuthorRole });
+  const lastReplyAuthorBadge = getAuthorBadge({ address: lastReply?.author?.address, role: lastReplyAuthorRole });
+  if (!visible) return null;
+
+  return createPortal(
+    <div className={styles.postPreview} ref={floatingRef} style={floatingStyles}>
+      {title ? (
+        <>
+          <span className={styles.postSubject}>{title} </span>
+          {t('by')}
+        </>
+      ) : (
+        t('posted_by')
+      )}{' '}
+      <span className={`${styles.postAuthor} ${catalogPostAuthorBadge ? styles.capcode : ''}`}>
+        {author?.displayName || capitalize(t('anonymous'))}
+        {catalogPostAuthorBadge && <span className={catalogPostAuthorBadge.capitalizeLabel ? 'capitalize' : undefined}>{` ## ${catalogPostAuthorBadge.label}`}</span>}
+      </span>
+      {showCommunityAddress && communityAddress && ` to p/${getShortAddress(communityAddress)}`}
+      <span className={styles.postAgo}> {getFormattedTimeAgo(timestamp)}</span>
+      {replyCount > 0 && lastReply && (
+        <div className={styles.postLast}>
+          {t('last_reply_by')}{' '}
+          <span className={`${styles.postAuthor} ${lastReplyAuthorBadge ? styles.capcode : ''}`}>
+            {lastReply?.author?.displayName || capitalize(t('anonymous'))}
+            {lastReplyAuthorBadge && <span className={lastReplyAuthorBadge.capitalizeLabel ? 'capitalize' : undefined}>{` ## ${lastReplyAuthorBadge.label}`}</span>}
+          </span>
+          <span className={styles.postAgo}> {getFormattedTimeAgo(lastReply?.timestamp)}</span>
+        </div>
+      )}
+    </div>,
+    document.body,
+  );
+};
+
 // Memoize CatalogPost to prevent rerenders when parent rerenders due to updatingState
 const CatalogPost = memo(
   ({ matchedFilterColor, post, showHiddenPost = false }: { matchedFilterColor?: string; post: Comment; showHiddenPost?: boolean }) => {
     const { t } = useTranslation();
     const resolvedPost = useMemo(() => withResolvedCommentCommunityAddress(post), [post]);
-    const { author, cid, content, link, linkHeight, linkWidth, locked, pinned, replyCount, spoiler, communityAddress, timestamp, title, thumbnailUrl } =
-      resolvedPost || {};
+    const { cid, content, link, linkHeight, linkWidth, locked, pinned, replyCount, spoiler, communityAddress, title, thumbnailUrl } = resolvedPost || {};
     const archived = isCommentArchived(resolvedPost);
     const linkCount = useCountLinksInReplies(resolvedPost);
 
@@ -215,20 +271,6 @@ const CatalogPost = memo(
     useEffect(() => {
       if (showPortal) update();
     }, [showPortal, update]);
-
-    const { replies } = useReplies({ comment: showPortal ? resolvedPost : undefined, flat: true });
-    const lastReply = replies?.length > 0 ? replies[replies.length - 1] : null;
-
-    const { commentAuthorRole: catalogPostAuthorRole } = useEditCommentPrivileges({
-      commentAuthorAddress: author?.address,
-      communityAddress: communityAddress ?? '',
-    });
-    const { commentAuthorRole: lastReplyAuthorRole } = useEditCommentPrivileges({
-      commentAuthorAddress: lastReply?.author?.address,
-      communityAddress: communityAddress ?? '',
-    });
-    const catalogPostAuthorBadge = getAuthorBadge({ address: author?.address, role: catalogPostAuthorRole });
-    const lastReplyAuthorBadge = getAuthorBadge({ address: lastReply?.author?.address, role: lastReplyAuthorRole });
 
     const postContent = (
       <div className={`${styles.teaser} ${shouldMaskPost && styles.hidden}`}>
@@ -323,41 +365,15 @@ const CatalogPost = memo(
             <div className={styles.postContent}>{(showOPComment || isTextOnlyThread) && (hasThumbnail ? postContent : <Link to={postLink}>{postContent}</Link>)}</div>
           </div>
         </div>
-        {hoveredCid === cid &&
-          showPortal &&
-          createPortal(
-            <div className={styles.postPreview} ref={refs.setFloating} style={floatingStyles}>
-              {title ? (
-                <>
-                  <span className={styles.postSubject}>{title} </span>
-                  {t('by')}
-                </>
-              ) : (
-                t('posted_by')
-              )}{' '}
-              <span className={`${styles.postAuthor} ${catalogPostAuthorBadge ? styles.capcode : ''}`}>
-                {author?.displayName || capitalize(t('anonymous'))}
-                {catalogPostAuthorBadge && (
-                  <span className={catalogPostAuthorBadge.capitalizeLabel ? 'capitalize' : undefined}>{` ## ${catalogPostAuthorBadge.label}`}</span>
-                )}
-              </span>
-              {(isInAllView || isInSubscriptionsView) && communityAddress && ` to p/${getShortAddress(communityAddress)}`}
-              <span className={styles.postAgo}> {getFormattedTimeAgo(timestamp)}</span>
-              {replyCount > 0 && (
-                <div className={styles.postLast}>
-                  {t('last_reply_by')}{' '}
-                  <span className={`${styles.postAuthor} ${lastReplyAuthorBadge ? styles.capcode : ''}`}>
-                    {lastReply?.author?.displayName || capitalize(t('anonymous'))}
-                    {lastReplyAuthorBadge && (
-                      <span className={lastReplyAuthorBadge.capitalizeLabel ? 'capitalize' : undefined}>{` ## ${lastReplyAuthorBadge.label}`}</span>
-                    )}
-                  </span>
-                  <span className={styles.postAgo}> {getFormattedTimeAgo(lastReply?.timestamp)}</span>
-                </div>
-              )}
-            </div>,
-            document.body,
-          )}
+        {showPortal && (
+          <CatalogPostPreview
+            post={resolvedPost}
+            visible={hoveredCid === cid}
+            showCommunityAddress={isInAllView || isInSubscriptionsView}
+            floatingRef={refs.setFloating}
+            floatingStyles={floatingStyles}
+          />
+        )}
       </>
     );
   },

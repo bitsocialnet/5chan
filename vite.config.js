@@ -6,6 +6,7 @@ import { readdirSync, readFileSync } from 'fs';
 import { createHash } from 'crypto';
 import { execFileSync } from 'child_process';
 import { VitePWA } from 'vite-plugin-pwa';
+import { APP_PRELOAD_ATTRIBUTE, dynamicEntryPreloadPlugin } from './scripts/vite-app-preload.mjs';
 
 const { version: packageVersion } = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8'));
 const appVersion = `${process.env.VITE_APP_VERSION || packageVersion}`.trim() || packageVersion;
@@ -144,7 +145,11 @@ function normalizePrecacheUrl(url) {
 }
 
 function collectIndexAssetUrls() {
-  const indexHtml = readFileSync(new URL(`./${buildOutDir}/index.html`, import.meta.url), 'utf8');
+  // The app graph preload tags are fetched by the page itself; keep the precache scoped to the entry shell.
+  const indexHtml = readFileSync(new URL(`./${buildOutDir}/index.html`, import.meta.url), 'utf8').replace(
+    new RegExp(`<link\\b[^>]*\\s${APP_PRELOAD_ATTRIBUTE}\\b[^>]*>`, 'g'),
+    '',
+  );
   const urls = new Set(baselineAppShellUrls);
   const assetAttributePattern = /\b(?:href|src)=["'](?:\.\/|\/)?([^"']+\.(?:css|ico|js|json|png|webmanifest))(?:\?[^"']*)?["']/g;
 
@@ -337,6 +342,7 @@ export default defineConfig({
     mathjaxFontAssetsPlugin(),
     react(),
     babel({ presets: [reactCompilerPreset()] }),
+    dynamicEntryPreloadPlugin(),
     VitePWA({
       disable: isProfilingBuild,
       registerType: 'autoUpdate',

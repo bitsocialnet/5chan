@@ -1,4 +1,9 @@
 import assert from 'node:assert/strict';
+import populatedBoard from './scenarios/populated-board.mjs';
+import populatedCatalog from './scenarios/populated-catalog.mjs';
+import populatedReplies from './scenarios/populated-replies.mjs';
+import replyDraft from './scenarios/reply-draft.mjs';
+import { waitForAccountReady } from './scenarios/account-ready.mjs';
 
 const settle = (page) => page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
 
@@ -27,6 +32,10 @@ export default {
         env: { REACT_PERF_RUN: '1', PORTLESS: '0', BROWSER: 'none' },
       },
       scenarios: [
+        populatedBoard,
+        populatedCatalog,
+        populatedReplies,
+        replyDraft,
         {
           name: 'crypto-address-draft',
           path: '/#/subs/settings',
@@ -119,6 +128,9 @@ export default {
           async run({ page, measure }) {
             await page.waitForFunction(() => typeof window.__PRETEXT_BENCH__?.runScenario === 'function');
             await page.locator('[data-pretext-height]').first().waitFor();
+            // Account creation updates every mounted post's hide/menu controls.
+            // Finish initialization before capturing a warmed scroll traversal.
+            await waitForAccountReady(page);
             // Warm the existing real CatalogRow/virtualizer path before measuring another traversal.
             const warmup = await page.evaluate(() => window.__PRETEXT_BENCH__.runScenario());
             assert.ok(warmup.itemCount > 0 && warmup.renderedItems > 0, 'Catalog fixture must contain rendered content');

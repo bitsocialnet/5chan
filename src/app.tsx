@@ -1,5 +1,6 @@
 import { Activity, lazy, Suspense, useCallback, useEffect } from 'react';
 import { Navigate, Outlet, Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { useShallow } from 'zustand/react/shallow';
 import { useAccount, useAccountComment, useCommunity } from '@bitsocial/bitsocial-react-hooks';
 import { initSnow, removeSnow, shouldShowSnow } from './lib/snow';
 import { isAllView, isCatalogView, isModView, isSubscriptionsView } from './lib/utils/view-utils';
@@ -217,16 +218,22 @@ const GlobalLayout = () => {
   const location = useLocation();
   const { pathname } = location;
   const locationDraftKey = getPageDraftKey(location);
-  const modal = useReplyModalStore((state) => state.modals[locationDraftKey]);
+  const { activeCid, parentNumber, threadNumber, threadCid, activeCommunityAddress, showReplyModal, scrollY } = useReplyModalStore(
+    useShallow((state) => {
+      const modal = state.modals[locationDraftKey];
+      return {
+        activeCid: modal?.activeCid,
+        parentNumber: modal?.parentNumber ?? null,
+        threadNumber: modal?.threadNumber ?? null,
+        threadCid: modal?.threadCid,
+        activeCommunityAddress: modal?.communityAddress,
+        showReplyModal: modal?.showReplyModal ?? false,
+        scrollY: modal?.scrollY ?? 0,
+      };
+    }),
+  );
   const closeReplyModal = useReplyModalStore((state) => state.closeModal);
   const closeModal = useCallback(() => closeReplyModal(locationDraftKey), [closeReplyModal, locationDraftKey]);
-  const activeCid = modal?.activeCid;
-  const parentNumber = modal?.parentNumber ?? null;
-  const threadNumber = modal?.threadNumber ?? null;
-  const threadCid = modal?.threadCid;
-  const activeCommunityAddress = modal?.communityAddress;
-  const showReplyModal = modal?.showReplyModal ?? false;
-  const scrollY = modal?.scrollY ?? 0;
   const isInSettingsView = pathname.endsWith('/settings');
 
   return (

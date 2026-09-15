@@ -98,6 +98,9 @@ const useIsOwnQuotelink = (quotelinkReply?: Comment) => {
   );
 };
 
+// Keep account updates local to the visible ownership label, including before hover.
+const OwnQuoteSuffix = ({ reply }: { reply?: Comment }) => (useIsOwnQuotelink(reply) ? ' (You)' : null);
+
 const DesktopQuotePreview = ({
   backlinkReply,
   quotelinkReply,
@@ -243,12 +246,11 @@ const DesktopQuotePreview = ({
     quoteCid: resolvedQuotelinkCid,
     isUnavailable: quotelinkUnavailable,
   });
-  const isOwnQuotelink = useIsOwnQuotelink(normalizedQuotelinkReply);
   const quotelinkLabel = (
     <>
       {formatQuoteNumber(resolvedQuotelinkNumber)}
       {isOP && ' (OP)'}
-      {isOwnQuotelink && ' (You)'}
+      <OwnQuoteSuffix reply={normalizedQuotelinkReply} />
     </>
   );
 
@@ -419,7 +421,6 @@ const MobileQuotePreview = ({
     quoteCid: resolvedQuotelinkCid,
     isUnavailable: quotelinkUnavailable,
   });
-  const isOwnQuotelink = useIsOwnQuotelink(normalizedQuotelinkReply);
   // When the body is not loaded yet but the cid is known, still allow hover/focus so the lazy fetch
   // can be requested and the preview can position itself once the comment resolves.
   const lazyResolvableQuotelinkCid = quotelinkPendingResolution && quotelinkCid ? quotelinkCid : undefined;
@@ -445,7 +446,7 @@ const MobileQuotePreview = ({
       >
         {formatQuoteNumber(resolvedQuotelinkNumber)}
         {isOP && ' (OP)'}
-        {isOwnQuotelink && ' (You)'}
+        <OwnQuoteSuffix reply={normalizedQuotelinkReply} />
       </span>
       {!quotelinkUnavailable &&
         !quotelinkPendingResolution &&

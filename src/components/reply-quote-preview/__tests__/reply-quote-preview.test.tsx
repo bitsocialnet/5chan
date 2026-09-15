@@ -24,6 +24,9 @@ const testState = vi.hoisted(() => ({
       address: '0xme',
     },
   } as { id?: string; author?: { address?: string } },
+  accountCalls: 0,
+  accountListeners: new Set<() => void>(),
+  floatingCalls: 0,
   accountCommentByCid: {} as Record<string, { cid?: string }>,
   accountCommentCalls: [] as Array<{ commentCid?: string } | undefined>,
   directories: [{ address: 'music-posting.eth', title: '/mu/ - Music' }] as Array<{ address: string; title?: string }>,
@@ -48,27 +51,44 @@ vi.mock('react-router-dom', async () => {
   };
 });
 
-vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
-  useAccount: () => testState.account,
-  useAccountComment: (options?: { commentCid?: string }) => {
-    testState.accountCommentCalls.push(options);
-    return (options?.commentCid && testState.accountCommentByCid[options.commentCid]) || {};
-  },
-}));
+vi.mock('@bitsocial/bitsocial-react-hooks', async () => {
+  const { useSyncExternalStore } = await vi.importActual<typeof import('react')>('react');
+  return {
+    useAccount: () => {
+      testState.accountCalls++;
+      return useSyncExternalStore(
+        (notify) => {
+          testState.accountListeners.add(notify);
+          return () => {
+            testState.accountListeners.delete(notify);
+          };
+        },
+        () => testState.account,
+      );
+    },
+    useAccountComment: (options?: { commentCid?: string }) => {
+      testState.accountCommentCalls.push(options);
+      return (options?.commentCid && testState.accountCommentByCid[options.commentCid]) || {};
+    },
+  };
+});
 
 vi.mock('@floating-ui/react', () => ({
   autoUpdate: vi.fn(),
   offset: vi.fn(),
   shift: vi.fn(),
   size: vi.fn(),
-  useFloating: () => ({
-    floatingStyles: { position: 'fixed' },
-    refs: {
-      setFloating: () => undefined,
-      setReference: () => undefined,
-    },
-    update: testState.updateMock,
-  }),
+  useFloating: () => {
+    testState.floatingCalls++;
+    return {
+      floatingStyles: { position: 'fixed' },
+      refs: {
+        setFloating: () => undefined,
+        setReference: () => undefined,
+      },
+      update: testState.updateMock,
+    };
+  },
 }));
 
 vi.mock('../../../hooks/use-directories', () => ({
@@ -172,6 +192,9 @@ describe('ReplyQuotePreview', () => {
     };
     testState.accountCommentByCid = {};
     testState.accountCommentCalls = [];
+    testState.accountCalls = 0;
+    testState.floatingCalls = 0;
+    testState.accountListeners.clear();
     testState.directories = [{ address: 'music-posting.eth', title: '/mu/ - Music' }];
     testState.isMobile = false;
     testState.locationPath = '/mu/thread/thread-cid';
@@ -203,6 +226,28 @@ describe('ReplyQuotePreview', () => {
     });
     document.querySelectorAll(`.${styles.replyQuotePreview}`).forEach((node) => node.remove());
     document.querySelectorAll('.scroll-highlight').forEach((node) => node.remove());
+  });
+
+  it.each([false, true])('does not subscribe backlink-only previews to account data (mobile: %s)', async (isMobile) => {
+    testState.isMobile = isMobile;
+    await renderPreview({ isBacklinkReply: true, backlinkReply: { cid: 'reply-cid', number: 7, communityAddress: 'music-posting.eth' } });
+    expect(container.textContent).toContain('>>7');
+    expect(testState.accountCalls).toBe(0);
+    expect(testState.accountCommentCalls).toEqual([]);
+  });
+
+  it.each([false, true])('updates the ownership label without rendering its preview on account changes (mobile: %s)', async (isMobile) => {
+    testState.isMobile = isMobile;
+    await renderPreview({ isQuotelinkReply: true, quotelinkReply: { cid: 'reply-cid', number: 7, author: { address: '0xme' }, communityAddress: 'music-posting.eth' } });
+    expect(container.textContent).toContain('>>7 (You)');
+    const initialFloatingCalls = testState.floatingCalls;
+    await act(async () => {
+      testState.account = { id: 'account-2', author: { address: '0xother' } };
+      testState.accountListeners.forEach((notify) => notify());
+    });
+    expect(container.textContent).toContain('>>7');
+    expect(container.textContent).not.toContain('(You)');
+    expect(testState.floatingCalls).toBe(initialFloatingCalls);
   });
 
   it('scrolls to an in-thread reply instead of navigating on desktop quotelinks', async () => {
