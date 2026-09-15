@@ -181,7 +181,7 @@ const CatalogPostPreview = ({ post, visible, showCommunityAddress, floatingRef, 
       </span>
       {showCommunityAddress && communityAddress && ` to p/${getShortAddress(communityAddress)}`}
       <span className={styles.postAgo}> {getFormattedTimeAgo(timestamp)}</span>
-      {replyCount > 0 && (
+      {replyCount > 0 && lastReply && (
         <div className={styles.postLast}>
           {t('last_reply_by')}{' '}
           <span className={`${styles.postAuthor} ${lastReplyAuthorBadge ? styles.capcode : ''}`}>

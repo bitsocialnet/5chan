@@ -411,6 +411,43 @@ describe('CatalogRow', () => {
     expect(testState.replyListeners.size).toBe(0);
   });
 
+  it('waits for a loaded last reply before showing its metadata', async () => {
+    testState.mediaInfoByLink['https://example.com/pending.png'] = { type: 'image', url: 'https://example.com/pending.png' };
+    const post: TestComment = {
+      author: { address: 'author-1', displayName: 'Alice' },
+      cid: 'post-pending',
+      link: 'https://example.com/pending.png',
+      communityAddress: 'music-posting.eth',
+      replyCount: 1,
+      timestamp: 100,
+    };
+    await renderWithRouter(createElement(CatalogRow, { row: [post] }), '/all/catalog');
+    vi.useFakeTimers();
+    const postLink = container.querySelector<HTMLAnchorElement>('a[href="/mu/thread/post-pending"]');
+    await act(async () => {
+      postLink?.focus();
+      vi.advanceTimersByTime(250);
+    });
+    expect(container.textContent).toContain('R: 1');
+    expect(document.body.textContent).toContain('posted_by Alice');
+    expect(document.body.textContent).not.toContain('last_reply_by');
+    expect(document.body.textContent).not.toContain('ago:undefined');
+
+    await act(async () => {
+      testState.replies = [{ author: { displayName: 'Bob' }, cid: 'reply-loaded', timestamp: 200 }];
+      testState.replyListeners.forEach((listener) => listener());
+    });
+    expect(document.body.textContent).toContain('last_reply_by Bob');
+    expect(document.body.textContent).toContain('ago:200');
+
+    await act(async () => {
+      root.render(createElement(MemoryRouter, { initialEntries: ['/all/catalog'] }, createElement(CatalogRow, { row: [{ ...post, replyCount: 0 }] })));
+    });
+    expect(container.textContent).toContain('R: 0');
+    expect(document.body.textContent).toContain('posted_by Alice');
+    expect(document.body.textContent).not.toContain('last_reply_by');
+  });
+
   it('opens keyboard previews after the same delay and releases reply subscriptions on blur', async () => {
     testState.mediaInfoByLink['https://example.com/focus.png'] = { type: 'image', url: 'https://example.com/focus.png' };
     testState.roleByAddress = { 'author-1': { commentAuthorRole: 'Owner', isCommentAuthorMod: true } };
