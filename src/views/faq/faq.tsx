@@ -776,7 +776,7 @@ const FAQ_SECTIONS: FAQSection[] = [
               5chan source repository
             </a>
             , and the app directory on{' '}
-            <a href='https://bitsocial.net/apps' {...externalLinkProps}>
+            <a href='https://bitsocial.net/projects?category=apps' {...externalLinkProps}>
               bitsocial.net
             </a>
             .

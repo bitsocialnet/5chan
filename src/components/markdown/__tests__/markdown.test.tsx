@@ -396,10 +396,10 @@ describe('Markdown', () => {
 
   it('renders inline Markdown links through the standard link renderer', async () => {
     await renderMarkdown({
-      content: '[AI moderation](https://bitsocial.net/apps/ai-moderation-challenge) sent this reply to the mod queue because the fortune check is missing',
+      content: '[AI moderation](https://bitsocial.net/projects/ai-moderation-challenge) sent this reply to the mod queue because the fortune check is missing',
     });
 
-    const link = container.querySelector<HTMLAnchorElement>('a[href="https://bitsocial.net/apps/ai-moderation-challenge"]');
+    const link = container.querySelector<HTMLAnchorElement>('a[href="https://bitsocial.net/projects/ai-moderation-challenge"]');
     expect(link?.textContent).toBe('AI moderation');
     expect(link?.getAttribute('target')).toBe('_blank');
     expect(container.textContent).toBe('AI moderation sent this reply to the mod queue because the fortune check is missing');
