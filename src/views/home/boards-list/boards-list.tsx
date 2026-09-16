@@ -427,6 +427,12 @@ const BoardsList = ({ multisub }: { multisub: DirectoryCommunity[] }) => {
                     {...boardLinkProps}
                   />
                   <BoardLink key={boardAddressesByName['Quests'] ?? 'Quests'} boardName='Quests' address={boardAddressesByName['Quests'] ?? null} {...boardLinkProps} />
+                  <BoardLink
+                    key={boardAddressesByName['Original Content'] ?? 'Original Content'}
+                    boardName='Original Content'
+                    address={boardAddressesByName['Original Content'] ?? null}
+                    {...boardLinkProps}
+                  />
                 </>
               )}
             </ul>

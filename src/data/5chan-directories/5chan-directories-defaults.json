@@ -2,7 +2,7 @@
   "title": "5chan Directory Defaults",
   "description": "Expected 5chan UX defaults by directory code. These defaults apply to the directory, not to individual candidate boards.",
   "createdAt": 1779262179,
-  "updatedAt": 1784884468,
+  "updatedAt": 1789572191,
   "directories": {
     "3": {
       "directoryCode": "3",
@@ -592,6 +592,28 @@
       "rules": [
         "All motor vehicle pictures are allowed.",
         "Photos of models and \"race queens\" are permitted, so long as they are sufficiently clothed."
+      ]
+    },
+    "oc": {
+      "directoryCode": "oc",
+      "title": "/oc/ - Original Content",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "Threads must be started with original content: something you made or remixed yourself, in any medium (drawings, edits, comics, music, video, writing, exploitables, quests).",
+        "Do not claim authorship of works you did not create. For remixes and edits, say what you started from.",
+        "There is no minimum quality requirement, but high-effort OC is highly encouraged. Lazy edits and reposts dressed up as OC may be removed at moderator discretion.",
+        "Replies may discuss, critique, or build on the thread's content. Requests for free work belong on /wsr/.",
+        "Remember: This is a worksafe board! No adult content."
       ]
     },
     "out": {
