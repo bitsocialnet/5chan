@@ -81,6 +81,7 @@ For an unexpected repo-specific issue, tell the contributor and continue indepen
 - Run browser engines sequentially. Reuse each session for desktop/mobile and close the exact session in cleanup even after failure. Never use `close-all` or `kill-all`.
 - Reuse a compatible dev server in the same worktree when safe. Otherwise record and clean up the server/process you start. Never start a server for a documentation-only task.
 - Review the final task-owned diff. Use `code-quality-review` for non-trivial changes or an explicit review request; apply high-confidence findings within existing authorization.
+- After a bug fix or substantive review correction exposes a preventable mistake, use [retro](.agents/skills/retro/SKILL.md) before finishing to consider the smallest useful prevention. Existing coverage or no additional check can be the right outcome.
 
 ## Skills and delegation
 

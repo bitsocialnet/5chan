@@ -31,6 +31,7 @@ The AI directories use LF line endings through `.gitattributes` so generated tex
 | `fix-merge-conflicts` | Resolve conflicts and verify the merged result |
 | `release`, `release-description` | Prepare release wording and perform authorized release steps |
 | `code-quality-review` | Review non-trivial diffs or an explicitly requested quality concern |
+| `retro` | Turn demonstrated mistakes into focused checks or review guidance |
 | `refactor-pass`, `deslop` | Requested cleanup of existing changes |
 | `debug-agent` | Evidence-based debugging, with instrumentation when needed |
 | `you-might-not-need-an-effect` | Focused effect/memo review |
