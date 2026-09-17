@@ -6,7 +6,7 @@ import { useFloating, offset, shift, size, autoUpdate, Placement } from '@floati
 import { useDirectories } from '../../hooks/use-directories';
 import { getBoardPath } from '../../lib/utils/route-utils';
 import { formatQuoteNumber, getQuoteTargetAvailability, shouldShowFloatingQuotePreview } from '../../lib/utils/quote-link-utils';
-import { findPreferredScrollTarget, getThreadTopNavigationState, scrollThreadContainerToTop } from '../../lib/utils/thread-scroll-utils';
+import { findPreferredScrollTarget, getThreadTopNavigationState, isVisibleScrollTarget, scrollThreadContainerToTop } from '../../lib/utils/thread-scroll-utils';
 import useIsMobile from '../../hooks/use-is-mobile';
 import styles from '../post-styles';
 import { useQuotePreviewPost } from '../../hooks/use-quote-preview-post';
@@ -31,7 +31,9 @@ const getQuotePreviewClassName = (previewPost?: Comment) =>
   !previewPost?.parentCid ? `${styles.replyQuotePreview} ${styles.replyQuotePreviewOp}` : styles.replyQuotePreview;
 
 const handleQuoteHover = (cid: string, onElementOutOfView: () => void) => {
-  const targetElements = document.querySelectorAll(`[data-cid="${cid}"]`);
+  // Hidden cached feeds keep duplicate post nodes mounted with a 0x0 rect at (0,0), which the
+  // viewport check below would count as visible; only consider nodes rendered for the user.
+  const targetElements = Array.from(document.querySelectorAll<HTMLElement>(`[data-cid="${cid}"]`)).filter(isVisibleScrollTarget);
   const isOpElement = (element: HTMLElement) => element.getAttribute('data-post-cid') === cid;
 
   const isInViewport = (element: HTMLElement) => {
@@ -46,8 +48,7 @@ const handleQuoteHover = (cid: string, onElementOutOfView: () => void) => {
 
   let anyInView = false;
 
-  targetElements.forEach((element) => {
-    const htmlElement = element as HTMLElement;
+  targetElements.forEach((htmlElement) => {
     if (isInViewport(htmlElement)) {
       // Never apply quote-hover highlight styles to OP cards.
       if (isOpElement(htmlElement)) {
@@ -141,10 +142,10 @@ const DesktopQuotePreview = ({
   useEffect(() => {
     const handleResize = () => {
       const availableWidth = availableWidthRef.current;
-      if (availableWidth >= 250) {
-        setPlacement('right');
-      } else {
-        setPlacement('left');
+      // The width is only measured while a preview is mounted, so before the first hover it is
+      // still 0; keep the current placement rather than pushing that first preview off-screen.
+      if (availableWidth > 0) {
+        setPlacement(availableWidth >= 250 ? 'right' : 'left');
       }
       update();
     };

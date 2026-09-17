@@ -18,7 +18,7 @@ export const getRequestedThreadTopCid = (state: unknown) => {
   return typeof cid === 'string' ? cid : undefined;
 };
 
-const isVisibleScrollTarget = (element: HTMLElement) => {
+export const isVisibleScrollTarget = (element: HTMLElement) => {
   const style = window.getComputedStyle(element);
   const rect = element.getBoundingClientRect();
 
