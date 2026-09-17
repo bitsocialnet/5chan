@@ -227,7 +227,11 @@ describe('useFetchGifFirstFrame', () => {
     testState.cacheGetItemMock.mockResolvedValueOnce(frame).mockReturnValue(new Promise(() => {}));
     const { getState, HookHarness } = await renderHook(undefined);
     const renderActivity = (mode: 'hidden' | 'visible') =>
-      createElement(React.Activity, { mode, children: createElement(HookHarness, { value: 'https://cdn.example/activity.gif' }) });
+      createElement(React.Activity, {
+        mode,
+        // oxlint-disable-next-line react/no-children-prop -- ActivityProps types children as required, so createElement only accepts it inside the props object
+        children: createElement(HookHarness, { value: 'https://cdn.example/activity.gif' }),
+      });
     await dispatchRender(root, renderActivity('visible'));
     expect(getState().status).toBe('ready');
 
@@ -270,7 +274,12 @@ describe('useFetchGifFirstFrame', () => {
         : Promise.resolve(source === firstSource ? firstFrame : currentFrame),
     );
     const { getState, HookHarness } = await renderHook(undefined);
-    const renderActivity = (mode: 'hidden' | 'visible', value: string) => createElement(React.Activity, { mode, children: createElement(HookHarness, { value }) });
+    const renderActivity = (mode: 'hidden' | 'visible', value: string) =>
+      createElement(React.Activity, {
+        mode,
+        // oxlint-disable-next-line react/no-children-prop -- ActivityProps types children as required, so createElement only accepts it inside the props object
+        children: createElement(HookHarness, { value }),
+      });
     await dispatchRender(root, renderActivity('visible', firstSource));
     const previousUrl = getState().frameUrl;
     act(() => root.render(renderActivity('hidden', firstSource)));

@@ -229,7 +229,7 @@ vi.mock('../../../hooks/use-publish-reply', async () => {
   const React = await vi.importActual<typeof import('react')>('react');
 
   return {
-    default: () => {
+    default: function usePublishReplyMock() {
       const [, forceUpdate] = React.useReducer((value: number) => value + 1, 0);
 
       return {

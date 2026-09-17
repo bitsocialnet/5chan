@@ -223,7 +223,7 @@ vi.mock('../../../hooks/use-publish-post', async () => {
   const React = await vi.importActual<typeof import('react')>('react');
 
   return {
-    default: ({
+    default: function usePublishPostMock({
       communityAddress,
       onAbandonPost,
       onDuplicateMediaRejected,
@@ -237,7 +237,7 @@ vi.mock('../../../hooks/use-publish-post', async () => {
       onPublishAccepted?: () => void;
       onPublishError?: (error: Error) => void;
       onPendingPost?: (accountCommentIndex: number, pendingPost: Record<string, unknown>) => void;
-    }) => {
+    }) {
       const [, forceUpdate] = React.useReducer((value: number) => value + 1, 0);
       testState.onAbandonPost = onAbandonPost;
       testState.onDuplicateMediaRejected = onDuplicateMediaRejected;
@@ -311,7 +311,7 @@ vi.mock('../../../hooks/use-publish-reply', async () => {
   const React = await vi.importActual<typeof import('react')>('react');
 
   return {
-    default: ({ cid, postCid, communityAddress }: { cid: string; postCid?: string; communityAddress: string }) => {
+    default: function usePublishReplyMock({ cid, postCid, communityAddress }: { cid: string; postCid?: string; communityAddress: string }) {
       const [publishReplyOptions, setPublishReplyOptionsState] = React.useState<Record<string, unknown>>({
         parentCid: cid,
         postCid: postCid ?? cid,

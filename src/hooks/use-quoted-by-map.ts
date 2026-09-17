@@ -75,26 +75,22 @@ const useQuotedByMap = (replies: Comment[] = [], communityAddress?: string) => {
     ),
   );
 
+  // The signature is `${number}:${cid}` entries joined by `|`; parsing it keeps the memo keyed on the
+  // subscribed primitive instead of re-reading the store non-reactively.
   const quotedNumberToCid = useMemo(() => {
-    if (quotedPostNumbers.length === 0 || !communityAddress) {
-      return {} as Record<number, string>;
-    }
-
-    const { numberToCid } = usePostNumberStore.getState();
-    const scoped = getScopedNumberToCidMap(numberToCid, communityAddress);
-    if (!scoped) return {} as Record<number, string>;
-
     const nextQuotedNumberToCid: Record<number, string> = {};
+    if (!communityAddress || !quotedNumbersSignature) return nextQuotedNumberToCid;
 
-    for (const postNumber of quotedPostNumbers) {
-      const quotedCid = scoped[postNumber];
+    for (const entry of quotedNumbersSignature.split('|')) {
+      const separator = entry.indexOf(':');
+      const quotedCid = entry.slice(separator + 1);
       if (quotedCid) {
-        nextQuotedNumberToCid[postNumber] = quotedCid;
+        nextQuotedNumberToCid[Number(entry.slice(0, separator))] = quotedCid;
       }
     }
 
     return nextQuotedNumberToCid;
-  }, [quotedPostNumbers, communityAddress, quotedNumbersSignature]);
+  }, [communityAddress, quotedNumbersSignature]);
 
   return useMemo(() => {
     const map = new Map<string, Comment[]>();
