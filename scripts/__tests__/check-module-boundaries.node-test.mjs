@@ -60,7 +60,7 @@ test('accepts one-way imports that enter modules through their index', (t) => {
   });
   const result = checkModuleBoundaries(src);
   assert.deepEqual(result.violations, []);
-  assert.equal(result.files, 30);
+  assert.equal(result.files, 31);
   assert.equal(result.edges, 40);
 });
 
@@ -172,6 +172,14 @@ test('ranks types and generated with constants, e2e with app, and treats lib sub
   const src = fixture(t, {
     'types/feed.ts': "import { format } from '../lib/utils/time-utils';\n",
     'types/globals.d.ts': "import type { format } from '../lib/utils/time-utils';\n",
+    'lib/utils/lists.ts':
+      "const lists = import.meta.glob('../../data/lists/*.json', { eager: true });\nconst feeds = import.meta.glob(['../../views/home/*.json', '!../../views/home/skip.json']);\n",
+    'data/lists/first.json': '[]\n',
+    'views/home/feed.json': '{}\n',
+    'views/home/skip.json': '{}\n',
+    'views/gold/gold.module.css': "/* @import '../about/about.module.css'; */\n@import './base.css';\n@import url('../about/about.module.css');\n",
+    'views/gold/base.css': '.base {}\n',
+    'views/about/about.module.css': '.about {}\n',
     'generated/asset-manifest.ts': "import { useFeedStore } from '../stores/use-feed-store';\nimport { sortTypes } from '../constants/sort-types';\n",
     'constants/sort-types.ts': "import type { Feed } from '../types/feed';\nexport const sortTypes = [];\n",
     'views/board/board.tsx': "import harness from '../../e2e/thread-harness';\n",
@@ -194,9 +202,11 @@ test('ranks types and generated with constants, e2e with app, and treats lib sub
     'private-module hooks/use-upload.ts:3 -> lib/media-hosting/imgur/api.ts',
     'private-module hooks/use-upload.ts:4 -> lib/media-hosting/imgur/internals/helper.ts',
     'private-module lib/media-hosting/provider-order.ts:1 -> lib/media-hosting/imgur/api.ts',
+    'layer lib/utils/lists.ts:2 -> views/home/feed.json',
     'layer types/feed.ts:1 -> lib/utils/time-utils.ts',
     'layer types/globals.d.ts:1 -> lib/utils/time-utils.ts',
     'layer views/board/board.tsx:1 -> e2e/thread-harness.tsx',
+    'view-to-view views/gold/gold.module.css:3 -> views/about/about.module.css',
   ]);
   assert.equal(
     formatViolation(

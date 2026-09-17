@@ -17,7 +17,7 @@ const LAYER_ORDER = LAYER_GROUPS.map((group) => group.join('/')).join(' -> ');
 const BASE_CATEGORIES = ['lib', 'views', 'components', 'hooks', 'stores', 'constants', 'data', 'plugins', 'types', 'generated'];
 // Folders of static data are not modules either, so their files may be imported directly.
 const DATA_CATEGORIES = new Set(['data']);
-const SOURCE = /\.(?:[cm]?[jt]sx?)$/;
+const SOURCE = /\.(?:[cm]?[jt]sx?|css)$/;
 const CHECKED_TARGET = /\.(?:[cm]?[jt]sx?|css|json)$/;
 const RESOLUTIONS = ['', '.ts', '.tsx', '.mts', '.js', '.jsx', '.mjs', '/index.ts', '/index.tsx', '/index.js'];
 
@@ -58,9 +58,23 @@ function locate(categories, file) {
   return { category, inside: file.slice(category.length + 1).split('/') };
 }
 
-// Reads static imports, re-exports, dynamic import() and require() from the parsed AST,
-// so comments, strings and multi-line clauses cannot produce phantom imports.
+// Reads a stylesheet's @import rules (comments stripped) so cross-module stylesheet dependencies count too.
+function readStylesheetImports(source) {
+  const imports = [];
+  const stripped = source.replace(/\/\*[\s\S]*?\*\//g, (comment) => comment.replace(/[^\n]/g, ' '));
+  for (const match of stripped.matchAll(/@import\s+(?:url\(\s*)?['"]([^'"]+)['"]/g)) {
+    imports.push({ specifier: match[1], line: stripped.slice(0, match.index).split('\n').length });
+  }
+  return imports;
+}
+
+const isImportMetaGlob = (callee) =>
+  callee.type === 'MemberExpression' && callee.object.type === 'MetaProperty' && callee.property.type === 'Identifier' && callee.property.name === 'glob';
+
+// Reads static imports, re-exports, dynamic import(), require() and import.meta.glob() patterns from the
+// parsed AST, so comments, strings and multi-line clauses cannot produce phantom imports.
 function readImports(file, source) {
+  if (file.endsWith('.css')) return readStylesheetImports(source);
   const { program, errors } = parseSync(file, source);
   if (errors.length) throw new Error(`Cannot parse ${file}: ${errors[0].message}`);
   const imports = [];
@@ -74,10 +88,39 @@ function readImports(file, source) {
     if (node.type === 'ImportDeclaration' || node.type === 'ExportNamedDeclaration' || node.type === 'ExportAllDeclaration') record(node.source);
     else if (node.type === 'ImportExpression') record(node.source);
     else if (node.type === 'CallExpression' && node.callee.type === 'Identifier' && node.callee.name === 'require') record(node.arguments[0]);
+    else if (node.type === 'CallExpression' && isImportMetaGlob(node.callee)) {
+      const literals = (node.arguments[0]?.type === 'ArrayExpression' ? node.arguments[0].elements : [node.arguments[0]]).filter(
+        (pattern) => pattern?.type === 'Literal' && typeof pattern.value === 'string',
+      );
+      const patterns = literals.map((pattern) => pattern.value);
+      if (patterns.length) {
+        imports.push({
+          glob: patterns.filter((pattern) => !pattern.startsWith('!')),
+          exclude: patterns.filter((pattern) => pattern.startsWith('!')).map((pattern) => pattern.slice(1)),
+          line: source.slice(0, literals[0].start).split('\n').length,
+        });
+      }
+    }
     for (const key of Object.keys(node)) if (key !== 'type') visit(node[key]);
   };
   visit(program);
   return imports;
+}
+
+// Expands an import.meta.glob() pattern relative to the importer into the src files it matches.
+function expandGlob(srcDir, importer, pattern) {
+  if (!pattern.startsWith('.')) return [];
+  const segments = pattern.split('/');
+  const firstGlob = segments.findIndex((segment) => /[*?[{]/.test(segment));
+  const prefix = segments.slice(0, firstGlob === -1 ? -1 : firstGlob).join('/');
+  const rest = segments.slice(firstGlob === -1 ? -1 : firstGlob).join('/');
+  const cwd = path.resolve(path.dirname(path.join(srcDir, importer)), prefix);
+  if (!fs.existsSync(cwd)) return [];
+  return fs
+    .globSync(rest, { cwd })
+    .map((match) => path.relative(srcDir, path.join(cwd, match)).split(path.sep).join('/'))
+    .filter((relative) => !relative.startsWith('..'))
+    .sort();
 }
 
 function resolveImport(srcDir, importer, specifier) {
@@ -128,46 +171,53 @@ export function checkModuleBoundaries(srcDir) {
 
   for (const importer of files) {
     const source = fs.readFileSync(path.join(srcDir, importer), 'utf8');
-    for (const { specifier, line } of readImports(importer, source)) {
-      const target = resolveImport(srcDir, importer, specifier);
-      if (!target || target === importer) continue;
-      edges += 1;
-      if (graph.has(target)) graph.get(importer).add(target);
-      if (isTest(importer) || !CHECKED_TARGET.test(target)) continue;
-      // One finding per import: the layer rule explains the problem best, then view-to-view, then private-module.
-      let reported = false;
-      const report = (rule, message) => {
-        if (reported) return;
-        reported = true;
-        violations.push({ file: importer, line, specifier, target, rule, message });
-      };
+    for (const entry of readImports(importer, source)) {
+      const { line } = entry;
+      const specifier = entry.glob ? entry.glob.join(', ') : entry.specifier;
+      const excluded = new Set(entry.exclude?.flatMap((pattern) => expandGlob(srcDir, importer, pattern)) ?? []);
+      const targets = entry.glob
+        ? [...new Set(entry.glob.flatMap((pattern) => expandGlob(srcDir, importer, pattern)))].filter((target) => !excluded.has(target))
+        : [resolveImport(srcDir, importer, specifier)];
+      for (const target of targets) {
+        if (!target || target === importer) continue;
+        edges += 1;
+        if (graph.has(target)) graph.get(importer).add(target);
+        if (isTest(importer) || !CHECKED_TARGET.test(target)) continue;
+        // One finding per import: the layer rule explains the problem best, then view-to-view, then private-module.
+        let reported = false;
+        const report = (rule, message) => {
+          if (reported) return;
+          reported = true;
+          violations.push({ file: importer, line, specifier, target, rule, message });
+        };
 
-      const importerRank = rankOf(importer);
-      const targetRank = rankOf(target);
-      if (importerRank !== null && targetRank !== null && importerRank < targetRank) {
-        report('layer', `${layerName(importer)} must not import from ${layerName(target)}; dependencies flow ${LAYER_ORDER}`);
-      }
+        const importerRank = rankOf(importer);
+        const targetRank = rankOf(target);
+        if (importerRank !== null && targetRank !== null && importerRank < targetRank) {
+          report('layer', `${layerName(importer)} must not import from ${layerName(target)}; dependencies flow ${LAYER_ORDER}`);
+        }
 
-      const from = locate(categories, importer);
-      const to = locate(categories, target);
-      if (from?.category === 'views' && to?.category === 'views' && from.inside[0] !== to.inside[0]) {
-        report('view-to-view', 'a view must not import another view; move shared code to components/, hooks/, or lib/');
-      }
+        const from = locate(categories, importer);
+        const to = locate(categories, target);
+        if (from?.category === 'views' && to?.category === 'views' && from.inside[0] !== to.inside[0]) {
+          report('view-to-view', 'a view must not import another view; move shared code to components/, hooks/, or lib/');
+        }
 
-      if (to && to.inside.length >= 2 && !DATA_CATEGORIES.has(to.category)) {
-        const module = `${to.category}/${to.inside[0]}`;
-        const targetDir = path.posix.dirname(target);
-        const owner = to.inside.length === 2 ? module : path.posix.dirname(targetDir);
-        const importerDir = path.posix.dirname(importer);
-        const insideOwner = importerDir === owner || importerDir.startsWith(`${owner}/`);
-        const entry = to.inside.length === 2 && /^index\.[cm]?[jt]sx?$/.test(to.inside[1]);
-        if (!insideOwner && !entry) {
-          report(
-            'private-module',
-            to.inside.length === 2
-              ? `${module} exposes only its index; import the module, not ${to.inside[1]}`
-              : `${targetDir} is private to ${owner}; promote it to ${to.category}/${path.posix.basename(targetDir)} if it is shared`,
-          );
+        if (to && to.inside.length >= 2 && !DATA_CATEGORIES.has(to.category)) {
+          const module = `${to.category}/${to.inside[0]}`;
+          const targetDir = path.posix.dirname(target);
+          const owner = to.inside.length === 2 ? module : path.posix.dirname(targetDir);
+          const importerDir = path.posix.dirname(importer);
+          const insideOwner = importerDir === owner || importerDir.startsWith(`${owner}/`);
+          const entry = to.inside.length === 2 && /^index\.[cm]?[jt]sx?$/.test(to.inside[1]);
+          if (!insideOwner && !entry) {
+            report(
+              'private-module',
+              to.inside.length === 2
+                ? `${module} exposes only its index; import the module, not ${to.inside[1]}`
+                : `${targetDir} is private to ${owner}; promote it to ${to.category}/${path.posix.basename(targetDir)} if it is shared`,
+            );
+          }
         }
       }
     }
