@@ -3,7 +3,8 @@ import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import PostPage, { Post } from '../post';
+import PostPage from '../post';
+import { Post } from '../../../components/post';
 import useThreadLiveUpdatesStore from '../../../stores/use-thread-live-updates-store';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;

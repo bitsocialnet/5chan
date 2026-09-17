@@ -3,7 +3,7 @@ import { TRASH_BOARD_ADDRESS, TRASH_BOARD_CODE, TRASH_BOARD_PUBLIC_KEY } from '.
 
 const importLookupUtilsWithDirectoryLists = async (directories: unknown[]) => {
   vi.resetModules();
-  vi.doMock('../../../data/vendored-directory-lists', () => ({
+  vi.doMock('../vendored-directory-lists', () => ({
     vendoredDirectoryLists: {
       directories,
     },

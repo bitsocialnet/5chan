@@ -19,7 +19,7 @@ import useAuthorPrivileges from '../../hooks/use-author-privileges';
 import { useBoardPseudonymityMode } from '../../hooks/use-board-pseudonymity-mode';
 import { getCommentCommunityAddress, withResolvedCommentCommunityAddress } from '../../lib/utils/comment-utils';
 import { canMoveCommentToTrash } from '../../lib/comment-transfer';
-import PostTransferModal from '../post-transfer-modal/post-transfer-modal';
+import PostTransferModal from '../post-transfer-modal';
 
 const daysToTimestampInSeconds = (days: number) => {
   const now = new Date();

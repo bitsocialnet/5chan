@@ -1,6 +1,6 @@
-import { getFlashTagOptionFromComment, isFlashDirectory } from '../lib/flash-tags';
-import type { DirectoryCommunity } from '../lib/utils/directory-list-utils';
-import styles from '../views/post/post.module.css';
+import { getFlashTagOptionFromComment, isFlashDirectory } from '../../lib/flash-tags';
+import type { DirectoryCommunity } from '../../lib/utils/directory-list-utils';
+import styles from '../post-styles';
 
 interface PostFlashTagProps {
   comment: unknown;

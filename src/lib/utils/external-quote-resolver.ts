@@ -1,7 +1,6 @@
 import type { Comment } from '@bitsocial/bitsocial-react-hooks';
 import { feedsStore, repliesStore, feedOptionsToFeedName, communitiesPagesStore } from '../bitsocial-internals/stores';
-import type { DirectoryCommunity } from '../../hooks/use-directories';
-import usePostNumberStore from '../../stores/use-post-number-store';
+import type { DirectoryCommunity } from './directory-list-utils';
 import type { ExternalQuoteReference, ExternalQuoteSearchStatus } from './external-quote-utils';
 import { getExternalQuoteBoardAddress, getExternalQuoteBoardLabel } from './external-quote-utils';
 import { getCommentCommunityAddress } from './comment-utils';
@@ -18,6 +17,11 @@ type ResolverAccount = {
   id?: string;
   [key: string]: unknown;
 };
+
+/** Post-number registry the resolver reads and writes; `usePostNumberStore` satisfies it structurally. */
+export interface PostNumberRegistry {
+  getState: () => { numberToCid: Record<string, Record<number, string>>; registerComments: (comments: Comment[]) => void };
+}
 
 type ResolvedExternalQuoteTarget = {
   boardPath: string;
@@ -89,12 +93,12 @@ const buildResolvedTarget = ({
   };
 };
 
-const registerComments = (comments: Comment[]) => {
+const registerComments = (postNumbers: PostNumberRegistry, comments: Comment[]) => {
   if (!comments.length) {
     return;
   }
 
-  usePostNumberStore.getState().registerComments(comments);
+  postNumbers.getState().registerComments(comments);
 };
 
 const waitForBoardFeedPage = async (feedName: string, previousLength: number, expectedPageNumber: number) =>
@@ -119,6 +123,7 @@ const loadBoardThreads = async ({
   account,
   number,
   onStatus,
+  postNumbers,
   quoteDisplay,
   communityAddress,
   directories,
@@ -127,6 +132,7 @@ const loadBoardThreads = async ({
   directories: DirectoryCommunity[];
   number: number;
   onStatus?: (status: ExternalQuoteSearchStatus) => void;
+  postNumbers: PostNumberRegistry;
   quoteDisplay: string;
   communityAddress: string;
 }) => {
@@ -165,7 +171,7 @@ const loadBoardThreads = async ({
     const hasMore = state.feedsHaveMore[feedName];
     const pageNumber = state.feedsOptions[feedName]?.pageNumber ?? 1;
 
-    registerComments(feed);
+    registerComments(postNumbers, feed);
 
     const matchingThread = feed.find((thread) => thread.number === number);
     if (matchingThread?.cid) {
@@ -211,6 +217,7 @@ const searchThreadReplies = async ({
   directories,
   number,
   onStatus,
+  postNumbers,
   quoteDisplay,
   communityAddress,
   threads,
@@ -219,6 +226,7 @@ const searchThreadReplies = async ({
   directories: DirectoryCommunity[];
   number: number;
   onStatus?: (status: ExternalQuoteSearchStatus) => void;
+  postNumbers: PostNumberRegistry;
   quoteDisplay: string;
   communityAddress: string;
   threads: Comment[];
@@ -269,7 +277,7 @@ const searchThreadReplies = async ({
       const hasMore = state.feedsHaveMore[feedName];
       const pageNumber = state.feedsOptions[feedName]?.pageNumber ?? 1;
 
-      registerComments(replies);
+      registerComments(postNumbers, replies);
 
       const matchingReply = replies.find((reply) => reply.number === number);
       if (matchingReply?.cid) {
@@ -293,11 +301,13 @@ export const resolveExternalQuoteTarget = async ({
   account,
   directories,
   onStatus,
+  postNumbers,
   reference,
 }: {
   account?: ResolverAccount | null;
   directories: DirectoryCommunity[];
   onStatus?: (status: ExternalQuoteSearchStatus) => void;
+  postNumbers: PostNumberRegistry;
   reference: ExternalQuoteReference;
 }): Promise<ResolvedExternalQuoteTarget | null> => {
   if (!account?.id) {
@@ -306,7 +316,7 @@ export const resolveExternalQuoteTarget = async ({
 
   const targetCommunityAddress = getExternalQuoteBoardAddress(reference, directories);
   const quoteDisplay = reference.raw;
-  const cachedCid = usePostNumberStore.getState().numberToCid[targetCommunityAddress]?.[reference.number];
+  const cachedCid = postNumbers.getState().numberToCid[targetCommunityAddress]?.[reference.number];
   if (cachedCid) {
     return buildResolvedTarget({
       cid: cachedCid,
@@ -321,7 +331,7 @@ export const resolveExternalQuoteTarget = async ({
     communityAddress: targetCommunityAddress,
   });
   if (loadedComment?.cid) {
-    registerComments([loadedComment]);
+    registerComments(postNumbers, [loadedComment]);
     return buildResolvedTarget({
       cid: loadedComment.cid,
       comment: loadedComment,
@@ -335,12 +345,13 @@ export const resolveExternalQuoteTarget = async ({
     directories,
     number: reference.number,
     onStatus,
+    postNumbers,
     quoteDisplay,
     communityAddress: targetCommunityAddress,
   });
 
   if (matchingThread?.cid) {
-    registerComments([matchingThread]);
+    registerComments(postNumbers, [matchingThread]);
     return buildResolvedTarget({
       cid: matchingThread.cid,
       comment: matchingThread,
@@ -354,6 +365,7 @@ export const resolveExternalQuoteTarget = async ({
     directories,
     number: reference.number,
     onStatus,
+    postNumbers,
     quoteDisplay,
     communityAddress: targetCommunityAddress,
     threads,
@@ -363,7 +375,7 @@ export const resolveExternalQuoteTarget = async ({
     return null;
   }
 
-  registerComments([matchingReply]);
+  registerComments(postNumbers, [matchingReply]);
   return buildResolvedTarget({
     cid: matchingReply.cid,
     comment: matchingReply,

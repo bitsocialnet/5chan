@@ -43,9 +43,12 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
-vi.mock('../../home', () => ({
-  Footer: () => createElement('div', { 'data-testid': 'footer' }, 'footer'),
-  HomeLogo: () => createElement('div', { 'data-testid': 'home-logo' }, 'home-logo'),
+vi.mock('../../../components/home-footer', () => ({
+  default: () => createElement('div', { 'data-testid': 'footer' }, 'footer'),
+}));
+
+vi.mock('../../../components/home-logo', () => ({
+  default: () => createElement('div', { 'data-testid': 'home-logo' }, 'home-logo'),
 }));
 
 let container: HTMLDivElement;

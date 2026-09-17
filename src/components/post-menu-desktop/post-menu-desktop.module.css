@@ -15,7 +15,8 @@
   text-align: left;
 }
 
-.postMenuBtn, .postMenuBtnCatalog {
+.postMenuBtn,
+.postMenuBtnCatalog {
   appearance: none;
   background: transparent;
   border: 0;
@@ -24,7 +25,9 @@
   padding: 0;
 }
 
-.postMenu button:focus-visible, .postMenuBtn:focus-visible, .postMenuBtnCatalog:focus-visible {
+.postMenu button:focus-visible,
+.postMenuBtn:focus-visible,
+.postMenuBtnCatalog:focus-visible {
   outline: 1px dotted currentcolor;
   outline-offset: 1px;
 }
@@ -105,9 +108,9 @@
 .postMenuBtnCatalog {
   /* preserve unicode triangle for button, some browsers will use an emoji */
   font-variant: normal;
-  font-feature-settings: "tnum";
-  -webkit-font-feature-settings: "tnum"; /* Chrome, Opera, and Safari */
-  -moz-font-feature-settings: "tnum";    /* Firefox */
+  font-feature-settings: 'tnum';
+  -webkit-font-feature-settings: 'tnum'; /* Chrome, Opera, and Safari */
+  -moz-font-feature-settings: 'tnum'; /* Firefox */
   font-variant-numeric: tabular-nums;
 }
 

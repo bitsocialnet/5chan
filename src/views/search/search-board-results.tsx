@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import LoadingEllipsis from '../../components/loading-ellipsis/loading-ellipsis';
+import LoadingEllipsis from '../../components/loading-ellipsis';
 import type { BoardSearchMatch } from '../../hooks/use-board-search';
 import { SEARCH_HIGHLIGHT_REGION_ATTRIBUTE } from '../../hooks/use-search-match-highlight';
 import getShortAddress from '../../lib/get-short-address';
-import directoryStyles from '../directory/directory.module.css';
+import directoryStyles from '../../components/directory-layout';
 import styles from './search.module.css';
 
 /** How many boards show before "[N more]" reveals the rest, so a broad term does not push the posts down. */

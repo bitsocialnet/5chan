@@ -1,8 +1,14 @@
 import type { Comment } from '@bitsocial/bitsocial-react-hooks';
-import useSearchSummaryStore from '../stores/use-search-summary-store';
 import getShortAddress from './get-short-address';
 import type { SearchProvider } from './search-providers';
 import { isBoardAddressShape } from './utils/directory-list-lookup-utils';
+
+export type SearchSummaryStatus = 'pending' | 'answered' | 'failed';
+
+/** Receives the summary of a search request; the store supplies one so lib never imports it. */
+export type SearchSummaryPublisher = (query: string, status: SearchSummaryStatus, total?: number | null, providerId?: string | null) => void;
+
+const noopPublisher: SearchSummaryPublisher = () => {};
 
 export interface IndexedPost {
   archived: 0 | 1;
@@ -169,16 +175,16 @@ const getSearchCacheKey = (providers: SearchProvider[], query: string, page: num
 /**
  * The board header titles the page with the query, the match count and who answered. Publishing
  * from the request instead of a component effect keeps a reload from showing the previous numbers.
+ * The publisher is injected by the caller (the search summary store) so lib stays below stores.
  *
  * Only the outcome is published for a cached request, and publishing it again is a no-op. Marking
  * a cached request pending on every render would flip the store back and forth with each re-render.
  */
-const publishSummary = (request: Promise<IndexerSearchResult>, query: string, isNewRequest: boolean): void => {
-  const { setSummary } = useSearchSummaryStore.getState();
-  if (isNewRequest) queueMicrotask(() => setSummary(query, 'pending'));
+const publishSummary = (request: Promise<IndexerSearchResult>, query: string, isNewRequest: boolean, publish: SearchSummaryPublisher): void => {
+  if (isNewRequest) queueMicrotask(() => publish(query, 'pending'));
   request.then(
-    (result) => setSummary(result.query, 'answered', result.total, result.providerId),
-    () => setSummary(query, 'failed'),
+    (result) => publish(result.query, 'answered', result.total, result.providerId),
+    () => publish(query, 'failed'),
   );
 };
 
@@ -192,11 +198,16 @@ const isStaleFailedRequest = (cacheKey: string): boolean => {
   return failedAt !== undefined && Date.now() - failedAt > FAILED_REQUEST_REUSE_MS;
 };
 
-export const getIndexerSearch = (providers: SearchProvider[], query: string, page: number): Promise<IndexerSearchResult> => {
+export const getIndexerSearch = (
+  providers: SearchProvider[],
+  query: string,
+  page: number,
+  publish: SearchSummaryPublisher = noopPublisher,
+): Promise<IndexerSearchResult> => {
   const cacheKey = getSearchCacheKey(providers, query, page);
   const cached = searchCache.get(cacheKey);
   if (cached && !isStaleFailedRequest(cacheKey)) {
-    publishSummary(cached, query, false);
+    publishSummary(cached, query, false, publish);
     return cached;
   }
 
@@ -210,7 +221,7 @@ export const getIndexerSearch = (providers: SearchProvider[], query: string, pag
   failedRequestTimes.delete(cacheKey);
   request.catch(() => failedRequestTimes.set(cacheKey, Date.now()));
   searchCache.set(cacheKey, request);
-  publishSummary(request, query, true);
+  publishSummary(request, query, true, publish);
   return request;
 };
 

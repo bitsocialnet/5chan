@@ -13,7 +13,7 @@ import { useDirectories } from '../../../hooks/use-directories';
 import useEditCommentPrivileges from '../../../hooks/use-author-privileges';
 import { useBoardPseudonymityMode } from '../../../hooks/use-board-pseudonymity-mode';
 import useHide from '../../../hooks/use-hide';
-import EditMenu from '../../edit-menu/edit-menu';
+import EditMenu from '../../edit-menu';
 import { isPostPageView } from '../../../lib/utils/view-utils';
 import { useLocation, useParams } from 'react-router-dom';
 import { PostMenuProps } from '../../../lib/utils/post-menu-props';

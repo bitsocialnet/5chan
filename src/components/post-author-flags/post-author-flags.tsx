@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
-import { getCommentFlagFlairs, getAuthorFlagViewModels } from '../lib/comment-flags';
-import { hasTransferredCommentMarker } from '../lib/comment-transfer';
-import styles from '../views/post/post.module.css';
+import { getCommentFlagFlairs, getAuthorFlagViewModels } from '../../lib/comment-flags';
+import { hasTransferredCommentMarker } from '../../lib/comment-transfer';
+import styles from '../post-styles';
 
 interface PostAuthorFlagsProps {
   author: unknown;

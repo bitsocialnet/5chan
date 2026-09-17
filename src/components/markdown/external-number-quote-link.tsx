@@ -9,9 +9,10 @@ import useIsMobile from '../../hooks/use-is-mobile';
 import { resolveExternalQuoteTarget } from '../../lib/utils/external-quote-resolver';
 import { ExternalQuoteReference, getExternalQuoteBoardLabel, getExternalQuoteStatusMessage } from '../../lib/utils/external-quote-utils';
 import useExternalQuoteStatusStore from '../../stores/use-external-quote-status-store';
+import usePostNumberStore from '../../stores/use-post-number-store';
 import LoadingEllipsis from '../loading-ellipsis';
-import postStyles from '../../views/post/post.module.css';
-import { Post } from '../../views/post';
+import postStyles from '../post-styles';
+import { useQuotePreviewPost } from '../../hooks/use-quote-preview-post';
 import styles from './markdown.module.css';
 
 interface ExternalNumberQuoteLinkProps {
@@ -49,6 +50,7 @@ const ExternalNumberQuoteLink = ({ isOP = false, reference }: ExternalNumberQuot
   const directories = useDirectories();
   const isMobile = useIsMobile();
   const navigate = useNavigate();
+  const renderQuotePreviewPost = useQuotePreviewPost();
   const setErrorStatus = useExternalQuoteStatusStore((state) => state.setErrorStatus);
   const [isResolving, setIsResolving] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
@@ -136,6 +138,7 @@ const ExternalNumberQuoteLink = ({ isOP = false, reference }: ExternalNumberQuot
             setPreviewState({ kind: 'loading', message });
           }
         },
+        postNumbers: usePostNumberStore,
         reference,
       }).then((target) => {
         resolvedTargetRef.current = target;
@@ -254,7 +257,9 @@ const ExternalNumberQuoteLink = ({ isOP = false, reference }: ExternalNumberQuot
   const previewContent =
     previewState.kind === 'idle' ? null : previewState.kind === 'resolved' ? (
       previewState.target.comment ? (
-        <Post post={previewState.target.comment} showReplies={false} />
+        renderQuotePreviewPost ? (
+          renderQuotePreviewPost({ post: previewState.target.comment, showReplies: false })
+        ) : null
       ) : (
         <div className={`${styles.externalQuotePreviewState} ${styles.externalQuotePreviewError}`}>{getUnavailableMessage()}</div>
       )

@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { copyToClipboard } from '../clipboard-utils';
 import { hashStringToColor, getTextColorForBackground, removeMarkdown } from '../post-utils';
-import { preloadReplyModal, preloadThemeAssets, resolveAssetUrl } from '../preload-utils';
+import { preloadThemeAssets, resolveAssetUrl, scheduleIdlePreload } from '../preload-utils';
 import {
   computeOmittedCount,
   filterRepliesForDisplay,
@@ -138,29 +138,33 @@ describe('misc utils', () => {
     expect(resolveAssetUrl('backgrounds/wallpaper.png', 'file:///app/')).toBe('file:///app/backgrounds/wallpaper.png');
   });
 
-  it('schedules reply modal preload with requestIdleCallback when available', () => {
+  it('schedules an idle preload with requestIdleCallback when available', () => {
     const requestIdleCallback = vi.fn();
+    const callback = vi.fn();
 
     Object.defineProperty(window, 'requestIdleCallback', {
       configurable: true,
       value: requestIdleCallback,
     });
 
-    preloadReplyModal();
+    scheduleIdlePreload(callback);
 
     expect(requestIdleCallback).toHaveBeenCalledWith(expect.any(Function), { timeout: 1500 });
+    expect(callback).not.toHaveBeenCalled();
   });
 
-  it('falls back to setTimeout for reply modal preload when requestIdleCallback is unavailable', () => {
+  it('falls back to setTimeout when requestIdleCallback is unavailable', () => {
     const originalRequestIdleCallback = window.requestIdleCallback;
     // @ts-expect-error test fallback path
     delete window.requestIdleCallback;
     vi.useFakeTimers();
     const setTimeoutSpy = vi.spyOn(window, 'setTimeout');
+    const callback = vi.fn();
 
-    preloadReplyModal();
+    scheduleIdlePreload(callback);
 
     expect(setTimeoutSpy).toHaveBeenCalledWith(expect.any(Function), 500);
+    expect(callback).not.toHaveBeenCalled();
 
     if (originalRequestIdleCallback) {
       Object.defineProperty(window, 'requestIdleCallback', {

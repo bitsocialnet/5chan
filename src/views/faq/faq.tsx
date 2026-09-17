@@ -1,7 +1,8 @@
 import { type ReactNode, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { HashLink } from 'react-router-hash-link';
-import { Footer, HomeLogo } from '../home/home';
+import HomeFooter from '../../components/home-footer';
+import HomeLogo from '../../components/home-logo';
 import styles from './faq.module.css';
 
 const externalLinkProps = {
@@ -862,7 +863,7 @@ const FAQ = () => {
             ))}
           </div>
         </div>
-        <Footer />
+        <HomeFooter />
       </div>
     </div>
   );

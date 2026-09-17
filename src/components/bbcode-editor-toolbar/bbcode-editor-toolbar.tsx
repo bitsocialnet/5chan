@@ -1,4 +1,4 @@
-import BbcodeContent from '../bbcode-content/bbcode-content';
+import BbcodeContent from '../bbcode-content';
 import styles from './bbcode-editor-toolbar.module.css';
 
 interface BbcodeButton {

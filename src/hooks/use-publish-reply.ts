@@ -212,6 +212,7 @@ const usePublishReply = ({ cid, communityAddress, postCid }: UsePublishReplyOpti
             onStatus: (status) => {
               setPublishReplyStateMessage(getExternalQuoteStatusMessage(t, status));
             },
+            postNumbers: usePostNumberStore,
             reference,
           });
 

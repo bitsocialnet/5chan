@@ -260,7 +260,6 @@ vi.mock('../../../hooks/use-directories', () => ({
         (value) => typeof value === 'string' && value.replace(/(\.bso|\.eth)$/, '') === address.replace(/(\.bso|\.eth)$/, ''),
       ),
     ),
-  getFallbackDirectoriesData: () => ({ communities: testState.directories }),
   normalizeBoardAddress: (address: string) => address.replace(/(\.bso|\.eth)$/, ''),
   useDirectories: () => testState.directories,
 }));
@@ -287,7 +286,7 @@ vi.mock('../../../components/tooltip/tooltip', () => ({
   default: ({ children }: { children: React.ReactNode }) => createElement(React.Fragment, {}, children),
 }));
 
-vi.mock('../../post/post', () => ({
+vi.mock('../../../components/post', () => ({
   Post: ({
     isModQueue,
     isPublishing,

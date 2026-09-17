@@ -1,5 +1,5 @@
 import { localForageLru } from '../bitsocial-internals/utils';
-import { canEmbed, getYouTubeVideoId, youtubeHosts } from '../../components/embed/embed-utils';
+import { canEmbed, getYouTubeVideoId, youtubeHosts } from './embed-utils';
 import memoize from 'memoizee';
 import { isPrivateNetworkHostname, isValidURL, parseHttpUrl } from './url-utils';
 import { Capacitor, CapacitorHttp } from '@capacitor/core';

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { Comment } from '@bitsocial/bitsocial-react-hooks';
-import { normalizeBoardAddress } from '../hooks/use-directories';
+import { normalizeBoardAddress } from '../lib/utils/directory-list-lookup-utils';
 import { getCommentCommunityAddress } from '../lib/utils/comment-utils';
 
 interface PostNumberState {

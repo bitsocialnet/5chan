@@ -7,15 +7,6 @@
   min-width: 748px;
 }
 
-.logo img {
-  height: 120px;
-}
-
-.logo {
-  margin: 0px auto;
-  text-align: center;
-}
-
 .box {
   position: relative;
   background: var(--homepage-box-background-color);
@@ -36,7 +27,8 @@
   margin-top: 10px;
 }
 
-.boxBar, .infoboxBar {
+.boxBar,
+.infoboxBar {
   padding-left: 0.5em;
   line-height: 2em;
   text-transform: capitalize;
@@ -52,12 +44,14 @@
   color: var(--homepage-box-bar-text-color);
 }
 
-.boxBar h2, .infoboxBar h2 {
+.boxBar h2,
+.infoboxBar h2 {
   font-size: 131%;
   font-weight: 700;
 }
 
-.boxBar > span, .boxBar > button {
+.boxBar > span,
+.boxBar > button {
   all: unset;
   position: absolute;
   top: 0;
@@ -69,7 +63,8 @@
   line-height: inherit;
 }
 
-.boxBar > span:hover, .boxBar > button:hover {
+.boxBar > span:hover,
+.boxBar > button:hover {
   cursor: pointer;
   color: var(--homepage-box-bar-text-color-hover);
 }
@@ -86,7 +81,8 @@
   text-decoration: underline;
 }
 
-.boxContent a, .boxContent a:visited{
+.boxContent a,
+.boxContent a:visited {
   color: var(--homepage-infobox-link-text-color);
 }
 
@@ -138,7 +134,7 @@
   text-align: right;
   background: #fff;
   border: 1px solid gray;
-  box-shadow: 2px 2px 0 1px rgba(0, 0, 0, .1);
+  box-shadow: 2px 2px 0 1px rgba(0, 0, 0, 0.1);
   padding: 4px 0;
   line-height: 1.7em;
   min-width: max-content;
@@ -178,22 +174,6 @@
 
 .filterModal .selected::before {
   content: '✓ ';
-}
-
-.footer a {
-  text-transform: capitalize;
-}
-
-.footerInfo {
-  text-align: center;
-  margin-top: 1em;
-  margin-bottom: 1em;
-  font-size: 11px;
-}
-
-
-.footerInfo a:visited {
-  color: blue;
 }
 
 .popularThreads {
@@ -244,7 +224,8 @@
   line-height: 0;
 }
 
-.popularThread .mediaContainer img, .popularThread .mediaContainer video {
+.popularThread .mediaContainer img,
+.popularThread .mediaContainer video {
   max-width: 150px;
   max-height: 150px;
 }
@@ -301,7 +282,7 @@
 }
 
 .boardsContent::after {
-  content: "";
+  content: '';
   display: table;
   clear: both;
 }
@@ -369,26 +350,6 @@
     width: auto;
     padding: 10px;
   }
-  
-  .footer {
-    text-align: center;
-  }
-
-  .footer ul {
-    margin: auto;
-  }
-
-  .footer li {
-    display: inline-table;
-    line-height: 1.7;
-    white-space: nowrap;
-    padding: 2px 1em 2px 1em;
-  }
-
-  .footer a {
-    color: var(--homepage-infobox-link-text-color);
-    text-decoration: underline;
-  }
 
   .boardsColumn li {
     padding: 5px 10px 5px 0;
@@ -401,37 +362,5 @@
   /* Mobile: popular threads cards stack more, so taller min-height needed */
   .popularThreadsLoading {
     min-height: 1200px;
-  }
-}
-
-@media (min-width: 640px) {
-  .footer {
-    border-top: 1px solid;
-    width: 748px;
-    display: inline-flex;
-    justify-content: center;
-    font-size: 12px;
-  }
-
-  .footer li {
-    background: var(--footer-item-background-color-desktop);
-    border: 1px solid;
-    padding: 2px 1em 2px 1em;
-    border-left: none;
-    margin-top: -1px;
-    list-style: none;
-  }
-
-  .footer li:first-child {
-    border-left: 1px solid !important;
-  }
-
-  .footer a {
-    color: var(--homepage-box-bar-text-color);
-    text-decoration: none;
-  }
-
-  .footer a:hover {
-    color: var(--homepage-box-bar-text-color-hover);
   }
 }

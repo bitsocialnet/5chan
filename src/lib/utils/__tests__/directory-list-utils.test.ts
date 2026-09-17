@@ -7,7 +7,7 @@ import {
   sortDirectoryLists,
   type DirectoryCommunity,
 } from '../directory-list-utils';
-import { vendoredDirectoryLists } from '../../../data/vendored-directory-lists';
+import { vendoredDirectoryLists } from '../vendored-directory-lists';
 
 describe('directory-list-utils', () => {
   it('preserves board scores and uses them for ranking', () => {

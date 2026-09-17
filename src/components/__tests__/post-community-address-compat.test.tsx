@@ -176,7 +176,7 @@ vi.mock('../../lib/get-short-address', () => ({
   },
 }));
 
-vi.mock('../../views/post/post.module.css', () => ({
+vi.mock('../post-styles/post-styles.module.css', () => ({
   default: new Proxy(
     {},
     {
@@ -316,7 +316,7 @@ vi.mock('../failed-publish-notice', () => ({
   default: () => createElement('div', { 'data-testid': 'failed-publish-notice' }, 'failed-publish-notice'),
 }));
 
-vi.mock('../embed/embed-utils', () => ({
+vi.mock('../../lib/utils/embed-utils', () => ({
   canEmbed: () => false,
 }));
 
@@ -324,7 +324,7 @@ vi.mock('../loading-ellipsis/loading-ellipsis', () => ({
   default: ({ string }: { string: string }) => createElement('div', { 'data-testid': 'loading-ellipsis' }, string),
 }));
 
-vi.mock('../post-desktop/post-menu-desktop/post-menu-desktop', () => ({
+vi.mock('../post-menu-desktop/post-menu-desktop', () => ({
   default: ({ postMenu }: { postMenu: { communityAddress?: string } }) =>
     createElement('div', { 'data-testid': 'post-menu-desktop' }, postMenu.communityAddress ?? 'missing'),
 }));
@@ -337,7 +337,8 @@ vi.mock('../tooltip/tooltip', () => ({
   default: ({ children }: { children?: React.ReactNode }) => createElement(React.Fragment, {}, children),
 }));
 
-vi.mock('../../lib/snow', () => ({
+vi.mock('../../stores/use-special-theme-store', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../stores/use-special-theme-store')>()),
   shouldShowSnow: () => false,
 }));
 

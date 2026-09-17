@@ -1,5 +1,5 @@
 import type { Comment } from '@bitsocial/bitsocial-react-hooks';
-import type { DirectoryCommunity } from '../../hooks/use-directories';
+import type { DirectoryCommunity } from './directory-list-utils';
 import { getCommentCommunityAddress } from './comment-utils';
 import { hasModQueueAccessRole } from './mod-access';
 import { isPendingApprovalRejected } from './pending-approval-moderation';

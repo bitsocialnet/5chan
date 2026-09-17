@@ -7,8 +7,8 @@ import useFetchGifFirstFrame from '../../hooks/use-fetch-gif-first-frame';
 import useIsMobile from '../../hooks/use-is-mobile';
 import { useYouTubeThumbnailFallback } from '../../hooks/use-youtube-thumbnail-fallback';
 import styles from './comment-media.module.css';
-import Embed from '../embed/embed';
-import { canEmbed } from '../embed/embed-utils';
+import Embed from '../embed';
+import { canEmbed } from '../../lib/utils/embed-utils';
 import RufflePlayer from './ruffle-player';
 
 interface MediaProps {

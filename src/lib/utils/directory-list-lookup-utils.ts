@@ -1,4 +1,4 @@
-import { vendoredDirectoryLists as directoryListsData } from '../../data/vendored-directory-lists';
+import { vendoredDirectoryLists as directoryListsData } from './vendored-directory-lists';
 import { isSpecialBoardAddress, isSpecialBoardCode } from '../special-boards';
 import { normalizeDirectoryList, type DirectoryList, type DirectoryListBoard } from './directory-list-utils';
 

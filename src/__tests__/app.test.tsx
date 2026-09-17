@@ -116,18 +116,18 @@ vi.mock('../stores/use-special-theme-store', () => ({
   default: () => ({
     isEnabled: testState.isSpecialEnabled,
   }),
+  shouldShowSnow: () => testState.shouldShowSnow,
 }));
 
 vi.mock('../lib/snow', () => ({
   initSnow: (options: unknown) => testState.initSnowMock(options),
   removeSnow: () => testState.removeSnowMock(),
-  shouldShowSnow: () => testState.shouldShowSnow,
 }));
 
 vi.mock('../lib/utils/preload-utils', () => ({
-  preloadReplyModal: vi.fn(),
   preloadThemeAssets: vi.fn(),
   resolveAssetUrl: (path: string) => path,
+  scheduleIdlePreload: vi.fn(),
 }));
 
 vi.mock('react-i18next', () => ({
@@ -183,7 +183,7 @@ vi.mock('../components/board-header/board-header', () => ({
   default: makeNamedComponent('board-header'),
 }));
 
-vi.mock('../components/feed-cache-container/feed-cache-container', () => ({
+vi.mock('../components/feed-cache-container', () => ({
   default: makeNamedComponent('feed-cache-container'),
 }));
 
@@ -243,6 +243,10 @@ vi.mock('../views/post/post', () => ({
   default: makeNamedComponent('post-view'),
 }));
 
+vi.mock('../components/post', () => ({
+  QuotePreviewPostProvider: ({ children }: { children: React.ReactNode }) => children,
+}));
+
 vi.mock('../views/rules/rules', () => ({
   default: makeNamedComponent('rules-view'),
 }));
@@ -259,7 +263,7 @@ vi.mock('../views/search/search', () => ({
   default: makeNamedComponent('search-view'),
 }));
 
-vi.mock('../views/search/search-directory', () => ({
+vi.mock('../views/search-directory/search-directory', () => ({
   default: makeNamedComponent('search-directory-view'),
 }));
 

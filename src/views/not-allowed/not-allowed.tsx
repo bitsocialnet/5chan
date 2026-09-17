@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
-import { HomeLogo } from '../home';
+import HomeLogo from '../../components/home-logo';
 import NotFoundImage from '../../components/not-found-image';
-import styles from '../not-found/not-found.module.css';
+import styles from '../../components/not-found-layout';
 
 const NotAllowed = () => {
   return (

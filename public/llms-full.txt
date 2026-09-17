@@ -219,7 +219,7 @@ For an unexpected repo-specific issue, tell the contributor and continue indepen
 | Loading/navigation/performance work | Add a throttled Chromium pass; see [low-spec-verification.md](docs/agent-playbooks/low-spec-verification.md) |
 | Translation keys/values | Use the `translate` skill; one process applies locale changes at a time |
 | `package.json` changed | Run `corepack yarn install` to synchronize `yarn.lock` |
-| Dependencies/imports changed | Run advisory `yarn knip`; resolve relevant new findings |
+| Dependencies, moved files, or imports changed | `yarn boundaries` (part of `yarn lint`) must pass; see module boundaries in [src/AGENTS.md](src/AGENTS.md). Run advisory `yarn knip`; resolve relevant new findings |
 | AI workflow files changed | Edit shared sources, run `yarn ai-workflow:sync`, then `yarn ai-workflow:check` and `yarn ai-workflow:test` |
 | Public English docs or AI context changed | Run `yarn llms:generate` and include resulting `public/llms*.txt` changes |
 | Version or changelog changed | Run `yarn blotter:check`; follow the `release` skill's user-facing wording rules |
@@ -230,7 +230,7 @@ For an unexpected repo-specific issue, tell the contributor and continue indepen
 
 - Use Corepack-managed Yarn 4, never npm for project dependency changes. Pin exact versions and keep the lockfile synchronized.
 - Stack: React 19, TypeScript, Zustand, React Router v6, Vite, `@bitsocial/bitsocial-react-hooks`, i18next, oxlint, oxfmt.
-- Keep page composition in `src/views/`, reusable UI in `src/components/`, hooks in `src/hooks/`, shared state in `src/stores/`, helpers in `src/lib/`, static data in `src/data/`.
+- Keep page composition in `src/views/`, reusable UI in `src/components/`, hooks in `src/hooks/`, shared state in `src/stores/`, helpers in `src/lib/`, static data in `src/data/`. Dependencies flow one way between those layers; see module boundaries in [src/AGENTS.md](src/AGENTS.md).
 - Use Zustand for shared/global state; local component state may use `useState`.
 - Use Bitsocial hooks for protocol data access. Do not fetch data in effects or synchronize derived state with effects; derive values during render.
 - Reuse hooks for repeated logic. Model complex flows clearly instead of accumulating boolean flags.
@@ -637,11 +637,21 @@ Source: https://github.com/bitsocialnet/5chan/blob/master/src/AGENTS.md
 
 These rules apply to `src/**`. Follow the repo-root `AGENTS.md` first, then use this file for code inside the application source tree.
 
-- Keep route composition in `src/views/`, reusable UI in `src/components/`, shared logic in `src/hooks/`, and shared app state in `src/stores/`.
 - Before adding new state, decide whether it belongs in render, a reusable hook, or a Zustand store. Do not duplicate the same state logic across views.
 - Use `@bitsocial/bitsocial-react-hooks` for data access. Do not add data-fetching `useEffect` calls or effects that only synchronize derived state.
 - For state/effect/data-flow or rendering-performance changes, review relevant React guidance. Choose checks and browser/viewports using `docs/agent-playbooks/verification.md`; a copy edit alone does not require React Doctor or a full build.
 - Prefer extending nearby tests under `src/**/__tests__/` when touching already-covered behavior.
+
+## Module boundaries
+
+`yarn boundaries` (run by `yarn lint`, so also by `yarn agent:verify` and CI) checks these rules; `__tests__/` folders and `*.test.*` files are skipped. Fix a reported violation by moving code, not by widening the import. There is no allowlist: if a rule conflicts with the requested change, restructure within scope or raise it with the user rather than editing the checker.
+
+- Dependencies flow one way: `constants`/`data`/`types`/`generated` → `lib`/`plugins` → `stores` → `hooks` → `components` → `views` → the root files (`app.tsx`, `index.tsx`, `bootstrap.ts`, `sw.ts`) and the `e2e/` harnesses. A lower layer never imports a higher one; when a `lib` helper needs a type or function that lives in a hook or component, the shared part belongs in `lib`.
+- `views`, `components`, `hooks`, `stores`, `constants`, `data`, `plugins`, `types`, `generated`, `lib`, and every folder directly under `lib` (`lib/utils`, `lib/media-hosting`, ...) are category folders, not modules. A folder inside one (`components/post-form`, `lib/media-hosting/<name>`) is a module, and its subfolders are private to it.
+- Import a module only through its `index.ts` (`../../components/post-form`), never its inner files, subfolders, or stylesheets. A file that sits directly in a category folder (`lib/utils/url-utils.ts`, `hooks/use-directories.ts`) and anything under `data/` may be imported directly. Anything used by more than one module lives at category level (`components/<name>`).
+- Views never import other views, their stylesheets included. Shared page layout or styles go in a `components/` module.
+- Every route target is a top-level view at `views/<name>`. A subfolder of a view is a private section of that view, not a route.
+- Keep the import graph acyclic. When two modules need each other, pass the dependency in as a prop or a context provided by the parent, or move the shared part down a layer.
 ```
 
 ---
@@ -1157,7 +1167,7 @@ Choose checks that establish the requested behavior. Finish the authorized imple
 | Shared runtime behavior, dependencies, build/package configuration, or substantial integration | Focused behavior tests plus `corepack yarn agent:verify` for build, lint, type-check, Doctor diagnostics, and runtime scenarios |
 | CSS, themes, or layout only | Affected browser/viewport/theme checks below; add a build for CSS processing, assets/import wiring, or integration uncertainty. Styling alone does not require React Doctor |
 | React state/effects/data flow or rendering performance | Inspect the relevant architecture; run `yarn doctor:check` and affected `yarn perf:check` scenarios |
-| Dependencies or import graph | Advisory `yarn knip`; resolve relevant new findings |
+| Dependencies or import graph | `yarn boundaries` (part of `yarn lint`) must pass when `src/` files move or imports change; advisory `yarn knip`; resolve relevant new findings |
 | Release, CI, or explicitly requested full verification | Run that workflow's required checks even when a smaller local edit would normally need less |
 
 For a small edit, name the behavior being checked and why the chosen evidence is enough. Broaden checks when the impact crosses a shared boundary, a failure appears, or uncertainty remains. Do not add tests that only mirror wording or formatting. An existing reliable test is preferable to new instrumentation.
@@ -1268,7 +1278,7 @@ Run before merge/rollout. All must pass.
 |---------|---------|----------------|
 | `yarn test` | Unit tests (Vitest) | Exit 0 = pass. Fix failing tests before merge. |
 | `yarn build` | Production build | Exit 0 = pass. No build errors. |
-| `yarn lint` | Lint (oxlint) | Exit 0 = pass. Fix lint errors. |
+| `yarn lint` | Lint (oxlint + module boundaries) | Exit 0 = pass. Fix lint errors. |
 | `yarn type-check` | TypeScript (tsc) | Exit 0 = pass. Fix type errors. |
 | `yarn doctor` | React Doctor | Advisory. Prioritize `error` > `warning`. |
 

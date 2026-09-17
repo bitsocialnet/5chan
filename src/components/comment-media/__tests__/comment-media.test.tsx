@@ -84,7 +84,7 @@ vi.mock('../../embed/embed', () => ({
   default: ({ url }: { url: string }) => createElement('div', { 'data-testid': 'embed' }, url),
 }));
 
-vi.mock('../../embed/embed-utils', () => ({
+vi.mock('../../../lib/utils/embed-utils', () => ({
   canEmbed: () => testState.canEmbed,
 }));
 

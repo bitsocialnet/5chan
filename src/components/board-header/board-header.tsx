@@ -21,8 +21,8 @@ import { getCommentCommunityAddress } from '../../lib/utils/comment-utils';
 import { getPendingPostRoutePost } from '../../lib/utils/pending-post-route-state';
 import useIsMobile from '../../hooks/use-is-mobile';
 import useIsCommunityOffline from '../../hooks/use-is-community-offline';
-import { shouldShowSnow } from '../../lib/snow';
-import Tooltip from '../tooltip/tooltip';
+import { shouldShowSnow } from '../../stores/use-special-theme-store';
+import Tooltip from '../tooltip';
 import { BANNERS } from '../../generated/asset-manifest';
 
 const ImageBanner = () => {

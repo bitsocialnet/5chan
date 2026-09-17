@@ -6,7 +6,7 @@ import { useSpring, animated } from '@react-spring/web';
 import { useDrag } from '@use-gesture/react';
 import { type ChallengeVerification, type Comment } from '@bitsocial/bitsocial-react-hooks';
 import useAccountsStore from '@bitsocial/bitsocial-react-hooks/dist/stores/accounts/index.js';
-import ErrorDisplay from '../error-display/error-display';
+import ErrorDisplay from '../error-display';
 import { useDirectories } from '../../hooks/use-directories';
 import useChallengesStore from '../../stores/use-challenges-store';
 import { alertChallengeVerificationFailed } from '../../lib/utils/challenge-utils';

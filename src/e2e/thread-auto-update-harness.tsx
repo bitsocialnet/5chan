@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { createInstance } from 'i18next';
 import { I18nextProvider, initReactI18next } from 'react-i18next';
-import { AutoButton, UpdateButton } from '../components/board-buttons/board-buttons';
+import { AutoButton, UpdateButton } from '../components/board-buttons';
 import useThreadLiveUpdatesStore from '../stores/use-thread-live-updates-store';
 
 type ReplySnapshot = {

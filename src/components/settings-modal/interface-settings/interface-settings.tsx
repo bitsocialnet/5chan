@@ -5,7 +5,7 @@ import capitalize from 'lodash/capitalize';
 import useExpandedMediaStore from '../../../stores/use-expanded-media-store';
 import useFeedViewSettingsStore from '../../../stores/use-feed-view-settings-store';
 import Version from '../../version';
-import StyleSelector from '../../style-selector/style-selector';
+import StyleSelector from '../../style-selector';
 import LazySection, { createSectionLoader } from '../lazy-section';
 import { INTERFACE_LANGUAGE_STORAGE_KEY, SUPPORTED_INTERFACE_LANGUAGES } from '../../../lib/constants';
 

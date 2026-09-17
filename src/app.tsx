@@ -2,14 +2,14 @@ import { Activity, lazy, Suspense, useCallback, useEffect } from 'react';
 import { Navigate, Outlet, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
 import { useAccount, useAccountComment, useCommunity } from '@bitsocial/bitsocial-react-hooks';
-import { initSnow, removeSnow, shouldShowSnow } from './lib/snow';
+import { initSnow, removeSnow } from './lib/snow';
 import { isAllView, isCatalogView, isModView, isSubscriptionsView } from './lib/utils/view-utils';
-import { preloadReplyModal, preloadThemeAssets } from './lib/utils/preload-utils';
+import { preloadThemeAssets, scheduleIdlePreload } from './lib/utils/preload-utils';
 import { hasModQueueAccessRole } from './lib/utils/mod-access';
 import useReplyModalStore from './stores/use-reply-modal-store';
 import useCreateBoardModalStore from './stores/use-create-board-modal-store';
 import usePendingPostNavigationStore from './stores/use-pending-post-navigation-store';
-import useSpecialThemeStore from './stores/use-special-theme-store';
+import useSpecialThemeStore, { shouldShowSnow } from './stores/use-special-theme-store';
 import useIsMobile from './hooks/use-is-mobile';
 import { useAccountCommunityAddresses } from './hooks/use-account-community-addresses';
 import useTheme from './hooks/use-theme';
@@ -40,29 +40,32 @@ import {
   getCatalogSearchRoute,
 } from './lib/utils/route-utils';
 import styles from './app.module.css';
-import { DesktopBoardButtons, MobileAllFeedFilter, MobileBoardButtons } from './components/board-buttons/board-buttons';
-import Blotter from './views/blotter/blotter';
-import Faq from './views/faq/faq';
-import Home from './views/home/home';
-import Archive from './views/archive/archive';
-import Directory from './views/directory/directory';
-import ModQueueView from './views/mod-queue/mod-queue';
-import NotAllowed from './views/not-allowed/not-allowed';
-import NotFound from './views/not-found/not-found';
-import Pass from './views/pass/pass';
-import PendingPost from './views/pending-post/pending-post';
-import Post from './views/post/post';
-import Rules from './views/rules/rules';
-import BoardHeader from './components/board-header/board-header';
-import FeedCacheContainer from './components/feed-cache-container/feed-cache-container';
-import PostForm from './components/post-form/post-form';
-import BoardBlotter from './components/board-blotter/board-blotter';
-import BoardsBar from './components/boards-bar/boards-bar';
-import ExternalQuoteStatus from './components/external-quote-status/external-quote-status';
-import ModEmptyState from './components/mod-empty-state/mod-empty-state';
+import { DesktopBoardButtons, MobileAllFeedFilter, MobileBoardButtons } from './components/board-buttons';
+import Blotter from './views/blotter';
+import Board from './views/board';
+import Catalog from './views/catalog';
+import Faq from './views/faq';
+import Home from './views/home';
+import Archive from './views/archive';
+import Directory from './views/directory';
+import ModQueueView from './views/mod-queue';
+import NotAllowed from './views/not-allowed';
+import NotFound from './views/not-found';
+import Pass from './views/pass';
+import PendingPost from './views/pending-post';
+import Post from './views/post';
+import Rules from './views/rules';
+import BoardHeader from './components/board-header';
+import FeedCacheContainer from './components/feed-cache-container';
+import PostForm from './components/post-form';
+import BoardBlotter from './components/board-blotter';
+import BoardsBar from './components/boards-bar';
+import ExternalQuoteStatus from './components/external-quote-status';
+import { ModEmptyState } from './components/mod-empty-state';
 import SettingsModal from './components/settings-modal';
-import Search from './views/search/search';
-import SearchDirectory from './views/search/search-directory';
+import { QuotePreviewPostProvider } from './components/post';
+import Search from './views/search';
+import SearchDirectory from './views/search-directory';
 
 const AccountDataEditor = lazy(() => import('./views/account-data-editor'));
 const BoardsBarEditModal = lazy(() => import('./components/boards-bar-edit-modal'));
@@ -70,13 +73,17 @@ const CreateBoardModal = lazy(() => import('./components/create-board-modal'));
 const ChallengeModal = lazy(() => import('./components/challenge-modal'));
 const DirectoryModal = lazy(() => import('./components/directory-modal'));
 const DisclaimerModal = lazy(() => import('./components/disclaimer-modal'));
-const ReplyModal = lazy(() => import('./components/reply-modal'));
+const loadReplyModal = () => import('./components/reply-modal');
+const ReplyModal = lazy(loadReplyModal);
 const SettingsUpgradeModal = lazy(() => import('./components/settings-upgrade-modal'));
 
 // Preload all theme assets (buttons, backgrounds) immediately on app load
 // to prevent visible loading delays when switching themes
 preloadThemeAssets();
-preloadReplyModal();
+// Warm the reply modal chunk during idle time so the first "No." click does not wait for the lazy import.
+scheduleIdlePreload(() => {
+  void loadReplyModal();
+});
 
 const getPostFormRouteKeyPath = (pathname: string) => pathname.replace(/\/settings$/, '').replace(/\/$/, '');
 
@@ -203,7 +210,7 @@ const BoardLayout = () => {
           )}
       {!isOnModQueueRoute && !isOnSearchRoute && (
         <Activity mode={isNavigatingToPendingPost ? 'hidden' : 'visible'}>
-          <FeedCacheContainer />
+          <FeedCacheContainer boardView={Board} catalogView={Catalog} />
         </Activity>
       )}
       {shouldRenderOutlet && <Outlet key='board-layout-outlet' />}
@@ -312,101 +319,103 @@ const App = () => {
 
   return (
     <div className={styles.app}>
-      <Routes>
-        <Route element={<GlobalLayout />}>
-          <Route path='/' element={<Home />} />
-          <Route path='/faq' element={<Faq />} />
-          <Route path='/pass' element={<Pass />} />
-          <Route path='/rules' element={<Rules />} />
-          <Route path='/rules/*' element={<Navigate to='/not-found' replace />} />
-          <Route path='/blotter' element={<Blotter />} />
-          <Route
-            path='/settings/account-data'
-            element={
-              <Suspense fallback={null}>
-                <AccountDataEditor />
-              </Suspense>
-            }
-          />
-          <Route element={<BoardLayout />}>
-            {/* Canonical multiboard routes (time filter lives in ?t=) */}
-            <Route path='/all' element={boardFeedElement} />
-            <Route path='/all/settings' element={boardFeedElement} />
-            <Route path='/all/catalog' element={catalogFeedElement} />
-            <Route path='/all/catalog/settings' element={catalogFeedElement} />
+      <QuotePreviewPostProvider>
+        <Routes>
+          <Route element={<GlobalLayout />}>
+            <Route path='/' element={<Home />} />
+            <Route path='/faq' element={<Faq />} />
+            <Route path='/pass' element={<Pass />} />
+            <Route path='/rules' element={<Rules />} />
+            <Route path='/rules/*' element={<Navigate to='/not-found' replace />} />
+            <Route path='/blotter' element={<Blotter />} />
+            <Route
+              path='/settings/account-data'
+              element={
+                <Suspense fallback={null}>
+                  <AccountDataEditor />
+                </Suspense>
+              }
+            />
+            <Route element={<BoardLayout />}>
+              {/* Canonical multiboard routes (time filter lives in ?t=) */}
+              <Route path='/all' element={boardFeedElement} />
+              <Route path='/all/settings' element={boardFeedElement} />
+              <Route path='/all/catalog' element={catalogFeedElement} />
+              <Route path='/all/catalog/settings' element={catalogFeedElement} />
 
-            <Route path='/subs' element={boardFeedElement} />
-            <Route path='/subs/settings' element={boardFeedElement} />
-            <Route path='/subs/catalog' element={catalogFeedElement} />
-            <Route path='/subs/catalog/settings' element={catalogFeedElement} />
+              <Route path='/subs' element={boardFeedElement} />
+              <Route path='/subs/settings' element={boardFeedElement} />
+              <Route path='/subs/catalog' element={catalogFeedElement} />
+              <Route path='/subs/catalog/settings' element={catalogFeedElement} />
 
-            <Route path='/mod' element={boardFeedElement} />
-            <Route path='/mod/settings' element={boardFeedElement} />
-            <Route path='/mod/catalog' element={catalogFeedElement} />
-            <Route path='/mod/catalog/settings' element={catalogFeedElement} />
+              <Route path='/mod' element={boardFeedElement} />
+              <Route path='/mod/settings' element={boardFeedElement} />
+              <Route path='/mod/catalog' element={catalogFeedElement} />
+              <Route path='/mod/catalog/settings' element={catalogFeedElement} />
 
-            <Route path='/mod/queue' element={<ModQueueRoute />} />
-            <Route path='/mod/queue/settings' element={<ModQueueRoute />} />
-            <Route path='/all/archive' element={<Navigate to='/not-found' replace />} />
-            <Route path='/all/archive/settings' element={<Navigate to='/not-found' replace />} />
-            <Route path='/subs/archive' element={<Navigate to='/not-found' replace />} />
-            <Route path='/subs/archive/settings' element={<Navigate to='/not-found' replace />} />
-            <Route path='/mod/archive' element={<Navigate to='/not-found' replace />} />
-            <Route path='/mod/archive/settings' element={<Navigate to='/not-found' replace />} />
-            <Route path='/all/directory' element={<Navigate to='/not-found' replace />} />
-            <Route path='/all/directory/settings' element={<Navigate to='/not-found' replace />} />
-            <Route path='/subs/directory' element={<Navigate to='/not-found' replace />} />
-            <Route path='/subs/directory/settings' element={<Navigate to='/not-found' replace />} />
-            <Route path='/mod/directory' element={<Navigate to='/not-found' replace />} />
-            <Route path='/mod/directory/settings' element={<Navigate to='/not-found' replace />} />
-            <Route path='/directory' element={<Navigate to='/not-found' replace />} />
-            <Route path='/directory/settings' element={<Navigate to='/not-found' replace />} />
+              <Route path='/mod/queue' element={<ModQueueRoute />} />
+              <Route path='/mod/queue/settings' element={<ModQueueRoute />} />
+              <Route path='/all/archive' element={<Navigate to='/not-found' replace />} />
+              <Route path='/all/archive/settings' element={<Navigate to='/not-found' replace />} />
+              <Route path='/subs/archive' element={<Navigate to='/not-found' replace />} />
+              <Route path='/subs/archive/settings' element={<Navigate to='/not-found' replace />} />
+              <Route path='/mod/archive' element={<Navigate to='/not-found' replace />} />
+              <Route path='/mod/archive/settings' element={<Navigate to='/not-found' replace />} />
+              <Route path='/all/directory' element={<Navigate to='/not-found' replace />} />
+              <Route path='/all/directory/settings' element={<Navigate to='/not-found' replace />} />
+              <Route path='/subs/directory' element={<Navigate to='/not-found' replace />} />
+              <Route path='/subs/directory/settings' element={<Navigate to='/not-found' replace />} />
+              <Route path='/mod/directory' element={<Navigate to='/not-found' replace />} />
+              <Route path='/mod/directory/settings' element={<Navigate to='/not-found' replace />} />
+              <Route path='/directory' element={<Navigate to='/not-found' replace />} />
+              <Route path='/directory/settings' element={<Navigate to='/not-found' replace />} />
 
-            <Route path='/search' element={<Search />} />
-            <Route path='/search/settings' element={<Search />} />
-            <Route path='/search/catalog' element={<Search />} />
-            <Route path='/search/catalog/settings' element={<Search />} />
-            <Route path='/search/directory' element={<SearchDirectory />} />
-            <Route path='/search/directory/settings' element={<SearchDirectory />} />
+              <Route path='/search' element={<Search />} />
+              <Route path='/search/settings' element={<Search />} />
+              <Route path='/search/catalog' element={<Search />} />
+              <Route path='/search/catalog/settings' element={<Search />} />
+              <Route path='/search/directory' element={<SearchDirectory />} />
+              <Route path='/search/directory/settings' element={<SearchDirectory />} />
 
-            {/* Invalid subpaths: old URLs and unknown paths -> not-found */}
-            <Route path='/mod/modqueue' element={<Navigate to='/not-found' replace />} />
-            <Route path='/mod/modqueue/settings' element={<Navigate to='/not-found' replace />} />
-            <Route path='/all/*' element={<Navigate to='/not-found' replace />} />
-            <Route path='/subs/*' element={<Navigate to='/not-found' replace />} />
-            <Route path='/mod/*' element={<Navigate to='/not-found' replace />} />
-            <Route path='/search/*' element={<Navigate to='/not-found' replace />} />
+              {/* Invalid subpaths: old URLs and unknown paths -> not-found */}
+              <Route path='/mod/modqueue' element={<Navigate to='/not-found' replace />} />
+              <Route path='/mod/modqueue/settings' element={<Navigate to='/not-found' replace />} />
+              <Route path='/all/*' element={<Navigate to='/not-found' replace />} />
+              <Route path='/subs/*' element={<Navigate to='/not-found' replace />} />
+              <Route path='/mod/*' element={<Navigate to='/not-found' replace />} />
+              <Route path='/search/*' element={<Navigate to='/not-found' replace />} />
 
-            <Route path='/:boardIdentifier/catalog' element={catalogFeedElement} />
-            <Route path='/:boardIdentifier/catalog/settings' element={catalogFeedElement} />
-            <Route path='/:boardIdentifier/:pageNumber' element={boardFeedElement} />
-            <Route path='/:boardIdentifier/:pageNumber/settings' element={boardFeedElement} />
-            <Route path='/:boardIdentifier' element={boardFeedElement} />
-            <Route path='/:boardIdentifier/settings' element={boardFeedElement} />
-            <Route path='/:boardIdentifier/archive' element={<Archive />} />
-            <Route path='/:boardIdentifier/archive/settings' element={<Archive />} />
-            <Route path='/:boardIdentifier/directory' element={<Directory />} />
-            <Route path='/:boardIdentifier/directory/settings' element={<Directory />} />
+              <Route path='/:boardIdentifier/catalog' element={catalogFeedElement} />
+              <Route path='/:boardIdentifier/catalog/settings' element={catalogFeedElement} />
+              <Route path='/:boardIdentifier/:pageNumber' element={boardFeedElement} />
+              <Route path='/:boardIdentifier/:pageNumber/settings' element={boardFeedElement} />
+              <Route path='/:boardIdentifier' element={boardFeedElement} />
+              <Route path='/:boardIdentifier/settings' element={boardFeedElement} />
+              <Route path='/:boardIdentifier/archive' element={<Archive />} />
+              <Route path='/:boardIdentifier/archive/settings' element={<Archive />} />
+              <Route path='/:boardIdentifier/directory' element={<Directory />} />
+              <Route path='/:boardIdentifier/directory/settings' element={<Directory />} />
 
-            <Route path='/:boardIdentifier/mod/queue' element={<ModQueueRoute />} />
-            <Route path='/:boardIdentifier/mod/queue/settings' element={<ModQueueRoute />} />
+              <Route path='/:boardIdentifier/mod/queue' element={<ModQueueRoute />} />
+              <Route path='/:boardIdentifier/mod/queue/settings' element={<ModQueueRoute />} />
 
-            <Route path='/:boardIdentifier/modqueue' element={<Navigate to='/not-found' replace />} />
-            <Route path='/:boardIdentifier/modqueue/settings' element={<Navigate to='/not-found' replace />} />
-            <Route path='/:boardIdentifier/mod' element={<Navigate to='/not-found' replace />} />
-            <Route path='/:boardIdentifier/mod/*' element={<Navigate to='/not-found' replace />} />
+              <Route path='/:boardIdentifier/modqueue' element={<Navigate to='/not-found' replace />} />
+              <Route path='/:boardIdentifier/modqueue/settings' element={<Navigate to='/not-found' replace />} />
+              <Route path='/:boardIdentifier/mod' element={<Navigate to='/not-found' replace />} />
+              <Route path='/:boardIdentifier/mod/*' element={<Navigate to='/not-found' replace />} />
 
-            <Route path='/:boardIdentifier/thread/:commentCid' element={<Post />} />
-            <Route path='/:boardIdentifier/thread/:commentCid/settings' element={<Post />} />
+              <Route path='/:boardIdentifier/thread/:commentCid' element={<Post />} />
+              <Route path='/:boardIdentifier/thread/:commentCid/settings' element={<Post />} />
 
-            <Route path='/pending/:accountCommentIndex' element={<PendingPost />} />
-            <Route path='/pending/:accountCommentIndex/settings' element={<PendingPost />} />
+              <Route path='/pending/:accountCommentIndex' element={<PendingPost />} />
+              <Route path='/pending/:accountCommentIndex/settings' element={<PendingPost />} />
+            </Route>
+            <Route path='/not-allowed' element={<NotAllowed />} />
+            <Route path='/not-found' element={<NotFound />} />
+            <Route path='*' element={<NotFound />} />
           </Route>
-          <Route path='/not-allowed' element={<NotAllowed />} />
-          <Route path='/not-found' element={<NotFound />} />
-          <Route path='*' element={<NotFound />} />
-        </Route>
-      </Routes>
+        </Routes>
+      </QuotePreviewPostProvider>
     </div>
   );
 };

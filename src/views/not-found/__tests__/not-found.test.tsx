@@ -42,8 +42,8 @@ vi.mock('../../../lib/utils/route-utils', () => ({
   getCommunityAddress: () => testState.communityAddress,
 }));
 
-vi.mock('../../home', () => ({
-  HomeLogo: () => createElement('div', { 'data-testid': 'home-logo' }, 'home-logo'),
+vi.mock('../../../components/home-logo', () => ({
+  default: () => createElement('div', { 'data-testid': 'home-logo' }, 'home-logo'),
 }));
 
 vi.mock('../../../components/not-found-image', () => ({

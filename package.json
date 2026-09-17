@@ -103,7 +103,8 @@
     "android:build:icons": "cordova-res android --skip-config --copy --resources /tmp/bitsocial-react-android-icons --icon-source ./android/icons/icon.png --splash-source ./android/icons/splash.png --icon-foreground-source ./android/icons/icon-foreground.png --icon-background-source '#ffffee'",
     "knip": "knip --production --include dependencies,unlisted,binaries --no-progress",
     "knip:full": "knip --no-progress --no-exit-code",
-    "lint": "oxlint src/**/*.{js,ts,tsx}",
+    "lint": "oxlint src/**/*.{js,ts,tsx} && corepack yarn boundaries",
+    "boundaries": "node scripts/check-module-boundaries.mjs",
     "type-check": "tsc --noEmit",
     "prettier": "oxfmt src/**/*.{js,ts,tsx} electron/**/*.{js,mjs}",
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s -r 0",
@@ -157,6 +158,7 @@
     "@electron-forge/maker-zip": "7.8.0",
     "@electron-forge/plugin-auto-unpack-natives": "7.8.0",
     "@electron/rebuild": "3.7.2",
+    "@playwright/cli": "0.1.19",
     "@reforged/maker-appimage": "5.1.1",
     "@rolldown/plugin-babel": "0.1.8",
     "@types/babel__core": "7.20.5",
@@ -168,6 +170,7 @@
     "agentation": "3.0.2",
     "assert": "2.1.0",
     "babel-plugin-react-compiler": "1.0.0",
+    "bippy": "0.7.3",
     "buffer": "6.0.3",
     "concurrently": "8.0.1",
     "conventional-changelog-cli": "4.1.0",
@@ -177,6 +180,7 @@
     "cz-conventional-changelog": "3.3.0",
     "electron": "39.8.10",
     "element-source": "0.0.4",
+    "esbuild": "0.28.2",
     "husky": "4.3.8",
     "isomorphic-fetch": "3.0.0",
     "js-yaml": "4.3.1",
@@ -184,6 +188,7 @@
     "knip": "6.17.0",
     "lint-staged": "12.3.8",
     "node-fetch": "3.3.2",
+    "oxc-parser": "0.148.0",
     "oxfmt": "0.20.0",
     "oxlint": "1.35.0",
     "playwright": "1.56.1",
@@ -197,10 +202,7 @@
     "vitest": "4.1.11",
     "wait-on": "9.0.3",
     "workbox-build": "7.4.0",
-    "workbox-window": "7.4.0",
-    "@playwright/cli": "0.1.19",
-    "bippy": "0.7.3",
-    "esbuild": "0.28.2"
+    "workbox-window": "7.4.0"
   },
   "optionalDependencies": {
     "portless": "0.11.1"

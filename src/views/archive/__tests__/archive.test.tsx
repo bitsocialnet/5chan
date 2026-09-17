@@ -115,7 +115,8 @@ vi.mock('../../../components/loading-ellipsis', () => ({
   default: ({ string }: { string: string }) => createElement('div', { 'data-testid': 'loading-ellipsis' }, string),
 }));
 
-vi.mock('../../../lib/snow', () => ({
+vi.mock('../../../stores/use-special-theme-store', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../stores/use-special-theme-store')>()),
   shouldShowSnow: () => false,
 }));
 

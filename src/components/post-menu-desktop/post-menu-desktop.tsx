@@ -4,15 +4,15 @@ import { useLocation, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { autoUpdate, flip, FloatingFocusManager, offset, shift, useClick, useDismiss, useFloating, useId, useInteractions, useRole } from '@floating-ui/react';
 import styles from './post-menu-desktop.module.css';
-import { getCommentMediaInfo } from '../../../lib/utils/media-utils';
-import { copyShareLinkToClipboard, isValidURL, type ShareLinkType } from '../../../lib/utils/url-utils';
-import { copyToClipboard } from '../../../lib/utils/clipboard-utils';
-import { getBoardPath } from '../../../lib/utils/route-utils';
-import { useDirectories } from '../../../hooks/use-directories';
-import { isCatalogView, isPostPageView } from '../../../lib/utils/view-utils';
-import useHide from '../../../hooks/use-hide';
+import { getCommentMediaInfo } from '../../lib/utils/media-utils';
+import { copyShareLinkToClipboard, isValidURL, type ShareLinkType } from '../../lib/utils/url-utils';
+import { copyToClipboard } from '../../lib/utils/clipboard-utils';
+import { getBoardPath } from '../../lib/utils/route-utils';
+import { useDirectories } from '../../hooks/use-directories';
+import { isCatalogView, isPostPageView } from '../../lib/utils/view-utils';
+import useHide from '../../hooks/use-hide';
 import capitalize from 'lodash/capitalize';
-import { PostMenuProps } from '../../../lib/utils/post-menu-props';
+import { PostMenuProps } from '../../lib/utils/post-menu-props';
 
 const safeCopyShareLink = async (boardIdentifier: string, linkType: ShareLinkType, cid?: string): Promise<boolean> => {
   try {

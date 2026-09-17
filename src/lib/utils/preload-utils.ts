@@ -22,7 +22,8 @@ export const preloadThemeAssets = (): void => {
   preloadImages(THEME_BACKGROUND_IMAGES);
 };
 
-const scheduleIdlePreload = (callback: () => void): void => {
+/** Runs the callback in requestIdleCallback (1500 ms timeout) when available, else after 500 ms. */
+export const scheduleIdlePreload = (callback: () => void): void => {
   if (typeof globalThis === 'undefined') {
     callback();
     return;
@@ -40,14 +41,4 @@ const scheduleIdlePreload = (callback: () => void): void => {
   }
 
   globalThis.setTimeout(callback, 500);
-};
-
-/**
- * Preloads the reply modal chunk during idle time so the first `No.` click
- * doesn't have to wait for the lazy import to resolve.
- */
-export const preloadReplyModal = (): void => {
-  scheduleIdlePreload(() => {
-    void import('../../components/reply-modal');
-  });
 };

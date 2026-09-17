@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import Version from '../version/version';
+import Version from '../version';
 import styles from './site-legal-meta.module.css';
 
 type SiteLegalMetaOrder = 'version-first' | 'license-first';

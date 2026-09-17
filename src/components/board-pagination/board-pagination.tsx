@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next';
 import useFeedViewSettingsStore from '../../stores/use-feed-view-settings-store';
 import { useDirectories } from '../../hooks/use-directories';
 import { isFlashBoardRoute } from '../../lib/utils/route-utils';
-import StyleSelector from '../style-selector/style-selector';
-import footerStyles from '../footer/footer.module.css';
+import StyleSelector from '../style-selector';
+import { footerStyles } from '../footer';
 import styles from './board-pagination.module.css';
 
 export interface BoardPaginationFooterLink {

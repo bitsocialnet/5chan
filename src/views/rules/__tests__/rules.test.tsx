@@ -49,9 +49,12 @@ vi.mock('../../../hooks/use-directories', async () => {
   };
 });
 
-vi.mock('../../home/home', () => ({
-  Footer: () => createElement('div', { 'data-testid': 'footer' }, 'footer'),
-  HomeLogo: () => createElement('div', { 'data-testid': 'home-logo' }, 'home-logo'),
+vi.mock('../../../components/home-footer', () => ({
+  default: () => createElement('div', { 'data-testid': 'footer' }, 'footer'),
+}));
+
+vi.mock('../../../components/home-logo', () => ({
+  default: () => createElement('div', { 'data-testid': 'home-logo' }, 'home-logo'),
 }));
 
 vi.mock('../../../components/markdown/markdown', () => ({

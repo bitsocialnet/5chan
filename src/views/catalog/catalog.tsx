@@ -25,11 +25,10 @@ import useSortingStore from '../../stores/use-sorting-store';
 import useCatalogFiltersStore from '../../stores/use-catalog-filters-store';
 import { isDirectoryBoard, normalizeMultiboardFeedPath } from '../../lib/utils/route-utils';
 import CatalogRow from '../../components/catalog-row';
-import { CatalogFooterFirstRow, CatalogFooterStyleRow, PageFooterDesktop, PageFooterMobile } from '../../components/footer';
-import { ReturnButton, ArchiveButton, TopButton, RefreshButton } from '../../components/board-buttons/board-buttons';
-import mobileFooterStyles from '../../components/footer/footer.module.css';
+import { CatalogFooterFirstRow, CatalogFooterStyleRow, PageFooterDesktop, PageFooterMobile, footerStyles } from '../../components/footer';
+import { ReturnButton, ArchiveButton, TopButton, RefreshButton } from '../../components/board-buttons';
 import LoadingEllipsis from '../../components/loading-ellipsis';
-import ErrorDisplay from '../../components/error-display/error-display';
+import ErrorDisplay from '../../components/error-display';
 import { ModEmptyState } from '../../components/mod-empty-state';
 import styles from './catalog.module.css';
 import { commentMatchesPattern } from '../../lib/utils/pattern-utils';
@@ -621,7 +620,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
           />
           <PageFooterDesktop variant='catalog' firstRow={catalogFooterFirstRow} styleRow={catalogFooterStyleRow} />
           <PageFooterMobile>
-            <div className={mobileFooterStyles.mobileFooterButtons}>
+            <div className={footerStyles.mobileFooterButtons}>
               <ReturnButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
               <ArchiveButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
               <TopButton />
@@ -665,7 +664,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
         />
         <PageFooterDesktop variant='catalog' firstRow={catalogFooterFirstRow} styleRow={catalogFooterStyleRow} />
         <PageFooterMobile>
-          <div className={mobileFooterStyles.mobileFooterButtons}>
+          <div className={footerStyles.mobileFooterButtons}>
             <ReturnButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
             <ArchiveButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
             <TopButton />
@@ -923,7 +922,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
             {catalogFooterFirstRow}
             <PageFooterDesktop variant='catalog' styleRow={catalogFooterStyleRow} />
             <PageFooterMobile>
-              <div className={mobileFooterStyles.mobileFooterButtons}>
+              <div className={footerStyles.mobileFooterButtons}>
                 <ReturnButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
                 <ArchiveButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
                 <TopButton />
@@ -938,7 +937,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
             {catalogFooterFirstRow}
             <PageFooterDesktop variant='catalog' styleRow={catalogFooterStyleRow} />
             <PageFooterMobile>
-              <div className={mobileFooterStyles.mobileFooterButtons}>
+              <div className={footerStyles.mobileFooterButtons}>
                 <ReturnButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
                 <ArchiveButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
                 <TopButton />
@@ -961,7 +960,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
             </div>
             <PageFooterDesktop variant='catalog' firstRow={catalogFooterFirstRow} styleRow={catalogFooterStyleRow} />
             <PageFooterMobile>
-              <div className={mobileFooterStyles.mobileFooterButtons}>
+              <div className={footerStyles.mobileFooterButtons}>
                 <ReturnButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
                 <ArchiveButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
                 <TopButton />

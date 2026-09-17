@@ -8,8 +8,9 @@ import { clearIndexerSearch } from '../../../lib/search-indexer';
 import { DEFAULT_SEARCH_QUERY } from '../../../lib/search-navigation';
 import { getSearchProviderChain } from '../../../lib/search-providers';
 import useSearchProviderStore from '../../../stores/use-search-provider-store';
+import useSearchSummaryStore from '../../../stores/use-search-summary-store';
 import Search from '../search';
-import SearchDirectory from '../search-directory';
+import SearchDirectory from '../../search-directory';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
@@ -182,6 +183,8 @@ describe('archive search', () => {
     await renderRoute(`/search?q=${encodeURIComponent(query)}`);
 
     await vi.waitFor(() => expect(container.textContent).toContain('A preserved thread'));
+    // The view hands the store publisher to getIndexerSearch; the board header reads the summary from it.
+    await vi.waitFor(() => expect(useSearchSummaryStore.getState()).toMatchObject({ query, status: 'answered', total: 1 }));
     // Only the search request: an OP match needs no thread lookup.
     expect(getSearchCalls(fetchMock)).toHaveLength(1);
     expect(fetchMock.mock.calls.some(([url]) => String(url).includes('/api/posts/'))).toBe(false);
