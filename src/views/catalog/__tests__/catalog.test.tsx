@@ -348,6 +348,7 @@ vi.mock('../../../components/footer', () => ({
   PageFooterDesktop: ({ firstRow, styleRow }: { firstRow?: React.ReactNode; styleRow?: React.ReactNode }) =>
     createElement('div', { 'data-testid': 'catalog-footer-desktop' }, firstRow, styleRow),
   PageFooterMobile: ({ children }: { children: React.ReactNode }) => createElement('div', { 'data-testid': 'catalog-footer-mobile' }, children),
+  footerStyles: {},
 }));
 
 vi.mock('../../../components/board-buttons/board-buttons', () => ({

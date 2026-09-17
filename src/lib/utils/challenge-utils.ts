@@ -1,5 +1,5 @@
 import type { ChallengeVerification, Comment } from '@bitsocial/bitsocial-react-hooks';
-import { getFallbackDirectoriesData } from '../../hooks/use-directories';
+import { getFallbackDirectoriesData } from './directories';
 import { getCommentCommunityAddress } from './comment-utils';
 import { getBoardPath } from './route-utils';
 import { stripGeneratedFortuneMarkup } from './post-options-utils';

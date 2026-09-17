@@ -345,7 +345,7 @@ vi.mock('../../../components/footer/footer', () => ({
   PageFooterMobile: ({ children }: { children: React.ReactNode }) => createElement('div', { 'data-testid': 'footer-mobile' }, children),
 }));
 
-vi.mock('../../post/post', () => ({
+vi.mock('../../../components/post', () => ({
   Post: ({ post }: { post?: TestComment }) =>
     createElement(
       'div',
@@ -358,7 +358,8 @@ vi.mock('../../post/post', () => ({
     ),
 }));
 
-vi.mock('../../../lib/snow', () => ({
+vi.mock('../../../stores/use-special-theme-store', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../stores/use-special-theme-store')>()),
   shouldShowSnow: () => false,
 }));
 
@@ -636,6 +637,7 @@ describe('Board', () => {
         createElement('button', { 'data-testid': 'back', onClick: () => navigate(-1) }, 'back'),
         createElement(React.Activity, {
           mode: isVisible ? 'visible' : 'hidden',
+          // oxlint-disable-next-line react/no-children-prop -- ActivityProps types children as required, so createElement only accepts it inside the props object
           children: createElement(Board, { feedCacheKey: '/all-activity-snapshot', isVisible, viewType: 'all' }),
         }),
       );
@@ -670,6 +672,7 @@ describe('Board', () => {
         createElement('button', { 'data-testid': 'page-two', onClick: () => navigate('/mu/2') }, 'page 2'),
         createElement(React.Activity, {
           mode: isVisible ? 'visible' : 'hidden',
+          // oxlint-disable-next-line react/no-children-prop -- ActivityProps types children as required, so createElement only accepts it inside the props object
           children: createElement(Board, { boardIdentifier: 'mu', feedCacheKey: '/mu', isVisible, viewType: 'board' }),
         }),
       );

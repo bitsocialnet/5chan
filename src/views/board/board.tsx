@@ -6,8 +6,7 @@ import { communitiesPagesStore as useCommunitiesPagesStore } from '../../lib/bit
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
 import { Trans, useTranslation } from 'react-i18next';
 import styles from './board.module.css';
-import mobileFooterStyles from '../../components/footer/footer.module.css';
-import { shouldShowSnow } from '../../lib/snow';
+import { shouldShowSnow } from '../../stores/use-special-theme-store';
 import { useAccountCommunityAddresses } from '../../hooks/use-account-community-addresses';
 import { useDirectories, useDirectoryByAddress } from '../../hooks/use-directories';
 import { useCommunityIdentifier, useCommunityIdentifiers } from '../../hooks/use-community-identifiers';
@@ -33,14 +32,14 @@ import { getRawBoardThreadState } from '../../lib/utils/raw-board-thread-state';
 import { getSearchWithTimeFilter, getSelectedTimeFilterValue, getTimeFilterSuggestion, type TimeFilterSuggestion } from '../../lib/utils/time-filter-utils';
 import { getPretextItemSizeFromElement, resolveFeedVirtualizationMode } from '../../lib/utils/pretext-height-estimates';
 import { isFlashDirectory, isFlashDirectoryCode } from '../../lib/flash-tags';
-import ErrorDisplay from '../../components/error-display/error-display';
-import FlashBoardTable from '../../components/flash-board-table/flash-board-table';
-import LoadingEllipsis from '../../components/loading-ellipsis/loading-ellipsis';
-import BoardPagination from '../../components/board-pagination/board-pagination';
-import { CatalogButton } from '../../components/board-buttons/board-buttons';
-import { PageFooterDesktop, PageFooterMobile } from '../../components/footer/footer';
-import ModEmptyState from '../../components/mod-empty-state/mod-empty-state';
-import { Post } from '../post/post';
+import ErrorDisplay from '../../components/error-display';
+import FlashBoardTable from '../../components/flash-board-table';
+import LoadingEllipsis from '../../components/loading-ellipsis';
+import BoardPagination from '../../components/board-pagination';
+import { CatalogButton } from '../../components/board-buttons';
+import { PageFooterDesktop, PageFooterMobile, footerStyles } from '../../components/footer';
+import { ModEmptyState } from '../../components/mod-empty-state';
+import { Post } from '../../components/post';
 
 const lastVirtuosoStates: { [key: string]: StateSnapshot } = {};
 const RECENT_ACCOUNT_COMMENT_WINDOW_SECONDS = 60 * 60;
@@ -634,13 +633,13 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
           <PageFooterMobile>
             <div>
               {!isForcedInfiniteScroll && (
-                <div className={mobileFooterStyles.mobileFooterButtons}>
+                <div className={footerStyles.mobileFooterButtons}>
                   <button type='button' className='button' onClick={() => window.scrollTo({ top: 0, left: 0, behavior: 'instant' })}>
                     {t('start_new_thread')}
                   </button>
                 </div>
               )}
-              <div className={mobileFooterStyles.mobileFooterButtons}>
+              <div className={footerStyles.mobileFooterButtons}>
                 <button type='button' className='button' onClick={() => window.scrollTo({ top: 0, left: 0, behavior: 'instant' })}>
                   {t('top')}
                 </button>
@@ -651,13 +650,13 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
               <hr />
               {!isForcedInfiniteScroll && !effectiveInfiniteScroll && (
                 <>
-                  <div className={mobileFooterStyles.mobileFooterPagination}>
+                  <div className={footerStyles.mobileFooterPagination}>
                     {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                       <span key={page}>
                         [
                         <Link
                           to={{ pathname: page === 1 ? paginationBasePath : `${paginationBasePath}/${page}`, search: routerLocation.search }}
-                          className={page === currentPage ? mobileFooterStyles.mobileFooterPaginationCurrent : undefined}
+                          className={page === currentPage ? footerStyles.mobileFooterPaginationCurrent : undefined}
                         >
                           {page}
                         </Link>
@@ -665,13 +664,13 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
                       </span>
                     ))}
                   </div>
-                  <div className={mobileFooterStyles.mobileFooterButtons}>
+                  <div className={footerStyles.mobileFooterButtons}>
                     <CatalogButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
                   </div>
                 </>
               )}
               {effectiveHasMore && !effectiveInfiniteScroll && !shouldUseFlashTable && (
-                <div className={mobileFooterStyles.mobileFooterButtons}>
+                <div className={footerStyles.mobileFooterButtons}>
                   <button type='button' className='button' onClick={() => setEnableInfiniteScroll(true)}>
                     {t('load_more')}
                   </button>

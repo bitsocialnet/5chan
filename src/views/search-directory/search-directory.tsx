@@ -2,12 +2,12 @@ import { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import capitalize from 'lodash/capitalize';
-import { BottomButton, TopButton } from '../../components/board-buttons/board-buttons';
-import { PageFooterDesktop, PageFooterMobile, ThreadFooterStyleRow } from '../../components/footer/footer';
+import { BottomButton, TopButton } from '../../components/board-buttons';
+import { PageFooterDesktop, PageFooterMobile, ThreadFooterStyleRow } from '../../components/footer';
 import { SEARCH_PATH } from '../../lib/search-navigation';
 import { getDirectorySearchProvider, getRankedSearchProviders } from '../../lib/search-providers';
 import useSearchProviderStore from '../../stores/use-search-provider-store';
-import styles from '../directory/directory.module.css';
+import styles from '../../components/directory-layout';
 
 /** The search that linked here travels in the router state, so the query stays out of this URL. */
 const getReturnPath = (state: unknown): string => {

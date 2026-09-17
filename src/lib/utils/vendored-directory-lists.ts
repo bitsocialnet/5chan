@@ -1,16 +1,16 @@
-import { normalizeDirectoryDefaultsData, normalizeDirectoryList, sortDirectoryLists, type DirectoryList } from '../lib/utils/directory-list-utils';
+import { normalizeDirectoryDefaultsData, normalizeDirectoryList, sortDirectoryLists, type DirectoryList } from './directory-list-utils';
 
 /**
  * Offline fallback for the directory data.
  *
- * `./5chan-directories/` is a byte-for-byte mirror of
+ * `src/data/5chan-directories/` is a byte-for-byte mirror of
  * https://github.com/bitsocialnet/lists/tree/master/5chan-directories (kept fresh by
  * `yarn sync:directories`). The raw per-directory files only carry candidate boards; their
  * code/title/features come from the filename and the shared defaults file, exactly like the
  * GitHub fetch path. This module assembles the same merged shape the app consumes so the
  * directory list and rules keep working when GitHub is unreachable.
  */
-const rawModules = import.meta.glob<{ default: unknown }>('./5chan-directories/*.json', { eager: true });
+const rawModules = import.meta.glob<{ default: unknown }>('../../data/5chan-directories/*.json', { eager: true });
 
 // Matched against the file's basename (not the full path) so the leading "5chan-directories/" folder
 // segment cannot be greedily captured as part of the directory code.

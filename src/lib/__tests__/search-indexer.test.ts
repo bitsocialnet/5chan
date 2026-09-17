@@ -191,6 +191,32 @@ describe('search indexer client', () => {
 
     await expect(getIndexerSearch(providers, query, 1)).rejects.toThrow('invalid response');
   });
+
+  it('publishes the pending and answered summary through the injected publisher', async () => {
+    const query = `summary-${Date.now()}`;
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ query, page: 1, limit: 25, total: 3, posts: [] }) });
+    vi.stubGlobal('fetch', fetchMock);
+    const publish = vi.fn();
+
+    const request = getIndexerSearch(providers, query, 1, publish);
+    await Promise.resolve();
+    expect(publish).toHaveBeenCalledWith(query, 'pending');
+
+    await request;
+    await Promise.resolve();
+    expect(publish).toHaveBeenLastCalledWith(query, 'answered', 3, provider.id);
+    expect(publish).toHaveBeenCalledTimes(2);
+  });
+
+  it('publishes a failed summary when no indexer answers', async () => {
+    const query = `summary-failed-${Date.now()}`;
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 503 }));
+    const publish = vi.fn();
+
+    await expect(getIndexerSearch(providers, query, 1, publish)).rejects.toThrow('503');
+    await Promise.resolve();
+    expect(publish).toHaveBeenLastCalledWith(query, 'failed');
+  });
 });
 
 describe('getIndexedPostComment', () => {

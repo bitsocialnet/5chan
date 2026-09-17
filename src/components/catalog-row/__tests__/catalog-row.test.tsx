@@ -132,7 +132,8 @@ vi.mock('../../../lib/get-short-address', () => ({
   default: () => 'mu',
 }));
 
-vi.mock('../../../lib/snow', () => ({
+vi.mock('../../../stores/use-special-theme-store', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../stores/use-special-theme-store')>()),
   shouldShowSnow: () => testState.showSnow,
 }));
 
@@ -194,7 +195,7 @@ vi.mock('../../../hooks/use-hide', () => ({
   }),
 }));
 
-vi.mock('../../post-desktop/post-menu-desktop/post-menu-desktop', () => ({
+vi.mock('../../post-menu-desktop/post-menu-desktop', () => ({
   default: ({ postMenu }: { postMenu: { cid?: string } }) => createElement('span', { 'data-testid': `post-menu-${postMenu.cid}` }, 'menu'),
 }));
 

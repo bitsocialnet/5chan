@@ -4,8 +4,8 @@ import { useLocation } from 'react-router-dom';
 import { parseHttpUrl } from '../../lib/utils/url-utils';
 import { HAS_CODE_TAG_REGEX, isCodeTagsEnabledForContext, splitCodeTagSegments } from '../../lib/code-tags';
 import { useDirectories } from '../../hooks/use-directories';
-import CodeBlock from '../code-block/code-block';
-import Markdown from '../markdown/markdown';
+import CodeBlock from '../code-block';
+import Markdown from '../markdown';
 import styles from './bbcode-content.module.css';
 
 const ALLOWED_BBCODE_TAGS = ['b', 'i', 'u', 's', 'color', 'size', 'quote', 'url'];

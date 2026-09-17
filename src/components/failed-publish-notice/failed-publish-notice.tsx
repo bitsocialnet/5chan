@@ -1,4 +1,4 @@
-import styles from '../views/post/post.module.css';
+import styles from '../post-styles';
 
 interface FailedPublishNoticeProps {
   isDeleting: boolean;

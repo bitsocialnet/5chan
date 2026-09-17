@@ -193,7 +193,7 @@ vi.mock('../../comment-media/comment-media', () => ({
   },
 }));
 
-vi.mock('../../embed/embed-utils', () => ({
+vi.mock('../../../lib/utils/embed-utils', () => ({
   canEmbed: (parsedUrl: URL) => testState.embeddableHosts.has(parsedUrl.host),
 }));
 

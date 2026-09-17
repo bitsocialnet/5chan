@@ -13,7 +13,7 @@ import {
   getYouTubeVideoId,
   xHosts,
   youtubeHosts,
-} from './embed-utils';
+} from '../../lib/utils/embed-utils';
 
 interface EmbedProps {
   url: string;

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
+import type { SearchSummaryPublisher, SearchSummaryStatus } from '../lib/search-indexer';
 
-export type SearchSummaryStatus = 'pending' | 'answered' | 'failed';
+export type { SearchSummaryStatus };
 
 interface SearchSummaryState {
   /** Indexer that answered, which the header credits instead of the ranked-first one. */
@@ -23,5 +24,9 @@ const useSearchSummaryStore = create<SearchSummaryState>((set) => ({
       state.query === query && state.status === status && state.total === total && state.providerId === providerId ? state : { query, status, total, providerId },
     ),
 }));
+
+/** Handed to getIndexerSearch so the request publishes into this store without lib importing it. */
+export const publishSearchSummary: SearchSummaryPublisher = (query, status, total, providerId) =>
+  useSearchSummaryStore.getState().setSummary(query, status, total, providerId);
 
 export default useSearchSummaryStore;

@@ -2,9 +2,9 @@ import { Link, useLocation } from 'react-router-dom';
 import { useCommunityField } from '../../hooks/use-stable-community';
 import { useDirectories } from '../../hooks/use-directories';
 import { getCommunityAddress } from '../../lib/utils/route-utils';
-import { HomeLogo } from '../home';
+import HomeLogo from '../../components/home-logo';
 import NotFoundImage from '../../components/not-found-image';
-import styles from './not-found.module.css';
+import styles from '../../components/not-found-layout';
 
 const NotFound = () => {
   const location = useLocation();

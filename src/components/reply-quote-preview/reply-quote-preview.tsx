@@ -8,8 +8,8 @@ import { getBoardPath } from '../../lib/utils/route-utils';
 import { formatQuoteNumber, getQuoteTargetAvailability, shouldShowFloatingQuotePreview } from '../../lib/utils/quote-link-utils';
 import { findPreferredScrollTarget, getThreadTopNavigationState, scrollThreadContainerToTop } from '../../lib/utils/thread-scroll-utils';
 import useIsMobile from '../../hooks/use-is-mobile';
-import styles from '../../views/post/post.module.css';
-import { Post } from '../../views/post';
+import styles from '../post-styles';
+import { useQuotePreviewPost } from '../../hooks/use-quote-preview-post';
 import { getCommentCommunityAddress, withResolvedCommentCommunityAddress } from '../../lib/utils/comment-utils';
 
 interface ReplyQuotePreviewProps {
@@ -157,6 +157,7 @@ const DesktopQuotePreview = ({
 
   const navigate = useNavigate();
   const location = useLocation();
+  const renderQuotePreviewPost = useQuotePreviewPost();
   const normalizedBacklinkReply = withResolvedCommentCommunityAddress(backlinkReply);
   const normalizedQuotelinkReply = withResolvedCommentCommunityAddress(quotelinkReply);
 
@@ -221,7 +222,7 @@ const DesktopQuotePreview = ({
         outOfViewCid === normalizedBacklinkReply?.cid &&
         createPortal(
           <div className={getQuotePreviewClassName(normalizedBacklinkReply)} data-thread-scroll-preview='true' ref={refs.setFloating} style={floatingStyles}>
-            <Post post={normalizedBacklinkReply} showReplies={false} />
+            {renderQuotePreviewPost ? renderQuotePreviewPost({ post: normalizedBacklinkReply, showReplies: false }) : null}
           </div>,
           document.body,
         )}
@@ -290,7 +291,7 @@ const DesktopQuotePreview = ({
       {shouldShowQuotelinkPreview &&
         createPortal(
           <div className={getQuotePreviewClassName(normalizedQuotelinkReply)} data-thread-scroll-preview='true' ref={refs.setFloating} style={floatingStyles}>
-            <Post post={normalizedQuotelinkReply} showReplies={false} />
+            {renderQuotePreviewPost ? renderQuotePreviewPost({ post: normalizedQuotelinkReply, showReplies: false }) : null}
           </div>,
           document.body,
         )}
@@ -335,6 +336,7 @@ const MobileQuotePreview = ({
 
   const navigate = useNavigate();
   const location = useLocation();
+  const renderQuotePreviewPost = useQuotePreviewPost();
   const isOnThreadPage = location.pathname.includes('/thread/');
 
   const handleClick = (e: React.MouseEvent, cid: string | undefined, communityAddress: string | undefined, isOpQuote = false) => {
@@ -402,7 +404,7 @@ const MobileQuotePreview = ({
         outOfViewCid === normalizedBacklinkReply?.cid &&
         createPortal(
           <div className={getQuotePreviewClassName(normalizedBacklinkReply)} data-thread-scroll-preview='true' ref={refs.setFloating} style={floatingStyles}>
-            <Post post={normalizedBacklinkReply} showReplies={false} />
+            {renderQuotePreviewPost ? renderQuotePreviewPost({ post: normalizedBacklinkReply, showReplies: false }) : null}
           </div>,
           document.body,
         )}
@@ -469,7 +471,7 @@ const MobileQuotePreview = ({
       {shouldShowQuotelinkPreview &&
         createPortal(
           <div className={getQuotePreviewClassName(normalizedQuotelinkReply)} data-thread-scroll-preview='true' ref={refs.setFloating} style={floatingStyles}>
-            <Post post={normalizedQuotelinkReply} showReplies={false} />
+            {renderQuotePreviewPost ? renderQuotePreviewPost({ post: normalizedQuotelinkReply, showReplies: false }) : null}
           </div>,
           document.body,
         )}

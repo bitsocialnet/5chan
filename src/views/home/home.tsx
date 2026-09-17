@@ -7,9 +7,10 @@ import { sortDirectoryBoardsByRank, useDirectoryLists } from '../../hooks/use-di
 import { CommunityStatsCollector, CommunityStatsMetadataLoader, useCommunitiesStatsStore } from '../../hooks/use-communities-stats';
 import PopularThreadsBox from './popular-threads-box';
 import BoardsList from './boards-list';
-import SiteLegalMeta from '../../components/site-legal-meta';
 import LoadingEllipsis from '../../components/loading-ellipsis';
 import Tooltip from '../../components/tooltip';
+import HomeFooter from '../../components/home-footer';
+import HomeLogo from '../../components/home-logo';
 import useDirectoryModalStore from '../../stores/use-directory-modal-store';
 import useHomepageStatsOptionsStore, { type HomepageStatsScope } from '../../stores/use-homepage-stats-options-store';
 import DisclaimerModal from '../../components/disclaimer-modal';
@@ -315,61 +316,6 @@ const Stats = ({ directories }: { directories: DirectoryCommunity[] }) => {
   );
 };
 
-export const Footer = () => {
-  const { t } = useTranslation();
-  return (
-    <>
-      <ul className={styles.footer}>
-        <li>
-          <Link to='/'>{t('home')}</Link>
-        </li>
-        <li>
-          <a href='https://bitsocial.net/projects/5chan' target='_blank' rel='noopener noreferrer'>
-            {t('about')}
-          </a>
-        </li>
-        <li>
-          <a href='https://bitsocial.net/blog?q=5chan' target='_blank' rel='noopener noreferrer'>
-            Blog
-          </a>
-        </li>
-        <li>
-          <Link to='/faq'>FAQ</Link>
-        </li>
-        <li>
-          <Link to='/rules'>Rules</Link>
-        </li>
-        <li>
-          <Link to='/pass'>{t('support_5chan')}</Link>
-        </li>
-        <li>
-          <a href='https://x.com/5chanapp' target='_blank' rel='noopener noreferrer'>
-            Twitter/X
-          </a>
-        </li>
-        <li>
-          <a href='https://github.com/bitsocialnet/5chan' target='_blank' rel='noopener noreferrer'>
-            Source Code
-          </a>
-        </li>
-      </ul>
-      <div className={styles.footerInfo}>
-        <SiteLegalMeta />
-      </div>
-    </>
-  );
-};
-
-export const HomeLogo = () => {
-  return (
-    <Link to='/'>
-      <div className={styles.logo}>
-        <img alt='' src='assets/logo/logo-transparent.png' />
-      </div>
-    </Link>
-  );
-};
-
 const Home = () => {
   const directories = useDirectories();
   const directoryAddresses = useDirectoryAddresses();
@@ -397,7 +343,7 @@ const Home = () => {
         <BoardsList multisub={directories} />
         <PopularThreadsBox directories={directories} directoryAddresses={directoryAddresses} />
         <Stats directories={directories} />
-        <Footer />
+        <HomeFooter />
       </div>
     </>
   );

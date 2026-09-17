@@ -3,7 +3,7 @@ import { Virtuoso, type SizeFunction } from 'react-virtuoso';
 import type { Comment } from '@bitsocial/bitsocial-react-hooks';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import CatalogRow from '../components/catalog-row';
-import { Post } from '../views/post';
+import { Post, QuotePreviewPostProvider } from '../components/post';
 import PostDesktop from '../components/post-desktop';
 import PostMobile from '../components/post-mobile';
 import {
@@ -786,25 +786,27 @@ const Harness = () => {
               <Route
                 path='/:boardIdentifier/thread/:commentCid'
                 element={
-                  isMobile ? (
-                    <PostMobile
-                      post={threadRoot}
-                      replyPaginationOverride={{ hasMore: true, loadMore: NOOP, replies }}
-                      replyVirtualizationModeOverride={virtualizationMode}
-                      roles={{} as never}
-                      showAllReplies={true}
-                      showReplies={true}
-                    />
-                  ) : (
-                    <PostDesktop
-                      post={threadRoot}
-                      replyPaginationOverride={{ hasMore: true, loadMore: NOOP, replies }}
-                      replyVirtualizationModeOverride={virtualizationMode}
-                      roles={{} as never}
-                      showAllReplies={true}
-                      showReplies={true}
-                    />
-                  )
+                  <QuotePreviewPostProvider>
+                    {isMobile ? (
+                      <PostMobile
+                        post={threadRoot}
+                        replyPaginationOverride={{ hasMore: true, loadMore: NOOP, replies }}
+                        replyVirtualizationModeOverride={virtualizationMode}
+                        roles={{} as never}
+                        showAllReplies={true}
+                        showReplies={true}
+                      />
+                    ) : (
+                      <PostDesktop
+                        post={threadRoot}
+                        replyPaginationOverride={{ hasMore: true, loadMore: NOOP, replies }}
+                        replyVirtualizationModeOverride={virtualizationMode}
+                        roles={{} as never}
+                        showAllReplies={true}
+                        showReplies={true}
+                      />
+                    )}
+                  </QuotePreviewPostProvider>
                 }
               />
             </Routes>

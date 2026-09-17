@@ -1,7 +1,7 @@
 // Best-effort mirror of the 5chan directories folder from GitHub.
 // Keeps src/data/5chan-directories/ a byte-for-byte copy of
 // https://github.com/bitsocialnet/lists/tree/master/5chan-directories so the app has an
-// offline fallback (loaded via src/data/vendored-directory-lists.ts) when GitHub is down.
+// offline fallback (loaded via src/lib/utils/vendored-directory-lists.ts) when GitHub is down.
 // Never fails the build: if the fetch fails (offline, rate-limited, etc.), existing files are kept.
 
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'fs';

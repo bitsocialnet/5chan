@@ -3,7 +3,7 @@ import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import ReplyQuotePreview from '../reply-quote-preview';
-import styles from '../../../views/post/post.module.css';
+import styles from '../../post-styles';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
@@ -119,9 +119,10 @@ vi.mock('../../../hooks/use-is-mobile', () => ({
   default: () => testState.isMobile,
 }));
 
-vi.mock('../../../views/post', () => ({
-  Post: ({ post }: { post?: TestComment }) => createElement('div', { 'data-testid': 'post-preview' }, post?.cid),
-}));
+vi.mock('../../../hooks/use-quote-preview-post', () => {
+  const PreviewPost = ({ post }: { post?: TestComment }) => createElement('div', { 'data-testid': 'post-preview' }, post?.cid);
+  return { useQuotePreviewPost: () => (props: { post?: TestComment }) => createElement(PreviewPost, props) };
+});
 
 let container: HTMLDivElement;
 let root: Root;

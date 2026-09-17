@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
-import { useCurrentTime } from '../hooks/use-current-time';
-import { getFormattedTimeAgo } from '../lib/utils/time-utils';
-import Tooltip from './tooltip';
+import { useCurrentTime } from '../../hooks/use-current-time';
+import { getFormattedTimeAgo } from '../../lib/utils/time-utils';
+import Tooltip from '../tooltip';
 
 const TimeAgoTooltipContent = ({ timestamp }: { timestamp?: number }) => {
   useCurrentTime();

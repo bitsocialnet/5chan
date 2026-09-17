@@ -168,9 +168,7 @@ describe('footer', () => {
         }),
         createElement(CatalogFooterStyleRow),
         createElement(ThreadFooterStyleRow),
-        createElement(PageFooterMobile, {
-          children: createElement('div', { 'data-testid': 'mobile-child' }, 'mobile-child'),
-        }),
+        createElement(PageFooterMobile, null, createElement('div', { 'data-testid': 'mobile-child' }, 'mobile-child')),
       ),
       '/all/catalog',
     );

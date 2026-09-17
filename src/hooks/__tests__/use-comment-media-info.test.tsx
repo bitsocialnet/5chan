@@ -4,7 +4,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { CommentMediaInfo } from '../../lib/utils/media-utils';
 import { useCommentMediaInfo } from '../use-comment-media-info';
-import { FeedCacheContext } from '../../components/feed-cache-container/feed-cache-context';
+import { FeedCacheContext } from '../use-feed-cache-context';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;

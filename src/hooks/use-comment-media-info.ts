@@ -1,8 +1,8 @@
-import { useContext, useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import { getCommentMediaInfo, fetchWebpageThumbnailIfNeeded, CommentMediaInfo } from '../lib/utils/media-utils';
 import { isPendingPostView, isPostPageView } from '../lib/utils/view-utils';
-import { FeedCacheContext } from '../components/feed-cache-container/feed-cache-context';
+import { useFeedCacheContext } from './use-feed-cache-context';
 
 /**
  * Hook to fetch and cache media info with thumbnail dimensions for comments.
@@ -11,7 +11,7 @@ import { FeedCacheContext } from '../components/feed-cache-container/feed-cache-
 export const useCommentMediaInfo = (link: string, thumbnailUrl: string, linkWidth: number, linkHeight: number): CommentMediaInfo | undefined => {
   const location = useLocation();
   const params = useParams();
-  const isCachedFeed = useContext(FeedCacheContext);
+  const isCachedFeed = useFeedCacheContext();
   const isInPostPageView = isPostPageView(location.pathname, params);
   const isInPendingPostView = isPendingPostView(location.pathname, params);
 

@@ -4,7 +4,6 @@ import CatalogRow from '../../components/catalog-row';
 import { SEARCH_HIGHLIGHT_REGION_ATTRIBUTE } from '../../hooks/use-search-match-highlight';
 import useCatalogStyleStore from '../../stores/use-catalog-style-store';
 import useWindowWidth from '../../hooks/use-window-width';
-import catalogStyles from '../catalog/catalog.module.css';
 
 const getRows = (threads: Comment[], columnCount: number): Comment[][] => {
   const rows: Comment[][] = [];
@@ -23,7 +22,7 @@ const SearchCatalog = ({ threads }: { threads: Comment[] }) => {
   const rows = useMemo(() => getRows(threads, columnCount), [threads, columnCount]);
 
   return (
-    <div className={catalogStyles.catalog} {...{ [SEARCH_HIGHLIGHT_REGION_ATTRIBUTE]: '' }}>
+    <div {...{ [SEARCH_HIGHLIGHT_REGION_ATTRIBUTE]: '' }}>
       {rows.map((row, index) => (
         <CatalogRow key={row.map((thread) => thread?.cid ?? '').join('\0') || `row-${index}`} index={index} row={row} />
       ))}

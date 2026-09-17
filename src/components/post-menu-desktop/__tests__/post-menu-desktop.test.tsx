@@ -60,28 +60,28 @@ vi.mock('@floating-ui/react', () => ({
   useRole: () => ({}),
 }));
 
-vi.mock('../../../../lib/utils/media-utils', () => ({
+vi.mock('../../../lib/utils/media-utils', () => ({
   getCommentMediaInfo: () => testState.mediaInfo,
 }));
 
-vi.mock('../../../../lib/utils/url-utils', () => ({
+vi.mock('../../../lib/utils/url-utils', () => ({
   copyShareLinkToClipboard: testState.copyShareLinkMock,
   isValidURL: () => testState.validUrl,
 }));
 
-vi.mock('../../../../lib/utils/clipboard-utils', () => ({
+vi.mock('../../../lib/utils/clipboard-utils', () => ({
   copyToClipboard: testState.copyToClipboardMock,
 }));
 
-vi.mock('../../../../lib/utils/route-utils', () => ({
+vi.mock('../../../lib/utils/route-utils', () => ({
   getBoardPath: () => testState.boardPath,
 }));
 
-vi.mock('../../../../hooks/use-directories', () => ({
+vi.mock('../../../hooks/use-directories', () => ({
   useDirectories: () => [],
 }));
 
-vi.mock('../../../../hooks/use-hide', () => ({
+vi.mock('../../../hooks/use-hide', () => ({
   default: () => ({
     hidden: testState.hidden,
     hide: testState.hideMock,
@@ -89,7 +89,7 @@ vi.mock('../../../../hooks/use-hide', () => ({
   }),
 }));
 
-vi.mock('../../../../lib/utils/view-utils', () => ({
+vi.mock('../../../lib/utils/view-utils', () => ({
   isAllView: (pathname: string) => pathname.startsWith('/all'),
   isCatalogView: (pathname: string) => pathname.includes('/catalog'),
   isPostPageView: (pathname: string) => pathname.includes('/thread/'),

@@ -3,11 +3,10 @@ import { Link, Navigate, useLocation, useNavigate, useSearchParams } from 'react
 import type { Comment } from '@bitsocial/bitsocial-react-hooks';
 import { useTranslation } from 'react-i18next';
 import capitalize from 'lodash/capitalize';
-import BoardPagination, { type BoardPaginationFooterLink } from '../../components/board-pagination/board-pagination';
-import { BottomButton, RefreshButton, TopButton } from '../../components/board-buttons/board-buttons';
-import { PageFooterDesktop, PageFooterMobile } from '../../components/footer/footer';
-import mobileFooterStyles from '../../components/footer/footer.module.css';
-import LoadingEllipsis from '../../components/loading-ellipsis/loading-ellipsis';
+import BoardPagination, { type BoardPaginationFooterLink } from '../../components/board-pagination';
+import { BottomButton, RefreshButton, TopButton } from '../../components/board-buttons';
+import { PageFooterDesktop, PageFooterMobile, footerStyles } from '../../components/footer';
+import LoadingEllipsis from '../../components/loading-ellipsis';
 import { useBoardSearch } from '../../hooks/use-board-search';
 import { retryIndexedBoards } from '../../hooks/use-indexed-boards';
 import useSearchMatchHighlight, { SEARCH_HIGHLIGHT_REGION_ATTRIBUTE } from '../../hooks/use-search-match-highlight';
@@ -25,7 +24,8 @@ import { getSearchProviderChain, type SearchProvider } from '../../lib/search-pr
 import { isSearchCatalogRoute } from '../../lib/utils/route-utils';
 import useFeedResetStore from '../../stores/use-feed-reset-store';
 import useSearchProviderStore from '../../stores/use-search-provider-store';
-import { Post } from '../post/post';
+import { publishSearchSummary } from '../../stores/use-search-summary-store';
+import { Post } from '../../components/post';
 import SearchBoardResults from './search-board-results';
 import SearchCatalog from './search-catalog';
 import styles from './search.module.css';
@@ -143,14 +143,11 @@ const SearchFooter = ({ isCatalogView, page, query, totalPages }: SearchControls
         {totalPages > 1 && (
           <>
             <hr />
-            <div className={mobileFooterStyles.mobileFooterPagination}>
+            <div className={footerStyles.mobileFooterPagination}>
               {Array.from({ length: totalPages }, (_, index) => index + 1).map((pageNumber) => (
                 <span key={pageNumber}>
                   [
-                  <Link
-                    to={getSearchPageHref(basePath, query, pageNumber)}
-                    className={pageNumber === page ? mobileFooterStyles.mobileFooterPaginationCurrent : undefined}
-                  >
+                  <Link to={getSearchPageHref(basePath, query, pageNumber)} className={pageNumber === page ? footerStyles.mobileFooterPaginationCurrent : undefined}>
                     {pageNumber}
                   </Link>
                   ]
@@ -166,7 +163,7 @@ const SearchFooter = ({ isCatalogView, page, query, totalPages }: SearchControls
 
 const SearchResults = ({ isCatalogView, page, providers, query }: SearchControlsProps & { page: number; providers: SearchProvider[] }) => {
   const { t } = useTranslation();
-  const result = use(getIndexerSearch(providers, query, page));
+  const result = use(getIndexerSearch(providers, query, page, publishSearchSummary));
   // A matched reply is shown in its thread: the OP, then that one reply.
   const matches = useMemo(
     () =>

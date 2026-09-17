@@ -2,7 +2,8 @@ import { useEffect } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { HashLink } from 'react-router-hash-link';
 import { Link } from 'react-router-dom';
-import { Footer, HomeLogo } from '../home';
+import HomeFooter from '../../components/home-footer';
+import HomeLogo from '../../components/home-logo';
 import styles from './pass.module.css';
 
 const overviewQuestionLinks = [
@@ -176,7 +177,7 @@ const Pass = () => {
             </div>
           </div>
         </div>
-        <Footer />
+        <HomeFooter />
       </div>
     </div>
   );

@@ -5,54 +5,52 @@ import { MemoryRouter, useLocation, useNavigate } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import useFeedCacheStore from '../../../stores/use-feed-cache-store';
 import FeedCacheContainer from '../feed-cache-container';
-import { FeedCacheContext } from '../feed-cache-context';
+import { FeedCacheContext } from '../../../hooks/use-feed-cache-context';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
 
-const testState = vi.hoisted(() => ({
+const testState = {
   activeSubscriptions: new Set<string>(),
   subscribeMock: vi.fn(),
-}));
+};
 
-vi.mock('../../../views/catalog/catalog', () => ({
-  default: ({ feedCacheKey }: { feedCacheKey: string }) => {
-    React.useEffect(() => {
-      testState.activeSubscriptions.add(feedCacheKey);
-      return () => {
-        testState.activeSubscriptions.delete(feedCacheKey);
-      };
-    }, [feedCacheKey]);
-    return createElement('div', { 'data-testid': 'catalog' });
-  },
-}));
+const MockCatalog = ({ feedCacheKey }: { feedCacheKey: string }) => {
+  React.useEffect(() => {
+    testState.activeSubscriptions.add(feedCacheKey);
+    return () => {
+      testState.activeSubscriptions.delete(feedCacheKey);
+    };
+  }, [feedCacheKey]);
+  return createElement('div', { 'data-testid': 'catalog' });
+};
 
-vi.mock('../../../views/board/board', () => ({
-  default: ({ feedCacheKey }: { feedCacheKey: string }) => {
-    const [count, setCount] = React.useState(0);
-    React.useEffect(() => {
-      testState.subscribeMock(feedCacheKey);
-      testState.activeSubscriptions.add(feedCacheKey);
-      return () => {
-        testState.activeSubscriptions.delete(feedCacheKey);
-      };
-    }, [feedCacheKey]);
-    return createElement(
-      'div',
-      { 'data-testid': `board-${feedCacheKey}`, 'data-cached-feed': React.useContext(FeedCacheContext) },
-      createElement('button', { 'data-testid': `counter-${feedCacheKey}`, onClick: () => setCount((value) => value + 1) }, String(count)),
-      feedCacheKey === '/a'
-        ? createElement(
-            React.Fragment,
-            {},
-            createElement('video', { 'data-testid': 'cached-video', src: 'https://cdn.example.com/video.mp4' }),
-            createElement('iframe', { 'data-testid': 'cached-iframe', src: 'https://player.example.com/embed', title: 'remote embed' }),
-            createElement('iframe', { 'data-testid': 'cached-srcdoc-iframe', srcDoc: '<p>srcdoc embed</p>', title: 'srcdoc embed' }),
-          )
-        : null,
-    );
-  },
-}));
+const MockBoard = ({ feedCacheKey }: { feedCacheKey: string }) => {
+  const [count, setCount] = React.useState(0);
+  React.useEffect(() => {
+    testState.subscribeMock(feedCacheKey);
+    testState.activeSubscriptions.add(feedCacheKey);
+    return () => {
+      testState.activeSubscriptions.delete(feedCacheKey);
+    };
+  }, [feedCacheKey]);
+  return createElement(
+    'div',
+    { 'data-testid': `board-${feedCacheKey}`, 'data-cached-feed': React.useContext(FeedCacheContext) },
+    createElement('button', { 'data-testid': `counter-${feedCacheKey}`, onClick: () => setCount((value) => value + 1) }, String(count)),
+    feedCacheKey === '/a'
+      ? createElement(
+          React.Fragment,
+          {},
+          createElement('video', { 'data-testid': 'cached-video', src: 'https://cdn.example.com/video.mp4' }),
+          createElement('iframe', { 'data-testid': 'cached-iframe', src: 'https://player.example.com/embed', title: 'remote embed' }),
+          createElement('iframe', { 'data-testid': 'cached-srcdoc-iframe', srcDoc: '<p>srcdoc embed</p>', title: 'srcdoc embed' }),
+        )
+      : null,
+  );
+};
+
+const renderFeedCacheContainer = () => createElement(FeedCacheContainer, { boardView: MockBoard, catalogView: MockCatalog });
 
 let container: HTMLDivElement;
 let iframeRectSpy: ReturnType<typeof vi.spyOn>;
@@ -129,7 +127,7 @@ describe('FeedCacheContainer', () => {
       return null;
     };
     await act(async () => {
-      root.render(createElement(MemoryRouter, { initialEntries: ['/a'] }, createElement(FeedCacheContainer), createElement(NavigateButtons), createElement(CommitProbe)));
+      root.render(createElement(MemoryRouter, { initialEntries: ['/a'] }, renderFeedCacheContainer(), createElement(NavigateButtons), createElement(CommitProbe)));
     });
     expect(commits[0]).toEqual({ pathname: '/a', hasFeed: true, persistedKeys: [] });
 
@@ -140,7 +138,7 @@ describe('FeedCacheContainer', () => {
 
   it('disconnects inactive board subscriptions while retaining DOM and local state across thread, board and settings navigation', async () => {
     await act(async () => {
-      root.render(createElement(MemoryRouter, { initialEntries: ['/a'] }, createElement(FeedCacheContainer), createElement(NavigateButtons)));
+      root.render(createElement(MemoryRouter, { initialEntries: ['/a'] }, renderFeedCacheContainer(), createElement(NavigateButtons)));
     });
     const board = container.querySelector('[data-testid="board-/a"]');
     await act(async () => container.querySelector<HTMLButtonElement>('[data-testid="counter-/a"]')?.click());
@@ -169,7 +167,7 @@ describe('FeedCacheContainer', () => {
 
   it('preserves the existing hidden catalog subscription lifecycle', async () => {
     await act(async () => {
-      root.render(createElement(MemoryRouter, { initialEntries: ['/a/catalog'] }, createElement(FeedCacheContainer), createElement(NavigateButtons)));
+      root.render(createElement(MemoryRouter, { initialEntries: ['/a/catalog'] }, renderFeedCacheContainer(), createElement(NavigateButtons)));
     });
     await act(async () => container.querySelector<HTMLButtonElement>('[data-testid="navigate-b"]')?.click());
     expect(testState.activeSubscriptions).toEqual(new Set(['/a/catalog', '/b']));
@@ -177,9 +175,7 @@ describe('FeedCacheContainer', () => {
 
   it('suspends playable media while a cached feed is hidden and restores iframe embeds when visible again', async () => {
     await act(async () => {
-      root.render(
-        createElement(MemoryRouter, { initialEntries: ['/a'] }, createElement(FeedCacheContainer), createElement(NavigateButtons), createElement(LocationProbe)),
-      );
+      root.render(createElement(MemoryRouter, { initialEntries: ['/a'] }, renderFeedCacheContainer(), createElement(NavigateButtons), createElement(LocationProbe)));
     });
     await flushEffects();
 

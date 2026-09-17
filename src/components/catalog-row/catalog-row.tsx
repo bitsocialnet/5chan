@@ -5,7 +5,7 @@ import { Link, useLocation, useParams } from 'react-router-dom';
 import { useFloating, offset, size, Placement } from '@floating-ui/react';
 import { Comment, useReplies } from '@bitsocial/bitsocial-react-hooks';
 import getShortAddress from '../../lib/get-short-address';
-import { shouldShowSnow } from '../../lib/snow';
+import { shouldShowSnow } from '../../stores/use-special-theme-store';
 import { CommentMediaInfo, getHasThumbnail } from '../../lib/utils/media-utils';
 import { getFormattedTimeAgo } from '../../lib/utils/time-utils';
 import { isAllView, isSubscriptionsView } from '../../lib/utils/view-utils';
@@ -20,7 +20,7 @@ import { useYouTubeThumbnailFallback } from '../../hooks/use-youtube-thumbnail-f
 import useHide from '../../hooks/use-hide';
 import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
 import { CATALOG_PREVIEW_MARKDOWN_OPTIONS, removeMarkdown } from '../../lib/utils/post-utils';
-import PostMenuDesktop from '../post-desktop/post-menu-desktop/post-menu-desktop';
+import PostMenuDesktop from '../post-menu-desktop';
 import styles from './catalog-row.module.css';
 import capitalize from 'lodash/capitalize';
 import { selectPostMenuProps } from '../../lib/utils/post-menu-props';

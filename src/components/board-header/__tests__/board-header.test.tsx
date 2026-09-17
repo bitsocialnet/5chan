@@ -112,7 +112,8 @@ vi.mock('../../../hooks/use-is-community-offline', () => ({
   default: () => testState.useIsCommunityOfflineValue,
 }));
 
-vi.mock('../../../lib/snow', () => ({
+vi.mock('../../../stores/use-special-theme-store', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../stores/use-special-theme-store')>()),
   shouldShowSnow: () => testState.shouldShowSnow,
 }));
 
