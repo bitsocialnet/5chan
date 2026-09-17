@@ -103,7 +103,7 @@
     "android:build:icons": "cordova-res android --skip-config --copy --resources /tmp/bitsocial-react-android-icons --icon-source ./android/icons/icon.png --splash-source ./android/icons/splash.png --icon-foreground-source ./android/icons/icon-foreground.png --icon-background-source '#ffffee'",
     "knip": "knip --production --include dependencies,unlisted,binaries --no-progress",
     "knip:full": "knip --no-progress --no-exit-code",
-    "lint": "oxlint src/**/*.{js,ts,tsx} && corepack yarn boundaries",
+    "lint": "oxlint --deny-warnings src electron && corepack yarn boundaries",
     "boundaries": "node scripts/check-module-boundaries.mjs",
     "type-check": "tsc --noEmit",
     "prettier": "oxfmt src/**/*.{js,ts,tsx} electron/**/*.{js,mjs}",

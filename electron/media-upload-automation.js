@@ -255,7 +255,7 @@ export async function automateUploadMedia(options) {
         if (win.webContents?.debugger?.isAttached?.()) {
           win.webContents.debugger.detach();
         }
-      } catch (_) {
+      } catch {
         /* ignore */
       }
       win.destroy();

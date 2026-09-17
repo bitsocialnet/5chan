@@ -12,7 +12,7 @@ try {
   if (fs.lstatSync(logRootPath).isFile()) {
     fs.removeSync(logRootPath);
   }
-} catch (e) {}
+} catch {}
 
 const logFilePath = path.join(logRootPath, new Date().toISOString().substring(0, 7));
 fs.ensureFileSync(logFilePath);

@@ -28,6 +28,7 @@ const useReplyHeightEstimates = ({ directRepliesByParentCid, enabled = true, isM
   const themeKey = typeof document !== 'undefined' ? document.body.className : '';
   const effectiveMode = mode ?? resolveReplyVirtualizationMode(location.search);
 
+  // oxlint-disable-next-line react-hooks/exhaustive-deps -- themeKey and windowWidth key a DOM read that has no reactive inputs
   const metrics = useMemo(() => readReplyTypographyMetrics(), [themeKey, windowWidth]);
 
   const rawHeightEstimates = !enabled
