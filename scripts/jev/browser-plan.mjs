@@ -217,6 +217,7 @@ export async function runBrowserPlan(planInput, { driver, client, baseline = fal
     version: 1,
     status: 'incomplete',
     flowCompleted: false,
+    staleReplans: 0,
     reason: 'not_started',
     mode: baseline ? 'deterministic' : 'jev',
     origin: plan.origin,
@@ -327,7 +328,13 @@ export async function runBrowserPlan(planInput, { driver, client, baseline = fal
       // the driver additionally checks role/name/visibility immediately before the action.
       const fresh = await observe();
       const current = candidatesFromSnapshot(plan, fresh.snapshot, history).find((candidate) => candidate.id === selected.id);
-      if (!current || current.ref !== selected.ref) fail('stale_target');
+      if (!current || current.ref !== selected.ref) {
+        if (report.staleReplans >= 2) fail('stale_target');
+        report.staleReplans++;
+        // Discard the decision, never reuse it against a replacement element. The next loop
+        // observes and chooses again; this consumes the existing step/request/time budgets.
+        continue;
+      }
       withinDeadline();
       await driver.act(current);
       history.push(current.id);

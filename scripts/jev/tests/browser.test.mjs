@@ -56,12 +56,13 @@ function fixtureDriver(extra = {}) {
     ...extra,
   };
 }
-function fixtureClient(selected = ['open', 'theme', 'close']) {
+function fixtureClient(selected = ['open', 'theme', 'close'], options = {}) {
   let index = 0;
   return createJevClient({
     live: true,
     model: 'jev-1.13.0',
     apiKey: 'fixture-key',
+    ...options,
     fetchImpl: async (_url, init) => {
       const body = JSON.parse(init.body);
       const [questionId, question] = Object.entries(body.questions)[0];
@@ -137,7 +138,33 @@ for (const [name, mutate] of Object.entries({
     assert.throws(() => validatePlan(plan));
   });
 
-test('stale ref after model decision hands back without action', async () => {
+for (const missing of [false, true])
+  test(`transient ${missing ? 'missing target' : 'ref replacement'} discards the decision and plans again before acting`, async () => {
+    const plan = basePlan();
+    plan.actions = [plan.actions[0]];
+    plan.requiredActions = ['open'];
+    plan.reloadBeforeFinal = false;
+    let observed = 0;
+    const acted = [];
+    const driver = fixtureDriver({
+      observe: async () => {
+        observed++;
+        return { url: plan.url, snapshot: missing && observed === 2 ? '' : `- button "Settings" [ref=e${observed === 1 ? 1 : 2}]` };
+      },
+      assert: async () => [acted.length === 1],
+      act: async (action) => acted.push(action.ref),
+    });
+    const report = await runBrowserPlan(plan, { driver, client: fixtureClient(['open', 'open']) });
+    assert.equal(report.status, 'completed');
+    assert.equal(report.flowCompleted, true);
+    assert.deepEqual(acted, ['e2']);
+    assert.deepEqual(report.actions, ['open']);
+    assert.equal(report.staleReplans, 1);
+    assert.equal(report.usage.requests, 2);
+    assert.equal(driver.inspect().closed, 1);
+  });
+
+test('continued target churn exhausts two replans and hands back without any action', async () => {
   let observed = 0,
     acted = 0;
   const driver = fixtureDriver({
@@ -146,10 +173,37 @@ test('stale ref after model decision hands back without action', async () => {
       acted++;
     },
   });
-  const report = await runBrowserPlan(basePlan(), { driver, client: fixtureClient() });
+  const report = await runBrowserPlan(basePlan(), { driver, client: fixtureClient(['open', 'open', 'open']) });
   assert.equal(report.reason, 'stale_target');
+  assert.equal(report.status, 'incomplete');
+  assert.equal(report.flowCompleted, false);
+  assert.equal(report.staleReplans, 2);
+  assert.equal(report.usage.requests, 3);
+  assert.deepEqual(report.actions, []);
   assert.equal(acted, 0);
   assert.equal(driver.inspect().closed, 1);
+});
+
+test('stale replanning consumes the existing step and request budgets', async () => {
+  for (const requestLimit of [false, true]) {
+    const plan = basePlan();
+    if (!requestLimit) plan.limits = { maxSteps: 1 };
+    let observed = 0,
+      acted = 0;
+    const report = await runBrowserPlan(plan, {
+      driver: fixtureDriver({
+        observe: async () => ({ url: plan.url, snapshot: `- button "Settings" [ref=e${++observed}]` }),
+        act: async () => {
+          acted++;
+        },
+      }),
+      client: fixtureClient(['open', 'open'], requestLimit ? { maxRequests: 1 } : {}),
+    });
+    assert.equal(report.reason, requestLimit ? 'budget_exhausted' : 'step_limit');
+    assert.equal(report.usage.requests, 1);
+    assert.equal(report.flowCompleted, false);
+    assert.equal(acted, 0);
+  }
 });
 
 test('origin drift, uncertain answer, provider failure, and cleanup failure never pass', async () => {
