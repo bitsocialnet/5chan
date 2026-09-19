@@ -22,6 +22,7 @@ import { getCommentCommunityAddress, withResolvedCommentCommunityAddress } from 
 import { formatErrorMessageForDisplay } from '../../lib/utils/error-utils';
 import { hasModQueueAccessRole } from '../../lib/utils/mod-access';
 import { stripGeneratedFortuneMarkup } from '../../lib/utils/post-options-utils';
+import BoardCheckStatus from './board-check-status';
 
 const QuotedCidLink = ({ cid, postCid }: { cid: string; postCid: string }) => {
   const quotedNumber = usePostNumberStore((state) => state.cidToNumber[cid]);
@@ -103,7 +104,7 @@ const CommentContent = ({
   const isMobile = useIsMobile();
   const resolvedPost = withResolvedCommentCommunityAddress(post);
 
-  const { cid, content, deleted, parentCid, postCid, pendingApproval, quotedCids, reason, removed, state } = resolvedPost || {};
+  const { cid, content, deleted, parentCid, postCid, pendingApproval, publishingState, quotedCids, reason, removed, state } = resolvedPost || {};
   const visibleContent = !cid && content ? stripGeneratedFortuneMarkup(content) : content;
   const communityAddress = getCommentCommunityAddress(resolvedPost);
   const authorAddress = resolvedPost?.author?.address;
@@ -177,7 +178,11 @@ const CommentContent = ({
       {failedError ? (
         <ErrorDisplay error={failedError} displayMessage={failedErrorMessage ?? capitalize(t('error'))} inline={true} showImmediately={true} />
       ) : !hasFailedState ? (
-        <LoadingEllipsis string={stateString || t('loading')} />
+        publishingState === 'waiting-challenge' || publishingState === 'waiting-challenge-verification' ? (
+          <BoardCheckStatus communityAddress={communityAddress} verifyingAnswers={publishingState === 'waiting-challenge-verification'} />
+        ) : (
+          <LoadingEllipsis string={stateString || t('loading')} />
+        )
       ) : (
         stateString || capitalize(t('failed'))
       )}
