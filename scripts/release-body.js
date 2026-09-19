@@ -103,7 +103,7 @@ const downloads = [macSection, winSection, linuxSection, androidSection, htmlSec
 
 // One-liner summary of what changed in this release. Update before each release.
 const oneLinerDescription =
-  'This version removes location and camera metadata from images before upload on web, desktop, and Android, makes feed scrolling, media loading, and navigation faster, rejects temporary or broken media links before you post, and fixes account backup imports and the display name after switching accounts.';
+  'This version restores thread bumping so active threads rise to the top again, lists matching boards above post results when you search, adds the /oc/ Original Content board directory, speeds up first load, and fixes quote link previews on boards you have already visited.';
 
 const releaseBody = `${oneLinerDescription}
 

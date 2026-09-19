@@ -1,3 +1,32 @@
+## [0.9.21](https://github.com/bitsocialnet/5chan/compare/v0.9.20...v0.9.21) (2026-09-19)
+
+
+### Bug Fixes
+
+* **feeds:** restore bump order with bitsocial-react-hooks 0.1.46 ([#1210](https://github.com/bitsocialnet/5chan/issues/1210)) ([dccd3aa](https://github.com/bitsocialnet/5chan/commit/dccd3aa7b6aef155f9bacafade918cf0c4747859))
+* **links:** point bitsocial.net app links at /projects ([29a725a](https://github.com/bitsocialnet/5chan/commit/29a725ac9194ab8071fbe3c51b142fb4d1c3d3f7))
+* **posting:** show AI notice after challenge answers ([e1320c8](https://github.com/bitsocialnet/5chan/commit/e1320c84ad9353f7c8703b303a86a09025b0ce73))
+* **quote previews:** pick the visible target and keep the first preview on screen ([af3b129](https://github.com/bitsocialnet/5chan/commit/af3b129ad08870b621d69c89610931fc731fe829))
+* **search:** escape the NUL byte in the catalog row key ([#1208](https://github.com/bitsocialnet/5chan/issues/1208)) ([8453f4c](https://github.com/bitsocialnet/5chan/commit/8453f4c966e8bca4cea19b00427da5706ad1815b))
+* **testing:** load shared private Jev credentials ([#1215](https://github.com/bitsocialnet/5chan/issues/1215)) ([2f15d24](https://github.com/bitsocialnet/5chan/commit/2f15d242955bc3e9cd59667898fee495168a1e5a))
+* **tests:** stop the lookup-utils mock race in the directory list test ([#1209](https://github.com/bitsocialnet/5chan/issues/1209)) ([440af5c](https://github.com/bitsocialnet/5chan/commit/440af5c6b07e134c39237d43a7abba086aa48635))
+
+
+### Features
+
+* **boards:** add /oc/ - Original Content directory ([#1212](https://github.com/bitsocialnet/5chan/issues/1212)) ([c80008b](https://github.com/bitsocialnet/5chan/commit/c80008b5a8ae46e9970b4d278ebd7ae746a0aa71)), closes [bitsocialnet/lists#11](https://github.com/bitsocialnet/lists/issues/11)
+* **devtools:** add automated React render checks ([784c916](https://github.com/bitsocialnet/5chan/commit/784c916e6d840db61a4f1de0e320d593bf19a74c))
+* **i18n:** translate board-check posting status ([d4dff86](https://github.com/bitsocialnet/5chan/commit/d4dff86d355a703d7619f3011cf17ce477eaa3b0))
+* **search:** list matching boards above post results ([#1207](https://github.com/bitsocialnet/5chan/issues/1207)) ([4196bbb](https://github.com/bitsocialnet/5chan/commit/4196bbb36d6a2ee250be6ac4685b3dc8df6176b6))
+* **testing:** add optional Jev browser and translation checks ([#1214](https://github.com/bitsocialnet/5chan/issues/1214)) ([a800e85](https://github.com/bitsocialnet/5chan/commit/a800e854bf4b1f5fbc3319a12ecef2e579b1f72d))
+
+
+### Performance Improvements
+
+* **app:** reduce background rendering and accelerate first load ([#1211](https://github.com/bitsocialnet/5chan/issues/1211)) ([d173079](https://github.com/bitsocialnet/5chan/commit/d173079c989b72c574a8c153272e3f6523bae705))
+
+
+
 ## [0.9.20](https://github.com/bitsocialnet/5chan/compare/v0.9.19...v0.9.20) (2026-09-12)
 
 

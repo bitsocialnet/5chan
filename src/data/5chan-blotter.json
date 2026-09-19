@@ -1,6 +1,13 @@
 {
   "entries": [
     {
+      "id": "release-0.9.21",
+      "kind": "release",
+      "timestamp": 1789819200,
+      "message": "v0.9.21: Thread bumping restored, boards in search results, new /oc/ board",
+      "version": "0.9.21"
+    },
+    {
       "id": "release-0.9.20",
       "kind": "release",
       "timestamp": 1789214400,
