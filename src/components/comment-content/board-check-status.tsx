@@ -1,7 +1,7 @@
 import { useCommunity } from '@bitsocial/bitsocial-react-hooks';
 import { Trans, useTranslation } from 'react-i18next';
 import { useCommunityIdentifier } from '../../hooks/use-community-identifiers';
-import LoadingEllipsis from '../loading-ellipsis/loading-ellipsis';
+import LoadingEllipsis from '../loading-ellipsis';
 
 const BoardCheckStatus = ({ communityAddress, verifyingAnswers }: { communityAddress?: string; verifyingAnswers: boolean }) => {
   const { t } = useTranslation();
