@@ -480,5 +480,8 @@
   "image_cannot_be_embedded": "لا يمكن تضمين الصورة من {{host}}",
   "search_board_title": "الاسم",
   "search_board_address": "العنوان",
-  "search_more_boards": "عرض {{count}} أخرى"
+  "search_more_boards": "عرض {{count}} أخرى",
+  "waiting_board_post_check": "في انتظار أن يتحقق المنتدى من منشورك",
+  "waiting_board_challenge_verification": "في انتظار أن يتحقق المنتدى من إجاباتك على التحدي",
+  "board_uses_ai_moderation": "يستخدم هذا المنتدى <1>الإشراف بالذكاء الاصطناعي</1> للتحقق من التزام المنشورات بقواعده."
 }

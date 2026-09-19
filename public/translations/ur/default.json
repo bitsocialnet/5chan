@@ -480,5 +480,8 @@
   "image_cannot_be_embedded": "{{host}} سے تصویر ایمبیڈ نہیں کی جا سکتی",
   "search_board_title": "عنوان",
   "search_board_address": "پتہ",
-  "search_more_boards": "{{count}} مزید دکھائیں"
+  "search_more_boards": "{{count}} مزید دکھائیں",
+  "waiting_board_post_check": "بورڈ کی جانب سے آپ کی پوسٹ کی جانچ کا انتظار ہے",
+  "waiting_board_challenge_verification": "بورڈ کی جانب سے آپ کے چیلنج کے جوابات کی تصدیق کا انتظار ہے",
+  "board_uses_ai_moderation": "یہ بورڈ پوسٹس کو اپنے قواعد کے مطابق جانچنے کے لیے <1>AI کے ذریعے نگرانی</1> کا استعمال کرتا ہے۔"
 }

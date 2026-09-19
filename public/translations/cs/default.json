@@ -480,5 +480,8 @@
   "image_cannot_be_embedded": "Obrázek z {{host}} nelze vložit",
   "search_board_title": "Název",
   "search_board_address": "Adresa",
-  "search_more_boards": "zobrazit dalších {{count}}"
+  "search_more_boards": "zobrazit dalších {{count}}",
+  "waiting_board_post_check": "Čekání, až fórum zkontroluje váš příspěvek",
+  "waiting_board_challenge_verification": "Čekání, až fórum ověří vaše odpovědi na výzvu",
+  "board_uses_ai_moderation": "Toto fórum používá <1>moderování pomocí AI</1> ke kontrole, zda příspěvky dodržují jeho pravidla."
 }

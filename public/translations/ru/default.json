@@ -480,5 +480,8 @@
   "image_cannot_be_embedded": "Изображение с {{host}} нельзя встроить",
   "search_board_title": "Название",
   "search_board_address": "Адрес",
-  "search_more_boards": "показать ещё {{count}}"
+  "search_more_boards": "показать ещё {{count}}",
+  "waiting_board_post_check": "Ожидание проверки вашего сообщения форумом",
+  "waiting_board_challenge_verification": "Ожидание проверки ваших ответов на задачу форумом",
+  "board_uses_ai_moderation": "Этот форум использует <1>модерацию с помощью ИИ</1> для проверки сообщений на соответствие своим правилам."
 }

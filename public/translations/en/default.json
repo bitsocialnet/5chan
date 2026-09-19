@@ -501,5 +501,8 @@
   "image_cannot_be_embedded": "Can't embed image from {{host}}",
   "search_board_title": "Title",
   "search_board_address": "Address",
-  "search_more_boards": "show {{count}} more"
+  "search_more_boards": "show {{count}} more",
+  "waiting_board_post_check": "Waiting for the board to check your post",
+  "waiting_board_challenge_verification": "Waiting for the board to verify your challenge answers",
+  "board_uses_ai_moderation": "This board uses <1>AI moderation</1> to check posts against its rules."
 }

@@ -480,5 +480,8 @@
   "image_cannot_be_embedded": "Không thể nhúng hình ảnh từ {{host}}",
   "search_board_title": "Tiêu đề",
   "search_board_address": "Địa chỉ",
-  "search_more_boards": "hiển thị thêm {{count}}"
+  "search_more_boards": "hiển thị thêm {{count}}",
+  "waiting_board_post_check": "Đang chờ diễn đàn kiểm tra bài đăng của bạn",
+  "waiting_board_challenge_verification": "Đang chờ diễn đàn xác minh câu trả lời thử thách của bạn",
+  "board_uses_ai_moderation": "Diễn đàn này sử dụng <1>kiểm duyệt bằng AI</1> để kiểm tra xem bài đăng có tuân thủ quy tắc của diễn đàn hay không."
 }

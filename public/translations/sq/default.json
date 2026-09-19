@@ -480,5 +480,8 @@
   "image_cannot_be_embedded": "Imazhi nga {{host}} nuk mund të integrohet",
   "search_board_title": "Titulli",
   "search_board_address": "Adresa",
-  "search_more_boards": "shfaq {{count}} të tjera"
+  "search_more_boards": "shfaq {{count}} të tjera",
+  "waiting_board_post_check": "Në pritje që forumi të kontrollojë postimin tuaj",
+  "waiting_board_challenge_verification": "Në pritje që forumi të verifikojë përgjigjet tuaja ndaj sfidës",
+  "board_uses_ai_moderation": "Ky forum përdor <1>moderimin me inteligjencë artificiale</1> për të kontrolluar nëse postimet përputhen me rregullat e tij."
 }

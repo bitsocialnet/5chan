@@ -480,5 +480,8 @@
   "image_cannot_be_embedded": "{{host}} kaynağındaki görsel yerleştirilemiyor",
   "search_board_title": "Başlık",
   "search_board_address": "Adres",
-  "search_more_boards": "{{count}} tane daha göster"
+  "search_more_boards": "{{count}} tane daha göster",
+  "waiting_board_post_check": "Forumun gönderinizi kontrol etmesi bekleniyor",
+  "waiting_board_challenge_verification": "Forumun doğrulama yanıtlarınızı kontrol etmesi bekleniyor",
+  "board_uses_ai_moderation": "Bu forum, gönderilerin kurallarına uygunluğunu denetlemek için <1>yapay zekâ moderasyonu</1> kullanır."
 }

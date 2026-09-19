@@ -480,5 +480,8 @@
   "image_cannot_be_embedded": "Kuvaa kohteesta {{host}} ei voi upottaa",
   "search_board_title": "Otsikko",
   "search_board_address": "Osoite",
-  "search_more_boards": "näytä {{count}} lisää"
+  "search_more_boards": "näytä {{count}} lisää",
+  "waiting_board_post_check": "Odotetaan, että foorumi tarkistaa viestisi",
+  "waiting_board_challenge_verification": "Odotetaan, että foorumi vahvistaa haastevastauksesi",
+  "board_uses_ai_moderation": "Tämä foorumi käyttää <1>tekoälymoderointia</1> tarkistaakseen, että viestit noudattavat sen sääntöjä."
 }

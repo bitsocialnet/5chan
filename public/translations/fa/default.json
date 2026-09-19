@@ -480,5 +480,8 @@
   "image_cannot_be_embedded": "تصویر از {{host}} قابل جاسازی نیست",
   "search_board_title": "عنوان",
   "search_board_address": "نشانی",
-  "search_more_boards": "نمایش {{count}} مورد دیگر"
+  "search_more_boards": "نمایش {{count}} مورد دیگر",
+  "waiting_board_post_check": "در انتظار بررسی پست شما توسط تالار",
+  "waiting_board_challenge_verification": "در انتظار تأیید پاسخ‌های شما به چالش توسط تالار",
+  "board_uses_ai_moderation": "این تالار از <1>نظارت با هوش مصنوعی</1> برای بررسی مطابقت پست‌ها با قوانین خود استفاده می‌کند."
 }

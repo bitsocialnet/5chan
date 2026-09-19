@@ -480,5 +480,8 @@
   "image_cannot_be_embedded": "ไม่สามารถฝังรูปภาพจาก {{host}} ได้",
   "search_board_title": "ชื่อ",
   "search_board_address": "ที่อยู่",
-  "search_more_boards": "แสดงเพิ่มอีก {{count}}"
+  "search_more_boards": "แสดงเพิ่มอีก {{count}}",
+  "waiting_board_post_check": "กำลังรอให้กระดานตรวจสอบโพสต์ของคุณ",
+  "waiting_board_challenge_verification": "กำลังรอให้กระดานตรวจสอบคำตอบของคุณสำหรับความท้าทาย",
+  "board_uses_ai_moderation": "กระดานนี้ใช้<1>การกลั่นกรองโดย AI</1>เพื่อตรวจสอบว่าโพสต์เป็นไปตามกฎของกระดานหรือไม่"
 }

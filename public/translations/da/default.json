@@ -480,5 +480,8 @@
   "image_cannot_be_embedded": "Billedet fra {{host}} kan ikke indlejres",
   "search_board_title": "Titel",
   "search_board_address": "Adresse",
-  "search_more_boards": "vis {{count}} mere"
+  "search_more_boards": "vis {{count}} mere",
+  "waiting_board_post_check": "Venter på, at forummet tjekker dit indlæg",
+  "waiting_board_challenge_verification": "Venter på, at forummet verificerer dine svar på udfordringen",
+  "board_uses_ai_moderation": "Dette forum bruger <1>AI-moderation</1> til at kontrollere, om indlæg overholder dets regler."
 }

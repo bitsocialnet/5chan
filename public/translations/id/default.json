@@ -480,5 +480,8 @@
   "image_cannot_be_embedded": "Gambar dari {{host}} tidak dapat disematkan",
   "search_board_title": "Judul",
   "search_board_address": "Alamat",
-  "search_more_boards": "tampilkan {{count}} lagi"
+  "search_more_boards": "tampilkan {{count}} lagi",
+  "waiting_board_post_check": "Menunggu forum memeriksa postingan Anda",
+  "waiting_board_challenge_verification": "Menunggu forum memverifikasi jawaban tantangan Anda",
+  "board_uses_ai_moderation": "Forum ini menggunakan <1>moderasi AI</1> untuk memeriksa apakah postingan mematuhi aturannya."
 }

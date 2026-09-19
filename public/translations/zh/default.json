@@ -480,5 +480,8 @@
   "image_cannot_be_embedded": "无法嵌入来自 {{host}} 的图片",
   "search_board_title": "标题",
   "search_board_address": "地址",
-  "search_more_boards": "显示另外 {{count}} 个"
+  "search_more_boards": "显示另外 {{count}} 个",
+  "waiting_board_post_check": "正在等待论坛检查你的帖子",
+  "waiting_board_challenge_verification": "正在等待论坛验证你的挑战答案",
+  "board_uses_ai_moderation": "本论坛使用<1>AI 审核</1>来检查帖子是否符合论坛规则。"
 }
