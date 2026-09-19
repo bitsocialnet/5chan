@@ -477,5 +477,8 @@
   "auto": "자동",
   "directory_submit_provider": "제공자 제출",
   "directory_winner_subtitle": "현재 /{{boardIdentifier}}/ 우승자: {{address}}",
-  "image_cannot_be_embedded": "{{host}}의 이미지를 삽입할 수 없습니다"
+  "image_cannot_be_embedded": "{{host}}의 이미지를 삽입할 수 없습니다",
+  "waiting_board_post_check": "게시판에서 회원님의 게시물을 확인하기를 기다리는 중",
+  "waiting_board_challenge_verification": "게시판에서 회원님의 챌린지 답변을 검증하기를 기다리는 중",
+  "board_uses_ai_moderation": "이 게시판은 게시물이 규칙을 준수하는지 확인하기 위해 <1>AI 모더레이션</1>을 사용합니다."
 }

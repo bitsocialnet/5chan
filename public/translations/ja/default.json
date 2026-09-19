@@ -477,5 +477,8 @@
   "auto": "自動",
   "directory_submit_provider": "プロバイダーを申請",
   "directory_winner_subtitle": "現在の /{{boardIdentifier}}/ 優勝者: {{address}}",
-  "image_cannot_be_embedded": "{{host}} の画像を埋め込めません"
+  "image_cannot_be_embedded": "{{host}} の画像を埋め込めません",
+  "waiting_board_post_check": "掲示板による投稿の確認を待っています",
+  "waiting_board_challenge_verification": "掲示板によるチャレンジ回答の検証を待っています",
+  "board_uses_ai_moderation": "この掲示板は、投稿がルールに従っているかを確認するために<1>AIモデレーション</1>を使用しています。"
 }

@@ -477,5 +477,8 @@
   "auto": "auto",
   "directory_submit_provider": "Szolgáltató beküldése",
   "directory_winner_subtitle": "Jelenlegi /{{boardIdentifier}}/ nyertes: {{address}}",
-  "image_cannot_be_embedded": "A(z) {{host}} webhelyről származó kép nem ágyazható be"
+  "image_cannot_be_embedded": "A(z) {{host}} webhelyről származó kép nem ágyazható be",
+  "waiting_board_post_check": "Várakozás arra, hogy a fórum ellenőrizze a bejegyzésed",
+  "waiting_board_challenge_verification": "Várakozás arra, hogy a fórum ellenőrizze a kihívásra adott válaszaid",
+  "board_uses_ai_moderation": "Ez a fórum <1>mesterséges intelligenciával végzett moderálást</1> használ annak ellenőrzésére, hogy a bejegyzések megfelelnek-e a szabályainak."
 }

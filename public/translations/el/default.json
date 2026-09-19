@@ -477,5 +477,8 @@
   "auto": "αυτόματο",
   "directory_submit_provider": "Υποβολή παρόχου",
   "directory_winner_subtitle": "Τρέχων νικητής /{{boardIdentifier}}/: {{address}}",
-  "image_cannot_be_embedded": "Δεν είναι δυνατή η ενσωμάτωση της εικόνας από {{host}}"
+  "image_cannot_be_embedded": "Δεν είναι δυνατή η ενσωμάτωση της εικόνας από {{host}}",
+  "waiting_board_post_check": "Αναμονή για τον έλεγχο της δημοσίευσής σας από το φόρουμ",
+  "waiting_board_challenge_verification": "Αναμονή για την επαλήθευση των απαντήσεών σας στην πρόκληση από το φόρουμ",
+  "board_uses_ai_moderation": "Αυτό το φόρουμ χρησιμοποιεί <1>συντονισμό με τεχνητή νοημοσύνη</1> για να ελέγχει αν οι δημοσιεύσεις συμμορφώνονται με τους κανόνες του."
 }

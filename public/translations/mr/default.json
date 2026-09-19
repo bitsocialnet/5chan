@@ -477,5 +477,8 @@
   "auto": "स्वयं",
   "directory_submit_provider": "प्रदाता सबमिट करा",
   "directory_winner_subtitle": "वर्तमान /{{boardIdentifier}}/ विजेता: {{address}}",
-  "image_cannot_be_embedded": "{{host}} वरील प्रतिमा एम्बेड करता येत नाही"
+  "image_cannot_be_embedded": "{{host}} वरील प्रतिमा एम्बेड करता येत नाही",
+  "waiting_board_post_check": "बोर्डाने तुमची पोस्ट तपासण्याची प्रतीक्षा करत आहे",
+  "waiting_board_challenge_verification": "बोर्डाने तुमच्या आव्हानाच्या उत्तरांची पडताळणी करण्याची प्रतीक्षा करत आहे",
+  "board_uses_ai_moderation": "हा बोर्ड पोस्ट त्याच्या नियमांचे पालन करतात का हे तपासण्यासाठी <1>AI मॉडरेशन</1> वापरतो."
 }

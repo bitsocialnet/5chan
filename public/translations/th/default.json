@@ -477,5 +477,8 @@
   "auto": "อัตโนมัติ",
   "directory_submit_provider": "ส่งผู้ให้บริการ",
   "directory_winner_subtitle": "ผู้ชนะปัจจุบัน /{{boardIdentifier}}/: {{address}}",
-  "image_cannot_be_embedded": "ไม่สามารถฝังรูปภาพจาก {{host}} ได้"
+  "image_cannot_be_embedded": "ไม่สามารถฝังรูปภาพจาก {{host}} ได้",
+  "waiting_board_post_check": "กำลังรอให้กระดานตรวจสอบโพสต์ของคุณ",
+  "waiting_board_challenge_verification": "กำลังรอให้กระดานตรวจสอบคำตอบของคุณสำหรับความท้าทาย",
+  "board_uses_ai_moderation": "กระดานนี้ใช้<1>การกลั่นกรองโดย AI</1>เพื่อตรวจสอบว่าโพสต์เป็นไปตามกฎของกระดานหรือไม่"
 }

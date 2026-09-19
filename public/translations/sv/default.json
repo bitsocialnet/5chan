@@ -477,5 +477,8 @@
   "auto": "auto",
   "directory_submit_provider": "Skicka in en leverantör",
   "directory_winner_subtitle": "Nuvarande /{{boardIdentifier}}/ vinnare: {{address}}",
-  "image_cannot_be_embedded": "Bilden från {{host}} kan inte bäddas in"
+  "image_cannot_be_embedded": "Bilden från {{host}} kan inte bäddas in",
+  "waiting_board_post_check": "Väntar på att forumet kontrollerar ditt inlägg",
+  "waiting_board_challenge_verification": "Väntar på att forumet verifierar dina svar på utmaningen",
+  "board_uses_ai_moderation": "Detta forum använder <1>AI-moderering</1> för att kontrollera att inlägg följer dess regler."
 }

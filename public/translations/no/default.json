@@ -477,5 +477,8 @@
   "auto": "auto",
   "directory_submit_provider": "Send inn en leverandør",
   "directory_winner_subtitle": "Nåværende /{{boardIdentifier}}/ vinner: {{address}}",
-  "image_cannot_be_embedded": "Bildet fra {{host}} kan ikke bygges inn"
+  "image_cannot_be_embedded": "Bildet fra {{host}} kan ikke bygges inn",
+  "waiting_board_post_check": "Venter på at forumet sjekker innlegget ditt",
+  "waiting_board_challenge_verification": "Venter på at forumet verifiserer svarene dine på utfordringen",
+  "board_uses_ai_moderation": "Dette forumet bruker <1>KI-moderering</1> for å sjekke om innlegg følger reglene."
 }

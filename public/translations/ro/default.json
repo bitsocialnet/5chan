@@ -477,5 +477,8 @@
   "auto": "auto",
   "directory_submit_provider": "Trimite un furnizor",
   "directory_winner_subtitle": "Câștigătorul actual de /{{boardIdentifier}}/: {{address}}",
-  "image_cannot_be_embedded": "Imaginea de la {{host}} nu poate fi încorporată"
+  "image_cannot_be_embedded": "Imaginea de la {{host}} nu poate fi încorporată",
+  "waiting_board_post_check": "Se așteaptă ca forumul să îți verifice postarea",
+  "waiting_board_challenge_verification": "Se așteaptă ca forumul să îți verifice răspunsurile la provocare",
+  "board_uses_ai_moderation": "Acest forum folosește <1>moderarea cu inteligență artificială</1> pentru a verifica dacă postările respectă regulile sale."
 }

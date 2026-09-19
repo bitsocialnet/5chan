@@ -477,5 +477,8 @@
   "auto": "auto",
   "directory_submit_provider": "Enviar un proveedor",
   "directory_winner_subtitle": "Ganador actual de /{{boardIdentifier}}/: {{address}}",
-  "image_cannot_be_embedded": "No se puede incrustar la imagen de {{host}}"
+  "image_cannot_be_embedded": "No se puede incrustar la imagen de {{host}}",
+  "waiting_board_post_check": "Esperando a que el foro revise tu mensaje",
+  "waiting_board_challenge_verification": "Esperando a que el foro verifique tus respuestas al desafío",
+  "board_uses_ai_moderation": "Este foro utiliza <1>moderación con IA</1> para comprobar que los mensajes cumplen sus reglas."
 }

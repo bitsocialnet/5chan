@@ -477,5 +477,8 @@
   "auto": "auto",
   "directory_submit_provider": "Indsend en udbyder",
   "directory_winner_subtitle": "Nuværende /{{boardIdentifier}}/ vinder: {{address}}",
-  "image_cannot_be_embedded": "Billedet fra {{host}} kan ikke indlejres"
+  "image_cannot_be_embedded": "Billedet fra {{host}} kan ikke indlejres",
+  "waiting_board_post_check": "Venter på, at forummet tjekker dit indlæg",
+  "waiting_board_challenge_verification": "Venter på, at forummet verificerer dine svar på udfordringen",
+  "board_uses_ai_moderation": "Dette forum bruger <1>AI-moderation</1> til at kontrollere, om indlæg overholder dets regler."
 }

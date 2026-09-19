@@ -477,5 +477,8 @@
   "auto": "auto",
   "directory_submit_provider": "Proposer un fournisseur",
   "directory_winner_subtitle": "Gagnant actuel de /{{boardIdentifier}}/: {{address}}",
-  "image_cannot_be_embedded": "Impossible d’intégrer l’image de {{host}}"
+  "image_cannot_be_embedded": "Impossible d’intégrer l’image de {{host}}",
+  "waiting_board_post_check": "En attente de la vérification de votre post par le forum",
+  "waiting_board_challenge_verification": "En attente de la vérification de vos réponses au défi par le forum",
+  "board_uses_ai_moderation": "Ce forum utilise la <1>modération par IA</1> pour vérifier que les posts respectent ses règles."
 }

@@ -477,5 +477,8 @@
   "auto": "авто",
   "directory_submit_provider": "Надіслати провайдера",
   "directory_winner_subtitle": "Поточний переможець /{{boardIdentifier}}/: {{address}}",
-  "image_cannot_be_embedded": "Зображення з {{host}} неможливо вбудувати"
+  "image_cannot_be_embedded": "Зображення з {{host}} неможливо вбудувати",
+  "waiting_board_post_check": "Очікування перевірки вашого допису форумом",
+  "waiting_board_challenge_verification": "Очікування перевірки ваших відповідей на виклик форумом",
+  "board_uses_ai_moderation": "Цей форум використовує <1>модерацію за допомогою ШІ</1> для перевірки дописів на відповідність своїм правилам."
 }

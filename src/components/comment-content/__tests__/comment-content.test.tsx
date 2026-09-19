@@ -1,8 +1,13 @@
 import * as React from 'react';
 import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
+import { createInstance } from 'i18next';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import CommentContent from '../comment-content';
+import englishTranslations from '../../../../public/translations/en/default.json';
+
+const boardStatusI18n = createInstance();
+void boardStatusI18n.init({ lng: 'en', resources: { en: { translation: englishTranslations } }, initAsync: false });
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
@@ -58,42 +63,50 @@ const testState = vi.hoisted(() => ({
   unavailableCids: new Set<string>(),
 }));
 
-vi.mock('react-i18next', () => ({
-  Trans: ({
-    components,
-    i18nKey,
-    values,
-  }: {
-    components?: Record<number, React.ReactElement<Record<string, unknown>>>;
-    i18nKey: string;
-    values?: Record<string, unknown>;
-  }) =>
-    createElement(
-      'span',
-      { 'data-testid': `trans-${i18nKey}` },
-      values?.timestamp ? `${i18nKey}:${values.timestamp}` : i18nKey,
-      components?.[1]
-        ? React.cloneElement(components[1], {
-            'data-testid': `trans-action-${i18nKey}`,
-            children: i18nKey,
-          })
-        : null,
-    ),
-  useTranslation: () => ({
-    t: (key: string, options?: Record<string, unknown>) => {
-      if (key === 'reason_reason') {
-        return `reason:${options?.reason}`;
-      }
-      if (key === 'pending_mod_approval_reason') {
-        return `pending-reason:${options?.reason}`;
-      }
-      if (key === 'ban_expires_at') {
-        return `ban:${options?.address}:${options?.timestamp}`;
-      }
-      return key;
-    },
-  }),
-}));
+vi.mock('react-i18next', async () => {
+  const actual = await vi.importActual<typeof import('react-i18next')>('react-i18next');
+  return {
+    Trans: ({
+      components,
+      i18nKey,
+      values,
+    }: {
+      components?: Record<number, React.ReactElement<Record<string, unknown>>>;
+      i18nKey: string;
+      values?: Record<string, unknown>;
+    }) =>
+      i18nKey === 'board_uses_ai_moderation'
+        ? createElement(actual.Trans, { i18n: boardStatusI18n, i18nKey, components })
+        : createElement(
+            'span',
+            { 'data-testid': `trans-${i18nKey}` },
+            values?.timestamp ? `${i18nKey}:${values.timestamp}` : i18nKey,
+            components?.[1]
+              ? React.cloneElement(components[1], {
+                  'data-testid': `trans-action-${i18nKey}`,
+                  children: i18nKey,
+                })
+              : null,
+          ),
+    useTranslation: () => ({
+      t: (key: string, options?: Record<string, unknown>) => {
+        if (key === 'waiting_board_post_check' || key === 'waiting_board_challenge_verification') {
+          return boardStatusI18n.t(key);
+        }
+        if (key === 'reason_reason') {
+          return `reason:${options?.reason}`;
+        }
+        if (key === 'pending_mod_approval_reason') {
+          return `pending-reason:${options?.reason}`;
+        }
+        if (key === 'ban_expires_at') {
+          return `ban:${options?.address}:${options?.timestamp}`;
+        }
+        return key;
+      },
+    }),
+  };
+});
 
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom');

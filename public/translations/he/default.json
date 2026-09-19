@@ -477,5 +477,8 @@
   "auto": "אוטומטי",
   "directory_submit_provider": "הגשת ספק",
   "directory_winner_subtitle": "הזוכה הנוכחי של /{{boardIdentifier}}/: {{address}}",
-  "image_cannot_be_embedded": "לא ניתן להטמיע תמונה מהאתר {{host}}"
+  "image_cannot_be_embedded": "לא ניתן להטמיע תמונה מהאתר {{host}}",
+  "waiting_board_post_check": "ממתינים שהפורום יבדוק את הפוסט שלך",
+  "waiting_board_challenge_verification": "ממתינים שהפורום יאמת את התשובות שלך לאתגר",
+  "board_uses_ai_moderation": "הפורום הזה משתמש ב<1>ניהול תוכן באמצעות בינה מלאכותית</1> כדי לבדוק שהפוסטים תואמים לכללים שלו."
 }

@@ -477,5 +477,8 @@
   "auto": "otomatis",
   "directory_submit_provider": "Kirim penyedia",
   "directory_winner_subtitle": "Pemenang /{{boardIdentifier}}/ saat ini: {{address}}",
-  "image_cannot_be_embedded": "Gambar dari {{host}} tidak dapat disematkan"
+  "image_cannot_be_embedded": "Gambar dari {{host}} tidak dapat disematkan",
+  "waiting_board_post_check": "Menunggu forum memeriksa postingan Anda",
+  "waiting_board_challenge_verification": "Menunggu forum memverifikasi jawaban tantangan Anda",
+  "board_uses_ai_moderation": "Forum ini menggunakan <1>moderasi AI</1> untuk memeriksa apakah postingan mematuhi aturannya."
 }

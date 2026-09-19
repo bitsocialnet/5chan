@@ -477,5 +477,8 @@
   "auto": "auto",
   "directory_submit_provider": "Anbieter einreichen",
   "directory_winner_subtitle": "Aktueller /{{boardIdentifier}}/-Sieger: {{address}}",
-  "image_cannot_be_embedded": "Das Bild von {{host}} kann nicht eingebettet werden"
+  "image_cannot_be_embedded": "Das Bild von {{host}} kann nicht eingebettet werden",
+  "waiting_board_post_check": "Warte darauf, dass das Forum deinen Beitrag prüft",
+  "waiting_board_challenge_verification": "Warte darauf, dass das Forum deine Antworten auf die Herausforderung überprüft",
+  "board_uses_ai_moderation": "Dieses Forum nutzt <1>KI-Moderation</1>, um Beiträge auf die Einhaltung seiner Regeln zu prüfen."
 }

@@ -477,5 +477,8 @@
   "auto": "otomatik",
   "directory_submit_provider": "Sağlayıcı gönder",
   "directory_winner_subtitle": "Mevcut /{{boardIdentifier}}/ kazananı: {{address}}",
-  "image_cannot_be_embedded": "{{host}} kaynağındaki görsel yerleştirilemiyor"
+  "image_cannot_be_embedded": "{{host}} kaynağındaki görsel yerleştirilemiyor",
+  "waiting_board_post_check": "Forumun gönderinizi kontrol etmesi bekleniyor",
+  "waiting_board_challenge_verification": "Forumun doğrulama yanıtlarınızı kontrol etmesi bekleniyor",
+  "board_uses_ai_moderation": "Bu forum, gönderilerin kurallarına uygunluğunu denetlemek için <1>yapay zekâ moderasyonu</1> kullanır."
 }

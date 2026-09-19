@@ -477,5 +477,8 @@
   "auto": "auto",
   "directory_submit_provider": "Enviar um provedor",
   "directory_winner_subtitle": "Vencedor atual de /{{boardIdentifier}}/: {{address}}",
-  "image_cannot_be_embedded": "Não é possível incorporar a imagem de {{host}}"
+  "image_cannot_be_embedded": "Não é possível incorporar a imagem de {{host}}",
+  "waiting_board_post_check": "Aguardando o fórum verificar sua postagem",
+  "waiting_board_challenge_verification": "Aguardando o fórum verificar suas respostas ao desafio",
+  "board_uses_ai_moderation": "Este fórum usa <1>moderação por IA</1> para verificar se as postagens seguem suas regras."
 }
