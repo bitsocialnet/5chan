@@ -16,3 +16,5 @@ Return actionable findings with file/line evidence, impact, and a practical corr
 A review-only request returns findings without edits. During an authorized implementation, apply high-confidence in-scope fixes without asking again for that authorization. This is an advisory pass, not an extra approval gate. Reuse verification evidence for the same final state; consult `docs/agent-playbooks/verification.md` only when a change or concrete uncertainty calls for more checks.
 
 When a substantive review correction exposes a preventable mistake, use [retro](../retro/SKILL.md) to identify useful prevention. Keep review-only requests read-only and reuse existing coverage where sufficient.
+
+For an explicitly scoped semantic second opinion, use [Jev diff review](../../../scripts/jev/review-README.md) via the repository root. Select only relevant changed files and rules; the helper is opt-in, sends selected content only with `--live`, and returns advisory issues or uncertainty. Keep deterministic lint/tests and independent review authoritative. Do not wire it into automatic edit, commit, or repair hooks.
