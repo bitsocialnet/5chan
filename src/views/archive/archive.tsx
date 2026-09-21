@@ -9,7 +9,6 @@ import { PageFooterDesktop, PageFooterMobile, ThreadFooterStyleRow } from '../..
 import LoadingEllipsis from '../../components/loading-ellipsis';
 import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
 import { useCommunityField } from '../../hooks/use-stable-community';
-import { useFeedStateString } from '../../hooks/use-state-string';
 import { getBoardPath } from '../../lib/utils/route-utils';
 import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
 import { removeMarkdown } from '../../lib/utils/post-utils';
@@ -106,7 +105,7 @@ const getArchiveWindowInDays = (comments: BoardFeedComment[]) => {
   return Math.max(1, Math.ceil(elapsedSeconds / SECONDS_PER_DAY));
 };
 
-const ArchiveFooter = ({ hasMore, loadingState, onLoadMore }: { hasMore: boolean; loadingState: string; onLoadMore: () => void }) => {
+const ArchiveFooter = ({ hasMore, onLoadMore }: { hasMore: boolean; onLoadMore: () => void }) => {
   const { t } = useTranslation();
 
   if (!hasMore) {
@@ -115,10 +114,11 @@ const ArchiveFooter = ({ hasMore, loadingState, onLoadMore }: { hasMore: boolean
 
   return (
     <div className={styles.footerState}>
-      <button type='button' className={styles.loadMoreButton} onClick={onLoadMore}>
+      <span className={styles.loadMoreBracket}>[</span>
+      <button type='button' className='button' onClick={onLoadMore}>
         {t('load_more')}
       </button>
-      <LoadingEllipsis string={loadingState} />
+      <span className={styles.loadMoreBracket}>]</span>
     </div>
   );
 };
@@ -202,7 +202,6 @@ const Archive = () => {
   );
 
   const { feed, hasMore, loadMore } = useFeed(feedOptions);
-  const loadingState = useFeedStateString(communityAddresses) || (hasMore ? t('loading_feed') : t('no_threads'));
   const community = useCommunity(communityIdentifier ? { community: communityIdentifier } : undefined);
   const { error: communityError } = community || {};
   const archiveWindowInDays = useMemo(() => getArchiveWindowInDays(feed), [feed]);
@@ -301,7 +300,7 @@ const Archive = () => {
         </table>
       )}
 
-      <ArchiveFooter hasMore={hasMore} loadingState={loadingState} onLoadMore={loadMore} />
+      <ArchiveFooter hasMore={hasMore} onLoadMore={loadMore} />
 
       <PageFooterDesktop firstRow={<ArchiveDesktopFooterControls communityAddress={communityAddress} />} styleRow={<ThreadFooterStyleRow />} />
       <PageFooterMobile>

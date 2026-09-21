@@ -211,6 +211,9 @@ describe('Archive', () => {
 
     const loadMoreButton = Array.from(container.querySelectorAll('button')).find((button) => button.textContent === 'load_more');
     expect(loadMoreButton).toBeTruthy();
+    expect(loadMoreButton?.className).toBe('button');
+    expect(loadMoreButton?.parentElement?.textContent).toBe('[load_more]');
+    expect(loadMoreButton?.parentElement?.querySelector('[data-testid="loading-ellipsis"]')).toBeNull();
 
     act(() => {
       loadMoreButton?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
