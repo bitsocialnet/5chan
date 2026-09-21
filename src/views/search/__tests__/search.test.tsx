@@ -41,6 +41,24 @@ const indexedBoards = [
 
 const getSearchCalls = (fetchMock: ReturnType<typeof vi.fn>) => fetchMock.mock.calls.filter(([url]) => String(url).includes('/api/search'));
 
+const changePostStatus = async (value: string) => {
+  const select = container.querySelector<HTMLSelectElement>('[class*="postStatus"] select');
+  expect(select).toBeTruthy();
+  await act(async () => {
+    select!.value = value;
+    select!.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+};
+
+const clickLink = async (href: string) => {
+  const getLink = () => [...container.querySelectorAll<HTMLAnchorElement>('a')].find((link) => link.getAttribute('href') === href);
+  await vi.waitFor(() => expect(getLink(), `Missing link to ${href}`).toBeTruthy());
+  const link = getLink();
+  await act(async () => {
+    link!.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+  });
+};
+
 const LocationProbe = () => {
   const location = useLocation();
   return <output data-testid='location'>{location.pathname + location.search}</output>;
@@ -240,6 +258,84 @@ describe('archive search', () => {
     // The url is normalized so links, the header and the field all show the query being searched.
     await vi.waitFor(() => expect(container.querySelector('[data-testid="location"]')?.textContent).toBe('/search?q=5chan'));
     expect(getSearchCalls(fetchMock)[0][0]).toContain('q=5chan');
+    expect(new URL(getSearchCalls(fetchMock)[0][0]).searchParams.get('status')).toBe('active');
+    expect(container.querySelector<HTMLSelectElement>('[class*="postStatus"] select')?.value).toBe('active');
+  });
+
+  it('resets pagination when status changes and retains it through paging, catalog, directory and new searches', async () => {
+    const query = `status-navigation-${Date.now()}`;
+    const fetchMock = vi.fn().mockImplementation((url: string) => {
+      const params = new URL(url).searchParams;
+      return Promise.resolve({
+        ok: true,
+        json: async () =>
+          url.includes('/api/communities') ? { communities: [] } : { query: params.get('q'), page: Number(params.get('page')), limit: 25, total: 75, posts: [] },
+      });
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    await renderRoute(`/search?q=${query}&page=3`);
+    await vi.waitFor(() => expect(container.textContent).toContain('search_no_results'));
+
+    await changePostStatus('archived');
+    expect(container.querySelector('[data-testid="location"]')?.textContent).toBe(`/search?q=${query}&status=archived`);
+    await vi.waitFor(() => expect(useSearchSummaryStore.getState()).toMatchObject({ query, postStatus: 'archived', status: 'answered' }));
+    expect(new URL(getSearchCalls(fetchMock).at(-1)![0]).searchParams.get('page')).toBe('1');
+    expect(new URL(getSearchCalls(fetchMock).at(-1)![0]).searchParams.get('status')).toBe('archived');
+
+    await clickLink(`/search?q=${query}&page=2&status=archived`);
+    await vi.waitFor(() => expect(new URL(getSearchCalls(fetchMock).at(-1)![0]).searchParams.get('page')).toBe('2'));
+    await clickLink(`/search/catalog?q=${query}&status=archived`);
+    await vi.waitFor(() => expect(container.querySelector<HTMLSelectElement>('[class*="postStatus"] select')?.value).toBe('archived'));
+    await clickLink(`/search/catalog?q=${query}&page=2&status=archived`);
+    await clickLink('/search/directory');
+    await clickLink(`/search/catalog?q=${query}&page=2&status=archived`);
+    expect(container.querySelector('[data-testid="location"]')?.textContent).toBe(`/search/catalog?q=${query}&page=2&status=archived`);
+
+    const input = container.querySelector<HTMLInputElement>('input[type="text"]')!;
+    await act(async () => {
+      input.value = 'another query';
+      input.form!.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    });
+    expect(container.querySelector('[data-testid="location"]')?.textContent).toBe('/search/catalog?q=another+query&status=archived');
+
+    await changePostStatus('all');
+    await vi.waitFor(() => expect(new URL(getSearchCalls(fetchMock).at(-1)![0]).searchParams.get('status')).toBe('all'));
+    await changePostStatus('active');
+    expect(container.querySelector('[data-testid="location"]')?.textContent).toBe('/search/catalog?q=another+query');
+    await vi.waitFor(() => expect(new URL(getSearchCalls(fetchMock).at(-1)![0]).searchParams.get('status')).toBe('active'));
+  });
+
+  it('keeps the selected status when refreshing and retrying a failed provider', async () => {
+    const query = `status-retry-${Date.now()}`;
+    let failSearch = true;
+    const fetchMock = vi
+      .fn()
+      .mockImplementation((url: string) =>
+        Promise.resolve(
+          url.includes('/api/search') && failSearch
+            ? { ok: false, status: 503 }
+            : { ok: true, json: async () => (url.includes('/api/communities') ? { communities: [] } : { query, page: 2, limit: 25, total: 30, posts: [] }) },
+        ),
+      );
+    vi.stubGlobal('fetch', fetchMock);
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      await renderRoute(`/search/catalog?q=${query}&page=2&status=all`);
+      await vi.waitFor(() => expect(container.querySelector('[role="alert"]')).toBeTruthy());
+      failSearch = false;
+      await act(async () => container.querySelector<HTMLButtonElement>('[role="alert"] button')!.click());
+      await vi.waitFor(() => expect(container.textContent).toContain('search_no_results'));
+
+      const previousRequests = getSearchCalls(fetchMock).length;
+      const refresh = [...container.querySelectorAll<HTMLButtonElement>('button')].find((button) => button.textContent === 'refresh');
+      expect(refresh).toBeTruthy();
+      await act(async () => refresh!.click());
+      await vi.waitFor(() => expect(getSearchCalls(fetchMock)).toHaveLength(previousRequests + 1));
+      expect(getSearchCalls(fetchMock).every(([url]) => new URL(url).searchParams.get('status') === 'all' && new URL(url).searchParams.get('page') === '2')).toBe(true);
+      expect(container.querySelector('[data-testid="location"]')?.textContent).toBe(`/search/catalog?q=${query}&page=2&status=all`);
+    } finally {
+      errorSpy.mockRestore();
+    }
   });
 
   it('lists the boards the query matched above the posts, from the directories and the indexer alike', async () => {

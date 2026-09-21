@@ -483,5 +483,7 @@
   "search_more_boards": "pokaż {{count}} więcej",
   "waiting_board_post_check": "Oczekiwanie na sprawdzenie twojego wpisu przez forum",
   "waiting_board_challenge_verification": "Oczekiwanie na weryfikację twoich odpowiedzi na wyzwanie przez forum",
-  "board_uses_ai_moderation": "To forum korzysta z <1>moderacji przy użyciu AI</1>, aby sprawdzać zgodność wpisów ze swoimi zasadami."
+  "board_uses_ai_moderation": "To forum korzysta z <1>moderacji przy użyciu AI</1>, aby sprawdzać zgodność wpisów ze swoimi zasadami.",
+  "search_post_status": "Posty",
+  "search_status_active": "Aktywne"
 }

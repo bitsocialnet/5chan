@@ -483,5 +483,7 @@
   "search_more_boards": "{{count}} tane daha göster",
   "waiting_board_post_check": "Forumun gönderinizi kontrol etmesi bekleniyor",
   "waiting_board_challenge_verification": "Forumun doğrulama yanıtlarınızı kontrol etmesi bekleniyor",
-  "board_uses_ai_moderation": "Bu forum, gönderilerin kurallarına uygunluğunu denetlemek için <1>yapay zekâ moderasyonu</1> kullanır."
+  "board_uses_ai_moderation": "Bu forum, gönderilerin kurallarına uygunluğunu denetlemek için <1>yapay zekâ moderasyonu</1> kullanır.",
+  "search_post_status": "Gönderiler",
+  "search_status_active": "Aktif"
 }

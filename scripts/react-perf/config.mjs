@@ -3,6 +3,7 @@ import populatedBoard from './scenarios/populated-board.mjs';
 import populatedCatalog from './scenarios/populated-catalog.mjs';
 import populatedReplies from './scenarios/populated-replies.mjs';
 import replyDraft from './scenarios/reply-draft.mjs';
+import searchPostStatus from './scenarios/search-post-status.mjs';
 import { waitForAccountReady } from './scenarios/account-ready.mjs';
 
 const settle = (page) => page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
@@ -36,6 +37,7 @@ export default {
         populatedCatalog,
         populatedReplies,
         replyDraft,
+        searchPostStatus,
         {
           name: 'crypto-address-draft',
           path: '/#/subs/settings',

@@ -483,5 +483,7 @@
   "search_more_boards": "แสดงเพิ่มอีก {{count}}",
   "waiting_board_post_check": "กำลังรอให้กระดานตรวจสอบโพสต์ของคุณ",
   "waiting_board_challenge_verification": "กำลังรอให้กระดานตรวจสอบคำตอบของคุณสำหรับความท้าทาย",
-  "board_uses_ai_moderation": "กระดานนี้ใช้<1>การกลั่นกรองโดย AI</1>เพื่อตรวจสอบว่าโพสต์เป็นไปตามกฎของกระดานหรือไม่"
+  "board_uses_ai_moderation": "กระดานนี้ใช้<1>การกลั่นกรองโดย AI</1>เพื่อตรวจสอบว่าโพสต์เป็นไปตามกฎของกระดานหรือไม่",
+  "search_post_status": "โพสต์",
+  "search_status_active": "ยังใช้งานอยู่"
 }

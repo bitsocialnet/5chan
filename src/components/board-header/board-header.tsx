@@ -9,7 +9,7 @@ import { useStableCommunity } from '../../hooks/use-stable-community';
 import { isAllView, isSubscriptionsView, isModView } from '../../lib/utils/view-utils';
 import { isArchiveRoute, isDirectoryListRoute, isDirectoryRoute, isSearchDirectoryRoute, isSearchRoute } from '../../lib/utils/route-utils';
 import { getSpecialBoardByAddress } from '../../lib/special-boards';
-import { MAX_SEARCH_QUERY_LENGTH } from '../../lib/search-navigation';
+import { getSearchPostStatus, MAX_SEARCH_QUERY_LENGTH, type SearchPostStatus } from '../../lib/search-navigation';
 import { getSearchProvider } from '../../lib/search-providers';
 import useSearchProviderStore from '../../stores/use-search-provider-store';
 import useSearchSummaryStore from '../../stores/use-search-summary-store';
@@ -57,11 +57,11 @@ const getSearchTitle = (query: string, total: number | null): string => {
   return `5chan Search \`${query}\` ${total} comments`;
 };
 
-const SearchProviderSubtitle = ({ query }: { query: string }) => {
+const SearchProviderSubtitle = ({ query, postStatus }: { query: string; postStatus: SearchPostStatus }) => {
   const { t } = useTranslation();
   const selectedProviderId = useSearchProviderStore((state) => state.selectedProviderId);
   // Credit whoever answered: a failed indexer hands the query to the next one in the directory.
-  const summary = useSearchSummaryStore((state) => (state.query === query ? state : undefined));
+  const summary = useSearchSummaryStore((state) => (state.query === query && state.postStatus === postStatus ? state : undefined));
   const provider = getSearchProvider(summary?.providerId ?? selectedProviderId);
 
   // Nothing answered, so nothing to credit: the page is showing the unavailable-indexer error.
@@ -86,7 +86,8 @@ const BoardHeader = memo(() => {
   const isInSearchDirectoryView = isSearchDirectoryRoute(location.pathname);
   const [searchParams] = useSearchParams();
   const searchQuery = (searchParams.get('q') ?? '').trim().slice(0, MAX_SEARCH_QUERY_LENGTH);
-  const searchSummary = useSearchSummaryStore((state) => (state.query === searchQuery ? state.total : null));
+  const searchPostStatus = getSearchPostStatus(searchParams.get('status'));
+  const searchSummary = useSearchSummaryStore((state) => (state.query === searchQuery && state.postStatus === searchPostStatus ? state.total : null));
   const bannerKey = isInAllView ? 'all' : isInSubscriptionsView ? 'subscriptions' : isInModView ? 'mod' : isInSearchView ? 'search' : params.boardIdentifier || 'board';
   const accountComment = useAccountComment({ commentIndex: normalizeAccountCommentIndex(params?.accountCommentIndex) });
   const resolvedAddress = useResolvedCommunityAddress();
@@ -134,7 +135,7 @@ const BoardHeader = memo(() => {
   ) : isInSearchDirectoryView ? (
     t('search_provider_directory_subtitle')
   ) : isInSearchView ? (
-    <SearchProviderSubtitle query={searchQuery} />
+    <SearchProviderSubtitle query={searchQuery} postStatus={searchPostStatus} />
   ) : isInDirectoryListView ? (
     t('directory_subtitle', { boardIdentifier: params.boardIdentifier })
   ) : (

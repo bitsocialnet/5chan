@@ -483,5 +483,7 @@
   "search_more_boards": "আরও {{count}}টি দেখুন",
   "waiting_board_post_check": "বোর্ড আপনার পোস্ট পরীক্ষা করার অপেক্ষায়",
   "waiting_board_challenge_verification": "বোর্ড আপনার চ্যালেঞ্জের উত্তরগুলো যাচাই করার অপেক্ষায়",
-  "board_uses_ai_moderation": "এই বোর্ড পোস্টগুলো তার নিয়ম মেনে চলছে কি না তা পরীক্ষা করতে <1>AI মডারেশন</1> ব্যবহার করে।"
+  "board_uses_ai_moderation": "এই বোর্ড পোস্টগুলো তার নিয়ম মেনে চলছে কি না তা পরীক্ষা করতে <1>AI মডারেশন</1> ব্যবহার করে।",
+  "search_post_status": "পোস্টসমূহ",
+  "search_status_active": "সক্রিয়"
 }

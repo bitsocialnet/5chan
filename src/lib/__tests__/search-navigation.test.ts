@@ -1,5 +1,20 @@
 import { describe, expect, it } from 'vitest';
-import { getSearchSubmitPath, MAX_SEARCH_QUERY_LENGTH } from '../search-navigation';
+import { getSearchDirectoryLinkState, getSearchPageHref, getSearchPostStatus, getSearchSubmitPath, MAX_SEARCH_QUERY_LENGTH } from '../search-navigation';
+
+describe('search post status navigation', () => {
+  it.each([null, '', 'active', 'unknown', 'ARCHIVED'])('defaults %s to active', (value) => {
+    expect(getSearchPostStatus(value)).toBe('active');
+  });
+
+  it.each(['archived', 'all'])('accepts %s', (value) => {
+    expect(getSearchPostStatus(value)).toBe(value);
+  });
+
+  it('retains status in pagination and the catalog directory return link', () => {
+    expect(getSearchPageHref('/search', 'old internet', 3, 'archived')).toEqual({ pathname: '/search', search: '?q=old+internet&page=3&status=archived' });
+    expect(getSearchDirectoryLinkState('old internet', 'all', '/search/catalog', 2)).toEqual({ returnPath: '/search/catalog?q=old+internet&page=2&status=all' });
+  });
+});
 
 describe('getSearchSubmitPath', () => {
   it('searches ordinary terms', () => {

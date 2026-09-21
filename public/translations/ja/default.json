@@ -483,5 +483,7 @@
   "search_more_boards": "さらに{{count}}件を表示",
   "waiting_board_post_check": "掲示板による投稿の確認を待っています",
   "waiting_board_challenge_verification": "掲示板によるチャレンジ回答の検証を待っています",
-  "board_uses_ai_moderation": "この掲示板は、投稿がルールに従っているかを確認するために<1>AIモデレーション</1>を使用しています。"
+  "board_uses_ai_moderation": "この掲示板は、投稿がルールに従っているかを確認するために<1>AIモデレーション</1>を使用しています。",
+  "search_post_status": "投稿",
+  "search_status_active": "アクティブ"
 }

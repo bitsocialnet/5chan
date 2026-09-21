@@ -1,12 +1,19 @@
 import type { Comment } from '@bitsocial/bitsocial-react-hooks';
 import getShortAddress from './get-short-address';
+import { DEFAULT_SEARCH_POST_STATUS, type SearchPostStatus } from './search-navigation';
 import type { SearchProvider } from './search-providers';
 import { isBoardAddressShape } from './utils/directory-list-lookup-utils';
 
 export type SearchSummaryStatus = 'pending' | 'answered' | 'failed';
 
 /** Receives the summary of a search request; the store supplies one so lib never imports it. */
-export type SearchSummaryPublisher = (query: string, status: SearchSummaryStatus, total?: number | null, providerId?: string | null) => void;
+export type SearchSummaryPublisher = (
+  query: string,
+  postStatus: SearchPostStatus,
+  status: SearchSummaryStatus,
+  total?: number | null,
+  providerId?: string | null,
+) => void;
 
 const noopPublisher: SearchSummaryPublisher = () => {};
 
@@ -52,6 +59,8 @@ const MAX_CACHED_SEARCHES = 50;
 const FAILED_REQUEST_REUSE_MS = 10_000;
 const searchCache = new Map<string, Promise<IndexerSearchResult>>();
 const failedRequestTimes = new Map<string, number>();
+/** A request that finishes after its publisher moved to another search must not replace that summary. */
+const latestSummaryRequests = new WeakMap<SearchSummaryPublisher, Promise<IndexerSearchResult>>();
 
 const isNullableString = (value: unknown): value is string | null => value === null || typeof value === 'string';
 const isOptionalNullableString = (value: unknown): value is string | null | undefined => value === undefined || isNullableString(value);
@@ -106,11 +115,12 @@ const getApiUrl = (provider: SearchProvider, path: string): URL => {
   return new URL(path, apiBase);
 };
 
-const getSearchUrl = (provider: SearchProvider, query: string, page: number): string => {
+const getSearchUrl = (provider: SearchProvider, query: string, page: number, postStatus: SearchPostStatus): string => {
   const url = getApiUrl(provider, 'api/search');
   url.searchParams.set('q', query);
   url.searchParams.set('page', String(page));
   url.searchParams.set('limit', '25');
+  url.searchParams.set('status', postStatus);
   return url.toString();
 };
 
@@ -148,20 +158,20 @@ const fetchThreadPosts = async (provider: SearchProvider, posts: IndexedPost[]):
   return Object.fromEntries(threadPosts.filter((post) => post !== null).map((post) => [post.cid, post]));
 };
 
-const fetchSearch = async (provider: SearchProvider, query: string, page: number): Promise<IndexerSearchResult> => {
-  const result: unknown = await fetchProviderJson(getSearchUrl(provider, query, page));
+const fetchSearch = async (provider: SearchProvider, query: string, page: number, postStatus: SearchPostStatus): Promise<IndexerSearchResult> => {
+  const result: unknown = await fetchProviderJson(getSearchUrl(provider, query, page, postStatus));
   if (!isSearchResult(result)) throw new Error('Search provider returned an invalid response');
 
   return { ...result, providerId: provider.id, threadPosts: await fetchThreadPosts(provider, result.posts) };
 };
 
 /** Ask each indexer in rank order, so one that is down or broken hands over to the next. */
-const fetchSearchFromChain = async (providers: SearchProvider[], query: string, page: number): Promise<IndexerSearchResult> => {
+const fetchSearchFromChain = async (providers: SearchProvider[], query: string, page: number, postStatus: SearchPostStatus): Promise<IndexerSearchResult> => {
   let lastError: unknown = new Error('No search provider is available');
 
   for (const provider of providers) {
     try {
-      return await fetchSearch(provider, query, page);
+      return await fetchSearch(provider, query, page, postStatus);
     } catch (error) {
       lastError = error;
     }
@@ -170,7 +180,8 @@ const fetchSearchFromChain = async (providers: SearchProvider[], query: string, 
   throw lastError;
 };
 
-const getSearchCacheKey = (providers: SearchProvider[], query: string, page: number): string => `${providers.map((provider) => provider.id).join(',')}:${page}:${query}`;
+const getSearchCacheKey = (providers: SearchProvider[], query: string, page: number, postStatus: SearchPostStatus): string =>
+  `${providers.map((provider) => provider.id).join(',')}:${postStatus}:${page}:${query}`;
 
 /**
  * The board header titles the page with the query, the match count and who answered. Publishing
@@ -180,11 +191,21 @@ const getSearchCacheKey = (providers: SearchProvider[], query: string, page: num
  * Only the outcome is published for a cached request, and publishing it again is a no-op. Marking
  * a cached request pending on every render would flip the store back and forth with each re-render.
  */
-const publishSummary = (request: Promise<IndexerSearchResult>, query: string, isNewRequest: boolean, publish: SearchSummaryPublisher): void => {
-  if (isNewRequest) queueMicrotask(() => publish(query, 'pending'));
+const publishSummary = (
+  request: Promise<IndexerSearchResult>,
+  query: string,
+  postStatus: SearchPostStatus,
+  isNewRequest: boolean,
+  publish: SearchSummaryPublisher,
+): void => {
+  latestSummaryRequests.set(publish, request);
+  const publishCurrent = (status: SearchSummaryStatus, total?: number, providerId?: string) => {
+    if (latestSummaryRequests.get(publish) === request) publish(query, postStatus, status, total, providerId);
+  };
+  if (isNewRequest) queueMicrotask(() => publishCurrent('pending'));
   request.then(
-    (result) => publish(result.query, 'answered', result.total, result.providerId),
-    () => publish(query, 'failed'),
+    (result) => publishCurrent('answered', result.total, result.providerId),
+    () => publishCurrent('failed'),
   );
 };
 
@@ -202,12 +223,13 @@ export const getIndexerSearch = (
   providers: SearchProvider[],
   query: string,
   page: number,
+  postStatus: SearchPostStatus = DEFAULT_SEARCH_POST_STATUS,
   publish: SearchSummaryPublisher = noopPublisher,
 ): Promise<IndexerSearchResult> => {
-  const cacheKey = getSearchCacheKey(providers, query, page);
+  const cacheKey = getSearchCacheKey(providers, query, page, postStatus);
   const cached = searchCache.get(cacheKey);
   if (cached && !isStaleFailedRequest(cacheKey)) {
-    publishSummary(cached, query, false, publish);
+    publishSummary(cached, query, postStatus, false, publish);
     return cached;
   }
 
@@ -216,17 +238,19 @@ export const getIndexerSearch = (
     if (oldestKey) clearCachedRequest(oldestKey);
   }
 
-  const request = fetchSearchFromChain(providers, query, page);
+  const request = fetchSearchFromChain(providers, query, page, postStatus);
   // Drop the previous failure first, or the retry would look stale too and every render would refetch.
   failedRequestTimes.delete(cacheKey);
-  request.catch(() => failedRequestTimes.set(cacheKey, Date.now()));
+  request.catch(() => {
+    if (searchCache.get(cacheKey) === request) failedRequestTimes.set(cacheKey, Date.now());
+  });
   searchCache.set(cacheKey, request);
-  publishSummary(request, query, true, publish);
+  publishSummary(request, query, postStatus, true, publish);
   return request;
 };
 
-export const clearIndexerSearch = (providers: SearchProvider[], query: string, page: number): void => {
-  clearCachedRequest(getSearchCacheKey(providers, query, page));
+export const clearIndexerSearch = (providers: SearchProvider[], query: string, page: number, postStatus: SearchPostStatus = DEFAULT_SEARCH_POST_STATUS): void => {
+  clearCachedRequest(getSearchCacheKey(providers, query, page, postStatus));
 };
 
 /**

@@ -483,5 +483,7 @@
   "search_more_boards": "ipakita ang {{count}} pa",
   "waiting_board_post_check": "Hinihintay na suriin ng board ang iyong post",
   "waiting_board_challenge_verification": "Hinihintay na beripikahin ng board ang iyong mga sagot sa hamon",
-  "board_uses_ai_moderation": "Gumagamit ang board na ito ng <1>pagmomoderate gamit ang AI</1> upang suriin kung sumusunod ang mga post sa mga patakaran nito."
+  "board_uses_ai_moderation": "Gumagamit ang board na ito ng <1>pagmomoderate gamit ang AI</1> upang suriin kung sumusunod ang mga post sa mga patakaran nito.",
+  "search_post_status": "Mga post",
+  "search_status_active": "Aktibo"
 }

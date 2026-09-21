@@ -483,5 +483,7 @@
   "search_more_boards": "आणखी {{count}} दाखवा",
   "waiting_board_post_check": "बोर्डाने तुमची पोस्ट तपासण्याची प्रतीक्षा करत आहे",
   "waiting_board_challenge_verification": "बोर्डाने तुमच्या आव्हानाच्या उत्तरांची पडताळणी करण्याची प्रतीक्षा करत आहे",
-  "board_uses_ai_moderation": "हा बोर्ड पोस्ट त्याच्या नियमांचे पालन करतात का हे तपासण्यासाठी <1>AI मॉडरेशन</1> वापरतो."
+  "board_uses_ai_moderation": "हा बोर्ड पोस्ट त्याच्या नियमांचे पालन करतात का हे तपासण्यासाठी <1>AI मॉडरेशन</1> वापरतो.",
+  "search_post_status": "पोस्ट",
+  "search_status_active": "सक्रिय"
 }

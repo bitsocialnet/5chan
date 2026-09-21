@@ -32,6 +32,18 @@
   align-items: center;
 }
 
+.postStatus {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 5px;
+  white-space: nowrap;
+}
+
+.mobileNavLinks .postStatus,
+.mobileFooterButtons .postStatus {
+  margin: 5px 2px;
+}
+
 .mobileNavLinks {
   display: none;
   text-align: center;
@@ -212,5 +224,4 @@
   .mobileNavLinks {
     display: block;
   }
-
 }

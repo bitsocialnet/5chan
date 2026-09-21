@@ -483,5 +483,7 @@
   "search_more_boards": "نمایش {{count}} مورد دیگر",
   "waiting_board_post_check": "در انتظار بررسی پست شما توسط تالار",
   "waiting_board_challenge_verification": "در انتظار تأیید پاسخ‌های شما به چالش توسط تالار",
-  "board_uses_ai_moderation": "این تالار از <1>نظارت با هوش مصنوعی</1> برای بررسی مطابقت پست‌ها با قوانین خود استفاده می‌کند."
+  "board_uses_ai_moderation": "این تالار از <1>نظارت با هوش مصنوعی</1> برای بررسی مطابقت پست‌ها با قوانین خود استفاده می‌کند.",
+  "search_post_status": "پست‌ها",
+  "search_status_active": "فعال"
 }

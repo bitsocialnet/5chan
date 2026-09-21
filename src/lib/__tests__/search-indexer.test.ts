@@ -46,7 +46,29 @@ describe('search indexer client', () => {
     expect(first).toBe(second);
     await expect(first).resolves.toEqual({ ...response, providerId: provider.id, threadPosts: {} });
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(fetchMock.mock.calls[0][0]).toBe(`https://api.5archive.org/api/search?q=${encodeURIComponent(query)}&page=2&limit=25`);
+    expect(fetchMock.mock.calls[0][0]).toBe(`https://api.5archive.org/api/search?q=${encodeURIComponent(query)}&page=2&limit=25&status=active`);
+  });
+
+  it('caches and refreshes each post status independently', async () => {
+    const query = `status-cache-${Date.now()}`;
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ query, posts: [], page: 1, limit: 25, total: 0 }) });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const active = getIndexerSearch(providers, query, 1, 'active');
+    const archived = getIndexerSearch(providers, query, 1, 'archived');
+    const all = getIndexerSearch(providers, query, 1, 'all');
+    await Promise.all([active, archived, all]);
+    expect(fetchMock.mock.calls.map(([url]) => new URL(url).searchParams.get('status'))).toEqual(['active', 'archived', 'all']);
+    expect(getIndexerSearch(providers, query, 1, 'archived')).toBe(archived);
+    expect(getIndexerSearch(providers, query, 1, 'all')).toBe(all);
+
+    clearIndexerSearch(providers, query, 1, 'archived');
+    expect(getIndexerSearch(providers, query, 1, 'active')).toBe(active);
+    expect(getIndexerSearch(providers, query, 1, 'all')).toBe(all);
+    const refreshed = getIndexerSearch(providers, query, 1, 'archived');
+    expect(refreshed).not.toBe(archived);
+    await refreshed;
+    expect(fetchMock).toHaveBeenCalledTimes(4);
   });
 
   it('loads the thread OP of each matched reply once', async () => {
@@ -198,13 +220,13 @@ describe('search indexer client', () => {
     vi.stubGlobal('fetch', fetchMock);
     const publish = vi.fn();
 
-    const request = getIndexerSearch(providers, query, 1, publish);
+    const request = getIndexerSearch(providers, query, 1, 'archived', publish);
     await Promise.resolve();
-    expect(publish).toHaveBeenCalledWith(query, 'pending');
+    expect(publish).toHaveBeenCalledWith(query, 'archived', 'pending', undefined, undefined);
 
     await request;
     await Promise.resolve();
-    expect(publish).toHaveBeenLastCalledWith(query, 'answered', 3, provider.id);
+    expect(publish).toHaveBeenLastCalledWith(query, 'archived', 'answered', 3, provider.id);
     expect(publish).toHaveBeenCalledTimes(2);
   });
 
@@ -213,9 +235,33 @@ describe('search indexer client', () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 503 }));
     const publish = vi.fn();
 
-    await expect(getIndexerSearch(providers, query, 1, publish)).rejects.toThrow('503');
+    await expect(getIndexerSearch(providers, query, 1, 'all', publish)).rejects.toThrow('503');
     await Promise.resolve();
-    expect(publish).toHaveBeenLastCalledWith(query, 'failed');
+    expect(publish).toHaveBeenLastCalledWith(query, 'all', 'failed', undefined, undefined);
+  });
+
+  it.each([true, false])('ignores an earlier status request after the current one answers (earlier success: %s)', async (ok) => {
+    const query = `late-status-${ok}-${Date.now()}`;
+    let finishEarlier: (value: unknown) => void = () => {};
+    const earlierResponse = new Promise((resolve) => {
+      finishEarlier = resolve;
+    });
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValueOnce(earlierResponse)
+        .mockResolvedValue({ ok: true, json: async () => ({ query, posts: [], page: 1, limit: 25, total: 2 }) }),
+    );
+    const publish = vi.fn();
+    const earlier = getIndexerSearch(providers, query, 1, 'active', publish).catch(() => undefined);
+    await getIndexerSearch(providers, query, 1, 'archived', publish);
+    expect(publish).toHaveBeenLastCalledWith(query, 'archived', 'answered', 2, provider.id);
+    const publishedCount = publish.mock.calls.length;
+
+    finishEarlier({ ok, status: 503, json: async () => ({ query, posts: [], page: 1, limit: 25, total: 100 }) });
+    await earlier;
+    expect(publish).toHaveBeenCalledTimes(publishedCount);
   });
 });
 

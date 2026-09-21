@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import capitalize from 'lodash/capitalize';
 import { BottomButton, TopButton } from '../../components/board-buttons';
 import { PageFooterDesktop, PageFooterMobile, ThreadFooterStyleRow } from '../../components/footer';
-import { SEARCH_PATH } from '../../lib/search-navigation';
+import { SEARCH_CATALOG_PATH, SEARCH_PATH } from '../../lib/search-navigation';
 import { getDirectorySearchProvider, getRankedSearchProviders } from '../../lib/search-providers';
 import useSearchProviderStore from '../../stores/use-search-provider-store';
 import styles from '../../components/directory-layout';
@@ -12,7 +12,7 @@ import styles from '../../components/directory-layout';
 /** The search that linked here travels in the router state, so the query stays out of this URL. */
 const getReturnPath = (state: unknown): string => {
   const returnPath = (state as { returnPath?: unknown } | null)?.returnPath;
-  return typeof returnPath === 'string' && returnPath.startsWith(`${SEARCH_PATH}?`) ? returnPath : SEARCH_PATH;
+  return typeof returnPath === 'string' && [SEARCH_PATH, SEARCH_CATALOG_PATH].some((path) => returnPath.startsWith(`${path}?`)) ? returnPath : SEARCH_PATH;
 };
 
 /** The provider list lives in the same repo the board directories are submitted to. */

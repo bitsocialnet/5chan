@@ -483,5 +483,7 @@
   "search_more_boards": "toon {{count}} meer",
   "waiting_board_post_check": "Wachten tot het forum je post controleert",
   "waiting_board_challenge_verification": "Wachten tot het forum je antwoorden op de uitdaging verifieert",
-  "board_uses_ai_moderation": "Dit forum gebruikt <1>AI-moderatie</1> om te controleren of posts aan zijn regels voldoen."
+  "board_uses_ai_moderation": "Dit forum gebruikt <1>AI-moderatie</1> om te controleren of posts aan zijn regels voldoen.",
+  "search_post_status": "Berichten",
+  "search_status_active": "Actief"
 }

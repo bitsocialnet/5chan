@@ -483,5 +483,7 @@
   "search_more_boards": "mostra altri {{count}}",
   "waiting_board_post_check": "In attesa che la board controlli il tuo post",
   "waiting_board_challenge_verification": "In attesa che la board verifichi le tue risposte alla sfida",
-  "board_uses_ai_moderation": "Questa board usa la <1>moderazione con IA</1> per verificare che i post rispettino le sue regole."
+  "board_uses_ai_moderation": "Questa board usa la <1>moderazione con IA</1> per verificare che i post rispettino le sue regole.",
+  "search_post_status": "Post",
+  "search_status_active": "Attivi"
 }
