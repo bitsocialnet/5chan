@@ -226,6 +226,49 @@ describe('Archive', () => {
     expect(container.querySelector('[data-testid="loading-ellipsis"]')?.textContent).toBe('loading_archive');
   });
 
+  it('truncates long excerpts to the row budget and keeps the full text in the tooltip', async () => {
+    const longContent = 'a'.repeat(400);
+    testState.feed = [{ cid: 'a', archived: true, threadCid: '111', content: longContent }];
+
+    await renderArchiveRoute({ root, element: createElement(Archive), initialEntry: '/mu/archive', routePath: '/:boardIdentifier/archive' });
+
+    const teaser = container.querySelector('#arc-list tbody tr td:nth-child(2)') as HTMLTableCellElement;
+    expect(teaser.textContent).toBe(`${'a'.repeat(100)}\u2026`);
+    expect(teaser.title).toBe(longContent);
+  });
+
+  it('shares the excerpt budget between the title and the content and collapses newlines', async () => {
+    testState.feed = [{ cid: 'a', archived: true, threadCid: '111', title: 'b'.repeat(40), content: `${'c'.repeat(30)}\n${'d'.repeat(200)}` }];
+
+    await renderArchiveRoute({ root, element: createElement(Archive), initialEntry: '/mu/archive', routePath: '/:boardIdentifier/archive' });
+
+    const teaser = container.querySelector('#arc-list tbody tr td:nth-child(2)') as HTMLTableCellElement;
+    expect(teaser.querySelector('b')?.textContent).toBe('b'.repeat(40));
+    // 40 title characters plus the ": " separator leave 58 characters of content.
+    expect(teaser.textContent).toBe(`${'b'.repeat(40)}: ${'c'.repeat(30)} ${'d'.repeat(27)}\u2026`);
+    expect(teaser.textContent?.replace('\u2026', '').length).toBe(100);
+  });
+
+  it('truncates a title that fills the whole excerpt budget and drops the content', async () => {
+    testState.feed = [{ cid: 'a', archived: true, threadCid: '111', title: 'e'.repeat(150), content: 'dropped content' }];
+
+    await renderArchiveRoute({ root, element: createElement(Archive), initialEntry: '/mu/archive', routePath: '/:boardIdentifier/archive' });
+
+    const teaser = container.querySelector('#arc-list tbody tr td:nth-child(2)') as HTMLTableCellElement;
+    expect(teaser.querySelector('b')?.textContent).toBe('e'.repeat(100));
+    expect(teaser.textContent).toBe(`${'e'.repeat(100)}\u2026`);
+    expect(teaser.textContent).not.toContain('dropped content');
+  });
+
+  it('leaves short excerpts untruncated', async () => {
+    testState.feed = [{ cid: 'a', archived: true, threadCid: '111', title: 'Short title', content: 'short content' }];
+
+    await renderArchiveRoute({ root, element: createElement(Archive), initialEntry: '/mu/archive', routePath: '/:boardIdentifier/archive' });
+
+    const teaser = container.querySelector('#arc-list tbody tr td:nth-child(2)') as HTMLTableCellElement;
+    expect(teaser.textContent).toBe('Short title: short content');
+  });
+
   it('renders the shared archive table and mobile nav actions when mobile hook is set', async () => {
     testState.isMobile = true;
     testState.feed = [

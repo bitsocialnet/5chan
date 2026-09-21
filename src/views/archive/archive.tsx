@@ -45,11 +45,33 @@ const getThreadLink = (boardPath: string | undefined, comment: BoardFeedComment)
   return `/${boardPath}/thread/${threadCid}`;
 };
 
-const getArchiveExcerptText = ({ content, title, link }: Pick<BoardFeedComment, 'content' | 'title' | 'link'>, t: (key: string) => string) => {
-  const cleanTitle = typeof title === 'string' ? removeMarkdown(title).trim() : '';
-  const cleanContent = typeof content === 'string' ? removeMarkdown(content).trim() : '';
-  const cleanLink = typeof link === 'string' ? link.trim() : '';
-  return cleanTitle || cleanContent || cleanLink || t('no_content');
+// Excerpts are capped so every archive row stays a single line, matching the
+// classic archive listing: a hard character budget followed by one ellipsis.
+const ARCHIVE_EXCERPT_MAX_LENGTH = 100;
+const ARCHIVE_EXCERPT_ELLIPSIS = '…';
+const ARCHIVE_EXCERPT_SEPARATOR = ': ';
+
+const collapseWhitespace = (value: string) => value.replace(/\s+/g, ' ').trim();
+
+const getArchiveExcerpt = ({ content, title, link }: Pick<BoardFeedComment, 'content' | 'title' | 'link'>, t: (key: string) => string) => {
+  const cleanTitle = typeof title === 'string' ? collapseWhitespace(removeMarkdown(title)) : '';
+  const cleanContent = typeof content === 'string' ? collapseWhitespace(removeMarkdown(content)) : '';
+  const cleanLink = typeof link === 'string' ? collapseWhitespace(link) : '';
+  const cleanBody = cleanTitle || cleanContent ? cleanContent : cleanLink || t('no_content');
+  const separator = cleanTitle && cleanBody ? ARCHIVE_EXCERPT_SEPARATOR : '';
+  const fullText = `${cleanTitle}${separator}${cleanBody}`;
+
+  if (fullText.length <= ARCHIVE_EXCERPT_MAX_LENGTH) {
+    return { body: cleanBody, fullText, isTruncated: false, title: cleanTitle };
+  }
+
+  // A title that already fills the budget leaves no room for the body at all.
+  const remainingLength = ARCHIVE_EXCERPT_MAX_LENGTH - cleanTitle.length - separator.length;
+  if (remainingLength <= 0) {
+    return { body: '', fullText, isTruncated: true, title: cleanTitle.slice(0, ARCHIVE_EXCERPT_MAX_LENGTH) };
+  }
+
+  return { body: cleanBody.slice(0, remainingLength), fullText, isTruncated: true, title: cleanTitle };
 };
 
 const normalizeTimestamp = (timestamp: BoardFeedComment['timestamp']) => {
@@ -244,23 +266,22 @@ const Archive = () => {
             {feed.map((comment, index) => {
               const threadLink = getThreadLink(boardPath, comment);
               const threadNumber = comment.threadCid || comment.number || comment.cid;
-              const cleanTitle = typeof comment.title === 'string' ? removeMarkdown(comment.title).trim() : '';
-              const cleanContent = typeof comment.content === 'string' ? removeMarkdown(comment.content).trim() : '';
-              const excerptText = getArchiveExcerptText(comment, t);
+              const excerpt = getArchiveExcerpt(comment, t);
 
               return (
                 <tr key={comment.cid || `archive-${index}`} className={`${styles.arcRow} ${index % 2 === 0 ? styles.rowOdd : ''}`}>
                   <td className={styles.numberCell}>{threadNumber || '—'}</td>
-                  <td className={styles.teaserCol} title={excerptText}>
-                    {cleanTitle ? (
+                  <td className={styles.teaserCol} title={excerpt.fullText}>
+                    {excerpt.title ? (
                       <>
-                        <b>{cleanTitle}</b>
-                        {cleanContent ? ': ' : ''}
-                        {cleanContent || null}
+                        <b>{excerpt.title}</b>
+                        {excerpt.body ? ': ' : ''}
+                        {excerpt.body || null}
                       </>
                     ) : (
-                      excerptText
+                      excerpt.body
                     )}
+                    {excerpt.isTruncated ? ARCHIVE_EXCERPT_ELLIPSIS : null}
                   </td>
                   <td className={styles.viewCell}>
                     {threadLink ? (
