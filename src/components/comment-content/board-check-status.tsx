@@ -2,6 +2,7 @@ import { useCommunity } from '@bitsocial/bitsocial-react-hooks';
 import { Trans, useTranslation } from 'react-i18next';
 import { useCommunityIdentifier } from '../../hooks/use-community-identifiers';
 import LoadingEllipsis from '../loading-ellipsis';
+import styles from './board-check-status.module.css';
 
 const BoardCheckStatus = ({ communityAddress, verifyingAnswers }: { communityAddress?: string; verifyingAnswers: boolean }) => {
   const { t } = useTranslation();
@@ -23,7 +24,7 @@ const BoardCheckStatus = ({ communityAddress, verifyingAnswers }: { communityAdd
           <br />
           <Trans
             i18nKey='board_uses_ai_moderation'
-            components={{ 1: <a href='https://bitsocial.net/apps/ai-moderation-challenge' target='_blank' rel='noopener noreferrer' /> }}
+            components={{ 1: <a className={styles.link} href='https://bitsocial.net/apps/ai-moderation-challenge' target='_blank' rel='noopener noreferrer' /> }}
           />
         </>
       )}

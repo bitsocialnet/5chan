@@ -591,6 +591,8 @@ describe('CommentContent', () => {
     const links = container.querySelectorAll('a[href="https://bitsocial.net/apps/ai-moderation-challenge"]');
     expect(links).toHaveLength(1);
     expect(links[0].getAttribute('rel')).toBe('noopener noreferrer');
+    // The notice must use the theme link colors, not the browser default blue/purple anchor styling.
+    expect(links[0].className).toContain('link');
     expect(testState.useCommunity).toHaveBeenLastCalledWith({ community: { name: 'outdoors-posting.bso' }, onlyIfCached: true });
 
     testState.community = { challenges: [] };
