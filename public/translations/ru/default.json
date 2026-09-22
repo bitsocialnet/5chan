@@ -485,5 +485,13 @@
   "waiting_board_challenge_verification": "Ожидание проверки ваших ответов на задачу форумом",
   "board_uses_ai_moderation": "Этот форум использует <1>модерацию с помощью ИИ</1> для проверки сообщений на соответствие своим правилам.",
   "search_post_status": "Сообщения",
-  "search_status_active": "Активные"
+  "search_status_active": "Активные",
+  "use_frames": "Использовать фреймы",
+  "remove_frames": "Убрать фреймы",
+  "show_directories": "Показать коды досок",
+  "hide_directories": "Скрыть коды досок",
+  "show_worksafe_only": "Показывать только доски, безопасные для просмотра на работе",
+  "image_boards": "Доски с изображениями",
+  "upload_boards": "Доски для загрузки файлов",
+  "multiboards": "Мультиборды"
 }

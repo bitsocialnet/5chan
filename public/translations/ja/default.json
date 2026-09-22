@@ -485,5 +485,13 @@
   "waiting_board_challenge_verification": "掲示板によるチャレンジ回答の検証を待っています",
   "board_uses_ai_moderation": "この掲示板は、投稿がルールに従っているかを確認するために<1>AIモデレーション</1>を使用しています。",
   "search_post_status": "投稿",
-  "search_status_active": "アクティブ"
+  "search_status_active": "アクティブ",
+  "use_frames": "フレームを使用する",
+  "remove_frames": "フレームを解除する",
+  "show_directories": "掲示板のコードを表示",
+  "hide_directories": "掲示板のコードを非表示",
+  "show_worksafe_only": "職場で閲覧可能な掲示板のみ表示",
+  "image_boards": "画像掲示板",
+  "upload_boards": "アップロード掲示板",
+  "multiboards": "マルチボード"
 }

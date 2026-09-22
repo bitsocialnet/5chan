@@ -485,5 +485,13 @@
   "waiting_board_challenge_verification": "बोर्डाने तुमच्या आव्हानाच्या उत्तरांची पडताळणी करण्याची प्रतीक्षा करत आहे",
   "board_uses_ai_moderation": "हा बोर्ड पोस्ट त्याच्या नियमांचे पालन करतात का हे तपासण्यासाठी <1>AI मॉडरेशन</1> वापरतो.",
   "search_post_status": "पोस्ट",
-  "search_status_active": "सक्रिय"
+  "search_status_active": "सक्रिय",
+  "use_frames": "फ्रेम वापरा",
+  "remove_frames": "फ्रेम काढा",
+  "show_directories": "बोर्डचे कोड दाखवा",
+  "hide_directories": "बोर्डचे कोड लपवा",
+  "show_worksafe_only": "फक्त कामाच्या ठिकाणी पाहण्यायोग्य बोर्ड दाखवा",
+  "image_boards": "चित्र बोर्ड",
+  "upload_boards": "फाइल अपलोड बोर्ड",
+  "multiboards": "मल्टीबोर्ड"
 }

@@ -13,8 +13,6 @@ import HomeFooter from '../../components/home-footer';
 import HomeLogo from '../../components/home-logo';
 import useDirectoryModalStore from '../../stores/use-directory-modal-store';
 import useHomepageStatsOptionsStore, { type HomepageStatsScope } from '../../stores/use-homepage-stats-options-store';
-import DisclaimerModal from '../../components/disclaimer-modal';
-import DirectoryModal from '../../components/directory-modal';
 import { extractDirectoryFromTitle } from '../../lib/utils/route-utils';
 import { getSearchSubmitPath } from '../../lib/search-navigation';
 import { isWebRuntime } from '../../lib/media-hosting/show-upload-controls';
@@ -334,8 +332,6 @@ const Home = () => {
 
   return (
     <>
-      <DisclaimerModal />
-      <DirectoryModal />
       <div className={styles.content}>
         <HomeLogo />
         <SearchBar />

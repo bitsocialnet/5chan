@@ -485,5 +485,13 @@
   "waiting_board_challenge_verification": "Odotetaan, että foorumi vahvistaa haastevastauksesi",
   "board_uses_ai_moderation": "Tämä foorumi käyttää <1>tekoälymoderointia</1> tarkistaakseen, että viestit noudattavat sen sääntöjä.",
   "search_post_status": "Viestit",
-  "search_status_active": "Aktiiviset"
+  "search_status_active": "Aktiiviset",
+  "use_frames": "Käytä kehyksiä",
+  "remove_frames": "Poista kehykset",
+  "show_directories": "Näytä lautatunnukset",
+  "hide_directories": "Piilota lautatunnukset",
+  "show_worksafe_only": "Näytä vain työpaikalle sopivat laudat",
+  "image_boards": "Kuvalaudat",
+  "upload_boards": "Tiedostolaudat",
+  "multiboards": "Monilautalistaukset"
 }

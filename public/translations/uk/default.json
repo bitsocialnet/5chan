@@ -485,5 +485,13 @@
   "waiting_board_challenge_verification": "Очікування перевірки ваших відповідей на виклик форумом",
   "board_uses_ai_moderation": "Цей форум використовує <1>модерацію за допомогою ШІ</1> для перевірки дописів на відповідність своїм правилам.",
   "search_post_status": "Дописи",
-  "search_status_active": "Активні"
+  "search_status_active": "Активні",
+  "use_frames": "Використовувати фрейми",
+  "remove_frames": "Прибрати фрейми",
+  "show_directories": "Показати коди дощок",
+  "hide_directories": "Приховати коди дощок",
+  "show_worksafe_only": "Показувати лише дошки, безпечні для перегляду на роботі",
+  "image_boards": "Дошки із зображеннями",
+  "upload_boards": "Дошки для завантаження файлів",
+  "multiboards": "Мультиборди"
 }

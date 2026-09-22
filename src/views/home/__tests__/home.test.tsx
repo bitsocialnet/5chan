@@ -112,14 +112,6 @@ vi.mock('../../../components/site-legal-meta', () => ({
   default: () => createElement('div', { 'data-testid': 'site-legal-meta' }, 'site-legal-meta'),
 }));
 
-vi.mock('../../../components/disclaimer-modal', () => ({
-  default: () => createElement('div', { 'data-testid': 'disclaimer-modal' }, 'disclaimer-modal'),
-}));
-
-vi.mock('../../../components/directory-modal', () => ({
-  default: () => createElement('div', { 'data-testid': 'directory-modal' }, 'directory-modal'),
-}));
-
 let container: HTMLDivElement;
 let root: Root;
 
@@ -173,8 +165,6 @@ describe('Home', () => {
     // subscription is never opened. Stats previously subscribed with an empty list regardless.
     expect(vi.mocked(useFeedStateString)).not.toHaveBeenCalled();
     expect(document.title).toBe('5chan');
-    expect(container.querySelector('[data-testid="disclaimer-modal"]')?.textContent).toBe('disclaimer-modal');
-    expect(container.querySelector('[data-testid="directory-modal"]')?.textContent).toBe('directory-modal');
     expect(container.querySelector('[data-testid="boards-list"]')?.textContent).toBe('boards:2');
     expect(container.querySelector('[data-testid="popular-threads-box"]')?.textContent).toBe('popular:2:2');
     expect(container.querySelector('[data-testid="stats-metadata-loader"]')?.getAttribute('data-addresses')).toBe('music-posting.eth,tech-posting.eth');

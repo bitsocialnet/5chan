@@ -485,5 +485,13 @@
   "waiting_board_challenge_verification": "Se așteaptă ca forumul să îți verifice răspunsurile la provocare",
   "board_uses_ai_moderation": "Acest forum folosește <1>moderarea cu inteligență artificială</1> pentru a verifica dacă postările respectă regulile sale.",
   "search_post_status": "Postări",
-  "search_status_active": "Active"
+  "search_status_active": "Active",
+  "use_frames": "Folosește cadre",
+  "remove_frames": "Elimină cadrele",
+  "show_directories": "Afișează codurile forumurilor",
+  "hide_directories": "Ascunde codurile forumurilor",
+  "show_worksafe_only": "Afișează doar forumuri potrivite pentru vizualizare la serviciu",
+  "image_boards": "Forumuri de imagini",
+  "upload_boards": "Forumuri de încărcare fișiere",
+  "multiboards": "Multiboard-uri"
 }

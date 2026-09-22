@@ -3,7 +3,7 @@ import type { Comment } from '@bitsocial/bitsocial-react-hooks';
 import CatalogRow from '../../components/catalog-row';
 import { SEARCH_HIGHLIGHT_REGION_ATTRIBUTE } from '../../hooks/use-search-match-highlight';
 import useCatalogStyleStore from '../../stores/use-catalog-style-store';
-import useWindowWidth from '../../hooks/use-window-width';
+import useContentWidth from '../../hooks/use-content-width';
 
 const getRows = (threads: Comment[], columnCount: number): Comment[][] => {
   const rows: Comment[][] = [];
@@ -16,7 +16,7 @@ const getRows = (threads: Comment[], columnCount: number): Comment[][] => {
 /** Catalog view of the threads a search matched, laid out like the board catalog. */
 const SearchCatalog = ({ threads }: { threads: Comment[] }) => {
   const imageSize = useCatalogStyleStore((state) => state.imageSize);
-  const windowWidth = useWindowWidth();
+  const windowWidth = useContentWidth();
   const columnWidth = imageSize === 'Large' ? 270 : 180;
   const columnCount = Math.max(1, Math.floor(windowWidth / columnWidth));
   const rows = useMemo(() => getRows(threads, columnCount), [threads, columnCount]);

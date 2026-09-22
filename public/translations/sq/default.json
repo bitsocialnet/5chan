@@ -485,5 +485,13 @@
   "waiting_board_challenge_verification": "Në pritje që forumi të verifikojë përgjigjet tuaja ndaj sfidës",
   "board_uses_ai_moderation": "Ky forum përdor <1>moderimin me inteligjencë artificiale</1> për të kontrolluar nëse postimet përputhen me rregullat e tij.",
   "search_post_status": "Postimet",
-  "search_status_active": "Aktive"
+  "search_status_active": "Aktive",
+  "use_frames": "Përdor kornizat",
+  "remove_frames": "Hiq kornizat",
+  "show_directories": "Shfaq kodet e forumeve",
+  "hide_directories": "Fsheh kodet e forumeve",
+  "show_worksafe_only": "Shfaq vetëm forume të përshtatshme për t’u parë në punë",
+  "image_boards": "Forume me imazhe",
+  "upload_boards": "Forume për ngarkim skedarësh",
+  "multiboards": "Multiboard-et"
 }

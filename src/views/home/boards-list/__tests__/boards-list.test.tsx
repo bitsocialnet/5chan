@@ -4,6 +4,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { MemoryRouter, useLocation } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import useBoardsFilterStore from '../../../../stores/use-boards-filter-store';
+import useFramesStore from '../../../../stores/use-frames-store';
 import BoardsList from '../boards-list';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -12,9 +13,11 @@ const testState = vi.hoisted(() => ({
   accountCommunityAddresses: ['moderated.bso'],
   showDisclaimerModal: vi.fn(),
   openDirectoryModal: vi.fn(),
+  framesAvailable: true,
 }));
 
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
+vi.mock('../../../../hooks/use-frames', () => ({ useFramesAvailable: () => testState.framesAvailable }));
 vi.mock('../../../../hooks/use-account-community-addresses', () => ({
   useAccountCommunityAddresses: () => testState.accountCommunityAddresses,
 }));
@@ -67,6 +70,8 @@ describe('homepage board catalog links', () => {
     vi.clearAllMocks();
     localStorage.clear();
     useBoardsFilterStore.setState({ useCatalogLinks: false, boardFilter: 'all' });
+    useFramesStore.setState({ useFrames: false });
+    testState.framesAvailable = true;
     testState.accountCommunityAddresses = ['moderated.bso'];
     container = document.createElement('div');
     document.body.appendChild(container);
@@ -99,6 +104,28 @@ describe('homepage board catalog links', () => {
     expectLinks('');
 
     expect(localStorage.getItem('5chan-boards-use-catalog')).toBe('false');
+  });
+
+  it('offers a checked, persistent frames preference on desktop', () => {
+    renderBoards();
+    clickButton('filter ▼');
+    clickButton('use_frames');
+    expect(useFramesStore.getState().useFrames).toBe(true);
+    expect(JSON.parse(localStorage.getItem('5chan-frames')!).useFrames).toBe(true);
+    clickButton('filter ▼');
+    const option = Array.from(container.querySelectorAll('button')).find((button) => button.textContent === 'use_frames');
+    expect(option?.getAttribute('aria-pressed')).toBe('true');
+    clickButton('use_frames');
+    expect(useFramesStore.getState().useFrames).toBe(false);
+  });
+
+  it('does not offer frames on mobile, even with a saved desktop preference', () => {
+    testState.framesAvailable = false;
+    useFramesStore.setState({ useFrames: true });
+    renderBoards();
+    clickButton('filter ▼');
+    expect(container.textContent).not.toContain('use_frames');
+    expect(container.textContent).toContain('use_catalog');
   });
 
   it.each(multiboards)('opens the catalog from %s when the preference is enabled', (name, path) => {

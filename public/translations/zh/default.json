@@ -485,5 +485,13 @@
   "waiting_board_challenge_verification": "正在等待论坛验证你的挑战答案",
   "board_uses_ai_moderation": "本论坛使用<1>AI 审核</1>来检查帖子是否符合论坛规则。",
   "search_post_status": "帖子",
-  "search_status_active": "活跃"
+  "search_status_active": "活跃",
+  "use_frames": "使用框架",
+  "remove_frames": "移除框架",
+  "show_directories": "显示板块代码",
+  "hide_directories": "隐藏板块代码",
+  "show_worksafe_only": "仅显示适合在工作场所浏览的板块",
+  "image_boards": "图片板块",
+  "upload_boards": "文件上传板块",
+  "multiboards": "多板视图"
 }

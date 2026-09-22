@@ -7,6 +7,12 @@
   min-width: 748px;
 }
 
+:global([data-frames-enabled]) .content {
+  box-sizing: border-box;
+  width: min(748px, 100%);
+  min-width: 0;
+}
+
 .box {
   position: relative;
   background: var(--homepage-box-background-color);

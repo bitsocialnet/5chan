@@ -485,5 +485,13 @@
   "waiting_board_challenge_verification": "బోర్డు మీ సవాలు సమాధానాలను ధృవీకరించే వరకు వేచి ఉంది",
   "board_uses_ai_moderation": "పోస్ట్‌లు తన నియమాలకు అనుగుణంగా ఉన్నాయో లేదో తనిఖీ చేయడానికి ఈ బోర్డు <1>AI మోడరేషన్</1>ను ఉపయోగిస్తుంది.",
   "search_post_status": "పోస్ట్‌లు",
-  "search_status_active": "క్రియాశీలమైనవి"
+  "search_status_active": "క్రియాశీలమైనవి",
+  "use_frames": "ఫ్రేమ్‌లను ఉపయోగించు",
+  "remove_frames": "ఫ్రేమ్‌లను తొలగించు",
+  "show_directories": "బోర్డు కోడ్‌లను చూపించు",
+  "hide_directories": "బోర్డు కోడ్‌లను దాచు",
+  "show_worksafe_only": "కార్యాలయంలో చూడటానికి అనువైన బోర్డులను మాత్రమే చూపించు",
+  "image_boards": "చిత్రాల బోర్డులు",
+  "upload_boards": "ఫైల్ అప్‌లోడ్ బోర్డులు",
+  "multiboards": "మల్టీబోర్డ్‌లు"
 }

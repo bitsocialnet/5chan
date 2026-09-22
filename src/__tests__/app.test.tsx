@@ -436,6 +436,12 @@ describe('App', () => {
     expect(latestLocation).toBe('/all');
   });
 
+  it.each(['/', '/g', '/faq'])('mounts navigation dialogs once on %s for the persistent sidebar', async (path) => {
+    await renderApp(path);
+    expect(container.querySelectorAll('[data-testid="directory-modal"]')).toHaveLength(1);
+    expect(container.querySelectorAll('[data-testid="disclaimer-modal"]')).toHaveLength(1);
+  });
+
   it('keeps the board chrome and cached feed mounted during the immediate pending handoff', async () => {
     await renderApp('/mu');
     const boardsBar = container.querySelector('[data-testid="boards-bar"]');

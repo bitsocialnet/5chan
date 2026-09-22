@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import type { Comment } from '@bitsocial/bitsocial-react-hooks';
 import type { SizeFunction } from 'react-virtuoso';
 import { useLocation } from 'react-router-dom';
-import useWindowWidth from './use-window-width';
+import useContentWidth from './use-content-width';
 import {
   getReplyHeightEstimates,
   getReplyItemSizeFromElement,
@@ -24,7 +24,7 @@ interface UseReplyHeightEstimatesOptions {
 
 const useReplyHeightEstimates = ({ directRepliesByParentCid, enabled = true, isMobile, maxContentChars, mode, quotedByMap, replies }: UseReplyHeightEstimatesOptions) => {
   const location = useLocation();
-  const windowWidth = useWindowWidth();
+  const windowWidth = useContentWidth();
   const themeKey = typeof document !== 'undefined' ? document.body.className : '';
   const effectiveMode = mode ?? resolveReplyVirtualizationMode(location.search);
 

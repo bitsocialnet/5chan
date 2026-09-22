@@ -485,5 +485,13 @@
   "waiting_board_challenge_verification": "ממתינים שהפורום יאמת את התשובות שלך לאתגר",
   "board_uses_ai_moderation": "הפורום הזה משתמש ב<1>ניהול תוכן באמצעות בינה מלאכותית</1> כדי לבדוק שהפוסטים תואמים לכללים שלו.",
   "search_post_status": "פוסטים",
-  "search_status_active": "פעילים"
+  "search_status_active": "פעילים",
+  "use_frames": "השתמש במסגרות",
+  "remove_frames": "הסר מסגרות",
+  "show_directories": "הצג קודי לוחות",
+  "hide_directories": "הסתר קודי לוחות",
+  "show_worksafe_only": "הצג רק לוחות שמתאימים לצפייה בעבודה",
+  "image_boards": "לוחות תמונות",
+  "upload_boards": "לוחות העלאת קבצים",
+  "multiboards": "לוחות מרובים"
 }

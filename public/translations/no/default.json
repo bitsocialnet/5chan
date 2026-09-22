@@ -485,5 +485,13 @@
   "waiting_board_challenge_verification": "Venter på at forumet verifiserer svarene dine på utfordringen",
   "board_uses_ai_moderation": "Dette forumet bruker <1>KI-moderering</1> for å sjekke om innlegg følger reglene.",
   "search_post_status": "Innlegg",
-  "search_status_active": "Aktive"
+  "search_status_active": "Aktive",
+  "use_frames": "Bruk rammer",
+  "remove_frames": "Fjern rammer",
+  "show_directories": "Vis boardkoder",
+  "hide_directories": "Skjul boardkoder",
+  "show_worksafe_only": "Vis bare boards som kan ses på jobb",
+  "image_boards": "Bildeboards",
+  "upload_boards": "Opplastingsboards",
+  "multiboards": "Multiboard"
 }

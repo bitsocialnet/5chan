@@ -485,5 +485,13 @@
   "waiting_board_challenge_verification": "Čekání, až fórum ověří vaše odpovědi na výzvu",
   "board_uses_ai_moderation": "Toto fórum používá <1>moderování pomocí AI</1> ke kontrole, zda příspěvky dodržují jeho pravidla.",
   "search_post_status": "Příspěvky",
-  "search_status_active": "Aktivní"
+  "search_status_active": "Aktivní",
+  "use_frames": "Použít rámy",
+  "remove_frames": "Odstranit rámy",
+  "show_directories": "Zobrazit kódy nástěnek",
+  "hide_directories": "Skrýt kódy nástěnek",
+  "show_worksafe_only": "Zobrazit jen nástěnky vhodné do práce",
+  "image_boards": "Obrázkové nástěnky",
+  "upload_boards": "Nástěnky pro nahrávání souborů",
+  "multiboards": "Multidesky"
 }

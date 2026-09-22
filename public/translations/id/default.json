@@ -485,5 +485,13 @@
   "waiting_board_challenge_verification": "Menunggu forum memverifikasi jawaban tantangan Anda",
   "board_uses_ai_moderation": "Forum ini menggunakan <1>moderasi AI</1> untuk memeriksa apakah postingan mematuhi aturannya.",
   "search_post_status": "Postingan",
-  "search_status_active": "Aktif"
+  "search_status_active": "Aktif",
+  "use_frames": "Gunakan bingkai",
+  "remove_frames": "Hapus bingkai",
+  "show_directories": "Tampilkan kode papan",
+  "hide_directories": "Sembunyikan kode papan",
+  "show_worksafe_only": "Tampilkan hanya papan yang aman dilihat di tempat kerja",
+  "image_boards": "Papan gambar",
+  "upload_boards": "Papan unggahan",
+  "multiboards": "Papan ganda"
 }
