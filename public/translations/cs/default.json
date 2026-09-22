@@ -493,5 +493,6 @@
   "show_worksafe_only": "Zobrazit jen nástěnky vhodné do práce",
   "image_boards": "Obrázkové nástěnky",
   "upload_boards": "Nástěnky pro nahrávání souborů",
-  "multiboards": "Multidesky"
+  "multiboards": "Multidesky",
+  "show_homepage_introduction": "Zobrazit úvod na domovské stránce"
 }

@@ -493,5 +493,6 @@
   "show_worksafe_only": "শুধু কর্মক্ষেত্রে দেখার উপযোগী বোর্ড দেখান",
   "image_boards": "ছবির বোর্ড",
   "upload_boards": "ফাইল আপলোডের বোর্ড",
-  "multiboards": "মাল্টিবোর্ড"
+  "multiboards": "মাল্টিবোর্ড",
+  "show_homepage_introduction": "হোমপেজের পরিচিতি দেখান"
 }

@@ -4,6 +4,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useFeedStateString } from '../../../hooks/use-state-string';
+import useHomepageIntroductionStore from '../../../stores/use-homepage-introduction-store';
 import Home from '../home';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -124,6 +125,7 @@ const renderHome = () => {
 describe('Home', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    useHomepageIntroductionStore.getState().setShowIntroduction(true);
     document.title = 'before';
     testState.closeDirectoryModalMock.mockReset();
     testState.navigateMock.mockReset();
@@ -156,6 +158,28 @@ describe('Home', () => {
   afterEach(() => {
     act(() => root.unmount());
     container.remove();
+    localStorage.removeItem('homepage-introduction');
+  });
+
+  it('keeps the introduction dismissed after returning home and restores it when the preference changes', () => {
+    renderHome();
+    expect(container.textContent).toContain('what_is_5chan');
+
+    const closeButton = container.querySelector<HTMLButtonElement>('button[aria-label="close"]');
+    expect(closeButton).not.toBeNull();
+    act(() => closeButton!.click());
+
+    expect(container.textContent).not.toContain('what_is_5chan');
+    expect(container.querySelector('[data-testid="boards-list"]')).not.toBeNull();
+    expect(JSON.parse(localStorage.getItem('homepage-introduction')!).state.showIntroduction).toBe(false);
+
+    act(() => root.render(null));
+    renderHome();
+    expect(container.textContent).not.toContain('what_is_5chan');
+
+    act(() => useHomepageIntroductionStore.getState().setShowIntroduction(true));
+    expect(container.textContent).toContain('what_is_5chan');
+    expect(container.querySelector('button[aria-label="close"]')).not.toBeNull();
   });
 
   it('renders the home view chrome, child sections, collectors, and aggregated stats', () => {

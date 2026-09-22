@@ -493,5 +493,6 @@
   "show_worksafe_only": "Pokaż tylko tablice bezpieczne do przeglądania w pracy",
   "image_boards": "Tablice obrazkowe",
   "upload_boards": "Tablice do przesyłania plików",
-  "multiboards": "Multiboardy"
+  "multiboards": "Multiboardy",
+  "show_homepage_introduction": "Pokaż wprowadzenie na stronie głównej"
 }

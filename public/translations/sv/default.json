@@ -493,5 +493,6 @@
   "show_worksafe_only": "Visa bara forum som kan läsas på jobbet",
   "image_boards": "Bildforum",
   "upload_boards": "Uppladdningsforum",
-  "multiboards": "Multiboard"
+  "multiboards": "Multiboard",
+  "show_homepage_introduction": "Visa introduktionen på startsidan"
 }

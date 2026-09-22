@@ -493,5 +493,6 @@
   "show_worksafe_only": "Mostrar solo foros aptos para el trabajo",
   "image_boards": "Foros de imágenes",
   "upload_boards": "Foros de subida de archivos",
-  "multiboards": "Multiboard"
+  "multiboards": "Multiboard",
+  "show_homepage_introduction": "Mostrar la introducción en la página de inicio"
 }

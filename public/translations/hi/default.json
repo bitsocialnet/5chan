@@ -493,5 +493,6 @@
   "show_worksafe_only": "केवल कार्यस्थल पर देखने योग्य बोर्ड दिखाएं",
   "image_boards": "चित्र बोर्ड",
   "upload_boards": "फ़ाइल अपलोड बोर्ड",
-  "multiboards": "मल्टीबोर्ड"
+  "multiboards": "मल्टीबोर्ड",
+  "show_homepage_introduction": "मुखपृष्ठ का परिचय दिखाएँ"
 }

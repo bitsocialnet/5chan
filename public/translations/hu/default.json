@@ -493,5 +493,6 @@
   "show_worksafe_only": "Csak munkahelyen is megtekinthető táblák",
   "image_boards": "Képtáblák",
   "upload_boards": "Fájlfeltöltő táblák",
-  "multiboards": "Többtáblás nézetek"
+  "multiboards": "Többtáblás nézetek",
+  "show_homepage_introduction": "Bemutatkozás megjelenítése a kezdőlapon"
 }

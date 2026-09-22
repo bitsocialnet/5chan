@@ -493,5 +493,6 @@
   "show_worksafe_only": "직장에서 봐도 되는 게시판만 표시",
   "image_boards": "이미지 게시판",
   "upload_boards": "업로드 게시판",
-  "multiboards": "멀티보드"
+  "multiboards": "멀티보드",
+  "show_homepage_introduction": "홈페이지 소개 표시"
 }

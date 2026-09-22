@@ -493,5 +493,6 @@
   "show_worksafe_only": "Alleen boards tonen die geschikt zijn voor op het werk",
   "image_boards": "Afbeeldingsboards",
   "upload_boards": "Uploadboards",
-  "multiboards": "Multiboards"
+  "multiboards": "Multiboards",
+  "show_homepage_introduction": "Introductie op de startpagina tonen"
 }

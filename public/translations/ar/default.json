@@ -493,5 +493,6 @@
   "show_worksafe_only": "عرض اللوحات الآمنة للعمل فقط",
   "image_boards": "منتديات الصور",
   "upload_boards": "منتديات رفع الملفات",
-  "multiboards": "اللوحات المتعددة"
+  "multiboards": "اللوحات المتعددة",
+  "show_homepage_introduction": "إظهار المقدمة في الصفحة الرئيسية"
 }

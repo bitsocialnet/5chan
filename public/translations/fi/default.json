@@ -493,5 +493,6 @@
   "show_worksafe_only": "Näytä vain työpaikalle sopivat laudat",
   "image_boards": "Kuvalaudat",
   "upload_boards": "Tiedostolaudat",
-  "multiboards": "Monilautalistaukset"
+  "multiboards": "Monilautalistaukset",
+  "show_homepage_introduction": "Näytä etusivun esittely"
 }

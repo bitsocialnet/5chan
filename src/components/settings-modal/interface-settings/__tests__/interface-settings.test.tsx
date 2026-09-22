@@ -7,6 +7,7 @@ import InterfaceSettings from '../interface-settings';
 import useFeedViewSettingsStore from '../../../../stores/use-feed-view-settings-store';
 import { INTERFACE_LANGUAGE_STORAGE_KEY } from '../../../../lib/constants';
 import useAppUpdateStore from '../../../../stores/use-app-update-store';
+import useHomepageIntroductionStore from '../../../../stores/use-homepage-introduction-store';
 
 vi.hoisted(() => {
   vi.stubEnv('VITE_APP_DISTRIBUTION', 'github');
@@ -81,6 +82,7 @@ describe('InterfaceSettings', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.removeItem(STORAGE_KEY);
+    useHomepageIntroductionStore.getState().setShowIntroduction(true);
     testState.alertMock.mockReset();
     testState.applyAppUpdateMock.mockReset();
     testState.changeLanguageMock.mockReset();
@@ -112,6 +114,26 @@ describe('InterfaceSettings', () => {
     container.remove();
     setItemSpy.mockRestore();
     vi.unstubAllGlobals();
+    localStorage.removeItem('homepage-introduction');
+  });
+
+  it('restores a dismissed homepage introduction and can hide it again', async () => {
+    useHomepageIntroductionStore.getState().setShowIntroduction(false);
+    render(createElement(InterfaceSettings));
+
+    const label = Array.from(container.querySelectorAll('label')).find((candidate) => candidate.textContent === 'show_homepage_introduction');
+    const checkbox = label?.querySelector<HTMLInputElement>('input[type="checkbox"]');
+    expect(checkbox).toBeTruthy();
+    expect(checkbox!.checked).toBe(false);
+
+    await act(async () => checkbox!.click());
+    expect(checkbox!.checked).toBe(true);
+    expect(useHomepageIntroductionStore.getState().showIntroduction).toBe(true);
+    expect(JSON.parse(localStorage.getItem('homepage-introduction')!).state.showIntroduction).toBe(true);
+
+    await act(async () => checkbox!.click());
+    expect(checkbox!.checked).toBe(false);
+    expect(useHomepageIntroductionStore.getState().showIntroduction).toBe(false);
   });
 
   it('renders enable_infinite_scroll_tip under the infinite scroll checkbox', () => {

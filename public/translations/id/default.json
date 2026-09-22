@@ -493,5 +493,6 @@
   "show_worksafe_only": "Tampilkan hanya papan yang aman dilihat di tempat kerja",
   "image_boards": "Papan gambar",
   "upload_boards": "Papan unggahan",
-  "multiboards": "Papan ganda"
+  "multiboards": "Papan ganda",
+  "show_homepage_introduction": "Tampilkan pengantar di beranda"
 }

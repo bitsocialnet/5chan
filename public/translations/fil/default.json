@@ -493,5 +493,6 @@
   "show_worksafe_only": "Ipakita lamang ang mga board na ligtas tingnan sa trabaho",
   "image_boards": "Mga board ng larawan",
   "upload_boards": "Mga board para sa pag-upload",
-  "multiboards": "Mga multiboard"
+  "multiboards": "Mga multiboard",
+  "show_homepage_introduction": "Ipakita ang pagpapakilala sa homepage"
 }

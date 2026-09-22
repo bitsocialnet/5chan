@@ -493,5 +493,6 @@
   "show_worksafe_only": "แสดงเฉพาะบอร์ดที่เปิดดูในที่ทำงานได้",
   "image_boards": "บอร์ดรูปภาพ",
   "upload_boards": "บอร์ดอัปโหลด",
-  "multiboards": "มัลติบอร์ด"
+  "multiboards": "มัลติบอร์ด",
+  "show_homepage_introduction": "แสดงคำแนะนำบนหน้าแรก"
 }

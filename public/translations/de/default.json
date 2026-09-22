@@ -493,5 +493,6 @@
   "show_worksafe_only": "Nur für den Arbeitsplatz geeignete Boards anzeigen",
   "image_boards": "Bilderboards",
   "upload_boards": "Upload-Boards",
-  "multiboards": "Multiboards"
+  "multiboards": "Multiboards",
+  "show_homepage_introduction": "Einführung auf der Startseite anzeigen"
 }

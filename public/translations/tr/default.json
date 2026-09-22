@@ -493,5 +493,6 @@
   "show_worksafe_only": "Yalnızca iş yerinde görüntülenmeye uygun panoları göster",
   "image_boards": "Görsel panoları",
   "upload_boards": "Dosya yükleme panoları",
-  "multiboards": "Çoklu panolar"
+  "multiboards": "Çoklu panolar",
+  "show_homepage_introduction": "Ana sayfadaki tanıtımı göster"
 }

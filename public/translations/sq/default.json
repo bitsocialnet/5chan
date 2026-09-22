@@ -493,5 +493,6 @@
   "show_worksafe_only": "Shfaq vetëm forume të përshtatshme për t’u parë në punë",
   "image_boards": "Forume me imazhe",
   "upload_boards": "Forume për ngarkim skedarësh",
-  "multiboards": "Multiboard-et"
+  "multiboards": "Multiboard-et",
+  "show_homepage_introduction": "Shfaq hyrjen në faqen kryesore"
 }

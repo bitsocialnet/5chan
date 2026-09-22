@@ -493,5 +493,6 @@
   "show_worksafe_only": "Vis kun boards, der kan ses på arbejde",
   "image_boards": "Billedboards",
   "upload_boards": "Uploadboards",
-  "multiboards": "Multiboard"
+  "multiboards": "Multiboard",
+  "show_homepage_introduction": "Vis introduktionen på forsiden"
 }

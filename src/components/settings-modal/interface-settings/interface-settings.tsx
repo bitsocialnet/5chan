@@ -4,6 +4,7 @@ import styles from './interface-settings.module.css';
 import capitalize from 'lodash/capitalize';
 import useExpandedMediaStore from '../../../stores/use-expanded-media-store';
 import useFeedViewSettingsStore from '../../../stores/use-feed-view-settings-store';
+import useHomepageIntroductionStore from '../../../stores/use-homepage-introduction-store';
 import Version from '../../version';
 import StyleSelector from '../../style-selector';
 import LazySection, { createSectionLoader } from '../lazy-section';
@@ -45,6 +46,8 @@ const InterfaceSettings = () => {
   const { t } = useTranslation();
   const { fitExpandedImagesToScreen, setFitExpandedImagesToScreen, setUnmuteExpandedVideoSound, unmuteExpandedVideoSound } = useExpandedMediaStore();
   const { enableInfiniteScroll, setEnableInfiniteScroll } = useFeedViewSettingsStore();
+  const showIntroduction = useHomepageIntroductionStore((state) => state.showIntroduction);
+  const setShowIntroduction = useHomepageIntroductionStore((state) => state.setShowIntroduction);
 
   return (
     <div className={styles.interfaceSettings}>
@@ -61,6 +64,12 @@ const InterfaceSettings = () => {
       </div>
       <div className={styles.setting}>
         {capitalize(t('style'))}: <StyleSelector />
+      </div>
+      <div className={styles.setting}>
+        <label>
+          <input type='checkbox' checked={showIntroduction} onChange={(e) => setShowIntroduction(e.target.checked)} />
+          {t('show_homepage_introduction')}
+        </label>
       </div>
       <div className={styles.setting}>
         <label>

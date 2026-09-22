@@ -493,5 +493,6 @@
   "show_worksafe_only": "仅显示适合在工作场所浏览的板块",
   "image_boards": "图片板块",
   "upload_boards": "文件上传板块",
-  "multiboards": "多板视图"
+  "multiboards": "多板视图",
+  "show_homepage_introduction": "显示首页介绍"
 }

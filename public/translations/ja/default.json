@@ -493,5 +493,6 @@
   "show_worksafe_only": "職場で閲覧可能な掲示板のみ表示",
   "image_boards": "画像掲示板",
   "upload_boards": "アップロード掲示板",
-  "multiboards": "マルチボード"
+  "multiboards": "マルチボード",
+  "show_homepage_introduction": "ホームページの紹介を表示"
 }

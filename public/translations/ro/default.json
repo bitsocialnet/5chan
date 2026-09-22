@@ -493,5 +493,6 @@
   "show_worksafe_only": "Afișează doar forumuri potrivite pentru vizualizare la serviciu",
   "image_boards": "Forumuri de imagini",
   "upload_boards": "Forumuri de încărcare fișiere",
-  "multiboards": "Multiboard-uri"
+  "multiboards": "Multiboard-uri",
+  "show_homepage_introduction": "Afișează introducerea pe pagina principală"
 }

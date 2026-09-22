@@ -493,5 +493,6 @@
   "show_worksafe_only": "Chỉ hiển thị bảng phù hợp để xem tại nơi làm việc",
   "image_boards": "Bảng hình ảnh",
   "upload_boards": "Bảng tải tệp lên",
-  "multiboards": "Đa bảng"
+  "multiboards": "Đa bảng",
+  "show_homepage_introduction": "Hiển thị phần giới thiệu trên trang chủ"
 }

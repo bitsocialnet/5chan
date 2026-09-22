@@ -514,5 +514,6 @@
   "show_worksafe_only": "Show Worksafe Only",
   "image_boards": "Image Boards",
   "upload_boards": "Upload Boards",
-  "multiboards": "Multiboards"
+  "multiboards": "Multiboards",
+  "show_homepage_introduction": "Show homepage introduction"
 }
