@@ -835,6 +835,22 @@ describe('post community address compatibility', () => {
     expect(container.textContent).toContain('updated-reply');
   });
 
+  it.each(['off', 'item-size'] as const)('lays out mobile preview replies before a virtualized feed measures them in %s mode', async (mode) => {
+    await renderWithRoute(createElement(PostMobile, { post: makeLegacyThread(), feedVirtualizationModeOverride: mode }));
+
+    const reply = container.querySelector('.replyMobile');
+    expect(reply).not.toBeNull();
+    expect(reply?.classList.contains('pretextVirtualizedReply')).toBe(true);
+  });
+
+  it('keeps deferred mobile preview layout outside virtualized feeds', async () => {
+    await renderWithRoute(createElement(PostMobile, { post: makeLegacyThread() }));
+
+    const reply = container.querySelector('.replyMobile');
+    expect(reply).not.toBeNull();
+    expect(reply?.classList.contains('pretextVirtualizedReply')).toBe(false);
+  });
+
   it('keeps board-card Pretext heights when preview replies are rendered', async () => {
     await renderWithRoute(createElement(PostDesktop, { post: makeLegacyThread() }));
     expect(container.querySelector('.postDesktop')?.getAttribute('data-pretext-height')).toBeTruthy();

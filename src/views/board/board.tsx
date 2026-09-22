@@ -53,6 +53,10 @@ const EMPTY_COMMUNITIES_PAGES = {};
 /** Board feed always uses 'active' sort; catalog dropdown does not affect board ordering. */
 const BOARD_SORT_TYPE = 'active' as const;
 
+// Rounded row heights accumulate into visible shifts when Virtuoso replaces rows with padding.
+const measureBoardItemSize = (element: HTMLElement, field: 'offsetHeight' | 'offsetWidth') =>
+  element.getBoundingClientRect()[field === 'offsetHeight' ? 'height' : 'width'];
+
 const mergeVisibleLocalAccountComments = (feed: Comment[], visibleLocalAccountComments: Comment[]) => {
   if (visibleLocalAccountComments.length === 0) {
     return feed;
@@ -536,9 +540,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
     [defaultFeedVirtualizationMode, routerLocation.search],
   );
   const defaultBoardItemHeight = feedVirtualizationMode === 'item-size' ? (isMobile ? 420 : 480) : isMobile ? 420 : 300;
-  // Omit the prop entirely in fallback mode. Passing `itemSize={undefined}` overrides
-  // Virtuoso's internal DOM measurer and leaves multiboard items stuck on the default height.
-  const boardSizingProps = useMemo(() => (feedVirtualizationMode === 'item-size' ? { itemSize: getPretextItemSizeFromElement } : {}), [feedVirtualizationMode]);
+  const boardItemSize = feedVirtualizationMode === 'item-size' ? getPretextItemSizeFromElement : measureBoardItemSize;
 
   // Redirect multiboard paths with page-number segments to normalized path (infinite-scroll only)
   useEffect(() => {
@@ -808,7 +810,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
         ) : effectiveInfiniteScroll ? (
           <Virtuoso
             defaultItemHeight={defaultBoardItemHeight}
-            {...boardSizingProps}
+            itemSize={boardItemSize}
             increaseViewportBy={boardViewportBuffer}
             minOverscanItemCount={boardMinOverscanItemCount}
             totalCount={displayFeed.length}
