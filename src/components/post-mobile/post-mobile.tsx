@@ -970,7 +970,8 @@ const PostMobile = ({
               previewDisplayReplies.map((reply, index) => (
                 <div key={reply.cid} className={styles.replyContainer} {...getPreviewReplyDebugProps(index)}>
                   <Reply
-                    disableDeferredLayout={feedVirtualizationModeOverride === 'item-size'}
+                    // DOM-measured feeds also need the real reply height before it enters the viewport.
+                    disableDeferredLayout={feedVirtualizationModeOverride !== undefined}
                     postReplyCount={replyCount}
                     reply={reply}
                     postsByAuthorInThread={postsByAuthorInThread}

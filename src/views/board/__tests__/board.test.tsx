@@ -87,6 +87,7 @@ const testState = vi.hoisted(() => ({
   hasMore: false,
   respectPostsPerPageForNewerThan: new Set<number>(),
   lastVirtuosoDefaultItemHeight: undefined as number | undefined,
+  lastVirtuosoItemSize: undefined as ((element: HTMLElement, field: 'offsetHeight' | 'offsetWidth') => number) | undefined,
   lastVirtuosoIncreaseViewportBy: undefined as { top: number; bottom: number } | undefined,
   lastVirtuosoMinOverscanItemCount: undefined as { top: number; bottom: number } | undefined,
   lastVirtuosoRestoreState: undefined as { ranges: number[]; scrollTop: number } | undefined,
@@ -234,6 +235,7 @@ vi.mock('react-virtuoso', () => ({
         components,
         data = [],
         defaultItemHeight,
+        itemSize,
         increaseViewportBy,
         minOverscanItemCount,
         endReached,
@@ -243,6 +245,7 @@ vi.mock('react-virtuoso', () => ({
         components?: { Footer?: React.ComponentType };
         data?: TestComment[];
         defaultItemHeight?: number;
+        itemSize?: (element: HTMLElement, field: 'offsetHeight' | 'offsetWidth') => number;
         increaseViewportBy?: { top: number; bottom: number };
         minOverscanItemCount?: { top: number; bottom: number };
         endReached?: ((index: number) => void) | undefined;
@@ -252,6 +255,7 @@ vi.mock('react-virtuoso', () => ({
       ref: React.ForwardedRef<{ getState: (cb: (snapshot: { ranges: number[]; scrollTop: number }) => void) => void }>,
     ) => {
       testState.lastVirtuosoDefaultItemHeight = defaultItemHeight;
+      testState.lastVirtuosoItemSize = itemSize;
       testState.lastVirtuosoIncreaseViewportBy = increaseViewportBy;
       testState.lastVirtuosoMinOverscanItemCount = minOverscanItemCount;
       testState.lastVirtuosoRestoreState = restoreStateFrom;
@@ -454,6 +458,7 @@ describe('Board', () => {
     testState.hasMore = false;
     testState.respectPostsPerPageForNewerThan = new Set();
     testState.lastVirtuosoDefaultItemHeight = undefined;
+    testState.lastVirtuosoItemSize = undefined;
     testState.lastVirtuosoIncreaseViewportBy = undefined;
     testState.lastVirtuosoMinOverscanItemCount = undefined;
     testState.lastVirtuosoRestoreState = undefined;
@@ -1283,6 +1288,33 @@ describe('Board', () => {
     expect(testState.lastVirtuosoDefaultItemHeight).toBe(420);
     expect(testState.lastVirtuosoIncreaseViewportBy).toEqual({ top: 2400, bottom: 1400 });
     expect(testState.lastVirtuosoMinOverscanItemCount).toEqual({ top: 8, bottom: 4 });
+  });
+
+  it('preserves fractional DOM sizes on mobile all feeds without using height estimates', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 390, writable: true });
+    testState.feed = [{ cid: 'first-post', communityAddress: 'music-posting.eth' }];
+
+    await renderBoard({ boardProps: { viewType: 'all' }, initialEntry: '/all', routePath: '/all/*' });
+
+    const row = document.createElement('div');
+    row.dataset.pretextHeight = '900';
+    vi.spyOn(row, 'getBoundingClientRect').mockReturnValue({ height: 386.96875, width: 389.5 } as DOMRect);
+
+    expect(testState.lastVirtuosoItemSize?.(row, 'offsetHeight')).toBe(386.96875);
+    expect(testState.lastVirtuosoItemSize?.(row, 'offsetWidth')).toBe(389.5);
+  });
+
+  it('preserves explicit Pretext sizing on mobile all feeds', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 390, writable: true });
+    testState.feed = [{ cid: 'first-post', communityAddress: 'music-posting.eth' }];
+
+    await renderBoard({ boardProps: { viewType: 'all' }, initialEntry: '/all?pretextFeed=item-size', routePath: '/all/*' });
+
+    const row = document.createElement('div');
+    row.dataset.pretextHeight = '900';
+    vi.spyOn(row, 'getBoundingClientRect').mockReturnValue({ height: 386.96875 } as DOMRect);
+
+    expect(testState.lastVirtuosoItemSize?.(row, 'offsetHeight')).toBe(900);
   });
 
   it('uses an asymmetric reverse-scroll buffer on desktop multiboard feeds', async () => {
