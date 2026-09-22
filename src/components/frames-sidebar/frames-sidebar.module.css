@@ -16,6 +16,11 @@
   text-align: left;
 }
 
+:global(.futaba) .sidebar,
+:global(.burichan) .sidebar {
+  font-size: var(--body-font-size);
+}
+
 .inner {
   padding: 8px;
 }
@@ -86,7 +91,7 @@
   background-color: var(--homepage-box-bar-background-color, var(--post-form-field-title-background-color));
   color: var(--homepage-box-bar-text-color, var(--post-form-field-title-color));
   font-family: inherit;
-  font-size: 9pt;
+  font-size: inherit;
   font-weight: bold;
   line-height: normal;
 }
