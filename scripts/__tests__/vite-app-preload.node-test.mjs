@@ -35,6 +35,43 @@ const createBundle = () => ({
 
 const html = `<head><script type="module" crossorigin src="./assets/index-AAAAAAAA.js"></script><link rel="modulepreload" crossorigin href="./assets/vendor-BBBBBBBB.js"><link rel="stylesheet" crossorigin href="./assets/index-DDDDDDDD.css"></head>`;
 
+const createBootstrapBundle = () => {
+  const bundle = createBundle();
+  bundle['assets/bootstrap-MMMMMMMM.js'] = chunk('assets/bootstrap-MMMMMMMM.js', {
+    facadeModuleId: '/repo/src/bootstrap.ts',
+    imports: ['assets/vendor-BBBBBBBB.js'],
+    dynamicImports: ['assets/index-AAAAAAAA.js'],
+  });
+  bundle['assets/index-AAAAAAAA.js'].imports.push('assets/polyfills-NNNNNNNN.js');
+  bundle['assets/polyfills-NNNNNNNN.js'] = chunk('assets/polyfills-NNNNNNNN.js');
+  return bundle;
+};
+
+test('preloads bootstrap -> index -> app, including index-only dependencies and theme CSS', () => {
+  for (const base of ['./', '/nested/']) {
+    const bootstrapHtml = `<head><script type="module" crossorigin src="${base}assets/bootstrap-MMMMMMMM.js"></script><link rel="modulepreload" crossorigin href="${base}assets/vendor-BBBBBBBB.js"></head>`;
+    const plugin = dynamicEntryPreloadPlugin();
+    plugin.configResolved({ base });
+    const tags = plugin.transformIndexHtml.handler(bootstrapHtml, { bundle: createBootstrapBundle() });
+    assert.deepEqual(
+      tags.map((tag) => [tag.attrs.rel, tag.attrs.href]),
+      [
+        ['modulepreload', `${base}assets/index-AAAAAAAA.js`],
+        ['modulepreload', `${base}assets/polyfills-NNNNNNNN.js`],
+        ['preload', `${base}assets/index-DDDDDDDD.css`],
+        ['modulepreload', `${base}assets/app-CCCCCCCC.js`],
+        ['modulepreload', `${base}assets/hooks-EEEEEEEE.js`],
+        ['modulepreload', `${base}assets/crypto-IIIIIIII.js`],
+        ['modulepreload', `${base}assets/posts-FFFFFFFF.js`],
+        ['preload', `${base}assets/posts-KKKKKKKK.css`],
+        ['preload', `${base}assets/app-HHHHHHHH.css`],
+      ],
+    );
+    assert.equal(new Set(tags.map((tag) => tag.attrs.href)).size, tags.length);
+    assert.ok(tags.every((tag) => tag.attrs.rel !== 'stylesheet'));
+  }
+});
+
 test('collects the static graph of the app chunk in Vite dependency order, skipping dynamic imports', () => {
   const files = collectDynamicEntryDependencies(createBundle(), 'assets/app-CCCCCCCC.js', { ownerFileName: 'assets/index-AAAAAAAA.js' });
   assert.deepEqual(files, [
@@ -46,6 +83,15 @@ test('collects the static graph of the app chunk in Vite dependency order, skipp
     'assets/posts-KKKKKKKK.css',
     'assets/app-HHHHHHHH.css',
   ]);
+});
+
+test('handles circular static imports and missing dependency chunks without adding lazy imports', () => {
+  const bundle = createBundle();
+  bundle['assets/crypto-IIIIIIII.js'].imports.push('assets/hooks-EEEEEEEE.js', 'assets/missing-OOOOOOOO.js');
+  assert.deepEqual(
+    collectDynamicEntryDependencies(bundle, 'assets/app-CCCCCCCC.js', { ownerFileName: 'assets/index-AAAAAAAA.js' }),
+    collectDynamicEntryDependencies(createBundle(), 'assets/app-CCCCCCCC.js', { ownerFileName: 'assets/index-AAAAAAAA.js' }),
+  );
 });
 
 test('emits preload tags only for files the HTML does not already reference', () => {

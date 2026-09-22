@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import { useAccountComment } from '@bitsocial/bitsocial-react-hooks';
 import { isAllView, isModView, isNotFoundView, isSearchView, isSubscriptionsView } from '../lib/utils/view-utils';
@@ -105,7 +105,8 @@ const useTheme = ({ applyDocumentEffects = false }: UseThemeOptions = {}): [stri
     directories,
   });
 
-  useEffect(() => {
+  // Theme variables must be available for the first painted app frame, including cached starts.
+  useLayoutEffect(() => {
     if (!applyDocumentEffects) return;
     updateThemeClass(currentTheme);
   }, [applyDocumentEffects, currentTheme]);

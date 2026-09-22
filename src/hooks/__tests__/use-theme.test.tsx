@@ -129,6 +129,37 @@ describe('useTheme', () => {
     expect(testState.setThemeMock).toHaveBeenCalledWith('nsfw', 'photon');
   });
 
+  it('applies the document theme before the first paint and route-change paint', async () => {
+    const themesAtLayout: string[] = [];
+    const PaintHarness = () => {
+      useTheme({ applyDocumentEffects: true });
+      React.useLayoutEffect(() => {
+        themesAtLayout.push(document.body.className);
+      });
+      return null;
+    };
+
+    await act(async () => root.render(createElement(PaintHarness)));
+    expect(themesAtLayout).toEqual(['tomorrow']);
+
+    testState.locationPathname = '/';
+    await act(async () => root.render(createElement(PaintHarness)));
+    expect(themesAtLayout).toEqual(['tomorrow', 'yotsuba']);
+  });
+
+  it('leaves the document theme to the layout owner for read-only consumers', async () => {
+    document.body.className = 'yotsuba';
+    const ConsumerHarness = () => {
+      useTheme();
+      return null;
+    };
+
+    await act(async () => root.render(createElement(ConsumerHarness)));
+
+    expect(document.body.className).toBe('yotsuba');
+    expect(testState.updateFaviconMock).not.toHaveBeenCalled();
+  });
+
   it('restores the default favicon when navigating from not-found to mod', async () => {
     testState.boardIdentifier = undefined;
     testState.resolvedAddress = undefined;

@@ -1,11 +1,9 @@
-// Preload the dynamically imported app chunk graph from index.html.
+// Preload the dynamically imported startup chunk graphs from index.html.
 //
-// src/index.tsx loads the real application with `import('./app')` so polyfills and the P2P
-// client options run first. Vite only writes <link rel="modulepreload"> tags for the entry's
-// static imports, so a cold visitor downloads the entry chunks, executes them, and only then
-// discovers the ~35 app chunks. Emitting preload tags for that graph lets the browser fetch
-// everything in parallel while the HTML is still being parsed. The runtime preload helper
-// skips scripts whose <link href> is already in the document, so nothing is fetched twice.
+// src/bootstrap.ts imports src/index.tsx, which imports the app after configuring polyfills
+// and P2P client options. Vite only writes HTML preload tags for bootstrap's static imports.
+// Preload both deferred graphs so index-only dependencies and global/theme CSS are discovered
+// alongside the app chunks. Preloading fetches them without changing their execution order.
 
 export const APP_PRELOAD_ATTRIBUTE = 'data-fivechan-app-preload';
 
@@ -47,10 +45,15 @@ export function createDynamicEntryPreloadTags({ bundle, html, base, entryFacadeS
     return [];
   }
   const owner = ownerFacadeSuffix ? findChunkByFacade(bundle, ownerFacadeSuffix) : undefined;
-  const files = collectDynamicEntryDependencies(bundle, entry.fileName, { ownerFileName: owner?.fileName });
+  const files = [
+    ...new Set([
+      ...(owner ? collectDynamicEntryDependencies(bundle, owner.fileName) : []),
+      ...collectDynamicEntryDependencies(bundle, entry.fileName, { ownerFileName: owner?.fileName }),
+    ]),
+  ];
   return (
     files
-      // The entry's own static graph is already referenced by Vite's tags.
+      // Bootstrap and any shared static dependencies already have Vite's HTML tags.
       .filter((fileName) => !html.includes(fileName))
       .map((fileName) => ({
         tag: 'link',
