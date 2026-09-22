@@ -6,11 +6,11 @@
   width: 200px;
   box-sizing: content-box;
   overflow: auto;
-  border-right: 1px solid #800;
-  background: #ffe url('/assets/background-fade.png') top repeat-x;
-  color: #800;
-  color-scheme: light;
-  font-family: sans-serif;
+  border-right: 1px solid var(--homepage-box-border-color, var(--pagelist-item-border-color));
+  background: var(--body-background-base-color) var(--body-background-pattern-image) top repeat-x;
+  color: var(--body-font-color);
+  color-scheme: var(--color-scheme);
+  font-family: var(--body-font-family);
   font-size: 9pt;
   line-height: normal;
   text-align: left;
@@ -28,13 +28,13 @@
 
 .sidebar a,
 .textButton {
-  color: #800;
+  color: var(--homepage-box-link-text-color, var(--button-desktop-text-color));
   text-decoration: none;
 }
 
 .sidebar a:hover,
 .textButton:hover {
-  color: #e00;
+  color: var(--homepage-box-link-text-color-hover, var(--button-desktop-text-color-hover));
   text-decoration: underline;
 }
 
@@ -81,9 +81,10 @@
 .sectionHeading {
   margin: 0.83em -8px 4px;
   padding: 2px 2px 2px 4px;
-  border-top: 1px solid #d8a787;
-  border-bottom: 1px solid #d8a787;
-  background-color: #fca;
+  border-top: 1px solid var(--pagelist-item-border-color);
+  border-bottom: 1px solid var(--pagelist-item-border-color);
+  background-color: var(--homepage-box-bar-background-color, var(--post-form-field-title-background-color));
+  color: var(--homepage-box-bar-text-color, var(--post-form-field-title-color));
   font-family: inherit;
   font-size: 9pt;
   font-weight: bold;
@@ -94,9 +95,9 @@
   float: right;
   margin: 0;
   padding: 0 4px;
-  border: 1px solid #d8a787;
+  border: 1px solid var(--pagelist-item-border-color);
   border-radius: 0;
-  background: #eb9;
+  background: var(--pagelist-item-background-color);
   color: inherit;
   font-family: inherit;
   font-size: 10px;
@@ -106,8 +107,8 @@
 }
 
 .collapseButton:hover {
-  border-color: #c97;
-  background: #da8;
+  border-color: var(--button-desktop-text-color-hover);
+  color: var(--button-desktop-text-color-hover);
 }
 
 .imageBoards li {
