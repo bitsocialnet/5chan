@@ -13,6 +13,7 @@ import HomeFooter from '../../components/home-footer';
 import HomeLogo from '../../components/home-logo';
 import useDirectoryModalStore from '../../stores/use-directory-modal-store';
 import useHomepageStatsOptionsStore, { type HomepageStatsScope } from '../../stores/use-homepage-stats-options-store';
+import useHomepageIntroductionStore from '../../stores/use-homepage-introduction-store';
 import DisclaimerModal from '../../components/disclaimer-modal';
 import DirectoryModal from '../../components/directory-modal';
 import { extractDirectoryFromTitle } from '../../lib/utils/route-utils';
@@ -57,10 +58,16 @@ const SearchBar = () => {
 const InfoBox = () => {
   const { t } = useTranslation();
   const isWeb = isWebRuntime();
+  const showIntroduction = useHomepageIntroductionStore((state) => state.showIntroduction);
+  const setShowIntroduction = useHomepageIntroductionStore((state) => state.setShowIntroduction);
+
+  if (!showIntroduction) return null;
+
   return (
     <div className={`${styles.box} ${styles.infoBox}`}>
       <div className={styles.infoboxBar}>
         <h2>{t('what_is_5chan')}</h2>
+        <button type='button' className={styles.closeInfoBox} aria-label={t('close')} title={t('close')} onClick={() => setShowIntroduction(false)} />
       </div>
       <div className={styles.boxContent}>
         <Trans

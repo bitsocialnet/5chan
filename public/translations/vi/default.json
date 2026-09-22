@@ -485,5 +485,6 @@
   "waiting_board_challenge_verification": "Đang chờ diễn đàn xác minh câu trả lời thử thách của bạn",
   "board_uses_ai_moderation": "Diễn đàn này sử dụng <1>kiểm duyệt bằng AI</1> để kiểm tra xem bài đăng có tuân thủ quy tắc của diễn đàn hay không.",
   "search_post_status": "Bài viết",
-  "search_status_active": "Đang hoạt động"
+  "search_status_active": "Đang hoạt động",
+  "show_homepage_introduction": "Hiển thị phần giới thiệu trên trang chủ"
 }

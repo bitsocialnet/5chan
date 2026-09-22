@@ -506,5 +506,6 @@
   "waiting_board_challenge_verification": "Waiting for the board to verify your challenge answers",
   "board_uses_ai_moderation": "This board uses <1>AI moderation</1> to check posts against its rules.",
   "search_post_status": "Posts",
-  "search_status_active": "Active"
+  "search_status_active": "Active",
+  "show_homepage_introduction": "Show homepage introduction"
 }

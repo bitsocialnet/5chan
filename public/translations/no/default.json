@@ -485,5 +485,6 @@
   "waiting_board_challenge_verification": "Venter på at forumet verifiserer svarene dine på utfordringen",
   "board_uses_ai_moderation": "Dette forumet bruker <1>KI-moderering</1> for å sjekke om innlegg følger reglene.",
   "search_post_status": "Innlegg",
-  "search_status_active": "Aktive"
+  "search_status_active": "Aktive",
+  "show_homepage_introduction": "Vis introduksjonen på forsiden"
 }

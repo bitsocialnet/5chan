@@ -485,5 +485,6 @@
   "waiting_board_challenge_verification": "Čekání, až fórum ověří vaše odpovědi na výzvu",
   "board_uses_ai_moderation": "Toto fórum používá <1>moderování pomocí AI</1> ke kontrole, zda příspěvky dodržují jeho pravidla.",
   "search_post_status": "Příspěvky",
-  "search_status_active": "Aktivní"
+  "search_status_active": "Aktivní",
+  "show_homepage_introduction": "Zobrazit úvod na domovské stránce"
 }

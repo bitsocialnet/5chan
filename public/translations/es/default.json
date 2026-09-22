@@ -485,5 +485,6 @@
   "waiting_board_challenge_verification": "Esperando a que el foro verifique tus respuestas al desafío",
   "board_uses_ai_moderation": "Este foro utiliza <1>moderación con IA</1> para comprobar que los mensajes cumplen sus reglas.",
   "search_post_status": "Publicaciones",
-  "search_status_active": "Activas"
+  "search_status_active": "Activas",
+  "show_homepage_introduction": "Mostrar la introducción en la página de inicio"
 }

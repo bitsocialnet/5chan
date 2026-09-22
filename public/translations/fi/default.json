@@ -485,5 +485,6 @@
   "waiting_board_challenge_verification": "Odotetaan, että foorumi vahvistaa haastevastauksesi",
   "board_uses_ai_moderation": "Tämä foorumi käyttää <1>tekoälymoderointia</1> tarkistaakseen, että viestit noudattavat sen sääntöjä.",
   "search_post_status": "Viestit",
-  "search_status_active": "Aktiiviset"
+  "search_status_active": "Aktiiviset",
+  "show_homepage_introduction": "Näytä etusivun esittely"
 }

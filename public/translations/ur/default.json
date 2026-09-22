@@ -485,5 +485,6 @@
   "waiting_board_challenge_verification": "بورڈ کی جانب سے آپ کے چیلنج کے جوابات کی تصدیق کا انتظار ہے",
   "board_uses_ai_moderation": "یہ بورڈ پوسٹس کو اپنے قواعد کے مطابق جانچنے کے لیے <1>AI کے ذریعے نگرانی</1> کا استعمال کرتا ہے۔",
   "search_post_status": "پوسٹس",
-  "search_status_active": "فعال"
+  "search_status_active": "فعال",
+  "show_homepage_introduction": "ہوم پیج کا تعارف دکھائیں"
 }

@@ -485,5 +485,6 @@
   "waiting_board_challenge_verification": "في انتظار أن يتحقق المنتدى من إجاباتك على التحدي",
   "board_uses_ai_moderation": "يستخدم هذا المنتدى <1>الإشراف بالذكاء الاصطناعي</1> للتحقق من التزام المنشورات بقواعده.",
   "search_post_status": "المنشورات",
-  "search_status_active": "نشطة"
+  "search_status_active": "نشطة",
+  "show_homepage_introduction": "إظهار المقدمة في الصفحة الرئيسية"
 }

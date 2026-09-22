@@ -485,5 +485,6 @@
   "waiting_board_challenge_verification": "掲示板によるチャレンジ回答の検証を待っています",
   "board_uses_ai_moderation": "この掲示板は、投稿がルールに従っているかを確認するために<1>AIモデレーション</1>を使用しています。",
   "search_post_status": "投稿",
-  "search_status_active": "アクティブ"
+  "search_status_active": "アクティブ",
+  "show_homepage_introduction": "ホームページの紹介を表示"
 }

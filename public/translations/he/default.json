@@ -485,5 +485,6 @@
   "waiting_board_challenge_verification": "ממתינים שהפורום יאמת את התשובות שלך לאתגר",
   "board_uses_ai_moderation": "הפורום הזה משתמש ב<1>ניהול תוכן באמצעות בינה מלאכותית</1> כדי לבדוק שהפוסטים תואמים לכללים שלו.",
   "search_post_status": "פוסטים",
-  "search_status_active": "פעילים"
+  "search_status_active": "פעילים",
+  "show_homepage_introduction": "הצגת ההקדמה בדף הבית"
 }

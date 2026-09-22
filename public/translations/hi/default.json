@@ -485,5 +485,6 @@
   "waiting_board_challenge_verification": "बोर्ड द्वारा चुनौती के आपके उत्तरों का सत्यापन किए जाने का इंतज़ार है",
   "board_uses_ai_moderation": "यह बोर्ड अपनी नियमावली के अनुसार पोस्ट की जाँच करने के लिए <1>AI मॉडरेशन</1> का उपयोग करता है।",
   "search_post_status": "पोस्ट",
-  "search_status_active": "सक्रिय"
+  "search_status_active": "सक्रिय",
+  "show_homepage_introduction": "मुखपृष्ठ का परिचय दिखाएँ"
 }

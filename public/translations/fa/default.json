@@ -485,5 +485,6 @@
   "waiting_board_challenge_verification": "در انتظار تأیید پاسخ‌های شما به چالش توسط تالار",
   "board_uses_ai_moderation": "این تالار از <1>نظارت با هوش مصنوعی</1> برای بررسی مطابقت پست‌ها با قوانین خود استفاده می‌کند.",
   "search_post_status": "پست‌ها",
-  "search_status_active": "فعال"
+  "search_status_active": "فعال",
+  "show_homepage_introduction": "نمایش معرفی در صفحهٔ اصلی"
 }

@@ -485,5 +485,6 @@
   "waiting_board_challenge_verification": "正在等待论坛验证你的挑战答案",
   "board_uses_ai_moderation": "本论坛使用<1>AI 审核</1>来检查帖子是否符合论坛规则。",
   "search_post_status": "帖子",
-  "search_status_active": "活跃"
+  "search_status_active": "活跃",
+  "show_homepage_introduction": "显示首页介绍"
 }

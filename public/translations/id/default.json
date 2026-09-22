@@ -485,5 +485,6 @@
   "waiting_board_challenge_verification": "Menunggu forum memverifikasi jawaban tantangan Anda",
   "board_uses_ai_moderation": "Forum ini menggunakan <1>moderasi AI</1> untuk memeriksa apakah postingan mematuhi aturannya.",
   "search_post_status": "Postingan",
-  "search_status_active": "Aktif"
+  "search_status_active": "Aktif",
+  "show_homepage_introduction": "Tampilkan pengantar di beranda"
 }

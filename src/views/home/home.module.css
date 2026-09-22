@@ -35,8 +35,29 @@
 }
 
 .infoboxBar {
+  position: relative;
   background: var(--homepage-infobox-bar-background-color);
   color: var(--homepage-infobox-bar-text-color);
+}
+
+.closeInfoBox {
+  all: unset;
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 16px;
+  height: 16px;
+  background: #800 url('/assets/buttons/icon-close-red.png');
+  cursor: pointer;
+}
+
+.closeInfoBox:focus-visible {
+  outline: 1px solid var(--homepage-infobox-bar-text-color);
+  outline-offset: 1px;
+}
+
+.infoboxBar h2 {
+  padding-right: 24px;
 }
 
 .boxBar {

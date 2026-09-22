@@ -485,5 +485,6 @@
   "waiting_board_challenge_verification": "Venter på, at forummet verificerer dine svar på udfordringen",
   "board_uses_ai_moderation": "Dette forum bruger <1>AI-moderation</1> til at kontrollere, om indlæg overholder dets regler.",
   "search_post_status": "Indlæg",
-  "search_status_active": "Aktive"
+  "search_status_active": "Aktive",
+  "show_homepage_introduction": "Vis introduktionen på forsiden"
 }
