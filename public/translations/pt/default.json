@@ -485,5 +485,13 @@
   "waiting_board_challenge_verification": "Aguardando o fórum verificar suas respostas ao desafio",
   "board_uses_ai_moderation": "Este fórum usa <1>moderação por IA</1> para verificar se as postagens seguem suas regras.",
   "search_post_status": "Publicações",
-  "search_status_active": "Ativas"
+  "search_status_active": "Ativas",
+  "use_frames": "Usar frames",
+  "remove_frames": "Remover frames",
+  "show_directories": "Mostrar códigos dos fóruns",
+  "hide_directories": "Ocultar códigos dos fóruns",
+  "show_worksafe_only": "Mostrar apenas fóruns seguros para ver no trabalho",
+  "image_boards": "Fóruns de imagens",
+  "upload_boards": "Fóruns de envio de arquivos",
+  "multiboards": "Multiboard"
 }

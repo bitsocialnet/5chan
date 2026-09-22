@@ -485,5 +485,13 @@
   "waiting_board_challenge_verification": "Warte darauf, dass das Forum deine Antworten auf die Herausforderung überprüft",
   "board_uses_ai_moderation": "Dieses Forum nutzt <1>KI-Moderation</1>, um Beiträge auf die Einhaltung seiner Regeln zu prüfen.",
   "search_post_status": "Beiträge",
-  "search_status_active": "Aktiv"
+  "search_status_active": "Aktiv",
+  "use_frames": "Frames verwenden",
+  "remove_frames": "Frames entfernen",
+  "show_directories": "Board-Kürzel anzeigen",
+  "hide_directories": "Board-Kürzel ausblenden",
+  "show_worksafe_only": "Nur für den Arbeitsplatz geeignete Boards anzeigen",
+  "image_boards": "Bilderboards",
+  "upload_boards": "Upload-Boards",
+  "multiboards": "Multiboards"
 }

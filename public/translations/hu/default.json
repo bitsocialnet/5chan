@@ -485,5 +485,13 @@
   "waiting_board_challenge_verification": "Várakozás arra, hogy a fórum ellenőrizze a kihívásra adott válaszaid",
   "board_uses_ai_moderation": "Ez a fórum <1>mesterséges intelligenciával végzett moderálást</1> használ annak ellenőrzésére, hogy a bejegyzések megfelelnek-e a szabályainak.",
   "search_post_status": "Bejegyzések",
-  "search_status_active": "Aktív"
+  "search_status_active": "Aktív",
+  "use_frames": "Keretek használata",
+  "remove_frames": "Keretek eltávolítása",
+  "show_directories": "Táblakódok megjelenítése",
+  "hide_directories": "Táblakódok elrejtése",
+  "show_worksafe_only": "Csak munkahelyen is megtekinthető táblák",
+  "image_boards": "Képtáblák",
+  "upload_boards": "Fájlfeltöltő táblák",
+  "multiboards": "Többtáblás nézetek"
 }

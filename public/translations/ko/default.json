@@ -485,5 +485,13 @@
   "waiting_board_challenge_verification": "게시판에서 회원님의 챌린지 답변을 검증하기를 기다리는 중",
   "board_uses_ai_moderation": "이 게시판은 게시물이 규칙을 준수하는지 확인하기 위해 <1>AI 모더레이션</1>을 사용합니다.",
   "search_post_status": "게시물",
-  "search_status_active": "활성"
+  "search_status_active": "활성",
+  "use_frames": "프레임 사용",
+  "remove_frames": "프레임 해제",
+  "show_directories": "게시판 코드 표시",
+  "hide_directories": "게시판 코드 숨기기",
+  "show_worksafe_only": "직장에서 봐도 되는 게시판만 표시",
+  "image_boards": "이미지 게시판",
+  "upload_boards": "업로드 게시판",
+  "multiboards": "멀티보드"
 }

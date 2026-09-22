@@ -17,7 +17,7 @@ import usePruneHiddenCatalogThreads from '../../hooks/use-prune-hidden-catalog-t
 import { useSuggestionFeedLoader } from '../../hooks/use-suggestion-feed-loader';
 import useTimeFilter from '../../hooks/use-time-filter';
 import useIsMobile from '../../hooks/use-is-mobile';
-import useWindowWidth from '../../hooks/use-window-width';
+import useContentWidth from '../../hooks/use-content-width';
 import useCatalogStyleStore from '../../stores/use-catalog-style-store';
 import useFeedResetStore from '../../stores/use-feed-reset-store';
 import useHiddenCatalogThreadsStore from '../../stores/use-hidden-catalog-threads-store';
@@ -323,7 +323,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   const imageSize = useCatalogStyleStore((state) => state.imageSize);
   const showOPComment = useCatalogStyleStore((state) => state.showOPComment);
   const columnWidth = imageSize === 'Large' ? 270 : 180;
-  const windowWidth = useWindowWidth();
+  const windowWidth = useContentWidth();
   const isMobile = useIsMobile();
   const columnCount = Math.floor(windowWidth / columnWidth);
   const multiboardCatalogPostsPerPage = Math.max(18, Math.min(24, Math.max(columnCount, 1) * 5));

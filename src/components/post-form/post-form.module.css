@@ -256,7 +256,7 @@
 .formError {
   box-sizing: border-box;
   width: 468px;
-  max-width: calc(100vw - 2px);
+  max-width: calc(100vw - var(--frames-sidebar-width, 0px) - 2px);
   text-align: start;
 }
 

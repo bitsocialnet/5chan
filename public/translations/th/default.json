@@ -485,5 +485,13 @@
   "waiting_board_challenge_verification": "กำลังรอให้กระดานตรวจสอบคำตอบของคุณสำหรับความท้าทาย",
   "board_uses_ai_moderation": "กระดานนี้ใช้<1>การกลั่นกรองโดย AI</1>เพื่อตรวจสอบว่าโพสต์เป็นไปตามกฎของกระดานหรือไม่",
   "search_post_status": "โพสต์",
-  "search_status_active": "ยังใช้งานอยู่"
+  "search_status_active": "ยังใช้งานอยู่",
+  "use_frames": "ใช้เฟรม",
+  "remove_frames": "เอาเฟรมออก",
+  "show_directories": "แสดงรหัสบอร์ด",
+  "hide_directories": "ซ่อนรหัสบอร์ด",
+  "show_worksafe_only": "แสดงเฉพาะบอร์ดที่เปิดดูในที่ทำงานได้",
+  "image_boards": "บอร์ดรูปภาพ",
+  "upload_boards": "บอร์ดอัปโหลด",
+  "multiboards": "มัลติบอร์ด"
 }

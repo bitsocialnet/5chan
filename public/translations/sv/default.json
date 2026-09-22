@@ -485,5 +485,13 @@
   "waiting_board_challenge_verification": "Väntar på att forumet verifierar dina svar på utmaningen",
   "board_uses_ai_moderation": "Detta forum använder <1>AI-moderering</1> för att kontrollera att inlägg följer dess regler.",
   "search_post_status": "Inlägg",
-  "search_status_active": "Aktiva"
+  "search_status_active": "Aktiva",
+  "use_frames": "Använd ramar",
+  "remove_frames": "Ta bort ramar",
+  "show_directories": "Visa forumkoder",
+  "hide_directories": "Dölj forumkoder",
+  "show_worksafe_only": "Visa bara forum som kan läsas på jobbet",
+  "image_boards": "Bildforum",
+  "upload_boards": "Uppladdningsforum",
+  "multiboards": "Multiboard"
 }

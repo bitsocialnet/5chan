@@ -485,5 +485,13 @@
   "waiting_board_challenge_verification": "Hinihintay na beripikahin ng board ang iyong mga sagot sa hamon",
   "board_uses_ai_moderation": "Gumagamit ang board na ito ng <1>pagmomoderate gamit ang AI</1> upang suriin kung sumusunod ang mga post sa mga patakaran nito.",
   "search_post_status": "Mga post",
-  "search_status_active": "Aktibo"
+  "search_status_active": "Aktibo",
+  "use_frames": "Gumamit ng mga frame",
+  "remove_frames": "Alisin ang mga frame",
+  "show_directories": "Ipakita ang mga code ng board",
+  "hide_directories": "Itago ang mga code ng board",
+  "show_worksafe_only": "Ipakita lamang ang mga board na ligtas tingnan sa trabaho",
+  "image_boards": "Mga board ng larawan",
+  "upload_boards": "Mga board para sa pag-upload",
+  "multiboards": "Mga multiboard"
 }

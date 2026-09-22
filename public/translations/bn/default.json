@@ -485,5 +485,13 @@
   "waiting_board_challenge_verification": "বোর্ড আপনার চ্যালেঞ্জের উত্তরগুলো যাচাই করার অপেক্ষায়",
   "board_uses_ai_moderation": "এই বোর্ড পোস্টগুলো তার নিয়ম মেনে চলছে কি না তা পরীক্ষা করতে <1>AI মডারেশন</1> ব্যবহার করে।",
   "search_post_status": "পোস্টসমূহ",
-  "search_status_active": "সক্রিয়"
+  "search_status_active": "সক্রিয়",
+  "use_frames": "ফ্রেম ব্যবহার করুন",
+  "remove_frames": "ফ্রেম সরান",
+  "show_directories": "বোর্ডের কোড দেখান",
+  "hide_directories": "বোর্ডের কোড লুকান",
+  "show_worksafe_only": "শুধু কর্মক্ষেত্রে দেখার উপযোগী বোর্ড দেখান",
+  "image_boards": "ছবির বোর্ড",
+  "upload_boards": "ফাইল আপলোডের বোর্ড",
+  "multiboards": "মাল্টিবোর্ড"
 }

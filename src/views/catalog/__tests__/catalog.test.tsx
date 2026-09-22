@@ -1,4 +1,5 @@
 import * as React from 'react';
+import useFramesStore from '../../../stores/use-frames-store';
 import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
@@ -295,10 +296,8 @@ vi.mock('../../../hooks/use-window-width', () => ({
 }));
 
 vi.mock('../../../stores/use-catalog-style-store', () => ({
-  default: () => ({
-    imageSize: testState.imageSize,
-    showOPComment: testState.showOPComment,
-  }),
+  default: (selector: (state: { imageSize: 'Large' | 'Small'; showOPComment: boolean }) => unknown) =>
+    selector({ imageSize: testState.imageSize, showOPComment: testState.showOPComment }),
 }));
 
 vi.mock('../../../stores/use-feed-reset-store', () => ({
@@ -1033,5 +1032,27 @@ describe('Catalog', () => {
     await renderCatalog({ initialEntry: '/mu/catalog', routePath: '/:boardIdentifier/catalog' });
 
     expect(Array.from(container.querySelectorAll('[data-testid="catalog-row"]')).map((element) => element.textContent)).toEqual(['row:first-post', 'row:second-post']);
+  });
+
+  it('reflows catalog rows when frames consume desktop width without a resize', async () => {
+    vi.stubGlobal('matchMedia', () => ({ matches: true, addEventListener: vi.fn(), removeEventListener: vi.fn() }));
+    useFramesStore.setState({ useFrames: false });
+    testState.windowWidth = 640;
+    testState.imageSize = 'Large';
+    testState.feed = [
+      { cid: 'first-post', title: 'one', communityAddress: 'music-posting.eth' },
+      { cid: 'second-post', title: 'two', communityAddress: 'music-posting.eth' },
+    ];
+    try {
+      await renderCatalog({ initialEntry: '/mu/catalog', routePath: '/:boardIdentifier/catalog' });
+      expect(container.querySelectorAll('[data-testid="catalog-row"]')).toHaveLength(1);
+      await act(async () => useFramesStore.getState().setUseFrames(true));
+      expect(Array.from(container.querySelectorAll('[data-testid="catalog-row"]')).map((element) => element.textContent)).toEqual(['row:first-post', 'row:second-post']);
+      await act(async () => useFramesStore.getState().setUseFrames(false));
+      expect(container.querySelectorAll('[data-testid="catalog-row"]')).toHaveLength(1);
+    } finally {
+      await act(async () => useFramesStore.setState({ useFrames: false }));
+      vi.unstubAllGlobals();
+    }
   });
 });

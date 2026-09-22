@@ -485,5 +485,13 @@
   "waiting_board_challenge_verification": "في انتظار أن يتحقق المنتدى من إجاباتك على التحدي",
   "board_uses_ai_moderation": "يستخدم هذا المنتدى <1>الإشراف بالذكاء الاصطناعي</1> للتحقق من التزام المنشورات بقواعده.",
   "search_post_status": "المنشورات",
-  "search_status_active": "نشطة"
+  "search_status_active": "نشطة",
+  "use_frames": "استخدام الإطارات",
+  "remove_frames": "إزالة الإطارات",
+  "show_directories": "عرض رموز اللوحات",
+  "hide_directories": "إخفاء رموز اللوحات",
+  "show_worksafe_only": "عرض اللوحات الآمنة للعمل فقط",
+  "image_boards": "منتديات الصور",
+  "upload_boards": "منتديات رفع الملفات",
+  "multiboards": "اللوحات المتعددة"
 }

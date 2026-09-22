@@ -485,5 +485,13 @@
   "waiting_board_challenge_verification": "In attesa che la board verifichi le tue risposte alla sfida",
   "board_uses_ai_moderation": "Questa board usa la <1>moderazione con IA</1> per verificare che i post rispettino le sue regole.",
   "search_post_status": "Post",
-  "search_status_active": "Attivi"
+  "search_status_active": "Attivi",
+  "use_frames": "Usa frame",
+  "remove_frames": "Rimuovi frame",
+  "show_directories": "Mostra i codici delle board",
+  "hide_directories": "Nascondi i codici delle board",
+  "show_worksafe_only": "Mostra solo le board sicure per il lavoro",
+  "image_boards": "Board di immagini",
+  "upload_boards": "Board di caricamento file",
+  "multiboards": "Multiboard"
 }

@@ -57,6 +57,7 @@ import Post from './views/post';
 import Rules from './views/rules';
 import BoardHeader from './components/board-header';
 import FeedCacheContainer from './components/feed-cache-container';
+import FramesLayout from './components/frames-layout';
 import PostForm from './components/post-form';
 import BoardBlotter from './components/board-blotter';
 import BoardsBar from './components/boards-bar';
@@ -176,12 +177,6 @@ const BoardLayout = () => {
       <Suspense fallback={null}>
         <BoardsBarEditModal />
       </Suspense>
-      <Suspense fallback={null}>
-        <DirectoryModal />
-      </Suspense>
-      <Suspense fallback={null}>
-        <DisclaimerModal />
-      </Suspense>
       <BoardHeader />
       {isMobile
         ? (communityAddress || isInAllView || isInModView || isInSubscriptionsView || pendingPostCommunityAddress || isOnModQueueRoute) &&
@@ -247,6 +242,10 @@ const GlobalLayout = () => {
     <>
       <ExternalQuoteStatus />
       <Suspense fallback={null}>
+        <DirectoryModal />
+        <DisclaimerModal />
+      </Suspense>
+      <Suspense fallback={null}>
         <ChallengeModal />
       </Suspense>
       <Suspense fallback={null}>
@@ -273,7 +272,9 @@ const GlobalLayout = () => {
           <SettingsModal />
         </Suspense>
       )}
-      <Outlet />
+      <FramesLayout>
+        <Outlet />
+      </FramesLayout>
     </>
   );
 };
