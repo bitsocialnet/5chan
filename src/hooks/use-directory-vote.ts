@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useAccount } from '@bitsocial/bitsocial-react-hooks';
 import { getAccountVoteSigner } from '../lib/directory-vote-signer';
-import { publishDirectoryVote, resolveDirectoryBoard, type DirectoryVoteTarget } from '../lib/directory-vote-publishing';
+import { publishDirectoryVote, resolveDirectoryBoard, withDirectoryVoteLock, type DirectoryVoteTarget } from '../lib/directory-vote-publishing';
 import { getOrCreateBrowserPubsubVoter, isTestnetVotingChain } from '../lib/pubsub-voter';
-import useDirectoryVotesStore, { getDirectoryVoteKey } from '../stores/use-directory-votes-store';
+import useDirectoryVotesStore, { getDirectoryVoteKey, type DirectoryVoteCommunity } from '../stores/use-directory-votes-store';
 import { getBrowserHeliaNode, getBrowserNameResolvers } from './use-pubsub-voter';
 import type { VoteTallyState } from './use-vote-tally';
 
@@ -15,17 +15,20 @@ export type DirectoryVoteOutcome =
   | { status: 'ineligible'; address: string; error: string; testnet: boolean }
   | { status: 'failed'; error: Error };
 
-/** The ballot being resolved, signed, and broadcast: from a directory row or from the submit form. */
-export type PendingDirectoryVote = { source: 'row'; publicKey: string } | { source: 'form' };
+/**
+ * The ballot being resolved, signed, and broadcast: from a directory row (keyed by its public key,
+ * or its address when the list has no key) or from the submit form.
+ */
+export type PendingDirectoryVote = { source: 'row'; key: string } | { source: 'form' };
 
 export interface DirectoryVoteState {
-  /** Public key of the board this account's voting wallet currently votes for in this directory. */
-  votedPublicKey?: string;
+  /** The board this account's voting wallet currently votes for in this directory. */
+  votedCommunity?: DirectoryVoteCommunity;
   pendingVote?: PendingDirectoryVote;
   /** Vote for a board, or withdraw when it is already this account's vote. */
   toggleVote: (target: DirectoryVoteTarget) => Promise<DirectoryVoteOutcome>;
-  /** Vote for a board typed by address, including boards not yet listed in the directory. */
-  voteForAddress: (address: string) => Promise<DirectoryVoteOutcome>;
+  /** Resolve a board address, then vote for it; covers typed submissions and listed boards without a key. */
+  voteForAddress: (address: string, pending?: PendingDirectoryVote) => Promise<DirectoryVoteOutcome>;
 }
 
 const asError = (error: unknown): Error => (error instanceof Error ? error : new Error(String(error)));
@@ -42,7 +45,7 @@ export const useDirectoryVote = (voteTally: VoteTallyState): DirectoryVoteState 
   const [pendingVote, setPendingVote] = useState<PendingDirectoryVote>();
 
   // A vote stored for an older manifest revision lives on a dead topic, so it is not this contest's vote.
-  const votedPublicKey = storedVote && contest && storedVote.topic === contest.topic ? storedVote.community.publicKey : undefined;
+  const votedCommunity = storedVote && contest && storedVote.topic === contest.topic ? storedVote.community : undefined;
 
   const publish = async (target: DirectoryVoteTarget | undefined, pending: PendingDirectoryVote): Promise<DirectoryVoteOutcome> => {
     if (!criteria || !voteSigner || !helia) return { status: 'unavailable' };
@@ -50,16 +53,19 @@ export const useDirectoryVote = (voteTally: VoteTallyState): DirectoryVoteState 
     setPendingVote(pending);
     try {
       const voter = getOrCreateBrowserPubsubVoter({ helia, nameResolvers });
-      const result = await publishDirectoryVote({ voter, criteria, signer: voteSigner.signer, address: voteSigner.address, community: target });
-      if (result.status === 'ineligible') {
-        return { status: 'ineligible', address: voteSigner.address, error: result.error, testnet: isTestnetVotingChain(criteria.bucketChainId) };
-      }
-      if (!target) {
-        removeVote(voteSigner.address, criteria.contestId);
-        return { status: 'withdrawn' };
-      }
-      setVote({ address: voteSigner.address, contestId: criteria.contestId, topic: result.topic, community: target, blockNumber: result.blockNumber });
-      return { status: 'voted' };
+      const lockKey = getDirectoryVoteKey(voteSigner.address, criteria.contestId);
+      return await withDirectoryVoteLock(lockKey, async (): Promise<DirectoryVoteOutcome> => {
+        const result = await publishDirectoryVote({ voter, criteria, signer: voteSigner.signer, address: voteSigner.address, community: target });
+        if (result.status === 'ineligible') {
+          return { status: 'ineligible', address: voteSigner.address, error: result.error, testnet: isTestnetVotingChain(criteria.bucketChainId) };
+        }
+        if (!target) {
+          removeVote(voteSigner.address, criteria.contestId);
+          return { status: 'withdrawn' };
+        }
+        setVote({ address: voteSigner.address, contestId: criteria.contestId, topic: result.topic, community: target, blockNumber: result.blockNumber });
+        return { status: 'voted' };
+      });
     } catch (error) {
       console.error(`Failed to publish directory vote for '${criteria.contestId}'`, error);
       return { status: 'failed', error: asError(error) };
@@ -68,12 +74,13 @@ export const useDirectoryVote = (voteTally: VoteTallyState): DirectoryVoteState 
     }
   };
 
-  const toggleVote = (target: DirectoryVoteTarget) => publish(target.publicKey === votedPublicKey ? undefined : target, { source: 'row', publicKey: target.publicKey });
+  const toggleVote = (target: DirectoryVoteTarget) =>
+    publish(target.publicKey === votedCommunity?.publicKey ? undefined : target, { source: 'row', key: target.publicKey });
 
-  const voteForAddress = async (address: string): Promise<DirectoryVoteOutcome> => {
+  const voteForAddress = async (address: string, pending: PendingDirectoryVote = { source: 'form' }): Promise<DirectoryVoteOutcome> => {
     if (!criteria || !voteSigner || !helia) return { status: 'unavailable' };
 
-    setPendingVote({ source: 'form' });
+    setPendingVote(pending);
     let resolution: Awaited<ReturnType<typeof resolveDirectoryBoard>>;
     try {
       resolution = await resolveDirectoryBoard(address, nameResolvers);
@@ -85,8 +92,8 @@ export const useDirectoryVote = (voteTally: VoteTallyState): DirectoryVoteState 
       setPendingVote(undefined);
       return { status: 'board-not-found' };
     }
-    return publish(resolution.target, { source: 'form' });
+    return publish(resolution.target, pending);
   };
 
-  return { votedPublicKey, pendingVote, toggleVote, voteForAddress };
+  return { votedCommunity, pendingVote, toggleVote, voteForAddress };
 };

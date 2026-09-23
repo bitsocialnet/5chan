@@ -105,6 +105,17 @@ describe('directory-vote-criteria', () => {
     unsubscribeChanged();
   });
 
+  it('falls back to the vendored manifest when storage is blocked and throws on every call', () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const blocked = () => {
+      throw new DOMException('blocked', 'SecurityError');
+    };
+    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(blocked);
+    vi.spyOn(Storage.prototype, 'removeItem').mockImplementation(blocked);
+
+    expect(getCachedDirectoryVoteCriteria().criteria).toHaveLength(65);
+  });
+
   it('falls back to the vendored manifest when the network and cache are unavailable', async () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline')));
     vi.spyOn(console, 'warn').mockImplementation(() => undefined);

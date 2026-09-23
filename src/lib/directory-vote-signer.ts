@@ -28,15 +28,15 @@ export const getAccountVoteSigner = (account: unknown): AccountVoteSigner | unde
   const cached = signersByPrivateKey.get(privateKeyBase64);
   if (cached) return cached;
 
-  let privateKeyBytes: Uint8Array;
+  // A malformed or out-of-range key (e.g. all zeros) disables voting instead of crashing the render.
+  let wallet: ReturnType<typeof privateKeyToAccount>;
   try {
-    privateKeyBytes = Uint8Array.from(atob(privateKeyBase64), (char) => char.charCodeAt(0));
+    const privateKeyBytes = Uint8Array.from(atob(privateKeyBase64), (char) => char.charCodeAt(0));
+    if (privateKeyBytes.length !== 32) return undefined;
+    wallet = privateKeyToAccount(toHex(privateKeyBytes));
   } catch {
     return undefined;
   }
-  if (privateKeyBytes.length !== 32) return undefined;
-
-  const wallet = privateKeyToAccount(toHex(privateKeyBytes));
   const accountVoteSigner: AccountVoteSigner = {
     address: wallet.address,
     signer: {

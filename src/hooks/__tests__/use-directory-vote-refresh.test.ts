@@ -77,6 +77,24 @@ describe('refreshDueDirectoryVotes', () => {
     expect(mocks.publishDirectoryVote).not.toHaveBeenCalled();
   });
 
+  it('does not republish or restore a vote the user changed while the refresh was checking', async () => {
+    useDirectoryVotesStore.getState().setVote(storedVote);
+    const changedVote = { ...storedVote, community: { name: 'other.bso', publicKey: '12D3KooWOther' }, blockNumber: 500 * 1800 };
+    mocks.headBlock = BigInt(361 * 1800);
+    mocks.topics = {};
+    Object.defineProperty(mocks.topics, criteria.contestId, {
+      get: () => {
+        useDirectoryVotesStore.getState().setVote(changedVote);
+        return 'topic-a';
+      },
+    });
+
+    await refreshDueDirectoryVotes({ voteSigner, helia, nameResolvers: undefined });
+
+    expect(mocks.publishDirectoryVote).not.toHaveBeenCalled();
+    expect(Object.values(useDirectoryVotesStore.getState().votes)).toEqual([changedVote]);
+  });
+
   it('skips, but keeps, a vote whose contest topic changed', async () => {
     useDirectoryVotesStore.getState().setVote(storedVote);
     mocks.headBlock = BigInt(10_000 * 1800);

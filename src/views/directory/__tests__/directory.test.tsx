@@ -38,10 +38,10 @@ const testState = vi.hoisted(() => ({
   nowSeconds: 1_704_067_210,
   voteTally: { state: 'unavailable', reason: 'no-voter' } as Record<string, unknown>,
   directoryVote: {
-    votedPublicKey: undefined as string | undefined,
-    pendingVote: undefined as { source: 'row'; publicKey: string } | { source: 'form' } | undefined,
+    votedCommunity: undefined as { name?: string; publicKey: string } | undefined,
+    pendingVote: undefined as { source: 'row'; key: string } | { source: 'form' } | undefined,
     toggleVote: (() => Promise.resolve({ status: 'voted' })) as (target: { name?: string; publicKey: string }) => Promise<Record<string, unknown>>,
-    voteForAddress: (() => Promise.resolve({ status: 'voted' })) as (address: string) => Promise<Record<string, unknown>>,
+    voteForAddress: (() => Promise.resolve({ status: 'voted' })) as (address: string, pending?: unknown) => Promise<Record<string, unknown>>,
   },
 }));
 
@@ -231,7 +231,7 @@ describe('Directory', () => {
     testState.nowSeconds = 1_704_067_210;
     testState.voteTally = { state: 'unavailable', reason: 'no-voter' };
     testState.directoryVote = {
-      votedPublicKey: undefined,
+      votedCommunity: undefined,
       pendingVote: undefined,
       toggleVote: vi.fn(() => Promise.resolve({ status: 'voted' })),
       voteForAddress: vi.fn(() => Promise.resolve({ status: 'voted' })),
@@ -302,7 +302,7 @@ describe('Directory', () => {
       { address: 'voted.bso', publicKey: '12D3KooWVoted', score: 1 },
       { address: 'other.bso', publicKey: '12D3KooWOther', score: 1 },
     ];
-    testState.directoryVote.votedPublicKey = '12D3KooWVoted';
+    testState.directoryVote.votedCommunity = { name: 'voted.bso', publicKey: '12D3KooWVoted' };
 
     await renderDirectory();
 
@@ -314,6 +314,28 @@ describe('Directory', () => {
 
     await act(async () => otherButton.click());
     expect(testState.directoryVote.toggleVote).toHaveBeenCalledWith({ name: 'other.bso', publicKey: '12D3KooWOther' });
+  });
+
+  it('resolves a listed board without a public key instead of rejecting its vote', async () => {
+    testState.directoryBoards = [{ address: 'keyless.bso', score: 1 }];
+
+    await renderDirectory();
+    await act(async () => getDirectoryRow('keyless.bso')!.querySelector<HTMLButtonElement>('td:nth-child(6) button')!.click());
+
+    expect(testState.directoryVote.voteForAddress).toHaveBeenCalledWith('keyless.bso', { source: 'row', key: 'keyless.bso' });
+    expect(container.querySelector('[role="status"]')).toBeNull();
+  });
+
+  it('withdraws the vote on a keyless listed board matched by name', async () => {
+    testState.directoryBoards = [{ address: 'keyless.bso', score: 1 }];
+    testState.directoryVote.votedCommunity = { name: 'keyless.bso', publicKey: '12D3KooWKeyless' };
+
+    await renderDirectory();
+    const button = getDirectoryRow('keyless.bso')!.querySelector<HTMLButtonElement>('td:nth-child(6) button')!;
+    expect(button.textContent).toBe('directory_unvote');
+    await act(async () => button.click());
+
+    expect(testState.directoryVote.toggleVote).toHaveBeenCalledWith({ name: 'keyless.bso', publicKey: '12D3KooWKeyless' });
   });
 
   it('explains how to get a test Pass when the voting address is not eligible', async () => {

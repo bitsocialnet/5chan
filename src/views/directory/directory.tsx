@@ -11,6 +11,7 @@ import { useDirectories } from '../../hooks/use-directories';
 import { useCommunityIdentifier } from '../../hooks/use-community-identifiers';
 import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
 import { isDirectoryRoute } from '../../lib/utils/route-utils';
+import type { DirectoryListBoard } from '../../lib/utils/directory-list-utils';
 import { useDirectoryList } from '../../hooks/use-directory-list';
 import { type CommunityFreshnessState, isCommunityKnownOffline } from '../../lib/utils/community-freshness-utils';
 import getShortAddress from '../../lib/get-short-address';
@@ -303,7 +304,7 @@ const Directory = () => {
   const voteTally = useVoteTally(isValidDirectoryCode ? boardIdentifier : undefined);
   const tally = voteTally.state === 'ready' ? voteTally.tally : undefined;
   const isTestnetVote = !!voteTally.criteria && isTestnetVotingChain(voteTally.criteria.bucketChainId);
-  const { votedPublicKey, pendingVote, toggleVote, voteForAddress } = useDirectoryVote(voteTally);
+  const { votedCommunity, pendingVote, toggleVote, voteForAddress } = useDirectoryVote(voteTally);
   const [voteNotice, setVoteNotice] = useState<VoteNotice>();
 
   const ranked = useMemo(() => (list ? rankDirectoryBoardsByVoteTally(list.boards, tally, { orderByVotes: !isTestnetVote }) : []), [list, tally, isTestnetVote]);
@@ -324,9 +325,15 @@ const Directory = () => {
     return false;
   };
 
+  // A listed board may lack a public key; such rows match the stored vote by name and resolve on click.
+  const getRowKey = (board: DirectoryListBoard) => board.publicKey ?? board.address;
+  const isVotedBoard = (board: DirectoryListBoard) =>
+    !!votedCommunity && (board.publicKey ? board.publicKey === votedCommunity.publicKey : board.address === votedCommunity.name);
+
   const handleVote = async ({ board }: RankedDirectoryVoteBoard) => {
     setVoteNotice(undefined);
-    if (!board.publicKey) return showVoteOutcome({ status: 'board-not-found' }, board.address);
+    if (votedCommunity && isVotedBoard(board)) return showVoteOutcome(await toggleVote(votedCommunity));
+    if (!board.publicKey) return showVoteOutcome(await voteForAddress(board.address, { source: 'row', key: getRowKey(board) }), board.address);
     return showVoteOutcome(await toggleVote({ name: board.address.includes('.') ? board.address : undefined, publicKey: board.publicKey }));
   };
 
@@ -390,8 +397,8 @@ const Directory = () => {
                   rankedBoard={rankedBoard}
                   nowSeconds={nowSeconds}
                   rank={index + 1}
-                  isVoted={!!rankedBoard.board.publicKey && rankedBoard.board.publicKey === votedPublicKey}
-                  isVotePending={pendingVote?.source === 'row' && pendingVote.publicKey === rankedBoard.board.publicKey}
+                  isVoted={isVotedBoard(rankedBoard.board)}
+                  isVotePending={pendingVote?.source === 'row' && pendingVote.key === getRowKey(rankedBoard.board)}
                   isVotingBusy={isVotingBusy}
                   onVote={() => handleVote(rankedBoard)}
                 />

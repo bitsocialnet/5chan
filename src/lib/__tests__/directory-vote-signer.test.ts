@@ -27,6 +27,8 @@ describe('getAccountVoteSigner', () => {
     expect(getAccountVoteSigner({ signer: {} })).toBeUndefined();
     expect(getAccountVoteSigner({ signer: { privateKey: 'private key' } })).toBeUndefined();
     expect(getAccountVoteSigner({ signer: { privateKey: 'AAAA' } })).toBeUndefined();
+    // 32 bytes, but zero is not a valid secp256k1 scalar.
+    expect(getAccountVoteSigner({ signer: { privateKey: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=' } })).toBeUndefined();
   });
 
   it('signs ballots that recover to the voting address', async () => {

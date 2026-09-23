@@ -83,4 +83,16 @@ describe('rankDirectoryBoardsByVoteTally', () => {
       ['nominee.bso', '7'],
     ]);
   });
+
+  it('matches a listed board without a public key by its resolved name', () => {
+    const tally: ContestTally = {
+      contestId: '5chan-dir-a-vote-test-1',
+      ranking: [{ community: { name: 'keyless.bso', publicKey: '12D3KooWKeyless' }, weight: BigInt(4), chainVerified: true, nameResolved: true }],
+    };
+
+    const ranked = rankDirectoryBoardsByVoteTally([...boards, { address: 'keyless.bso', addedAt: 4 }], tally);
+
+    expect(ranked[0]).toMatchObject({ board: { address: 'keyless.bso' }, weight: BigInt(4) });
+    expect(ranked.some(({ nominated }) => nominated)).toBe(false);
+  });
 });

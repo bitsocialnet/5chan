@@ -32,6 +32,23 @@ export const publishDirectoryVote = async ({ voter, criteria, signer, address, c
   return { status: 'published', topic: contest.topic, blockNumber: bundle.blockNumber };
 };
 
+const directoryVoteLocks = new Map<string, Promise<unknown>>();
+
+/**
+ * Run one ballot operation at a time per voting wallet and contest, so a background refresh can
+ * never sign a stale choice after (or between) the user's own vote changes.
+ */
+export const withDirectoryVoteLock = <T>(key: string, operation: () => Promise<T>): Promise<T> => {
+  const previous = directoryVoteLocks.get(key) ?? Promise.resolve();
+  const result = previous.catch(() => undefined).then(operation);
+  const settled = result.catch(() => undefined);
+  directoryVoteLocks.set(key, settled);
+  void settled.then(() => {
+    if (directoryVoteLocks.get(key) === settled) directoryVoteLocks.delete(key);
+  });
+  return result;
+};
+
 /** A vote expires `voteExpiryBuckets` after it was signed; re-sign it once half of that has passed. */
 export const isDirectoryVoteRefreshDue = (criteria: Criteria, blockNumber: number, headBlock: number): boolean =>
   Math.floor(headBlock / criteria.blocksPerBucket) >= Math.floor(blockNumber / criteria.blocksPerBucket) + republishIntervalBuckets(criteria);

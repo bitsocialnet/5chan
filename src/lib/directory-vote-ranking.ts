@@ -31,18 +31,22 @@ export const rankDirectoryBoardsByVoteTally = (
     : sortDirectoryBoardsByRank(boards);
   const fallbackIndex = new Map(fallbackOrder.map((board, index) => [board, index]));
   const tallyByPublicKey = new Map(tally.ranking.map((row) => [row.community.publicKey, row]));
-  const listedPublicKeys = new Set(boards.map((board) => board.publicKey).filter(Boolean));
+  // A board listed without a public key can only be matched by its name; the tally already drops
+  // rows whose name resolves to a different key.
+  const tallyByName = new Map(tally.ranking.filter((row) => row.community.name && row.nameResolved !== false).map((row) => [row.community.name!, row]));
+  const findRow = (board: DirectoryListBoard) => (board.publicKey ? tallyByPublicKey.get(board.publicKey) : tallyByName.get(board.address));
+  const listedRows = new Set(boards.map(findRow).filter(Boolean));
 
   const listed = boards
     .map<RankedDirectoryVoteBoard>((board) => {
-      const row = board.publicKey ? tallyByPublicKey.get(board.publicKey) : undefined;
+      const row = findRow(board);
       return row ? { board, weight: row.weight, chainVerified: row.chainVerified, nameResolved: row.nameResolved } : { board, weight: BigInt(0), chainVerified: true };
     })
     .sort((first, second) => (orderByVotes && compareWeight(first, second)) || fallbackIndex.get(first.board)! - fallbackIndex.get(second.board)!);
 
   // The tally already dropped votes whose name resolves to another key; hide the rest until resolved.
   const nominated = tally.ranking
-    .filter((row) => !listedPublicKeys.has(row.community.publicKey) && row.weight > BigInt(0) && row.nameResolved !== false)
+    .filter((row) => !listedRows.has(row) && row.weight > BigInt(0) && row.nameResolved !== false)
     .map<RankedDirectoryVoteBoard>((row) => ({
       board: { address: row.community.name ?? row.community.publicKey, publicKey: row.community.publicKey },
       weight: row.weight,

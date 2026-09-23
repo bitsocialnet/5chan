@@ -2,10 +2,10 @@ import { useEffect } from 'react';
 import { useAccount } from '@bitsocial/bitsocial-react-hooks';
 import { topicFor, type NameResolver, type PubsubVoterOptions } from '@bitsocial/pubsub-voting';
 import { loadDirectoryVoteCriteria } from '../lib/directory-vote-criteria';
-import { isDirectoryVoteRefreshDue, publishDirectoryVote } from '../lib/directory-vote-publishing';
+import { isDirectoryVoteRefreshDue, publishDirectoryVote, withDirectoryVoteLock } from '../lib/directory-vote-publishing';
 import { getAccountVoteSigner, type AccountVoteSigner } from '../lib/directory-vote-signer';
 import { getOrCreateBrowserPubsubVoter, getVotingChainClient } from '../lib/pubsub-voter';
-import useDirectoryVotesStore from '../stores/use-directory-votes-store';
+import useDirectoryVotesStore, { getDirectoryVoteKey } from '../stores/use-directory-votes-store';
 import { getBrowserHeliaNode, getBrowserNameResolvers } from './use-pubsub-voter';
 
 const REFRESH_CHECK_INTERVAL_MS = 60 * 60 * 1000;
@@ -28,7 +28,6 @@ export const refreshDueDirectoryVotes = async ({ voteSigner, helia, nameResolver
   const { criteria: allCriteria } = await loadDirectoryVoteCriteria();
   const criteriaByContestId = new Map(allCriteria.map((criteria) => [criteria.contestId, criteria]));
   const headBlocks = new Map<number, Promise<bigint>>();
-  const { setVote } = useDirectoryVotesStore.getState();
 
   for (const storedVote of storedVotes) {
     try {
@@ -46,10 +45,15 @@ export const refreshDueDirectoryVotes = async ({ voteSigner, helia, nameResolver
       }
       if (!isDirectoryVoteRefreshDue(criteria, storedVote.blockNumber, Number(await headBlock))) continue;
 
-      const voter = getOrCreateBrowserPubsubVoter({ helia, nameResolvers });
-      const result = await publishDirectoryVote({ voter, criteria, signer: voteSigner.signer, address: voteSigner.address, community: storedVote.community });
-      // An ineligible wallet (expired Pass) keeps its intent, so the vote resumes after a renewal.
-      if (result.status === 'published') setVote({ ...storedVote, topic: result.topic, blockNumber: result.blockNumber });
+      const key = getDirectoryVoteKey(storedVote.address, storedVote.contestId);
+      await withDirectoryVoteLock(key, async () => {
+        // The user may have changed or withdrawn this vote while the checks above awaited.
+        if (useDirectoryVotesStore.getState().votes[key] !== storedVote) return;
+        const voter = getOrCreateBrowserPubsubVoter({ helia, nameResolvers });
+        const result = await publishDirectoryVote({ voter, criteria, signer: voteSigner.signer, address: voteSigner.address, community: storedVote.community });
+        // An ineligible wallet (expired Pass) keeps its intent, so the vote resumes after a renewal.
+        if (result.status === 'published') useDirectoryVotesStore.getState().setVote({ ...storedVote, topic: result.topic, blockNumber: result.blockNumber });
+      });
     } catch (error) {
       console.warn(`Failed to refresh directory vote for '${storedVote.contestId}'`, error);
     }

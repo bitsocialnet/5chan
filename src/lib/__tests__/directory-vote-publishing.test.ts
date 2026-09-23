@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { Criteria, NameResolver, PubsubVoter, VoteSigner } from '@bitsocial/pubsub-voting';
-import { isDirectoryVoteRefreshDue, publishDirectoryVote, resolveDirectoryBoard } from '../directory-vote-publishing';
+import { isDirectoryVoteRefreshDue, publishDirectoryVote, resolveDirectoryBoard, withDirectoryVoteLock } from '../directory-vote-publishing';
 
 const PUBLIC_KEY = '12D3KooWR7nTdKZqZ1twGWMfVsXYDGp1XAKUrnYznKP651jFrizE';
 const criteria = { contestId: '5chan-dir-a-vote-test-1', blocksPerBucket: 1800, voteExpiryBuckets: 720 } as Criteria;
@@ -51,6 +51,33 @@ describe('publishDirectoryVote', () => {
     await expect(publishDirectoryVote({ voter, criteria, signer, address: '0xabc', community: undefined })).resolves.toMatchObject({ status: 'published' });
     expect(checkEligibility).not.toHaveBeenCalled();
     expect(createContestVote).toHaveBeenCalledWith({ criteria, votes: [], signer });
+  });
+});
+
+describe('withDirectoryVoteLock', () => {
+  it('runs operations for one wallet and contest in order, even after a failure', async () => {
+    const events: string[] = [];
+    let releaseFirst!: () => void;
+    const first = withDirectoryVoteLock('0xabc:contest', async () => {
+      events.push('first:start');
+      await new Promise<void>((resolve) => (releaseFirst = resolve));
+      events.push('first:end');
+      throw new Error('first failed');
+    });
+    const second = withDirectoryVoteLock('0xabc:contest', async () => {
+      events.push('second');
+      return 2;
+    });
+    const other = withDirectoryVoteLock('0xabc:other', async () => {
+      events.push('other');
+    });
+
+    await other;
+    expect(events).toEqual(['first:start', 'other']);
+    releaseFirst();
+    await expect(first).rejects.toThrow('first failed');
+    await expect(second).resolves.toBe(2);
+    expect(events).toEqual(['first:start', 'other', 'first:end', 'second']);
   });
 });
 

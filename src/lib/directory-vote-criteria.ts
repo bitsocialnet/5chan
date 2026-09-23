@@ -73,8 +73,11 @@ const readCachedSource = (): { source: string; savedAt?: number } | undefined =>
     return { source, ...(Number.isFinite(savedAtValue) && savedAtValue > 0 ? { savedAt: savedAtValue } : {}) };
   } catch (error) {
     console.warn('Invalid directory vote criteria cache, clearing it:', error);
-    storage.removeItem(LOCALSTORAGE_KEY);
-    storage.removeItem(LOCALSTORAGE_TIMESTAMP_KEY);
+    // Blocked storage can throw on every call; the vendored manifest must still load.
+    try {
+      storage.removeItem(LOCALSTORAGE_KEY);
+      storage.removeItem(LOCALSTORAGE_TIMESTAMP_KEY);
+    } catch {}
     return undefined;
   }
 };
