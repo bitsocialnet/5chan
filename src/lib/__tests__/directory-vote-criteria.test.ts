@@ -25,12 +25,12 @@ describe('directory-vote-criteria', () => {
     vi.unstubAllGlobals();
   });
 
-  it('derives and indexes all 64 vendored directory contests', () => {
+  it('derives and indexes all 65 vendored directory contests', () => {
     const manifest = getVendoredDirectoryVoteCriteria();
 
-    expect(manifest.criteria).toHaveLength(64);
-    expect(manifest.criteriaByDirectoryCode.size).toBe(64);
-    expect(manifest.directoryCodeByContestId.size).toBe(64);
+    expect(manifest.criteria).toHaveLength(65);
+    expect(manifest.criteriaByDirectoryCode.size).toBe(65);
+    expect(manifest.directoryCodeByContestId.size).toBe(65);
     expect(manifest.criteriaByDirectoryCode.get('b')?.contestId).toBe('5chan-dir-b-vote-test-1');
     expect(manifest.criteriaByDirectoryCode.get('r')?.contestId).toBe('5chan-dir-r-vote-test-1');
     expect(manifest.criteriaByDirectoryCode.has('trash')).toBe(false);
@@ -40,6 +40,7 @@ describe('directory-vote-criteria', () => {
     const manifest = parseDirectoryVoteCriteria(`// downloaded from the canonical lists repository\n${vendoredManifestSource}`);
 
     expect(getDirectoryCodeFromContestId('5chan-dir-g-vote-test-12')).toBe('g');
+    expect(getDirectoryCodeFromContestId('5chan-dir-biz-vote-1')).toBe('biz');
     expect(getDirectoryCodeFromContestId('not-a-directory-contest')).toBeUndefined();
     expect(manifest.directoryCodeByContestId.get('5chan-dir-g-vote-test-1')).toBe('g');
     expect(manifest.criteriaByDirectoryCode.get('g')?.contestId).toBe('5chan-dir-g-vote-test-1');
@@ -110,7 +111,7 @@ describe('directory-vote-criteria', () => {
 
     const manifest = await loadDirectoryVoteCriteria();
 
-    expect(manifest.criteria).toHaveLength(64);
+    expect(manifest.criteria).toHaveLength(65);
     expect(manifest.criteriaByDirectoryCode.get('b')?.contestId).toBe('5chan-dir-b-vote-test-1');
     expect(getCachedDirectoryVoteCriteria()).toBe(manifest);
   });

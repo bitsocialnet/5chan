@@ -150,6 +150,10 @@
             "contestId": "5chan-dir-o-vote-test-1"
         },
         {
+            "name": "/oc/ - Original Content directory (test)",
+            "contestId": "5chan-dir-oc-vote-test-1"
+        },
+        {
             "name": "/out/ - Outdoors directory (test)",
             "contestId": "5chan-dir-out-vote-test-1"
         },

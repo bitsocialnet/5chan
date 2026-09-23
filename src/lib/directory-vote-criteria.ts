@@ -9,7 +9,8 @@ const LOCALSTORAGE_TIMESTAMP_KEY = '5chan-directory-vote-criteria-cache-timestam
 const CACHE_MAX_AGE_MS = 60 * 60 * 1000;
 const FETCH_RETRY_DELAY_MS = 60 * 1000;
 const FETCH_TIMEOUT_MS = 10 * 1000;
-const DIRECTORY_CONTEST_ID_PATTERN = /^5chan-dir-(.+)-vote-test-\d+$/;
+// Testnet manifests use `5chan-dir-<code>-vote-test-<n>`; the mainnet manifest may drop `test-`.
+const DIRECTORY_CONTEST_ID_PATTERN = /^5chan-dir-(.+)-vote-(?:test-)?\d+$/;
 
 export interface DirectoryVoteCriteria {
   criteria: Criteria[];
