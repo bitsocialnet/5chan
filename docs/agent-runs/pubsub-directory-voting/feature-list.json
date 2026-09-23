@@ -1,11 +1,12 @@
 {
   "task": "pubsub-directory-voting",
-  "last_updated": "2026-08-21",
+  "last_updated": "2026-09-23",
   "decisions": {
-    "signer": "EIP-6963 injected discovery first, WalletConnect fallback for mobile/Electron",
+    "signer": "The 5chan account's built-in ETH key (same derivation as the default author.wallets.eth) signs ballots silently; no browser wallet for voting. The Pass must be held by that address, so the purchase flow must tell buyers to back up their account (developer decision 2026-09-23).",
     "scope": "All three phases: read tally, cast votes, republish + homepage winner",
-    "network": "Testnet only; derive contests from the published lists manifest at runtime, nothing hardcoded",
-    "republishing": "5chan owns persisted vote intent and foreground refresh prompts; pubsub-voting supplies cadence and verification state, while pkc-js stays transport-only"
+    "network": "Contests derive from the published lists manifest at runtime. Testnet contests (any bucketChainId other than Ethereum mainnet) show votes but keep the listed order and do not pick homepage winners; the mainnet manifest flips this automatically. The production 5chan Pass will live on Ethereum mainnet, priced in USD via Chainlink ETH/USD.",
+    "republishing": "5chan persists vote intent per voting wallet and contest and re-signs silently on start, refocus, and hourly once half the expiry window has passed; pubsub-voting supplies the cadence.",
+    "submission": "Boards are submitted in-app by voting for them; tally rows missing from the lists file render as nominations. Upvote-only by design."
   },
   "verified_facts": [
     "@bitsocial/pubsub-voting@0.6.1 is the latest npm release; 0.6.0 moves the signer from PubsubVoter to each ballot, renames publishing state succeeded to published, and exposes local/peer verification evidence, while 0.6.1 signs seeder provider announcements",
@@ -35,11 +36,11 @@
     {
       "id": "F015",
       "priority": 5,
-      "status": "pending",
+      "status": "done",
       "description": "Handle directory codes that have no voting contest. /trash/ has a directory list but is intentionally outside the published contest manifest, so its page must render the static list with voting cleanly unavailable rather than erroring.",
       "verification": ["load /trash/ directory page and confirm no console error and no vote UI"],
       "files": [],
-      "notes": "trash is a special board (TRASH_BOARD_CODE) and is absent from the defaults file, so excluding it is correct. /r/ was added upstream and now has a contest. Do not hardcode exclusions; drive purely off which contests the manifest actually derives."
+      "notes": "/trash/ (no contest) keeps the static list; voting there shows a no-contest notice."
     },
     {
       "id": "F002",
@@ -122,56 +123,56 @@
     {
       "id": "F007",
       "priority": 7,
-      "status": "pending",
+      "status": "dropped",
       "description": "Wallet connection: EIP-6963 provider discovery with EIP-1193 fallback, Zustand store for connection state, connect/disconnect UI. Warn (do not block) when the connected address differs from account.author.wallets.eth.address.",
       "verification": ["playwright-cli with a mock EIP-1193 provider injected"],
       "files": [],
-      "notes": "The library never reads the bitsocial account; the recovered signature address IS the voter."
+      "notes": "Superseded: votes are signed with the account's built-in key, so no wallet connection is needed to vote. A wallet is only needed to pay for the Pass (purchase flow, not in this branch)."
     },
     {
       "id": "F008",
       "priority": 8,
-      "status": "pending",
+      "status": "dropped",
       "description": "WalletConnect fallback for mobile and Electron, behind the injected path.",
       "verification": ["manual connect flow on a mobile viewport"],
       "files": [],
-      "notes": "Adds a hosted relay dependency; keep it strictly opt-in and lazy-loaded so it stays out of the main bundle."
+      "notes": "Superseded with F007."
     },
     {
       "id": "F009",
       "priority": 9,
-      "status": "pending",
+      "status": "done",
       "description": "VoteSigner adapter: address() + signBallot(typedData) backed by a viem WalletClient.",
       "verification": ["unit test against the library's frozen EIP-712 conformance vector"],
       "files": [],
-      "notes": "pubsub-voting ships a frozen conformance vector; test against it rather than hand-rolling expectations."
+      "notes": "src/lib/directory-vote-signer.ts derives the signer from the account key; a test recovers the EIP-712 ballot signer with viem."
     },
     {
       "id": "F010",
       "priority": 10,
-      "status": "pending",
+      "status": "done",
       "description": "Cast and withdraw: createContestVote({ criteria, votes, signer }).publish(), +1 becomes a toggle reflecting the user's current vote, remove the -1 button, and surface InvalidCommunityNameError, VoteEvictedError, recipientCount, and the published / verified-locally / verified-by-peer states.",
       "verification": ["cast a real vote on testnet against a faucet-minted Pass and observe the tally change"],
       "files": ["src/views/directory/directory.tsx"],
-      "notes": "The signer belongs to each ballot, not the shared voter. Published means broadcast, not accepted; verified-locally and verified-by-peer are the positive evidence states. Withdraw = publish an empty ballot (LWW supersede). Downvotes are unrepresentable under this criteria."
+      "notes": "+1 toggles the vote (Unvote withdraws with an empty ballot); -1 removed; eligibility is checked before publishing, with a faucet or Pass-page notice."
     },
     {
       "id": "F011",
       "priority": 11,
-      "status": "pending",
+      "status": "done",
       "description": "Cast-vote persistence store: remember the vote intent plus PublishOutcome cid and bundle.blockNumber per wallet and contest, so refresh timing, toggle state, and verification evidence survive reload.",
       "verification": ["yarn test", "reload persistence check in browser", "after contest.update(), call trackOwnBundle(cid) and restore checksFor/checkpointPeersFor evidence"],
       "files": [],
-      "notes": "Zustand persisted store, keyed by wallet address + contestId."
+      "notes": "src/stores/use-directory-votes-store.ts persists address, contestId, topic, community, blockNumber."
     },
     {
       "id": "F012",
       "priority": 12,
-      "status": "pending",
+      "status": "done",
       "description": "5chan foreground refresh manager: inspect persisted vote intents on app start, reconnect, and visibility changes; compute the due bucket with republishIntervalBuckets and prompt the wallet to re-sign before a vote lapses (~15 days on testnet).",
       "verification": ["unit test the bucket math against fixed current and published blocks", "browser test returning after the refresh bucket shows one actionable prompt and republishes only after wallet approval"],
       "files": [],
-      "notes": "Keep this in 5chan first: it owns the vote-intent store, wallet UX, and withdrawal behavior. Do not put it in pkc-js. Extract only the generic React scheduling mechanics to bitsocial-react-hooks if a second React client needs them. Automatic means detect and prompt reliably; injected and WalletConnect signers generally cannot re-sign silently or while 5chan is closed."
+      "notes": "src/hooks/use-directory-vote-refresh.ts re-signs silently; stale topics are skipped, never deleted."
     },
     {
       "id": "F013",
@@ -180,16 +181,16 @@
       "description": "Homepage: join all 64 contests and resolve each directory winner from the live tally instead of the static lists JSON, with the static list as fallback.",
       "verification": ["low-spec pass via ./scripts/pw-throttle.sh <session> mid", "profile-browsing for rerender cost"],
       "files": [],
-      "notes": "Unproven cost. 64 gossipsub topics + 64 checkpoint cold-joins in a browser. Seeder raises its fetch stream cap to 256 for exactly this reason. Measure before shipping."
+      "notes": "Deferred until the mainnet manifest: testnet votes must not pick homepage winners."
     },
     {
       "id": "F014",
       "priority": 14,
-      "status": "pending",
+      "status": "done",
       "description": "Translations for all new user-facing keys via the translate skill, then regenerate llms files if public-facing English content changed.",
       "verification": ["yarn llms:generate", "yarn build"],
       "files": [],
-      "notes": "Run translator subagents sequentially, never in parallel (update-translations.js --write is non-atomic)."
+      "notes": "Nine new/changed directory voting keys translated into all 35 locales; three obsolete English-only keys removed."
     }
   ]
 }

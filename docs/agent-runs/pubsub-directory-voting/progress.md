@@ -301,3 +301,36 @@ Append one entry per session.
 - Blockers: none
 - Next: F007 — add an injected-wallet connection model and mismatch warning, without enabling
   vote publication until the per-ballot signer adapter is covered by the conformance vector.
+
+## 2026-09-23 — Session 7: master sync, casting, refresh, in-app submission
+
+- Items: F009-F012, F014, F015 (done); F007-F008 (dropped); F013 (deferred to mainnet)
+- Summary: Merged current `origin/master` (74 commits; conflicts in `package.json`,
+  `yarn.lock`, `sync-directories.js`, the vendored defaults, and `directory.tsx`, whose styles
+  moved to `components/directory-layout`). Updated pubsub-voting 0.7.0 to 0.7.7 and aligned the
+  gossipsub resolution to 17.0.1, which both pkc-js 0.0.101 and pubsub-voting declare.
+- Signer decision (developer, 2026-09-23): ballots are signed with the 5chan account's built-in
+  ETH key, so voting needs no browser wallet and refreshes are silent. The Pass must be held by
+  that address. The future purchase flow must warn buyers to back up their account, since a
+  soulbound Pass cannot move to another key.
+- Casting: `+1` toggles the account's single vote per directory; `Unvote` publishes an empty
+  ballot; `-1` is gone. Eligibility is checked before publishing because gossipsub gives no
+  acceptance feedback. An ineligible testnet voter sees its voting address and the free faucet.
+- Submission: the "Submit a Board" controls focus an in-page form. Voting for a typed `.bso`
+  name or public key submits it; tally rows missing from the lists file render after listed
+  boards as nominations, with squatted names hidden.
+- Testnet guard: any `bucketChainId` other than Ethereum mainnet keeps the file's order and adds
+  a testnet note. Ethereum mainnet chain clients (archive-capable public RPCs: drpc, tenderly,
+  1rpc, blastapi; publicnode and cloudflare refuse 30-day-old calls) and mainnet contest ids
+  without `test-` are already accepted, so the mainnet manifest needs no code change.
+- Upstream: the lists manifest now has 65 contests (`/oc/` added); the vendored copy was
+  refreshed by `sync:directories`.
+- Verification: full suite (195 files, 1,801 tests), `yarn agent:verify` (build, lint,
+  type-check, Doctor, 24 perf cases), Chrome desktop/mobile and WebKit on `/biz/directory`
+  against the live testnet contest (tally ready, static order kept, +1 and form submission both
+  reach the eligibility notice for a fresh account, unknown names report not found). Firefox was
+  not verified: Playwright's Firefox hung at launch on this machine, even on a blank page.
+  On mobile the table still scrolls horizontally inside the board layout, as on master.
+- Not verified: a successful publish from an eligible wallet in the browser. The faucet requires
+  a captcha; minting a test Pass to the account's voting address and voting once would close it.
+- Next: F013 homepage winner and the mainnet manifest once the 5chan Pass is deployed.
