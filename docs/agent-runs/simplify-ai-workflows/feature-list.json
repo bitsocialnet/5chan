@@ -1,0 +1,100 @@
+{
+  "task": "simplify-ai-workflows",
+  "last_updated": "2026-09-11",
+  "items": [
+    {
+      "id": "F001",
+      "priority": 1,
+      "status": "verified",
+      "description": "Fix hook payload handling and make verification explicit",
+      "verification": [
+        "corepack yarn ai-workflow:test: hook and verifier fixtures passed",
+        "corepack yarn agent:verify: build, lint and type-check passed"
+      ],
+      "files": [
+        "scripts/agent-hooks/format.mjs",
+        "scripts/agent-verify.mjs",
+        ".codex/hooks.json",
+        ".claude/settings.json",
+        ".cursor/hooks.json"
+      ],
+      "notes": "Formatter only; handles payload cwd, containment and platform command shims. Verification owns one shared lock and preserves artifacts."
+    },
+    {
+      "id": "F002",
+      "priority": 2,
+      "status": "verified",
+      "description": "Prevent concurrent locale writes",
+      "verification": [
+        "corepack yarn ai-workflow:test: six translation writer fixtures passed"
+      ],
+      "files": [
+        "scripts/update-translations.js",
+        "scripts/__tests__/update-translations.node-test.mjs",
+        ".agents/skills/translate/SKILL.md"
+      ],
+      "notes": "Parallel map generation with one serial locale writer; exclusive lock and per-file atomic replacement. Actual locale files unchanged."
+    },
+    {
+      "id": "F003",
+      "priority": 3,
+      "status": "verified",
+      "description": "Consolidate skills and modernize agent configuration",
+      "verification": [
+        "node scripts/validate-ai-workflow.mjs: 23 skills, 5 roles, 111 generated files, zero errors",
+        "corepack yarn ai-workflow:test: generator and validator regression fixtures passed",
+        "codex debug prompt-input: canonical shared skills discovered",
+        "codex app-server --strict-config with config/read: accepted max_concurrent_threads_per_session = 4"
+      ],
+      "files": [
+        ".agents/skills/",
+        ".agents/roles/",
+        "scripts/ai-workflow-files.mjs",
+        "scripts/sync-ai-workflow.mjs",
+        "scripts/validate-ai-workflow.mjs",
+        ".codex/config.toml"
+      ],
+      "notes": "Canonical sources with generated compatibility copies, LF attributes, byte-preserving support assets and no Codex model pins. Live Claude/Cursor activation and standalone role loading still require an application session reload/check."
+    },
+    {
+      "id": "F004",
+      "priority": 4,
+      "status": "verified",
+      "description": "Simplify instructions, review and Git workflows",
+      "verification": [
+        "Advisory code-quality review and scoped independent review; reported issues fixed",
+        "bash -n scripts/agent-init.sh and all formatter wrappers: passed",
+        "git diff --check: passed"
+      ],
+      "files": [
+        "AGENTS.md",
+        "src/AGENTS.md",
+        "docs/agent-playbooks/",
+        ".agents/skills/",
+        "scripts/agent-init.sh"
+      ],
+      "notes": "Removed duplicate review chains, implicit Stop work and unowned server startup. Preserved project-specific requirements; scoped Git operations and read-only release previews."
+    },
+    {
+      "id": "F005",
+      "priority": 5,
+      "status": "verified",
+      "description": "Run behavioral checks, quality checks and refresh LLM indexes",
+      "verification": [
+        "corepack yarn ai-workflow:test: 32 passed, zero failures",
+        "corepack yarn agent:verify: build, lint and type-check passed after final launcher changes",
+        "corepack yarn knip: passed",
+        "corepack yarn llms:generate: refreshed both indexes"
+      ],
+      "files": [
+        ".github/workflows/ci.yml",
+        "package.json",
+        "yarn.lock",
+        "scripts/__tests__/",
+        "public/llms.txt",
+        "public/llms-full.txt"
+      ],
+      "notes": "CI runs workflow validation and fixture tests. cross-spawn 7.0.6 is now declared directly, reusing the existing resolved version. Native Windows execution was not available; platform launch handling uses cross-spawn and taskkill."
+    }
+  ]
+}

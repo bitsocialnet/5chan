@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useTranslation, Trans } from 'react-i18next';
 import { clearMathElement, typesetMathElement } from '../../lib/mathjax/mathjax-typeset';
-import TexLogo from '../tex-logo/tex-logo';
+import TexLogo from '../tex-logo';
 import styles from './tex-preview-modal.module.css';
 
 const TYPESET_DEBOUNCE_MS = 50;

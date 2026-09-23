@@ -3,7 +3,7 @@ import { create } from 'zustand';
 import { useShallow } from 'zustand/react/shallow';
 import { useCommunities, useCommunityStats, type CommunityIdentifier } from '@bitsocial/bitsocial-react-hooks';
 import { useCommunityIdentifier, useCommunityIdentifiers } from './use-community-identifiers';
-import { communitiesStore } from '../lib/bitsocial-internals/stores';
+import { communitiesStore as useCommunitiesStore } from '../lib/bitsocial-internals/stores';
 
 type CommunityStatsState = {
   communityStats: { [communityAddress: string]: any };
@@ -67,7 +67,7 @@ const CommunityStatsRequest = ({
 
 export const CommunityStatsMetadataLoader = memo(({ communityAddresses }: { communityAddresses: string[] }) => {
   const communities = useCommunityIdentifiers(communityAddresses);
-  const pendingCommunities = communitiesStore(
+  const pendingCommunities = useCommunitiesStore(
     useShallow((state) => communities.filter((community) => !state.communities[community.publicKey ?? community.name ?? '']?.statsCid)),
   );
 
@@ -82,7 +82,7 @@ CommunityStatsMetadataLoader.displayName = 'CommunityStatsMetadataLoader';
 export const CommunityStatsCollector = memo(({ communityAddress }: { communityAddress: string }) => {
   const community = useCommunityIdentifier(communityAddress);
   const communityKey = community?.publicKey ?? community?.name;
-  const sourceStatsCid = communitiesStore((state) => (communityKey ? state.communities[communityKey]?.statsCid : undefined));
+  const sourceStatsCid = useCommunitiesStore((state) => (communityKey ? state.communities[communityKey]?.statsCid : undefined));
   const collectedStatsCid = useCommunitiesStatsStore((state) => state.communityStats[communityAddress]?.sourceStatsCid);
 
   if (!sourceStatsCid || collectedStatsCid === sourceStatsCid) {

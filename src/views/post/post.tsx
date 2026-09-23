@@ -1,18 +1,7 @@
-import { memo, useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  type Comment,
-  type CommunityIdentifier,
-  type Role,
-  useAccountComment,
-  useComment,
-  useEditedComment,
-  useCommunity,
-  useReplies,
-  resolveReplySortType,
-} from '@bitsocial/bitsocial-react-hooks';
+import { type Comment, type CommunityIdentifier, useAccountComment, useComment, useCommunity, useReplies, resolveReplySortType } from '@bitsocial/bitsocial-react-hooks';
 import { communitiesPagesStore as useCommunitiesPagesStore } from '../../lib/bitsocial-internals/stores';
-import { useCommunityField } from '../../hooks/use-stable-community';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { isAllView } from '../../lib/utils/view-utils';
 import { useResolvedCommunityAddress, useResolvedDirectoryBoardPath } from '../../hooks/use-resolved-community-address';
@@ -21,35 +10,17 @@ import { useCommunityIdentifier } from '../../hooks/use-community-identifiers';
 import { useCommentCidPayload } from '../../hooks/use-comment-cid-payload';
 import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
 import { areSameBoardAddress, getBoardPath, isDirectoryBoard } from '../../lib/utils/route-utils';
-import { getCommentCommunityAddress, hasAuthoritativeCommentPayload } from '../../lib/utils/comment-utils';
-import useIsMobile from '../../hooks/use-is-mobile';
-import ErrorDisplay from '../../components/error-display/error-display';
-import { PageFooterDesktop, ThreadFooterFirstRow, ThreadFooterStyleRow, ThreadFooterMobile } from '../../components/footer/footer';
-import PostDesktop from '../../components/post-desktop/post-desktop';
-import PostMobile from '../../components/post-mobile/post-mobile';
+import { type CommentWithRefresh, getCommentCommunityAddress, hasAuthoritativeCommentPayload, mergeCommentFallback } from '../../lib/utils/comment-utils';
+import ErrorDisplay from '../../components/error-display';
+import { PageFooterDesktop, ThreadFooterFirstRow, ThreadFooterStyleRow, ThreadFooterMobile } from '../../components/footer';
+import { Post } from '../../components/post';
 import { getRequestedThreadTopCid, scrollThreadContainerToTop } from '../../lib/utils/thread-scroll-utils';
 import { evictThreadRefreshCaches } from '../../lib/utils/thread-refresh-cache-utils';
-import { hasTransferredCommentMarker } from '../../lib/comment-transfer';
 import { REPLIES_PER_PAGE } from '../../lib/constants';
 import { preservePublishedUserID } from '../../lib/utils/comment-user-id-utils';
 import useThreadLiveUpdatesStore from '../../stores/use-thread-live-updates-store';
 import type { QueuedCommentRouteState } from '../../lib/utils/mod-queue-utils';
-import type { ReplyVirtualizationMode } from '../../lib/utils/pretext-height-estimates';
-import styles from './post.module.css';
-
-const EMPTY_ROLE_MAP = {};
-
-export type CommentWithRefresh = Comment & {
-  approved?: boolean;
-  communityAddress?: string;
-  refresh?: () => Promise<void>;
-  state?: string;
-  pendingApproval?: boolean;
-  error?: Error;
-  errors?: Error[];
-  index?: number;
-  removed?: boolean;
-};
+import styles from '../../components/post-styles';
 
 const getRouteUserState = (state: unknown): QueuedCommentRouteState | undefined => {
   if (!state || typeof state !== 'object') return undefined;
@@ -70,46 +41,12 @@ const getEffectiveRouteUserState = (state: unknown): QueuedCommentRouteState | u
   return getRouteUserState(window.history.state);
 };
 
-interface ReplyPaginationOverride {
-  hasMore?: boolean;
-  loadMore?: () => void;
-  replies: Comment[];
-  reset?: () => Promise<void>;
-}
-
 const getQueuedCommentFromRouteState = (state: unknown, commentCid: string | undefined): CommentWithRefresh | undefined => {
   if (!commentCid) return undefined;
 
   const queuedComment = getRouteUserState(state)?.queuedComment;
   if (!queuedComment || typeof queuedComment !== 'object') return undefined;
   return queuedComment.cid === commentCid ? queuedComment : undefined;
-};
-
-const mergeCommentFallback = (comment: CommentWithRefresh | undefined, fallback: CommentWithRefresh | undefined): CommentWithRefresh | undefined => {
-  if (!fallback) return comment;
-  if (!comment) return fallback;
-  if (comment.cid && fallback.cid && comment.cid !== fallback.cid) return comment;
-
-  const hasRenderableData =
-    comment.timestamp !== undefined ||
-    comment.number !== undefined ||
-    !!comment.content ||
-    !!comment.title ||
-    !!comment.link ||
-    !!comment.thumbnailUrl ||
-    !!comment.error ||
-    !!comment.deleted ||
-    !!comment.removed;
-
-  if (hasRenderableData) return comment;
-
-  return {
-    ...fallback,
-    error: comment.error,
-    errors: comment.errors,
-    refresh: comment.refresh,
-    state: comment.state,
-  };
 };
 
 const mergeDefinedFields = <T extends object>(base: T | undefined, override: T | undefined): T | undefined => {
@@ -191,156 +128,6 @@ const mergeRepliesWithQueuedReply = (replies: Comment[], queuedReply: CommentWit
   return nextReplies;
 };
 
-export interface PostProps {
-  feedVirtualizationModeOverride?: ReplyVirtualizationMode;
-  index?: number;
-  isHidden?: boolean;
-  hasThumbnail?: boolean;
-  post?: CommentWithRefresh;
-  postReplyCount?: number;
-  reply?: Comment;
-  replyPaginationOverride?: ReplyPaginationOverride;
-  replyVirtualizationModeOverride?: ReplyVirtualizationMode;
-  roles?: Role[];
-  showAllReplies?: boolean;
-  showReplies?: boolean;
-  targetReplyCid?: string;
-  threadNumber?: number;
-  isModQueue?: boolean;
-  modQueueStatus?: 'approved' | 'rejected' | 'failed' | null;
-  modQueueError?: unknown;
-  isPublishing?: boolean;
-  onApprove?: () => void;
-  onReject?: () => void;
-  onTransfer?: () => void;
-  onRemoveFromModQueue?: () => void;
-  quotedByMap?: Map<string, Comment[]>;
-}
-
-export const Post = memo(
-  ({
-    post,
-    showAllReplies = false,
-    showReplies = true,
-    targetReplyCid,
-    isModQueue,
-    modQueueStatus,
-    modQueueError,
-    isPublishing,
-    onApprove,
-    onReject,
-    onTransfer,
-    onRemoveFromModQueue,
-    feedVirtualizationModeOverride,
-    replyPaginationOverride,
-    replyVirtualizationModeOverride,
-  }: PostProps) => {
-    // Only subscribe to roles field to avoid rerenders from updatingState changes
-    const communityAddress = getCommentCommunityAddress(post);
-    const routeCommunityAddress = useResolvedCommunityAddress();
-    const rawRoles = useCommunityField(communityAddress, (community) => community?.roles ?? EMPTY_ROLE_MAP);
-    const shouldWaitForRoles = Boolean(routeCommunityAddress && communityAddress && areSameBoardAddress(routeCommunityAddress, communityAddress));
-    const roles = rawRoles ?? (shouldWaitForRoles ? undefined : EMPTY_ROLE_MAP);
-    const isMobile = useIsMobile();
-
-    let comment = post;
-
-    // handle pending mod or author edit
-    const { editedComment } = useEditedComment({ comment });
-    comment = preservePublishedUserID(mergeCommentFallback(editedComment as CommentWithRefresh | undefined, comment as CommentWithRefresh | undefined), post);
-    const transferHandler = comment?.parentCid ? undefined : onTransfer;
-
-    return (
-      <div className={styles.thread}>
-        <div className={styles.postContainer}>
-          {isMobile ? (
-            <PostMobile
-              feedVirtualizationModeOverride={feedVirtualizationModeOverride}
-              post={comment}
-              replyPaginationOverride={replyPaginationOverride}
-              replyVirtualizationModeOverride={replyVirtualizationModeOverride}
-              roles={roles}
-              showAllReplies={showAllReplies}
-              showReplies={showReplies}
-              targetReplyCid={targetReplyCid}
-              isModQueue={isModQueue}
-              modQueueStatus={modQueueStatus}
-              modQueueError={modQueueError}
-              isPublishing={isPublishing}
-              onApprove={onApprove}
-              onReject={onReject}
-              onTransfer={transferHandler}
-              onRemoveFromModQueue={onRemoveFromModQueue}
-            />
-          ) : (
-            <PostDesktop
-              feedVirtualizationModeOverride={feedVirtualizationModeOverride}
-              post={comment}
-              replyPaginationOverride={replyPaginationOverride}
-              replyVirtualizationModeOverride={replyVirtualizationModeOverride}
-              roles={roles}
-              showAllReplies={showAllReplies}
-              showReplies={showReplies}
-              targetReplyCid={targetReplyCid}
-              isModQueue={isModQueue}
-              modQueueStatus={modQueueStatus}
-              modQueueError={modQueueError}
-              isPublishing={isPublishing}
-              onApprove={onApprove}
-              onReject={onReject}
-              onTransfer={transferHandler}
-              onRemoveFromModQueue={onRemoveFromModQueue}
-            />
-          )}
-        </div>
-      </div>
-    );
-  },
-  (prevProps, nextProps) => {
-    const prev = prevProps.post;
-    const next = nextProps.post;
-    return (
-      prev?.cid === next?.cid &&
-      prev?.number === next?.number &&
-      prev?.parentCid === next?.parentCid &&
-      prev?.postNumber === next?.postNumber &&
-      prev?.replyCount === next?.replyCount &&
-      prev?.updatedAt === next?.updatedAt &&
-      prev?.state === next?.state &&
-      prev?.publishingState === next?.publishingState &&
-      prev?.author?.address === next?.author?.address &&
-      prev?.author?.displayName === next?.author?.displayName &&
-      prev?.author?.shortAddress === next?.author?.shortAddress &&
-      prev?.error === next?.error &&
-      prev?.errors === next?.errors &&
-      prev?.approved === next?.approved &&
-      prev?.locked === next?.locked &&
-      prev?.pinned === next?.pinned &&
-      prev?.pendingApproval === next?.pendingApproval &&
-      isCommentArchived(prev) === isCommentArchived(next) &&
-      prev?.removed === next?.removed &&
-      prev?.deleted === next?.deleted &&
-      prev?.reason === next?.reason &&
-      prev?.commentModeration?.purged === next?.commentModeration?.purged &&
-      hasTransferredCommentMarker(prev) === hasTransferredCommentMarker(next) &&
-      prevProps.showAllReplies === nextProps.showAllReplies &&
-      prevProps.showReplies === nextProps.showReplies &&
-      prevProps.targetReplyCid === nextProps.targetReplyCid &&
-      prevProps.feedVirtualizationModeOverride === nextProps.feedVirtualizationModeOverride &&
-      prevProps.replyPaginationOverride === nextProps.replyPaginationOverride &&
-      prevProps.replyVirtualizationModeOverride === nextProps.replyVirtualizationModeOverride &&
-      prevProps.isModQueue === nextProps.isModQueue &&
-      prevProps.modQueueStatus === nextProps.modQueueStatus &&
-      prevProps.modQueueError === nextProps.modQueueError &&
-      prevProps.isPublishing === nextProps.isPublishing &&
-      prevProps.onApprove === nextProps.onApprove &&
-      prevProps.onReject === nextProps.onReject &&
-      prevProps.onTransfer === nextProps.onTransfer &&
-      prevProps.onRemoveFromModQueue === nextProps.onRemoveFromModQueue
-    );
-  },
-);
-
 const PostPage = () => {
   const { t } = useTranslation();
   const { hash, key: locationKey, pathname, search, state: locationState } = useLocation();
@@ -403,7 +190,7 @@ const PostPage = () => {
 
   // if the comment is a reply, return the post comment instead, then the reply will be highlighted in the thread
   const postComment = useCommentWithFeedCache({
-    commentCid: comment?.postCid,
+    commentCid: comment?.parentCid ? comment.postCid : undefined,
     autoUpdate: autoUpdateEnabled,
     community: authoritativeCommentCommunityAddress ? communityIdentifier : undefined,
   });

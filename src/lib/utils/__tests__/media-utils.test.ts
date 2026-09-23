@@ -21,8 +21,8 @@ vi.mock('@bitsocial/bitsocial-react-hooks/dist/lib/localforage-lru/index.js', ()
   },
 }));
 
-vi.mock('../../../components/embed/embed-utils', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('../../../components/embed/embed-utils')>();
+vi.mock('../embed-utils', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../embed-utils')>();
   return {
     ...actual,
     canEmbed: (url: URL) => testState.canEmbedHosts.has(url.hostname),

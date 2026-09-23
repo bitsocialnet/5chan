@@ -27,8 +27,7 @@ describe('snow', () => {
   });
 
   it('shows snow only for christmas special theme dates', async () => {
-    const useSpecialThemeStore = (await import('../../stores/use-special-theme-store')).default;
-    const { shouldShowSnow } = await import('../snow');
+    const { default: useSpecialThemeStore, shouldShowSnow } = await import('../../stores/use-special-theme-store');
 
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2024-12-24T00:00:00Z'));

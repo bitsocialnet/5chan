@@ -15,30 +15,28 @@ interface FeedCacheState {
   isFeedCached: (key: string) => boolean;
 }
 
+/** Pure projection shared by navigation rendering and the committed LRU update. */
+export const getFeedCacheAfterAccess = (cachedFeeds: CachedFeed[], maxCacheSize: number, incomingFeed: CachedFeed): CachedFeed[] => {
+  const existingIndex = cachedFeeds.findIndex((feed) => feed.key === incomingFeed.key);
+  if (existingIndex !== -1) {
+    return cachedFeeds.map((feed, index) => (index === existingIndex ? { ...feed, lastAccessed: incomingFeed.lastAccessed } : feed));
+  }
+
+  const updatedFeeds = [...cachedFeeds, incomingFeed];
+  if (updatedFeeds.length > maxCacheSize) {
+    updatedFeeds.sort((a, b) => a.lastAccessed - b.lastAccessed);
+    return updatedFeeds.slice(updatedFeeds.length - maxCacheSize);
+  }
+  return updatedFeeds;
+};
+
 const useFeedCacheStore = create<FeedCacheState>((set, get) => ({
   cachedFeeds: [],
   maxCacheSize: 2,
 
   accessFeed: (key: string, type: 'board' | 'catalog') => {
     const { cachedFeeds, maxCacheSize } = get();
-    const now = Date.now();
-    const existingIndex = cachedFeeds.findIndex((feed) => feed.key === key);
-
-    if (existingIndex !== -1) {
-      const updatedFeeds = [...cachedFeeds];
-      updatedFeeds[existingIndex] = { ...updatedFeeds[existingIndex], lastAccessed: now };
-      set({ cachedFeeds: updatedFeeds });
-    } else {
-      const newFeed: CachedFeed = { key, type, lastAccessed: now };
-      let updatedFeeds = [...cachedFeeds, newFeed];
-
-      if (updatedFeeds.length > maxCacheSize) {
-        updatedFeeds.sort((a, b) => a.lastAccessed - b.lastAccessed);
-        updatedFeeds = updatedFeeds.slice(1);
-      }
-
-      set({ cachedFeeds: updatedFeeds });
-    }
+    set({ cachedFeeds: getFeedCacheAfterAccess(cachedFeeds, maxCacheSize, { key, type, lastAccessed: Date.now() }) });
   },
 
   removeFeed: (key: string) => {

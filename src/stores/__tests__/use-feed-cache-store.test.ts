@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import useFeedCacheStore from '../use-feed-cache-store';
+import useFeedCacheStore, { getFeedCacheAfterAccess } from '../use-feed-cache-store';
 
 describe('useFeedCacheStore', () => {
   beforeEach(() => {
@@ -40,6 +40,22 @@ describe('useFeedCacheStore', () => {
     expect(isFeedCached('c')).toBe(true);
 
     vi.useRealTimers();
+  });
+
+  it('projects incoming navigation with the same capacity and LRU eviction as a committed access', () => {
+    const cachedFeeds = [
+      { key: '/a', type: 'board' as const, lastAccessed: 20 },
+      { key: '/b', type: 'board' as const, lastAccessed: 10 },
+    ];
+    const projected = getFeedCacheAfterAccess(cachedFeeds, 2, { key: '/c', type: 'board', lastAccessed: Infinity });
+    expect(projected.map((feed) => feed.key)).toEqual(['/a', '/c']);
+    expect(cachedFeeds.map((feed) => feed.key)).toEqual(['/a', '/b']);
+    expect(cachedFeeds.map((feed) => feed.lastAccessed)).toEqual([20, 10]);
+
+    useFeedCacheStore.setState({ cachedFeeds });
+    useFeedCacheStore.getState().accessFeed('/c', 'board');
+    expect(useFeedCacheStore.getState().cachedFeeds.map((feed) => feed.key)).toEqual(projected.map((feed) => feed.key));
+    expect(useFeedCacheStore.getState().cachedFeeds.at(-1)?.lastAccessed).not.toBe(Infinity);
   });
 
   it('clearFeeds empties cache', () => {

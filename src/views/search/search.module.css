@@ -32,6 +32,18 @@
   align-items: center;
 }
 
+.postStatus {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 5px;
+  white-space: nowrap;
+}
+
+.mobileNavLinks .postStatus,
+.mobileFooterButtons .postStatus {
+  margin: 5px 2px;
+}
+
 .mobileNavLinks {
   display: none;
   text-align: center;
@@ -157,6 +169,42 @@
   overflow-y: hidden;
 }
 
+/* Board matches sit above the posts in the directory table, the way /search/directory lists indexers. */
+.boardResults {
+  margin-bottom: 10px;
+}
+
+.boardResults table {
+  margin-top: 0;
+}
+
+.boardTitleCell,
+.boardAddressCell {
+  text-align: center;
+  vertical-align: middle;
+  word-break: break-word;
+}
+
+.boardAddressCell {
+  word-break: break-all;
+}
+
+.boardNsfw {
+  font-weight: 700;
+}
+
+.boardResultsFooter {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 4px;
+  font-size: 12px;
+}
+
+.divider {
+  display: block;
+}
+
 /* Registered by use-search-match-highlight while the results are on screen. */
 :global(::highlight(search-match)) {
   background-color: #ff0;
@@ -176,5 +224,4 @@
   .mobileNavLinks {
     display: block;
   }
-
 }

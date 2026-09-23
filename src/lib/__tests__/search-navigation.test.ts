@@ -1,40 +1,43 @@
 import { describe, expect, it } from 'vitest';
-import { getSearchDestination } from '../search-navigation';
+import { getSearchDirectoryLinkState, getSearchPageHref, getSearchPostStatus, getSearchSubmitPath, MAX_SEARCH_QUERY_LENGTH } from '../search-navigation';
 
-const directories = [
-  { address: 'music-posting.eth', directoryCode: 'mu', title: '/mu/ - Music' },
-  { address: 'tech-posting.bso', directoryCode: 'g', title: '/g/ - Technology' },
-];
-
-describe('getSearchDestination', () => {
-  it('keeps directory codes and board addresses as direct navigation', () => {
-    expect(getSearchDestination('mu', directories)).toBe('/mu');
-    expect(getSearchDestination('/g/', directories)).toBe('/g');
-    expect(getSearchDestination('music-posting.eth', directories)).toBe('/mu');
-    expect(getSearchDestination('unlisted-board.bso', directories)).toBe('/unlisted-board.bso');
+describe('search post status navigation', () => {
+  it.each([null, '', 'active', 'unknown', 'ARCHIVED'])('defaults %s to active', (value) => {
+    expect(getSearchPostStatus(value)).toBe('active');
   });
 
-  it('opens a board typed by the name the homepage lists it under', () => {
-    expect(getSearchDestination('Music', directories)).toBe('/mu');
-    expect(getSearchDestination('technology', directories)).toBe('/g');
-    expect(getSearchDestination('/mu/ - Music', directories)).toBe('/mu');
+  it.each(['archived', 'all'])('accepts %s', (value) => {
+    expect(getSearchPostStatus(value)).toBe(value);
   });
 
-  it('routes ordinary terms to archive search', () => {
-    expect(getSearchDestination('old internet culture', directories)).toBe('/search?q=old%20internet%20culture');
-    expect(getSearchDestination('bitcoin', directories)).toBe('/search?q=bitcoin');
-    // Only the full board name opens a board; a partial one stays a post search.
-    expect(getSearchDestination('music posting', directories)).toBe('/search?q=music%20posting');
+  it('retains status in pagination and the catalog directory return link', () => {
+    expect(getSearchPageHref('/search', 'old internet', 3, 'archived')).toEqual({ pathname: '/search', search: '?q=old+internet&page=3&status=archived' });
+    expect(getSearchDirectoryLinkState('old internet', 'all', '/search/catalog', 2)).toEqual({ returnPath: '/search/catalog?q=old+internet&page=2&status=all' });
+  });
+});
+
+describe('getSearchSubmitPath', () => {
+  it('searches ordinary terms', () => {
+    expect(getSearchSubmitPath('old internet culture')).toBe('/search?q=old+internet+culture');
+    expect(getSearchSubmitPath('  bitcoin  ')).toBe('/search?q=bitcoin');
   });
 
-  it('keeps a long non-address token on the search path', () => {
-    const longToken = 'supercalifragilisticexpialidocious-thread-about-nothing';
-    expect(getSearchDestination(longToken, directories)).toBe(`/search?q=${encodeURIComponent(longToken)}`);
-    // Raw board public keys still navigate.
-    expect(getSearchDestination('12D3KooWQdQ6TkVA1Xe9zzaFP6vXBgsLeMAewpLpLwbsAYKivnQy', directories)).toBe('/12D3KooWQdQ6TkVA1Xe9zzaFP6vXBgsLeMAewpLpLwbsAYKivnQy');
+  it('searches a board code, name or address instead of opening the board', () => {
+    // "lit" may be a word to find in posts; the results page lists /lit/ above them either way.
+    expect(getSearchSubmitPath('lit')).toBe('/search?q=lit');
+    expect(getSearchSubmitPath('/g/')).toBe('/search?q=%2Fg%2F');
+    expect(getSearchSubmitPath('Music')).toBe('/search?q=Music');
+    expect(getSearchSubmitPath('music-posting.bso')).toBe('/search?q=music-posting.bso');
+    expect(getSearchSubmitPath('12D3KooWQdQ6TkVA1Xe9zzaFP6vXBgsLeMAewpLpLwbsAYKivnQy')).toBe('/search?q=12D3KooWQdQ6TkVA1Xe9zzaFP6vXBgsLeMAewpLpLwbsAYKivnQy');
+  });
+
+  it('caps the query at the search length limit', () => {
+    const longQuery = 'a'.repeat(MAX_SEARCH_QUERY_LENGTH + 20);
+    expect(getSearchSubmitPath(longQuery)).toBe(`/search?q=${'a'.repeat(MAX_SEARCH_QUERY_LENGTH)}`);
   });
 
   it('ignores empty input', () => {
-    expect(getSearchDestination('   ', directories)).toBeNull();
+    expect(getSearchSubmitPath('   ')).toBeNull();
+    expect(getSearchSubmitPath('')).toBeNull();
   });
 });

@@ -64,13 +64,68 @@ describe('getRawBoardThreadState', () => {
     });
   });
 
-  it('does not treat an unavailable sort as empty when another sort is published', () => {
+  it('serves the active sort from the complete preloaded hot page of a single-page community', () => {
+    const community = {
+      posts: {
+        pages: {
+          hot: {
+            comments: [rootThread('hot-thread')],
+          },
+        },
+      },
+    } as Community;
+
+    expect(
+      getRawBoardThreadState({
+        accountId: undefined,
+        communitiesPages: {} as CommunitiesPages,
+        community,
+        sortType: 'active',
+      }),
+    ).toMatchObject({
+      hasExplicitEmptyPageCids: false,
+      isFullyLoaded: true,
+      rootThreadCids: new Set(['hot-thread']),
+    });
+  });
+
+  it('serves the active sort from a fetched single-page community that publishes empty page cids', () => {
+    // pkc-js publishes `pageCids: {}` until the preloaded page overflows
     const community = {
       posts: {
         pageCids: {},
         pages: {
           hot: {
             comments: [rootThread('hot-thread')],
+          },
+        },
+      },
+      updatedAt: 1781773422,
+    } as Community;
+
+    expect(
+      getRawBoardThreadState({
+        accountId: undefined,
+        communitiesPages: {} as CommunitiesPages,
+        community,
+        sortType: 'active',
+      }),
+    ).toMatchObject({
+      isFullyLoaded: true,
+      rootThreadCids: new Set(['hot-thread']),
+    });
+  });
+
+  it('does not treat an unavailable sort as empty when another sort is published', () => {
+    const community = {
+      posts: {
+        pageCids: {
+          hot: 'hot-page-2',
+        },
+        pages: {
+          hot: {
+            comments: [rootThread('hot-thread')],
+            nextCid: 'hot-page-2',
           },
         },
       },

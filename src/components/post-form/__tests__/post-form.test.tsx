@@ -16,7 +16,7 @@ const testState = vi.hoisted(() => ({
   account: {
     author: { address: 'alice.eth', displayName: 'Alice' },
     subscriptions: ['music-posting.eth'],
-  },
+  } as { author?: { address?: string; displayName?: string }; subscriptions?: string[] },
   accountComment: undefined as { communityAddress?: string } | undefined,
   bestAvailableYouTubeThumbnailMock: undefined as undefined | ((link: string) => Promise<string | undefined>),
   accountCommunityAddresses: ['mod.eth'] as string[],
@@ -43,6 +43,7 @@ const testState = vi.hoisted(() => ({
   isUploading: false,
   isResolvingExternalQuotes: false,
   mediaHostingRuntime: 'web' as 'web' | 'android' | 'electron',
+  mediaLinkLoadMock: vi.fn<(link: string) => Promise<boolean>>(),
   navigateMock: vi.fn(),
   onAbandonPost: undefined as undefined | (() => void),
   onDuplicateMediaRejected: undefined as undefined | ((error: string) => void),
@@ -107,6 +108,7 @@ vi.mock('react-i18next', async () => {
         if (key === 'choose_one') return 'Choose one:';
         if (key === 'post_form_code_tags_prompt') return 'You may highlight syntax and preserve whitespace by using [code] tags.';
         if (typeof options?.count !== 'undefined') return `${key}:${options.count}`;
+        if (options?.host) return `${key}:${options.host}`;
         return options?.domain ? `${key}:${options.domain}` : key;
       },
     }),
@@ -118,6 +120,14 @@ vi.mock('react-router-dom', async () => {
   return {
     ...actual,
     useNavigate: () => testState.navigateMock,
+  };
+});
+
+vi.mock('../../../lib/utils/media-link-validation-utils', async () => {
+  const actual = await vi.importActual<typeof import('../../../lib/utils/media-link-validation-utils')>('../../../lib/utils/media-link-validation-utils');
+  return {
+    ...actual,
+    canLoadMediaLinkInBrowser: (link: string) => testState.mediaLinkLoadMock(link),
   };
 });
 
@@ -213,7 +223,7 @@ vi.mock('../../../hooks/use-publish-post', async () => {
   const React = await vi.importActual<typeof import('react')>('react');
 
   return {
-    default: ({
+    default: function usePublishPostMock({
       communityAddress,
       onAbandonPost,
       onDuplicateMediaRejected,
@@ -227,7 +237,7 @@ vi.mock('../../../hooks/use-publish-post', async () => {
       onPublishAccepted?: () => void;
       onPublishError?: (error: Error) => void;
       onPendingPost?: (accountCommentIndex: number, pendingPost: Record<string, unknown>) => void;
-    }) => {
+    }) {
       const [, forceUpdate] = React.useReducer((value: number) => value + 1, 0);
       testState.onAbandonPost = onAbandonPost;
       testState.onDuplicateMediaRejected = onDuplicateMediaRejected;
@@ -301,7 +311,7 @@ vi.mock('../../../hooks/use-publish-reply', async () => {
   const React = await vi.importActual<typeof import('react')>('react');
 
   return {
-    default: ({ cid, postCid, communityAddress }: { cid: string; postCid?: string; communityAddress: string }) => {
+    default: function usePublishReplyMock({ cid, postCid, communityAddress }: { cid: string; postCid?: string; communityAddress: string }) {
       const [publishReplyOptions, setPublishReplyOptionsState] = React.useState<Record<string, unknown>>({
         parentCid: cid,
         postCid: postCid ?? cid,
@@ -605,6 +615,8 @@ describe('PostForm', () => {
     testState.isUploading = false;
     testState.isResolvingExternalQuotes = false;
     testState.mediaHostingRuntime = 'web';
+    testState.mediaLinkLoadMock.mockReset();
+    testState.mediaLinkLoadMock.mockResolvedValue(true);
     testState.offlineTitle = 'offline board';
     testState.onAbandonPost = undefined;
     testState.onDuplicateMediaRejected = undefined;
@@ -730,10 +742,10 @@ describe('PostForm', () => {
     expect(testState.publishPostMock).not.toHaveBeenCalled();
 
     await dispatchInput(textarea as HTMLTextAreaElement, 'A valid body');
-    await dispatchInput(linkInput as HTMLInputElement, 'https://i.4cdn.org/gif/file.jpg');
+    await dispatchInput(linkInput as HTMLInputElement, 'https://litter.catbox.moe/4p9wb8r6429l8n9s.jpg');
     await clickByText(table as HTMLTableElement, 'post');
     expect(globalThis.alert).not.toHaveBeenCalled();
-    expect(container.textContent).toContain('error: expiring_media_link_alert:i.4cdn.org');
+    expect(container.textContent).toContain('error: expiring_media_link_alert:litter.catbox.moe');
     expect(testState.publishPostMock).not.toHaveBeenCalled();
 
     await dispatchInput(linkInput as HTMLInputElement, '');
@@ -755,6 +767,36 @@ describe('PostForm', () => {
 
     expect(testState.publishPostMock).toHaveBeenCalledTimes(1);
     expect(testState.setPublishPostOptionsMock).toHaveBeenCalledWith({ communityAddress: 'music-posting.eth' });
+  });
+
+  it('does not reuse the previous account display name after switching to an anonymous account', async () => {
+    testState.account = {
+      author: { address: 'dev-account.bso', displayName: 'Old Dev Name' },
+      subscriptions: ['music-posting.eth'],
+    };
+    testState.resolvedCommunityAddress = 'music-posting.eth';
+
+    await renderPostForm('/mu');
+    await clickByText(container, 'start_new_thread');
+
+    const devNameInput = container.querySelectorAll<HTMLInputElement>('input[type="text"]')[0];
+    await dispatchInput(devNameInput, '5chan Dev');
+    expect(testState.publishPostOptions.displayName).toBe('5chan Dev');
+
+    testState.account = {
+      author: { address: 'anonymous-account' },
+      subscriptions: ['music-posting.eth'],
+    };
+    await renderPostForm('/mu');
+
+    const table = container.querySelector('table') as HTMLTableElement;
+    const nameInput = table.querySelectorAll<HTMLInputElement>('input[type="text"]')[0];
+    const textarea = table.querySelector('textarea') as HTMLTextAreaElement;
+    expect(nameInput.value).toBe('');
+    await dispatchInput(textarea, 'Account switch regression');
+    await clickByText(table, 'post');
+
+    expect(testState.publishPostMock).toHaveBeenCalledWith(expect.objectContaining({ displayName: undefined }));
   });
 
   it('converts YouTube links to thumbnail file links on media-only post forms', async () => {
@@ -882,7 +924,27 @@ describe('PostForm', () => {
     expect(container.textContent).toContain('error: link_not_image_or_video_alert');
     expect(testState.publishPostMock).not.toHaveBeenCalled();
 
+    await dispatchInput(linkInput, 'https://example.com/blocked-image.jpg');
+    const publishButton = Array.from(table.querySelectorAll('button')).find((button) => button.textContent === 'post') as HTMLButtonElement;
+    expect(publishButton.disabled).toBe(false);
+
+    await act(async () => {
+      table.querySelector('img[hidden]')?.dispatchEvent(new Event('error'));
+    });
+
+    expect(container.textContent).toContain('failed');
+    const mediaLoadError = Array.from(container.querySelectorAll('div')).find((element) => element.textContent === 'error: image_cannot_be_embedded:example.com.');
+    expect(mediaLoadError?.className).toContain('formError');
+    expect(mediaLoadError?.closest('tfoot')).toBeTruthy();
+    expect(publishButton.disabled).toBe(false);
+
+    await clickByText(table, 'post');
+
+    expect(testState.mediaLinkLoadMock).not.toHaveBeenCalled();
+    expect(testState.publishPostMock).not.toHaveBeenCalled();
+
     await dispatchInput(linkInput, 'https://example.com/image.jpg');
+    expect(publishButton.disabled).toBe(false);
     await clickByText(table, 'post');
 
     expect(testState.publishPostMock).toHaveBeenCalledTimes(1);
@@ -1019,7 +1081,10 @@ describe('PostForm', () => {
     expect(linkInput.value).toBe(twimgLink);
     expect(testState.publishPostMock).toHaveBeenCalledTimes(1);
     expect(testState.publishPostMock).toHaveBeenCalledWith({
+      challengeRequest: undefined,
       content: 'Twimg thread',
+      displayName: 'Alice',
+      flairs: undefined,
       link: publishLink,
     });
     expect(testState.publishedPostOptions?.link).toBe(publishLink);
@@ -1141,7 +1206,10 @@ describe('PostForm', () => {
 
     await clickByText(table as HTMLTableElement, 'post');
     expect(testState.publishPostMock).toHaveBeenCalledWith({
+      challengeRequest: undefined,
       content: 'saved board draft',
+      displayName: 'Alice',
+      flairs: undefined,
       link: 'https://example.com/saved.png',
       spoiler: true,
       title: 'Saved subject',
@@ -1188,6 +1256,7 @@ describe('PostForm', () => {
 
     expect(testState.publishPostMock).toHaveBeenCalledWith({
       content: 'flagged post',
+      displayName: 'Alice',
       challengeRequest: {
         challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
       },
@@ -1219,6 +1288,7 @@ describe('PostForm', () => {
 
     expect(testState.publishPostMock).toHaveBeenCalledWith({
       content: 'candidate board flag post',
+      displayName: 'Alice',
       challengeRequest: {
         challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
       },
@@ -1243,6 +1313,7 @@ describe('PostForm', () => {
 
     expect(testState.publishPostMock).toHaveBeenCalledWith({
       content: 'sports post',
+      displayName: 'Alice',
       challengeRequest: {
         challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
       },
@@ -1265,7 +1336,9 @@ describe('PostForm', () => {
     await clickByText(table as HTMLTableElement, 'post');
 
     expect(testState.publishPostMock).toHaveBeenCalledWith({
+      challengeRequest: undefined,
       content: 'memeflag post',
+      displayName: 'Alice',
       flairs: [{ type: 'pol', code: 'AC', text: 'flag:pol:AC' }],
     });
   });
@@ -1303,7 +1376,9 @@ describe('PostForm', () => {
     await clickByText(table as HTMLTableElement, 'post');
 
     expect(testState.publishPostMock).toHaveBeenCalledWith({
+      challengeRequest: undefined,
       content: 'flash thread',
+      displayName: 'Alice',
       flairs: [{ text: 'flash:loop' }],
     });
   });
@@ -1323,7 +1398,10 @@ describe('PostForm', () => {
     await clickByText(table as HTMLTableElement, 'post');
 
     expect(testState.publishPostMock).toHaveBeenCalledWith({
+      challengeRequest: undefined,
       content: 'flash thread',
+      displayName: 'Alice',
+      flairs: undefined,
     });
   });
 
@@ -1365,7 +1443,10 @@ describe('PostForm', () => {
 
     expect(testState.publishPostMock).toHaveBeenCalledTimes(1);
     expect(testState.publishPostMock).toHaveBeenCalledWith({
+      challengeRequest: undefined,
       content: 'fortune body[fortune color=#fd4d32]Excellent Luck[/fortune]',
+      displayName: 'Alice',
+      flairs: undefined,
     });
     randomSpy.mockRestore();
   });
@@ -2182,6 +2263,34 @@ describe('PostForm', () => {
     expect(testState.publishReplyMock).not.toHaveBeenCalled();
   });
 
+  it('rejects inline image replies that the browser cannot load', async () => {
+    testState.comments = {
+      'thread-cid': {
+        postCid: 'thread-cid',
+      },
+    };
+    testState.resolvedCommunityAddress = 'music-posting.eth';
+
+    await renderPostForm('/mu/thread/thread-cid');
+    await clickByText(container, 'post_a_reply');
+
+    const table = container.querySelector('table') as HTMLTableElement;
+    const textarea = table.querySelector('textarea') as HTMLTextAreaElement;
+    const linkInput = table.querySelectorAll<HTMLInputElement>('input[type="text"]')[2];
+    const publishButton = Array.from(table.querySelectorAll('button')).find((button) => button.textContent === 'post') as HTMLButtonElement;
+
+    await dispatchInput(textarea, 'Reply body');
+    await dispatchInput(linkInput, 'https://example.com/blocked-reply.jpg');
+    testState.mediaLinkLoadMock.mockResolvedValueOnce(false);
+    await clickByText(table, 'post');
+
+    const mediaLoadError = Array.from(container.querySelectorAll('div')).find((element) => element.textContent === 'error: image_cannot_be_embedded:example.com.');
+    expect(mediaLoadError?.className).toContain('formError');
+    expect(mediaLoadError?.closest('tfoot')).toBeTruthy();
+    expect(publishButton.disabled).toBe(false);
+    expect(testState.publishReplyMock).not.toHaveBeenCalled();
+  });
+
   it('publishes known twimg query-format reply links with a path extension without editing the field', async () => {
     const twimgLink = 'https://pbs.twimg.com/media/HJxnhNKWMAAhqFU?format=jpg&name=medium';
     const publishLink = 'https://pbs.twimg.com/media/HJxnhNKWMAAhqFU.jpg';
@@ -2207,7 +2316,10 @@ describe('PostForm', () => {
     expect(linkInput.value).toBe(twimgLink);
     expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
     expect(testState.publishReplyMock).toHaveBeenCalledWith({
+      challengeRequest: undefined,
       content: 'Twimg reply',
+      displayName: 'Alice',
+      flairs: undefined,
       link: publishLink,
     });
   });
@@ -2230,6 +2342,10 @@ describe('LinkTypePreviewer', () => {
     await act(async () => {
       root.render(createElement(LinkTypePreviewer, { link: 'https://example.com/file.gif' }));
     });
+    expect(container.textContent).toBe('file: animated_gif (loading)');
+    await act(async () => {
+      container.querySelector('img')?.dispatchEvent(new Event('load'));
+    });
     expect(container.textContent).toBe('file: animated_gif');
 
     await act(async () => {
@@ -2241,6 +2357,18 @@ describe('LinkTypePreviewer', () => {
       root.render(createElement(LinkTypePreviewer, { link: 'not-a-url' }));
     });
     expect(container.textContent).toBe('invalid_url');
+  });
+
+  it('reports direct media that the browser cannot load', async () => {
+    await act(async () => {
+      root.render(createElement(LinkTypePreviewer, { link: 'https://example.com/blocked.jpg' }));
+    });
+    await act(async () => {
+      container.querySelector('img')?.dispatchEvent(new Event('error'));
+    });
+
+    expect(container.textContent).toBe('failed');
+    expect(container.querySelector('[role="alert"]')?.className).toContain('linkTypeError');
   });
 
   it('shows unsupported file links as not a file on media-only forms', async () => {

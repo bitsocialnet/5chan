@@ -6,10 +6,10 @@ import { useAccount, useFeed, Comment, useEditedComment, useCommunity } from '@b
 import { useFloating, offset, shift, size, flip, autoUpdate } from '@floating-ui/react';
 import { Virtuoso, type Components } from 'react-virtuoso';
 import styles from './mod-queue.module.css';
-import postStyles from '../post/post.module.css';
+import postStyles from '../../components/post-styles';
 import useModQueueStore from '../../stores/use-mod-queue-store';
-import LoadingEllipsis from '../../components/loading-ellipsis/loading-ellipsis';
-import ErrorDisplay from '../../components/error-display/error-display';
+import LoadingEllipsis from '../../components/loading-ellipsis';
+import ErrorDisplay from '../../components/error-display';
 import { getCommunityAddress, getBoardPath, areSameBoardAddress } from '../../lib/utils/route-utils';
 import { useDirectories, DirectoryCommunity } from '../../hooks/use-directories';
 import getShortAddress from '../../lib/get-short-address';
@@ -33,19 +33,18 @@ import {
   getVisibleQueuedCommentHistory,
   shouldKeepQueuedCommentHistory,
 } from '../../lib/utils/mod-queue-utils';
-import Tooltip from '../../components/tooltip/tooltip';
+import Tooltip from '../../components/tooltip';
 import { useCommunityIdentifier, useCommunityIdentifiers } from '../../hooks/use-community-identifiers';
 import useIsMobile from '../../hooks/use-is-mobile';
 import { useCurrentTime } from '../../hooks/use-current-time';
-import { Post } from '../post/post';
+import { Post } from '../../components/post';
 import { useLocallyModeratedModQueueFeed } from '../../hooks/use-locally-moderated-mod-queue-feed';
-import ModQueueCommunityMetadataLoader from '../../components/mod-queue-community-metadata-loader/mod-queue-community-metadata-loader';
+import ModQueueCommunityMetadataLoader from '../../components/mod-queue-community-metadata-loader';
 import capitalize from 'lodash/capitalize';
 import lowerCase from 'lodash/lowerCase';
-import { PageFooterDesktop, PageFooterMobile, StyleOnlyFooterFirstRow } from '../../components/footer/footer';
-import footerStyles from '../../components/footer/footer.module.css';
+import { PageFooterDesktop, PageFooterMobile, StyleOnlyFooterFirstRow, footerStyles } from '../../components/footer';
 import { useModeratedCommunityAddressInputs, useModeratedCommunityAddressesForInputs } from '../../hooks/use-moderated-community-addresses';
-import PostTransferModal, { type PostTransferState } from '../../components/post-transfer-modal/post-transfer-modal';
+import PostTransferModal, { type PostTransferState } from '../../components/post-transfer-modal';
 import { canMoveCommentToTrash } from '../../lib/comment-transfer';
 import useSettledModQueueFeed from '../../hooks/use-settled-mod-queue-feed';
 

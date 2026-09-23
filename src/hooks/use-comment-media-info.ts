@@ -2,6 +2,7 @@ import { useMemo, useState, useEffect } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import { getCommentMediaInfo, fetchWebpageThumbnailIfNeeded, CommentMediaInfo } from '../lib/utils/media-utils';
 import { isPendingPostView, isPostPageView } from '../lib/utils/view-utils';
+import { useFeedCacheContext } from './use-feed-cache-context';
 
 /**
  * Hook to fetch and cache media info with thumbnail dimensions for comments.
@@ -10,6 +11,7 @@ import { isPendingPostView, isPostPageView } from '../lib/utils/view-utils';
 export const useCommentMediaInfo = (link: string, thumbnailUrl: string, linkWidth: number, linkHeight: number): CommentMediaInfo | undefined => {
   const location = useLocation();
   const params = useParams();
+  const isCachedFeed = useFeedCacheContext();
   const isInPostPageView = isPostPageView(location.pathname, params);
   const isInPendingPostView = isPendingPostView(location.pathname, params);
 
@@ -17,7 +19,8 @@ export const useCommentMediaInfo = (link: string, thumbnailUrl: string, linkWidt
 
   // Fetch and cache thumbnail dimensions for webpage media
   useEffect(() => {
-    if (!(isInPostPageView || isInPendingPostView)) return;
+    // The live route can be a thread while this media still belongs to a hidden feed.
+    if (isCachedFeed || !(isInPostPageView || isInPendingPostView)) return;
 
     // Reset dimensions when inputs change to avoid stale state
     setThumbnailDimensions(null);
@@ -63,7 +66,7 @@ export const useCommentMediaInfo = (link: string, thumbnailUrl: string, linkWidt
         img.onerror = null;
       }
     };
-  }, [link, thumbnailUrl, linkWidth, linkHeight, isInPostPageView, isInPendingPostView]);
+  }, [link, thumbnailUrl, linkWidth, linkHeight, isCachedFeed, isInPostPageView, isInPendingPostView]);
 
   return useMemo(() => {
     const mediaInfo = getCommentMediaInfo(link, thumbnailUrl, linkWidth, linkHeight);

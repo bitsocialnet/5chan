@@ -3,16 +3,19 @@ import { Link, Navigate, useLocation, useNavigate, useSearchParams } from 'react
 import type { Comment } from '@bitsocial/bitsocial-react-hooks';
 import { useTranslation } from 'react-i18next';
 import capitalize from 'lodash/capitalize';
-import BoardPagination, { type BoardPaginationFooterLink } from '../../components/board-pagination/board-pagination';
-import { BottomButton, RefreshButton, TopButton } from '../../components/board-buttons/board-buttons';
-import { PageFooterDesktop, PageFooterMobile } from '../../components/footer/footer';
-import mobileFooterStyles from '../../components/footer/footer.module.css';
-import LoadingEllipsis from '../../components/loading-ellipsis/loading-ellipsis';
-import useSearchMatchHighlight from '../../hooks/use-search-match-highlight';
+import BoardPagination, { type BoardPaginationFooterLink } from '../../components/board-pagination';
+import { BottomButton, RefreshButton, TopButton } from '../../components/board-buttons';
+import { PageFooterDesktop, PageFooterMobile, footerStyles } from '../../components/footer';
+import LoadingEllipsis from '../../components/loading-ellipsis';
+import { useBoardSearch } from '../../hooks/use-board-search';
+import { retryIndexedBoards } from '../../hooks/use-indexed-boards';
+import useSearchMatchHighlight, { SEARCH_HIGHLIGHT_REGION_ATTRIBUTE } from '../../hooks/use-search-match-highlight';
 import { clearIndexerSearch, getIndexedPostComment, getIndexerSearch } from '../../lib/search-indexer';
 import {
   DEFAULT_SEARCH_QUERY,
   getSearchPageHref,
+  getSearchPostStatus,
+  type SearchPostStatus,
   MAX_SEARCH_QUERY_LENGTH,
   SEARCH_CATALOG_PATH,
   SEARCH_DIRECTORY_PATH,
@@ -23,7 +26,9 @@ import { getSearchProviderChain, type SearchProvider } from '../../lib/search-pr
 import { isSearchCatalogRoute } from '../../lib/utils/route-utils';
 import useFeedResetStore from '../../stores/use-feed-reset-store';
 import useSearchProviderStore from '../../stores/use-search-provider-store';
-import { Post } from '../post/post';
+import { publishSearchSummary } from '../../stores/use-search-summary-store';
+import { Post } from '../../components/post';
+import SearchBoardResults from './search-board-results';
 import SearchCatalog from './search-catalog';
 import styles from './search.module.css';
 
@@ -41,33 +46,55 @@ const NO_FOOTER_LINKS: BoardPaginationFooterLink[] = [];
 interface SearchControlsProps {
   isCatalogView: boolean;
   query: string;
+  postStatus: SearchPostStatus;
+  page: number;
 }
 
-const SearchDirectoryLink = ({ query }: { query: string }) => {
+const SearchDirectoryLink = ({ query, postStatus, isCatalogView, page }: SearchControlsProps) => {
   const { t } = useTranslation();
 
   return (
-    <Link className='button' to={SEARCH_DIRECTORY_PATH} state={getSearchDirectoryLinkState(query)}>
+    <Link className='button' to={SEARCH_DIRECTORY_PATH} state={getSearchDirectoryLinkState(query, postStatus, isCatalogView ? SEARCH_CATALOG_PATH : SEARCH_PATH, page)}>
       {t('directory')}
     </Link>
   );
 };
 
 /** Index and catalog link to each other, the way a board and its catalog do. */
-const SearchViewLink = ({ isCatalogView, query }: SearchControlsProps) => {
+const SearchViewLink = ({ isCatalogView, query, postStatus }: SearchControlsProps) => {
   const { t } = useTranslation();
 
   return (
-    <Link className='button' to={getSearchPageHref(isCatalogView ? SEARCH_PATH : SEARCH_CATALOG_PATH, query)}>
+    <Link className='button' to={getSearchPageHref(isCatalogView ? SEARCH_PATH : SEARCH_CATALOG_PATH, query, 1, postStatus)}>
       {t(isCatalogView ? 'return' : 'catalog')}
     </Link>
   );
 };
 
-const SearchDesktopTopControls = ({ isCatalogView, query }: SearchControlsProps) => (
+const SearchPostStatusSelect = ({ isCatalogView, query, postStatus }: SearchControlsProps) => {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+
+  return (
+    <label className={styles.postStatus}>
+      {t('search_post_status')}:&nbsp;
+      <select
+        aria-label={t('search_post_status')}
+        value={postStatus}
+        onChange={(event) => navigate(getSearchPageHref(isCatalogView ? SEARCH_CATALOG_PATH : SEARCH_PATH, query, 1, getSearchPostStatus(event.target.value)))}
+      >
+        <option value='active'>{t('search_status_active')}</option>
+        <option value='archived'>{t('archived')}</option>
+        <option value='all'>{t('all')}</option>
+      </select>
+    </label>
+  );
+};
+
+const SearchDesktopTopControls = (props: SearchControlsProps) => (
   <div className={styles.desktopNavLinks}>
     <span>
-      [<SearchViewLink isCatalogView={isCatalogView} query={query} />]
+      [<SearchViewLink {...props} />]
     </span>
     <span>
       [<BottomButton />]
@@ -77,15 +104,16 @@ const SearchDesktopTopControls = ({ isCatalogView, query }: SearchControlsProps)
     </span>
     {/* Boards keep the directory button on the right of the button row. */}
     <span className={styles.rightSideButtons}>
-      [<SearchDirectoryLink query={query} />]
+      <SearchPostStatusSelect {...props} />
+      [<SearchDirectoryLink {...props} />]
     </span>
   </div>
 );
 
-const SearchDesktopFooterControls = ({ isCatalogView, query }: SearchControlsProps) => (
+const SearchDesktopFooterControls = (props: SearchControlsProps) => (
   <div className={styles.desktopFooterButtons}>
     <span>
-      [<SearchViewLink isCatalogView={isCatalogView} query={query} />]
+      [<SearchViewLink {...props} />]
     </span>
     <span>
       [<TopButton />]
@@ -94,59 +122,63 @@ const SearchDesktopFooterControls = ({ isCatalogView, query }: SearchControlsPro
       [<RefreshButton />]
     </span>
     <span className={styles.rightSideButtons}>
-      [<SearchDirectoryLink query={query} />]
+      <SearchPostStatusSelect {...props} />
+      [<SearchDirectoryLink {...props} />]
     </span>
   </div>
 );
 
-const SearchMobileTopControls = ({ isCatalogView, query }: SearchControlsProps) => (
+const SearchMobileTopControls = (props: SearchControlsProps) => (
   <div className={styles.mobileNavLinks}>
-    <SearchViewLink isCatalogView={isCatalogView} query={query} />
+    <SearchViewLink {...props} />
     <BottomButton />
     <RefreshButton />
-    <SearchDirectoryLink query={query} />
+    <SearchDirectoryLink {...props} />
+    <SearchPostStatusSelect {...props} />
   </div>
 );
 
-const SearchMobileFooterControls = ({ isCatalogView, query }: SearchControlsProps) => (
+const SearchMobileFooterControls = (props: SearchControlsProps) => (
   <div className={styles.mobileFooterButtons}>
-    <SearchViewLink isCatalogView={isCatalogView} query={query} />
+    <SearchViewLink {...props} />
     <TopButton />
     <RefreshButton />
-    <SearchDirectoryLink query={query} />
+    <SearchDirectoryLink {...props} />
+    <SearchPostStatusSelect {...props} />
   </div>
 );
 
-const SearchFooter = ({ isCatalogView, page, query, totalPages }: SearchControlsProps & { page: number; totalPages: number }) => {
+const SearchFooter = ({ totalPages, ...controls }: SearchControlsProps & { totalPages: number }) => {
+  const { isCatalogView, page, query, postStatus } = controls;
   const basePath = isCatalogView ? SEARCH_CATALOG_PATH : SEARCH_PATH;
 
   return (
     <>
       <PageFooterDesktop
-        firstRow={<SearchDesktopFooterControls isCatalogView={isCatalogView} query={query} />}
+        firstRow={<SearchDesktopFooterControls {...controls} />}
         styleRow={
           <BoardPagination
             basePath={basePath}
             currentPage={page}
             totalPages={totalPages}
             footerStyle
-            getPageHref={(nextPage) => getSearchPageHref(basePath, query, nextPage)}
+            getPageHref={(nextPage) => getSearchPageHref(basePath, query, nextPage, postStatus)}
             footerLinks={NO_FOOTER_LINKS}
           />
         }
       />
       <PageFooterMobile>
-        <SearchMobileFooterControls isCatalogView={isCatalogView} query={query} />
+        <SearchMobileFooterControls {...controls} />
         {totalPages > 1 && (
           <>
             <hr />
-            <div className={mobileFooterStyles.mobileFooterPagination}>
+            <div className={footerStyles.mobileFooterPagination}>
               {Array.from({ length: totalPages }, (_, index) => index + 1).map((pageNumber) => (
                 <span key={pageNumber}>
                   [
                   <Link
-                    to={getSearchPageHref(basePath, query, pageNumber)}
-                    className={pageNumber === page ? mobileFooterStyles.mobileFooterPaginationCurrent : undefined}
+                    to={getSearchPageHref(basePath, query, pageNumber, postStatus)}
+                    className={pageNumber === page ? footerStyles.mobileFooterPaginationCurrent : undefined}
                   >
                     {pageNumber}
                   </Link>
@@ -161,10 +193,9 @@ const SearchFooter = ({ isCatalogView, page, query, totalPages }: SearchControls
   );
 };
 
-const SearchResults = ({ isCatalogView, page, providers, query }: SearchControlsProps & { page: number; providers: SearchProvider[] }) => {
+const SearchResults = ({ isCatalogView, page, providers, query, postStatus }: SearchControlsProps & { providers: SearchProvider[] }) => {
   const { t } = useTranslation();
-  const result = use(getIndexerSearch(providers, query, page));
-  const resultsRef = useRef<HTMLDivElement>(null);
+  const result = use(getIndexerSearch(providers, query, page, postStatus, publishSearchSummary));
   // A matched reply is shown in its thread: the OP, then that one reply.
   const matches = useMemo(
     () =>
@@ -192,16 +223,14 @@ const SearchResults = ({ isCatalogView, page, providers, query }: SearchControls
   }, [matches]);
   const totalPages = Math.min(MAX_SEARCH_PAGES, Math.max(1, Math.ceil(result.total / result.limit)));
 
-  useSearchMatchHighlight(resultsRef, query);
-
   return (
     <>
       {matches.length === 0 ? (
         <div className={styles.empty}>{t('search_no_results')}</div>
       ) : isCatalogView ? (
-        <SearchCatalog ref={resultsRef} threads={threads} />
+        <SearchCatalog threads={threads} />
       ) : (
-        <div className={styles.results} ref={resultsRef}>
+        <div className={styles.results} {...{ [SEARCH_HIGHLIGHT_REGION_ATTRIBUTE]: '' }}>
           {matches.map(({ comment, replyPaginationOverride, threadComment }) =>
             threadComment ? (
               <Post key={comment.cid} post={threadComment} replyPaginationOverride={replyPaginationOverride} />
@@ -211,9 +240,20 @@ const SearchResults = ({ isCatalogView, page, providers, query }: SearchControls
           )}
         </div>
       )}
-      <SearchFooter isCatalogView={isCatalogView} page={page} query={query} totalPages={totalPages} />
+      <SearchFooter isCatalogView={isCatalogView} page={page} query={query} postStatus={postStatus} totalPages={totalPages} />
     </>
   );
+};
+
+/**
+ * The results area, which the highlight paints as a whole: the board table and the post feed, whichever
+ * arrives first. It only mounts once the page has a query, so the paint is never set up against the
+ * redirect that /search without one renders first.
+ */
+const SearchScope = ({ children, query }: { children: ReactNode; query: string }) => {
+  const scopeRef = useRef<HTMLDivElement>(null);
+  useSearchMatchHighlight(scopeRef, query);
+  return <div ref={scopeRef}>{children}</div>;
 };
 
 interface SearchErrorBoundaryProps {
@@ -243,10 +283,13 @@ const Search = () => {
   const urlQuery = (searchParams.get('q') ?? '').trim().slice(0, MAX_SEARCH_QUERY_LENGTH);
   const query = urlQuery || DEFAULT_SEARCH_QUERY;
   const page = getPage(searchParams.get('page'));
+  const postStatus = getSearchPostStatus(searchParams.get('status'));
   const isCatalogView = isSearchCatalogRoute(location.pathname);
   const selectedProviderId = useSearchProviderStore((state) => state.selectedProviderId);
   const providers = useMemo(() => getSearchProviderChain(selectedProviderId), [selectedProviderId]);
   const setResetFunction = useFeedResetStore((state) => state.setResetFunction);
+  // Board matches are local and immediate, so they show while the indexer is still answering.
+  const boardSearch = useBoardSearch(query, selectedProviderId);
 
   useEffect(() => {
     const title = `${query} - ${t('archive_search_title')}`;
@@ -256,13 +299,14 @@ const Search = () => {
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const nextQuery = inputRef.current?.value.trim().slice(0, MAX_SEARCH_QUERY_LENGTH) || DEFAULT_SEARCH_QUERY;
-    navigate(getSearchPageHref(isCatalogView ? SEARCH_CATALOG_PATH : SEARCH_PATH, nextQuery));
+    navigate(getSearchPageHref(isCatalogView ? SEARCH_CATALOG_PATH : SEARCH_PATH, nextQuery, 1, postStatus));
   };
 
   const retry = useCallback(() => {
-    clearIndexerSearch(providers, query, page);
+    clearIndexerSearch(providers, query, page, postStatus);
+    retryIndexedBoards(selectedProviderId);
     setRetryKey((value) => value + 1);
-  }, [page, providers, query]);
+  }, [page, postStatus, providers, query, selectedProviderId]);
 
   // The shared refresh button reruns whichever feed is on screen.
   useEffect(() => {
@@ -271,7 +315,7 @@ const Search = () => {
 
   // The URL always carries the query the page is showing, so links and the header agree.
   if (!urlQuery) {
-    return <Navigate to={getSearchPageHref(location.pathname, DEFAULT_SEARCH_QUERY, page)} replace />;
+    return <Navigate to={getSearchPageHref(location.pathname, DEFAULT_SEARCH_QUERY, page, postStatus)} replace />;
   }
 
   return (
@@ -292,37 +336,45 @@ const Search = () => {
         />
         <button type='submit'>{capitalize(t('search'))}</button>
       </form>
-      <SearchMobileTopControls isCatalogView={isCatalogView} query={query} />
+      <SearchMobileTopControls isCatalogView={isCatalogView} query={query} postStatus={postStatus} page={page} />
       <hr className={styles.desktopDivider} />
-      <SearchDesktopTopControls isCatalogView={isCatalogView} query={query} />
-      <SearchErrorBoundary
-        key={`${providers.map((entry) => entry.id).join(',')}:${query}:${page}:${retryKey}`}
-        fallback={
+      <SearchDesktopTopControls isCatalogView={isCatalogView} query={query} postStatus={postStatus} page={page} />
+      <SearchScope query={query}>
+        {boardSearch.boards.length > 0 && (
           <>
-            <div className={styles.error} role='alert'>
-              {t('search_provider_unavailable')} [
-              <button type='button' onClick={retry}>
-                {t('refresh')}
-              </button>
-              ]
-            </div>
-            <SearchFooter isCatalogView={isCatalogView} page={page} query={query} totalPages={1} />
+            <SearchBoardResults key={query} boards={boardSearch.boards} loading={boardSearch.loading} />
+            <hr className={styles.divider} />
           </>
-        }
-      >
-        <Suspense
+        )}
+        <SearchErrorBoundary
+          key={`${providers.map((entry) => entry.id).join(',')}:${query}:${postStatus}:${page}:${retryKey}`}
           fallback={
             <>
-              <div className={styles.loading}>
-                <LoadingEllipsis string={t('loading')} />
+              <div className={styles.error} role='alert'>
+                {t('search_provider_unavailable')} [
+                <button type='button' onClick={retry}>
+                  {t('refresh')}
+                </button>
+                ]
               </div>
-              <SearchFooter isCatalogView={isCatalogView} page={page} query={query} totalPages={1} />
+              <SearchFooter isCatalogView={isCatalogView} page={page} query={query} postStatus={postStatus} totalPages={1} />
             </>
           }
         >
-          <SearchResults isCatalogView={isCatalogView} page={page} providers={providers} query={query} />
-        </Suspense>
-      </SearchErrorBoundary>
+          <Suspense
+            fallback={
+              <>
+                <div className={styles.loading}>
+                  <LoadingEllipsis string={t('loading')} />
+                </div>
+                <SearchFooter isCatalogView={isCatalogView} page={page} query={query} postStatus={postStatus} totalPages={1} />
+              </>
+            }
+          >
+            <SearchResults isCatalogView={isCatalogView} page={page} providers={providers} query={query} postStatus={postStatus} />
+          </Suspense>
+        </SearchErrorBoundary>
+      </SearchScope>
     </main>
   );
 };

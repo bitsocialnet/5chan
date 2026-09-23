@@ -93,9 +93,8 @@ vi.mock('../../board-buttons/catalog-button-utils', () => ({
 }));
 
 vi.mock('../../../stores/use-reply-modal-store', () => ({
-  default: () => ({
-    openReplyModalEmpty: testState.openReplyModalEmptyMock,
-  }),
+  default: <T,>(selector: (state: { openReplyModalEmpty: typeof testState.openReplyModalEmptyMock }) => T) =>
+    selector({ openReplyModalEmpty: testState.openReplyModalEmptyMock }),
 }));
 
 vi.mock('../../../hooks/use-count-links-in-replies', () => ({
@@ -169,9 +168,7 @@ describe('footer', () => {
         }),
         createElement(CatalogFooterStyleRow),
         createElement(ThreadFooterStyleRow),
-        createElement(PageFooterMobile, {
-          children: createElement('div', { 'data-testid': 'mobile-child' }, 'mobile-child'),
-        }),
+        createElement(PageFooterMobile, null, createElement('div', { 'data-testid': 'mobile-child' }, 'mobile-child')),
       ),
       '/all/catalog',
     );

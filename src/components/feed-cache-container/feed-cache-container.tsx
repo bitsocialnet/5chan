@@ -1,15 +1,25 @@
-import { useEffect, useRef } from 'react';
+import { Activity, type ComponentType, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
-import useFeedCacheStore, { CachedFeed } from '../../stores/use-feed-cache-store';
+import useFeedCacheStore, { CachedFeed, getFeedCacheAfterAccess } from '../../stores/use-feed-cache-store';
 import { getFeedCacheKey, getFeedType, isFeedRoute } from '../../lib/utils/route-utils';
 import { TIME_FILTER_QUERY_PARAM } from '../../lib/utils/time-filter-utils';
 import { restoreSuspendedMediaPlayback, suspendMediaPlayback } from '../../lib/utils/media-playback-utils';
-import Board from '../../views/board/board';
-import Catalog from '../../views/catalog/catalog';
+import { FeedCacheContext } from '../../hooks/use-feed-cache-context';
 import styles from './feed-cache-container.module.css';
 
+type CachedFeedViewType = 'all' | 'subs' | 'mod' | 'board';
+
+// The board and catalog views are injected by app.tsx so this component never depends on the views layer.
+interface CachedFeedViewProps {
+  feedCacheKey: string;
+  viewType: CachedFeedViewType;
+  boardIdentifier?: string;
+  timeFilterNameFromCache?: string;
+  isVisible: boolean;
+}
+
 interface FeedContextFromKey {
-  viewType: 'all' | 'subs' | 'mod' | 'board';
+  viewType: CachedFeedViewType;
   boardIdentifier?: string;
   timeFilterName?: string;
 }
@@ -39,9 +49,11 @@ const parseFeedKey = (key: string): FeedContextFromKey => {
 interface CachedFeedWrapperProps {
   feed: CachedFeed;
   isVisible: boolean;
+  boardView: ComponentType<CachedFeedViewProps>;
+  catalogView: ComponentType<CachedFeedViewProps>;
 }
 
-const CachedFeedWrapper = ({ feed, isVisible }: CachedFeedWrapperProps) => {
+const CachedFeedWrapper = ({ feed, isVisible, boardView: BoardView, catalogView: CatalogView }: CachedFeedWrapperProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const context = parseFeedKey(feed.key);
 
@@ -58,7 +70,7 @@ const CachedFeedWrapper = ({ feed, isVisible }: CachedFeedWrapperProps) => {
   return (
     <div ref={containerRef} className={isVisible ? styles.visible : styles.hidden}>
       {feed.type === 'catalog' ? (
-        <Catalog
+        <CatalogView
           feedCacheKey={feed.key}
           viewType={context.viewType}
           boardIdentifier={context.boardIdentifier}
@@ -66,26 +78,40 @@ const CachedFeedWrapper = ({ feed, isVisible }: CachedFeedWrapperProps) => {
           isVisible={isVisible}
         />
       ) : (
-        <Board
-          feedCacheKey={feed.key}
-          viewType={context.viewType}
-          boardIdentifier={context.boardIdentifier}
-          timeFilterNameFromCache={context.timeFilterName}
-          isVisible={isVisible}
-        />
+        <Activity mode={isVisible ? 'visible' : 'hidden'}>
+          <BoardView
+            feedCacheKey={feed.key}
+            viewType={context.viewType}
+            boardIdentifier={context.boardIdentifier}
+            timeFilterNameFromCache={context.timeFilterName}
+            isVisible={isVisible}
+          />
+        </Activity>
       )}
     </div>
   );
 };
 
-const FeedCacheContainer = () => {
+interface FeedCacheContainerProps {
+  boardView: ComponentType<CachedFeedViewProps>;
+  catalogView: ComponentType<CachedFeedViewProps>;
+}
+
+const FeedCacheContainer = ({ boardView, catalogView }: FeedCacheContainerProps) => {
   const location = useLocation();
   const cachedFeeds = useFeedCacheStore((state) => state.cachedFeeds);
   const accessFeed = useFeedCacheStore((state) => state.accessFeed);
+  const maxCacheSize = useFeedCacheStore((state) => state.maxCacheSize);
 
   const currentFeedKey = getFeedCacheKey(location.pathname, location.search);
   const isOnFeedRoute = isFeedRoute(location.pathname);
   const feedType = getFeedType(location.pathname);
+  // Mount the incoming view in this route commit; persist its recency in the effect.
+  // Infinity is only a deterministic projection marker and never enters the store.
+  const renderedFeeds =
+    isOnFeedRoute && currentFeedKey && feedType && !cachedFeeds.some((feed) => feed.key === currentFeedKey)
+      ? getFeedCacheAfterAccess(cachedFeeds, maxCacheSize, { key: currentFeedKey, type: feedType, lastAccessed: Infinity })
+      : cachedFeeds;
 
   useEffect(() => {
     if (isOnFeedRoute && currentFeedKey && feedType) {
@@ -94,11 +120,11 @@ const FeedCacheContainer = () => {
   }, [currentFeedKey, isOnFeedRoute, feedType, accessFeed]);
 
   return (
-    <>
-      {cachedFeeds.map((feed) => (
-        <CachedFeedWrapper key={feed.key} feed={feed} isVisible={isOnFeedRoute && feed.key === currentFeedKey} />
+    <FeedCacheContext.Provider value={true}>
+      {renderedFeeds.map((feed) => (
+        <CachedFeedWrapper key={feed.key} feed={feed} isVisible={isOnFeedRoute && feed.key === currentFeedKey} boardView={boardView} catalogView={catalogView} />
       ))}
-    </>
+    </FeedCacheContext.Provider>
   );
 };
 

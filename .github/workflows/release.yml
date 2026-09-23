@@ -12,6 +12,11 @@ on:
   push:
     tags:
       - 'v*'
+  # Dry run. Builds, signs and uploads every artifact as a workflow artifact
+  # without publishing anything: finalize-release is skipped unless a v* tag
+  # was actually pushed. Every job reads the version from package.json rather
+  # than the tag, so a dispatch from a branch produces correctly named assets.
+  workflow_dispatch:
 
 jobs:
   preflight:
@@ -318,8 +323,23 @@ jobs:
           done
       - name: Optimize APK
         run: cd android/app/build/outputs/apk/github/release && zipalign 4 app-github-release-unsigned.apk app-github-release-unsigned-zip.apk
+      - name: Check Android signing secret
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.BITSOCIAL_KEYSTORE_PASSWORD }}
+        run: |
+          if [ -z "${KEYSTORE_PASSWORD:-}" ]; then
+            echo "::error::BITSOCIAL_KEYSTORE_PASSWORD is required to sign the Android release APK."
+            exit 1
+          fi
+      # Pass the keystore password through the environment rather than the
+      # command line: it keeps the secret out of the process argument list and
+      # out of reach of shell metacharacter expansion.
       - name: Sign APK
-        run: cd android/app/build/outputs/apk/github/release && apksigner sign --ks ../../../../../../plebbit.keystore --ks-pass pass:${{ secrets.PLEBBIT_REACT_KEYSTORE_PASSWORD }} --ks-key-alias release --out app-github-release-signed.apk app-github-release-unsigned-zip.apk
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.BITSOCIAL_KEYSTORE_PASSWORD }}
+        run: cd android/app/build/outputs/apk/github/release && apksigner sign --ks ../../../../../../bitsocial.keystore --ks-pass env:KEYSTORE_PASSWORD --ks-key-alias release --out app-github-release-signed.apk app-github-release-unsigned-zip.apk
+      - name: Verify APK signature
+        run: cd android/app/build/outputs/apk/github/release && apksigner verify --verbose --print-certs app-github-release-signed.apk
       - name: Stage release artifacts
         run: |
           mkdir -p release-assets
@@ -333,6 +353,9 @@ jobs:
           path: release-assets/
 
   finalize-release:
+    # Publication step. A workflow_dispatch run stops after the build jobs, so a
+    # dry run can never create a GitHub release or deploy to Vercel Production.
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-22.04
     needs: [linux, mac, windows, android]
     permissions:

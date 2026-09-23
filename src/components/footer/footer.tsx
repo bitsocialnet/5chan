@@ -3,7 +3,7 @@ import { useLocation, useParams } from 'react-router-dom';
 import { useComment } from '@bitsocial/bitsocial-react-hooks';
 import BoardsBar from '../boards-bar';
 import SiteLegalMeta from '../site-legal-meta';
-import StyleSelector from '../style-selector/style-selector';
+import StyleSelector from '../style-selector';
 import {
   CatalogSearchResultsLabel,
   ReturnButton,
@@ -13,8 +13,8 @@ import {
   AutoButton,
   PostPageStats,
   RefreshButton,
-} from '../board-buttons/board-buttons';
-import { shouldShowCatalogButton } from '../board-buttons/catalog-button-utils';
+  shouldShowCatalogButton,
+} from '../board-buttons';
 import { isAllView, isSubscriptionsView, isModView } from '../../lib/utils/view-utils';
 import useReplyModalStore from '../../stores/use-reply-modal-store';
 import { getPageDraftKey } from '../../lib/utils/location-draft-utils';
@@ -159,7 +159,7 @@ export const ThreadFooterFirstRow = ({ postCid, threadNumber, communityAddress, 
   const { t } = useTranslation();
   const location = useLocation();
   const params = useParams();
-  const { openReplyModalEmpty } = useReplyModalStore();
+  const openReplyModalEmpty = useReplyModalStore((state) => state.openReplyModalEmpty);
 
   const isInAllView = isAllView(location.pathname);
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, params);
@@ -241,7 +241,7 @@ export const ThreadFooterMobile = ({ postCid, threadNumber, communityAddress, is
   const { t } = useTranslation();
   const location = useLocation();
   const params = useParams();
-  const { openReplyModalEmpty } = useReplyModalStore();
+  const openReplyModalEmpty = useReplyModalStore((state) => state.openReplyModalEmpty);
   const autoUpdateEnabled = useThreadLiveUpdatesStore((state) => state.enabled);
 
   const isInAllView = isAllView(location.pathname);

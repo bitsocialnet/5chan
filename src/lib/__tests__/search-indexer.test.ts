@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { clearIndexerSearch, getIndexedPostComment, getIndexerSearch, type IndexedPost } from '../search-indexer';
+import { clearIndexerSearch, fetchIndexedBoardsFromChain, getIndexedPostComment, getIndexerSearch, type IndexedPost } from '../search-indexer';
 import { getSearchProvider } from '../search-providers';
 
 const provider = getSearchProvider('5archive');
@@ -46,7 +46,29 @@ describe('search indexer client', () => {
     expect(first).toBe(second);
     await expect(first).resolves.toEqual({ ...response, providerId: provider.id, threadPosts: {} });
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(fetchMock.mock.calls[0][0]).toBe(`https://api.5archive.org/api/search?q=${encodeURIComponent(query)}&page=2&limit=25`);
+    expect(fetchMock.mock.calls[0][0]).toBe(`https://api.5archive.org/api/search?q=${encodeURIComponent(query)}&page=2&limit=25&status=active`);
+  });
+
+  it('caches and refreshes each post status independently', async () => {
+    const query = `status-cache-${Date.now()}`;
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ query, posts: [], page: 1, limit: 25, total: 0 }) });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const active = getIndexerSearch(providers, query, 1, 'active');
+    const archived = getIndexerSearch(providers, query, 1, 'archived');
+    const all = getIndexerSearch(providers, query, 1, 'all');
+    await Promise.all([active, archived, all]);
+    expect(fetchMock.mock.calls.map(([url]) => new URL(url).searchParams.get('status'))).toEqual(['active', 'archived', 'all']);
+    expect(getIndexerSearch(providers, query, 1, 'archived')).toBe(archived);
+    expect(getIndexerSearch(providers, query, 1, 'all')).toBe(all);
+
+    clearIndexerSearch(providers, query, 1, 'archived');
+    expect(getIndexerSearch(providers, query, 1, 'active')).toBe(active);
+    expect(getIndexerSearch(providers, query, 1, 'all')).toBe(all);
+    const refreshed = getIndexerSearch(providers, query, 1, 'archived');
+    expect(refreshed).not.toBe(archived);
+    await refreshed;
+    expect(fetchMock).toHaveBeenCalledTimes(4);
   });
 
   it('loads the thread OP of each matched reply once', async () => {
@@ -191,6 +213,56 @@ describe('search indexer client', () => {
 
     await expect(getIndexerSearch(providers, query, 1)).rejects.toThrow('invalid response');
   });
+
+  it('publishes the pending and answered summary through the injected publisher', async () => {
+    const query = `summary-${Date.now()}`;
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ query, page: 1, limit: 25, total: 3, posts: [] }) });
+    vi.stubGlobal('fetch', fetchMock);
+    const publish = vi.fn();
+
+    const request = getIndexerSearch(providers, query, 1, 'archived', publish);
+    await Promise.resolve();
+    expect(publish).toHaveBeenCalledWith(query, 'archived', 'pending', undefined, undefined);
+
+    await request;
+    await Promise.resolve();
+    expect(publish).toHaveBeenLastCalledWith(query, 'archived', 'answered', 3, provider.id);
+    expect(publish).toHaveBeenCalledTimes(2);
+  });
+
+  it('publishes a failed summary when no indexer answers', async () => {
+    const query = `summary-failed-${Date.now()}`;
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 503 }));
+    const publish = vi.fn();
+
+    await expect(getIndexerSearch(providers, query, 1, 'all', publish)).rejects.toThrow('503');
+    await Promise.resolve();
+    expect(publish).toHaveBeenLastCalledWith(query, 'all', 'failed', undefined, undefined);
+  });
+
+  it.each([true, false])('ignores an earlier status request after the current one answers (earlier success: %s)', async (ok) => {
+    const query = `late-status-${ok}-${Date.now()}`;
+    let finishEarlier: (value: unknown) => void = () => {};
+    const earlierResponse = new Promise((resolve) => {
+      finishEarlier = resolve;
+    });
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValueOnce(earlierResponse)
+        .mockResolvedValue({ ok: true, json: async () => ({ query, posts: [], page: 1, limit: 25, total: 2 }) }),
+    );
+    const publish = vi.fn();
+    const earlier = getIndexerSearch(providers, query, 1, 'active', publish).catch(() => undefined);
+    await getIndexerSearch(providers, query, 1, 'archived', publish);
+    expect(publish).toHaveBeenLastCalledWith(query, 'archived', 'answered', 2, provider.id);
+    const publishedCount = publish.mock.calls.length;
+
+    finishEarlier({ ok, status: 503, json: async () => ({ query, posts: [], page: 1, limit: 25, total: 100 }) });
+    await earlier;
+    expect(publish).toHaveBeenCalledTimes(publishedCount);
+  });
 });
 
 describe('getIndexedPostComment', () => {
@@ -222,7 +294,7 @@ describe('getIndexedPostComment', () => {
         linkHeight: 200,
         linkWidth: 300,
         spoiler: true,
-        subplebbitAddress: 'business-and-finance.eth',
+        communityAddress: 'business-and-finance.eth',
       },
       commentUpdate: {
         author: { community: { firstCommentTimestamp: 1_600_000_000 } },
@@ -255,5 +327,24 @@ describe('getIndexedPostComment', () => {
     expect(comment.deleted).toBe(true);
     expect(comment.link).toBe('https://example.com/fallback.png');
     expect(comment.content).toBe('archived reply');
+  });
+
+  it('lists the boards the provider indexed, dropping malformed rows', async () => {
+    const board = { address: 'music-posting.bso', description: null, nsfw: 0, post_count: 50, title: '/mu/ - Music' };
+    // A path or URL as the address is dropped too: it would become an off-site link on the results page.
+    const malformed = [{ title: 'no address' }, { address: 'bad.bso', post_count: -1, title: null }, { address: '/evil.example', post_count: 1, title: null }];
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ communities: [board, ...malformed] }) });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(fetchIndexedBoardsFromChain(providers)).resolves.toEqual([board]);
+    expect(fetchMock.mock.calls[0][0]).toBe('https://api.5archive.org/api/communities');
+  });
+
+  it('answers null when every provider fails, instead of throwing, and an empty list when the provider has none', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 503 }));
+    await expect(fetchIndexedBoardsFromChain(providers)).resolves.toBeNull();
+
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => ({ communities: [] }) }));
+    await expect(fetchIndexedBoardsFromChain(providers)).resolves.toEqual([]);
   });
 });

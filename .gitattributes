@@ -1,2 +1,8 @@
 # Inline script CSP hashes depend on exact line endings.
 index.html text eol=lf
+
+# Shared AI sources and generated compatibility files must agree across platforms.
+/.agents/** text=auto eol=lf
+/.claude/** text=auto eol=lf
+/.codex/** text=auto eol=lf
+/.cursor/** text=auto eol=lf

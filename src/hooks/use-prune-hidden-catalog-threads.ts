@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useAccount, type Comment } from '@bitsocial/bitsocial-react-hooks';
-import { accountsStore, communitiesStore, communitiesPagesStore } from '../lib/bitsocial-internals/stores';
+import { accountsStore, communitiesStore as useCommunitiesStore, communitiesPagesStore as useCommunitiesPagesStore } from '../lib/bitsocial-internals/stores';
 import { getCommentCommunityAddress } from '../lib/utils/comment-utils';
 import { isCommentArchived } from '../lib/utils/comment-moderation-utils';
 import { getRawBoardThreadState } from '../lib/utils/raw-board-thread-state';
@@ -24,8 +24,8 @@ const EMPTY_RAW_BOARD_THREAD_STATE = getRawBoardThreadState({
 const usePruneHiddenCatalogThreads = ({ enabled, hiddenThreadCandidates, communityAddress, sortType }: UsePruneHiddenCatalogThreadsOptions) => {
   const account = useAccount();
   const directories = useDirectories();
-  const community = communitiesStore((state) => (communityAddress ? state.communities[communityAddress] : undefined));
-  const communitiesPages = communitiesPagesStore((state) => state.communitiesPages);
+  const community = useCommunitiesStore((state) => (communityAddress ? state.communities[communityAddress] : undefined));
+  const communitiesPages = useCommunitiesPagesStore((state) => state.communitiesPages);
   const pendingPruneCidsRef = useRef(new Set<string>());
   const boardAddressKeys = useMemo(() => (enabled ? getBoardAddressKeys(communityAddress, directories) : new Set<string>()), [communityAddress, directories, enabled]);
   const rawBoardCatalogState = useMemo(

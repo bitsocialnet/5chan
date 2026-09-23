@@ -116,18 +116,18 @@ vi.mock('../stores/use-special-theme-store', () => ({
   default: () => ({
     isEnabled: testState.isSpecialEnabled,
   }),
+  shouldShowSnow: () => testState.shouldShowSnow,
 }));
 
 vi.mock('../lib/snow', () => ({
   initSnow: (options: unknown) => testState.initSnowMock(options),
   removeSnow: () => testState.removeSnowMock(),
-  shouldShowSnow: () => testState.shouldShowSnow,
 }));
 
 vi.mock('../lib/utils/preload-utils', () => ({
-  preloadReplyModal: vi.fn(),
   preloadThemeAssets: vi.fn(),
   resolveAssetUrl: (path: string) => path,
+  scheduleIdlePreload: vi.fn(),
 }));
 
 vi.mock('react-i18next', () => ({
@@ -183,7 +183,7 @@ vi.mock('../components/board-header/board-header', () => ({
   default: makeNamedComponent('board-header'),
 }));
 
-vi.mock('../components/feed-cache-container/feed-cache-container', () => ({
+vi.mock('../components/feed-cache-container', () => ({
   default: makeNamedComponent('feed-cache-container'),
 }));
 
@@ -243,6 +243,10 @@ vi.mock('../views/post/post', () => ({
   default: makeNamedComponent('post-view'),
 }));
 
+vi.mock('../components/post', () => ({
+  QuotePreviewPostProvider: ({ children }: { children: React.ReactNode }) => children,
+}));
+
 vi.mock('../views/rules/rules', () => ({
   default: makeNamedComponent('rules-view'),
 }));
@@ -259,7 +263,7 @@ vi.mock('../views/search/search', () => ({
   default: makeNamedComponent('search-view'),
 }));
 
-vi.mock('../views/search/search-directory', () => ({
+vi.mock('../views/search-directory/search-directory', () => ({
   default: makeNamedComponent('search-directory-view'),
 }));
 
@@ -430,6 +434,12 @@ describe('App', () => {
     expect(container.querySelector('[data-testid="desktop-board-buttons"]')).toBeTruthy();
     expect(container.querySelector('[data-testid="board-blotter"]')).toBeTruthy();
     expect(latestLocation).toBe('/all');
+  });
+
+  it.each(['/', '/g', '/faq'])('mounts navigation dialogs once on %s for the persistent sidebar', async (path) => {
+    await renderApp(path);
+    expect(container.querySelectorAll('[data-testid="directory-modal"]')).toHaveLength(1);
+    expect(container.querySelectorAll('[data-testid="disclaimer-modal"]')).toHaveLength(1);
   });
 
   it('keeps the board chrome and cached feed mounted during the immediate pending handoff', async () => {

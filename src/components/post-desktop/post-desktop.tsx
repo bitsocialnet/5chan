@@ -1,10 +1,10 @@
-import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigationType, useParams } from 'react-router-dom';
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
-import { Comment, resolveReplySortType, useAccount, useAccountComment, useEditedComment, useReplies } from '@bitsocial/bitsocial-react-hooks';
+import { Comment, resolveReplySortType, useAccountComment, useEditedComment, useReplies } from '@bitsocial/bitsocial-react-hooks';
 import getShortAddress from '../../lib/get-short-address';
-import styles from '../../views/post/post.module.css';
+import styles from '../post-styles';
 import { CommentMediaInfo, getHasThumbnail, getMediaDimensions, getPostMediaTypeLabel, getYouTubeEmbedPostMediaFileLink } from '../../lib/utils/media-utils';
 import { hashStringToColor, getTextColorForBackground } from '../../lib/utils/post-utils';
 import { getFormattedDate, getFormattedTimeAgo } from '../../lib/utils/time-utils';
@@ -21,27 +21,28 @@ import { useCommentMediaInfo } from '../../hooks/use-comment-media-info';
 import useCountLinksInReplies from '../../hooks/use-count-links-in-replies';
 import useFetchGifFirstFrame from '../../hooks/use-fetch-gif-first-frame';
 import useHide from '../../hooks/use-hide';
+import { useActiveAccountField } from '../../hooks/use-active-account-field';
 import useStateString from '../../hooks/use-state-string';
 import useScrollToReply from '../../hooks/use-scroll-to-reply';
 import { useCurrentTime } from '../../hooks/use-current-time';
 import { useBoardPseudonymityMode } from '../../hooks/use-board-pseudonymity-mode';
-import CommentContent from '../comment-content/comment-content';
-import CommentMedia from '../comment-media/comment-media';
-import EditMenu from '../edit-menu/edit-menu';
+import CommentContent from '../comment-content';
+import CommentMedia from '../comment-media';
+import EditMenu from '../edit-menu';
 import FailedPublishNotice from '../failed-publish-notice';
-import { canEmbed } from '../embed/embed-utils';
-import LoadingEllipsis from '../loading-ellipsis/loading-ellipsis';
+import { canEmbed } from '../../lib/utils/embed-utils';
+import LoadingEllipsis from '../loading-ellipsis';
 import PostAuthorFlags from '../post-author-flags';
 import PostFlashTag from '../post-flash-tag';
 import PostTransferredTag from '../post-transferred-tag';
-import PostMenuDesktop from './post-menu-desktop/post-menu-desktop';
-import ReplyQuotePreview from '../reply-quote-preview/reply-quote-preview';
-import Tooltip from '../tooltip/tooltip';
+import PostMenuDesktop from '../post-menu-desktop';
+import ReplyQuotePreview from '../reply-quote-preview';
+import Tooltip from '../tooltip';
 import TimeAgoTooltip from '../time-ago-tooltip';
-import { PostProps } from '../../views/post/post';
+import type { PostProps } from '../../lib/utils/post-props';
 import { create } from 'zustand';
 import capitalize from 'lodash/capitalize';
-import { shouldShowSnow } from '../../lib/snow';
+import { shouldShowSnow } from '../../stores/use-special-theme-store';
 import useReplyModalStore from '../../stores/use-reply-modal-store';
 import { getPageDraftKey } from '../../lib/utils/location-draft-utils';
 import { selectPostMenuProps } from '../../lib/utils/post-menu-props';
@@ -203,8 +204,7 @@ const PostInfo = ({
   const isInModQueueView = isModQueueView(location.pathname);
   const getAlertThresholdSeconds = useModQueueStore((state) => state.getAlertThresholdSeconds);
   const currentTime = useCurrentTime(isInModQueueView ? 60 : false);
-  const account = useAccount();
-  const accountAddress = account?.author?.address;
+  const accountAddress = useActiveAccountField((account) => account?.author?.address);
 
   // Check if user is mod of this board
   const accountRole = roles?.[accountAddress]?.role;
@@ -895,13 +895,8 @@ const PostDesktop = ({
 
   const fullIsFetching = shouldFetchFull && !hasReplyPaginationOverride && fullReplies.length === 0 && fullRepliesResult.hasMore;
 
-  const repliesForRender = showAllReplies
-    ? fullReplies
-    : showOmittedReplies[cid]
-      ? fullReplies.length
-        ? fullReplies
-        : previewReplies
-      : getPreviewDisplayReplies(previewReplies, BOARD_REPLIES_PREVIEW_VISIBLE_COUNT);
+  const collapsedPreviewReplies = useMemo(() => getPreviewDisplayReplies(previewReplies, BOARD_REPLIES_PREVIEW_VISIBLE_COUNT), [previewReplies]);
+  const repliesForRender = showAllReplies ? fullReplies : showOmittedReplies[cid] ? (fullReplies.length ? fullReplies : previewReplies) : collapsedPreviewReplies;
   const freshRepliesForRender = useFreshReplies(repliesForRender, { post: resolvedPost });
   useRegisterFreshReplies(resolvedPost, freshRepliesForRender);
   const setResetFunction = useFeedResetStore((s) => s.setResetFunction);
@@ -1068,20 +1063,27 @@ const PostDesktop = ({
   const virtuosoRef = useRef<VirtuosoHandle | null>(null);
   const virtuosoStateKey = `replies-desktop-${cid}`;
 
-  useEffect(() => {
-    if (!showAllReplies || !isInPostPageView) return;
+  const hasVirtualizedReplies = !isHidden && showAllReplies && !isInPendingPostView && showReplies && hasMore && !!resolvedPost?.replyCount;
 
-    const currentKey = virtuosoStateKey;
-    const setLastVirtuosoState = () => {
-      virtuosoRef.current?.getState((snapshot: StateSnapshot) => {
+  useLayoutEffect(() => {
+    if (!hasVirtualizedReplies || !isInPostPageView) return;
+
+    // Capture the handle before React clears its ref on unmount. Snapshotting every
+    // scroll event serializes the complete item-size tree in the scrolling hot path.
+    const virtuoso = virtuosoRef.current;
+    const saveVirtuosoState = () => {
+      virtuoso?.getState((snapshot: StateSnapshot) => {
         if (snapshot?.ranges?.length) {
-          lastVirtuosoStates[currentKey] = snapshot;
+          lastVirtuosoStates[virtuosoStateKey] = snapshot;
         }
       });
     };
-    window.addEventListener('scroll', setLastVirtuosoState, { passive: true });
-    return () => window.removeEventListener('scroll', setLastVirtuosoState);
-  }, [virtuosoStateKey, showAllReplies, isInPostPageView]);
+    window.addEventListener('pagehide', saveVirtuosoState);
+    return () => {
+      saveVirtuosoState();
+      window.removeEventListener('pagehide', saveVirtuosoState);
+    };
+  }, [virtuosoStateKey, hasVirtualizedReplies, isInPostPageView]);
 
   const lastVirtuosoState = navigationType === 'POP' ? lastVirtuosoStates?.[virtuosoStateKey] : undefined;
 
@@ -1212,7 +1214,7 @@ const PostDesktop = ({
           </span>
         )}
         {/* Virtuoso infinite scroll for post page view when there's more content to paginate */}
-        {!isHidden && showAllReplies && !isInPendingPostView && showReplies && hasMore && !!resolvedPost?.replyCount && (
+        {hasVirtualizedReplies && (
           <Virtuoso
             defaultItemHeight={defaultReplyItemHeight}
             heightEstimates={replyHeightEstimates}

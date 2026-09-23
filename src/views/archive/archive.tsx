@@ -2,20 +2,18 @@ import { useEffect, useMemo } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useFeed, useCommunity } from '@bitsocial/bitsocial-react-hooks';
 import { useTranslation } from 'react-i18next';
-import { shouldShowSnow } from '../../lib/snow';
-import { BottomButton, BracketedCatalogButton, CatalogButton, ReturnButton, TopButton } from '../../components/board-buttons/board-buttons';
-import ErrorDisplay from '../../components/error-display/error-display';
+import { shouldShowSnow } from '../../stores/use-special-theme-store';
+import { BottomButton, BracketedCatalogButton, CatalogButton, ReturnButton, TopButton } from '../../components/board-buttons';
+import ErrorDisplay from '../../components/error-display';
 import { PageFooterDesktop, PageFooterMobile, ThreadFooterStyleRow } from '../../components/footer';
 import LoadingEllipsis from '../../components/loading-ellipsis';
 import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
 import { useCommunityField } from '../../hooks/use-stable-community';
-import { useFeedStateString } from '../../hooks/use-state-string';
 import { getBoardPath } from '../../lib/utils/route-utils';
 import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
 import { removeMarkdown } from '../../lib/utils/post-utils';
 import { useDirectories } from '../../hooks/use-directories';
 import { useCommunityIdentifier, useCommunityIdentifiers } from '../../hooks/use-community-identifiers';
-import { useCompatiblePostSortType } from '../../hooks/use-compatible-post-sort-type';
 import styles from './archive.module.css';
 
 type BoardFeedComment = {
@@ -46,11 +44,33 @@ const getThreadLink = (boardPath: string | undefined, comment: BoardFeedComment)
   return `/${boardPath}/thread/${threadCid}`;
 };
 
-const getArchiveExcerptText = ({ content, title, link }: Pick<BoardFeedComment, 'content' | 'title' | 'link'>, t: (key: string) => string) => {
-  const cleanTitle = typeof title === 'string' ? removeMarkdown(title).trim() : '';
-  const cleanContent = typeof content === 'string' ? removeMarkdown(content).trim() : '';
-  const cleanLink = typeof link === 'string' ? link.trim() : '';
-  return cleanTitle || cleanContent || cleanLink || t('no_content');
+// Excerpts are capped so every archive row stays a single line, matching the
+// classic archive listing: a hard character budget followed by one ellipsis.
+const ARCHIVE_EXCERPT_MAX_LENGTH = 100;
+const ARCHIVE_EXCERPT_ELLIPSIS = '…';
+const ARCHIVE_EXCERPT_SEPARATOR = ': ';
+
+const collapseWhitespace = (value: string) => value.replace(/\s+/g, ' ').trim();
+
+const getArchiveExcerpt = ({ content, title, link }: Pick<BoardFeedComment, 'content' | 'title' | 'link'>, t: (key: string) => string) => {
+  const cleanTitle = typeof title === 'string' ? collapseWhitespace(removeMarkdown(title)) : '';
+  const cleanContent = typeof content === 'string' ? collapseWhitespace(removeMarkdown(content)) : '';
+  const cleanLink = typeof link === 'string' ? collapseWhitespace(link) : '';
+  const cleanBody = cleanTitle || cleanContent ? cleanContent : cleanLink || t('no_content');
+  const separator = cleanTitle && cleanBody ? ARCHIVE_EXCERPT_SEPARATOR : '';
+  const fullText = `${cleanTitle}${separator}${cleanBody}`;
+
+  if (fullText.length <= ARCHIVE_EXCERPT_MAX_LENGTH) {
+    return { body: cleanBody, fullText, isTruncated: false, title: cleanTitle };
+  }
+
+  // A title that already fills the budget leaves no room for the body at all.
+  const remainingLength = ARCHIVE_EXCERPT_MAX_LENGTH - cleanTitle.length - separator.length;
+  if (remainingLength <= 0) {
+    return { body: '', fullText, isTruncated: true, title: cleanTitle.slice(0, ARCHIVE_EXCERPT_MAX_LENGTH) };
+  }
+
+  return { body: cleanBody.slice(0, remainingLength), fullText, isTruncated: true, title: cleanTitle };
 };
 
 const normalizeTimestamp = (timestamp: BoardFeedComment['timestamp']) => {
@@ -85,7 +105,7 @@ const getArchiveWindowInDays = (comments: BoardFeedComment[]) => {
   return Math.max(1, Math.ceil(elapsedSeconds / SECONDS_PER_DAY));
 };
 
-const ArchiveFooter = ({ hasMore, loadingState, onLoadMore }: { hasMore: boolean; loadingState: string; onLoadMore: () => void }) => {
+const ArchiveFooter = ({ hasMore, onLoadMore }: { hasMore: boolean; onLoadMore: () => void }) => {
   const { t } = useTranslation();
 
   if (!hasMore) {
@@ -94,10 +114,11 @@ const ArchiveFooter = ({ hasMore, loadingState, onLoadMore }: { hasMore: boolean
 
   return (
     <div className={styles.footerState}>
-      <button type='button' className={styles.loadMoreButton} onClick={onLoadMore}>
+      <span className={styles.loadMoreBracket}>[</span>
+      <button type='button' className='button' onClick={onLoadMore}>
         {t('load_more')}
       </button>
-      <LoadingEllipsis string={loadingState} />
+      <span className={styles.loadMoreBracket}>]</span>
     </div>
   );
 };
@@ -169,20 +190,18 @@ const Archive = () => {
 
   const communityAddresses = useMemo(() => (communityAddress ? [communityAddress] : []), [communityAddress]);
   const communities = useCommunityIdentifiers(communityAddresses);
-  const feedSortType = useCompatiblePostSortType(communities, BOARD_SORT_TYPE);
   const communityIdentifier = useCommunityIdentifier(communityAddress);
 
   const feedOptions = useMemo(
     () => ({
       communities,
-      sortType: feedSortType,
+      sortType: BOARD_SORT_TYPE,
       filter: archiveFilter,
     }),
-    [communities, feedSortType, archiveFilter],
+    [communities, archiveFilter],
   );
 
   const { feed, hasMore, loadMore } = useFeed(feedOptions);
-  const loadingState = useFeedStateString(communityAddresses) || (hasMore ? t('loading_feed') : t('no_threads'));
   const community = useCommunity(communityIdentifier ? { community: communityIdentifier } : undefined);
   const { error: communityError } = community || {};
   const archiveWindowInDays = useMemo(() => getArchiveWindowInDays(feed), [feed]);
@@ -246,23 +265,22 @@ const Archive = () => {
             {feed.map((comment, index) => {
               const threadLink = getThreadLink(boardPath, comment);
               const threadNumber = comment.threadCid || comment.number || comment.cid;
-              const cleanTitle = typeof comment.title === 'string' ? removeMarkdown(comment.title).trim() : '';
-              const cleanContent = typeof comment.content === 'string' ? removeMarkdown(comment.content).trim() : '';
-              const excerptText = getArchiveExcerptText(comment, t);
+              const excerpt = getArchiveExcerpt(comment, t);
 
               return (
                 <tr key={comment.cid || `archive-${index}`} className={`${styles.arcRow} ${index % 2 === 0 ? styles.rowOdd : ''}`}>
                   <td className={styles.numberCell}>{threadNumber || '—'}</td>
-                  <td className={styles.teaserCol} title={excerptText}>
-                    {cleanTitle ? (
+                  <td className={styles.teaserCol} title={excerpt.fullText}>
+                    {excerpt.title ? (
                       <>
-                        <b>{cleanTitle}</b>
-                        {cleanContent ? ': ' : ''}
-                        {cleanContent || null}
+                        <b>{excerpt.title}</b>
+                        {excerpt.body ? ': ' : ''}
+                        {excerpt.body || null}
                       </>
                     ) : (
-                      excerptText
+                      excerpt.body
                     )}
+                    {excerpt.isTruncated ? ARCHIVE_EXCERPT_ELLIPSIS : null}
                   </td>
                   <td className={styles.viewCell}>
                     {threadLink ? (
@@ -282,7 +300,7 @@ const Archive = () => {
         </table>
       )}
 
-      <ArchiveFooter hasMore={hasMore} loadingState={loadingState} onLoadMore={loadMore} />
+      <ArchiveFooter hasMore={hasMore} onLoadMore={loadMore} />
 
       <PageFooterDesktop firstRow={<ArchiveDesktopFooterControls communityAddress={communityAddress} />} styleRow={<ThreadFooterStyleRow />} />
       <PageFooterMobile>

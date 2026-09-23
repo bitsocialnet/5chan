@@ -1,0 +1,139 @@
+.sidebar {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 200px;
+  box-sizing: content-box;
+  overflow: auto;
+  border-right: 1px solid var(--homepage-box-border-color, var(--pagelist-item-border-color));
+  background: var(--body-background-base-color) var(--body-background-pattern-image) top repeat-x;
+  color: var(--body-font-color);
+  color-scheme: var(--color-scheme);
+  font-family: sans-serif;
+  font-size: 9pt;
+  line-height: normal;
+  text-align: left;
+}
+
+:global(.futaba) .sidebar,
+:global(.burichan) .sidebar {
+  font-family: var(--body-font-family);
+  font-size: var(--body-font-size);
+}
+
+.inner {
+  padding: 8px;
+}
+
+.sidebar ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.sidebar a,
+.textButton {
+  color: var(--homepage-box-link-text-color, var(--button-desktop-text-color));
+  text-decoration: none;
+}
+
+.sidebar a:hover,
+.textButton:hover {
+  color: var(--homepage-box-link-text-color-hover, var(--button-desktop-text-color-hover));
+  text-decoration: underline;
+}
+
+.sidebar li a,
+.textButton {
+  display: block;
+  width: 100%;
+}
+
+.textButton {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  line-height: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.logo {
+  width: 47px;
+  height: 46px;
+  margin: 0 auto;
+  padding-bottom: 15px;
+}
+
+.logo a {
+  display: block;
+  position: relative;
+  height: 46px;
+  overflow: hidden;
+}
+
+.logo img {
+  position: absolute;
+  top: -6px;
+  left: -15px;
+  width: 150px;
+  max-width: none;
+  height: 60px;
+}
+
+.sectionHeading {
+  position: relative;
+  margin: 0.83em -8px 4px;
+  padding: 2px 2px 2px 4px;
+  border-top: 1px solid var(--frames-heading-border-color, var(--pagelist-item-border-color));
+  border-bottom: 1px solid var(--frames-heading-border-color, var(--pagelist-item-border-color));
+  background-color: var(--frames-heading-background-color, var(--homepage-box-bar-background-color, var(--post-form-field-title-background-color)));
+  color: var(--homepage-box-bar-text-color, var(--post-form-field-title-color));
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: bold;
+  line-height: normal;
+}
+
+.collapseButton {
+  appearance: none;
+  box-sizing: content-box;
+  float: right;
+  margin: 0;
+  padding: 0 4px;
+  border: 1px solid var(--frames-heading-border-color, var(--pagelist-item-border-color));
+  border-radius: 0;
+  background: var(--frames-button-background-color, var(--pagelist-item-background-color));
+  color: inherit;
+  font-family: sans-serif;
+  font-size: 10px;
+  font-weight: normal;
+  line-height: normal;
+  text-align: inherit;
+  cursor: pointer;
+}
+
+.collapseButton:hover {
+  border-color: var(--frames-button-border-color-hover, currentColor);
+  background: var(--frames-button-background-color-hover, var(--post-menu-desktop-item-hover-background-color));
+}
+
+:global(.futaba) .sectionHeading,
+:global(.burichan) .sectionHeading {
+  padding-right: 22px;
+}
+
+:global(.futaba) .collapseButton,
+:global(.burichan) .collapseButton {
+  position: absolute;
+  top: 50%;
+  right: 2px;
+  transform: translateY(-50%);
+}
+
+.imageBoards li {
+  line-height: 110%;
+}

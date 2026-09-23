@@ -112,7 +112,8 @@ vi.mock('../../../hooks/use-is-community-offline', () => ({
   default: () => testState.useIsCommunityOfflineValue,
 }));
 
-vi.mock('../../../lib/snow', () => ({
+vi.mock('../../../stores/use-special-theme-store', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../stores/use-special-theme-store')>()),
   shouldShowSnow: () => testState.shouldShowSnow,
 }));
 
@@ -157,7 +158,7 @@ describe('BoardHeader', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    useSearchSummaryStore.setState({ providerId: null, query: '', status: 'pending', total: null });
+    useSearchSummaryStore.setState({ providerId: null, query: '', postStatus: 'active', status: 'pending', total: null });
     testState.accountComment = undefined;
     testState.community = { address: 'music-posting.eth' };
     testState.communityIdentifier = { name: 'music-posting.eth' };
@@ -221,7 +222,7 @@ describe('BoardHeader', () => {
   });
 
   it('credits no indexer when the search failed', async () => {
-    useSearchSummaryStore.getState().setSummary('esteban', 'failed');
+    useSearchSummaryStore.getState().setSummary('esteban', 'active', 'failed');
     await renderHeader('/search?q=esteban');
 
     expect(container.textContent).toContain('5chan Search `esteban`');
@@ -229,7 +230,7 @@ describe('BoardHeader', () => {
   });
 
   it('adds the matched comment count to the archive search title once the results report it', async () => {
-    useSearchSummaryStore.getState().setSummary('esteban', 'answered', 29, '5archive');
+    useSearchSummaryStore.getState().setSummary('esteban', 'active', 'answered', 29, '5archive');
     await renderHeader('/search?q=esteban');
 
     expect(container.textContent).toContain('5chan Search `esteban` 29 comments');
@@ -240,6 +241,18 @@ describe('BoardHeader', () => {
     await renderHeader('/search?q=other');
     expect(container.textContent).toContain('5chan Search `other`');
     expect(container.textContent).not.toContain('29 comments');
+  });
+
+  it('hides a count and failure belonging to another post status', async () => {
+    useSearchSummaryStore.getState().setSummary('esteban', 'archived', 'answered', 29, '5archive');
+    await renderHeader('/search?q=esteban');
+    expect(container.textContent).not.toContain('29 comments');
+
+    await act(async () => useSearchSummaryStore.getState().setSummary('esteban', 'archived', 'failed'));
+    expect(container.textContent).toContain('results_provided_by 5archive.org');
+
+    await act(async () => useSearchSummaryStore.getState().setSummary('esteban', 'active', 'answered', 7, '5archive'));
+    expect(container.textContent).toContain('7 comments');
   });
 
   it('renders a clickable subscriptions subtitle that navigates to subscription settings', async () => {
@@ -301,10 +314,10 @@ describe('BoardHeader', () => {
   });
 
   it('keeps the banner stable while a directory route resolves different board candidates', async () => {
-    mathRandomSpy.mockReturnValueOnce(0).mockReturnValue(0.75);
-
     await renderHeader('/biz');
-    expect(container.querySelector('img')?.getAttribute('src')).toBe('banner-a.png');
+    const banner = container.querySelector('img');
+    expect(banner?.getAttribute('src')).toBe('banner-a.png');
+    mathRandomSpy.mockReturnValue(0.75);
 
     await act(async () => {
       testState.resolvedAddress = 'bizraelis.bso';
@@ -312,7 +325,7 @@ describe('BoardHeader', () => {
     });
 
     expect(container.querySelector('img')?.getAttribute('src')).toBe('banner-a.png');
-    expect(mathRandomSpy).toHaveBeenCalledTimes(1);
+    expect(container.querySelector('img')).toBe(banner);
   });
 
   it('keeps board metadata while an optimistic pending post is being persisted', async () => {

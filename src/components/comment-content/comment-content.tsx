@@ -10,18 +10,19 @@ import { isUnavailableQuoteTarget } from '../../lib/utils/quote-link-utils';
 import { isPostPageView } from '../../lib/utils/view-utils';
 import useIsMobile from '../../hooks/use-is-mobile';
 import useStateString from '../../hooks/use-state-string';
-import LoadingEllipsis from '../loading-ellipsis/loading-ellipsis';
-import BbcodeContent from '../../components/bbcode-content/bbcode-content';
-import ErrorDisplay from '../../components/error-display/error-display';
-import ReplyQuotePreview from '../reply-quote-preview/reply-quote-preview';
-import Markdown from '../markdown/markdown';
-import Tooltip from '../tooltip/tooltip';
-import styles from '../../views/post/post.module.css';
+import LoadingEllipsis from '../loading-ellipsis';
+import BbcodeContent from '../bbcode-content';
+import ErrorDisplay from '../error-display';
+import ReplyQuotePreview from '../reply-quote-preview';
+import Markdown from '../markdown';
+import Tooltip from '../tooltip';
+import styles from '../post-styles';
 import capitalize from 'lodash/capitalize';
 import { getCommentCommunityAddress, withResolvedCommentCommunityAddress } from '../../lib/utils/comment-utils';
 import { formatErrorMessageForDisplay } from '../../lib/utils/error-utils';
 import { hasModQueueAccessRole } from '../../lib/utils/mod-access';
 import { stripGeneratedFortuneMarkup } from '../../lib/utils/post-options-utils';
+import BoardCheckStatus from './board-check-status';
 
 const QuotedCidLink = ({ cid, postCid }: { cid: string; postCid: string }) => {
   const quotedNumber = usePostNumberStore((state) => state.cidToNumber[cid]);
@@ -103,7 +104,7 @@ const CommentContent = ({
   const isMobile = useIsMobile();
   const resolvedPost = withResolvedCommentCommunityAddress(post);
 
-  const { cid, content, deleted, parentCid, postCid, pendingApproval, quotedCids, reason, removed, state } = resolvedPost || {};
+  const { cid, content, deleted, parentCid, postCid, pendingApproval, publishingState, quotedCids, reason, removed, state } = resolvedPost || {};
   const visibleContent = !cid && content ? stripGeneratedFortuneMarkup(content) : content;
   const communityAddress = getCommentCommunityAddress(resolvedPost);
   const authorAddress = resolvedPost?.author?.address;
@@ -177,7 +178,11 @@ const CommentContent = ({
       {failedError ? (
         <ErrorDisplay error={failedError} displayMessage={failedErrorMessage ?? capitalize(t('error'))} inline={true} showImmediately={true} />
       ) : !hasFailedState ? (
-        <LoadingEllipsis string={stateString || t('loading')} />
+        publishingState === 'waiting-challenge' || publishingState === 'waiting-challenge-verification' ? (
+          <BoardCheckStatus communityAddress={communityAddress} verifyingAnswers={publishingState === 'waiting-challenge-verification'} />
+        ) : (
+          <LoadingEllipsis string={stateString || t('loading')} />
+        )
       ) : (
         stateString || capitalize(t('failed'))
       )}

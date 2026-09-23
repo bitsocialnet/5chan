@@ -1,7 +1,8 @@
 import { type ReactNode, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { HashLink } from 'react-router-hash-link';
-import { Footer, HomeLogo } from '../home/home';
+import HomeFooter from '../../components/home-footer';
+import HomeLogo from '../../components/home-logo';
 import styles from './faq.module.css';
 
 const externalLinkProps = {
@@ -776,7 +777,7 @@ const FAQ_SECTIONS: FAQSection[] = [
               5chan source repository
             </a>
             , and the app directory on{' '}
-            <a href='https://bitsocial.net/apps' {...externalLinkProps}>
+            <a href='https://bitsocial.net/projects?category=apps' {...externalLinkProps}>
               bitsocial.net
             </a>
             .
@@ -862,7 +863,7 @@ const FAQ = () => {
             ))}
           </div>
         </div>
-        <Footer />
+        <HomeFooter />
       </div>
     </div>
   );

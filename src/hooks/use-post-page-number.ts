@@ -4,7 +4,6 @@ import { feedsStore as useFeedsStore } from '../lib/bitsocial-internals/stores';
 import { useDirectoryByAddress } from './use-directories';
 import { useBoardFeedPageSize } from './use-board-feed-page-size';
 import { useCommunityIdentifier } from './use-community-identifiers';
-import { useCompatiblePostSortType } from './use-compatible-post-sort-type';
 import { findPostPageInFeed, findPostPageInLoadedBoardFeeds, type FeedsOptionsLike, type LoadedFeedsLike } from '../lib/utils/post-page-resolution';
 
 interface UsePostPageNumberOptions {
@@ -23,8 +22,6 @@ interface UsePostPageNumberOptions {
  */
 export function usePostPageNumber({ communityAddress, postCid, enabled = true }: UsePostPageNumberOptions): number | undefined {
   const communityIdentifier = useCommunityIdentifier(communityAddress);
-  const communityIdentifiers = useMemo(() => (communityIdentifier ? [communityIdentifier] : []), [communityIdentifier]);
-  const feedSortType = useCompatiblePostSortType(communityIdentifiers, 'active');
 
   const community = useDirectoryByAddress(communityAddress);
   const { guiPostsPerPage, paginationFeedPostsPerPage } = useBoardFeedPageSize(community);
@@ -48,12 +45,12 @@ export function usePostPageNumber({ communityAddress, postCid, enabled = true }:
     () =>
       canResolve
         ? {
-            communities: communityIdentifiers,
-            sortType: feedSortType,
+            communities: communityIdentifier ? [communityIdentifier] : [],
+            sortType: 'active' as const,
             postsPerPage: paginationFeedPostsPerPage,
           }
         : undefined,
-    [canResolve, communityIdentifiers, feedSortType, paginationFeedPostsPerPage],
+    [canResolve, communityIdentifier, paginationFeedPostsPerPage],
   );
 
   const { feed: preloadFeed } = useFeed(preloadOptions);

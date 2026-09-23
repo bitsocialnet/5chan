@@ -1,4 +1,6 @@
-import { DirectoryCommunity, findDirectoryByAddress, normalizeBoardAddress } from '../../hooks/use-directories';
+import { findDirectoryByAddress } from './directories';
+import { normalizeBoardAddress } from './directory-list-lookup-utils';
+import type { DirectoryCommunity } from './directory-list-utils';
 import { getSpecialBoardByAddress, getSpecialBoardByCode } from '../special-boards';
 import { isFlashDirectory, isFlashDirectoryCode } from '../flash-tags';
 import { getEffectiveTimeFilterName, getSearchWithTimeFilter } from './time-filter-utils';

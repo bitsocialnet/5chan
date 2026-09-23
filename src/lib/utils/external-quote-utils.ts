@@ -1,5 +1,5 @@
-import type { DirectoryCommunity } from '../../hooks/use-directories';
-import { findDirectoryByAddress } from '../../hooks/use-directories';
+import type { DirectoryCommunity } from './directory-list-utils';
+import { findDirectoryByAddress } from './directories';
 import { getBoardPath, getCommunityAddress } from './route-utils';
 import { QUOTE_NUMBER_REGEX } from './url-utils';
 

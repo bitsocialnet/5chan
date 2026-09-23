@@ -17,7 +17,7 @@ describe('media-upload-recipes', () => {
   });
 
   it('every provider has trigger, success, blocked selectors and timeout', () => {
-    for (const [provider, recipe] of Object.entries(MEDIA_UPLOAD_RECIPES)) {
+    for (const recipe of Object.values(MEDIA_UPLOAD_RECIPES)) {
       expect(recipe.fileInputSelectorCandidates?.length).toBeGreaterThan(0);
       expect(recipe.submitSelectorCandidates?.length).toBeGreaterThan(0);
       expect(recipe.successExtractor?.selectorCandidates?.length).toBeGreaterThan(0);

@@ -71,7 +71,7 @@ vi.mock('../../../stores/use-failed-post-retry-store', () => ({
     selector({ retryingAccountCommentIndex: testState.retryingAccountCommentIndex }),
 }));
 
-vi.mock('../../post/post', async () => {
+vi.mock('../../../components/post', async () => {
   const { createElement, memo } = await vi.importActual<typeof import('react')>('react');
 
   return {

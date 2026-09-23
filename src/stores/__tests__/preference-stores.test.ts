@@ -7,6 +7,21 @@ describe('preference stores', () => {
     localStorage.clear();
   });
 
+  it('remembers homepage introduction visibility across fresh store instances', async () => {
+    const store = (await import('../use-homepage-introduction-store')).default;
+    expect(store.getState().showIntroduction).toBe(true);
+
+    store.getState().setShowIntroduction(false);
+    vi.resetModules();
+    const reopenedStore = (await import('../use-homepage-introduction-store')).default;
+    expect(reopenedStore.getState().showIntroduction).toBe(false);
+
+    reopenedStore.getState().setShowIntroduction(true);
+    vi.resetModules();
+    const restoredStore = (await import('../use-homepage-introduction-store')).default;
+    expect(restoredStore.getState().showIntroduction).toBe(true);
+  });
+
   it('useAllFeedFilterStore loads and persists the selected filter', async () => {
     localStorage.setItem('5chan-all-feed-filter', 'nsfw');
 

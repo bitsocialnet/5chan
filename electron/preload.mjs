@@ -1,8 +1,5 @@
 import { contextBridge, ipcRenderer, webUtils } from 'electron';
 
-// dev uses http://localhost, prod uses file://...index.html
-const isDev = window.location.protocol === 'http:';
-
 const defaultPkcOptions = {
   pkcRpcClientsOptions: ['ws://localhost:9138'],
   httpRoutersOptions: ['https://peers.pleb.bot', 'https://routing.lol', 'https://peers.forumindex.com', 'https://peers.plebpubsub.xyz'],

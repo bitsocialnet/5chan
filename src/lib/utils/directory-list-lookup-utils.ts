@@ -1,10 +1,17 @@
-import { vendoredDirectoryLists as directoryListsData } from '../../data/vendored-directory-lists';
+import { vendoredDirectoryLists as directoryListsData } from './vendored-directory-lists';
 import { isSpecialBoardAddress, isSpecialBoardCode } from '../special-boards';
 import { normalizeDirectoryList, type DirectoryList, type DirectoryListBoard } from './directory-list-utils';
 
 const DIRECTORY_ALIAS_SUFFIXES = ['.bso', '.eth'] as const;
 
 let vendoredDirectoryListsCache: DirectoryList[] | null = null;
+
+/**
+ * What a board address can look like: a name with dots, dashes and underscores (music-posting.bso)
+ * or a peer id. Anything with a slash, colon, query or whitespace is not one, so an address that
+ * came from outside (an indexer, a typed query) can never turn into an off-site or nested link.
+ */
+export const isBoardAddressShape = (value: string): boolean => /^[\p{L}\p{N}][\p{L}\p{N}._-]*$/u.test(value);
 
 export const normalizeBoardAddress = (address: string): string => {
   for (const suffix of DIRECTORY_ALIAS_SUFFIXES) {

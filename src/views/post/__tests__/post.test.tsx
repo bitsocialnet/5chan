@@ -3,7 +3,8 @@ import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import PostPage, { Post } from '../post';
+import PostPage from '../post';
+import { Post } from '../../../components/post';
 import useThreadLiveUpdatesStore from '../../../stores/use-thread-live-updates-store';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -113,29 +114,34 @@ vi.mock('react-router-dom', async () => {
   };
 });
 
-vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
-  resolveReplySortType: () => undefined,
-  useAccount: () => activeAccount,
-  useAccountComment: ({ commentCid }: { commentCid?: string }) => (commentCid ? enrichAccountCommentAuthor(testState.accountCommentsByCid[commentCid]) : undefined),
-  useComment: ({ commentCid, autoUpdate, community }: { commentCid?: string; autoUpdate?: boolean; community?: { name?: string; publicKey?: string } }) => {
-    testState.useCommentCalls.push({ commentCid, autoUpdate, community });
-    return commentCid ? testState.commentsByCid[commentCid] : undefined;
-  },
-  useEditedComment: ({ comment }: { comment?: TestComment }) => ({
-    editedComment: comment?.cid ? testState.editedCommentsByCid[comment.cid] : undefined,
-  }),
-  useReplies: ({ comment }: { comment?: TestComment }) => {
-    const replies = comment?.cid ? testState.repliesByCommentCid[comment.cid] || [] : [];
-    return {
-      hasMore: false,
-      loadMore: vi.fn(),
-      replies,
-      reset: vi.fn(),
-      updatedReplies: replies,
-    };
-  },
-  useCommunity: () => testState.community,
-}));
+vi.mock('@bitsocial/bitsocial-react-hooks', async () => {
+  const { resolveReplySortType } = await vi.importActual<typeof import('@bitsocial/bitsocial-react-hooks/dist/lib/page-sorts.js')>(
+    '@bitsocial/bitsocial-react-hooks/dist/lib/page-sorts.js',
+  );
+  return {
+    resolveReplySortType,
+    useAccount: () => activeAccount,
+    useAccountComment: ({ commentCid }: { commentCid?: string }) => (commentCid ? enrichAccountCommentAuthor(testState.accountCommentsByCid[commentCid]) : undefined),
+    useComment: ({ commentCid, autoUpdate, community }: { commentCid?: string; autoUpdate?: boolean; community?: { name?: string; publicKey?: string } }) => {
+      testState.useCommentCalls.push({ commentCid, autoUpdate, community });
+      return commentCid ? testState.commentsByCid[commentCid] : undefined;
+    },
+    useEditedComment: ({ comment }: { comment?: TestComment }) => ({
+      editedComment: comment?.cid ? testState.editedCommentsByCid[comment.cid] : undefined,
+    }),
+    useReplies: ({ comment }: { comment?: TestComment }) => {
+      const replies = comment?.cid ? testState.repliesByCommentCid[comment.cid] || [] : [];
+      return {
+        hasMore: false,
+        loadMore: vi.fn(),
+        replies,
+        reset: vi.fn(),
+        updatedReplies: replies,
+      };
+    },
+    useCommunity: () => testState.community,
+  };
+});
 
 vi.mock('@bitsocial/bitsocial-react-hooks/dist/stores/communities-pages', () => ({
   default: (selector: (state: { comments: typeof testState.cachedComments }) => unknown) =>
@@ -879,6 +885,28 @@ describe('Post', () => {
     expect(testState.navigateMock).toHaveBeenCalledWith('/business-and-finance.bso/thread/comment-1?focus=1#reply-2', { replace: true });
   });
 
+  it('does not subscribe to an OP a second time when its postCid points to itself', async () => {
+    testState.commentsByCid = {
+      'thread-cid': {
+        cid: 'thread-cid',
+        postCid: 'thread-cid',
+        communityAddress: 'music-posting.eth',
+        title: 'Thread title',
+        timestamp: 1,
+        replyCount: 0,
+      },
+    };
+
+    await renderPostPage('/mu/thread/thread-cid');
+
+    expect(testState.useCommentCalls.length).toBeGreaterThan(0);
+    for (let index = 0; index < testState.useCommentCalls.length; index += 2) {
+      expect(testState.useCommentCalls[index].commentCid).toBe('thread-cid');
+      expect(testState.useCommentCalls[index + 1].commentCid).toBeUndefined();
+    }
+    expect(container.querySelector('[data-testid="post-desktop"]')?.textContent).toBe('thread-cid:none:1');
+  });
+
   it('uses the CID community as the initial useComment hint without rendering the raw CID payload', async () => {
     testState.cidCommunityAddress = 'business-and-finance.bso';
     testState.resolvedCommunityAddress = 'bizraelis.bso';
@@ -980,6 +1008,8 @@ describe('Post', () => {
     expect(container.querySelector('[data-testid="post-desktop"]')?.textContent).toBe('root-cid:reply-cid:1');
     expect(container.querySelector('[data-testid="thread-footer-first-row"]')?.textContent).toBe('root-cid:99:music-posting.eth:true');
     expect(container.textContent).toContain('thread failed');
+    expect(testState.useCommentCalls).toContainEqual(expect.objectContaining({ commentCid: 'reply-cid' }));
+    expect(testState.useCommentCalls).toContainEqual(expect.objectContaining({ commentCid: 'root-cid' }));
   });
 
   it('renders pending reply routes from queued mod-queue state when the reply CID only resolves to a loading shell', async () => {

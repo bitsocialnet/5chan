@@ -3,7 +3,7 @@ import { TRASH_BOARD_ADDRESS, TRASH_BOARD_CODE, TRASH_BOARD_PUBLIC_KEY } from '.
 
 const importLookupUtilsWithDirectoryLists = async (directories: unknown[]) => {
   vi.resetModules();
-  vi.doMock('../../../data/vendored-directory-lists', () => ({
+  vi.doMock('../vendored-directory-lists', () => ({
     vendoredDirectoryLists: {
       directories,
     },
@@ -12,8 +12,10 @@ const importLookupUtilsWithDirectoryLists = async (directories: unknown[]) => {
 };
 
 describe('directory-list-lookup-utils', () => {
+  // Only the module registry is reset between tests. Each test re-registers the same mock, and an
+  // unmock queued here would resolve concurrently with that mock on the next import: vitest 4.1.0
+  // applies the two in completion order, so the mock is sometimes dropped and the real lists load.
   afterEach(() => {
-    vi.doUnmock('../../../data/vendored-directory-lists');
     vi.resetModules();
   });
 

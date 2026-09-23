@@ -7,15 +7,15 @@ import { sortDirectoryBoardsByRank, useDirectoryLists } from '../../hooks/use-di
 import { CommunityStatsCollector, CommunityStatsMetadataLoader, useCommunitiesStatsStore } from '../../hooks/use-communities-stats';
 import PopularThreadsBox from './popular-threads-box';
 import BoardsList from './boards-list';
-import SiteLegalMeta from '../../components/site-legal-meta';
 import LoadingEllipsis from '../../components/loading-ellipsis';
 import Tooltip from '../../components/tooltip';
+import HomeFooter from '../../components/home-footer';
+import HomeLogo from '../../components/home-logo';
 import useDirectoryModalStore from '../../stores/use-directory-modal-store';
 import useHomepageStatsOptionsStore, { type HomepageStatsScope } from '../../stores/use-homepage-stats-options-store';
-import DisclaimerModal from '../../components/disclaimer-modal';
-import DirectoryModal from '../../components/directory-modal';
+import useHomepageIntroductionStore from '../../stores/use-homepage-introduction-store';
 import { extractDirectoryFromTitle } from '../../lib/utils/route-utils';
-import { getSearchDestination } from '../../lib/search-navigation';
+import { getSearchSubmitPath } from '../../lib/search-navigation';
 import { isWebRuntime } from '../../lib/media-hosting/show-upload-controls';
 import { useFeedStateString } from '../../hooks/use-state-string';
 
@@ -25,11 +25,10 @@ const SearchBar = () => {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const directories = useDirectories();
 
   const handleSearchSubmit = (e: FormEvent) => {
     e.preventDefault();
-    const destination = getSearchDestination(searchInputRef.current?.value ?? '', directories);
+    const destination = getSearchSubmitPath(searchInputRef.current?.value ?? '');
     if (destination) navigate(destination);
   };
 
@@ -57,10 +56,16 @@ const SearchBar = () => {
 const InfoBox = () => {
   const { t } = useTranslation();
   const isWeb = isWebRuntime();
+  const showIntroduction = useHomepageIntroductionStore((state) => state.showIntroduction);
+  const setShowIntroduction = useHomepageIntroductionStore((state) => state.setShowIntroduction);
+
+  if (!showIntroduction) return null;
+
   return (
     <div className={`${styles.box} ${styles.infoBox}`}>
       <div className={styles.infoboxBar}>
         <h2>{t('what_is_5chan')}</h2>
+        <button type='button' className={styles.closeInfoBox} aria-label={t('close')} title={t('close')} onClick={() => setShowIntroduction(false)} />
       </div>
       <div className={styles.boxContent}>
         <Trans
@@ -316,61 +321,6 @@ const Stats = ({ directories }: { directories: DirectoryCommunity[] }) => {
   );
 };
 
-export const Footer = () => {
-  const { t } = useTranslation();
-  return (
-    <>
-      <ul className={styles.footer}>
-        <li>
-          <Link to='/'>{t('home')}</Link>
-        </li>
-        <li>
-          <a href='https://bitsocial.net/apps/5chan' target='_blank' rel='noopener noreferrer'>
-            {t('about')}
-          </a>
-        </li>
-        <li>
-          <a href='https://bitsocial.net/blog?q=5chan' target='_blank' rel='noopener noreferrer'>
-            Blog
-          </a>
-        </li>
-        <li>
-          <Link to='/faq'>FAQ</Link>
-        </li>
-        <li>
-          <Link to='/rules'>Rules</Link>
-        </li>
-        <li>
-          <Link to='/pass'>{t('support_5chan')}</Link>
-        </li>
-        <li>
-          <a href='https://x.com/5chanapp' target='_blank' rel='noopener noreferrer'>
-            Twitter/X
-          </a>
-        </li>
-        <li>
-          <a href='https://github.com/bitsocialnet/5chan' target='_blank' rel='noopener noreferrer'>
-            Source Code
-          </a>
-        </li>
-      </ul>
-      <div className={styles.footerInfo}>
-        <SiteLegalMeta />
-      </div>
-    </>
-  );
-};
-
-export const HomeLogo = () => {
-  return (
-    <Link to='/'>
-      <div className={styles.logo}>
-        <img alt='' src='assets/logo/logo-transparent.png' />
-      </div>
-    </Link>
-  );
-};
-
 const Home = () => {
   const directories = useDirectories();
   const directoryAddresses = useDirectoryAddresses();
@@ -389,8 +339,6 @@ const Home = () => {
 
   return (
     <>
-      <DisclaimerModal />
-      <DirectoryModal />
       <div className={styles.content}>
         <HomeLogo />
         <SearchBar />
@@ -398,7 +346,7 @@ const Home = () => {
         <BoardsList multisub={directories} />
         <PopularThreadsBox directories={directories} directoryAddresses={directoryAddresses} />
         <Stats directories={directories} />
-        <Footer />
+        <HomeFooter />
       </div>
     </>
   );

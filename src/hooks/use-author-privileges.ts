@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useAccount } from '@bitsocial/bitsocial-react-hooks';
+import { useActiveAccountField } from './use-active-account-field';
 import { useCommunityField } from './use-stable-community';
 
 interface AuthorPrivilegesProps {
@@ -9,8 +9,7 @@ interface AuthorPrivilegesProps {
 }
 
 const useAuthorPrivileges = ({ commentAuthorAddress, communityAddress }: AuthorPrivilegesProps) => {
-  const account = useAccount();
-  const accountAuthorAddress = account?.author?.address;
+  const accountAuthorAddress = useActiveAccountField((account) => account?.author?.address);
   // Only subscribe to roles field to avoid rerenders from updatingState changes
   const roles = useCommunityField(communityAddress, (community) => community?.roles);
   const { isCommentAuthorMod, isAccountMod, isAccountCommentAuthor, commentAuthorRole, accountAuthorRole } = useMemo(() => {

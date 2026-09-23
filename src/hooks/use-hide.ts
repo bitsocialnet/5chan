@@ -1,8 +1,8 @@
 import { useCallback, useMemo } from 'react';
-import { useAccount, useBlock } from '@bitsocial/bitsocial-react-hooks';
 import type { Comment } from '@bitsocial/bitsocial-react-hooks';
 import { accountsStore } from '../lib/bitsocial-internals/stores';
 import useHiddenCatalogThreadsStore from '../stores/use-hidden-catalog-threads-store';
+import { useActiveAccountField } from './use-active-account-field';
 
 export type HiddenCidLookup = { [cid: string]: boolean | undefined };
 
@@ -15,10 +15,10 @@ export const isCidHidden = (hiddenCids: HiddenCidLookup | undefined, cid?: strin
 export const filterHiddenComments = <T extends CommentWithCid>(comments: readonly T[], hiddenCids: HiddenCidLookup | undefined): T[] =>
   comments.filter((comment) => !isCidHidden(hiddenCids, comment?.cid));
 
-export const useHiddenCids = (): HiddenCidLookup => {
-  const account = useAccount();
-  return useMemo(() => account?.blockedCids || {}, [account?.blockedCids]);
-};
+const EMPTY_HIDDEN_CIDS: HiddenCidLookup = {};
+const EMPTY_ERRORS: never[] = [];
+
+export const useHiddenCids = (): HiddenCidLookup => useActiveAccountField((account) => account?.blockedCids || EMPTY_HIDDEN_CIDS);
 
 const shouldLogHideActionError = (cid: string, expectedHidden: boolean): boolean => {
   const { accounts, activeAccountId } = accountsStore.getState();
@@ -35,9 +35,9 @@ const getCurrentAccountHiddenState = (cid: string): boolean => {
 };
 
 const useHide = ({ cid, comment }: { cid: string; comment?: Comment }) => {
-  const account = useAccount();
-  const { error, errors, state } = useBlock({ cid: cid || undefined });
-  const hidden = isCidHidden(account?.blockedCids, cid);
+  const hasAccount = useActiveAccountField((account) => Boolean(account));
+  const hidden = useActiveAccountField((account) => isCidHidden(account?.blockedCids, cid));
+  const state = hasAccount && cid ? 'ready' : 'initializing';
   const rememberHiddenComment = useHiddenCatalogThreadsStore((state) => state.rememberHiddenComment);
   const forgetHiddenComment = useHiddenCatalogThreadsStore((state) => state.forgetHiddenComment);
 
@@ -85,7 +85,8 @@ const useHide = ({ cid, comment }: { cid: string; comment?: Comment }) => {
       });
   }, [cid, forgetHiddenComment]);
 
-  return useMemo(() => ({ error, errors, hidden, hide, state, unhide }), [error, errors, hidden, hide, state, unhide]);
+  // Hide/unhide report action failures above; keep the hook's error fields empty.
+  return useMemo(() => ({ error: undefined, errors: EMPTY_ERRORS, hidden, hide, state, unhide }), [hidden, hide, state, unhide]);
 };
 
 export default useHide;

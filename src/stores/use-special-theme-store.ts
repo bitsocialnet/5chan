@@ -31,4 +31,15 @@ const useSpecialThemeStore = create(
   ),
 );
 
+export const shouldShowSnow = (): boolean => {
+  const isEnabled = useSpecialThemeStore.getState().isEnabled;
+  const activeSpecialTheme = getActiveSpecialTheme();
+
+  if (isEnabled !== null) {
+    return isEnabled && activeSpecialTheme === 'christmas';
+  }
+
+  return activeSpecialTheme === 'christmas';
+};
+
 export default useSpecialThemeStore;

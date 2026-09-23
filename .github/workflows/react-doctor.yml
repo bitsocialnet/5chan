@@ -1,6 +1,6 @@
 # React Doctor PR review.
-# Reports only issues this PR INTRODUCES (diffed against the base branch) as
-# GitHub annotations. It reads doctor.config.jsonc, so the React-Compiler rules
+# Runs the same advisory task-diff diagnostics as agent verification and CI.
+# It reads doctor.config.jsonc, so the React-Compiler rules
 # we don't enforce stay suppressed (see that file and
 # docs/agent-playbooks/known-surprises.md). We do NOT chase the aggregate score.
 name: React Doctor
@@ -33,4 +33,4 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable
       - name: Run React Doctor on changed files
-        run: yarn doctor --verbose --scope changed --base "origin/${{ github.base_ref }}" --annotations --blocking error
+        run: yarn doctor:check --base "origin/${{ github.base_ref }}"

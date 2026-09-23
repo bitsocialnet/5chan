@@ -136,19 +136,10 @@
   text-align: center;
 }
 
-.loadMoreButton {
-  margin-right: 10px;
-  background: transparent;
-  border: none;
-  padding: 0;
-  text-transform: lowercase;
-  color: var(--button-desktop-text-color);
-  text-decoration: var(--button-text-decoration);
-  cursor: pointer;
-}
-
-.loadMoreButton:hover {
-  color: var(--button-desktop-text-color-hover);
+/* Desktop brackets match the board buttons; mobile hides them so the
+   global .button mobile styling reads as a tappable button. */
+.loadMoreBracket {
+  display: inline;
 }
 
 .garland {
@@ -179,6 +170,10 @@
 
   .viewCell {
     white-space: nowrap;
+  }
+
+  .loadMoreBracket {
+    display: none;
   }
 }
 

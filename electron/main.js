@@ -26,7 +26,7 @@ const packageJson = JSON.parse(fs.readFileSync(path.join(dirname, '../package.js
 if (process.platform === 'linux') {
   try {
     app.commandLine.appendSwitch('gtk-version', '3');
-  } catch (e) {
+  } catch {
     // ignore – if unsupported, Electron will simply ignore this switch
   }
 }
@@ -265,7 +265,7 @@ const createMainWindow = () => {
   });
 
   // deny attaching webview https://www.electronjs.org/docs/latest/tutorial/security#12-verify-webview-options-before-creation
-  mainWindow.webContents.on('will-attach-webview', (e, webPreferences, params) => {
+  mainWindow.webContents.on('will-attach-webview', (e) => {
     // deny all
     e.preventDefault();
   });
@@ -294,7 +294,8 @@ const createMainWindow = () => {
 
     // show/hide on tray right click
     tray.on('right-click', () => {
-      mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show();
+      if (mainWindow.isVisible()) mainWindow.hide();
+      else mainWindow.show();
     });
 
     // close to tray

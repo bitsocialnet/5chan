@@ -1,12 +1,6 @@
-import useSpecialThemeStore from '../stores/use-special-theme-store';
-import { getActiveSpecialTheme } from './utils/time-utils';
-
 interface SnowOptions {
   flakeCount: number;
 }
-
-// Add this new variable to track manual override
-let manualSnowOverride: boolean | null = null;
 
 export const initSnow = ({ flakeCount }: SnowOptions): void => {
   const randomRange = (min: number, max: number): number => {
@@ -81,21 +75,4 @@ export const removeSnow = (): void => {
   if (element) {
     element.parentNode?.removeChild(element);
   }
-};
-
-export const shouldShowSnow = (): boolean => {
-  const isEnabled = useSpecialThemeStore.getState().isEnabled;
-  const activeSpecialTheme = getActiveSpecialTheme();
-
-  // Check store value first
-  if (isEnabled !== null) {
-    return isEnabled && activeSpecialTheme === 'christmas';
-  }
-
-  // Check manual override second
-  if (manualSnowOverride !== null) {
-    return manualSnowOverride;
-  }
-
-  return activeSpecialTheme === 'christmas';
 };

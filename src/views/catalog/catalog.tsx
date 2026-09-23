@@ -15,10 +15,9 @@ import { filterHiddenComments, isCidHidden, useHiddenCids } from '../../hooks/us
 import useHiddenCatalogThreads from '../../hooks/use-hidden-catalog-threads';
 import usePruneHiddenCatalogThreads from '../../hooks/use-prune-hidden-catalog-threads';
 import { useSuggestionFeedLoader } from '../../hooks/use-suggestion-feed-loader';
-import { useCompatiblePostSortType } from '../../hooks/use-compatible-post-sort-type';
 import useTimeFilter from '../../hooks/use-time-filter';
 import useIsMobile from '../../hooks/use-is-mobile';
-import useWindowWidth from '../../hooks/use-window-width';
+import useContentWidth from '../../hooks/use-content-width';
 import useCatalogStyleStore from '../../stores/use-catalog-style-store';
 import useFeedResetStore from '../../stores/use-feed-reset-store';
 import useHiddenCatalogThreadsStore from '../../stores/use-hidden-catalog-threads-store';
@@ -26,11 +25,10 @@ import useSortingStore from '../../stores/use-sorting-store';
 import useCatalogFiltersStore from '../../stores/use-catalog-filters-store';
 import { isDirectoryBoard, normalizeMultiboardFeedPath } from '../../lib/utils/route-utils';
 import CatalogRow from '../../components/catalog-row';
-import { CatalogFooterFirstRow, CatalogFooterStyleRow, PageFooterDesktop, PageFooterMobile } from '../../components/footer';
-import { ReturnButton, ArchiveButton, TopButton, RefreshButton } from '../../components/board-buttons/board-buttons';
-import mobileFooterStyles from '../../components/footer/footer.module.css';
+import { CatalogFooterFirstRow, CatalogFooterStyleRow, PageFooterDesktop, PageFooterMobile, footerStyles } from '../../components/footer';
+import { ReturnButton, ArchiveButton, TopButton, RefreshButton } from '../../components/board-buttons';
 import LoadingEllipsis from '../../components/loading-ellipsis';
-import ErrorDisplay from '../../components/error-display/error-display';
+import ErrorDisplay from '../../components/error-display';
 import { ModEmptyState } from '../../components/mod-empty-state';
 import styles from './catalog.module.css';
 import { commentMatchesPattern } from '../../lib/utils/pattern-utils';
@@ -325,7 +323,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   const imageSize = useCatalogStyleStore((state) => state.imageSize);
   const showOPComment = useCatalogStyleStore((state) => state.showOPComment);
   const columnWidth = imageSize === 'Large' ? 270 : 180;
-  const windowWidth = useWindowWidth();
+  const windowWidth = useContentWidth();
   const isMobile = useIsMobile();
   const columnCount = Math.floor(windowWidth / columnWidth);
   const multiboardCatalogPostsPerPage = Math.max(18, Math.min(24, Math.max(columnCount, 1) * 5));
@@ -343,8 +341,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   }, [isInAllView, isInSubscriptionsView, isInModView, routerLocation.pathname, routerLocation.search, navigate]);
 
   const sortType = useSortingStore((state) => state.sortType);
-  const preferredFeedSortType = sortType === 'new' ? 'new' : 'active';
-  const feedSortType = useCompatiblePostSortType(communities, preferredFeedSortType);
+  const feedSortType = sortType === 'new' ? 'new' : 'active';
   const catalogVirtualizationMode = useMemo(() => resolveCatalogVirtualizationMode(routerLocation.search, 'item-size'), [routerLocation.search]);
   const themeKey = typeof document !== 'undefined' ? document.body.className : '';
   const hadVisibleHiddenThreadsRef = useRef(false);
@@ -394,7 +391,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   } = useHiddenCatalogThreads({
     candidateComments: feed,
     communityAddresses,
-    sortType: preferredFeedSortType,
+    sortType: feedSortType,
   });
   const hiddenThreadsCount = hiddenCatalogThreads.length;
   const requestedShowHiddenThreads = useHiddenCatalogThreadsStore((state) => state.shownScopeKey === hiddenCatalogThreadsScopeKey);
@@ -623,7 +620,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
           />
           <PageFooterDesktop variant='catalog' firstRow={catalogFooterFirstRow} styleRow={catalogFooterStyleRow} />
           <PageFooterMobile>
-            <div className={mobileFooterStyles.mobileFooterButtons}>
+            <div className={footerStyles.mobileFooterButtons}>
               <ReturnButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
               <ArchiveButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
               <TopButton />
@@ -667,7 +664,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
         />
         <PageFooterDesktop variant='catalog' firstRow={catalogFooterFirstRow} styleRow={catalogFooterStyleRow} />
         <PageFooterMobile>
-          <div className={mobileFooterStyles.mobileFooterButtons}>
+          <div className={footerStyles.mobileFooterButtons}>
             <ReturnButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
             <ArchiveButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
             <TopButton />
@@ -794,6 +791,8 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
     return nextRows;
   }, [catalogRenderFeed, columnCount, isFeedLoaded]);
 
+  const isMultiboardView = isInAllView || isInSubscriptionsView || isInModView;
+  const shouldVirtualizeCatalog = isMultiboardView;
   const catalogMetrics = useMemo(() => {
     void themeKey;
     void windowWidth;
@@ -801,7 +800,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   }, [themeKey, windowWidth]);
   const rowHeightEstimates = useMemo(
     () =>
-      catalogVirtualizationMode === 'off'
+      !shouldVirtualizeCatalog || catalogVirtualizationMode === 'off'
         ? []
         : getCatalogRowHeightEstimates({
             imageSize,
@@ -809,14 +808,12 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
             rows,
             showOPComment,
           }),
-    [catalogMetrics, catalogVirtualizationMode, imageSize, rows, showOPComment],
+    [catalogMetrics, catalogVirtualizationMode, imageSize, rows, shouldVirtualizeCatalog, showOPComment],
   );
   const defaultCatalogRowHeight = useMemo(() => getTypicalCatalogRowHeight(rowHeightEstimates, imageSize), [imageSize, rowHeightEstimates]);
   // Omit the prop entirely in fallback mode. Passing `itemSize={undefined}` overrides
   // Virtuoso's default DOM measurement path and leaves rows on the fallback height.
   const catalogSizingProps = useMemo(() => (catalogVirtualizationMode === 'item-size' ? { itemSize: getPretextItemSizeFromElement } : {}), [catalogVirtualizationMode]);
-  const isMultiboardView = isInAllView || isInSubscriptionsView || isInModView;
-  const shouldVirtualizeCatalog = isMultiboardView;
   const catalogViewportBuffer = isMultiboardView ? (isMobile ? { bottom: 2400, top: 1200 } : { bottom: 900, top: 600 }) : { bottom: 1200, top: 1200 };
 
   const virtuosoRef = useRef<VirtuosoHandle | null>(null);
@@ -925,7 +922,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
             {catalogFooterFirstRow}
             <PageFooterDesktop variant='catalog' styleRow={catalogFooterStyleRow} />
             <PageFooterMobile>
-              <div className={mobileFooterStyles.mobileFooterButtons}>
+              <div className={footerStyles.mobileFooterButtons}>
                 <ReturnButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
                 <ArchiveButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
                 <TopButton />
@@ -940,7 +937,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
             {catalogFooterFirstRow}
             <PageFooterDesktop variant='catalog' styleRow={catalogFooterStyleRow} />
             <PageFooterMobile>
-              <div className={mobileFooterStyles.mobileFooterButtons}>
+              <div className={footerStyles.mobileFooterButtons}>
                 <ReturnButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
                 <ArchiveButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
                 <TopButton />
@@ -963,7 +960,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
             </div>
             <PageFooterDesktop variant='catalog' firstRow={catalogFooterFirstRow} styleRow={catalogFooterStyleRow} />
             <PageFooterMobile>
-              <div className={mobileFooterStyles.mobileFooterButtons}>
+              <div className={footerStyles.mobileFooterButtons}>
                 <ReturnButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
                 <ArchiveButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
                 <TopButton />

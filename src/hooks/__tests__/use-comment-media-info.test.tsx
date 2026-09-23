@@ -4,6 +4,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { CommentMediaInfo } from '../../lib/utils/media-utils';
 import { useCommentMediaInfo } from '../use-comment-media-info';
+import { FeedCacheContext } from '../use-feed-cache-context';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
@@ -169,5 +170,27 @@ describe('useCommentMediaInfo', () => {
 
     expect(latestValue).toEqual(testState.mediaInfo);
     expect(testState.fetchWebpageThumbnailIfNeededMock).not.toHaveBeenCalled();
+  });
+
+  it.each(['/biz/thread/post-1', '/pending/42'])('does not fetch thumbnails for cached feeds when navigating to %s', async (pathname) => {
+    testState.mediaInfo = { type: 'webpage', url: 'https://example.com' };
+    const props = { link: 'https://example.com', linkHeight: 360, linkWidth: 640, thumbnailUrl: '' };
+    const renderCachedFeed = async () => {
+      await act(async () => {
+        root.render(createElement(FeedCacheContext.Provider, { value: true }, createElement(HookHarness, props)));
+      });
+      await flushEffects();
+    };
+
+    await renderCachedFeed();
+    testState.pathname = pathname;
+    testState.params = { boardIdentifier: 'biz', commentCid: 'post-1', accountCommentIndex: '42' };
+    await renderCachedFeed();
+    expect(testState.fetchWebpageThumbnailIfNeededMock).not.toHaveBeenCalled();
+    expect(latestValue).toEqual(testState.mediaInfo);
+
+    // The actual thread/pending post outside the cache still resolves its thumbnail.
+    await renderHook(props);
+    expect(testState.fetchWebpageThumbnailIfNeededMock).toHaveBeenCalledOnce();
   });
 });

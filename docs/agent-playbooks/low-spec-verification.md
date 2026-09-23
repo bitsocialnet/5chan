@@ -61,4 +61,4 @@ playwright-cli -s=lowspec eval "() => Math.round(performance.getEntriesByType('n
 - Chromium-only. Skip on Firefox/WebKit sessions; keep those checks unthrottled.
 - Low-spec emulation is a measurement pass, not a machine-resource control. Hold the machine-wide browser slot for the whole pass and close it immediately afterward.
 - The `low` latency is intentionally aggressive; if requests time out, fall back to `mid`.
-- For render/rerender hotspots after a slow result, use the `profile-browsing` skill (it drives `playwright-cli` + react-scan) on the already-throttled session.
+- For render/rerender hotspots after a slow result, use the `profile-browsing` skill (it uses browser measurements and React Doctor diagnostics/traces) on the already-throttled session.

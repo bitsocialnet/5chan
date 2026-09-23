@@ -2,7 +2,8 @@ import { useEffect } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { HashLink } from 'react-router-hash-link';
 import { Link } from 'react-router-dom';
-import { Footer, HomeLogo } from '../home';
+import HomeFooter from '../../components/home-footer';
+import HomeLogo from '../../components/home-logo';
 import styles from './pass.module.css';
 
 const overviewQuestionLinks = [
@@ -154,14 +155,7 @@ const Pass = () => {
                   />
                 </dd>
                 <dt id='proceeds'>{t('pass_question_proceeds')}</dt>
-                <dd>
-                  <Trans
-                    i18nKey='pass_answer_proceeds'
-                    components={{
-                      bitsocial: <a href='https://bitsocial.net' target='_blank' rel='noopener noreferrer' aria-label='Bitsocial' />,
-                    }}
-                  />
-                </dd>
+                <dd>{t('pass_answer_proceeds')}</dd>
                 <dt id='faq'>{t('pass_question_need')}</dt>
                 <dd id='needpass'>
                   <Trans
@@ -183,7 +177,7 @@ const Pass = () => {
             </div>
           </div>
         </div>
-        <Footer />
+        <HomeFooter />
       </div>
     </div>
   );

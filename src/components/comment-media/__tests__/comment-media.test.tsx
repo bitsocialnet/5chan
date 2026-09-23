@@ -13,6 +13,7 @@ const testState = vi.hoisted(() => ({
   getHasThumbnailResult: true,
   gifFrameStatus: 'idle' as 'failed' | 'idle' | 'loading' | 'ready',
   gifFrameUrl: null as string | null,
+  gifFrameRequests: vi.fn(),
   hostname: 'example.com',
   isMobile: false,
   unmuteExpandedVideoSound: false,
@@ -65,10 +66,13 @@ vi.mock('../../../stores/use-expanded-media-store', () => {
 });
 
 vi.mock('../../../hooks/use-fetch-gif-first-frame', () => ({
-  default: () => ({
-    frameUrl: testState.gifFrameUrl,
-    status: testState.gifFrameStatus,
-  }),
+  default: (url?: string) => {
+    testState.gifFrameRequests(url);
+    return {
+      frameUrl: testState.gifFrameUrl,
+      status: testState.gifFrameStatus,
+    };
+  },
 }));
 
 vi.mock('../../../hooks/use-is-mobile', () => ({
@@ -80,7 +84,7 @@ vi.mock('../../embed/embed', () => ({
   default: ({ url }: { url: string }) => createElement('div', { 'data-testid': 'embed' }, url),
 }));
 
-vi.mock('../../embed/embed-utils', () => ({
+vi.mock('../../../lib/utils/embed-utils', () => ({
   canEmbed: () => testState.canEmbed,
 }));
 
@@ -283,6 +287,70 @@ describe('CommentMedia', () => {
 
     expect(container.textContent).toContain('animated gif');
     expect(container.querySelector('img[src="https://cdn.example.com/frame.png"]')).toBeTruthy();
+  });
+
+  it('opens an inline GIF without fetching or mounting an unused still thumbnail', async () => {
+    const url = 'https://cdn.example.com/inline.gif';
+    await renderMedia({
+      commentMediaInfo: { type: 'gif', url },
+      disableToggle: true,
+      setShowThumbnail: setShowThumbnailMock,
+      showThumbnail: false,
+    });
+
+    expect(testState.gifFrameRequests).toHaveBeenLastCalledWith(undefined);
+    expect(container.querySelectorAll('img')).toHaveLength(1);
+    expect(container.querySelector('img')?.getAttribute('src')).toBe(url);
+    expect(container.querySelector('[aria-label="Open GIF"]')).toBeNull();
+  });
+
+  it('opens an inline video with one media element and keeps normal collapse thumbnails available', async () => {
+    const commentMediaInfo = { type: 'video', url: 'https://cdn.example.com/inline.mp4' };
+    await renderMedia({ commentMediaInfo, disableToggle: true, setShowThumbnail: setShowThumbnailMock, showThumbnail: false });
+
+    expect(container.querySelectorAll('video')).toHaveLength(1);
+    expect(container.querySelector('video')?.getAttribute('src')).toBe(commentMediaInfo.url);
+
+    await renderMedia({ commentMediaInfo, setShowThumbnail: setShowThumbnailMock, showThumbnail: true });
+    const thumbnail = container.querySelector('video[aria-label="Video thumbnail"]');
+    expect(thumbnail?.getAttribute('src')).toBe(`${commentMediaInfo.url}#t=0.001`);
+    await renderMedia({ commentMediaInfo, setShowThumbnail: setShowThumbnailMock, showThumbnail: false });
+    expect(container.querySelector('video[aria-label="Video thumbnail"]')).toBe(thumbnail);
+    await renderMedia({ commentMediaInfo, setShowThumbnail: setShowThumbnailMock, showThumbnail: true });
+    expect(container.querySelector('video[aria-label="Video thumbnail"]')).toBe(thumbnail);
+    expect(container.querySelectorAll('video')).toHaveLength(1);
+  });
+
+  it('does not load an unused YouTube thumbnail for an expanded inline embed', async () => {
+    await renderMedia({
+      commentMediaInfo: { type: 'iframe', url: 'https://youtu.be/inline', patternThumbnailUrl: 'https://img.youtube.com/vi/inline/maxresdefault.jpg' },
+      disableToggle: true,
+      setShowThumbnail: setShowThumbnailMock,
+      showThumbnail: false,
+    });
+
+    expect(container.querySelector('[data-testid="embed"]')).toBeTruthy();
+    expect(container.querySelector('img')).toBeNull();
+  });
+
+  it('keeps floating GIF thumbnails and audio preview players available', async () => {
+    await renderMedia({
+      commentMediaInfo: { type: 'gif', url: 'https://cdn.example.com/hover.gif' },
+      disableToggle: true,
+      isFloatingEmbed: true,
+      setShowThumbnail: setShowThumbnailMock,
+      showThumbnail: true,
+    });
+    expect(testState.gifFrameRequests).toHaveBeenLastCalledWith('https://cdn.example.com/hover.gif');
+    expect(container.querySelector('[aria-label="Open GIF"]')).toBeTruthy();
+
+    await renderMedia({
+      commentMediaInfo: { type: 'audio', url: 'https://cdn.example.com/audio.mp3' },
+      disableToggle: true,
+      setShowThumbnail: setShowThumbnailMock,
+      showThumbnail: false,
+    });
+    expect(container.querySelector('audio[aria-label="Audio preview"]')).toBeTruthy();
   });
 
   it('renders fallback embedded webpage links when there is no thumbnail', async () => {

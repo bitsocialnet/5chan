@@ -6,10 +6,10 @@ import { useFloating, offset, shift, size, autoUpdate, Placement } from '@floati
 import { useDirectories } from '../../hooks/use-directories';
 import { getBoardPath } from '../../lib/utils/route-utils';
 import { formatQuoteNumber, getQuoteTargetAvailability, shouldShowFloatingQuotePreview } from '../../lib/utils/quote-link-utils';
-import { findPreferredScrollTarget, getThreadTopNavigationState, scrollThreadContainerToTop } from '../../lib/utils/thread-scroll-utils';
+import { findPreferredScrollTarget, getThreadTopNavigationState, isVisibleScrollTarget, scrollThreadContainerToTop } from '../../lib/utils/thread-scroll-utils';
 import useIsMobile from '../../hooks/use-is-mobile';
-import styles from '../../views/post/post.module.css';
-import { Post } from '../../views/post';
+import styles from '../post-styles';
+import { useQuotePreviewPost } from '../../hooks/use-quote-preview-post';
 import { getCommentCommunityAddress, withResolvedCommentCommunityAddress } from '../../lib/utils/comment-utils';
 
 interface ReplyQuotePreviewProps {
@@ -31,7 +31,9 @@ const getQuotePreviewClassName = (previewPost?: Comment) =>
   !previewPost?.parentCid ? `${styles.replyQuotePreview} ${styles.replyQuotePreviewOp}` : styles.replyQuotePreview;
 
 const handleQuoteHover = (cid: string, onElementOutOfView: () => void) => {
-  const targetElements = document.querySelectorAll(`[data-cid="${cid}"]`);
+  // Hidden cached feeds keep duplicate post nodes mounted with a 0x0 rect at (0,0), which the
+  // viewport check below would count as visible; only consider nodes rendered for the user.
+  const targetElements = Array.from(document.querySelectorAll<HTMLElement>(`[data-cid="${cid}"]`)).filter(isVisibleScrollTarget);
   const isOpElement = (element: HTMLElement) => element.getAttribute('data-post-cid') === cid;
 
   const isInViewport = (element: HTMLElement) => {
@@ -46,8 +48,7 @@ const handleQuoteHover = (cid: string, onElementOutOfView: () => void) => {
 
   let anyInView = false;
 
-  targetElements.forEach((element) => {
-    const htmlElement = element as HTMLElement;
+  targetElements.forEach((htmlElement) => {
     if (isInViewport(htmlElement)) {
       // Never apply quote-hover highlight styles to OP cards.
       if (isOpElement(htmlElement)) {
@@ -98,6 +99,9 @@ const useIsOwnQuotelink = (quotelinkReply?: Comment) => {
   );
 };
 
+// Keep account updates local to the visible ownership label, including before hover.
+const OwnQuoteSuffix = ({ reply }: { reply?: Comment }) => (useIsOwnQuotelink(reply) ? ' (You)' : null);
+
 const DesktopQuotePreview = ({
   backlinkReply,
   quotelinkReply,
@@ -138,10 +142,10 @@ const DesktopQuotePreview = ({
   useEffect(() => {
     const handleResize = () => {
       const availableWidth = availableWidthRef.current;
-      if (availableWidth >= 250) {
-        setPlacement('right');
-      } else {
-        setPlacement('left');
+      // The width is only measured while a preview is mounted, so before the first hover it is
+      // still 0; keep the current placement rather than pushing that first preview off-screen.
+      if (availableWidth > 0) {
+        setPlacement(availableWidth >= 250 ? 'right' : 'left');
       }
       update();
     };
@@ -154,6 +158,7 @@ const DesktopQuotePreview = ({
 
   const navigate = useNavigate();
   const location = useLocation();
+  const renderQuotePreviewPost = useQuotePreviewPost();
   const normalizedBacklinkReply = withResolvedCommentCommunityAddress(backlinkReply);
   const normalizedQuotelinkReply = withResolvedCommentCommunityAddress(quotelinkReply);
 
@@ -218,7 +223,7 @@ const DesktopQuotePreview = ({
         outOfViewCid === normalizedBacklinkReply?.cid &&
         createPortal(
           <div className={getQuotePreviewClassName(normalizedBacklinkReply)} data-thread-scroll-preview='true' ref={refs.setFloating} style={floatingStyles}>
-            <Post post={normalizedBacklinkReply} showReplies={false} />
+            {renderQuotePreviewPost ? renderQuotePreviewPost({ post: normalizedBacklinkReply, showReplies: false }) : null}
           </div>,
           document.body,
         )}
@@ -243,12 +248,11 @@ const DesktopQuotePreview = ({
     quoteCid: resolvedQuotelinkCid,
     isUnavailable: quotelinkUnavailable,
   });
-  const isOwnQuotelink = useIsOwnQuotelink(normalizedQuotelinkReply);
   const quotelinkLabel = (
     <>
       {formatQuoteNumber(resolvedQuotelinkNumber)}
       {isOP && ' (OP)'}
-      {isOwnQuotelink && ' (You)'}
+      <OwnQuoteSuffix reply={normalizedQuotelinkReply} />
     </>
   );
 
@@ -288,7 +292,7 @@ const DesktopQuotePreview = ({
       {shouldShowQuotelinkPreview &&
         createPortal(
           <div className={getQuotePreviewClassName(normalizedQuotelinkReply)} data-thread-scroll-preview='true' ref={refs.setFloating} style={floatingStyles}>
-            <Post post={normalizedQuotelinkReply} showReplies={false} />
+            {renderQuotePreviewPost ? renderQuotePreviewPost({ post: normalizedQuotelinkReply, showReplies: false }) : null}
           </div>,
           document.body,
         )}
@@ -333,6 +337,7 @@ const MobileQuotePreview = ({
 
   const navigate = useNavigate();
   const location = useLocation();
+  const renderQuotePreviewPost = useQuotePreviewPost();
   const isOnThreadPage = location.pathname.includes('/thread/');
 
   const handleClick = (e: React.MouseEvent, cid: string | undefined, communityAddress: string | undefined, isOpQuote = false) => {
@@ -400,7 +405,7 @@ const MobileQuotePreview = ({
         outOfViewCid === normalizedBacklinkReply?.cid &&
         createPortal(
           <div className={getQuotePreviewClassName(normalizedBacklinkReply)} data-thread-scroll-preview='true' ref={refs.setFloating} style={floatingStyles}>
-            <Post post={normalizedBacklinkReply} showReplies={false} />
+            {renderQuotePreviewPost ? renderQuotePreviewPost({ post: normalizedBacklinkReply, showReplies: false }) : null}
           </div>,
           document.body,
         )}
@@ -419,7 +424,6 @@ const MobileQuotePreview = ({
     quoteCid: resolvedQuotelinkCid,
     isUnavailable: quotelinkUnavailable,
   });
-  const isOwnQuotelink = useIsOwnQuotelink(normalizedQuotelinkReply);
   // When the body is not loaded yet but the cid is known, still allow hover/focus so the lazy fetch
   // can be requested and the preview can position itself once the comment resolves.
   const lazyResolvableQuotelinkCid = quotelinkPendingResolution && quotelinkCid ? quotelinkCid : undefined;
@@ -445,7 +449,7 @@ const MobileQuotePreview = ({
       >
         {formatQuoteNumber(resolvedQuotelinkNumber)}
         {isOP && ' (OP)'}
-        {isOwnQuotelink && ' (You)'}
+        <OwnQuoteSuffix reply={normalizedQuotelinkReply} />
       </span>
       {!quotelinkUnavailable &&
         !quotelinkPendingResolution &&
@@ -468,7 +472,7 @@ const MobileQuotePreview = ({
       {shouldShowQuotelinkPreview &&
         createPortal(
           <div className={getQuotePreviewClassName(normalizedQuotelinkReply)} data-thread-scroll-preview='true' ref={refs.setFloating} style={floatingStyles}>
-            <Post post={normalizedQuotelinkReply} showReplies={false} />
+            {renderQuotePreviewPost ? renderQuotePreviewPost({ post: normalizedQuotelinkReply, showReplies: false }) : null}
           </div>,
           document.body,
         )}

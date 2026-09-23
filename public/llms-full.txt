@@ -19,6 +19,8 @@ Use this as compiled context only. Source files, tests, manifests, and live/runt
 - [docs/agent-playbooks/bug-investigation.md](#docsagent-playbooksbug-investigationmd)
 - [docs/agent-playbooks/translations.md](#docsagent-playbookstranslationsmd)
 - [docs/agent-playbooks/skills-and-tools.md](#docsagent-playbooksskills-and-toolsmd)
+- [docs/agent-playbooks/verification.md](#docsagent-playbooksverificationmd)
+- [docs/agent-playbooks/hooks-setup.md](#docsagent-playbookshooks-setupmd)
 - [docs/upload-automation-retest-checklist.md](#docsupload-automation-retest-checklistmd)
 
 ---
@@ -164,6 +166,8 @@ Bitsocial communities can require users to solve one or more anti-spam challenge
 
 5chan also has an optional UX integration with [`@bitsocial/ai-moderation-challenge`](https://github.com/bitsocialnet/ai-moderation-challenge): when a failed verification contains the exact message `This media was already posted recently.`, 5chan abandons the rejected pending publication, returns to the originating post form, preserves the draft, and shows the message inline. This string is an intentionally small cross-package contract rather than a package dependency. Challenges that omit it, or return any other error, continue through the normal generic challenge-error flow.
 
+While waiting for a challenge or answer verification, unpublished posts explain that the board is checking the post or verifying its challenge answers. The AI moderation notice appears only after challenge answers have been submitted, while waiting for verification, so it does not appear before Spamblocker opens. It also requires the target board's cached public `community.challenges` to contain the package's exact description, `Moderate Bitsocial publications with AI.`, with type `text/plain`. Unknown or customized metadata gets no AI notice. This describes the board's configuration, not live AI progress or confirmation that its earlier checks passed; other publishing states and errors retain their existing messages.
+
 ### Build
 
 The Linux/Windows/macOS/Android build scripts are in [.github/workflows/release.yml](https://github.com/bitsocialnet/5chan/blob/master/.github/workflows/release.yml)
@@ -182,271 +186,119 @@ Source: https://github.com/bitsocialnet/5chan/blob/master/AGENTS.md
 ```markdown
 # AGENTS.md
 
-## Purpose
+## Purpose and priority
 
-This file defines the always-on rules for AI agents working on 5chan.
-Use this as the default policy. Load linked playbooks only when their trigger condition applies.
+These are the shared instructions for agents working on 5chan. Explicit user instructions take precedence over repository workflow guidance. MUST rules are mandatory; SHOULD rules are defaults. Read linked playbooks only when the task needs them.
 
-## Surprise Handling
+Use judgment for routine implementation choices and continue authorized work. Ask only when missing information materially changes the outcome or an action needs authorization that has not already been given. Do not turn a skill's suggested procedure into an extra approval gate.
 
-The role of this file is to reduce recurring agent mistakes and confusion points in this repository.
-If you encounter something surprising or ambiguous while working, alert the developer immediately.
-After confirmation, add a concise entry to `docs/agent-playbooks/known-surprises.md` so future agents avoid the same issue.
-Only record items that are repo-specific, likely to recur, and have a concrete mitigation.
+## Product and source of truth
 
-## Project Overview
+5chan is a static, serverless, adminless, decentralized imageboard client built on the Bitsocial protocol. Board content comes from peers, not the app origin. Preserve hash routing and static deployment unless the user requests an architectural change.
 
-5chan is a serverless, adminless, decentralized imageboard built on the Bitsocial protocol.
+Code, tests, manifests, source docs, and runtime evidence establish behavior. This file, skills, playbooks, task logs, and generated `llms*.txt` are orientation and policy; verify their technical claims against source before editing. Check the installed dependency version before assuming a nearby repository supplies its code.
 
-## Instruction Priority
+For an unexpected repo-specific issue, tell the contributor and continue independent work. After confirmation, record only recurring issues with a concrete mitigation in [known-surprises.md](docs/agent-playbooks/known-surprises.md).
 
-- **MUST** rules are mandatory.
-- **SHOULD** rules are strong defaults unless task context requires a different choice.
-- If guidance conflicts, prefer: user request > MUST > SHOULD > playbooks.
+## Working principles
 
-## Agent Operating Principles
+- Define completion for non-trivial work. Continue through implementation, relevant verification, and fixes until the requested outcome is complete; stop at the user’s requested boundary.
+- Understand the flow before editing. Prefer skipping unnecessary work, reusing repository code, standard-library/native features, then installed dependencies, before writing new code.
+- Keep diffs scoped. Preserve unrelated edits; do not reformat, rename, or refactor adjacent code without a task-related reason.
+- Simplicity must preserve correctness, clarity, accessibility, validation, security, and useful tests.
+- For a bug tied to a file or line, inspect `git log`/`git blame`, then relevant `git show`, before fixing it. See [bug-investigation.md](docs/agent-playbooks/bug-investigation.md).
+- Use existing evidence or a focused test before adding instrumentation. Add runtime logging when it resolves uncertainty; remove task-owned instrumentation after verification.
 
-- Before editing, state important assumptions when the task is ambiguous. Ask instead of silently choosing between materially different interpretations.
-- After understanding the affected flow, apply the [Ponytail](https://github.com/DietrichGebert/ponytail) solution ladder: skip work that is not required; reuse repository code; prefer the standard library, native platform features, then installed dependencies; only then write the minimum new code. Never trade away explicit requirements, correctness, clarity, validation, error handling, security, accessibility, or necessary tests.
-- Keep diffs surgical. Do not refactor, reformat, rename, or "improve" adjacent code unless it is necessary for the task.
-- Clean up only artifacts created by the current change, such as newly unused imports or dead helper code.
-- For non-trivial work, define success criteria and verify them with the narrowest reliable checks before marking the task complete.
+## Task router
 
-## LLM Knowledge Base Policy
-
-Use compiled context for orientation, not as source of truth.
-
-Source of truth:
-
-- Code, tests, package manifests, docs, and runtime/live evidence when relevant.
-
-Compiled context:
-
-- `AGENTS.md`, directory-specific `AGENTS.md` files, `CLAUDE.md`, and repo-managed `.codex/`, `.cursor/`, and `.claude/` workflow files.
-- `docs/agent-playbooks/**`, `docs/agent-runs/**`, `docs/agent-playbooks/known-surprises.md`, and tracked `llms.txt` / `llms-full.txt` files when present.
-
-Agents may use compiled context to navigate quickly, but must verify against source files before making behavioral claims or edits. External code graph, RAG, MCP, or wiki tools are optional local accelerators unless the developer explicitly asks to make one part of the committed workflow.
-For very large non-source artifacts such as CI logs, debug traces, generated JSON, or massive tool output, contributors may optionally use `chopratejas/headroom` or a similar local compression tool as a navigation aid, but agents must verify conclusions against the original uncompressed artifact before editing code or making final claims.
-When CodeGraph MCP tools are available and `.codegraph/` exists, prefer them for initial symbol lookup, caller/callee tracing, and impact analysis before broad `rg` or file-reading sweeps; still verify important claims against source files before editing or reporting conclusions.
-
-## Task Router (Read First)
-
-| Situation | Required action |
+| Task | Required guidance/check |
 |---|---|
-| New UI designed or styled, or any visual/component/theme work (`src/components`, `src/views`, CSS modules, `src/themes.css`) | Read `DESIGN.md` first and follow it; self-review the diff against its Do/Don't list before verifying. 5chan is a classic imageboard: square edges, 1px theme borders, flat surfaces, dense text, theme palette. No rounded corners, pill/badge shapes, hover background fills, CSS transitions, or soft shadows on product UI |
-| React UI logic changed (`src/components`, `src/views`, `src/hooks`, UI stores) | Follow React architecture rules below, review the diff with `vercel-react-best-practices` and `vercel:react-best-practices` when available, fix valid findings, then run `yarn doctor` |
-| `package.json` changed | Run `corepack yarn install` to keep `yarn.lock` in sync |
-| Dependencies or import graph changed | Run `yarn knip` as an advisory manifest/import audit |
-| Translation key/value changed | Use the `translate` skill (spawns parallel `translator` subagents); for manual script operations see `docs/agent-playbooks/translations.md` |
-| Public-facing English content or AI context changed (`README.md`, `index.html`, `AGENTS.md`, `PRODUCT.md`, `DESIGN.md`, docs pages, or `scripts/generate-llms-files.mjs`) | Run `yarn llms:generate`; inspect and commit any resulting changes to `public/llms*.txt` so LLM indexes stay current |
-| Bug report in a specific file/line | Start with git history scan from `docs/agent-playbooks/bug-investigation.md` before editing |
-| `CHANGELOG.md` or package version changed | Run `yarn blotter:check`; if needed add a concise release one-liner |
-| UI/visual behavior changed | Verify in browser with `playwright-cli` across Chrome/Blink, Firefox/Gecko, and WebKit/Safari; use `./scripts/pw-session.sh` so only one browser is active machine-wide, run engines sequentially, reuse each session for desktop/mobile, and close it before opening the next; if existing browser state matters, confirm whether to use a fresh session or the contributor's current browser session |
-| Loading, navigation, or interaction speed matters (or perf may just be a fast dev machine) | Run a low-spec pass: throttle a Chromium `playwright-cli` session with `./scripts/pw-throttle.sh <session> mid` (or `low`), then verify. Chromium only. See `docs/agent-playbooks/low-spec-verification.md` |
-| Long-running task spans multiple sessions, handoffs, or spawned agents | Use `docs/agent-playbooks/long-running-agent-workflow.md`, keep a machine-readable feature list plus a progress log, and run `./scripts/agent-init.sh --smoke` before starting a fresh feature slice |
-| New reviewable feature/fix started while on `master` | Create a short-lived `codex/feature/*`, `codex/fix/*`, `codex/docs/*`, or `codex/chore/*` branch from `master` before editing; use a separate worktree only for parallel tasks |
-| New unrelated task started while another task branch is already checked out or being worked on by another agent | Create a separate worktree from `master`, create a new short-lived task branch there, and keep each agent on its own worktree/branch/PR |
-| Open PR needs feedback triage or merge readiness check | Use the `review-and-merge-pr` skill to inspect bot/human feedback, fix valid findings, and merge only after verification |
-| Before finishing or committing code, docs, or AI workflow changes, and before pushing/opening a PR | Run the advisory `code-quality-review` skill on the current diff; treat findings as suggestions, not blockers, and address only high-confidence improvements |
-| Repo AI workflow files changed (`.codex/**`, `.cursor/**`, `.claude/**`) | Keep the Codex, Cursor, and Claude copies aligned when they represent the same workflow; run `yarn ai-workflow:check` to catch parity and drift issues; update `AGENTS.md` if the default agent policy changes |
-| GitHub operation needed | Use `gh` CLI, not GitHub MCP |
-| User asks for commit/issue phrasing | Use `docs/agent-playbooks/commit-issue-format.md` |
-| Surprising/ambiguous repo behavior encountered | Alert developer and, once confirmed, document in `docs/agent-playbooks/known-surprises.md` |
+| Visual design, layout, CSS, or themes | Read the relevant guidance in [DESIGN.md](DESIGN.md); review against its Do/Don't list |
+| Files under `src/` or `scripts/` | Read the directory's `AGENTS.md` |
+| Code or automation changed | Select affected checks using [verification.md](docs/agent-playbooks/verification.md); use `agent:verify` for integration/build changes or an explicitly requested full pass |
+| React state, effects, data flow, or rendering performance changed | Review relevant React guidance; run `yarn doctor:check` and affected `yarn perf:check` scenarios |
+| UI behavior/layout changed | Verify the affected flow; select browsers/viewports using [verification.md](docs/agent-playbooks/verification.md) |
+| Loading/navigation/performance work | Add a throttled Chromium pass; see [low-spec-verification.md](docs/agent-playbooks/low-spec-verification.md) |
+| Translation keys/values | Use the `translate` skill; one process applies locale changes at a time |
+| `package.json` changed | Run `corepack yarn install` to synchronize `yarn.lock` |
+| Dependencies, moved files, or imports changed | `yarn boundaries` (part of `yarn lint`) must pass; see module boundaries in [src/AGENTS.md](src/AGENTS.md). Run advisory `yarn knip`; resolve relevant new findings |
+| AI workflow files changed | Edit shared sources, run `yarn ai-workflow:sync`, then `yarn ai-workflow:check` and `yarn ai-workflow:test` |
+| Public English docs or AI context changed | Run `yarn llms:generate` and include resulting `public/llms*.txt` changes |
+| Version or changelog changed | Run `yarn blotter:check`; follow the `release` skill's user-facing wording rules |
+| Open PR feedback or merge readiness | Use `review-and-merge-pr` within the user's requested scope |
+| Work needs a durable handoff/resumption | Use [long-running-agent-workflow.md](docs/agent-playbooks/long-running-agent-workflow.md) |
 
-## Stack
+## Code and design
 
-- React 19 + TypeScript
-- Zustand for shared state
-- React Router v6
-- Vite
-- bitsocial-react-hooks
-- i18next
-- yarn
-- oxlint
-- oxfmt
-- tsc (TypeScript 7 native compiler)
+- Use Corepack-managed Yarn 4, never npm for project dependency changes. Pin exact versions and keep the lockfile synchronized.
+- Stack: React 19, TypeScript, Zustand, React Router v6, Vite, `@bitsocial/bitsocial-react-hooks`, i18next, oxlint, oxfmt.
+- Keep page composition in `src/views/`, reusable UI in `src/components/`, hooks in `src/hooks/`, shared state in `src/stores/`, helpers in `src/lib/`, static data in `src/data/`. Dependencies flow one way between those layers; see module boundaries in [src/AGENTS.md](src/AGENTS.md).
+- Use Zustand for shared/global state; local component state may use `useState`.
+- Use Bitsocial hooks for protocol data access. Do not fetch data in effects or synchronize derived state with effects; derive values during render.
+- Reuse hooks for repeated logic. Model complex flows clearly instead of accumulating boolean flags.
+- Use React Router for navigation, not manual history manipulation.
+- Add comments for non-obvious constraints or logic, not for obvious code.
+- Preserve the classic imageboard appearance: square edges, 1px theme borders, flat surfaces, compact text, and the theme palette.
+- No rounded corners, decorative pills/badges, row/card hover background fills, CSS transitions/animations, soft shadows, glass, gradients, or new marketing colors on product UI.
+- Small flat per-entity color indicators are allowed when functional. Technical surfaces follow the same compact, theme-aware design.
 
-## Project Structure
+## Git and ownership
 
-```text
-src/
-├── components/   # Reusable UI components
-├── views/        # Page-level route views
-├── hooks/        # Custom hooks
-├── stores/       # Zustand stores
-├── lib/          # Utilities/helpers
-└── data/         # Static data
-```
+- Keep `master` releasable. Start new changes on short-lived `codex/feature/*`, `codex/fix/*`, `codex/docs/*`, or `codex/chore/*` branches unless the user requests otherwise.
+- For an unrelated task while another branch is active, create a separate descriptive worktree from `master`. Prefer `./scripts/create-task-worktree.sh <type> <descriptive-slug>`; it installs dependencies.
+- Related delegated slices may share the task worktree with non-overlapping file ownership. Never switch branches underneath another agent.
+- Stage only task-owned changes, using a selective index patch when files contain mixed edits. Do not use `git add -A` as a default.
+- Never commit secrets or generated build output. Preserve preexisting artifacts and unrelated changes during cleanup.
+- Only commit, push, publish, or merge when authorized. Permission already given for the action persists through its necessary steps.
+- When opening a requested PR, target `master` and make it ready for review so review bots run.
+- After an authorized merge, clean up only the verified merged branch/worktree; preserve any later or unrelated work. Do not run Git cleanup from lifecycle hooks.
+- Use `gh` for GitHub operations. Commit/issue formatting lives in [commit-issue-format.md](docs/agent-playbooks/commit-issue-format.md); provide suggestions when requested, not on every answer.
 
-## Core MUST Rules
+## Verification and resource ownership
 
-### Package and Dependency Rules
+- Verify the affected behavior with the narrowest reliable checks. Add regression tests for non-trivial, testable bugs; do not add tests that merely restate a reversible wording or formatting edit.
+- Run applicable checks for the final change once. Repeat or broaden them only after relevant edits, failures, or unresolved concerns. Preserve explicit user, CI, and release requirements. Documentation-only changes need document/workflow checks.
+- Before heavy work, inspect existing processes. Stop only stale processes owned by this task; never stop a process of unclear ownership.
+- Serialize installs, builds, full tests/coverage, React Doctor, Android/Electron work, and browser profiling across the task. One agent owns heavy verification.
+- Use `corepack yarn exec vitest run --maxWorkers=2 [paths]` for agent-run tests. Do not use watch mode or the package's default four-worker setting.
+- React Doctor is guidance for newly introduced issues, not a score target. Knip and coverage are advisory; do not invent new repository-wide gates.
+- Default to fresh isolated Playwright sessions. Reuse a contributor's current browser only when explicitly authorized; do not ask again after session mode is established.
+- Use `./scripts/pw-session.sh open <session> ...` and `close <session>` for every browser session. One browser may be active machine-wide. Exit 75 means busy; defer or use the wrapper's bounded wait.
+- Run browser engines sequentially. Reuse each session for desktop/mobile and close the exact session in cleanup even after failure. Never use `close-all` or `kill-all`.
+- Reuse a compatible dev server in the same worktree when safe. Otherwise record and clean up the server/process you start. Never start a server for a documentation-only task.
+- Review the final task-owned diff. Use `code-quality-review` for non-trivial changes or an explicit review request; apply high-confidence findings within existing authorization.
+- After a bug fix or substantive review correction exposes a preventable mistake, use [retro](.agents/skills/retro/SKILL.md) before finishing to consider the smallest useful prevention. Existing coverage or no additional check can be the right outcome.
 
-- Use Corepack-managed Yarn 4, never `npm`. Run `corepack enable` once on a new machine before using `yarn`.
-- Pin exact dependency versions (`package@x.y.z`), never `^` or `~`.
-- Keep lockfile synchronized when dependency manifests change.
+## Skills and delegation
 
-### React Architecture Rules
+- Shared skills live in `.agents/skills/`; shared roles in `.agents/roles/`. `.claude/skills/` and harness agent files are generated compatibility outputs. See [skills-and-tools.md](docs/agent-playbooks/skills-and-tools.md).
+- Keep harness-specific hooks, permissions, and metadata explicit; byte-identical files do not establish equivalent runtime behavior.
+- Keep model and reasoning choices out of committed skills and custom agents. Use the app’s runtime defaults, parent inheritance, and supported invocation-time choices; do not invent a `latest` alias or require model research for ordinary tasks.
+- Delegate substantial independent work when it improves speed, context isolation, or independent review. Small or tightly coupled tasks can stay with the parent.
+- Give each child its scope, acceptance criteria, context, file ownership, and evidence to return. For an independent review, omit the parent's verdict.
+- Parallelize read-heavy work and non-overlapping edits; use at most four active workers by default. Children do not each run full builds. Browser work always remains serialized.
+- Use built-in worker/explorer roles where available; custom roles cover browser checks, profiling, Android, translation, and review. Avoid a compulsory chain of specialist agents.
+- Use relevant React skill guidance for state/effect/data-flow or performance work. Load only rules that fit this Vite client; use `you-might-not-need-an-effect` for a focused effect review when the reason is unclear.
+- Prefer existing tools and local CLIs. Use external documentation when versions matter. Do not search for or install additional skills merely because a normal coding task mentions their domain.
+- Keep tool catalogs relevant. Deferred MCP loading can reduce context overhead, but unnecessary integrations still add choices; disable unused tools when their overhead is observable. Playwright CLI remains the project browser verification path.
 
-- Do not use `useState` for shared/global state. Use Zustand stores in `src/stores/`.
-- Do not use `useEffect` for data fetching. Use `bitsocial-react-hooks`.
-- Do not sync derived state with effects. Compute during render.
-- Avoid copy-paste logic across components. Extract custom hooks in `src/hooks/`.
-- Avoid boolean flag soup for complex flows; model state clearly in Zustand.
-- Use React Router for navigation; no manual history manipulation.
+## React diagnostics and runtime performance
 
-### Design Rules
+`yarn agent:verify` and CI run `yarn doctor:check` for task-diff source diagnostics and `yarn perf:check` for deterministic runtime scenarios. Doctor remains advisory for relevant new findings; a score is not a target. Run affected scenarios after React state/effect/subscription/rendering changes, and `yarn perf:test` after React, Bippy, or collector upgrades. Install the pinned browser once with `yarn perf:install`; ordinary edit hooks still only format files.
 
-- Read `DESIGN.md` before designing, styling, or adding any UI, and self-review the diff against its Do/Don't list before verification. `DESIGN.md` is the source of truth for 5chan's classic-imageboard look.
-- Preserve the old-school imageboard aesthetic: square edges, 1px theme borders, flat surfaces, dense compact text, and the existing theme palette (CSS variables in `src/themes.css` or `currentColor`).
-- Do not introduce modern UI patterns on product surfaces: no rounded corners/`border-radius`, no pill/capsule/badge shapes, no hover background-color changes or CSS transitions/animations on rows or cards, and no soft shadows, glass, gradients, or new accent/marketing colors.
-- Functional per-entity colors (e.g. a small hashed swatch identifying a peer) are allowed, but render them flat and square as small indicators, not as decorative gradients.
-- New decentralized/technical surfaces (P2P stats, addresses, tables) still follow the same language: compact, square, theme-aware, terse labels.
+Development builds initialize the bounded Bippy collector before React and expose `window.__REACT_PERF__.reset()` / `.snapshot()`. It counts committed component updates by instance; it does not identify wasted work or count aborted renders. A root React Profiler supplies measured render duration. Missing instrumentation, dropped events, and exceeded scenario budgets fail the runtime check. Use `yarn perf:record --scenario <name>` for JSON and native Chrome traces; use `profile-browsing` for the evidence contract and broader investigations.
 
-### Code Organization Rules
+`yarn build:profile` creates a separate `build-profile/` output with `react-dom/profiling` and sourcemaps; `yarn preview:profile` serves it. Ordinary production excludes the collector and Profiler boundary. A normal production preview can measure page timing but cannot provide these React timing/count checks.
 
-- Keep components focused; split large components.
-- Follow DRY: shared UI in `src/components/`, shared logic in `src/hooks/`.
-- Add comments for complex/non-obvious code; skip obvious comments.
+Development builds retain Agentation and `window.__ELEMENT_SOURCE__` for visual feedback/source inspection. The runner suppresses Agentation during capture. Run browser tools and heavy checks serially; the performance runner owns its browser/server lifecycle and uses the shared browser resource lock. Stop or wait for an existing browser owner before starting another capture.
 
-### Git Workflow Rules
+## Local commands and playbooks
 
-- Keep `master` releasable. Do not treat `master` as a scratch branch.
-- If the user asks for a reviewable feature/fix and the current branch is `master`, create a short-lived task branch before making code changes unless the user explicitly asks to work directly on `master`.
-- Name short-lived AI task branches by intent under the Codex prefix: `codex/feature/*`, `codex/fix/*`, `codex/docs/*`, `codex/chore/*`.
-- Open PRs from task branches into `master` so review bots can run against the actual change.
-- Open PRs as ready for review, not draft. Draft PRs prevent CodeRabbit, Cursor Bugbot, and similar review bots from running.
-- Prefer short-lived task branches over a long-lived `develop` branch unless the user explicitly asks for a staging branch workflow.
-- Use worktrees only when parallel tasks need isolated checkouts. One active task branch per worktree.
-- If a new task is unrelated to the currently checked out branch, do not stack it on that branch. Create a new worktree from `master` and create a separate short-lived task branch there.
-- Always give a new worktree a descriptive name that reflects the task (e.g. `fix-login-redirect`, not `wt1`, `tmp`, `feature`, or a numbered slug), so it can be identified at a glance in a long list of worktrees. When using `./scripts/create-task-worktree.sh`, the `<slug>` argument must be that descriptive name.
-- Prefer `./scripts/create-task-worktree.sh <feature|fix|docs|chore> <slug>` when you need a new task worktree and do not have a stronger repo-specific reason to create it manually.
-- Treat branch and worktree as different things: the branch is the change set; the worktree is the checkout where that branch is worked on.
-- For parallel unrelated tasks, give each task its own branch from `master`, its own worktree, and its own PR into `master`.
-- After a reviewed branch is merged, prefer deleting it to keep branch drift and merge conflicts low.
+Canonical dev URL: `https://5chan.localhost`; other worktrees may use branch-scoped `*.5chan.localhost`. Preserve the launcher's HTTPS proxy on port 443. Direct Vite fallback: `PORTLESS=0 yarn start`. USB Android: `yarn start:android-usb` (`ANDROID_USB_OPEN_BROWSER=0` skips opening the phone browser).
 
-### Bug Investigation Rules
+Common checks: `yarn agent:verify`, `yarn doctor`, `yarn knip`, `yarn ai-workflow:sync`, `yarn ai-workflow:check`, `yarn ai-workflow:test`, `yarn llms:generate`, `./scripts/pw-session.sh status`.
 
-- For bug reports tied to a specific file/line, check relevant git history before any fix.
-- Minimum sequence: `git log --oneline` or `git blame` first, then scoped `git show` for relevant commits.
-- Full workflow: `docs/agent-playbooks/bug-investigation.md`.
-
-### Verification Rules
-
-- Never mark work complete without verification.
-- After code changes, run: `yarn build`, `yarn lint`, `yarn type-check`.
-- After adding or changing tests, run `yarn test`.
-- Do not commit or force-add local rebuild output. `build/` is the main generated build output in this repo; remove or restore generated output directories after local verification before committing.
-- After React UI logic changes, run: `yarn doctor`.
-- Treat React Doctor output as guidance for *newly introduced* issues (the CI PR check in `.github/workflows/react-doctor.yml` runs `yarn doctor --scope changed --base <base branch>` to flag those), not as an aggregate score to grind up: many `error`-level diagnostics flag intentional patterns or current React-Compiler limitations, not bugs. See `docs/agent-playbooks/known-surprises.md`.
-- For UI/visual changes, use Chrome/Blink for iterative checks, then perform final verification across Chrome/Blink, Firefox/Gecko, and WebKit/Safari.
-- Cover desktop and a mobile viewport flow in each browser engine when the change affects layout, touch behavior, or responsiveness.
-- Browser automation has a machine-wide resource budget of one active Playwright browser session, shared by every worktree. Use `./scripts/pw-session.sh open <session> ...` to acquire the slot, reuse that session for desktop and mobile, then run `./scripts/pw-session.sh close <session>` in a finally-style cleanup before opening another engine.
-- Run browser engines and profiler batches sequentially. Do not spawn browser-driving agents in parallel. When `open` exits 75 the slot is busy: finish non-browser checks first, or block on `./scripts/pw-session.sh open --wait[=SECONDS] <session> ...`, rather than bypassing the lock.
-- Use short, task-specific session names. Close the exact named session even when verification fails; `close` stops the browser even if the lock was already lost. Do not use `playwright-cli close-all` or `kill-all` while concurrent agents may own other sessions.
-- A lock left behind by an interrupted workflow is reclaimed automatically by the next `open` once its browser is gone. Run `./scripts/pw-session.sh status` before assuming the slot is stuck; it reports whether the holder's browser is still alive.
-- When loading, navigation, or interaction speed matters (or you cannot tell whether perf is real or just a fast dev machine), run a low-spec pass: `./scripts/pw-throttle.sh <session> mid` (or `low`) applies CPU + network throttling to a Chromium `playwright-cli` session before you measure. Throttling is Chromium-only; keep the Firefox/WebKit checks unthrottled. See `docs/agent-playbooks/low-spec-verification.md`.
-- For browser automation and verification, default to a fresh isolated `playwright-cli` session for reproducibility.
-- If the task depends on existing auth, cookies, extensions, open tabs, or another live browser state, explicitly confirm whether to use a fresh isolated session or the contributor's current browser session.
-- Do not assume permission to drive the contributor's active personal browser session.
-- The shared hook verification path is strict by default. Only set `AGENT_VERIFY_MODE=advisory` when you intentionally need signal from a broken tree without blocking the session.
-- Use `yarn test:coverage` as an advisory check when expanding test coverage or auditing risky logic; do not invent a repo-wide coverage gate unless the user asks for one.
-- If verification fails, fix and re-run until passing.
-
-### Tooling Constraints
-
-- Use `gh` CLI for GitHub work (issues, PRs, actions, dependabot, projects, search).
-- Do not use GitHub MCP.
-- Do not use browser MCP servers (cursor-ide-browser, playwright-mcp, chrome MCP, etc.).
-- Use `playwright-cli` for browser automation.
-- If many MCP tools are present in context, warn user and suggest disabling unused MCPs.
-
-### AI Tooling Rules
-
-- Treat `.codex/`, `.cursor/`, and `.claude/` as repo-managed contributor tooling, not private scratch space.
-- Keep equivalent workflow files aligned across all toolchains when their directories contain the same skill, hook, or agent.
-- Keep shared behavior equivalent while preserving harness-specific models, config formats, hook entry points, and tool invocation syntax.
-- Do not configure `.claude` agents to use `composer-2`; that model is Cursor-only in this repo. Keep `.claude` agent models on Claude-supported options.
-- Do not pin `model` or `model_reasoning_effort` in committed Codex custom-agent TOMLs under `.codex/**/agents/*.toml`; omit both so subagents inherit the current parent settings. Do not use undocumented aliases such as `latest`.
-- When changing shared agent behavior, update the relevant files in `.codex/skills/`, `.cursor/skills/`, `.claude/skills/`, `.codex/agents/`, `.cursor/agents/`, `.claude/agents/`, `.codex/hooks/`, `.cursor/hooks/`, `.claude/hooks/`, and the hook entry points as needed. Hook entry points are harness-specific: the `hooks` key in `.claude/settings.json` (Claude Code does not read a standalone hooks.json), `.cursor/hooks.json` (Cursor schema), and `.codex/hooks.json` (Codex schema, intentionally Claude-compatible).
-- If `AGENTS.md` references a skill, agent, or hook, prefer a tracked file under `.codex/`, `.cursor/`, or `.claude/` rather than an untracked local-only instruction.
-- Review `.codex/config.toml`, `.codex/hooks.json`, `.cursor/hooks.json`, and `.claude/settings.json` before changing agent orchestration or hook behavior, because they are the entry points contributors will actually load.
-- Before finishing any React UI logic change under `src/components`, `src/views`, `src/hooks`, or UI stores, review the changed diff with `vercel-react-best-practices` and, in Codex/Vercel-plugin sessions, `vercel:react-best-practices`. Fix valid findings before final verification; do not limit this review to diffs that add new hooks or memoization.
-- When a diff adds new `useEffect`, `useLayoutEffect`, `useInsertionEffect`, `useMemo`, `useCallback`, or `memo(...)` usage under `src/`, treat the repo hook reminder as mandatory and also reconsider the change with `you-might-not-need-an-effect` before finishing.
-- Directory-specific auto-loaded rules live under `src/AGENTS.md` and `scripts/AGENTS.md`; read them before editing files in those trees.
-- For work expected to span multiple sessions, keep explicit task state in a `feature-list.json` plus `progress.md` pair using `docs/agent-playbooks/long-running-agent-workflow.md`.
-- If more than one human or toolchain needs the same task state, keep it in a tracked location such as `docs/agent-runs/<slug>/` instead of burying it in a tool-specific hidden directory.
-
-### Project Maintenance Rules
-
-- If `CHANGELOG.md` or package version changes, run `yarn blotter:check`.
-- If blotter check fails for missing release coverage, add a concise one-line release entry.
-- Blotter entries are shown to 5chan end users, not developers. Every release message must be plain English a non-dev can understand: no internal library names (e.g. `Pretext`, `Zustand`), no dev shorthand (`perf`, `deps`, `refactor`, `a11y`, `CI`), no file paths, and no PR numbers. Mention only the most interesting user-visible changes in the release, if any; do not pad entries with routine maintenance, regression fixes, invisible security/stability work, or generic labels like `security fixes`, `bug fixes`, or `stability fixes`. Prefer dropping a weak highlight to making the entry longer. Full rules and examples live in the `release` skill's Step 3.
-- Ignore manual entries for release coverage logic.
-- Use `yarn blotter` / `yarn blotter:manual` for manual dev messages.
-
-### Security and Boundaries
-
-- Never commit secrets or API keys.
-- Never push to a remote unless the user explicitly asks.
-- Test responsive behavior on mobile viewport.
-
-## Core SHOULD Rules
-
-- Keep context lean: delegate heavy/verbose tasks to subprocesses when available.
-- For complex work, parallelize independent checks, except browser-driving checks, which must respect the machine-wide single-session resource budget.
-- Add or update tests for bug fixes and non-trivial logic changes when the code is reasonably testable.
-- When touching already-covered code, prefer extending nearby tests so measured coverage does not regress without a clear reason.
-- Use `yarn knip` when adding/removing dependencies or introducing new direct imports; treat findings as advisory, but resolve real issues before finishing.
-- When proposing or implementing meaningful code changes, include both:
-  - a Conventional Commit title suggestion
-  - a short GitHub issue suggestion
-  Use the format playbook: `docs/agent-playbooks/commit-issue-format.md`.
-- When stuck on a bug, search the web for recent fixes/workarounds.
-- After user corrections, identify root cause and apply the lesson in subsequent steps.
-
-## Local Development URLs
-
-This project uses [Portless](https://github.com/vercel-labs/portless) for local dev. The canonical dev URL is https://5chan.localhost, and non-`master` branches can automatically fall back to a branch-scoped `*.5chan.localhost` route when needed so parallel worktrees do not collide. Other Bitsocial projects use the same proxy (seedit, mintpass, bitsocial at `.localhost`), so they can all run simultaneously without port conflicts. The launcher intentionally starts the Portless HTTPS proxy on port 443 before registering app routes; keep that step so legacy `~/.portless` state on port 1355 is not reused.
-
-To bypass Portless: `PORTLESS=0 yarn start`
-
-Android phone over USB (default browser opens via `adb`; `ANDROID_USB_OPEN_BROWSER=0` to skip): `yarn start:android-usb`
-
-## Common Commands
-
-```bash
-corepack yarn install
-yarn start                # https://5chan.localhost
-yarn start:android-usb    # Vite + adb reverse for USB Android (http://localhost:3000 on device)
-yarn build
-yarn test
-yarn test:coverage
-yarn knip
-yarn knip:full
-yarn prettier
-yarn electron
-yarn doctor
-yarn doctor:score
-yarn doctor:verbose
-yarn ai-workflow:check
-./scripts/pw-session.sh status
-./scripts/create-task-worktree.sh chore ai-workflow-improvement
-./scripts/agent-init.sh --smoke
-```
-
-## Playbooks (Load On Demand)
-
-Use these only when relevant to the active task:
-
-- Hooks setup and scripts: `docs/agent-playbooks/hooks-setup.md`
-- Long-running agent workflow: `docs/agent-playbooks/long-running-agent-workflow.md`
-- Translations workflow: `docs/agent-playbooks/translations.md`
-- Commit/issue output format: `docs/agent-playbooks/commit-issue-format.md`
-- Skills/tools setup, MCP rationale, and the index of all committed skills/subagents: `docs/agent-playbooks/skills-and-tools.md`
-- Bug investigation workflow: `docs/agent-playbooks/bug-investigation.md`
-- Known surprises log: `docs/agent-playbooks/known-surprises.md`
-- Low-spec device verification (CPU/network throttling): `docs/agent-playbooks/low-spec-verification.md`
+Load details on demand: [hooks](docs/agent-playbooks/hooks-setup.md), [verification](docs/agent-playbooks/verification.md), [translations](docs/agent-playbooks/translations.md), [skills/tools](docs/agent-playbooks/skills-and-tools.md), [long-running work](docs/agent-playbooks/long-running-agent-workflow.md), [known surprises](docs/agent-playbooks/known-surprises.md).
 ```
 
 ---
@@ -788,11 +640,21 @@ Source: https://github.com/bitsocialnet/5chan/blob/master/src/AGENTS.md
 
 These rules apply to `src/**`. Follow the repo-root `AGENTS.md` first, then use this file for code inside the application source tree.
 
-- Keep route composition in `src/views/`, reusable UI in `src/components/`, shared logic in `src/hooks/`, and shared app state in `src/stores/`.
 - Before adding new state, decide whether it belongs in render, a reusable hook, or a Zustand store. Do not duplicate the same state logic across views.
 - Use `@bitsocial/bitsocial-react-hooks` for data access. Do not add data-fetching `useEffect` calls or effects that only synchronize derived state.
-- When changing React UI logic, review the changed diff with `vercel-react-best-practices` and `vercel:react-best-practices` when available before final verification. Run `yarn doctor` in addition to build, lint, and type-check. When changing layout or interaction, verify desktop and mobile behavior with `playwright-cli`.
+- For state/effect/data-flow or rendering-performance changes, review relevant React guidance. Choose checks and browser/viewports using `docs/agent-playbooks/verification.md`; a copy edit alone does not require React Doctor or a full build.
 - Prefer extending nearby tests under `src/**/__tests__/` when touching already-covered behavior.
+
+## Module boundaries
+
+`yarn boundaries` (run by `yarn lint`, so also by `yarn agent:verify` and CI) checks these rules over static imports, re-exports, dynamic `import()`, `import.meta.glob()` patterns and stylesheet `@import` rules; `__tests__/` folders and `*.test.*` files are skipped. Fix a reported violation by moving code, not by widening the import. There is no allowlist: if a rule conflicts with the requested change, restructure within scope or raise it with the user rather than editing the checker.
+
+- Dependencies flow one way: `constants`/`data`/`types`/`generated` → `lib`/`plugins` → `stores` → `hooks` → `components` → `views` → the root files (`app.tsx`, `index.tsx`, `bootstrap.ts`, `sw.ts`) and the `e2e/` harnesses. A lower layer never imports a higher one; when a `lib` helper needs a type or function that lives in a hook or component, the shared part belongs in `lib`.
+- `views`, `components`, `hooks`, `stores`, `constants`, `data`, `plugins`, `types`, `generated`, `lib`, and every folder directly under `lib` (`lib/utils`, `lib/media-hosting`, ...) are category folders, not modules. A folder inside one (`components/post-form`, `lib/media-hosting/<name>`) is a module, and its subfolders are private to it; a nested folder is likewise private to its parent, so a module reaches its own sub-modules only through their index.
+- Import a module only through its `index.ts` (`../../components/post-form`), never its inner files, subfolders, or stylesheets. A file that sits directly in a category folder (`lib/utils/url-utils.ts`, `hooks/use-directories.ts`) and anything under `data/` may be imported directly. Anything used by more than one module lives at category level (`components/<name>`).
+- Views never import other views, their stylesheets included. Shared page layout or styles go in a `components/` module.
+- Every route target is a top-level view at `views/<name>`. A subfolder of a view is a private section of that view, not a route.
+- Keep the import graph acyclic. When two modules need each other, pass the dependency in as a prop or a context provided by the parent, or move the shared part down a layer.
 ```
 
 ---
@@ -852,6 +714,56 @@ If uncertain, ask the developer before adding an entry.
 
 ## Entries
 
+### 5archive rejects branch-scoped dev origins
+
+- **Date:** 2026-09-13
+- **Observed by:** Tommaso + Claude
+- **Context:** Browser-verifying `/search/` changes from a task worktree, which the launcher served at a branch-scoped route (`https://codex-feature-search-board-results.5chan.localhost`).
+- **What was surprising:** Every `api.5archive.org` request failed in the browser with `net::ERR_FAILED` and `/search/` showed "The search provider is unavailable", while `curl` from the shell answered normally. The indexer only sends `access-control-allow-origin` for `https://5chan.localhost` and `https://5chan.app`, and the launcher picks a branch-scoped portless name for any non-master branch, so a worktree never gets an allowed origin.
+- **Impact:** Anything that calls the indexer looks broken in every worktree browser check; an agent can burn time debugging the client or report a working change as failing.
+- **Mitigation:** Confirm the cause with `curl -s -D - -o /dev/null -H "Origin: https://<host>" https://api.5archive.org/api/communities | grep -i access-control`. For the browser check, serve the worktree on the canonical route when it is free (`NODE_EXTRA_CA_CERTS=~/.portless/ca.pem corepack yarn exec portless 5chan vite` from the worktree) and open `https://5chan.localhost`; stop that server afterwards. Do not treat the failure as a client bug.
+- **Status:** confirmed
+
+### `yarn changelog` regenerates every release and reverts the changelog rebrand
+
+- **Date:** 2026-09-12
+- **Observed by:** Claude Opus 5
+- **Context:** Preparing the `v0.9.20` release with the `release` skill, which instructs running `corepack yarn changelog`.
+- **What was surprising:** The script is `conventional-changelog -p angular -i CHANGELOG.md -s -r 0`. The `-r 0` flag regenerates *every* release section from raw commit messages, not just the new one. Commit `cdfeb13` had hand-edited 90 lines of `CHANGELOG.md` to scrub pre-rebrand terminology (`subplebbit` -> `community`, `plebbit-js` -> `bitsocial-js`, `Plebbit.` -> `Bitsocial.`), and those edits exist only in the file: the underlying commit subjects still carry the old words.
+- **Impact:** Running the documented command reintroduces 45 `plebbit`/`subplebbit` references into historical entries, silently undoing the rebrand inside the release commit itself. Confirmed by diffing a dry run against the committed file.
+- **Mitigation:** Do not run `corepack yarn changelog` as-is. Generate only the new section with `corepack yarn exec conventional-changelog -p angular` (no `-i`, `-s` or `-r`), prepend it to `CHANGELOG.md`, then verify the untouched remainder is byte-identical to the previous file before committing. The generated section already ends with the three blank lines the file uses between releases, so plain concatenation preserves the format. The durable fix is to drop `-r 0` from the `changelog` script in `package.json` so it only ever prepends.
+- **Status:** confirmed
+
+### AI hook payloads and concurrent locale writes need behavioral checks
+
+- **Date:** 2026-09-11
+- **Observed by:** contributor + Codex
+- **Context:** Approved audit of the repository's AI workflows for GPT-6 Astra.
+- **What was surprising:** Mirrored hook files passed parity checks while Codex supplied patch text in `tool_input.command`, not `file_path`. Stop hooks also mutated Git and repeated builds. Per-key translator agents rewrote the same locale files concurrently.
+- **Impact:** Edit hooks could silently skip work; routine conversations could trigger unrelated work; overlapping locale writers could lose keys.
+- **Mitigation:** Keep only the payload-tested formatter on edit events, use explicit `agent:verify`, and apply translation maps serially with the writer lock. Run `ai-workflow:test` as well as schema/generated-file checks after workflow changes.
+- **Status:** confirmed
+
+### Yarn Berry never runs `pre*`/`post*` hooks on user-defined scripts
+
+- **Date:** 2026-09-02
+- **Observed by:** Tommaso + Claude
+- **Context:** Investigating why the vendored directory mirror in `src/data/5chan-directories/` went stale (it lacked `/r/` until a manual `yarn sync:directories`) even though `package.json` had `prebuild`/`prestart` entries that called `sync:directories` and `generate:assets`.
+- **What was surprising:** This repo uses Corepack-managed Yarn 4 (Berry), which by design does not run npm-style `pre<script>`/`post<script>` hooks for user-defined scripts; it only honours `preinstall`/`install`/`postinstall`, `prepack`/`postpack`, and `prepublish`. `yarn build` went straight to `vite build` and `yarn start` straight to the dev server, so the "automatic" sync and asset generation never ran locally, in CI, on Vercel, or in Electron/Android builds. The entries still work when invoked by name (`yarn run prebuild`), which makes them look alive.
+- **Impact:** The committed mirror is exactly what ships; upstream directory changes only reached users when someone ran the sync by hand. Any future `pre*`/`post*` entry for a custom script is silently ignored the same way.
+- **Mitigation:** Compose lifecycle intent explicitly: `refresh:generated` runs `sync:directories` and `generate:assets`, and `build` and `start` invoke it as their first step (`corepack yarn refresh:generated && ...`); `scripts/start-android-usb.mjs` calls the same script. Never add `pre*`/`post*` entries for custom scripts in this repo; chain the step into the script itself or into the orchestrating Node script.
+- **Status:** confirmed
+
+### Agent verification can saturate contributor laptops
+
+- **Date:** 2026-08-26
+- **Observed by:** Tommaso + Codex
+- **Context:** Verifying a reply-loading fix while multiple 5chan worktrees already had Vite servers running.
+- **What was surprising:** The full Vitest suite started a coordinator plus four Node workers, and subsequent build and React Doctor work ran while existing dev servers remained active. Even sequential heavy commands can saturate several CPU cores when they stack on long-lived worktree servers.
+- **Impact:** The contributor laptop became nearly unresponsive for a short period, with several Node processes each consuming close to or more than one CPU core.
+- **Mitigation:** Before heavy verification, inspect existing repo processes; remember that `create-task-worktree.sh` automatically installs dependencies; reuse or stop only agent-owned dev servers; cap agent-invoked Vitest at two workers; run worktree creation/installs, full tests, coverage, builds, React Doctor, Electron/Android work, and browser/profiler checks sequentially across all agents; and clean up every process/session the agent starts.
+- **Status:** confirmed
+
 ### GitHub Projects are not used for repository workflow
 
 - **Date:** 2026-07-23
@@ -887,9 +799,9 @@ If uncertain, ask the developer before adding an entry.
 - **Date:** 2026-04-23
 - **Observed by:** Codex
 - **Context:** Cutting the `v0.8.0` release after the core terminology rename changed release workflow signing references.
-- **What was surprising:** The tracked Android release keystore is still `android/plebbit.keystore`, and the available GitHub secret is still `PLEBBIT_REACT_KEYSTORE_PASSWORD`; changing only the workflow references to `bitsocial.keystore` / `BITSOCIAL_KEYSTORE_PASSWORD` made the Android release artifact fail at signing.
+- **What was surprising:** The tracked Android release keystore and its GitHub secret still carried pre-rebrand names; changing only the workflow references to the rebranded names made the Android release artifact fail at signing.
 - **Impact:** Tag releases can pass the Android build and then fail before publishing because `apksigner` cannot find the keystore or password secret.
-- **Mitigation:** Until the keystore migration is done, keep release APK signing pointed at `android/plebbit.keystore` and `PLEBBIT_REACT_KEYSTORE_PASSWORD`. If renaming, migrate the tracked file, workflow path, and GitHub secret in one change and verify with a tag release dry run or full release.
+- **Mitigation:** The tracked keystore is now `android/bitsocial.keystore`, the workflow reads `BITSOCIAL_KEYSTORE_PASSWORD`, and that secret was finally created on 2026-09-12 while cutting `v0.9.20`. The entry was marked resolved on 2026-04-23 when only the file and workflow references had been migrated, so the outstanding half stayed invisible for four months and two releases. Verify a renamed secret with `gh secret list` before claiming a signing migration is complete: a secret value cannot be read back through any API or token scope, so only the owner can create the replacement. The lesson generalises: migrate the tracked file, the workflow path, and the GitHub secret in one change, never the references alone, and do not mark such an entry resolved until every half is verified.
 - **Status:** confirmed
 
 ### 5chan consumes a pinned hooks tarball instead of using the local hooks repo
@@ -982,16 +894,6 @@ If uncertain, ask the developer before adding an entry.
 - **Impact:** Notarization aborts after a successful signing pass; the error message looks like a signing failure and invites debugging the certificate/keychain instead of the real cause. Any tool that shells out to `codesign` with a bare relative path can hit this because the app is literally named `5chan`.
 - **Mitigation:** Keep the yarn patch `.yarn/patches/@electron-notarize-npm-2.5.0-*.patch` (backport of electron/notarize#245, prefixes the basename with `./`) until electron-forge depends on `@electron/notarize` >= 3.x. When invoking `codesign` manually on the app bundle, always use an absolute or `./`-prefixed path.
 - **Status:** confirmed
-
-### react-scan's `getReport()` is dead API and can never return data
-
-- **Date:** 2026-07-27
-- **Observed by:** contributor + Claude
-- **Context:** Running the `profile-browsing` skill against a branch to measure excessive rerenders, and getting no component data back
-- **What was surprising:** Three independent failures stacked up silently. (1) `getReport()` returns `Store.legacyReportData`, which react-scan 0.5.3 initializes as an empty `Map` and never writes to anywhere in the bundle. (2) The live `Store.reportData` is only populated inside `if (options.showToolbar !== false && Store.inspectState.value.kind === 'focused')` — but the profiler sets `__PROFILING__=true`, which sets `showToolbar: false`, and `'focused'` requires a human clicking the inspector onto one component, so it is unreachable under automation. (3) `getReport()` returns a `Map`, and `JSON.stringify(new Map())` is `"{}"` regardless of contents, so the skill's collection line would have printed `{}` even if data existed. The skill and profiler agent additionally claimed the app was configured with `report: true`; react-scan 0.5.3 has no `report` option at all, and passing one logs `[React Scan] Invalid options: - Unknown option "report"`.
-- **Impact:** Every profiling run reported zero react-scan component data without erroring, so rerender hotspots looked invisible and profiling silently degraded to raw commit counts.
-- **Mitigation:** `src/lib/react-scan.ts` now accumulates render data through react-scan's `onRender` option, which is only skipped when `isPaused && inspectorInactive` (verified `isPaused: false` with the toolbar off). It exposes `window.__getReactScanReport()` returning a plain, JSON-serializable object and `window.__resetReactScanReport()`. Never reintroduce `getReport()`, and never `JSON.stringify` a `Map`. Set `window.__PROFILING_UNNECESSARY__ = true` to opt into `trackUnnecessaryRenders`; it is off by default because it adds overhead that skews the `time` field.
-- **Status:** confirmed
 ```
 
 ---
@@ -1003,7 +905,7 @@ Source: https://github.com/bitsocialnet/5chan/blob/master/docs/agent-playbooks/l
 ```markdown
 # Long-Running Agent Workflow
 
-Use this playbook when a task is likely to span multiple sessions, handoffs, or spawned agents.
+Use this playbook when work needs durable state across sessions or handoffs. A short task or a single delegated slice does not require these artifacts.
 
 ## Goals
 
@@ -1035,10 +937,10 @@ Prefer JSON for the feature list so agents can update a small number of fields w
 2. Read `progress.md`.
 3. Read `feature-list.json`.
 4. Run `git log --oneline -20`.
-5. Run `./scripts/agent-init.sh --smoke`.
+5. For application behavior work only, use an existing task-worktree server or run `./scripts/agent-init.sh --smoke`. Skip server startup for docs/tooling tasks.
 6. Choose exactly one highest-priority item that is still `pending`, `in_progress`, or `blocked`.
 
-If the smoke step fails, fix the broken baseline before implementing a new feature slice.
+If a relevant smoke check fails, establish whether the failure affects the task. Report unrelated baseline failures; do not expand scope automatically. Record and clean up any server started for the task.
 
 ## Session Rules
 
@@ -1064,8 +966,8 @@ Use a short structure like:
 
 - Item: F003
 - Summary: Updated the browser-check flow to use the shared init/bootstrap path.
-- Files: `.cursor/agents/browser-check.md`, `.codex/agents/browser-check.toml`
-- Verification: `yarn build`, `yarn lint`, `yarn type-check`
+- Files: `.agents/roles/browser-check.md` and generated harness agent files
+- Verification: affected checks and their outcomes (use `yarn agent:verify` when a full pass is required)
 - Next: Run the smoke flow and update the task-board status.
 ```
 ```
@@ -1108,7 +1010,7 @@ git show <commit-hash> -- path/to/file.tsx
 
 ## Troubleshooting Rule
 
-When blocked, search the web for recent fixes/workarounds.
+Search current documentation or upstream issues when the blocker concerns a dependency or platform behavior. If access to private source or a user-only reproduction step is missing, report that specific gap instead of doing an unrelated web search.
 ```
 
 ---
@@ -1120,44 +1022,39 @@ Source: https://github.com/bitsocialnet/5chan/blob/master/docs/agent-playbooks/t
 ```markdown
 # Translations Workflow
 
-This project uses i18next translation files in `public/translations/{lang}/default.json`.
+Locales live in `public/translations/{lang}/default.json`. Use the `translate` skill and `scripts/update-translations.js`; do not rewrite individual locale files by hand.
 
-## Rule
+## Add or update
 
-Do not manually edit every language file. Use `scripts/update-translations.js`.
+Create one task-specific temporary map per key, containing every supported language including English. Preserve placeholders, markup, technical terms, and brand names. Discover the supported language directories instead of hard-coding a count.
 
-## Add or Update a Key
-
-1. Create a temporary dictionary file, e.g. `translations-temp.json`:
-
-```json
-{
-  "en": "English text",
-  "es": "Spanish text",
-  "fr": "French text",
-  "de": "German text"
-}
-```
-
-2. Apply the translation map:
+Translation generation can run in parallel. Only the parent/writer applies the resulting maps, serially:
 
 ```bash
-node scripts/update-translations.js --key my_new_key --map translations-temp.json --include-en --write
+node scripts/update-translations.js --key my_new_key --map /tmp/task-key-map.json --include-en --dry
+node scripts/update-translations.js --key my_new_key --map /tmp/task-key-map.json --include-en --write
 ```
 
-3. Delete the temporary dictionary file.
+Review the dry run and validate the final key/language coverage. Delete only the temporary maps created for this task. A translator child generates its assigned map and returns it; it never invokes a locale write.
 
-## Other Useful Commands
+## Concurrency and recovery
+
+Every non-dry write mode takes `public/translations/.update-translations.lock` before reading files. A competing writer fails without writing; retry after the owner finishes so it reads fresh state. Each locale file is replaced atomically, but a multi-language operation is not a transaction across all files; inspect results after an interrupted write and safely rerun the intended operation.
+
+Normal success/failure releases the owned lock. A terminated process may leave a lock behind. The lock file has no owner metadata: inspect running translation commands and open file handles to confirm no writer is active before removing that exact stale lock. Never remove a live or unknown lock and never commit lock or temporary files. Dry runs acquire no lock and change no files.
+
+## Other operations
 
 ```bash
-# Copy a key from English to all languages (dry run then write)
+# Technical term, brand, or placeholder fallback only
 node scripts/update-translations.js --key some_key --from en --dry
 node scripts/update-translations.js --key some_key --from en --write
 
-# Delete a key from all languages
+# Authorized key removal
+node scripts/update-translations.js --key obsolete_key --delete --dry
 node scripts/update-translations.js --key obsolete_key --delete --write
 
-# Audit for unused translation keys
+# Inspect unused keys before an authorized removal
 node scripts/update-translations.js --audit --dry
 node scripts/update-translations.js --audit --write
 ```
@@ -1172,115 +1069,198 @@ Source: https://github.com/bitsocialnet/5chan/blob/master/docs/agent-playbooks/s
 ```markdown
 # Skills and Tools
 
-Use this playbook when setting up/adjusting skills and external tooling, or to discover what is already committed.
+Shared skills live in `.agents/skills/`. Edit these sources, then run `yarn ai-workflow:sync` to generate `.claude/skills/` for Claude Code. Codex and Cursor discover `.agents/skills/` directly; do not restore the duplicate `.codex/skills/` or `.cursor/skills/` roots.
 
-## Committed Skills Index
+Shared role prompts live in `.agents/roles/*.md`. This is a repository-specific source format, not a native agent discovery path. `scripts/ai-workflow-files.mjs` converts these sources into the app-specific files below; `yarn ai-workflow:sync` writes them. Commit the generated files alongside their sources so a fresh checkout has the native configuration without running a generator first. After removing a source, remove its obsolete generated outputs explicitly; the validator reports them rather than silently deleting files.
 
-These live in `.claude/skills/`, `.cursor/skills/`, and `.codex/skills/` (mirrored; run `yarn ai-workflow:check` after edits). No install needed — prefer them over re-implementing the flow by hand.
+## Native discovery paths
 
-| Skill | Use when |
+Verified against official documentation on 2026-09-12:
+
+| App | Project instructions | Skills used by this repository | Custom agents used by this repository |
+|---|---|---|---|
+| Codex | `AGENTS.md` | `.agents/skills/<name>/SKILL.md` | Generated `.codex/agents/<name>.toml` |
+| Cursor | `AGENTS.md`; `.cursor/rules/*.mdc` remains available for Cursor-specific conditional rules | `.agents/skills/<name>/SKILL.md` | Generated `.cursor/agents/<name>.md` |
+| Claude Code | `CLAUDE.md` imports `@AGENTS.md` | Generated `.claude/skills/<name>/SKILL.md` | Generated `.claude/agents/<name>.md` |
+
+Sources: [Codex skills](https://learn.chatgpt.com/docs/build-skills), [Codex subagents](https://learn.chatgpt.com/docs/agent-configuration/subagents), [Cursor rules](https://cursor.com/docs/rules), [Cursor skills](https://cursor.com/docs/skills), [Cursor subagents](https://cursor.com/docs/subagents), [Claude memory](https://code.claude.com/docs/en/memory), [Claude skills](https://code.claude.com/docs/en/skills), [Claude subagents](https://code.claude.com/docs/en/sub-agents).
+
+Do not replace the native agent directories with `.agents/roles` or assume Claude discovers `.agents/skills`. Claude can still read a referenced file there as ordinary project context. Cursor also discovers `.claude/skills` for compatibility; copies remain synchronized, but its published skills guide does not specify deduplication across these roots. Check the installed app's skill catalog rather than promising that duplicate entries cannot appear.
+
+The AI directories use LF line endings through `.gitattributes` so generated text stays identical across platforms. Supporting skill assets are copied as bytes.
+
+## Skills
+
+| Skill | Purpose |
 |---|---|
-| `commit` | Committing current work (splits into logical scoped commits) |
-| `commit-format` / `issue-format` | Formatting commit/issue *suggestions* in chat output |
-| `make-closed-issue` | Creating an issue + branch + PR into `master` for already-done work |
-| `review-and-merge-pr` | Triaging bot/human PR feedback, fixing, merging, finalizing issues |
-| `fix-merge-conflicts` | Resolving merge conflicts non-interactively and validating the build |
-| `release` / `release-description` | Cutting a release / updating the release one-liner |
-| `code-quality-review` | Advisory final-diff quality pass before finishing, committing, pushing, or opening a PR |
-| `refactor-pass` | Simplicity-focused refactor of recent changes |
-| `deslop` | Removing AI-generated slop from the branch diff |
-| `debug-agent` | Evidence-based debugging with runtime NDJSON logs |
-| `you-might-not-need-an-effect` | Auditing/refactoring `useEffect` anti-patterns |
-| `vercel-react-best-practices` | React performance review rules (vendored from Vercel) |
-| `translate` | i18next key changes across all 35 languages (spawns `translator` subagents) |
-| `playwright-cli` | Browser automation and cross-engine UI verification |
-| `inspect-elements` | Mapping a live DOM node to its React source file/component stack |
-| `profile-browsing` | Web Vitals + react-scan rerender profiling (spawns `profiler` subagents) |
-| `test-apk` | Android emulator APK testing (spawns the `test-apk` subagent) |
-| `implement-plan` | Executing a multi-task plan via parallel `plan-implementer` subagents |
-| `readme` | Creating/updating README.md |
-| `context7` | Fetching up-to-date library docs |
-| `find-skills` | Discovering/installing ecosystem skills |
+| `commit` | Create authorized, scoped local commits |
+| `commit-format`, `issue-format` | Format suggestions when requested |
+| `make-closed-issue` | Create an authorized issue, scoped commit and PR |
+| `review-and-merge-pr` | Triage PR feedback; fix/publish/merge only within the requested scope |
+| `fix-merge-conflicts` | Resolve conflicts and verify the merged result |
+| `release`, `release-description` | Prepare release wording and perform authorized release steps |
+| `code-quality-review` | Review non-trivial diffs or an explicitly requested quality concern |
+| `retro` | Turn demonstrated mistakes into focused checks or review guidance |
+| `refactor-pass`, `deslop` | Requested cleanup of existing changes |
+| `debug-agent` | Evidence-based debugging, with instrumentation when needed |
+| `you-might-not-need-an-effect` | Focused effect/memo review |
+| `vercel-react-best-practices` | Applicable React performance guidance; skip Next.js/server-only rules for this Vite client |
+| `translate` | Generate translations, then apply maps through a single writer |
+| `playwright-cli`, `inspect-elements` | Browser verification and DOM-to-source mapping |
+| `profile-browsing` | Scoped browser and React profiling |
+| `test-apk` | Local Android emulator procedures |
+| `implement-plan` | Execute a plan with optional bounded delegation |
+| `readme` | Maintain verified project documentation |
+| `context7` | Retrieve version-appropriate library documentation |
+| `find-skills` | Find additional skills when explicitly requested |
 
-## Committed Subagents
+## Roles and models
 
-Defined in `.claude/agents/*.md`, `.cursor/agents/*.md`, `.codex/agents/*.toml` (+ `.codex/config.toml` entries): `browser-check`, `code-quality`, `plan-implementer`, `profiler`, `react-doctor-fixer`, `react-patterns-enforcer`, `test-apk`, `translator`. Most are driven by the skills above; read the agent file before spawning one directly.
+Keep custom roles for `browser-check`, `profiler`, `test-apk`, `translator`, and `reviewer`. Use the harness's built-in worker/general-purpose or explorer role for ordinary implementation and code discovery. The parent assigns acceptance criteria and ownership; one owner runs heavyweight checks.
 
-## Recommended Skills
+Codex agent files include `name`, `description`, and `developer_instructions`. `.codex/config.toml` caps concurrent children at four using `max_concurrent_threads_per_session`. Shared role metadata contains the name, description, and optional sandbox mode; it deliberately has no model fields.
 
-### Context7 (library docs)
+Leave model and reasoning fields out of committed skills and custom agents in all three apps. This allows runtime invocation choices, user defaults, and parent inheritance according to each app’s documented precedence. Claude family aliases reduce version maintenance but still choose a family; a versioned Cursor model requires future updates. Keep such choices in user/session settings when needed. Inheritance does not promise an automatic choice of the best current model. Do not invent a `latest` alias or add model-catalog research to routine tasks. See [Codex selection](https://learn.chatgpt.com/docs/agent-configuration/subagents), [Claude selection](https://code.claude.com/docs/en/sub-agents#choose-a-model), and [Cursor selection](https://cursor.com/docs/subagents#model-configuration).
 
-For up-to-date docs on libraries.
+`sandbox-mode: read-only` maps to Codex’s sandbox and Cursor’s `readonly`; Claude’s tool list and the role instructions restrict its review workflow, but Bash access is not an OS-level sandbox.
 
-```bash
-npx skills add https://github.com/intellectronica/agent-skills --skill context7
+Shared skill frontmatter uses `disable-model-invocation: true` for user-invoked workflows where applicable. Codex's corresponding setting lives in `agents/openai.yaml` as `policy.allow_implicit_invocation: false`; the validator requires both. Invocation metadata supplements explicit authorization rules; a review request never authorizes publication merely because a skill includes publishing steps.
+
+## Checks and discovery
+
+- `yarn ai-workflow:sync` regenerates compatibility outputs using installed `js-yaml` and `smol-toml`.
+- `yarn ai-workflow:check` parses source/frontmatter/configs, checks generated outputs, invocation metadata, model-field placement, and the formatter-only hook wiring. It does not resolve model identifiers against a provider catalog.
+- `yarn ai-workflow:test` runs isolated Node fixtures for hook payloads, verification ownership, translation writers, and workflow generation/validation.
+- After upgrading an agent application, verify skill/role discovery in that application. Syntax/parity checks do not replace a loader check. Reload the application if an existing session retains an old catalog.
+- Hooks require the harness's project trust and hook review; do not bypass trust to make a check pass. See [hooks-setup.md](hooks-setup.md).
+
+## Maintaining useful instructions
+
+Follow [OpenAI’s skills and prompts guidance](https://developers.openai.com/blog/rethinking-skills-and-prompts-for-gpt-6-astra) (reviewed 2026-09-12): keep descriptions precise, load details only when relevant, and preserve the user’s requested scope. Shared skills serve different models; retain project-specific invariants while allowing routine implementation choices.
+
+Keep a skill’s purpose, decision boundaries, and essential constraints in `SKILL.md`. Link substantial mode-specific commands or examples as optional references. Put trigger conditions early in short descriptions; a matching keyword alone should not expand the task. Preserve existing invocation metadata unless its behavior is intentionally being changed.
+
+After a substantial instruction change, exercise a few representative small and large requests. Check which skills/references were selected, whether actions stayed within scope, whether verification matched the change, and whether authorized work completed. Schema and fixture tests establish tooling correctness, not agent decision quality.
+
+## Tools and browser ownership
+
+Prefer the existing skill/tool catalog and installed project CLIs. Use `gh` for GitHub, `playwright-cli` for browser verification, and official/version-specific documentation when library behavior matters. Avoid installing duplicate skills or fetching an unpinned package merely to run an existing formatter.
+
+MCP overhead depends on the harness: deferred tool loading can avoid loading every schema upfront. Keep integrations relevant rather than treating MCP itself as obsolete. Existing CLI choices remain useful for reproducibility and resource control.
+
+All browser sessions use `./scripts/pw-session.sh`, which enforces one active browser machine-wide. Default to a fresh isolated session. Current personal-browser access needs explicit authorization; reuse that authorization in subsequent steps. Choose browsers/viewports for the affected behavior, run selected engines sequentially, close the exact named session in cleanup, and never use `close-all`/`kill-all`. See the `playwright-cli` skill and [verification.md](verification.md).
 ```
 
-### Vercel React Best Practices
+---
 
-For deeper React/Next performance guidance.
+## docs/agent-playbooks/verification.md
 
-```bash
-npx skills add https://github.com/vercel-labs/agent-skills --skill vercel-react-best-practices
+Source: https://github.com/bitsocialnet/5chan/blob/master/docs/agent-playbooks/verification.md
+
+```markdown
+# Agent Verification
+
+Choose checks that establish the requested behavior. Finish the authorized implementation and fix failures caused by it; report unrelated failures with evidence. Reuse successful checks for unchanged code instead of starting the same pass again.
+
+## Select checks by impact
+
+| Change | Default verification |
+|---|---|
+| Prose, comments, or formatting | Inspect the diff and relevant links/output; run required generators. No application build for documentation alone |
+| Isolated logic or automation | Affected behavior tests or a focused invocation; lint/type-check when the edited language or interface warrants it |
+| Shared runtime behavior, dependencies, build/package configuration, or substantial integration | Focused behavior tests plus `corepack yarn agent:verify` for build, lint, type-check, Doctor diagnostics, and runtime scenarios |
+| CSS, themes, or layout only | Affected browser/viewport/theme checks below; add a build for CSS processing, assets/import wiring, or integration uncertainty. Styling alone does not require React Doctor |
+| React state/effects/data flow or rendering performance | Inspect the relevant architecture; run `yarn doctor:check` and affected `yarn perf:check` scenarios |
+| Dependencies or import graph | `yarn boundaries` (part of `yarn lint`) must pass when `src/` files move or imports change; advisory `yarn knip`; resolve relevant new findings |
+| Release, CI, or explicitly requested full verification | Run that workflow's required checks even when a smaller local edit would normally need less |
+
+For a small edit, name the behavior being checked and why the chosen evidence is enough. Broaden checks when the impact crosses a shared boundary, a failure appears, or uncertainty remains. Do not add tests that only mirror wording or formatting. An existing reliable test is preferable to new instrumentation.
+
+For focused Vitest runs use `corepack yarn exec vitest run --maxWorkers=2 [paths]`. Add or extend nearby regression tests for non-trivial, testable bugs. The AI workflow Node tests use disposable fixtures and fake commands without production access; run and repair them within the requested task without another approval pause.
+
+## Browser coverage
+
+Verify the affected flow in Chrome/Blink for a small browser change. Also cover Firefox/Gecko and WebKit/Safari for shared CSS/layout/responsiveness changes, browser-sensitive behavior or APIs, broad interaction changes, releases, or an explicit cross-browser requirement. Include desktop/mobile when layout, responsiveness, or touch behavior is affected. Check changed theme behavior in relevant themes.
+
+Use the `playwright-cli` skill and `./scripts/pw-session.sh` for every session. Run selected engines sequentially and close the exact session in cleanup even if a check fails. Reuse a compatible server in the same worktree or record and stop only the one this task starts. Use a fresh profile unless current-session access is already authorized and required.
+
+For loading, navigation, or interaction performance, add a Chromium low-spec pass with `./scripts/pw-throttle.sh <session> mid`; see [low-spec verification](low-spec-verification.md). Firefox and WebKit remain unthrottled.
+
+## Full verification and ownership
+
+Before heavy work, inspect existing workloads; never stop an unfamiliar process. One owner runs `corepack yarn agent:verify` when a full pass is needed. It serializes build, lint, type-check, Doctor diagnostics, and runtime scenarios behind a machine-wide lock and reports contention. Installs, tests, browser work, and directly launched builds still require coordination.
+
+Builds may refresh generated assets and create `build/`. Inspect status before and after, preserve preexisting artifacts and changes, and remove only output created by this task. The verifier never restores or deletes output for you. No lifecycle hook runs builds, installs, audits, or Git cleanup.
+
+Review the final task-owned diff. For non-trivial changes or an explicit quality review, use `code-quality-review` once and apply high-confidence findings within existing authorization. Passing a check or review does not authorize publication.
+
+## Workflow and document changes
+
+For shared skills, roles, or hooks run `yarn ai-workflow:sync`, `yarn ai-workflow:check`, and `yarn ai-workflow:test`. Run `yarn llms:generate` after public English docs or AI context changes. These checks do not require an app server or browser. When only prose changed, skip the application build; changing executable workflow code may need the focused or full checks above.
+
+After substantial prompt changes, try representative requests for skill selection, scope, completion, and check choice. Use isolated fixtures for actions where possible; a read-only scenario review is useful evidence but does not prove live execution behavior.
+
+Record commands, outcomes, and limits in the task report. Use the [long-running workflow](long-running-agent-workflow.md) only when a durable handoff is needed.
+
+## Automated React performance evidence
+
+Run `yarn perf:install` once for the pinned browser, then `yarn perf:check` (three samples at 4x CPU by default). Scope a rerun with `--scenario <name>` when the change affects one covered flow. CI runs the compatibility self-test and scenarios; local `agent:verify` runs scenarios and Doctor automatically. After React/Bippy/collector upgrades, run `yarn perf:test` before relying on the counts. Keep these heavy checks out of per-edit hooks.
+
+`yarn perf:record` keeps JSON and native trace evidence under `.react-perf/`; use `--url <origin>` to reuse a compatible instrumented server. The runner owns its processes and browser lock; run it separately from manual browser sessions. Scenario configuration lives in `scripts/react-perf/config.mjs`. Exact update limits follow the tested interaction; timing caps are deliberately generous smoke limits and must not be relaxed merely to silence a failure. Diagnose a failed phase from its component-instance/commit evidence and visible completion.
+
+Read the `profile-browsing` measurement reference for interpretation and coverage limits. Root Profiler duration measures the subtree, not the self time of each component. A normal production preview lacks this React instrumentation; build and serve `build-profile/` for production-like React timing, leaving the release output untouched.
 ```
 
-### Find Skills
+---
 
-Discover/install skills from the open ecosystem.
+## docs/agent-playbooks/hooks-setup.md
 
-```bash
-npx skills add https://github.com/vercel-labs/skills --skill find-skills
-```
+Source: https://github.com/bitsocialnet/5chan/blob/master/docs/agent-playbooks/hooks-setup.md
 
-### Playwright CLI
+```markdown
+# Agent Hooks Setup
 
-Use `playwright-cli` for browser automation (navigation, interaction, screenshots, tests, extraction).
+The only automatic lifecycle action is formatting edited JavaScript and TypeScript files. Each harness has a thin `format.sh` wrapper that calls `scripts/agent-hooks/format.mjs`. Finishing a response does not install packages, run verification, inject review reminders, or mutate Git state.
 
-Default to a fresh isolated browser session for normal verification. If the task depends on the contributor's existing browser state, ask whether they want:
+## Entry points
 
-- a fresh isolated `playwright-cli` session
-- their current browser session reused
+| Harness | Entry point | Event |
+|---|---|---|
+| Claude Code | `hooks` in `.claude/settings.json` | `PostToolUse`, matcher `Edit\|Write\|MultiEdit` |
+| Cursor | `.cursor/hooks.json`, version 1 | `afterFileEdit` |
+| Codex | `.codex/hooks.json` | `PostToolUse`, matcher `apply_patch` |
 
-Do not attach to a live personal browser session without explicit confirmation.
+Keep these application-specific schemas separate. Codex hooks also need to be trusted in the contributor's Codex settings before they run; a committed configuration does not establish that trust.
 
-When using `playwright-cli` for repo UI verification, run the relevant flow in all three main browser engines:
+## Formatting behavior
 
-- `chrome` for Blink
-- `firefox` for Gecko
-- `webkit` for Safari/WebKit coverage
+- Claude sends `tool_input.file_path`; Cursor sends `file_path`.
+- Codex sends `apply_patch` text in `tool_input.command`. The formatter collects added and updated files, uses the destination of a move, and ignores deleted files.
+- Relative paths use the payload's working directory when supplied, falling back to the repository root.
+- Known read-only tool calls, non-edit events, reported tool failures, malformed input, missing paths, and unsupported extensions are skipped.
+- Both lexical paths and resolved real paths must remain inside this checkout. This includes the final file and any symlinked parent directories.
+- Formatting runs once per payload through `corepack yarn exec oxfmt --write`, only when the repository's formatter is installed. Corepack network access is disabled. Missing dependencies are not installed by the hook.
+- Node command launches use the declared `cross-spawn` dependency to handle Windows command shims and argument escaping. Shell hook entry points still require the harness's Bash support on Windows.
+- Formatter failures are reported on stderr and remain advisory. Hooks do not inject additional instructions into the model.
 
-Use separate named sessions per engine so results stay isolated, but run those sessions sequentially. Only one Playwright browser session may be active at a time, machine-wide, because the contended resource is machine RAM and CPU rather than the repository. Open and close sessions through `./scripts/pw-session.sh`; it holds that shared lock so concurrent agents defer and retry browser work instead of saturating the machine.
+Run `corepack yarn install` explicitly when setting up a worktree or changing dependencies. The worktree creation helper already performs installation.
 
-During iteration, use Chrome/Blink only. Run the full Chrome, Firefox, and WebKit sequence once the change is ready for final verification. Reuse each engine session for desktop and mobile by resizing it, close it in a finally-style cleanup, and only then open the next engine. Do not run profiler batches in parallel, and do not use `close-all` or `kill-all` while other agents may be active.
+## Explicit verification
 
-```bash
-./scripts/pw-session.sh open verify-chrome https://5chan.localhost --browser=chrome
-playwright-cli -s=verify-chrome snapshot
-playwright-cli -s=verify-chrome resize 375 812
-playwright-cli -s=verify-chrome snapshot
-./scripts/pw-session.sh close verify-chrome
-```
+Use `corepack yarn agent:verify` when the change needs the full pass described in [verification.md](verification.md). `scripts/agent-verify.mjs` runs `build`, `lint`, and `type-check` sequentially, prints the commands and working directory, and reports every failed check. It completes the remaining checks after a command fails and exits with the first failure's status. A missing executable returns 127; a terminated command reports its signal and returns the conventional signal exit status.
 
-When the slot is busy, `open` exits 75; block on `./scripts/pw-session.sh open --wait[=SECONDS] ...` (default 300s) instead of retrying by hand. A lock left behind by an interrupted workflow is reclaimed automatically, because `open` drops any slot whose recorded browser is no longer running. Inspect the holder with `./scripts/pw-session.sh status`, which reports whether that browser is still alive; `release <session>` is a last resort for the rare case where `status` cannot verify the browser state.
+The command does not remove, restore, or stage generated artifacts. The build itself can update output and generated files; inspect the resulting diff and clean up only output created by your own run. Tests, React Doctor, and browser verification remain explicit checks selected for the change.
 
-```bash
-npm install -g @playwright/cli@latest
-playwright-cli install --skills
-```
+All checkouts share an atomic lock directory named `5chan-agent-verify.lock` in the operating system's temporary directory. A busy slot exits immediately with status 75 and owner details. Wait for the owning run to finish before retrying. Normal completion and handled SIGINT/SIGTERM release the lock; on Unix, interruption is forwarded to the active command's process group, and on Windows it terminates the command tree through `taskkill /T /F`. A force-killed process can leave a lock behind. Inspect `owner.json` and verify that the recorded run and its child workloads have stopped before manually removing that stale lock. Unreadable metadata is never treated as permission to steal the slot.
 
-Skill install locations:
+The lock coordinates invocations of this command. Other heavyweight work, such as installs, tests, browsers, and builds launched directly, still needs the repository's workload coordination rules.
 
-- `.codex/skills/playwright-cli/`
-- `.cursor/skills/playwright-cli/`
-- `.claude/skills/playwright-cli/`
+## Maintaining the workflow
 
-## MCP Policy Rationale
-
-Avoid GitHub MCP and browser MCP servers for this project because they add significant tool-schema/context overhead.
-
-- GitHub operations: use `gh` CLI.
-- Browser operations: use `playwright-cli`.
-- If current browser reuse is needed, keep using Playwright-based attach paths rather than browser MCP servers.
+- Change shared formatter behavior in `scripts/agent-hooks/format.mjs`; keep harness wrappers thin.
+- Wire only the formatter in each hook configuration. Dependency installation, Git housekeeping, reviews, and full verification belong to explicit workflows.
+- Run `corepack yarn ai-workflow:check` after changing hook scripts or configuration.
+- Run `yarn ai-workflow:test` for payload, path-containment, and verification behavior. These tests use fake commands and never run real builds.
 ```
 
 ---
@@ -1302,7 +1282,7 @@ Run before merge/rollout. All must pass.
 |---------|---------|----------------|
 | `yarn test` | Unit tests (Vitest) | Exit 0 = pass. Fix failing tests before merge. |
 | `yarn build` | Production build | Exit 0 = pass. No build errors. |
-| `yarn lint` | Lint (oxlint) | Exit 0 = pass. Fix lint errors. |
+| `yarn lint` | Lint (oxlint + module boundaries) | Exit 0 = pass. Fix lint errors. |
 | `yarn type-check` | TypeScript (tsc) | Exit 0 = pass. Fix type errors. |
 | `yarn doctor` | React Doctor | Advisory. Prioritize `error` > `warning`. |
 

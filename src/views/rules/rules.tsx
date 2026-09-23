@@ -1,12 +1,13 @@
 import { Fragment, useEffect, useState, FormEvent } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useCommunity } from '@bitsocial/bitsocial-react-hooks';
-import { Footer, HomeLogo } from '../home/home';
+import HomeFooter from '../../components/home-footer';
+import HomeLogo from '../../components/home-logo';
 import { useDirectories, useDirectoryDefaults, DirectoryCommunity, DirectoryDefaultsData } from '../../hooks/use-directories';
 import { useCommunityIdentifier } from '../../hooks/use-community-identifiers';
 import { getCommunityAddress, isDirectoryRoute } from '../../lib/utils/route-utils';
-import Markdown from '../../components/markdown/markdown';
-import LoadingEllipsis from '../../components/loading-ellipsis/loading-ellipsis';
+import Markdown from '../../components/markdown';
+import LoadingEllipsis from '../../components/loading-ellipsis';
 import useStateString from '../../hooks/use-state-string';
 import styles from './rules.module.css';
 import { useTranslation } from 'react-i18next';
@@ -301,7 +302,7 @@ const Rules = () => {
             ))}
           </div>
         </div>
-        <Footer />
+        <HomeFooter />
       </div>
     </div>
   );

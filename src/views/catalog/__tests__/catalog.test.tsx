@@ -1,4 +1,5 @@
 import * as React from 'react';
+import useFramesStore from '../../../stores/use-frames-store';
 import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
@@ -7,6 +8,12 @@ import Catalog, { type CatalogProps } from '../catalog';
 import { getCatalogRenderFeed } from '../catalog-render-feed';
 import { clearStableLastVisitTimeFilterName, LAST_VISIT_STORAGE_KEY } from '../../../lib/utils/time-filter-utils';
 import useHiddenCatalogThreadsStore from '../../../stores/use-hidden-catalog-threads-store';
+import { getCatalogRowHeightEstimates } from '../../../lib/utils/pretext-height-estimates';
+
+vi.mock('../../../lib/utils/pretext-height-estimates', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../lib/utils/pretext-height-estimates')>();
+  return { ...actual, getCatalogRowHeightEstimates: vi.fn(actual.getCatalogRowHeightEstimates) };
+});
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
@@ -78,7 +85,6 @@ const testState = vi.hoisted(() => ({
   setResetFunctionMock: vi.fn(),
   showOPComment: true,
   sortType: 'new' as 'active' | 'new',
-  compatiblePostSortType: 'preferred' as string | undefined,
   unblockCidMock: vi.fn(),
   virtuosoInitialScrollTops: [] as Array<number | undefined>,
   windowWidth: 900,
@@ -159,47 +165,56 @@ const getScopedFeed = (options?: { filter?: FeedFilter; newerThan?: number; post
   return scopedFeed;
 };
 
-vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
-  useAccount: () => testState.account,
-  useAccountComments: (options?: { commentIndices?: number[]; communityAddress?: string; newerThan?: number; sortType?: 'new' | 'old' }) => {
-    testState.accountCommentsCalls.push(options);
-    return { accountComments: getScopedAccountComments(options) };
-  },
-  useFeed: (options: { communities?: unknown[]; filter?: FeedFilter; newerThan?: number; postsPerPage?: number; sortType?: string }) => {
-    testState.feedOptionsCalls.push({
-      communitiesLength: options.communities?.length,
-      filterKey: options.filter?.key,
-      newerThan: options.newerThan,
-      postsPerPage: options.postsPerPage,
-      sortType: options.sortType,
-    });
-    return {
-      feed: getScopedFeed(options),
-      hasMore: testState.hasMore,
-      expandTimeWindow: testState.expandTimeWindowMock,
-      loadMore: testState.loadMoreMock,
-      reset: testState.resetMock,
-    };
-  },
-  useCommunity: () => testState.community,
-  useComments: ({ commentCids = [] }: { commentCids?: string[] } = {}) => ({
-    comments: commentCids.map((cid) => testState.commentsByCid[cid]),
-    state: 'succeeded',
-  }),
-}));
-
-vi.mock('@bitsocial/bitsocial-react-hooks/dist/stores/accounts', () => ({
-  default: {
-    getState: () => ({
-      accounts: { account: testState.account },
-      accountsActions: {
-        blockCid: testState.blockCidMock,
-        unblockCid: testState.unblockCidMock,
-      },
-      activeAccountId: 'account',
+vi.mock('@bitsocial/bitsocial-react-hooks', async () => {
+  // Real sort helpers for the raw board state read by usePruneHiddenCatalogThreads.
+  const { getPostPageSortType, resolvePostSortType } = await vi.importActual<typeof import('@bitsocial/bitsocial-react-hooks/dist/lib/page-sorts.js')>(
+    '@bitsocial/bitsocial-react-hooks/dist/lib/page-sorts.js',
+  );
+  return {
+    getPostPageSortType,
+    resolvePostSortType,
+    useAccount: () => testState.account,
+    useAccountComments: (options?: { commentIndices?: number[]; communityAddress?: string; newerThan?: number; sortType?: 'new' | 'old' }) => {
+      testState.accountCommentsCalls.push(options);
+      return { accountComments: getScopedAccountComments(options) };
+    },
+    useFeed: (options: { communities?: unknown[]; filter?: FeedFilter; newerThan?: number; postsPerPage?: number; sortType?: string }) => {
+      testState.feedOptionsCalls.push({
+        communitiesLength: options.communities?.length,
+        filterKey: options.filter?.key,
+        newerThan: options.newerThan,
+        postsPerPage: options.postsPerPage,
+        sortType: options.sortType,
+      });
+      return {
+        feed: getScopedFeed(options),
+        hasMore: testState.hasMore,
+        expandTimeWindow: testState.expandTimeWindowMock,
+        loadMore: testState.loadMoreMock,
+        reset: testState.resetMock,
+      };
+    },
+    useCommunity: () => testState.community,
+    useComments: ({ commentCids = [] }: { commentCids?: string[] } = {}) => ({
+      comments: commentCids.map((cid) => testState.commentsByCid[cid]),
+      state: 'succeeded',
     }),
-  },
-}));
+  };
+});
+
+vi.mock('@bitsocial/bitsocial-react-hooks/dist/stores/accounts', () => {
+  const getState = () => ({
+    accounts: { account: testState.account },
+    accountsActions: {
+      blockCid: testState.blockCidMock,
+      unblockCid: testState.unblockCidMock,
+    },
+    activeAccountId: 'account',
+  });
+  return {
+    default: Object.assign(<T,>(selector: (state: ReturnType<typeof getState>) => T) => selector(getState()), { getState }),
+  };
+});
 
 vi.mock('react-virtuoso', () => ({
   Virtuoso: React.forwardRef(
@@ -275,21 +290,14 @@ vi.mock('../../../hooks/use-state-string', () => ({
   useFeedStateString: () => 'loading_feed',
 }));
 
-vi.mock('../../../hooks/use-compatible-post-sort-type', () => ({
-  useCompatiblePostSortType: (_communities: unknown[], preferredSortType: string) =>
-    testState.compatiblePostSortType === 'preferred' ? preferredSortType : testState.compatiblePostSortType,
-}));
-
 vi.mock('../../../hooks/use-window-width', () => ({
   default: () => testState.windowWidth,
   useIsMobileBreakpoint: () => testState.windowWidth < 640,
 }));
 
 vi.mock('../../../stores/use-catalog-style-store', () => ({
-  default: () => ({
-    imageSize: testState.imageSize,
-    showOPComment: testState.showOPComment,
-  }),
+  default: (selector: (state: { imageSize: 'Large' | 'Small'; showOPComment: boolean }) => unknown) =>
+    selector({ imageSize: testState.imageSize, showOPComment: testState.showOPComment }),
 }));
 
 vi.mock('../../../stores/use-feed-reset-store', () => ({
@@ -339,6 +347,7 @@ vi.mock('../../../components/footer', () => ({
   PageFooterDesktop: ({ firstRow, styleRow }: { firstRow?: React.ReactNode; styleRow?: React.ReactNode }) =>
     createElement('div', { 'data-testid': 'catalog-footer-desktop' }, firstRow, styleRow),
   PageFooterMobile: ({ children }: { children: React.ReactNode }) => createElement('div', { 'data-testid': 'catalog-footer-mobile' }, children),
+  footerStyles: {},
 }));
 
 vi.mock('../../../components/board-buttons/board-buttons', () => ({
@@ -452,7 +461,6 @@ describe('Catalog', () => {
     testState.searchText = '';
     testState.showOPComment = true;
     testState.sortType = 'new';
-    testState.compatiblePostSortType = 'preferred';
     testState.unblockCidMock.mockReset();
     testState.unblockCidMock.mockResolvedValue(undefined);
     testState.virtuosoInitialScrollTops = [];
@@ -512,8 +520,8 @@ describe('Catalog', () => {
     root = createRoot(container);
   });
 
-  it('uses the preloaded page when a board does not publish the selected sort', async () => {
-    testState.compatiblePostSortType = undefined;
+  it('requests the selected sort directly on a single board', async () => {
+    testState.sortType = 'active';
 
     await renderCatalog({ initialEntry: '/mu/catalog', routePath: '/:boardIdentifier/catalog' });
 
@@ -522,13 +530,14 @@ describe('Catalog', () => {
         expect.objectContaining({
           communitiesLength: 1,
           newerThan: undefined,
-          sortType: undefined,
+          sortType: 'active',
         }),
       ]),
     );
   });
 
   it('renders single-board catalogs without Virtuoso virtualization', async () => {
+    vi.mocked(getCatalogRowHeightEstimates).mockClear();
     testState.feed = [
       { cid: 'board-post-1', title: 'one', communityAddress: 'music-posting.eth' },
       { cid: 'board-post-2', title: 'two', communityAddress: 'music-posting.eth' },
@@ -537,6 +546,8 @@ describe('Catalog', () => {
     await renderCatalog({ initialEntry: '/mu/catalog', routePath: '/:boardIdentifier/catalog' });
 
     expect(container.querySelector('[data-testid="virtuoso"]')).toBeNull();
+    expect(getCatalogRowHeightEstimates).not.toHaveBeenCalled();
+    expect(container.querySelector('[data-pretext-height]')).toBeNull();
     expect(Array.from(container.querySelectorAll('[data-testid="catalog-row"]')).map((element) => element.textContent)).toEqual(['row:board-post-1,board-post-2']);
   });
 
@@ -733,6 +744,7 @@ describe('Catalog', () => {
   });
 
   it('canonicalizes multiboard catalog paths and keeps load-more wired for infinite scrolling', async () => {
+    vi.mocked(getCatalogRowHeightEstimates).mockClear();
     testState.feed = [{ cid: 'all-post', title: 'one', communityAddress: 'music-posting.eth' }];
     testState.hasMore = true;
 
@@ -743,6 +755,7 @@ describe('Catalog', () => {
     });
 
     expect(latestLocation).toBe('/all/catalog');
+    expect(getCatalogRowHeightEstimates).toHaveBeenCalled();
     expect(testState.feedOptionsCalls).toEqual(expect.arrayContaining([expect.objectContaining({ postsPerPage: 24 })]));
     const loadMoreCallCountBeforeEndReached = testState.loadMoreMock.mock.calls.length;
 
@@ -1019,5 +1032,27 @@ describe('Catalog', () => {
     await renderCatalog({ initialEntry: '/mu/catalog', routePath: '/:boardIdentifier/catalog' });
 
     expect(Array.from(container.querySelectorAll('[data-testid="catalog-row"]')).map((element) => element.textContent)).toEqual(['row:first-post', 'row:second-post']);
+  });
+
+  it('reflows catalog rows when frames consume desktop width without a resize', async () => {
+    vi.stubGlobal('matchMedia', () => ({ matches: true, addEventListener: vi.fn(), removeEventListener: vi.fn() }));
+    useFramesStore.setState({ useFrames: false });
+    testState.windowWidth = 640;
+    testState.imageSize = 'Large';
+    testState.feed = [
+      { cid: 'first-post', title: 'one', communityAddress: 'music-posting.eth' },
+      { cid: 'second-post', title: 'two', communityAddress: 'music-posting.eth' },
+    ];
+    try {
+      await renderCatalog({ initialEntry: '/mu/catalog', routePath: '/:boardIdentifier/catalog' });
+      expect(container.querySelectorAll('[data-testid="catalog-row"]')).toHaveLength(1);
+      await act(async () => useFramesStore.getState().setUseFrames(true));
+      expect(Array.from(container.querySelectorAll('[data-testid="catalog-row"]')).map((element) => element.textContent)).toEqual(['row:first-post', 'row:second-post']);
+      await act(async () => useFramesStore.getState().setUseFrames(false));
+      expect(container.querySelectorAll('[data-testid="catalog-row"]')).toHaveLength(1);
+    } finally {
+      await act(async () => useFramesStore.setState({ useFrames: false }));
+      vi.unstubAllGlobals();
+    }
   });
 });

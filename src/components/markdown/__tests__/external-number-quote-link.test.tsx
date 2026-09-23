@@ -4,7 +4,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import ExternalNumberQuoteLink from '../external-number-quote-link';
-import postStyles from '../../../views/post/post.module.css';
+import postStyles from '../../post-styles';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
@@ -69,9 +69,10 @@ vi.mock('../../loading-ellipsis', () => ({
   default: ({ string }: { string: string }) => createElement('div', { 'data-testid': 'loading-ellipsis' }, string),
 }));
 
-vi.mock('../../../views/post', () => ({
-  Post: ({ post }: { post?: { cid?: string } }) => createElement('div', { 'data-testid': 'post-preview' }, post?.cid || 'missing-post'),
-}));
+vi.mock('../../../hooks/use-quote-preview-post', () => {
+  const PreviewPost = ({ post }: { post?: { cid?: string } }) => createElement('div', { 'data-testid': 'post-preview' }, post?.cid || 'missing-post');
+  return { useQuotePreviewPost: () => (props: { post?: { cid?: string } }) => createElement(PreviewPost, props) };
+});
 
 let container: HTMLDivElement;
 let root: Root;

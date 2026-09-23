@@ -3,9 +3,14 @@ import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { __resetIndexedBoardsForTests } from '../../../hooks/use-indexed-boards';
+import { clearIndexerSearch } from '../../../lib/search-indexer';
+import { DEFAULT_SEARCH_QUERY } from '../../../lib/search-navigation';
+import { getSearchProviderChain } from '../../../lib/search-providers';
 import useSearchProviderStore from '../../../stores/use-search-provider-store';
+import useSearchSummaryStore from '../../../stores/use-search-summary-store';
 import Search from '../search';
-import SearchDirectory from '../search-directory';
+import SearchDirectory from '../../search-directory';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
@@ -28,6 +33,32 @@ vi.mock('../../../hooks/use-directories', async () => {
   };
 });
 
+/** The indexer's board list, answered alongside the search on every provider call. */
+const indexedBoards = [
+  { address: 'music-posting.bso', description: null, nsfw: 0, post_count: 50, title: '/mu/ - Music' },
+  { address: 'torrents-posting.bso', description: null, nsfw: 1, post_count: 4, title: 'Torrents' },
+];
+
+const getSearchCalls = (fetchMock: ReturnType<typeof vi.fn>) => fetchMock.mock.calls.filter(([url]) => String(url).includes('/api/search'));
+
+const changePostStatus = async (value: string) => {
+  const select = container.querySelector<HTMLSelectElement>('[class*="postStatus"] select');
+  expect(select).toBeTruthy();
+  await act(async () => {
+    select!.value = value;
+    select!.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+};
+
+const clickLink = async (href: string) => {
+  const getLink = () => [...container.querySelectorAll<HTMLAnchorElement>('a')].find((link) => link.getAttribute('href') === href);
+  await vi.waitFor(() => expect(getLink(), `Missing link to ${href}`).toBeTruthy());
+  const link = getLink();
+  await act(async () => {
+    link!.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+  });
+};
+
 const LocationProbe = () => {
   const location = useLocation();
   return <output data-testid='location'>{location.pathname + location.search}</output>;
@@ -35,6 +66,12 @@ const LocationProbe = () => {
 
 let container: HTMLDivElement;
 let root: Root;
+
+/** MemoryRouter keeps its first entries, so a second route in one test needs a fresh root. */
+const remount = () => {
+  act(() => root.unmount());
+  root = createRoot(container);
+};
 
 const renderRoute = async (entry: string | { pathname: string; search?: string; state?: unknown }) => {
   await act(async () => {
@@ -64,6 +101,7 @@ describe('archive search', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
+    __resetIndexedBoardsForTests();
     useSearchProviderStore.setState({ selectedProviderId: '5archive' });
     container = document.createElement('div');
     document.body.appendChild(container);
@@ -100,7 +138,12 @@ describe('archive search', () => {
     const fetchMock = vi.fn().mockImplementation((url: string) =>
       Promise.resolve({
         ok: true,
-        json: async () => (url.includes('/api/posts/') ? { post: threadPost } : { query, page: 1, limit: 25, total: 1, posts: [matchedReply] }),
+        json: async () =>
+          url.includes('/api/posts/')
+            ? { post: threadPost }
+            : url.includes('/api/communities')
+              ? { communities: indexedBoards }
+              : { query, page: 1, limit: 25, total: 1, posts: [matchedReply] },
       }),
     );
     vi.stubGlobal('fetch', fetchMock);
@@ -158,8 +201,11 @@ describe('archive search', () => {
     await renderRoute(`/search?q=${encodeURIComponent(query)}`);
 
     await vi.waitFor(() => expect(container.textContent).toContain('A preserved thread'));
+    // The view hands the store publisher to getIndexerSearch; the board header reads the summary from it.
+    await vi.waitFor(() => expect(useSearchSummaryStore.getState()).toMatchObject({ query, status: 'answered', total: 1 }));
     // Only the search request: an OP match needs no thread lookup.
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(getSearchCalls(fetchMock)).toHaveLength(1);
+    expect(fetchMock.mock.calls.some(([url]) => String(url).includes('/api/posts/'))).toBe(false);
   });
 
   it('shows the matched threads as catalog tiles, one tile per thread', async () => {
@@ -211,7 +257,240 @@ describe('archive search', () => {
 
     // The url is normalized so links, the header and the field all show the query being searched.
     await vi.waitFor(() => expect(container.querySelector('[data-testid="location"]')?.textContent).toBe('/search?q=5chan'));
-    expect(fetchMock.mock.calls[0][0]).toContain('q=5chan');
+    expect(getSearchCalls(fetchMock)[0][0]).toContain('q=5chan');
+    expect(new URL(getSearchCalls(fetchMock)[0][0]).searchParams.get('status')).toBe('active');
+    expect(container.querySelector<HTMLSelectElement>('[class*="postStatus"] select')?.value).toBe('active');
+  });
+
+  it('resets pagination when status changes and retains it through paging, catalog, directory and new searches', async () => {
+    const query = `status-navigation-${Date.now()}`;
+    const fetchMock = vi.fn().mockImplementation((url: string) => {
+      const params = new URL(url).searchParams;
+      return Promise.resolve({
+        ok: true,
+        json: async () =>
+          url.includes('/api/communities') ? { communities: [] } : { query: params.get('q'), page: Number(params.get('page')), limit: 25, total: 75, posts: [] },
+      });
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    await renderRoute(`/search?q=${query}&page=3`);
+    await vi.waitFor(() => expect(container.textContent).toContain('search_no_results'));
+
+    await changePostStatus('archived');
+    expect(container.querySelector('[data-testid="location"]')?.textContent).toBe(`/search?q=${query}&status=archived`);
+    await vi.waitFor(() => expect(useSearchSummaryStore.getState()).toMatchObject({ query, postStatus: 'archived', status: 'answered' }));
+    expect(new URL(getSearchCalls(fetchMock).at(-1)![0]).searchParams.get('page')).toBe('1');
+    expect(new URL(getSearchCalls(fetchMock).at(-1)![0]).searchParams.get('status')).toBe('archived');
+
+    await clickLink(`/search?q=${query}&page=2&status=archived`);
+    await vi.waitFor(() => expect(new URL(getSearchCalls(fetchMock).at(-1)![0]).searchParams.get('page')).toBe('2'));
+    await clickLink(`/search/catalog?q=${query}&status=archived`);
+    await vi.waitFor(() => expect(container.querySelector<HTMLSelectElement>('[class*="postStatus"] select')?.value).toBe('archived'));
+    await clickLink(`/search/catalog?q=${query}&page=2&status=archived`);
+    await clickLink('/search/directory');
+    await clickLink(`/search/catalog?q=${query}&page=2&status=archived`);
+    expect(container.querySelector('[data-testid="location"]')?.textContent).toBe(`/search/catalog?q=${query}&page=2&status=archived`);
+
+    const input = container.querySelector<HTMLInputElement>('input[type="text"]')!;
+    await act(async () => {
+      input.value = 'another query';
+      input.form!.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    });
+    expect(container.querySelector('[data-testid="location"]')?.textContent).toBe('/search/catalog?q=another+query&status=archived');
+
+    await changePostStatus('all');
+    await vi.waitFor(() => expect(new URL(getSearchCalls(fetchMock).at(-1)![0]).searchParams.get('status')).toBe('all'));
+    await changePostStatus('active');
+    expect(container.querySelector('[data-testid="location"]')?.textContent).toBe('/search/catalog?q=another+query');
+    await vi.waitFor(() => expect(new URL(getSearchCalls(fetchMock).at(-1)![0]).searchParams.get('status')).toBe('active'));
+  });
+
+  it('keeps the selected status when refreshing and retrying a failed provider', async () => {
+    const query = `status-retry-${Date.now()}`;
+    let failSearch = true;
+    const fetchMock = vi
+      .fn()
+      .mockImplementation((url: string) =>
+        Promise.resolve(
+          url.includes('/api/search') && failSearch
+            ? { ok: false, status: 503 }
+            : { ok: true, json: async () => (url.includes('/api/communities') ? { communities: [] } : { query, page: 2, limit: 25, total: 30, posts: [] }) },
+        ),
+      );
+    vi.stubGlobal('fetch', fetchMock);
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      await renderRoute(`/search/catalog?q=${query}&page=2&status=all`);
+      await vi.waitFor(() => expect(container.querySelector('[role="alert"]')).toBeTruthy());
+      failSearch = false;
+      await act(async () => container.querySelector<HTMLButtonElement>('[role="alert"] button')!.click());
+      await vi.waitFor(() => expect(container.textContent).toContain('search_no_results'));
+
+      const previousRequests = getSearchCalls(fetchMock).length;
+      const refresh = [...container.querySelectorAll<HTMLButtonElement>('button')].find((button) => button.textContent === 'refresh');
+      expect(refresh).toBeTruthy();
+      await act(async () => refresh!.click());
+      await vi.waitFor(() => expect(getSearchCalls(fetchMock)).toHaveLength(previousRequests + 1));
+      expect(getSearchCalls(fetchMock).every(([url]) => new URL(url).searchParams.get('status') === 'all' && new URL(url).searchParams.get('page') === '2')).toBe(true);
+      expect(container.querySelector('[data-testid="location"]')?.textContent).toBe(`/search/catalog?q=${query}&page=2&status=all`);
+    } finally {
+      errorSpy.mockRestore();
+    }
+  });
+
+  it('lists the boards the query matched above the posts, from the directories and the indexer alike', async () => {
+    const fetchMock = vi.fn().mockImplementation((url: string) =>
+      Promise.resolve({
+        ok: true,
+        json: async () => (url.includes('/api/communities') ? { communities: indexedBoards } : { query: 'music', page: 1, limit: 25, total: 0, posts: [] }),
+      }),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    await renderRoute('/search?q=music');
+
+    // The directory board is local, so it is listed before the indexer has answered anything.
+    const boardLink = container.querySelector<HTMLAnchorElement>('table a[href="/mu"]');
+    expect(boardLink?.textContent).toBe('/mu/');
+    expect(container.querySelector('table')?.textContent).toContain('Music');
+    expect(container.querySelector('table')?.textContent).toContain('music-posting.bso');
+    // The posts still load and report their own outcome underneath.
+    await vi.waitFor(() => expect(container.textContent).toContain('search_no_results'));
+    expect(container.querySelector('table')?.compareDocumentPosition(container.querySelector('[class*="empty"]')!)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    expect(fetchMock.mock.calls.some(([url]) => String(url) === 'https://api.5archive.org/api/communities')).toBe(true);
+  });
+
+  it('lists a board only the indexer knows, flagged when it is nsfw', async () => {
+    const fetchMock = vi.fn().mockImplementation((url: string) =>
+      Promise.resolve({
+        ok: true,
+        json: async () => (url.includes('/api/communities') ? { communities: indexedBoards } : { query: 'torrents', page: 1, limit: 25, total: 0, posts: [] }),
+      }),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    await renderRoute('/search?q=torrents');
+
+    await vi.waitFor(() => expect(container.querySelector<HTMLAnchorElement>('table a[href="/torrents-posting.bso"]')).toBeTruthy());
+    const row = container.querySelector<HTMLAnchorElement>('table a[href="/torrents-posting.bso"]')?.closest('tr');
+    expect(row?.textContent).toContain('Torrents');
+    expect(row?.textContent).toContain('(NSFW)');
+  });
+
+  it('offers a typed address that no list knows as a board row, and reveals the rest of a long list on demand', async () => {
+    const fetchMock = vi.fn().mockImplementation((url: string) =>
+      Promise.resolve({
+        ok: true,
+        json: async () => (url.includes('/api/communities') ? { communities: [] } : { query: 'x', page: 1, limit: 25, total: 0, posts: [] }),
+      }),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    await renderRoute('/search?q=unlisted-board.bso');
+
+    const unlistedLink = container.querySelector<HTMLAnchorElement>('table a[href="/unlisted-board.bso"]');
+    expect(unlistedLink?.textContent).toBe('unlisted-board.bso');
+    expect(container.querySelectorAll('table tbody tr')).toHaveLength(1);
+
+    // Seven directory boards share a made-up word no real list carries; five show, two wait behind the button.
+    testState.directories = [
+      ...testState.directories,
+      ...['a', 'b', 'c', 'd', 'e', 'f', 'g'].map((code) => ({
+        address: `${code}-zzsynthetic.bso`,
+        directoryCode: code,
+        title: `/${code}/ - Zzsynthetic ${code.toUpperCase()}`,
+      })),
+    ];
+    try {
+      remount();
+      await renderRoute('/search?q=zzsynthetic');
+      expect(container.querySelectorAll('table tbody tr')).toHaveLength(5);
+      const showMore = [...container.querySelectorAll('button')].find((button) => button.textContent?.startsWith('search_more_boards'));
+      expect(showMore?.textContent).toBe('search_more_boards:{"count":2}');
+
+      await act(async () => {
+        showMore?.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+      });
+      expect(container.querySelectorAll('table tbody tr')).toHaveLength(7);
+      expect([...container.querySelectorAll('button')].some((button) => button.textContent?.startsWith('search_more_boards'))).toBe(false);
+
+      // A new query starts collapsed again.
+      remount();
+      await renderRoute('/search?q=zzsyn');
+      expect(container.querySelectorAll('table tbody tr')).toHaveLength(5);
+    } finally {
+      testState.directories = testState.directories.slice(0, 1);
+    }
+  });
+
+  it('paints the searched terms over the board table and the posts, but not the page chrome, when opened without a query', async () => {
+    class FakeHighlight {
+      ranges: Range[];
+      constructor(...ranges: Range[]) {
+        this.ranges = ranges;
+      }
+    }
+    const highlights = new Map<string, FakeHighlight>();
+    vi.stubGlobal('Highlight', FakeHighlight);
+    vi.stubGlobal('CSS', { highlights });
+    const post = {
+      archived: 0,
+      author_address: null,
+      author_name: null,
+      cid: 'post-cid',
+      community_address: 'music-posting.bso',
+      content: 'A thread about 5chan itself',
+      deleted: 0,
+      depth: 0,
+      indexed_at: 1_700_000_100,
+      parent_cid: null,
+      post_cid: 'post-cid',
+      removed: 0,
+      reply_count: 0,
+      timestamp: 1_700_000_000,
+      title: null,
+    };
+    const fetchMock = vi.fn().mockImplementation((url: string) =>
+      Promise.resolve({
+        ok: true,
+        json: async () =>
+          url.includes('/api/communities')
+            ? { communities: [{ address: '5chan-feedback.bso', description: null, nsfw: 0, post_count: 6, title: '/q/ - 5chan Feedback' }] }
+            : { query: '5chan', page: 1, limit: 25, total: 1, posts: [post] },
+      }),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    // The default query is shared with the redirect test above, and searches are cached per query.
+    clearIndexerSearch(getSearchProviderChain('5archive'), DEFAULT_SEARCH_QUERY, 1);
+
+    // The boards bar links here with no query; the page redirects to the default one on the same route.
+    await renderRoute('/search');
+
+    await vi.waitFor(() => expect(container.textContent).toContain('A thread about 5chan itself'));
+    await vi.waitFor(() => expect(container.textContent).toContain('5chan Feedback'));
+    await vi.waitFor(() => {
+      const painted = highlights.get('search-match')?.ranges.map((range) => range.toString()) ?? [];
+      expect(painted.filter((text) => text.toLowerCase() === '5chan').length).toBeGreaterThanOrEqual(3);
+    });
+    // Every painted range sits in a result region: the table or the feed, never the footer's link to /search.
+    const ranges = highlights.get('search-match')?.ranges ?? [];
+    expect(ranges.every((range) => (range.startContainer.parentElement as HTMLElement | null)?.closest('[data-search-highlight]'))).toBe(true);
+    expect(ranges.some((range) => (range.startContainer.parentElement as HTMLElement | null)?.closest('table'))).toBe(true);
+  });
+
+  it('shows no board table when nothing matched a plain word', async () => {
+    const fetchMock = vi.fn().mockImplementation((url: string) =>
+      Promise.resolve({
+        ok: true,
+        json: async () => (url.includes('/api/communities') ? { communities: indexedBoards } : { query: 'bitcoin', page: 1, limit: 25, total: 0, posts: [] }),
+      }),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    await renderRoute('/search?q=bitcoin');
+
+    await vi.waitFor(() => expect(container.textContent).toContain('search_no_results'));
+    expect(container.querySelector('table')).toBeNull();
   });
 
   it('lists the current provider in the provider directory and returns to the search it came from', async () => {

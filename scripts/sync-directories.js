@@ -1,7 +1,7 @@
 // Best-effort mirror of the 5chan directories folder from GitHub.
 // Keeps src/data/5chan-directories/ a byte-for-byte copy of
 // https://github.com/bitsocialnet/lists/tree/master/5chan-directories so the app has an
-// offline fallback (loaded via src/data/vendored-directory-lists.ts) when GitHub is down.
+// offline fallback (loaded via src/lib/utils/vendored-directory-lists.ts) when GitHub is down.
 // Also mirrors the directory voting manifest next to it (see syncVoteCriteria below).
 // Never fails the build: if the fetch fails (offline, rate-limited, etc.), existing files are kept.
 
@@ -45,7 +45,8 @@ const fetchWithTimeout = async (url, asJson) => {
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`);
     }
-    return asJson ? response.json() : response.text();
+    // `await` keeps the abort timer armed while the body streams; a bare `return` would clear it in `finally` first.
+    return await (asJson ? response.json() : response.text());
   } finally {
     clearTimeout(timeout);
   }

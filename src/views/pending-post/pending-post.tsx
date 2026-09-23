@@ -9,7 +9,7 @@ import { getBoardPath } from '../../lib/utils/route-utils';
 import useChallengesStore from '../../stores/use-challenges-store';
 import useFailedPostRetryStore from '../../stores/use-failed-post-retry-store';
 import usePendingPostNavigationStore from '../../stores/use-pending-post-navigation-store';
-import { Post } from '../post/post';
+import { Post } from '../../components/post';
 
 type PendingAccountComment = {
   index?: number;
@@ -121,6 +121,7 @@ const PendingPost = () => {
       if (typeof secondFrameId === 'number') window.cancelAnimationFrame(secondFrameId);
       completeOwnedPendingNavigation();
     };
+    // oxlint-disable-next-line react-hooks/exhaustive-deps -- keyed on the route index; completeOwnedPendingNavigation re-reads the live store
   }, [isNavigatingToPendingPost, normalizedAccountCommentIndex]);
 
   useEffect(() => {

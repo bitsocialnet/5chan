@@ -1,11 +1,11 @@
-import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigationType, useParams } from 'react-router-dom';
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
-import { Comment, resolveReplySortType, useAccount, useAccountComment, useEditedComment, useReplies } from '@bitsocial/bitsocial-react-hooks';
+import { Comment, resolveReplySortType, useAccountComment, useEditedComment, useReplies } from '@bitsocial/bitsocial-react-hooks';
 import getShortAddress from '../../lib/get-short-address';
-import styles from '../../views/post/post.module.css';
-import { shouldShowSnow } from '../../lib/snow';
+import styles from '../post-styles';
+import { shouldShowSnow } from '../../stores/use-special-theme-store';
 import { getHasThumbnail } from '../../lib/utils/media-utils';
 import { getTextColorForBackground, hashStringToColor } from '../../lib/utils/post-utils';
 import { getFormattedDate, getFormattedTimeAgo } from '../../lib/utils/time-utils';
@@ -20,22 +20,23 @@ import useAuthorAddressClick from '../../hooks/use-author-address-click';
 import { useCommentMediaInfo } from '../../hooks/use-comment-media-info';
 import useCountLinksInReplies from '../../hooks/use-count-links-in-replies';
 import useHide from '../../hooks/use-hide';
+import { useActiveAccountField } from '../../hooks/use-active-account-field';
 import useStateString from '../../hooks/use-state-string';
 import useScrollToReply from '../../hooks/use-scroll-to-reply';
 import { useCurrentTime } from '../../hooks/use-current-time';
 import { useBoardPseudonymityMode } from '../../hooks/use-board-pseudonymity-mode';
-import CommentContent from '../comment-content/comment-content';
-import CommentMedia, { MediaLoadFailureInfo } from '../comment-media/comment-media';
+import CommentContent from '../comment-content';
+import CommentMedia, { MediaLoadFailureInfo } from '../comment-media';
 import FailedPublishNotice from '../failed-publish-notice';
-import LoadingEllipsis from '../loading-ellipsis/loading-ellipsis';
+import LoadingEllipsis from '../loading-ellipsis';
 import PostAuthorFlags from '../post-author-flags';
 import PostFlashTag from '../post-flash-tag';
 import PostTransferredTag from '../post-transferred-tag';
 import PostMenuMobile from './post-menu-mobile/post-menu-mobile';
-import ReplyQuotePreview from '../reply-quote-preview/reply-quote-preview';
-import Tooltip from '../tooltip/tooltip';
+import ReplyQuotePreview from '../reply-quote-preview';
+import Tooltip from '../tooltip';
 import TimeAgoTooltip from '../time-ago-tooltip';
-import { PostProps } from '../../views/post/post';
+import type { PostProps } from '../../lib/utils/post-props';
 import capitalize from 'lodash/capitalize';
 import lowerCase from 'lodash/lowerCase';
 import useReplyModalStore from '../../stores/use-reply-modal-store';
@@ -119,8 +120,7 @@ const PostInfoAndMedia = ({
   const isInModQueueView = isModQueueView(location.pathname);
   const getAlertThresholdSeconds = useModQueueStore((state) => state.getAlertThresholdSeconds);
   const currentTime = useCurrentTime(isInModQueueView ? 60 : false);
-  const account = useAccount();
-  const accountAddress = account?.author?.address;
+  const accountAddress = useActiveAccountField((account) => account?.author?.address);
 
   // Check if user is mod of this board
   const accountRole = roles?.[accountAddress]?.role;
@@ -745,20 +745,27 @@ const PostMobile = ({
   const virtuosoRef = useRef<VirtuosoHandle | null>(null);
   const virtuosoStateKey = `replies-mobile-${cid}`;
 
-  useEffect(() => {
-    if (!showAllReplies || !isInPostPageView) return;
+  const hasVirtualizedReplies = showAllReplies && !isInPendingPostView && showReplies && hasMore && !!resolvedPost?.replyCount;
 
-    const currentKey = virtuosoStateKey;
-    const setLastVirtuosoState = () => {
-      virtuosoRef.current?.getState((snapshot: StateSnapshot) => {
+  useLayoutEffect(() => {
+    if (!hasVirtualizedReplies || !isInPostPageView) return;
+
+    // Capture the handle before React clears its ref on unmount. Snapshotting every
+    // scroll event serializes the complete item-size tree in the scrolling hot path.
+    const virtuoso = virtuosoRef.current;
+    const saveVirtuosoState = () => {
+      virtuoso?.getState((snapshot: StateSnapshot) => {
         if (snapshot?.ranges?.length) {
-          lastVirtuosoStates[currentKey] = snapshot;
+          lastVirtuosoStates[virtuosoStateKey] = snapshot;
         }
       });
     };
-    window.addEventListener('scroll', setLastVirtuosoState, { passive: true });
-    return () => window.removeEventListener('scroll', setLastVirtuosoState);
-  }, [virtuosoStateKey, showAllReplies, isInPostPageView]);
+    window.addEventListener('pagehide', saveVirtuosoState);
+    return () => {
+      saveVirtuosoState();
+      window.removeEventListener('pagehide', saveVirtuosoState);
+    };
+  }, [virtuosoStateKey, hasVirtualizedReplies, isInPostPageView]);
 
   const lastVirtuosoState = navigationType === 'POP' ? lastVirtuosoStates?.[virtuosoStateKey] : undefined;
 
@@ -884,7 +891,7 @@ const PostMobile = ({
               )}
             </div>
             {/* Virtuoso infinite scroll for post page view when there's more content to paginate */}
-            {showAllReplies && !isInPendingPostView && showReplies && hasMore && !!resolvedPost?.replyCount && (
+            {hasVirtualizedReplies && (
               <Virtuoso
                 defaultItemHeight={defaultReplyItemHeight}
                 heightEstimates={replyHeightEstimates}
@@ -963,7 +970,8 @@ const PostMobile = ({
               previewDisplayReplies.map((reply, index) => (
                 <div key={reply.cid} className={styles.replyContainer} {...getPreviewReplyDebugProps(index)}>
                   <Reply
-                    disableDeferredLayout={feedVirtualizationModeOverride === 'item-size'}
+                    // DOM-measured feeds also need the real reply height before it enters the viewport.
+                    disableDeferredLayout={feedVirtualizationModeOverride !== undefined}
                     postReplyCount={replyCount}
                     reply={reply}
                     postsByAuthorInThread={postsByAuthorInThread}

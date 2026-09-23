@@ -5,19 +5,19 @@ import { useDismiss, useFloating, useFocus, useHover, useInteractions, offset, s
 import { getLinkMediaInfo, getHasThumbnail } from '../../lib/utils/media-utils';
 import { isCatalogView } from '../../lib/utils/view-utils';
 import useIsMobile from '../../hooks/use-is-mobile';
-import CommentMedia from '../comment-media/comment-media';
-import CodeBlock from '../code-block/code-block';
-import TexMath from '../tex-math/tex-math';
+import CommentMedia from '../comment-media';
+import CodeBlock from '../code-block';
+import TexMath from '../tex-math';
 import styles from './markdown.module.css';
 import { Link, useLocation, useParams } from 'react-router-dom';
-import { canEmbed } from '../embed/embed-utils';
+import { canEmbed } from '../../lib/utils/embed-utils';
 import { is5chanLink, transform5chanLinkToInternal, isValidCrossboardPattern } from '../../lib/utils/url-utils';
 import { CROSSBOARD_NUMBER_QUOTE_TOKEN_REGEX, type ExternalQuoteReference } from '../../lib/utils/external-quote-utils';
 import { isUnavailableQuoteTarget } from '../../lib/utils/quote-link-utils';
 import usePostNumberStore, { getCidForPostNumber } from '../../stores/use-post-number-store';
 import { communitiesPagesStore as useCommunitiesPagesStore } from '../../lib/bitsocial-internals/stores';
 import { useComment } from '@bitsocial/bitsocial-react-hooks';
-import ReplyQuotePreview from '../reply-quote-preview/reply-quote-preview';
+import ReplyQuotePreview from '../reply-quote-preview';
 import ExternalNumberQuoteLink from './external-number-quote-link';
 import { useDirectories, type DirectoryCommunity } from '../../hooks/use-directories';
 import { getCatalogSearchRoute } from '../../lib/utils/route-utils';
@@ -126,20 +126,11 @@ const ContentLinkEmbed = ({ children, href, linkMediaInfo }: ContentLinkEmbedPro
           <CommentMedia commentMediaInfo={linkMediaInfo} disableToggle={true} isReply={false} setShowThumbnail={setShowMedia} showThumbnail={false} />
         </>
       )}
-      {getHasThumbnail(linkMediaInfo, href) && (
+      {isOpen && !isMobile && getHasThumbnail(linkMediaInfo, href) && (
         <FloatingPortal>
-          {isOpen && !isMobile && (
-            <div className={styles.floatingEmbed} ref={refs.setFloating} style={floatingStyles} {...getFloatingProps()}>
-              <CommentMedia
-                commentMediaInfo={linkMediaInfo}
-                disableToggle={true}
-                isFloatingEmbed={true}
-                isReply={false}
-                setShowThumbnail={() => {}}
-                showThumbnail={true}
-              />
-            </div>
-          )}
+          <div className={styles.floatingEmbed} ref={refs.setFloating} style={floatingStyles} {...getFloatingProps()}>
+            <CommentMedia commentMediaInfo={linkMediaInfo} disableToggle={true} isFloatingEmbed={true} isReply={false} setShowThumbnail={() => {}} showThumbnail={true} />
+          </div>
         </FloatingPortal>
       )}
     </>

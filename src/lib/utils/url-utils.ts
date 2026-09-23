@@ -70,7 +70,8 @@ export const normalizePublishURL = (url: string) => {
 const EXPIRING_MEDIA_LINK_HOSTNAMES = [
   // 4chan CDN media disappears when threads are pruned, usually after a few hours or days.
   'i.4cdn.org',
-  // Litterbox temporary uploads can expire after 1 hour, 12 hours, 1 day, or 3 days.
+  // Litterbox temporary uploads are served from litter.catbox.moe and can expire after 1 hour, 12 hours, 1 day, or 3 days.
+  'litter.catbox.moe',
   'litterbox.catbox.moe',
   // tmpfiles.org uploads expire after 60 minutes, 6 hours, 12 hours, or 24 hours.
   'tmpfiles.org',
@@ -84,9 +85,46 @@ const EXPIRING_MEDIA_LINK_HOSTNAMES = [
   'uguu.se',
   // file.kiwi encrypted files are deleted after about 4 days by default.
   'file.kiwi',
+  // These upload services delete anonymous or free uploads automatically by default.
+  '0x0.st',
+  'bashupload.app',
+  'file.io',
+  'upload.ee',
+  'wetransfer.com',
+  'we.tl',
+  'filemail.com',
+  'send.vis.ee',
+  'oshi.at',
+  'gofile.io',
+  'hotimg.com',
+  'uploadir.com',
+  'sendspace.com',
 ] as const;
 
+const DISCORD_ATTACHMENT_HOSTNAMES = ['cdn.discordapp.com', 'media.discordapp.net'] as const;
+const AZURE_STORAGE_HOSTNAME_SUFFIXES = ['blob.core.windows.net', 'dfs.core.windows.net', 'file.core.windows.net'] as const;
+
 const normalizeHostnameForMatching = (hostname: string) => hostname.toLowerCase().replace(/^www\./, '');
+
+const hostnameMatches = (hostname: string, expectedHostname: string) => hostname === expectedHostname || hostname.endsWith(`.${expectedHostname}`);
+
+const getLowercaseSearchParamNames = (searchParams: URLSearchParams) => new Set([...searchParams.keys()].map((name) => name.toLowerCase()));
+
+const isIdentifiablyExpiringSignedUrl = (parsedUrl: URL, hostname: string): boolean => {
+  const searchParamNames = getLowercaseSearchParamNames(parsedUrl.searchParams);
+  const hasSearchParams = (...names: string[]) => names.every((name) => searchParamNames.has(name));
+
+  const isDiscordAttachment =
+    DISCORD_ATTACHMENT_HOSTNAMES.some((candidate) => hostname === candidate) &&
+    (parsedUrl.pathname.startsWith('/attachments/') || parsedUrl.pathname.startsWith('/ephemeral-attachments/')) &&
+    hasSearchParams('ex', 'hm');
+
+  const isAwsSignedUrl = hasSearchParams('x-amz-expires', 'x-amz-signature');
+  const isGoogleCloudSignedUrl = hasSearchParams('x-goog-expires', 'x-goog-signature');
+  const isAzureSignedUrl = AZURE_STORAGE_HOSTNAME_SUFFIXES.some((suffix) => hostnameMatches(hostname, suffix)) && hasSearchParams('se', 'sig');
+
+  return isDiscordAttachment || isAwsSignedUrl || isGoogleCloudSignedUrl || isAzureSignedUrl;
+};
 
 export const getExpiringMediaLinkHostname = (url: string): string | null => {
   try {
@@ -96,7 +134,12 @@ export const getExpiringMediaLinkHostname = (url: string): string | null => {
     }
 
     const hostname = normalizeHostnameForMatching(parsedUrl.hostname);
-    return EXPIRING_MEDIA_LINK_HOSTNAMES.find((expiringHostname) => hostname === expiringHostname || hostname.endsWith(`.${expiringHostname}`)) || null;
+    const expiringHostname = EXPIRING_MEDIA_LINK_HOSTNAMES.find((candidate) => hostnameMatches(hostname, candidate));
+    if (expiringHostname) {
+      return expiringHostname;
+    }
+
+    return isIdentifiablyExpiringSignedUrl(parsedUrl, hostname) ? hostname : null;
   } catch {
     return null;
   }

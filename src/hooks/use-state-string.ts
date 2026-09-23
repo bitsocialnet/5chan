@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useClientsStates, useCommunity, type Communities, type CommunityIdentifier } from '@bitsocial/bitsocial-react-hooks';
 import getShortAddress from '../lib/get-short-address';
-import { communitiesStore } from '../lib/bitsocial-internals/stores';
+import { communitiesStore as useCommunitiesStore } from '../lib/bitsocial-internals/stores';
 import { communityPostsCacheExpired } from '../lib/bitsocial-internals/utils';
 import { isBrowserPureP2PEnabled } from '../lib/p2p-runtime';
 import { useCommunityIdentifiers } from './use-community-identifiers';
@@ -281,7 +281,7 @@ export const useFeedStateString = (communityAddresses?: string[]): string | unde
 
   // Every caller already owns the data-loading hook. Observe only the derived text here so
   // high-frequency per-community lifecycle changes do not create no-op React commits.
-  const multipleCommunitiesFeedStateString = communitiesStore((state) => {
+  const multipleCommunitiesFeedStateString = useCommunitiesStore((state) => {
     if (communityAddress) {
       return;
     }

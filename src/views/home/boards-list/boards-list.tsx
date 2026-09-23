@@ -55,7 +55,7 @@ const DirectoriesErrorMessage = () => {
   return error?.message ? <div className='red'>{error.message}</div> : null;
 };
 
-const ModeratedBoardsLink = () => {
+const ModeratedBoardsLink = ({ useCatalogLinks }: { useCatalogLinks: boolean }) => {
   const { t } = useTranslation();
   const accountCommunityAddresses = useAccountCommunityAddresses();
 
@@ -65,7 +65,7 @@ const ModeratedBoardsLink = () => {
 
   return (
     <li>
-      <Link to='/mod'>{t('boards_you_moderate_nav')}</Link>
+      <Link to={useCatalogLinks ? '/mod/catalog' : '/mod'}>{t('boards_you_moderate_nav')}</Link>
     </li>
   );
 };
@@ -427,6 +427,12 @@ const BoardsList = ({ multisub }: { multisub: DirectoryCommunity[] }) => {
                     {...boardLinkProps}
                   />
                   <BoardLink key={boardAddressesByName['Quests'] ?? 'Quests'} boardName='Quests' address={boardAddressesByName['Quests'] ?? null} {...boardLinkProps} />
+                  <BoardLink
+                    key={boardAddressesByName['Original Content'] ?? 'Original Content'}
+                    boardName='Original Content'
+                    address={boardAddressesByName['Original Content'] ?? null}
+                    {...boardLinkProps}
+                  />
                 </>
               )}
             </ul>
@@ -609,12 +615,12 @@ const BoardsList = ({ multisub }: { multisub: DirectoryCommunity[] }) => {
             <NSFWBadge />
             <ul>
               <li>
-                <Link to='/all'>All 5chan Directories</Link>
+                <Link to={useCatalogLinks ? '/all/catalog' : '/all'}>All 5chan Directories</Link>
               </li>
               <li>
-                <Link to='/subs'>Subscriptions</Link>
+                <Link to={useCatalogLinks ? '/subs/catalog' : '/subs'}>Subscriptions</Link>
               </li>
-              <ModeratedBoardsLink />
+              <ModeratedBoardsLink useCatalogLinks={useCatalogLinks} />
             </ul>
           </div>
         )}

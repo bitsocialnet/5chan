@@ -1,3 +1,22 @@
+/* 4chan Frames header/control palettes, shared by the warm and cool serif themes. */
+:root .yotsuba,
+:root .futaba {
+  --frames-heading-background-color: #fca;
+  --frames-heading-border-color: #d8a787;
+  --frames-button-background-color: #eb9;
+  --frames-button-background-color-hover: #da8;
+  --frames-button-border-color-hover: #c97;
+}
+
+:root .yotsuba-b,
+:root .burichan {
+  --frames-heading-background-color: #d1d5ee;
+  --frames-heading-border-color: #98e;
+  --frames-button-background-color: #b9bedd;
+  --frames-button-background-color-hover: #a9aed0;
+  --frames-button-border-color-hover: #806fd8;
+}
+
 /* Code block ([code] tags on /g/) — Prettify-style token palette.
    Light themes use the default google-code-prettify colours; dark themes
    (.tomorrow, .spooky) use 4chan's "Tomorrow" code palette. */

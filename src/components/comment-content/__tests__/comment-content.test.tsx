@@ -1,8 +1,13 @@
 import * as React from 'react';
 import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
+import { createInstance } from 'i18next';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import CommentContent from '../comment-content';
+import englishTranslations from '../../../../public/translations/en/default.json';
+
+const boardStatusI18n = createInstance();
+void boardStatusI18n.init({ lng: 'en', resources: { en: { translation: englishTranslations } }, initAsync: false });
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
@@ -31,6 +36,7 @@ type TestComment = {
   };
   parentCid?: string;
   pendingApproval?: boolean;
+  publishingState?: string;
   postCid?: string;
   quotedCids?: string[];
   reason?: string;
@@ -40,6 +46,8 @@ type TestComment = {
 };
 
 const testState = vi.hoisted(() => ({
+  community: {} as { challenges?: unknown },
+  useCommunity: vi.fn(),
   commentsByCid: {} as Record<string, TestComment>,
   formattedDate: '2024-01-01 12:00:00',
   formattedTimeAgo: '2 hours ago',
@@ -55,42 +63,50 @@ const testState = vi.hoisted(() => ({
   unavailableCids: new Set<string>(),
 }));
 
-vi.mock('react-i18next', () => ({
-  Trans: ({
-    components,
-    i18nKey,
-    values,
-  }: {
-    components?: Record<number, React.ReactElement<Record<string, unknown>>>;
-    i18nKey: string;
-    values?: Record<string, unknown>;
-  }) =>
-    createElement(
-      'span',
-      { 'data-testid': `trans-${i18nKey}` },
-      values?.timestamp ? `${i18nKey}:${values.timestamp}` : i18nKey,
-      components?.[1]
-        ? React.cloneElement(components[1], {
-            'data-testid': `trans-action-${i18nKey}`,
-            children: i18nKey,
-          })
-        : null,
-    ),
-  useTranslation: () => ({
-    t: (key: string, options?: Record<string, unknown>) => {
-      if (key === 'reason_reason') {
-        return `reason:${options?.reason}`;
-      }
-      if (key === 'pending_mod_approval_reason') {
-        return `pending-reason:${options?.reason}`;
-      }
-      if (key === 'ban_expires_at') {
-        return `ban:${options?.address}:${options?.timestamp}`;
-      }
-      return key;
-    },
-  }),
-}));
+vi.mock('react-i18next', async () => {
+  const actual = await vi.importActual<typeof import('react-i18next')>('react-i18next');
+  return {
+    Trans: ({
+      components,
+      i18nKey,
+      values,
+    }: {
+      components?: Record<number, React.ReactElement<Record<string, unknown>>>;
+      i18nKey: string;
+      values?: Record<string, unknown>;
+    }) =>
+      i18nKey === 'board_uses_ai_moderation'
+        ? createElement(actual.Trans, { i18n: boardStatusI18n, i18nKey, components })
+        : createElement(
+            'span',
+            { 'data-testid': `trans-${i18nKey}` },
+            values?.timestamp ? `${i18nKey}:${values.timestamp}` : i18nKey,
+            components?.[1]
+              ? React.cloneElement(components[1], {
+                  'data-testid': `trans-action-${i18nKey}`,
+                  children: i18nKey,
+                })
+              : null,
+          ),
+    useTranslation: () => ({
+      t: (key: string, options?: Record<string, unknown>) => {
+        if (key === 'waiting_board_post_check' || key === 'waiting_board_challenge_verification') {
+          return boardStatusI18n.t(key);
+        }
+        if (key === 'reason_reason') {
+          return `reason:${options?.reason}`;
+        }
+        if (key === 'pending_mod_approval_reason') {
+          return `pending-reason:${options?.reason}`;
+        }
+        if (key === 'ban_expires_at') {
+          return `ban:${options?.address}:${options?.timestamp}`;
+        }
+        return key;
+      },
+    }),
+  };
+});
 
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom');
@@ -103,6 +119,14 @@ vi.mock('react-router-dom', async () => {
 
 vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
   useComment: ({ commentCid }: { commentCid?: string }) => (commentCid ? testState.commentsByCid[commentCid] : undefined),
+  useCommunity: (options: unknown) => {
+    testState.useCommunity(options);
+    return testState.community;
+  },
+}));
+
+vi.mock('../../../hooks/use-community-identifiers', () => ({
+  useCommunityIdentifier: (address?: string) => (address ? { name: address } : undefined),
 }));
 
 vi.mock('@bitsocial/bitsocial-react-hooks/dist/stores/communities-pages', () => ({
@@ -218,6 +242,7 @@ const queryMarkdownText = () => Array.from(container.querySelectorAll('[data-tes
 describe('CommentContent', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    testState.community = {};
     testState.commentsByCid = {};
     testState.formattedDate = '2024-01-01 12:00:00';
     testState.formattedTimeAgo = '2 hours ago';
@@ -524,6 +549,106 @@ describe('CommentContent', () => {
       state: 'publishing',
     });
     expect(container.querySelector('[data-testid="loading-ellipsis"]')?.textContent).toBe('Publishing');
+  });
+
+  it('waits until challenge answers are submitted before showing the AI notice, including on retries', async () => {
+    testState.community = {
+      challenges: [
+        { type: 'url/iframe', description: 'Spamblocker' },
+        { type: 'text/plain', description: 'Moderate Bitsocial publications with AI.' },
+      ],
+    };
+    const comment = { content: 'pending reply', parentCid: 'thread-cid', communityAddress: 'nothing-is-beyond-our-reach.bso', state: 'pending' };
+
+    for (const publishingState of ['waiting-challenge', 'waiting-challenge-answers', 'publishing-challenge-answer']) {
+      await renderContent({ ...comment, publishingState });
+      expect(container.textContent).not.toContain('AI moderation');
+    }
+
+    await renderContent({ ...comment, publishingState: 'waiting-challenge-verification' });
+    expect(container.textContent).toContain('This board uses AI moderation');
+
+    await renderContent({ ...comment, publishingState: 'waiting-challenge' });
+    expect(container.textContent).not.toContain('AI moderation');
+  });
+
+  it('explains board checks using only the target board public AI challenge metadata', async () => {
+    testState.community = {
+      challenges: [
+        { type: 'text/plain', description: 'Moderate Bitsocial publications with AI.' },
+        { type: 'text/plain', description: 'Moderate Bitsocial publications with AI.', pendingApproval: true },
+      ],
+    };
+    const comment = { content: 'pending post', communityAddress: 'outdoors-posting.bso', state: 'pending' };
+    await renderContent({ ...comment, publishingState: 'waiting-challenge' });
+
+    expect(container.textContent).toContain('Waiting for the board to check your post');
+    expect(container.textContent).not.toContain('AI moderation');
+
+    await renderContent({ ...comment, publishingState: 'waiting-challenge-verification' });
+    expect(container.textContent).toContain('Waiting for the board to verify your challenge answers');
+    expect(container.textContent).toContain('This board uses AI moderation to check posts against its rules.');
+    const links = container.querySelectorAll('a[href="https://bitsocial.net/apps/ai-moderation-challenge"]');
+    expect(links).toHaveLength(1);
+    expect(links[0].getAttribute('rel')).toBe('noopener noreferrer');
+    // The notice must use the theme link colors, not the browser default blue/purple anchor styling.
+    expect(links[0].className).toContain('link');
+    expect(testState.useCommunity).toHaveBeenLastCalledWith({ community: { name: 'outdoors-posting.bso' }, onlyIfCached: true });
+
+    testState.community = { challenges: [] };
+    await renderContent({ ...comment, publishingState: 'waiting-challenge-verification' });
+    expect(container.textContent).toContain('Waiting for the board to verify your challenge answers');
+    expect(container.textContent).not.toContain('AI moderation');
+  });
+
+  it.each([
+    undefined,
+    [],
+    [null],
+    [{ type: 'text/plain', description: 'This board does not use AI moderation.' }],
+    [{ type: 'text/plain', description: 'Custom AI challenge' }],
+    [{ type: 'url/iframe', description: 'Moderate Bitsocial publications with AI.' }],
+    [{ type: 'text/plain', name: '@bitsocial/ai-moderation-challenge' }],
+  ])('does not infer AI moderation from absent or unrecognized metadata: %j', async (challenges) => {
+    testState.community = { challenges };
+    await renderContent({ communityAddress: 'outdoors-posting.bso', publishingState: 'waiting-challenge-verification', state: 'pending' });
+    expect(container.textContent).toContain('Waiting for the board to verify your challenge answers');
+    expect(container.textContent).not.toContain('This board uses');
+  });
+
+  it.each(['publishing-challenge-request', 'waiting-challenge-answers', 'publishing-challenge-answer', 'fetching-community-ipns'])(
+    'preserves the existing status during %s without reading moderation metadata',
+    async (publishingState) => {
+      testState.community = { challenges: [{ type: 'text/plain', description: 'Moderate Bitsocial publications with AI.' }] };
+      testState.stateString = publishingState;
+      await renderContent({ communityAddress: 'outdoors-posting.bso', publishingState, state: 'pending' });
+      expect(container.querySelector('[data-testid="loading-ellipsis"]')?.textContent).toBe(publishingState);
+      expect(container.textContent).not.toContain('This board uses');
+      expect(testState.useCommunity).not.toHaveBeenCalled();
+    },
+  );
+
+  it('removes the board-check notice on success and prioritizes a failure over stale waiting state', async () => {
+    testState.community = { challenges: [{ type: 'text/plain', description: 'Moderate Bitsocial publications with AI.' }] };
+    const comment = { communityAddress: 'outdoors-posting.bso', publishingState: 'waiting-challenge-verification' };
+    await renderContent({ ...comment, state: 'pending' });
+    expect(container.textContent).toContain('This board uses');
+
+    await renderContent({ ...comment, state: 'failed', error: new Error('Unable to publish') });
+    expect(container.textContent).toContain('Unable to publish');
+    expect(container.textContent).not.toContain('This board uses');
+
+    await renderContent({ ...comment, cid: 'accepted-post', state: 'succeeded' });
+    expect(container.textContent).not.toContain('Waiting for');
+    expect(container.textContent).not.toContain('This board uses');
+  });
+
+  it('does not show AI moderation without a known publication target', async () => {
+    testState.community = { challenges: [{ type: 'text/plain', description: 'Moderate Bitsocial publications with AI.' }] };
+    await renderContent({ publishingState: 'waiting-challenge-verification', state: 'pending' });
+    expect(container.textContent).toContain('Waiting for the board to verify your challenge answers');
+    expect(container.textContent).not.toContain('This board uses');
+    expect(testState.useCommunity).toHaveBeenLastCalledWith(undefined);
   });
 
   it('hides generated fortune output from unpublished comment content', async () => {

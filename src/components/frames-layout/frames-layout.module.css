@@ -1,0 +1,7 @@
+.layout {
+  margin-left: var(--frames-sidebar-width);
+}
+
+.content {
+  min-width: 0;
+}

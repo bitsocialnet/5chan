@@ -2,8 +2,9 @@ import * as React from 'react';
 import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { size } from '@floating-ui/react';
 import ReplyQuotePreview from '../reply-quote-preview';
-import styles from '../../../views/post/post.module.css';
+import styles from '../../post-styles';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
@@ -24,6 +25,10 @@ const testState = vi.hoisted(() => ({
       address: '0xme',
     },
   } as { id?: string; author?: { address?: string } },
+  accountCalls: 0,
+  accountListeners: new Set<() => void>(),
+  floatingCalls: 0,
+  floatingPlacements: [] as Array<string | undefined>,
   accountCommentByCid: {} as Record<string, { cid?: string }>,
   accountCommentCalls: [] as Array<{ commentCid?: string } | undefined>,
   directories: [{ address: 'music-posting.eth', title: '/mu/ - Music' }] as Array<{ address: string; title?: string }>,
@@ -48,27 +53,45 @@ vi.mock('react-router-dom', async () => {
   };
 });
 
-vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
-  useAccount: () => testState.account,
-  useAccountComment: (options?: { commentCid?: string }) => {
-    testState.accountCommentCalls.push(options);
-    return (options?.commentCid && testState.accountCommentByCid[options.commentCid]) || {};
-  },
-}));
+vi.mock('@bitsocial/bitsocial-react-hooks', async () => {
+  const { useSyncExternalStore } = await vi.importActual<typeof import('react')>('react');
+  return {
+    useAccount: () => {
+      testState.accountCalls++;
+      return useSyncExternalStore(
+        (notify) => {
+          testState.accountListeners.add(notify);
+          return () => {
+            testState.accountListeners.delete(notify);
+          };
+        },
+        () => testState.account,
+      );
+    },
+    useAccountComment: (options?: { commentCid?: string }) => {
+      testState.accountCommentCalls.push(options);
+      return (options?.commentCid && testState.accountCommentByCid[options.commentCid]) || {};
+    },
+  };
+});
 
 vi.mock('@floating-ui/react', () => ({
   autoUpdate: vi.fn(),
   offset: vi.fn(),
   shift: vi.fn(),
   size: vi.fn(),
-  useFloating: () => ({
-    floatingStyles: { position: 'fixed' },
-    refs: {
-      setFloating: () => undefined,
-      setReference: () => undefined,
-    },
-    update: testState.updateMock,
-  }),
+  useFloating: (options?: { placement?: string }) => {
+    testState.floatingCalls++;
+    testState.floatingPlacements.push(options?.placement);
+    return {
+      floatingStyles: { position: 'fixed' },
+      refs: {
+        setFloating: () => undefined,
+        setReference: () => undefined,
+      },
+      update: testState.updateMock,
+    };
+  },
 }));
 
 vi.mock('../../../hooks/use-directories', () => ({
@@ -99,9 +122,10 @@ vi.mock('../../../hooks/use-is-mobile', () => ({
   default: () => testState.isMobile,
 }));
 
-vi.mock('../../../views/post', () => ({
-  Post: ({ post }: { post?: TestComment }) => createElement('div', { 'data-testid': 'post-preview' }, post?.cid),
-}));
+vi.mock('../../../hooks/use-quote-preview-post', () => {
+  const PreviewPost = ({ post }: { post?: TestComment }) => createElement('div', { 'data-testid': 'post-preview' }, post?.cid);
+  return { useQuotePreviewPost: () => (props: { post?: TestComment }) => createElement(PreviewPost, props) };
+});
 
 let container: HTMLDivElement;
 let root: Root;
@@ -120,12 +144,14 @@ const appendReplyElement = ({
   isThreadCard = false,
   withHighlight = false,
   parent = document.body,
+  zeroRect = false,
 }: {
   cid: string;
   inViewport?: boolean;
   isThreadCard?: boolean;
   withHighlight?: boolean;
   parent?: HTMLElement;
+  zeroRect?: boolean;
 }) => {
   const element = document.createElement('div');
   element.dataset.cid = cid;
@@ -135,13 +161,28 @@ const appendReplyElement = ({
   }
   element.scrollIntoView = vi.fn();
   element.getBoundingClientRect = () =>
-    ({
-      bottom: inViewport ? 100 : window.innerHeight + 500,
-      left: 0,
-      right: 100,
-      top: inViewport ? 0 : -500,
-    }) as DOMRect;
+    zeroRect
+      ? ({ bottom: 0, height: 0, left: 0, right: 0, top: 0, width: 0 } as DOMRect)
+      : ({
+          bottom: inViewport ? 100 : window.innerHeight + 500,
+          height: 100,
+          left: 0,
+          right: 100,
+          top: inViewport ? 0 : -500,
+          width: 100,
+        } as DOMRect);
   parent.appendChild(element);
+  return element;
+};
+
+// Mirrors the hidden feed-cache container: mounted but not rendered for the user.
+const appendHiddenFeedContainer = () => {
+  const element = document.createElement('div');
+  element.dataset.hiddenFeed = 'true';
+  element.style.visibility = 'hidden';
+  element.style.height = '0';
+  element.style.overflow = 'hidden';
+  document.body.appendChild(element);
   return element;
 };
 
@@ -172,6 +213,10 @@ describe('ReplyQuotePreview', () => {
     };
     testState.accountCommentByCid = {};
     testState.accountCommentCalls = [];
+    testState.accountCalls = 0;
+    testState.floatingCalls = 0;
+    testState.floatingPlacements = [];
+    testState.accountListeners.clear();
     testState.directories = [{ address: 'music-posting.eth', title: '/mu/ - Music' }];
     testState.isMobile = false;
     testState.locationPath = '/mu/thread/thread-cid';
@@ -198,11 +243,34 @@ describe('ReplyQuotePreview', () => {
     act(() => root.unmount());
     container.remove();
     document.querySelectorAll('[data-cid]').forEach((node) => node.remove());
+    document.querySelectorAll('[data-hidden-feed]').forEach((node) => node.remove());
     document.querySelectorAll('[data-thread-container-cid]').forEach((node) => {
       node.remove();
     });
     document.querySelectorAll(`.${styles.replyQuotePreview}`).forEach((node) => node.remove());
     document.querySelectorAll('.scroll-highlight').forEach((node) => node.remove());
+  });
+
+  it.each([false, true])('does not subscribe backlink-only previews to account data (mobile: %s)', async (isMobile) => {
+    testState.isMobile = isMobile;
+    await renderPreview({ isBacklinkReply: true, backlinkReply: { cid: 'reply-cid', number: 7, communityAddress: 'music-posting.eth' } });
+    expect(container.textContent).toContain('>>7');
+    expect(testState.accountCalls).toBe(0);
+    expect(testState.accountCommentCalls).toEqual([]);
+  });
+
+  it.each([false, true])('updates the ownership label without rendering its preview on account changes (mobile: %s)', async (isMobile) => {
+    testState.isMobile = isMobile;
+    await renderPreview({ isQuotelinkReply: true, quotelinkReply: { cid: 'reply-cid', number: 7, author: { address: '0xme' }, communityAddress: 'music-posting.eth' } });
+    expect(container.textContent).toContain('>>7 (You)');
+    const initialFloatingCalls = testState.floatingCalls;
+    await act(async () => {
+      testState.account = { id: 'account-2', author: { address: '0xother' } };
+      testState.accountListeners.forEach((notify) => notify());
+    });
+    expect(container.textContent).toContain('>>7');
+    expect(container.textContent).not.toContain('(You)');
+    expect(testState.floatingCalls).toBe(initialFloatingCalls);
   });
 
   it('scrolls to an in-thread reply instead of navigating on desktop quotelinks', async () => {
@@ -388,6 +456,89 @@ describe('ReplyQuotePreview', () => {
 
     expect(document.querySelector('[data-testid="post-preview"]')).toBeNull();
     outOfView.remove();
+  });
+
+  it('ignores hidden cached feed duplicates when deciding whether the quoted reply is in view', async () => {
+    const hiddenDuplicate = appendReplyElement({ cid: 'reply-cid', parent: appendHiddenFeedContainer(), zeroRect: true });
+    const inView = appendReplyElement({ cid: 'reply-cid', inViewport: true });
+
+    await renderPreview({
+      isQuotelinkReply: true,
+      quotelinkReply: {
+        cid: 'reply-cid',
+        number: 9,
+        communityAddress: 'music-posting.eth',
+      },
+    });
+
+    const link = queryAnchorByText('>>9');
+    expect(link).toBeTruthy();
+
+    await act(async () => {
+      link?.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+    });
+
+    expect(inView.classList.contains('highlight')).toBe(true);
+    expect(hiddenDuplicate.classList.contains('highlight')).toBe(false);
+    expect(document.querySelector('[data-testid="post-preview"]')).toBeNull();
+
+    await act(async () => {
+      link?.dispatchEvent(new MouseEvent('mouseout', { bubbles: true }));
+    });
+
+    inView.remove();
+    const outOfView = appendReplyElement({ cid: 'reply-cid', inViewport: false });
+
+    await act(async () => {
+      link?.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+    });
+
+    expect(hiddenDuplicate.classList.contains('highlight')).toBe(false);
+    expect(outOfView.classList.contains('highlight')).toBe(false);
+    expect(document.querySelector('[data-testid="post-preview"]')?.textContent).toBe('reply-cid');
+
+    await act(async () => {
+      link?.dispatchEvent(new MouseEvent('mouseout', { bubbles: true }));
+    });
+
+    expect(document.querySelector('[data-testid="post-preview"]')).toBeNull();
+  });
+
+  it('keeps the default desktop placement on resize until a preview has been measured', async () => {
+    await renderPreview({
+      isQuotelinkReply: true,
+      quotelinkReply: {
+        cid: 'reply-cid',
+        number: 9,
+        communityAddress: 'music-posting.eth',
+      },
+    });
+    expect(testState.floatingPlacements.at(-1)).toBe('right');
+
+    // No preview has been mounted yet, so the available width is unknown rather than narrow.
+    await act(async () => {
+      window.dispatchEvent(new Event('resize'));
+    });
+    expect(testState.floatingPlacements.at(-1)).toBe('right');
+    expect(testState.updateMock).toHaveBeenCalledTimes(1);
+
+    // Once the size middleware has measured the gap, resizing follows that measurement.
+    const applySize = (availableWidth: number) => {
+      const sizeOptions = vi.mocked(size).mock.calls.at(-1)?.[0] as { apply: (state: { availableWidth: number; elements: { floating: HTMLElement } }) => void };
+      sizeOptions.apply({ availableWidth, elements: { floating: document.createElement('div') } });
+    };
+    await act(async () => {
+      applySize(200);
+    });
+    expect(testState.floatingPlacements.at(-1)).toBe('left');
+
+    await act(async () => {
+      applySize(400);
+    });
+    await act(async () => {
+      window.dispatchEvent(new Event('resize'));
+    });
+    expect(testState.floatingPlacements.at(-1)).toBe('right');
   });
 
   it('uses the OP preview width class for floating desktop OP quotelinks', async () => {

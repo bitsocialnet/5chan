@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useBoardsFilterStore from '../../../stores/use-boards-filter-store';
+import useFramesStore from '../../../stores/use-frames-store';
+import { useFramesAvailable } from '../../../hooks/use-frames';
 import { DISCLAIMER_ACCEPTED_KEY } from '../../../stores/use-disclaimer-modal-store';
 import styles from '../home.module.css';
 
@@ -11,6 +13,9 @@ const BoardsFilterModal = () => {
   const buttonRef = useRef<HTMLButtonElement>(null);
 
   const { useCatalogLinks, setUseCatalogLinks, boardFilter, setBoardFilter } = useBoardsFilterStore();
+  const framesAvailable = useFramesAvailable();
+  const useFrames = useFramesStore((state) => state.useFrames);
+  const setUseFrames = useFramesStore((state) => state.setUseFrames);
 
   // Check if disclaimer has been accepted
   const hasAcceptedDisclaimer = (): boolean => {
@@ -54,6 +59,19 @@ const BoardsFilterModal = () => {
       </button>
       {showFilterModal && (
         <div ref={modalRef} className={styles.filterModal}>
+          {framesAvailable && (
+            <button
+              type='button'
+              className={`${styles.option} ${useFrames && styles.selected}`}
+              aria-pressed={useFrames}
+              onClick={() => {
+                setUseFrames(!useFrames);
+                setShowFilterModal(false);
+              }}
+            >
+              {t('use_frames')}
+            </button>
+          )}
           {/* Always shown: Use Catalog */}
           <button
             type='button'

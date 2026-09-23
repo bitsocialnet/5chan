@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
+import { MemoryRouter, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import communitiesPagesStore from '@bitsocial/bitsocial-react-hooks/dist/stores/communities-pages/index.js';
 import Board, { type BoardProps } from '../board';
@@ -87,8 +87,12 @@ const testState = vi.hoisted(() => ({
   hasMore: false,
   respectPostsPerPageForNewerThan: new Set<number>(),
   lastVirtuosoDefaultItemHeight: undefined as number | undefined,
+  lastVirtuosoItemSize: undefined as ((element: HTMLElement, field: 'offsetHeight' | 'offsetWidth') => number) | undefined,
   lastVirtuosoIncreaseViewportBy: undefined as { top: number; bottom: number } | undefined,
   lastVirtuosoMinOverscanItemCount: undefined as { top: number; bottom: number } | undefined,
+  lastVirtuosoRestoreState: undefined as { ranges: number[]; scrollTop: number } | undefined,
+  virtuosoSnapshot: { ranges: [0], scrollTop: 42 },
+  getVirtuosoStateMock: vi.fn(),
   expandTimeWindowMock: vi.fn(),
   loadMoreMock: vi.fn(),
   pageSizes: {
@@ -112,7 +116,6 @@ const testState = vi.hoisted(() => ({
     shortAddress: 'music-posting.eth',
     title: '/mu/ - Music',
   } as { shortAddress?: string; title?: string },
-  compatiblePostSortType: 'preferred' as string | undefined,
 }));
 
 vi.mock('react-i18next', () => ({
@@ -181,41 +184,45 @@ const getScopedFeed = (options?: { filter?: { filter: (comment: TestComment) => 
   return scopedFeed;
 };
 
-vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
-  resolvePostSortType: (community: TestCommunity | undefined, requestedSortType?: string) => {
-    const publishedSortTypes = [...Object.keys(community?.posts?.pages || {}), ...Object.keys(community?.posts?.pageCids || {})];
-    return requestedSortType ? (publishedSortTypes.includes(requestedSortType) ? requestedSortType : undefined) : publishedSortTypes[0];
-  },
-  useAccount: () => testState.account,
-  useAccountComments: (options?: { commentIndices?: number[]; communityAddress?: string; newerThan?: number; sortType?: 'new' | 'old' }) => {
-    testState.accountCommentsCalls.push(options);
-    return { accountComments: getScopedAccountComments(options).map(enrichAccountCommentAuthor) };
-  },
-  useFeed: (options?: {
-    communities?: unknown[];
-    filter?: { filter: (comment: TestComment) => boolean };
-    newerThan?: number;
-    postsPerPage?: number;
-    sortType?: string;
-  }) => {
-    testState.feedOptionsCalls.push({
-      communities: options?.communities,
-      communitiesLength: options?.communities?.length,
-      newerThan: options?.newerThan,
-      postsPerPage: options?.postsPerPage,
-      sortType: options?.sortType,
-    });
-    return {
-      feed: getScopedFeed(options),
-      hasMore: testState.hasMore,
-      state: testState.feedState ?? (testState.hasMore ? 'fetching-ipns' : 'succeeded'),
-      expandTimeWindow: testState.expandTimeWindowMock,
-      loadMore: testState.loadMoreMock,
-      reset: testState.resetMock,
-    };
-  },
-  useCommunity: () => testState.community,
-}));
+vi.mock('@bitsocial/bitsocial-react-hooks', async () => {
+  // Real sort helpers so the raw board state follows the package's single-page contract.
+  const { getPostPageSortType, resolvePostSortType } = await vi.importActual<typeof import('@bitsocial/bitsocial-react-hooks/dist/lib/page-sorts.js')>(
+    '@bitsocial/bitsocial-react-hooks/dist/lib/page-sorts.js',
+  );
+  return {
+    getPostPageSortType,
+    resolvePostSortType,
+    useAccount: () => testState.account,
+    useAccountComments: (options?: { commentIndices?: number[]; communityAddress?: string; newerThan?: number; sortType?: 'new' | 'old' }) => {
+      testState.accountCommentsCalls.push(options);
+      return { accountComments: getScopedAccountComments(options).map(enrichAccountCommentAuthor) };
+    },
+    useFeed: (options?: {
+      communities?: unknown[];
+      filter?: { filter: (comment: TestComment) => boolean };
+      newerThan?: number;
+      postsPerPage?: number;
+      sortType?: string;
+    }) => {
+      testState.feedOptionsCalls.push({
+        communities: options?.communities,
+        communitiesLength: options?.communities?.length,
+        newerThan: options?.newerThan,
+        postsPerPage: options?.postsPerPage,
+        sortType: options?.sortType,
+      });
+      return {
+        feed: getScopedFeed(options),
+        hasMore: testState.hasMore,
+        state: testState.feedState ?? (testState.hasMore ? 'fetching-ipns' : 'succeeded'),
+        expandTimeWindow: testState.expandTimeWindowMock,
+        loadMore: testState.loadMoreMock,
+        reset: testState.resetMock,
+      };
+    },
+    useCommunity: () => testState.community,
+  };
+});
 
 vi.mock('../../../hooks/use-stable-community', () => ({
   useCommunityField: (_address: string | undefined, selector: (community: typeof testState.communitySnapshot) => unknown) => selector(testState.communitySnapshot),
@@ -228,26 +235,35 @@ vi.mock('react-virtuoso', () => ({
         components,
         data = [],
         defaultItemHeight,
+        itemSize,
         increaseViewportBy,
         minOverscanItemCount,
         endReached,
         itemContent,
+        restoreStateFrom,
       }: {
         components?: { Footer?: React.ComponentType };
         data?: TestComment[];
         defaultItemHeight?: number;
+        itemSize?: (element: HTMLElement, field: 'offsetHeight' | 'offsetWidth') => number;
         increaseViewportBy?: { top: number; bottom: number };
         minOverscanItemCount?: { top: number; bottom: number };
         endReached?: ((index: number) => void) | undefined;
         itemContent: (index: number, item: TestComment) => React.ReactNode;
+        restoreStateFrom?: { ranges: number[]; scrollTop: number };
       },
       ref: React.ForwardedRef<{ getState: (cb: (snapshot: { ranges: number[]; scrollTop: number }) => void) => void }>,
     ) => {
       testState.lastVirtuosoDefaultItemHeight = defaultItemHeight;
+      testState.lastVirtuosoItemSize = itemSize;
       testState.lastVirtuosoIncreaseViewportBy = increaseViewportBy;
       testState.lastVirtuosoMinOverscanItemCount = minOverscanItemCount;
+      testState.lastVirtuosoRestoreState = restoreStateFrom;
       React.useImperativeHandle(ref, () => ({
-        getState: (cb) => cb({ ranges: [0], scrollTop: 42 }),
+        getState: (cb) => {
+          testState.getVirtuosoStateMock();
+          cb(testState.virtuosoSnapshot);
+        },
       }));
 
       return createElement(
@@ -283,11 +299,6 @@ vi.mock('../../../hooks/use-resolved-community-address', () => ({
 
 vi.mock('../../../hooks/use-state-string', () => ({
   useFeedStateString: () => testState.feedStateString,
-}));
-
-vi.mock('../../../hooks/use-compatible-post-sort-type', () => ({
-  useCompatiblePostSortType: (_communities: unknown[], preferredSortType: string) =>
-    testState.compatiblePostSortType === 'preferred' ? preferredSortType : testState.compatiblePostSortType,
 }));
 
 vi.mock('../../../stores/use-feed-reset-store', () => ({
@@ -338,7 +349,7 @@ vi.mock('../../../components/footer/footer', () => ({
   PageFooterMobile: ({ children }: { children: React.ReactNode }) => createElement('div', { 'data-testid': 'footer-mobile' }, children),
 }));
 
-vi.mock('../../post/post', () => ({
+vi.mock('../../../components/post', () => ({
   Post: ({ post }: { post?: TestComment }) =>
     createElement(
       'div',
@@ -351,7 +362,8 @@ vi.mock('../../post/post', () => ({
     ),
 }));
 
-vi.mock('../../../lib/snow', () => ({
+vi.mock('../../../stores/use-special-theme-store', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../stores/use-special-theme-store')>()),
   shouldShowSnow: () => false,
 }));
 
@@ -446,8 +458,12 @@ describe('Board', () => {
     testState.hasMore = false;
     testState.respectPostsPerPageForNewerThan = new Set();
     testState.lastVirtuosoDefaultItemHeight = undefined;
+    testState.lastVirtuosoItemSize = undefined;
     testState.lastVirtuosoIncreaseViewportBy = undefined;
     testState.lastVirtuosoMinOverscanItemCount = undefined;
+    testState.lastVirtuosoRestoreState = undefined;
+    testState.virtuosoSnapshot = { ranges: [0], scrollTop: 42 };
+    testState.getVirtuosoStateMock.mockReset();
     testState.pageSizes = {
       guiPostsPerPage: 2,
       infiniteFeedPostsPerPage: 2,
@@ -465,7 +481,6 @@ describe('Board', () => {
       shortAddress: 'music-posting.eth',
       title: '/mu/ - Music',
     };
-    testState.compatiblePostSortType = 'preferred';
     testState.loadMoreMock.mockReset();
     testState.resetMock.mockReset();
     testState.registerCommentsMock.mockReset();
@@ -518,8 +533,11 @@ describe('Board', () => {
     ]);
   });
 
-  it('uses the preloaded page when a board does not publish the active sort', async () => {
-    testState.compatiblePostSortType = undefined;
+  it('requests the active sort on a board that only preloads its hot page', async () => {
+    testState.community = {
+      ...testState.community,
+      posts: { pageCids: {}, pages: { hot: { comments: [] } } },
+    };
 
     await renderBoard({
       boardProps: { boardIdentifier: 'mu', viewType: 'board' },
@@ -532,7 +550,7 @@ describe('Board', () => {
         expect.objectContaining({
           communitiesLength: 1,
           newerThan: undefined,
-          sortType: undefined,
+          sortType: 'active',
         }),
       ]),
     );
@@ -609,6 +627,83 @@ describe('Board', () => {
     });
 
     expect(document.title).toBe(`${TRASH_BOARD_TITLE} - 5chan`);
+  });
+
+  it('saves the last Virtuoso snapshot on Activity hide and restores it when returning with POP navigation', async () => {
+    testState.feed = [{ cid: 'post-activity', communityAddress: 'music-posting.eth' }];
+    const CachedBoardHarness = () => {
+      const { pathname } = useLocation();
+      const navigate = useNavigate();
+      const isVisible = pathname === '/all';
+      return createElement(
+        React.Fragment,
+        {},
+        createElement('button', { 'data-testid': 'open-thread', onClick: () => navigate('/mu/thread/post-activity') }, 'thread'),
+        createElement('button', { 'data-testid': 'back', onClick: () => navigate(-1) }, 'back'),
+        createElement(React.Activity, {
+          mode: isVisible ? 'visible' : 'hidden',
+          // oxlint-disable-next-line react/no-children-prop -- ActivityProps types children as required, so createElement only accepts it inside the props object
+          children: createElement(Board, { feedCacheKey: '/all-activity-snapshot', isVisible, viewType: 'all' }),
+        }),
+      );
+    };
+    await act(async () => {
+      root.render(createElement(MemoryRouter, { initialEntries: ['/all'] }, createElement(CachedBoardHarness)));
+    });
+    expect(testState.lastVirtuosoRestoreState).toBeUndefined();
+    expect(testState.getVirtuosoStateMock).not.toHaveBeenCalled();
+    const lastSnapshot = { ranges: [0, 4], scrollTop: 432 };
+    testState.virtuosoSnapshot = lastSnapshot;
+
+    await act(async () => container.querySelector<HTMLButtonElement>('[data-testid="open-thread"]')?.click());
+    expect(testState.getVirtuosoStateMock).toHaveBeenCalledTimes(1);
+    await act(async () => container.querySelector<HTMLButtonElement>('[data-testid="back"]')?.click());
+    expect(testState.lastVirtuosoRestoreState).toBe(lastSnapshot);
+  });
+
+  it('retains pagination scroll on Activity reactivation and settings navigation but scrolls for real page changes', async () => {
+    testState.feed = [1, 2, 3, 4].map((number) => ({ cid: `post-${number}`, communityAddress: 'music-posting.eth' }));
+    const CachedBoardHarness = () => {
+      const { pathname } = useLocation();
+      const navigate = useNavigate();
+      const isVisible = !pathname.includes('/thread/');
+      return createElement(
+        React.Fragment,
+        {},
+        createElement('button', { 'data-testid': 'open-thread', onClick: () => navigate('/mu/thread/post-3') }, 'thread'),
+        createElement('button', { 'data-testid': 'back', onClick: () => navigate(-1) }, 'back'),
+        createElement('button', { 'data-testid': 'settings', onClick: () => navigate('/mu/2/settings') }, 'settings'),
+        createElement('button', { 'data-testid': 'page-one', onClick: () => navigate('/mu') }, 'page 1'),
+        createElement('button', { 'data-testid': 'page-two', onClick: () => navigate('/mu/2') }, 'page 2'),
+        createElement(React.Activity, {
+          mode: isVisible ? 'visible' : 'hidden',
+          // oxlint-disable-next-line react/no-children-prop -- ActivityProps types children as required, so createElement only accepts it inside the props object
+          children: createElement(Board, { boardIdentifier: 'mu', feedCacheKey: '/mu', isVisible, viewType: 'board' }),
+        }),
+      );
+    };
+    await act(async () => {
+      root.render(
+        createElement(
+          MemoryRouter,
+          { initialEntries: ['/mu/2'] },
+          createElement(Routes, {}, createElement(Route, { path: '/:boardIdentifier/*', element: createElement(CachedBoardHarness) })),
+        ),
+      );
+    });
+    expect(window.scrollTo).toHaveBeenCalledWith({ top: 0, left: 0, behavior: 'instant' });
+    vi.mocked(window.scrollTo).mockClear();
+
+    for (const testId of ['open-thread', 'back', 'settings', 'back']) {
+      await act(async () => container.querySelector<HTMLButtonElement>(`[data-testid="${testId}"]`)?.click());
+    }
+    expect(window.scrollTo).not.toHaveBeenCalled();
+    expect(container.querySelector('[data-testid="board-pagination"]')?.textContent).toBe('/mu:2:2');
+
+    await act(async () => container.querySelector<HTMLButtonElement>('[data-testid="page-one"]')?.click());
+    expect(window.scrollTo).toHaveBeenCalledTimes(1);
+    await act(async () => container.querySelector<HTMLButtonElement>('[data-testid="page-two"]')?.click());
+    expect(window.scrollTo).toHaveBeenCalledTimes(2);
   });
 
   it('renders the current page feed, inserts recent account comments, and wires footer actions', async () => {
@@ -1193,6 +1288,33 @@ describe('Board', () => {
     expect(testState.lastVirtuosoDefaultItemHeight).toBe(420);
     expect(testState.lastVirtuosoIncreaseViewportBy).toEqual({ top: 2400, bottom: 1400 });
     expect(testState.lastVirtuosoMinOverscanItemCount).toEqual({ top: 8, bottom: 4 });
+  });
+
+  it('preserves fractional DOM sizes on mobile all feeds without using height estimates', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 390, writable: true });
+    testState.feed = [{ cid: 'first-post', communityAddress: 'music-posting.eth' }];
+
+    await renderBoard({ boardProps: { viewType: 'all' }, initialEntry: '/all', routePath: '/all/*' });
+
+    const row = document.createElement('div');
+    row.dataset.pretextHeight = '900';
+    vi.spyOn(row, 'getBoundingClientRect').mockReturnValue({ height: 386.96875, width: 389.5 } as DOMRect);
+
+    expect(testState.lastVirtuosoItemSize?.(row, 'offsetHeight')).toBe(386.96875);
+    expect(testState.lastVirtuosoItemSize?.(row, 'offsetWidth')).toBe(389.5);
+  });
+
+  it('preserves explicit Pretext sizing on mobile all feeds', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 390, writable: true });
+    testState.feed = [{ cid: 'first-post', communityAddress: 'music-posting.eth' }];
+
+    await renderBoard({ boardProps: { viewType: 'all' }, initialEntry: '/all?pretextFeed=item-size', routePath: '/all/*' });
+
+    const row = document.createElement('div');
+    row.dataset.pretextHeight = '900';
+    vi.spyOn(row, 'getBoundingClientRect').mockReturnValue({ height: 386.96875 } as DOMRect);
+
+    expect(testState.lastVirtuosoItemSize?.(row, 'offsetHeight')).toBe(900);
   });
 
   it('uses an asymmetric reverse-scroll buffer on desktop multiboard feeds', async () => {

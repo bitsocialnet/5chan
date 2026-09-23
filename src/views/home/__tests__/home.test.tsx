@@ -4,6 +4,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useFeedStateString } from '../../../hooks/use-state-string';
+import useHomepageIntroductionStore from '../../../stores/use-homepage-introduction-store';
 import Home from '../home';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -112,14 +113,6 @@ vi.mock('../../../components/site-legal-meta', () => ({
   default: () => createElement('div', { 'data-testid': 'site-legal-meta' }, 'site-legal-meta'),
 }));
 
-vi.mock('../../../components/disclaimer-modal', () => ({
-  default: () => createElement('div', { 'data-testid': 'disclaimer-modal' }, 'disclaimer-modal'),
-}));
-
-vi.mock('../../../components/directory-modal', () => ({
-  default: () => createElement('div', { 'data-testid': 'directory-modal' }, 'directory-modal'),
-}));
-
 let container: HTMLDivElement;
 let root: Root;
 
@@ -132,6 +125,7 @@ const renderHome = () => {
 describe('Home', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    useHomepageIntroductionStore.getState().setShowIntroduction(true);
     document.title = 'before';
     testState.closeDirectoryModalMock.mockReset();
     testState.navigateMock.mockReset();
@@ -164,6 +158,28 @@ describe('Home', () => {
   afterEach(() => {
     act(() => root.unmount());
     container.remove();
+    localStorage.removeItem('homepage-introduction');
+  });
+
+  it('keeps the introduction dismissed after returning home and restores it when the preference changes', () => {
+    renderHome();
+    expect(container.textContent).toContain('what_is_5chan');
+
+    const closeButton = container.querySelector<HTMLButtonElement>('button[aria-label="close"]');
+    expect(closeButton).not.toBeNull();
+    act(() => closeButton!.click());
+
+    expect(container.textContent).not.toContain('what_is_5chan');
+    expect(container.querySelector('[data-testid="boards-list"]')).not.toBeNull();
+    expect(JSON.parse(localStorage.getItem('homepage-introduction')!).state.showIntroduction).toBe(false);
+
+    act(() => root.render(null));
+    renderHome();
+    expect(container.textContent).not.toContain('what_is_5chan');
+
+    act(() => useHomepageIntroductionStore.getState().setShowIntroduction(true));
+    expect(container.textContent).toContain('what_is_5chan');
+    expect(container.querySelector('button[aria-label="close"]')).not.toBeNull();
   });
 
   it('renders the home view chrome, child sections, collectors, and aggregated stats', () => {
@@ -173,8 +189,6 @@ describe('Home', () => {
     // subscription is never opened. Stats previously subscribed with an empty list regardless.
     expect(vi.mocked(useFeedStateString)).not.toHaveBeenCalled();
     expect(document.title).toBe('5chan');
-    expect(container.querySelector('[data-testid="disclaimer-modal"]')?.textContent).toBe('disclaimer-modal');
-    expect(container.querySelector('[data-testid="directory-modal"]')?.textContent).toBe('directory-modal');
     expect(container.querySelector('[data-testid="boards-list"]')?.textContent).toBe('boards:2');
     expect(container.querySelector('[data-testid="popular-threads-box"]')?.textContent).toBe('popular:2:2');
     expect(container.querySelector('[data-testid="stats-metadata-loader"]')?.getAttribute('data-addresses')).toBe('music-posting.eth,tech-posting.eth');
@@ -307,7 +321,7 @@ describe('Home', () => {
     expect(testState.setStatsScopeMock).toHaveBeenCalledWith('all');
   });
 
-  it('navigates to the canonical board path when the search form is submitted', async () => {
+  it('searches a board address instead of opening the board, so the results page can list it', async () => {
     renderHome();
 
     const input = container.querySelector<HTMLInputElement>('input[type="text"]');
@@ -322,7 +336,7 @@ describe('Home', () => {
       form?.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
     });
 
-    expect(testState.navigateMock).toHaveBeenCalledWith('/mu');
+    expect(testState.navigateMock).toHaveBeenCalledWith('/search?q=music-posting.eth');
   });
 
   it('navigates ordinary search terms to the archive search route', async () => {
@@ -335,7 +349,20 @@ describe('Home', () => {
       form?.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
     });
 
-    expect(testState.navigateMock).toHaveBeenCalledWith('/search?q=old%20internet%20culture');
+    expect(testState.navigateMock).toHaveBeenCalledWith('/search?q=old+internet+culture');
+  });
+
+  it('does nothing when the search form is submitted empty', async () => {
+    renderHome();
+
+    const input = container.querySelector<HTMLInputElement>('input[type="text"]');
+    const form = container.querySelector('form');
+    await act(async () => {
+      if (input) input.value = '   ';
+      form?.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    });
+
+    expect(testState.navigateMock).not.toHaveBeenCalled();
   });
 
   it('closes the directory modal when the home view unmounts', () => {

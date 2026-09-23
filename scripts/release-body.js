@@ -103,7 +103,7 @@ const downloads = [macSection, winSection, linuxSection, androidSection, htmlSec
 
 // One-liner summary of what changed in this release. Update before each release.
 const oneLinerDescription =
-  'This version adds /search/, which searches archived posts across every 5chan board and shows the matches inside their threads, tells you which board currently serves a directory code, and widens the time filter automatically when a feed comes up empty.';
+  'This version restores thread bumping so active threads rise to the top again, lists matching boards above post results when you search, adds the /oc/ Original Content board directory, speeds up first load, and fixes quote link previews on boards you have already visited.';
 
 const releaseBody = `${oneLinerDescription}
 

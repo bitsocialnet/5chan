@@ -24,7 +24,6 @@ const testState = vi.hoisted(() => ({
   isMobile: false,
   loadMoreMock: vi.fn(),
   feedOptions: undefined as { sortType?: string } | undefined,
-  compatiblePostSortType: 'preferred' as string | undefined,
   resolvedCommunityAddress: 'music-posting.eth' as string | undefined,
   community: {
     error: undefined as Error | undefined,
@@ -75,11 +74,6 @@ vi.mock('../../../hooks/use-state-string', () => ({
   useFeedStateString: () => 'loading_feed',
 }));
 
-vi.mock('../../../hooks/use-compatible-post-sort-type', () => ({
-  useCompatiblePostSortType: (_communities: unknown[], preferredSortType: string) =>
-    testState.compatiblePostSortType === 'preferred' ? preferredSortType : testState.compatiblePostSortType,
-}));
-
 vi.mock('../../../hooks/use-stable-community', () => ({
   useCommunityField: (_address: string | undefined, selector: (value: typeof testState.community) => unknown) => selector(testState.community),
 }));
@@ -121,7 +115,8 @@ vi.mock('../../../components/loading-ellipsis', () => ({
   default: ({ string }: { string: string }) => createElement('div', { 'data-testid': 'loading-ellipsis' }, string),
 }));
 
-vi.mock('../../../lib/snow', () => ({
+vi.mock('../../../stores/use-special-theme-store', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../stores/use-special-theme-store')>()),
   shouldShowSnow: () => false,
 }));
 
@@ -143,7 +138,6 @@ describe('Archive', () => {
     };
     testState.loadMoreMock = vi.fn();
     testState.feedOptions = undefined;
-    testState.compatiblePostSortType = 'preferred';
 
     container = document.createElement('div');
     document.body.appendChild(container);
@@ -173,12 +167,10 @@ describe('Archive', () => {
     expect(rows[0]!.textContent).not.toContain('222');
   });
 
-  it('uses the preloaded page when a board does not publish the active sort', async () => {
-    testState.compatiblePostSortType = undefined;
-
+  it('requests the active sort for the archive feed', async () => {
     await renderArchiveRoute({ root, element: createElement(Archive), initialEntry: '/mu/archive', routePath: '/:boardIdentifier/archive' });
 
-    expect(testState.feedOptions?.sortType).toBeUndefined();
+    expect(testState.feedOptions?.sortType).toBe('active');
   });
 
   it('shows the archived summary window using the oldest archived timestamp', async () => {
@@ -219,6 +211,9 @@ describe('Archive', () => {
 
     const loadMoreButton = Array.from(container.querySelectorAll('button')).find((button) => button.textContent === 'load_more');
     expect(loadMoreButton).toBeTruthy();
+    expect(loadMoreButton?.className).toBe('button');
+    expect(loadMoreButton?.parentElement?.textContent).toBe('[load_more]');
+    expect(loadMoreButton?.parentElement?.querySelector('[data-testid="loading-ellipsis"]')).toBeNull();
 
     act(() => {
       loadMoreButton?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
@@ -232,6 +227,49 @@ describe('Archive', () => {
     await renderArchiveRoute({ root, element: createElement(Archive), initialEntry: '/mu/archive', routePath: '/:boardIdentifier/archive' });
 
     expect(container.querySelector('[data-testid="loading-ellipsis"]')?.textContent).toBe('loading_archive');
+  });
+
+  it('truncates long excerpts to the row budget and keeps the full text in the tooltip', async () => {
+    const longContent = 'a'.repeat(400);
+    testState.feed = [{ cid: 'a', archived: true, threadCid: '111', content: longContent }];
+
+    await renderArchiveRoute({ root, element: createElement(Archive), initialEntry: '/mu/archive', routePath: '/:boardIdentifier/archive' });
+
+    const teaser = container.querySelector('#arc-list tbody tr td:nth-child(2)') as HTMLTableCellElement;
+    expect(teaser.textContent).toBe(`${'a'.repeat(100)}\u2026`);
+    expect(teaser.title).toBe(longContent);
+  });
+
+  it('shares the excerpt budget between the title and the content and collapses newlines', async () => {
+    testState.feed = [{ cid: 'a', archived: true, threadCid: '111', title: 'b'.repeat(40), content: `${'c'.repeat(30)}\n${'d'.repeat(200)}` }];
+
+    await renderArchiveRoute({ root, element: createElement(Archive), initialEntry: '/mu/archive', routePath: '/:boardIdentifier/archive' });
+
+    const teaser = container.querySelector('#arc-list tbody tr td:nth-child(2)') as HTMLTableCellElement;
+    expect(teaser.querySelector('b')?.textContent).toBe('b'.repeat(40));
+    // 40 title characters plus the ": " separator leave 58 characters of content.
+    expect(teaser.textContent).toBe(`${'b'.repeat(40)}: ${'c'.repeat(30)} ${'d'.repeat(27)}\u2026`);
+    expect(teaser.textContent?.replace('\u2026', '').length).toBe(100);
+  });
+
+  it('truncates a title that fills the whole excerpt budget and drops the content', async () => {
+    testState.feed = [{ cid: 'a', archived: true, threadCid: '111', title: 'e'.repeat(150), content: 'dropped content' }];
+
+    await renderArchiveRoute({ root, element: createElement(Archive), initialEntry: '/mu/archive', routePath: '/:boardIdentifier/archive' });
+
+    const teaser = container.querySelector('#arc-list tbody tr td:nth-child(2)') as HTMLTableCellElement;
+    expect(teaser.querySelector('b')?.textContent).toBe('e'.repeat(100));
+    expect(teaser.textContent).toBe(`${'e'.repeat(100)}\u2026`);
+    expect(teaser.textContent).not.toContain('dropped content');
+  });
+
+  it('leaves short excerpts untruncated', async () => {
+    testState.feed = [{ cid: 'a', archived: true, threadCid: '111', title: 'Short title', content: 'short content' }];
+
+    await renderArchiveRoute({ root, element: createElement(Archive), initialEntry: '/mu/archive', routePath: '/:boardIdentifier/archive' });
+
+    const teaser = container.querySelector('#arc-list tbody tr td:nth-child(2)') as HTMLTableCellElement;
+    expect(teaser.textContent).toBe('Short title: short content');
   });
 
   it('renders the shared archive table and mobile nav actions when mobile hook is set', async () => {

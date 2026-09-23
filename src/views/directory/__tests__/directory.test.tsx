@@ -147,7 +147,8 @@ vi.mock('../../../stores/use-community-offline-store', () => ({
     }),
 }));
 
-vi.mock('../../../lib/snow', () => ({
+vi.mock('../../../stores/use-special-theme-store', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../stores/use-special-theme-store')>()),
   shouldShowSnow: () => false,
 }));
 

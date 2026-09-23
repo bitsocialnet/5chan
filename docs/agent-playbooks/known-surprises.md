@@ -28,6 +28,56 @@ If uncertain, ask the developer before adding an entry.
 
 ## Entries
 
+### 5archive rejects branch-scoped dev origins
+
+- **Date:** 2026-09-13
+- **Observed by:** Tommaso + Claude
+- **Context:** Browser-verifying `/search/` changes from a task worktree, which the launcher served at a branch-scoped route (`https://codex-feature-search-board-results.5chan.localhost`).
+- **What was surprising:** Every `api.5archive.org` request failed in the browser with `net::ERR_FAILED` and `/search/` showed "The search provider is unavailable", while `curl` from the shell answered normally. The indexer only sends `access-control-allow-origin` for `https://5chan.localhost` and `https://5chan.app`, and the launcher picks a branch-scoped portless name for any non-master branch, so a worktree never gets an allowed origin.
+- **Impact:** Anything that calls the indexer looks broken in every worktree browser check; an agent can burn time debugging the client or report a working change as failing.
+- **Mitigation:** Confirm the cause with `curl -s -D - -o /dev/null -H "Origin: https://<host>" https://api.5archive.org/api/communities | grep -i access-control`. For the browser check, serve the worktree on the canonical route when it is free (`NODE_EXTRA_CA_CERTS=~/.portless/ca.pem corepack yarn exec portless 5chan vite` from the worktree) and open `https://5chan.localhost`; stop that server afterwards. Do not treat the failure as a client bug.
+- **Status:** confirmed
+
+### `yarn changelog` regenerates every release and reverts the changelog rebrand
+
+- **Date:** 2026-09-12
+- **Observed by:** Claude Opus 5
+- **Context:** Preparing the `v0.9.20` release with the `release` skill, which instructs running `corepack yarn changelog`.
+- **What was surprising:** The script is `conventional-changelog -p angular -i CHANGELOG.md -s -r 0`. The `-r 0` flag regenerates *every* release section from raw commit messages, not just the new one. Commit `cdfeb13` had hand-edited 90 lines of `CHANGELOG.md` to scrub pre-rebrand terminology (`subplebbit` -> `community`, `plebbit-js` -> `bitsocial-js`, `Plebbit.` -> `Bitsocial.`), and those edits exist only in the file: the underlying commit subjects still carry the old words.
+- **Impact:** Running the documented command reintroduces 45 `plebbit`/`subplebbit` references into historical entries, silently undoing the rebrand inside the release commit itself. Confirmed by diffing a dry run against the committed file.
+- **Mitigation:** Do not run `corepack yarn changelog` as-is. Generate only the new section with `corepack yarn exec conventional-changelog -p angular` (no `-i`, `-s` or `-r`), prepend it to `CHANGELOG.md`, then verify the untouched remainder is byte-identical to the previous file before committing. The generated section already ends with the three blank lines the file uses between releases, so plain concatenation preserves the format. The durable fix is to drop `-r 0` from the `changelog` script in `package.json` so it only ever prepends.
+- **Status:** confirmed
+
+### AI hook payloads and concurrent locale writes need behavioral checks
+
+- **Date:** 2026-09-11
+- **Observed by:** contributor + Codex
+- **Context:** Approved audit of the repository's AI workflows for GPT-6 Astra.
+- **What was surprising:** Mirrored hook files passed parity checks while Codex supplied patch text in `tool_input.command`, not `file_path`. Stop hooks also mutated Git and repeated builds. Per-key translator agents rewrote the same locale files concurrently.
+- **Impact:** Edit hooks could silently skip work; routine conversations could trigger unrelated work; overlapping locale writers could lose keys.
+- **Mitigation:** Keep only the payload-tested formatter on edit events, use explicit `agent:verify`, and apply translation maps serially with the writer lock. Run `ai-workflow:test` as well as schema/generated-file checks after workflow changes.
+- **Status:** confirmed
+
+### Yarn Berry never runs `pre*`/`post*` hooks on user-defined scripts
+
+- **Date:** 2026-09-02
+- **Observed by:** Tommaso + Claude
+- **Context:** Investigating why the vendored directory mirror in `src/data/5chan-directories/` went stale (it lacked `/r/` until a manual `yarn sync:directories`) even though `package.json` had `prebuild`/`prestart` entries that called `sync:directories` and `generate:assets`.
+- **What was surprising:** This repo uses Corepack-managed Yarn 4 (Berry), which by design does not run npm-style `pre<script>`/`post<script>` hooks for user-defined scripts; it only honours `preinstall`/`install`/`postinstall`, `prepack`/`postpack`, and `prepublish`. `yarn build` went straight to `vite build` and `yarn start` straight to the dev server, so the "automatic" sync and asset generation never ran locally, in CI, on Vercel, or in Electron/Android builds. The entries still work when invoked by name (`yarn run prebuild`), which makes them look alive.
+- **Impact:** The committed mirror is exactly what ships; upstream directory changes only reached users when someone ran the sync by hand. Any future `pre*`/`post*` entry for a custom script is silently ignored the same way.
+- **Mitigation:** Compose lifecycle intent explicitly: `refresh:generated` runs `sync:directories` and `generate:assets`, and `build` and `start` invoke it as their first step (`corepack yarn refresh:generated && ...`); `scripts/start-android-usb.mjs` calls the same script. Never add `pre*`/`post*` entries for custom scripts in this repo; chain the step into the script itself or into the orchestrating Node script.
+- **Status:** confirmed
+
+### Agent verification can saturate contributor laptops
+
+- **Date:** 2026-08-26
+- **Observed by:** Tommaso + Codex
+- **Context:** Verifying a reply-loading fix while multiple 5chan worktrees already had Vite servers running.
+- **What was surprising:** The full Vitest suite started a coordinator plus four Node workers, and subsequent build and React Doctor work ran while existing dev servers remained active. Even sequential heavy commands can saturate several CPU cores when they stack on long-lived worktree servers.
+- **Impact:** The contributor laptop became nearly unresponsive for a short period, with several Node processes each consuming close to or more than one CPU core.
+- **Mitigation:** Before heavy verification, inspect existing repo processes; remember that `create-task-worktree.sh` automatically installs dependencies; reuse or stop only agent-owned dev servers; cap agent-invoked Vitest at two workers; run worktree creation/installs, full tests, coverage, builds, React Doctor, Electron/Android work, and browser/profiler checks sequentially across all agents; and clean up every process/session the agent starts.
+- **Status:** confirmed
+
 ### GitHub Projects are not used for repository workflow
 
 - **Date:** 2026-07-23
@@ -63,9 +113,9 @@ If uncertain, ask the developer before adding an entry.
 - **Date:** 2026-04-23
 - **Observed by:** Codex
 - **Context:** Cutting the `v0.8.0` release after the core terminology rename changed release workflow signing references.
-- **What was surprising:** The tracked Android release keystore is still `android/plebbit.keystore`, and the available GitHub secret is still `PLEBBIT_REACT_KEYSTORE_PASSWORD`; changing only the workflow references to `bitsocial.keystore` / `BITSOCIAL_KEYSTORE_PASSWORD` made the Android release artifact fail at signing.
+- **What was surprising:** The tracked Android release keystore and its GitHub secret still carried pre-rebrand names; changing only the workflow references to the rebranded names made the Android release artifact fail at signing.
 - **Impact:** Tag releases can pass the Android build and then fail before publishing because `apksigner` cannot find the keystore or password secret.
-- **Mitigation:** Until the keystore migration is done, keep release APK signing pointed at `android/plebbit.keystore` and `PLEBBIT_REACT_KEYSTORE_PASSWORD`. If renaming, migrate the tracked file, workflow path, and GitHub secret in one change and verify with a tag release dry run or full release.
+- **Mitigation:** The tracked keystore is now `android/bitsocial.keystore`, the workflow reads `BITSOCIAL_KEYSTORE_PASSWORD`, and that secret was finally created on 2026-09-12 while cutting `v0.9.20`. The entry was marked resolved on 2026-04-23 when only the file and workflow references had been migrated, so the outstanding half stayed invisible for four months and two releases. Verify a renamed secret with `gh secret list` before claiming a signing migration is complete: a secret value cannot be read back through any API or token scope, so only the owner can create the replacement. The lesson generalises: migrate the tracked file, the workflow path, and the GitHub secret in one change, never the references alone, and do not mark such an entry resolved until every half is verified.
 - **Status:** confirmed
 
 ### 5chan consumes a pinned hooks tarball instead of using the local hooks repo
@@ -157,14 +207,4 @@ If uncertain, ask the developer before adding an entry.
 - **What was surprising:** `@electron/notarize` 2.x runs its pre-upload signature check as `codesign -dv 5chan.app` from the bundle's parent directory, and `codesign` accepts a process ID in place of a path — so it parses the digit-leading basename as PID 5 and fails with `5chan.app: No such process` even though the app is signed correctly.
 - **Impact:** Notarization aborts after a successful signing pass; the error message looks like a signing failure and invites debugging the certificate/keychain instead of the real cause. Any tool that shells out to `codesign` with a bare relative path can hit this because the app is literally named `5chan`.
 - **Mitigation:** Keep the yarn patch `.yarn/patches/@electron-notarize-npm-2.5.0-*.patch` (backport of electron/notarize#245, prefixes the basename with `./`) until electron-forge depends on `@electron/notarize` >= 3.x. When invoking `codesign` manually on the app bundle, always use an absolute or `./`-prefixed path.
-- **Status:** confirmed
-
-### react-scan's `getReport()` is dead API and can never return data
-
-- **Date:** 2026-07-27
-- **Observed by:** contributor + Claude
-- **Context:** Running the `profile-browsing` skill against a branch to measure excessive rerenders, and getting no component data back
-- **What was surprising:** Three independent failures stacked up silently. (1) `getReport()` returns `Store.legacyReportData`, which react-scan 0.5.3 initializes as an empty `Map` and never writes to anywhere in the bundle. (2) The live `Store.reportData` is only populated inside `if (options.showToolbar !== false && Store.inspectState.value.kind === 'focused')` — but the profiler sets `__PROFILING__=true`, which sets `showToolbar: false`, and `'focused'` requires a human clicking the inspector onto one component, so it is unreachable under automation. (3) `getReport()` returns a `Map`, and `JSON.stringify(new Map())` is `"{}"` regardless of contents, so the skill's collection line would have printed `{}` even if data existed. The skill and profiler agent additionally claimed the app was configured with `report: true`; react-scan 0.5.3 has no `report` option at all, and passing one logs `[React Scan] Invalid options: - Unknown option "report"`.
-- **Impact:** Every profiling run reported zero react-scan component data without erroring, so rerender hotspots looked invisible and profiling silently degraded to raw commit counts.
-- **Mitigation:** `src/lib/react-scan.ts` now accumulates render data through react-scan's `onRender` option, which is only skipped when `isPaused && inspectorInactive` (verified `isPaused: false` with the toolbar off). It exposes `window.__getReactScanReport()` returning a plain, JSON-serializable object and `window.__resetReactScanReport()`. Never reintroduce `getReport()`, and never `JSON.stringify` a `Map`. Set `window.__PROFILING_UNNECESSARY__ = true` to opt into `trackUnnecessaryRenders`; it is off by default because it adds overhead that skews the `time` field.
 - **Status:** confirmed

@@ -1,13 +1,12 @@
-import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { Link, useLocation, useNavigate, useNavigationType, useParams } from 'react-router-dom';
 import { Comment, useAccount, useAccountComments, useCommunity, useFeed } from '@bitsocial/bitsocial-react-hooks';
 import { useCommunityField } from '../../hooks/use-stable-community';
-import { communitiesPagesStore } from '../../lib/bitsocial-internals/stores';
+import { communitiesPagesStore as useCommunitiesPagesStore } from '../../lib/bitsocial-internals/stores';
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
 import { Trans, useTranslation } from 'react-i18next';
 import styles from './board.module.css';
-import mobileFooterStyles from '../../components/footer/footer.module.css';
-import { shouldShowSnow } from '../../lib/snow';
+import { shouldShowSnow } from '../../stores/use-special-theme-store';
 import { useAccountCommunityAddresses } from '../../hooks/use-account-community-addresses';
 import { useDirectories, useDirectoryByAddress } from '../../hooks/use-directories';
 import { useCommunityIdentifier, useCommunityIdentifiers } from '../../hooks/use-community-identifiers';
@@ -22,7 +21,6 @@ import useExpandedTimeFilter from '../../hooks/use-expanded-time-filter';
 import useIsMobile from '../../hooks/use-is-mobile';
 import { useNowSeconds } from '../../hooks/use-now-seconds';
 import { useSuggestionFeedLoader } from '../../hooks/use-suggestion-feed-loader';
-import { useCompatiblePostSortType } from '../../hooks/use-compatible-post-sort-type';
 import useTimeFilter from '../../hooks/use-time-filter';
 import { getPageSlice } from '../../lib/utils/board-feed-pagination';
 import { getPageFromFeedPath, isDirectoryBoard, normalizeMultiboardFeedPath, stripPageFromFeedPath } from '../../lib/utils/route-utils';
@@ -34,14 +32,14 @@ import { getRawBoardThreadState } from '../../lib/utils/raw-board-thread-state';
 import { getSearchWithTimeFilter, getSelectedTimeFilterValue, getTimeFilterSuggestion, type TimeFilterSuggestion } from '../../lib/utils/time-filter-utils';
 import { getPretextItemSizeFromElement, resolveFeedVirtualizationMode } from '../../lib/utils/pretext-height-estimates';
 import { isFlashDirectory, isFlashDirectoryCode } from '../../lib/flash-tags';
-import ErrorDisplay from '../../components/error-display/error-display';
-import FlashBoardTable from '../../components/flash-board-table/flash-board-table';
-import LoadingEllipsis from '../../components/loading-ellipsis/loading-ellipsis';
-import BoardPagination from '../../components/board-pagination/board-pagination';
-import { CatalogButton } from '../../components/board-buttons/board-buttons';
-import { PageFooterDesktop, PageFooterMobile } from '../../components/footer/footer';
-import ModEmptyState from '../../components/mod-empty-state/mod-empty-state';
-import { Post } from '../post/post';
+import ErrorDisplay from '../../components/error-display';
+import FlashBoardTable from '../../components/flash-board-table';
+import LoadingEllipsis from '../../components/loading-ellipsis';
+import BoardPagination from '../../components/board-pagination';
+import { CatalogButton } from '../../components/board-buttons';
+import { PageFooterDesktop, PageFooterMobile, footerStyles } from '../../components/footer';
+import { ModEmptyState } from '../../components/mod-empty-state';
+import { Post } from '../../components/post';
 
 const lastVirtuosoStates: { [key: string]: StateSnapshot } = {};
 const RECENT_ACCOUNT_COMMENT_WINDOW_SECONDS = 60 * 60;
@@ -52,8 +50,12 @@ const YEAR_IN_SECONDS = 365 * 24 * 60 * 60;
 const EMPTY_ACCOUNT_COMMENT_LOOKUP = { commentIndices: [-1] };
 const EMPTY_COMMUNITIES_PAGES = {};
 
-/** Board feed prefers 'active' sort; catalog dropdown does not affect board ordering. */
+/** Board feed always uses 'active' sort; catalog dropdown does not affect board ordering. */
 const BOARD_SORT_TYPE = 'active' as const;
+
+// Rounded row heights accumulate into visible shifts when Virtuoso replaces rows with padding.
+const measureBoardItemSize = (element: HTMLElement, field: 'offsetHeight' | 'offsetWidth') =>
+  element.getBoundingClientRect()[field === 'offsetHeight' ? 'height' : 'width'];
 
 const mergeVisibleLocalAccountComments = (feed: Comment[], visibleLocalAccountComments: Comment[]) => {
   if (visibleLocalAccountComments.length === 0) {
@@ -229,7 +231,6 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
     return [communityAddress];
   }, [isInAllView, isInSubscriptionsView, isInModView, communityAddress, filteredDirectoryAddresses, subscriptions, accountCommunityAddresses]);
   const communities = useCommunityIdentifiers(communityAddresses);
-  const feedSortType = useCompatiblePostSortType(communities, BOARD_SORT_TYPE);
   const communityIdentifier = useCommunityIdentifier(communityAddress);
 
   const communityDirectory = useDirectoryByAddress(isInAllView || isInSubscriptionsView || isInModView ? undefined : communityAddress);
@@ -254,12 +255,12 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
   const feedOptions = useMemo(
     () => ({
       communities,
-      sortType: feedSortType,
+      sortType: BOARD_SORT_TYPE,
       postsPerPage: effectiveInfiniteScroll ? infiniteFeedPostsPerPage : paginationFeedPostsPerPage,
       filter: excludeArchivedFilter,
       newerThan: multiboardTimeFilterSeconds,
     }),
-    [communities, effectiveInfiniteScroll, feedSortType, infiniteFeedPostsPerPage, paginationFeedPostsPerPage, excludeArchivedFilter, multiboardTimeFilterSeconds],
+    [communities, effectiveInfiniteScroll, infiniteFeedPostsPerPage, paginationFeedPostsPerPage, excludeArchivedFilter, multiboardTimeFilterSeconds],
   );
 
   const { feed, hasMore, loadMore, reset, expandTimeWindow, state: feedState } = useFeed(feedOptions);
@@ -281,7 +282,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
     loadMore: loadMoreWeeklyFeed,
   } = useFeed({
     communities: shouldProbeWeeklyFeed ? communities : [],
-    sortType: feedSortType,
+    sortType: BOARD_SORT_TYPE,
     postsPerPage: suggestionPostsPerPage,
     filter: excludeArchivedFilter,
     newerThan: WEEK_IN_SECONDS,
@@ -292,7 +293,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
     loadMore: loadMoreMonthlyFeed,
   } = useFeed({
     communities: shouldProbeMonthlyFeed ? communities : [],
-    sortType: feedSortType,
+    sortType: BOARD_SORT_TYPE,
     postsPerPage: suggestionPostsPerPage,
     filter: excludeArchivedFilter,
     newerThan: MONTH_IN_SECONDS,
@@ -303,7 +304,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
     loadMore: loadMoreYearlyFeed,
   } = useFeed({
     communities: shouldProbeYearlyFeed ? communities : [],
-    sortType: feedSortType,
+    sortType: BOARD_SORT_TYPE,
     postsPerPage: suggestionPostsPerPage,
     filter: excludeArchivedFilter,
     newerThan: YEAR_IN_SECONDS,
@@ -399,7 +400,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
   // useCommunityField only reads from store, doesn't trigger fetching
   const communityData = useCommunity(communityIdentifier ? { community: communityIdentifier } : undefined);
   const { error: communityError, state: communityState } = communityData || {};
-  const communitiesPages = communitiesPagesStore((state) => (isMultiboardView ? EMPTY_COMMUNITIES_PAGES : state.communitiesPages));
+  const communitiesPages = useCommunitiesPagesStore((state) => (isMultiboardView ? EMPTY_COMMUNITIES_PAGES : state.communitiesPages));
   const rawBoardThreadState = useMemo(
     () =>
       isMultiboardView
@@ -408,9 +409,9 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
             accountId: account?.id,
             communitiesPages,
             community: communityData,
-            sortType: feedSortType,
+            sortType: BOARD_SORT_TYPE,
           }),
-    [account?.id, communitiesPages, communityData, feedSortType, isMultiboardView],
+    [account?.id, communitiesPages, communityData, isMultiboardView],
   );
   const isRawBoardThreadStateFullyLoaded = rawBoardThreadState?.isFullyLoaded ?? false;
   const isRawBoardThreadStateEmpty = isRawBoardThreadStateFullyLoaded && (rawBoardThreadState?.rootThreadCids.size ?? 0) === 0;
@@ -539,9 +540,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
     [defaultFeedVirtualizationMode, routerLocation.search],
   );
   const defaultBoardItemHeight = feedVirtualizationMode === 'item-size' ? (isMobile ? 420 : 480) : isMobile ? 420 : 300;
-  // Omit the prop entirely in fallback mode. Passing `itemSize={undefined}` overrides
-  // Virtuoso's internal DOM measurer and leaves multiboard items stuck on the default height.
-  const boardSizingProps = useMemo(() => (feedVirtualizationMode === 'item-size' ? { itemSize: getPretextItemSizeFromElement } : {}), [feedVirtualizationMode]);
+  const boardItemSize = feedVirtualizationMode === 'item-size' ? getPretextItemSizeFromElement : measureBoardItemSize;
 
   // Redirect multiboard paths with page-number segments to normalized path (infinite-scroll only)
   useEffect(() => {
@@ -561,12 +560,19 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
     }
   }, [isVisible, effectiveInfiniteScroll, currentPage, totalPages, paginationBasePath, routerLocation.search, navigate]);
 
-  // Scroll to top instantly when page changes in pagination mode
+  // Activity reconnects effects when returning to a cached feed. Only a real page
+  // change should scroll; background route changes must not replace the saved page.
+  const lastVisiblePaginationPageRef = useRef<number | undefined>(undefined);
   useEffect(() => {
-    if (!effectiveInfiniteScroll) {
-      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    if (!isVisible) return;
+    if (effectiveInfiniteScroll) {
+      lastVisiblePaginationPageRef.current = undefined;
+      return;
     }
-  }, [effectiveInfiniteScroll, currentPage]);
+    if (lastVisiblePaginationPageRef.current === currentPage) return;
+    lastVisiblePaginationPageRef.current = currentPage;
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [effectiveInfiniteScroll, currentPage, isVisible]);
 
   useEffect(() => {
     if (filteredComments.length > 0 && !resetTriggeredRef.current) {
@@ -629,13 +635,13 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
           <PageFooterMobile>
             <div>
               {!isForcedInfiniteScroll && (
-                <div className={mobileFooterStyles.mobileFooterButtons}>
+                <div className={footerStyles.mobileFooterButtons}>
                   <button type='button' className='button' onClick={() => window.scrollTo({ top: 0, left: 0, behavior: 'instant' })}>
                     {t('start_new_thread')}
                   </button>
                 </div>
               )}
-              <div className={mobileFooterStyles.mobileFooterButtons}>
+              <div className={footerStyles.mobileFooterButtons}>
                 <button type='button' className='button' onClick={() => window.scrollTo({ top: 0, left: 0, behavior: 'instant' })}>
                   {t('top')}
                 </button>
@@ -646,13 +652,13 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
               <hr />
               {!isForcedInfiniteScroll && !effectiveInfiniteScroll && (
                 <>
-                  <div className={mobileFooterStyles.mobileFooterPagination}>
+                  <div className={footerStyles.mobileFooterPagination}>
                     {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                       <span key={page}>
                         [
                         <Link
                           to={{ pathname: page === 1 ? paginationBasePath : `${paginationBasePath}/${page}`, search: routerLocation.search }}
-                          className={page === currentPage ? mobileFooterStyles.mobileFooterPaginationCurrent : undefined}
+                          className={page === currentPage ? footerStyles.mobileFooterPaginationCurrent : undefined}
                         >
                           {page}
                         </Link>
@@ -660,13 +666,13 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
                       </span>
                     ))}
                   </div>
-                  <div className={mobileFooterStyles.mobileFooterButtons}>
+                  <div className={footerStyles.mobileFooterButtons}>
                     <CatalogButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
                   </div>
                 </>
               )}
               {effectiveHasMore && !effectiveInfiniteScroll && !shouldUseFlashTable && (
-                <div className={mobileFooterStyles.mobileFooterButtons}>
+                <div className={footerStyles.mobileFooterButtons}>
                   <button type='button' className='button' onClick={() => setEnableInfiniteScroll(true)}>
                     {t('load_more')}
                   </button>
@@ -711,8 +717,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
   );
 
   const virtuosoRef = useRef<VirtuosoHandle | null>(null);
-  const feedSortStateKey = feedSortType ?? 'preloaded';
-  const virtuosoStateKey = feedCacheKey ? `${feedCacheKey}-${feedSortStateKey}` : `${routerLocation.pathname}${routerLocation.search}-${feedSortStateKey}`;
+  const virtuosoStateKey = feedCacheKey ? `${feedCacheKey}-${BOARD_SORT_TYPE}` : `${routerLocation.pathname}${routerLocation.search}-${BOARD_SORT_TYPE}`;
   const navigationType = useNavigationType();
   const boardViewportBuffer = isMultiboardView ? (isMobile ? { bottom: 1400, top: 2400 } : { bottom: 1200, top: 2400 }) : { bottom: 1200, top: 1200 };
   const boardMinOverscanItemCount = isMultiboardView && isMobile ? { bottom: 4, top: 8 } : undefined;
@@ -732,13 +737,15 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
     }
   }, [isVisible, navigationType]);
 
-  useEffect(() => {
-    if (!isVisible) return;
+  useLayoutEffect(() => {
+    if (!isVisible || !effectiveInfiniteScroll) return;
 
     const currentKey = virtuosoStateKey;
-    // Avoid state snapshot work on every scroll tick in the hottest board path.
+    // Capture the handle before Activity clears the ref. Save before Virtuoso's
+    // effects disconnect, without snapshot work on every scroll tick.
+    const virtuoso = virtuosoRef.current;
     const saveVirtuosoState = () => {
-      virtuosoRef.current?.getState((snapshot: StateSnapshot) => {
+      virtuoso?.getState((snapshot: StateSnapshot) => {
         if (snapshot?.ranges?.length) {
           lastVirtuosoStates[currentKey] = snapshot;
         }
@@ -749,7 +756,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
       saveVirtuosoState();
       window.removeEventListener('pagehide', saveVirtuosoState);
     };
-  }, [virtuosoStateKey, isVisible]);
+  }, [virtuosoStateKey, isVisible, effectiveInfiniteScroll]);
 
   const lastVirtuosoState = navigationType === 'POP' ? lastVirtuosoStates?.[virtuosoStateKey] : undefined;
 
@@ -803,7 +810,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
         ) : effectiveInfiniteScroll ? (
           <Virtuoso
             defaultItemHeight={defaultBoardItemHeight}
-            {...boardSizingProps}
+            itemSize={boardItemSize}
             increaseViewportBy={boardViewportBuffer}
             minOverscanItemCount={boardMinOverscanItemCount}
             totalCount={displayFeed.length}

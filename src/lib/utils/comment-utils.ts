@@ -1,15 +1,4 @@
-type CommentWithCommunityAddress = {
-  communityAddress?: string;
-  replies?: {
-    pages?: Record<
-      string,
-      | {
-          comments?: unknown[];
-        }
-      | undefined
-    >;
-  };
-};
+import type { Comment } from '@bitsocial/bitsocial-react-hooks';
 
 export const getCommentCommunityAddress = (comment?: unknown) => {
   if (!comment || typeof comment !== 'object') {
@@ -42,78 +31,45 @@ export const hasAuthoritativeCommentPayload = (comment?: unknown): boolean => {
   return Boolean(record.timestamp !== undefined || record.content || record.title || record.link || record.thumbnailUrl || record.deleted || record.removed);
 };
 
-const withResolvedReplyPages = <T>(replies: T): T => {
-  const replyCollection = replies as CommentWithCommunityAddress['replies'];
-  if (!replyCollection?.pages) {
-    return replies;
-  }
+// Protocol comments already carry canonical communityAddress fields, including replies.
+// Keep this compatibility entry point without walking every nested reply on each render.
+export const withResolvedCommentCommunityAddress = <T>(comment: T): T => comment;
 
-  let nextPages = replyCollection.pages;
-  let pagesChanged = false;
-
-  for (const [sortType, page] of Object.entries(replyCollection.pages)) {
-    if (!page?.comments?.length) {
-      continue;
-    }
-
-    let nextComments = page.comments;
-    let commentsChanged = false;
-
-    page.comments.forEach((reply, index) => {
-      const normalizedReply = withResolvedCommentCommunityAddress(reply);
-      if (normalizedReply === reply) {
-        return;
-      }
-
-      if (!commentsChanged) {
-        nextComments = [...(page.comments ?? [])];
-        commentsChanged = true;
-      }
-      nextComments[index] = normalizedReply;
-    });
-
-    if (!commentsChanged) {
-      continue;
-    }
-
-    if (!pagesChanged) {
-      nextPages = { ...replyCollection.pages };
-      pagesChanged = true;
-    }
-
-    nextPages[sortType] = {
-      ...page,
-      comments: nextComments,
-    };
-  }
-
-  if (!pagesChanged) {
-    return replies;
-  }
-
-  return {
-    ...replyCollection,
-    pages: nextPages,
-  } as T;
+export type CommentWithRefresh = Comment & {
+  approved?: boolean;
+  communityAddress?: string;
+  refresh?: () => Promise<void>;
+  state?: string;
+  pendingApproval?: boolean;
+  error?: Error;
+  errors?: Error[];
+  index?: number;
+  removed?: boolean;
 };
 
-export const withResolvedCommentCommunityAddress = <T>(comment: T): T => {
-  if (!comment || typeof comment !== 'object') {
-    return comment;
-  }
+export const mergeCommentFallback = (comment: CommentWithRefresh | undefined, fallback: CommentWithRefresh | undefined): CommentWithRefresh | undefined => {
+  if (!fallback) return comment;
+  if (!comment) return fallback;
+  if (comment.cid && fallback.cid && comment.cid !== fallback.cid) return comment;
 
-  const commentRecord = comment as CommentWithCommunityAddress;
-  const communityAddress = getCommentCommunityAddress(commentRecord);
-  const replies = withResolvedReplyPages(commentRecord.replies);
-  const needsResolvedCommunityAddress = !!communityAddress && commentRecord.communityAddress !== communityAddress;
+  const hasRenderableData =
+    comment.timestamp !== undefined ||
+    comment.number !== undefined ||
+    !!comment.content ||
+    !!comment.title ||
+    !!comment.link ||
+    !!comment.thumbnailUrl ||
+    !!comment.error ||
+    !!comment.deleted ||
+    !!comment.removed;
 
-  if (!needsResolvedCommunityAddress && replies === commentRecord.replies) {
-    return comment;
-  }
+  if (hasRenderableData) return comment;
 
   return {
-    ...commentRecord,
-    ...(needsResolvedCommunityAddress ? { communityAddress } : {}),
-    ...(replies !== commentRecord.replies ? { replies } : {}),
-  } as T;
+    ...fallback,
+    error: comment.error,
+    errors: comment.errors,
+    refresh: comment.refresh,
+    state: comment.state,
+  };
 };

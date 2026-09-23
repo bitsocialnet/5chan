@@ -1,5 +1,5 @@
 import { useCallback, useSyncExternalStore } from 'react';
-import { useAccount } from '@bitsocial/bitsocial-react-hooks';
+import { useActiveAccountField } from './use-active-account-field';
 
 type PkcWithCidFetch = {
   fetchCid: (options: { cid: string }) => Promise<unknown>;
@@ -19,6 +19,7 @@ type CommentCidPayloadEntry = {
 
 const IDLE_SNAPSHOT: CommentCidPayloadSnapshot = { state: 'idle' };
 const entriesByClient = new WeakMap<object, Map<string, CommentCidPayloadEntry>>();
+const MAX_CACHED_PAYLOADS_PER_CLIENT = 100;
 
 const isRecord = (value: unknown): value is Record<string, unknown> => Boolean(value && typeof value === 'object');
 
@@ -30,7 +31,7 @@ const decodeText = (value: unknown): string | undefined => {
 };
 
 const getCommunityAddress = (payload: Record<string, unknown>): string | undefined => {
-  for (const key of ['communityName', 'communityAddress', 'subplebbitAddress', 'communityPublicKey']) {
+  for (const key of ['communityName', 'communityAddress', 'communityPublicKey']) {
     const value = payload[key];
     if (typeof value === 'string' && value) return value;
   }
@@ -73,8 +74,30 @@ const getEntry = (pkc: PkcWithCidFetch, cid: string): CommentCidPayloadEntry => 
       snapshot: IDLE_SNAPSHOT,
     };
     entries.set(cid, entry);
+  } else if (entry.snapshot.state === 'succeeded') {
+    entries.delete(cid);
+    entries.set(cid, entry);
   }
   return entry;
+};
+
+const releaseUnusedEntry = (pkc: PkcWithCidFetch, cid: string, entry: CommentCidPayloadEntry) => {
+  if (entry.listeners.size > 0 || entry.request) return;
+
+  const entries = getClientEntries(pkc);
+  if (entry.snapshot.state !== 'succeeded') {
+    entries.delete(cid);
+    return;
+  }
+
+  // CID payloads are immutable. Retain successful lookups across visits, but never
+  // evict a live subscription or pending request to make room in the inactive cache.
+  for (const [cachedCid, cachedEntry] of entries) {
+    if (entries.size <= MAX_CACHED_PAYLOADS_PER_CLIENT) break;
+    if (cachedEntry.listeners.size === 0 && !cachedEntry.request && cachedEntry.snapshot.state === 'succeeded') {
+      entries.delete(cachedCid);
+    }
+  }
 };
 
 const notify = (entry: CommentCidPayloadEntry) => {
@@ -103,7 +126,7 @@ const startFetch = (pkc: PkcWithCidFetch, cid: string, entry: CommentCidPayloadE
     .finally(() => {
       entry.request = undefined;
       notify(entry);
-      if (entry.listeners.size === 0) getClientEntries(pkc).delete(cid);
+      releaseUnusedEntry(pkc, cid, entry);
     });
 };
 
@@ -114,15 +137,15 @@ const subscribe = (pkc: PkcWithCidFetch, cid: string, listener: () => void) => {
 
   return () => {
     entry.listeners.delete(listener);
-    if (entry.listeners.size === 0 && !entry.request) getClientEntries(pkc).delete(cid);
+    releaseUnusedEntry(pkc, cid, entry);
   };
 };
 
 const isPkcWithCidFetch = (value: unknown): value is PkcWithCidFetch => isRecord(value) && typeof value.fetchCid === 'function';
 
 export const useCommentCidPayload = (commentCid: string | undefined): CommentCidPayloadSnapshot => {
-  const account = useAccount();
-  const pkc = isPkcWithCidFetch(account?.pkc) ? account.pkc : undefined;
+  const accountPkc = useActiveAccountField((account) => account?.pkc);
+  const pkc = isPkcWithCidFetch(accountPkc) ? accountPkc : undefined;
 
   const subscribeToPayload = useCallback((listener: () => void) => (pkc && commentCid ? subscribe(pkc, commentCid, listener) : () => {}), [commentCid, pkc]);
   const getSnapshot = useCallback(() => (pkc && commentCid ? getEntry(pkc, commentCid).snapshot : IDLE_SNAPSHOT), [commentCid, pkc]);

@@ -1,17 +1,20 @@
 import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
+import react, { reactCompilerPreset } from '@vitejs/plugin-react';
+import babel from '@rolldown/plugin-babel';
 import { resolve } from 'path';
 import { readdirSync, readFileSync } from 'fs';
 import { createHash } from 'crypto';
 import { execFileSync } from 'child_process';
 import { VitePWA } from 'vite-plugin-pwa';
+import { APP_PRELOAD_ATTRIBUTE, dynamicEntryPreloadPlugin } from './scripts/vite-app-preload.mjs';
 
 const { version: packageVersion } = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8'));
 const appVersion = `${process.env.VITE_APP_VERSION || packageVersion}`.trim() || packageVersion;
 process.env.VITE_APP_VERSION = appVersion;
 const releaseTag = `v${appVersion.replace(/^v/i, '').split('-')[0]}`;
 const publicBase = process.env.PUBLIC_URL || '/';
-const buildOutDir = 'build';
+const isProfilingBuild = process.env.REACT_PERF_PROFILE === '1';
+const buildOutDir = isProfilingBuild ? 'build-profile' : 'build';
 const basePathPrefix = (() => {
   const pathname = new URL(publicBase, 'https://example.invalid/').pathname;
   return pathname === '/' ? '' : pathname.replace(/^\/+|\/+$/g, '');
@@ -142,7 +145,11 @@ function normalizePrecacheUrl(url) {
 }
 
 function collectIndexAssetUrls() {
-  const indexHtml = readFileSync(new URL(`./${buildOutDir}/index.html`, import.meta.url), 'utf8');
+  // The app graph preload tags are fetched by the page itself; keep the precache scoped to the entry shell.
+  const indexHtml = readFileSync(new URL(`./${buildOutDir}/index.html`, import.meta.url), 'utf8').replace(
+    new RegExp(`<link\\b[^>]*\\s${APP_PRELOAD_ATTRIBUTE}\\b[^>]*>`, 'g'),
+    '',
+  );
   const urls = new Set(baselineAppShellUrls);
   const assetAttributePattern = /\b(?:href|src)=["'](?:\.\/|\/)?([^"']+\.(?:css|ico|js|json|png|webmanifest))(?:\?[^"']*)?["']/g;
 
@@ -328,60 +335,16 @@ function verifyVercelCspHashesPlugin() {
   };
 }
 
-function adaptReactPluginForRolldown(plugin) {
-  if (!plugin?.config || plugin.name !== 'vite:react-babel') {
-    return plugin;
-  }
-
-  return {
-    ...plugin,
-    async config(userConfig, configEnv) {
-      const config = await plugin.config.call(this, userConfig, configEnv);
-      const optimizeDeps = config?.optimizeDeps;
-
-      if (optimizeDeps?.esbuildOptions?.jsx !== 'automatic') {
-        return config;
-      }
-
-      const { esbuildOptions, ...remainingOptimizeDeps } = optimizeDeps;
-
-      return {
-        ...config,
-        optimizeDeps: {
-          ...remainingOptimizeDeps,
-          rolldownOptions: {
-            ...optimizeDeps.rolldownOptions,
-            transform: {
-              ...optimizeDeps.rolldownOptions?.transform,
-              jsx: optimizeDeps.rolldownOptions?.transform?.jsx ?? {
-                runtime: 'automatic',
-              },
-            },
-          },
-        },
-      };
-    },
-  };
-}
-
 export default defineConfig({
   plugins: [
     appVersionMetadataPlugin(),
     ruffleRuntimeAssetsPlugin(),
     mathjaxFontAssetsPlugin(),
-    ...react({
-      babel: {
-        plugins: [
-          [
-            'babel-plugin-react-compiler',
-            {
-              verbose: true,
-            },
-          ],
-        ],
-      },
-    }).map(adaptReactPluginForRolldown),
+    react(),
+    babel({ presets: [reactCompilerPreset()] }),
+    dynamicEntryPreloadPlugin(),
     VitePWA({
+      disable: isProfilingBuild,
       registerType: 'autoUpdate',
       strategies: 'injectManifest',
       injectManifest: {
@@ -391,10 +354,6 @@ export default defineConfig({
       },
       srcDir: 'src',
       filename: 'sw.ts',
-      devOptions: {
-        enabled: true,
-        type: 'module',
-      },
       includeAssets: ['favicon.ico', 'favicon-404.ico', 'favicon2.ico', 'robots.txt', 'apple-touch-icon.png'],
       manifest: {
         name: '5chan',
@@ -489,6 +448,7 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
+      ...(isProfilingBuild ? { 'react-dom/client': 'react-dom/profiling' } : {}),
       '@': resolve(__dirname, 'src'),
       // bitsocial-react-hooks imports zustand/shallow's deprecated default export and
       // passes it as a store equality fn, so its console.warn fires on every comparator
@@ -513,7 +473,7 @@ export default defineConfig({
   },
   server: {
     port: 3000,
-    open: process.env.PORTLESS_URL ? false : true,
+    open: process.env.REACT_PERF_RUN === '1' || process.env.PORTLESS_URL ? false : true,
     watch: {
       usePolling: true,
     },
@@ -523,7 +483,8 @@ export default defineConfig({
     // Use 'build' to match what electron/main.js expects (../build/index.html)
     outDir: buildOutDir,
     emptyOutDir: true,
-    sourcemap: process.env.GENERATE_SOURCEMAP === 'true',
+    sourcemap: isProfilingBuild || process.env.GENERATE_SOURCEMAP === 'true',
+    ...(isProfilingBuild ? { minify: false } : {}),
     target: process.env.ELECTRON ? 'electron-renderer' : 'esnext',
     rollupOptions: {
       output: {
