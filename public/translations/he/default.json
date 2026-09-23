@@ -494,5 +494,14 @@
   "image_boards": "לוחות תמונות",
   "upload_boards": "לוחות העלאת קבצים",
   "multiboards": "לוחות מרובים",
-  "show_homepage_introduction": "הצגת ההקדמה בדף הבית"
+  "show_homepage_introduction": "הצגת ההקדמה בדף הבית",
+  "directory_footnote": "כדי להגיש לוח, הזינו את הכתובת שלו למטה והצביעו עבורו. רק מחזיקי <passLink>5chan Pass</passLink> יכולים להצביע, קול אחד לכל דירקטורי.",
+  "directory_unvote": "ביטול הצבעה",
+  "directory_votes_testnet": "ההצבעה פועלת כרגע על testnet: הקולות נספרים ומוצגים, אבל עדיין לא משנים את הדירוג.",
+  "directory_voting_unavailable": "ההצבעה על הדירקטורי דורשת את חיבור ה-P2P של 5chan, שאינו זמין כרגע.",
+  "directory_voting_no_contest": "ל-/{{boardIdentifier}}/ אין הצבעה על הספרייה.",
+  "directory_vote_needs_pass": "ההצבעה שלך לא נשלחה: כתובת ההצבעה של החשבון הזה <address>{{address}}</address> לא מחזיקה <passLink>5chan Pass</passLink>.",
+  "directory_vote_needs_test_pass": "ההצבעה שלך לא נשלחה: כתובת ההצבעה של החשבון הזה <address>{{address}}</address> לא מחזיקה 5chan Pass. ההצבעה פועלת כרגע על testnet, כך שאפשר לקבל Pass בדיקה בחינם לכתובת הזו מה-<faucetLink>faucet</faucetLink>.",
+  "directory_vote_board_not_found": "לא נמצא לוח בכתובת {{address}}. הזינו כתובת .bso או מפתח ציבורי של לוח.",
+  "directory_vote_failed": "לא ניתן היה לשלוח את ההצבעה שלך: {{error}}"
 }

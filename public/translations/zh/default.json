@@ -494,5 +494,14 @@
   "image_boards": "图片板块",
   "upload_boards": "文件上传板块",
   "multiboards": "多板视图",
-  "show_homepage_introduction": "显示首页介绍"
+  "show_homepage_introduction": "显示首页介绍",
+  "directory_footnote": "要提交板块，请在下方输入其地址并为其投票。只有 <passLink>5chan Pass</passLink> 持有者可以投票，每个目录限投一票。",
+  "directory_unvote": "取消投票",
+  "directory_votes_testnet": "投票目前运行在 testnet 上：票数会被统计和显示，但暂时不会影响排名。",
+  "directory_voting_unavailable": "目录投票需要 5chan 的点对点连接，但目前无法使用。",
+  "directory_voting_no_contest": "/{{boardIdentifier}}/ 没有目录投票。",
+  "directory_vote_needs_pass": "你的投票未发送：此账户的投票地址 <address>{{address}}</address> 未持有 <passLink>5chan Pass</passLink>。",
+  "directory_vote_needs_test_pass": "你的投票未发送：此账户的投票地址 <address>{{address}}</address> 未持有 5chan Pass。投票目前在 testnet 上进行，你可以从<faucetLink>水龙头</faucetLink>为此地址免费领取一个测试 Pass。",
+  "directory_vote_board_not_found": "在 {{address}} 未找到板块。请输入 .bso 地址或板块的公钥。",
+  "directory_vote_failed": "无法发送你的投票：{{error}}"
 }

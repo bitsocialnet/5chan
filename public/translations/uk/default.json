@@ -494,5 +494,14 @@
   "image_boards": "Дошки із зображеннями",
   "upload_boards": "Дошки для завантаження файлів",
   "multiboards": "Мультиборди",
-  "show_homepage_introduction": "Показувати вступний блок на головній сторінці"
+  "show_homepage_introduction": "Показувати вступний блок на головній сторінці",
+  "directory_footnote": "Щоб надіслати дошку, введіть її адресу нижче та проголосуйте за неї. Голосувати можуть лише власники <passLink>5chan Pass</passLink>, один голос на каталог.",
+  "directory_unvote": "Скасувати голос",
+  "directory_votes_testnet": "Поки що голосування працює в testnet: голоси враховуються й показуються, але ще не змінюють рейтинг.",
+  "directory_voting_unavailable": "Для голосування в каталозі потрібне пірингове з’єднання 5chan, яке зараз недоступне.",
+  "directory_voting_no_contest": "У /{{boardIdentifier}}/ немає голосування за каталог.",
+  "directory_vote_needs_pass": "Ваш голос не надіслано: на адресі для голосування цього облікового запису <address>{{address}}</address> немає <passLink>5chan Pass</passLink>.",
+  "directory_vote_needs_test_pass": "Ваш голос не надіслано: на адресі для голосування цього облікового запису <address>{{address}}</address> немає 5chan Pass. Поки що голосування працює в testnet, тож ви можете безкоштовно отримати тестовий Pass для цієї адреси через <faucetLink>кран</faucetLink>.",
+  "directory_vote_board_not_found": "За адресою {{address}} дошку не знайдено. Введіть адресу .bso або публічний ключ дошки.",
+  "directory_vote_failed": "Не вдалося надіслати ваш голос: {{error}}"
 }

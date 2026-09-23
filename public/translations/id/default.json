@@ -494,5 +494,14 @@
   "image_boards": "Papan gambar",
   "upload_boards": "Papan unggahan",
   "multiboards": "Papan ganda",
-  "show_homepage_introduction": "Tampilkan pengantar di beranda"
+  "show_homepage_introduction": "Tampilkan pengantar di beranda",
+  "directory_footnote": "Untuk mengirim board, masukkan alamatnya di bawah dan beri suara untuknya. Hanya pemegang <passLink>5chan Pass</passLink> yang dapat memberi suara, dengan satu suara per direktori.",
+  "directory_unvote": "Batalkan suara",
+  "directory_votes_testnet": "Untuk saat ini pemungutan suara berjalan di testnet: suara dihitung dan ditampilkan, tetapi belum mengubah peringkat.",
+  "directory_voting_unavailable": "Pemungutan suara direktori memerlukan koneksi peer-to-peer 5chan, yang saat ini tidak tersedia.",
+  "directory_voting_no_contest": "/{{boardIdentifier}}/ tidak memiliki pemungutan suara direktori.",
+  "directory_vote_needs_pass": "Suara Anda tidak terkirim: alamat pemungutan suara akun ini <address>{{address}}</address> tidak memiliki <passLink>5chan Pass</passLink>.",
+  "directory_vote_needs_test_pass": "Suara Anda tidak terkirim: alamat pemungutan suara akun ini <address>{{address}}</address> tidak memiliki 5chan Pass. Pemungutan suara saat ini masih di testnet, jadi Anda bisa mendapatkan Pass uji coba gratis untuk alamat ini dari <faucetLink>faucet</faucetLink>.",
+  "directory_vote_board_not_found": "Tidak ada papan di {{address}}. Masukkan alamat .bso atau kunci publik sebuah papan.",
+  "directory_vote_failed": "Suara Anda tidak dapat dikirim: {{error}}"
 }

@@ -494,5 +494,14 @@
   "image_boards": "이미지 게시판",
   "upload_boards": "업로드 게시판",
   "multiboards": "멀티보드",
-  "show_homepage_introduction": "홈페이지 소개 표시"
+  "show_homepage_introduction": "홈페이지 소개 표시",
+  "directory_footnote": "게시판을 제출하려면 아래에 주소를 입력하고 투표하세요. <passLink>5chan Pass</passLink> 보유자만 투표할 수 있으며, 디렉터리당 한 표입니다.",
+  "directory_unvote": "투표 취소",
+  "directory_votes_testnet": "현재 투표는 testnet에서 진행 중입니다. 투표는 집계되어 표시되지만 아직 순위에는 반영되지 않습니다.",
+  "directory_voting_unavailable": "디렉터리 투표에는 5chan의 P2P 연결이 필요하지만 현재 사용할 수 없습니다.",
+  "directory_voting_no_contest": "/{{boardIdentifier}}/에는 디렉터리 투표가 없습니다.",
+  "directory_vote_needs_pass": "투표가 전송되지 않았습니다: 이 계정의 투표 주소 <address>{{address}}</address>에 <passLink>5chan Pass</passLink>가 없습니다.",
+  "directory_vote_needs_test_pass": "투표가 전송되지 않았습니다: 이 계정의 투표 주소 <address>{{address}}</address>에 5chan Pass가 없습니다. 현재 투표는 testnet에서 진행되므로 <faucetLink>파우셋</faucetLink>에서 이 주소용 무료 테스트 Pass를 받을 수 있습니다.",
+  "directory_vote_board_not_found": "{{address}}에서 게시판을 찾을 수 없습니다. .bso 주소 또는 게시판의 공개 키를 입력하세요.",
+  "directory_vote_failed": "투표를 전송할 수 없습니다: {{error}}"
 }

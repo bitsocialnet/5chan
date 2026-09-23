@@ -494,5 +494,14 @@
   "image_boards": "Доски с изображениями",
   "upload_boards": "Доски для загрузки файлов",
   "multiboards": "Мультиборды",
-  "show_homepage_introduction": "Показывать вводный блок на главной странице"
+  "show_homepage_introduction": "Показывать вводный блок на главной странице",
+  "directory_footnote": "Чтобы добавить доску, введите её адрес ниже и проголосуйте за неё. Голосовать могут только владельцы <passLink>5chan Pass</passLink>, один голос на каталог.",
+  "directory_unvote": "Отменить голос",
+  "directory_votes_testnet": "Пока голосование работает в testnet: голоса учитываются и отображаются, но ещё не влияют на рейтинг.",
+  "directory_voting_unavailable": "Для голосования в каталоге нужно пиринговое соединение 5chan, которое сейчас недоступно.",
+  "directory_voting_no_contest": "У /{{boardIdentifier}}/ нет голосования по каталогу.",
+  "directory_vote_needs_pass": "Ваш голос не отправлен: на адресе для голосования этого аккаунта <address>{{address}}</address> нет <passLink>5chan Pass</passLink>.",
+  "directory_vote_needs_test_pass": "Ваш голос не отправлен: на адресе для голосования этого аккаунта <address>{{address}}</address> нет 5chan Pass. Пока голосование идёт в testnet, поэтому вы можете бесплатно получить тестовый Pass для этого адреса через <faucetLink>кран</faucetLink>.",
+  "directory_vote_board_not_found": "По адресу {{address}} доска не найдена. Введите адрес .bso или публичный ключ доски.",
+  "directory_vote_failed": "Не удалось отправить ваш голос: {{error}}"
 }

@@ -4,7 +4,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MissingChainClientError, MissingFetchError, type NameResolver, type PubsubVoterOptions } from '@bitsocial/pubsub-voting';
 import { getVendoredDirectoryVoteCriteria } from '../../lib/directory-vote-criteria';
-import { createBrowserPubsubVoter, getOrCreateBrowserPubsubVoter, getVotingChainClient } from '../../lib/pubsub-voter';
+import { createBrowserPubsubVoter, getOrCreateBrowserPubsubVoter, getVotingChainClient, isTestnetVotingChain } from '../../lib/pubsub-voter';
 import { getBrowserNameResolvers, usePubsubVoter } from '../use-pubsub-voter';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -85,12 +85,18 @@ describe('usePubsubVoter', () => {
     const voter = createBrowserPubsubVoter({ helia: createHeliaNode() });
     const criteria = {
       ...getVendoredDirectoryVoteCriteria().criteriaByDirectoryCode.get('b')!,
-      bucketChainId: 1,
+      bucketChainId: 8453,
     };
 
-    expect(getVotingChainClient({ chainId: 1 })).toBeUndefined();
+    expect(getVotingChainClient({ chainId: 8453 })).toBeUndefined();
     await expect(voter.createContest({ criteria })).rejects.toBeInstanceOf(MissingChainClientError);
     await voter.destroy();
+  });
+
+  it('configures Ethereum mainnet so the production manifest needs no code change', () => {
+    expect(getVotingChainClient({ chainId: 1 })?.chain?.id).toBe(1);
+    expect(isTestnetVotingChain(1)).toBe(false);
+    expect(isTestnetVotingChain(84532)).toBe(true);
   });
 
   it('shares one voter for the same PKC node and resolver set', async () => {

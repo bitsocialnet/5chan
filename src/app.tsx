@@ -13,6 +13,7 @@ import useSpecialThemeStore, { shouldShowSnow } from './stores/use-special-theme
 import useIsMobile from './hooks/use-is-mobile';
 import { useAccountCommunityAddresses } from './hooks/use-account-community-addresses';
 import useTheme from './hooks/use-theme';
+import { useDirectoryVoteRefresh } from './hooks/use-directory-vote-refresh';
 import { useDirectories } from './hooks/use-directories';
 import { useBrowserPureP2PAccountUpgrade } from './hooks/use-browser-pure-p2p-account-upgrade';
 import { useCommunityIdentifier } from './hooks/use-community-identifiers';
@@ -216,6 +217,7 @@ const BoardLayout = () => {
 const GlobalLayout = () => {
   useTheme({ applyDocumentEffects: true });
   useSuspendOffscreenMediaPlayback();
+  useDirectoryVoteRefresh();
 
   const location = useLocation();
   const { pathname } = location;

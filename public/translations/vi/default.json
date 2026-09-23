@@ -494,5 +494,14 @@
   "image_boards": "Bảng hình ảnh",
   "upload_boards": "Bảng tải tệp lên",
   "multiboards": "Đa bảng",
-  "show_homepage_introduction": "Hiển thị phần giới thiệu trên trang chủ"
+  "show_homepage_introduction": "Hiển thị phần giới thiệu trên trang chủ",
+  "directory_footnote": "Để gửi một diễn đàn, hãy nhập địa chỉ của nó bên dưới và bỏ phiếu cho nó. Chỉ người giữ <passLink>5chan Pass</passLink> mới có thể bỏ phiếu, mỗi thư mục một phiếu.",
+  "directory_unvote": "Hủy phiếu",
+  "directory_votes_testnet": "Hiện tại việc bỏ phiếu đang chạy trên testnet: phiếu được đếm và hiển thị, nhưng chưa thay đổi thứ hạng.",
+  "directory_voting_unavailable": "Bỏ phiếu thư mục cần kết nối peer-to-peer của 5chan, hiện không khả dụng.",
+  "directory_voting_no_contest": "/{{boardIdentifier}}/ không có cuộc bỏ phiếu thư mục.",
+  "directory_vote_needs_pass": "Phiếu bầu của bạn chưa được gửi: địa chỉ bỏ phiếu của tài khoản này <address>{{address}}</address> không có <passLink>5chan Pass</passLink>.",
+  "directory_vote_needs_test_pass": "Phiếu bầu của bạn chưa được gửi: địa chỉ bỏ phiếu của tài khoản này <address>{{address}}</address> không có 5chan Pass. Hiện việc bỏ phiếu đang chạy trên testnet, nên bạn có thể nhận một Pass thử nghiệm miễn phí cho địa chỉ này từ <faucetLink>faucet</faucetLink>.",
+  "directory_vote_board_not_found": "Không tìm thấy bảng nào tại {{address}}. Hãy nhập địa chỉ .bso hoặc khóa công khai của một bảng.",
+  "directory_vote_failed": "Không thể gửi phiếu bầu của bạn: {{error}}"
 }

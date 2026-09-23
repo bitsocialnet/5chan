@@ -494,5 +494,14 @@
   "image_boards": "Forume me imazhe",
   "upload_boards": "Forume për ngarkim skedarësh",
   "multiboards": "Multiboard-et",
-  "show_homepage_introduction": "Shfaq hyrjen në faqen kryesore"
+  "show_homepage_introduction": "Shfaq hyrjen në faqen kryesore",
+  "directory_footnote": "Për të dërguar një bord, shkruaj adresën e tij më poshtë dhe voto për të. Vetëm mbajtësit e <passLink>5chan Pass</passLink> mund të votojnë, me një votë për çdo directory.",
+  "directory_unvote": "Hiq votën",
+  "directory_votes_testnet": "Votimi për momentin është në testnet: votat numërohen dhe shfaqen, por ende nuk e ndryshojnë renditjen.",
+  "directory_voting_unavailable": "Votimi në directory kërkon lidhjen peer-to-peer të 5chan, e cila nuk është e disponueshme tani.",
+  "directory_voting_no_contest": "/{{boardIdentifier}}/ nuk ka votim të drejtorisë.",
+  "directory_vote_needs_pass": "Vota jote nuk u dërgua: adresa e votimit e kësaj llogarie <address>{{address}}</address> nuk ka <passLink>5chan Pass</passLink>.",
+  "directory_vote_needs_test_pass": "Vota jote nuk u dërgua: adresa e votimit e kësaj llogarie <address>{{address}}</address> nuk ka 5chan Pass. Votimi për momentin është në testnet, ndaj mund të marrësh falas një Pass testimi për këtë adresë nga <faucetLink>faucet</faucetLink>.",
+  "directory_vote_board_not_found": "Nuk u gjet asnjë bord në {{address}}. Shkruaj një adresë .bso ose çelësin publik të një bordi.",
+  "directory_vote_failed": "Vota jote nuk mund të dërgohej: {{error}}"
 }

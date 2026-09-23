@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { type FormEvent, useEffect, useMemo, useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { Trans, useTranslation } from 'react-i18next';
 import { useCommunity } from '@bitsocial/bitsocial-react-hooks';
@@ -19,7 +19,9 @@ import useCommunityOfflineStore from '../../stores/use-community-offline-store';
 import useIsCommunityOffline from '../../hooks/use-is-community-offline';
 import { useNowSeconds } from '../../hooks/use-now-seconds';
 import { useVoteTally } from '../../hooks/use-vote-tally';
+import { type DirectoryVoteOutcome, useDirectoryVote } from '../../hooks/use-directory-vote';
 import { rankDirectoryBoardsByVoteTally, type RankedDirectoryVoteBoard } from '../../lib/directory-vote-ranking';
+import { isTestnetVotingChain, TESTNET_PASS_FAUCET_URL } from '../../lib/pubsub-voter';
 import postStyles from '../../components/post-styles';
 import styles from '../../components/directory-layout';
 
@@ -47,17 +49,25 @@ const computeBoardStatus = (
 
 const PASS_LINK = '/pass';
 
-const DirectorySubmitBoardLink = ({ href }: { href: string }) => {
+const SUBMIT_BOARD_INPUT_ID = 'directory-submit-board';
+
+const focusSubmitBoardInput = () => {
+  const input = document.getElementById(SUBMIT_BOARD_INPUT_ID);
+  input?.scrollIntoView({ block: 'center' });
+  input?.focus();
+};
+
+const DirectorySubmitBoardButton = () => {
   const { t } = useTranslation();
 
   return (
-    <a className='button' href={href} target='_blank' rel='noreferrer noopener'>
+    <button type='button' className='button' onClick={focusSubmitBoardInput}>
       {t('directory_submit_board')}
-    </a>
+    </button>
   );
 };
 
-const DirectoryDesktopTopControls = ({ communityAddress, submitHref }: { communityAddress: string | undefined; submitHref: string }) => (
+const DirectoryDesktopTopControls = ({ communityAddress }: { communityAddress: string | undefined }) => (
   <div className={styles.desktopNavLinks}>
     <div className={styles.navButtonGroup}>
       <span>
@@ -69,12 +79,12 @@ const DirectoryDesktopTopControls = ({ communityAddress, submitHref }: { communi
       </span>
     </div>
     <span className={styles.submitBoardControl}>
-      [<DirectorySubmitBoardLink href={submitHref} />]
+      [<DirectorySubmitBoardButton />]
     </span>
   </div>
 );
 
-const DirectoryDesktopFooterControls = ({ communityAddress, submitHref }: { communityAddress: string | undefined; submitHref: string }) => (
+const DirectoryDesktopFooterControls = ({ communityAddress }: { communityAddress: string | undefined }) => (
   <div className={styles.desktopFooterButtons}>
     <div className={styles.navButtonGroup}>
       <span>
@@ -86,12 +96,12 @@ const DirectoryDesktopFooterControls = ({ communityAddress, submitHref }: { comm
       </span>
     </div>
     <span className={styles.submitBoardControl}>
-      [<DirectorySubmitBoardLink href={submitHref} />]
+      [<DirectorySubmitBoardButton />]
     </span>
   </div>
 );
 
-const DirectoryMobileTopControls = ({ communityAddress, submitHref }: { communityAddress: string | undefined; submitHref: string }) => (
+const DirectoryMobileTopControls = ({ communityAddress }: { communityAddress: string | undefined }) => (
   <div className={styles.mobileNavLinks}>
     <div>
       <ReturnButton address={communityAddress} />
@@ -99,12 +109,12 @@ const DirectoryMobileTopControls = ({ communityAddress, submitHref }: { communit
       <BottomButton />
     </div>
     <div className={styles.mobileSubmitRow}>
-      <DirectorySubmitBoardLink href={submitHref} />
+      <DirectorySubmitBoardButton />
     </div>
   </div>
 );
 
-const DirectoryMobileFooterControls = ({ communityAddress, submitHref }: { communityAddress: string | undefined; submitHref: string }) => (
+const DirectoryMobileFooterControls = ({ communityAddress }: { communityAddress: string | undefined }) => (
   <div className={styles.mobileFooterButtons}>
     <div>
       <ReturnButton address={communityAddress} />
@@ -112,19 +122,89 @@ const DirectoryMobileFooterControls = ({ communityAddress, submitHref }: { commu
       <TopButton />
     </div>
     <div className={styles.mobileSubmitRow}>
-      <DirectorySubmitBoardLink href={submitHref} />
+      <DirectorySubmitBoardButton />
     </div>
   </div>
 );
+
+/** Submitting a board is voting for it: the tally lists any board a Pass holder votes for. */
+const DirectorySubmitBoardForm = ({ isBusy, isPending, onSubmit }: { isBusy: boolean; isPending: boolean; onSubmit: (address: string) => Promise<boolean> }) => {
+  const { t } = useTranslation();
+  const [address, setAddress] = useState('');
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!address.trim() || isBusy) return;
+    if (await onSubmit(address)) setAddress('');
+  };
+
+  return (
+    <form className={styles.submitBoardForm} onSubmit={handleSubmit}>
+      <label htmlFor={SUBMIT_BOARD_INPUT_ID}>{t('directory_submit_board')}:</label>{' '}
+      <input
+        id={SUBMIT_BOARD_INPUT_ID}
+        type='text'
+        value={address}
+        onChange={(event) => setAddress(event.target.value)}
+        placeholder='board.bso'
+        autoComplete='off'
+        autoCapitalize='off'
+        autoCorrect='off'
+        spellCheck={false}
+      />{' '}
+      [
+      <button type='submit' className={styles.actionButton} disabled={isBusy} aria-label={t('upvote')} title={t('upvote')}>
+        {isPending ? '...' : '+1'}
+      </button>
+      ]
+    </form>
+  );
+};
+
+type VoteNotice = Exclude<DirectoryVoteOutcome, { status: 'voted' } | { status: 'withdrawn' }> & { boardAddress?: string };
+
+const DirectoryVoteNotice = ({ notice, boardIdentifier, noContest }: { notice: VoteNotice; boardIdentifier: string; noContest: boolean }) => {
+  const { t } = useTranslation();
+
+  let content;
+  if (notice.status === 'ineligible') {
+    content = (
+      <Trans
+        i18nKey={notice.testnet ? 'directory_vote_needs_test_pass' : 'directory_vote_needs_pass'}
+        values={{ address: notice.address }}
+        components={{
+          address: <span className={styles.voteNoticeAddress} />,
+          passLink: <Link to={PASS_LINK} />,
+          faucetLink: <a href={TESTNET_PASS_FAUCET_URL} target='_blank' rel='noreferrer noopener' />,
+        }}
+      />
+    );
+  } else if (notice.status === 'unavailable') {
+    content = noContest ? t('directory_voting_no_contest', { boardIdentifier }) : t('directory_voting_unavailable');
+  } else if (notice.status === 'board-not-found') {
+    content = t('directory_vote_board_not_found', { address: notice.boardAddress });
+  } else {
+    content = t('directory_vote_failed', { error: notice.error.message });
+  }
+
+  return (
+    <div className={styles.voteNotice} role='status'>
+      {content}
+    </div>
+  );
+};
 
 interface DirectoryRowProps {
   rankedBoard: RankedDirectoryVoteBoard;
   nowSeconds: number;
   rank: number;
+  isVoted: boolean;
+  isVotePending: boolean;
+  isVotingBusy: boolean;
   onVote: () => void;
 }
 
-const DirectoryRow = ({ rankedBoard, nowSeconds, rank, onVote }: DirectoryRowProps) => {
+const DirectoryRow = ({ rankedBoard, nowSeconds, rank, isVoted, isVotePending, isVotingBusy, onVote }: DirectoryRowProps) => {
   const { t } = useTranslation();
   const { board, chainVerified, nameResolved, weight } = rankedBoard;
   const statusUnavailableReason = t('directory_status_unavailable_reason');
@@ -190,12 +270,16 @@ const DirectoryRow = ({ rankedBoard, nowSeconds, rank, onVote }: DirectoryRowPro
       </td>
       <td className={styles.actionsCell}>
         [
-        <button type='button' className={styles.actionButton} onClick={onVote} aria-label={t('upvote')} title={t('upvote')}>
-          +1
-        </button>
-        ] [
-        <button type='button' className={styles.actionButton} onClick={onVote} aria-label={t('downvote')} title={t('downvote')}>
-          -1
+        <button
+          type='button'
+          className={styles.actionButton}
+          onClick={onVote}
+          disabled={isVotingBusy}
+          aria-pressed={isVoted}
+          aria-label={isVoted ? t('directory_unvote') : t('upvote')}
+          title={isVoted ? t('directory_unvote') : t('upvote')}
+        >
+          {isVotePending ? '...' : isVoted ? t('directory_unvote') : '+1'}
         </button>
         ] [
         <Link to={boardLink} className={styles.viewLink}>
@@ -206,8 +290,6 @@ const DirectoryRow = ({ rankedBoard, nowSeconds, rank, onVote }: DirectoryRowPro
     </tr>
   );
 };
-
-const getRepoEditUrl = (directoryCode: string) => `https://github.com/bitsocialnet/lists/edit/master/5chan-directories/5chan-${directoryCode}-directory.json`;
 
 const Directory = () => {
   const { t } = useTranslation();
@@ -220,8 +302,11 @@ const Directory = () => {
   const nowSeconds = useNowSeconds();
   const voteTally = useVoteTally(isValidDirectoryCode ? boardIdentifier : undefined);
   const tally = voteTally.state === 'ready' ? voteTally.tally : undefined;
+  const isTestnetVote = !!voteTally.criteria && isTestnetVotingChain(voteTally.criteria.bucketChainId);
+  const { votedPublicKey, pendingVote, toggleVote, voteForAddress } = useDirectoryVote(voteTally);
+  const [voteNotice, setVoteNotice] = useState<VoteNotice>();
 
-  const ranked = useMemo(() => (list ? rankDirectoryBoardsByVoteTally(list.boards, tally) : []), [list, tally]);
+  const ranked = useMemo(() => (list ? rankDirectoryBoardsByVoteTally(list.boards, tally, { orderByVotes: !isTestnetVote }) : []), [list, tally, isTestnetVote]);
   const directoryTitle = list?.title || (boardIdentifier ? `/${boardIdentifier}/ - ${t('directory')}` : t('directory'));
 
   useEffect(() => {
@@ -233,20 +318,32 @@ const Directory = () => {
     return <Navigate to='/not-found' replace />;
   }
 
-  const handleVoteUnavailable = () => {
-    const values = { boardIdentifier };
-    window.alert(`${t('directory_voting_unavailable_intro', values)}\n\n${t('directory_voting_unavailable_outro', values)}`);
+  const showVoteOutcome = (outcome: DirectoryVoteOutcome, boardAddress?: string) => {
+    if (outcome.status === 'voted' || outcome.status === 'withdrawn') return true;
+    setVoteNotice({ ...outcome, boardAddress });
+    return false;
+  };
+
+  const handleVote = async ({ board }: RankedDirectoryVoteBoard) => {
+    setVoteNotice(undefined);
+    if (!board.publicKey) return showVoteOutcome({ status: 'board-not-found' }, board.address);
+    return showVoteOutcome(await toggleVote({ name: board.address.includes('.') ? board.address : undefined, publicKey: board.publicKey }));
+  };
+
+  const handleSubmitBoard = async (address: string) => {
+    setVoteNotice(undefined);
+    return showVoteOutcome(await voteForAddress(address), address.trim());
   };
 
   const isLoadingShell = loading && ranked.length === 0;
   const boardCount = ranked.length;
-  const repoEditUrl = getRepoEditUrl(boardIdentifier!);
+  const isVotingBusy = pendingVote !== undefined;
 
   return (
     <div id='top' className={`${styles.page} ${shouldShowSnow() ? styles.garland : ''}`} data-pubsub-vote-tally-state={voteTally.state}>
-      <DirectoryMobileTopControls communityAddress={communityAddress} submitHref={repoEditUrl} />
+      <DirectoryMobileTopControls communityAddress={communityAddress} />
       <hr className={styles.desktopDivider} />
-      <DirectoryDesktopTopControls communityAddress={communityAddress} submitHref={repoEditUrl} />
+      <DirectoryDesktopTopControls communityAddress={communityAddress} />
       <hr className={styles.divider} />
       {isLoadingShell ? (
         <h4 className={styles.directorySummary}>
@@ -256,6 +353,9 @@ const Directory = () => {
         <h4 className={styles.directorySummary}>{t('directory_empty')}</h4>
       ) : (
         <h4 className={styles.directorySummary}>{t('directory_heading', { boardIdentifier, count: boardCount })}</h4>
+      )}
+      {voteNotice && (
+        <DirectoryVoteNotice notice={voteNotice} boardIdentifier={boardIdentifier!} noContest={voteTally.state === 'unavailable' && voteTally.reason === 'no-contest'} />
       )}
 
       {!isLoadingShell && ranked.length > 0 && (
@@ -285,26 +385,35 @@ const Directory = () => {
             </thead>
             <tbody>
               {ranked.map((rankedBoard, index) => (
-                <DirectoryRow key={rankedBoard.board.address} rankedBoard={rankedBoard} nowSeconds={nowSeconds} rank={index + 1} onVote={handleVoteUnavailable} />
+                <DirectoryRow
+                  key={rankedBoard.board.publicKey ?? rankedBoard.board.address}
+                  rankedBoard={rankedBoard}
+                  nowSeconds={nowSeconds}
+                  rank={index + 1}
+                  isVoted={!!rankedBoard.board.publicKey && rankedBoard.board.publicKey === votedPublicKey}
+                  isVotePending={pendingVote?.source === 'row' && pendingVote.publicKey === rankedBoard.board.publicKey}
+                  isVotingBusy={isVotingBusy}
+                  onVote={() => handleVote(rankedBoard)}
+                />
               ))}
             </tbody>
           </table>
+        </>
+      )}
+
+      {!isLoadingShell && (
+        <>
+          <DirectorySubmitBoardForm isBusy={isVotingBusy} isPending={pendingVote?.source === 'form'} onSubmit={handleSubmitBoard} />
           <div className={styles.directoryFootnote}>
-            <Trans
-              i18nKey='directory_footnote'
-              values={{ boardIdentifier }}
-              components={{
-                passLink: <Link to={PASS_LINK} />,
-                repoLink: <a href={repoEditUrl} target='_blank' rel='noreferrer noopener' aria-label={t('directory_submit_repo_link_label', 'directory repository')} />,
-              }}
-            />
+            <Trans i18nKey='directory_footnote' components={{ passLink: <Link to={PASS_LINK} /> }} />
+            {isTestnetVote && <> {t('directory_votes_testnet')}</>}
           </div>
         </>
       )}
 
-      <PageFooterDesktop firstRow={<DirectoryDesktopFooterControls communityAddress={communityAddress} submitHref={repoEditUrl} />} styleRow={<ThreadFooterStyleRow />} />
+      <PageFooterDesktop firstRow={<DirectoryDesktopFooterControls communityAddress={communityAddress} />} styleRow={<ThreadFooterStyleRow />} />
       <PageFooterMobile>
-        <DirectoryMobileFooterControls communityAddress={communityAddress} submitHref={repoEditUrl} />
+        <DirectoryMobileFooterControls communityAddress={communityAddress} />
       </PageFooterMobile>
     </div>
   );
