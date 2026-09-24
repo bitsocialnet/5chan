@@ -183,6 +183,10 @@ vi.mock('../components/board-header/board-header', () => ({
   default: makeNamedComponent('board-header'),
 }));
 
+vi.mock('../components/prefetcher', () => ({
+  default: () => null,
+}));
+
 vi.mock('../components/feed-cache-container', () => ({
   default: makeNamedComponent('feed-cache-container'),
 }));

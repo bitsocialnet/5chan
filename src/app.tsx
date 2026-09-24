@@ -55,6 +55,7 @@ import PostForm from './components/post-form';
 import BoardBlotter from './components/board-blotter';
 import BoardsBar from './components/boards-bar';
 import ExternalQuoteStatus from './components/external-quote-status';
+import Prefetcher from './components/prefetcher';
 import { ModEmptyState } from './components/mod-empty-state';
 import { QuotePreviewPostProvider } from './components/post';
 
@@ -269,6 +270,7 @@ const GlobalLayout = () => {
   return (
     <>
       <ExternalQuoteStatus />
+      <Prefetcher />
       <Suspense fallback={null}>
         <DirectoryModal />
         <DisclaimerModal />

@@ -67,6 +67,7 @@ import { formatErrorForDisplay } from '../../lib/utils/error-utils';
 import { getModQueueCommentRoute, getQueuedCommentRouteState } from '../../lib/utils/mod-queue-utils';
 import { getThreadTopNavigationState, scrollThreadContainerToTop } from '../../lib/utils/thread-scroll-utils';
 import useDeleteFailedPost from '../../hooks/use-delete-failed-post';
+import usePrefetchIntent from '../../hooks/use-prefetch-intent';
 import { getThreadPostCountsByAuthor } from '../../lib/utils/author-post-counts';
 import { withResolvedCommentCommunityAddress } from '../../lib/utils/comment-utils';
 import { getCommentUserID, preservePublishedUserID } from '../../lib/utils/comment-user-id-utils';
@@ -262,6 +263,7 @@ const PostInfo = ({
 
   const threadRoute = cid ? (boardPath ? `/${boardPath}/thread/${cid}` : `/thread/${cid}`) : undefined;
   const threadTopNavigationState = !isReply ? getThreadTopNavigationState(cid) : undefined;
+  const prefetchThread = usePrefetchIntent({ commentCid: postCid, communityAddress });
   const modQueueThreadRoute = getModQueueCommentRoute(boardPath, post?.cid);
   const modQueueThreadRouteState = getQueuedCommentRouteState(post);
   const modQueueErrorMessage = formatErrorForDisplay(modQueueError);
@@ -434,7 +436,7 @@ const PostInfo = ({
           {!isInPostPageView && !isReply && !isHidden && !isModQueue && (
             <span className={styles.replyButton}>
               [
-              <Link to={boardPath ? `/${boardPath}/thread/${postCid}` : `/thread/${postCid}`} onClick={(e) => !cid && e.preventDefault()}>
+              <Link to={boardPath ? `/${boardPath}/thread/${postCid}` : `/thread/${postCid}`} onClick={(e) => !cid && e.preventDefault()} {...prefetchThread}>
                 {capitalize(t('reply'))}
               </Link>
               ]
