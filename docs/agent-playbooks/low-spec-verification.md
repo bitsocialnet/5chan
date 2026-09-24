@@ -54,6 +54,8 @@ Throttled numbers are approximations (CDP throttling, not a real device), but th
 playwright-cli -s=lowspec eval "() => Math.round(performance.getEntriesByType('navigation')[0].duration)"
 ```
 
+For repeatable cold-load numbers from the production build, `yarn perf:load` applies the same `mid` profile to fresh contexts and reports median first paint and first React commit per route (see [verification.md](verification.md)).
+
 5chan is a React Router SPA, so in-app navigation does not create a new navigation entry. Time those manually: read `performance.now()` before triggering the route change, then again once the target content appears in the snapshot.
 
 ## Caveats
