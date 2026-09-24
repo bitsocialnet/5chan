@@ -494,5 +494,14 @@
   "image_boards": "Képtáblák",
   "upload_boards": "Fájlfeltöltő táblák",
   "multiboards": "Többtáblás nézetek",
-  "show_homepage_introduction": "Bemutatkozás megjelenítése a kezdőlapon"
+  "show_homepage_introduction": "Bemutatkozás megjelenítése a kezdőlapon",
+  "directory_footnote": "Board beküldéséhez add meg alább a címét, és szavazz rá. Csak a <passLink>5chan Pass</passLink> birtokosai szavazhatnak, könyvtáranként egy szavazattal.",
+  "directory_unvote": "Szavazat visszavonása",
+  "directory_votes_testnet": "A szavazás egyelőre testneten fut: a szavazatokat számoljuk és megjelenítjük, de még nem változtatják meg a rangsort.",
+  "directory_voting_unavailable": "A könyvtárszavazáshoz szükség van a 5chan peer-to-peer kapcsolatára, amely jelenleg nem érhető el.",
+  "directory_voting_no_contest": "/{{boardIdentifier}}/ esetében nincs könyvtárszavazás.",
+  "directory_vote_needs_pass": "A szavazatodat nem küldtük el: a fiók <address>{{address}}</address> szavazási címén nincs <passLink>5chan Pass</passLink>.",
+  "directory_vote_needs_test_pass": "A szavazatodat nem küldtük el: a fiók <address>{{address}}</address> szavazási címén nincs 5chan Pass. A szavazás egyelőre testneten zajlik, így erre a címre ingyenes teszt Passt kérhetsz a <faucetLink>faucetből</faucetLink>.",
+  "directory_vote_board_not_found": "Nem található tábla a(z) {{address}} címen. Adj meg egy .bso címet vagy egy tábla nyilvános kulcsát.",
+  "directory_vote_failed": "A szavazatodat nem sikerült elküldeni: {{error}}"
 }

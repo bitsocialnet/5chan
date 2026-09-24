@@ -494,5 +494,14 @@
   "image_boards": "चित्र बोर्ड",
   "upload_boards": "फाइल अपलोड बोर्ड",
   "multiboards": "मल्टीबोर्ड",
-  "show_homepage_introduction": "मुख्यपृष्ठावरील परिचय दाखवा"
+  "show_homepage_introduction": "मुख्यपृष्ठावरील परिचय दाखवा",
+  "directory_footnote": "बोर्ड सबमिट करण्यासाठी, खाली त्याचा पत्ता टाका आणि त्याला मत द्या. फक्त <passLink>5chan Pass</passLink> धारकच मत देऊ शकतात, प्रत्येक डिरेक्टरीसाठी एक मत.",
+  "directory_unvote": "मत मागे घ्या",
+  "directory_votes_testnet": "मतदान सध्या testnet वर आहे: मते मोजली आणि दाखवली जातात, पण ती अद्याप क्रमवारी बदलत नाहीत.",
+  "directory_voting_unavailable": "डिरेक्टरी मतदानासाठी 5chan चे पीअर-टू-पीअर कनेक्शन आवश्यक आहे, जे सध्या उपलब्ध नाही.",
+  "directory_voting_no_contest": "/{{boardIdentifier}}/ साठी कोणतेही डिरेक्टरी मतदान नाही.",
+  "directory_vote_needs_pass": "तुमचे मत पाठवले गेले नाही: या खात्याच्या मतदान पत्त्यावर <address>{{address}}</address> <passLink>5chan Pass</passLink> नाही.",
+  "directory_vote_needs_test_pass": "तुमचे मत पाठवले गेले नाही: या खात्याच्या मतदान पत्त्यावर <address>{{address}}</address> 5chan Pass नाही. सध्या मतदान testnet वर चालू आहे, त्यामुळे तुम्ही <faucetLink>फॉसेट</faucetLink> वरून या पत्त्यासाठी मोफत टेस्ट Pass मिळवू शकता.",
+  "directory_vote_board_not_found": "{{address}} येथे कोणताही बोर्ड सापडला नाही. .bso पत्ता किंवा बोर्डची सार्वजनिक की प्रविष्ट करा.",
+  "directory_vote_failed": "तुमचे मत पाठवता आले नाही: {{error}}"
 }

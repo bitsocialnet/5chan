@@ -494,5 +494,14 @@
   "image_boards": "Mga board ng larawan",
   "upload_boards": "Mga board para sa pag-upload",
   "multiboards": "Mga multiboard",
-  "show_homepage_introduction": "Ipakita ang pagpapakilala sa homepage"
+  "show_homepage_introduction": "Ipakita ang pagpapakilala sa homepage",
+  "directory_footnote": "Para magsumite ng board, ilagay ang address nito sa ibaba at iboto ito. Ang mga may hawak lang ng <passLink>5chan Pass</passLink> ang puwedeng bumoto, isang boto bawat directory.",
+  "directory_unvote": "Bawiin ang boto",
+  "directory_votes_testnet": "Nasa testnet muna ang botohan: binibilang at ipinapakita ang mga boto, pero hindi pa nito binabago ang ranking.",
+  "directory_voting_unavailable": "Kailangan ng pagboto sa directory ang peer-to-peer na koneksyon ng 5chan, na hindi available sa ngayon.",
+  "directory_voting_no_contest": "Walang botohan sa directory ang /{{boardIdentifier}}/.",
+  "directory_vote_needs_pass": "Hindi naipadala ang boto mo: walang <passLink>5chan Pass</passLink> ang voting address ng account na ito na <address>{{address}}</address>.",
+  "directory_vote_needs_test_pass": "Hindi naipadala ang boto mo: walang 5chan Pass ang voting address ng account na ito na <address>{{address}}</address>. Nasa testnet muna ang pagboto, kaya puwede kang kumuha ng libreng test Pass para sa address na ito mula sa <faucetLink>faucet</faucetLink>.",
+  "directory_vote_board_not_found": "Walang board na nahanap sa {{address}}. Maglagay ng .bso address o public key ng isang board.",
+  "directory_vote_failed": "Hindi maipadala ang boto mo: {{error}}"
 }

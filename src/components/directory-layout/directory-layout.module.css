@@ -205,6 +205,12 @@
   font-weight: 700;
 }
 
+.scorePending {
+  margin-left: 1px;
+  font-size: 0.75em;
+  cursor: help;
+}
+
 .statusOnline {
   color: green;
 }
@@ -230,6 +236,66 @@
 .statusUnavailableHelp:focus-visible {
   outline: 1px dotted currentcolor;
   outline-offset: 1px;
+}
+
+.actionButton:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.submitBoardForm {
+  margin: 14px auto 0;
+  text-align: center;
+  font-size: 11px;
+}
+
+.submitBoardForm label {
+  font-weight: 700;
+}
+
+.submitBoardForm input[type='text'] {
+  width: 220px;
+  max-width: 60vw;
+  padding: 2px;
+  outline: none;
+  border: var(--reply-modal-field-input-border, 1px solid #aaa);
+  border-radius: 0;
+  font-size: 11px;
+}
+
+.submitBoardForm input[type='text']:focus {
+  border: var(--reply-modal-field-input-border-focus, 1px solid #ea8);
+}
+
+@media (max-width: 640px) {
+  .submitBoardForm input[type='text'] {
+    font-size: 16px;
+  }
+}
+
+.voteNotice {
+  width: 80%;
+  max-width: 810px;
+  margin: 0 auto 10px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.voteNotice a {
+  color: var(--post-link-text-color);
+  text-decoration: var(--post-link-text-decoration);
+}
+
+.voteNotice a:hover {
+  color: var(--post-link-text-color-hover);
+}
+
+.voteNoticeAddress {
+  font-family: monospace;
+  font-weight: 400;
+  word-break: break-all;
 }
 
 .directoryFootnote {

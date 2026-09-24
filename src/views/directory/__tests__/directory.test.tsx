@@ -19,7 +19,7 @@ const testState = vi.hoisted(() => ({
       address: 'anime-and-manga.bso',
       score: 12,
     },
-  ],
+  ] as Array<{ address: string; publicKey?: string; score: number }>,
   directories: [
     {
       address: 'anime-and-manga.bso',
@@ -36,6 +36,13 @@ const testState = vi.hoisted(() => ({
   },
   offlineStates: {} as Record<string, { state?: string; updatedAt?: number }>,
   nowSeconds: 1_704_067_210,
+  voteTally: { state: 'unavailable', reason: 'no-voter' } as Record<string, unknown>,
+  directoryVote: {
+    votedCommunity: undefined as { name?: string; publicKey: string } | undefined,
+    pendingVote: undefined as { source: 'row'; key: string } | { source: 'form' } | undefined,
+    toggleVote: (() => Promise.resolve({ status: 'voted' })) as (target: { name?: string; publicKey: string }) => Promise<Record<string, unknown>>,
+    voteForAddress: (() => Promise.resolve({ status: 'voted' })) as (address: string, pending?: unknown) => Promise<Record<string, unknown>>,
+  },
 }));
 
 vi.mock('react-i18next', () => ({
@@ -135,6 +142,14 @@ vi.mock('../../../hooks/use-now-seconds', () => ({
   useNowSeconds: () => testState.nowSeconds,
 }));
 
+vi.mock('../../../hooks/use-vote-tally', () => ({
+  useVoteTally: () => testState.voteTally,
+}));
+
+vi.mock('../../../hooks/use-directory-vote', () => ({
+  useDirectoryVote: () => testState.directoryVote,
+}));
+
 vi.mock('../../../stores/use-community-offline-store', () => ({
   default: <T,>(selector: (state: { communityOfflineState: typeof testState.offlineStates }) => T) =>
     selector({
@@ -172,7 +187,14 @@ const createCommunity = (address: string, updatedAt = testState.nowSeconds - 60)
 });
 
 const getDirectoryRow = (address = 'anime-and-manga.bso') => Array.from(container.querySelectorAll('tbody tr')).find((row) => row.textContent?.includes(address));
-const getSubmitBoardLinks = () => Array.from(container.querySelectorAll<HTMLAnchorElement>('a')).filter((link) => link.textContent === 'Submit Your Board');
+const getSubmitBoardButtons = () => Array.from(container.querySelectorAll<HTMLButtonElement>('button')).filter((button) => button.textContent === 'Submit Your Board');
+const getSubmitBoardInput = () => container.querySelector<HTMLInputElement>('#directory-submit-board');
+
+const typeIntoInput = (input: HTMLInputElement, value: string) => {
+  const setValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!;
+  setValue.call(input, value);
+  input.dispatchEvent(new Event('input', { bubbles: true }));
+};
 
 describe('Directory', () => {
   beforeEach(() => {
@@ -207,6 +229,13 @@ describe('Directory', () => {
     };
     testState.offlineStates = {};
     testState.nowSeconds = 1_704_067_210;
+    testState.voteTally = { state: 'unavailable', reason: 'no-voter' };
+    testState.directoryVote = {
+      votedCommunity: undefined,
+      pendingVote: undefined,
+      toggleVote: vi.fn(() => Promise.resolve({ status: 'voted' })),
+      voteForAddress: vi.fn(() => Promise.resolve({ status: 'voted' })),
+    };
     originalAlert = window.alert;
     window.alert = vi.fn();
 
@@ -224,10 +253,11 @@ describe('Directory', () => {
   it('shows online status for a listed board after loading its community', async () => {
     await renderDirectory();
 
+    expect(container.querySelector('#top')?.getAttribute('data-pubsub-vote-tally-state')).toBe('unavailable');
     const cells = Array.from(getDirectoryRow()?.querySelectorAll('td') ?? []).map((cell) => cell.textContent?.replace(/\s+/g, ' ').trim());
     expect(cells.slice(0, 5)).toEqual(['1', 'anime-and-manga.bso', 'directory_owner_anonymous', 'online', '12']);
     expect(cells[5]).toContain('+1');
-    expect(cells[5]).toContain('-1');
+    expect(cells[5]).not.toContain('-1');
     expect(cells[5]).toContain('View');
     expect(getDirectoryRow()?.querySelector('td:nth-child(2) a')).toBeNull();
     expect(getDirectoryRow()?.querySelector('td:nth-child(2) span')).toBeNull();
@@ -238,18 +268,135 @@ describe('Directory', () => {
     });
   });
 
-  it('links the submit-board controls to the GitHub directory edit flow', async () => {
+  it('focuses the in-app submit form from every submit-board control', async () => {
     await renderDirectory();
 
-    const submitLinks = getSubmitBoardLinks();
-    expect(submitLinks).toHaveLength(4);
+    const submitButtons = getSubmitBoardButtons();
+    expect(submitButtons).toHaveLength(4);
+    expect(container.querySelector('a[href*="github.com"]')).toBeNull();
 
-    for (const link of submitLinks) {
-      expect(link.getAttribute('href')).toBe('https://github.com/bitsocialnet/lists/edit/master/5chan-directories/5chan-a-directory.json');
-      expect(link.getAttribute('target')).toBe('_blank');
-      expect(link.getAttribute('rel')).toContain('noreferrer');
-      expect(link.getAttribute('rel')).toContain('noopener');
+    const input = getSubmitBoardInput()!;
+    input.scrollIntoView = vi.fn();
+    for (const button of submitButtons) {
+      input.blur();
+      await act(async () => button.click());
+      expect(document.activeElement).toBe(input);
     }
+  });
+
+  it('submits a typed board address as a vote and clears the form', async () => {
+    await renderDirectory();
+
+    const input = getSubmitBoardInput()!;
+    await act(async () => typeIntoInput(input, 'new-board.bso'));
+    await act(async () => {
+      input.form!.requestSubmit();
+    });
+
+    expect(testState.directoryVote.voteForAddress).toHaveBeenCalledWith('new-board.bso');
+    expect(input.value).toBe('');
+  });
+
+  it('toggles a listed board vote by public key and shows the unvote action for the current vote', async () => {
+    testState.directoryBoards = [
+      { address: 'voted.bso', publicKey: '12D3KooWVoted', score: 1 },
+      { address: 'other.bso', publicKey: '12D3KooWOther', score: 1 },
+    ];
+    testState.directoryVote.votedCommunity = { name: 'voted.bso', publicKey: '12D3KooWVoted' };
+
+    await renderDirectory();
+
+    const votedButton = getDirectoryRow('voted.bso')!.querySelector<HTMLButtonElement>('td:nth-child(6) button')!;
+    const otherButton = getDirectoryRow('other.bso')!.querySelector<HTMLButtonElement>('td:nth-child(6) button')!;
+    expect(votedButton.textContent).toBe('directory_unvote');
+    expect(votedButton.getAttribute('aria-pressed')).toBe('true');
+    expect(otherButton.textContent).toBe('+1');
+
+    await act(async () => otherButton.click());
+    expect(testState.directoryVote.toggleVote).toHaveBeenCalledWith({ name: 'other.bso', publicKey: '12D3KooWOther' });
+  });
+
+  it('resolves a listed board without a public key instead of rejecting its vote', async () => {
+    testState.directoryBoards = [{ address: 'keyless.bso', score: 1 }];
+
+    await renderDirectory();
+    await act(async () => getDirectoryRow('keyless.bso')!.querySelector<HTMLButtonElement>('td:nth-child(6) button')!.click());
+
+    expect(testState.directoryVote.voteForAddress).toHaveBeenCalledWith('keyless.bso', { source: 'row', key: 'keyless.bso' });
+    expect(container.querySelector('[role="status"]')).toBeNull();
+  });
+
+  it('withdraws the vote on a keyless listed board matched by name', async () => {
+    testState.directoryBoards = [{ address: 'keyless.bso', score: 1 }];
+    testState.directoryVote.votedCommunity = { name: 'keyless.bso', publicKey: '12D3KooWKeyless' };
+
+    await renderDirectory();
+    const button = getDirectoryRow('keyless.bso')!.querySelector<HTMLButtonElement>('td:nth-child(6) button')!;
+    expect(button.textContent).toBe('directory_unvote');
+    await act(async () => button.click());
+
+    expect(testState.directoryVote.toggleVote).toHaveBeenCalledWith({ name: 'keyless.bso', publicKey: '12D3KooWKeyless' });
+  });
+
+  it('explains how to get a test Pass when the voting address is not eligible', async () => {
+    testState.directoryBoards = [{ address: 'board.bso', publicKey: '12D3KooWBoard', score: 1 }];
+    testState.directoryVote.toggleVote = vi.fn(() => Promise.resolve({ status: 'ineligible', address: '0xabc', error: 'no pass', testnet: true }));
+
+    await renderDirectory();
+    await act(async () => getDirectoryRow('board.bso')!.querySelector<HTMLButtonElement>('td:nth-child(6) button')!.click());
+
+    expect(container.querySelector('[role="status"]')?.textContent).toBe('directory_vote_needs_test_pass');
+  });
+
+  it('keeps the listed order and labels votes as testnet for a testnet contest', async () => {
+    testState.directoryBoards = [
+      { address: 'manual-winner.bso', publicKey: '12D3KooWManual', score: 100 },
+      { address: 'vote-winner.bso', publicKey: '12D3KooWVote', score: 1 },
+    ];
+    testState.communities = Object.fromEntries(testState.directoryBoards.map((board) => [board.address, createCommunity(board.address)]));
+    testState.voteTally = {
+      state: 'ready',
+      criteria: { bucketChainId: 84532, contestId: '5chan-dir-a-vote-test-1' },
+      tally: {
+        contestId: '5chan-dir-a-vote-test-1',
+        ranking: [{ community: { name: 'vote-winner.bso', publicKey: '12D3KooWVote' }, weight: BigInt(9), chainVerified: true, nameResolved: true }],
+      },
+    };
+
+    await renderDirectory();
+
+    const rows = Array.from(container.querySelectorAll('tbody tr'));
+    expect(rows.map((row) => row.querySelector('td:nth-child(2)')?.textContent)).toEqual(['manual-winner.bso', 'vote-winner.bso']);
+    expect(rows.map((row) => row.querySelector('td:nth-child(5)')?.textContent)).toEqual(['0', '9']);
+    expect(container.textContent).toContain('directory_votes_testnet');
+  });
+
+  it('makes the live public-key tally authoritative and marks provisional scores', async () => {
+    testState.directoryBoards = [
+      { address: 'manual-winner.bso', publicKey: '12D3KooWManual', score: 100 },
+      { address: 'vote-winner.bso', publicKey: '12D3KooWVote', score: 1 },
+      { address: 'no-votes.bso', publicKey: '12D3KooWNone', score: 50 },
+    ];
+    testState.communities = Object.fromEntries(testState.directoryBoards.map((board) => [board.address, createCommunity(board.address)]));
+    testState.voteTally = {
+      state: 'ready',
+      tally: {
+        contestId: '5chan-dir-a-vote-test-1',
+        ranking: [
+          { community: { name: 'vote-winner.bso', publicKey: '12D3KooWVote' }, weight: BigInt(9), chainVerified: false, nameResolved: false },
+          { community: { name: 'manual-winner.bso', publicKey: '12D3KooWManual' }, weight: BigInt(2), chainVerified: true, nameResolved: true },
+        ],
+      },
+    };
+
+    await renderDirectory();
+
+    const rows = Array.from(container.querySelectorAll('tbody tr'));
+    expect(rows.map((row) => row.querySelector('td:nth-child(2)')?.textContent)).toEqual(['vote-winner.bso', 'manual-winner.bso', 'no-votes.bso']);
+    expect(rows.map((row) => row.querySelector('td:nth-child(5)')?.textContent)).toEqual(['9?', '2', '0']);
+    expect(rows[0].querySelector('[data-score-verification]')?.getAttribute('data-score-verification')).toBe('pending');
+    expect(rows[0].querySelector('sup')?.getAttribute('title')).toBe('pending');
+    expect(rows[1].querySelector('[data-score-verification]')?.getAttribute('data-score-verification')).toBe('verified');
   });
 
   it('shows loading status while the listed board status is loading', async () => {

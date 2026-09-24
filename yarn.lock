@@ -13,6 +13,7 @@ __metadata:
     "@bbob/parser": "npm:4.3.1"
     "@bitsocial/bitsocial-react-hooks": "npm:0.1.46"
     "@bitsocial/bso-resolver": "npm:0.0.10"
+    "@bitsocial/pubsub-voting": "npm:0.7.7"
     "@capacitor/android": "npm:7.4.5"
     "@capacitor/app": "npm:7.0.1"
     "@capacitor/browser": "npm:7.0.5"
@@ -97,8 +98,10 @@ __metadata:
     rolldown: "npm:1.0.3"
     smol-toml: "npm:1.6.1"
     stream-browserify: "npm:3.0.0"
+    strip-json-comments: "npm:5.0.3"
     tcp-port-used: "npm:1.0.2"
     typescript: "npm:7.0.2"
+    viem: "npm:2.56.0"
     vite: "npm:8.0.16"
     vite-plugin-pwa: "npm:1.2.0"
     vitest: "npm:4.1.11"
@@ -1628,6 +1631,23 @@ __metadata:
     "@pkcprotocol/pkc-logger": "npm:0.1.0"
     viem: "npm:2.55.1"
   checksum: 10c0/6dd612cb374fadb4f23d37eb6f48292032efa64867871a3d2f81b0c1a4d9a4bdb6463afb0d737ec60a78a39505d92aaf42586812356e31e21b49012daf8fd55c
+  languageName: node
+  linkType: hard
+
+"@bitsocial/pubsub-voting@npm:0.7.7":
+  version: 0.7.7
+  resolution: "@bitsocial/pubsub-voting@npm:0.7.7"
+  dependencies:
+    "@ipld/dag-cbor": "npm:10.0.2"
+    "@libp2p/interface": "npm:3.3.0"
+    better-sqlite3: "npm:12.9.0"
+    helia: "npm:7.1.10"
+    localforage: "npm:1.10.0"
+    multiformats: "npm:14.0.5"
+    p-limit: "npm:7.3.1"
+    viem: "npm:2.56.0"
+    zod: "npm:4.3.6"
+  checksum: 10c0/216cf674499110b52f947afd15f9c7bf461a7b073891589633e97bf5f5e94d2bee1d8f36e4f14a62921c4d2549e516ae0196e3a6e5e7b7ce5788212e92998022
   languageName: node
   linkType: hard
 
@@ -3780,7 +3800,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ipld/dag-cbor@npm:^10.0.0":
+"@ipld/dag-cbor@npm:10.0.2, @ipld/dag-cbor@npm:^10.0.0":
   version: 10.0.2
   resolution: "@ipld/dag-cbor@npm:10.0.2"
   dependencies:
@@ -4061,7 +4081,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@libp2p/crypto@npm:5.1.23, @libp2p/crypto@npm:^5.1.22, @libp2p/crypto@npm:^5.1.23":
+"@libp2p/crypto@npm:5.1.23, @libp2p/crypto@npm:^5.1.23":
   version: 5.1.23
   resolution: "@libp2p/crypto@npm:5.1.23"
   dependencies:
@@ -4182,15 +4202,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@libp2p/gossipsub@npm:17.0.0":
-  version: 17.0.0
-  resolution: "@libp2p/gossipsub@npm:17.0.0"
+"@libp2p/gossipsub@npm:17.0.1":
+  version: 17.0.1
+  resolution: "@libp2p/gossipsub@npm:17.0.1"
   dependencies:
-    "@libp2p/crypto": "npm:^5.1.22"
-    "@libp2p/interface": "npm:^3.2.5"
-    "@libp2p/interface-internal": "npm:^3.1.11"
-    "@libp2p/peer-id": "npm:^6.0.14"
-    "@libp2p/utils": "npm:^7.3.2"
+    "@libp2p/crypto": "npm:^5.1.23"
+    "@libp2p/interface": "npm:^3.3.0"
+    "@libp2p/interface-internal": "npm:^3.1.12"
+    "@libp2p/peer-id": "npm:^6.0.15"
+    "@libp2p/utils": "npm:^7.4.0"
     "@multiformats/multiaddr": "npm:^13.0.3"
     denque: "npm:^2.1.0"
     it-length-prefixed: "npm:^11.0.1"
@@ -4200,7 +4220,7 @@ __metadata:
     protons-runtime: "npm:^7.0.0"
     uint8arraylist: "npm:^3.0.2"
     uint8arrays: "npm:^6.1.1"
-  checksum: 10c0/3061f444272f3b633bed23ec4317923a483e5442e883696f1a5ac630c86329db217f77b2212bfc380cb899e21d3eaf1d69d4c8a3bae88b12ec673ba9645e1484
+  checksum: 10c0/d5de277d47b47a2756d10b7f819c364ee34c7de162cc1c31b96e82d4f0a9fbfa325909cc5f8a7a154203d823907a707e37329f2229534dfee62ac446942596e3
   languageName: node
   linkType: hard
 
@@ -4370,18 +4390,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@libp2p/interface-internal@npm:^3.1.11":
-  version: 3.1.12
-  resolution: "@libp2p/interface-internal@npm:3.1.12"
-  dependencies:
-    "@libp2p/interface": "npm:^3.3.0"
-    "@libp2p/peer-collections": "npm:^7.0.27"
-    "@multiformats/multiaddr": "npm:^13.0.3"
-    progress-events: "npm:^1.0.1"
-  checksum: 10c0/ee792e3d259e762d7d5b160580b96763fd2da273efadc7c3efd7f8445dc5b0f6adfb261187725cf8fa2b07af3432cec1a9ee20ab1a7c5976c2d2158ba0aa8aa0
-  languageName: node
-  linkType: hard
-
 "@libp2p/interface-internal@npm:^3.1.12, @libp2p/interface-internal@npm:^3.1.13":
   version: 3.1.13
   resolution: "@libp2p/interface-internal@npm:3.1.13"
@@ -4459,20 +4467,6 @@ __metadata:
     progress-events: "npm:^1.1.0"
     uint8arraylist: "npm:^3.0.2"
   checksum: 10c0/195d473be79caeec42a14f852b6ac2d3d394ab545938af0dba169f62df4c8dc79d46b642faf02c9fa6c9443fd9abcda18d950fcc8173179d30b4bf5875c553b9
-  languageName: node
-  linkType: hard
-
-"@libp2p/interface@npm:^3.2.5":
-  version: 3.2.5
-  resolution: "@libp2p/interface@npm:3.2.5"
-  dependencies:
-    "@multiformats/dns": "npm:^1.0.6"
-    "@multiformats/multiaddr": "npm:^13.0.3"
-    main-event: "npm:^1.0.1"
-    multiformats: "npm:^14.0.0"
-    progress-events: "npm:^1.1.0"
-    uint8arraylist: "npm:^3.0.2"
-  checksum: 10c0/d3d2ee1620276c6df73c5c6e3b27a1a4f2aaf8302619342b5e041020021f4744e12cd53fc47da2444f1710c99ddf4c825a114107747c58ef8ccbc9429e60e8cc
   languageName: node
   linkType: hard
 
@@ -4749,7 +4743,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@libp2p/peer-id@npm:6.0.15, @libp2p/peer-id@npm:^6.0.14, @libp2p/peer-id@npm:^6.0.15":
+"@libp2p/peer-id@npm:6.0.15, @libp2p/peer-id@npm:^6.0.15":
   version: 6.0.15
   resolution: "@libp2p/peer-id@npm:6.0.15"
   dependencies:
@@ -5072,7 +5066,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@libp2p/utils@npm:^7.3.2, @libp2p/utils@npm:^7.4.0":
+"@libp2p/utils@npm:^7.4.0":
   version: 7.4.0
   resolution: "@libp2p/utils@npm:7.4.0"
   dependencies:
@@ -16493,9 +16487,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ox@npm:0.14.30":
-  version: 0.14.30
-  resolution: "ox@npm:0.14.30"
+"ox@npm:0.14.34":
+  version: 0.14.34
+  resolution: "ox@npm:0.14.34"
   dependencies:
     "@adraffy/ens-normalize": "npm:^1.11.0"
     "@noble/ciphers": "npm:^1.3.0"
@@ -16510,28 +16504,7 @@ __metadata:
   peerDependenciesMeta:
     typescript:
       optional: true
-  checksum: 10c0/dfefa9218269103b3da3686c4da62849aef15e4347fd21f898fa113d9b4c2b86afab7c662c94d58206257736202647ce96249405c021c4a233712ac34fa3cc1b
-  languageName: node
-  linkType: hard
-
-"ox@npm:0.14.32":
-  version: 0.14.32
-  resolution: "ox@npm:0.14.32"
-  dependencies:
-    "@adraffy/ens-normalize": "npm:^1.11.0"
-    "@noble/ciphers": "npm:^1.3.0"
-    "@noble/curves": "npm:1.9.1"
-    "@noble/hashes": "npm:^1.8.0"
-    "@scure/bip32": "npm:^1.7.0"
-    "@scure/bip39": "npm:^1.6.0"
-    abitype: "npm:^1.2.3"
-    eventemitter3: "npm:5.0.1"
-  peerDependencies:
-    typescript: ">=5.4.0"
-  peerDependenciesMeta:
-    typescript:
-      optional: true
-  checksum: 10c0/e07c0b18f967f93bf9b52dd5f00cd72db38be435f06cb16e7852c08cc6f05730c031a3ae5dbe058682160ec25b8a8664df334e28fe0677f7848abd0b9a9b59f0
+  checksum: 10c0/e290089bb8ec640ce50c0e989a711845441c651a7a014def3bb49bf87416194fa89037761366b7a6662eac37795ff3dfc90f9a99be5fc305d559de51567f0374
   languageName: node
   linkType: hard
 
@@ -17038,6 +17011,15 @@ __metadata:
   dependencies:
     yocto-queue: "npm:^1.2.1"
   checksum: 10c0/8030f0ccc67d80d9c12f2b4ed277c5ede151f80a09cb1b143ab0ee597940784f2cf6e07e92d54c023fe9836784329750c25c6cd4488a7a326c0ae0ec2efca982
+  languageName: node
+  linkType: hard
+
+"p-limit@npm:7.3.1":
+  version: 7.3.1
+  resolution: "p-limit@npm:7.3.1"
+  dependencies:
+    yocto-queue: "npm:^1.2.1"
+  checksum: 10c0/49b7d7fcc244d4659fa3b260c7b4e632bc72333c60e76e4cd24c7befdeb9b8e22da644e5064e83df9e2ded75245e3e3b9df0e9cf8500b08db8ebf58ac18c6764
   languageName: node
   linkType: hard
 
@@ -20983,9 +20965,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"viem@npm:2.55.1":
-  version: 2.55.1
-  resolution: "viem@npm:2.55.1"
+"viem@npm:2.56.0":
+  version: 2.56.0
+  resolution: "viem@npm:2.56.0"
   dependencies:
     "@noble/curves": "npm:1.9.1"
     "@noble/hashes": "npm:1.8.0"
@@ -20993,35 +20975,14 @@ __metadata:
     "@scure/bip39": "npm:1.6.0"
     abitype: "npm:1.2.3"
     isows: "npm:1.0.7"
-    ox: "npm:0.14.30"
+    ox: "npm:0.14.34"
     ws: "npm:8.21.0"
   peerDependencies:
     typescript: ">=5.0.4"
   peerDependenciesMeta:
     typescript:
       optional: true
-  checksum: 10c0/4747450c511604dc2280b94b6a6eab53638058a559531f7707d31f21de51670449530f9ebc2fbc06d961b8b5a6cfadb920683e701058adc8996619b012bbc56d
-  languageName: node
-  linkType: hard
-
-"viem@npm:2.55.8":
-  version: 2.55.8
-  resolution: "viem@npm:2.55.8"
-  dependencies:
-    "@noble/curves": "npm:1.9.1"
-    "@noble/hashes": "npm:1.8.0"
-    "@scure/bip32": "npm:1.7.0"
-    "@scure/bip39": "npm:1.6.0"
-    abitype: "npm:1.2.3"
-    isows: "npm:1.0.7"
-    ox: "npm:0.14.32"
-    ws: "npm:8.21.0"
-  peerDependencies:
-    typescript: ">=5.0.4"
-  peerDependenciesMeta:
-    typescript:
-      optional: true
-  checksum: 10c0/30457ab22c174e02680831f841cd27ba806346ea2099e6b091a53bb46f0bcd6406d93704ef1d91be0d21fd367e38fe81573a9a89a84906e469bdb9c12be7a0bb
+  checksum: 10c0/eafa75985ec05dea1a6fc6d7428378a7df0ec4aa38733b471bb29252cb41e909e5ccbc23b061aa764dbf42adb2d72edbaf8524166026f7488edc0971fa2e35df
   languageName: node
   linkType: hard
 

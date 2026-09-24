@@ -494,5 +494,14 @@
   "image_boards": "Obrázkové nástěnky",
   "upload_boards": "Nástěnky pro nahrávání souborů",
   "multiboards": "Multidesky",
-  "show_homepage_introduction": "Zobrazit úvod na domovské stránce"
+  "show_homepage_introduction": "Zobrazit úvod na domovské stránce",
+  "directory_footnote": "Chcete-li přidat board, zadejte níže jeho adresu a hlasujte pro něj. Hlasovat mohou pouze držitelé <passLink>5chan Pass</passLink>, a to jedním hlasem v každém adresáři.",
+  "directory_unvote": "Zrušit hlas",
+  "directory_votes_testnet": "Hlasování zatím běží na testnetu: hlasy se počítají a zobrazují, ale pořadí zatím nemění.",
+  "directory_voting_unavailable": "Hlasování adresáře vyžaduje peer-to-peer připojení 5chan, které momentálně není k dispozici.",
+  "directory_voting_no_contest": "/{{boardIdentifier}}/ nemá žádné hlasování o adresáři.",
+  "directory_vote_needs_pass": "Váš hlas nebyl odeslán: hlasovací adresa tohoto účtu <address>{{address}}</address> nevlastní <passLink>5chan Pass</passLink>.",
+  "directory_vote_needs_test_pass": "Váš hlas nebyl odeslán: hlasovací adresa tohoto účtu <address>{{address}}</address> nevlastní 5chan Pass. Hlasování zatím probíhá na síti testnet, takže si pro tuto adresu můžete zdarma získat testovací Pass z <faucetLink>faucetu</faucetLink>.",
+  "directory_vote_board_not_found": "Na adrese {{address}} nebyla nalezena žádná deska. Zadejte adresu .bso nebo veřejný klíč desky.",
+  "directory_vote_failed": "Váš hlas se nepodařilo odeslat: {{error}}"
 }

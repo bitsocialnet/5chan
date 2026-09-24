@@ -2,7 +2,7 @@
   "title": "5chan Directory Defaults",
   "description": "Expected 5chan UX defaults by directory code. These defaults apply to the directory, not to individual candidate boards.",
   "createdAt": 1779262179,
-  "updatedAt": 1789572191,
+  "updatedAt": 1790272372,
   "directories": {
     "3": {
       "directoryCode": "3",
@@ -13,9 +13,12 @@
         "hasFlags": false,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
         "noSpoilerReplies": true,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 15
       },
       "rules": [
@@ -32,9 +35,12 @@
         "hasFlags": false,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": false,
         "noSpoilerReplies": false,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 15
       },
       "rules": [
@@ -57,9 +63,12 @@
         "requirePostFlairs": true,
         "requirePostLink": true,
         "requirePostLinkIsMedia": false,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
         "noSpoilerReplies": true,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 50
       },
       "rules": [
@@ -75,9 +84,12 @@
         "hasFlags": false,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
         "noSpoilerReplies": true,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 15
       },
       "rules": [
@@ -96,9 +108,12 @@
         "hasFlags": false,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
         "noSpoilerReplies": true,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 15
       },
       "rules": [
@@ -115,9 +130,12 @@
         "hasFlags": false,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
         "noSpoilerReplies": true,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 15
       },
       "rules": [
@@ -134,9 +152,12 @@
         "hasFlags": true,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
         "noSpoilerReplies": true,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 15
       },
       "rules": [
@@ -152,9 +173,12 @@
         "hasFlags": false,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
         "noSpoilerReplies": true,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 20
       },
       "rules": [
@@ -173,9 +197,12 @@
         "hasFlags": false,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
         "noSpoilerReplies": true,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 15
       },
       "rules": [
@@ -193,9 +220,12 @@
         "hasFlags": false,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
         "noSpoilerReplies": true,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 15
       },
       "rules": [
@@ -212,9 +242,12 @@
         "hasFlags": false,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": false,
         "noSpoilerReplies": false,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 15
       },
       "rules": [
@@ -231,9 +264,12 @@
         "hasFlags": false,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
         "noSpoilerReplies": true,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 15
       },
       "rules": [
@@ -250,9 +286,12 @@
         "hasFlags": false,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
         "noSpoilerReplies": true,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 15
       },
       "rules": [
@@ -268,9 +307,12 @@
         "hasFlags": false,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
         "noSpoilerReplies": true,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 15
       },
       "rules": [
@@ -287,9 +329,12 @@
         "hasFlags": false,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
         "noSpoilerReplies": true,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 15
       },
       "rules": [
@@ -305,9 +350,12 @@
       "features": {
         "noSpoilers": true,
         "noSpoilerReplies": true,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "safeForWork": true,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "pseudonymityMode": "per-reply",
         "hasFlags": false,
         "bumpLimit": 300,
@@ -327,9 +375,12 @@
         "hasFlags": false,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
         "noSpoilerReplies": true,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 15
       },
       "rules": [
@@ -345,9 +396,12 @@
         "hasFlags": false,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
         "noSpoilerReplies": true,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 15
       },
       "rules": [
@@ -366,9 +420,12 @@
         "hasFlags": false,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
         "noSpoilerReplies": true,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 15
       },
       "rules": [
@@ -384,9 +441,12 @@
         "hasFlags": false,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
         "noSpoilerReplies": true,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 15
       },
       "rules": [
@@ -407,9 +467,12 @@
         "hasFlags": true,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
         "noSpoilerReplies": true,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 15
       },
       "rules": [
@@ -424,9 +487,12 @@
       "features": {
         "noSpoilers": false,
         "noSpoilerReplies": false,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "safeForWork": true,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "pseudonymityMode": "per-reply",
         "hasFlags": false,
         "bumpLimit": 300,
@@ -446,9 +512,12 @@
         "hasFlags": false,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
         "noSpoilerReplies": true,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 15
       },
       "rules": [
@@ -464,9 +533,12 @@
         "hasFlags": false,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": false,
         "noSpoilerReplies": false,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 15
       },
       "rules": [
@@ -482,9 +554,12 @@
         "hasFlags": false,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": false,
         "noSpoilerReplies": false,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 15
       },
       "rules": [
@@ -500,9 +575,12 @@
         "hasFlags": true,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": false,
         "noSpoilerReplies": false,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 15
       },
       "rules": [
@@ -522,9 +600,12 @@
         "hasFlags": false,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
         "noSpoilerReplies": true,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 15
       },
       "rules": [
@@ -543,9 +624,12 @@
         "hasFlags": false,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
         "noSpoilerReplies": true,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 15
       },
       "rules": [
@@ -563,9 +647,12 @@
         "hasFlags": false,
         "requirePostLink": false,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": false,
         "noSpoilerReplies": false,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 15
       },
       "rules": [
@@ -584,9 +671,12 @@
         "hasFlags": false,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
         "noSpoilerReplies": true,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 15
       },
       "rules": [
@@ -603,9 +693,12 @@
         "hasFlags": false,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
         "noSpoilerReplies": true,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 15
       },
       "rules": [
@@ -625,9 +718,12 @@
         "hasFlags": false,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
         "noSpoilerReplies": true,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 15
       },
       "rules": [
@@ -644,9 +740,12 @@
         "hasFlags": false,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
         "noSpoilerReplies": true,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 15
       },
       "rules": [
@@ -663,9 +762,12 @@
       "features": {
         "noSpoilers": true,
         "noSpoilerReplies": true,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "safeForWork": true,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "pseudonymityMode": "per-reply",
         "hasFlags": false,
         "bumpLimit": 300,
@@ -685,9 +787,12 @@
         "hasFlags": true,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
         "noSpoilerReplies": true,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 20
       },
       "rules": [
@@ -705,9 +810,12 @@
         "hasFlags": false,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
         "noSpoilerReplies": true,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 15
       },
       "rules": [
@@ -722,10 +830,13 @@
         "safeForWork": true,
         "hasFlags": false,
         "requirePostLink": false,
-        "requirePostLinkIsMedia": false,
+        "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": false,
         "noSpoilerReplies": false,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 15
       },
       "rules": [
@@ -743,9 +854,12 @@
       "features": {
         "noSpoilers": false,
         "noSpoilerReplies": false,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "safeForWork": true,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "pseudonymityMode": "per-reply",
         "hasFlags": false,
         "bumpLimit": 300,
@@ -767,9 +881,12 @@
         "hasFlags": false,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
         "noSpoilerReplies": true,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 15
       },
       "rules": [
@@ -788,9 +905,12 @@
       "features": {
         "noSpoilers": false,
         "noSpoilerReplies": false,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "safeForWork": false,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "pseudonymityMode": "per-reply",
         "hasFlags": false,
         "bumpLimit": 300,
@@ -808,9 +928,12 @@
       "features": {
         "noSpoilers": false,
         "noSpoilerReplies": false,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "safeForWork": false,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "pseudonymityMode": "per-reply",
         "hasFlags": false,
         "bumpLimit": 300,
@@ -829,9 +952,12 @@
         "hasFlags": false,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
         "noSpoilerReplies": true,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 15
       },
       "rules": [
@@ -849,9 +975,12 @@
         "hasFlags": false,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
         "noSpoilerReplies": true,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 15
       },
       "rules": [
@@ -875,9 +1004,12 @@
         "hasFlags": true,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
         "noSpoilerReplies": true,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 15
       },
       "rules": [
@@ -895,9 +1027,12 @@
         "hasFlags": false,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
         "noSpoilerReplies": true,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 15
       },
       "rules": [
@@ -913,9 +1048,12 @@
         "hasFlags": false,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": false,
         "noSpoilerReplies": false,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 15
       },
       "rules": [
@@ -931,9 +1069,12 @@
         "hasFlags": false,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
         "noSpoilerReplies": true,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 15
       },
       "rules": [
@@ -951,9 +1092,12 @@
         "hasFlags": false,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
         "noSpoilerReplies": true,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 15
       },
       "rules": [
@@ -972,9 +1116,12 @@
         "hasFlags": false,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": false,
         "noSpoilerReplies": false,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 15
       },
       "rules": [
@@ -993,9 +1140,12 @@
         "hasFlags": false,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": false,
         "noSpoilerReplies": false,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 15
       },
       "rules": [
@@ -1016,9 +1166,12 @@
         "hasFlags": false,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": false,
         "noSpoilerReplies": false,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 20
       },
       "rules": [
@@ -1036,9 +1189,12 @@
         "hasFlags": false,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
         "noSpoilerReplies": true,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 15
       },
       "rules": [
@@ -1054,9 +1210,12 @@
         "hasFlags": false,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": false,
         "noSpoilerReplies": false,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 15
       },
       "rules": [
@@ -1071,9 +1230,12 @@
       "features": {
         "noSpoilers": false,
         "noSpoilerReplies": false,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "safeForWork": true,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "pseudonymityMode": "per-reply",
         "hasFlags": false,
         "bumpLimit": 300,
@@ -1094,9 +1256,12 @@
         "hasFlags": false,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": false,
         "noSpoilerReplies": false,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 15
       },
       "rules": [
@@ -1117,9 +1282,12 @@
         "hasFlags": false,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": false,
         "noSpoilerReplies": false,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 15
       },
       "rules": [
@@ -1136,9 +1304,12 @@
         "hasFlags": false,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": false,
         "noSpoilerReplies": false,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 15
       },
       "rules": [
@@ -1156,9 +1327,12 @@
         "hasFlags": false,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": false,
         "noSpoilerReplies": false,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 15
       },
       "rules": [
@@ -1176,9 +1350,12 @@
         "hasFlags": false,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": false,
         "noSpoilerReplies": false,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 15
       },
       "rules": [
@@ -1196,9 +1373,12 @@
         "hasFlags": false,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
         "noSpoilerReplies": true,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 15
       },
       "rules": [
@@ -1212,9 +1392,12 @@
       "features": {
         "noSpoilers": true,
         "noSpoilerReplies": true,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "safeForWork": false,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "pseudonymityMode": "per-reply",
         "hasFlags": false,
         "bumpLimit": 300,
@@ -1234,9 +1417,12 @@
         "hasFlags": false,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
         "noSpoilerReplies": true,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 15
       },
       "rules": [
@@ -1253,9 +1439,12 @@
         "hasFlags": false,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
         "noSpoilerReplies": true,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 15
       },
       "rules": [
@@ -1279,9 +1468,12 @@
         "hasFlags": false,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
         "noSpoilerReplies": true,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 15
       },
       "rules": [
@@ -1297,9 +1489,12 @@
         "hasFlags": false,
         "requirePostLink": true,
         "requirePostLinkIsMedia": true,
+        "requireReplyLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": true,
         "noSpoilerReplies": true,
+        "noUpvotes": true,
+        "noDownvotes": true,
         "postsPerPage": 15
       },
       "rules": [
