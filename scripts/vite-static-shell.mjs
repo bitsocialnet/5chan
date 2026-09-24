@@ -4,9 +4,10 @@
 // scripts/static-shell/render.mjs renders the real App (src/static-shell.tsx) in jsdom. The result
 // goes into a <template>; a small inline script inserts it before first paint, and React replaces it
 // on its first commit. The script only inserts it when that commit will render the same frame: the
-// home route (always the yotsuba theme, no viewport-specific markup), an English UI, and none of the
-// saved home preferences below. Everyone else sees exactly what they saw before. A new saved
-// preference that changes the home page's first frame belongs in HOME_PREFERENCE_KEYS.
+// web runtime (Home renders Electron and Android variants), the home route (always the yotsuba theme,
+// no viewport-specific markup), an English UI, and none of the saved home preferences below. Everyone
+// else sees exactly what they saw before. A new saved preference that changes the home page's first
+// frame belongs in HOME_PREFERENCE_KEYS.
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -26,6 +27,8 @@ const HOME_PREFERENCE_KEYS = [
 // The inline script's hash must be listed in vercel.json's script-src (verified at build time).
 const insertShellScript = `(function () {
   try {
+    // Electron's preload and Capacitor's Android bridge are both in place before page scripts run.
+    if (window.isElectron || (window.electronApi && window.electronApi.isElectron) || window.androidBridge) return;
     if (location.hash && location.hash !== '#' && location.hash !== '#/') return;
     var language = localStorage.getItem('5chan-interface-language');
     if (language && !/^en(-|$)/i.test(language)) return;
@@ -70,7 +73,8 @@ export function injectStaticShell(html, variants) {
   const templates = Object.entries(variants)
     .map(([name, markup]) => `<template id="static-shell-${name}">${markup}</template>`)
     .join('');
-  return html.replace('<div id="root"></div>', `<div id="root"></div>${templates}<script>${insertShellScript}</script>`);
+  // A replacer function keeps `$` sequences in the rendered markup literal.
+  return html.replace('<div id="root"></div>', () => `<div id="root"></div>${templates}<script>${insertShellScript}</script>`);
 }
 
 export function staticShellPlugin({ preloadAttribute }) {

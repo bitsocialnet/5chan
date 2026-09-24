@@ -34,10 +34,11 @@ test('adds the shell templates and insertion script after an empty root', () => 
   assert.throws(() => injectStaticShell('<body><div id="root">x</div></body>', {}), /no empty/);
 });
 
-const loadWithShell = ({ hash = '', storage = {} } = {}) => {
+const loadWithShell = ({ hash = '', storage = {}, globals = {} } = {}) => {
   const html = injectStaticShell('<!doctype html><html><body><div id="root"></div></body></html>', { home: '<div class="app">shell</div>' });
   const dom = new JSDOM(html, { url: `https://5chan.test/${hash}`, runScripts: 'outside-only' });
   for (const [key, value] of Object.entries(storage)) dom.window.localStorage.setItem(key, value);
+  Object.assign(dom.window, globals);
   // Run the inline script as the parser would, now that storage is seeded.
   dom.window.eval(dom.window.document.querySelector('body > script').textContent);
   const root = dom.window.document.getElementById('root');
@@ -55,4 +56,6 @@ test('skips the shell when the first frame would differ', () => {
   assert.equal(loadWithShell({ storage: { '5chan-interface-language': 'de' } }).shown, false);
   assert.equal(loadWithShell({ storage: { 'homepage-introduction': '{"state":{"showIntroduction":false},"version":0}' } }).shown, false);
   assert.equal(loadWithShell({ storage: { '5chan-boards-filter': 'worksafe' } }).shown, false);
+  assert.equal(loadWithShell({ globals: { isElectron: true } }).shown, false);
+  assert.equal(loadWithShell({ globals: { androidBridge: {} } }).shown, false);
 });

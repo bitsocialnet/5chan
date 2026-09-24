@@ -107,13 +107,13 @@ const SearchDirectory = lazyView(secondaryViewLoaders.searchDirectory);
 // Preload all theme assets (buttons, backgrounds) immediately on app load
 // to prevent visible loading delays when switching themes
 preloadThemeAssets();
-// Warm the reply modal, settings modal, and secondary view chunks during idle time so the first
-// "No." click or navigation does not wait for a lazy import (routes render without transitions).
-scheduleIdlePreload(() => {
+// Warm the reply modal, settings modal, and secondary view chunks so the first "No." click or
+// navigation does not wait for a lazy import (routes render without transitions).
+const preloadLazyChunks = () => {
   void loadReplyModal();
   void loadSettingsModal();
   Object.values(secondaryViewLoaders).forEach((load) => void load());
-});
+};
 
 const getPostFormRouteKeyPath = (pathname: string) => pathname.replace(/\/settings$/, '').replace(/\/$/, '');
 
@@ -343,6 +343,10 @@ const ModQueueRoute = () => {
 
 const App = () => {
   useBrowserPureP2PAccountUpgrade();
+  // Start after the first route has committed, in idle time, so these downloads never compete with it.
+  useEffect(() => {
+    scheduleIdlePreload(preloadLazyChunks);
+  }, []);
 
   // Feed routes are always rendered by FeedCacheContainer (Virtuoso used for all modes)
   const boardFeedElement = null;
