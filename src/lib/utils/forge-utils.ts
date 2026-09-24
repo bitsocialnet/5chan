@@ -1,10 +1,10 @@
-import { FORGE_IMAGES_API_ORIGIN, FORGE_IMAGES_TURNSTILE_SITEKEY } from '../forge-images-config';
+import { FORGE_IMAGES_API_ORIGIN, FORGE_IMAGES_MEDIA_ORIGIN, FORGE_IMAGES_TURNSTILE_SITEKEY } from '../forge-images-config';
 import type { UploadAttemptStage } from '../media-hosting/types';
 import { getTurnstileToken } from './turnstile-utils';
 
 /** Covers a 20 MB GIF (the largest launch cap) on a slow uplink; a hung request still fails. */
 const FORGE_UPLOAD_TIMEOUT_MS = 120_000;
-/** Longest wait for a pending (in moderation) image to start serving before its URL is returned anyway. */
+/** Longest wait for a pending (in moderation) image to start serving before the upload is reported as not ready. */
 const PENDING_SERVE_WAIT_MS = 60_000;
 const PENDING_POLL_MAX_INTERVAL_MS = 8_000;
 const SERVE_PROBE_TIMEOUT_MS = 10_000;
@@ -41,16 +41,10 @@ function getApiErrorMessage(body: unknown): string | undefined {
   return typeof error?.message === 'string' && error.message.trim() ? error.message.trim() : undefined;
 }
 
+/** The URL is written into a permanent public post, so it must point at the Forge media origin. */
 function getUploadedUrl(body: ForgeUploadResponse | null): string {
   const url = body?.url;
-  if (typeof url === 'string') {
-    try {
-      const { protocol } = new URL(url);
-      if (protocol === 'https:' || protocol === 'http:') return url;
-    } catch {
-      // Falls through to the invalid-response error.
-    }
-  }
+  if (typeof url === 'string' && url.startsWith(`${FORGE_IMAGES_MEDIA_ORIGIN}/`)) return url;
   throw new ForgeUploadError('Upload failed: the response did not include a valid URL', 'provider_error');
 }
 
@@ -65,9 +59,15 @@ function canLoadImage(url: string, timeoutMs: number): Promise<boolean> {
       if (settled) return;
       settled = true;
       clearTimeout(timeoutId);
+      image.onload = null;
+      image.onerror = null;
       resolve(loaded);
     };
-    const timeoutId = setTimeout(() => settle(false), timeoutMs);
+    const timeoutId = setTimeout(() => {
+      settle(false);
+      // Stop the abandoned download so slow polls of a large GIF do not overlap.
+      image.src = '';
+    }, timeoutMs);
     image.onload = () => settle(true);
     image.onerror = () => settle(false);
     image.referrerPolicy = 'no-referrer';
@@ -80,21 +80,24 @@ function canLoadImage(url: string, timeoutMs: number): Promise<boolean> {
  * ARCHITECTURE.md §2). The post form loads a link once when it is inserted and
  * blocks publishing if that load failed, so wait, bounded, until the image serves.
  */
-async function waitUntilImageServes(url: string, maxWaitMs: number): Promise<void> {
+async function waitUntilImageServes(url: string, maxWaitMs: number): Promise<boolean> {
   const deadline = Date.now() + maxWaitMs;
   let delay = 1_000;
   while (Date.now() < deadline) {
     await sleep(Math.min(delay, deadline - Date.now()));
     // Keep the last probe from running far past the deadline.
-    if (await canLoadImage(url, Math.min(SERVE_PROBE_TIMEOUT_MS, Math.max(deadline - Date.now(), 1_000)))) return;
+    if (await canLoadImage(url, Math.min(SERVE_PROBE_TIMEOUT_MS, Math.max(deadline - Date.now(), 1_000)))) return true;
     delay = Math.min(delay * 2, PENDING_POLL_MAX_INTERVAL_MS);
   }
+  return false;
 }
 
 /**
  * Upload a file to Forge Images (API contract: forge-images docs/ARCHITECTURE.md §4).
- * Returns the media URL for both `live` and `pending` uploads. A pending image is
- * first given up to a minute to pass moderation and start serving.
+ * Returns the media URL for `live` uploads, and for `pending` images once they
+ * pass moderation and start serving (up to a minute). An image still in review
+ * after that fails instead: its URL inserted now would stay marked broken in the
+ * post form even after it goes live, while a later retry dedups to `live` at once.
  * @throws ForgeUploadError with stage 'blocked' (Turnstile failed, or 403),
  * 'provider_error' (other API errors), 'timeout', or 'unknown' (network failure)
  */
@@ -143,7 +146,9 @@ export async function uploadToForge(file: File, options: ForgeUploadOptions = {}
 
   const url = getUploadedUrl(body);
   if (body?.status === 'pending' && typeof body.mime === 'string' && body.mime.startsWith('image/') && pendingServeWaitMs > 0) {
-    await waitUntilImageServes(url, pendingServeWaitMs);
+    if (!(await waitUntilImageServes(url, pendingServeWaitMs))) {
+      throw new ForgeUploadError('The image was uploaded but is still being reviewed. Try again in a minute.', 'provider_error');
+    }
   }
   return url;
 }

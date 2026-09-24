@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { FORGE_IMAGES_API_ORIGIN, FORGE_IMAGES_MEDIA_ORIGIN } from '../../forge-images-config';
 import { ForgeUploadError, uploadToForge } from '../forge-utils';
 
 const jsonResponse = (status: number, body: unknown, statusText = '') =>
@@ -30,7 +31,7 @@ describe('uploadToForge', () => {
   });
 
   it.each(['live', 'pending'])('returns the URL for a %s upload', async (status) => {
-    const url = 'https://img.bitsocialforge.com/9f86d08/photo.png';
+    const url = `${FORGE_IMAGES_MEDIA_ORIGIN}/9f86d08/photo.png`;
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse(200, { url, sha256: '9f86d08', status }));
     vi.stubGlobal('fetch', fetchMock);
 
@@ -38,7 +39,7 @@ describe('uploadToForge', () => {
   });
 
   describe('pending images', () => {
-    const url = 'http://127.0.0.1:3917/dev/media/abc/photo.png';
+    const url = `${FORGE_IMAGES_MEDIA_ORIGIN}/abc/photo.png`;
     let loadResults: boolean[];
     let loadedSrcs: string[];
 
@@ -77,12 +78,15 @@ describe('uploadToForge', () => {
       expect(result).toBe(url);
     });
 
-    it('returns the URL anyway once the bounded wait runs out', async () => {
-      const pending = uploadToForge(new File(['x'], 'photo.png', { type: 'image/png' }), { getToken, pendingServeWaitMs: 10_000 });
+    it('fails with a retry message when the image is still in review after the bounded wait', async () => {
+      const pending = uploadToForge(new File(['x'], 'photo.png', { type: 'image/png' }), { getToken, pendingServeWaitMs: 10_000 }).catch((err: unknown) => err);
 
       await vi.advanceTimersByTimeAsync(10_000);
+      const error = (await pending) as ForgeUploadError;
 
-      await expect(pending).resolves.toBe(url);
+      expect(error).toBeInstanceOf(ForgeUploadError);
+      expect(error.stage).toBe('provider_error');
+      expect(error.message).toMatch(/still being reviewed/);
       expect(loadedSrcs.length).toBeGreaterThan(1);
     });
 
@@ -95,7 +99,7 @@ describe('uploadToForge', () => {
   });
 
   it('POSTs multipart with the turnstile field before the file part and no custom headers', async () => {
-    const fetchMock = vi.fn().mockResolvedValue(jsonResponse(200, { url: 'https://img.bitsocialforge.com/abc.png', status: 'pending' }));
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse(200, { url: `${FORGE_IMAGES_MEDIA_ORIGIN}/abc.png`, status: 'pending' }));
     vi.stubGlobal('fetch', fetchMock);
     const file = new File(['x'], 'photo.png', { type: 'image/png' });
 
@@ -103,7 +107,7 @@ describe('uploadToForge', () => {
 
     expect(getToken).toHaveBeenCalledOnce();
     const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
-    expect(url).toBe('https://img-api.bitsocialforge.com/api/upload');
+    expect(url).toBe(`${FORGE_IMAGES_API_ORIGIN}/api/upload`);
     expect(init.method).toBe('POST');
     expect(init.headers).toBeUndefined();
     const body = init.body as FormData;
@@ -164,8 +168,8 @@ describe('uploadToForge', () => {
     expect(error.message).toBe('Upload failed: 502 Bad Gateway');
   });
 
-  it('rejects a success response without a usable URL', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse(200, { url: 'javascript:alert(1)', status: 'live' })));
+  it.each(['javascript:alert(1)', 'https://evil.example/abc.png'])('rejects a success response whose URL is not on the Forge media origin: %s', async (url) => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse(200, { url, status: 'live' })));
 
     const error = await uploadError();
 

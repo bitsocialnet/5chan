@@ -16,7 +16,8 @@ export const MEDIA_HOSTING_PROVIDERS: readonly ProviderDefinition[] = [
   {
     id: 'forge',
     label: 'Forge Images',
-    homepageUrl: 'https://img.bitsocialforge.com',
+    // The media host's root is a bare bucket (404), so link the operator's site.
+    homepageUrl: 'https://bitsocialforge.com',
     // Both serve the same frozen 1x1 PNG: the pinned blob proves the media serve path,
     // health.png proves the upload API is healthy (it answers a non-image 503 otherwise).
     availabilityProbeUrls: [`${FORGE_IMAGES_MEDIA_ORIGIN}/2aa4fa20701cdd6d8d56046069001186b5267e3ee7d0ef618ad2f4a683723e11.png`, `${FORGE_IMAGES_API_ORIGIN}/health.png`],

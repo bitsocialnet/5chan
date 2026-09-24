@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { FORGE_IMAGES_API_ORIGIN, FORGE_IMAGES_MEDIA_ORIGIN } from '../../lib/forge-images-config';
 import useMediaHostingStore, { MEDIA_HOSTING_PROVIDERS } from '../use-media-hosting-store';
 
 const STORAGE_KEY = 'media-hosting-storage';
@@ -24,10 +25,10 @@ describe('useMediaHostingStore', () => {
     expect(forge).toEqual({
       id: 'forge',
       label: 'Forge Images',
-      homepageUrl: 'https://img.bitsocialforge.com',
+      homepageUrl: 'https://bitsocialforge.com',
       availabilityProbeUrls: [
-        'https://img.bitsocialforge.com/2aa4fa20701cdd6d8d56046069001186b5267e3ee7d0ef618ad2f4a683723e11.png',
-        'https://img-api.bitsocialforge.com/health.png',
+        `${FORGE_IMAGES_MEDIA_ORIGIN}/2aa4fa20701cdd6d8d56046069001186b5267e3ee7d0ef618ad2f4a683723e11.png`,
+        `${FORGE_IMAGES_API_ORIGIN}/health.png`,
       ],
       supportedRuntimes: ['web'],
     });
