@@ -1,3 +1,4 @@
+import { FORGE_IMAGES_API_ORIGIN, FORGE_IMAGES_MEDIA_ORIGIN } from '../forge-images-config';
 import type { MediaHostingRuntime, ProviderId } from './types';
 
 interface ProviderDefinition {
@@ -10,14 +11,26 @@ interface ProviderDefinition {
   supportedRuntimes: readonly MediaHostingRuntime[];
 }
 
-/** All media hosting providers with metadata */
+/** All media hosting providers with metadata. Array order is the settings display order. */
 export const MEDIA_HOSTING_PROVIDERS: readonly ProviderDefinition[] = [
+  {
+    id: 'forge',
+    label: 'Forge Images',
+    homepageUrl: 'https://img.bitsocialforge.com',
+    // Both serve the same frozen 1x1 PNG: the pinned blob proves the media serve path,
+    // health.png proves the upload API is healthy (it answers a non-image 503 otherwise).
+    availabilityProbeUrls: [`${FORGE_IMAGES_MEDIA_ORIGIN}/2aa4fa20701cdd6d8d56046069001186b5267e3ee7d0ef618ad2f4a683723e11.png`, `${FORGE_IMAGES_API_ORIGIN}/health.png`],
+    // Web only for now: Electron production loads file://, where Turnstile cannot run,
+    // and Android uploads entirely through the native FileUploader plugin.
+    supportedRuntimes: ['web'],
+  },
   {
     id: 'catbox',
     label: 'Catbox',
     homepageUrl: 'https://catbox.moe',
     availabilityProbeUrls: ['https://catbox.moe/pictures/logo.png', 'https://files.catbox.moe/8ten4y.png'],
-    supportedRuntimes: ['web', 'electron', 'android'],
+    // Not web: catbox's API sends no CORS headers, so a browser fetch always fails.
+    supportedRuntimes: ['electron', 'android'],
   },
   {
     id: 'imgur',

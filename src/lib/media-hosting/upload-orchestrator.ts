@@ -1,6 +1,7 @@
 import type { ProviderAttempt, ProviderId, UploadAttemptStage } from './types';
 import { stripMediaMetadata } from '../media-metadata/strip-media-metadata';
 import { uploadToCatbox } from '../utils/catbox-utils';
+import { uploadToForge } from '../utils/forge-utils';
 
 /** Attempt metadata inferred or parsed from plugin rejection. Used when plugins throw plain errors. */
 function parseAttemptMetadata(errorMessage: string): {
@@ -62,10 +63,11 @@ async function fileToByteArray(file: File): Promise<number[]> {
 }
 
 /**
- * Uploads a file via a single provider. Catbox uses the web API;
+ * Uploads a file via a single provider. Forge and catbox use their web APIs;
  * imgur/imgbb use Electron automation when available.
  */
 async function uploadViaProvider(provider: ProviderId, file: File): Promise<string> {
+  if (provider === 'forge') return uploadToForge(await stripMediaMetadata(file));
   if (provider === 'catbox') return uploadToCatbox(await stripMediaMetadata(file));
   if (provider === 'imgur' || provider === 'imgbb') {
     const fn = typeof window !== 'undefined' && window.electronApi?.automateUploadMedia;
@@ -96,18 +98,18 @@ async function uploadViaProvider(provider: ProviderId, file: File): Promise<stri
   throw new Error(`Unsupported provider: ${provider}`);
 }
 
-/** Rejection shape for plugin errors that include structured metadata (future Electron/Android) */
+/** Rejection shape for errors that include structured metadata (forge adapter, future Electron/Android plugins) */
 interface PluginRejectionMeta {
   stage?: UploadAttemptStage;
   matchedSelectors?: string[];
 }
 
 /**
- * Orchestrates Electron upload: tries each provider in order, returns URL on first success.
+ * Orchestrates a web or Electron upload: tries each provider in order, returns URL on first success.
  * Collects attempt errors with deterministic metadata (provider, stage, elapsedMs, matchedSelectors).
  * Throws with attempts if all fail.
  */
-export async function orchestrateElectronUpload(file: File, providerOrder: ProviderId[]): Promise<string> {
+export async function orchestrateUpload(file: File, providerOrder: ProviderId[]): Promise<string> {
   const attempts: ProviderAttempt[] = [];
 
   for (const provider of providerOrder) {

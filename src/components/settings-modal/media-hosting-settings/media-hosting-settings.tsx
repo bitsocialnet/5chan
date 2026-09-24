@@ -7,7 +7,6 @@ import { useProviderAvailability } from '../../../hooks/use-provider-availabilit
 import styles from '../interface-settings/interface-settings.module.css';
 
 const RADIO_NAME = 'media-hosting-provider';
-const RELEASES_URL = 'https://github.com/bitsocialnet/5chan/releases/latest';
 
 const MediaHostingSettings = () => {
   const { t } = useTranslation();
@@ -16,20 +15,11 @@ const MediaHostingSettings = () => {
   const setUploadMode = useMediaHostingStore((state) => state.setUploadMode);
   const setPreferredProvider = useMediaHostingStore((state) => state.setPreferredProvider);
   const runtime = getMediaHostingRuntime();
-  const isWeb = runtime === 'web';
   const availability = useProviderAvailability(runtime);
 
   return (
     <div className={styles.interfaceSettings}>
       <div role='radiogroup' aria-label={t('media_hosting')}>
-        {isWeb && (
-          <div className={styles.webUploadWarning}>
-            {t('upload_not_supported_web_before_link')}{' '}
-            <a href={RELEASES_URL} target='_blank' rel='noopener noreferrer'>
-              {t('upload_not_supported_web_link_text')}
-            </a>
-          </div>
-        )}
         <div className={styles.setting}>
           <label>
             <input
@@ -39,7 +29,6 @@ const MediaHostingSettings = () => {
               value='random'
               checked={uploadMode === 'random'}
               onChange={() => setUploadMode('random')}
-              disabled={isWeb}
             />
             {t('media_hosting_random')}
           </label>
@@ -53,7 +42,6 @@ const MediaHostingSettings = () => {
               value='preferred'
               checked={uploadMode === 'preferred'}
               onChange={() => setUploadMode('preferred')}
-              disabled={isWeb}
             />
             {t('media_hosting_preferred')}
           </label>
@@ -61,7 +49,7 @@ const MediaHostingSettings = () => {
             <div role='radiogroup' aria-label={t('media_hosting_preferred_provider_label')}>
               {MEDIA_HOSTING_PROVIDERS.map((provider) => {
                 const providerUnavailable = availability[provider.id] === 'unavailable';
-                const providerDisabled = isWeb || !provider.supportedRuntimes.includes(runtime) || providerUnavailable;
+                const providerDisabled = !provider.supportedRuntimes.includes(runtime) || providerUnavailable;
                 return (
                   <div key={provider.id} className={styles.setting}>
                     <label title={providerUnavailable ? t('media_hosting_provider_unavailable') : undefined}>
@@ -96,7 +84,6 @@ const MediaHostingSettings = () => {
               value='none'
               checked={uploadMode === 'none'}
               onChange={() => setUploadMode('none')}
-              disabled={isWeb}
             />
             {t('media_hosting_none')}
           </label>

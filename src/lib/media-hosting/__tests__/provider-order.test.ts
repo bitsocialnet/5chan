@@ -51,10 +51,10 @@ describe('provider-order', () => {
       expect(
         getProviderOrder({
           mode: 'preferred',
-          preferredProvider: 'catbox',
+          preferredProvider: 'forge',
           runtime: 'web',
         }),
-      ).toEqual(['catbox']);
+      ).toEqual(['forge']);
       expect(
         getProviderOrder({
           mode: 'preferred',
@@ -79,6 +79,27 @@ describe('provider-order', () => {
     });
 
     it('returns empty when preferred provider not supported on runtime', () => {
+      expect(
+        getProviderOrder({
+          mode: 'preferred',
+          preferredProvider: 'catbox',
+          runtime: 'web',
+        }),
+      ).toEqual([]);
+      expect(
+        getProviderOrder({
+          mode: 'preferred',
+          preferredProvider: 'forge',
+          runtime: 'electron',
+        }),
+      ).toEqual([]);
+      expect(
+        getProviderOrder({
+          mode: 'preferred',
+          preferredProvider: 'forge',
+          runtime: 'android',
+        }),
+      ).toEqual([]);
       expect(
         getProviderOrder({
           mode: 'preferred',
@@ -127,21 +148,43 @@ describe('provider-order', () => {
       ).toEqual([]);
     });
 
-    it('filters by runtime for random mode', () => {
+    it('uses only forge on web with the default persisted settings (random + catbox)', () => {
+      expect(
+        getProviderOrder({
+          mode: 'random',
+          preferredProvider: 'catbox',
+          runtime: 'web',
+        }),
+      ).toEqual(['forge']);
+    });
+
+    it('returns empty on web when forge is unavailable from this network', () => {
+      expect(
+        getProviderOrder({
+          mode: 'random',
+          preferredProvider: 'catbox',
+          runtime: 'web',
+          availability: { forge: 'unavailable' },
+        }),
+      ).toEqual([]);
+    });
+
+    it('never includes forge in electron random mode', () => {
       const order = getProviderOrder({
         mode: 'random',
         preferredProvider: 'catbox',
-        runtime: 'web',
+        runtime: 'electron',
+        availability: { forge: 'available' },
       });
-      expect(order).toHaveLength(1);
-      expect(order).toEqual(['catbox']);
+      expect([...order].sort()).toEqual(['catbox', 'imgbb', 'imgur']);
     });
 
-    it('uses catbox, imgur, and imgbb for android random mode', () => {
+    it('uses catbox, imgur, and imgbb (never forge) for android random mode', () => {
       const order = getProviderOrder({
         mode: 'random',
         preferredProvider: 'catbox',
         runtime: 'android',
+        availability: { forge: 'available' },
       });
       expect(order).toHaveLength(3);
       expect([...order].sort()).toEqual(['catbox', 'imgbb', 'imgur']);

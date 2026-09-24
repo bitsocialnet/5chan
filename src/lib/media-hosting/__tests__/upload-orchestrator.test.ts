@@ -1,10 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { orchestrateElectronUpload } from '../upload-orchestrator';
+import { orchestrateUpload } from '../upload-orchestrator';
 import { uploadToCatbox } from '../../utils/catbox-utils';
+import { ForgeUploadError, uploadToForge } from '../../utils/forge-utils';
 import type { ProviderId } from '../types';
 
 vi.mock('../../utils/catbox-utils', () => ({
   uploadToCatbox: vi.fn(),
+}));
+
+vi.mock('../../utils/forge-utils', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../utils/forge-utils')>()),
+  uploadToForge: vi.fn(),
 }));
 
 // Minimal JPEG: SOI + COM segment ("gps!") + SOS with entropy data.
@@ -22,7 +28,7 @@ function createElectronApiMock() {
   };
 }
 
-describe('orchestrateElectronUpload', () => {
+describe('orchestrateUpload', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     window.electronApi = undefined;
@@ -33,17 +39,39 @@ describe('orchestrateElectronUpload', () => {
     vi.mocked(uploadToCatbox).mockResolvedValue('https://files.catbox.moe/a.png');
     const file = new File(['a'], 'a.png', { type: 'image/png' });
 
-    const url = await orchestrateElectronUpload(file, ['catbox']);
+    const url = await orchestrateUpload(file, ['catbox']);
 
     expect(url).toBe('https://files.catbox.moe/a.png');
     expect(uploadToCatbox).toHaveBeenCalledWith(file);
+  });
+
+  it('uploads via forge with metadata stripped', async () => {
+    vi.mocked(uploadToForge).mockResolvedValue('https://img.bitsocialforge.com/abc/photo.jpg');
+    const file = new File([new Uint8Array(jpegWithComment)], 'photo.jpg', { type: 'image/jpeg' });
+
+    const url = await orchestrateUpload(file, ['forge']);
+
+    expect(url).toBe('https://img.bitsocialforge.com/abc/photo.jpg');
+    const uploaded = vi.mocked(uploadToForge).mock.calls[0][0];
+    expect(uploaded.name).toBe('photo.jpg');
+    expect(Array.from(new Uint8Array(await uploaded.arrayBuffer()))).toEqual(jpegWithoutComment);
+  });
+
+  it('records the stage carried by a forge error instead of parsing its message', async () => {
+    vi.mocked(uploadToForge).mockRejectedValue(new ForgeUploadError('missing or invalid Turnstile token', 'blocked'));
+    const file = new File(['a'], 'a.png', { type: 'image/png' });
+
+    const error = (await orchestrateUpload(file, ['forge']).catch((err: unknown) => err)) as Error & { attempts: unknown[] };
+
+    expect(error.message).toBe('All providers failed');
+    expect(error.attempts).toEqual([expect.objectContaining({ provider: 'forge', success: false, error: 'missing or invalid Turnstile token', stage: 'blocked' })]);
   });
 
   it('strips image metadata before uploading to catbox', async () => {
     vi.mocked(uploadToCatbox).mockResolvedValue('https://files.catbox.moe/b.jpg');
     const file = new File([new Uint8Array(jpegWithComment)], 'photo.jpg', { type: 'image/jpeg' });
 
-    await orchestrateElectronUpload(file, ['catbox']);
+    await orchestrateUpload(file, ['catbox']);
 
     const uploaded = vi.mocked(uploadToCatbox).mock.calls[0][0];
     expect(uploaded).not.toBe(file);
@@ -57,7 +85,7 @@ describe('orchestrateElectronUpload', () => {
     window.electronApi = electronApi;
 
     const file = new File([new Uint8Array(jpegWithComment)], 'photo.jpg', { type: 'image/jpeg' });
-    await orchestrateElectronUpload(file, ['imgur']);
+    await orchestrateUpload(file, ['imgur']);
 
     expect(electronApi.automateUploadGeneratedMedia).toHaveBeenCalledWith({
       provider: 'imgur',
@@ -72,7 +100,7 @@ describe('orchestrateElectronUpload', () => {
     window.electronApi = electronApi;
 
     const file = new File(['x'], 'x.png', { type: 'image/png' });
-    const url = await orchestrateElectronUpload(file, ['imgur']);
+    const url = await orchestrateUpload(file, ['imgur']);
 
     expect(url).toBe('https://i.imgur.com/abc.png');
     expect(electronApi.getPathForFile).toHaveBeenCalledWith(file);
@@ -88,7 +116,7 @@ describe('orchestrateElectronUpload', () => {
     window.electronApi = electronApi;
 
     const file = new File(['x'], 'x.png', { type: 'image/png' });
-    const url = await orchestrateElectronUpload(file, ['imgbb']);
+    const url = await orchestrateUpload(file, ['imgbb']);
 
     expect(url).toBe('https://i.ibb.co/example/image.png');
     expect(electronApi.automateUploadMedia).toHaveBeenCalledWith({
@@ -106,8 +134,8 @@ describe('orchestrateElectronUpload', () => {
     const file = new File(['z'], 'z.png', { type: 'image/png' });
 
     try {
-      await orchestrateElectronUpload(file, ['imgur']);
-      throw new Error('Expected orchestrateElectronUpload to throw');
+      await orchestrateUpload(file, ['imgur']);
+      throw new Error('Expected orchestrateUpload to throw');
     } catch (error) {
       const typedError = error as Error & {
         attempts?: Array<{ provider: string; error?: string; elapsedMs?: number; stage?: string }>;
@@ -126,7 +154,7 @@ describe('orchestrateElectronUpload', () => {
     window.electronApi = electronApi;
 
     const file = new File(['abc'], 'tegaki.png', { type: 'image/png' });
-    const url = await orchestrateElectronUpload(file, ['imgur']);
+    const url = await orchestrateUpload(file, ['imgur']);
 
     expect(url).toBe('https://i.imgur.com/generated.png');
     expect(electronApi.automateUploadGeneratedMedia).toHaveBeenCalledWith({
@@ -146,8 +174,8 @@ describe('orchestrateElectronUpload', () => {
     const file = new File(['x'], 'x.png', { type: 'image/png' });
 
     try {
-      await orchestrateElectronUpload(file, ['imgur']);
-      throw new Error('Expected orchestrateElectronUpload to throw');
+      await orchestrateUpload(file, ['imgur']);
+      throw new Error('Expected orchestrateUpload to throw');
     } catch (error) {
       const typedError = error as Error & {
         attempts?: Array<{ provider: string; error?: string; stage?: string; elapsedMs?: number; matchedSelectors?: string[] }>;
@@ -169,8 +197,8 @@ describe('orchestrateElectronUpload', () => {
     const file = new File(['x'], 'x.png', { type: 'image/png' });
 
     try {
-      await orchestrateElectronUpload(file, ['imgur']);
-      throw new Error('Expected orchestrateElectronUpload to throw');
+      await orchestrateUpload(file, ['imgur']);
+      throw new Error('Expected orchestrateUpload to throw');
     } catch (error) {
       const typedError = error as Error & {
         attempts?: Array<{ provider: string; stage?: string; matchedSelectors?: string[] }>;
@@ -189,8 +217,8 @@ describe('orchestrateElectronUpload', () => {
     const file = new File(['x'], 'x.png', { type: 'image/png' });
 
     try {
-      await orchestrateElectronUpload(file, ['imgur']);
-      throw new Error('Expected orchestrateElectronUpload to throw');
+      await orchestrateUpload(file, ['imgur']);
+      throw new Error('Expected orchestrateUpload to throw');
     } catch (error) {
       const typedError = error as Error & {
         attempts?: Array<{ provider: string; stage?: string }>;
@@ -208,8 +236,8 @@ describe('orchestrateElectronUpload', () => {
     const file = new File(['x'], 'x.png', { type: 'image/png' });
 
     try {
-      await orchestrateElectronUpload(file, ['imgur']);
-      throw new Error('Expected orchestrateElectronUpload to throw');
+      await orchestrateUpload(file, ['imgur']);
+      throw new Error('Expected orchestrateUpload to throw');
     } catch (error) {
       const typedError = error as Error & {
         attempts?: Array<{ provider: string; stage?: string }>;
@@ -227,8 +255,8 @@ describe('orchestrateElectronUpload', () => {
     const file = new File(['x'], 'x.png', { type: 'image/png' });
 
     try {
-      await orchestrateElectronUpload(file, ['imgur']);
-      throw new Error('Expected orchestrateElectronUpload to throw');
+      await orchestrateUpload(file, ['imgur']);
+      throw new Error('Expected orchestrateUpload to throw');
     } catch (error) {
       const typedError = error as Error & {
         attempts?: Array<{ provider: string; stage?: string }>;

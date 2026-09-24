@@ -1,5 +1,5 @@
 /** Supported media hosting provider identifiers */
-export type ProviderId = 'catbox' | 'imgur' | 'imgbb';
+export type ProviderId = 'forge' | 'catbox' | 'imgur' | 'imgbb';
 
 /** User-facing upload mode */
 export type UploadMode = 'random' | 'preferred' | 'none';

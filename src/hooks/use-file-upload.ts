@@ -3,8 +3,9 @@ import { useTranslation } from 'react-i18next';
 import FileUploader from '../plugins/file-uploader';
 import { formatAggregatedError, formatPreferredModeError, type ProviderAttempt } from '../lib/media-hosting/error-format';
 import { getProviderOrder } from '../lib/media-hosting/provider-order';
-import { getMediaHostingRuntime, isElectronRuntime } from '../lib/media-hosting/show-upload-controls';
-import { orchestrateElectronUpload } from '../lib/media-hosting/upload-orchestrator';
+import { getMediaHostingRuntime } from '../lib/media-hosting/show-upload-controls';
+import { MEDIA_HOSTING_PROVIDERS } from '../lib/media-hosting/providers';
+import { orchestrateUpload } from '../lib/media-hosting/upload-orchestrator';
 import { stripMediaMetadata } from '../lib/media-metadata/strip-media-metadata';
 import { ensureProviderAvailability } from '../lib/media-hosting/provider-availability';
 import { selectFileViaInput } from '../lib/utils/file-picker-utils';
@@ -29,9 +30,9 @@ const ANDROID_STAGE_MAP: Record<string, UploadAttemptStage> = {
 };
 
 const FILE_SELECTION_CANCELLED_ERROR = 'File selection cancelled';
-const WEB_UPLOAD_NOT_SUPPORTED_ERROR = 'Web upload is not supported';
 
-const VALID_PROVIDERS: ProviderId[] = ['catbox', 'imgur', 'imgbb'];
+/** Derived from the registry so a new provider's Android attempts are never dropped from error aggregation. */
+const VALID_PROVIDERS: ReadonlySet<string> = new Set(MEDIA_HOSTING_PROVIDERS.map((provider) => provider.id));
 
 /** Raw attempt shape from Android plugin rejection payload */
 interface RawAttempt {
@@ -58,7 +59,7 @@ function normalizeAndroidRejection(error: unknown): Error & { attempts?: Provide
     .map((a: unknown): ProviderAttempt | null => {
       const item = a as RawAttempt;
       const provider = item?.provider;
-      if (typeof provider !== 'string' || !VALID_PROVIDERS.includes(provider as ProviderId)) return null;
+      if (typeof provider !== 'string' || !VALID_PROVIDERS.has(provider)) return null;
       const ms = typeof item?.elapsedMs === 'number' ? item.elapsedMs : undefined;
       let sel: string[] | undefined;
       if (Array.isArray(item?.matchedSelectors)) {
@@ -109,7 +110,7 @@ function readFileAsBase64(file: File): Promise<string> {
   });
 }
 
-const UPLOAD_FILE_ACCEPT = 'image/jpeg,image/png,video/mp4,video/webm,.swf,application/x-shockwave-flash,application/vnd.adobe.flash.movie';
+const UPLOAD_FILE_ACCEPT = 'image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,.swf,application/x-shockwave-flash,application/vnd.adobe.flash.movie';
 
 export function useFileUpload(options: UseFileUploadOptions) {
   const { t } = useTranslation();
@@ -126,9 +127,6 @@ export function useFileUpload(options: UseFileUploadOptions) {
     const order = getProviderOrder({ mode: uploadMode, preferredProvider, runtime, availability });
 
     if (order.length === 0) {
-      if (runtime === 'web') {
-        throw new Error(WEB_UPLOAD_NOT_SUPPORTED_ERROR);
-      }
       if (supportedOrder.length > 0) {
         const message =
           uploadMode === 'preferred' && availability[preferredProvider] === 'unavailable'
@@ -146,10 +144,6 @@ export function useFileUpload(options: UseFileUploadOptions) {
     (error: unknown) => {
       const errorMessage = error instanceof Error ? error.message : String(error);
       if (errorMessage === FILE_SELECTION_CANCELLED_ERROR) return;
-      if (errorMessage === WEB_UPLOAD_NOT_SUPPORTED_ERROR) {
-        window.alert(t('upload_not_supported_web'));
-        return;
-      }
 
       const err = normalizeAndroidRejection(error) as Error & { attempts?: ProviderAttempt[] };
       if (err.attempts && err.attempts.length > 0) {
@@ -182,11 +176,9 @@ export function useFileUpload(options: UseFileUploadOptions) {
             base64: await readFileAsBase64(cleanFile),
           });
           result = pluginResult.url ? { url: pluginResult.url, fileName: pluginResult.fileName || file.name } : null;
-        } else if (runtime === 'electron') {
-          const url = await orchestrateElectronUpload(file, order);
-          result = { url, fileName: file.name };
         } else {
-          throw new Error(WEB_UPLOAD_NOT_SUPPORTED_ERROR);
+          const url = await orchestrateUpload(file, order);
+          result = { url, fileName: file.name };
         }
 
         if (result?.url) {
@@ -210,8 +202,10 @@ export function useFileUpload(options: UseFileUploadOptions) {
     try {
       setIsUploading(true);
       setUploadedFileName(null);
-      const { runtime, order } = await getAvailableProviderOrder();
+      const runtime = getMediaHostingRuntime();
+      const orderPromise = getAvailableProviderOrder();
       if (runtime === 'android') {
+        const { order } = await orderPromise;
         // The native picker uploads straight from the device; the plugin strips
         // metadata before upload (android MediaMetadataStripper).
         const result = await FileUploader.pickAndUploadMedia({ providerOrder: order });
@@ -222,19 +216,25 @@ export function useFileUpload(options: UseFileUploadOptions) {
         return;
       }
 
-      if (runtime === 'electron' || isElectronRuntime()) {
-        const file = await selectFileViaInput(UPLOAD_FILE_ACCEPT, { resolveOnWindowFocus: true });
-        if (!file) {
-          throw new Error(FILE_SELECTION_CANCELLED_ERROR);
-        }
-
-        const url = await orchestrateElectronUpload(file, order);
-        setUploadedFileName(file.name);
-        onUploadComplete(url, file.name);
-        return;
+      if (runtime === 'web') {
+        // Browsers only open a file picker during the click's short-lived user
+        // activation, which the availability probes can outlast, so web opens the
+        // picker first and awaits the provider order after a file is chosen.
+        orderPromise.catch(() => undefined);
+      } else {
+        await orderPromise;
+      }
+      // Electron keeps the focus fallback; browsers emit `cancel`, and Safari can deliver
+      // `change` after the fallback window, which would drop the selection.
+      const file = await selectFileViaInput(UPLOAD_FILE_ACCEPT, { resolveOnWindowFocus: runtime === 'electron' });
+      if (!file) {
+        throw new Error(FILE_SELECTION_CANCELLED_ERROR);
       }
 
-      throw new Error(WEB_UPLOAD_NOT_SUPPORTED_ERROR);
+      const { order } = await orderPromise;
+      const url = await orchestrateUpload(file, order);
+      setUploadedFileName(file.name);
+      onUploadComplete(url, file.name);
     } catch (error) {
       handleUploadError(error);
     } finally {

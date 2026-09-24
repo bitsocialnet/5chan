@@ -1206,7 +1206,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
     }
   };
   const uploadMode = useMediaHostingStore((state) => state.uploadMode);
-  const showUploadControls = getShowUploadControls(uploadMode, isWebRuntime());
+  const showUploadControls = getShowUploadControls(uploadMode);
 
   return (
     <>
