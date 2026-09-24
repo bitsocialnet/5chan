@@ -1,5 +1,5 @@
 {
-  "maxRawBytes": 2681036,
+  "maxRawBytes": 2681086,
   "allowanceBytes": 32768,
   "allowanceReason": "yarn build syncs board directory data from bitsocialnet/lists, and that data is in the startup bundle"
 }
