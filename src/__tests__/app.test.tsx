@@ -335,6 +335,10 @@ const renderApp = async (initialEntry: string | { pathname: string; state?: unkn
   act(() => {
     root.render(createElement(MemoryRouter, { initialEntries: [initialEntry] }, createElement(App!), createElement(LocationProbe)));
   });
+  // Secondary views are lazy; let their modules resolve so React retries the suspended route.
+  await act(async () => {
+    await vi.dynamicImportSettled();
+  });
   await flushEffects();
 };
 

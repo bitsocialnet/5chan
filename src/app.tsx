@@ -1,4 +1,4 @@
-import { Activity, lazy, Suspense, useCallback, useEffect } from 'react';
+import { Activity, ComponentType, lazy, Suspense, useCallback, useEffect } from 'react';
 import { Navigate, Outlet, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
 import { useAccount, useAccountComment, useCommunity } from '@bitsocial/bitsocial-react-hooks';
@@ -41,20 +41,13 @@ import {
 } from './lib/utils/route-utils';
 import styles from './app.module.css';
 import { DesktopBoardButtons, MobileAllFeedFilter, MobileBoardButtons } from './components/board-buttons';
-import Blotter from './views/blotter';
 import Board from './views/board';
 import Catalog from './views/catalog';
-import Faq from './views/faq';
 import Home from './views/home';
-import Archive from './views/archive';
-import Directory from './views/directory';
-import ModQueueView from './views/mod-queue';
 import NotAllowed from './views/not-allowed';
 import NotFound from './views/not-found';
-import Pass from './views/pass';
 import PendingPost from './views/pending-post';
 import Post from './views/post';
-import Rules from './views/rules';
 import BoardHeader from './components/board-header';
 import FeedCacheContainer from './components/feed-cache-container';
 import FramesLayout from './components/frames-layout';
@@ -63,10 +56,7 @@ import BoardBlotter from './components/board-blotter';
 import BoardsBar from './components/boards-bar';
 import ExternalQuoteStatus from './components/external-quote-status';
 import { ModEmptyState } from './components/mod-empty-state';
-import SettingsModal from './components/settings-modal';
 import { QuotePreviewPostProvider } from './components/post';
-import Search from './views/search';
-import SearchDirectory from './views/search-directory';
 
 const AccountDataEditor = lazy(() => import('./views/account-data-editor'));
 const BoardsBarEditModal = lazy(() => import('./components/boards-bar-edit-modal'));
@@ -77,13 +67,51 @@ const DisclaimerModal = lazy(() => import('./components/disclaimer-modal'));
 const loadReplyModal = () => import('./components/reply-modal');
 const ReplyModal = lazy(loadReplyModal);
 const SettingsUpgradeModal = lazy(() => import('./components/settings-upgrade-modal'));
+const loadSettingsModal = () => import('./components/settings-modal');
+const SettingsModal = lazy(loadSettingsModal);
+// Views that visitors rarely land on load after the first render instead of before it (see the idle
+// preload below). Home, board, catalog, thread, and pending-post views stay in the startup bundle;
+// the pending-post view must replace the post form immediately after publishing.
+const secondaryViewLoaders = {
+  archive: () => import('./views/archive'),
+  blotter: () => import('./views/blotter'),
+  directory: () => import('./views/directory'),
+  faq: () => import('./views/faq'),
+  modQueue: () => import('./views/mod-queue'),
+  pass: () => import('./views/pass'),
+  rules: () => import('./views/rules'),
+  search: () => import('./views/search'),
+  searchDirectory: () => import('./views/search-directory'),
+};
+// Each lazy view gets its own boundary. One around a layout's outlet would also catch eager views
+// that suspend (on translations, for example) and commit the layout with an empty page first.
+const lazyView = (load: () => Promise<{ default: ComponentType }>) => {
+  const View = lazy(load);
+  return () => (
+    <Suspense fallback={null}>
+      <View />
+    </Suspense>
+  );
+};
+const Archive = lazyView(secondaryViewLoaders.archive);
+const Blotter = lazyView(secondaryViewLoaders.blotter);
+const Directory = lazyView(secondaryViewLoaders.directory);
+const Faq = lazyView(secondaryViewLoaders.faq);
+const ModQueueView = lazyView(secondaryViewLoaders.modQueue);
+const Pass = lazyView(secondaryViewLoaders.pass);
+const Rules = lazyView(secondaryViewLoaders.rules);
+const Search = lazyView(secondaryViewLoaders.search);
+const SearchDirectory = lazyView(secondaryViewLoaders.searchDirectory);
 
 // Preload all theme assets (buttons, backgrounds) immediately on app load
 // to prevent visible loading delays when switching themes
 preloadThemeAssets();
-// Warm the reply modal chunk during idle time so the first "No." click does not wait for the lazy import.
+// Warm the reply modal, settings modal, and secondary view chunks during idle time so the first
+// "No." click or navigation does not wait for a lazy import (routes render without transitions).
 scheduleIdlePreload(() => {
   void loadReplyModal();
+  void loadSettingsModal();
+  Object.values(secondaryViewLoaders).forEach((load) => void load());
 });
 
 const getPostFormRouteKeyPath = (pathname: string) => pathname.replace(/\/settings$/, '').replace(/\/$/, '');
