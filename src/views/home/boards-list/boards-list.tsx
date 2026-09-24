@@ -1,6 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAccountCommunityAddresses } from '../../../hooks/use-account-community-addresses';
+import usePrefetchIntent from '../../../hooks/use-prefetch-intent';
 import { useDirectoriesState, DirectoryCommunity } from '../../../hooks/use-directories';
 import { getBoardNameFromDirectoryTitle, getBoardPath } from '../../../lib/utils/route-utils';
 import useDisclaimerModalStore from '../../../stores/use-disclaimer-modal-store';
@@ -31,10 +32,11 @@ interface BoardLinkProps {
 }
 
 const BoardLink = ({ boardName, address, getBoardLink, onLinkClick, onPlaceholderClick }: BoardLinkProps) => {
+  const prefetchBoard = usePrefetchIntent({ communityAddress: address ?? undefined });
   if (address) {
     return (
       <li>
-        <Link to={getBoardLink(address)} onClick={(e) => onLinkClick(e, address)}>
+        <Link to={getBoardLink(address)} onClick={(e) => onLinkClick(e, address)} {...prefetchBoard}>
           {boardName}
         </Link>
       </li>

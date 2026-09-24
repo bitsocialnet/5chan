@@ -14,6 +14,7 @@ import { DirectoryCommunity, findDirectoryByAddress } from '../../../hooks/use-d
 import { useCommunityIdentifiers } from '../../../hooks/use-community-identifiers';
 import { getCommentCommunityAddress } from '../../../lib/utils/comment-utils';
 import { getBoardPath } from '../../../lib/utils/route-utils';
+import usePrefetchIntent from '../../../hooks/use-prefetch-intent';
 import { CATALOG_PREVIEW_MARKDOWN_OPTIONS, removeMarkdown } from '../../../lib/utils/post-utils';
 
 interface PopularThreadProps {
@@ -40,12 +41,13 @@ const PopularThreadCard = memo(
   ({ post, boardTitle, boardPath }: PopularThreadProps) => {
     const { cid, content, link, linkHeight, linkWidth, thumbnailUrl, title } = post || {};
     const commentMediaInfo = getCommentMediaInfo(link, thumbnailUrl, linkWidth, linkHeight);
+    const prefetchThread = usePrefetchIntent({ commentCid: cid, communityAddress: getCommentCommunityAddress(post) });
 
     return (
       <div className={styles.popularThread} key={cid}>
         <div className={styles.title}>{boardTitle}</div>
         <div className={styles.mediaContainer}>
-          <Link to={`/${boardPath}/thread/${cid}`}>
+          <Link to={`/${boardPath}/thread/${cid}`} {...prefetchThread}>
             <CatalogPostMedia commentMediaInfo={commentMediaInfo} isOutOfFeed={true} cid={cid} linkWidth={linkWidth} linkHeight={linkHeight} />
           </Link>
         </div>

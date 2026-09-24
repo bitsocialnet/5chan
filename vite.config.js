@@ -7,6 +7,7 @@ import { createHash } from 'crypto';
 import { execFileSync } from 'child_process';
 import { VitePWA } from 'vite-plugin-pwa';
 import { APP_PRELOAD_ATTRIBUTE, dynamicEntryPreloadPlugin } from './scripts/vite-app-preload.mjs';
+import { staticShellPlugin } from './scripts/vite-static-shell.mjs';
 
 const { version: packageVersion } = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8'));
 const appVersion = `${process.env.VITE_APP_VERSION || packageVersion}`.trim() || packageVersion;
@@ -343,9 +344,13 @@ export default defineConfig({
     react(),
     babel({ presets: [reactCompilerPreset()] }),
     dynamicEntryPreloadPlugin(),
+    staticShellPlugin({ preloadAttribute: APP_PRELOAD_ATTRIBUTE }),
     VitePWA({
       disable: isProfilingBuild,
       registerType: 'autoUpdate',
+      // registerSW.js only registers on window load; a parser-blocking tag would hold the static
+      // first frame in <body> behind every startup download.
+      injectRegister: 'script-defer',
       strategies: 'injectManifest',
       injectManifest: {
         maximumFileSizeToCacheInBytes: 20000000,

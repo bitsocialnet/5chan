@@ -18,6 +18,7 @@ import useCountLinksInReplies from '../../hooks/use-count-links-in-replies';
 import useFetchGifFirstFrame from '../../hooks/use-fetch-gif-first-frame';
 import { useYouTubeThumbnailFallback } from '../../hooks/use-youtube-thumbnail-fallback';
 import useHide from '../../hooks/use-hide';
+import usePrefetchIntent from '../../hooks/use-prefetch-intent';
 import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
 import { CATALOG_PREVIEW_MARKDOWN_OPTIONS, removeMarkdown } from '../../lib/utils/post-utils';
 import PostMenuDesktop from '../post-menu-desktop';
@@ -222,6 +223,7 @@ const CatalogPost = memo(
     const postMenuProps = useMemo(() => selectPostMenuProps(resolvedPost), [resolvedPost]);
 
     const postLink = boardPath ? `/${boardPath}/thread/${cid}` : `/thread/${cid}`;
+    const prefetchThread = usePrefetchIntent({ commentCid: cid, communityAddress });
 
     const threadIcons = (
       <div className={styles.threadIcons}>
@@ -304,7 +306,24 @@ const CatalogPost = memo(
     return (
       <>
         <div className={`${styles.post} ${imageSize === 'Large' ? styles.large : ''}`} style={CSSProperties}>
-          <div onMouseOver={() => setHoveredCid(cid)} onFocus={() => setHoveredCid(cid)} onMouseLeave={() => setHoveredCid(null)} onBlur={() => setHoveredCid(null)}>
+          <div
+            onMouseOver={() => {
+              setHoveredCid(cid);
+              prefetchThread.onMouseEnter?.();
+            }}
+            onFocus={() => {
+              setHoveredCid(cid);
+              prefetchThread.onFocus?.();
+            }}
+            onMouseLeave={() => {
+              setHoveredCid(null);
+              prefetchThread.onMouseLeave?.();
+            }}
+            onBlur={() => {
+              setHoveredCid(null);
+              prefetchThread.onBlur?.();
+            }}
+          >
             {shouldMaskPost ? (
               <Link to={postLink}>
                 <span className={styles.hiddenThumbnail} />

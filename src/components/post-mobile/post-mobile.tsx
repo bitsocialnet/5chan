@@ -58,6 +58,7 @@ import { filterRepliesForDisplay, getPreviewDisplayReplies, hasEnoughPreviewRepl
 import { getRenderableMobileBacklinks } from '../../lib/utils/reply-backlink-utils';
 import { getThreadTopNavigationState, scrollThreadContainerToTop } from '../../lib/utils/thread-scroll-utils';
 import useDeleteFailedPost from '../../hooks/use-delete-failed-post';
+import usePrefetchIntent from '../../hooks/use-prefetch-intent';
 import { getThreadPostCountsByAuthor } from '../../lib/utils/author-post-counts';
 import { withResolvedCommentCommunityAddress } from '../../lib/utils/comment-utils';
 import { getCommentUserID, preservePublishedUserID } from '../../lib/utils/comment-user-id-utils';
@@ -558,6 +559,7 @@ const PostMobile = ({
   const directoryEntry = findDirectoryByAddress(directories, communityAddress);
   const requirePostLinkIsMedia = directoryEntry?.features?.requirePostLinkIsMedia === true;
   const boardPath = communityAddress ? getBoardPath(communityAddress, directories) : undefined;
+  const prefetchThread = usePrefetchIntent({ commentCid: cid, communityAddress });
   const modQueueThreadRoute = getModQueueCommentRoute(boardPath, resolvedPost?.cid);
   const modQueueThreadRouteState = getQueuedCommentRouteState(resolvedPost);
   const modQueueErrorMessage = formatErrorForDisplay(modQueueError);
@@ -883,7 +885,7 @@ const PostMobile = ({
                       )}
                     </div>
                   ) : (
-                    <Link to={boardPath ? `/${boardPath}/thread/${cid}` : `/thread/${cid}`} className='button'>
+                    <Link to={boardPath ? `/${boardPath}/thread/${cid}` : `/thread/${cid}`} className='button' {...prefetchThread}>
                       {t('view_thread')}
                     </Link>
                   )}

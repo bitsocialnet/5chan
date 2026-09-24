@@ -42,6 +42,12 @@ After substantial prompt changes, try representative requests for skill selectio
 
 Record commands, outcomes, and limits in the task report. Use the [long-running workflow](long-running-agent-workflow.md) only when a durable handoff is needed.
 
+## Cold-load evidence
+
+After `yarn build`, `yarn perf:startup-bytes` compares what a first visit downloads before the first render (`build/index.html` with its inlined startup CSS and static shell, plus the scripts it loads) with the checked-in ceiling in `scripts/load-perf/startup-bytes-budget.json`. Keep new code out of that set with a lazy import; lower the ceiling with `--update` when it shrinks, and raise it only by editing the file with the reason. Its allowance covers the board directory data `yarn build` syncs from bitsocialnet/lists, which is part of the startup bundle.
+
+`yarn perf:load` cold-loads configured routes of the production build over HTTP/2 in fresh Chromium contexts (default `mid` throttling, peer requests blocked) and reports first paint, first React commit, blocking time, and layout shifts by page region. `--check` (run in Linux CI at `cpu4`) fails when a region moves between first paint and React's first commit, or when the static first frame from `scripts/vite-static-shell.mjs` differs from React's first commit; shifts after the first commit are reported for follow-up, not gated. `--network live` adds time to the first post over real peers; it is not deterministic.
+
 ## Automated React performance evidence
 
 Run `yarn perf:install` once for the pinned browser, then `yarn perf:check` (three samples at 4x CPU by default). Scope a rerun with `--scenario <name>` when the change affects one covered flow. CI runs the compatibility self-test and scenarios; local `agent:verify` runs scenarios and Doctor automatically. After React/Bippy/collector upgrades, run `yarn perf:test` before relying on the counts. Keep these heavy checks out of per-edit hooks.

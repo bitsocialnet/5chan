@@ -183,6 +183,10 @@ vi.mock('../components/board-header/board-header', () => ({
   default: makeNamedComponent('board-header'),
 }));
 
+vi.mock('../components/prefetcher', () => ({
+  default: () => null,
+}));
+
 vi.mock('../components/feed-cache-container', () => ({
   default: makeNamedComponent('feed-cache-container'),
 }));
@@ -334,6 +338,10 @@ const renderApp = async (initialEntry: string | { pathname: string; state?: unkn
   latestLocation = typeof initialEntry === 'string' ? initialEntry : initialEntry.pathname;
   act(() => {
     root.render(createElement(MemoryRouter, { initialEntries: [initialEntry] }, createElement(App!), createElement(LocationProbe)));
+  });
+  // Secondary views are lazy; let their modules resolve so React retries the suspended route.
+  await act(async () => {
+    await vi.dynamicImportSettled();
   });
   await flushEffects();
 };
