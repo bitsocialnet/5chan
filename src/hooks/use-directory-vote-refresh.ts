@@ -43,16 +43,20 @@ export const refreshDueDirectoryVotes = async ({ voteSigner, helia, nameResolver
         headBlock = chain.getBlockNumber();
         headBlocks.set(criteria.bucketChainId, headBlock);
       }
-      if (!isDirectoryVoteRefreshDue(criteria, storedVote.blockNumber, Number(await headBlock))) continue;
+      if (!isDirectoryVoteRefreshDue(criteria, storedVote.blockNumber, Number(await headBlock), storedVote.resignNextBucket)) continue;
 
       const key = getDirectoryVoteKey(storedVote.address, storedVote.contestId);
       await withDirectoryVoteLock(key, async () => {
         // The user may have changed or withdrawn this vote while the checks above awaited.
         if (useDirectoryVotesStore.getState().votes[key] !== storedVote) return;
         const voter = getOrCreateBrowserPubsubVoter({ helia, nameResolvers });
+        // A record without a community is a withdrawal that still had to win against a same-bucket vote.
         const result = await publishDirectoryVote({ voter, criteria, signer: voteSigner.signer, address: voteSigner.address, community: storedVote.community });
         // An ineligible wallet (expired Pass) keeps its intent, so the vote resumes after a renewal.
-        if (result.status === 'published') useDirectoryVotesStore.getState().setVote({ ...storedVote, topic: result.topic, blockNumber: result.blockNumber });
+        if (result.status !== 'published') return;
+        const { address, contestId, community } = storedVote;
+        if (community) useDirectoryVotesStore.getState().setVote({ address, contestId, topic: result.topic, community, blockNumber: result.blockNumber });
+        else useDirectoryVotesStore.getState().removeVote(address, contestId);
       });
     } catch (error) {
       console.warn(`Failed to refresh directory vote for '${storedVote.contestId}'`, error);

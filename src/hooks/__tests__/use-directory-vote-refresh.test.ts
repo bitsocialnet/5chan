@@ -95,6 +95,29 @@ describe('refreshDueDirectoryVotes', () => {
     expect(Object.values(useDirectoryVotesStore.getState().votes)).toEqual([changedVote]);
   });
 
+  it('re-signs a same-bucket change as soon as the next bucket starts', async () => {
+    useDirectoryVotesStore.getState().setVote({ ...storedVote, resignNextBucket: true });
+    mocks.headBlock = BigInt(1800 + 1799);
+    await refreshDueDirectoryVotes({ voteSigner, helia, nameResolvers: undefined });
+    expect(mocks.publishDirectoryVote).not.toHaveBeenCalled();
+
+    mocks.headBlock = BigInt(2 * 1800);
+    await refreshDueDirectoryVotes({ voteSigner, helia, nameResolvers: undefined });
+
+    expect(mocks.publishDirectoryVote).toHaveBeenCalledTimes(1);
+    expect(Object.values(useDirectoryVotesStore.getState().votes)).toEqual([{ ...storedVote, blockNumber: 999_000 }]);
+  });
+
+  it('re-signs a pending same-bucket withdrawal with an empty ballot, then forgets it', async () => {
+    useDirectoryVotesStore.getState().setVote({ ...storedVote, community: undefined, resignNextBucket: true });
+    mocks.headBlock = BigInt(2 * 1800);
+
+    await refreshDueDirectoryVotes({ voteSigner, helia, nameResolvers: undefined });
+
+    expect(mocks.publishDirectoryVote).toHaveBeenCalledWith(expect.objectContaining({ community: undefined }));
+    expect(useDirectoryVotesStore.getState().votes).toEqual({});
+  });
+
   it('skips, but keeps, a vote whose contest topic changed', async () => {
     useDirectoryVotesStore.getState().setVote(storedVote);
     mocks.headBlock = BigInt(10_000 * 1800);

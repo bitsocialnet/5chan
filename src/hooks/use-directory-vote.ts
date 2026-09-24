@@ -1,9 +1,16 @@
 import { useState } from 'react';
 import { useAccount } from '@bitsocial/bitsocial-react-hooks';
+import type { Criteria } from '@bitsocial/pubsub-voting';
 import { getAccountVoteSigner } from '../lib/directory-vote-signer';
-import { publishDirectoryVote, resolveDirectoryBoard, withDirectoryVoteLock, type DirectoryVoteTarget } from '../lib/directory-vote-publishing';
+import {
+  isSameDirectoryVoteBucket,
+  publishDirectoryVote,
+  resolveDirectoryBoard,
+  withDirectoryVoteLock,
+  type DirectoryVoteTarget,
+} from '../lib/directory-vote-publishing';
 import { getOrCreateBrowserPubsubVoter, isTestnetVotingChain } from '../lib/pubsub-voter';
-import useDirectoryVotesStore, { getDirectoryVoteKey, type DirectoryVoteCommunity } from '../stores/use-directory-votes-store';
+import useDirectoryVotesStore, { getDirectoryVoteKey, type DirectoryVoteCommunity, type StoredDirectoryVote } from '../stores/use-directory-votes-store';
 import { getBrowserHeliaNode, getBrowserNameResolvers } from './use-pubsub-voter';
 import type { VoteTallyState } from './use-vote-tally';
 
@@ -33,6 +40,21 @@ export interface DirectoryVoteState {
 
 const asError = (error: unknown): Error => (error instanceof Error ? error : new Error(String(error)));
 
+/**
+ * The record to keep after a ballot is published; undefined removes it. A ballot that replaces
+ * another in the same bucket may lose the lowest-CID tie-break, so it stays flagged (a withdrawal
+ * included) until it is re-signed in a later bucket.
+ */
+export const nextDirectoryVoteRecord = (
+  previous: StoredDirectoryVote | undefined,
+  published: Omit<StoredDirectoryVote, 'resignNextBucket'>,
+  criteria: Criteria,
+): StoredDirectoryVote | undefined => {
+  const replacedInSameBucket = !!previous && previous.topic === published.topic && isSameDirectoryVoteBucket(criteria, previous.blockNumber, published.blockNumber);
+  if (!published.community && !replacedInSameBucket) return undefined;
+  return replacedInSameBucket ? { ...published, resignNextBucket: true } : published;
+};
+
 export const useDirectoryVote = (voteTally: VoteTallyState): DirectoryVoteState => {
   const account = useAccount();
   const voteSigner = getAccountVoteSigner(account);
@@ -55,16 +77,16 @@ export const useDirectoryVote = (voteTally: VoteTallyState): DirectoryVoteState 
       const voter = getOrCreateBrowserPubsubVoter({ helia, nameResolvers });
       const lockKey = getDirectoryVoteKey(voteSigner.address, criteria.contestId);
       return await withDirectoryVoteLock(lockKey, async (): Promise<DirectoryVoteOutcome> => {
+        const previous = useDirectoryVotesStore.getState().votes[lockKey];
         const result = await publishDirectoryVote({ voter, criteria, signer: voteSigner.signer, address: voteSigner.address, community: target });
         if (result.status === 'ineligible') {
           return { status: 'ineligible', address: voteSigner.address, error: result.error, testnet: isTestnetVotingChain(criteria.bucketChainId) };
         }
-        if (!target) {
-          removeVote(voteSigner.address, criteria.contestId);
-          return { status: 'withdrawn' };
-        }
-        setVote({ address: voteSigner.address, contestId: criteria.contestId, topic: result.topic, community: target, blockNumber: result.blockNumber });
-        return { status: 'voted' };
+        const published = { address: voteSigner.address, contestId: criteria.contestId, topic: result.topic, community: target, blockNumber: result.blockNumber };
+        const next = nextDirectoryVoteRecord(previous, published, criteria);
+        if (next) setVote(next);
+        else removeVote(voteSigner.address, criteria.contestId);
+        return { status: target ? 'voted' : 'withdrawn' };
       });
     } catch (error) {
       console.error(`Failed to publish directory vote for '${criteria.contestId}'`, error);

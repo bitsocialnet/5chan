@@ -12,9 +12,15 @@ export interface StoredDirectoryVote {
   contestId: string;
   /** The contest topic the vote was published on; a regenerated manifest means a new topic. */
   topic: string;
-  community: DirectoryVoteCommunity;
+  /** The board voted for; undefined while a withdrawal still has to be re-signed. */
+  community?: DirectoryVoteCommunity;
   /** `bundle.blockNumber` of the latest publish, which drives the refresh schedule. */
   blockNumber: number;
+  /**
+   * Set when this ballot replaced another in the same bucket. Equal block numbers resolve by the
+   * lowest CID, not publish order, so the choice is re-signed once the next bucket starts.
+   */
+  resignNextBucket?: boolean;
 }
 
 interface DirectoryVotesState {

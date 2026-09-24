@@ -49,9 +49,19 @@ export const withDirectoryVoteLock = <T>(key: string, operation: () => Promise<T
   return result;
 };
 
-/** A vote expires `voteExpiryBuckets` after it was signed; re-sign it once half of that has passed. */
-export const isDirectoryVoteRefreshDue = (criteria: Criteria, blockNumber: number, headBlock: number): boolean =>
-  Math.floor(headBlock / criteria.blocksPerBucket) >= Math.floor(blockNumber / criteria.blocksPerBucket) + republishIntervalBuckets(criteria);
+export const isSameDirectoryVoteBucket = (criteria: Criteria, firstBlock: number, secondBlock: number): boolean =>
+  Math.floor(firstBlock / criteria.blocksPerBucket) === Math.floor(secondBlock / criteria.blocksPerBucket);
+
+/**
+ * A vote expires `voteExpiryBuckets` after it was signed; re-sign it once half of that has passed.
+ * A ballot that replaced another in its own bucket is re-signed as soon as the next bucket starts,
+ * because only a higher block number is guaranteed to win.
+ */
+export const isDirectoryVoteRefreshDue = (criteria: Criteria, blockNumber: number, headBlock: number, resignNextBucket = false): boolean => {
+  const signedBucket = Math.floor(blockNumber / criteria.blocksPerBucket);
+  const headBucket = Math.floor(headBlock / criteria.blocksPerBucket);
+  return resignNextBucket ? headBucket > signedBucket : headBucket >= signedBucket + republishIntervalBuckets(criteria);
+};
 
 export type DirectoryBoardResolution = { status: 'resolved'; target: DirectoryVoteTarget } | { status: 'invalid' | 'not-found' };
 

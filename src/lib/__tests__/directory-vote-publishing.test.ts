@@ -88,6 +88,11 @@ describe('isDirectoryVoteRefreshDue', () => {
     expect(isDirectoryVoteRefreshDue(criteria, signedAt, (10 + 359) * 1800 + 1799)).toBe(false);
     expect(isDirectoryVoteRefreshDue(criteria, signedAt, (10 + 360) * 1800)).toBe(true);
   });
+
+  it('is due in the very next bucket for a ballot that replaced another in its own bucket', () => {
+    expect(isDirectoryVoteRefreshDue(criteria, 10 * 1800, 10 * 1800 + 1799, true)).toBe(false);
+    expect(isDirectoryVoteRefreshDue(criteria, 10 * 1800, 11 * 1800, true)).toBe(true);
+  });
 });
 
 describe('resolveDirectoryBoard', () => {
