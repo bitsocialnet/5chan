@@ -494,5 +494,14 @@
   "image_boards": "تصویری بورڈز",
   "upload_boards": "فائل اپ لوڈ بورڈز",
   "multiboards": "ملٹی بورڈز",
-  "show_homepage_introduction": "ہوم پیج کا تعارف دکھائیں"
+  "show_homepage_introduction": "ہوم پیج کا تعارف دکھائیں",
+  "directory_footnote": "بورڈ جمع کرنے کے لیے، نیچے اس کا پتہ درج کریں اور اسے ووٹ دیں۔ صرف <passLink>5chan Pass</passLink> ہولڈرز ووٹ دے سکتے ہیں، ہر ڈائریکٹری میں ایک ووٹ۔",
+  "directory_unvote": "ووٹ واپس لیں",
+  "directory_votes_testnet": "ووٹنگ فی الحال testnet پر ہے: ووٹ گنے اور دکھائے جاتے ہیں، لیکن وہ ابھی درجہ بندی نہیں بدلتے۔",
+  "directory_voting_unavailable": "ڈائریکٹری ووٹنگ کے لیے 5chan کا پیر ٹو پیر کنکشن درکار ہے، جو اس وقت دستیاب نہیں ہے۔",
+  "directory_voting_no_contest": "/{{boardIdentifier}}/ کے لیے کوئی ڈائریکٹری ووٹنگ نہیں ہے۔",
+  "directory_vote_needs_pass": "آپ کا ووٹ نہیں بھیجا گیا: اس اکاؤنٹ کے ووٹنگ پتے <address>{{address}}</address> میں کوئی <passLink>5chan Pass</passLink> نہیں ہے۔",
+  "directory_vote_needs_test_pass": "آپ کا ووٹ نہیں بھیجا گیا: اس اکاؤنٹ کے ووٹنگ پتے <address>{{address}}</address> میں کوئی 5chan Pass نہیں ہے۔ ووٹنگ فی الحال testnet پر ہے، اس لیے آپ اس پتے کے لیے <faucetLink>فاسیٹ</faucetLink> سے مفت ٹیسٹ Pass حاصل کر سکتے ہیں۔",
+  "directory_vote_board_not_found": "{{address}} پر کوئی بورڈ نہیں ملا۔ کوئی .bso پتہ یا کسی بورڈ کی پبلک کی درج کریں۔",
+  "directory_vote_failed": "آپ کا ووٹ نہیں بھیجا جا سکا: {{error}}"
 }

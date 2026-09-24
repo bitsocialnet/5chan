@@ -494,5 +494,14 @@
   "image_boards": "Bilderboards",
   "upload_boards": "Upload-Boards",
   "multiboards": "Multiboards",
-  "show_homepage_introduction": "Einführung auf der Startseite anzeigen"
+  "show_homepage_introduction": "Einführung auf der Startseite anzeigen",
+  "directory_footnote": "Um ein Board einzureichen, gib unten seine Adresse ein und stimme dafür ab. Nur Inhaber eines <passLink>5chan Pass</passLink> können abstimmen, mit einer Stimme pro Verzeichnis.",
+  "directory_unvote": "Stimme zurückziehen",
+  "directory_votes_testnet": "Die Abstimmung läuft vorerst im Testnet: Stimmen werden gezählt und angezeigt, ändern das Ranking aber noch nicht.",
+  "directory_voting_unavailable": "Die Verzeichnisabstimmung benötigt die Peer-to-Peer-Verbindung von 5chan, die gerade nicht verfügbar ist.",
+  "directory_voting_no_contest": "/{{boardIdentifier}}/ hat keine Verzeichnisabstimmung.",
+  "directory_vote_needs_pass": "Deine Stimme wurde nicht gesendet: Die Abstimmungsadresse dieses Kontos <address>{{address}}</address> besitzt keinen <passLink>5chan Pass</passLink>.",
+  "directory_vote_needs_test_pass": "Deine Stimme wurde nicht gesendet: Die Abstimmungsadresse dieses Kontos <address>{{address}}</address> besitzt keinen 5chan Pass. Die Abstimmung läuft vorerst im Testnet, daher kannst du dir für diese Adresse einen kostenlosen Test-Pass vom <faucetLink>Faucet</faucetLink> holen.",
+  "directory_vote_board_not_found": "Unter {{address}} wurde kein Board gefunden. Gib eine .bso-Adresse oder den öffentlichen Schlüssel eines Boards ein.",
+  "directory_vote_failed": "Deine Stimme konnte nicht gesendet werden: {{error}}"
 }

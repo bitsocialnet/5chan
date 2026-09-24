@@ -494,5 +494,14 @@
   "image_boards": "Kuvalaudat",
   "upload_boards": "Tiedostolaudat",
   "multiboards": "Monilautalistaukset",
-  "show_homepage_introduction": "Näytä etusivun esittely"
+  "show_homepage_introduction": "Näytä etusivun esittely",
+  "directory_footnote": "Lähettääksesi laudan syötä sen osoite alle ja äänestä sitä. Vain <passLink>5chan Pass</passLink> -haltijat voivat äänestää, yksi ääni hakemistoa kohden.",
+  "directory_unvote": "Peru ääni",
+  "directory_votes_testnet": "Äänestys on toistaiseksi testnetissä: äänet lasketaan ja näytetään, mutta ne eivät vielä muuta järjestystä.",
+  "directory_voting_unavailable": "Hakemistoäänestys vaatii 5chanin vertaisverkkoyhteyden, joka ei ole juuri nyt käytettävissä.",
+  "directory_voting_no_contest": "Hakemistolla /{{boardIdentifier}}/ ei ole äänestystä.",
+  "directory_vote_needs_pass": "Ääntäsi ei lähetetty: tämän tilin äänestysosoitteessa <address>{{address}}</address> ei ole <passLink>5chan Passia</passLink>.",
+  "directory_vote_needs_test_pass": "Ääntäsi ei lähetetty: tämän tilin äänestysosoitteessa <address>{{address}}</address> ei ole 5chan Passia. Äänestys on toistaiseksi testnetissä, joten voit hakea tälle osoitteelle ilmaisen testi-Passin <faucetLink>faucetista</faucetLink>.",
+  "directory_vote_board_not_found": "Osoitteesta {{address}} ei löytynyt lautaa. Syötä .bso-osoite tai laudan julkinen avain.",
+  "directory_vote_failed": "Ääntäsi ei voitu lähettää: {{error}}"
 }

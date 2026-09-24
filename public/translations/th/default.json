@@ -494,5 +494,14 @@
   "image_boards": "บอร์ดรูปภาพ",
   "upload_boards": "บอร์ดอัปโหลด",
   "multiboards": "มัลติบอร์ด",
-  "show_homepage_introduction": "แสดงคำแนะนำบนหน้าแรก"
+  "show_homepage_introduction": "แสดงคำแนะนำบนหน้าแรก",
+  "directory_footnote": "หากต้องการส่งบอร์ด ให้ป้อนที่อยู่ของบอร์ดด้านล่างแล้วโหวตให้ เฉพาะผู้ถือ <passLink>5chan Pass</passLink> เท่านั้นที่โหวตได้ โดยได้หนึ่งโหวตต่อไดเรกทอรี",
+  "directory_unvote": "ยกเลิกโหวต",
+  "directory_votes_testnet": "ตอนนี้การโหวตยังอยู่บน testnet: ระบบนับและแสดงผลโหวต แต่ยังไม่มีผลต่ออันดับ",
+  "directory_voting_unavailable": "การโหวตไดเรกทอรีต้องใช้การเชื่อมต่อ P2P ของ 5chan ซึ่งขณะนี้ใช้งานไม่ได้",
+  "directory_voting_no_contest": "/{{boardIdentifier}}/ ไม่มีการโหวตไดเรกทอรี",
+  "directory_vote_needs_pass": "ไม่ได้ส่งโหวตของคุณ: ที่อยู่สำหรับโหวตของบัญชีนี้ <address>{{address}}</address> ไม่มี <passLink>5chan Pass</passLink>",
+  "directory_vote_needs_test_pass": "ไม่ได้ส่งโหวตของคุณ: ที่อยู่สำหรับโหวตของบัญชีนี้ <address>{{address}}</address> ไม่มี 5chan Pass ขณะนี้การโหวตยังอยู่บน testnet คุณจึงรับ Pass ทดสอบฟรีสำหรับที่อยู่นี้ได้จาก <faucetLink>faucet</faucetLink>",
+  "directory_vote_board_not_found": "ไม่พบบอร์ดที่ {{address}} ป้อนที่อยู่ .bso หรือคีย์สาธารณะของบอร์ด",
+  "directory_vote_failed": "ส่งโหวตของคุณไม่สำเร็จ: {{error}}"
 }

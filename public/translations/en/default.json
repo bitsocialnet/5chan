@@ -270,9 +270,7 @@
   "directory_owner_anonymous": "Anonymous",
   "directory_subtitle": "The highest-scoring board resolves /{{boardIdentifier}}/; if it goes offline, 5chan rotates to the next-highest.",
   "directory_winner_subtitle": "Current /{{boardIdentifier}}/ winner: {{address}}",
-  "directory_footnote": "To submit your own board, open a pull request <repoLink>here</repoLink>. Read more on the <passLink>5chan Pass</passLink> page.",
-  "directory_voting_unavailable_intro": "Voting isn't enabled yet. The board ranked #1 in /{{boardIdentifier}}/ is temporarily fixed because it's currently managed by devs.",
-  "directory_voting_unavailable_outro": "5chan Pass holders and BSO token holders will be able to upvote and downvote each board in this list. Learn more at 5chan.app/pass.",
+  "directory_footnote": "To submit a board, enter its address below and vote for it. Only <passLink>5chan Pass</passLink> holders can vote, with one vote per directory.",
   "loading_directory": "Loading directory",
   "directory_empty": "No boards listed for this directory yet.",
   "upvote": "Upvote",
@@ -515,5 +513,13 @@
   "image_boards": "Image Boards",
   "upload_boards": "Upload Boards",
   "multiboards": "Multiboards",
-  "show_homepage_introduction": "Show homepage introduction"
+  "show_homepage_introduction": "Show homepage introduction",
+  "directory_unvote": "Unvote",
+  "directory_votes_testnet": "Voting is on testnet for now: votes are counted and shown, but they don't change the ranking yet.",
+  "directory_voting_unavailable": "Directory voting needs 5chan's peer-to-peer connection, which isn't available right now.",
+  "directory_voting_no_contest": "/{{boardIdentifier}}/ has no directory vote.",
+  "directory_vote_needs_pass": "Your vote wasn't sent: this account's voting address <address>{{address}}</address> doesn't hold a <passLink>5chan Pass</passLink>.",
+  "directory_vote_needs_test_pass": "Your vote wasn't sent: this account's voting address <address>{{address}}</address> doesn't hold a 5chan Pass. Voting is on testnet for now, so you can get a free test Pass for this address from the <faucetLink>faucet</faucetLink>.",
+  "directory_vote_board_not_found": "No board found at {{address}}. Enter a .bso address or a board's public key.",
+  "directory_vote_failed": "Your vote couldn't be sent: {{error}}"
 }

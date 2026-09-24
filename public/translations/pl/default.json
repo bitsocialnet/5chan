@@ -494,5 +494,14 @@
   "image_boards": "Tablice obrazkowe",
   "upload_boards": "Tablice do przesyłania plików",
   "multiboards": "Multiboardy",
-  "show_homepage_introduction": "Pokaż wprowadzenie na stronie głównej"
+  "show_homepage_introduction": "Pokaż wprowadzenie na stronie głównej",
+  "directory_footnote": "Aby zgłosić board, wpisz poniżej jego adres i zagłosuj na niego. Głosować mogą tylko posiadacze <passLink>5chan Pass</passLink>, jeden głos na katalog.",
+  "directory_unvote": "Cofnij głos",
+  "directory_votes_testnet": "Głosowanie działa na razie w sieci testnet: głosy są liczone i wyświetlane, ale jeszcze nie zmieniają rankingu.",
+  "directory_voting_unavailable": "Głosowanie w katalogu wymaga połączenia peer-to-peer 5chan, które jest teraz niedostępne.",
+  "directory_voting_no_contest": "/{{boardIdentifier}}/ nie ma głosowania katalogowego.",
+  "directory_vote_needs_pass": "Twój głos nie został wysłany: adres do głosowania tego konta <address>{{address}}</address> nie posiada <passLink>5chan Pass</passLink>.",
+  "directory_vote_needs_test_pass": "Twój głos nie został wysłany: adres do głosowania tego konta <address>{{address}}</address> nie posiada 5chan Pass. Głosowanie działa na razie w sieci testnet, więc możesz pobrać darmowy testowy Pass dla tego adresu z <faucetLink>faucetu</faucetLink>.",
+  "directory_vote_board_not_found": "Nie znaleziono tablicy pod adresem {{address}}. Wpisz adres .bso lub klucz publiczny tablicy.",
+  "directory_vote_failed": "Nie udało się wysłać głosu: {{error}}"
 }

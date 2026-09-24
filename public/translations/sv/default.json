@@ -494,5 +494,14 @@
   "image_boards": "Bildforum",
   "upload_boards": "Uppladdningsforum",
   "multiboards": "Multiboard",
-  "show_homepage_introduction": "Visa introduktionen på startsidan"
+  "show_homepage_introduction": "Visa introduktionen på startsidan",
+  "directory_footnote": "För att skicka in ett board anger du dess adress nedan och röstar på det. Bara innehavare av <passLink>5chan Pass</passLink> kan rösta, med en röst per katalog.",
+  "directory_unvote": "Ta bort röst",
+  "directory_votes_testnet": "Omröstningen körs på testnet tills vidare: röster räknas och visas, men de påverkar inte rankningen ännu.",
+  "directory_voting_unavailable": "Katalogomröstning kräver 5chans peer-to-peer-anslutning, som inte är tillgänglig just nu.",
+  "directory_voting_no_contest": "/{{boardIdentifier}}/ har ingen katalogomröstning.",
+  "directory_vote_needs_pass": "Din röst skickades inte: det här kontots röstadress <address>{{address}}</address> har inget <passLink>5chan Pass</passLink>.",
+  "directory_vote_needs_test_pass": "Din röst skickades inte: det här kontots röstadress <address>{{address}}</address> har inget 5chan Pass. Röstningen körs på testnet tills vidare, så du kan hämta ett gratis test-Pass för den här adressen från <faucetLink>faucet</faucetLink>.",
+  "directory_vote_board_not_found": "Inget board hittades på {{address}}. Ange en .bso-adress eller ett boards publika nyckel.",
+  "directory_vote_failed": "Din röst kunde inte skickas: {{error}}"
 }

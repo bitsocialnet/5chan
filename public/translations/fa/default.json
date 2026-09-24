@@ -494,5 +494,14 @@
   "image_boards": "تابلوهای تصاویر",
   "upload_boards": "تابلوهای بارگذاری",
   "multiboards": "تابلوهای چندگانه",
-  "show_homepage_introduction": "نمایش معرفی در صفحهٔ اصلی"
+  "show_homepage_introduction": "نمایش معرفی در صفحهٔ اصلی",
+  "directory_footnote": "برای ثبت یک برد، آدرس آن را در پایین وارد کنید و به آن رأی دهید. فقط دارندگان <passLink>5chan Pass</passLink> می‌توانند رأی دهند، با یک رأی برای هر دایرکتوری.",
+  "directory_unvote": "لغو رأی",
+  "directory_votes_testnet": "رأی‌گیری فعلاً روی testnet است: رأی‌ها شمرده و نمایش داده می‌شوند، اما هنوز رتبه‌بندی را تغییر نمی‌دهند.",
+  "directory_voting_unavailable": "رأی‌گیری دایرکتوری به اتصال همتا به همتای 5chan نیاز دارد که در حال حاضر در دسترس نیست.",
+  "directory_voting_no_contest": "/{{boardIdentifier}}/ رأی‌گیری دایرکتوری ندارد.",
+  "directory_vote_needs_pass": "رأی شما ارسال نشد: آدرس رأی‌دهی این حساب <address>{{address}}</address> هیچ <passLink>5chan Pass</passLink> ندارد.",
+  "directory_vote_needs_test_pass": "رأی شما ارسال نشد: آدرس رأی‌دهی این حساب <address>{{address}}</address> هیچ 5chan Pass ندارد. رأی‌گیری فعلاً روی testnet است، بنابراین می‌توانید یک Pass آزمایشی رایگان برای این آدرس از <faucetLink>فاست</faucetLink> دریافت کنید.",
+  "directory_vote_board_not_found": "هیچ تابلویی در {{address}} پیدا نشد. یک آدرس .bso یا کلید عمومی یک تابلو را وارد کنید.",
+  "directory_vote_failed": "ارسال رأی شما ناموفق بود: {{error}}"
 }

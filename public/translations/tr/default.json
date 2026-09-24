@@ -494,5 +494,14 @@
   "image_boards": "Görsel panoları",
   "upload_boards": "Dosya yükleme panoları",
   "multiboards": "Çoklu panolar",
-  "show_homepage_introduction": "Ana sayfadaki tanıtımı göster"
+  "show_homepage_introduction": "Ana sayfadaki tanıtımı göster",
+  "directory_footnote": "Bir pano göndermek için adresini aşağıya girin ve ona oy verin. Yalnızca <passLink>5chan Pass</passLink> sahipleri oy verebilir; her directory için bir oy.",
+  "directory_unvote": "Oyu geri al",
+  "directory_votes_testnet": "Oylama şimdilik testnet üzerinde: oylar sayılıp gösteriliyor, ancak henüz sıralamayı değiştirmiyor.",
+  "directory_voting_unavailable": "Directory oylaması 5chan'ın eşler arası bağlantısını gerektirir, ancak bu bağlantı şu anda kullanılamıyor.",
+  "directory_voting_no_contest": "/{{boardIdentifier}}/ için dizin oylaması yok.",
+  "directory_vote_needs_pass": "Oyunuz gönderilmedi: bu hesabın oylama adresi <address>{{address}}</address> bir <passLink>5chan Pass</passLink> tutmuyor.",
+  "directory_vote_needs_test_pass": "Oyunuz gönderilmedi: bu hesabın oylama adresi <address>{{address}}</address> bir 5chan Pass tutmuyor. Oylama şimdilik testnet üzerinde, bu yüzden bu adres için <faucetLink>faucet</faucetLink> üzerinden ücretsiz bir test Pass alabilirsiniz.",
+  "directory_vote_board_not_found": "{{address}} adresinde pano bulunamadı. Bir .bso adresi veya bir panonun açık anahtarını girin.",
+  "directory_vote_failed": "Oyunuz gönderilemedi: {{error}}"
 }

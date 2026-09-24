@@ -494,5 +494,14 @@
   "image_boards": "Afbeeldingsboards",
   "upload_boards": "Uploadboards",
   "multiboards": "Multiboards",
-  "show_homepage_introduction": "Introductie op de startpagina tonen"
+  "show_homepage_introduction": "Introductie op de startpagina tonen",
+  "directory_footnote": "Om een board in te dienen, voer je hieronder het adres in en stem je erop. Alleen houders van een <passLink>5chan Pass</passLink> kunnen stemmen, met één stem per directory.",
+  "directory_unvote": "Stem intrekken",
+  "directory_votes_testnet": "Het stemmen draait voorlopig op testnet: stemmen worden geteld en getoond, maar veranderen de rangschikking nog niet.",
+  "directory_voting_unavailable": "Stemmen in de directory vereist de peer-to-peer-verbinding van 5chan, die op dit moment niet beschikbaar is.",
+  "directory_voting_no_contest": "/{{boardIdentifier}}/ heeft geen directorystemming.",
+  "directory_vote_needs_pass": "Je stem is niet verzonden: het stemadres van dit account <address>{{address}}</address> heeft geen <passLink>5chan Pass</passLink>.",
+  "directory_vote_needs_test_pass": "Je stem is niet verzonden: het stemadres van dit account <address>{{address}}</address> heeft geen 5chan Pass. Stemmen gebeurt voorlopig op testnet, dus je kunt voor dit adres een gratis test-Pass halen bij de <faucetLink>faucet</faucetLink>.",
+  "directory_vote_board_not_found": "Geen board gevonden op {{address}}. Voer een .bso-adres of de publieke sleutel van een board in.",
+  "directory_vote_failed": "Je stem kon niet worden verzonden: {{error}}"
 }

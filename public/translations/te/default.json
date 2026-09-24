@@ -494,5 +494,14 @@
   "image_boards": "చిత్రాల బోర్డులు",
   "upload_boards": "ఫైల్ అప్‌లోడ్ బోర్డులు",
   "multiboards": "మల్టీబోర్డ్‌లు",
-  "show_homepage_introduction": "హోమ్‌పేజీలో పరిచయాన్ని చూపించు"
+  "show_homepage_introduction": "హోమ్‌పేజీలో పరిచయాన్ని చూపించు",
+  "directory_footnote": "బోర్డును సమర్పించడానికి, దాని చిరునామాను కింద నమోదు చేసి దానికి ఓటు వేయండి. <passLink>5chan Pass</passLink> హోల్డర్‌లు మాత్రమే ఓటు వేయగలరు, ఒక్కో డైరెక్టరీకి ఒక ఓటు.",
+  "directory_unvote": "ఓటు తీసివేయండి",
+  "directory_votes_testnet": "ప్రస్తుతానికి ఓటింగ్ testnet లో ఉంది: ఓట్లు లెక్కించబడి చూపించబడతాయి, కానీ అవి ఇంకా ర్యాంకింగ్‌ను మార్చవు.",
+  "directory_voting_unavailable": "డైరెక్టరీ ఓటింగ్‌కు 5chan యొక్క పీర్-టు-పీర్ కనెక్షన్ అవసరం, అది ప్రస్తుతం అందుబాటులో లేదు.",
+  "directory_voting_no_contest": "/{{boardIdentifier}}/ కు డైరెక్టరీ ఓటింగ్ లేదు.",
+  "directory_vote_needs_pass": "మీ ఓటు పంపబడలేదు: ఈ ఖాతా ఓటింగ్ చిరునామా <address>{{address}}</address> వద్ద <passLink>5chan Pass</passLink> లేదు.",
+  "directory_vote_needs_test_pass": "మీ ఓటు పంపబడలేదు: ఈ ఖాతా ఓటింగ్ చిరునామా <address>{{address}}</address> వద్ద 5chan Pass లేదు. ప్రస్తుతం ఓటింగ్ testnet లో జరుగుతోంది, కాబట్టి మీరు <faucetLink>ఫాసెట్</faucetLink> నుండి ఈ చిరునామా కోసం ఉచిత టెస్ట్ Pass పొందవచ్చు.",
+  "directory_vote_board_not_found": "{{address}} వద్ద ఏ బోర్డ్ కనుగొనబడలేదు. .bso చిరునామా లేదా ఒక బోర్డ్ పబ్లిక్ కీని నమోదు చేయండి.",
+  "directory_vote_failed": "మీ ఓటును పంపడం సాధ్యపడలేదు: {{error}}"
 }

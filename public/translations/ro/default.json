@@ -494,5 +494,14 @@
   "image_boards": "Forumuri de imagini",
   "upload_boards": "Forumuri de încărcare fișiere",
   "multiboards": "Multiboard-uri",
-  "show_homepage_introduction": "Afișează introducerea pe pagina principală"
+  "show_homepage_introduction": "Afișează introducerea pe pagina principală",
+  "directory_footnote": "Pentru a trimite un board, introdu adresa lui mai jos și votează-l. Doar deținătorii <passLink>5chan Pass</passLink> pot vota, cu un vot per director.",
+  "directory_unvote": "Retrage votul",
+  "directory_votes_testnet": "Deocamdată votul este pe testnet: voturile sunt numărate și afișate, dar încă nu schimbă clasamentul.",
+  "directory_voting_unavailable": "Votul în director necesită conexiunea peer-to-peer a 5chan, care nu este disponibilă momentan.",
+  "directory_voting_no_contest": "/{{boardIdentifier}}/ nu are vot pentru director.",
+  "directory_vote_needs_pass": "Votul tău nu a fost trimis: adresa de vot a acestui cont <address>{{address}}</address> nu deține un <passLink>5chan Pass</passLink>.",
+  "directory_vote_needs_test_pass": "Votul tău nu a fost trimis: adresa de vot a acestui cont <address>{{address}}</address> nu deține un 5chan Pass. Deocamdată votul are loc pe testnet, așa că poți obține gratuit un Pass de test pentru această adresă de la <faucetLink>faucet</faucetLink>.",
+  "directory_vote_board_not_found": "Nu a fost găsit niciun board la {{address}}. Introdu o adresă .bso sau cheia publică a unui board.",
+  "directory_vote_failed": "Votul tău nu a putut fi trimis: {{error}}"
 }

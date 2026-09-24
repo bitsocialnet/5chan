@@ -494,5 +494,14 @@
   "image_boards": "منتديات الصور",
   "upload_boards": "منتديات رفع الملفات",
   "multiboards": "اللوحات المتعددة",
-  "show_homepage_introduction": "إظهار المقدمة في الصفحة الرئيسية"
+  "show_homepage_introduction": "إظهار المقدمة في الصفحة الرئيسية",
+  "directory_footnote": "لإضافة لوحة، أدخل عنوانها أدناه وصوّت لها. يمكن لحاملي <passLink>5chan Pass</passLink> فقط التصويت، بصوت واحد لكل دليل.",
+  "directory_unvote": "إلغاء التصويت",
+  "directory_votes_testnet": "التصويت حاليًا على testnet: تُحتسب الأصوات وتُعرض، لكنها لا تغيّر الترتيب بعد.",
+  "directory_voting_unavailable": "يتطلب التصويت على الدليل اتصال الند للند الخاص بـ 5chan، وهو غير متاح حاليًا.",
+  "directory_voting_no_contest": "لا يوجد تصويت على الدليل لـ /{{boardIdentifier}}/.",
+  "directory_vote_needs_pass": "لم يُرسَل تصويتك: عنوان التصويت الخاص بهذا الحساب <address>{{address}}</address> لا يملك <passLink>5chan Pass</passLink>.",
+  "directory_vote_needs_test_pass": "لم يُرسَل تصويتك: عنوان التصويت الخاص بهذا الحساب <address>{{address}}</address> لا يملك 5chan Pass. التصويت يعمل على testnet حاليًا، لذا يمكنك الحصول على Pass تجريبي مجاني لهذا العنوان من <faucetLink>الصنبور</faucetLink>.",
+  "directory_vote_board_not_found": "لم يُعثر على أي لوحة في {{address}}. أدخل عنوان .bso أو المفتاح العام للوحة.",
+  "directory_vote_failed": "تعذّر إرسال تصويتك: {{error}}"
 }

@@ -494,5 +494,14 @@
   "image_boards": "Bildeboards",
   "upload_boards": "Opplastingsboards",
   "multiboards": "Multiboard",
-  "show_homepage_introduction": "Vis introduksjonen på forsiden"
+  "show_homepage_introduction": "Vis introduksjonen på forsiden",
+  "directory_footnote": "For å sende inn et board, skriv inn adressen nedenfor og stem på det. Bare innehavere av <passLink>5chan Pass</passLink> kan stemme, med én stemme per katalog.",
+  "directory_unvote": "Fjern stemme",
+  "directory_votes_testnet": "Avstemningen kjører på testnet foreløpig: stemmer telles og vises, men endrer ikke rangeringen ennå.",
+  "directory_voting_unavailable": "Avstemning i katalogen krever 5chans peer-to-peer-tilkobling, som ikke er tilgjengelig akkurat nå.",
+  "directory_voting_no_contest": "/{{boardIdentifier}}/ har ingen katalogavstemning.",
+  "directory_vote_needs_pass": "Stemmen din ble ikke sendt: denne kontoens stemmeadresse <address>{{address}}</address> har ikke et <passLink>5chan Pass</passLink>.",
+  "directory_vote_needs_test_pass": "Stemmen din ble ikke sendt: denne kontoens stemmeadresse <address>{{address}}</address> har ikke et 5chan Pass. Avstemningen kjører på testnet foreløpig, så du kan få et gratis test-Pass for denne adressen fra <faucetLink>faucet</faucetLink>.",
+  "directory_vote_board_not_found": "Fant ingen brett på {{address}}. Skriv inn en .bso-adresse eller et bretts offentlige nøkkel.",
+  "directory_vote_failed": "Stemmen din kunne ikke sendes: {{error}}"
 }

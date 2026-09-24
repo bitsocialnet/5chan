@@ -494,5 +494,14 @@
   "image_boards": "Foros de imágenes",
   "upload_boards": "Foros de subida de archivos",
   "multiboards": "Multiboard",
-  "show_homepage_introduction": "Mostrar la introducción en la página de inicio"
+  "show_homepage_introduction": "Mostrar la introducción en la página de inicio",
+  "directory_footnote": "Para enviar un tablón, introduce su dirección abajo y vota por él. Solo los poseedores de <passLink>5chan Pass</passLink> pueden votar, con un voto por directorio.",
+  "directory_unvote": "Quitar voto",
+  "directory_votes_testnet": "Por ahora la votación está en testnet: los votos se cuentan y se muestran, pero todavía no cambian la clasificación.",
+  "directory_voting_unavailable": "La votación del directorio necesita la conexión peer-to-peer de 5chan, que no está disponible en este momento.",
+  "directory_voting_no_contest": "/{{boardIdentifier}}/ no tiene votación del directorio.",
+  "directory_vote_needs_pass": "Tu voto no se envió: la dirección de votación de esta cuenta <address>{{address}}</address> no tiene un <passLink>5chan Pass</passLink>.",
+  "directory_vote_needs_test_pass": "Tu voto no se envió: la dirección de votación de esta cuenta <address>{{address}}</address> no tiene un 5chan Pass. Por ahora la votación está en testnet, así que puedes conseguir un Pass de prueba gratis para esta dirección en el <faucetLink>faucet</faucetLink>.",
+  "directory_vote_board_not_found": "No se encontró ningún tablón en {{address}}. Introduce una dirección .bso o la clave pública de un tablón.",
+  "directory_vote_failed": "No se pudo enviar tu voto: {{error}}"
 }
