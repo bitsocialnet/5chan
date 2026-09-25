@@ -3,6 +3,13 @@
   overflow-y: hidden;
 }
 
+/* Virtuoso sets the window scroller's inline height from itemSize, which returns Pretext estimates
+   in item-size mode. When rendered threads are taller, the footer overflows that height and is
+   clipped above. The item list already pads for unrendered threads, so fit the scroller to it. */
+.content [data-virtuoso-scroller] {
+  height: auto !important;
+}
+
 .error {
   padding: 15px 0 0 5px;
 }
