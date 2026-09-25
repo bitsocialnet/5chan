@@ -1,3 +1,10 @@
+/* Virtuoso sets the window scroller's inline height from itemSize, which returns Pretext estimates
+   in item-size mode. When rendered rows are taller, the footer overflows that height and is
+   clipped by the layout. The item list already pads for unrendered rows, so fit the scroller to it. */
+.content [data-virtuoso-scroller] {
+  height: auto !important;
+}
+
 .footer {
   padding: 15px 0 10px 5px;
   color: var(--post-mobile-abbr-text-color);
