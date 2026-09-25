@@ -5,9 +5,9 @@
 // goes into a <template>; a small inline script inserts it before first paint, and React replaces it
 // on its first commit. The script only inserts it when that commit will render the same frame: the
 // web runtime (Home renders Electron and Android variants), the home route (always the yotsuba theme,
-// no viewport-specific markup), an English UI, and none of the saved home preferences below. Everyone
-// else sees exactly what they saw before. A new saved preference that changes the home page's first
-// frame belongs in HOME_PREFERENCE_KEYS.
+// no viewport-specific markup), an English UI, and no home preference below saved with a value other
+// than the one the app saves on its own. Everyone else sees exactly what they saw before. A new saved
+// preference that changes the home page's first frame belongs in HOME_PREFERENCE_KEYS.
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -25,15 +25,21 @@ const HOME_PREFERENCE_KEYS = [
 ];
 
 // The inline script's hash must be listed in vercel.json's script-src (verified at build time).
-const insertShellScript = `(function () {
+// `defaults` maps each preference key to the value the app saves before the visitor changes anything,
+// or null. zustand's persist middleware saves a store while hydrating, so every visit after the first
+// already has homepage-introduction saved with its default, which still renders the shell's frame.
+const createInsertShellScript = (defaults) => `(function () {
   try {
     // Electron's preload and Capacitor's Android bridge are both in place before page scripts run.
     if (window.isElectron || (window.electronApi && window.electronApi.isElectron) || window.androidBridge) return;
     if (location.hash && location.hash !== '#' && location.hash !== '#/') return;
     var language = localStorage.getItem('5chan-interface-language');
     if (language && !/^en(-|$)/i.test(language)) return;
-    var keys = ${JSON.stringify(HOME_PREFERENCE_KEYS)};
-    for (var i = 0; i < keys.length; i++) if (localStorage.getItem(keys[i]) !== null) return;
+    var defaults = ${JSON.stringify(defaults).replaceAll('<', '\\u003c')};
+    for (var key in defaults) {
+      var value = localStorage.getItem(key);
+      if (value !== null && value !== defaults[key]) return;
+    }
     var root = document.getElementById('root');
     var template = document.getElementById('static-shell-home');
     if (!root || !template || root.firstChild) return;
@@ -68,13 +74,15 @@ export function inlineStartupStylesheets(html, preloadAttribute, base, readAsset
   });
 }
 
-export function injectStaticShell(html, variants) {
+// `renderStorage` is what localStorage held after the build rendered the shell.
+export function injectStaticShell(html, variants, renderStorage = {}) {
   if (!html.includes('<div id="root"></div>')) throw new Error('static shell: index.html has no empty <div id="root"></div>');
   const templates = Object.entries(variants)
     .map(([name, markup]) => `<template id="static-shell-${name}">${markup}</template>`)
     .join('');
+  const defaults = Object.fromEntries(HOME_PREFERENCE_KEYS.map((key) => [key, renderStorage[key] ?? null]));
   // A replacer function keeps `$` sequences in the rendered markup literal.
-  return html.replace('<div id="root"></div>', () => `<div id="root"></div>${templates}<script>${insertShellScript}</script>`);
+  return html.replace('<div id="root"></div>', () => `<div id="root"></div>${templates}<script>${createInsertShellScript(defaults)}</script>`);
 }
 
 export function staticShellPlugin({ preloadAttribute }) {
@@ -97,13 +105,13 @@ export function staticShellPlugin({ preloadAttribute }) {
         maxBuffer: 16 * 1024 * 1024,
         stdio: ['ignore', 'pipe', 'inherit'],
       });
-      const { variants } = JSON.parse(output);
+      const { variants, storage } = JSON.parse(output);
       const readAsset = (fileName) => {
         const asset = bundle[fileName];
         if (!asset || asset.type !== 'asset') throw new Error(`static shell: ${fileName} is not in the bundle`);
         return String(asset.source);
       };
-      index.source = injectStaticShell(inlineStartupStylesheets(String(index.source), preloadAttribute, base, readAsset), variants);
+      index.source = injectStaticShell(inlineStartupStylesheets(String(index.source), preloadAttribute, base, readAsset), variants, storage);
     },
   };
 }
