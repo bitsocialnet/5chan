@@ -521,6 +521,9 @@ export default defineConfig({
   },
   base: publicBase,
   optimizeDeps: {
+    // Scan only the app entry; the default **/*.html glob also crawls ignored Electron packages in out/
+    // and Android fixtures, and one unresolved import there disables pre-bundling for the whole session.
+    entries: ['index.html'],
     include: [
       'ethers',
       'assert',
