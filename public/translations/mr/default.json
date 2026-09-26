@@ -495,7 +495,7 @@
   "upload_boards": "फाइल अपलोड बोर्ड",
   "multiboards": "मल्टीबोर्ड",
   "show_homepage_introduction": "मुख्यपृष्ठावरील परिचय दाखवा",
-  "directory_footnote": "बोर्ड सबमिट करण्यासाठी, खाली त्याचा पत्ता टाका आणि त्याला मत द्या. फक्त <passLink>5chan Pass</passLink> धारकच मत देऊ शकतात, प्रत्येक डिरेक्टरीसाठी एक मत.",
+  "directory_footnote": "फक्त <passLink>5chan Pass</passLink> धारकच मत देऊ शकतात, प्रत्येक डिरेक्टरीसाठी एक मत.",
   "directory_unvote": "मत मागे घ्या",
   "directory_votes_testnet": "मतदान सध्या testnet वर आहे: मते मोजली आणि दाखवली जातात, पण ती अद्याप क्रमवारी बदलत नाहीत.",
   "directory_voting_unavailable": "डिरेक्टरी मतदानासाठी 5chan चे पीअर-टू-पीअर कनेक्शन आवश्यक आहे, जे सध्या उपलब्ध नाही.",

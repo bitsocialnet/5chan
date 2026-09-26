@@ -495,7 +495,7 @@
   "upload_boards": "Forume për ngarkim skedarësh",
   "multiboards": "Multiboard-et",
   "show_homepage_introduction": "Shfaq hyrjen në faqen kryesore",
-  "directory_footnote": "Për të dërguar një bord, shkruaj adresën e tij më poshtë dhe voto për të. Vetëm mbajtësit e <passLink>5chan Pass</passLink> mund të votojnë, me një votë për çdo directory.",
+  "directory_footnote": "Vetëm mbajtësit e <passLink>5chan Pass</passLink> mund të votojnë, me një votë për çdo directory.",
   "directory_unvote": "Hiq votën",
   "directory_votes_testnet": "Votimi për momentin është në testnet: votat numërohen dhe shfaqen, por ende nuk e ndryshojnë renditjen.",
   "directory_voting_unavailable": "Votimi në directory kërkon lidhjen peer-to-peer të 5chan, e cila nuk është e disponueshme tani.",

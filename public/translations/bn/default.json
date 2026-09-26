@@ -495,7 +495,7 @@
   "upload_boards": "ফাইল আপলোডের বোর্ড",
   "multiboards": "মাল্টিবোর্ড",
   "show_homepage_introduction": "হোমপেজের পরিচিতি দেখান",
-  "directory_footnote": "একটি বোর্ড জমা দিতে, নিচে এর ঠিকানা লিখুন এবং এতে ভোট দিন। শুধু <passLink>5chan Pass</passLink> হোল্ডাররাই ভোট দিতে পারবেন, প্রতি ডিরেক্টরিতে একটি করে ভোট।",
+  "directory_footnote": "শুধু <passLink>5chan Pass</passLink> হোল্ডাররাই ভোট দিতে পারবেন, প্রতি ডিরেক্টরিতে একটি করে ভোট।",
   "directory_unvote": "ভোট প্রত্যাহার",
   "directory_votes_testnet": "ভোটিং আপাতত testnet-এ চলছে: ভোট গোনা ও দেখানো হয়, কিন্তু এখনও র‍্যাঙ্কিং বদলায় না।",
   "directory_voting_unavailable": "ডিরেক্টরি ভোটিংয়ের জন্য 5chan-এর পিয়ার-টু-পিয়ার সংযোগ প্রয়োজন, যা এই মুহূর্তে উপলব্ধ নেই।",

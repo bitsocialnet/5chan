@@ -495,7 +495,7 @@
   "upload_boards": "アップロード掲示板",
   "multiboards": "マルチボード",
   "show_homepage_introduction": "ホームページの紹介を表示",
-  "directory_footnote": "板を申請するには、下にアドレスを入力して投票してください。投票できるのは<passLink>5chan Pass</passLink>保有者のみで、ディレクトリごとに1票です。",
+  "directory_footnote": "投票できるのは<passLink>5chan Pass</passLink>保有者のみで、ディレクトリごとに1票です。",
   "directory_unvote": "投票取消",
   "directory_votes_testnet": "投票は現在testnet上で行われています。票は集計・表示されますが、まだランキングには反映されません。",
   "directory_voting_unavailable": "ディレクトリ投票には5chanのピアツーピア接続が必要ですが、現在利用できません。",

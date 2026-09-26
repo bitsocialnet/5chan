@@ -495,7 +495,7 @@
   "upload_boards": "บอร์ดอัปโหลด",
   "multiboards": "มัลติบอร์ด",
   "show_homepage_introduction": "แสดงคำแนะนำบนหน้าแรก",
-  "directory_footnote": "หากต้องการส่งบอร์ด ให้ป้อนที่อยู่ของบอร์ดด้านล่างแล้วโหวตให้ เฉพาะผู้ถือ <passLink>5chan Pass</passLink> เท่านั้นที่โหวตได้ โดยได้หนึ่งโหวตต่อไดเรกทอรี",
+  "directory_footnote": "เฉพาะผู้ถือ <passLink>5chan Pass</passLink> เท่านั้นที่โหวตได้ โดยได้หนึ่งโหวตต่อไดเรกทอรี",
   "directory_unvote": "ยกเลิกโหวต",
   "directory_votes_testnet": "ตอนนี้การโหวตยังอยู่บน testnet: ระบบนับและแสดงผลโหวต แต่ยังไม่มีผลต่ออันดับ",
   "directory_voting_unavailable": "การโหวตไดเรกทอรีต้องใช้การเชื่อมต่อ P2P ของ 5chan ซึ่งขณะนี้ใช้งานไม่ได้",

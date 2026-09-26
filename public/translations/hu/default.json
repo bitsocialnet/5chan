@@ -495,7 +495,7 @@
   "upload_boards": "Fájlfeltöltő táblák",
   "multiboards": "Többtáblás nézetek",
   "show_homepage_introduction": "Bemutatkozás megjelenítése a kezdőlapon",
-  "directory_footnote": "Board beküldéséhez add meg alább a címét, és szavazz rá. Csak a <passLink>5chan Pass</passLink> birtokosai szavazhatnak, könyvtáranként egy szavazattal.",
+  "directory_footnote": "Csak a <passLink>5chan Pass</passLink> birtokosai szavazhatnak, könyvtáranként egy szavazattal.",
   "directory_unvote": "Szavazat visszavonása",
   "directory_votes_testnet": "A szavazás egyelőre testneten fut: a szavazatokat számoljuk és megjelenítjük, de még nem változtatják meg a rangsort.",
   "directory_voting_unavailable": "A könyvtárszavazáshoz szükség van a 5chan peer-to-peer kapcsolatára, amely jelenleg nem érhető el.",

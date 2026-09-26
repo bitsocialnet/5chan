@@ -495,7 +495,7 @@
   "upload_boards": "منتديات رفع الملفات",
   "multiboards": "اللوحات المتعددة",
   "show_homepage_introduction": "إظهار المقدمة في الصفحة الرئيسية",
-  "directory_footnote": "لإضافة لوحة، أدخل عنوانها أدناه وصوّت لها. يمكن لحاملي <passLink>5chan Pass</passLink> فقط التصويت، بصوت واحد لكل دليل.",
+  "directory_footnote": "يمكن لحاملي <passLink>5chan Pass</passLink> فقط التصويت، بصوت واحد لكل دليل.",
   "directory_unvote": "إلغاء التصويت",
   "directory_votes_testnet": "التصويت حاليًا على testnet: تُحتسب الأصوات وتُعرض، لكنها لا تغيّر الترتيب بعد.",
   "directory_voting_unavailable": "يتطلب التصويت على الدليل اتصال الند للند الخاص بـ 5chan، وهو غير متاح حاليًا.",

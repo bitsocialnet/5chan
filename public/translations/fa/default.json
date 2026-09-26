@@ -495,7 +495,7 @@
   "upload_boards": "تابلوهای بارگذاری",
   "multiboards": "تابلوهای چندگانه",
   "show_homepage_introduction": "نمایش معرفی در صفحهٔ اصلی",
-  "directory_footnote": "برای ثبت یک برد، آدرس آن را در پایین وارد کنید و به آن رأی دهید. فقط دارندگان <passLink>5chan Pass</passLink> می‌توانند رأی دهند، با یک رأی برای هر دایرکتوری.",
+  "directory_footnote": "فقط دارندگان <passLink>5chan Pass</passLink> می‌توانند رأی دهند، با یک رأی برای هر دایرکتوری.",
   "directory_unvote": "لغو رأی",
   "directory_votes_testnet": "رأی‌گیری فعلاً روی testnet است: رأی‌ها شمرده و نمایش داده می‌شوند، اما هنوز رتبه‌بندی را تغییر نمی‌دهند.",
   "directory_voting_unavailable": "رأی‌گیری دایرکتوری به اتصال همتا به همتای 5chan نیاز دارد که در حال حاضر در دسترس نیست.",

@@ -495,7 +495,7 @@
   "upload_boards": "Uppladdningsforum",
   "multiboards": "Multiboard",
   "show_homepage_introduction": "Visa introduktionen på startsidan",
-  "directory_footnote": "För att skicka in ett board anger du dess adress nedan och röstar på det. Bara innehavare av <passLink>5chan Pass</passLink> kan rösta, med en röst per katalog.",
+  "directory_footnote": "Bara innehavare av <passLink>5chan Pass</passLink> kan rösta, med en röst per katalog.",
   "directory_unvote": "Ta bort röst",
   "directory_votes_testnet": "Omröstningen körs på testnet tills vidare: röster räknas och visas, men de påverkar inte rankningen ännu.",
   "directory_voting_unavailable": "Katalogomröstning kräver 5chans peer-to-peer-anslutning, som inte är tillgänglig just nu.",

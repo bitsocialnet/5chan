@@ -495,7 +495,7 @@
   "upload_boards": "Upload-Boards",
   "multiboards": "Multiboards",
   "show_homepage_introduction": "Einführung auf der Startseite anzeigen",
-  "directory_footnote": "Um ein Board einzureichen, gib unten seine Adresse ein und stimme dafür ab. Nur Inhaber eines <passLink>5chan Pass</passLink> können abstimmen, mit einer Stimme pro Verzeichnis.",
+  "directory_footnote": "Nur Inhaber eines <passLink>5chan Pass</passLink> können abstimmen, mit einer Stimme pro Verzeichnis.",
   "directory_unvote": "Stimme zurückziehen",
   "directory_votes_testnet": "Die Abstimmung läuft vorerst im Testnet: Stimmen werden gezählt und angezeigt, ändern das Ranking aber noch nicht.",
   "directory_voting_unavailable": "Die Verzeichnisabstimmung benötigt die Peer-to-Peer-Verbindung von 5chan, die gerade nicht verfügbar ist.",

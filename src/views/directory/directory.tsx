@@ -8,6 +8,7 @@ import { PageFooterDesktop, PageFooterMobile, ThreadFooterStyleRow } from '../..
 import LoadingEllipsis from '../../components/loading-ellipsis';
 import Tooltip from '../../components/tooltip';
 import { useDirectories } from '../../hooks/use-directories';
+import useIsMobile from '../../hooks/use-is-mobile';
 import { useCommunityIdentifier } from '../../hooks/use-community-identifiers';
 import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
 import { isDirectoryRoute } from '../../lib/utils/route-utils';
@@ -52,22 +53,6 @@ const PASS_LINK = '/pass';
 
 const SUBMIT_BOARD_INPUT_ID = 'directory-submit-board';
 
-const focusSubmitBoardInput = () => {
-  const input = document.getElementById(SUBMIT_BOARD_INPUT_ID);
-  input?.scrollIntoView({ block: 'center' });
-  input?.focus();
-};
-
-const DirectorySubmitBoardButton = () => {
-  const { t } = useTranslation();
-
-  return (
-    <button type='button' className='button' onClick={focusSubmitBoardInput}>
-      {t('directory_submit_board')}
-    </button>
-  );
-};
-
 const DirectoryDesktopTopControls = ({ communityAddress }: { communityAddress: string | undefined }) => (
   <div className={styles.desktopNavLinks}>
     <div className={styles.navButtonGroup}>
@@ -79,9 +64,6 @@ const DirectoryDesktopTopControls = ({ communityAddress }: { communityAddress: s
         [<BottomButton />]
       </span>
     </div>
-    <span className={styles.submitBoardControl}>
-      [<DirectorySubmitBoardButton />]
-    </span>
   </div>
 );
 
@@ -96,9 +78,6 @@ const DirectoryDesktopFooterControls = ({ communityAddress }: { communityAddress
         [<TopButton />]
       </span>
     </div>
-    <span className={styles.submitBoardControl}>
-      [<DirectorySubmitBoardButton />]
-    </span>
   </div>
 );
 
@@ -108,9 +87,6 @@ const DirectoryMobileTopControls = ({ communityAddress }: { communityAddress: st
       <ReturnButton address={communityAddress} />
       <CatalogButton address={communityAddress} />
       <BottomButton />
-    </div>
-    <div className={styles.mobileSubmitRow}>
-      <DirectorySubmitBoardButton />
     </div>
   </div>
 );
@@ -122,15 +98,14 @@ const DirectoryMobileFooterControls = ({ communityAddress }: { communityAddress:
       <CatalogButton address={communityAddress} />
       <TopButton />
     </div>
-    <div className={styles.mobileSubmitRow}>
-      <DirectorySubmitBoardButton />
-    </div>
   </div>
 );
 
 /** Submitting a board is voting for it: the tally lists any board a Pass holder votes for. */
 const DirectorySubmitBoardForm = ({ isBusy, isPending, onSubmit }: { isBusy: boolean; isPending: boolean; onSubmit: (address: string) => Promise<boolean> }) => {
   const { t } = useTranslation();
+  const isMobile = useIsMobile();
+  const [isOpen, setIsOpen] = useState(false);
   const [address, setAddress] = useState('');
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -138,6 +113,15 @@ const DirectorySubmitBoardForm = ({ isBusy, isPending, onSubmit }: { isBusy: boo
     if (!address.trim() || isBusy) return;
     if (await onSubmit(address)) setAddress('');
   };
+
+  if (!isOpen) {
+    const openButton = (
+      <button type='button' className='button' onClick={() => setIsOpen(true)}>
+        {t('directory_submit_board')}
+      </button>
+    );
+    return <div className={styles.submitBoardToggle}>{isMobile ? openButton : <>[{openButton}]</>}</div>;
+  }
 
   return (
     <form className={styles.submitBoardForm} onSubmit={handleSubmit}>
@@ -152,6 +136,8 @@ const DirectorySubmitBoardForm = ({ isBusy, isPending, onSubmit }: { isBusy: boo
         autoCapitalize='off'
         autoCorrect='off'
         spellCheck={false}
+        // The form mounts only when the user opens it, so take them straight to the field.
+        autoFocus
       />{' '}
       [
       <button type='submit' className={styles.actionButton} disabled={isBusy} aria-label={t('upvote')} title={t('upvote')}>
@@ -231,8 +217,10 @@ const DirectoryRow = ({ rankedBoard, nowSeconds, rank, isVoted, isVotePending, i
           {ownerDisplay ?? t('directory_owner_anonymous')}
           {developerBadge && (
             <>
-              {' ## '}
-              {developerBadge.label} <span className={`${postStyles.capcodeIcon} ${postStyles.capcodeAdminIcon}`} title={developerBadge.title} />
+              {' '}
+              <span className={styles.ownerCapcode}>
+                ## {developerBadge.label} <span className={`${postStyles.capcodeIcon} ${postStyles.capcodeAdminIcon}`} title={developerBadge.title} />
+              </span>
             </>
           )}
         </span>
@@ -383,7 +371,8 @@ const Directory = () => {
                   {t('directory_status')}
                 </th>
                 <th className={styles.postblock} scope='col'>
-                  {t('directory_score')}
+                  {/* Testnet votes don't rank the list, so they must not read as its score. */}
+                  {isTestnetVote ? t('directory_test_votes') : t('directory_score')}
                 </th>
                 <th className={styles.postblock} scope='col'>
                   {t('directory_vote')}

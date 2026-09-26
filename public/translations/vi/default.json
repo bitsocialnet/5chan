@@ -495,7 +495,7 @@
   "upload_boards": "Bảng tải tệp lên",
   "multiboards": "Đa bảng",
   "show_homepage_introduction": "Hiển thị phần giới thiệu trên trang chủ",
-  "directory_footnote": "Để gửi một diễn đàn, hãy nhập địa chỉ của nó bên dưới và bỏ phiếu cho nó. Chỉ người giữ <passLink>5chan Pass</passLink> mới có thể bỏ phiếu, mỗi thư mục một phiếu.",
+  "directory_footnote": "Chỉ người giữ <passLink>5chan Pass</passLink> mới có thể bỏ phiếu, mỗi thư mục một phiếu.",
   "directory_unvote": "Hủy phiếu",
   "directory_votes_testnet": "Hiện tại việc bỏ phiếu đang chạy trên testnet: phiếu được đếm và hiển thị, nhưng chưa thay đổi thứ hạng.",
   "directory_voting_unavailable": "Bỏ phiếu thư mục cần kết nối peer-to-peer của 5chan, hiện không khả dụng.",
