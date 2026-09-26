@@ -252,6 +252,7 @@
 }
 
 .popularThread .mediaContainer img,
+.popularThread .mediaContainer canvas,
 .popularThread .mediaContainer video {
   max-width: 150px;
   max-height: 150px;

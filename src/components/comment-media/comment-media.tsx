@@ -8,6 +8,7 @@ import useIsMobile from '../../hooks/use-is-mobile';
 import { useYouTubeThumbnailFallback } from '../../hooks/use-youtube-thumbnail-fallback';
 import styles from './comment-media.module.css';
 import Embed from '../embed';
+import GifFirstFrameCanvas from '../gif-first-frame-canvas';
 import { canEmbed } from '../../lib/utils/embed-utils';
 import RufflePlayer from './ruffle-player';
 
@@ -126,7 +127,7 @@ const Thumbnail = ({
         <button type='button' className={`${styles.gifPlaceholder} ${styles.mediaToggleButton}`} aria-label='Loading GIF thumbnail' onClick={handleOpenMedia} />
       ) : (
         <button type='button' className={styles.mediaToggleButton} aria-label='Open GIF' onClick={handleOpenMedia}>
-          <img src={gifFrameUrl || url} alt='' />
+          {gifFrameUrl ? <img src={gifFrameUrl} alt='' /> : url && <GifFirstFrameCanvas src={url} />}
         </button>
       );
   } else if (type === 'video') {

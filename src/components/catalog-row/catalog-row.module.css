@@ -83,7 +83,7 @@
   overflow: hidden;
 }
 
-.post img, .post video, .post audio {
+.post img, .post canvas, .post video, .post audio {
   max-width: var(--maxWidth);
   max-height: var(--maxHeight);
 }

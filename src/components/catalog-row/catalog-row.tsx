@@ -21,6 +21,7 @@ import useHide from '../../hooks/use-hide';
 import usePrefetchIntent from '../../hooks/use-prefetch-intent';
 import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
 import { CATALOG_PREVIEW_MARKDOWN_OPTIONS, removeMarkdown } from '../../lib/utils/post-utils';
+import GifFirstFrameCanvas from '../gif-first-frame-canvas';
 import PostMenuDesktop from '../post-menu-desktop';
 import styles from './catalog-row.module.css';
 import capitalize from 'lodash/capitalize';
@@ -106,7 +107,7 @@ export const CatalogPostMedia = ({ cid, commentMediaInfo, linkWidth, linkHeight,
   if (type === 'gif' && gifFrameStatus === 'ready' && gifFrameUrl && !hasError) {
     thumbnailComponent = <img src={gifFrameUrl} alt='' onLoad={handleLoad} onError={handleError} style={loadingStyle} width={numericWidth} height={numericHeight} />;
   } else if (type === 'gif' && gifFrameStatus === 'failed' && !hasError) {
-    thumbnailComponent = <img src={url} alt='' onLoad={handleLoad} onError={handleError} style={loadingStyle} width={numericWidth} height={numericHeight} />;
+    thumbnailComponent = url && <GifFirstFrameCanvas src={url} onLoad={handleLoad} onError={handleError} style={loadingStyle} />;
   } else if (type === 'image' && !hasError) {
     thumbnailComponent = <img src={url} alt='' onLoad={handleLoad} onError={handleError} style={loadingStyle} width={numericWidth} height={numericHeight} />;
   } else if (type === 'video' && !hasError) {

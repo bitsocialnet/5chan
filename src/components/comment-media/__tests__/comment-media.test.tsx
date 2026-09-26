@@ -289,6 +289,19 @@ describe('CommentMedia', () => {
     expect(container.querySelector('img[src="https://cdn.example.com/frame.png"]')).toBeTruthy();
   });
 
+  it('renders a still canvas instead of the animated GIF when the first-frame fetch fails', async () => {
+    testState.gifFrameStatus = 'failed';
+
+    await renderMedia({
+      commentMediaInfo: { type: 'gif', url: 'https://cdn.example.com/animated.gif' },
+      setShowThumbnail: setShowThumbnailMock,
+      showThumbnail: true,
+    });
+
+    expect(container.querySelector('[aria-label="Open GIF"] canvas')).toBeTruthy();
+    expect(container.querySelector('img[src="https://cdn.example.com/animated.gif"]')).toBeNull();
+  });
+
   it('opens an inline GIF without fetching or mounting an unused still thumbnail', async () => {
     const url = 'https://cdn.example.com/inline.gif';
     await renderMedia({
