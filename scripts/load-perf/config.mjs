@@ -22,6 +22,8 @@ export default {
   routes: [
     { name: 'home', hash: '/', staticShell: true, content: '[class*="_popularThreads_"] a[href*="/thread/"]' },
     { name: 'home-mobile', hash: '/', staticShell: true, viewport: { width: 375, height: 812 } },
+    // A return visit: the introduction store saved its default while hydrating on the first visit.
+    { name: 'home-returning', hash: '/', staticShell: true, storage: { 'homepage-introduction': '{"state":{"showIntroduction":true},"version":0}' } },
     { name: 'home-intro-closed', hash: '/', staticShell: false, storage: { 'homepage-introduction': '{"state":{"showIntroduction":false},"version":0}' } },
     { name: 'home-german', hash: '/', staticShell: false, storage: { '5chan-interface-language': 'de' } },
     { name: 'board', hash: '/biz', staticShell: false, content: '[class*="_thread_"]' },
