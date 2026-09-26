@@ -277,6 +277,22 @@ describe('CatalogRow', () => {
     expect(container.querySelector<HTMLImageElement>('img[src="assets/filedeleted-res.gif"]')).toBeTruthy();
   });
 
+  it('renders a still canvas instead of the animated GIF when the first-frame fetch fails', async () => {
+    testState.gifFrameStatus = 'failed';
+
+    await act(async () => {
+      root.render(
+        createElement(CatalogPostMedia, {
+          cid: 'post-1',
+          commentMediaInfo: { type: 'gif', url: 'https://example.com/source.gif' },
+        }),
+      );
+    });
+
+    expect(container.querySelector('canvas')).toBeTruthy();
+    expect(container.querySelector('img[src="https://example.com/source.gif"]')).toBeNull();
+  });
+
   it('renders the archived icon for archived threads', async () => {
     const post: TestComment = {
       author: { address: 'author-1', displayName: 'Alice' },

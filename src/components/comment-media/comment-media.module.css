@@ -109,6 +109,7 @@
 }
 
 .mediaToggleButton img,
+.mediaToggleButton canvas,
 .mediaToggleButton video {
   display: block;
 }
@@ -128,6 +129,7 @@
 }
 
 .content img,
+.content canvas,
 .content video,
 .content iframe,
 .content audio {
