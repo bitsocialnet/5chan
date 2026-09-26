@@ -495,7 +495,7 @@
   "upload_boards": "Opplastingsboards",
   "multiboards": "Multiboard",
   "show_homepage_introduction": "Vis introduksjonen på forsiden",
-  "directory_footnote": "For å sende inn et board, skriv inn adressen nedenfor og stem på det. Bare innehavere av <passLink>5chan Pass</passLink> kan stemme, med én stemme per katalog.",
+  "directory_footnote": "Bare innehavere av <passLink>5chan Pass</passLink> kan stemme, med én stemme per katalog.",
   "directory_unvote": "Fjern stemme",
   "directory_votes_testnet": "Avstemningen kjører på testnet foreløpig: stemmer telles og vises, men endrer ikke rangeringen ennå.",
   "directory_voting_unavailable": "Avstemning i katalogen krever 5chans peer-to-peer-tilkobling, som ikke er tilgjengelig akkurat nå.",

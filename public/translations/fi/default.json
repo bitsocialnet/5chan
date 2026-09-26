@@ -495,7 +495,7 @@
   "upload_boards": "Tiedostolaudat",
   "multiboards": "Monilautalistaukset",
   "show_homepage_introduction": "Näytä etusivun esittely",
-  "directory_footnote": "Lähettääksesi laudan syötä sen osoite alle ja äänestä sitä. Vain <passLink>5chan Pass</passLink> -haltijat voivat äänestää, yksi ääni hakemistoa kohden.",
+  "directory_footnote": "Vain <passLink>5chan Pass</passLink> -haltijat voivat äänestää, yksi ääni hakemistoa kohden.",
   "directory_unvote": "Peru ääni",
   "directory_votes_testnet": "Äänestys on toistaiseksi testnetissä: äänet lasketaan ja näytetään, mutta ne eivät vielä muuta järjestystä.",
   "directory_voting_unavailable": "Hakemistoäänestys vaatii 5chanin vertaisverkkoyhteyden, joka ei ole juuri nyt käytettävissä.",

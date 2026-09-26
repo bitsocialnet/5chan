@@ -495,7 +495,7 @@
   "upload_boards": "Board di caricamento file",
   "multiboards": "Multiboard",
   "show_homepage_introduction": "Mostra l’introduzione nella pagina iniziale",
-  "directory_footnote": "Per proporre una board, inserisci il suo indirizzo qui sotto e votala. Solo i possessori del <passLink>5chan Pass</passLink> possono votare, con un voto per directory.",
+  "directory_footnote": "Solo i possessori del <passLink>5chan Pass</passLink> possono votare, con un voto per directory.",
   "directory_unvote": "Rimuovi voto",
   "directory_votes_testnet": "Per ora il voto è su testnet: i voti vengono contati e mostrati, ma non cambiano ancora la classifica.",
   "directory_voting_unavailable": "Il voto della directory richiede la connessione peer-to-peer di 5chan, che al momento non è disponibile.",

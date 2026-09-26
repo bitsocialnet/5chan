@@ -495,7 +495,7 @@
   "upload_boards": "文件上传板块",
   "multiboards": "多板视图",
   "show_homepage_introduction": "显示首页介绍",
-  "directory_footnote": "要提交板块，请在下方输入其地址并为其投票。只有 <passLink>5chan Pass</passLink> 持有者可以投票，每个目录限投一票。",
+  "directory_footnote": "只有 <passLink>5chan Pass</passLink> 持有者可以投票，每个目录限投一票。",
   "directory_unvote": "取消投票",
   "directory_votes_testnet": "投票目前运行在 testnet 上：票数会被统计和显示，但暂时不会影响排名。",
   "directory_voting_unavailable": "目录投票需要 5chan 的点对点连接，但目前无法使用。",

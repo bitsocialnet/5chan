@@ -152,12 +152,13 @@
 .postblock {
   padding: 5px !important;
   text-align: center;
+  white-space: nowrap;
 }
 
 .boardCol {
   text-align: center;
   vertical-align: middle;
-  word-break: break-all;
+  overflow-wrap: anywhere;
 }
 
 .ownerCell,
@@ -173,6 +174,10 @@
 
 .ownerName {
   font-weight: var(--post-name-font-weight, 700);
+}
+
+.ownerCapcode {
+  white-space: nowrap;
 }
 
 .viewLink {
@@ -243,6 +248,12 @@
   opacity: 0.6;
 }
 
+.submitBoardToggle {
+  margin: 14px auto 0;
+  text-align: center;
+  font-size: 13px;
+}
+
 .submitBoardForm {
   margin: 14px auto 0;
   text-align: center;
@@ -278,7 +289,8 @@
   max-width: 810px;
   margin: 0 auto 10px;
   text-align: center;
-  font-size: 11px;
+  color: red;
+  font-size: 16px;
   font-weight: 700;
   line-height: 1.4;
 }
@@ -298,22 +310,22 @@
   word-break: break-all;
 }
 
-.directoryFootnote {
+/* Matches the classic imageboard global message row between the board header and nav links. */
+.directoryNotice {
   width: 80%;
   max-width: 810px;
-  margin: 14px auto 0;
+  margin: 0 auto;
+  color: red;
   text-align: center;
-  font-size: 11px;
   line-height: 1.4;
-  opacity: 0.85;
 }
 
-.directoryFootnote a {
+.directoryNotice a {
   color: var(--post-link-text-color);
   text-decoration: var(--post-link-text-decoration);
 }
 
-.directoryFootnote a:hover {
+.directoryNotice a:hover {
   color: var(--post-link-text-color-hover);
 }
 
@@ -344,7 +356,8 @@
 
   .flashListing,
   .directoryIntro,
-  .directoryFootnote {
+  .voteNotice,
+  .directoryNotice {
     width: calc(100% - 10px);
     max-width: calc(100% - 10px);
     margin-left: auto;
@@ -355,8 +368,10 @@
     margin-top: 10px;
   }
 
+  .postblock,
+  .ownerCell,
   .actionsCell {
-    white-space: nowrap;
+    white-space: normal;
   }
 }
 

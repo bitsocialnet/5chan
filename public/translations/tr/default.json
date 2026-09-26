@@ -495,7 +495,7 @@
   "upload_boards": "Dosya yükleme panoları",
   "multiboards": "Çoklu panolar",
   "show_homepage_introduction": "Ana sayfadaki tanıtımı göster",
-  "directory_footnote": "Bir pano göndermek için adresini aşağıya girin ve ona oy verin. Yalnızca <passLink>5chan Pass</passLink> sahipleri oy verebilir; her directory için bir oy.",
+  "directory_footnote": "Yalnızca <passLink>5chan Pass</passLink> sahipleri oy verebilir; her directory için bir oy.",
   "directory_unvote": "Oyu geri al",
   "directory_votes_testnet": "Oylama şimdilik testnet üzerinde: oylar sayılıp gösteriliyor, ancak henüz sıralamayı değiştirmiyor.",
   "directory_voting_unavailable": "Directory oylaması 5chan'ın eşler arası bağlantısını gerektirir, ancak bu bağlantı şu anda kullanılamıyor.",

@@ -495,7 +495,7 @@
   "upload_boards": "Tablice do przesyłania plików",
   "multiboards": "Multiboardy",
   "show_homepage_introduction": "Pokaż wprowadzenie na stronie głównej",
-  "directory_footnote": "Aby zgłosić board, wpisz poniżej jego adres i zagłosuj na niego. Głosować mogą tylko posiadacze <passLink>5chan Pass</passLink>, jeden głos na katalog.",
+  "directory_footnote": "Głosować mogą tylko posiadacze <passLink>5chan Pass</passLink>, jeden głos na katalog.",
   "directory_unvote": "Cofnij głos",
   "directory_votes_testnet": "Głosowanie działa na razie w sieci testnet: głosy są liczone i wyświetlane, ale jeszcze nie zmieniają rankingu.",
   "directory_voting_unavailable": "Głosowanie w katalogu wymaga połączenia peer-to-peer 5chan, które jest teraz niedostępne.",

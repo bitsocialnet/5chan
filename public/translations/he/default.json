@@ -495,7 +495,7 @@
   "upload_boards": "לוחות העלאת קבצים",
   "multiboards": "לוחות מרובים",
   "show_homepage_introduction": "הצגת ההקדמה בדף הבית",
-  "directory_footnote": "כדי להגיש לוח, הזינו את הכתובת שלו למטה והצביעו עבורו. רק מחזיקי <passLink>5chan Pass</passLink> יכולים להצביע, קול אחד לכל דירקטורי.",
+  "directory_footnote": "רק מחזיקי <passLink>5chan Pass</passLink> יכולים להצביע, קול אחד לכל דירקטורי.",
   "directory_unvote": "ביטול הצבעה",
   "directory_votes_testnet": "ההצבעה פועלת כרגע על testnet: הקולות נספרים ומוצגים, אבל עדיין לא משנים את הדירוג.",
   "directory_voting_unavailable": "ההצבעה על הדירקטורי דורשת את חיבור ה-P2P של 5chan, שאינו זמין כרגע.",

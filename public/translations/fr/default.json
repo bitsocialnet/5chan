@@ -495,7 +495,7 @@
   "upload_boards": "Forums de dépôt de fichiers",
   "multiboards": "Multiboards",
   "show_homepage_introduction": "Afficher la présentation sur la page d’accueil",
-  "directory_footnote": "Pour proposer un board, saisissez son adresse ci-dessous et votez pour lui. Seuls les détenteurs du <passLink>5chan Pass</passLink> peuvent voter, à raison d'un vote par répertoire.",
+  "directory_footnote": "Seuls les détenteurs du <passLink>5chan Pass</passLink> peuvent voter, à raison d'un vote par répertoire.",
   "directory_unvote": "Retirer le vote",
   "directory_votes_testnet": "Le vote est pour l'instant sur le testnet : les votes sont comptés et affichés, mais ne changent pas encore le classement.",
   "directory_voting_unavailable": "Le vote du répertoire nécessite la connexion pair-à-pair de 5chan, qui n'est pas disponible pour le moment.",

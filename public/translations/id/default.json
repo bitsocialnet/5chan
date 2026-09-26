@@ -495,7 +495,7 @@
   "upload_boards": "Papan unggahan",
   "multiboards": "Papan ganda",
   "show_homepage_introduction": "Tampilkan pengantar di beranda",
-  "directory_footnote": "Untuk mengirim board, masukkan alamatnya di bawah dan beri suara untuknya. Hanya pemegang <passLink>5chan Pass</passLink> yang dapat memberi suara, dengan satu suara per direktori.",
+  "directory_footnote": "Hanya pemegang <passLink>5chan Pass</passLink> yang dapat memberi suara, dengan satu suara per direktori.",
   "directory_unvote": "Batalkan suara",
   "directory_votes_testnet": "Untuk saat ini pemungutan suara berjalan di testnet: suara dihitung dan ditampilkan, tetapi belum mengubah peringkat.",
   "directory_voting_unavailable": "Pemungutan suara direktori memerlukan koneksi peer-to-peer 5chan, yang saat ini tidak tersedia.",

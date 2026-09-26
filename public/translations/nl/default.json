@@ -495,7 +495,7 @@
   "upload_boards": "Uploadboards",
   "multiboards": "Multiboards",
   "show_homepage_introduction": "Introductie op de startpagina tonen",
-  "directory_footnote": "Om een board in te dienen, voer je hieronder het adres in en stem je erop. Alleen houders van een <passLink>5chan Pass</passLink> kunnen stemmen, met één stem per directory.",
+  "directory_footnote": "Alleen houders van een <passLink>5chan Pass</passLink> kunnen stemmen, met één stem per directory.",
   "directory_unvote": "Stem intrekken",
   "directory_votes_testnet": "Het stemmen draait voorlopig op testnet: stemmen worden geteld en getoond, maar veranderen de rangschikking nog niet.",
   "directory_voting_unavailable": "Stemmen in de directory vereist de peer-to-peer-verbinding van 5chan, die op dit moment niet beschikbaar is.",

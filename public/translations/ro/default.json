@@ -495,7 +495,7 @@
   "upload_boards": "Forumuri de încărcare fișiere",
   "multiboards": "Multiboard-uri",
   "show_homepage_introduction": "Afișează introducerea pe pagina principală",
-  "directory_footnote": "Pentru a trimite un board, introdu adresa lui mai jos și votează-l. Doar deținătorii <passLink>5chan Pass</passLink> pot vota, cu un vot per director.",
+  "directory_footnote": "Doar deținătorii <passLink>5chan Pass</passLink> pot vota, cu un vot per director.",
   "directory_unvote": "Retrage votul",
   "directory_votes_testnet": "Deocamdată votul este pe testnet: voturile sunt numărate și afișate, dar încă nu schimbă clasamentul.",
   "directory_voting_unavailable": "Votul în director necesită conexiunea peer-to-peer a 5chan, care nu este disponibilă momentan.",

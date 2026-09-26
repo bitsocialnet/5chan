@@ -268,24 +268,24 @@ describe('Directory', () => {
     });
   });
 
-  it('focuses the in-app submit form from every submit-board control', async () => {
+  it('reveals the submit form from one button below the list and focuses it', async () => {
     await renderDirectory();
 
     const submitButtons = getSubmitBoardButtons();
-    expect(submitButtons).toHaveLength(4);
+    expect(submitButtons).toHaveLength(1);
+    expect(submitButtons[0].compareDocumentPosition(container.querySelector('table')!)).toBe(Node.DOCUMENT_POSITION_PRECEDING);
     expect(container.querySelector('a[href*="github.com"]')).toBeNull();
+    expect(getSubmitBoardInput()).toBeNull();
 
-    const input = getSubmitBoardInput()!;
-    input.scrollIntoView = vi.fn();
-    for (const button of submitButtons) {
-      input.blur();
-      await act(async () => button.click());
-      expect(document.activeElement).toBe(input);
-    }
+    await act(async () => submitButtons[0].click());
+
+    expect(getSubmitBoardButtons()).toHaveLength(0);
+    expect(document.activeElement).toBe(getSubmitBoardInput());
   });
 
   it('submits a typed board address as a vote and clears the form', async () => {
     await renderDirectory();
+    await act(async () => getSubmitBoardButtons()[0].click());
 
     const input = getSubmitBoardInput()!;
     await act(async () => typeIntoInput(input, 'new-board.bso'));
@@ -368,6 +368,7 @@ describe('Directory', () => {
     const rows = Array.from(container.querySelectorAll('tbody tr'));
     expect(rows.map((row) => row.querySelector('td:nth-child(2)')?.textContent)).toEqual(['manual-winner.bso', 'vote-winner.bso']);
     expect(rows.map((row) => row.querySelector('td:nth-child(5)')?.textContent)).toEqual(['0', '9']);
+    expect(container.querySelector('th:nth-child(5)')?.textContent).toBe('directory_test_votes');
     expect(container.textContent).toContain('directory_votes_testnet');
   });
 
@@ -394,6 +395,7 @@ describe('Directory', () => {
     const rows = Array.from(container.querySelectorAll('tbody tr'));
     expect(rows.map((row) => row.querySelector('td:nth-child(2)')?.textContent)).toEqual(['vote-winner.bso', 'manual-winner.bso', 'no-votes.bso']);
     expect(rows.map((row) => row.querySelector('td:nth-child(5)')?.textContent)).toEqual(['9?', '2', '0']);
+    expect(container.querySelector('th:nth-child(5)')?.textContent).toBe('directory_score');
     expect(rows[0].querySelector('[data-score-verification]')?.getAttribute('data-score-verification')).toBe('pending');
     expect(rows[0].querySelector('sup')?.getAttribute('title')).toBe('pending');
     expect(rows[1].querySelector('[data-score-verification]')?.getAttribute('data-score-verification')).toBe('verified');
