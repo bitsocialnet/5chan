@@ -336,6 +336,10 @@ const Directory = () => {
 
   return (
     <div id='top' className={`${styles.page} ${shouldShowSnow() ? styles.garland : ''}`} data-pubsub-vote-tally-state={voteTally.state}>
+      <div className={styles.directoryNotice}>
+        <Trans i18nKey='directory_footnote' components={{ passLink: <Link to={PASS_LINK} /> }} />
+        {isTestnetVote && <> {t('directory_votes_testnet')}</>}
+      </div>
       <DirectoryMobileTopControls communityAddress={communityAddress} />
       <hr className={styles.desktopDivider} />
       <DirectoryDesktopTopControls communityAddress={communityAddress} />
@@ -397,15 +401,7 @@ const Directory = () => {
         </>
       )}
 
-      {!isLoadingShell && (
-        <>
-          <DirectorySubmitBoardForm isBusy={isVotingBusy} isPending={pendingVote?.source === 'form'} onSubmit={handleSubmitBoard} />
-          <div className={styles.directoryFootnote}>
-            <Trans i18nKey='directory_footnote' components={{ passLink: <Link to={PASS_LINK} /> }} />
-            {isTestnetVote && <> {t('directory_votes_testnet')}</>}
-          </div>
-        </>
-      )}
+      {!isLoadingShell && <DirectorySubmitBoardForm isBusy={isVotingBusy} isPending={pendingVote?.source === 'form'} onSubmit={handleSubmitBoard} />}
 
       <PageFooterDesktop firstRow={<DirectoryDesktopFooterControls communityAddress={communityAddress} />} styleRow={<ThreadFooterStyleRow />} />
       <PageFooterMobile>
