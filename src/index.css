@@ -3,9 +3,10 @@ html, body {
   overflow-x: hidden;
 }
 
+/* Until the app sets a theme class, the variables are undefined; without fallbacks the whole
+   shorthand is dropped and the dark root canvas (color-scheme below) flashes before the theme. */
 body {
-  background-color: white;
-  background: var(--body-background-base-color) var(--body-background-pattern-image) top center repeat-x;
+  background: var(--body-background-base-color, #ffe) var(--body-background-pattern-image, none) top center repeat-x;
   font-size: var(--body-font-size);
   font-family: var(--body-font-family);
   color: var(--body-font-color);
