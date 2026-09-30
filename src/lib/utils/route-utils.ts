@@ -329,7 +329,8 @@ export const getPageFromFeedPath = (pathname: string): number => {
   const normalized = pathname.replace(/\/settings$/, '').replace(/\/$/, '');
   const segments = normalized.split('/').filter(Boolean);
   const last = segments[segments.length - 1];
-  if (last && isBoardFeedPageNumber(last)) {
+  // A lone segment is the board identifier, which can be a numeric directory code such as /3/.
+  if (segments.length > 1 && isBoardFeedPageNumber(last)) {
     const n = parseInt(last, 10);
     return Math.min(10, Math.max(1, n));
   }

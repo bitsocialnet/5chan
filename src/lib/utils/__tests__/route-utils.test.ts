@@ -221,6 +221,14 @@ describe('feed pagination helpers', () => {
     expect(getPageFromFeedPath('/biz/11')).toBe(1);
     expect(getPageFromFeedPath('/biz')).toBe(1);
   });
+
+  it('treats a numeric board code as the board index, not a page', () => {
+    expect(getPageFromFeedPath('/3')).toBe(1);
+    expect(getPageFromFeedPath('/3/settings')).toBe(1);
+    expect(getPageFromFeedPath('/3/2')).toBe(2);
+    expect(stripPageFromFeedPath('/3')).toBe('/3');
+    expect(stripPageFromFeedPath('/3/2')).toBe('/3');
+  });
 });
 
 describe('catalog search route helpers', () => {
