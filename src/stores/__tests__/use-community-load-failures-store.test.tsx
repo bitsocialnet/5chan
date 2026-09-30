@@ -54,10 +54,18 @@ describe('useCommunityLoadFailuresStore', () => {
   });
 
   it('ignores loaded communities waiting between polls', () => {
-    communitiesStore.setState({ communities: { 'loaded-board': { address: 'loaded-board', updatedAt: 1781773422 } } });
+    communitiesStore.setState({
+      communities: {
+        'loaded-board': { address: 'loaded-board', updatedAt: 1781773422 },
+        // the hooks count any numeric updatedAt as cached data (hasCachedData), including 0
+        'zero-timestamp-board': { address: 'zero-timestamp-board', updatedAt: 0 },
+      },
+    });
 
     setSyncState('loaded-board', 'retrying');
+    setSyncState('zero-timestamp-board', 'retrying');
     expect(isFailed('loaded-board')).toBe(false);
+    expect(isFailed('zero-timestamp-board')).toBe(false);
   });
 
   it('forgets the failure when the community sync status is removed', () => {

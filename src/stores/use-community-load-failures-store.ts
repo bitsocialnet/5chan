@@ -21,7 +21,7 @@ const recordCommunityLoadFailures = ({ communities, syncStatuses }: ReturnType<t
 
   for (const communityKey in syncStatuses) {
     const syncState = syncStatuses[communityKey]?.syncState;
-    if (syncState === 'retrying' && !failedCommunityKeys[communityKey] && !communities[communityKey]?.updatedAt) {
+    if (syncState === 'retrying' && !failedCommunityKeys[communityKey] && typeof communities[communityKey]?.updatedAt !== 'number') {
       nextFailedCommunityKeys ??= { ...failedCommunityKeys };
       nextFailedCommunityKeys[communityKey] = true;
     } else if (syncState === 'succeeded' && failedCommunityKeys[communityKey]) {
