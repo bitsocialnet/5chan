@@ -204,7 +204,7 @@ jobs:
         run: |
           mkdir -p release-assets
           VERSION=$(node -e "console.log(require('./package.json').version)")
-          DMG_PATH=$(find out/make -maxdepth 1 -name '*.dmg' | head -n 1)
+          DMG_PATH=$(find out/make/dmg -name '*.dmg' | head -n 1)
           ZIP_PATH=$(find out/make/zip -name '*.zip' | head -n 1)
           [ -n "$DMG_PATH" ] || exit 1
           [ -n "$ZIP_PATH" ] || exit 1

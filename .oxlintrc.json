@@ -3,7 +3,21 @@
   "rules": {
     "react/react-in-jsx-scope": "off",
     "react/rules-of-hooks": "error",
-    "react/exhaustive-deps": "warn"
+    "react/exhaustive-deps": "warn",
+    // React Compiler optimizability diagnostics; same policy as doctor.config.jsonc.
+    "react/refs": "off",
+    "react/set-state-in-effect": "off",
+    "react/preserve-manual-memoization": "off",
+    "react/immutability": "off",
+    "react/purity": "off"
   },
+  "overrides": [
+    {
+      "files": ["**/__tests__/**", "**/*.test.*"],
+      "rules": {
+        "react/globals": "off"
+      }
+    }
+  ],
   "ignorePatterns": ["android/**", "build/**", "node_modules/**", "public/**"]
 }

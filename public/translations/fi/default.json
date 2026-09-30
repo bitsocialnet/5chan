@@ -154,7 +154,6 @@
   "1_post_by_this_id": "1 viesti tällä tunnuksella",
   "x_posts_by_this_id": "{{number}} viestiä tältä tunnukselta",
   "ban_expires_at": "Porttikielto p/{{address}} asti {{timestamp}}",
-  "user_banned": "Käyttäjä on estetty tästä viestistä",
   "replies": "vastaukset",
   "links": "linkit",
   "animated_gif": "Animoitu GIF",
@@ -503,5 +502,6 @@
   "directory_vote_needs_pass": "Ääntäsi ei lähetetty: tämän tilin äänestysosoitteessa <address>{{address}}</address> ei ole <passLink>5chan Passia</passLink>.",
   "directory_vote_needs_test_pass": "Ääntäsi ei lähetetty: tämän tilin äänestysosoitteessa <address>{{address}}</address> ei ole 5chan Passia. Äänestys on toistaiseksi testnetissä, joten voit hakea tälle osoitteelle ilmaisen testi-Passin <faucetLink>faucetista</faucetLink>.",
   "directory_vote_board_not_found": "Osoitteesta {{address}} ei löytynyt lautaa. Syötä .bso-osoite tai laudan julkinen avain.",
-  "directory_vote_failed": "Ääntäsi ei voitu lähettää: {{error}}"
+  "directory_vote_failed": "Ääntäsi ei voitu lähettää: {{error}}",
+  "user_banned_from_board": "Käyttäjä sai porttikiellon laudalle {{board}}"
 }

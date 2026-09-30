@@ -8,19 +8,24 @@ if (typeof electronBinary !== 'string' || electronBinary.length === 0) {
   throw new Error('Failed to resolve the Electron executable for native-module verification');
 }
 
-const nativeModules = ['better-sqlite3'];
+// Each check loads the module's native binary: better-sqlite3 only loads it when a database opens.
+const nativeModuleChecks = {
+  'better-sqlite3': "new (require('better-sqlite3'))(':memory:').prepare('select sqlite_version() as version').get().version",
+};
 const verificationScript = `
 console.log('electron modules', process.versions.modules);
-for (const moduleName of ${JSON.stringify(nativeModules)}) {
-  try {
-    require(moduleName);
-    console.log('native-ok', moduleName);
-  } catch (error) {
-    console.error('native-fail', moduleName);
-    console.error(error && error.stack ? error.stack : String(error));
-    process.exit(1);
-  }
-}
+${Object.entries(nativeModuleChecks)
+  .map(
+    ([moduleName, check]) => `
+try {
+  console.log('native-ok', ${JSON.stringify(moduleName)}, ${check});
+} catch (error) {
+  console.error('native-fail', ${JSON.stringify(moduleName)});
+  console.error(error && error.stack ? error.stack : String(error));
+  process.exit(1);
+}`,
+  )
+  .join('\n')}
 `;
 
 const result = spawnSync(electronBinary, ['-e', verificationScript], {

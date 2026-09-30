@@ -1,5 +1,6 @@
 import { type ReactNode, useMemo, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
+import { useShallow } from 'zustand/react/shallow';
 import { Trans, useTranslation } from 'react-i18next';
 import { Comment, useComment } from '@bitsocial/bitsocial-react-hooks';
 import { communitiesPagesStore as useCommunitiesPagesStore } from '../../lib/bitsocial-internals/stores';
@@ -49,24 +50,24 @@ const useScopedCidToNumber = (cids: string[]) => {
     return Array.from(uniqueCids).toSorted();
   }, [cids]);
 
-  const cidToNumber = usePostNumberStore(
-    useMemo(
-      () => (state) => {
-        if (sortedUniqueCids.length === 0) {
-          return {} as Record<string, number>;
+  const selectCidToNumber = useMemo(
+    () => (state: { cidToNumber: Record<string, number> }) => {
+      if (sortedUniqueCids.length === 0) {
+        return {} as Record<string, number>;
+      }
+      const nextCidToNumber: Record<string, number> = {};
+      for (const cid of sortedUniqueCids) {
+        const number = state.cidToNumber[cid];
+        if (typeof number === 'number') {
+          nextCidToNumber[cid] = number;
         }
-        const nextCidToNumber: Record<string, number> = {};
-        for (const cid of sortedUniqueCids) {
-          const number = state.cidToNumber[cid];
-          if (typeof number === 'number') {
-            nextCidToNumber[cid] = number;
-          }
-        }
-        return nextCidToNumber;
-      },
-      [sortedUniqueCids],
-    ),
+      }
+      return nextCidToNumber;
+    },
+    [sortedUniqueCids],
   );
+  // The selector builds a new object on every call; useShallow keeps the result stable while its entries are unchanged.
+  const cidToNumber = usePostNumberStore(useShallow(selectCidToNumber));
 
   return cidToNumber;
 };
@@ -115,8 +116,13 @@ const CommentContent = ({
   const shouldRenderBbcode = isPrivilegedAuthor;
   const shouldWaitForRoleSensitiveBbcode = roles === undefined && Boolean(authorAddress && communityAddress) && containsRoleSensitiveBbcode(visibleContent);
   const purged = resolvedPost?.commentModeration?.purged;
+  // author.community.banExpiresAt is aggregated from every ban against the author, so it is set on all of
+  // their comments and cannot tell which post caused the ban. Bans are per board, so the label names the board.
+  // TODO: when https://github.com/pkcprotocol/pkc-js/issues/363 adds a per-comment ban field, show
+  // "User was banned by [board] for this post" on the banned comment only.
   const banExpiresAt = resolvedPost?.author?.community?.banExpiresAt;
   const banned = !!banExpiresAt;
+  const boardShortAddress = communityAddress && getShortAddress(communityAddress);
 
   const [showFullComment, setShowFullComment] = useState(false);
   const displayContent =
@@ -309,12 +315,12 @@ const CommentContent = ({
           <br />
           <Tooltip
             content={`${t('ban_expires_at', {
-              address: communityAddress && getShortAddress(communityAddress),
+              address: boardShortAddress,
               timestamp: banExpiresAt ? getFormattedDate(banExpiresAt) : '',
               interpolation: { escapeValue: false },
             })}${reason ? `. ${capitalize(t('reason'))}: "${reason}"` : ''}`}
           >
-            {`(${t('user_banned')})`}
+            {`(${t('user_banned_from_board', { board: boardShortAddress, interpolation: { escapeValue: false } })})`}
           </Tooltip>
         </span>
       )}

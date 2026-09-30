@@ -154,7 +154,6 @@
   "1_post_by_this_id": "1 post cu acest ID",
   "x_posts_by_this_id": "{{number}} postări cu acest ID",
   "ban_expires_at": "Interzis de la p/{{address}} până la {{timestamp}}",
-  "user_banned": "Utilizatorul a fost interzis pentru acest mesaj",
   "replies": "răspunsuri",
   "links": "linkuri",
   "animated_gif": "GIF Animat",
@@ -503,5 +502,6 @@
   "directory_vote_needs_pass": "Votul tău nu a fost trimis: adresa de vot a acestui cont <address>{{address}}</address> nu deține un <passLink>5chan Pass</passLink>.",
   "directory_vote_needs_test_pass": "Votul tău nu a fost trimis: adresa de vot a acestui cont <address>{{address}}</address> nu deține un 5chan Pass. Deocamdată votul are loc pe testnet, așa că poți obține gratuit un Pass de test pentru această adresă de la <faucetLink>faucet</faucetLink>.",
   "directory_vote_board_not_found": "Nu a fost găsit niciun board la {{address}}. Introdu o adresă .bso sau cheia publică a unui board.",
-  "directory_vote_failed": "Votul tău nu a putut fi trimis: {{error}}"
+  "directory_vote_failed": "Votul tău nu a putut fi trimis: {{error}}",
+  "user_banned_from_board": "Utilizatorul a fost blocat pe {{board}}"
 }

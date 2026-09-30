@@ -154,7 +154,6 @@
   "1_post_by_this_id": "此ID的1篇帖子",
   "x_posts_by_this_id": "此ID的{{number}}篇帖子",
   "ban_expires_at": "被禁止从p/{{address}}到{{timestamp}}",
-  "user_banned": "用户因此帖子被禁止",
   "replies": "回复",
   "links": "链接",
   "animated_gif": "动画GIF",
@@ -503,5 +502,6 @@
   "directory_vote_needs_pass": "你的投票未发送：此账户的投票地址 <address>{{address}}</address> 未持有 <passLink>5chan Pass</passLink>。",
   "directory_vote_needs_test_pass": "你的投票未发送：此账户的投票地址 <address>{{address}}</address> 未持有 5chan Pass。投票目前在 testnet 上进行，你可以从<faucetLink>水龙头</faucetLink>为此地址免费领取一个测试 Pass。",
   "directory_vote_board_not_found": "在 {{address}} 未找到板块。请输入 .bso 地址或板块的公钥。",
-  "directory_vote_failed": "无法发送你的投票：{{error}}"
+  "directory_vote_failed": "无法发送你的投票：{{error}}",
+  "user_banned_from_board": "用户已被{{board}}封禁"
 }

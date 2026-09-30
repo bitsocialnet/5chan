@@ -524,7 +524,8 @@ jobs:
         run: |
           APP_ASAR=$(find out -path '*/resources/app.asar' | head -n 1)
           KUBO_EXE=$(find out -path '*/resources/app.asar.unpacked/bin/win/ipfs.exe' | head -n 1)
-          SQLITE_MODULE=$(find out -path '*/resources/app.asar.unpacked/node_modules/better-sqlite3/build/Release/better_sqlite3.node' | head -n 1)
+          # better-sqlite3 13 loads its bundled N-API prebuild for the platform and arch.
+          SQLITE_MODULE=$(find out -path '*/resources/app.asar.unpacked/node_modules/better-sqlite3/prebuilds/win32-x64.node' | head -n 1)
           DATACHANNEL_MODULE=$(find out -path '*/resources/app.asar.unpacked/node_modules/@node-datachannel/win32-x64-msvc/node_datachannel.node' | head -n 1)
           echo "Found ASAR: $APP_ASAR"
           echo "Found Kubo: $KUBO_EXE"

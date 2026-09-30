@@ -12,6 +12,7 @@ import {
   readImportedAccountAddresses,
   rememberImportedAccountAddress,
 } from '../../../lib/utils/account-import-utils';
+import { selectFileViaInput } from '../../../lib/utils/file-picker-utils';
 
 const isAndroid = Capacitor.getPlatform() === 'android';
 
@@ -92,60 +93,48 @@ const AccountSettingsEditor = ({
   };
 
   const handleImportAccount = async () => {
-    const fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.accept = '.json';
+    const file = await selectFileViaInput('.json');
+    if (!file) return;
 
-    fileInput.onchange = async (event) => {
-      const files = (event.target as HTMLInputElement).files;
-      if (!files || files.length === 0) {
-        alert('No file selected.');
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const fileContent = e.target?.result ?? reader.result;
+      if (typeof fileContent !== 'string') {
+        alert('File content is not a string.');
         return;
       }
-      const file = files[0];
 
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        const fileContent = e.target?.result ?? reader.result;
-        if (typeof fileContent !== 'string') {
-          alert('File content is not a string.');
-          return;
-        }
+      const result = await withErrorHandling(
+        async () => {
+          const modifiedAccountJson = processImportedAccount(fileContent, isElectron);
+          const accountData = JSON.parse(modifiedAccountJson) as { account?: { author?: { address?: string }; name?: string } };
+          const importedAccountActiveName = getImportedAccountActiveName(accountData.account?.name, accounts);
+          await importAccount(modifiedAccountJson);
+          if (accountData.account?.author?.address) {
+            rememberImportedAccountAddress(accountData.account.author.address);
+          }
+          if (importedAccountActiveName) {
+            await setActiveAccount(importedAccountActiveName);
+          }
+          return importedAccountActiveName;
+        },
+        (error) => {
+          if (error instanceof Error) {
+            alert(error.message);
+            console.log(error);
+          } else {
+            console.error('An unknown error occurred:', error);
+          }
+        },
+      );
+      if (result === undefined) return;
 
-        const result = await withErrorHandling(
-          async () => {
-            const modifiedAccountJson = processImportedAccount(fileContent, isElectron);
-            const accountData = JSON.parse(modifiedAccountJson) as { account?: { author?: { address?: string }; name?: string } };
-            const importedAccountActiveName = getImportedAccountActiveName(accountData.account?.name, accounts);
-            await importAccount(modifiedAccountJson);
-            if (accountData.account?.author?.address) {
-              rememberImportedAccountAddress(accountData.account.author.address);
-            }
-            if (importedAccountActiveName) {
-              await setActiveAccount(importedAccountActiveName);
-            }
-            return importedAccountActiveName;
-          },
-          (error) => {
-            if (error instanceof Error) {
-              alert(error.message);
-              console.log(error);
-            } else {
-              console.error('An unknown error occurred:', error);
-            }
-          },
-        );
-        if (result === undefined) return;
-
-        alert(`Imported ${result}`);
-        if (new URLSearchParams(location.search).get('section') !== 'account-settings') {
-          navigate(getSettingsSectionPath(location.pathname, 'account-settings', location.search), { replace: true });
-        }
-      };
-      reader.readAsText(file);
+      alert(`Imported ${result}`);
+      if (new URLSearchParams(location.search).get('section') !== 'account-settings') {
+        navigate(getSettingsSectionPath(location.pathname, 'account-settings', location.search), { replace: true });
+      }
     };
-
-    fileInput.click();
+    reader.readAsText(file);
   };
 
   const accountsOptions = accounts.map((account) => (
