@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react';
 
-const MOBILE_BREAKPOINT_WIDTH = 640;
+export const MOBILE_BREAKPOINT_WIDTH = 640;
 const SERVER_WIDTH = 1024;
 
 type Listener = () => void;

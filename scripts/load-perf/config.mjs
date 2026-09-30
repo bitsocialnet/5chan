@@ -26,6 +26,9 @@ export default {
     { name: 'home-returning', hash: '/', staticShell: true, storage: { 'homepage-introduction': '{"state":{"showIntroduction":true},"version":0}' } },
     { name: 'home-intro-closed', hash: '/', staticShell: false, storage: { 'homepage-introduction': '{"state":{"showIntroduction":false},"version":0}' } },
     { name: 'home-german', hash: '/', staticShell: false, storage: { '5chan-interface-language': 'de' } },
-    { name: 'board', hash: '/biz', staticShell: false, content: '[class*="_thread_"]' },
+    { name: 'board', hash: '/biz', staticShell: true, content: '[class*="_thread_"]' },
+    { name: 'board-mobile', hash: '/biz', staticShell: true, viewport: { width: 375, height: 812 } },
+    { name: 'board-nsfw', hash: '/b', staticShell: true },
+    { name: 'catalog', hash: '/biz/catalog', staticShell: false },
   ],
 };

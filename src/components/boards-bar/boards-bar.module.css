@@ -37,6 +37,10 @@
   padding: 0 1px;
 }
 
+.placeholder, .temporaryButton {
+  cursor: pointer;
+}
+
 .boardNavDesktop a:hover, .navTopRight span:hover, .navTopRight button:hover {
   color: var(--boardsbar-desktop-link-text-color-hover);
   text-decoration: var(--boardsbar-desktop-link-text-decoration-hover);
