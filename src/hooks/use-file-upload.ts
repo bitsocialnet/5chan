@@ -223,7 +223,7 @@ export function useFileUpload(options: UseFileUploadOptions) {
       }
 
       if (runtime === 'electron' || isElectronRuntime()) {
-        const file = await selectFileViaInput(UPLOAD_FILE_ACCEPT);
+        const file = await selectFileViaInput(UPLOAD_FILE_ACCEPT, { resolveOnWindowFocus: true });
         if (!file) {
           throw new Error(FILE_SELECTION_CANCELLED_ERROR);
         }

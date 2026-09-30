@@ -328,6 +328,35 @@ describe('AccountSettings', () => {
     expect(hookMocks.importAccount).not.toHaveBeenCalled();
   });
 
+  it('still imports a file chosen after the window regains focus', async () => {
+    fileReaderState.result = JSON.stringify({ account: { name: 'Imported', author: { address: '0x999' } } });
+    hookMocks.importAccount.mockResolvedValue(undefined);
+    hookMocks.setActiveAccount.mockResolvedValue(undefined);
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+
+    try {
+      render();
+
+      await act(async () => {
+        getButtonByText('import_account_backup').click();
+      });
+
+      window.dispatchEvent(new Event('focus'));
+      vi.advanceTimersByTime(2000);
+      expect(createdInput?.isConnected).toBe(true);
+
+      await act(async () => {
+        selectImportFile(new File(['{}'], 'account.json', { type: 'application/json' }));
+        await Promise.resolve();
+      });
+      await flushMicrotasks();
+
+      expect(hookMocks.importAccount).toHaveBeenCalledOnce();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('alerts when the imported file contains invalid JSON', async () => {
     fileReaderState.result = '{bad json';
     render();

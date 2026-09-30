@@ -1,7 +1,13 @@
+interface SelectFileViaInputOptions {
+  // Also settle 800ms after the window regains focus, for environments that don't reliably emit `cancel`.
+  // A `change` that arrives after that is dropped, so only enable it where a picker that never settles is worse.
+  resolveOnWindowFocus?: boolean;
+}
+
 // Opens the browser file picker and resolves with the chosen file, or null when the picker is dismissed.
 // The input stays attached to the document until the picker settles: WebKit can garbage-collect a detached
 // input while its picker is open, which silently drops the selection.
-export function selectFileViaInput(accept: string): Promise<File | null> {
+export function selectFileViaInput(accept: string, { resolveOnWindowFocus = false }: SelectFileViaInputOptions = {}): Promise<File | null> {
   return new Promise((resolve) => {
     const input = document.createElement('input');
     input.type = 'file';
@@ -35,7 +41,6 @@ export function selectFileViaInput(accept: string): Promise<File | null> {
 
     const onCancel = () => finalize(null);
 
-    // Fallback: some environments don't reliably emit `cancel`.
     const onFocusFallback = () => {
       if (resolved) return;
       if (focusTimeoutId !== null) {
@@ -50,7 +55,9 @@ export function selectFileViaInput(accept: string): Promise<File | null> {
 
     input.addEventListener('change', onChange);
     input.addEventListener('cancel', onCancel);
-    window.addEventListener('focus', onFocusFallback);
+    if (resolveOnWindowFocus) {
+      window.addEventListener('focus', onFocusFallback);
+    }
     document.body.appendChild(input);
     input.click();
   });
