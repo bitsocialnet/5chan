@@ -307,7 +307,9 @@ function getInlineScriptHashes(indexHtml) {
   const hashes = [];
 
   for (const [, attributes, source] of indexHtml.matchAll(scriptPattern)) {
-    if (/\bsrc\s*=/i.test(attributes) || source.trim().length === 0) {
+    // JSON data blocks are never executed, so CSP does not apply to them.
+    const type = attributes.match(/(?:^|\s)type\s*=\s*["']?([^"'\s>]+)/i)?.[1];
+    if (/\bsrc\s*=/i.test(attributes) || source.trim().length === 0 || /^application\/(?:ld\+)?json$/i.test(type ?? '')) {
       continue;
     }
 

@@ -9,6 +9,7 @@ import { useStableCommunity } from '../../hooks/use-stable-community';
 import { isAllView, isSubscriptionsView, isModView } from '../../lib/utils/view-utils';
 import { isArchiveRoute, isDirectoryListRoute, isDirectoryRoute, isSearchDirectoryRoute, isSearchRoute } from '../../lib/utils/route-utils';
 import { getSpecialBoardByAddress } from '../../lib/special-boards';
+import { takeStaticShellBanner } from '../../lib/static-shell-banner';
 import { getSearchPostStatus, MAX_SEARCH_QUERY_LENGTH, type SearchPostStatus } from '../../lib/search-navigation';
 import { getSearchProvider } from '../../lib/search-providers';
 import useSearchProviderStore from '../../stores/use-search-provider-store';
@@ -26,7 +27,7 @@ import Tooltip from '../tooltip';
 import { BANNERS } from '../../generated/asset-manifest';
 
 const ImageBanner = () => {
-  const [banner] = useState(() => BANNERS[Math.floor(Math.random() * BANNERS.length)]);
+  const [banner] = useState(() => takeStaticShellBanner() ?? BANNERS[Math.floor(Math.random() * BANNERS.length)]);
 
   return <img src={banner} alt='' />;
 };
