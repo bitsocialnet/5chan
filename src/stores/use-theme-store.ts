@@ -1,5 +1,6 @@
 import { create, StoreApi } from 'zustand';
 import { localForageLru } from '../lib/bitsocial-internals/utils';
+import { DEFAULT_THEMES } from '../constants/themes';
 
 interface ThemeState {
   themes: {
@@ -11,11 +12,6 @@ interface ThemeState {
   getTheme: (category: keyof ThemeState['themes'], updateCurrentTheme?: boolean) => string | null;
   loadThemes: () => Promise<void>;
 }
-
-const DEFAULT_THEMES: ThemeState['themes'] = {
-  nsfw: 'yotsuba',
-  sfw: 'yotsuba-b',
-};
 
 // Synchronous localStorage mirror of the persisted themes. The canonical store is
 // localForage (IndexedDB) below, but reads from it are async, so on a hard refresh the
