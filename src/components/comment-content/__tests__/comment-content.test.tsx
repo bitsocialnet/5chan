@@ -4,6 +4,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { createInstance } from 'i18next';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import CommentContent from '../comment-content';
+import { CompleteThreadCidsContext } from '../../../hooks/use-complete-thread-cids';
 import englishTranslations from '../../../../public/translations/en/default.json';
 
 const boardStatusI18n = createInstance();
@@ -58,6 +59,7 @@ const testState = vi.hoisted(() => ({
   isMobile: false,
   params: {} as Record<string, string>,
   pathname: '/mu',
+  numberToCid: {} as Record<string, Record<number, string>>,
   postNumbers: {} as Record<string, number>,
   stateString: 'Publishing',
   unavailableCids: new Set<string>(),
@@ -137,9 +139,12 @@ vi.mock('@bitsocial/bitsocial-react-hooks/dist/stores/communities-pages', () => 
 }));
 
 vi.mock('../../../stores/use-post-number-store', () => ({
-  default: (selector: (state: { cidToNumber: Record<string, number> }) => unknown) =>
+  getScopedNumberToCidMap: (numberToCid: Record<string, Record<number, string>>, communityAddress?: string) =>
+    communityAddress ? numberToCid[communityAddress] : undefined,
+  default: (selector: (state: { cidToNumber: Record<string, number>; numberToCid: Record<string, Record<number, string>> }) => unknown) =>
     selector({
       cidToNumber: testState.postNumbers,
+      numberToCid: testState.numberToCid,
     }),
 }));
 
@@ -152,7 +157,8 @@ vi.mock('../../../lib/utils/time-utils', () => ({
   getFormattedTimeAgo: () => testState.formattedTimeAgo,
 }));
 
-vi.mock('../../../lib/utils/quote-link-utils', () => ({
+vi.mock('../../../lib/utils/quote-link-utils', async () => ({
+  getPurgedQuoteNumbers: (await vi.importActual<typeof import('../../../lib/utils/quote-link-utils')>('../../../lib/utils/quote-link-utils')).getPurgedQuoteNumbers,
   isUnavailableQuoteTarget: (comment?: TestComment) => Boolean(comment?.cid && testState.unavailableCids.has(comment.cid)),
 }));
 
@@ -213,7 +219,8 @@ vi.mock('../../reply-quote-preview/reply-quote-preview', () => ({
 }));
 
 vi.mock('../../markdown/markdown', () => ({
-  default: ({ content }: { content?: string }) => createElement('div', { 'data-testid': 'markdown' }, content),
+  default: ({ content, purgedQuoteNumbers }: { content?: string; purgedQuoteNumbers?: ReadonlySet<number> }) =>
+    createElement('div', { 'data-purged-quote-numbers': [...(purgedQuoteNumbers ?? [])].join(','), 'data-testid': 'markdown' }, content),
 }));
 
 vi.mock('../../tooltip/tooltip', () => ({
@@ -249,6 +256,7 @@ describe('CommentContent', () => {
     testState.isMobile = false;
     testState.params = {};
     testState.pathname = '/mu';
+    testState.numberToCid = {};
     testState.postNumbers = {};
     testState.stateString = 'Publishing';
     testState.unavailableCids = new Set<string>();
@@ -284,6 +292,59 @@ describe('CommentContent', () => {
     const previews = container.querySelectorAll('[data-testid="reply-quote-preview"]');
     expect(previews).toHaveLength(1);
     expect(previews[0]?.textContent).toBe('quoted-2');
+  });
+
+  it('marks quotes of purged same-thread replies once the thread is completely loaded', async () => {
+    testState.numberToCid = { 'music-posting.eth': { 158: 'thread-cid', 162: 'reply-162' } };
+    testState.postNumbers = { 'thread-cid': 158, 'reply-162': 162 };
+    const reply = {
+      cid: 'reply-162',
+      communityAddress: 'music-posting.eth',
+      content: '>>161\nBig if true',
+      number: 162,
+      parentCid: 'thread-cid',
+      postCid: 'thread-cid',
+      quotedCids: ['purged-161'],
+    };
+    const renderInThread = async (completeThreadCids?: ReadonlySet<string>, comment: TestComment = reply, roles?: TestRoleMap) => {
+      await act(async () => {
+        root.render(createElement(CompleteThreadCidsContext.Provider, { value: completeThreadCids }, createElement(CommentContent, { comment, roles } as any)));
+      });
+    };
+    const getPurgedQuoteNumbersAttribute = () => container.querySelector('[data-testid="markdown"]')?.getAttribute('data-purged-quote-numbers');
+
+    await renderInThread(new Set(['thread-cid', 'reply-162']));
+    expect(getPurgedQuoteNumbersAttribute()).toBe('161');
+
+    // While replies may still be unloaded, or when the loaded thread is another one, nothing is known.
+    await renderInThread(undefined);
+    expect(getPurgedQuoteNumbersAttribute()).toBe('');
+    await renderInThread(new Set(['other-thread-cid', 'purged-161']));
+    expect(getPurgedQuoteNumbersAttribute()).toBe('');
+    // A reply newer than the loaded copy of the thread may quote replies that copy does not have yet.
+    await renderInThread(new Set(['thread-cid']));
+    expect(getPurgedQuoteNumbersAttribute()).toBe('');
+
+    await renderInThread(new Set(['thread-cid', 'reply-162', 'purged-161']));
+    expect(getPurgedQuoteNumbersAttribute()).toBe('');
+
+    // A purged quote whose number was cached before the purge but is not in the text is prepended as unavailable.
+    testState.postNumbers = { ...testState.postNumbers, 'purged-150': 150 };
+    testState.commentsByCid = { 'purged-150': { cid: 'purged-150', number: 150 } };
+    await renderInThread(new Set(['thread-cid', 'reply-162']), { ...reply, quotedCids: ['purged-150'] });
+    const prependedQuote = container.querySelector('[data-testid="reply-quote-preview"]');
+    expect(prependedQuote?.getAttribute('data-number')).toBe('150');
+    expect(prependedQuote?.getAttribute('data-unavailable')).toBe('true');
+    testState.commentsByCid = {};
+
+    // Moderator replies render through BBCode, which must pass the numbers on to its Markdown.
+    await renderInThread(
+      new Set(['thread-cid', 'reply-162']),
+      { ...reply, author: { address: '0xmod' }, content: '[b]banned[/b] for >>161' },
+      { '0xmod': { role: 'moderator' } },
+    );
+    expect(container.querySelector('strong')?.textContent).toBe('banned');
+    expect(Array.from(container.querySelectorAll('[data-testid="markdown"]')).map((node) => node.getAttribute('data-purged-quote-numbers'))).toContain('161');
   });
 
   it('renders prepended content before reply quote previews and markdown', async () => {

@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState, useCallback, useMemo } from 'react';
+import { useContext, useEffect, useLayoutEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigationType, useParams } from 'react-router-dom';
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
@@ -50,6 +50,7 @@ import usePendingCommentModerationActions from '../../hooks/use-pending-comment-
 import useProgressiveRender from '../../hooks/use-progressive-render';
 import useReplyHeightEstimates from '../../hooks/use-reply-height-estimates';
 import useFreshReplies from '../../hooks/use-fresh-replies';
+import { CompleteThreadCidsContext } from '../../hooks/use-complete-thread-cids';
 import { BOARD_REPLIES_PREVIEW_FETCH_SIZE, BOARD_REPLIES_PREVIEW_VISIBLE_COUNT, REPLIES_PER_PAGE } from '../../lib/constants';
 import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
 import { formatErrorForDisplay } from '../../lib/utils/error-utils';
@@ -66,6 +67,7 @@ import { getFeedPostHeightEstimate, getReplyHeightEstimates, reportReplyHeightAu
 import { getAuthorBadge } from '../../lib/utils/author-display-utils';
 import { hasCommentFlagsForDirectory } from '../../lib/comment-flag-selection';
 import { shouldSuppressPostLoadingState } from '../../lib/utils/post-loading-state-utils';
+import { getCompleteThreadCids, getPreloadedThreadReplies } from '../../lib/utils/quote-link-utils';
 
 const RepliesFooter = ({ hasMore, loadingString }: { hasMore: boolean; loadingString: string }) =>
   hasMore ? (
@@ -622,6 +624,17 @@ const PostMobile = ({
   const repliesForRender = updatedReplies?.length ? updatedReplies : replies || [];
   const freshRepliesForRender = useFreshReplies(repliesForRender, { post: resolvedPost });
   useRegisterFreshReplies(resolvedPost, freshRepliesForRender);
+  const inheritedCompleteThreadCids = useContext(CompleteThreadCidsContext);
+  const threadCid = parentCid ? undefined : cid;
+  const completeThreadCids = useMemo(
+    () =>
+      // Only a thread's OP describes the whole thread; a quoted reply's preview inherits its set instead.
+      getCompleteThreadCids({ hasMore: false, postCid: threadCid, replies: getPreloadedThreadReplies(resolvedPost?.replies), replyCount: resolvedPost?.replyCount }) ??
+      (showAllReplies && (shouldFetchReplies || hasReplyPaginationOverride)
+        ? getCompleteThreadCids({ hasMore, postCid: threadCid, replies: freshRepliesForRender, replyCount: resolvedPost?.replyCount })
+        : undefined),
+    [freshRepliesForRender, hasMore, hasReplyPaginationOverride, resolvedPost?.replies, resolvedPost?.replyCount, shouldFetchReplies, showAllReplies, threadCid],
+  );
   const reset = (repliesResult as { reset?: () => Promise<void> }).reset;
   const setResetFunction = useFeedResetStore((s) => s.setResetFunction);
   const repliesResetRequestId = useThreadLiveUpdatesStore((state) => state.repliesResetRequestId);
@@ -784,7 +797,7 @@ const PostMobile = ({
   const virtuosoFooter = useCallback(() => <RepliesFooter hasMore={hasMore} loadingString={t('loading')} />, [hasMore, t]);
 
   return (
-    <>
+    <CompleteThreadCidsContext.Provider value={completeThreadCids ?? inheritedCompleteThreadCids}>
       {hidden && !isInPostPageView ? (
         <>
           <hr className={styles.unhideButtonHr} />
@@ -1000,7 +1013,7 @@ const PostMobile = ({
           )}
         </div>
       )}
-    </>
+    </CompleteThreadCidsContext.Provider>
   );
 };
 
