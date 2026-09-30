@@ -95,7 +95,19 @@ const THEME_SCRIPT = `(function () {
         if (typeof community === 'string' && community) theme = themeFor(data.nsfw.indexOf(community) === -1 ? 'sfw' : 'nsfw');
       }
     }
-    document.body.classList.add(theme);
+    // This runs in the document head: the class goes on the body element as the parser inserts it,
+    // in the same task, so no frame renders without it.
+    var apply = function () {
+      if (!document.body) return false;
+      document.body.classList.add(theme);
+      return true;
+    };
+    if (!apply()) {
+      var observer = new MutationObserver(function () {
+        if (apply()) observer.disconnect();
+      });
+      observer.observe(document.documentElement, { childList: true });
+    }
   } catch (error) {
     // The app applies the theme on its first commit.
   }
@@ -107,8 +119,6 @@ const SHELL_SCRIPT = `(function () {
     if (window.isElectron || (window.electronApi && window.electronApi.isElectron) || window.androidBridge) return;
     var language = localStorage.getItem('5chan-interface-language');
     if (language && !/^en(-|$)/i.test(language)) return;
-    var root = document.getElementById('root');
-    if (!root || root.firstChild) return;
     var data = JSON.parse(document.getElementById('${SHELL_DATA_ID}').textContent);
     var unchanged = function (defaults) {
       for (var key in defaults) {
@@ -117,38 +127,58 @@ const SHELL_SCRIPT = `(function () {
       }
       return true;
     };
-    var hash = location.hash;
-    if (!hash || hash === '#' || hash === '#/') {
-      var template = document.getElementById('static-shell-home');
-      if (!template || !unchanged(data.home)) return;
-      root.appendChild(template.content.cloneNode(true));
-    } else {
-      var boards = data.boards;
-      var match = /^#\\/([^/?#]+)$/.exec(hash);
-      var code = match && match[1];
-      var values = code && Object.prototype.hasOwnProperty.call(boards.codes, code) && boards.codes[code];
-      var today = new Date();
-      var seasonal = (today.getMonth() === 11 && (today.getDate() === 24 || today.getDate() === 25)) || (today.getMonth() === 9 && today.getDate() === 31);
-      // The theme script above set the theme React's first commit applies.
-      var theme = document.body.className;
-      if (!values || seasonal || !theme || !unchanged(boards.preferences)) return;
-      var frame = boards.frames[window.innerWidth < boards.mobileBreakpointWidth ? 'mobile' : 'desktop'];
-      var html = frame.segments[0];
-      for (var index = 0; index < frame.slots.length; index += 1) {
-        var slot = frame.slots[index];
-        html += (typeof slot === 'number' ? values[slot] : slot.split('\\u0000').join(code)) + frame.segments[index + 1];
+    var insert = function (root) {
+      try {
+        if (root.firstChild) return;
+        var hash = location.hash;
+        if (!hash || hash === '#' || hash === '#/') {
+          var template = document.getElementById('static-shell-home');
+          if (!template || !unchanged(data.home)) return;
+          root.appendChild(template.content.cloneNode(true));
+        } else {
+          var boards = data.boards;
+          var match = /^#\\/([^/?#]+)$/.exec(hash);
+          var code = match && match[1];
+          var values = code && Object.prototype.hasOwnProperty.call(boards.codes, code) && boards.codes[code];
+          var today = new Date();
+          var seasonal = (today.getMonth() === 11 && (today.getDate() === 24 || today.getDate() === 25)) || (today.getMonth() === 9 && today.getDate() === 31);
+          // The theme script, which runs first, set the theme React's first commit applies.
+          var theme = document.body.className;
+          if (!values || seasonal || !theme || !unchanged(boards.preferences)) return;
+          var frame = boards.frames[window.innerWidth < boards.mobileBreakpointWidth ? 'mobile' : 'desktop'];
+          var html = frame.segments[0];
+          for (var index = 0; index < frame.slots.length; index += 1) {
+            var slot = frame.slots[index];
+            html += (typeof slot === 'number' ? values[slot] : slot.split('\\u0000').join(code)) + frame.segments[index + 1];
+          }
+          var banner = boards.banners[Math.floor(Math.random() * boards.banners.length)];
+          root.innerHTML = html.split(boards.bannerPlaceholder).join(banner);
+          window.__FIVECHAN_SHELL_BANNER__ = banner;
+          // React sets a select element's value as a property, not markup.
+          var selects = root.getElementsByTagName('select');
+          for (var selectIndex = 0; selectIndex < frame.selects.length; selectIndex += 1) selects[selectIndex].value = frame.selects[selectIndex] === 'theme' ? theme : code;
+        }
+        root.firstElementChild.setAttribute('${STATIC_SHELL_ATTRIBUTE}', '');
+      } catch (error) {
+        // Without the shell the page loads exactly as it did before.
+        root.textContent = '';
       }
-      var banner = boards.banners[Math.floor(Math.random() * boards.banners.length)];
-      root.innerHTML = html.split(boards.bannerPlaceholder).join(banner);
-      window.__FIVECHAN_SHELL_BANNER__ = banner;
-      // React sets a <select>'s value as a property, not markup.
-      var selects = root.getElementsByTagName('select');
-      for (var selectIndex = 0; selectIndex < frame.selects.length; selectIndex += 1) selects[selectIndex].value = frame.selects[selectIndex] === 'theme' ? theme : code;
+    };
+    // This runs in the document head: the frame goes into #root as the parser inserts it, before any
+    // frame renders.
+    var root = document.getElementById('root');
+    if (root) insert(root);
+    else {
+      var observer = new MutationObserver(function () {
+        var element = document.getElementById('root');
+        if (!element) return;
+        observer.disconnect();
+        insert(element);
+      });
+      observer.observe(document.documentElement, { childList: true, subtree: true });
     }
-    root.firstElementChild.setAttribute('${STATIC_SHELL_ATTRIBUTE}', '');
   } catch (error) {
     // Without the shell the page loads exactly as it did before.
-    if (root) root.textContent = '';
   }
 })();`;
 
@@ -159,11 +189,13 @@ const toScriptJson = (value) => JSON.stringify(value).replaceAll('</', '<\\/').r
 // lets the theme class paint. The injected copies of the same rules follow and win.
 const DEV_STYLESHEETS = '<link rel="stylesheet" href="/src/index.css"><link rel="stylesheet" href="/src/themes.css">';
 
+// Both inline scripts run at the end of <head>, the theme script first: the frame script reads the
+// class it sets. Neither depends on the parser reaching a later point of <body> before a frame renders.
 export function injectThemeScript(html, categories, defaultThemes) {
-  if (!/<body[^>]*>/.test(html)) throw new Error('static shell: index.html has no <body>');
+  if (!html.includes('</head>')) throw new Error('static shell: index.html has no </head>');
   const nsfw = [...Object.entries(categories.codes), ...Object.entries(categories.addresses)].filter(([, category]) => category === 'nsfw').map(([identifier]) => identifier);
   const data = toScriptJson({ defaults: defaultThemes, nsfw });
-  return html.replace(/<body[^>]*>/, (tag) => `${tag}<script type="application/json" id="${THEME_DATA_ID}">${data}</script><script>${THEME_SCRIPT}</script>`);
+  return html.replace('</head>', () => `<script type="application/json" id="${THEME_DATA_ID}">${data}</script><script>${THEME_SCRIPT}</script></head>`);
 }
 
 // Relative url() references in a stylesheet resolve against its own directory; once inlined they
@@ -264,11 +296,11 @@ export function injectStaticShell(html, { home, boards, storage = {} }) {
   if (!html.includes('<div id="root"></div>')) throw new Error('static shell: index.html has no empty <div id="root"></div>');
   const defaultsOf = (keys) => Object.fromEntries(keys.map((key) => [key, storage[key] ?? null]));
   const data = toScriptJson({ home: defaultsOf(HOME_PREFERENCE_KEYS), boards: { ...boards, preferences: defaultsOf(BOARD_PREFERENCE_KEYS) } });
+  if (!html.includes(`id="${THEME_DATA_ID}"`)) throw new Error('static shell: inject the theme script first; the frame script reads its class');
   // A replacer function keeps `$` sequences in the rendered markup literal.
   return html.replace(
-    '<div id="root"></div>',
-    () =>
-      `<div id="root"></div><template id="static-shell-home">${home}</template><script type="application/json" id="${SHELL_DATA_ID}">${data}</script><script>${SHELL_SCRIPT}</script>`,
+    '</head>',
+    () => `<template id="static-shell-home">${home}</template><script type="application/json" id="${SHELL_DATA_ID}">${data}</script><script>${SHELL_SCRIPT}</script></head>`,
   );
 }
 
@@ -345,12 +377,8 @@ export function staticShellPlugin({ preloadAttribute }) {
         return String(asset.source);
       };
       const boards = { mobileBreakpointWidth, banners, bannerPlaceholder: BANNER_PLACEHOLDER, frames, codes };
-      const html = injectStaticShell(inlineStartupStylesheets(String(index.source), preloadAttribute, base, readAsset), {
-        home: homeRender.variants.home,
-        boards,
-        storage: homeRender.storage,
-      });
-      index.source = injectThemeScript(html, expected, defaultThemes);
+      const html = injectThemeScript(inlineStartupStylesheets(String(index.source), preloadAttribute, base, readAsset), expected, defaultThemes);
+      index.source = injectStaticShell(html, { home: homeRender.variants.home, boards, storage: homeRender.storage });
     },
   };
 }

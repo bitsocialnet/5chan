@@ -73,18 +73,17 @@ const BANNERS = ['assets/banners/banner-1.jpg', 'assets/banners/banner-2.jpg'];
 const SAVED_INTRODUCTION = '{"state":{"showIntroduction":true},"version":0}';
 const SAVED_FEED_VIEW = '{"state":{"enableInfiniteScroll":false},"version":0}';
 
-const load = ({ hash = '', storage = {}, globals = {}, width = 1280, date, historyState } = {}) => {
+const buildHtml = () => {
   const { frames, codes } = buildBoardFrames(BOARD_RENDERS);
-  const html = injectThemeScript(
-    injectStaticShell('<!doctype html><html><body><div id="root"></div></body></html>', {
-      home: '<div class="app">shell</div>',
-      boards: { mobileBreakpointWidth: 640, banners: BANNERS, bannerPlaceholder: BANNER_PLACEHOLDER, frames, codes },
-      storage: { 'homepage-introduction': SAVED_INTRODUCTION, 'feed-view-settings-store': SAVED_FEED_VIEW, 'unrelated-store': '{}' },
-    }),
-    CATEGORIES,
-    DEFAULT_THEMES,
-  );
-  const dom = new JSDOM(html, { url: `https://5chan.test/${hash}`, runScripts: 'outside-only' });
+  return injectStaticShell(injectThemeScript('<!doctype html><html><head></head><body><div id="root"></div></body></html>', CATEGORIES, DEFAULT_THEMES), {
+    home: '<div class="app">shell</div>',
+    boards: { mobileBreakpointWidth: 640, banners: BANNERS, bannerPlaceholder: BANNER_PLACEHOLDER, frames, codes },
+    storage: { 'homepage-introduction': SAVED_INTRODUCTION, 'feed-view-settings-store': SAVED_FEED_VIEW, 'unrelated-store': '{}' },
+  });
+};
+
+const load = ({ hash = '', storage = {}, globals = {}, width = 1280, date, historyState } = {}) => {
+  const dom = new JSDOM(buildHtml(), { url: `https://5chan.test/${hash}`, runScripts: 'outside-only' });
   for (const [key, value] of Object.entries(storage)) dom.window.localStorage.setItem(key, value);
   Object.assign(dom.window, globals);
   Object.defineProperty(dom.window, 'innerWidth', { configurable: true, value: width });
@@ -174,10 +173,30 @@ test('skips the frame when the first frame would differ', () => {
   assert.equal(load({ hash: '#/biz', date: '2026-12-24T12:00:00' }).shown, false);
 });
 
+test('applies the theme and frame as the parser inserts <body> and #root, before they exist', async () => {
+  const dom = new JSDOM(buildHtml(), { url: 'https://5chan.test/#/biz', runScripts: 'outside-only' });
+  const { document } = dom.window;
+  // The scripts run in <head>, before the parser has created <body>.
+  document.body.remove();
+  for (const script of document.querySelectorAll('script:not([type])')) dom.window.eval(script.textContent);
+  const body = document.createElement('body');
+  document.documentElement.appendChild(body);
+  const root = document.createElement('div');
+  root.id = 'root';
+  body.appendChild(root);
+  // Mutation observers run in the parser's task, before the browser renders a frame.
+  await new Promise((resolve) => dom.window.queueMicrotask(resolve));
+  assert.equal(body.className, 'yotsuba-b');
+  assert.equal(root.firstElementChild?.hasAttribute(STATIC_SHELL_ATTRIBUTE), true);
+  assert.match(root.innerHTML, /Current \/biz\/ winner/);
+});
+
 test('keeps JSON data from ending its script element early', () => {
-  const html = injectStaticShell('<body><div id="root"></div></body>', { home: '', boards: { codes: { x: ['</script><script>alert(1)</script>', '<!--'] } } });
+  const withTheme = injectThemeScript('<html><head></head><body><div id="root"></div></body></html>', CATEGORIES, DEFAULT_THEMES);
+  const html = injectStaticShell(withTheme, { home: '', boards: { codes: { x: ['</script><script>alert(1)</script>', '<!--'] } } });
   const dom = new JSDOM(html);
   const data = JSON.parse(dom.window.document.getElementById('static-shell-data').textContent);
   assert.deepEqual(data.boards.codes.x, ['</script><script>alert(1)</script>', '<!--']);
-  assert.throws(() => injectStaticShell('<body><div id="root">x</div></body>', { home: '', boards: {} }), /no empty/);
+  assert.throws(() => injectStaticShell(withTheme.replace('<div id="root"></div>', '<div id="root">x</div>'), { home: '', boards: {} }), /no empty/);
+  assert.throws(() => injectStaticShell('<html><head></head><body><div id="root"></div></body></html>', { home: '', boards: {} }), /theme script first/);
 });
