@@ -40,9 +40,9 @@ export const getPageSlice = <T>(items: T[], page: number, guiPostsPerPage: numbe
   }
 
   const totalItems = items.length;
-  const totalGuiPages = Math.min(maxGuiPages, Math.ceil(totalItems / guiPostsPerPage) || 1);
+  const totalGuiPages = Math.min(maxGuiPages, Math.floor(totalItems / guiPostsPerPage) || 1);
   const clampedPage = Math.max(1, Math.min(page, totalGuiPages));
-  const start = (clampedPage - 1) * guiPostsPerPage;
+  const start = clampedPage * guiPostsPerPage;
   const end = start + guiPostsPerPage;
 
   return items.slice(start, end);
