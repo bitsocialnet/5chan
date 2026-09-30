@@ -233,7 +233,7 @@ let container: HTMLDivElement;
 let root: Root;
 
 const renderMarkdown = async (
-  props: { content: string; postCid?: string; communityAddress?: string; title?: string; parseSpoilers?: boolean },
+  props: { content: string; postCid?: string; communityAddress?: string; title?: string; parseSpoilers?: boolean; purgedQuoteNumbers?: ReadonlySet<number> },
   initialEntry = '/mu/thread/post-1',
 ) => {
   await act(async () => {
@@ -648,6 +648,35 @@ describe('Markdown', () => {
 
     const lazyLinks = Array.from(container.querySelectorAll('[data-testid="external-number-quote-link"]'));
     expect(lazyLinks.map((node) => node.textContent)).toEqual(['>>42', '>>>/fit/77']);
+  });
+
+  it('strikes through purged same-thread quotes instead of searching the board for them', async () => {
+    await renderMarkdown({
+      content: '>>161 >>42',
+      postCid: 'thread-cid',
+      communityAddress: 'music-posting.eth',
+      purgedQuoteNumbers: new Set([161]),
+    });
+
+    const preview = container.querySelector('[data-testid="reply-quote-preview"]');
+    expect(preview?.getAttribute('data-number')).toBe('161');
+    expect(preview?.getAttribute('data-unavailable')).toBe('true');
+    expect(Array.from(container.querySelectorAll('[data-testid="external-number-quote-link"]')).map((node) => node.textContent)).toEqual(['>>42']);
+  });
+
+  it('strikes through a purged quote whose number was cached before the purge', async () => {
+    testState.numberToCid = { 'music-posting.eth': { 161: 'purged-161' } };
+    testState.cidToNumber = { 'purged-161': 161 };
+    testState.comments = { 'purged-161': { cid: 'purged-161', number: 161 } };
+
+    await renderMarkdown({
+      content: '>>161',
+      postCid: 'thread-cid',
+      communityAddress: 'music-posting.eth',
+      purgedQuoteNumbers: new Set([161]),
+    });
+
+    expect(container.querySelector('[data-testid="reply-quote-preview"]')?.getAttribute('data-unavailable')).toBe('true');
   });
 
   it('passes the known cid to the quote preview when a cross-thread number resolves but its body is uncached', async () => {

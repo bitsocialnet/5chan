@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState, useCallback, useMemo } from 'react';
+import { useContext, useEffect, useLayoutEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigationType, useParams } from 'react-router-dom';
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
@@ -54,6 +54,7 @@ import usePendingCommentModerationActions from '../../hooks/use-pending-comment-
 import useQuotedByMap from '../../hooks/use-quoted-by-map';
 import useProgressiveRender from '../../hooks/use-progressive-render';
 import useFreshReplies from '../../hooks/use-fresh-replies';
+import { CompleteThreadCidsContext } from '../../hooks/use-complete-thread-cids';
 import { BOARD_REPLIES_PREVIEW_FETCH_SIZE, BOARD_REPLIES_PREVIEW_VISIBLE_COUNT, REPLIES_PER_PAGE } from '../../lib/constants';
 import {
   computeOmittedCount,
@@ -75,6 +76,7 @@ import { getFeedPostHeightEstimate, getReplyHeightEstimates, reportReplyHeightAu
 import { getAuthorBadge } from '../../lib/utils/author-display-utils';
 import { hasCommentFlagsForDirectory } from '../../lib/comment-flag-selection';
 import { shouldSuppressPostLoadingState } from '../../lib/utils/post-loading-state-utils';
+import { getCompleteThreadCids, getPreloadedThreadReplies } from '../../lib/utils/quote-link-utils';
 
 const RepliesFooter = ({ hasMore, loadingString }: { hasMore: boolean; loadingString: string }) =>
   hasMore ? (
@@ -901,6 +903,17 @@ const PostDesktop = ({
   const repliesForRender = showAllReplies ? fullReplies : showOmittedReplies[cid] ? (fullReplies.length ? fullReplies : previewReplies) : collapsedPreviewReplies;
   const freshRepliesForRender = useFreshReplies(repliesForRender, { post: resolvedPost });
   useRegisterFreshReplies(resolvedPost, freshRepliesForRender);
+  const inheritedCompleteThreadCids = useContext(CompleteThreadCidsContext);
+  const threadCid = parentCid ? undefined : cid;
+  const completeThreadCids = useMemo(
+    () =>
+      // Only a thread's OP describes the whole thread; a quoted reply's preview inherits its set instead.
+      getCompleteThreadCids({ hasMore: false, postCid: threadCid, replies: getPreloadedThreadReplies(resolvedPost?.replies), replyCount: resolvedPost?.replyCount }) ??
+      (shouldFetchFull || (hasReplyPaginationOverride && showAllReplies)
+        ? getCompleteThreadCids({ hasMore, postCid: threadCid, replies: freshRepliesForRender, replyCount: resolvedPost?.replyCount })
+        : undefined),
+    [freshRepliesForRender, hasMore, hasReplyPaginationOverride, resolvedPost?.replies, resolvedPost?.replyCount, shouldFetchFull, showAllReplies, threadCid],
+  );
   const setResetFunction = useFeedResetStore((s) => s.setResetFunction);
   const repliesResetRequestId = useThreadLiveUpdatesStore((state) => state.repliesResetRequestId);
   const lastHandledRepliesResetRequestIdRef = useRef(repliesResetRequestId);
@@ -1102,136 +1115,164 @@ const PostDesktop = ({
   const virtuosoFooter = useCallback(() => <RepliesFooter hasMore={hasMore} loadingString={t('loading')} />, [hasMore, t]);
 
   return (
-    <div className={styles.postDesktop} data-pretext-height={shouldUsePretextFeedHeightEstimate ? feedHeightEstimate : undefined}>
-      {showReplies || isModQueue ? (
-        <div className={styles.hrWrapper}>
-          <hr />
-        </div>
-      ) : (
-        <div className={styles.replyQuotePreviewSpacer} />
-      )}
-      <div className={isHidden ? styles.postDesktopHidden : ''}>
-        {!isInPostPageView && showReplies && (
-          <span className={`${styles.hideButtonWrapper} ${!hasThumbnail ? styles.hideButtonWrapperNoImage : ''}`}>
-            <button
-              type='button'
-              aria-label={hidden ? t('unhide') : t('hide')}
-              className={`${styles.hideButton} ${hidden ? styles.unhideThread : styles.hideThread}`}
-              tabIndex={0}
-              onClick={hidden ? unhide : hide}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  (hidden ? unhide : hide)();
-                }
-              }}
-            />
-          </span>
+    <CompleteThreadCidsContext.Provider value={completeThreadCids ?? inheritedCompleteThreadCids}>
+      <div className={styles.postDesktop} data-pretext-height={shouldUsePretextFeedHeightEstimate ? feedHeightEstimate : undefined}>
+        {showReplies || isModQueue ? (
+          <div className={styles.hrWrapper}>
+            <hr />
+          </div>
+        ) : (
+          <div className={styles.replyQuotePreviewSpacer} />
         )}
-        <div
-          data-thread-container-cid={cid}
-          data-cid={cid}
-          data-author-address={userID}
-          data-post-cid={postCid}
-          className={`${styles.opContainer} ${shouldShowSnow() && hasThumbnail ? styles.xmasHatWrapper : ''}`}
-        >
-          {shouldShowSnow() && hasThumbnail && <img src='assets/xmashat.gif' className={styles.xmasHat} alt='' />}
-          {!hasRenderedMedia && communityAddress && showBoardLabel && boardPath && (
-            <div className={styles.file}>
-              <div className={styles.fileText}>
-                {t('board')}: <Link to={`/${boardPath}`}>{displayBoardPath}</Link>
-              </div>
-            </div>
-          )}
-          {hasRenderedMedia && (
-            <PostMedia
-              commentMediaInfo={commentMediaInfo}
-              hasThumbnail={hasThumbnail}
-              spoiler={spoiler}
-              deleted={deleted}
-              purged={!!purged}
-              removed={removed}
-              linkHeight={linkHeight}
-              linkWidth={linkWidth}
-              parentCid={parentCid}
-              communityAddress={communityAddress}
-              showBoardLabel={showBoardLabel}
-            />
-          )}
-          <PostInfo
-            isHidden={hidden}
-            post={resolvedPost}
-            postReplyCount={replyCount}
-            postsByAuthorInThread={postsByAuthorInThread}
-            roles={roles}
-            threadNumber={resolvedPost?.number}
-            isModQueue={isModQueue}
-            modQueueStatus={modQueueStatus}
-            modQueueError={modQueueError}
-            isPublishing={isPublishing}
-            onApprove={onApprove}
-            onReject={onReject}
-            onTransfer={onTransfer}
-            onRemoveFromModQueue={onRemoveFromModQueue}
-            quotedByMap={quotedByMap}
-            directRepliesByParentCid={directRepliesByParentCid}
-          />
-          {!isHidden && !content && !(deleted || removed || purged) && <div className={styles.spacer} />}
-          {resolvedPost && !isHidden && <CommentContent comment={resolvedPost} prependContent={failedPublishNotice} roles={roles} />}
-        </div>
-        {!isHidden && !isInPendingPostView && showReplies && repliesCount > 0 && !isInPostPageView && (
-          <span className={styles.summary}>
-            {canExpandOmittedReplies && (
+        <div className={isHidden ? styles.postDesktopHidden : ''}>
+          {!isInPostPageView && showReplies && (
+            <span className={`${styles.hideButtonWrapper} ${!hasThumbnail ? styles.hideButtonWrapperNoImage : ''}`}>
               <button
                 type='button'
-                aria-label={showOmittedReplies[cid] ? t('hide_replies') : t('show_replies')}
-                className={`${showOmittedReplies[cid] ? styles.hideOmittedReplies : styles.showOmittedReplies} ${styles.omittedRepliesButtonWrapper}`}
+                aria-label={hidden ? t('unhide') : t('hide')}
+                className={`${styles.hideButton} ${hidden ? styles.unhideThread : styles.hideThread}`}
                 tabIndex={0}
-                onClick={() => setShowOmittedReplies(cid, !showOmittedReplies[cid])}
+                onClick={hidden ? unhide : hide}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
-                    setShowOmittedReplies(cid, !showOmittedReplies[cid]);
+                    (hidden ? unhide : hide)();
                   }
                 }}
               />
+            </span>
+          )}
+          <div
+            data-thread-container-cid={cid}
+            data-cid={cid}
+            data-author-address={userID}
+            data-post-cid={postCid}
+            className={`${styles.opContainer} ${shouldShowSnow() && hasThumbnail ? styles.xmasHatWrapper : ''}`}
+          >
+            {shouldShowSnow() && hasThumbnail && <img src='assets/xmashat.gif' className={styles.xmasHat} alt='' />}
+            {!hasRenderedMedia && communityAddress && showBoardLabel && boardPath && (
+              <div className={styles.file}>
+                <div className={styles.fileText}>
+                  {t('board')}: <Link to={`/${boardPath}`}>{displayBoardPath}</Link>
+                </div>
+              </div>
             )}
-            {canExpandOmittedReplies && showOmittedReplies[cid] ? (
-              t('showing_all_replies')
-            ) : linksCount > 0 ? (
-              <Trans
-                i18nKey={'replies_and_links_omitted'}
-                shouldUnescape={true}
-                components={{ 1: <Link key={cid} to={boardPath ? `/${boardPath}/thread/${cid}` : `/thread/${cid}`} /> }}
-                values={{ repliesCount, linksCount }}
-              />
-            ) : (
-              <Trans
-                i18nKey={'replies_omitted'}
-                shouldUnescape={true}
-                components={{ 1: <Link key={cid} to={boardPath ? `/${boardPath}/thread/${cid}` : `/thread/${cid}`} /> }}
-                values={{ repliesCount }}
+            {hasRenderedMedia && (
+              <PostMedia
+                commentMediaInfo={commentMediaInfo}
+                hasThumbnail={hasThumbnail}
+                spoiler={spoiler}
+                deleted={deleted}
+                purged={!!purged}
+                removed={removed}
+                linkHeight={linkHeight}
+                linkWidth={linkWidth}
+                parentCid={parentCid}
+                communityAddress={communityAddress}
+                showBoardLabel={showBoardLabel}
               />
             )}
-          </span>
-        )}
-        {/* Virtuoso infinite scroll for post page view when there's more content to paginate */}
-        {hasVirtualizedReplies && (
-          <Virtuoso
-            defaultItemHeight={defaultReplyItemHeight}
-            heightEstimates={replyHeightEstimates}
-            {...replyVirtualizationProps}
-            increaseViewportBy={{ bottom: 1200, top: 1200 }}
-            totalCount={filteredReplies.length}
-            data={filteredReplies}
-            itemContent={(index, reply) => (
-              <div
-                className={styles.replyContainer}
-                data-pretext-height={replyHeightEstimates?.[index]}
-                ref={(element) => reportReplyHeightAuditSample(element, replyHeightEstimates?.[index], reply.cid)}
-              >
+            <PostInfo
+              isHidden={hidden}
+              post={resolvedPost}
+              postReplyCount={replyCount}
+              postsByAuthorInThread={postsByAuthorInThread}
+              roles={roles}
+              threadNumber={resolvedPost?.number}
+              isModQueue={isModQueue}
+              modQueueStatus={modQueueStatus}
+              modQueueError={modQueueError}
+              isPublishing={isPublishing}
+              onApprove={onApprove}
+              onReject={onReject}
+              onTransfer={onTransfer}
+              onRemoveFromModQueue={onRemoveFromModQueue}
+              quotedByMap={quotedByMap}
+              directRepliesByParentCid={directRepliesByParentCid}
+            />
+            {!isHidden && !content && !(deleted || removed || purged) && <div className={styles.spacer} />}
+            {resolvedPost && !isHidden && <CommentContent comment={resolvedPost} prependContent={failedPublishNotice} roles={roles} />}
+          </div>
+          {!isHidden && !isInPendingPostView && showReplies && repliesCount > 0 && !isInPostPageView && (
+            <span className={styles.summary}>
+              {canExpandOmittedReplies && (
+                <button
+                  type='button'
+                  aria-label={showOmittedReplies[cid] ? t('hide_replies') : t('show_replies')}
+                  className={`${showOmittedReplies[cid] ? styles.hideOmittedReplies : styles.showOmittedReplies} ${styles.omittedRepliesButtonWrapper}`}
+                  tabIndex={0}
+                  onClick={() => setShowOmittedReplies(cid, !showOmittedReplies[cid])}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setShowOmittedReplies(cid, !showOmittedReplies[cid]);
+                    }
+                  }}
+                />
+              )}
+              {canExpandOmittedReplies && showOmittedReplies[cid] ? (
+                t('showing_all_replies')
+              ) : linksCount > 0 ? (
+                <Trans
+                  i18nKey={'replies_and_links_omitted'}
+                  shouldUnescape={true}
+                  components={{ 1: <Link key={cid} to={boardPath ? `/${boardPath}/thread/${cid}` : `/thread/${cid}`} /> }}
+                  values={{ repliesCount, linksCount }}
+                />
+              ) : (
+                <Trans
+                  i18nKey={'replies_omitted'}
+                  shouldUnescape={true}
+                  components={{ 1: <Link key={cid} to={boardPath ? `/${boardPath}/thread/${cid}` : `/thread/${cid}`} /> }}
+                  values={{ repliesCount }}
+                />
+              )}
+            </span>
+          )}
+          {/* Virtuoso infinite scroll for post page view when there's more content to paginate */}
+          {hasVirtualizedReplies && (
+            <Virtuoso
+              defaultItemHeight={defaultReplyItemHeight}
+              heightEstimates={replyHeightEstimates}
+              {...replyVirtualizationProps}
+              increaseViewportBy={{ bottom: 1200, top: 1200 }}
+              totalCount={filteredReplies.length}
+              data={filteredReplies}
+              itemContent={(index, reply) => (
+                <div
+                  className={styles.replyContainer}
+                  data-pretext-height={replyHeightEstimates?.[index]}
+                  ref={(element) => reportReplyHeightAuditSample(element, replyHeightEstimates?.[index], reply.cid)}
+                >
+                  <Reply
+                    disableDeferredLayout={Boolean(replyItemSize)}
+                    reply={reply}
+                    roles={roles}
+                    postReplyCount={replyCount}
+                    postsByAuthorInThread={postsByAuthorInThread}
+                    threadNumber={resolvedPost?.number}
+                    quotedByMap={quotedByMap}
+                    directRepliesByParentCid={directRepliesByParentCid}
+                  />
+                </div>
+              )}
+              useWindowScroll={true}
+              components={{ Footer: virtuosoFooter }}
+              endReached={loadMore}
+              ref={virtuosoRef}
+              restoreStateFrom={lastVirtuosoState}
+              initialScrollTop={lastVirtuosoState?.scrollTop}
+            />
+          )}
+          {/* Non-virtualized rendering for post page view when all replies fit on one page */}
+          {!isHidden &&
+            showAllReplies &&
+            !isInPendingPostView &&
+            showReplies &&
+            !hasMore &&
+            visibleReplies.map((reply) => (
+              <div key={reply.cid} className={styles.replyContainer}>
                 <Reply
-                  disableDeferredLayout={Boolean(replyItemSize)}
                   reply={reply}
                   roles={roles}
                   postReplyCount={replyCount}
@@ -1241,71 +1282,45 @@ const PostDesktop = ({
                   directRepliesByParentCid={directRepliesByParentCid}
                 />
               </div>
-            )}
-            useWindowScroll={true}
-            components={{ Footer: virtuosoFooter }}
-            endReached={loadMore}
-            ref={virtuosoRef}
-            restoreStateFrom={lastVirtuosoState}
-            initialScrollTop={lastVirtuosoState?.scrollTop}
-          />
-        )}
-        {/* Non-virtualized rendering for post page view when all replies fit on one page */}
-        {!isHidden &&
-          showAllReplies &&
-          !isInPendingPostView &&
-          showReplies &&
-          !hasMore &&
-          visibleReplies.map((reply) => (
-            <div key={reply.cid} className={styles.replyContainer}>
-              <Reply
-                reply={reply}
-                roles={roles}
-                postReplyCount={replyCount}
-                postsByAuthorInThread={postsByAuthorInThread}
-                threadNumber={resolvedPost?.number}
-                quotedByMap={quotedByMap}
-                directRepliesByParentCid={directRepliesByParentCid}
-              />
+            ))}
+          {/* Non-virtualized rendering for board view (preview replies when collapsed, full when expanded) */}
+          {!isHidden &&
+            !showAllReplies &&
+            !isInPendingPostView &&
+            freshRepliesForRender &&
+            showReplies &&
+            filteredReplies.map((reply, index) => (
+              <div key={reply.cid} className={styles.replyContainer} {...getPreviewReplyDebugProps(index)}>
+                <Reply
+                  disableDeferredLayout={feedVirtualizationModeOverride === 'item-size'}
+                  reply={reply}
+                  roles={roles}
+                  postReplyCount={replyCount}
+                  postsByAuthorInThread={postsByAuthorInThread}
+                  threadNumber={resolvedPost?.number}
+                  quotedByMap={quotedByMap}
+                  directRepliesByParentCid={directRepliesByParentCid}
+                />
+              </div>
+            ))}
+          {!isHidden && !showAllReplies && showOmittedReplies[cid] && fullIsFetching && showReplies && filteredReplies.length > 0 && (
+            <div className={styles.stateString}>
+              <LoadingEllipsis string={t('loading')} />
             </div>
-          ))}
-        {/* Non-virtualized rendering for board view (preview replies when collapsed, full when expanded) */}
-        {!isHidden &&
-          !showAllReplies &&
-          !isInPendingPostView &&
-          freshRepliesForRender &&
-          showReplies &&
-          filteredReplies.map((reply, index) => (
-            <div key={reply.cid} className={styles.replyContainer} {...getPreviewReplyDebugProps(index)}>
-              <Reply
-                disableDeferredLayout={feedVirtualizationModeOverride === 'item-size'}
-                reply={reply}
-                roles={roles}
-                postReplyCount={replyCount}
-                postsByAuthorInThread={postsByAuthorInThread}
-                threadNumber={resolvedPost?.number}
-                quotedByMap={quotedByMap}
-                directRepliesByParentCid={directRepliesByParentCid}
-              />
-            </div>
-          ))}
-        {!isHidden && !showAllReplies && showOmittedReplies[cid] && fullIsFetching && showReplies && filteredReplies.length > 0 && (
-          <div className={styles.stateString}>
-            <LoadingEllipsis string={t('loading')} />
-          </div>
+          )}
+        </div>
+        {!isInPendingPostView &&
+        !hasFailedState &&
+        state !== 'succeeded' &&
+        !shouldSuppressPostLoadingState(resolvedPost) &&
+        isInPostPageView &&
+        !(!showReplies && !showAllReplies) ? (
+          <PostLoadingState post={resolvedPost} />
+        ) : (
+          hasFailedState && <span className={styles.error}>{t('failed')}</span>
         )}
       </div>
-      {!isInPendingPostView &&
-      !hasFailedState &&
-      state !== 'succeeded' &&
-      !shouldSuppressPostLoadingState(resolvedPost) &&
-      isInPostPageView &&
-      !(!showReplies && !showAllReplies) ? (
-        <PostLoadingState post={resolvedPost} />
-      ) : (
-        hasFailedState && <span className={styles.error}>{t('failed')}</span>
-      )}
-    </div>
+    </CompleteThreadCidsContext.Provider>
   );
 };
 

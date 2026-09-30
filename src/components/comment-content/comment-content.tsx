@@ -3,11 +3,12 @@ import { useLocation, useParams } from 'react-router-dom';
 import { Trans, useTranslation } from 'react-i18next';
 import { Comment, useComment } from '@bitsocial/bitsocial-react-hooks';
 import { communitiesPagesStore as useCommunitiesPagesStore } from '../../lib/bitsocial-internals/stores';
-import usePostNumberStore from '../../stores/use-post-number-store';
+import usePostNumberStore, { getScopedNumberToCidMap } from '../../stores/use-post-number-store';
 import getShortAddress from '../../lib/get-short-address';
 import { getFormattedDate } from '../../lib/utils/time-utils';
-import { isUnavailableQuoteTarget } from '../../lib/utils/quote-link-utils';
+import { getPurgedQuoteNumbers, isUnavailableQuoteTarget } from '../../lib/utils/quote-link-utils';
 import { isPostPageView } from '../../lib/utils/view-utils';
+import { useCompleteThreadCids } from '../../hooks/use-complete-thread-cids';
 import useIsMobile from '../../hooks/use-is-mobile';
 import useStateString from '../../hooks/use-state-string';
 import LoadingEllipsis from '../loading-ellipsis';
@@ -156,6 +157,26 @@ const CommentContent = ({
     });
   }, [quotedCids, cidToNumber, contentNumbers]);
 
+  const completeThreadCids = useCompleteThreadCids(postCid, cid);
+  const purgedQuotedCids = useMemo(
+    () => (completeThreadCids && quotedCids?.length ? [...new Set<string>(quotedCids)].filter((quotedCid) => !completeThreadCids.has(quotedCid)) : undefined),
+    [completeThreadCids, quotedCids],
+  );
+  // Joined into a string so the selector returns a stable value.
+  const purgedQuoteNumbersKey = usePostNumberStore((state) =>
+    purgedQuotedCids?.length
+      ? getPurgedQuoteNumbers({
+          cidToNumber: state.cidToNumber,
+          contentNumbers,
+          numberToCid: getScopedNumberToCidMap(state.numberToCid, communityAddress),
+          purgedQuotedCids,
+          replyNumber: resolvedPost?.number,
+          threadNumber: postCid ? state.cidToNumber[postCid] : undefined,
+        }).join(',')
+      : '',
+  );
+  const purgedQuoteNumbers = useMemo(() => (purgedQuoteNumbersKey ? new Set(purgedQuoteNumbersKey.split(',').map(Number)) : undefined), [purgedQuoteNumbersKey]);
+
   const parentNumber = parentCid ? cidToNumber[parentCid] : undefined;
   const shouldShowReplyingToReply = isReplyingToReply && parentNumber !== undefined && !contentNumbers.has(parentNumber);
 
@@ -194,9 +215,9 @@ const CommentContent = ({
         <LoadingEllipsis string={t('loading')} />
       </span>
     ) : shouldRenderBbcode ? (
-      <BbcodeContent content={value || ''} postCid={postCid} communityAddress={communityAddress} />
+      <BbcodeContent content={value || ''} postCid={postCid} communityAddress={communityAddress} purgedQuoteNumbers={purgedQuoteNumbers} />
     ) : (
-      <Markdown content={value || ''} postCid={postCid} communityAddress={communityAddress} />
+      <Markdown content={value || ''} postCid={postCid} communityAddress={communityAddress} purgedQuoteNumbers={purgedQuoteNumbers} />
     );
 
   return (
