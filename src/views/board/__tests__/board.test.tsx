@@ -3,6 +3,7 @@ import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { MemoryRouter, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import communitiesStore from '@bitsocial/bitsocial-react-hooks/dist/stores/communities/index.js';
 import communitiesPagesStore from '@bitsocial/bitsocial-react-hooks/dist/stores/communities-pages/index.js';
 import Board, { type BoardProps } from '../board';
 import { TRASH_BOARD_ADDRESS, TRASH_BOARD_TITLE } from '../../../lib/special-boards';
@@ -72,7 +73,7 @@ const testState = vi.hoisted(() => ({
   accountComments: [] as Array<TestComment | undefined>,
   accountCommentsCalls: [] as Array<{ commentIndices?: number[]; communityAddress?: string; newerThan?: number; sortType?: 'new' | 'old' } | undefined>,
   accountCommunityAddresses: [] as string[],
-  directories: [{ address: 'music-posting.eth', title: '/mu/ - Music' }] as Array<{ address: string; title?: string; directoryCode?: string }>,
+  directories: [{ address: 'music-posting.eth', title: '/mu/ - Music' }] as Array<{ address: string; publicKey?: string; title?: string; directoryCode?: string }>,
   directoryByAddress: {
     'music-posting.eth': {
       address: 'music-posting.eth',
@@ -505,6 +506,7 @@ describe('Board', () => {
     act(() => root.unmount());
     container.remove();
     communitiesPagesStore.setState({ communitiesPages: {}, comments: {} });
+    communitiesStore.setState({ syncStatuses: {} });
     clearStableLastVisitTimeFilterName();
     localStorage.clear();
   });
@@ -1386,6 +1388,32 @@ describe('Board', () => {
         }),
       ]),
     );
+  });
+
+  it('keeps showing failed while an unreachable board starts another load attempt', async () => {
+    testState.directories = [{ address: 'music-posting.eth', publicKey: '12D3KooWUnreachableBoard', title: '/mu/ - Music' }];
+    testState.hasMore = true;
+    testState.feedStateString = 'Downloading board from peers';
+    testState.community = {
+      error: undefined,
+      shortAddress: 'music-posting.eth',
+      state: 'fetching-ipns',
+      title: '/mu/ - Music',
+    };
+
+    await renderBoard({ initialEntry: '/mu', routePath: '/:boardIdentifier/*' });
+    expect(container.textContent).not.toContain('failed');
+
+    // pkc-js retries forever and the hooks drop retriable errors, so only the sync state records the failed attempt
+    await act(async () => {
+      communitiesStore.setState({ syncStatuses: { '12D3KooWUnreachableBoard': { syncState: 'retrying' } } });
+    });
+    await act(async () => {
+      communitiesStore.setState({ syncStatuses: { '12D3KooWUnreachableBoard': { syncState: 'loading' } } });
+    });
+
+    expect(container.textContent).toContain('failed');
+    expect(container.querySelector('[data-testid="loading-ellipsis"]')?.textContent).toBe('Downloading board from peers');
   });
 
   it('does not show no threads while an empty all feed is still loading', async () => {
