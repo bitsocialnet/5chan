@@ -206,5 +206,5 @@ If uncertain, ask the developer before adding an entry.
 - **Context:** Running the first signed + notarized mac Electron build (`yarn electron:build:mac:arm64` with Apple credentials set)
 - **What was surprising:** `@electron/notarize` 2.x runs its pre-upload signature check as `codesign -dv 5chan.app` from the bundle's parent directory, and `codesign` accepts a process ID in place of a path — so it parses the digit-leading basename as PID 5 and fails with `5chan.app: No such process` even though the app is signed correctly.
 - **Impact:** Notarization aborts after a successful signing pass; the error message looks like a signing failure and invites debugging the certificate/keychain instead of the real cause. Any tool that shells out to `codesign` with a bare relative path can hit this because the app is literally named `5chan`.
-- **Mitigation:** Keep the yarn patch `.yarn/patches/@electron-notarize-npm-2.5.0-*.patch` (backport of electron/notarize#245, prefixes the basename with `./`) until electron-forge depends on `@electron/notarize` >= 3.x. When invoking `codesign` manually on the app bundle, always use an absolute or `./`-prefixed path.
-- **Status:** confirmed
+- **Mitigation:** electron-forge 8 signs through `@electron/notarize` 3.1.1, which includes electron/notarize#245 (prefixes the basename with `./`), so the yarn patch for 2.5.0 was removed. Keep the lockfile on notarize >= 3.1.1; 3.1.0 lacks the fix. When invoking `codesign` manually on the app bundle, always use an absolute or `./`-prefixed path.
+- **Status:** resolved upstream
