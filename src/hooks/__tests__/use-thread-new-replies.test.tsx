@@ -9,14 +9,6 @@ import useThreadLiveUpdatesStore from '../../stores/use-thread-live-updates-stor
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
 
-const testState = vi.hoisted(() => ({
-  syncThreadRepliesFeedsMock: vi.fn(),
-}));
-
-vi.mock('../../lib/utils/thread-refresh-cache-utils', () => ({
-  syncThreadRepliesFeeds: testState.syncThreadRepliesFeedsMock,
-}));
-
 vi.mock('../../lib/bitsocial-internals/stores', () => ({
   accountsStore: {
     getState: () => ({ commentCidsToAccountsComments: { mine: {} } }),
@@ -47,7 +39,6 @@ const startUpdate = () => useThreadLiveUpdatesStore.setState({ updatesStarted: 1
 
 describe('useThreadNewReplies', () => {
   beforeEach(() => {
-    testState.syncThreadRepliesFeedsMock.mockReset();
     recordNewRepliesMock.mockReset();
     useThreadLiveUpdatesStore.getState().resetState();
     useThreadLiveUpdatesStore.setState({ recordNewReplies: recordNewRepliesMock });
@@ -122,17 +113,6 @@ describe('useThreadNewReplies', () => {
     expect(recordNewRepliesMock).toHaveBeenCalledWith({ count: 1, lastReadReplyCid: 'b', quotesOwnPost: false });
   });
 
-  it('recomputes the replies feed when the thread post updates', async () => {
-    await render({ post, replies: [reply('a')] });
-    expect(testState.syncThreadRepliesFeedsMock).toHaveBeenCalledTimes(1);
-
-    await render({ post: { ...post }, replies: [reply('a')] });
-    expect(testState.syncThreadRepliesFeedsMock).toHaveBeenCalledTimes(1);
-
-    await render({ post: { ...post, updatedAt: 200 } as Comment, replies: [reply('a')] });
-    expect(testState.syncThreadRepliesFeedsMock).toHaveBeenCalledTimes(2);
-  });
-
   it('returns the unread marker only on the thread page', async () => {
     useThreadLiveUpdatesStore.setState({ unreadMarkerCid: 'b' });
 
@@ -141,6 +121,5 @@ describe('useThreadNewReplies', () => {
 
     await render({ enabled: false, post, replies: [reply('a'), reply('b')] });
     expect(markerCid).toBeUndefined();
-    expect(testState.syncThreadRepliesFeedsMock).toHaveBeenCalledTimes(1);
   });
 });

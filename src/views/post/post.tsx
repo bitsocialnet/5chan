@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { type Comment, type CommunityIdentifier, useAccountComment, useComment, useCommunity, useReplies, resolveReplySortType } from '@bitsocial/bitsocial-react-hooks';
 import { communitiesPagesStore as useCommunitiesPagesStore } from '../../lib/bitsocial-internals/stores';
@@ -15,7 +15,7 @@ import ErrorDisplay from '../../components/error-display';
 import { PageFooterDesktop, ThreadFooterFirstRow, ThreadFooterStyleRow, ThreadFooterMobile } from '../../components/footer';
 import { Post } from '../../components/post';
 import { getRequestedThreadTopCid, scrollThreadContainerToTop } from '../../lib/utils/thread-scroll-utils';
-import { evictThreadRefreshCaches, refreshCommentOnce } from '../../lib/utils/thread-refresh-cache-utils';
+import { evictThreadRefreshCaches } from '../../lib/utils/thread-refresh-cache-utils';
 import { REPLIES_PER_PAGE } from '../../lib/constants';
 import { preservePublishedUserID } from '../../lib/utils/comment-user-id-utils';
 import useThreadUpdater from '../../hooks/use-thread-updater';
@@ -89,32 +89,12 @@ const mergeLocalAccountComment = (comment: CommentWithRefresh | undefined, accou
   return mergeLocalCommentAuthor(mergeCommentFallback(comment, accountComment), accountComment);
 };
 
-// The thread stays as loaded until Update or Auto refreshes it, like a 4chan thread page. A refresh
-// that finds nothing newer than the hooks' live comment leaves useComment's frozen copy as it was,
-// so after each refresh the thread also takes the hooks' cached copy when that one is newer.
-const useThreadComment = (options: { commentCid: string | undefined; community?: CommunityIdentifier }) => {
-  const frozenComment = useComment({ ...options, autoUpdate: false });
-  const cachedComment = useComment({ ...options, autoUpdate: true, onlyIfCached: true });
-  const refreshCount = useThreadLiveUpdatesStore((state) => state.refreshCount);
-  const [refreshedCopy, setRefreshedCopy] = useState<{ refreshCount: number; comment?: Comment }>({ refreshCount });
-  if (refreshedCopy.refreshCount !== refreshCount) {
-    setRefreshedCopy({ refreshCount, comment: cachedComment });
-  }
-
-  return useMemo(() => {
-    const refreshedComment = refreshedCopy.comment;
-    if (!refreshedComment || refreshedComment.cid !== options.commentCid || (refreshedComment.updatedAt ?? 0) <= (frozenComment.updatedAt ?? 0)) {
-      return frozenComment;
-    }
-    return { ...refreshedComment, refresh: frozenComment.refresh, state: frozenComment.state, error: frozenComment.error, errors: frozenComment.errors };
-  }, [frozenComment, options.commentCid, refreshedCopy.comment]);
-};
-
 // useComment may not return cached feed data immediately due to its updatedAt comparison logic.
 // This hook falls back to the communities pages store and then overlays a matching
 // local account author so author controls keep working after publish navigation.
+// The thread stays as loaded until Update or Auto refreshes it, like a 4chan thread page.
 const useCommentWithFeedCache = (options: { commentCid: string | undefined; community?: CommunityIdentifier }): CommentWithRefresh | undefined => {
-  const comment = useThreadComment(options);
+  const comment = useComment({ ...options, autoUpdate: false });
   const cachedComment = useCommunitiesPagesStore((state) => state.comments[options?.commentCid || '']);
   const accountComment = useAccountComment({ commentCid: options.commentCid }) as CommentWithRefresh | undefined;
 
@@ -308,7 +288,13 @@ const PostPage = () => {
           console.error('Failed to clear stale thread cache before refresh:', cacheError);
         }
       }
-      return (await refreshCommentOnce(postCidForRefresh, postRefresh)) !== 'failed';
+      try {
+        await postRefresh();
+        return true;
+      } catch (error) {
+        console.error('Failed to refresh thread comments:', error);
+        return false;
+      }
     };
   }, [postCidForRefresh, postRefresh]);
 

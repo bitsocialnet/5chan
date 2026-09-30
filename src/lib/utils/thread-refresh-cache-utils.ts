@@ -1,5 +1,5 @@
 import type { Comment, RepliesPages } from '@bitsocial/bitsocial-react-hooks';
-import { commentsStore, repliesPagesStore, repliesStore } from '../bitsocial-internals/stores';
+import { repliesPagesStore } from '../bitsocial-internals/stores';
 import { localForageLru } from '../bitsocial-internals/utils';
 
 const commentsDatabase = localForageLru.createInstance({ name: 'bitsocialReactHooks-comments' });
@@ -77,55 +77,3 @@ export const evictThreadRefreshCaches = async (comments: Array<Comment | undefin
     ...replyPageCids.map((pageCid) => repliesPagesDatabase.removeItem(pageCid)),
   ]);
 };
-
-// The replies store only recomputes a feed when a post's first reply page or page cids change, so
-// replies appended to a single preloaded page need an explicit recompute. Unlike a feed reset,
-// this keeps the rendered replies and only appends new ones.
-export const syncThreadRepliesFeeds = () => {
-  repliesStore.getState().updateFeeds();
-};
-
-export type CommentRefreshOutcome = 'updated' | 'unchanged' | 'failed';
-
-const THREAD_REFRESH_SUBSCRIBER_ID = 'thread-refresh';
-
-/**
- * Runs one refresh cycle of a thread comment and reports how it ended. The hooks' refresh() only
- * settles on a newer CommentUpdate, but pkc-js reports an unchanged one as 'waiting-retry', so a
- * quiet thread would never settle and a later update would reach the thread without a refresh.
- * An unchanged cycle therefore stops the one-shot update.
- */
-export const refreshCommentOnce = (commentCid: string, refresh: () => Promise<void>): Promise<CommentRefreshOutcome> =>
-  new Promise((resolve) => {
-    const initialErrorCount = commentsStore.getState().errors[commentCid]?.length ?? 0;
-    let fetchedUpdate = false;
-    let settled = false;
-
-    const settle = (outcome: CommentRefreshOutcome) => {
-      if (settled) return;
-      settled = true;
-      unsubscribe();
-      if (outcome === 'unchanged') {
-        void commentsStore.getState().stopCommentAutoUpdate(commentCid, THREAD_REFRESH_SUBSCRIBER_ID);
-      }
-      resolve(outcome);
-    };
-
-    const unsubscribe = commentsStore.subscribe((state) => {
-      const updatingState = state.comments[commentCid]?.updatingState;
-      if (updatingState === 'fetching-update-ipfs') {
-        fetchedUpdate = true;
-      } else if (updatingState === 'waiting-retry' && fetchedUpdate) {
-        const failed = (state.errors[commentCid]?.length ?? 0) > initialErrorCount;
-        settle(failed ? 'failed' : 'unchanged');
-      }
-    });
-
-    refresh().then(
-      () => settle('updated'),
-      (error) => {
-        console.error('Failed to refresh thread comments:', error);
-        settle('failed');
-      },
-    );
-  });

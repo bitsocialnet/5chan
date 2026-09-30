@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react';
 import type { Comment } from '@bitsocial/bitsocial-react-hooks';
 import useThreadLiveUpdatesStore from '../stores/use-thread-live-updates-store';
-import { syncThreadRepliesFeeds } from '../lib/utils/thread-refresh-cache-utils';
 import { findNewThreadReplies } from '../lib/utils/thread-updater-utils';
 
 interface SeenReplies {
@@ -26,12 +25,6 @@ interface UseThreadNewRepliesOptions {
 const useThreadNewReplies = ({ enabled, hasMore, post, replies }: UseThreadNewRepliesOptions) => {
   const unreadMarkerCid = useThreadLiveUpdatesStore((state) => (enabled ? state.unreadMarkerCid : undefined));
   const seenRepliesRef = useRef<SeenReplies>(undefined);
-  const postUpdatedAt = post?.updatedAt;
-
-  // Runs after useReplies has received the refreshed post, so appended replies get loaded.
-  useEffect(() => {
-    if (enabled && postUpdatedAt !== undefined) syncThreadRepliesFeeds();
-  }, [enabled, postUpdatedAt]);
 
   useEffect(() => {
     const postCid = post?.cid;

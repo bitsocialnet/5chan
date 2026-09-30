@@ -7,7 +7,6 @@
 // across views, hooks, stores, components, and utils.
 
 export { default as accountsStore } from '@bitsocial/bitsocial-react-hooks/dist/stores/accounts/index.js';
-export { default as commentsStore } from '@bitsocial/bitsocial-react-hooks/dist/stores/comments/index.js';
 export { default as communitiesStore } from '@bitsocial/bitsocial-react-hooks/dist/stores/communities/index.js';
 export { default as communitiesPagesStore } from '@bitsocial/bitsocial-react-hooks/dist/stores/communities-pages/index.js';
 export { default as feedsStore } from '@bitsocial/bitsocial-react-hooks/dist/stores/feeds/index.js';

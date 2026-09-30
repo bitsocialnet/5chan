@@ -50,7 +50,6 @@ const testState = vi.hoisted(() => ({
   cidCommunityAddress: undefined as string | undefined,
   communityFieldAddress: undefined as string | undefined,
   commentsByCid: {} as Record<string, TestComment>,
-  cachedCommentsByCid: {} as Record<string, TestComment>,
   directories: [{ address: 'music-posting.eth', name: 'music-posting.eth', publicKey: 'music-public-key', title: '/mu/ - Music' }] as Array<{
     address: string;
     name?: string;
@@ -74,7 +73,7 @@ const testState = vi.hoisted(() => ({
       '0xmod': { role: 'admin' },
     },
   } as { roles?: Record<string, unknown> } | undefined,
-  useCommentCalls: [] as Array<{ commentCid?: string; autoUpdate?: boolean; community?: { name?: string; publicKey?: string }; onlyIfCached?: boolean }>,
+  useCommentCalls: [] as Array<{ commentCid?: string; autoUpdate?: boolean; community?: { name?: string; publicKey?: string } }>,
   evictThreadRefreshCachesMock: vi.fn(),
 }));
 
@@ -124,20 +123,9 @@ vi.mock('@bitsocial/bitsocial-react-hooks', async () => {
     resolveReplySortType,
     useAccount: () => activeAccount,
     useAccountComment: ({ commentCid }: { commentCid?: string }) => (commentCid ? enrichAccountCommentAuthor(testState.accountCommentsByCid[commentCid]) : undefined),
-    useComment: ({
-      commentCid,
-      autoUpdate,
-      community,
-      onlyIfCached,
-    }: {
-      commentCid?: string;
-      autoUpdate?: boolean;
-      community?: { name?: string; publicKey?: string };
-      onlyIfCached?: boolean;
-    }) => {
-      testState.useCommentCalls.push({ commentCid, autoUpdate, community, ...(onlyIfCached ? { onlyIfCached } : {}) });
-      if (!commentCid) return undefined;
-      return (onlyIfCached && testState.cachedCommentsByCid[commentCid]) || testState.commentsByCid[commentCid];
+    useComment: ({ commentCid, autoUpdate, community }: { commentCid?: string; autoUpdate?: boolean; community?: { name?: string; publicKey?: string } }) => {
+      testState.useCommentCalls.push({ commentCid, autoUpdate, community });
+      return commentCid ? testState.commentsByCid[commentCid] : undefined;
     },
     useEditedComment: ({ comment }: { comment?: TestComment }) => ({
       editedComment: comment?.cid ? testState.editedCommentsByCid[comment.cid] : undefined,
@@ -298,14 +286,6 @@ vi.mock('../../../components/post-mobile/post-mobile', () => ({
 
 vi.mock('../../../lib/utils/thread-refresh-cache-utils', () => ({
   evictThreadRefreshCaches: testState.evictThreadRefreshCachesMock,
-  refreshCommentOnce: (_commentCid: string, refresh: () => Promise<void>) =>
-    refresh().then(
-      () => 'updated',
-      (error: unknown) => {
-        console.error('Failed to refresh thread comments:', error);
-        return 'failed';
-      },
-    ),
 }));
 
 let container: HTMLDivElement;
@@ -346,7 +326,6 @@ describe('Post', () => {
     testState.cidCommunityAddress = undefined;
     testState.communityFieldAddress = undefined;
     testState.commentsByCid = {};
-    testState.cachedCommentsByCid = {};
     testState.directories = [{ address: 'music-posting.eth', name: 'music-posting.eth', publicKey: 'music-public-key', title: '/mu/ - Music' }];
     testState.editedCommentsByCid = {};
     testState.isMobile = false;
@@ -921,12 +900,10 @@ describe('Post', () => {
 
     await renderPostPage('/mu/thread/thread-cid');
 
-    // Cache-only reads never subscribe or fetch, so only the loading calls matter here.
-    const loadingCalls = testState.useCommentCalls.filter((call) => !call.onlyIfCached);
-    expect(loadingCalls.length).toBeGreaterThan(0);
-    for (let index = 0; index < loadingCalls.length; index += 2) {
-      expect(loadingCalls[index].commentCid).toBe('thread-cid');
-      expect(loadingCalls[index + 1].commentCid).toBeUndefined();
+    expect(testState.useCommentCalls.length).toBeGreaterThan(0);
+    for (let index = 0; index < testState.useCommentCalls.length; index += 2) {
+      expect(testState.useCommentCalls[index].commentCid).toBe('thread-cid');
+      expect(testState.useCommentCalls[index + 1].commentCid).toBeUndefined();
     }
     expect(container.querySelector('[data-testid="post-desktop"]')?.textContent).toBe('thread-cid:none:1');
   });
@@ -1338,30 +1315,6 @@ describe('Post', () => {
     expect(useThreadLiveUpdatesStore.getState().status).toEqual({ type: 'error', reason: 'connection' });
     expect(consoleErrorSpy).toHaveBeenCalledWith('Failed to refresh thread comments:', expect.any(Error));
     consoleErrorSpy.mockRestore();
-  });
-
-  it('takes a newer cached copy of the thread after a refresh, and not before', async () => {
-    testState.commentsByCid = {
-      'root-cid': { cid: 'root-cid', communityAddress: 'music-posting.eth', number: 31, postCid: 'root-cid', replyCount: 8, updatedAt: 100 },
-    };
-    testState.cachedCommentsByCid = {
-      'root-cid': { cid: 'root-cid', communityAddress: 'music-posting.eth', number: 31, postCid: 'root-cid', replyCount: 9, updatedAt: 200 },
-    };
-
-    await renderPostPage('/mu/thread/root-cid');
-    const postDesktop = () => container.querySelector<HTMLElement>('[data-testid="post-desktop"]');
-    expect(postDesktop()?.dataset.replyCount).toBe('8');
-
-    await act(async () => {
-      useThreadLiveUpdatesStore.setState({ refreshCount: useThreadLiveUpdatesStore.getState().refreshCount + 1 });
-    });
-    expect(postDesktop()?.dataset.replyCount).toBe('9');
-
-    testState.cachedCommentsByCid['root-cid'] = { ...testState.cachedCommentsByCid['root-cid'], replyCount: 10, updatedAt: 300 };
-    await act(async () => {
-      useThreadLiveUpdatesStore.setState({ unreadCount: 0 });
-    });
-    expect(postDesktop()?.dataset.replyCount).toBe('9');
   });
 
   it('prefixes the tab title with the unread reply count', async () => {

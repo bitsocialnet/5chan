@@ -48,8 +48,6 @@ interface ThreadLiveUpdatesState {
   unreadMarkerCid: string | undefined;
   faviconAlert: ThreadFaviconAlert | undefined;
   updatesStarted: number;
-  /** Successful refreshes of the open thread; the page takes the freshest cached copy after each. */
-  refreshCount: number;
   openThread: (threadCid: string | undefined) => void;
   setRefreshThread: (refreshThread: RefreshThread | undefined) => void;
   setThreadPost: (post: Comment | undefined) => void;
@@ -74,7 +72,6 @@ const defaultState = {
   unreadMarkerCid: undefined,
   faviconAlert: undefined,
   updatesStarted: 0,
-  refreshCount: 0,
 };
 
 const getAutoSessionKey = (threadCid: string) => `${AUTO_SESSION_STORAGE_KEY_PREFIX}${threadCid}`;
@@ -200,7 +197,6 @@ const useThreadLiveUpdatesStore = create<ThreadLiveUpdatesState>((set, get) => {
         return;
       }
 
-      set((state) => ({ refreshCount: state.refreshCount + 1 }));
       setTimeout(() => {
         if (token !== updateToken) return;
         if (newPostsInUpdate === 0) {
