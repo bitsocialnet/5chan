@@ -491,7 +491,7 @@ describe('BoardButtons', () => {
     expect(testState.navigateMock).toHaveBeenCalledWith({ pathname: '/all/catalog', search: '?t=last' });
   });
 
-  it('renders thread actions and post stats, then requests refreshes, toggles auto updates, and scrolls to the bottom', async () => {
+  it('renders thread actions and post stats, toggles auto updates, and scrolls to the bottom', async () => {
     testState.commentsByCid = {
       'comment-1': {
         cid: 'comment-1',
@@ -523,6 +523,8 @@ describe('BoardButtons', () => {
 
     await clickButton('bottom');
     expect(window.scrollTo).toHaveBeenCalledWith({ behavior: 'instant', top: 2400 });
+
+    useThreadLiveUpdatesStore.getState().openThread('comment-1');
 
     const autoCheckbox = container.querySelector<HTMLInputElement>('input[type="checkbox"]');
     expect(autoCheckbox?.checked).toBe(false);

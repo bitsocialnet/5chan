@@ -47,14 +47,15 @@ const useThreadNewReplies = ({ enabled, hasMore, post, replies }: UseThreadNewRe
       return;
     }
 
+    const { isUpdating, recordNewReplies, updatesStarted } = useThreadLiveUpdatesStore.getState();
     const { count, quotesOwnPost } = findNewThreadReplies({ post, replies, seenReplyCids: seen.cids });
     const lastReadReplyCid = seen.lastCid;
     const isPaginating = hasMore || seen.hadMore;
     for (const cid of replyCids) seen.cids.add(cid);
     seen.lastCid = lastCid ?? seen.lastCid;
-    seen.hadMore = hasMore;
+    // An update can briefly report more pages while it reloads them; only a quiet thread paginates.
+    seen.hadMore = hasMore && !isUpdating;
 
-    const { recordNewReplies, updatesStarted } = useThreadLiveUpdatesStore.getState();
     if (count === 0 || isPaginating || updatesStarted === 0) return;
     recordNewReplies({ count, lastReadReplyCid, quotesOwnPost });
   }, [enabled, hasMore, post, replies]);

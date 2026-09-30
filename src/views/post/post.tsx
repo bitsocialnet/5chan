@@ -19,7 +19,7 @@ import { evictThreadRefreshCaches, refreshCommentOnce } from '../../lib/utils/th
 import { REPLIES_PER_PAGE } from '../../lib/constants';
 import { preservePublishedUserID } from '../../lib/utils/comment-user-id-utils';
 import useThreadUpdater from '../../hooks/use-thread-updater';
-import useThreadLiveUpdatesStore from '../../stores/use-thread-live-updates-store';
+import useThreadLiveUpdatesStore, { type RefreshThread } from '../../stores/use-thread-live-updates-store';
 import type { QueuedCommentRouteState } from '../../lib/utils/mod-queue-utils';
 import styles from '../../components/post-styles';
 
@@ -292,27 +292,25 @@ const PostPage = () => {
     previousThreadCidRef.current = post.cid;
   }, [post?.cid]);
 
-  const commentCidForRefresh = comment?.cid;
-  const commentRefresh = comment?.refresh;
+  // Only the post needs a refresh: replies, including a linked one, come from its reply pages.
   const postCidForRefresh = post?.cid;
   const postRefresh = post?.refresh;
-  const refreshThread = useMemo(() => {
-    const refreshByCid = new Map<string, () => Promise<void>>();
-    if (commentCidForRefresh && typeof commentRefresh === 'function') refreshByCid.set(commentCidForRefresh, commentRefresh);
-    if (postCidForRefresh && typeof postRefresh === 'function') refreshByCid.set(postCidForRefresh, postRefresh);
-    if (refreshByCid.size === 0) return undefined;
+  const refreshThread = useMemo<RefreshThread | undefined>(() => {
+    if (!postCidForRefresh || typeof postRefresh !== 'function') return undefined;
 
-    return async () => {
-      try {
-        await evictThreadRefreshCaches(threadRefreshCommentsRef.current);
-      } catch (cacheError) {
-        console.error('Failed to clear stale thread cache before refresh:', cacheError);
+    return async ({ force }) => {
+      // Evicting reply pages briefly empties the reply feed, so only a manual Update clears
+      // stale caches, as it did before Auto refreshed through the same path.
+      if (force) {
+        try {
+          await evictThreadRefreshCaches(threadRefreshCommentsRef.current);
+        } catch (cacheError) {
+          console.error('Failed to clear stale thread cache before refresh:', cacheError);
+        }
       }
-
-      const outcomes = await Promise.all(Array.from(refreshByCid, ([cid, refresh]) => refreshCommentOnce(cid, refresh)));
-      return outcomes.some((outcome) => outcome !== 'failed');
+      return (await refreshCommentOnce(postCidForRefresh, postRefresh)) !== 'failed';
     };
-  }, [commentCidForRefresh, commentRefresh, postCidForRefresh, postRefresh]);
+  }, [postCidForRefresh, postRefresh]);
 
   useThreadUpdater({ post: post?.cid ? post : undefined, refreshThread });
 

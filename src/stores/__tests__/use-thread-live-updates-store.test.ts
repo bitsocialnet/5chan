@@ -63,6 +63,34 @@ describe('useThreadLiveUpdatesStore', () => {
     await vi.advanceTimersByTimeAsync(1000);
     expect(getState().status).toEqual({ type: 'updating' });
     expect(refresh).toHaveBeenCalledTimes(1);
+    expect(refresh).toHaveBeenCalledWith({ force: false });
+  });
+
+  it('updates on time after a hidden tab throttles the countdown timers', async () => {
+    const refresh = openThreadWithRefresh();
+    getState().setEnabled(true);
+
+    // A throttled tab can sleep through many one-second ticks and wake once a minute.
+    vi.setSystemTime(Date.now() + 60_000);
+    await vi.advanceTimersByTimeAsync(1000);
+
+    expect(getState().status).toEqual({ type: 'updating' });
+    expect(refresh).toHaveBeenCalledTimes(1);
+  });
+
+  it('ignores Auto until a thread is open, then retries while the thread cannot refresh yet', async () => {
+    getState().setEnabled(true);
+    expect(getState()).toMatchObject({ enabled: false, status: { type: 'idle' } });
+
+    getState().openThread('thread-1');
+    getState().setEnabled(true);
+    await vi.advanceTimersByTimeAsync(10_000);
+    expect(getState()).toMatchObject({ status: { type: 'countdown', seconds: 10 }, updatesStarted: 0 });
+
+    const refresh = vi.fn(async () => true);
+    getState().setRefreshThread(refresh);
+    await vi.advanceTimersByTimeAsync(10_000);
+    expect(refresh).toHaveBeenCalledTimes(1);
   });
 
   it('waits one step longer after each empty update and returns to 10 after new posts', async () => {
@@ -100,6 +128,7 @@ describe('useThreadLiveUpdatesStore', () => {
 
     getState().forceUpdate();
     expect(getState().status).toEqual({ type: 'updating' });
+    expect(refresh).toHaveBeenCalledWith({ force: true });
     await flushPromises();
     getState().recordNewReplies({ count: 1, lastReadReplyCid: 'reply-2', quotesOwnPost: true });
     getState().recordNewReplies({ count: 2, lastReadReplyCid: 'reply-3', quotesOwnPost: false });
@@ -218,8 +247,9 @@ describe('useThreadLiveUpdatesStore', () => {
     expect(getState().status).toEqual({ type: 'countdown', seconds: 15 });
 
     getState().recordNewReplies({ count: 1, lastReadReplyCid: 'reply-1', quotesOwnPost: false });
-    await vi.advanceTimersByTimeAsync(1000);
     expect(getState().status).toEqual({ type: 'countdown', seconds: 10 });
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(getState().status).toEqual({ type: 'countdown', seconds: 9 });
   });
 
   it('keeps Auto per thread for the browser session', () => {

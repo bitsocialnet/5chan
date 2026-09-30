@@ -24,8 +24,8 @@ export type ThreadUpdaterStatus =
 
 export type ThreadFaviconAlert = FaviconAlert;
 
-/** Resolves whether at least one of the thread's comments refreshed. */
-export type RefreshThread = () => Promise<boolean>;
+/** Resolves whether the thread refreshed. `force` is set for a manual Update. */
+export type RefreshThread = (options: { force: boolean }) => Promise<boolean>;
 
 export interface NewThreadReplies {
   count: number;
@@ -107,7 +107,9 @@ const isPageScrollable = () => typeof document !== 'undefined' && document.docum
 const useThreadLiveUpdatesStore = create<ThreadLiveUpdatesState>((set, get) => {
   let refreshThread: RefreshThread | undefined;
   let delayIndex = 0;
-  let timeLeft = 0;
+  // The countdown runs against a deadline because hidden tabs throttle chained timers to about
+  // one wake-up a minute, which would stretch a counted-down delay far past its length.
+  let deadline = 0;
   let pulseTimer: ReturnType<typeof setTimeout> | undefined;
   let hadAuto = false;
   let updateForced = false;
@@ -121,15 +123,19 @@ const useThreadLiveUpdatesStore = create<ThreadLiveUpdatesState>((set, get) => {
     pulseTimer = undefined;
   };
 
+  const setDelay = (seconds: number) => {
+    deadline = Date.now() + seconds * 1000;
+  };
+
   const pulse = () => {
     pulseTimer = undefined;
-    if (timeLeft === 0) {
+    const msLeft = deadline - Date.now();
+    if (msLeft <= 0) {
       update(false);
       return;
     }
-    set({ status: { type: 'countdown', seconds: timeLeft } });
-    timeLeft -= 1;
-    pulseTimer = setTimeout(pulse, 1000);
+    set({ status: { type: 'countdown', seconds: Math.ceil(msLeft / 1000) } });
+    pulseTimer = setTimeout(pulse, msLeft % 1000 || 1000);
   };
 
   const restartPulse = () => {
@@ -145,7 +151,7 @@ const useThreadLiveUpdatesStore = create<ThreadLiveUpdatesState>((set, get) => {
     } else {
       delayIndex = isDocumentHidden() ? HIDDEN_TAB_DELAY_INDEX : 0;
     }
-    timeLeft = THREAD_UPDATE_DELAYS_SECONDS[delayIndex];
+    setDelay(THREAD_UPDATE_DELAYS_SECONDS[delayIndex]);
     if (get().enabled) {
       restartPulse();
     }
@@ -165,8 +171,11 @@ const useThreadLiveUpdatesStore = create<ThreadLiveUpdatesState>((set, get) => {
     }
     const refresh = refreshThread;
     if (!refresh) {
-      // The thread has not loaded yet; keep the automatic countdown going.
-      if (!force) adjustDelay(0);
+      // The thread has not loaded yet; try again after the same delay.
+      if (!force && get().enabled) {
+        setDelay(THREAD_UPDATE_DELAYS_SECONDS[delayIndex]);
+        restartPulse();
+      }
       return;
     }
 
@@ -181,7 +190,7 @@ const useThreadLiveUpdatesStore = create<ThreadLiveUpdatesState>((set, get) => {
       timeoutId = setTimeout(() => resolve(false), THREAD_UPDATE_TIMEOUT_MS);
     });
 
-    void Promise.race([refresh().catch(() => false), timeout]).then((refreshed) => {
+    void Promise.race([refresh({ force }).catch(() => false), timeout]).then((refreshed) => {
       clearTimeout(timeoutId);
       if (token !== updateToken) return;
 
@@ -206,6 +215,7 @@ const useThreadLiveUpdatesStore = create<ThreadLiveUpdatesState>((set, get) => {
 
   const start = () => {
     const { deadReason, isUpdating, threadCid } = get();
+    if (!threadCid) return;
     if (deadReason) {
       set({ status: { type: 'error', reason: deadReason } });
       return;
@@ -214,7 +224,7 @@ const useThreadLiveUpdatesStore = create<ThreadLiveUpdatesState>((set, get) => {
     set({ enabled: true });
     writeAutoSession(threadCid, true);
     delayIndex = 0;
-    timeLeft = THREAD_UPDATE_DELAYS_SECONDS[0];
+    setDelay(THREAD_UPDATE_DELAYS_SECONDS[0]);
     // An update already in flight starts the countdown when it finishes.
     if (!isUpdating) restartPulse();
   };
@@ -234,7 +244,7 @@ const useThreadLiveUpdatesStore = create<ThreadLiveUpdatesState>((set, get) => {
     clearPulse();
     updateToken += 1;
     delayIndex = 0;
-    timeLeft = 0;
+    deadline = 0;
     hadAuto = false;
     updateForced = false;
     newPostsInUpdate = 0;
@@ -284,7 +294,8 @@ const useThreadLiveUpdatesStore = create<ThreadLiveUpdatesState>((set, get) => {
         const firstDelayIndex = isDocumentHidden() ? HIDDEN_TAB_DELAY_INDEX : 0;
         if (delayIndex > firstDelayIndex) {
           delayIndex = firstDelayIndex;
-          timeLeft = Math.min(timeLeft, THREAD_UPDATE_DELAYS_SECONDS[delayIndex]);
+          deadline = Math.min(deadline, Date.now() + THREAD_UPDATE_DELAYS_SECONDS[delayIndex] * 1000);
+          if (get().enabled) restartPulse();
         }
       }
     },
@@ -298,7 +309,7 @@ const useThreadLiveUpdatesStore = create<ThreadLiveUpdatesState>((set, get) => {
     handleVisibilityChange: () => {
       if (!get().enabled) return;
       delayIndex = isDocumentHidden() ? Math.max(delayIndex, HIDDEN_TAB_DELAY_INDEX) : 0;
-      timeLeft = THREAD_UPDATE_DELAYS_SECONDS[0];
+      setDelay(THREAD_UPDATE_DELAYS_SECONDS[0]);
       if (!get().isUpdating) restartPulse();
     },
     markThreadDead: (reason, announce) => {

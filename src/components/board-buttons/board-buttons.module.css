@@ -14,6 +14,12 @@
 
 .mobileBoardButtons .secondRow {
   margin-top: -5px;
+  padding-bottom: 20px;
+}
+
+/* The thread status line below Update and Auto takes the place of the row's bottom padding. */
+.mobileBoardButtons .threadSecondRow {
+  padding-bottom: 0;
 }
 
 .mobileThreadUpdateStatus {

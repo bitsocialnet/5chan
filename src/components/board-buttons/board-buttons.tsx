@@ -594,7 +594,7 @@ export const MobileBoardButtons = () => {
             <CatalogButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
           )}
           {showBottomButton && <BottomButton />}
-          <div className={styles.secondRow}>
+          <div className={`${styles.secondRow} ${styles.threadSecondRow}`}>
             <UpdateButton />
             <AutoButton />
             <ThreadUpdateStatus isMobile={true} />

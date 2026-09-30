@@ -112,6 +112,16 @@ describe('useThreadNewReplies', () => {
     expect(recordNewRepliesMock).toHaveBeenCalledWith({ count: 1, lastReadReplyCid: 'd', quotesOwnPost: false });
   });
 
+  it('still reports replies after an update briefly reloads the reply pages', async () => {
+    await render({ post, replies: [reply('a'), reply('b')] });
+    useThreadLiveUpdatesStore.setState({ isUpdating: true, updatesStarted: 1 });
+    await render({ hasMore: true, post, replies: [reply('a'), reply('b')] });
+    useThreadLiveUpdatesStore.setState({ isUpdating: false });
+    await render({ hasMore: false, post, replies: [reply('a'), reply('b'), reply('c')] });
+
+    expect(recordNewRepliesMock).toHaveBeenCalledWith({ count: 1, lastReadReplyCid: 'b', quotesOwnPost: false });
+  });
+
   it('recomputes the replies feed when the thread post updates', async () => {
     await render({ post, replies: [reply('a')] });
     expect(testState.syncThreadRepliesFeedsMock).toHaveBeenCalledTimes(1);

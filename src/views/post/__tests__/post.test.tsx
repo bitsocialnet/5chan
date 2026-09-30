@@ -1276,8 +1276,9 @@ describe('Post', () => {
     await flushEffects();
 
     expect(testState.evictThreadRefreshCachesMock).toHaveBeenCalledWith([testState.commentsByCid['reply-cid'], testState.commentsByCid['root-cid']]);
-    expect(events[0]).toBe('evict-cache');
-    expect(refreshReply).toHaveBeenCalledTimes(1);
+    expect(events).toEqual(['evict-cache', 'refresh-post']);
+    // The linked reply comes from the post's reply pages, so only the post refreshes.
+    expect(refreshReply).not.toHaveBeenCalled();
     expect(refreshPost).toHaveBeenCalledTimes(1);
 
     await act(async () => {
@@ -1287,6 +1288,28 @@ describe('Post', () => {
       isUpdating: false,
       status: { type: 'no-new-posts' },
     });
+  });
+
+  it('refreshes automatic updates without evicting the thread caches', async () => {
+    const refreshPost = vi.fn(async () => undefined);
+    testState.commentsByCid = {
+      'root-cid': { cid: 'root-cid', communityAddress: 'music-posting.eth', number: 31, postCid: 'root-cid', refresh: refreshPost, replyCount: 0 },
+    };
+    sessionStorage.setItem('5chan-thread-auto-update:root-cid', '1');
+
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    try {
+      await renderPostPage('/mu/thread/root-cid');
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(10_000);
+      });
+
+      expect(refreshPost).toHaveBeenCalledTimes(1);
+      expect(testState.evictThreadRefreshCachesMock).not.toHaveBeenCalled();
+    } finally {
+      vi.useRealTimers();
+      sessionStorage.clear();
+    }
   });
 
   it('reports a failed thread refresh as a connection error', async () => {
