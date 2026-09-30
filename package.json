@@ -193,7 +193,7 @@
     "lint-staged": "17.6.0",
     "node-fetch": "3.3.2",
     "oxc-parser": "0.152.0",
-    "oxfmt": "0.20.0",
+    "oxfmt": "0.71.0",
     "oxlint": "1.86.0",
     "playwright": "1.63.0",
     "progress": "2.0.3",
