@@ -1,6 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+type CommentsStoreState = {
+  comments: Record<string, { updatingState?: string }>;
+  errors: Record<string, Error[]>;
+  stopCommentAutoUpdate: (commentCid: string, subscriberId: string) => Promise<void>;
+};
+
 const testState = vi.hoisted(() => ({
+  commentsStoreListeners: new Set<(state: CommentsStoreState) => void>(),
+  commentsStoreState: { comments: {}, errors: {} } as unknown as CommentsStoreState,
+  stopCommentAutoUpdateMock: vi.fn(async () => undefined),
+  updateFeedsMock: vi.fn(),
   commentsRemoveItemMock: vi.fn(),
   repliesPagesRemoveItemMock: vi.fn(),
   repliesPagesState: {
@@ -26,6 +36,16 @@ vi.mock('../../bitsocial-internals/utils', () => ({
 }));
 
 vi.mock('../../bitsocial-internals/stores', () => ({
+  commentsStore: {
+    getState: () => testState.commentsStoreState,
+    subscribe: (listener: (state: CommentsStoreState) => void) => {
+      testState.commentsStoreListeners.add(listener);
+      return () => testState.commentsStoreListeners.delete(listener);
+    },
+  },
+  repliesStore: {
+    getState: () => ({ updateFeeds: testState.updateFeedsMock }),
+  },
   repliesPagesStore: {
     getState: () => testState.repliesPagesState,
     setState: (updater: (state: typeof testState.repliesPagesState) => Partial<typeof testState.repliesPagesState>) => {
@@ -39,7 +59,7 @@ vi.mock('../../bitsocial-internals/stores', () => ({
   },
 }));
 
-import { evictThreadRefreshCaches } from '../thread-refresh-cache-utils';
+import { evictThreadRefreshCaches, refreshCommentOnce, syncThreadRepliesFeeds } from '../thread-refresh-cache-utils';
 
 describe('thread-refresh-cache-utils', () => {
   beforeEach(() => {
@@ -105,5 +125,59 @@ describe('thread-refresh-cache-utils', () => {
     expect(testState.repliesPagesState.comments).toEqual({
       unrelated: { cid: 'unrelated' },
     });
+  });
+  describe('refreshCommentOnce', () => {
+    const setCommentState = (updatingState: string, errors: Error[] = testState.commentsStoreState.errors['post-cid'] ?? []) => {
+      testState.commentsStoreState = {
+        ...testState.commentsStoreState,
+        comments: { 'post-cid': { updatingState } },
+        errors: { 'post-cid': errors },
+      };
+      for (const listener of testState.commentsStoreListeners) listener(testState.commentsStoreState);
+    };
+
+    beforeEach(() => {
+      testState.commentsStoreListeners.clear();
+      testState.stopCommentAutoUpdateMock.mockClear();
+      testState.commentsStoreState = { comments: {}, errors: {}, stopCommentAutoUpdate: testState.stopCommentAutoUpdateMock };
+    });
+
+    it('reports an update when the hooks refresh settles', async () => {
+      await expect(refreshCommentOnce('post-cid', async () => undefined)).resolves.toBe('updated');
+      expect(testState.commentsStoreListeners.size).toBe(0);
+    });
+
+    it('reports an unchanged thread and stops the one-shot update', async () => {
+      const outcome = refreshCommentOnce('post-cid', () => new Promise<void>(() => undefined));
+      setCommentState('stopped');
+      setCommentState('waiting-retry');
+      setCommentState('fetching-update-ipfs');
+      setCommentState('waiting-retry');
+
+      await expect(outcome).resolves.toBe('unchanged');
+      expect(testState.stopCommentAutoUpdateMock).toHaveBeenCalledWith('post-cid', 'thread-refresh');
+      expect(testState.commentsStoreListeners.size).toBe(0);
+    });
+
+    it('reports a retriable fetch error as a failure', async () => {
+      const outcome = refreshCommentOnce('post-cid', () => new Promise<void>(() => undefined));
+      setCommentState('fetching-update-ipfs');
+      setCommentState('waiting-retry', [new Error('gateway timeout')]);
+
+      await expect(outcome).resolves.toBe('failed');
+      expect(testState.stopCommentAutoUpdateMock).not.toHaveBeenCalled();
+    });
+
+    it('reports a rejected refresh as a failure', async () => {
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+      await expect(refreshCommentOnce('post-cid', async () => Promise.reject(new Error('offline')))).resolves.toBe('failed');
+      expect(consoleErrorSpy).toHaveBeenCalledWith('Failed to refresh thread comments:', expect.any(Error));
+      consoleErrorSpy.mockRestore();
+    });
+  });
+
+  it('recomputes reply feeds without resetting them', () => {
+    syncThreadRepliesFeeds();
+    expect(testState.updateFeedsMock).toHaveBeenCalledOnce();
   });
 });
