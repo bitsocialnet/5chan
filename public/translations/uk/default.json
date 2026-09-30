@@ -154,7 +154,6 @@
   "1_post_by_this_id": "1 пост з цим ідентифікатором",
   "x_posts_by_this_id": "{{number}} пост з цього ідентифікатора",
   "ban_expires_at": "Заборонений з p/{{address}} до {{timestamp}}",
-  "user_banned": "Користувач був заблокований за цей пост",
   "replies": "відповіді",
   "links": "посилання",
   "animated_gif": "Анімований GIF",
@@ -503,5 +502,6 @@
   "directory_vote_needs_pass": "Ваш голос не надіслано: на адресі для голосування цього облікового запису <address>{{address}}</address> немає <passLink>5chan Pass</passLink>.",
   "directory_vote_needs_test_pass": "Ваш голос не надіслано: на адресі для голосування цього облікового запису <address>{{address}}</address> немає 5chan Pass. Поки що голосування працює в testnet, тож ви можете безкоштовно отримати тестовий Pass для цієї адреси через <faucetLink>кран</faucetLink>.",
   "directory_vote_board_not_found": "За адресою {{address}} дошку не знайдено. Введіть адресу .bso або публічний ключ дошки.",
-  "directory_vote_failed": "Не вдалося надіслати ваш голос: {{error}}"
+  "directory_vote_failed": "Не вдалося надіслати ваш голос: {{error}}",
+  "user_banned_from_board": "Користувача було заблоковано на {{board}}"
 }

@@ -154,7 +154,6 @@
   "1_post_by_this_id": "1 โพสต์โดย ID นี้",
   "x_posts_by_this_id": "{{number}} โพสต์จาก ID นี้",
   "ban_expires_at": "ถูกห้ามใช้งานจาก p/{{address}} จนถึง {{timestamp}}",
-  "user_banned": "ผู้ใช้ถูกห้ามใช้งานสำหรับโพสต์นี้",
   "replies": "คำตอบ",
   "links": "ลิงก์",
   "animated_gif": "GIF ที่เคลื่อนไหว",
@@ -503,5 +502,6 @@
   "directory_vote_needs_pass": "ไม่ได้ส่งโหวตของคุณ: ที่อยู่สำหรับโหวตของบัญชีนี้ <address>{{address}}</address> ไม่มี <passLink>5chan Pass</passLink>",
   "directory_vote_needs_test_pass": "ไม่ได้ส่งโหวตของคุณ: ที่อยู่สำหรับโหวตของบัญชีนี้ <address>{{address}}</address> ไม่มี 5chan Pass ขณะนี้การโหวตยังอยู่บน testnet คุณจึงรับ Pass ทดสอบฟรีสำหรับที่อยู่นี้ได้จาก <faucetLink>faucet</faucetLink>",
   "directory_vote_board_not_found": "ไม่พบบอร์ดที่ {{address}} ป้อนที่อยู่ .bso หรือคีย์สาธารณะของบอร์ด",
-  "directory_vote_failed": "ส่งโหวตของคุณไม่สำเร็จ: {{error}}"
+  "directory_vote_failed": "ส่งโหวตของคุณไม่สำเร็จ: {{error}}",
+  "user_banned_from_board": "ผู้ใช้ถูกแบนจาก {{board}}"
 }

@@ -28,6 +28,11 @@ jobs:
         with:
           fetch-depth: 1
       - uses: anthropics/claude-code-action@v1
+        env:
+          # The action ends the session at Claude's first result. The code-review command starts its
+          # first agent in the background and ends that turn to wait, so the review never ran and the
+          # job still passed (anthropics/claude-code-action#1646). Keep every agent in the foreground.
+          CLAUDE_CODE_DISABLE_BACKGROUND_TASKS: '1'
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           plugin_marketplaces: 'https://github.com/anthropics/claude-code.git'

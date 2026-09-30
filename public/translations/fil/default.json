@@ -154,7 +154,6 @@
   "1_post_by_this_id": "1 post sa pamamagitan ng ID na ito",
   "x_posts_by_this_id": "{{number}} post mula sa ID na ito",
   "ban_expires_at": "Bawal sa p/{{address}} hanggang {{timestamp}}",
-  "user_banned": "Banal ang user para sa post na ito",
   "replies": "mga tugon",
   "links": "mga link",
   "animated_gif": "Animated GIF",
@@ -503,5 +502,6 @@
   "directory_vote_needs_pass": "Hindi naipadala ang boto mo: walang <passLink>5chan Pass</passLink> ang voting address ng account na ito na <address>{{address}}</address>.",
   "directory_vote_needs_test_pass": "Hindi naipadala ang boto mo: walang 5chan Pass ang voting address ng account na ito na <address>{{address}}</address>. Nasa testnet muna ang pagboto, kaya puwede kang kumuha ng libreng test Pass para sa address na ito mula sa <faucetLink>faucet</faucetLink>.",
   "directory_vote_board_not_found": "Walang board na nahanap sa {{address}}. Maglagay ng .bso address o public key ng isang board.",
-  "directory_vote_failed": "Hindi maipadala ang boto mo: {{error}}"
+  "directory_vote_failed": "Hindi maipadala ang boto mo: {{error}}",
+  "user_banned_from_board": "Na-ban ang user sa {{board}}"
 }

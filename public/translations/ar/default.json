@@ -154,7 +154,6 @@
   "1_post_by_this_id": "مشاركة واحدة بهذا المعرف",
   "x_posts_by_this_id": "{{number}} منشور من هذا المعرف",
   "ban_expires_at": "محظور من p/{{address}} حتى {{timestamp}}",
-  "user_banned": "تم حظر المستخدم لهذا المنشور",
   "replies": "الردود",
   "links": "الروابط",
   "animated_gif": "GIF متحرك",
@@ -503,5 +502,6 @@
   "directory_vote_needs_pass": "لم يُرسَل تصويتك: عنوان التصويت الخاص بهذا الحساب <address>{{address}}</address> لا يملك <passLink>5chan Pass</passLink>.",
   "directory_vote_needs_test_pass": "لم يُرسَل تصويتك: عنوان التصويت الخاص بهذا الحساب <address>{{address}}</address> لا يملك 5chan Pass. التصويت يعمل على testnet حاليًا، لذا يمكنك الحصول على Pass تجريبي مجاني لهذا العنوان من <faucetLink>الصنبور</faucetLink>.",
   "directory_vote_board_not_found": "لم يُعثر على أي لوحة في {{address}}. أدخل عنوان .bso أو المفتاح العام للوحة.",
-  "directory_vote_failed": "تعذّر إرسال تصويتك: {{error}}"
+  "directory_vote_failed": "تعذّر إرسال تصويتك: {{error}}",
+  "user_banned_from_board": "تم حظر المستخدم من {{board}}"
 }
