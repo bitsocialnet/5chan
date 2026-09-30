@@ -398,6 +398,7 @@ interface RenderContext {
   enableFortuneMarkup: boolean;
   enableQstBbcode: boolean;
   parseSpoilers: boolean;
+  purgedQuoteNumbers?: ReadonlySet<number>;
 }
 
 interface MarkdownProps {
@@ -407,9 +408,21 @@ interface MarkdownProps {
   communityAddress?: string;
   /** When false, [spoiler] tags stay visible (e.g. rules text teaching the syntax). Default true. */
   parseSpoilers?: boolean;
+  /** Same-thread quote numbers whose targets are known to be purged (see getPurgedQuoteNumbers). */
+  purgedQuoteNumbers?: ReadonlySet<number>;
 }
 
-const NumberQuoteLink = ({ number, threadPostCid, communityAddress }: { number: number; threadPostCid?: string; communityAddress?: string }) => {
+const NumberQuoteLink = ({
+  number,
+  threadPostCid,
+  communityAddress,
+  isPurged,
+}: {
+  number: number;
+  threadPostCid?: string;
+  communityAddress?: string;
+  isPurged?: boolean;
+}) => {
   // A cross-thread quote's number->cid mapping can be known locally while its comment body is not
   // yet cached. Fetch the body lazily on hover so the floating preview can show, instead of leaving
   // the quotelink inert. Same-thread quotes stay cached, so this never fetches for them.
@@ -421,7 +434,9 @@ const NumberQuoteLink = ({ number, threadPostCid, communityAddress }: { number: 
   const comment = commentFromHook?.number !== undefined ? commentFromHook : commentFromStore;
   const isOP = Boolean((threadPostCid && cid === threadPostCid) || (threadPostNumber !== undefined && number === threadPostNumber));
 
-  if (isUnavailableQuoteTarget(comment)) {
+  // A purged target usually left no number to resolve, so skip the board-wide lookup; a number
+  // cached before the purge would otherwise link to a comment that no longer exists.
+  if (isUnavailableQuoteTarget(comment) || isPurged) {
     return (
       <ReplyQuotePreview isQuotelinkReply={true} quotelinkReply={comment} quotelinkNumber={number} isQuotelinkUnavailable={true} isOP={isOP} showTrailingBreak={false} />
     );
@@ -509,7 +524,7 @@ const AnchorLink = ({ href, text }: { href: string; text: string }) => {
 };
 
 const TokenNode = ({ token, context }: { token: Token; context: RenderContext }) => {
-  const { isInCatalogView, postCid, communityAddress } = context;
+  const { isInCatalogView, postCid, communityAddress, purgedQuoteNumbers } = context;
 
   switch (token.type) {
     case 'text':
@@ -532,7 +547,7 @@ const TokenNode = ({ token, context }: { token: Token; context: RenderContext })
     case 'quoteLink':
       return (
         <span className={styles.inlineQuoteLink}>
-          <NumberQuoteLink number={token.number} threadPostCid={postCid} communityAddress={communityAddress} />
+          <NumberQuoteLink number={token.number} threadPostCid={postCid} communityAddress={communityAddress} isPurged={purgedQuoteNumbers?.has(token.number)} />
         </span>
       );
     case 'crossBoardNumberQuoteLink':
@@ -754,7 +769,7 @@ const renderTextLines = (normalized: string, context: RenderContext, keyPrefix: 
   return elements;
 };
 
-const Markdown = ({ content, title, postCid, communityAddress, parseSpoilers = true }: MarkdownProps) => {
+const Markdown = ({ content, title, postCid, communityAddress, parseSpoilers = true, purgedQuoteNumbers }: MarkdownProps) => {
   const location = useLocation();
   const params = useParams();
   const directories = useDirectories();
@@ -773,7 +788,7 @@ const Markdown = ({ content, title, postCid, communityAddress, parseSpoilers = t
       isMathDirectoryCode(getDirectoryCodeForIdentifier(communityAddress, directories)));
 
   const rendered = useMemo(() => {
-    const context = { isInCatalogView, postCid, communityAddress, enableFortuneMarkup, enableQstBbcode, parseSpoilers };
+    const context = { isInCatalogView, postCid, communityAddress, enableFortuneMarkup, enableQstBbcode, parseSpoilers, purgedQuoteNumbers };
     const raw = content || '';
 
     if (enableMathTags && HAS_MATH_TAG_REGEX.test(raw)) {
@@ -806,7 +821,7 @@ const Markdown = ({ content, title, postCid, communityAddress, parseSpoilers = t
     });
 
     return elements;
-  }, [content, isInCatalogView, postCid, communityAddress, enableFortuneMarkup, enableQstBbcode, parseSpoilers, enableCodeTags, enableMathTags]);
+  }, [content, isInCatalogView, postCid, communityAddress, enableFortuneMarkup, enableQstBbcode, parseSpoilers, purgedQuoteNumbers, enableCodeTags, enableMathTags]);
 
   return (
     <span className={styles.markdown}>
