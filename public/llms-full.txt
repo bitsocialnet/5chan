@@ -130,7 +130,7 @@ To have your board appear in a directory on the 5chan homepage:
 
 ### Prerequisites
 
-- Node.js 22.12.0, pinned in [`.nvmrc`](./.nvmrc)
+- Node.js 22.22.3, pinned in [`.nvmrc`](./.nvmrc)
 - Corepack enabled once per machine: `corepack enable`
 
 ### Contributor Setup
@@ -851,7 +851,7 @@ If uncertain, ask the developer before adding an entry.
 - **Context:** Investigating the `v0.7.1` macOS arm64 DMG after the app showed a live IPFS node but never loaded boards or comments.
 - **What was surprising:** The packaged app can start IPFS successfully while `electron/start-pkc-rpc.js` loops forever because `/Applications/5chan.app/.../better_sqlite3.node` was built for plain Node 22 (`NODE_MODULE_VERSION 127`) instead of Electron 36 (`NODE_MODULE_VERSION 135`).
 - **Impact:** The local RPC server on `ws://localhost:9138` never starts, so the desktop app cannot load boards, posts, or comments even though node stats look healthy.
-- **Mitigation:** Before any Electron package/build job, run `yarn electron:prepare-package` so `better-sqlite3` is rebuilt for Electron and immediately verified via `ELECTRON_RUN_AS_NODE=1 electron`.
+- **Mitigation:** Before any Electron package/build job, run `yarn electron:prepare-package` so `better-sqlite3` is rebuilt for Electron and immediately verified via `ELECTRON_RUN_AS_NODE=1 electron`. Since better-sqlite3 13 the runtime loads a bundled N-API prebuild that does not depend on the Node or Electron version; it loads that binary only when a database opens, so the verification opens one.
 - **Status:** confirmed
 
 ### Plain Vite fallback used to hard-fail on port 1355
@@ -892,8 +892,8 @@ If uncertain, ask the developer before adding an entry.
 - **Context:** Running the first signed + notarized mac Electron build (`yarn electron:build:mac:arm64` with Apple credentials set)
 - **What was surprising:** `@electron/notarize` 2.x runs its pre-upload signature check as `codesign -dv 5chan.app` from the bundle's parent directory, and `codesign` accepts a process ID in place of a path — so it parses the digit-leading basename as PID 5 and fails with `5chan.app: No such process` even though the app is signed correctly.
 - **Impact:** Notarization aborts after a successful signing pass; the error message looks like a signing failure and invites debugging the certificate/keychain instead of the real cause. Any tool that shells out to `codesign` with a bare relative path can hit this because the app is literally named `5chan`.
-- **Mitigation:** Keep the yarn patch `.yarn/patches/@electron-notarize-npm-2.5.0-*.patch` (backport of electron/notarize#245, prefixes the basename with `./`) until electron-forge depends on `@electron/notarize` >= 3.x. When invoking `codesign` manually on the app bundle, always use an absolute or `./`-prefixed path.
-- **Status:** confirmed
+- **Mitigation:** electron-forge 8 signs through `@electron/notarize` 3.1.1, which includes electron/notarize#245 (prefixes the basename with `./`), so the yarn patch for 2.5.0 was removed. Keep the lockfile on notarize >= 3.1.1; 3.1.0 lacks the fix. When invoking `codesign` manually on the app bundle, always use an absolute or `./`-prefixed path.
+- **Status:** resolved upstream
 ```
 
 ---

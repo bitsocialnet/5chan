@@ -12,7 +12,6 @@ i18next
   .use(initReactI18next)
   .init({
     fallbackLng: DEFAULT_INTERFACE_LANGUAGE,
-    showSupportNotice: false,
     supportedLngs: [...SUPPORTED_INTERFACE_LANGUAGES],
     detection: {
       order: ['localStorage'],

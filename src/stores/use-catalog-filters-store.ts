@@ -333,28 +333,17 @@ const useCatalogFiltersStore = create(
           })),
         } as any;
       },
-      deserialize: (persisted) => {
-        const persistedObj = typeof persisted === 'string' ? JSON.parse(persisted) : persisted;
-        const persistedState =
-          persistedObj && typeof persistedObj === 'object' && 'state' in persistedObj ? (persistedObj as { state?: CatalogFiltersStore }).state : persistedObj;
-
-        if (persistedState && typeof persistedState === 'object' && 'filterItems' in persistedState) {
-          const migratedState = {
-            ...persistedState,
-            filterItems: persistedState.filterItems.map((item: RawFilterItem) => ({
-              ...normalizeFilterItem(item),
-            })),
-            filteredCount: 0,
-          };
-
-          if (persistedObj && typeof persistedObj === 'object' && 'state' in persistedObj) {
-            return { ...persistedObj, state: migratedState };
-          }
-
-          return migratedState;
+      merge: (persisted, current) => {
+        const persistedState = persisted as { filterItems?: RawFilterItem[] } | undefined;
+        if (!persistedState || typeof persistedState !== 'object' || !Array.isArray(persistedState.filterItems)) {
+          return current;
         }
-
-        return persistedObj || persisted;
+        return {
+          ...current,
+          ...persistedState,
+          filterItems: persistedState.filterItems.map((item) => normalizeFilterItem(item)),
+          filteredCount: 0,
+        };
       },
     },
   ),

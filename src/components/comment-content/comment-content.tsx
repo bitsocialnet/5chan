@@ -1,5 +1,6 @@
 import { type ReactNode, useMemo, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
+import { useShallow } from 'zustand/react/shallow';
 import { Trans, useTranslation } from 'react-i18next';
 import { Comment, useComment } from '@bitsocial/bitsocial-react-hooks';
 import { communitiesPagesStore as useCommunitiesPagesStore } from '../../lib/bitsocial-internals/stores';
@@ -49,24 +50,24 @@ const useScopedCidToNumber = (cids: string[]) => {
     return Array.from(uniqueCids).toSorted();
   }, [cids]);
 
-  const cidToNumber = usePostNumberStore(
-    useMemo(
-      () => (state) => {
-        if (sortedUniqueCids.length === 0) {
-          return {} as Record<string, number>;
+  const selectCidToNumber = useMemo(
+    () => (state: { cidToNumber: Record<string, number> }) => {
+      if (sortedUniqueCids.length === 0) {
+        return {} as Record<string, number>;
+      }
+      const nextCidToNumber: Record<string, number> = {};
+      for (const cid of sortedUniqueCids) {
+        const number = state.cidToNumber[cid];
+        if (typeof number === 'number') {
+          nextCidToNumber[cid] = number;
         }
-        const nextCidToNumber: Record<string, number> = {};
-        for (const cid of sortedUniqueCids) {
-          const number = state.cidToNumber[cid];
-          if (typeof number === 'number') {
-            nextCidToNumber[cid] = number;
-          }
-        }
-        return nextCidToNumber;
-      },
-      [sortedUniqueCids],
-    ),
+      }
+      return nextCidToNumber;
+    },
+    [sortedUniqueCids],
   );
+  // The selector builds a new object on every call; useShallow keeps the result stable while its entries are unchanged.
+  const cidToNumber = usePostNumberStore(useShallow(selectCidToNumber));
 
   return cidToNumber;
 };

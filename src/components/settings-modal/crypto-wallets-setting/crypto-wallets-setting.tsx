@@ -29,14 +29,12 @@ const CryptoWalletsForm = ({ account }: { account: Account | undefined }) => {
   const authorAddress = account?.author?.address;
   const defaultWalletObject: Wallet = { chainTicker: '', address: '', timestamp: 0, signature: '' };
 
-  const walletsFromAccount = Object.keys(account?.author?.wallets || {}).map(
-    (chainTicker): Wallet => ({
-      chainTicker,
-      address: account.author.wallets[chainTicker].address,
-      timestamp: account.author.wallets[chainTicker].timestamp,
-      signature: account.author.wallets[chainTicker].signature.signature,
-    }),
-  );
+  const walletsFromAccount = Object.keys(account?.author?.wallets || {}).map((chainTicker): Wallet => ({
+    chainTicker,
+    address: account.author.wallets[chainTicker].address,
+    timestamp: account.author.wallets[chainTicker].timestamp,
+    signature: account.author.wallets[chainTicker].signature.signature,
+  }));
 
   const defaultWalletsArray: Wallet[] = walletsFromAccount.length ? walletsFromAccount : [];
 

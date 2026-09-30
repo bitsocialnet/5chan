@@ -22,12 +22,19 @@ export default {
   routes: [
     { name: 'home', hash: '/', staticShell: true, content: '[class*="_popularThreads_"] a[href*="/thread/"]' },
     { name: 'home-mobile', hash: '/', staticShell: true, viewport: { width: 375, height: 812 } },
-    // A return visit: the introduction store saved its default while hydrating on the first visit.
+    // A return visit from before zustand 5, which saved the introduction store's default while hydrating.
     { name: 'home-returning', hash: '/', staticShell: true, storage: { 'homepage-introduction': '{"state":{"showIntroduction":true},"version":0}' } },
     { name: 'home-intro-closed', hash: '/', staticShell: false, storage: { 'homepage-introduction': '{"state":{"showIntroduction":false},"version":0}' } },
     { name: 'home-german', hash: '/', staticShell: false, storage: { '5chan-interface-language': 'de' } },
     { name: 'board', hash: '/biz', staticShell: true, content: '[class*="_thread_"]' },
     { name: 'board-mobile', hash: '/biz', staticShell: true, viewport: { width: 375, height: 812 } },
+    // A return visit from before zustand 5, which saved the board page's stores with their defaults while hydrating.
+    {
+      name: 'board-returning',
+      hash: '/biz',
+      staticShell: true,
+      storage: { 'feed-view-settings-store': '{"state":{"enableInfiniteScroll":false},"version":0}', 'blotter-visibility': '{"state":{"isHidden":false},"version":0}' },
+    },
     { name: 'board-nsfw', hash: '/b', staticShell: true },
     { name: 'catalog', hash: '/biz/catalog', staticShell: false },
   ],
