@@ -77,15 +77,19 @@ const THEME_SCRIPT = `(function () {
       var special = today.getMonth() === 11 && (today.getDate() === 24 || today.getDate() === 25) ? 'tomorrow' : today.getMonth() === 9 && today.getDate() === 31 ? 'spooky' : null;
       var specialState = special && read('Special-theme-storage');
       var searchPath = path.replace(/\\/+$/, '').replace(/\\/settings$/, '');
-      var segment = path.split('/')[1];
+      var segments = path.split('/');
+      var segment = segments[1];
       var community = null;
       if (specialState && specialState.state && specialState.state.isEnabled) theme = special;
       else if (path.indexOf('/all') === 0 || /^\\/subs(\\/catalog)?(\\/settings)?$/.test(path) || path === '/mod' || path.indexOf('/mod/') === 0 || /^\\/search(\\/catalog|\\/directory)?$/.test(searchPath)) theme = themeFor('nsfw');
       else {
-        if (segment === 'pending') {
+        // Only these exact paths are static pages; React Router matches any other path, like
+        // /faq/2, as /:boardIdentifier/:pageNumber. Other /subs/ and /search/ paths redirect.
+        var staticPage = ['/faq', '/pass', '/blotter', '/settings/account-data', '/directory', '/directory/settings', '/not-allowed', '/not-found'].indexOf(path.replace(/\\/+$/, '')) !== -1;
+        if (segment === 'pending' && segments[2]) {
           var routeState = history.state && history.state.usr;
           community = routeState && routeState.pendingPost && routeState.pendingPost.communityAddress;
-        } else if (['faq', 'pass', 'blotter', 'all', 'subs', 'mod', 'search', 'directory', 'not-allowed', 'not-found'].indexOf(segment) === -1 && path !== '/settings/account-data') {
+        } else if (!staticPage && segment !== 'subs' && segment !== 'search') {
           community = segment && decodeURIComponent(segment);
         }
         if (typeof community === 'string' && community) theme = themeFor(data.nsfw.indexOf(community) === -1 ? 'sfw' : 'nsfw');

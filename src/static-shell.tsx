@@ -9,7 +9,7 @@ import i18next from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import en from '../public/translations/en/default.json';
 import App from './app';
-import { useIsMobileBreakpoint } from './hooks/use-window-width';
+import { MOBILE_BREAKPOINT_WIDTH, useIsMobileBreakpoint } from './hooks/use-window-width';
 import useFeedCacheStore from './stores/use-feed-cache-store';
 import { communitiesPagesStore, communitiesStore, feedsStore, repliesPagesStore, repliesStore } from './lib/bitsocial-internals/stores';
 
@@ -56,7 +56,7 @@ const setViewportWidth = async (width: number) => {
     await nextFrame();
     await nextFrame();
   }
-  if (viewportProbe.textContent !== String(width < 640)) throw new Error(`static shell: viewport width ${width} did not reach the app`);
+  if (viewportProbe.textContent !== String(width < MOBILE_BREAKPOINT_WIDTH)) throw new Error(`static shell: viewport width ${width} did not reach the app`);
 };
 
 export const renderStaticShell = async ({ hash = '#/', width = 1024, banner }: StaticShellVariant = {}): Promise<StaticShellRender> => {
