@@ -35,6 +35,7 @@ interface BbcodeContentProps {
   communityAddress?: string;
   content: string;
   postCid?: string;
+  purgedQuoteNumbers?: ReadonlySet<number>;
 }
 
 const getFirstAttributeValue = (attrs: Record<string, unknown> | undefined): string | undefined => {
@@ -59,13 +60,15 @@ const getPlainTextContent = (content: BbcodeNode | BbcodeNode[] | undefined): st
     })
     .join('');
 
-type BbcodeRenderContext = Pick<BbcodeContentProps, 'communityAddress' | 'postCid'>;
+type BbcodeRenderContext = Pick<BbcodeContentProps, 'communityAddress' | 'postCid' | 'purgedQuoteNumbers'>;
 
 const renderNode = (node: BbcodeNode, key: string, context: BbcodeRenderContext): ReactNode => {
   if (node === null) return null;
   if (typeof node === 'string' || typeof node === 'number') {
     const content = String(node);
-    return content ? <Markdown key={key} content={content} postCid={context.postCid} communityAddress={context.communityAddress} /> : null;
+    return content ? (
+      <Markdown key={key} content={content} postCid={context.postCid} communityAddress={context.communityAddress} purgedQuoteNumbers={context.purgedQuoteNumbers} />
+    ) : null;
   }
 
   const tag = typeof node.tag === 'string' ? node.tag.toLowerCase() : '';
@@ -137,13 +140,13 @@ const renderBbcodeSegment = (content: string, key: string, context: BbcodeRender
   return nodes.map((node, index) => renderNode(node, `${key}-${index}`, context));
 };
 
-const BbcodeContent = ({ communityAddress, content, postCid }: BbcodeContentProps) => {
+const BbcodeContent = ({ communityAddress, content, postCid, purgedQuoteNumbers }: BbcodeContentProps) => {
   const location = useLocation();
   const directories = useDirectories();
   const enableCodeTags = isCodeTagsEnabledForContext(location.pathname, communityAddress, directories);
 
   const nodes = useMemo<ReactNode[]>(() => {
-    const context = { communityAddress, postCid };
+    const context = { communityAddress, postCid, purgedQuoteNumbers };
     const raw = content || '';
 
     if (!enableCodeTags || !HAS_CODE_TAG_REGEX.test(raw)) {
@@ -162,7 +165,7 @@ const BbcodeContent = ({ communityAddress, content, postCid }: BbcodeContentProp
     });
 
     return elements;
-  }, [communityAddress, content, enableCodeTags, postCid]);
+  }, [communityAddress, content, enableCodeTags, postCid, purgedQuoteNumbers]);
 
   return <span className={styles.content}>{nodes}</span>;
 };

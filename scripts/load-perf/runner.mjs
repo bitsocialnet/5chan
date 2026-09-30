@@ -34,9 +34,10 @@ if (options.help) {
       'Serves an existing production build (run `yarn build` first) and cold-loads each configured route in a fresh context',
       'with service workers blocked (CDP throttling does not reliably cover worker fetches). `blocked` aborts every request',
       'outside the app origin; `live` allows peer traffic.',
-      "--check fails when a configured region shifts between first paint and React's first commit, or when a route",
-      "marked staticShell does not show a shell identical to React's first frame (both in `blocked` mode). Shifts after",
-      'the first commit (account and peer data arriving) are reported, not gated.',
+      "--check fails when a configured region shifts between first paint and React's first commit, when the first frame's",
+      "theme class differs from the one React's first commit applies, or when a route marked staticShell does not show a",
+      "shell identical to React's first frame (all in `blocked` mode). Shifts after the first commit (account and peer",
+      'data arriving) are reported, not gated.',
     ].join('\n'),
   );
   process.exit(0);
@@ -151,8 +152,15 @@ async function serveBuild() {
 // Runs in the page before any app code. Everything is timed against the
 // navigation start, like the browser's own paint entries.
 function installObservers(settings) {
-  const state = { shifts: [], longTasks: [], firstAppCommit: null, firstContent: null, paints: {} };
+  const state = { shifts: [], longTasks: [], firstAppCommit: null, firstContent: null, paints: {}, firstFrameTheme: null, commitTheme: null };
   window.__LOAD_PERF__ = state;
+  // The body's theme class in the first frame the browser renders, before any app code has run.
+  const captureFirstFrameTheme = () => {
+    if (document.body) state.firstFrameTheme = document.body.className;
+    else requestAnimationFrame(captureFirstFrameTheme);
+  };
+  requestAnimationFrame(captureFirstFrameTheme);
+  const selectValues = (root) => [...root.querySelectorAll('select')].map((select) => select.value);
   const regionOf = (node) => {
     const element = node?.nodeType === 1 ? node : node?.parentElement;
     if (!element) return 'unknown';
@@ -189,12 +197,16 @@ function installObservers(settings) {
       const now = performance.now();
       if (state.shellHtml === undefined && root.firstElementChild?.hasAttribute('data-static-shell')) {
         state.shellHtml = root.innerHTML;
+        state.shellSelects = selectValues(root);
         state.shellInserted = now;
       }
       if (state.firstAppCommit === null && [...root.children].some((child) => !child.hasAttribute('data-static-shell'))) {
         state.firstAppCommit = now;
-        // Observer callbacks run right after React's commit, before its passive effects: the first app frame.
+        // Observer callbacks run right after React's commit, after its layout effects and before its
+        // passive effects: the first app frame.
         state.commitHtml = root.innerHTML;
+        state.commitSelects = selectValues(root);
+        state.commitTheme = document.body.className;
       }
       if (state.firstContent === null && settings.content && root.querySelector(settings.content)) state.firstContent = now;
     };
@@ -260,16 +272,19 @@ async function loadOnce(browser, origin, route) {
         return template.innerHTML;
       };
       let handoff = null;
-      const { shellHtml, commitHtml } = window.__LOAD_PERF__;
+      const { shellHtml, commitHtml, shellSelects, commitSelects } = window.__LOAD_PERF__;
       if (shellHtml !== undefined && commitHtml !== undefined) {
         const shell = normalize(shellHtml);
         const commit = normalize(commitHtml);
         let index = 0;
         while (index < shell.length && shell[index] === commit[index]) index += 1;
+        // A <select>'s value is a property, so it is compared separately from the markup.
         handoff =
-          shell === commit
-            ? { matches: true }
-            : { matches: false, shell: shell.slice(Math.max(0, index - 80), index + 120), commit: commit.slice(Math.max(0, index - 80), index + 120) };
+          shell !== commit
+            ? { matches: false, shell: shell.slice(Math.max(0, index - 80), index + 120), commit: commit.slice(Math.max(0, index - 80), index + 120) }
+            : JSON.stringify(shellSelects) !== JSON.stringify(commitSelects)
+              ? { matches: false, shell: `select values ${JSON.stringify(shellSelects)}`, commit: `select values ${JSON.stringify(commitSelects)}` }
+              : { matches: true };
       }
       const navigation = performance.getEntriesByType('navigation')[0];
       const resources = performance.getEntriesByType('resource');
@@ -278,6 +293,8 @@ async function loadOnce(browser, origin, route) {
         ...window.__LOAD_PERF__,
         shellHtml: undefined,
         commitHtml: undefined,
+        shellSelects: undefined,
+        commitSelects: undefined,
         handoff,
         responseStart: navigation?.responseStart,
         domContentLoaded: navigation?.domContentLoadedEventEnd,
@@ -322,6 +339,7 @@ async function loadOnce(browser, origin, route) {
       ),
       cls: Number(afterPaint.reduce((total, shift) => total + shift.value, 0).toFixed(4)),
       handoff: data.handoff,
+      theme: { firstFrame: data.firstFrameTheme, firstCommit: data.commitTheme },
       regionShifts,
       shifts: afterPaint.map((shift) => ({ ...shift, time: round(shift.time), value: Number(shift.value.toFixed(4)) })),
       scriptKB: Math.round(data.scriptBytes / 1024),
@@ -371,12 +389,18 @@ try {
         shiftedAfterCommit: [...new Set(runs.flatMap((run) => Object.keys(run.regionShifts.afterCommit)))].sort(),
         // null when no static shell was shown for this route.
         shellMatchesFirstCommit: runs.some((run) => run.handoff) ? runs.every((run) => run.handoff?.matches) : null,
+        themeMatchesFirstCommit: runs.every((run) => run.theme.firstFrame === run.theme.firstCommit),
       };
       report.routes[route.name] = { summary, runs };
       console.log(`${route.name}: ${JSON.stringify(summary)}`);
       if (options.check && summary.shiftedBeforeCommit.length) {
         failed = true;
         console.error(`[load] ${route.name}: regions moved before React's first commit: ${summary.shiftedBeforeCommit.join(', ')}`);
+      }
+      if (options.check && !summary.themeMatchesFirstCommit) {
+        failed = true;
+        const { theme } = runs.find((run) => run.theme.firstFrame !== run.theme.firstCommit);
+        console.error(`[load] ${route.name}: first frame painted theme "${theme.firstFrame}", React's first commit applied "${theme.firstCommit}"`);
       }
       if (options.check && route.staticShell === false && summary.shellMatchesFirstCommit !== null) {
         failed = true;

@@ -112,7 +112,6 @@ const BoardsBarDesktop = memo(() => {
               }
             }}
             onClick={openDirectoryForPlaceholder}
-            style={{ cursor: 'pointer' }}
           >
             {code}
           </button>
@@ -177,7 +176,6 @@ const BoardsBarDesktop = memo(() => {
                 }
               }}
               onClick={() => setShowAllTemporarily(true)}
-              style={{ cursor: 'pointer' }}
               title='Show all'
             >
               ...
@@ -200,7 +198,6 @@ const BoardsBarDesktop = memo(() => {
             }
           }}
           onClick={() => openBoardsBarEditModal()}
-          style={{ cursor: 'pointer' }}
         >
           {capitalize(t('edit'))}
         </button>
@@ -216,7 +213,6 @@ const BoardsBarDesktop = memo(() => {
             }
           }}
           onClick={() => openCreateBoardModal()}
-          style={{ cursor: 'pointer' }}
         >
           {t('create_board')}
         </button>
