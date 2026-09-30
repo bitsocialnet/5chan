@@ -522,20 +522,21 @@ describe('BoardButtons', () => {
     );
 
     await clickButton('bottom');
-    await clickButton('update');
+    expect(window.scrollTo).toHaveBeenCalledWith({ behavior: 'instant', top: 2400 });
+
     const autoCheckbox = container.querySelector<HTMLInputElement>('input[type="checkbox"]');
     expect(autoCheckbox?.checked).toBe(false);
+    expect(autoCheckbox?.title).toBe('fetch_new_replies_automatically');
     await act(async () => {
       autoCheckbox?.click();
     });
 
-    expect(window.scrollTo).toHaveBeenCalledWith({ behavior: 'instant', top: 2400 });
-    expect(useThreadLiveUpdatesStore.getState().updateRequestId).toBe(1);
     expect(useThreadLiveUpdatesStore.getState().enabled).toBe(true);
     expect(autoCheckbox?.checked).toBe(true);
+    expect(container.textContent).toContain('[update] [ Auto] 10');
   });
 
-  it('keeps the update button enabled while a manual thread refresh is in progress', async () => {
+  it('runs a thread update from the update button and shows its progress', async () => {
     testState.commentsByCid = {
       'comment-1': {
         cid: 'comment-1',
@@ -543,16 +544,53 @@ describe('BoardButtons', () => {
         replyCount: 9,
       },
     };
-    useThreadLiveUpdatesStore.getState().startUpdate();
+    const refreshThread = vi.fn(() => new Promise<boolean>(() => undefined));
+    useThreadLiveUpdatesStore.getState().openThread('comment-1');
+    useThreadLiveUpdatesStore.getState().setRefreshThread(refreshThread);
 
     await renderWithRoute(createElement(DesktopBoardButtons), '/mu/thread/comment-1');
+    await clickButton('update');
+
+    expect(refreshThread).toHaveBeenCalledTimes(1);
+    expect(container.textContent).toContain('thread_update_updating');
 
     const updateButton = Array.from(container.querySelectorAll('button')).find((candidate) => candidate.textContent === 'update');
     expect(updateButton?.hasAttribute('disabled')).toBe(false);
-
     await clickButton('update');
+    expect(refreshThread).toHaveBeenCalledTimes(1);
+  });
 
-    expect(useThreadLiveUpdatesStore.getState().updateRequestId).toBe(1);
+  it('shows thread stats from the thread page copy of the post', async () => {
+    testState.commentsByCid = {
+      'comment-1': {
+        cid: 'comment-1',
+        postCid: 'comment-1',
+        replyCount: 9,
+      },
+    };
+    useThreadLiveUpdatesStore.getState().setThreadPost({ cid: 'comment-1', postCid: 'comment-1', replyCount: 12 } as never);
+
+    await renderWithRoute(createElement(DesktopBoardButtons), '/mu/thread/comment-1');
+
+    const tooltips = Array.from(container.querySelectorAll<HTMLElement>('[data-testid="tooltip"]'));
+    expect(tooltips[0]?.textContent).toBe('12');
+  });
+
+  it('shows thread update errors in red text', async () => {
+    testState.commentsByCid = {
+      'comment-1': {
+        cid: 'comment-1',
+        postCid: 'comment-1',
+        replyCount: 9,
+      },
+    };
+    useThreadLiveUpdatesStore.getState().openThread('comment-1');
+    useThreadLiveUpdatesStore.getState().markThreadDead('archived', true);
+
+    await renderWithRoute(createElement(DesktopBoardButtons), '/mu/thread/comment-1');
+
+    const errorText = Array.from(container.querySelectorAll('span')).findLast((span) => span.textContent === 'thread_update_thread_archived');
+    expect(errorText?.className).toContain('threadUpdateError');
   });
 
   it('renders mobile mod-queue controls and clamps alert threshold updates', async () => {

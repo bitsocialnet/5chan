@@ -503,5 +503,13 @@
   "directory_vote_needs_pass": "Deine Stimme wurde nicht gesendet: Die Abstimmungsadresse dieses Kontos <address>{{address}}</address> besitzt keinen <passLink>5chan Pass</passLink>.",
   "directory_vote_needs_test_pass": "Deine Stimme wurde nicht gesendet: Die Abstimmungsadresse dieses Kontos <address>{{address}}</address> besitzt keinen 5chan Pass. Die Abstimmung läuft vorerst im Testnet, daher kannst du dir für diese Adresse einen kostenlosen Test-Pass vom <faucetLink>Faucet</faucetLink> holen.",
   "directory_vote_board_not_found": "Unter {{address}} wurde kein Board gefunden. Gib eine .bso-Adresse oder den öffentlichen Schlüssel eines Boards ein.",
-  "directory_vote_failed": "Deine Stimme konnte nicht gesendet werden: {{error}}"
+  "directory_vote_failed": "Deine Stimme konnte nicht gesendet werden: {{error}}",
+  "thread_update_updating": "Wird aktualisiert...",
+  "thread_update_no_new_posts": "Keine neuen Beiträge",
+  "thread_update_new_post": "1 neuer Beitrag",
+  "thread_update_new_posts": "{{count}} neue Beiträge",
+  "thread_update_connection_error": "Verbindungsfehler",
+  "thread_update_thread_archived": "Dieser Thread ist archiviert",
+  "thread_update_thread_deleted": "Dieser Thread wurde entfernt oder gelöscht",
+  "fetch_new_replies_automatically": "Neue Antworten automatisch abrufen"
 }

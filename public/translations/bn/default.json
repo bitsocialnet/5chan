@@ -503,5 +503,13 @@
   "directory_vote_needs_pass": "আপনার ভোট পাঠানো হয়নি: এই অ্যাকাউন্টের ভোটিং ঠিকানা <address>{{address}}</address>-এ কোনো <passLink>5chan Pass</passLink> নেই।",
   "directory_vote_needs_test_pass": "আপনার ভোট পাঠানো হয়নি: এই অ্যাকাউন্টের ভোটিং ঠিকানা <address>{{address}}</address>-এ কোনো 5chan Pass নেই। ভোটিং আপাতত testnet-এ চলছে, তাই <faucetLink>ফসেট</faucetLink> থেকে এই ঠিকানার জন্য একটি বিনামূল্যের টেস্ট Pass নিতে পারেন।",
   "directory_vote_board_not_found": "{{address}}-এ কোনো বোর্ড পাওয়া যায়নি। একটি .bso ঠিকানা বা কোনো বোর্ডের পাবলিক কী লিখুন।",
-  "directory_vote_failed": "আপনার ভোট পাঠানো যায়নি: {{error}}"
+  "directory_vote_failed": "আপনার ভোট পাঠানো যায়নি: {{error}}",
+  "thread_update_updating": "আপডেট হচ্ছে...",
+  "thread_update_no_new_posts": "কোনো নতুন পোস্ট নেই",
+  "thread_update_new_post": "1টি নতুন পোস্ট",
+  "thread_update_new_posts": "{{count}}টি নতুন পোস্ট",
+  "thread_update_connection_error": "সংযোগ ত্রুটি",
+  "thread_update_thread_archived": "এই থ্রেডটি আর্কাইভ করা হয়েছে",
+  "thread_update_thread_deleted": "এই থ্রেডটি সরিয়ে ফেলা বা মুছে ফেলা হয়েছে",
+  "fetch_new_replies_automatically": "নতুন উত্তর স্বয়ংক্রিয়ভাবে আনুন"
 }

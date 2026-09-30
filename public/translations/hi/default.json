@@ -503,5 +503,13 @@
   "directory_vote_needs_pass": "आपका वोट नहीं भेजा गया: इस खाते के वोटिंग पते <address>{{address}}</address> में <passLink>5chan Pass</passLink> नहीं है।",
   "directory_vote_needs_test_pass": "आपका वोट नहीं भेजा गया: इस खाते के वोटिंग पते <address>{{address}}</address> में 5chan Pass नहीं है। वोटिंग अभी testnet पर है, इसलिए आप <faucetLink>फ़ॉसेट</faucetLink> से इस पते के लिए मुफ़्त टेस्ट Pass पा सकते हैं।",
   "directory_vote_board_not_found": "{{address}} पर कोई बोर्ड नहीं मिला। कोई .bso पता या किसी बोर्ड की सार्वजनिक कुंजी दर्ज करें।",
-  "directory_vote_failed": "आपका वोट भेजा नहीं जा सका: {{error}}"
+  "directory_vote_failed": "आपका वोट भेजा नहीं जा सका: {{error}}",
+  "thread_update_updating": "अपडेट हो रहा है...",
+  "thread_update_no_new_posts": "कोई नई पोस्ट नहीं",
+  "thread_update_new_post": "1 नई पोस्ट",
+  "thread_update_new_posts": "{{count}} नई पोस्ट",
+  "thread_update_connection_error": "कनेक्शन त्रुटि",
+  "thread_update_thread_archived": "यह थ्रेड आर्काइव हो चुका है",
+  "thread_update_thread_deleted": "यह थ्रेड छाँट दिया गया है या हटा दिया गया है",
+  "fetch_new_replies_automatically": "नए जवाब स्वचालित रूप से लाएँ"
 }

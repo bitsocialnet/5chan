@@ -503,5 +503,13 @@
   "directory_vote_needs_pass": "ההצבעה שלך לא נשלחה: כתובת ההצבעה של החשבון הזה <address>{{address}}</address> לא מחזיקה <passLink>5chan Pass</passLink>.",
   "directory_vote_needs_test_pass": "ההצבעה שלך לא נשלחה: כתובת ההצבעה של החשבון הזה <address>{{address}}</address> לא מחזיקה 5chan Pass. ההצבעה פועלת כרגע על testnet, כך שאפשר לקבל Pass בדיקה בחינם לכתובת הזו מה-<faucetLink>faucet</faucetLink>.",
   "directory_vote_board_not_found": "לא נמצא לוח בכתובת {{address}}. הזינו כתובת .bso או מפתח ציבורי של לוח.",
-  "directory_vote_failed": "לא ניתן היה לשלוח את ההצבעה שלך: {{error}}"
+  "directory_vote_failed": "לא ניתן היה לשלוח את ההצבעה שלך: {{error}}",
+  "thread_update_updating": "מעדכן...",
+  "thread_update_no_new_posts": "אין פוסטים חדשים",
+  "thread_update_new_post": "1 פוסט חדש",
+  "thread_update_new_posts": "{{count}} פוסטים חדשים",
+  "thread_update_connection_error": "שגיאת חיבור",
+  "thread_update_thread_archived": "השרשור הזה נמצא בארכיון",
+  "thread_update_thread_deleted": "השרשור הזה הוסר או נמחק",
+  "fetch_new_replies_automatically": "טען תגובות חדשות באופן אוטומטי"
 }

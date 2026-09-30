@@ -503,5 +503,13 @@
   "directory_vote_needs_pass": "رأی شما ارسال نشد: آدرس رأی‌دهی این حساب <address>{{address}}</address> هیچ <passLink>5chan Pass</passLink> ندارد.",
   "directory_vote_needs_test_pass": "رأی شما ارسال نشد: آدرس رأی‌دهی این حساب <address>{{address}}</address> هیچ 5chan Pass ندارد. رأی‌گیری فعلاً روی testnet است، بنابراین می‌توانید یک Pass آزمایشی رایگان برای این آدرس از <faucetLink>فاست</faucetLink> دریافت کنید.",
   "directory_vote_board_not_found": "هیچ تابلویی در {{address}} پیدا نشد. یک آدرس .bso یا کلید عمومی یک تابلو را وارد کنید.",
-  "directory_vote_failed": "ارسال رأی شما ناموفق بود: {{error}}"
+  "directory_vote_failed": "ارسال رأی شما ناموفق بود: {{error}}",
+  "thread_update_updating": "در حال به‌روزرسانی...",
+  "thread_update_no_new_posts": "پست جدیدی وجود ندارد",
+  "thread_update_new_post": "1 پست جدید",
+  "thread_update_new_posts": "{{count}} پست جدید",
+  "thread_update_connection_error": "خطای اتصال",
+  "thread_update_thread_archived": "این موضوع بایگانی شده است",
+  "thread_update_thread_deleted": "این موضوع پاک‌سازی یا حذف شده است",
+  "fetch_new_replies_automatically": "دریافت خودکار پاسخ‌های جدید"
 }

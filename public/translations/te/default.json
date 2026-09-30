@@ -503,5 +503,13 @@
   "directory_vote_needs_pass": "మీ ఓటు పంపబడలేదు: ఈ ఖాతా ఓటింగ్ చిరునామా <address>{{address}}</address> వద్ద <passLink>5chan Pass</passLink> లేదు.",
   "directory_vote_needs_test_pass": "మీ ఓటు పంపబడలేదు: ఈ ఖాతా ఓటింగ్ చిరునామా <address>{{address}}</address> వద్ద 5chan Pass లేదు. ప్రస్తుతం ఓటింగ్ testnet లో జరుగుతోంది, కాబట్టి మీరు <faucetLink>ఫాసెట్</faucetLink> నుండి ఈ చిరునామా కోసం ఉచిత టెస్ట్ Pass పొందవచ్చు.",
   "directory_vote_board_not_found": "{{address}} వద్ద ఏ బోర్డ్ కనుగొనబడలేదు. .bso చిరునామా లేదా ఒక బోర్డ్ పబ్లిక్ కీని నమోదు చేయండి.",
-  "directory_vote_failed": "మీ ఓటును పంపడం సాధ్యపడలేదు: {{error}}"
+  "directory_vote_failed": "మీ ఓటును పంపడం సాధ్యపడలేదు: {{error}}",
+  "thread_update_updating": "నవీకరిస్తోంది...",
+  "thread_update_no_new_posts": "కొత్త పోస్ట్‌లు లేవు",
+  "thread_update_new_post": "1 కొత్త పోస్ట్",
+  "thread_update_new_posts": "{{count}} కొత్త పోస్ట్‌లు",
+  "thread_update_connection_error": "కనెక్షన్ దోషం",
+  "thread_update_thread_archived": "ఈ థ్రెడ్ ఆర్కైవ్ చేయబడింది",
+  "thread_update_thread_deleted": "ఈ థ్రెడ్ తీసివేయబడింది లేదా తొలగించబడింది",
+  "fetch_new_replies_automatically": "కొత్త సమాధానాలను స్వయంచాలకంగా పొందండి"
 }

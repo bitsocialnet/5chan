@@ -503,5 +503,13 @@
   "directory_vote_needs_pass": "투표가 전송되지 않았습니다: 이 계정의 투표 주소 <address>{{address}}</address>에 <passLink>5chan Pass</passLink>가 없습니다.",
   "directory_vote_needs_test_pass": "투표가 전송되지 않았습니다: 이 계정의 투표 주소 <address>{{address}}</address>에 5chan Pass가 없습니다. 현재 투표는 testnet에서 진행되므로 <faucetLink>파우셋</faucetLink>에서 이 주소용 무료 테스트 Pass를 받을 수 있습니다.",
   "directory_vote_board_not_found": "{{address}}에서 게시판을 찾을 수 없습니다. .bso 주소 또는 게시판의 공개 키를 입력하세요.",
-  "directory_vote_failed": "투표를 전송할 수 없습니다: {{error}}"
+  "directory_vote_failed": "투표를 전송할 수 없습니다: {{error}}",
+  "thread_update_updating": "업데이트 중...",
+  "thread_update_no_new_posts": "새 게시물 없음",
+  "thread_update_new_post": "새 게시물 1개",
+  "thread_update_new_posts": "새 게시물 {{count}}개",
+  "thread_update_connection_error": "연결 오류",
+  "thread_update_thread_archived": "이 스레드는 아카이브되었습니다",
+  "thread_update_thread_deleted": "이 스레드는 정리되었거나 삭제되었습니다",
+  "fetch_new_replies_automatically": "새 답글 자동으로 가져오기"
 }

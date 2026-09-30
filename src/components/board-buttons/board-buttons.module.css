@@ -14,7 +14,15 @@
 
 .mobileBoardButtons .secondRow {
   margin-top: -5px;
-  padding-bottom: 20px;
+}
+
+.mobileThreadUpdateStatus {
+  height: 20px;
+  line-height: 20px;
+}
+
+.threadUpdateError {
+  color: red;
 }
 
 .mobileBoardButtons {

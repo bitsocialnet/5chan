@@ -503,5 +503,13 @@
   "directory_vote_needs_pass": "لم يُرسَل تصويتك: عنوان التصويت الخاص بهذا الحساب <address>{{address}}</address> لا يملك <passLink>5chan Pass</passLink>.",
   "directory_vote_needs_test_pass": "لم يُرسَل تصويتك: عنوان التصويت الخاص بهذا الحساب <address>{{address}}</address> لا يملك 5chan Pass. التصويت يعمل على testnet حاليًا، لذا يمكنك الحصول على Pass تجريبي مجاني لهذا العنوان من <faucetLink>الصنبور</faucetLink>.",
   "directory_vote_board_not_found": "لم يُعثر على أي لوحة في {{address}}. أدخل عنوان .bso أو المفتاح العام للوحة.",
-  "directory_vote_failed": "تعذّر إرسال تصويتك: {{error}}"
+  "directory_vote_failed": "تعذّر إرسال تصويتك: {{error}}",
+  "thread_update_updating": "جارٍ التحديث...",
+  "thread_update_no_new_posts": "لا توجد منشورات جديدة",
+  "thread_update_new_post": "1 منشور جديد",
+  "thread_update_new_posts": "منشورات جديدة: {{count}}",
+  "thread_update_connection_error": "خطأ في الاتصال",
+  "thread_update_thread_archived": "هذا الموضوع مؤرشف",
+  "thread_update_thread_deleted": "تمت إزالة هذا الموضوع أو حذفه",
+  "fetch_new_replies_automatically": "جلب الردود الجديدة تلقائياً"
 }

@@ -503,5 +503,13 @@
   "directory_vote_needs_pass": "آپ کا ووٹ نہیں بھیجا گیا: اس اکاؤنٹ کے ووٹنگ پتے <address>{{address}}</address> میں کوئی <passLink>5chan Pass</passLink> نہیں ہے۔",
   "directory_vote_needs_test_pass": "آپ کا ووٹ نہیں بھیجا گیا: اس اکاؤنٹ کے ووٹنگ پتے <address>{{address}}</address> میں کوئی 5chan Pass نہیں ہے۔ ووٹنگ فی الحال testnet پر ہے، اس لیے آپ اس پتے کے لیے <faucetLink>فاسیٹ</faucetLink> سے مفت ٹیسٹ Pass حاصل کر سکتے ہیں۔",
   "directory_vote_board_not_found": "{{address}} پر کوئی بورڈ نہیں ملا۔ کوئی .bso پتہ یا کسی بورڈ کی پبلک کی درج کریں۔",
-  "directory_vote_failed": "آپ کا ووٹ نہیں بھیجا جا سکا: {{error}}"
+  "directory_vote_failed": "آپ کا ووٹ نہیں بھیجا جا سکا: {{error}}",
+  "thread_update_updating": "اپ ڈیٹ ہو رہا ہے...",
+  "thread_update_no_new_posts": "کوئی نئی پوسٹ نہیں",
+  "thread_update_new_post": "1 نئی پوسٹ",
+  "thread_update_new_posts": "{{count}} نئی پوسٹس",
+  "thread_update_connection_error": "کنکشن کی غلطی",
+  "thread_update_thread_archived": "یہ تھریڈ آرکائیو ہو چکا ہے",
+  "thread_update_thread_deleted": "یہ تھریڈ ہٹا دیا گیا ہے یا حذف کر دیا گیا ہے",
+  "fetch_new_replies_automatically": "نئے جوابات خود بخود حاصل کریں"
 }

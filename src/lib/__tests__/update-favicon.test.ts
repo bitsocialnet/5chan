@@ -53,6 +53,28 @@ describe('update-favicon', () => {
     expect(document.querySelector('link[rel="icon"][sizes="16x16"]')?.getAttribute('type')).toBe('image/png');
   });
 
+  it('shows thread updater alerts on the board favicon but never on the not-found favicon', async () => {
+    const { updateFavicon } = await import('../update-favicon');
+
+    updateFavicon('default', 'new-posts');
+    expect(document.querySelector('link[rel="icon"][sizes="16x16"]')?.getAttribute('href')).toBe('/favicon-newposts.ico?variant=default-new-posts');
+    expect(document.querySelector('link[rel="shortcut icon"][sizes="16x16"]')?.getAttribute('href')).toBe('/favicon-newposts.ico?variant=default-new-posts');
+
+    updateFavicon('sfw', 'new-replies');
+    expect(document.querySelector('link[rel="icon"][sizes="16x16"]')?.getAttribute('href')).toBe('/favicon2-newreplies.ico?variant=sfw-new-replies');
+
+    updateFavicon('sfw', 'dead');
+    expect(document.querySelector('link[rel="icon"][sizes="16x16"]')?.getAttribute('href')).toBe('/favicon2-deadthread.ico?variant=sfw-dead');
+    expect(document.querySelector('link[rel="icon"][sizes="16x16"]')?.getAttribute('type')).toBe('image/png');
+
+    updateFavicon('not-found', 'new-posts');
+    expect(document.querySelector('link[rel="icon"][sizes="16x16"]')?.getAttribute('href')).toBe('/favicon-404.ico?variant=404');
+
+    updateFavicon('default');
+    expect(document.querySelector('link[rel="icon"][sizes="16x16"]')?.getAttribute('href')).toBe('/favicon.ico?variant=nsfw');
+    expect(document.querySelectorAll('link[rel="icon"][sizes="16x16"], link[rel="shortcut icon"][sizes="16x16"]')).toHaveLength(2);
+  });
+
   it('marks only non-special, non-routing aggregate sfw boards as sfw', async () => {
     const { isSfwBoard } = await import('../update-favicon');
     const { TRASH_BOARD_ADDRESS } = await import('../special-boards');

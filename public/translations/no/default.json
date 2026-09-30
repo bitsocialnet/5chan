@@ -503,5 +503,13 @@
   "directory_vote_needs_pass": "Stemmen din ble ikke sendt: denne kontoens stemmeadresse <address>{{address}}</address> har ikke et <passLink>5chan Pass</passLink>.",
   "directory_vote_needs_test_pass": "Stemmen din ble ikke sendt: denne kontoens stemmeadresse <address>{{address}}</address> har ikke et 5chan Pass. Avstemningen kjører på testnet foreløpig, så du kan få et gratis test-Pass for denne adressen fra <faucetLink>faucet</faucetLink>.",
   "directory_vote_board_not_found": "Fant ingen brett på {{address}}. Skriv inn en .bso-adresse eller et bretts offentlige nøkkel.",
-  "directory_vote_failed": "Stemmen din kunne ikke sendes: {{error}}"
+  "directory_vote_failed": "Stemmen din kunne ikke sendes: {{error}}",
+  "thread_update_updating": "Oppdaterer...",
+  "thread_update_no_new_posts": "Ingen nye innlegg",
+  "thread_update_new_post": "1 nytt innlegg",
+  "thread_update_new_posts": "{{count}} nye innlegg",
+  "thread_update_connection_error": "Tilkoblingsfeil",
+  "thread_update_thread_archived": "Denne tråden er arkivert",
+  "thread_update_thread_deleted": "Denne tråden er fjernet eller slettet",
+  "fetch_new_replies_automatically": "Hent nye svar automatisk"
 }

@@ -503,5 +503,13 @@
   "directory_vote_needs_pass": "Váš hlas nebyl odeslán: hlasovací adresa tohoto účtu <address>{{address}}</address> nevlastní <passLink>5chan Pass</passLink>.",
   "directory_vote_needs_test_pass": "Váš hlas nebyl odeslán: hlasovací adresa tohoto účtu <address>{{address}}</address> nevlastní 5chan Pass. Hlasování zatím probíhá na síti testnet, takže si pro tuto adresu můžete zdarma získat testovací Pass z <faucetLink>faucetu</faucetLink>.",
   "directory_vote_board_not_found": "Na adrese {{address}} nebyla nalezena žádná deska. Zadejte adresu .bso nebo veřejný klíč desky.",
-  "directory_vote_failed": "Váš hlas se nepodařilo odeslat: {{error}}"
+  "directory_vote_failed": "Váš hlas se nepodařilo odeslat: {{error}}",
+  "thread_update_updating": "Aktualizace...",
+  "thread_update_no_new_posts": "Žádné nové příspěvky",
+  "thread_update_new_post": "1 nový příspěvek",
+  "thread_update_new_posts": "Nové příspěvky: {{count}}",
+  "thread_update_connection_error": "Chyba připojení",
+  "thread_update_thread_archived": "Toto vlákno je archivováno",
+  "thread_update_thread_deleted": "Toto vlákno bylo vyřazeno nebo smazáno",
+  "fetch_new_replies_automatically": "Automaticky načítat nové odpovědi"
 }

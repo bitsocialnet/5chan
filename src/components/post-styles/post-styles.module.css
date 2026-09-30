@@ -560,6 +560,18 @@
   contain-intrinsic-size: auto;
 }
 
+/* 4chan's unread divider: a hard red rule under the last reply read before new replies arrived.
+   Deferred reply layout clips painting to the reply, so the marked reply opts out of it. */
+.newPostsMarker .replyDesktop,
+.newPostsMarker .replyMobile {
+  content-visibility: visible;
+}
+
+.newPostsMarker .replyDesktop .reply,
+.newPostsMarker .replyMobile .replyContainer {
+  box-shadow: 0 3px red;
+}
+
 .replyMobile .replyContainer {
   background-color: var(--post-mobile-background-color);
   border-bottom: var(--post-mobile-border-bottom);

@@ -47,7 +47,7 @@ import useReplyModalStore from '../../stores/use-reply-modal-store';
 import { getPageDraftKey } from '../../lib/utils/location-draft-utils';
 import { selectPostMenuProps } from '../../lib/utils/post-menu-props';
 import useFeedResetStore from '../../stores/use-feed-reset-store';
-import useThreadLiveUpdatesStore from '../../stores/use-thread-live-updates-store';
+import useThreadNewReplies from '../../hooks/use-thread-new-replies';
 import useRegisterFreshReplies from '../../hooks/use-register-fresh-replies';
 import useReplyHeightEstimates from '../../hooks/use-reply-height-estimates';
 import usePendingCommentModerationActions from '../../hooks/use-pending-comment-moderation-actions';
@@ -902,8 +902,6 @@ const PostDesktop = ({
   const freshRepliesForRender = useFreshReplies(repliesForRender, { post: resolvedPost });
   useRegisterFreshReplies(resolvedPost, freshRepliesForRender);
   const setResetFunction = useFeedResetStore((s) => s.setResetFunction);
-  const repliesResetRequestId = useThreadLiveUpdatesStore((state) => state.repliesResetRequestId);
-  const lastHandledRepliesResetRequestIdRef = useRef(repliesResetRequestId);
   useEffect(() => {
     if ((isInPostPageView || isInPendingPostView) && reset) {
       setResetFunction(() => {
@@ -911,11 +909,6 @@ const PostDesktop = ({
       });
     }
   }, [isInPostPageView, isInPendingPostView, reset, setResetFunction]);
-  useEffect(() => {
-    if (!reset || repliesResetRequestId === 0 || repliesResetRequestId === lastHandledRepliesResetRequestIdRef.current) return;
-    lastHandledRepliesResetRequestIdRef.current = repliesResetRequestId;
-    void reset();
-  }, [repliesResetRequestId, reset]);
   const visiblelinksCount = useCountLinksInReplies(resolvedPost, BOARD_REPLIES_PREVIEW_VISIBLE_COUNT);
   const totalLinksCount = useCountLinksInReplies(resolvedPost);
   const replyCount = freshRepliesForRender.length;
@@ -970,6 +963,12 @@ const PostDesktop = ({
   }, [filteredReplies]);
 
   const quotedByMap = useQuotedByMap(filteredReplies, communityAddress);
+  const unreadMarkerCid = useThreadNewReplies({
+    enabled: isInPostPageView && !!showAllReplies,
+    hasMore: !!hasMore,
+    post: resolvedPost,
+    replies: filteredReplies,
+  });
   const {
     defaultItemHeight: defaultReplyItemHeight,
     heightEstimates: replyHeightEstimates,
@@ -1226,7 +1225,7 @@ const PostDesktop = ({
             data={filteredReplies}
             itemContent={(index, reply) => (
               <div
-                className={styles.replyContainer}
+                className={`${styles.replyContainer} ${reply.cid === unreadMarkerCid ? styles.newPostsMarker : ''}`}
                 data-pretext-height={replyHeightEstimates?.[index]}
                 ref={(element) => reportReplyHeightAuditSample(element, replyHeightEstimates?.[index], reply.cid)}
               >
@@ -1257,7 +1256,7 @@ const PostDesktop = ({
           showReplies &&
           !hasMore &&
           visibleReplies.map((reply) => (
-            <div key={reply.cid} className={styles.replyContainer}>
+            <div key={reply.cid} className={`${styles.replyContainer} ${reply.cid === unreadMarkerCid ? styles.newPostsMarker : ''}`}>
               <Reply
                 reply={reply}
                 roles={roles}

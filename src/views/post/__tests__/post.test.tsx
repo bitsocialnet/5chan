@@ -5,7 +5,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import PostPage from '../post';
 import { Post } from '../../../components/post';
-import useThreadLiveUpdatesStore from '../../../stores/use-thread-live-updates-store';
+import useThreadLiveUpdatesStore, { THREAD_REPLIES_SETTLE_MS } from '../../../stores/use-thread-live-updates-store';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
@@ -1173,7 +1173,7 @@ describe('Post', () => {
     expect(container.querySelector('[data-testid="thread-footer-first-row"]')).toBeNull();
   });
 
-  it('uses frozen useComment subscriptions when thread auto updates are disabled', async () => {
+  it('keeps thread comments frozen even with Auto checked, so only updates change the thread', async () => {
     testState.commentsByCid = {
       'reply-cid': {
         cid: 'reply-cid',
@@ -1191,9 +1191,12 @@ describe('Post', () => {
         timestamp: 1,
       },
     };
-    useThreadLiveUpdatesStore.getState().setEnabled(false);
+    sessionStorage.setItem('5chan-thread-auto-update:root-cid', '1');
 
     await renderPostPage('/mu/thread/reply-cid');
+
+    expect(useThreadLiveUpdatesStore.getState()).toMatchObject({ enabled: true, threadCid: 'root-cid' });
+    sessionStorage.clear();
 
     expect(testState.useCommentCalls).toEqual(
       expect.arrayContaining([
@@ -1244,7 +1247,7 @@ describe('Post', () => {
     await renderPostPage('/mu/thread/reply-cid');
 
     await act(async () => {
-      useThreadLiveUpdatesStore.getState().requestUpdate();
+      useThreadLiveUpdatesStore.getState().forceUpdate();
     });
     await flushEffects();
 
@@ -1252,10 +1255,67 @@ describe('Post', () => {
     expect(events[0]).toBe('evict-cache');
     expect(refreshReply).toHaveBeenCalledTimes(1);
     expect(refreshPost).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, THREAD_REPLIES_SETTLE_MS));
+    });
     expect(useThreadLiveUpdatesStore.getState()).toMatchObject({
       isUpdating: false,
-      repliesResetRequestId: 1,
-      updateRequestId: 1,
+      status: { type: 'no-new-posts' },
     });
+  });
+
+  it('reports a failed thread refresh as a connection error', async () => {
+    testState.commentsByCid = {
+      'root-cid': {
+        cid: 'root-cid',
+        communityAddress: 'music-posting.eth',
+        number: 31,
+        postCid: 'root-cid',
+        refresh: vi.fn(async () => {
+          throw new Error('offline');
+        }),
+        replyCount: 0,
+        title: 'Root thread',
+      },
+    };
+
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+
+    await renderPostPage('/mu/thread/root-cid');
+    await act(async () => {
+      useThreadLiveUpdatesStore.getState().forceUpdate();
+    });
+    await flushEffects();
+
+    expect(useThreadLiveUpdatesStore.getState().status).toEqual({ type: 'error', reason: 'connection' });
+    expect(consoleErrorSpy).toHaveBeenCalledWith('Failed to refresh thread comments:', expect.any(Error));
+    consoleErrorSpy.mockRestore();
+  });
+
+  it('prefixes the tab title with the unread reply count', async () => {
+    testState.commentsByCid = {
+      'root-cid': {
+        cid: 'root-cid',
+        communityAddress: 'music-posting.eth',
+        number: 31,
+        postCid: 'root-cid',
+        replyCount: 0,
+        title: 'Root thread',
+      },
+    };
+
+    await renderPostPage('/mu/thread/root-cid');
+    const title = document.title;
+
+    await act(async () => {
+      useThreadLiveUpdatesStore.setState({ unreadCount: 3 });
+    });
+    expect(document.title).toBe(`(3) ${title}`);
+
+    await act(async () => {
+      useThreadLiveUpdatesStore.setState({ unreadCount: 0 });
+    });
+    expect(document.title).toBe(title);
   });
 });

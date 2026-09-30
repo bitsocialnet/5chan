@@ -503,5 +503,13 @@
   "directory_vote_needs_pass": "Vota jote nuk u dërgua: adresa e votimit e kësaj llogarie <address>{{address}}</address> nuk ka <passLink>5chan Pass</passLink>.",
   "directory_vote_needs_test_pass": "Vota jote nuk u dërgua: adresa e votimit e kësaj llogarie <address>{{address}}</address> nuk ka 5chan Pass. Votimi për momentin është në testnet, ndaj mund të marrësh falas një Pass testimi për këtë adresë nga <faucetLink>faucet</faucetLink>.",
   "directory_vote_board_not_found": "Nuk u gjet asnjë bord në {{address}}. Shkruaj një adresë .bso ose çelësin publik të një bordi.",
-  "directory_vote_failed": "Vota jote nuk mund të dërgohej: {{error}}"
+  "directory_vote_failed": "Vota jote nuk mund të dërgohej: {{error}}",
+  "thread_update_updating": "Duke përditësuar...",
+  "thread_update_no_new_posts": "Asnjë postim i ri",
+  "thread_update_new_post": "1 postim i ri",
+  "thread_update_new_posts": "{{count}} postime të reja",
+  "thread_update_connection_error": "Gabim lidhjeje",
+  "thread_update_thread_archived": "Kjo temë është arkivuar",
+  "thread_update_thread_deleted": "Kjo temë është hequr ose fshirë",
+  "fetch_new_replies_automatically": "Merr automatikisht përgjigjet e reja"
 }

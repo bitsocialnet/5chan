@@ -503,5 +503,13 @@
   "directory_vote_needs_pass": "Suara Anda tidak terkirim: alamat pemungutan suara akun ini <address>{{address}}</address> tidak memiliki <passLink>5chan Pass</passLink>.",
   "directory_vote_needs_test_pass": "Suara Anda tidak terkirim: alamat pemungutan suara akun ini <address>{{address}}</address> tidak memiliki 5chan Pass. Pemungutan suara saat ini masih di testnet, jadi Anda bisa mendapatkan Pass uji coba gratis untuk alamat ini dari <faucetLink>faucet</faucetLink>.",
   "directory_vote_board_not_found": "Tidak ada papan di {{address}}. Masukkan alamat .bso atau kunci publik sebuah papan.",
-  "directory_vote_failed": "Suara Anda tidak dapat dikirim: {{error}}"
+  "directory_vote_failed": "Suara Anda tidak dapat dikirim: {{error}}",
+  "thread_update_updating": "Memperbarui...",
+  "thread_update_no_new_posts": "Tidak ada pos baru",
+  "thread_update_new_post": "1 pos baru",
+  "thread_update_new_posts": "{{count}} pos baru",
+  "thread_update_connection_error": "Kesalahan koneksi",
+  "thread_update_thread_archived": "Thread ini telah diarsipkan",
+  "thread_update_thread_deleted": "Thread ini telah dipangkas atau dihapus",
+  "fetch_new_replies_automatically": "Ambil balasan baru secara otomatis"
 }

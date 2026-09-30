@@ -503,5 +503,13 @@
   "directory_vote_needs_pass": "Η ψήφος σας δεν στάλθηκε: η διεύθυνση ψηφοφορίας αυτού του λογαριασμού <address>{{address}}</address> δεν διαθέτει <passLink>5chan Pass</passLink>.",
   "directory_vote_needs_test_pass": "Η ψήφος σας δεν στάλθηκε: η διεύθυνση ψηφοφορίας αυτού του λογαριασμού <address>{{address}}</address> δεν διαθέτει 5chan Pass. Η ψηφοφορία γίνεται προς το παρόν στο testnet, οπότε μπορείτε να πάρετε ένα δωρεάν δοκιμαστικό Pass για αυτή τη διεύθυνση από το <faucetLink>faucet</faucetLink>.",
   "directory_vote_board_not_found": "Δεν βρέθηκε πίνακας στη διεύθυνση {{address}}. Εισαγάγετε μια διεύθυνση .bso ή το δημόσιο κλειδί ενός πίνακα.",
-  "directory_vote_failed": "Δεν ήταν δυνατή η αποστολή της ψήφου σας: {{error}}"
+  "directory_vote_failed": "Δεν ήταν δυνατή η αποστολή της ψήφου σας: {{error}}",
+  "thread_update_updating": "Ενημέρωση...",
+  "thread_update_no_new_posts": "Καμία νέα ανάρτηση",
+  "thread_update_new_post": "1 νέα ανάρτηση",
+  "thread_update_new_posts": "{{count}} νέες αναρτήσεις",
+  "thread_update_connection_error": "Σφάλμα σύνδεσης",
+  "thread_update_thread_archived": "Αυτό το νήμα είναι αρχειοθετημένο",
+  "thread_update_thread_deleted": "Αυτό το νήμα έχει αφαιρεθεί ή διαγραφεί",
+  "fetch_new_replies_automatically": "Αυτόματη λήψη νέων απαντήσεων"
 }

@@ -503,5 +503,13 @@
   "directory_vote_needs_pass": "Votul tău nu a fost trimis: adresa de vot a acestui cont <address>{{address}}</address> nu deține un <passLink>5chan Pass</passLink>.",
   "directory_vote_needs_test_pass": "Votul tău nu a fost trimis: adresa de vot a acestui cont <address>{{address}}</address> nu deține un 5chan Pass. Deocamdată votul are loc pe testnet, așa că poți obține gratuit un Pass de test pentru această adresă de la <faucetLink>faucet</faucetLink>.",
   "directory_vote_board_not_found": "Nu a fost găsit niciun board la {{address}}. Introdu o adresă .bso sau cheia publică a unui board.",
-  "directory_vote_failed": "Votul tău nu a putut fi trimis: {{error}}"
+  "directory_vote_failed": "Votul tău nu a putut fi trimis: {{error}}",
+  "thread_update_updating": "Se actualizează...",
+  "thread_update_no_new_posts": "Nicio postare nouă",
+  "thread_update_new_post": "1 postare nouă",
+  "thread_update_new_posts": "Postări noi: {{count}}",
+  "thread_update_connection_error": "Eroare de conexiune",
+  "thread_update_thread_archived": "Acest thread este arhivat",
+  "thread_update_thread_deleted": "Acest thread a fost eliminat sau șters",
+  "fetch_new_replies_automatically": "Preia automat răspunsurile noi"
 }

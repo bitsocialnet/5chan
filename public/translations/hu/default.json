@@ -503,5 +503,13 @@
   "directory_vote_needs_pass": "A szavazatodat nem küldtük el: a fiók <address>{{address}}</address> szavazási címén nincs <passLink>5chan Pass</passLink>.",
   "directory_vote_needs_test_pass": "A szavazatodat nem küldtük el: a fiók <address>{{address}}</address> szavazási címén nincs 5chan Pass. A szavazás egyelőre testneten zajlik, így erre a címre ingyenes teszt Passt kérhetsz a <faucetLink>faucetből</faucetLink>.",
   "directory_vote_board_not_found": "Nem található tábla a(z) {{address}} címen. Adj meg egy .bso címet vagy egy tábla nyilvános kulcsát.",
-  "directory_vote_failed": "A szavazatodat nem sikerült elküldeni: {{error}}"
+  "directory_vote_failed": "A szavazatodat nem sikerült elküldeni: {{error}}",
+  "thread_update_updating": "Frissítés...",
+  "thread_update_no_new_posts": "Nincs új bejegyzés",
+  "thread_update_new_post": "1 új bejegyzés",
+  "thread_update_new_posts": "{{count}} új bejegyzés",
+  "thread_update_connection_error": "Kapcsolódási hiba",
+  "thread_update_thread_archived": "Ez a szál archiválva van",
+  "thread_update_thread_deleted": "Ezt a szálat eltávolították vagy törölték",
+  "fetch_new_replies_automatically": "Új válaszok automatikus lekérése"
 }

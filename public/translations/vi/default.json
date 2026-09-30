@@ -503,5 +503,13 @@
   "directory_vote_needs_pass": "Phiếu bầu của bạn chưa được gửi: địa chỉ bỏ phiếu của tài khoản này <address>{{address}}</address> không có <passLink>5chan Pass</passLink>.",
   "directory_vote_needs_test_pass": "Phiếu bầu của bạn chưa được gửi: địa chỉ bỏ phiếu của tài khoản này <address>{{address}}</address> không có 5chan Pass. Hiện việc bỏ phiếu đang chạy trên testnet, nên bạn có thể nhận một Pass thử nghiệm miễn phí cho địa chỉ này từ <faucetLink>faucet</faucetLink>.",
   "directory_vote_board_not_found": "Không tìm thấy bảng nào tại {{address}}. Hãy nhập địa chỉ .bso hoặc khóa công khai của một bảng.",
-  "directory_vote_failed": "Không thể gửi phiếu bầu của bạn: {{error}}"
+  "directory_vote_failed": "Không thể gửi phiếu bầu của bạn: {{error}}",
+  "thread_update_updating": "Đang cập nhật...",
+  "thread_update_no_new_posts": "Không có bài đăng mới",
+  "thread_update_new_post": "1 bài đăng mới",
+  "thread_update_new_posts": "{{count}} bài đăng mới",
+  "thread_update_connection_error": "Lỗi kết nối",
+  "thread_update_thread_archived": "Chủ đề này đã được lưu trữ",
+  "thread_update_thread_deleted": "Chủ đề này đã bị gỡ bỏ hoặc bị xóa",
+  "fetch_new_replies_automatically": "Tự động tải câu trả lời mới"
 }

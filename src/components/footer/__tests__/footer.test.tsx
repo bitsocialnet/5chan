@@ -84,6 +84,7 @@ vi.mock('../../board-buttons/board-buttons', () => ({
     isInModView?: boolean;
     isInSubscriptionsView?: boolean;
   }) => createElement('button', { 'data-testid': 'return-button', type: 'button' }, `${address}|${isInAllView}|${isInSubscriptionsView}|${isInModView}`),
+  ThreadUpdateStatus: ({ isMobile }: { isMobile?: boolean }) => createElement('span', { 'data-testid': 'thread-update-status' }, isMobile ? 'mobile-status' : 'status'),
   TopButton: () => createElement('button', { type: 'button' }, 'top-button'),
   UpdateButton: () => createElement('button', { type: 'button' }, 'update-button'),
 }));
@@ -198,6 +199,7 @@ describe('footer', () => {
 
     expect(testState.openReplyModalEmptyMock).toHaveBeenCalledWith('/all/thread/post-cid', 'post-cid', 42, 'music-posting.eth');
     expect(container.querySelector('[data-testid="post-page-stats"]')?.textContent).toBe('post-page-stats');
+    expect(container.querySelector('[data-testid="thread-update-status"]')?.textContent).toBe('status');
 
     testState.openReplyModalEmptyMock.mockReset();
     await renderWithRouter(
@@ -230,6 +232,7 @@ describe('footer', () => {
     );
 
     expect(container.textContent).toContain('Replies: 7 / Images: 2 / pagination.pageLabel: 4');
+    expect(container.querySelector('[data-testid="thread-update-status"]')?.textContent).toBe('mobile-status');
     expect(testState.useCommentCalls).toEqual([
       {
         commentCid: 'post-cid',

@@ -503,5 +503,13 @@
   "directory_vote_needs_pass": "你的投票未发送：此账户的投票地址 <address>{{address}}</address> 未持有 <passLink>5chan Pass</passLink>。",
   "directory_vote_needs_test_pass": "你的投票未发送：此账户的投票地址 <address>{{address}}</address> 未持有 5chan Pass。投票目前在 testnet 上进行，你可以从<faucetLink>水龙头</faucetLink>为此地址免费领取一个测试 Pass。",
   "directory_vote_board_not_found": "在 {{address}} 未找到板块。请输入 .bso 地址或板块的公钥。",
-  "directory_vote_failed": "无法发送你的投票：{{error}}"
+  "directory_vote_failed": "无法发送你的投票：{{error}}",
+  "thread_update_updating": "正在更新...",
+  "thread_update_no_new_posts": "没有新帖子",
+  "thread_update_new_post": "1 篇新帖子",
+  "thread_update_new_posts": "{{count}} 篇新帖子",
+  "thread_update_connection_error": "连接错误",
+  "thread_update_thread_archived": "此主题已归档",
+  "thread_update_thread_deleted": "此主题已被清理或删除",
+  "fetch_new_replies_automatically": "自动获取新回复"
 }

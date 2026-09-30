@@ -503,5 +503,13 @@
   "directory_vote_needs_pass": "Ääntäsi ei lähetetty: tämän tilin äänestysosoitteessa <address>{{address}}</address> ei ole <passLink>5chan Passia</passLink>.",
   "directory_vote_needs_test_pass": "Ääntäsi ei lähetetty: tämän tilin äänestysosoitteessa <address>{{address}}</address> ei ole 5chan Passia. Äänestys on toistaiseksi testnetissä, joten voit hakea tälle osoitteelle ilmaisen testi-Passin <faucetLink>faucetista</faucetLink>.",
   "directory_vote_board_not_found": "Osoitteesta {{address}} ei löytynyt lautaa. Syötä .bso-osoite tai laudan julkinen avain.",
-  "directory_vote_failed": "Ääntäsi ei voitu lähettää: {{error}}"
+  "directory_vote_failed": "Ääntäsi ei voitu lähettää: {{error}}",
+  "thread_update_updating": "Päivitetään...",
+  "thread_update_no_new_posts": "Ei uusia viestejä",
+  "thread_update_new_post": "1 uusi viesti",
+  "thread_update_new_posts": "{{count}} uutta viestiä",
+  "thread_update_connection_error": "Yhteysvirhe",
+  "thread_update_thread_archived": "Tämä ketju on arkistoitu",
+  "thread_update_thread_deleted": "Tämä ketju on karsittu tai poistettu",
+  "fetch_new_replies_automatically": "Hae uudet vastaukset automaattisesti"
 }

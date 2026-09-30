@@ -18,6 +18,7 @@ import { getRequestedThreadTopCid, scrollThreadContainerToTop } from '../../lib/
 import { evictThreadRefreshCaches } from '../../lib/utils/thread-refresh-cache-utils';
 import { REPLIES_PER_PAGE } from '../../lib/constants';
 import { preservePublishedUserID } from '../../lib/utils/comment-user-id-utils';
+import useThreadUpdater from '../../hooks/use-thread-updater';
 import useThreadLiveUpdatesStore from '../../stores/use-thread-live-updates-store';
 import type { QueuedCommentRouteState } from '../../lib/utils/mod-queue-utils';
 import styles from '../../components/post-styles';
@@ -132,11 +133,7 @@ const PostPage = () => {
   const { t } = useTranslation();
   const { hash, key: locationKey, pathname, search, state: locationState } = useLocation();
   const { boardIdentifier, commentCid } = useParams();
-  const autoUpdateEnabled = useThreadLiveUpdatesStore((state) => state.enabled);
-  const updateRequestId = useThreadLiveUpdatesStore((state) => state.updateRequestId);
-  const startUpdate = useThreadLiveUpdatesStore((state) => state.startUpdate);
-  const finishUpdate = useThreadLiveUpdatesStore((state) => state.finishUpdate);
-  const resetThreadLiveUpdates = useThreadLiveUpdatesStore((state) => state.resetState);
+  const unreadCount = useThreadLiveUpdatesStore((state) => state.unreadCount);
   const resolvedCommunityAddress = useResolvedCommunityAddress();
   const isInAllView = isAllView(pathname);
   const routeState = useMemo(() => {
@@ -149,7 +146,8 @@ const PostPage = () => {
 
   const { communityAddress: cidCommunityAddress } = useCommentCidPayload(commentCid);
   const commentCommunityIdentifier = useCommunityIdentifier(cidCommunityAddress ?? resolvedCommunityAddress);
-  const resolvedComment = useCommentWithFeedCache({ commentCid, autoUpdate: autoUpdateEnabled, community: commentCommunityIdentifier });
+  // The thread stays as loaded until Update or Auto refreshes it, like a 4chan thread page.
+  const resolvedComment = useCommentWithFeedCache({ commentCid, autoUpdate: false, community: commentCommunityIdentifier });
   const queuedComment = useMemo(() => getQueuedCommentFromRouteState(routeState, commentCid), [routeState, commentCid]);
   const comment = useMemo(() => mergeLocalCommentAuthor(mergeCommentFallback(resolvedComment, queuedComment), queuedComment), [resolvedComment, queuedComment]);
   const commentCommunityAddress = getCommentCommunityAddress(comment);
@@ -163,7 +161,6 @@ const PostPage = () => {
     : undefined;
   const consumedThreadTopScrollRef = useRef<string | null>(null);
   const previousThreadCidRef = useRef<string>(undefined);
-  const lastProcessedUpdateRequestIdRef = useRef(0);
   const threadRefreshCommentsRef = useRef<Array<CommentWithRefresh | undefined>>([]);
 
   const navigate = useNavigate();
@@ -191,7 +188,7 @@ const PostPage = () => {
   // if the comment is a reply, return the post comment instead, then the reply will be highlighted in the thread
   const postComment = useCommentWithFeedCache({
     commentCid: comment?.parentCid ? comment.postCid : undefined,
-    autoUpdate: autoUpdateEnabled,
+    autoUpdate: false,
     community: authoritativeCommentCommunityAddress ? communityIdentifier : undefined,
   });
   const post = useMemo(() => (comment?.parentCid ? mergeCommentFallback(postComment, comment) : comment), [comment, postComment]);
@@ -237,8 +234,9 @@ const PostPage = () => {
 
     const postTitle = post?.title?.slice(0, 30) || post?.content?.slice(0, 30);
     const postTitlePart = postTitle ? ` - ${postTitle.trim()}...` : '';
-    document.title = `${boardTitle}${postTitlePart} - 5chan`;
-  }, [title, shortAddress, communityAddress, post?.title, post?.content, isInAllView, t, boardIdentifier, directories]);
+    const unreadCountPart = unreadCount > 0 ? `(${unreadCount}) ` : '';
+    document.title = `${unreadCountPart}${boardTitle}${postTitlePart} - 5chan`;
+  }, [title, shortAddress, communityAddress, post?.title, post?.content, isInAllView, t, boardIdentifier, directories, unreadCount]);
 
   const shouldShowCommentError = comment?.error?.message && !comment?.cid;
   const shouldShowPostError = post?.error && post?.replyCount > 0 && post?.replies?.length === 0;
@@ -268,61 +266,40 @@ const PostPage = () => {
   }, [post?.cid, queuedReply, queuedReplyHasMore, queuedReplyLoadMore, queuedReplyRepliesResult.replies, queuedReplyRepliesResult.updatedReplies, queuedReplyReset]);
 
   useEffect(() => {
-    return () => {
-      resetThreadLiveUpdates();
-    };
-  }, [resetThreadLiveUpdates]);
-
-  useEffect(() => {
     if (!post?.cid) return;
     if (previousThreadCidRef.current && previousThreadCidRef.current !== post.cid) {
-      lastProcessedUpdateRequestIdRef.current = 0;
       consumedThreadTopScrollRef.current = null;
-      resetThreadLiveUpdates();
     }
     previousThreadCidRef.current = post.cid;
-  }, [post?.cid, resetThreadLiveUpdates]);
+  }, [post?.cid]);
 
-  useEffect(() => {
-    if (!post?.cid || updateRequestId <= lastProcessedUpdateRequestIdRef.current) return;
-
+  const commentCidForRefresh = comment?.cid;
+  const commentRefresh = comment?.refresh;
+  const postCidForRefresh = post?.cid;
+  const postRefresh = post?.refresh;
+  const refreshThread = useMemo(() => {
     const refreshByCid = new Map<string, () => Promise<void>>();
-    if (comment?.cid && typeof comment.refresh === 'function') {
-      refreshByCid.set(comment.cid, comment.refresh);
-    }
-    if (post?.cid && typeof post.refresh === 'function') {
-      refreshByCid.set(post.cid, post.refresh);
-    }
-    if (refreshByCid.size === 0) return;
+    if (commentCidForRefresh && typeof commentRefresh === 'function') refreshByCid.set(commentCidForRefresh, commentRefresh);
+    if (postCidForRefresh && typeof postRefresh === 'function') refreshByCid.set(postCidForRefresh, postRefresh);
+    if (refreshByCid.size === 0) return undefined;
 
-    lastProcessedUpdateRequestIdRef.current = updateRequestId;
-    let cancelled = false;
-    startUpdate();
-
-    void (async () => {
+    return async () => {
       try {
         await evictThreadRefreshCaches(threadRefreshCommentsRef.current);
       } catch (cacheError) {
         console.error('Failed to clear stale thread cache before refresh:', cacheError);
       }
 
-      return Promise.allSettled(Array.from(refreshByCid.values(), (refresh) => refresh()));
-    })().then((results) => {
-      if (cancelled) return;
-
-      const hasSuccessfulRefresh = results.some((result) => result.status === 'fulfilled');
-      finishUpdate(updateRequestId, hasSuccessfulRefresh);
-
+      const results = await Promise.allSettled(Array.from(refreshByCid.values(), (refresh) => refresh()));
       const rejectedResult = results.find((result) => result.status === 'rejected');
       if (rejectedResult?.status === 'rejected') {
         console.error('Failed to refresh thread comments:', rejectedResult.reason);
       }
-    });
-
-    return () => {
-      cancelled = true;
+      return results.some((result) => result.status === 'fulfilled');
     };
-  }, [comment?.cid, comment?.refresh, finishUpdate, post?.cid, post?.refresh, startUpdate, updateRequestId]);
+  }, [commentCidForRefresh, commentRefresh, postCidForRefresh, postRefresh]);
+
+  useThreadUpdater({ post: post?.cid ? post : undefined, refreshThread });
 
   return (
     <div className={styles.content}>

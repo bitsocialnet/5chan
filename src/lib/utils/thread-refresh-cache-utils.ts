@@ -1,5 +1,5 @@
 import type { Comment, RepliesPages } from '@bitsocial/bitsocial-react-hooks';
-import { repliesPagesStore } from '../bitsocial-internals/stores';
+import { repliesPagesStore, repliesStore } from '../bitsocial-internals/stores';
 import { localForageLru } from '../bitsocial-internals/utils';
 
 const commentsDatabase = localForageLru.createInstance({ name: 'bitsocialReactHooks-comments' });
@@ -76,4 +76,11 @@ export const evictThreadRefreshCaches = async (comments: Array<Comment | undefin
     ...commentCids.map((commentCid) => commentsDatabase.removeItem(commentCid)),
     ...replyPageCids.map((pageCid) => repliesPagesDatabase.removeItem(pageCid)),
   ]);
+};
+
+// The replies store only recomputes a feed when a post's first reply page or page cids change, so
+// replies appended to a single preloaded page need an explicit recompute. Unlike a feed reset,
+// this keeps the rendered replies and only appends new ones.
+export const syncThreadRepliesFeeds = () => {
+  repliesStore.getState().updateFeeds();
 };
