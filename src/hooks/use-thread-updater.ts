@@ -11,8 +11,6 @@ const useThreadUpdater = ({ post, refreshThread }: { post: Comment | undefined; 
   const setRefreshThread = useThreadLiveUpdatesStore((state) => state.setRefreshThread);
   const setThreadPost = useThreadLiveUpdatesStore((state) => state.setThreadPost);
   const markThreadDead = useThreadLiveUpdatesStore((state) => state.markThreadDead);
-  const clearUnread = useThreadLiveUpdatesStore((state) => state.clearUnread);
-  const handleVisibilityChange = useThreadLiveUpdatesStore((state) => state.handleVisibilityChange);
   const resetState = useThreadLiveUpdatesStore((state) => state.resetState);
   const threadCid = post?.cid;
   const isThreadLoaded = typeof post?.updatedAt === 'number';
@@ -45,15 +43,16 @@ const useThreadUpdater = ({ post, refreshThread }: { post: Comment | undefined; 
 
   useEffect(() => {
     const handleScroll = () => {
-      if (!document.hidden && isScrolledToBottom()) clearUnread();
+      if (!document.hidden && isScrolledToBottom()) useThreadLiveUpdatesStore.getState().clearUnread();
     };
+    const handleVisibilityChange = () => useThreadLiveUpdatesStore.getState().handleVisibilityChange();
     window.addEventListener('scroll', handleScroll, { passive: true });
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => {
       window.removeEventListener('scroll', handleScroll);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [clearUnread, handleVisibilityChange]);
+  }, []);
 };
 
 export default useThreadUpdater;
