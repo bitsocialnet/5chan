@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { CommunityIdentifier } from '@bitsocial/bitsocial-react-hooks';
-import { communitiesStore } from '../lib/bitsocial-internals/stores';
+import { communitiesStore as useCommunitiesStore } from '../lib/bitsocial-internals/stores';
 
 // pkc-js retries an unreachable community forever, cycling 'fetching-ipns' -> 'waiting-retry', and
 // bitsocial-react-hooks drops errors marked retriable, so neither `community.error` nor
@@ -15,7 +15,7 @@ const useCommunityLoadFailuresStore = create<CommunityLoadFailuresState>(() => (
   failedCommunityKeys: {},
 }));
 
-const recordCommunityLoadFailures = ({ communities, syncStatuses }: ReturnType<typeof communitiesStore.getState>) => {
+const recordCommunityLoadFailures = ({ communities, syncStatuses }: ReturnType<typeof useCommunitiesStore.getState>) => {
   const { failedCommunityKeys } = useCommunityLoadFailuresStore.getState();
   let nextFailedCommunityKeys: Record<string, true> | undefined;
 
@@ -42,8 +42,8 @@ const recordCommunityLoadFailures = ({ communities, syncStatuses }: ReturnType<t
   }
 };
 
-recordCommunityLoadFailures(communitiesStore.getState());
-const unsubscribeFromCommunities = communitiesStore.subscribe((state, prevState) => {
+recordCommunityLoadFailures(useCommunitiesStore.getState());
+const unsubscribeFromCommunities = useCommunitiesStore.subscribe((state, prevState) => {
   if (state.syncStatuses !== prevState.syncStatuses) {
     recordCommunityLoadFailures(state);
   }
@@ -57,7 +57,8 @@ export const useHasCommunityLoadFailed = (communityIdentifier?: CommunityIdentif
   const communityKey = getCommunityKey(communityIdentifier);
   const hasFailed = useCommunityLoadFailuresStore((state) => Boolean(communityKey && state.failedCommunityKeys[communityKey]));
   // The pkc-js RPC client applies 'succeeded' without emitting it, so also stop once data arrives
-  const hasLoaded = communitiesStore((state) => Boolean(communityKey && typeof state.communities[communityKey]?.updatedAt === 'number'));
+  // Named as a hook so React Compiler never memoizes this subscription away
+  const hasLoaded = useCommunitiesStore((state) => Boolean(communityKey && typeof state.communities[communityKey]?.updatedAt === 'number'));
   return hasFailed && !hasLoaded;
 };
 
