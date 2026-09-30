@@ -24,21 +24,27 @@ const HOME_PREFERENCE_KEYS = [
   '5chan-frames',
 ];
 
+// Values a visitor can have saved without changing the preference. zustand 4's persist middleware saved
+// homepage-introduction with its default while hydrating on every visit; zustand 5 saves it only when it
+// changes, so visitors from before the upgrade still carry that value, which renders the shell's frame.
+const PREVIOUSLY_SAVED_DEFAULTS = {
+  'homepage-introduction': ['{"state":{"showIntroduction":true},"version":0}'],
+};
+
 // The inline script's hash must be listed in vercel.json's script-src (verified at build time).
-// `defaults` maps each preference key to the value the app saves before the visitor changes anything,
-// or null. zustand's persist middleware saves a store while hydrating, so every visit after the first
-// already has homepage-introduction saved with its default, which still renders the shell's frame.
-const createInsertShellScript = (defaults) => `(function () {
+// `savedDefaults` maps each preference key to the values it can hold without the visitor changing it;
+// a key that is not saved at all always renders the shell's frame.
+const createInsertShellScript = (savedDefaults) => `(function () {
   try {
     // Electron's preload and Capacitor's Android bridge are both in place before page scripts run.
     if (window.isElectron || (window.electronApi && window.electronApi.isElectron) || window.androidBridge) return;
     if (location.hash && location.hash !== '#' && location.hash !== '#/') return;
     var language = localStorage.getItem('5chan-interface-language');
     if (language && !/^en(-|$)/i.test(language)) return;
-    var defaults = ${JSON.stringify(defaults).replaceAll('<', '\\u003c')};
-    for (var key in defaults) {
+    var savedDefaults = ${JSON.stringify(savedDefaults).replaceAll('<', '\\u003c')};
+    for (var key in savedDefaults) {
       var value = localStorage.getItem(key);
-      if (value !== null && value !== defaults[key]) return;
+      if (value !== null && savedDefaults[key].indexOf(value) === -1) return;
     }
     var root = document.getElementById('root');
     var template = document.getElementById('static-shell-home');
@@ -80,9 +86,11 @@ export function injectStaticShell(html, variants, renderStorage = {}) {
   const templates = Object.entries(variants)
     .map(([name, markup]) => `<template id="static-shell-${name}">${markup}</template>`)
     .join('');
-  const defaults = Object.fromEntries(HOME_PREFERENCE_KEYS.map((key) => [key, renderStorage[key] ?? null]));
+  const savedDefaults = Object.fromEntries(
+    HOME_PREFERENCE_KEYS.map((key) => [key, [...new Set([renderStorage[key], ...(PREVIOUSLY_SAVED_DEFAULTS[key] ?? [])].filter((value) => typeof value === 'string'))]]),
+  );
   // A replacer function keeps `$` sequences in the rendered markup literal.
-  return html.replace('<div id="root"></div>', () => `<div id="root"></div>${templates}<script>${createInsertShellScript(defaults)}</script>`);
+  return html.replace('<div id="root"></div>', () => `<div id="root"></div>${templates}<script>${createInsertShellScript(savedDefaults)}</script>`);
 }
 
 export function staticShellPlugin({ preloadAttribute }) {

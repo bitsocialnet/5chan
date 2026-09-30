@@ -98,7 +98,7 @@ const usePublishReply = ({ cid, communityAddress, postCid }: UsePublishReplyOpti
 
   const resetPublishReplyOptions = useCallback(() => resetPublishReplyStore(parentCid), [parentCid, resetPublishReplyStore]);
 
-  const scopedNumberToCid = usePostNumberStore((state) => getScopedNumberToCidMap(state.numberToCid, communityAddress));
+  const scopedNumberToCid = usePostNumberStore(useShallow((state) => getScopedNumberToCidMap(state.numberToCid, communityAddress)));
   const cidToPostCid = usePostNumberStore((state) => state.cidToPostCid);
   const threadPostCid = postCid ?? parentCid;
   const quotedCids = useMemo(() => getQuotedCidsFromContent(content, scopedNumberToCid), [content, scopedNumberToCid]);

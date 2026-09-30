@@ -49,7 +49,7 @@ try {
   const { renderStaticShell } = await server.ssrLoadModule('/src/static-shell.tsx');
   const rendered = {};
   for (const [name, variant] of Object.entries(variants)) rendered[name] = await renderStaticShell(variant);
-  // Stores that persist while hydrating have now saved their defaults, as they do on a first visit.
+  // Whatever the app saved on its own while rendering, as it would on a first visit.
   const storage = {};
   for (let index = 0; index < localStorage.length; index += 1) {
     const key = localStorage.key(index);

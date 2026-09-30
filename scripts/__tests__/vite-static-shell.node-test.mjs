@@ -34,15 +34,12 @@ test('adds the shell templates and insertion script after an empty root', () => 
   assert.throws(() => injectStaticShell('<body><div id="root">x</div></body>', {}), /no empty/);
 });
 
-// What the build's render saves on its own, as zustand's persist middleware does on every first visit.
+// What zustand 4's persist middleware saved on every visit before the visitor changed anything.
 const SAVED_INTRODUCTION = '{"state":{"showIntroduction":true},"version":0}';
 
-const loadWithShell = ({ hash = '', storage = {}, globals = {} } = {}) => {
-  const html = injectStaticShell(
-    '<!doctype html><html><body><div id="root"></div></body></html>',
-    { home: '<div class="app">shell</div>' },
-    { 'homepage-introduction': SAVED_INTRODUCTION, 'unrelated-store': '{}' },
-  );
+// `renderStorage` is what the build's render saved; zustand 5 no longer saves the introduction store there.
+const loadWithShell = ({ hash = '', storage = {}, globals = {}, renderStorage = { 'unrelated-store': '{}' } } = {}) => {
+  const html = injectStaticShell('<!doctype html><html><body><div id="root"></div></body></html>', { home: '<div class="app">shell</div>' }, renderStorage);
   const dom = new JSDOM(html, { url: `https://5chan.test/${hash}`, runScripts: 'outside-only' });
   for (const [key, value] of Object.entries(storage)) dom.window.localStorage.setItem(key, value);
   Object.assign(dom.window, globals);
@@ -60,6 +57,7 @@ test('shows the shell on a first visit to the home page', () => {
 
 test('shows the shell on a return visit that only has the preferences the app saved itself', () => {
   assert.equal(loadWithShell({ storage: { 'homepage-introduction': SAVED_INTRODUCTION, 'unrelated-store': '{"changed":true}' } }).shown, true);
+  assert.equal(loadWithShell({ renderStorage: { '5chan-frames': 'saved' }, storage: { '5chan-frames': 'saved' } }).shown, true);
 });
 
 test('skips the shell when the first frame would differ', () => {

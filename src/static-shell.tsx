@@ -17,7 +17,6 @@ export const renderStaticShell = async (): Promise<string> => {
       ns: ['default'],
       defaultNS: 'default',
       resources: { en: { default: en } },
-      showSupportNotice: false,
     });
   }
   const container = document.createElement('div');
