@@ -287,7 +287,7 @@
     "yaml@npm:^1.10.2": "1.10.3",
     "yaml@npm:^2.8.2": "2.8.3",
     "use-sync-external-store": "1.6.0",
-    "better-sqlite3@npm:12.9.0": "12.11.1"
+    "better-sqlite3@npm:12.9.0": "13.0.3"
   },
   "main": "electron/main.js",
   "lint-staged": {
