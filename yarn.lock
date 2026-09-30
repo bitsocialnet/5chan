@@ -14,13 +14,13 @@ __metadata:
     "@bitsocial/bitsocial-react-hooks": "npm:0.1.46"
     "@bitsocial/bso-resolver": "npm:0.0.10"
     "@bitsocial/pubsub-voting": "npm:0.7.8"
-    "@capacitor/android": "npm:7.4.5"
-    "@capacitor/app": "npm:7.0.1"
-    "@capacitor/browser": "npm:7.0.5"
-    "@capacitor/cli": "npm:7.4.5"
-    "@capacitor/core": "npm:7.4.5"
-    "@capacitor/status-bar": "npm:7.0.1"
-    "@capawesome/capacitor-android-edge-to-edge-support": "npm:7.2.2"
+    "@capacitor/android": "npm:8.5.2"
+    "@capacitor/app": "npm:8.1.1"
+    "@capacitor/browser": "npm:8.0.4"
+    "@capacitor/cli": "npm:8.5.2"
+    "@capacitor/core": "npm:8.5.2"
+    "@capacitor/status-bar": "npm:8.0.3"
+    "@capawesome/capacitor-android-edge-to-edge-support": "npm:8.0.8"
     "@chenglou/pretext": "npm:0.0.9"
     "@electron-forge/cli": "npm:7.8.0"
     "@electron-forge/maker-dmg": "npm:7.8.0"
@@ -1739,36 +1739,36 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@capacitor/android@npm:7.4.5":
-  version: 7.4.5
-  resolution: "@capacitor/android@npm:7.4.5"
+"@capacitor/android@npm:8.5.2":
+  version: 8.5.2
+  resolution: "@capacitor/android@npm:8.5.2"
   peerDependencies:
-    "@capacitor/core": ^7.4.0
-  checksum: 10c0/c29ea5ec86c1ba4a3bf896be4791609e4096afd6a2b89d3d49e3d7fe2f4f0c97a9d6d23be18a9510aa86b1da7102c765bedddc942f6f29bec5ef804047b502f5
+    "@capacitor/core": ^8.5.0
+  checksum: 10c0/339e79cb00e3cdce6c91dfa647a269bd20f88c524d75b7d267f797130a37a0425722e15c283b707d4530dd8494f50c3cc1a7fedc842f702a55a530a90ed49e54
   languageName: node
   linkType: hard
 
-"@capacitor/app@npm:7.0.1":
-  version: 7.0.1
-  resolution: "@capacitor/app@npm:7.0.1"
+"@capacitor/app@npm:8.1.1":
+  version: 8.1.1
+  resolution: "@capacitor/app@npm:8.1.1"
   peerDependencies:
-    "@capacitor/core": ">=7.0.0"
-  checksum: 10c0/dded2134a429b3c9fb377233ec6c7f73a6cc66941294c0b8d5ad8f53fa0511a168ed3679daaff111644c85d72f552e3006a809c7ab5550b293316a978a31806c
+    "@capacitor/core": ">=8.0.0"
+  checksum: 10c0/11d246e22bd3e2409d2c7e8fcfa690be7f977e8dff44f2934b9fa24d074ca8fa980b156cc027ad652755a9d1de04a2c00750570a6c3a79cd530d04b7e97b5d3d
   languageName: node
   linkType: hard
 
-"@capacitor/browser@npm:7.0.5":
-  version: 7.0.5
-  resolution: "@capacitor/browser@npm:7.0.5"
+"@capacitor/browser@npm:8.0.4":
+  version: 8.0.4
+  resolution: "@capacitor/browser@npm:8.0.4"
   peerDependencies:
-    "@capacitor/core": ">=7.0.0"
-  checksum: 10c0/d88cdfb2d0368e8b6edaf894989b1f9d957965d34fd8b5002b0fff05eee1b51d7a7cfa048624f13bd0e41530262655aa632f4cb8621f77ac789a642738081981
+    "@capacitor/core": ">=8.0.0"
+  checksum: 10c0/14e96965ae222c840593f4609eb5fc70601db0363f9d89adb15e228efd5cd9da73c743d1eef3242e7dca8b59f9e3773028be18359d7ce900702b01c4daeef7ef
   languageName: node
   linkType: hard
 
-"@capacitor/cli@npm:7.4.5":
-  version: 7.4.5
-  resolution: "@capacitor/cli@npm:7.4.5"
+"@capacitor/cli@npm:8.5.2":
+  version: 8.5.2
+  resolution: "@capacitor/cli@npm:8.5.2"
   dependencies:
     "@ionic/cli-framework-output": "npm:^2.2.8"
     "@ionic/utils-subprocess": "npm:^3.0.1"
@@ -1784,40 +1784,41 @@ __metadata:
     prompts: "npm:^2.4.2"
     rimraf: "npm:^6.0.1"
     semver: "npm:^7.6.3"
-    tar: "npm:^6.1.11"
+    tar: "npm:^7.5.3"
     tslib: "npm:^2.8.1"
+    xcode: "npm:^3.0.1"
     xml2js: "npm:^0.6.2"
   bin:
     cap: bin/capacitor
     capacitor: bin/capacitor
-  checksum: 10c0/c90394a5445cbb51a9fb20394b0bee05f9662b77dd73e9cb8a27ba82b95c31da907586955f13d725210cdead58bb7418926a4dc7b0ce983569d8ea74998ea22c
+  checksum: 10c0/1c9b457d0e28e7c3402dd9783cbfa9cad799b5d4ef69c8a6a7679acfb2c718908c45e851a30b18c5be9a1f257cdd4b8b0e7c3fb921c2266deb0547825c8eeb3a
   languageName: node
   linkType: hard
 
-"@capacitor/core@npm:7.4.5":
-  version: 7.4.5
-  resolution: "@capacitor/core@npm:7.4.5"
+"@capacitor/core@npm:8.5.2":
+  version: 8.5.2
+  resolution: "@capacitor/core@npm:8.5.2"
   dependencies:
     tslib: "npm:^2.1.0"
-  checksum: 10c0/9e820bdce33a5ae84197aa350c36909f6b6047d6593c84788cf28dee35c3eef4ea3fdf242780829afb65d3839f1db1120dd757bd3acf1c7b6b5cd27c730d9d92
+  checksum: 10c0/266f084b124ecbaeece8d763ce5bea1aac234e950b08b137782b94b5b898e248a9bcdfbc5a6ba57a8f8fe35f8bbbaf80ea1d2ce8cd744d7c55010176d5823d0d
   languageName: node
   linkType: hard
 
-"@capacitor/status-bar@npm:7.0.1":
-  version: 7.0.1
-  resolution: "@capacitor/status-bar@npm:7.0.1"
+"@capacitor/status-bar@npm:8.0.3":
+  version: 8.0.3
+  resolution: "@capacitor/status-bar@npm:8.0.3"
   peerDependencies:
-    "@capacitor/core": ">=7.0.0"
-  checksum: 10c0/bd1368030c0c051a32549b2dde6839e28328ec070896de202bb16b40af823772869687466569fa7a0186a4af8843597ced7933a5c04a2b88e924c858a4cf8675
+    "@capacitor/core": ">=8.0.0"
+  checksum: 10c0/f4ea555fd466928e413ea64d0cf52566dd63e96af333f63a33938ffe4068d568a0b3c490f4c4967f29b96d0c91c6867049ad63e413353c287d29a6d8df3e0875
   languageName: node
   linkType: hard
 
-"@capawesome/capacitor-android-edge-to-edge-support@npm:7.2.2":
-  version: 7.2.2
-  resolution: "@capawesome/capacitor-android-edge-to-edge-support@npm:7.2.2"
+"@capawesome/capacitor-android-edge-to-edge-support@npm:8.0.8":
+  version: 8.0.8
+  resolution: "@capawesome/capacitor-android-edge-to-edge-support@npm:8.0.8"
   peerDependencies:
-    "@capacitor/core": ">=7.0.0"
-  checksum: 10c0/4832e0426d7fe131979c891c82e7cf7580ccbb7d882462517b52bff85661aacbb55619c5bef40f961870d5dbfdf8cc7d778180e35e4dd5c00f5ab03597d43feb
+    "@capacitor/core": ">=8.0.0"
+  checksum: 10c0/ab155bd5eb7b9f345b8a36f6bc7d93892b01b2a21ee2efb4888ab5a7050f074318bb96d646430963998a40af4b538df58f2f9a1ff46d46f1502cc9a2fb18b769
   languageName: node
   linkType: hard
 
@@ -8746,6 +8747,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"bplist-creator@npm:0.1.1":
+  version: 0.1.1
+  resolution: "bplist-creator@npm:0.1.1"
+  dependencies:
+    stream-buffers: "npm:2.2.x"
+  checksum: 10c0/427ec37263ce0e8c68a83f595fc9889a9cbf2e6fda2de18e1f8ef7f0c6ce68c0cdbb7c9c1f3bb3f2d217407af8cffbdf254bf0f71c99f2186175d07752f08a47
+  languageName: node
+  linkType: hard
+
 "bplist-creator@npm:~0.0.3":
   version: 0.0.8
   resolution: "bplist-creator@npm:0.0.8"
@@ -8755,7 +8765,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bplist-parser@npm:^0.3.2":
+"bplist-parser@npm:0.3.2, bplist-parser@npm:^0.3.2":
   version: 0.3.2
   resolution: "bplist-parser@npm:0.3.2"
   dependencies:
@@ -19050,6 +19060,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"simple-plist@npm:^1.1.0":
+  version: 1.4.0
+  resolution: "simple-plist@npm:1.4.0"
+  dependencies:
+    bplist-creator: "npm:0.1.1"
+    bplist-parser: "npm:0.3.2"
+    plist: "npm:^3.0.5"
+  checksum: 10c0/226c283492d8518d715e4133d94bdbd15c0619561bcde583b4807b36cde106c0078c615b9b4e25c0e8758a4ae4e79ed5dd76e57cd528d8b7001ecab5ad35e343
+  languageName: node
+  linkType: hard
+
 "sisteransi@npm:^1.0.5":
   version: 1.0.5
   resolution: "sisteransi@npm:1.0.5"
@@ -19350,7 +19371,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"stream-buffers@npm:~2.2.0":
+"stream-buffers@npm:2.2.x, stream-buffers@npm:~2.2.0":
   version: 2.2.0
   resolution: "stream-buffers@npm:2.2.0"
   checksum: 10c0/14a351f0a066eaa08c8c64a74f4aedd87dd7a8e59d4be224703da33dca3eb370828ee6c0ae3fff59a9c743e8098728fc95c5f052ae7741672a31e6b1430ba50a
@@ -20807,6 +20828,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"uuid@npm:^7.0.3":
+  version: 7.0.3
+  resolution: "uuid@npm:7.0.3"
+  bin:
+    uuid: dist/bin/uuid
+  checksum: 10c0/2eee5723b0fcce8256f5bfd3112af6c453b5471db00af9c3533e3d5a6e57de83513f9a145a570890457bd7abf2c2aa05797291d950ac666e5a074895dc63168b
+  languageName: node
+  linkType: hard
+
 "validate-npm-package-license@npm:^3.0.1, validate-npm-package-license@npm:^3.0.4":
   version: 3.0.4
   resolution: "validate-npm-package-license@npm:3.0.4"
@@ -21559,6 +21589,16 @@ __metadata:
     utf-8-validate:
       optional: true
   checksum: 10c0/ef4a243476283fc49bc7550966c4af4aa0eef56273837211e700de3b664e08604a760cdddcb5ba43c049140e74ccfec5b0ee0bb439e08c2adf9138902fdde5f9
+  languageName: node
+  linkType: hard
+
+"xcode@npm:^3.0.1":
+  version: 3.0.1
+  resolution: "xcode@npm:3.0.1"
+  dependencies:
+    simple-plist: "npm:^1.1.0"
+    uuid: "npm:^7.0.3"
+  checksum: 10c0/51bf35cee52909aeb18f868ecf9828f93b8042fadf968159320f9f11e757a52e43f6563a53b586986cfe5a34d576f3300c4c0cf1e14300084344ae206eaa53c3
   languageName: node
   linkType: hard
 
