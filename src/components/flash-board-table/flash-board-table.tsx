@@ -17,6 +17,7 @@ type FlashBoardComment = Comment & {
 interface FlashBoardTableProps {
   boardBasePath: string;
   isLoading?: boolean;
+  hasLoadFailed?: boolean;
   posts: FlashBoardComment[];
 }
 
@@ -49,7 +50,7 @@ const getSubjectLabel = (comment: FlashBoardComment) => {
 
 const getReplyCount = (comment: FlashBoardComment) => (typeof comment.replyCount === 'number' ? comment.replyCount : 0);
 
-const FlashBoardTable = ({ boardBasePath, isLoading = false, posts }: FlashBoardTableProps) => {
+const FlashBoardTable = ({ boardBasePath, isLoading = false, hasLoadFailed = false, posts }: FlashBoardTableProps) => {
   const { t } = useTranslation();
   const anonymousLabel = capitalize(t('anonymous'));
 
@@ -89,6 +90,7 @@ const FlashBoardTable = ({ boardBasePath, isLoading = false, posts }: FlashBoard
           {posts.length === 0 && isLoading ? (
             <tr className={styles.row}>
               <td colSpan={CELL_COUNT} className={styles.emptyCell}>
+                {hasLoadFailed && <div className='red'>{t('failed')}</div>}
                 <LoadingEllipsis string={t('downloading_board')} />
               </td>
             </tr>

@@ -13,6 +13,7 @@ import { useCommunityIdentifier, useCommunityIdentifiers } from '../../hooks/use
 import { useFilteredDirectoryAddresses } from '../../hooks/use-filtered-directory-addresses';
 import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
 import { useFeedStateString } from '../../hooks/use-state-string';
+import { useHasCommunityLoadFailed } from '../../stores/use-community-load-failures-store';
 import useFeedResetStore from '../../stores/use-feed-reset-store';
 import useFeedViewSettingsStore from '../../stores/use-feed-view-settings-store';
 import usePostNumberStore from '../../stores/use-post-number-store';
@@ -95,6 +96,7 @@ interface BoardFooterProps {
   moreThreadsSuggestionSearch: string;
   onExpandTimeWindow?: (suggestion: TimeFilterSuggestion) => void | Promise<void>;
   communityState: string | undefined;
+  hasCommunityLoadFailed: boolean;
   subscriptionsLength: number;
   accountCommunityAddressesLength: number;
   /** Show loading ellipsis. True when infinite scroll, or when pagination + empty feed (initial load). */
@@ -121,6 +123,7 @@ const BoardFooter = ({
   moreThreadsSuggestionSearch,
   onExpandTimeWindow,
   communityState,
+  hasCommunityLoadFailed,
   subscriptionsLength,
   accountCommunityAddressesLength,
   showLoadingEllipsis = true,
@@ -182,7 +185,10 @@ const BoardFooter = ({
         ) : isInModView && accountCommunityAddressesLength === 0 ? (
           <ModEmptyState />
         ) : (
-          showFooterLoading && <LoadingEllipsis string={loadingStateString} />
+          <>
+            {hasCommunityLoadFailed && <div className='red'>{t('failed')}</div>}
+            {showFooterLoading && <LoadingEllipsis string={loadingStateString} />}
+          </>
         )}
       </div>
     </div>
@@ -417,6 +423,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
   const isRawBoardThreadStateEmpty = isRawBoardThreadStateFullyLoaded && (rawBoardThreadState?.rootThreadCids.size ?? 0) === 0;
   const isSingleCommunityBoard = !isInAllView && !isInSubscriptionsView && !isInModView;
   const isLoadedCommunityState = communityState === 'succeeded' || communityState === 'ready';
+  const hasCommunityLoadFailed = useHasCommunityLoadFailed(communityIdentifier);
   const isFeedSucceeded = feedState === 'succeeded';
   const refreshHold = refreshHoldRef.current;
   if (refreshHold && !refreshHold.isReleased && !refreshHold.hasSeenEmptyFeed && feed.length === 0) {
@@ -615,6 +622,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
               moreThreadsSuggestionSearch={routerLocation.search}
               onExpandTimeWindow={expandSuggestionTimeWindow}
               communityState={communityState}
+              hasCommunityLoadFailed={hasCommunityLoadFailed}
               subscriptionsLength={subscriptions?.length || 0}
               accountCommunityAddressesLength={accountCommunityAddresses?.length || 0}
               showLoadingEllipsis={effectiveInfiniteScroll || combinedFeed.length === 0}
@@ -699,6 +707,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
       moreThreadsSuggestionPathname,
       expandSuggestionTimeWindow,
       communityState,
+      hasCommunityLoadFailed,
       feedState,
       communityAddress,
       subscriptions?.length,
@@ -804,7 +813,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
         {shouldShowUnverifiedAddressWarning && <output className={styles.addressWarning}>{t('board_address_unverified_warning')}</output>}
         {shouldUseFlashTable ? (
           <>
-            <FlashBoardTable boardBasePath={paginationBasePath} isLoading={shouldShowFlashTableLoading} posts={displayFeed} />
+            <FlashBoardTable boardBasePath={paginationBasePath} isLoading={shouldShowFlashTableLoading} hasLoadFailed={hasCommunityLoadFailed} posts={displayFeed} />
             <footerComponents.Footer />
           </>
         ) : effectiveInfiniteScroll ? (
