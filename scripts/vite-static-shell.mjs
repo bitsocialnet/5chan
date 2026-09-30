@@ -321,12 +321,18 @@ export function staticShellPlugin({ preloadAttribute }) {
   let command;
   let devServer;
   const render = async (plan) => {
-    const { stdout } = await execFileAsync(process.execPath, [path.join(packageRoot, 'scripts/static-shell/render.mjs'), JSON.stringify(plan)], {
-      cwd: packageRoot,
-      encoding: 'utf8',
-      maxBuffer: 64 * 1024 * 1024,
-    });
-    return JSON.parse(stdout);
+    try {
+      const { stdout } = await execFileAsync(process.execPath, [path.join(packageRoot, 'scripts/static-shell/render.mjs'), JSON.stringify(plan)], {
+        cwd: packageRoot,
+        encoding: 'utf8',
+        maxBuffer: 64 * 1024 * 1024,
+      });
+      return JSON.parse(stdout);
+    } catch (error) {
+      // Vite reports a later plugin's error (the PWA build's missing index.html) instead of this one.
+      process.stderr.write(`static shell: render ${JSON.stringify(plan).slice(0, 120)} failed: ${error.stack}\n${String(error.stderr ?? '').slice(-4000)}\n`);
+      throw error;
+    }
   };
   return {
     name: 'fivechan-static-shell',

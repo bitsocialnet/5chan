@@ -124,6 +124,9 @@ try {
   await new Promise((resolve) => write(JSON.stringify({ variants: rendered, boards, storage }), resolve));
 } finally {
   await server.close();
-  await rm(cacheDir, { recursive: true, force: true });
+  // Windows can neither remove the working directory nor files the peer client still holds open.
+  // The directory is in the OS temp directory, so a failed cleanup must not fail the render.
+  process.chdir(packageRoot);
+  await rm(cacheDir, { recursive: true, force: true, maxRetries: 3 }).catch(() => {});
 }
 process.exit(0);
