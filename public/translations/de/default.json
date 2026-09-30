@@ -154,7 +154,6 @@
   "1_post_by_this_id": "1 Beitrag mit dieser ID",
   "x_posts_by_this_id": "{{number}} Beiträge von dieser ID",
   "ban_expires_at": "Gesperrt von p/{{address}} bis {{timestamp}}",
-  "user_banned": "Benutzer wurde für diesen Beitrag gesperrt",
   "replies": "Antworten",
   "links": "Links",
   "animated_gif": "Animiertes GIF",
@@ -503,5 +502,6 @@
   "directory_vote_needs_pass": "Deine Stimme wurde nicht gesendet: Die Abstimmungsadresse dieses Kontos <address>{{address}}</address> besitzt keinen <passLink>5chan Pass</passLink>.",
   "directory_vote_needs_test_pass": "Deine Stimme wurde nicht gesendet: Die Abstimmungsadresse dieses Kontos <address>{{address}}</address> besitzt keinen 5chan Pass. Die Abstimmung läuft vorerst im Testnet, daher kannst du dir für diese Adresse einen kostenlosen Test-Pass vom <faucetLink>Faucet</faucetLink> holen.",
   "directory_vote_board_not_found": "Unter {{address}} wurde kein Board gefunden. Gib eine .bso-Adresse oder den öffentlichen Schlüssel eines Boards ein.",
-  "directory_vote_failed": "Deine Stimme konnte nicht gesendet werden: {{error}}"
+  "directory_vote_failed": "Deine Stimme konnte nicht gesendet werden: {{error}}",
+  "user_banned_from_board": "Benutzer wurde auf {{board}} gesperrt"
 }

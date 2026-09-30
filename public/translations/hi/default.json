@@ -154,7 +154,6 @@
   "1_post_by_this_id": "इस आईडी द्वारा 1 पोस्ट",
   "x_posts_by_this_id": "इस आईडी से {{number}} पोस्ट",
   "ban_expires_at": "p/{{address}} से {{timestamp}} तक पर प्रतिबंधित",
-  "user_banned": "इस पोस्ट के लिए उपयोगकर्ता पर प्रतिबंध लगा दिया गया था",
   "replies": "जवाब",
   "links": "लिंक",
   "animated_gif": "एनिमेटेड GIF",
@@ -503,5 +502,6 @@
   "directory_vote_needs_pass": "आपका वोट नहीं भेजा गया: इस खाते के वोटिंग पते <address>{{address}}</address> में <passLink>5chan Pass</passLink> नहीं है।",
   "directory_vote_needs_test_pass": "आपका वोट नहीं भेजा गया: इस खाते के वोटिंग पते <address>{{address}}</address> में 5chan Pass नहीं है। वोटिंग अभी testnet पर है, इसलिए आप <faucetLink>फ़ॉसेट</faucetLink> से इस पते के लिए मुफ़्त टेस्ट Pass पा सकते हैं।",
   "directory_vote_board_not_found": "{{address}} पर कोई बोर्ड नहीं मिला। कोई .bso पता या किसी बोर्ड की सार्वजनिक कुंजी दर्ज करें।",
-  "directory_vote_failed": "आपका वोट भेजा नहीं जा सका: {{error}}"
+  "directory_vote_failed": "आपका वोट भेजा नहीं जा सका: {{error}}",
+  "user_banned_from_board": "उपयोगकर्ता को {{board}} से प्रतिबंधित कर दिया गया था"
 }

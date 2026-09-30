@@ -154,7 +154,6 @@
   "1_post_by_this_id": "1 postim me këtë ID",
   "x_posts_by_this_id": "{{number}} postime nga ky ID",
   "ban_expires_at": "I ndaluar nga p/{{address}} deri më {{timestamp}}",
-  "user_banned": "Përdoruesi u ndalua për këtë postim",
   "replies": "përgjigje",
   "links": "lidhje",
   "animated_gif": "GIF i Animuar",
@@ -503,5 +502,6 @@
   "directory_vote_needs_pass": "Vota jote nuk u dërgua: adresa e votimit e kësaj llogarie <address>{{address}}</address> nuk ka <passLink>5chan Pass</passLink>.",
   "directory_vote_needs_test_pass": "Vota jote nuk u dërgua: adresa e votimit e kësaj llogarie <address>{{address}}</address> nuk ka 5chan Pass. Votimi për momentin është në testnet, ndaj mund të marrësh falas një Pass testimi për këtë adresë nga <faucetLink>faucet</faucetLink>.",
   "directory_vote_board_not_found": "Nuk u gjet asnjë bord në {{address}}. Shkruaj një adresë .bso ose çelësin publik të një bordi.",
-  "directory_vote_failed": "Vota jote nuk mund të dërgohej: {{error}}"
+  "directory_vote_failed": "Vota jote nuk mund të dërgohej: {{error}}",
+  "user_banned_from_board": "Përdoruesi u ndalua nga {{board}}"
 }

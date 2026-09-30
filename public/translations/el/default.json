@@ -154,7 +154,6 @@
   "1_post_by_this_id": "1 ανάρτηση με αυτό το ID",
   "x_posts_by_this_id": "{{number}} αναρτήσεις από αυτό το ID",
   "ban_expires_at": "Αποκλείστηκε από p/{{address}} έως {{timestamp}}",
-  "user_banned": "Ο χρήστης αποκλείστηκε για αυτή τη δημοσίευση",
   "replies": "Απαντήσεις",
   "links": "Σύνδεσμοι",
   "animated_gif": "Κινούμενο GIF",
@@ -503,5 +502,6 @@
   "directory_vote_needs_pass": "Η ψήφος σας δεν στάλθηκε: η διεύθυνση ψηφοφορίας αυτού του λογαριασμού <address>{{address}}</address> δεν διαθέτει <passLink>5chan Pass</passLink>.",
   "directory_vote_needs_test_pass": "Η ψήφος σας δεν στάλθηκε: η διεύθυνση ψηφοφορίας αυτού του λογαριασμού <address>{{address}}</address> δεν διαθέτει 5chan Pass. Η ψηφοφορία γίνεται προς το παρόν στο testnet, οπότε μπορείτε να πάρετε ένα δωρεάν δοκιμαστικό Pass για αυτή τη διεύθυνση από το <faucetLink>faucet</faucetLink>.",
   "directory_vote_board_not_found": "Δεν βρέθηκε πίνακας στη διεύθυνση {{address}}. Εισαγάγετε μια διεύθυνση .bso ή το δημόσιο κλειδί ενός πίνακα.",
-  "directory_vote_failed": "Δεν ήταν δυνατή η αποστολή της ψήφου σας: {{error}}"
+  "directory_vote_failed": "Δεν ήταν δυνατή η αποστολή της ψήφου σας: {{error}}",
+  "user_banned_from_board": "Ο χρήστης αποκλείστηκε από το {{board}}"
 }

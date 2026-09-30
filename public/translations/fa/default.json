@@ -154,7 +154,6 @@
   "1_post_by_this_id": "1 پست با این شناسه",
   "x_posts_by_this_id": "{{number}} پست از این شناسه",
   "ban_expires_at": "مسدود از p/{{address}} تا {{timestamp}}",
-  "user_banned": "این کاربر برای این پست مسدود شد",
   "replies": "پاسخ‌ها",
   "links": "لینک‌ها",
   "animated_gif": "GIF متحرک",
@@ -503,5 +502,6 @@
   "directory_vote_needs_pass": "رأی شما ارسال نشد: آدرس رأی‌دهی این حساب <address>{{address}}</address> هیچ <passLink>5chan Pass</passLink> ندارد.",
   "directory_vote_needs_test_pass": "رأی شما ارسال نشد: آدرس رأی‌دهی این حساب <address>{{address}}</address> هیچ 5chan Pass ندارد. رأی‌گیری فعلاً روی testnet است، بنابراین می‌توانید یک Pass آزمایشی رایگان برای این آدرس از <faucetLink>فاست</faucetLink> دریافت کنید.",
   "directory_vote_board_not_found": "هیچ تابلویی در {{address}} پیدا نشد. یک آدرس .bso یا کلید عمومی یک تابلو را وارد کنید.",
-  "directory_vote_failed": "ارسال رأی شما ناموفق بود: {{error}}"
+  "directory_vote_failed": "ارسال رأی شما ناموفق بود: {{error}}",
+  "user_banned_from_board": "کاربر از {{board}} مسدود شد"
 }

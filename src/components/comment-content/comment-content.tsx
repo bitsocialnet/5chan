@@ -116,8 +116,13 @@ const CommentContent = ({
   const shouldRenderBbcode = isPrivilegedAuthor;
   const shouldWaitForRoleSensitiveBbcode = roles === undefined && Boolean(authorAddress && communityAddress) && containsRoleSensitiveBbcode(visibleContent);
   const purged = resolvedPost?.commentModeration?.purged;
+  // author.community.banExpiresAt is aggregated from every ban against the author, so it is set on all of
+  // their comments and cannot tell which post caused the ban. Bans are per board, so the label names the board.
+  // TODO: when https://github.com/pkcprotocol/pkc-js/issues/363 adds a per-comment ban field, show
+  // "User was banned by [board] for this post" on the banned comment only.
   const banExpiresAt = resolvedPost?.author?.community?.banExpiresAt;
   const banned = !!banExpiresAt;
+  const boardShortAddress = communityAddress && getShortAddress(communityAddress);
 
   const [showFullComment, setShowFullComment] = useState(false);
   const displayContent =
@@ -310,12 +315,12 @@ const CommentContent = ({
           <br />
           <Tooltip
             content={`${t('ban_expires_at', {
-              address: communityAddress && getShortAddress(communityAddress),
+              address: boardShortAddress,
               timestamp: banExpiresAt ? getFormattedDate(banExpiresAt) : '',
               interpolation: { escapeValue: false },
             })}${reason ? `. ${capitalize(t('reason'))}: "${reason}"` : ''}`}
           >
-            {`(${t('user_banned')})`}
+            {`(${t('user_banned_from_board', { board: boardShortAddress, interpolation: { escapeValue: false } })})`}
           </Tooltip>
         </span>
       )}

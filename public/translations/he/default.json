@@ -154,7 +154,6 @@
   "1_post_by_this_id": "פוסט אחד עם המזהה הזה",
   "x_posts_by_this_id": "{{number}} פוסטים מהמזהה הזה",
   "ban_expires_at": "נחסם מ-p/{{address}} עד {{timestamp}}",
-  "user_banned": "המשתמש נחסם עבור הפוסט הזה",
   "replies": "תגובות",
   "links": "קישורים",
   "animated_gif": "GIF מונפש",
@@ -503,5 +502,6 @@
   "directory_vote_needs_pass": "ההצבעה שלך לא נשלחה: כתובת ההצבעה של החשבון הזה <address>{{address}}</address> לא מחזיקה <passLink>5chan Pass</passLink>.",
   "directory_vote_needs_test_pass": "ההצבעה שלך לא נשלחה: כתובת ההצבעה של החשבון הזה <address>{{address}}</address> לא מחזיקה 5chan Pass. ההצבעה פועלת כרגע על testnet, כך שאפשר לקבל Pass בדיקה בחינם לכתובת הזו מה-<faucetLink>faucet</faucetLink>.",
   "directory_vote_board_not_found": "לא נמצא לוח בכתובת {{address}}. הזינו כתובת .bso או מפתח ציבורי של לוח.",
-  "directory_vote_failed": "לא ניתן היה לשלוח את ההצבעה שלך: {{error}}"
+  "directory_vote_failed": "לא ניתן היה לשלוח את ההצבעה שלך: {{error}}",
+  "user_banned_from_board": "המשתמש נחסם מ-{{board}}"
 }

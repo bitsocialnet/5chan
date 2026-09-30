@@ -154,7 +154,6 @@
   "1_post_by_this_id": "1 publication avec cet identifiant",
   "x_posts_by_this_id": "{{number}} publications depuis cet identifiant",
   "ban_expires_at": "Banni de p/{{address}} jusqu'au {{timestamp}}",
-  "user_banned": "L'utilisateur a été banni pour ce post",
   "replies": "réponses",
   "links": "liens",
   "animated_gif": "GIF Animé",
@@ -503,5 +502,6 @@
   "directory_vote_needs_pass": "Votre vote n'a pas été envoyé : l'adresse de vote de ce compte <address>{{address}}</address> ne détient pas de <passLink>5chan Pass</passLink>.",
   "directory_vote_needs_test_pass": "Votre vote n'a pas été envoyé : l'adresse de vote de ce compte <address>{{address}}</address> ne détient pas de 5chan Pass. Le vote se fait sur testnet pour l'instant, vous pouvez donc obtenir un Pass de test gratuit pour cette adresse via le <faucetLink>faucet</faucetLink>.",
   "directory_vote_board_not_found": "Aucun board trouvé à {{address}}. Saisissez une adresse .bso ou la clé publique d'un board.",
-  "directory_vote_failed": "Votre vote n'a pas pu être envoyé : {{error}}"
+  "directory_vote_failed": "Votre vote n'a pas pu être envoyé : {{error}}",
+  "user_banned_from_board": "L'utilisateur a été banni de {{board}}"
 }

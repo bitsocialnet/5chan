@@ -104,6 +104,9 @@ vi.mock('react-i18next', async () => {
         if (key === 'ban_expires_at') {
           return `ban:${options?.address}:${options?.timestamp}`;
         }
+        if (key === 'user_banned_from_board') {
+          return `banned-from:${options?.board}`;
+        }
         return key;
       },
     }),
@@ -534,7 +537,7 @@ describe('CommentContent', () => {
       postCid: 'post-1',
     });
 
-    expect(container.textContent).toContain('(user_banned)');
+    expect(container.textContent).toContain('(banned-from:short:music-posting.eth)');
     expect(container.querySelector('[data-testid="tooltip"]')?.getAttribute('title')).toContain('ban:short:music-posting.eth:2024-01-01 12:00:00');
   });
 

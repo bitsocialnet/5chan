@@ -154,7 +154,6 @@
   "1_post_by_this_id": "1 inlägg med detta ID",
   "x_posts_by_this_id": "{{number}} inlägg från detta ID",
   "ban_expires_at": "Bannad från p/{{address}} till {{timestamp}}",
-  "user_banned": "Användaren blev blockerad för detta inlägg",
   "replies": "svar",
   "links": "länkar",
   "animated_gif": "Animerad GIF",
@@ -503,5 +502,6 @@
   "directory_vote_needs_pass": "Din röst skickades inte: det här kontots röstadress <address>{{address}}</address> har inget <passLink>5chan Pass</passLink>.",
   "directory_vote_needs_test_pass": "Din röst skickades inte: det här kontots röstadress <address>{{address}}</address> har inget 5chan Pass. Röstningen körs på testnet tills vidare, så du kan hämta ett gratis test-Pass för den här adressen från <faucetLink>faucet</faucetLink>.",
   "directory_vote_board_not_found": "Inget board hittades på {{address}}. Ange en .bso-adress eller ett boards publika nyckel.",
-  "directory_vote_failed": "Din röst kunde inte skickas: {{error}}"
+  "directory_vote_failed": "Din röst kunde inte skickas: {{error}}",
+  "user_banned_from_board": "Användaren blev bannad från {{board}}"
 }
