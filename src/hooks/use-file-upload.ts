@@ -7,6 +7,7 @@ import { getMediaHostingRuntime, isElectronRuntime } from '../lib/media-hosting/
 import { orchestrateElectronUpload } from '../lib/media-hosting/upload-orchestrator';
 import { stripMediaMetadata } from '../lib/media-metadata/strip-media-metadata';
 import { ensureProviderAvailability } from '../lib/media-hosting/provider-availability';
+import { selectFileViaInput } from '../lib/utils/file-picker-utils';
 import useMediaHostingStore from '../stores/use-media-hosting-store';
 import type { ProviderId, UploadAttemptStage } from '../lib/media-hosting/types';
 
@@ -108,60 +109,7 @@ function readFileAsBase64(file: File): Promise<string> {
   });
 }
 
-function selectFileViaInput(): Promise<File | null> {
-  return new Promise((resolve) => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/jpeg,image/png,video/mp4,video/webm,.swf,application/x-shockwave-flash,application/vnd.adobe.flash.movie';
-    input.style.display = 'none';
-    let resolved = false;
-    let focusTimeoutId: number | null = null;
-
-    const cleanup = () => {
-      if (focusTimeoutId !== null) {
-        window.clearTimeout(focusTimeoutId);
-        focusTimeoutId = null;
-      }
-      input.remove();
-      window.removeEventListener('focus', onFocusFallback);
-      input.removeEventListener('change', onChange);
-      input.removeEventListener('cancel', onCancel);
-    };
-
-    const finalize = (file: File | null) => {
-      if (resolved) return;
-      resolved = true;
-      cleanup();
-      resolve(file);
-    };
-
-    const onChange = () => {
-      const file = input.files && input.files.length > 0 ? input.files[0] : null;
-      finalize(file);
-    };
-
-    const onCancel = () => finalize(null);
-
-    // Fallback: some environments don't reliably emit `cancel`.
-    const onFocusFallback = () => {
-      if (resolved) return;
-      if (focusTimeoutId !== null) {
-        window.clearTimeout(focusTimeoutId);
-      }
-      focusTimeoutId = window.setTimeout(() => {
-        if (resolved) return;
-        const file = input.files && input.files.length > 0 ? input.files[0] : null;
-        finalize(file);
-      }, 800);
-    };
-
-    input.addEventListener('change', onChange);
-    input.addEventListener('cancel', onCancel);
-    window.addEventListener('focus', onFocusFallback);
-    document.body.appendChild(input);
-    input.click();
-  });
-}
+const UPLOAD_FILE_ACCEPT = 'image/jpeg,image/png,video/mp4,video/webm,.swf,application/x-shockwave-flash,application/vnd.adobe.flash.movie';
 
 export function useFileUpload(options: UseFileUploadOptions) {
   const { t } = useTranslation();
@@ -275,7 +223,7 @@ export function useFileUpload(options: UseFileUploadOptions) {
       }
 
       if (runtime === 'electron' || isElectronRuntime()) {
-        const file = await selectFileViaInput();
+        const file = await selectFileViaInput(UPLOAD_FILE_ACCEPT);
         if (!file) {
           throw new Error(FILE_SELECTION_CANCELLED_ERROR);
         }

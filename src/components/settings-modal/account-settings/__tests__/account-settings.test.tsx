@@ -98,6 +98,12 @@ const getButtonByText = (text: string) => {
 
 const getLocationText = () => container.querySelector('[data-testid="location"]')?.textContent ?? '';
 
+const selectImportFile = (file: File) => {
+  const input = createdInput as HTMLInputElement;
+  Object.defineProperty(input, 'files', { configurable: true, value: [file] });
+  input.dispatchEvent(new Event('change'));
+};
+
 describe('AccountSettings', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -302,7 +308,7 @@ describe('AccountSettings', () => {
     expect(createObjectUrlSpy).not.toHaveBeenCalled();
   });
 
-  it('alerts when no import file is selected', async () => {
+  it('ignores a cancelled import picker', async () => {
     render();
 
     await act(async () => {
@@ -313,10 +319,12 @@ describe('AccountSettings', () => {
     expect(inputClickSpy).toHaveBeenCalledOnce();
 
     await act(async () => {
-      createdInput?.onchange?.({ target: { files: [] } } as unknown as Event);
+      createdInput?.dispatchEvent(new Event('cancel'));
+      await Promise.resolve();
     });
 
-    expect(alertSpy).toHaveBeenCalledWith('No file selected.');
+    expect(createdInput?.isConnected).toBe(false);
+    expect(alertSpy).not.toHaveBeenCalled();
     expect(hookMocks.importAccount).not.toHaveBeenCalled();
   });
 
@@ -330,7 +338,7 @@ describe('AccountSettings', () => {
 
     const file = new File(['{}'], 'account.json', { type: 'application/json' });
     await act(async () => {
-      createdInput?.onchange?.({ target: { files: [file] } } as unknown as Event);
+      selectImportFile(file);
     });
 
     expect(alertSpy).toHaveBeenCalledWith(expect.stringContaining('Failed to parse account data:'));
@@ -358,13 +366,18 @@ describe('AccountSettings', () => {
       getButtonByText('import_account_backup').click();
     });
 
+    // WebKit can garbage-collect a detached input while its picker is open, dropping the selection (#516).
+    expect(createdInput?.isConnected).toBe(true);
+    expect(createdInput?.accept).toBe('.json');
+
     const file = new File(['{}'], 'account.json', { type: 'application/json' });
     await act(async () => {
-      createdInput?.onchange?.({ target: { files: [file] } } as unknown as Event);
+      selectImportFile(file);
       await Promise.resolve();
     });
     await flushMicrotasks();
 
+    expect(createdInput?.isConnected).toBe(false);
     expect(hookMocks.importAccount).toHaveBeenCalledOnce();
     const importedPayload = JSON.parse(hookMocks.importAccount.mock.calls[0][0]);
     expect(importedPayload.account.subscriptions).toEqual(['business.eth', 'music-posting.bso']);
@@ -405,7 +418,7 @@ describe('AccountSettings', () => {
 
     const file = new File(['{}'], 'account.json', { type: 'application/json' });
     await act(async () => {
-      createdInput?.onchange?.({ target: { files: [file] } } as unknown as Event);
+      selectImportFile(file);
       await Promise.resolve();
     });
     await flushMicrotasks();
@@ -442,7 +455,7 @@ describe('AccountSettings', () => {
 
     const file = new File(['{}'], 'account.json', { type: 'application/json' });
     await act(async () => {
-      createdInput?.onchange?.({ target: { files: [file] } } as unknown as Event);
+      selectImportFile(file);
       await Promise.resolve();
     });
     await flushMicrotasks();
@@ -484,7 +497,7 @@ describe('AccountSettings', () => {
 
     const file = new File(['{}'], 'account.json', { type: 'application/json' });
     await act(async () => {
-      createdInput?.onchange?.({ target: { files: [file] } } as unknown as Event);
+      selectImportFile(file);
       await Promise.resolve();
     });
     await flushMicrotasks();
@@ -511,7 +524,7 @@ describe('AccountSettings', () => {
 
     const file = new File(['{}'], 'account.json', { type: 'application/json' });
     await act(async () => {
-      createdInput?.onchange?.({ target: { files: [file] } } as unknown as Event);
+      selectImportFile(file);
       await Promise.resolve();
     });
     await flushMicrotasks();
