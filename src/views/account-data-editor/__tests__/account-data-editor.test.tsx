@@ -10,6 +10,7 @@ const DEFAULT_JSON = '{"account":{"name":"test"}}';
 
 const testState = vi.hoisted(() => ({
   account: { id: 'test-id', name: 'Account 1', author: { address: '0x123', shortAddress: '0x1...3' } },
+  aceImportGate: Promise.resolve() as Promise<void>,
   alertMock: vi.fn(),
   buildEditableAccountJsonMock: vi.fn<(account: unknown) => string>(() => DEFAULT_JSON),
   buildSavePayloadMock: vi.fn<(parsed: { account: Record<string, unknown> }, id: string) => Record<string, unknown>>((parsed, id) => ({
@@ -58,7 +59,8 @@ vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
 
 vi.mock('react-ace', async () => {
   const ReactModule = await vi.importActual<typeof import('react')>('react');
-  await Promise.resolve();
+  // Tests can hold this gate to keep the lazy editor import pending.
+  await testState.aceImportGate;
   (
     globalThis as typeof globalThis & {
       ace?: { config?: { setModuleUrl?: ReturnType<typeof vi.fn> } };
@@ -166,6 +168,7 @@ describe('AccountDataEditor', () => {
     delete (globalThis as typeof globalThis & { ace?: unknown }).ace;
     AccountDataEditor = (await import('../account-data-editor')).default;
     testState.account = { id: 'test-id', name: 'Account 1', author: { address: '0x123', shortAddress: '0x1...3' } };
+    testState.aceImportGate = Promise.resolve();
     testState.alertMock.mockReset();
     testState.buildEditableAccountJsonMock.mockReturnValue(DEFAULT_JSON);
     testState.buildSavePayloadMock.mockImplementation((parsed: { account: Record<string, unknown> }, id: string) => ({ ...parsed.account, id }));
@@ -204,11 +207,17 @@ describe('AccountDataEditor', () => {
 
   it('loads the editor after continue and respects custom return routes', async () => {
     testState.locationState = { state: { returnTo: '/custom/settings#account' } };
+    let releaseAceImport = () => {};
+    testState.aceImportGate = new Promise<void>((resolve) => {
+      releaseAceImport = resolve;
+    });
 
     renderEditor();
     await clickButton('continue');
+    await flushEffects();
 
     expect(container.textContent).toContain('loading_editor');
+    releaseAceImport();
     await waitForEditor();
 
     expect(container.textContent).not.toContain('loading_editor');
