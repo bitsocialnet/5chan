@@ -279,6 +279,7 @@
     "@tootallnate/once": "3.0.1",
     "rollup": "2.80.0",
     "@electron/asar": "4.0.1",
+    "uuid@npm:^7.0.3": "14.0.0",
     "uuid@npm:^8.3.2": "14.0.0",
     "uuid@npm:^11.0.0": "14.0.0",
     "uuid@npm:11.1.0": "14.0.0",
