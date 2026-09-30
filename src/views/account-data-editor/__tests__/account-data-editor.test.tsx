@@ -27,6 +27,8 @@ const testState = vi.hoisted(() => ({
     }
   }),
   setAccountMock: vi.fn(),
+  // The react-ace mock resolves only after this settles, so a test can hold the editor in its loading phase.
+  aceLoaded: Promise.resolve() as Promise<void>,
 }));
 
 vi.mock('react-i18next', () => ({
@@ -58,7 +60,7 @@ vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
 
 vi.mock('react-ace', async () => {
   const ReactModule = await vi.importActual<typeof import('react')>('react');
-  await Promise.resolve();
+  await testState.aceLoaded;
   (
     globalThis as typeof globalThis & {
       ace?: { config?: { setModuleUrl?: ReturnType<typeof vi.fn> } };
@@ -180,6 +182,7 @@ describe('AccountDataEditor', () => {
       }
     });
     testState.setAccountMock.mockReset();
+    testState.aceLoaded = Promise.resolve();
     vi.stubGlobal('alert', testState.alertMock);
 
     container = document.createElement('div');
@@ -204,11 +207,16 @@ describe('AccountDataEditor', () => {
 
   it('loads the editor after continue and respects custom return routes', async () => {
     testState.locationState = { state: { returnTo: '/custom/settings#account' } };
+    let finishAceLoad!: () => void;
+    testState.aceLoaded = new Promise((resolve) => {
+      finishAceLoad = resolve;
+    });
 
     renderEditor();
     await clickButton('continue');
 
     expect(container.textContent).toContain('loading_editor');
+    finishAceLoad();
     await waitForEditor();
 
     expect(container.textContent).not.toContain('loading_editor');
