@@ -1158,6 +1158,34 @@ describe('Board', () => {
     expect(container.querySelectorAll('[data-testid="loading-ellipsis"]').length).toBe(1);
   });
 
+  it('keeps showing failed in the flash table while an unreachable board retries', async () => {
+    testState.directories = [{ address: 'flash-posting.bso', directoryCode: 'f', publicKey: '12D3KooWUnreachableFlash', title: '/f/ - Flash' }];
+    testState.directoryByAddress = {
+      'flash-posting.bso': {
+        address: 'flash-posting.bso',
+        directoryCode: 'f',
+        features: { postsPerPage: 50 },
+        title: '/f/ - Flash',
+      },
+    };
+    testState.resolvedCommunityAddress = 'flash-posting.bso';
+    testState.community = { error: undefined, shortAddress: 'flash-posting.bso', state: 'fetching-ipns', title: '/f/ - Flash' };
+    testState.communitySnapshot = { shortAddress: 'flash-posting.bso', title: '/f/ - Flash' };
+    testState.hasMore = true;
+
+    await renderBoard({ initialEntry: '/f', routePath: '/:boardIdentifier/*' });
+    await act(async () => {
+      communitiesStore.setState({ syncStatuses: { '12D3KooWUnreachableFlash': { syncState: 'retrying' } } });
+    });
+    await act(async () => {
+      communitiesStore.setState({ syncStatuses: { '12D3KooWUnreachableFlash': { syncState: 'loading' } } });
+    });
+
+    const table = container.querySelector('#flash-list');
+    expect(table?.textContent).toContain('failed');
+    expect(table?.querySelector('[data-testid="loading-ellipsis"]')?.textContent).toBe('downloading_board');
+  });
+
   it('renders an empty flash table when a loaded board reports explicit empty page cids', async () => {
     testState.directories = [{ address: 'flash-posting.bso', directoryCode: 'f', title: '/f/ - Flash' }];
     testState.directoryByAddress = {

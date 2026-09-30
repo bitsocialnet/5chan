@@ -5,6 +5,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import Catalog, { type CatalogProps } from '../catalog';
+import { communitiesStore } from '../../../lib/bitsocial-internals/stores';
 import { getCatalogRenderFeed } from '../catalog-render-feed';
 import { clearStableLastVisitTimeFilterName, LAST_VISIT_STORAGE_KEY } from '../../../lib/utils/time-filter-utils';
 import useHiddenCatalogThreadsStore from '../../../stores/use-hidden-catalog-threads-store';
@@ -490,6 +491,7 @@ describe('Catalog', () => {
     act(() => root.unmount());
     container.remove();
     useHiddenCatalogThreadsStore.setState({ hiddenCommentsByCid: {}, scopeHiddenThreadsCounts: {}, shownScopeKey: null });
+    communitiesStore.setState({ syncStatuses: {} });
     clearStableLastVisitTimeFilterName();
     localStorage.clear();
   });
@@ -931,6 +933,25 @@ describe('Catalog', () => {
     });
 
     expect(testState.virtuosoInitialScrollTops.at(-1)).toBe(24);
+  });
+
+  it('keeps showing failed while an unreachable board starts another load attempt', async () => {
+    testState.directories = [{ address: 'music-posting.eth', directoryCode: 'mu', publicKey: '12D3KooWUnreachableBoard', title: '/mu/ - Music' }];
+    testState.hasMore = true;
+    testState.community = { error: undefined, shortAddress: 'music-posting.eth', state: 'fetching-ipns', title: '/mu/ - Music' };
+
+    await renderCatalog({ initialEntry: '/mu/catalog', routePath: '/:boardIdentifier/catalog' });
+    expect(container.textContent).not.toContain('failed');
+
+    await act(async () => {
+      communitiesStore.setState({ syncStatuses: { '12D3KooWUnreachableBoard': { syncState: 'retrying' } } });
+    });
+    await act(async () => {
+      communitiesStore.setState({ syncStatuses: { '12D3KooWUnreachableBoard': { syncState: 'loading' } } });
+    });
+
+    expect(container.textContent).toContain('failed');
+    expect(container.querySelector('[data-testid="loading-ellipsis"]')?.textContent).toBe('loading_feed');
   });
 
   it('shows the empty subscriptions state when there are no subscribed boards to browse', async () => {

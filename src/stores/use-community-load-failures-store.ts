@@ -43,18 +43,22 @@ const recordCommunityLoadFailures = ({ communities, syncStatuses }: ReturnType<t
 };
 
 recordCommunityLoadFailures(communitiesStore.getState());
-communitiesStore.subscribe((state, prevState) => {
+const unsubscribeFromCommunities = communitiesStore.subscribe((state, prevState) => {
   if (state.syncStatuses !== prevState.syncStatuses) {
     recordCommunityLoadFailures(state);
   }
 });
+import.meta.hot?.dispose(unsubscribeFromCommunities);
 
 // Same key bitsocial-react-hooks uses for syncStatuses (getCommunityRefKey)
 const getCommunityKey = (communityIdentifier?: CommunityIdentifier) => communityIdentifier?.publicKey || communityIdentifier?.name;
 
 export const useHasCommunityLoadFailed = (communityIdentifier?: CommunityIdentifier): boolean => {
   const communityKey = getCommunityKey(communityIdentifier);
-  return useCommunityLoadFailuresStore((state) => Boolean(communityKey && state.failedCommunityKeys[communityKey]));
+  const hasFailed = useCommunityLoadFailuresStore((state) => Boolean(communityKey && state.failedCommunityKeys[communityKey]));
+  // The pkc-js RPC client applies 'succeeded' without emitting it, so also stop once data arrives
+  const hasLoaded = communitiesStore((state) => Boolean(communityKey && typeof state.communities[communityKey]?.updatedAt === 'number'));
+  return hasFailed && !hasLoaded;
 };
 
 export default useCommunityLoadFailuresStore;

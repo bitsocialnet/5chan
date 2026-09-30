@@ -2,9 +2,15 @@ import * as React from 'react';
 import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import type { CommunityIdentifier, CommunitySyncState } from '@bitsocial/bitsocial-react-hooks';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { communitiesStore } from '../../lib/bitsocial-internals/stores';
 import useCommunityLoadFailuresStore, { useHasCommunityLoadFailed } from '../use-community-load-failures-store';
+
+// A plain store keeps the real hooks accounts store from initializing after the test environment is torn down
+vi.mock('../../lib/bitsocial-internals/stores', async () => {
+  const { create } = await import('zustand');
+  return { communitiesStore: create(() => ({ communities: {}, syncStatuses: {} })) };
+});
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
@@ -90,6 +96,16 @@ describe('useCommunityLoadFailuresStore', () => {
     expect(latestValue).toBe(true);
 
     act(() => root.render(createElement(Harness, {})));
+    expect(latestValue).toBe(false);
+  });
+
+  it('stops reporting the failure once the community has data even without a succeeded sync state', () => {
+    setSyncState('rpc-board', 'retrying');
+    act(() => root.render(createElement(Harness, { communityIdentifier: { publicKey: 'rpc-board' } })));
+    expect(latestValue).toBe(true);
+
+    // the pkc-js RPC client applies 'succeeded' without emitting updatingstatechange
+    act(() => communitiesStore.setState({ communities: { 'rpc-board': { address: 'rpc-board', updatedAt: 1781773422 } } }));
     expect(latestValue).toBe(false);
   });
 });

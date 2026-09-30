@@ -813,7 +813,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
         {shouldShowUnverifiedAddressWarning && <output className={styles.addressWarning}>{t('board_address_unverified_warning')}</output>}
         {shouldUseFlashTable ? (
           <>
-            <FlashBoardTable boardBasePath={paginationBasePath} isLoading={shouldShowFlashTableLoading} posts={displayFeed} />
+            <FlashBoardTable boardBasePath={paginationBasePath} isLoading={shouldShowFlashTableLoading} hasLoadFailed={hasCommunityLoadFailed} posts={displayFeed} />
             <footerComponents.Footer />
           </>
         ) : effectiveInfiniteScroll ? (
