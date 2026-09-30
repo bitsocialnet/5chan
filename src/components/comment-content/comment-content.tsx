@@ -25,14 +25,15 @@ import { hasModQueueAccessRole } from '../../lib/utils/mod-access';
 import { stripGeneratedFortuneMarkup } from '../../lib/utils/post-options-utils';
 import BoardCheckStatus from './board-check-status';
 
-const QuotedCidLink = ({ cid, postCid }: { cid: string; postCid: string }) => {
+const QuotedCidLink = ({ cid, isPurged, postCid }: { cid: string; isPurged?: boolean; postCid: string }) => {
   const quotedNumber = usePostNumberStore((state) => state.cidToNumber[cid]);
   const commentFromStore = useCommunitiesPagesStore((state) => state.comments[cid]);
   const commentFromHook = useComment({ commentCid: cid, onlyIfCached: true });
   // Prefer hook version to ensure 'number' property is populated for deeper nested replies in Virtuoso
   const quotedComment = commentFromHook?.number !== undefined ? commentFromHook : commentFromStore;
   const isOP = cid === postCid;
-  const isUnavailable = isUnavailableQuoteTarget(quotedComment);
+  // A comment cached before it was purged still looks available, so trust the loaded thread instead.
+  const isUnavailable = isPurged || isUnavailableQuoteTarget(quotedComment);
 
   return <ReplyQuotePreview isQuotelinkReply={true} quotelinkReply={quotedComment} quotelinkNumber={quotedNumber} isQuotelinkUnavailable={isUnavailable} isOP={isOP} />;
 };
@@ -232,7 +233,7 @@ const CommentContent = ({
         !hasFailedState &&
         !(deleted || removed || purged) &&
         (filteredQuotedCids.length > 0
-          ? filteredQuotedCids.map((cid: string) => <QuotedCidLink key={cid} cid={cid} postCid={postCid} />)
+          ? filteredQuotedCids.map((cid: string) => <QuotedCidLink key={cid} cid={cid} isPurged={purgedQuotedCids?.includes(cid)} postCid={postCid} />)
           : shouldShowReplyingToReply && <ReplyQuotePreview isQuotelinkReply={true} quotelinkReply={quotelinkReply} quotelinkNumber={parentNumber} />)}
       {purged ? (
         <span className={styles.grayEditMessage}>{capitalize(t('this_post_was_purged'))}</span>

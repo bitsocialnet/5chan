@@ -328,6 +328,15 @@ describe('CommentContent', () => {
     await renderInThread(new Set(['thread-cid', 'reply-162', 'purged-161']));
     expect(getPurgedQuoteNumbersAttribute()).toBe('');
 
+    // A purged quote whose number was cached before the purge but is not in the text is prepended as unavailable.
+    testState.postNumbers = { ...testState.postNumbers, 'purged-150': 150 };
+    testState.commentsByCid = { 'purged-150': { cid: 'purged-150', number: 150 } };
+    await renderInThread(new Set(['thread-cid', 'reply-162']), { ...reply, quotedCids: ['purged-150'] });
+    const prependedQuote = container.querySelector('[data-testid="reply-quote-preview"]');
+    expect(prependedQuote?.getAttribute('data-number')).toBe('150');
+    expect(prependedQuote?.getAttribute('data-unavailable')).toBe('true');
+    testState.commentsByCid = {};
+
     // Moderator replies render through BBCode, which must pass the numbers on to its Markdown.
     await renderInThread(
       new Set(['thread-cid', 'reply-162']),
