@@ -67,7 +67,6 @@ export const renderStaticShell = async ({ hash = '#/', width = 1024, banner }: S
       ns: ['default'],
       defaultNS: 'default',
       resources: { en: { default: en } },
-      showSupportNotice: false,
     });
   }
   await setViewportWidth(width);

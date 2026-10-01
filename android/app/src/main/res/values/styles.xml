@@ -13,6 +13,8 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="android:background">@null</item>
+        <!-- Shows in the display-cutout inset that edge-to-edge support leaves beside the WebView; match the black system bars. -->
+        <item name="android:windowBackground">@android:color/black</item>
     </style>
 
 

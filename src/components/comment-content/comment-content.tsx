@@ -1,13 +1,15 @@
 import { type ReactNode, useMemo, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
+import { useShallow } from 'zustand/react/shallow';
 import { Trans, useTranslation } from 'react-i18next';
 import { Comment, useComment } from '@bitsocial/bitsocial-react-hooks';
 import { communitiesPagesStore as useCommunitiesPagesStore } from '../../lib/bitsocial-internals/stores';
-import usePostNumberStore from '../../stores/use-post-number-store';
+import usePostNumberStore, { getScopedNumberToCidMap } from '../../stores/use-post-number-store';
 import getShortAddress from '../../lib/get-short-address';
 import { getFormattedDate } from '../../lib/utils/time-utils';
-import { isUnavailableQuoteTarget } from '../../lib/utils/quote-link-utils';
+import { getPurgedQuoteNumbers, isUnavailableQuoteTarget } from '../../lib/utils/quote-link-utils';
 import { isPostPageView } from '../../lib/utils/view-utils';
+import { useCompleteThreadCids } from '../../hooks/use-complete-thread-cids';
 import useIsMobile from '../../hooks/use-is-mobile';
 import useStateString from '../../hooks/use-state-string';
 import LoadingEllipsis from '../loading-ellipsis';
@@ -24,14 +26,15 @@ import { hasModQueueAccessRole } from '../../lib/utils/mod-access';
 import { stripGeneratedFortuneMarkup } from '../../lib/utils/post-options-utils';
 import BoardCheckStatus from './board-check-status';
 
-const QuotedCidLink = ({ cid, postCid }: { cid: string; postCid: string }) => {
+const QuotedCidLink = ({ cid, isPurged, postCid }: { cid: string; isPurged?: boolean; postCid: string }) => {
   const quotedNumber = usePostNumberStore((state) => state.cidToNumber[cid]);
   const commentFromStore = useCommunitiesPagesStore((state) => state.comments[cid]);
   const commentFromHook = useComment({ commentCid: cid, onlyIfCached: true });
   // Prefer hook version to ensure 'number' property is populated for deeper nested replies in Virtuoso
   const quotedComment = commentFromHook?.number !== undefined ? commentFromHook : commentFromStore;
   const isOP = cid === postCid;
-  const isUnavailable = isUnavailableQuoteTarget(quotedComment);
+  // A comment cached before it was purged still looks available, so trust the loaded thread instead.
+  const isUnavailable = isPurged || isUnavailableQuoteTarget(quotedComment);
 
   return <ReplyQuotePreview isQuotelinkReply={true} quotelinkReply={quotedComment} quotelinkNumber={quotedNumber} isQuotelinkUnavailable={isUnavailable} isOP={isOP} />;
 };
@@ -47,24 +50,24 @@ const useScopedCidToNumber = (cids: string[]) => {
     return Array.from(uniqueCids).toSorted();
   }, [cids]);
 
-  const cidToNumber = usePostNumberStore(
-    useMemo(
-      () => (state) => {
-        if (sortedUniqueCids.length === 0) {
-          return {} as Record<string, number>;
+  const selectCidToNumber = useMemo(
+    () => (state: { cidToNumber: Record<string, number> }) => {
+      if (sortedUniqueCids.length === 0) {
+        return {} as Record<string, number>;
+      }
+      const nextCidToNumber: Record<string, number> = {};
+      for (const cid of sortedUniqueCids) {
+        const number = state.cidToNumber[cid];
+        if (typeof number === 'number') {
+          nextCidToNumber[cid] = number;
         }
-        const nextCidToNumber: Record<string, number> = {};
-        for (const cid of sortedUniqueCids) {
-          const number = state.cidToNumber[cid];
-          if (typeof number === 'number') {
-            nextCidToNumber[cid] = number;
-          }
-        }
-        return nextCidToNumber;
-      },
-      [sortedUniqueCids],
-    ),
+      }
+      return nextCidToNumber;
+    },
+    [sortedUniqueCids],
   );
+  // The selector builds a new object on every call; useShallow keeps the result stable while its entries are unchanged.
+  const cidToNumber = usePostNumberStore(useShallow(selectCidToNumber));
 
   return cidToNumber;
 };
@@ -113,8 +116,13 @@ const CommentContent = ({
   const shouldRenderBbcode = isPrivilegedAuthor;
   const shouldWaitForRoleSensitiveBbcode = roles === undefined && Boolean(authorAddress && communityAddress) && containsRoleSensitiveBbcode(visibleContent);
   const purged = resolvedPost?.commentModeration?.purged;
+  // author.community.banExpiresAt is aggregated from every ban against the author, so it is set on all of
+  // their comments and cannot tell which post caused the ban. Bans are per board, so the label names the board.
+  // TODO: when https://github.com/pkcprotocol/pkc-js/issues/363 adds a per-comment ban field, show
+  // "User was banned by [board] for this post" on the banned comment only.
   const banExpiresAt = resolvedPost?.author?.community?.banExpiresAt;
   const banned = !!banExpiresAt;
+  const boardShortAddress = communityAddress && getShortAddress(communityAddress);
 
   const [showFullComment, setShowFullComment] = useState(false);
   const displayContent =
@@ -156,6 +164,26 @@ const CommentContent = ({
     });
   }, [quotedCids, cidToNumber, contentNumbers]);
 
+  const completeThreadCids = useCompleteThreadCids(postCid, cid);
+  const purgedQuotedCids = useMemo(
+    () => (completeThreadCids && quotedCids?.length ? [...new Set<string>(quotedCids)].filter((quotedCid) => !completeThreadCids.has(quotedCid)) : undefined),
+    [completeThreadCids, quotedCids],
+  );
+  // Joined into a string so the selector returns a stable value.
+  const purgedQuoteNumbersKey = usePostNumberStore((state) =>
+    purgedQuotedCids?.length
+      ? getPurgedQuoteNumbers({
+          cidToNumber: state.cidToNumber,
+          contentNumbers,
+          numberToCid: getScopedNumberToCidMap(state.numberToCid, communityAddress),
+          purgedQuotedCids,
+          replyNumber: resolvedPost?.number,
+          threadNumber: postCid ? state.cidToNumber[postCid] : undefined,
+        }).join(',')
+      : '',
+  );
+  const purgedQuoteNumbers = useMemo(() => (purgedQuoteNumbersKey ? new Set(purgedQuoteNumbersKey.split(',').map(Number)) : undefined), [purgedQuoteNumbersKey]);
+
   const parentNumber = parentCid ? cidToNumber[parentCid] : undefined;
   const shouldShowReplyingToReply = isReplyingToReply && parentNumber !== undefined && !contentNumbers.has(parentNumber);
 
@@ -194,9 +222,9 @@ const CommentContent = ({
         <LoadingEllipsis string={t('loading')} />
       </span>
     ) : shouldRenderBbcode ? (
-      <BbcodeContent content={value || ''} postCid={postCid} communityAddress={communityAddress} />
+      <BbcodeContent content={value || ''} postCid={postCid} communityAddress={communityAddress} purgedQuoteNumbers={purgedQuoteNumbers} />
     ) : (
-      <Markdown content={value || ''} postCid={postCid} communityAddress={communityAddress} />
+      <Markdown content={value || ''} postCid={postCid} communityAddress={communityAddress} purgedQuoteNumbers={purgedQuoteNumbers} />
     );
 
   return (
@@ -211,7 +239,7 @@ const CommentContent = ({
         !hasFailedState &&
         !(deleted || removed || purged) &&
         (filteredQuotedCids.length > 0
-          ? filteredQuotedCids.map((cid: string) => <QuotedCidLink key={cid} cid={cid} postCid={postCid} />)
+          ? filteredQuotedCids.map((cid: string) => <QuotedCidLink key={cid} cid={cid} isPurged={purgedQuotedCids?.includes(cid)} postCid={postCid} />)
           : shouldShowReplyingToReply && <ReplyQuotePreview isQuotelinkReply={true} quotelinkReply={quotelinkReply} quotelinkNumber={parentNumber} />)}
       {purged ? (
         <span className={styles.grayEditMessage}>{capitalize(t('this_post_was_purged'))}</span>
@@ -287,12 +315,12 @@ const CommentContent = ({
           <br />
           <Tooltip
             content={`${t('ban_expires_at', {
-              address: communityAddress && getShortAddress(communityAddress),
+              address: boardShortAddress,
               timestamp: banExpiresAt ? getFormattedDate(banExpiresAt) : '',
               interpolation: { escapeValue: false },
             })}${reason ? `. ${capitalize(t('reason'))}: "${reason}"` : ''}`}
           >
-            {`(${t('user_banned')})`}
+            {`(${t('user_banned_from_board', { board: boardShortAddress, interpolation: { escapeValue: false } })})`}
           </Tooltip>
         </span>
       )}

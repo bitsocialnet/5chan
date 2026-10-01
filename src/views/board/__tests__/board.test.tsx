@@ -3,6 +3,7 @@ import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { MemoryRouter, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import communitiesStore from '@bitsocial/bitsocial-react-hooks/dist/stores/communities/index.js';
 import communitiesPagesStore from '@bitsocial/bitsocial-react-hooks/dist/stores/communities-pages/index.js';
 import Board, { type BoardProps } from '../board';
 import { TRASH_BOARD_ADDRESS, TRASH_BOARD_TITLE } from '../../../lib/special-boards';
@@ -72,7 +73,7 @@ const testState = vi.hoisted(() => ({
   accountComments: [] as Array<TestComment | undefined>,
   accountCommentsCalls: [] as Array<{ commentIndices?: number[]; communityAddress?: string; newerThan?: number; sortType?: 'new' | 'old' } | undefined>,
   accountCommunityAddresses: [] as string[],
-  directories: [{ address: 'music-posting.eth', title: '/mu/ - Music' }] as Array<{ address: string; title?: string; directoryCode?: string }>,
+  directories: [{ address: 'music-posting.eth', title: '/mu/ - Music' }] as Array<{ address: string; publicKey?: string; title?: string; directoryCode?: string }>,
   directoryByAddress: {
     'music-posting.eth': {
       address: 'music-posting.eth',
@@ -505,6 +506,7 @@ describe('Board', () => {
     act(() => root.unmount());
     container.remove();
     communitiesPagesStore.setState({ communitiesPages: {}, comments: {} });
+    communitiesStore.setState({ syncStatuses: {} });
     clearStableLastVisitTimeFilterName();
     localStorage.clear();
   });
@@ -1156,6 +1158,34 @@ describe('Board', () => {
     expect(container.querySelectorAll('[data-testid="loading-ellipsis"]').length).toBe(1);
   });
 
+  it('keeps showing failed in the flash table while an unreachable board retries', async () => {
+    testState.directories = [{ address: 'flash-posting.bso', directoryCode: 'f', publicKey: '12D3KooWUnreachableFlash', title: '/f/ - Flash' }];
+    testState.directoryByAddress = {
+      'flash-posting.bso': {
+        address: 'flash-posting.bso',
+        directoryCode: 'f',
+        features: { postsPerPage: 50 },
+        title: '/f/ - Flash',
+      },
+    };
+    testState.resolvedCommunityAddress = 'flash-posting.bso';
+    testState.community = { error: undefined, shortAddress: 'flash-posting.bso', state: 'fetching-ipns', title: '/f/ - Flash' };
+    testState.communitySnapshot = { shortAddress: 'flash-posting.bso', title: '/f/ - Flash' };
+    testState.hasMore = true;
+
+    await renderBoard({ initialEntry: '/f', routePath: '/:boardIdentifier/*' });
+    await act(async () => {
+      communitiesStore.setState({ syncStatuses: { '12D3KooWUnreachableFlash': { syncState: 'retrying' } } });
+    });
+    await act(async () => {
+      communitiesStore.setState({ syncStatuses: { '12D3KooWUnreachableFlash': { syncState: 'loading' } } });
+    });
+
+    const table = container.querySelector('#flash-list');
+    expect(table?.textContent).toContain('failed');
+    expect(table?.querySelector('[data-testid="loading-ellipsis"]')?.textContent).toBe('downloading_board');
+  });
+
   it('renders an empty flash table when a loaded board reports explicit empty page cids', async () => {
     testState.directories = [{ address: 'flash-posting.bso', directoryCode: 'f', title: '/f/ - Flash' }];
     testState.directoryByAddress = {
@@ -1386,6 +1416,32 @@ describe('Board', () => {
         }),
       ]),
     );
+  });
+
+  it('keeps showing failed while an unreachable board starts another load attempt', async () => {
+    testState.directories = [{ address: 'music-posting.eth', publicKey: '12D3KooWUnreachableBoard', title: '/mu/ - Music' }];
+    testState.hasMore = true;
+    testState.feedStateString = 'Downloading board from peers';
+    testState.community = {
+      error: undefined,
+      shortAddress: 'music-posting.eth',
+      state: 'fetching-ipns',
+      title: '/mu/ - Music',
+    };
+
+    await renderBoard({ initialEntry: '/mu', routePath: '/:boardIdentifier/*' });
+    expect(container.textContent).not.toContain('failed');
+
+    // pkc-js retries forever and the hooks drop retriable errors, so only the sync state records the failed attempt
+    await act(async () => {
+      communitiesStore.setState({ syncStatuses: { '12D3KooWUnreachableBoard': { syncState: 'retrying' } } });
+    });
+    await act(async () => {
+      communitiesStore.setState({ syncStatuses: { '12D3KooWUnreachableBoard': { syncState: 'loading' } } });
+    });
+
+    expect(container.textContent).toContain('failed');
+    expect(container.querySelector('[data-testid="loading-ellipsis"]')?.textContent).toBe('Downloading board from peers');
   });
 
   it('does not show no threads while an empty all feed is still loading', async () => {

@@ -76,13 +76,10 @@ const usePublishReply = ({ cid, communityAddress, postCid }: UsePublishReplyOpti
   const setPublishReplyOptions = useCallback(
     (options: Partial<Comment>) => {
       const baseOptions = createBaseOptions();
-      const sanitizedOptions = Object.entries(options).reduce(
-        (acc, [key, value]) => {
-          acc[key] = value === '' ? undefined : value;
-          return acc;
-        },
-        {} as Partial<Comment>,
-      );
+      const sanitizedOptions = Object.entries(options).reduce((acc, [key, value]) => {
+        acc[key] = value === '' ? undefined : value;
+        return acc;
+      }, {} as Partial<Comment>);
 
       const { communityAddress: nextCommunityAddress, ...restOptions } = sanitizedOptions;
       const resolvedCommunityAddress = nextCommunityAddress ?? baseOptions.communityAddress;
@@ -98,7 +95,7 @@ const usePublishReply = ({ cid, communityAddress, postCid }: UsePublishReplyOpti
 
   const resetPublishReplyOptions = useCallback(() => resetPublishReplyStore(parentCid), [parentCid, resetPublishReplyStore]);
 
-  const scopedNumberToCid = usePostNumberStore((state) => getScopedNumberToCidMap(state.numberToCid, communityAddress));
+  const scopedNumberToCid = usePostNumberStore(useShallow((state) => getScopedNumberToCidMap(state.numberToCid, communityAddress)));
   const cidToPostCid = usePostNumberStore((state) => state.cidToPostCid);
   const threadPostCid = postCid ?? parentCid;
   const quotedCids = useMemo(() => getQuotedCidsFromContent(content, scopedNumberToCid), [content, scopedNumberToCid]);

@@ -98,7 +98,7 @@ To have your board appear in a directory on the 5chan homepage:
 
 ### Prerequisites
 
-- Node.js 22.12.0, pinned in [`.nvmrc`](./.nvmrc)
+- Node.js 22.22.3, pinned in [`.nvmrc`](./.nvmrc)
 - Corepack enabled once per machine: `corepack enable`
 
 ### Contributor Setup

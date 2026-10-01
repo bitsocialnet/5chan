@@ -69,16 +69,18 @@ const CATEGORIES = { codes: { biz: 'sfw', b: 'nsfw', g: 'sfw' }, addresses: { 'r
 const DEFAULT_THEMES = { nsfw: 'yotsuba', sfw: 'yotsuba-b' };
 const BANNERS = ['assets/banners/banner-1.jpg', 'assets/banners/banner-2.jpg'];
 
-// What the build's render saves on its own, as zustand's persist middleware does on every first visit.
+// What zustand 4's persist middleware saved on every visit before the visitor changed anything. zustand 5
+// no longer saves these stores while the build renders.
 const SAVED_INTRODUCTION = '{"state":{"showIntroduction":true},"version":0}';
 const SAVED_FEED_VIEW = '{"state":{"enableInfiniteScroll":false},"version":0}';
+const SAVED_BLOTTER = '{"state":{"isHidden":false},"version":0}';
 
 const buildHtml = () => {
   const { frames, codes } = buildBoardFrames(BOARD_RENDERS);
   return injectStaticShell(injectThemeScript('<!doctype html><html><head></head><body><div id="root"></div></body></html>', CATEGORIES, DEFAULT_THEMES), {
     home: '<div class="app">shell</div>',
     boards: { mobileBreakpointWidth: 640, banners: BANNERS, bannerPlaceholder: BANNER_PLACEHOLDER, frames, codes },
-    storage: { 'homepage-introduction': SAVED_INTRODUCTION, 'feed-view-settings-store': SAVED_FEED_VIEW, 'unrelated-store': '{}' },
+    storage: { '5chan-frames': 'saved', 'unrelated-store': '{}' },
   });
 };
 
@@ -143,10 +145,11 @@ test('shows the home frame on a first visit and on a return visit with only pref
   assert.equal(load({ hash: '#/' }).shown, true);
   assert.equal(load({ storage: { '5chan-interface-language': 'en' } }).shown, true);
   assert.equal(load({ storage: { 'homepage-introduction': SAVED_INTRODUCTION, 'unrelated-store': '{"changed":true}' } }).shown, true);
+  assert.equal(load({ storage: { '5chan-frames': 'saved' } }).shown, true);
 });
 
 test('shows a directory board frame for the width, with the board and theme React selects', () => {
-  const desktop = load({ hash: '#/biz', storage: { 'feed-view-settings-store': SAVED_FEED_VIEW } });
+  const desktop = load({ hash: '#/biz', storage: { 'feed-view-settings-store': SAVED_FEED_VIEW, 'blotter-visibility': SAVED_BLOTTER } });
   assert.equal(desktop.shown, true);
   assert.match(desktop.html, /href="#\/biz\/settings"/);
   assert.match(desktop.html, /Current \/biz\/ winner: bizraelis.bso/);

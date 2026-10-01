@@ -49,6 +49,16 @@ const BOARD_PREFERENCE_KEYS = [
   '5chan-topbar-subscriptions-visible',
 ];
 
+// Values a visitor can have saved without changing the preference, besides what the build's render
+// saves. zustand 4's persist middleware saved these stores with their defaults while hydrating on every
+// visit; zustand 5 saves them only when they change, so visitors from before the upgrade still carry
+// these values, which render the same first frames.
+const PREVIOUSLY_SAVED_DEFAULTS = {
+  'homepage-introduction': ['{"state":{"showIntroduction":true},"version":0}'],
+  'feed-view-settings-store': ['{"state":{"enableInfiniteScroll":false},"version":0}'],
+  'blotter-visibility': ['{"state":{"isHidden":false},"version":0}'],
+};
+
 // Mirrors useTheme on React's first commit: the home page and rules are yotsuba, an enabled seasonal
 // theme wins elsewhere, multiboard views use the NSFW theme, and a board uses the theme of its category
 // in the bundled directory (live community data can only change it after the first commit).
@@ -120,10 +130,11 @@ const SHELL_SCRIPT = `(function () {
     var language = localStorage.getItem('5chan-interface-language');
     if (language && !/^en(-|$)/i.test(language)) return;
     var data = JSON.parse(document.getElementById('${SHELL_DATA_ID}').textContent);
-    var unchanged = function (defaults) {
-      for (var key in defaults) {
+    // Each key maps to the values it can hold without the visitor changing it; no saved value always matches.
+    var unchanged = function (savedDefaults) {
+      for (var key in savedDefaults) {
         var value = localStorage.getItem(key);
-        if (value !== null && value !== defaults[key]) return false;
+        if (value !== null && savedDefaults[key].indexOf(value) === -1) return false;
       }
       return true;
     };
@@ -294,7 +305,8 @@ export function buildBoardFrames(renders) {
 // `renders.storage` is what localStorage held after the build rendered the shells.
 export function injectStaticShell(html, { home, boards, storage = {} }) {
   if (!html.includes('<div id="root"></div>')) throw new Error('static shell: index.html has no empty <div id="root"></div>');
-  const defaultsOf = (keys) => Object.fromEntries(keys.map((key) => [key, storage[key] ?? null]));
+  const defaultsOf = (keys) =>
+    Object.fromEntries(keys.map((key) => [key, [...new Set([storage[key], ...(PREVIOUSLY_SAVED_DEFAULTS[key] ?? [])].filter((value) => typeof value === 'string'))]]));
   const data = toScriptJson({ home: defaultsOf(HOME_PREFERENCE_KEYS), boards: { ...boards, preferences: defaultsOf(BOARD_PREFERENCE_KEYS) } });
   if (!html.includes(`id="${THEME_DATA_ID}"`)) throw new Error('static shell: inject the theme script first; the frame script reads its class');
   // A replacer function keeps `$` sequences in the rendered markup literal.

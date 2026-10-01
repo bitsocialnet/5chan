@@ -19,6 +19,7 @@ import useTimeFilter from '../../hooks/use-time-filter';
 import useIsMobile from '../../hooks/use-is-mobile';
 import useContentWidth from '../../hooks/use-content-width';
 import useCatalogStyleStore from '../../stores/use-catalog-style-store';
+import { useHasCommunityLoadFailed } from '../../stores/use-community-load-failures-store';
 import useFeedResetStore from '../../stores/use-feed-reset-store';
 import useHiddenCatalogThreadsStore from '../../stores/use-hidden-catalog-threads-store';
 import useSortingStore from '../../stores/use-sorting-store';
@@ -146,12 +147,22 @@ interface CatalogLoadingProps {
   hasMore: boolean;
   combinedFeedLength: number;
   state: string | undefined;
+  hasCommunityLoadFailed: boolean;
   subscriptionsLength: number;
   error: Error | undefined;
   hasActiveSearch: boolean;
 }
 
-const CatalogLoading = ({ communityAddresses, hasMore, combinedFeedLength, state, subscriptionsLength, error, hasActiveSearch }: CatalogLoadingProps) => {
+const CatalogLoading = ({
+  communityAddresses,
+  hasMore,
+  combinedFeedLength,
+  state,
+  hasCommunityLoadFailed,
+  subscriptionsLength,
+  error,
+  hasActiveSearch,
+}: CatalogLoadingProps) => {
   const { t } = useTranslation();
 
   const rawFeedStateString = useFeedStateString(communityAddresses);
@@ -168,7 +179,10 @@ const CatalogLoading = ({ communityAddresses, hasMore, combinedFeedLength, state
           t('no_threads')
         )
       ) : (
-        hasMore && <LoadingEllipsis string={loadingStateString} />
+        <>
+          {hasCommunityLoadFailed && <div className='red'>{t('failed')}</div>}
+          {hasMore && <LoadingEllipsis string={loadingStateString} />}
+        </>
       )}
       <ErrorDisplay error={error} />
     </div>
@@ -590,6 +604,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
 
   const community = useCommunity(communityIdentifier ? { community: communityIdentifier } : undefined);
   const { error, shortAddress, state, title } = community || {};
+  const hasCommunityLoadFailed = useHasCommunityLoadFailed(communityIdentifier);
   const footerHasMore = showHiddenThreads ? isLoadingHiddenCatalogThreads : hasMore;
   const footerCombinedFeedLength = catalogBaseFeed.length;
   const footerMoreThreadsSuggestion = showHiddenThreads ? null : moreThreadsSuggestion;
@@ -953,6 +968,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
                 hasMore={footerHasMore}
                 combinedFeedLength={footerCombinedFeedLength}
                 state={state}
+                hasCommunityLoadFailed={hasCommunityLoadFailed}
                 subscriptionsLength={isInSubscriptionsView ? subscriptions?.length || 0 : 1}
                 error={error}
                 hasActiveSearch={hasActiveSearch}

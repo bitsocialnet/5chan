@@ -65,13 +65,10 @@ const usePublishPost = ({ communityAddress, onAbandonPost, onDuplicateMediaRejec
   const setPublishPostOptions = useCallback(
     (options: Partial<Comment>) => {
       const baseOptions = createBaseOptions();
-      const sanitizedOptions = Object.entries(options).reduce(
-        (acc, [key, value]) => {
-          acc[key] = value === '' ? undefined : value;
-          return acc;
-        },
-        {} as Partial<Comment>,
-      );
+      const sanitizedOptions = Object.entries(options).reduce((acc, [key, value]) => {
+        acc[key] = value === '' ? undefined : value;
+        return acc;
+      }, {} as Partial<Comment>);
 
       const { communityAddress: nextCommunityAddress, ...restOptions } = sanitizedOptions;
       const resolvedCommunityAddress = nextCommunityAddress ?? baseOptions.communityAddress;

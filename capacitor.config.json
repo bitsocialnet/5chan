@@ -16,6 +16,10 @@
     },
     "EdgeToEdge": {
       "backgroundColor": "#000000"
+    },
+    "SystemBars": {
+      "insetsHandling": "disable",
+      "style": "DARK"
     }
   },
   "server": {
