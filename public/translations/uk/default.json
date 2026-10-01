@@ -511,5 +511,17 @@
   "thread_update_connection_error": "Помилка з’єднання",
   "thread_update_thread_archived": "Цю тему архівовано",
   "thread_update_thread_deleted": "Цю тему витіснено або видалено",
-  "fetch_new_replies_automatically": "Автоматично завантажувати нові відповіді"
+  "fetch_new_replies_automatically": "Автоматично завантажувати нові відповіді",
+  "directory_requirement_ids_per_thread": "ID авторів для кожної теми",
+  "directory_requirement_no_ids": "Без ID авторів",
+  "directory_requirement_pseudonymity_mode": "Режим псевдонімності {{mode}}",
+  "directory_requirement_sfw": "Позначена як безпечна для роботи",
+  "directory_requirement_nsfw": "Не позначена як безпечна для роботи",
+  "directory_requirement_media_threads": "Посилання в темах мають вести на медіафайли",
+  "directory_requirement_mod_queue": "Черга модерації для нових авторів",
+  "directory_requirements_title": "Вимоги для розміщення /{{boardIdentifier}}/:",
+  "directory_requirements_footnote": "Дошки також мають дотримуватися <rulesLink>правил /{{boardIdentifier}}/</rulesLink> і залишатися онлайн. 5chan пропускає дошку, яка офлайн або не відповідає якійсь вимозі, і переходить до наступної відповідної.",
+  "directory_status_ineligible_reason": "Бракує: {{requirements}}",
+  "directory_vote_board_ineligible": "{{address}} поки не можна надіслати до /{{boardIdentifier}}/. Бракує: {{requirements}}.",
+  "directory_vote_board_unreachable": "Не вдалося завантажити {{address}}, щоб перевірити налаштування. Дошка має бути онлайн, щоб її можна було надіслати."
 }

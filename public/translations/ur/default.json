@@ -511,5 +511,17 @@
   "thread_update_connection_error": "کنکشن کی غلطی",
   "thread_update_thread_archived": "یہ تھریڈ آرکائیو ہو چکا ہے",
   "thread_update_thread_deleted": "یہ تھریڈ ہٹا دیا گیا ہے یا حذف کر دیا گیا ہے",
-  "fetch_new_replies_automatically": "نئے جوابات خود بخود حاصل کریں"
+  "fetch_new_replies_automatically": "نئے جوابات خود بخود حاصل کریں",
+  "directory_requirement_ids_per_thread": "ہر تھریڈ کے لیے پوسٹ کرنے والوں کی ID",
+  "directory_requirement_no_ids": "پوسٹ کرنے والوں کی کوئی ID نہیں",
+  "directory_requirement_pseudonymity_mode": "فرضی نام موڈ {{mode}}",
+  "directory_requirement_sfw": "کام کے لیے محفوظ کے طور پر نشان زد",
+  "directory_requirement_nsfw": "کام کے لیے محفوظ کے طور پر نشان زد نہیں",
+  "directory_requirement_media_threads": "تھریڈ کے لنکس میڈیا فائلیں ہونے چاہئیں",
+  "directory_requirement_mod_queue": "نئے پوسٹ کرنے والوں کے لیے نگرانی کی قطار",
+  "directory_requirements_title": "/{{boardIdentifier}}/ کی میزبانی کے تقاضے:",
+  "directory_requirements_footnote": "بورڈز کو <rulesLink>/{{boardIdentifier}}/ کے اصولوں</rulesLink> کی بھی پابندی کرنی ہوگی اور آن لائن رہنا ہوگا۔ جو بورڈ آف لائن ہو یا کوئی تقاضا پورا نہ کرے، 5chan اسے چھوڑ کر اگلے اہل بورڈ کی طرف بڑھ جاتا ہے۔",
+  "directory_status_ineligible_reason": "کمی: {{requirements}}",
+  "directory_vote_board_ineligible": "{{address}} ابھی /{{boardIdentifier}}/ میں جمع نہیں کیا جا سکتا۔ کمی: {{requirements}}۔",
+  "directory_vote_board_unreachable": "ترتیبات چیک کرنے کے لیے {{address}} لوڈ نہیں کیا جا سکا۔ جمع کرنے کے لیے بورڈ کا آن لائن ہونا ضروری ہے۔"
 }

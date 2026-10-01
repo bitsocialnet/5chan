@@ -511,5 +511,17 @@
   "thread_update_connection_error": "خطای اتصال",
   "thread_update_thread_archived": "این موضوع بایگانی شده است",
   "thread_update_thread_deleted": "این موضوع پاک‌سازی یا حذف شده است",
-  "fetch_new_replies_automatically": "دریافت خودکار پاسخ‌های جدید"
+  "fetch_new_replies_automatically": "دریافت خودکار پاسخ‌های جدید",
+  "directory_requirement_ids_per_thread": "شناسه نویسندگان در هر موضوع",
+  "directory_requirement_no_ids": "بدون شناسه نویسنده",
+  "directory_requirement_pseudonymity_mode": "حالت نام مستعار {{mode}}",
+  "directory_requirement_sfw": "به‌عنوان ایمن برای کار علامت‌گذاری شده",
+  "directory_requirement_nsfw": "به‌عنوان ایمن برای کار علامت‌گذاری نشده",
+  "directory_requirement_media_threads": "پیوند موضوع‌ها باید فایل رسانه‌ای باشد",
+  "directory_requirement_mod_queue": "صف انتظار نظارت برای کاربران جدید",
+  "directory_requirements_title": "الزامات میزبانی /{{boardIdentifier}}/:",
+  "directory_requirements_footnote": "بردها همچنین باید از <rulesLink>قوانین /{{boardIdentifier}}/</rulesLink> پیروی کنند و آنلاین بمانند. 5chan بردی را که آفلاین است یا یکی از الزامات را برآورده نمی‌کند نادیده می‌گیرد و سراغ برد واجد شرایط بعدی می‌رود.",
+  "directory_status_ineligible_reason": "موارد ناقص: {{requirements}}",
+  "directory_vote_board_ineligible": "{{address}} هنوز نمی‌تواند در /{{boardIdentifier}}/ ثبت شود. موارد ناقص: {{requirements}}.",
+  "directory_vote_board_unreachable": "بارگذاری {{address}} برای بررسی تنظیماتش ممکن نشد. یک تابلو برای ثبت شدن باید آنلاین باشد."
 }

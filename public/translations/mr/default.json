@@ -511,5 +511,17 @@
   "thread_update_connection_error": "कनेक्शन त्रुटी",
   "thread_update_thread_archived": "हा थ्रेड आर्काइव केला आहे",
   "thread_update_thread_deleted": "हा थ्रेड काढून टाकला किंवा हटवला गेला आहे",
-  "fetch_new_replies_automatically": "नवीन उत्तरे स्वयंचलितपणे आणा"
+  "fetch_new_replies_automatically": "नवीन उत्तरे स्वयंचलितपणे आणा",
+  "directory_requirement_ids_per_thread": "प्रत्येक थ्रेडसाठी पोस्टर ID",
+  "directory_requirement_no_ids": "पोस्टर ID नाहीत",
+  "directory_requirement_pseudonymity_mode": "टोपणनाव मोड {{mode}}",
+  "directory_requirement_sfw": "कामासाठी सुरक्षित म्हणून चिन्हांकित",
+  "directory_requirement_nsfw": "कामासाठी सुरक्षित म्हणून चिन्हांकित नाही",
+  "directory_requirement_media_threads": "थ्रेडच्या लिंक मीडिया फाइल्स असणे आवश्यक",
+  "directory_requirement_mod_queue": "नवीन पोस्ट करणाऱ्यांसाठी मॉडरेशन रांग",
+  "directory_requirements_title": "/{{boardIdentifier}}/ होस्ट करण्यासाठी आवश्यकता:",
+  "directory_requirements_footnote": "बोर्डांनी <rulesLink>/{{boardIdentifier}}/ चे नियम</rulesLink> देखील पाळले पाहिजेत आणि ऑनलाइन राहिले पाहिजे. एखादा बोर्ड ऑफलाइन असल्यास किंवा एखादी आवश्यकता पूर्ण करत नसल्यास 5chan तो वगळून पुढील पात्र बोर्ड निवडते.",
+  "directory_status_ineligible_reason": "कमतरता: {{requirements}}",
+  "directory_vote_board_ineligible": "{{address}} अद्याप /{{boardIdentifier}}/ मध्ये सबमिट करता येत नाही. कमतरता: {{requirements}}.",
+  "directory_vote_board_unreachable": "सेटिंग्ज तपासण्यासाठी {{address}} लोड करता आले नाही. सबमिट करण्यासाठी बोर्ड ऑनलाइन असणे आवश्यक आहे."
 }

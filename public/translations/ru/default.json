@@ -511,5 +511,17 @@
   "thread_update_connection_error": "Ошибка соединения",
   "thread_update_thread_archived": "Эта тема в архиве",
   "thread_update_thread_deleted": "Эта тема была вытеснена или удалена",
-  "fetch_new_replies_automatically": "Автоматически загружать новые ответы"
+  "fetch_new_replies_automatically": "Автоматически загружать новые ответы",
+  "directory_requirement_ids_per_thread": "ID авторов для каждой темы",
+  "directory_requirement_no_ids": "Без ID авторов",
+  "directory_requirement_pseudonymity_mode": "Режим псевдонимности {{mode}}",
+  "directory_requirement_sfw": "Отмечена как безопасная для работы",
+  "directory_requirement_nsfw": "Не отмечена как безопасная для работы",
+  "directory_requirement_media_threads": "Ссылки в темах должны вести на медиафайлы",
+  "directory_requirement_mod_queue": "Очередь модерации для новых авторов",
+  "directory_requirements_title": "Требования для размещения /{{boardIdentifier}}/:",
+  "directory_requirements_footnote": "Доски также должны соблюдать <rulesLink>правила /{{boardIdentifier}}/</rulesLink> и оставаться онлайн. 5chan пропускает доску, которая офлайн или не выполняет какое-либо требование, и переходит к следующей подходящей.",
+  "directory_status_ineligible_reason": "Не хватает: {{requirements}}",
+  "directory_vote_board_ineligible": "{{address}} пока нельзя добавить в /{{boardIdentifier}}/. Не хватает: {{requirements}}.",
+  "directory_vote_board_unreachable": "Не удалось загрузить {{address}}, чтобы проверить настройки. Доска должна быть онлайн, чтобы её можно было добавить."
 }

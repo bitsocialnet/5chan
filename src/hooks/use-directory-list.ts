@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { type DirectoryCommunity, useDirectories } from './use-directories';
 import { type DirectoryList, type DirectoryListBoard, normalizeDirectoryList, sortDirectoryBoardsByRank } from '../lib/utils/directory-list-utils';
 import { getDirectoryCodeForBoardAddress, getVendoredDirectoryList } from '../lib/utils/directory-list-lookup-utils';
+import type { DirectoryBoardEligibility } from '../lib/directory-board-requirements';
 
 export type { DirectoryListBoard } from '../lib/utils/directory-list-utils';
 export { getDirectoryCodeForBoardAddress };
@@ -318,13 +319,28 @@ export const useDirectoryLists = (directoryCodes: string[] | undefined): Directo
 };
 
 /**
- * Pick the winning board for a directory, skipping any boards reported offline.
- * Returns the highest-ranked online board, or — if every candidate looks offline —
- * the highest-ranked board anyway, so the user still lands somewhere.
+ * Pick the winning board for a directory: the highest-ranked online board that meets the
+ * directory's requirements. The winner only moves past the top online board to one already known
+ * to qualify, so it never bounces between candidates while their records load. Without a
+ * qualifying board the top online board still hosts, and if every candidate looks offline, the
+ * highest-ranked board, so the user still lands somewhere.
  */
-export const pickDirectoryWinner = (boards: DirectoryListBoard[], isOffline: (board: DirectoryListBoard) => boolean): DirectoryListBoard | undefined => {
+export const pickDirectoryWinner = (
+  boards: DirectoryListBoard[],
+  isOffline: (board: DirectoryListBoard) => boolean,
+  getEligibility: (board: DirectoryListBoard) => DirectoryBoardEligibility = () => 'eligible',
+): DirectoryListBoard | undefined => {
   const ranked = sortDirectoryBoardsByRank(boards);
-  return ranked.find((board) => !isOffline(board)) ?? ranked[0];
+  // Checks stay lazy: each one scans the community store, so stop at the first board that decides it.
+  let topOnline: DirectoryListBoard | undefined;
+  for (const board of ranked) {
+    if (isOffline(board)) continue;
+    topOnline ??= board;
+    const eligibility = getEligibility(board);
+    if (eligibility === 'eligible') return board;
+    if (eligibility === 'unknown') return topOnline;
+  }
+  return topOnline ?? ranked[0];
 };
 
 export { sortDirectoryBoardsByRank };

@@ -511,5 +511,17 @@
   "thread_update_connection_error": "Error de conexión",
   "thread_update_thread_archived": "Este hilo está archivado",
   "thread_update_thread_deleted": "Este hilo ha sido purgado o eliminado",
-  "fetch_new_replies_automatically": "Cargar respuestas nuevas automáticamente"
+  "fetch_new_replies_automatically": "Cargar respuestas nuevas automáticamente",
+  "directory_requirement_ids_per_thread": "IDs de autor por hilo",
+  "directory_requirement_no_ids": "Sin IDs de autor",
+  "directory_requirement_pseudonymity_mode": "Modo de seudonimato {{mode}}",
+  "directory_requirement_sfw": "Marcado como seguro para el trabajo",
+  "directory_requirement_nsfw": "No marcado como seguro para el trabajo",
+  "directory_requirement_media_threads": "Los enlaces de los hilos deben ser archivos multimedia",
+  "directory_requirement_mod_queue": "Cola de moderación para usuarios nuevos",
+  "directory_requirements_title": "Requisitos para alojar /{{boardIdentifier}}/:",
+  "directory_requirements_footnote": "Los tablones también deben seguir las <rulesLink>reglas de /{{boardIdentifier}}/</rulesLink> y mantenerse en línea. 5chan omite un tablón que esté desconectado o no cumpla un requisito y pasa al siguiente que reúna las condiciones.",
+  "directory_status_ineligible_reason": "Falta: {{requirements}}",
+  "directory_vote_board_ineligible": "{{address}} aún no se puede enviar a /{{boardIdentifier}}/. Falta: {{requirements}}.",
+  "directory_vote_board_unreachable": "No se pudo cargar {{address}} para comprobar su configuración. Un tablón debe estar en línea para poder enviarse."
 }

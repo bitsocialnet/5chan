@@ -511,5 +511,17 @@
   "thread_update_connection_error": "Error sa koneksyon",
   "thread_update_thread_archived": "Naka-archive ang thread na ito",
   "thread_update_thread_deleted": "Ang thread na ito ay inalis o tinanggal na",
-  "fetch_new_replies_automatically": "Awtomatikong kunin ang mga bagong tugon"
+  "fetch_new_replies_automatically": "Awtomatikong kunin ang mga bagong tugon",
+  "directory_requirement_ids_per_thread": "Mga poster ID kada thread",
+  "directory_requirement_no_ids": "Walang poster ID",
+  "directory_requirement_pseudonymity_mode": "Mode ng pseudonymity {{mode}}",
+  "directory_requirement_sfw": "Naka-mark bilang worksafe",
+  "directory_requirement_nsfw": "Hindi naka-mark bilang worksafe",
+  "directory_requirement_media_threads": "Dapat media file ang mga link ng thread",
+  "directory_requirement_mod_queue": "Moderasyon queue para sa mga bagong nagpo-post",
+  "directory_requirements_title": "Mga kinakailangan para mag-host ng /{{boardIdentifier}}/:",
+  "directory_requirements_footnote": "Dapat ding sumunod ang mga board sa <rulesLink>mga patakaran ng /{{boardIdentifier}}/</rulesLink> at manatiling online. Nilalaktawan ng 5chan ang board na offline o hindi nakatugon sa isang kinakailangan at lumilipat ito sa susunod na kwalipikadong board.",
+  "directory_status_ineligible_reason": "Kulang: {{requirements}}",
+  "directory_vote_board_ineligible": "Hindi pa maisusumite ang {{address}} sa /{{boardIdentifier}}/. Kulang: {{requirements}}.",
+  "directory_vote_board_unreachable": "Hindi ma-load ang {{address}} para suriin ang mga setting nito. Kailangang online ang isang board para maisumite ito."
 }

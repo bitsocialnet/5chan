@@ -511,5 +511,17 @@
   "thread_update_connection_error": "Tilkoblingsfeil",
   "thread_update_thread_archived": "Denne tråden er arkivert",
   "thread_update_thread_deleted": "Denne tråden er fjernet eller slettet",
-  "fetch_new_replies_automatically": "Hent nye svar automatisk"
+  "fetch_new_replies_automatically": "Hent nye svar automatisk",
+  "directory_requirement_ids_per_thread": "Skribent-ID-er per tråd",
+  "directory_requirement_no_ids": "Ingen skribent-ID-er",
+  "directory_requirement_pseudonymity_mode": "Pseudonymitetsmodus {{mode}}",
+  "directory_requirement_sfw": "Merket som arbeidssikker",
+  "directory_requirement_nsfw": "Ikke merket som arbeidssikker",
+  "directory_requirement_media_threads": "Trådlenker må være mediefiler",
+  "directory_requirement_mod_queue": "Modereringskø for nye brukere",
+  "directory_requirements_title": "Krav for å hoste /{{boardIdentifier}}/:",
+  "directory_requirements_footnote": "Boards må også følge <rulesLink>reglene for /{{boardIdentifier}}/</rulesLink> og holde seg online. 5chan hopper over et board som er offline eller ikke oppfyller et krav, og går videre til det neste som kvalifiserer.",
+  "directory_status_ineligible_reason": "Mangler: {{requirements}}",
+  "directory_vote_board_ineligible": "{{address}} kan ikke sendes inn til /{{boardIdentifier}}/ ennå. Mangler: {{requirements}}.",
+  "directory_vote_board_unreachable": "Kunne ikke laste inn {{address}} for å sjekke innstillingene. Et brett må være online for å kunne sendes inn."
 }

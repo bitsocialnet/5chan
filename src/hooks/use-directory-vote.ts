@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useAccount } from '@bitsocial/bitsocial-react-hooks';
 import type { Criteria } from '@bitsocial/pubsub-voting';
 import { getAccountVoteSigner } from '../lib/directory-vote-signer';
+import { getUnmetDirectoryBoardRequirements, type DirectoryBoardRecord, type DirectoryBoardRequirement } from '../lib/directory-board-requirements';
 import {
   isSameDirectoryVoteBucket,
   publishDirectoryVote,
@@ -19,6 +20,11 @@ export type DirectoryVoteOutcome =
   | { status: 'withdrawn' }
   | { status: 'unavailable' }
   | { status: 'board-not-found' }
+  /** The board's record could not be loaded to check it against the directory's requirements. */
+  | { status: 'board-unreachable' }
+  | { status: 'board-ineligible'; unmet: DirectoryBoardRequirement[] }
+  /** The directory was left while the board's record was loading, so nothing was published. */
+  | { status: 'cancelled' }
   | { status: 'ineligible'; address: string; error: string; testnet: boolean }
   | { status: 'failed'; error: Error };
 
@@ -34,9 +40,20 @@ export interface DirectoryVoteState {
   pendingVote?: PendingDirectoryVote;
   /** Vote for a board, or withdraw when it is already this account's vote. */
   toggleVote: (target: DirectoryVoteTarget) => Promise<DirectoryVoteOutcome>;
-  /** Resolve a board address, then vote for it; covers typed submissions and listed boards without a key. */
+  /** Resolve a board address, then vote for it; covers listed boards without a key. */
   voteForAddress: (address: string, pending?: PendingDirectoryVote) => Promise<DirectoryVoteOutcome>;
+  /** Resolve a typed board address and vote for it only once its record meets the directory's requirements. */
+  submitBoard: (address: string, requirements: DirectoryBoardRequirement[]) => Promise<DirectoryVoteOutcome>;
 }
+
+interface AccountWithPkc {
+  pkc?: { getCommunity: (args: DirectoryVoteTarget & { abortSignal?: AbortSignal }) => Promise<DirectoryBoardRecord> };
+}
+
+// pkc-js keeps retrying an unreachable board for minutes, and the form and every vote button wait on it.
+const REQUIREMENTS_CHECK_TIMEOUT_MS = 60_000;
+
+const getAccountPkc = (account: unknown) => (account && typeof account === 'object' ? (account as AccountWithPkc).pkc : undefined);
 
 const asError = (error: unknown): Error => (error instanceof Error ? error : new Error(String(error)));
 
@@ -60,11 +77,21 @@ export const useDirectoryVote = (voteTally: VoteTallyState): DirectoryVoteState 
   const voteSigner = getAccountVoteSigner(account);
   const helia = getBrowserHeliaNode(account);
   const nameResolvers = getBrowserNameResolvers(account);
+  const pkc = getAccountPkc(account);
   const { criteria, contest } = voteTally;
   const storedVote = useDirectoryVotesStore((state) => (voteSigner && criteria ? state.votes[getDirectoryVoteKey(voteSigner.address, criteria.contestId)] : undefined));
   const setVote = useDirectoryVotesStore((state) => state.setVote);
   const removeVote = useDirectoryVotesStore((state) => state.removeVote);
   const [pendingVote, setPendingVote] = useState<PendingDirectoryVote>();
+  const requirementsScopeRef = useRef<AbortController>(undefined);
+
+  // Leaving the directory, or moving to another one, cancels a pending requirements check so a
+  // board submitted there is never voted for later.
+  useEffect(() => {
+    const scope = new AbortController();
+    requirementsScopeRef.current = scope;
+    return () => scope.abort();
+  }, [criteria?.contestId]);
 
   // A vote stored for an older manifest revision lives on a dead topic, so it is not this contest's vote.
   const votedCommunity = storedVote && contest && storedVote.topic === contest.topic ? storedVote.community : undefined;
@@ -99,8 +126,8 @@ export const useDirectoryVote = (voteTally: VoteTallyState): DirectoryVoteState 
   const toggleVote = (target: DirectoryVoteTarget) =>
     publish(target.publicKey === votedCommunity?.publicKey ? undefined : target, { source: 'row', key: target.publicKey });
 
-  const voteForAddress = async (address: string, pending: PendingDirectoryVote = { source: 'form' }): Promise<DirectoryVoteOutcome> => {
-    if (!criteria || !voteSigner || !helia) return { status: 'unavailable' };
+  const resolveAndVote = async (address: string, pending: PendingDirectoryVote, requirements?: DirectoryBoardRequirement[]): Promise<DirectoryVoteOutcome> => {
+    if (!criteria || !voteSigner || !helia || (requirements && !pkc)) return { status: 'unavailable' };
 
     setPendingVote(pending);
     let resolution: Awaited<ReturnType<typeof resolveDirectoryBoard>>;
@@ -114,8 +141,41 @@ export const useDirectoryVote = (voteTally: VoteTallyState): DirectoryVoteState 
       setPendingVote(undefined);
       return { status: 'board-not-found' };
     }
+    if (requirements && pkc) {
+      const scope = requirementsScopeRef.current?.signal;
+      const controller = new AbortController();
+      const cancel = () => controller.abort();
+      scope?.addEventListener('abort', cancel);
+      const timeout = setTimeout(cancel, REQUIREMENTS_CHECK_TIMEOUT_MS);
+      let record: DirectoryBoardRecord | undefined;
+      try {
+        record = await pkc.getCommunity({ ...resolution.target, abortSignal: controller.signal });
+      } catch (error) {
+        if (!scope?.aborted) console.warn(`Failed to load '${address}' to check the directory requirements`, error);
+      } finally {
+        clearTimeout(timeout);
+        scope?.removeEventListener('abort', cancel);
+      }
+      if (scope?.aborted) {
+        setPendingVote(undefined);
+        return { status: 'cancelled' };
+      }
+      if (!record) {
+        setPendingVote(undefined);
+        return { status: 'board-unreachable' };
+      }
+      const unmet = getUnmetDirectoryBoardRequirements(requirements, record);
+      if (unmet.length > 0) {
+        setPendingVote(undefined);
+        return { status: 'board-ineligible', unmet };
+      }
+    }
     return publish(resolution.target, pending);
   };
 
-  return { votedCommunity, pendingVote, toggleVote, voteForAddress };
+  const voteForAddress = (address: string, pending: PendingDirectoryVote = { source: 'form' }) => resolveAndVote(address, pending);
+
+  const submitBoard = (address: string, requirements: DirectoryBoardRequirement[]) => resolveAndVote(address, { source: 'form' }, requirements);
+
+  return { votedCommunity, pendingVote, toggleVote, voteForAddress, submitBoard };
 };

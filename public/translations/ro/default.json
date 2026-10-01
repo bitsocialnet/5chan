@@ -511,5 +511,17 @@
   "thread_update_connection_error": "Eroare de conexiune",
   "thread_update_thread_archived": "Acest thread este arhivat",
   "thread_update_thread_deleted": "Acest thread a fost eliminat sau șters",
-  "fetch_new_replies_automatically": "Preia automat răspunsurile noi"
+  "fetch_new_replies_automatically": "Preia automat răspunsurile noi",
+  "directory_requirement_ids_per_thread": "ID-uri de autor per thread",
+  "directory_requirement_no_ids": "Fără ID-uri de autor",
+  "directory_requirement_pseudonymity_mode": "Mod de pseudonimitate {{mode}}",
+  "directory_requirement_sfw": "Marcat ca sigur pentru muncă",
+  "directory_requirement_nsfw": "Nemarcat ca sigur pentru muncă",
+  "directory_requirement_media_threads": "Linkurile firelor trebuie să fie fișiere media",
+  "directory_requirement_mod_queue": "Coadă de moderare pentru utilizatorii noi",
+  "directory_requirements_title": "Cerințe pentru a găzdui /{{boardIdentifier}}/:",
+  "directory_requirements_footnote": "Boardurile trebuie, de asemenea, să respecte <rulesLink>regulile /{{boardIdentifier}}/</rulesLink> și să rămână online. 5chan sare peste un board care este offline sau nu îndeplinește o cerință și trece la următorul eligibil.",
+  "directory_status_ineligible_reason": "Lipsește: {{requirements}}",
+  "directory_vote_board_ineligible": "{{address}} nu poate fi trimis încă la /{{boardIdentifier}}/. Lipsește: {{requirements}}.",
+  "directory_vote_board_unreachable": "Nu s-a putut încărca {{address}} pentru a-i verifica setările. Un board trebuie să fie online pentru a putea fi trimis."
 }

@@ -511,5 +511,17 @@
   "thread_update_connection_error": "连接错误",
   "thread_update_thread_archived": "此主题已归档",
   "thread_update_thread_deleted": "此主题已被清理或删除",
-  "fetch_new_replies_automatically": "自动获取新回复"
+  "fetch_new_replies_automatically": "自动获取新回复",
+  "directory_requirement_ids_per_thread": "按主题分配的发帖人ID",
+  "directory_requirement_no_ids": "无发帖人ID",
+  "directory_requirement_pseudonymity_mode": "假名模式 {{mode}}",
+  "directory_requirement_sfw": "标记为工作安全",
+  "directory_requirement_nsfw": "未标记为工作安全",
+  "directory_requirement_media_threads": "主题链接必须是媒体文件",
+  "directory_requirement_mod_queue": "新发帖者进入审核队列",
+  "directory_requirements_title": "托管 /{{boardIdentifier}}/ 的要求：",
+  "directory_requirements_footnote": "板块还必须遵守 <rulesLink>/{{boardIdentifier}}/ 规则</rulesLink>并保持在线。如果某个板块离线或未满足任一要求，5chan 会跳过它，改用下一个符合条件的板块。",
+  "directory_status_ineligible_reason": "缺少：{{requirements}}",
+  "directory_vote_board_ineligible": "{{address}} 暂时无法提交到 /{{boardIdentifier}}/。缺少：{{requirements}}。",
+  "directory_vote_board_unreachable": "无法加载 {{address}} 以检查其设置。板块必须在线才能提交。"
 }
