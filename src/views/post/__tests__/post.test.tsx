@@ -5,7 +5,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import PostPage from '../post';
 import { Post } from '../../../components/post';
-import useThreadLiveUpdatesStore from '../../../stores/use-thread-live-updates-store';
+import useThreadLiveUpdatesStore, { THREAD_REPLIES_SETTLE_MS } from '../../../stores/use-thread-live-updates-store';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
@@ -41,6 +41,7 @@ type TestComment = {
   communityAddress?: string;
   timestamp?: number;
   title?: string;
+  updatedAt?: number;
 };
 
 const testState = vi.hoisted(() => ({
@@ -238,6 +239,7 @@ vi.mock('../../../components/post-desktop/post-desktop', () => ({
         'data-pending-approval': post?.pendingApproval === undefined ? '' : String(post.pendingApproval),
         'data-reply-count': post?.replyCount === undefined ? '' : String(post.replyCount),
         'data-replies': replyPaginationOverride?.replies?.map((reply) => reply.cid).join(',') || '',
+        'data-reply-contents': replyPaginationOverride?.replies?.map((reply) => reply.content).join('|') || '',
         'data-roles-present': String(roles !== undefined),
         'data-transfer-enabled': String(typeof onTransfer === 'function'),
         'data-transferred': String(hasTransferredMarker(post)),
@@ -273,6 +275,7 @@ vi.mock('../../../components/post-mobile/post-mobile', () => ({
         'data-pending-approval': post?.pendingApproval === undefined ? '' : String(post.pendingApproval),
         'data-reply-count': post?.replyCount === undefined ? '' : String(post.replyCount),
         'data-replies': replyPaginationOverride?.replies?.map((reply) => reply.cid).join(',') || '',
+        'data-reply-contents': replyPaginationOverride?.replies?.map((reply) => reply.content).join('|') || '',
         'data-roles-present': String(roles !== undefined),
         'data-transfer-enabled': String(typeof onTransfer === 'function'),
         'data-transferred': String(hasTransferredMarker(post)),
@@ -1173,7 +1176,7 @@ describe('Post', () => {
     expect(container.querySelector('[data-testid="thread-footer-first-row"]')).toBeNull();
   });
 
-  it('uses frozen useComment subscriptions when thread auto updates are disabled', async () => {
+  it('keeps thread comments frozen even with Auto checked, so only updates change the thread', async () => {
     testState.commentsByCid = {
       'reply-cid': {
         cid: 'reply-cid',
@@ -1191,9 +1194,12 @@ describe('Post', () => {
         timestamp: 1,
       },
     };
-    useThreadLiveUpdatesStore.getState().setEnabled(false);
+    sessionStorage.setItem('5chan-thread-auto-update:root-cid', '1');
 
     await renderPostPage('/mu/thread/reply-cid');
+
+    expect(useThreadLiveUpdatesStore.getState()).toMatchObject({ enabled: true, threadCid: 'root-cid' });
+    sessionStorage.clear();
 
     expect(testState.useCommentCalls).toEqual(
       expect.arrayContaining([
@@ -1209,6 +1215,23 @@ describe('Post', () => {
         }),
       ]),
     );
+  });
+
+  it('shows the refreshed reply pages copy of a linked reply once it is newer than the reply loaded with the page', async () => {
+    const linkedReply = { cid: 'reply-cid', communityAddress: 'music-posting.eth', parentCid: 'root-cid', postCid: 'root-cid', timestamp: 2 };
+    testState.commentsByCid = {
+      'reply-cid': { ...linkedReply, content: 'original body', updatedAt: 100 },
+      'root-cid': { cid: 'root-cid', communityAddress: 'music-posting.eth', number: 31, postCid: 'root-cid', replyCount: 1, timestamp: 1, title: 'Root thread' },
+    };
+    testState.repliesByCommentCid = { 'root-cid': [{ ...linkedReply, content: 'original body', updatedAt: 90 }] };
+
+    await renderPostPage('/mu/thread/reply-cid');
+    const getReplyContents = () => container.querySelector('[data-testid="post-desktop"]')?.getAttribute('data-reply-contents');
+    expect(getReplyContents()).toBe('original body');
+
+    testState.repliesByCommentCid = { 'root-cid': [{ ...linkedReply, content: 'edited body', updatedAt: 200 }] };
+    await renderPostPage('/mu/thread/reply-cid');
+    expect(getReplyContents()).toBe('edited body');
   });
 
   it('evicts stale thread caches before refreshing a manual thread update', async () => {
@@ -1244,18 +1267,98 @@ describe('Post', () => {
     await renderPostPage('/mu/thread/reply-cid');
 
     await act(async () => {
-      useThreadLiveUpdatesStore.getState().requestUpdate();
+      useThreadLiveUpdatesStore.getState().forceUpdate();
     });
     await flushEffects();
 
     expect(testState.evictThreadRefreshCachesMock).toHaveBeenCalledWith([testState.commentsByCid['reply-cid'], testState.commentsByCid['root-cid']]);
-    expect(events[0]).toBe('evict-cache');
-    expect(refreshReply).toHaveBeenCalledTimes(1);
+    expect(events).toEqual(['evict-cache', 'refresh-post']);
+    // The linked reply comes from the post's reply pages, so only the post refreshes.
+    expect(refreshReply).not.toHaveBeenCalled();
     expect(refreshPost).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, THREAD_REPLIES_SETTLE_MS));
+    });
     expect(useThreadLiveUpdatesStore.getState()).toMatchObject({
       isUpdating: false,
-      repliesResetRequestId: 1,
-      updateRequestId: 1,
+      status: { type: 'no-new-posts' },
     });
+  });
+
+  it('refreshes automatic updates without evicting the thread caches', async () => {
+    const refreshPost = vi.fn(async () => undefined);
+    testState.commentsByCid = {
+      'root-cid': { cid: 'root-cid', communityAddress: 'music-posting.eth', number: 31, postCid: 'root-cid', refresh: refreshPost, replyCount: 0 },
+    };
+    sessionStorage.setItem('5chan-thread-auto-update:root-cid', '1');
+
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    try {
+      await renderPostPage('/mu/thread/root-cid');
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(10_000);
+      });
+
+      expect(refreshPost).toHaveBeenCalledTimes(1);
+      expect(testState.evictThreadRefreshCachesMock).not.toHaveBeenCalled();
+    } finally {
+      vi.useRealTimers();
+      sessionStorage.clear();
+    }
+  });
+
+  it('reports a failed thread refresh as a connection error', async () => {
+    testState.commentsByCid = {
+      'root-cid': {
+        cid: 'root-cid',
+        communityAddress: 'music-posting.eth',
+        number: 31,
+        postCid: 'root-cid',
+        refresh: vi.fn(async () => {
+          throw new Error('offline');
+        }),
+        replyCount: 0,
+        title: 'Root thread',
+      },
+    };
+
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+
+    await renderPostPage('/mu/thread/root-cid');
+    await act(async () => {
+      useThreadLiveUpdatesStore.getState().forceUpdate();
+    });
+    await flushEffects();
+
+    expect(useThreadLiveUpdatesStore.getState().status).toEqual({ type: 'error', reason: 'connection' });
+    expect(consoleErrorSpy).toHaveBeenCalledWith('Failed to refresh thread comments:', expect.any(Error));
+    consoleErrorSpy.mockRestore();
+  });
+
+  it('prefixes the tab title with the unread reply count', async () => {
+    testState.commentsByCid = {
+      'root-cid': {
+        cid: 'root-cid',
+        communityAddress: 'music-posting.eth',
+        number: 31,
+        postCid: 'root-cid',
+        replyCount: 0,
+        title: 'Root thread',
+      },
+    };
+
+    await renderPostPage('/mu/thread/root-cid');
+    const title = document.title;
+
+    await act(async () => {
+      useThreadLiveUpdatesStore.setState({ unreadCount: 3 });
+    });
+    expect(document.title).toBe(`(3) ${title}`);
+
+    await act(async () => {
+      useThreadLiveUpdatesStore.setState({ unreadCount: 0 });
+    });
+    expect(document.title).toBe(title);
   });
 });

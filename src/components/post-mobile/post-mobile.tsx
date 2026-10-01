@@ -43,7 +43,7 @@ import useReplyModalStore from '../../stores/use-reply-modal-store';
 import { getPageDraftKey } from '../../lib/utils/location-draft-utils';
 import { selectPostMenuProps } from '../../lib/utils/post-menu-props';
 import useFeedResetStore from '../../stores/use-feed-reset-store';
-import useThreadLiveUpdatesStore from '../../stores/use-thread-live-updates-store';
+import useThreadNewReplies from '../../hooks/use-thread-new-replies';
 import useRegisterFreshReplies from '../../hooks/use-register-fresh-replies';
 import useQuotedByMap from '../../hooks/use-quoted-by-map';
 import usePendingCommentModerationActions from '../../hooks/use-pending-comment-moderation-actions';
@@ -637,8 +637,6 @@ const PostMobile = ({
   );
   const reset = (repliesResult as { reset?: () => Promise<void> }).reset;
   const setResetFunction = useFeedResetStore((s) => s.setResetFunction);
-  const repliesResetRequestId = useThreadLiveUpdatesStore((state) => state.repliesResetRequestId);
-  const lastHandledRepliesResetRequestIdRef = useRef(repliesResetRequestId);
   useEffect(() => {
     if ((isInPostView || isInPendingPostView) && reset) {
       setResetFunction(() => {
@@ -646,11 +644,6 @@ const PostMobile = ({
       });
     }
   }, [isInPostView, isInPendingPostView, reset, setResetFunction]);
-  useEffect(() => {
-    if (!reset || repliesResetRequestId === 0 || repliesResetRequestId === lastHandledRepliesResetRequestIdRef.current) return;
-    lastHandledRepliesResetRequestIdRef.current = repliesResetRequestId;
-    void reset();
-  }, [repliesResetRequestId, reset]);
 
   const isInPostPageView = isPostPageView(location.pathname, params);
   const { hidden, unhide } = useHide({ cid });
@@ -695,6 +688,12 @@ const PostMobile = ({
   }, [filteredReplies]);
 
   const quotedByMap = useQuotedByMap(filteredReplies, communityAddress);
+  const unreadMarkerCid = useThreadNewReplies({
+    enabled: isInPostPageView && !!showAllReplies,
+    hasMore: !!hasMore,
+    post: resolvedPost,
+    replies: filteredReplies,
+  });
   const {
     defaultItemHeight: defaultReplyItemHeight,
     heightEstimates: replyHeightEstimates,
@@ -929,7 +928,7 @@ const PostMobile = ({
 
                   return (
                     <div
-                      className={styles.replyContainer}
+                      className={`${styles.replyContainer} ${reply.cid === unreadMarkerCid ? styles.newPostsMarker : ''}`}
                       data-pretext-height={replyHeightEstimates?.[index]}
                       data-pretext-reply-backlink-count={backlinkCount}
                       data-pretext-reply-content-length={import.meta.env.DEV ? reply.content?.length || 0 : undefined}
@@ -965,7 +964,7 @@ const PostMobile = ({
               showReplies &&
               !hasMore &&
               visibleReplies.map((reply) => (
-                <div key={reply.cid} className={styles.replyContainer}>
+                <div key={reply.cid} className={`${styles.replyContainer} ${reply.cid === unreadMarkerCid ? styles.newPostsMarker : ''}`}>
                   <Reply
                     postReplyCount={replyCount}
                     reply={reply}

@@ -6,6 +6,7 @@ import useThemeStore from '../stores/use-theme-store';
 import { useDirectories } from './use-directories';
 import { useResolvedCommunityAddress } from './use-resolved-community-address';
 import useSpecialThemeStore from '../stores/use-special-theme-store';
+import useThreadLiveUpdatesStore from '../stores/use-thread-live-updates-store';
 import { getActiveSpecialTheme, getSpecialThemeClass } from '../lib/utils/time-utils';
 import { getSpecialBoardByAddress } from '../lib/special-boards';
 import { isSfwBoard, updateFavicon } from '../lib/update-favicon';
@@ -111,11 +112,12 @@ const useTheme = ({ applyDocumentEffects = false }: UseThemeOptions = {}): [stri
     updateThemeClass(currentTheme);
   }, [applyDocumentEffects, currentTheme]);
 
+  const threadFaviconAlert = useThreadLiveUpdatesStore((state) => state.faviconAlert);
   useEffect(() => {
     if (!applyDocumentEffects) return;
     const faviconVariant = isInNotFoundView ? 'not-found' : sfw ? 'sfw' : 'default';
-    updateFavicon(faviconVariant);
-  }, [applyDocumentEffects, isInNotFoundView, sfw]);
+    updateFavicon(faviconVariant, threadFaviconAlert);
+  }, [applyDocumentEffects, isInNotFoundView, sfw, threadFaviconAlert]);
 
   const setCommunityTheme = useCallback(
     async (newTheme: string) => {

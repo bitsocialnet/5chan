@@ -503,5 +503,13 @@
   "directory_vote_needs_test_pass": "ไม่ได้ส่งโหวตของคุณ: ที่อยู่สำหรับโหวตของบัญชีนี้ <address>{{address}}</address> ไม่มี 5chan Pass ขณะนี้การโหวตยังอยู่บน testnet คุณจึงรับ Pass ทดสอบฟรีสำหรับที่อยู่นี้ได้จาก <faucetLink>faucet</faucetLink>",
   "directory_vote_board_not_found": "ไม่พบบอร์ดที่ {{address}} ป้อนที่อยู่ .bso หรือคีย์สาธารณะของบอร์ด",
   "directory_vote_failed": "ส่งโหวตของคุณไม่สำเร็จ: {{error}}",
-  "user_banned_from_board": "ผู้ใช้ถูกแบนจาก {{board}}"
+  "user_banned_from_board": "ผู้ใช้ถูกแบนจาก {{board}}",
+  "thread_update_updating": "กำลังอัปเดต...",
+  "thread_update_no_new_posts": "ไม่มีโพสต์ใหม่",
+  "thread_update_new_post": "1 โพสต์ใหม่",
+  "thread_update_new_posts": "{{count}} โพสต์ใหม่",
+  "thread_update_connection_error": "ข้อผิดพลาดในการเชื่อมต่อ",
+  "thread_update_thread_archived": "เธรดนี้ถูกเก็บถาวรแล้ว",
+  "thread_update_thread_deleted": "เธรดนี้ถูกตัดออกหรือถูกลบแล้ว",
+  "fetch_new_replies_automatically": "ดึงคำตอบใหม่โดยอัตโนมัติ"
 }

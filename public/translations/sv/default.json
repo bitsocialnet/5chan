@@ -503,5 +503,13 @@
   "directory_vote_needs_test_pass": "Din röst skickades inte: det här kontots röstadress <address>{{address}}</address> har inget 5chan Pass. Röstningen körs på testnet tills vidare, så du kan hämta ett gratis test-Pass för den här adressen från <faucetLink>faucet</faucetLink>.",
   "directory_vote_board_not_found": "Inget board hittades på {{address}}. Ange en .bso-adress eller ett boards publika nyckel.",
   "directory_vote_failed": "Din röst kunde inte skickas: {{error}}",
-  "user_banned_from_board": "Användaren blev bannad från {{board}}"
+  "user_banned_from_board": "Användaren blev bannad från {{board}}",
+  "thread_update_updating": "Uppdaterar...",
+  "thread_update_no_new_posts": "Inga nya inlägg",
+  "thread_update_new_post": "1 nytt inlägg",
+  "thread_update_new_posts": "{{count}} nya inlägg",
+  "thread_update_connection_error": "Anslutningsfel",
+  "thread_update_thread_archived": "Denna tråd är arkiverad",
+  "thread_update_thread_deleted": "Denna tråd har rensats bort eller raderats",
+  "fetch_new_replies_automatically": "Hämta nya svar automatiskt"
 }

@@ -503,5 +503,13 @@
   "directory_vote_needs_test_pass": "Je stem is niet verzonden: het stemadres van dit account <address>{{address}}</address> heeft geen 5chan Pass. Stemmen gebeurt voorlopig op testnet, dus je kunt voor dit adres een gratis test-Pass halen bij de <faucetLink>faucet</faucetLink>.",
   "directory_vote_board_not_found": "Geen board gevonden op {{address}}. Voer een .bso-adres of de publieke sleutel van een board in.",
   "directory_vote_failed": "Je stem kon niet worden verzonden: {{error}}",
-  "user_banned_from_board": "Gebruiker is verbannen van {{board}}"
+  "user_banned_from_board": "Gebruiker is verbannen van {{board}}",
+  "thread_update_updating": "Bijwerken...",
+  "thread_update_no_new_posts": "Geen nieuwe berichten",
+  "thread_update_new_post": "1 nieuw bericht",
+  "thread_update_new_posts": "{{count}} nieuwe berichten",
+  "thread_update_connection_error": "Verbindingsfout",
+  "thread_update_thread_archived": "Deze thread is gearchiveerd",
+  "thread_update_thread_deleted": "Deze thread is opgeschoond of verwijderd",
+  "fetch_new_replies_automatically": "Nieuwe reacties automatisch ophalen"
 }

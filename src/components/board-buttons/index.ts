@@ -11,6 +11,7 @@ export {
   PostPageStats,
   RefreshButton,
   ReturnButton,
+  ThreadUpdateStatus,
   TopButton,
   UpdateButton,
 } from './board-buttons';

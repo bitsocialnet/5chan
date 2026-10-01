@@ -503,5 +503,13 @@
   "directory_vote_needs_test_pass": "Oyunuz gönderilmedi: bu hesabın oylama adresi <address>{{address}}</address> bir 5chan Pass tutmuyor. Oylama şimdilik testnet üzerinde, bu yüzden bu adres için <faucetLink>faucet</faucetLink> üzerinden ücretsiz bir test Pass alabilirsiniz.",
   "directory_vote_board_not_found": "{{address}} adresinde pano bulunamadı. Bir .bso adresi veya bir panonun açık anahtarını girin.",
   "directory_vote_failed": "Oyunuz gönderilemedi: {{error}}",
-  "user_banned_from_board": "Kullanıcı {{board}} panosundan yasaklandı"
+  "user_banned_from_board": "Kullanıcı {{board}} panosundan yasaklandı",
+  "thread_update_updating": "Güncelleniyor...",
+  "thread_update_no_new_posts": "Yeni gönderi yok",
+  "thread_update_new_post": "1 yeni gönderi",
+  "thread_update_new_posts": "{{count}} yeni gönderi",
+  "thread_update_connection_error": "Bağlantı hatası",
+  "thread_update_thread_archived": "Bu konu arşivlendi",
+  "thread_update_thread_deleted": "Bu konu kaldırıldı veya silindi",
+  "fetch_new_replies_automatically": "Yeni yanıtları otomatik olarak getir"
 }

@@ -17,6 +17,20 @@
   padding-bottom: 20px;
 }
 
+/* The thread status line below Update and Auto takes the place of the row's bottom padding. */
+.mobileBoardButtons .threadSecondRow {
+  padding-bottom: 0;
+}
+
+.mobileThreadUpdateStatus {
+  height: 20px;
+  line-height: 20px;
+}
+
+.threadUpdateError {
+  color: red;
+}
+
 .mobileBoardButtons {
   margin-top: -3px;
 }

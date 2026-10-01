@@ -503,5 +503,13 @@
   "directory_vote_needs_test_pass": "Ваш голос не отправлен: на адресе для голосования этого аккаунта <address>{{address}}</address> нет 5chan Pass. Пока голосование идёт в testnet, поэтому вы можете бесплатно получить тестовый Pass для этого адреса через <faucetLink>кран</faucetLink>.",
   "directory_vote_board_not_found": "По адресу {{address}} доска не найдена. Введите адрес .bso или публичный ключ доски.",
   "directory_vote_failed": "Не удалось отправить ваш голос: {{error}}",
-  "user_banned_from_board": "Пользователь был заблокирован на {{board}}"
+  "user_banned_from_board": "Пользователь был заблокирован на {{board}}",
+  "thread_update_updating": "Обновление...",
+  "thread_update_no_new_posts": "Нет новых сообщений",
+  "thread_update_new_post": "1 новое сообщение",
+  "thread_update_new_posts": "Новых сообщений: {{count}}",
+  "thread_update_connection_error": "Ошибка соединения",
+  "thread_update_thread_archived": "Эта тема в архиве",
+  "thread_update_thread_deleted": "Эта тема была вытеснена или удалена",
+  "fetch_new_replies_automatically": "Автоматически загружать новые ответы"
 }

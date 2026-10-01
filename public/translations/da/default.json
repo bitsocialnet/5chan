@@ -503,5 +503,13 @@
   "directory_vote_needs_test_pass": "Din stemme blev ikke sendt: denne kontos stemmeadresse <address>{{address}}</address> har ikke et 5chan Pass. Afstemningen kører på testnet indtil videre, så du kan få et gratis test-Pass til denne adresse fra <faucetLink>faucet</faucetLink>.",
   "directory_vote_board_not_found": "Intet board fundet på {{address}}. Indtast en .bso-adresse eller et boards offentlige nøgle.",
   "directory_vote_failed": "Din stemme kunne ikke sendes: {{error}}",
-  "user_banned_from_board": "Brugeren blev udelukket fra {{board}}"
+  "user_banned_from_board": "Brugeren blev udelukket fra {{board}}",
+  "thread_update_updating": "Opdaterer...",
+  "thread_update_no_new_posts": "Ingen nye indlæg",
+  "thread_update_new_post": "1 nyt indlæg",
+  "thread_update_new_posts": "{{count}} nye indlæg",
+  "thread_update_connection_error": "Forbindelsesfejl",
+  "thread_update_thread_archived": "Denne tråd er arkiveret",
+  "thread_update_thread_deleted": "Denne tråd er blevet fjernet eller slettet",
+  "fetch_new_replies_automatically": "Hent nye svar automatisk"
 }

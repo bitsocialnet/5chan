@@ -3,6 +3,7 @@ import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import useTheme from '../use-theme';
+import useThreadLiveUpdatesStore from '../../stores/use-thread-live-updates-store';
 import { TRASH_BOARD_ADDRESS, TRASH_BOARD_CODE } from '../../lib/special-boards';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -166,12 +167,27 @@ describe('useTheme', () => {
     testState.locationPathname = '/not-found';
     await renderHook();
 
-    expect(testState.updateFaviconMock).toHaveBeenLastCalledWith('not-found');
+    expect(testState.updateFaviconMock).toHaveBeenLastCalledWith('not-found', undefined);
 
     testState.locationPathname = '/mod';
     await renderHook();
 
-    expect(testState.updateFaviconMock).toHaveBeenLastCalledWith('default');
+    expect(testState.updateFaviconMock).toHaveBeenLastCalledWith('default', undefined);
+  });
+
+  it('adds the thread updater alert to the board favicon', async () => {
+    await renderHook();
+    expect(testState.updateFaviconMock).toHaveBeenLastCalledWith('default', undefined);
+
+    await act(async () => {
+      useThreadLiveUpdatesStore.setState({ faviconAlert: 'new-replies' });
+    });
+    expect(testState.updateFaviconMock).toHaveBeenLastCalledWith('default', 'new-replies');
+
+    await act(async () => {
+      useThreadLiveUpdatesStore.getState().resetState();
+    });
+    expect(testState.updateFaviconMock).toHaveBeenLastCalledWith('default', undefined);
   });
 
   it('shares the multiboard theme bucket on the archive search', async () => {

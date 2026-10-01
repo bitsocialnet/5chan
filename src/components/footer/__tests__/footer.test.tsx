@@ -13,6 +13,7 @@ import {
   ThreadFooterMobile,
   ThreadFooterStyleRow,
 } from '../footer';
+import useThreadLiveUpdatesStore from '../../../stores/use-thread-live-updates-store';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
@@ -84,6 +85,7 @@ vi.mock('../../board-buttons/board-buttons', () => ({
     isInModView?: boolean;
     isInSubscriptionsView?: boolean;
   }) => createElement('button', { 'data-testid': 'return-button', type: 'button' }, `${address}|${isInAllView}|${isInSubscriptionsView}|${isInModView}`),
+  ThreadUpdateStatus: ({ isMobile }: { isMobile?: boolean }) => createElement('span', { 'data-testid': 'thread-update-status' }, isMobile ? 'mobile-status' : 'status'),
   TopButton: () => createElement('button', { type: 'button' }, 'top-button'),
   UpdateButton: () => createElement('button', { type: 'button' }, 'update-button'),
 }));
@@ -140,6 +142,7 @@ describe('footer', () => {
   afterEach(() => {
     act(() => root.unmount());
     container.remove();
+    useThreadLiveUpdatesStore.getState().resetState();
   });
 
   it('renders the desktop footer shell with optional style row, boards bar, and legal metadata', async () => {
@@ -198,6 +201,7 @@ describe('footer', () => {
 
     expect(testState.openReplyModalEmptyMock).toHaveBeenCalledWith('/all/thread/post-cid', 'post-cid', 42, 'music-posting.eth');
     expect(container.querySelector('[data-testid="post-page-stats"]')?.textContent).toBe('post-page-stats');
+    expect(container.querySelector('[data-testid="thread-update-status"]')?.textContent).toBe('status');
 
     testState.openReplyModalEmptyMock.mockReset();
     await renderWithRouter(
@@ -230,6 +234,7 @@ describe('footer', () => {
     );
 
     expect(container.textContent).toContain('Replies: 7 / Images: 2 / pagination.pageLabel: 4');
+    expect(container.querySelector('[data-testid="thread-update-status"]')?.textContent).toBe('mobile-status');
     expect(testState.useCommentCalls).toEqual([
       {
         commentCid: 'post-cid',
@@ -271,5 +276,26 @@ describe('footer', () => {
       button?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
     expect(testState.openReplyModalEmptyMock).not.toHaveBeenCalled();
+  });
+
+  it('hides Update and Auto in both thread footers once the thread is archived or deleted', async () => {
+    const threadFooters = createElement(
+      React.Fragment,
+      {},
+      createElement(ThreadFooterFirstRow, { postCid: 'post-cid', communityAddress: 'music-posting.eth', threadNumber: 42 }),
+      createElement(ThreadFooterMobile, { postCid: 'post-cid', communityAddress: 'music-posting.eth', threadNumber: 42 }),
+    );
+    useThreadLiveUpdatesStore.getState().openThread('post-cid');
+
+    await renderWithRouter(threadFooters);
+    expect(container.textContent?.match(/update-button/g)).toHaveLength(2);
+    expect(container.textContent?.match(/auto-button/g)).toHaveLength(2);
+
+    await act(async () => {
+      useThreadLiveUpdatesStore.getState().markThreadDead('deleted', true);
+    });
+    expect(container.textContent).not.toContain('update-button');
+    expect(container.textContent).not.toContain('auto-button');
+    expect(container.querySelectorAll('[data-testid="thread-update-status"]')).toHaveLength(2);
   });
 });

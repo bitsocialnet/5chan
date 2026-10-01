@@ -1,127 +1,150 @@
-import { useEffect, useRef, useState } from 'react';
-import { createInstance } from 'i18next';
-import { I18nextProvider, initReactI18next } from 'react-i18next';
-import { AutoButton, UpdateButton } from '../components/board-buttons';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import type { Comment } from '@bitsocial/bitsocial-react-hooks';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { AutoButton, ThreadUpdateStatus, UpdateButton } from '../components/board-buttons';
+import { QuotePreviewPostProvider } from '../components/post';
+import PostDesktop from '../components/post-desktop';
+import PostMobile from '../components/post-mobile';
+import useIsMobile from '../hooks/use-is-mobile';
+import useThreadUpdater from '../hooks/use-thread-updater';
+import { updateFavicon } from '../lib/update-favicon';
 import useThreadLiveUpdatesStore from '../stores/use-thread-live-updates-store';
 
-type ReplySnapshot = {
-  cid: string;
-  content: string;
+// Renders the real thread controls, updater, and reply list against a scripted server so the
+// browser check can add replies, fail refreshes, and fast-forward the Auto countdown.
+
+const THREAD_CID = 'thread-root';
+const BOARD_ADDRESS = 'music-posting.eth';
+const INITIAL_REPLY_COUNT = 30;
+const REFRESH_DELAY_MS = 300;
+const NOOP = async () => {};
+
+type ThreadAutoUpdateHarnessApi = {
+  addReplies: (count: number) => void;
+  setRefreshFails: (fails: boolean) => void;
+  getRefreshCount: () => number;
 };
 
-type ThreadSnapshot = {
-  postLabel: string;
-  replies: ReplySnapshot[];
-  version: number;
-};
+declare global {
+  interface Window {
+    __THREAD_AUTO_UPDATE_E2E__?: ThreadAutoUpdateHarnessApi;
+  }
+}
 
-const i18n = createInstance();
-void i18n.use(initReactI18next).init({
-  fallbackLng: 'en',
-  initAsync: false,
-  lng: 'en',
-  resources: {
-    en: {
-      translation: {
-        Auto: 'Auto',
-        update: 'update',
-      },
-    },
-  },
-});
+const buildReply = (index: number): Comment =>
+  ({
+    author: { address: `0x${index.toString(16).padStart(4, '0')}`, shortAddress: index.toString(16).padStart(4, '0') },
+    cid: `reply-${index}`,
+    communityAddress: BOARD_ADDRESS,
+    content: `Reply ${index} to the scripted thread.`,
+    number: index + 1,
+    parentCid: THREAD_CID,
+    postCid: THREAD_CID,
+    state: 'succeeded',
+    timestamp: 1700000000 + index * 60,
+    updatedAt: 1700000000 + index * 60,
+  }) as Comment;
 
-const buildSnapshot = (version: number): ThreadSnapshot => ({
-  postLabel: `OP version ${version}`,
-  replies: Array.from({ length: version }, (_, index) => ({
-    cid: `reply-${index + 1}`,
-    content: index === 0 ? `reply 1 edited v${version}` : `reply ${index + 1} added in v${index + 1}`,
-  })),
-  version,
-});
+const buildReplies = (count: number) => Array.from({ length: count }, (_, index) => buildReply(index + 1));
+
+const buildPost = (replyCount: number, updatedAt: number): Comment =>
+  ({
+    author: { address: '0xop', shortAddress: '0xop' },
+    cid: THREAD_CID,
+    communityAddress: BOARD_ADDRESS,
+    content: 'Scripted thread for the Auto and Update controls.',
+    number: 1,
+    postCid: THREAD_CID,
+    replyCount,
+    state: 'succeeded',
+    timestamp: 1699999000,
+    title: 'Thread Auto Update E2E',
+    updatedAt,
+  }) as Comment;
 
 const Harness = () => {
-  const enabled = useThreadLiveUpdatesStore((state) => state.enabled);
-  const isUpdating = useThreadLiveUpdatesStore((state) => state.isUpdating);
-  const updateRequestId = useThreadLiveUpdatesStore((state) => state.updateRequestId);
-  const repliesResetRequestId = useThreadLiveUpdatesStore((state) => state.repliesResetRequestId);
-  const startUpdate = useThreadLiveUpdatesStore((state) => state.startUpdate);
-  const finishUpdate = useThreadLiveUpdatesStore((state) => state.finishUpdate);
-  const resetState = useThreadLiveUpdatesStore((state) => state.resetState);
-  const initialSnapshot = buildSnapshot(1);
-  const [serverSnapshot, setServerSnapshot] = useState(initialSnapshot);
-  const [visiblePostLabel, setVisiblePostLabel] = useState(initialSnapshot.postLabel);
-  const [visibleReplies, setVisibleReplies] = useState(initialSnapshot.replies);
-  const lastProcessedUpdateRequestIdRef = useRef(0);
-  const lastHandledRepliesResetIdRef = useRef(0);
-  const pendingRepliesRef = useRef<ReplySnapshot[] | null>(null);
+  const isMobile = useIsMobile();
+  const serverRepliesRef = useRef(buildReplies(INITIAL_REPLY_COUNT));
+  const refreshFailsRef = useRef(false);
+  const refreshCountRef = useRef(0);
+  const [replies, setReplies] = useState(serverRepliesRef.current);
+  const [postVersion, setPostVersion] = useState(1);
+  const post = useMemo(() => buildPost(replies.length, postVersion), [postVersion, replies.length]);
+  const unreadCount = useThreadLiveUpdatesStore((state) => state.unreadCount);
+  const faviconAlert = useThreadLiveUpdatesStore((state) => state.faviconAlert);
+
+  const refreshThread = useMemo(
+    () => async () => {
+      refreshCountRef.current += 1;
+      await new Promise((resolve) => setTimeout(resolve, REFRESH_DELAY_MS));
+      if (refreshFailsRef.current) return false;
+      setReplies(serverRepliesRef.current);
+      setPostVersion((version) => version + 1);
+      return true;
+    },
+    [],
+  );
+
+  useThreadUpdater({ post, refreshThread });
 
   useEffect(() => {
-    resetState();
-    return () => {
-      resetState();
+    document.body.classList.add('yotsuba');
+    window.__THREAD_AUTO_UPDATE_E2E__ = {
+      addReplies: (count) => {
+        const start = serverRepliesRef.current.length + 1;
+        serverRepliesRef.current = [...serverRepliesRef.current, ...Array.from({ length: count }, (_, index) => buildReply(start + index))];
+      },
+      setRefreshFails: (fails) => {
+        refreshFailsRef.current = fails;
+      },
+      getRefreshCount: () => refreshCountRef.current,
     };
-  }, [resetState]);
-
-  useEffect(() => {
-    if (!enabled) return;
-    setVisiblePostLabel(serverSnapshot.postLabel);
-    setVisibleReplies(serverSnapshot.replies);
-  }, [enabled, serverSnapshot]);
-
-  useEffect(() => {
-    if (updateRequestId === 0 || updateRequestId === lastProcessedUpdateRequestIdRef.current) return;
-
-    lastProcessedUpdateRequestIdRef.current = updateRequestId;
-    const snapshotToApply = serverSnapshot;
-    startUpdate();
-    pendingRepliesRef.current = snapshotToApply.replies;
-
-    const timeoutId = window.setTimeout(() => {
-      setVisiblePostLabel(snapshotToApply.postLabel);
-      finishUpdate(updateRequestId, true);
-    }, 20);
-
     return () => {
-      window.clearTimeout(timeoutId);
+      delete window.__THREAD_AUTO_UPDATE_E2E__;
     };
-  }, [finishUpdate, serverSnapshot, startUpdate, updateRequestId]);
+  }, []);
 
   useEffect(() => {
-    if (repliesResetRequestId === 0 || repliesResetRequestId === lastHandledRepliesResetIdRef.current || !pendingRepliesRef.current) return;
-    lastHandledRepliesResetIdRef.current = repliesResetRequestId;
-    setVisibleReplies(pendingRepliesRef.current);
-    pendingRepliesRef.current = null;
-  }, [repliesResetRequestId]);
+    document.title = `${unreadCount > 0 ? `(${unreadCount}) ` : ''}Thread Auto Update E2E`;
+  }, [unreadCount]);
+
+  useEffect(() => {
+    updateFavicon('default', faviconAlert);
+  }, [faviconAlert]);
+
+  const replyPaginationOverride = useMemo(() => ({ hasMore: false, loadMore: NOOP, replies }), [replies]);
+  const ThreadPost = isMobile ? PostMobile : PostDesktop;
 
   return (
-    <main style={{ fontFamily: 'sans-serif', lineHeight: 1.5, margin: '40px auto', maxWidth: 720, padding: '0 20px' }}>
+    <main>
       <h1>Thread Auto Update E2E</h1>
-      <p>Use the real thread buttons below, then simulate incoming server updates.</p>
-      <div style={{ alignItems: 'center', display: 'flex', gap: 16, marginBottom: 20 }}>
-        <UpdateButton />
-        <AutoButton />
-        <button className='button' data-testid='simulate-server-update' onClick={() => setServerSnapshot((current) => buildSnapshot(current.version + 1))}>
-          Simulate server update
-        </button>
+      <div data-testid='thread-controls'>
+        {isMobile ? (
+          <>
+            <UpdateButton /> <AutoButton />
+            <ThreadUpdateStatus isMobile={true} />
+          </>
+        ) : (
+          <>
+            [<UpdateButton />] [<AutoButton />] <ThreadUpdateStatus />
+          </>
+        )}
       </div>
-      <div data-testid='updating-state'>{isUpdating ? 'updating' : 'idle'}</div>
-      <div data-testid='server-version'>Server version {serverSnapshot.version}</div>
-      <div data-testid='visible-post-label'>{visiblePostLabel}</div>
-      <div data-testid='visible-replies-count'>{visibleReplies.length}</div>
-      <div data-testid='visible-first-reply'>{visibleReplies[0]?.content ?? 'no replies'}</div>
-      <ul data-testid='visible-replies-list'>
-        {visibleReplies.map((reply) => (
-          <li key={reply.cid}>{reply.content}</li>
-        ))}
-      </ul>
+      <div data-testid='visible-replies-count'>{replies.length}</div>
+      <MemoryRouter initialEntries={[`/mu/thread/${THREAD_CID}`]}>
+        <Routes>
+          <Route
+            path='/:boardIdentifier/thread/:commentCid'
+            element={
+              <QuotePreviewPostProvider>
+                <ThreadPost post={post} replyPaginationOverride={replyPaginationOverride} roles={{} as never} showAllReplies={true} showReplies={true} />
+              </QuotePreviewPostProvider>
+            }
+          />
+        </Routes>
+      </MemoryRouter>
     </main>
   );
 };
 
-const ThreadAutoUpdateHarness = () => (
-  <I18nextProvider i18n={i18n}>
-    <Harness />
-  </I18nextProvider>
-);
-
-export default ThreadAutoUpdateHarness;
+export default Harness;

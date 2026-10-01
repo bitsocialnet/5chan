@@ -503,5 +503,13 @@
   "directory_vote_needs_test_pass": "Seu voto não foi enviado: o endereço de votação desta conta <address>{{address}}</address> não possui um 5chan Pass. Por enquanto a votação está na testnet, então você pode obter um Pass de teste gratuito para este endereço no <faucetLink>faucet</faucetLink>.",
   "directory_vote_board_not_found": "Nenhum board encontrado em {{address}}. Digite um endereço .bso ou a chave pública de um board.",
   "directory_vote_failed": "Não foi possível enviar seu voto: {{error}}",
-  "user_banned_from_board": "O usuário foi banido de {{board}}"
+  "user_banned_from_board": "O usuário foi banido de {{board}}",
+  "thread_update_updating": "Atualizando...",
+  "thread_update_no_new_posts": "Nenhum post novo",
+  "thread_update_new_post": "1 novo post",
+  "thread_update_new_posts": "{{count}} novos posts",
+  "thread_update_connection_error": "Erro de conexão",
+  "thread_update_thread_archived": "Este tópico está arquivado",
+  "thread_update_thread_deleted": "Este tópico foi removido ou excluído",
+  "fetch_new_replies_automatically": "Buscar novas respostas automaticamente"
 }

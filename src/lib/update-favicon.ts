@@ -7,6 +7,8 @@ const FAVICON_RELS = ['icon', 'shortcut icon'] as const;
 const FAVICON_SELECTOR = ['link[data-fivechan-tab-favicon="true"]', ...FAVICON_RELS.map((rel) => `link[rel="${rel}"][sizes="16x16"]`)].join(', ');
 
 export type FaviconVariant = 'default' | 'sfw' | 'not-found';
+/** Thread updater alerts, drawn like 4chan's: a white "!" for new posts, a red "!" for replies to you. */
+export type FaviconAlert = 'new-posts' | 'new-replies' | 'dead';
 
 const FAVICONS: Record<FaviconVariant, { href: string; type: string }> = {
   default: { href: DEFAULT_FAVICON, type: 'image/png' },
@@ -14,12 +16,24 @@ const FAVICONS: Record<FaviconVariant, { href: string; type: string }> = {
   'not-found': { href: NOT_FOUND_FAVICON, type: 'image/x-icon' },
 };
 
+const ALERT_FAVICON_FILES: Record<FaviconAlert, string> = {
+  'new-posts': 'newposts',
+  'new-replies': 'newreplies',
+  dead: 'deadthread',
+};
+
+const getFavicon = (variant: FaviconVariant, alert: FaviconAlert | undefined) => {
+  if (!alert || variant === 'not-found') return FAVICONS[variant];
+  const baseName = variant === 'sfw' ? 'favicon2' : 'favicon';
+  return { href: `/${baseName}-${ALERT_FAVICON_FILES[alert]}.ico?variant=${variant}-${alert}`, type: 'image/png' };
+};
+
 let currentHref: string | null = null;
 
 const hasExpectedFaviconLinks = (href: string): boolean =>
   FAVICON_RELS.every((rel) => document.querySelector(`link[rel="${rel}"][href="${href}"][data-fivechan-tab-favicon="true"]`));
 
-const createFaviconLink = (rel: (typeof FAVICON_RELS)[number], favicon: (typeof FAVICONS)[FaviconVariant]): HTMLLinkElement => {
+const createFaviconLink = (rel: (typeof FAVICON_RELS)[number], favicon: { href: string; type: string }): HTMLLinkElement => {
   const link = document.createElement('link');
   link.rel = rel;
   link.type = favicon.type;
@@ -30,11 +44,11 @@ const createFaviconLink = (rel: (typeof FAVICON_RELS)[number], favicon: (typeof 
 };
 
 /**
- * Swap the tab favicon between the default (NSFW/home), SFW, and 404 variants.
- * Uses remove-and-recreate plus cache-busted URLs to bypass sticky favicon caching.
+ * Swap the tab favicon between the default (NSFW/home), SFW, and 404 variants, optionally with a
+ * thread updater alert. Uses remove-and-recreate plus cache-busted URLs to bypass sticky favicon caching.
  */
-export const updateFavicon = (variant: FaviconVariant): void => {
-  const favicon = FAVICONS[variant];
+export const updateFavicon = (variant: FaviconVariant, alert?: FaviconAlert): void => {
+  const favicon = getFavicon(variant, alert);
   const { href } = favicon;
   if (href === currentHref && hasExpectedFaviconLinks(href)) return;
   currentHref = href;

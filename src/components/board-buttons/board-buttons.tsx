@@ -1,3 +1,4 @@
+import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useAccount, useAccountComment, useComment, useSubscribe } from '@bitsocial/bitsocial-react-hooks';
@@ -19,7 +20,7 @@ import useSortingStore from '../../stores/use-sorting-store';
 import useAllFeedFilterStore from '../../stores/use-all-feed-filter-store';
 import useModQueueStore from '../../stores/use-mod-queue-store';
 import useFeedViewSettingsStore from '../../stores/use-feed-view-settings-store';
-import useThreadLiveUpdatesStore from '../../stores/use-thread-live-updates-store';
+import useThreadLiveUpdatesStore, { type ThreadUpdaterStatus } from '../../stores/use-thread-live-updates-store';
 import useCountLinksInReplies from '../../hooks/use-count-links-in-replies';
 import useOptimisticReplyCount from '../../hooks/use-optimistic-reply-count';
 import useIsMobile from '../../hooks/use-is-mobile';
@@ -265,9 +266,9 @@ const HiddenCatalogThreadsToggle = ({
 
 export const UpdateButton = () => {
   const { t } = useTranslation();
-  const requestUpdate = useThreadLiveUpdatesStore((state) => state.requestUpdate);
+  const forceUpdate = useThreadLiveUpdatesStore((state) => state.forceUpdate);
   return (
-    <button type='button' className='button' onClick={() => requestUpdate()}>
+    <button type='button' className='button' onClick={forceUpdate}>
       {t('update')}
     </button>
   );
@@ -283,6 +284,7 @@ export const AutoButton = () => {
       <input
         type='checkbox'
         aria-label={t('Auto')}
+        title={t('fetch_new_replies_automatically')}
         className={styles.autoCheckbox}
         checked={autoUpdateEnabled}
         onChange={(event) => setAutoUpdateEnabled(event.target.checked)}
@@ -290,6 +292,44 @@ export const AutoButton = () => {
       {t('Auto')}
     </label>
   );
+};
+
+const getThreadUpdateStatusText = (status: ThreadUpdaterStatus, t: TFunction): string => {
+  switch (status.type) {
+    case 'countdown':
+      return String(status.seconds);
+    case 'updating':
+      return t('thread_update_updating');
+    case 'no-new-posts':
+      return t('thread_update_no_new_posts');
+    case 'new-posts':
+      return status.count === 1 ? t('thread_update_new_post') : t('thread_update_new_posts', { count: status.count });
+    case 'error':
+      if (status.reason === 'archived') return t('thread_update_thread_archived');
+      if (status.reason === 'deleted') return t('thread_update_thread_deleted');
+      return t('thread_update_connection_error');
+    default:
+      return '';
+  }
+};
+
+/** The Update/Auto result shown next to the controls: a countdown, progress, or the last outcome. */
+export const ThreadUpdateStatus = ({ isMobile = false }: { isMobile?: boolean }) => {
+  const { t } = useTranslation();
+  const status = useThreadLiveUpdatesStore((state) => state.status);
+  const isThreadDead = useThreadLiveUpdatesStore((state) => state.deadReason !== undefined);
+  const text = getThreadUpdateStatusText(status, t);
+  // Mobile reserves the line so the controls do not jump while the status changes; a dead thread has no controls.
+  if (!text && (!isMobile || isThreadDead)) return null;
+
+  const content = status.type === 'error' ? <span className={styles.threadUpdateError}>{text}</span> : text;
+  if (isMobile)
+    return (
+      <div className={styles.mobileThreadUpdateStatus} data-testid='thread-update-status'>
+        {content}
+      </div>
+    );
+  return <span data-testid='thread-update-status'>{content}</span>;
 };
 
 const scrollToBottom = () => {
@@ -531,6 +571,7 @@ export const MobileBoardButtons = () => {
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, useParams());
   const isInModView = isModView(location.pathname);
   const isInModQueueView = isModQueueView(location.pathname);
+  const isThreadDead = useThreadLiveUpdatesStore((state) => state.deadReason !== undefined);
 
   const accountComment = useAccountComment({ commentIndex: normalizeAccountCommentIndex(params?.accountCommentIndex) });
   const resolvedAddress = useResolvedCommunityAddress();
@@ -556,10 +597,15 @@ export const MobileBoardButtons = () => {
             <CatalogButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
           )}
           {showBottomButton && <BottomButton />}
-          <div className={styles.secondRow}>
-            <UpdateButton />
-            <AutoButton />
-          </div>
+          {isThreadDead ? (
+            <ThreadUpdateStatus isMobile={true} />
+          ) : (
+            <div className={`${styles.secondRow} ${styles.threadSecondRow}`}>
+              <UpdateButton />
+              <AutoButton />
+              <ThreadUpdateStatus isMobile={true} />
+            </div>
+          )}
         </>
       ) : isInModQueueView ? (
         <>
@@ -643,16 +689,18 @@ export const PostPageStats = () => {
   const { t } = useTranslation();
   const params = useParams();
   const location = useLocation();
-  const autoUpdateEnabled = useThreadLiveUpdatesStore((state) => state.enabled);
   const commentCid = params?.commentCid as string | undefined;
   const resolvedAddress = useResolvedCommunityAddress();
   const accountComment = useAccountComment({ commentIndex: normalizeAccountCommentIndex(params?.accountCommentIndex) });
   const communityAddress = resolvedAddress || accountComment?.communityAddress;
   const communityIdentifier = useCommunityIdentifier(communityAddress);
 
-  const comment = useComment({ commentCid, autoUpdate: autoUpdateEnabled, community: communityIdentifier });
+  const comment = useComment({ commentCid, autoUpdate: false, community: communityIdentifier });
   const postCid = comment?.postCid ?? commentCid;
-  const post = useComment({ commentCid: postCid, autoUpdate: autoUpdateEnabled, community: communityIdentifier });
+  const fetchedPost = useComment({ commentCid: postCid, autoUpdate: false, community: communityIdentifier });
+  // Show the thread page's copy so the stats change with Update and Auto, not on their own.
+  const threadPost = useThreadLiveUpdatesStore((state) => (postCid && state.threadPost?.cid === postCid ? state.threadPost : undefined));
+  const post = threadPost ?? fetchedPost;
 
   const archived = isCommentArchived(post);
   const { closed, pinned } = post || {};
@@ -726,6 +774,7 @@ export const DesktopBoardButtons = () => {
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, useParams());
   const isInModView = isModView(location.pathname);
   const isInModQueueView = isModQueueView(location.pathname);
+  const isThreadDead = useThreadLiveUpdatesStore((state) => state.deadReason !== undefined);
 
   const enableInfiniteScroll = useFeedViewSettingsStore((state) => state.enableInfiniteScroll);
   const isMultiboard = isInAllView || isInSubscriptionsView || isInModView;
@@ -757,7 +806,12 @@ export const DesktopBoardButtons = () => {
                 [<BottomButton />]
               </>
             )}{' '}
-            [<UpdateButton />] [<AutoButton />]
+            {!isThreadDead && (
+              <>
+                [<UpdateButton />] [<AutoButton />]{' '}
+              </>
+            )}
+            <ThreadUpdateStatus />
             <span className={styles.rightSideButtons}>
               <PostPageStats />
             </span>

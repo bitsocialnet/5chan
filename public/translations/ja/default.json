@@ -503,5 +503,13 @@
   "directory_vote_needs_test_pass": "投票は送信されませんでした。このアカウントの投票用アドレス <address>{{address}}</address> は 5chan Pass を保有していません。現在、投票は testnet で行われているため、<faucetLink>フォーセット</faucetLink>からこのアドレス用の無料テスト Pass を入手できます。",
   "directory_vote_board_not_found": "{{address}} に板が見つかりません。.bso アドレスまたは板の公開鍵を入力してください。",
   "directory_vote_failed": "投票を送信できませんでした: {{error}}",
-  "user_banned_from_board": "ユーザーは{{board}}からBANされました"
+  "user_banned_from_board": "ユーザーは{{board}}からBANされました",
+  "thread_update_updating": "更新中...",
+  "thread_update_no_new_posts": "新しい投稿はありません",
+  "thread_update_new_post": "1件の新しい投稿",
+  "thread_update_new_posts": "{{count}}件の新しい投稿",
+  "thread_update_connection_error": "接続エラー",
+  "thread_update_thread_archived": "このスレッドはアーカイブされています",
+  "thread_update_thread_deleted": "このスレッドは落ちたか削除されました",
+  "fetch_new_replies_automatically": "新しい返信を自動で取得"
 }

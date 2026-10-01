@@ -11,6 +11,7 @@ import {
   TopButton,
   UpdateButton,
   AutoButton,
+  ThreadUpdateStatus,
   PostPageStats,
   RefreshButton,
   shouldShowCatalogButton,
@@ -160,6 +161,7 @@ export const ThreadFooterFirstRow = ({ postCid, threadNumber, communityAddress, 
   const location = useLocation();
   const params = useParams();
   const openReplyModalEmpty = useReplyModalStore((state) => state.openReplyModalEmpty);
+  const isThreadDead = useThreadLiveUpdatesStore((state) => state.deadReason !== undefined);
 
   const isInAllView = isAllView(location.pathname);
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, params);
@@ -186,12 +188,17 @@ export const ThreadFooterFirstRow = ({ postCid, threadNumber, communityAddress, 
         <span>
           [<TopButton />]
         </span>
-        <span>
-          [<UpdateButton />]
-        </span>
-        <span>
-          [<AutoButton />]
-        </span>
+        {!isThreadDead && (
+          <>
+            <span>
+              [<UpdateButton />]
+            </span>
+            <span>
+              [<AutoButton />]
+            </span>
+          </>
+        )}
+        <ThreadUpdateStatus />
       </div>
       <div className={styles.threadCenter}>
         <span>
@@ -242,7 +249,7 @@ export const ThreadFooterMobile = ({ postCid, threadNumber, communityAddress, is
   const location = useLocation();
   const params = useParams();
   const openReplyModalEmpty = useReplyModalStore((state) => state.openReplyModalEmpty);
-  const autoUpdateEnabled = useThreadLiveUpdatesStore((state) => state.enabled);
+  const isThreadDead = useThreadLiveUpdatesStore((state) => state.deadReason !== undefined);
 
   const isInAllView = isAllView(location.pathname);
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, params);
@@ -251,7 +258,10 @@ export const ThreadFooterMobile = ({ postCid, threadNumber, communityAddress, is
   const showCatalogButton = shouldShowCatalogButton(params.boardIdentifier, directories, { isInAllView, isInSubscriptionsView, isInModView });
   const communityIdentifier = useCommunityIdentifier(communityAddress);
 
-  const post = useComment({ commentCid: postCid, autoUpdate: autoUpdateEnabled, community: communityIdentifier });
+  const fetchedPost = useComment({ commentCid: postCid, autoUpdate: false, community: communityIdentifier });
+  // Show the thread page's copy so the stats change with Update and Auto, not on their own.
+  const threadPost = useThreadLiveUpdatesStore((state) => (state.threadPost?.cid === postCid ? state.threadPost : undefined));
+  const post = threadPost ?? fetchedPost;
   const replyCount = useOptimisticReplyCount(post);
   const linkCount = useCountLinksInReplies(post);
   const directoryEntry = useDirectoryByAddress(communityAddress);
@@ -278,10 +288,13 @@ export const ThreadFooterMobile = ({ postCid, threadNumber, communityAddress, is
           )}
           <TopButton />
         </div>
-        <div className={styles.mobileFooterButtons}>
-          <UpdateButton />
-          <AutoButton />
-        </div>
+        {!isThreadDead && (
+          <div className={styles.mobileFooterButtons}>
+            <UpdateButton />
+            <AutoButton />
+          </div>
+        )}
+        <ThreadUpdateStatus isMobile={true} />
         <div className={styles.mobileFooterStats}>
           {capitalize(t('replies'))}: {replyCount ?? '?'} / {capitalize(requirePostLinkIsMedia ? t('images') : t('links'))}: {linkCount ?? '?'} /{' '}
           {t('pagination.pageLabel')}: {pageNumber ?? '?'}
