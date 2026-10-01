@@ -9,7 +9,7 @@
   "private": true,
   "dependencies": {
     "@bbob/parser": "4.3.1",
-    "@bitsocial/bitsocial-react-hooks": "0.1.46",
+    "@bitsocial/bitsocial-react-hooks": "0.1.47",
     "@bitsocial/bso-resolver": "0.0.10",
     "@bitsocial/pubsub-voting": "0.7.7",
     "@capacitor/app": "7.0.1",
