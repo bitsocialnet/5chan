@@ -93,11 +93,11 @@ describe('placePinnedCatalogThreads', () => {
     expect(placePinnedCatalogThreads(posts, [])).toBe(posts);
   });
 
-  it('places pinned threads after the sticky threads in feed order, then pinned threads the feed has not loaded', () => {
+  it('places pinned threads after the sticky threads in the order they were pinned, wherever the feed has them', () => {
     const posts: CatalogPost[] = [{ cid: 'sticky', pinned: true }, { cid: 'a' }, { cid: 'pinned-2' }, { cid: 'b' }, { cid: 'pinned-1' }];
     const pinnedPosts: CatalogPost[] = [{ cid: 'pinned-1' }, { cid: 'unloaded' }, { cid: 'pinned-2' }];
 
-    expect(placePinnedCatalogThreads(posts, pinnedPosts).map((post) => post.cid)).toEqual(['sticky', 'pinned-2', 'pinned-1', 'unloaded', 'a', 'b']);
+    expect(placePinnedCatalogThreads(posts, pinnedPosts).map((post) => post.cid)).toEqual(['sticky', 'pinned-1', 'unloaded', 'pinned-2', 'a', 'b']);
   });
 
   it('puts pinned threads first without sticky threads and keeps a pinned sticky thread with the sticky ones', () => {

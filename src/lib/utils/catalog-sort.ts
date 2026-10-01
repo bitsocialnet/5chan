@@ -63,33 +63,27 @@ export function sortCatalogFeedForDisplay<T extends CatalogPost>(posts: T[], sor
 }
 
 /**
- * Place the viewer's pinned threads right after the sticky threads, like 4chan's catalog. A pinned
- * thread that is also sticky stays with the sticky threads. Each pinned thread shows whichever copy,
- * the feed's or the live one, has the newer update. Threads keep their feed order, and pinned threads
- * the feed has not loaded follow the ones it has.
+ * Place the viewer's pinned threads right after the sticky threads, like 4chan's catalog, in the
+ * order of `pinnedPosts` (the order they were pinned), so a new pin goes after the earlier ones.
+ * A pinned thread that is also sticky stays with the sticky threads. Each pinned thread shows
+ * whichever copy, the feed's or the live one, has the newer update.
  */
 export function placePinnedCatalogThreads<T extends CatalogPost>(posts: T[], pinnedPosts: T[]): T[] {
   if (pinnedPosts.length === 0) return posts;
 
-  const pinnedPostsByCid = new Map(pinnedPosts.map((post) => [post.cid, post]));
-  const placedCids = new Set<string>();
-  const pinnedGroup: T[] = [];
-  const otherPosts: T[] = [];
+  const feedPostsByCid = new Map(posts.map((post) => [post.cid, post]));
+  const newerPinnedPosts = pinnedPosts.map((pinnedPost) => {
+    const feedPost = feedPostsByCid.get(pinnedPost.cid);
+    return feedPost && (feedPost.updatedAt ?? 0) > (pinnedPost.updatedAt ?? 0) ? feedPost : pinnedPost;
+  });
+  const stickyPinnedCids = new Set(newerPinnedPosts.filter((post) => post.pinned && feedPostsByCid.has(post.cid)).map((post) => post.cid));
+  const newerPinnedPostsByCid = new Map(newerPinnedPosts.map((post) => [post.cid, post]));
 
-  for (const post of posts) {
-    const pinnedPost = post.cid ? pinnedPostsByCid.get(post.cid) : undefined;
-    if (!pinnedPost || !post.cid) {
-      otherPosts.push(post);
-      continue;
-    }
-    const newerPost = (pinnedPost.updatedAt ?? 0) >= (post.updatedAt ?? 0) ? pinnedPost : post;
-    placedCids.add(post.cid);
-    if (post.pinned) otherPosts.push(newerPost);
-    else pinnedGroup.push(newerPost);
-  }
-  for (const pinnedPost of pinnedPosts) {
-    if (pinnedPost.cid && !placedCids.has(pinnedPost.cid)) pinnedGroup.push(pinnedPost);
-  }
+  const otherPosts = posts.flatMap((post) => {
+    if (!newerPinnedPostsByCid.has(post.cid)) return [post];
+    return stickyPinnedCids.has(post.cid) ? [newerPinnedPostsByCid.get(post.cid) as T] : [];
+  });
+  const pinnedGroup = newerPinnedPosts.filter((post) => !stickyPinnedCids.has(post.cid));
 
   const lastStickyIndex = otherPosts.map((post) => post.pinned).lastIndexOf(true);
   return [...otherPosts.slice(0, lastStickyIndex + 1), ...pinnedGroup, ...otherPosts.slice(lastStickyIndex + 1)];

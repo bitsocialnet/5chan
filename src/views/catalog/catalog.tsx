@@ -249,6 +249,7 @@ const createCombinedFilter = (
   communityAddress: string,
   onFilterMatch?: (filterIndex: number, cid: string, communityAddress: string) => void,
   trackMatches = true,
+  excludeArchived = true,
 ) => {
   const contentFilter = createContentFilter(filterItems, communityAddress, onFilterMatch, trackMatches);
 
@@ -262,13 +263,13 @@ const createCombinedFilter = (
 
   return {
     filter: (comment: Comment) => {
-      if (isCommentArchived(comment)) return false;
+      if (excludeArchived && isCommentArchived(comment)) return false;
       if (!contentFilter.filter(comment)) return false;
       if (!searchFilter.filter(comment)) return false;
 
       return true;
     },
-    key: `${contentFilter.key}-${searchFilter.key}-exclude-archived`,
+    key: `${contentFilter.key}-${searchFilter.key}${excludeArchived ? '-exclude-archived' : ''}`,
   };
 };
 
@@ -586,10 +587,15 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   const moreThreadsSuggestionPathname = isInAllView ? '/all/catalog' : isInSubscriptionsView ? '/subs/catalog' : isInModView ? '/mod/catalog' : null;
 
   const catalogBaseFeed = showHiddenThreads ? hiddenCatalogThreads : cappedFeed;
+  // Pinned threads stay through archiving, so they only go through the search and content filters.
+  const pinnedThreadsFilter = useMemo(
+    () => (hasActiveCatalogFiltering ? createCombinedFilter(filterItems, searchText, communityAddress || 'all', undefined, false, false).filter : undefined),
+    [communityAddress, filterItems, hasActiveCatalogFiltering, searchText],
+  );
   const pinnedCatalogThreads = usePinnedCatalogThreads({
     communityAddresses,
     enabled: !showHiddenThreads,
-    filter: suggestionFilter.filter,
+    filter: pinnedThreadsFilter,
     hiddenCids,
   });
   const sortedFeed = useMemo(

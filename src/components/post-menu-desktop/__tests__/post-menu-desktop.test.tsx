@@ -200,7 +200,9 @@ describe('PostMenuDesktop', () => {
         .slice(0, 2),
     ).toEqual(['pin_thread', 'hide_thread']);
     await clickMenuButton('pin_thread');
-    expect(usePinnedCatalogThreadsStore.getState().pinnedThreads).toEqual({ 'cid-1': { communityAddress: 'music-posting.eth', readReplyCount: 9 } });
+    expect(usePinnedCatalogThreadsStore.getState().pinnedThreads).toEqual({
+      'cid-1': { communityAddress: 'music-posting.eth', pinnedAt: expect.any(Number), readReplyCount: 9 },
+    });
 
     await openMenu();
     await clickMenuButton('unpin_thread');

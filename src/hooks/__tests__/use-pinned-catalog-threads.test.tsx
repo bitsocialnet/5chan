@@ -40,8 +40,9 @@ const ReadHarness = ({ post }: { post: Comment | undefined }) => {
   return null;
 };
 
+let pinCount = 0;
 const pin = (cid: string, communityAddress = 'music-posting.eth', readReplyCount = 0) =>
-  usePinnedCatalogThreadsStore.setState((state) => ({ pinnedThreads: { ...state.pinnedThreads, [cid]: { communityAddress, readReplyCount } } }));
+  usePinnedCatalogThreadsStore.setState((state) => ({ pinnedThreads: { ...state.pinnedThreads, [cid]: { communityAddress, pinnedAt: ++pinCount, readReplyCount } } }));
 
 describe('usePinnedCatalogThreads', () => {
   beforeEach(() => {
@@ -87,28 +88,46 @@ describe('usePinnedCatalogThreads', () => {
     expect(pinnedPosts.map((post) => post.cid)).toEqual(['shown']);
   });
 
-  it('requests nothing while disabled and unpins threads that died', async () => {
+  it('requests nothing while disabled, keeps archived and removed threads, and unpins purged ones', async () => {
     pin('archived');
     pin('removed');
-    pin('alive');
+    pin('purged');
+    pin('moderated-purged');
     testState.commentsByCid = {
       archived: { cid: 'archived', timestamp: 1, commentModeration: { archived: true } } as Partial<Comment>,
       removed: { cid: 'removed', timestamp: 1, removed: true },
-      alive: { cid: 'alive', timestamp: 1 },
+      purged: { cid: 'purged', timestamp: 1, purged: true } as Partial<Comment>,
+      'moderated-purged': { cid: 'moderated-purged', timestamp: 1, commentModeration: { purged: true } } as Partial<Comment>,
     };
-    const props = { communityAddresses: ['music-posting.eth'], filter: () => true, hiddenCids: {} };
+    const props = { communityAddresses: ['music-posting.eth'], hiddenCids: {} };
 
     await act(async () => {
       root.render(createElement(PinnedThreadsHarness, { ...props, enabled: false }));
     });
     expect(testState.useCommentsCalls.at(-1)).toEqual({ commentCids: [], autoUpdate: true });
-    expect(Object.keys(usePinnedCatalogThreadsStore.getState().pinnedThreads)).toHaveLength(3);
+    expect(Object.keys(usePinnedCatalogThreadsStore.getState().pinnedThreads)).toHaveLength(4);
 
     await act(async () => {
       root.render(createElement(PinnedThreadsHarness, { ...props, enabled: true }));
     });
-    expect(pinnedPosts.map((post) => post.cid)).toEqual(['alive']);
-    expect(Object.keys(usePinnedCatalogThreadsStore.getState().pinnedThreads)).toEqual(['alive']);
+    expect(pinnedPosts.map((post) => post.cid)).toEqual(['archived', 'removed']);
+    expect(Object.keys(usePinnedCatalogThreadsStore.getState().pinnedThreads)).toEqual(['archived', 'removed']);
+  });
+
+  it('returns pinned threads in the order they were pinned', async () => {
+    usePinnedCatalogThreadsStore.setState({
+      pinnedThreads: {
+        second: { communityAddress: 'music-posting.eth', pinnedAt: 20, readReplyCount: 0 },
+        first: { communityAddress: 'music-posting.eth', pinnedAt: 10, readReplyCount: 0 },
+      },
+    });
+    testState.commentsByCid = { first: { cid: 'first', timestamp: 1 }, second: { cid: 'second', timestamp: 2 } };
+
+    await act(async () => {
+      root.render(createElement(PinnedThreadsHarness, { communityAddresses: ['music-posting.eth'], enabled: true, hiddenCids: {} }));
+    });
+
+    expect(pinnedPosts.map((post) => post.cid)).toEqual(['first', 'second']);
   });
 });
 
@@ -136,6 +155,8 @@ describe('useMarkPinnedThreadRead', () => {
     await act(async () => {
       root.render(createElement(ReadHarness, { post: { cid: 'thread-2', replyCount: 3 } as Comment }));
     });
-    expect(usePinnedCatalogThreadsStore.getState().pinnedThreads).toEqual({ 'thread-1': { communityAddress: 'music-posting.eth', readReplyCount: 9 } });
+    expect(usePinnedCatalogThreadsStore.getState().pinnedThreads).toEqual({
+      'thread-1': { communityAddress: 'music-posting.eth', pinnedAt: expect.any(Number), readReplyCount: 9 },
+    });
   });
 });

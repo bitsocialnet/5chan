@@ -6,6 +6,8 @@ import { persist } from 'zustand/middleware';
 // are keyed by CID instead of per board like 4chan's thread numbers.
 export interface PinnedCatalogThread {
   communityAddress: string;
+  /** Pinned threads show in the order they were pinned. */
+  pinnedAt: number;
   /** Reply count when the thread was pinned or last opened. */
   readReplyCount: number;
 }
@@ -23,7 +25,7 @@ const usePinnedCatalogThreadsStore = create<PinnedCatalogThreadsState>()(
       pinnedThreads: {},
       pinThread: ({ cid, communityAddress, replyCount }) =>
         set((state) => ({
-          pinnedThreads: { ...state.pinnedThreads, [cid]: { communityAddress, readReplyCount: replyCount ?? 0 } },
+          pinnedThreads: { ...state.pinnedThreads, [cid]: { communityAddress, pinnedAt: Date.now(), readReplyCount: replyCount ?? 0 } },
         })),
       unpinThread: (cid) =>
         set((state) => {

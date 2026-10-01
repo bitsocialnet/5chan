@@ -22,6 +22,7 @@ const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise
 
 type TestComment = {
   archived?: boolean;
+  purged?: boolean;
   cid: string;
   content?: string;
   title?: string;
@@ -526,7 +527,7 @@ describe('Catalog', () => {
     root = createRoot(container);
   });
 
-  it('places pinned threads after the sticky threads, including pinned threads the feed has not loaded', async () => {
+  it('places pinned threads after the sticky threads in pin order, keeping archived and unloaded ones and dropping purged ones', async () => {
     testState.feed = [
       { cid: 'sticky-post', pinned: true, title: 'rules', communityAddress: 'music-posting.eth' },
       { cid: 'first-post', title: 'first', communityAddress: 'music-posting.eth' },
@@ -535,24 +536,44 @@ describe('Catalog', () => {
     testState.commentsByCid = {
       'pinned-post': { cid: 'pinned-post', title: 'pinned', communityAddress: 'music-posting.eth', timestamp: 2 },
       'unloaded-pinned-post': { cid: 'unloaded-pinned-post', title: 'older', communityAddress: 'music-posting.eth', timestamp: 1 },
-      'archived-pinned-post': { cid: 'archived-pinned-post', title: 'gone', communityAddress: 'music-posting.eth', timestamp: 1, archived: true },
+      'archived-pinned-post': { cid: 'archived-pinned-post', title: 'archived', communityAddress: 'music-posting.eth', timestamp: 1, archived: true },
+      'purged-pinned-post': { cid: 'purged-pinned-post', title: 'gone', communityAddress: 'music-posting.eth', timestamp: 1, purged: true },
     };
     usePinnedCatalogThreadsStore.setState({
       pinnedThreads: {
-        'pinned-post': { communityAddress: 'music-posting.eth', readReplyCount: 0 },
-        'unloaded-pinned-post': { communityAddress: 'music-posting.eth', readReplyCount: 0 },
-        'archived-pinned-post': { communityAddress: 'music-posting.eth', readReplyCount: 0 },
-        'other-board-post': { communityAddress: 'other-board.eth', readReplyCount: 0 },
+        'archived-pinned-post': { communityAddress: 'music-posting.eth', pinnedAt: 3, readReplyCount: 0 },
+        'pinned-post': { communityAddress: 'music-posting.eth', pinnedAt: 1, readReplyCount: 0 },
+        'unloaded-pinned-post': { communityAddress: 'music-posting.eth', pinnedAt: 2, readReplyCount: 0 },
+        'purged-pinned-post': { communityAddress: 'music-posting.eth', pinnedAt: 4, readReplyCount: 0 },
+        'other-board-post': { communityAddress: 'other-board.eth', pinnedAt: 5, readReplyCount: 0 },
       },
     });
 
     await renderCatalog({ initialEntry: '/mu/catalog', routePath: '/:boardIdentifier/catalog' });
 
     expect(Array.from(container.querySelectorAll('[data-testid="catalog-row"]')).map((element) => element.textContent)).toEqual([
-      'row:sticky-post,pinned-post,unloaded-pinned-post,first-post',
+      'row:sticky-post,pinned-post,unloaded-pinned-post,archived-pinned-post,first-post',
     ]);
-    // A pinned thread that died is unpinned, like it leaves 4chan's catalog.
-    expect(Object.keys(usePinnedCatalogThreadsStore.getState().pinnedThreads).sort()).toEqual(['other-board-post', 'pinned-post', 'unloaded-pinned-post']);
+    expect(Object.keys(usePinnedCatalogThreadsStore.getState().pinnedThreads).sort()).toEqual([
+      'archived-pinned-post',
+      'other-board-post',
+      'pinned-post',
+      'unloaded-pinned-post',
+    ]);
+  });
+
+  it('keeps showing a pinned thread after it falls past the last board page', async () => {
+    testState.feed = Array.from({ length: 8 }, (_, index) => ({ cid: `post-${index + 1}`, title: `post ${index + 1}`, communityAddress: 'music-posting.eth' }));
+    testState.commentsByCid = { 'post-8': { cid: 'post-8', title: 'post 8', communityAddress: 'music-posting.eth', timestamp: 1 } };
+    usePinnedCatalogThreadsStore.setState({ pinnedThreads: { 'post-8': { communityAddress: 'music-posting.eth', pinnedAt: 1, readReplyCount: 0 } } });
+
+    await renderCatalog({ initialEntry: '/mu/catalog', routePath: '/:boardIdentifier/catalog' });
+
+    // The board shows 3 pages of 2 threads, so post-7 and post-8 are past its last page.
+    const shownCids = Array.from(container.querySelectorAll('[data-testid="catalog-row"]')).flatMap(
+      (element) => element.textContent?.replace('row:', '').split(',') ?? [],
+    );
+    expect(shownCids).toEqual(['post-8', 'post-1', 'post-2', 'post-3', 'post-4', 'post-5', 'post-6']);
   });
 
   it('requests the selected sort directly on a single board', async () => {

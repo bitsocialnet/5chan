@@ -303,7 +303,7 @@ describe('CatalogRow', () => {
     testState.mediaInfoByLink['https://example.com/media.png'] = { type: 'image', url: 'https://example.com/media.png' };
     const pinnedPost: TestComment = { cid: 'pinned-post', link: 'https://example.com/media.png', replyCount: 7, communityAddress: 'music-posting.eth', title: 'Pinned' };
     const otherPost: TestComment = { cid: 'other-post', link: 'https://example.com/media.png', replyCount: 7, communityAddress: 'music-posting.eth', title: 'Other' };
-    usePinnedCatalogThreadsStore.setState({ pinnedThreads: { 'pinned-post': { communityAddress: 'music-posting.eth', readReplyCount: 4 } } });
+    usePinnedCatalogThreadsStore.setState({ pinnedThreads: { 'pinned-post': { communityAddress: 'music-posting.eth', pinnedAt: 1, readReplyCount: 4 } } });
 
     await renderWithRouter(createElement(CatalogRow, { row: [pinnedPost, otherPost] }));
 
@@ -324,7 +324,7 @@ describe('CatalogRow', () => {
   it('shows pinned threads plainly in the hidden threads list', async () => {
     testState.mediaInfoByLink['https://example.com/media.png'] = { type: 'image', url: 'https://example.com/media.png' };
     const pinnedPost: TestComment = { cid: 'pinned-post', link: 'https://example.com/media.png', replyCount: 7, communityAddress: 'music-posting.eth', title: 'Pinned' };
-    usePinnedCatalogThreadsStore.setState({ pinnedThreads: { 'pinned-post': { communityAddress: 'music-posting.eth', readReplyCount: 4 } } });
+    usePinnedCatalogThreadsStore.setState({ pinnedThreads: { 'pinned-post': { communityAddress: 'music-posting.eth', pinnedAt: 1, readReplyCount: 4 } } });
 
     await renderWithRouter(createElement(CatalogRow, { row: [pinnedPost], showHiddenPosts: true }));
 

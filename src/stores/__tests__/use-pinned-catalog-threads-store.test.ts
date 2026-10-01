@@ -12,7 +12,7 @@ describe('usePinnedCatalogThreadsStore', () => {
   it('pins a thread at its current reply count and keeps it across reloads', () => {
     getState().pinThread({ cid: 'thread-1', communityAddress: 'music-posting.eth', replyCount: 12 });
 
-    expect(getState().pinnedThreads).toEqual({ 'thread-1': { communityAddress: 'music-posting.eth', readReplyCount: 12 } });
+    expect(getState().pinnedThreads).toEqual({ 'thread-1': { communityAddress: 'music-posting.eth', pinnedAt: expect.any(Number), readReplyCount: 12 } });
     expect(JSON.parse(localStorage.getItem('pinned-catalog-threads-store') ?? '{}').state.pinnedThreads).toEqual(getState().pinnedThreads);
   });
 
