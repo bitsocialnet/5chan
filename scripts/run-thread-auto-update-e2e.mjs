@@ -2,7 +2,7 @@ import { spawn } from 'node:child_process';
 import { join } from 'node:path';
 import process from 'node:process';
 import { setTimeout as delay } from 'node:timers/promises';
-import { chromium } from 'playwright';
+import { withBrowser } from './react-perf/browser.mjs';
 
 const PAGE_TIMEOUT_MS = 30_000;
 const SERVER_TIMEOUT_MS = 60_000;
@@ -41,6 +41,7 @@ const UPDATE_SETTLE_MS = 800;
 
 let devServerProcess = null;
 let devServerShutdownRequested = false;
+const interruption = new AbortController();
 
 const cleanupDevServer = async () => {
   if (!devServerProcess || devServerProcess.exitCode !== null || devServerProcess.killed) {
@@ -62,10 +63,12 @@ const cleanupDevServer = async () => {
   }
 };
 
+// The pw-session browser outlives this process, so a signal ends the run through the normal
+// cleanup, which closes the browser session and the dev server, instead of exiting right away.
 const registerSignalHandlers = () => {
-  const handleSignal = async (signal) => {
-    await cleanupDevServer();
-    process.exit(signal === 'SIGINT' ? 130 : 143);
+  const handleSignal = (signal) => {
+    process.exitCode = signal === 'SIGINT' ? 130 : 143;
+    interruption.abort(new Error(`Interrupted by ${signal}`));
   };
 
   process.once('SIGINT', handleSignal);
@@ -94,6 +97,7 @@ const waitForServer = async (timeoutMs = SERVER_TIMEOUT_MS) => {
   const startedAt = Date.now();
 
   while (Date.now() - startedAt < timeoutMs) {
+    interruption.signal.throwIfAborted();
     try {
       const response = await fetch(HARNESS_URL, { redirect: 'manual' });
       if (response.ok || response.status === 304) {
@@ -272,15 +276,21 @@ const main = async () => {
       await waitForServer();
     }
 
-    const browser = await chromium.launch({ headless: true });
-    try {
-      for (const scenario of scenarios) {
-        console.log(`Running thread auto update e2e for ${scenario.name}...`);
-        await runScenario(browser, scenario);
+    // Like perf:check, take the browser through the machine-wide pw-session lock.
+    await withBrowser(process.cwd(), false, async (browser) => {
+      // Disconnecting fails the running scenario, so withBrowser still closes the session.
+      const disconnect = () => void browser.close().catch(() => {});
+      interruption.signal.addEventListener('abort', disconnect, { once: true });
+      try {
+        for (const scenario of scenarios) {
+          interruption.signal.throwIfAborted();
+          console.log(`Running thread auto update e2e for ${scenario.name}...`);
+          await runScenario(browser, scenario);
+        }
+      } finally {
+        interruption.signal.removeEventListener('abort', disconnect);
       }
-    } finally {
-      await browser.close();
-    }
+    });
 
     console.log('Thread auto update e2e passed.');
   } finally {
@@ -288,4 +298,7 @@ const main = async () => {
   }
 };
 
-await main();
+await main().catch((error) => {
+  if (!interruption.signal.aborted) throw error;
+  console.error(interruption.signal.reason.message);
+});
