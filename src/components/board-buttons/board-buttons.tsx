@@ -317,17 +317,19 @@ const getThreadUpdateStatusText = (status: ThreadUpdaterStatus, t: TFunction): s
 export const ThreadUpdateStatus = ({ isMobile = false }: { isMobile?: boolean }) => {
   const { t } = useTranslation();
   const status = useThreadLiveUpdatesStore((state) => state.status);
+  const isThreadDead = useThreadLiveUpdatesStore((state) => state.deadReason !== undefined);
   const text = getThreadUpdateStatusText(status, t);
-  const content = status.type === 'error' ? <span className={styles.threadUpdateError}>{text}</span> : text;
+  // Mobile reserves the line so the controls do not jump while the status changes; a dead thread has no controls.
+  if (!text && (!isMobile || isThreadDead)) return null;
 
-  // Mobile reserves the line so the controls do not jump while the status changes.
+  const content = status.type === 'error' ? <span className={styles.threadUpdateError}>{text}</span> : text;
   if (isMobile)
     return (
       <div className={styles.mobileThreadUpdateStatus} data-testid='thread-update-status'>
         {content}
       </div>
     );
-  return text ? <span data-testid='thread-update-status'>{content}</span> : null;
+  return <span data-testid='thread-update-status'>{content}</span>;
 };
 
 const scrollToBottom = () => {
@@ -569,6 +571,7 @@ export const MobileBoardButtons = () => {
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, useParams());
   const isInModView = isModView(location.pathname);
   const isInModQueueView = isModQueueView(location.pathname);
+  const isThreadDead = useThreadLiveUpdatesStore((state) => state.deadReason !== undefined);
 
   const accountComment = useAccountComment({ commentIndex: normalizeAccountCommentIndex(params?.accountCommentIndex) });
   const resolvedAddress = useResolvedCommunityAddress();
@@ -594,11 +597,15 @@ export const MobileBoardButtons = () => {
             <CatalogButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
           )}
           {showBottomButton && <BottomButton />}
-          <div className={`${styles.secondRow} ${styles.threadSecondRow}`}>
-            <UpdateButton />
-            <AutoButton />
+          {isThreadDead ? (
             <ThreadUpdateStatus isMobile={true} />
-          </div>
+          ) : (
+            <div className={`${styles.secondRow} ${styles.threadSecondRow}`}>
+              <UpdateButton />
+              <AutoButton />
+              <ThreadUpdateStatus isMobile={true} />
+            </div>
+          )}
         </>
       ) : isInModQueueView ? (
         <>
@@ -767,6 +774,7 @@ export const DesktopBoardButtons = () => {
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, useParams());
   const isInModView = isModView(location.pathname);
   const isInModQueueView = isModQueueView(location.pathname);
+  const isThreadDead = useThreadLiveUpdatesStore((state) => state.deadReason !== undefined);
 
   const enableInfiniteScroll = useFeedViewSettingsStore((state) => state.enableInfiniteScroll);
   const isMultiboard = isInAllView || isInSubscriptionsView || isInModView;
@@ -798,7 +806,12 @@ export const DesktopBoardButtons = () => {
                 [<BottomButton />]
               </>
             )}{' '}
-            [<UpdateButton />] [<AutoButton />] <ThreadUpdateStatus />
+            {!isThreadDead && (
+              <>
+                [<UpdateButton />] [<AutoButton />]{' '}
+              </>
+            )}
+            <ThreadUpdateStatus />
             <span className={styles.rightSideButtons}>
               <PostPageStats />
             </span>

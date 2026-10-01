@@ -161,6 +161,7 @@ export const ThreadFooterFirstRow = ({ postCid, threadNumber, communityAddress, 
   const location = useLocation();
   const params = useParams();
   const openReplyModalEmpty = useReplyModalStore((state) => state.openReplyModalEmpty);
+  const isThreadDead = useThreadLiveUpdatesStore((state) => state.deadReason !== undefined);
 
   const isInAllView = isAllView(location.pathname);
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, params);
@@ -187,12 +188,16 @@ export const ThreadFooterFirstRow = ({ postCid, threadNumber, communityAddress, 
         <span>
           [<TopButton />]
         </span>
-        <span>
-          [<UpdateButton />]
-        </span>
-        <span>
-          [<AutoButton />]
-        </span>
+        {!isThreadDead && (
+          <>
+            <span>
+              [<UpdateButton />]
+            </span>
+            <span>
+              [<AutoButton />]
+            </span>
+          </>
+        )}
         <ThreadUpdateStatus />
       </div>
       <div className={styles.threadCenter}>
@@ -244,6 +249,7 @@ export const ThreadFooterMobile = ({ postCid, threadNumber, communityAddress, is
   const location = useLocation();
   const params = useParams();
   const openReplyModalEmpty = useReplyModalStore((state) => state.openReplyModalEmpty);
+  const isThreadDead = useThreadLiveUpdatesStore((state) => state.deadReason !== undefined);
 
   const isInAllView = isAllView(location.pathname);
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, params);
@@ -282,10 +288,12 @@ export const ThreadFooterMobile = ({ postCid, threadNumber, communityAddress, is
           )}
           <TopButton />
         </div>
-        <div className={styles.mobileFooterButtons}>
-          <UpdateButton />
-          <AutoButton />
-        </div>
+        {!isThreadDead && (
+          <div className={styles.mobileFooterButtons}>
+            <UpdateButton />
+            <AutoButton />
+          </div>
+        )}
         <ThreadUpdateStatus isMobile={true} />
         <div className={styles.mobileFooterStats}>
           {capitalize(t('replies'))}: {replyCount ?? '?'} / {capitalize(requirePostLinkIsMedia ? t('images') : t('links'))}: {linkCount ?? '?'} /{' '}

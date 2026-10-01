@@ -578,7 +578,7 @@ describe('BoardButtons', () => {
     expect(tooltips[0]?.textContent).toBe('12');
   });
 
-  it('shows thread update errors in red text', async () => {
+  it('drops Update and Auto when the thread dies while open and keeps its status in red text', async () => {
     testState.commentsByCid = {
       'comment-1': {
         cid: 'comment-1',
@@ -589,10 +589,34 @@ describe('BoardButtons', () => {
     useThreadLiveUpdatesStore.getState().openThread('comment-1');
     useThreadLiveUpdatesStore.getState().markThreadDead('archived', true);
 
-    await renderWithRoute(createElement(DesktopBoardButtons), '/mu/thread/comment-1');
+    for (const BoardButtons of [DesktopBoardButtons, MobileBoardButtons]) {
+      await renderWithRoute(createElement(BoardButtons), '/mu/thread/comment-1');
 
-    const errorText = Array.from(container.querySelectorAll('span')).findLast((span) => span.textContent === 'thread_update_thread_archived');
-    expect(errorText?.className).toContain('threadUpdateError');
+      expect(Array.from(container.querySelectorAll('button')).some((button) => button.textContent === 'update')).toBe(false);
+      expect(container.querySelector('input[type="checkbox"]')).toBeNull();
+      const errorText = Array.from(container.querySelectorAll('span')).findLast((span) => span.textContent === 'thread_update_thread_archived');
+      expect(errorText?.className).toContain('threadUpdateError');
+    }
+  });
+
+  it('renders no Update, Auto, or status line on a thread that was already archived', async () => {
+    testState.commentsByCid = {
+      'comment-1': {
+        cid: 'comment-1',
+        postCid: 'comment-1',
+        replyCount: 9,
+      },
+    };
+    useThreadLiveUpdatesStore.getState().openThread('comment-1');
+    useThreadLiveUpdatesStore.getState().markThreadDead('archived', false);
+
+    for (const BoardButtons of [DesktopBoardButtons, MobileBoardButtons]) {
+      await renderWithRoute(createElement(BoardButtons), '/mu/thread/comment-1');
+
+      expect(Array.from(container.querySelectorAll('button')).some((button) => button.textContent === 'update')).toBe(false);
+      expect(container.querySelector('input[type="checkbox"]')).toBeNull();
+      expect(container.querySelector('[data-testid="thread-update-status"]')).toBeNull();
+    }
   });
 
   it('renders mobile mod-queue controls and clamps alert threshold updates', async () => {
