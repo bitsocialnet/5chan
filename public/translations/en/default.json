@@ -530,5 +530,7 @@
   "thread_update_connection_error": "Connection Error",
   "thread_update_thread_archived": "This thread is archived",
   "thread_update_thread_deleted": "This thread has been pruned or deleted",
-  "fetch_new_replies_automatically": "Fetch new replies automatically"
+  "fetch_new_replies_automatically": "Fetch new replies automatically",
+  "pin_thread": "Pin thread",
+  "unpin_thread": "Unpin thread"
 }

@@ -511,5 +511,7 @@
   "thread_update_connection_error": "Kapcsolódási hiba",
   "thread_update_thread_archived": "Ez a szál archiválva van",
   "thread_update_thread_deleted": "Ezt a szálat eltávolították vagy törölték",
-  "fetch_new_replies_automatically": "Új válaszok automatikus lekérése"
+  "fetch_new_replies_automatically": "Új válaszok automatikus lekérése",
+  "pin_thread": "szál kitűzése",
+  "unpin_thread": "szál kitűzésének megszüntetése"
 }

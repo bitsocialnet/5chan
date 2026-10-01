@@ -511,5 +511,7 @@
   "thread_update_connection_error": "Erro de conexão",
   "thread_update_thread_archived": "Este tópico está arquivado",
   "thread_update_thread_deleted": "Este tópico foi removido ou excluído",
-  "fetch_new_replies_automatically": "Buscar novas respostas automaticamente"
+  "fetch_new_replies_automatically": "Buscar novas respostas automaticamente",
+  "pin_thread": "Fixar tópico",
+  "unpin_thread": "Desafixar tópico"
 }

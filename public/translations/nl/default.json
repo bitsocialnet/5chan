@@ -511,5 +511,7 @@
   "thread_update_connection_error": "Verbindingsfout",
   "thread_update_thread_archived": "Deze thread is gearchiveerd",
   "thread_update_thread_deleted": "Deze thread is opgeschoond of verwijderd",
-  "fetch_new_replies_automatically": "Nieuwe reacties automatisch ophalen"
+  "fetch_new_replies_automatically": "Nieuwe reacties automatisch ophalen",
+  "pin_thread": "thread vastzetten",
+  "unpin_thread": "thread losmaken"
 }

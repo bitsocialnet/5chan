@@ -511,5 +511,7 @@
   "thread_update_connection_error": "Lỗi kết nối",
   "thread_update_thread_archived": "Chủ đề này đã được lưu trữ",
   "thread_update_thread_deleted": "Chủ đề này đã bị gỡ bỏ hoặc bị xóa",
-  "fetch_new_replies_automatically": "Tự động tải câu trả lời mới"
+  "fetch_new_replies_automatically": "Tự động tải câu trả lời mới",
+  "pin_thread": "Ghim chủ đề",
+  "unpin_thread": "Bỏ ghim chủ đề"
 }

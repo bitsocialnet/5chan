@@ -511,5 +511,7 @@
   "thread_update_connection_error": "Yhteysvirhe",
   "thread_update_thread_archived": "Tämä ketju on arkistoitu",
   "thread_update_thread_deleted": "Tämä ketju on karsittu tai poistettu",
-  "fetch_new_replies_automatically": "Hae uudet vastaukset automaattisesti"
+  "fetch_new_replies_automatically": "Hae uudet vastaukset automaattisesti",
+  "pin_thread": "kiinnitä keskustelu",
+  "unpin_thread": "irrota keskustelu"
 }

@@ -511,5 +511,7 @@
   "thread_update_connection_error": "Erreur de connexion",
   "thread_update_thread_archived": "Ce fil est archivé",
   "thread_update_thread_deleted": "Ce fil a été purgé ou supprimé",
-  "fetch_new_replies_automatically": "Récupérer automatiquement les nouvelles réponses"
+  "fetch_new_replies_automatically": "Récupérer automatiquement les nouvelles réponses",
+  "pin_thread": "Épingler le fil",
+  "unpin_thread": "Désépingler le fil"
 }

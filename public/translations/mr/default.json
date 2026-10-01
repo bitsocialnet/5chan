@@ -511,5 +511,7 @@
   "thread_update_connection_error": "कनेक्शन त्रुटी",
   "thread_update_thread_archived": "हा थ्रेड आर्काइव केला आहे",
   "thread_update_thread_deleted": "हा थ्रेड काढून टाकला किंवा हटवला गेला आहे",
-  "fetch_new_replies_automatically": "नवीन उत्तरे स्वयंचलितपणे आणा"
+  "fetch_new_replies_automatically": "नवीन उत्तरे स्वयंचलितपणे आणा",
+  "pin_thread": "थ्रेड पिन करा",
+  "unpin_thread": "थ्रेड अनपिन करा"
 }

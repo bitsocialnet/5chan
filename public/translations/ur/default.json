@@ -511,5 +511,7 @@
   "thread_update_connection_error": "کنکشن کی غلطی",
   "thread_update_thread_archived": "یہ تھریڈ آرکائیو ہو چکا ہے",
   "thread_update_thread_deleted": "یہ تھریڈ ہٹا دیا گیا ہے یا حذف کر دیا گیا ہے",
-  "fetch_new_replies_automatically": "نئے جوابات خود بخود حاصل کریں"
+  "fetch_new_replies_automatically": "نئے جوابات خود بخود حاصل کریں",
+  "pin_thread": "دھاگہ پن کریں",
+  "unpin_thread": "دھاگہ ان پن کریں"
 }

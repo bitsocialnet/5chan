@@ -511,5 +511,7 @@
   "thread_update_connection_error": "ข้อผิดพลาดในการเชื่อมต่อ",
   "thread_update_thread_archived": "เธรดนี้ถูกเก็บถาวรแล้ว",
   "thread_update_thread_deleted": "เธรดนี้ถูกตัดออกหรือถูกลบแล้ว",
-  "fetch_new_replies_automatically": "ดึงคำตอบใหม่โดยอัตโนมัติ"
+  "fetch_new_replies_automatically": "ดึงคำตอบใหม่โดยอัตโนมัติ",
+  "pin_thread": "ปักหมุดเธรด",
+  "unpin_thread": "เลิกปักหมุดเธรด"
 }

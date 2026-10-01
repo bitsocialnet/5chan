@@ -511,5 +511,7 @@
   "thread_update_connection_error": "Bağlantı hatası",
   "thread_update_thread_archived": "Bu konu arşivlendi",
   "thread_update_thread_deleted": "Bu konu kaldırıldı veya silindi",
-  "fetch_new_replies_automatically": "Yeni yanıtları otomatik olarak getir"
+  "fetch_new_replies_automatically": "Yeni yanıtları otomatik olarak getir",
+  "pin_thread": "konuyu sabitle",
+  "unpin_thread": "konunun sabitlemesini kaldır"
 }

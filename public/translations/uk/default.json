@@ -511,5 +511,7 @@
   "thread_update_connection_error": "Помилка з’єднання",
   "thread_update_thread_archived": "Цю тему архівовано",
   "thread_update_thread_deleted": "Цю тему витіснено або видалено",
-  "fetch_new_replies_automatically": "Автоматично завантажувати нові відповіді"
+  "fetch_new_replies_automatically": "Автоматично завантажувати нові відповіді",
+  "pin_thread": "закріпити нитку",
+  "unpin_thread": "відкріпити нитку"
 }

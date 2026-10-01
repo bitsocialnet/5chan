@@ -511,5 +511,7 @@
   "thread_update_connection_error": "연결 오류",
   "thread_update_thread_archived": "이 스레드는 아카이브되었습니다",
   "thread_update_thread_deleted": "이 스레드는 정리되었거나 삭제되었습니다",
-  "fetch_new_replies_automatically": "새 답글 자동으로 가져오기"
+  "fetch_new_replies_automatically": "새 답글 자동으로 가져오기",
+  "pin_thread": "스레드 고정",
+  "unpin_thread": "스레드 고정 해제"
 }

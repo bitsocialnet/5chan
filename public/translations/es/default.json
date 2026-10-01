@@ -511,5 +511,7 @@
   "thread_update_connection_error": "Error de conexión",
   "thread_update_thread_archived": "Este hilo está archivado",
   "thread_update_thread_deleted": "Este hilo ha sido purgado o eliminado",
-  "fetch_new_replies_automatically": "Cargar respuestas nuevas automáticamente"
+  "fetch_new_replies_automatically": "Cargar respuestas nuevas automáticamente",
+  "pin_thread": "Fijar hilo",
+  "unpin_thread": "Desfijar hilo"
 }

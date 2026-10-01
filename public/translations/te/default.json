@@ -511,5 +511,7 @@
   "thread_update_connection_error": "కనెక్షన్ దోషం",
   "thread_update_thread_archived": "ఈ థ్రెడ్ ఆర్కైవ్ చేయబడింది",
   "thread_update_thread_deleted": "ఈ థ్రెడ్ తీసివేయబడింది లేదా తొలగించబడింది",
-  "fetch_new_replies_automatically": "కొత్త సమాధానాలను స్వయంచాలకంగా పొందండి"
+  "fetch_new_replies_automatically": "కొత్త సమాధానాలను స్వయంచాలకంగా పొందండి",
+  "pin_thread": "థ్రెడ్ పిన్ చేయి",
+  "unpin_thread": "థ్రెడ్ అన్‌పిన్ చేయి"
 }

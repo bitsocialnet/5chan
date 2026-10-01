@@ -511,5 +511,7 @@
   "thread_update_connection_error": "Anslutningsfel",
   "thread_update_thread_archived": "Denna tråd är arkiverad",
   "thread_update_thread_deleted": "Denna tråd har rensats bort eller raderats",
-  "fetch_new_replies_automatically": "Hämta nya svar automatiskt"
+  "fetch_new_replies_automatically": "Hämta nya svar automatiskt",
+  "pin_thread": "fäst tråd",
+  "unpin_thread": "lossa tråd"
 }

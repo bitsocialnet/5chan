@@ -18,7 +18,9 @@ import useCountLinksInReplies from '../../hooks/use-count-links-in-replies';
 import useFetchGifFirstFrame from '../../hooks/use-fetch-gif-first-frame';
 import { useYouTubeThumbnailFallback } from '../../hooks/use-youtube-thumbnail-fallback';
 import useHide from '../../hooks/use-hide';
+import { usePostPageNumber } from '../../hooks/use-post-page-number';
 import usePrefetchIntent from '../../hooks/use-prefetch-intent';
+import usePinnedCatalogThreadsStore, { getPinnedThreadNewReplyCount } from '../../stores/use-pinned-catalog-threads-store';
 import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
 import { CATALOG_PREVIEW_MARKDOWN_OPTIONS, removeMarkdown } from '../../lib/utils/post-utils';
 import GifFirstFrameCanvas from '../gif-first-frame-canvas';
@@ -36,9 +38,10 @@ interface CatalogPostMediaProps {
   linkWidth?: number;
   linkHeight?: number;
   matchedFilterColor?: string;
+  pinned?: boolean;
 }
 
-export const CatalogPostMedia = ({ cid, commentMediaInfo, linkWidth, linkHeight, matchedFilterColor }: CatalogPostMediaProps) => {
+export const CatalogPostMedia = ({ cid, commentMediaInfo, linkWidth, linkHeight, matchedFilterColor, pinned = false }: CatalogPostMediaProps) => {
   void cid;
   const { patternThumbnailUrl, thumbnail, type, url } = commentMediaInfo || {};
   const iframeThumbnail = patternThumbnailUrl || thumbnail;
@@ -129,7 +132,7 @@ export const CatalogPostMedia = ({ cid, commentMediaInfo, linkWidth, linkHeight,
 
   return (
     <div
-      className={hasError || isIframeThumbnailUnavailable ? '' : styles.mediaWrapper}
+      className={`${hasError || isIframeThumbnailUnavailable ? '' : styles.mediaWrapper} ${pinned && !matchedFilterColor ? styles.pinned : ''}`}
       style={{
         ...CSSProperties,
         ...(matchedFilterColor ? { border: `3px solid ${matchedFilterColor}` } : {}),
@@ -198,6 +201,18 @@ const CatalogPostPreview = ({ post, visible, showCommunityAddress, floatingRef, 
   );
 };
 
+// Like 4chan, a pinned thread's meta line also shows its board page. Only pinned threads resolve it.
+const PinnedThreadPage = ({ cid, communityAddress }: { cid: string; communityAddress: string | undefined }) => {
+  const page = usePostPageNumber({ communityAddress, postCid: cid });
+  if (page === undefined) return null;
+  return (
+    <span>
+      {' '}
+      / P: <b>{page}</b>
+    </span>
+  );
+};
+
 // Memoize CatalogPost to prevent rerenders when parent rerenders due to updatingState
 const CatalogPost = memo(
   ({ matchedFilterColor, post, showHiddenPost = false }: { matchedFilterColor?: string; post: Comment; showHiddenPost?: boolean }) => {
@@ -212,6 +227,10 @@ const CatalogPost = memo(
 
     const { hidden } = useHide({ cid, comment: resolvedPost });
     const shouldMaskPost = hidden && !showHiddenPost;
+    const pinnedThread = usePinnedCatalogThreadsStore((state) => (cid ? state.pinnedThreads[cid] : undefined));
+    // The hidden threads list shows threads as they are, like 4chan's hidden mode.
+    const isPinned = Boolean(pinnedThread) && !showHiddenPost;
+    const newReplyCount = pinnedThread ? getPinnedThreadNewReplyCount(pinnedThread, replyCount) : 0;
 
     const location = useLocation();
     const params = useParams();
@@ -354,7 +373,7 @@ const CatalogPost = memo(
                   <div className={`${styles.mediaPaddingWrapper} ${shouldMaskPost && styles.hidden}`} ref={refs.setReference}>
                     {threadIcons}
                     {spoiler ? (
-                      <img src='assets/spoiler.png' alt='' />
+                      <img src='assets/spoiler.png' alt='' className={isPinned ? styles.pinned : undefined} />
                     ) : (
                       <CatalogPostMedia
                         cid={cid}
@@ -362,6 +381,7 @@ const CatalogPost = memo(
                         linkWidth={linkWidth}
                         linkHeight={linkHeight}
                         matchedFilterColor={matchedFilterColor}
+                        pinned={isPinned}
                       />
                     )}
                   </div>
@@ -370,14 +390,17 @@ const CatalogPost = memo(
             ) : (
               threadIcons
             )}
-            <div className={styles.meta} title={requirePostLinkIsMedia ? '(R)eplies / (I)mage Replies' : '(R)eplies / (L)ink Replies'}>
+            <div className={styles.meta} title={`${requirePostLinkIsMedia ? '(R)eplies / (I)mage Replies' : '(R)eplies / (L)ink Replies'}${isPinned ? ' / (P)age' : ''}`}>
               R: <b>{replyCount || '0'}</b>
+              {/* 4chan writes the zero count without a space. */}
+              {isPinned && (newReplyCount > 0 ? ` (+${newReplyCount})` : '(+0)')}
               {linkCount > 0 && (
                 <span>
                   {' '}
                   / {requirePostLinkIsMedia ? 'I' : 'L'}: <b>{linkCount}</b>
                 </span>
               )}
+              {isPinned && cid && <PinnedThreadPage cid={cid} communityAddress={communityAddress} />}
               <span className={`${styles.postMenu} ${hoveredCid && styles.postMenuVisible}`}>
                 <PostMenuDesktop postMenu={postMenuProps} />
               </span>

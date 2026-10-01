@@ -511,5 +511,7 @@
   "thread_update_connection_error": "Kesalahan koneksi",
   "thread_update_thread_archived": "Thread ini telah diarsipkan",
   "thread_update_thread_deleted": "Thread ini telah dipangkas atau dihapus",
-  "fetch_new_replies_automatically": "Ambil balasan baru secara otomatis"
+  "fetch_new_replies_automatically": "Ambil balasan baru secara otomatis",
+  "pin_thread": "sematkan utas",
+  "unpin_thread": "lepas sematan utas"
 }

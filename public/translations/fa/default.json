@@ -511,5 +511,7 @@
   "thread_update_connection_error": "خطای اتصال",
   "thread_update_thread_archived": "این موضوع بایگانی شده است",
   "thread_update_thread_deleted": "این موضوع پاک‌سازی یا حذف شده است",
-  "fetch_new_replies_automatically": "دریافت خودکار پاسخ‌های جدید"
+  "fetch_new_replies_automatically": "دریافت خودکار پاسخ‌های جدید",
+  "pin_thread": "سنجاق کردن موضوع",
+  "unpin_thread": "برداشتن سنجاق موضوع"
 }

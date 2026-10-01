@@ -14,6 +14,7 @@ import useExpandedTimeFilter from '../../hooks/use-expanded-time-filter';
 import { filterHiddenComments, isCidHidden, useHiddenCids } from '../../hooks/use-hide';
 import useHiddenCatalogThreads from '../../hooks/use-hidden-catalog-threads';
 import usePruneHiddenCatalogThreads from '../../hooks/use-prune-hidden-catalog-threads';
+import usePinnedCatalogThreads from '../../hooks/use-pinned-catalog-threads';
 import { useSuggestionFeedLoader } from '../../hooks/use-suggestion-feed-loader';
 import useTimeFilter from '../../hooks/use-time-filter';
 import useIsMobile from '../../hooks/use-is-mobile';
@@ -34,7 +35,7 @@ import { ModEmptyState } from '../../components/mod-empty-state';
 import styles from './catalog.module.css';
 import { commentMatchesPattern } from '../../lib/utils/pattern-utils';
 import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
-import { sortCatalogFeedForDisplay } from '../../lib/utils/catalog-sort';
+import { placePinnedCatalogThreads, sortCatalogFeedForDisplay } from '../../lib/utils/catalog-sort';
 import { getCommentCommunityAddress } from '../../lib/utils/comment-utils';
 import { getSearchWithTimeFilter, getTimeFilterSuggestion, type TimeFilterSuggestion } from '../../lib/utils/time-filter-utils';
 import {
@@ -585,7 +586,16 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   const moreThreadsSuggestionPathname = isInAllView ? '/all/catalog' : isInSubscriptionsView ? '/subs/catalog' : isInModView ? '/mod/catalog' : null;
 
   const catalogBaseFeed = showHiddenThreads ? hiddenCatalogThreads : cappedFeed;
-  const sortedFeed = useMemo(() => sortCatalogFeedForDisplay(catalogBaseFeed, sortType), [catalogBaseFeed, sortType]);
+  const pinnedCatalogThreads = usePinnedCatalogThreads({
+    communityAddresses,
+    enabled: !showHiddenThreads,
+    filter: suggestionFilter.filter,
+    hiddenCids,
+  });
+  const sortedFeed = useMemo(
+    () => placePinnedCatalogThreads(sortCatalogFeedForDisplay(catalogBaseFeed, sortType), pinnedCatalogThreads),
+    [catalogBaseFeed, pinnedCatalogThreads, sortType],
+  );
 
   useEffect(() => {
     if (filteredComments.length > 0 && !resetTriggeredRef.current) {

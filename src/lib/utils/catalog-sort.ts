@@ -10,6 +10,7 @@ export interface CatalogPost {
   replyCount?: number | null;
   lastReplyTimestamp?: number | null;
   timestamp?: number | null;
+  updatedAt?: number | null;
 }
 
 /** Sort types supported by the catalog feed */
@@ -59,4 +60,37 @@ export function sortCatalogFeedForDisplay<T extends CatalogPost>(posts: T[], sor
   });
 
   return [...pinned, ...unpinned];
+}
+
+/**
+ * Place the viewer's pinned threads right after the sticky threads, like 4chan's catalog. A pinned
+ * thread that is also sticky stays with the sticky threads. Each pinned thread shows whichever copy,
+ * the feed's or the live one, has the newer update. Threads keep their feed order, and pinned threads
+ * the feed has not loaded follow the ones it has.
+ */
+export function placePinnedCatalogThreads<T extends CatalogPost>(posts: T[], pinnedPosts: T[]): T[] {
+  if (pinnedPosts.length === 0) return posts;
+
+  const pinnedPostsByCid = new Map(pinnedPosts.map((post) => [post.cid, post]));
+  const placedCids = new Set<string>();
+  const pinnedGroup: T[] = [];
+  const otherPosts: T[] = [];
+
+  for (const post of posts) {
+    const pinnedPost = post.cid ? pinnedPostsByCid.get(post.cid) : undefined;
+    if (!pinnedPost || !post.cid) {
+      otherPosts.push(post);
+      continue;
+    }
+    const newerPost = (pinnedPost.updatedAt ?? 0) >= (post.updatedAt ?? 0) ? pinnedPost : post;
+    placedCids.add(post.cid);
+    if (post.pinned) otherPosts.push(newerPost);
+    else pinnedGroup.push(newerPost);
+  }
+  for (const pinnedPost of pinnedPosts) {
+    if (pinnedPost.cid && !placedCids.has(pinnedPost.cid)) pinnedGroup.push(pinnedPost);
+  }
+
+  const lastStickyIndex = otherPosts.map((post) => post.pinned).lastIndexOf(true);
+  return [...otherPosts.slice(0, lastStickyIndex + 1), ...pinnedGroup, ...otherPosts.slice(lastStickyIndex + 1)];
 }

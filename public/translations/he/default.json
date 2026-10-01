@@ -511,5 +511,7 @@
   "thread_update_connection_error": "שגיאת חיבור",
   "thread_update_thread_archived": "השרשור הזה נמצא בארכיון",
   "thread_update_thread_deleted": "השרשור הזה הוסר או נמחק",
-  "fetch_new_replies_automatically": "טען תגובות חדשות באופן אוטומטי"
+  "fetch_new_replies_automatically": "טען תגובות חדשות באופן אוטומטי",
+  "pin_thread": "הצמד ת’רד",
+  "unpin_thread": "בטל הצמדת ת’רד"
 }

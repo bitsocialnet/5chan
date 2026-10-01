@@ -511,5 +511,7 @@
   "thread_update_connection_error": "Σφάλμα σύνδεσης",
   "thread_update_thread_archived": "Αυτό το νήμα είναι αρχειοθετημένο",
   "thread_update_thread_deleted": "Αυτό το νήμα έχει αφαιρεθεί ή διαγραφεί",
-  "fetch_new_replies_automatically": "Αυτόματη λήψη νέων απαντήσεων"
+  "fetch_new_replies_automatically": "Αυτόματη λήψη νέων απαντήσεων",
+  "pin_thread": "καρφίτσωμα νήματος",
+  "unpin_thread": "ξεκαρφίτσωμα νήματος"
 }

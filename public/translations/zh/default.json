@@ -511,5 +511,7 @@
   "thread_update_connection_error": "连接错误",
   "thread_update_thread_archived": "此主题已归档",
   "thread_update_thread_deleted": "此主题已被清理或删除",
-  "fetch_new_replies_automatically": "自动获取新回复"
+  "fetch_new_replies_automatically": "自动获取新回复",
+  "pin_thread": "固定主题",
+  "unpin_thread": "取消固定主题"
 }

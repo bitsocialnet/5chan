@@ -511,5 +511,7 @@
   "thread_update_connection_error": "接続エラー",
   "thread_update_thread_archived": "このスレッドはアーカイブされています",
   "thread_update_thread_deleted": "このスレッドは落ちたか削除されました",
-  "fetch_new_replies_automatically": "新しい返信を自動で取得"
+  "fetch_new_replies_automatically": "新しい返信を自動で取得",
+  "pin_thread": "スレッドをピン留め",
+  "unpin_thread": "スレッドのピン留めを解除"
 }

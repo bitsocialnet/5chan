@@ -511,5 +511,7 @@
   "thread_update_connection_error": "Error sa koneksyon",
   "thread_update_thread_archived": "Naka-archive ang thread na ito",
   "thread_update_thread_deleted": "Ang thread na ito ay inalis o tinanggal na",
-  "fetch_new_replies_automatically": "Awtomatikong kunin ang mga bagong tugon"
+  "fetch_new_replies_automatically": "Awtomatikong kunin ang mga bagong tugon",
+  "pin_thread": "i-pin ang thread",
+  "unpin_thread": "i-unpin ang thread"
 }

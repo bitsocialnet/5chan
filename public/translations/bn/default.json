@@ -511,5 +511,7 @@
   "thread_update_connection_error": "সংযোগ ত্রুটি",
   "thread_update_thread_archived": "এই থ্রেডটি আর্কাইভ করা হয়েছে",
   "thread_update_thread_deleted": "এই থ্রেডটি সরিয়ে ফেলা বা মুছে ফেলা হয়েছে",
-  "fetch_new_replies_automatically": "নতুন উত্তর স্বয়ংক্রিয়ভাবে আনুন"
+  "fetch_new_replies_automatically": "নতুন উত্তর স্বয়ংক্রিয়ভাবে আনুন",
+  "pin_thread": "থ্রেড পিন করুন",
+  "unpin_thread": "থ্রেড আনপিন করুন"
 }

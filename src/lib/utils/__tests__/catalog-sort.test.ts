@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { sortCatalogFeedForDisplay, type CatalogPost } from '../catalog-sort';
+import { placePinnedCatalogThreads, sortCatalogFeedForDisplay, type CatalogPost } from '../catalog-sort';
 
 describe('sortCatalogFeedForDisplay', () => {
   describe('replyCount sort', () => {
@@ -84,5 +84,36 @@ describe('sortCatalogFeedForDisplay', () => {
       expect(result).toBe(posts);
       expect(result.map((p) => p.cid)).toEqual(['c', 'a', 'b']);
     });
+  });
+});
+
+describe('placePinnedCatalogThreads', () => {
+  it('returns the feed unchanged when nothing is pinned', () => {
+    const posts: CatalogPost[] = [{ cid: 'a' }, { cid: 'b' }];
+    expect(placePinnedCatalogThreads(posts, [])).toBe(posts);
+  });
+
+  it('places pinned threads after the sticky threads in feed order, then pinned threads the feed has not loaded', () => {
+    const posts: CatalogPost[] = [{ cid: 'sticky', pinned: true }, { cid: 'a' }, { cid: 'pinned-2' }, { cid: 'b' }, { cid: 'pinned-1' }];
+    const pinnedPosts: CatalogPost[] = [{ cid: 'pinned-1' }, { cid: 'unloaded' }, { cid: 'pinned-2' }];
+
+    expect(placePinnedCatalogThreads(posts, pinnedPosts).map((post) => post.cid)).toEqual(['sticky', 'pinned-2', 'pinned-1', 'unloaded', 'a', 'b']);
+  });
+
+  it('puts pinned threads first without sticky threads and keeps a pinned sticky thread with the sticky ones', () => {
+    expect(placePinnedCatalogThreads([{ cid: 'a' }, { cid: 'pinned' }], [{ cid: 'pinned' }]).map((post) => post.cid)).toEqual(['pinned', 'a']);
+    expect(
+      placePinnedCatalogThreads([{ cid: 'sticky-1', pinned: true }, { cid: 'sticky-2', pinned: true }, { cid: 'a' }], [{ cid: 'sticky-1', pinned: true }]).map(
+        (post) => post.cid,
+      ),
+    ).toEqual(['sticky-1', 'sticky-2', 'a']);
+  });
+
+  it('shows the copy with the newer update', () => {
+    const feedPost: CatalogPost = { cid: 'pinned', replyCount: 3, updatedAt: 100 };
+    const livePost: CatalogPost = { cid: 'pinned', replyCount: 5, updatedAt: 200 };
+
+    expect(placePinnedCatalogThreads([feedPost], [livePost])[0]).toBe(livePost);
+    expect(placePinnedCatalogThreads([livePost], [feedPost])[0]).toBe(livePost);
   });
 });

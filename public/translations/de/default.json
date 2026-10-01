@@ -511,5 +511,7 @@
   "thread_update_connection_error": "Verbindungsfehler",
   "thread_update_thread_archived": "Dieser Thread ist archiviert",
   "thread_update_thread_deleted": "Dieser Thread wurde entfernt oder gelöscht",
-  "fetch_new_replies_automatically": "Neue Antworten automatisch abrufen"
+  "fetch_new_replies_automatically": "Neue Antworten automatisch abrufen",
+  "pin_thread": "Thread anheften",
+  "unpin_thread": "Thread lösen"
 }
