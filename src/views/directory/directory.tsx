@@ -25,12 +25,8 @@ import { useVoteTally } from '../../hooks/use-vote-tally';
 import { type DirectoryVoteOutcome, useDirectoryVote } from '../../hooks/use-directory-vote';
 import { rankDirectoryBoardsByVoteTally, type RankedDirectoryVoteBoard } from '../../lib/directory-vote-ranking';
 import { isTestnetVotingChain, TESTNET_PASS_FAUCET_URL } from '../../lib/pubsub-voter';
-import {
-  getDirectoryBoardRequirements,
-  getDirectoryBoardRequirementSetting,
-  getUnmetDirectoryBoardRequirements,
-  type DirectoryBoardRequirement,
-} from '../../lib/directory-board-requirements';
+import { useDirectoryBoardRequirements } from '../../hooks/use-directory-board-requirements';
+import { getDirectoryBoardRequirementSetting, getUnmetDirectoryBoardRequirements, type DirectoryBoardRequirement } from '../../lib/directory-board-requirements';
 import postStyles from '../../components/post-styles';
 import styles from '../../components/directory-layout';
 
@@ -389,7 +385,7 @@ const Directory = () => {
   const [voteNotice, setVoteNotice] = useState<VoteNotice>();
 
   const ranked = useMemo(() => (list ? rankDirectoryBoardsByVoteTally(list.boards, tally, { orderByVotes: !isTestnetVote }) : []), [list, tally, isTestnetVote]);
-  const requirements = useMemo(() => getDirectoryBoardRequirements(list?.features), [list?.features]);
+  const requirements = useDirectoryBoardRequirements(list);
   const directoryTitle = list?.title || (boardIdentifier ? `/${boardIdentifier}/ - ${t('directory')}` : t('directory'));
 
   useEffect(() => {

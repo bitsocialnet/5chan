@@ -114,8 +114,11 @@ vi.mock('../../../components/tooltip/tooltip', () => ({
     createElement('span', { title: typeof content === 'string' ? content : undefined }, children),
 }));
 
+const directoryDefaults = { directories: {} };
+
 vi.mock('../../../hooks/use-directories', () => ({
   useDirectories: () => testState.directories,
+  useDirectoryDefaults: () => directoryDefaults,
 }));
 
 vi.mock('../../../hooks/use-directory-list', async () => {

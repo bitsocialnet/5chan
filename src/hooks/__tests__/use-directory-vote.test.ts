@@ -12,6 +12,7 @@ const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise
 
 const testState = vi.hoisted(() => ({
   account: undefined as unknown,
+  resolveDirectoryBoard: undefined as unknown as (address: string) => Promise<unknown>,
   publishDirectoryVote: vi.fn<(...args: unknown[]) => Promise<unknown>>(),
 }));
 
@@ -33,7 +34,7 @@ vi.mock('../../lib/pubsub-voter', () => ({
 
 vi.mock('../../lib/directory-vote-publishing', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../lib/directory-vote-publishing')>()),
-  resolveDirectoryBoard: async (address: string) => ({ status: 'resolved', target: { name: address, publicKey: '12D3KooWNewBoard' } }),
+  resolveDirectoryBoard: (address: string) => testState.resolveDirectoryBoard(address),
   publishDirectoryVote: (...args: unknown[]) => testState.publishDirectoryVote(...args),
 }));
 
@@ -82,18 +83,25 @@ describe('useDirectoryVote submitBoard', () => {
   const requirements: DirectoryBoardRequirement[] = [{ type: 'pseudonymityMode', mode: 'per-reply' }, { type: 'pendingApproval' }];
   const voteTally = { state: 'joining', criteria: { ...criteria, bucketChainId: 84532 } } as VoteTallyState;
 
-  const mount = async (getCommunity: (target: unknown) => Promise<unknown>) => {
+  const resolved = async (address: string) => ({ status: 'resolved', target: { name: address, publicKey: '12D3KooWNewBoard' } });
+
+  const mount = async (getCommunity: (target: unknown) => Promise<unknown>, resolveBoard = resolved) => {
     testState.account = { pkc: { getCommunity: vi.fn(getCommunity) } };
+    testState.resolveDirectoryBoard = resolveBoard;
     testState.publishDirectoryVote.mockReset();
     testState.publishDirectoryVote.mockResolvedValue({ status: 'published', topic: 'topic-a', blockNumber: 1800 });
     let state: DirectoryVoteState | undefined;
-    const Harness = () => {
-      state = useDirectoryVote(voteTally);
+    const Harness = ({ tally }: { tally: VoteTallyState }) => {
+      state = useDirectoryVote(tally);
       return null;
     };
     const root = createRoot(document.createElement('div'));
-    await act(async () => root.render(createElement(Harness)));
-    return { submitBoard: () => state!.submitBoard('new-board.bso', requirements), unmount: () => act(() => root.unmount()) };
+    await act(async () => root.render(createElement(Harness, { tally: voteTally })));
+    return {
+      submitBoard: () => state!.submitBoard('new-board.bso', requirements),
+      switchDirectory: (tally: VoteTallyState) => act(async () => root.render(createElement(Harness, { tally }))),
+      unmount: () => act(() => root.unmount()),
+    };
   };
 
   const submit = async (getCommunity: (target: unknown) => Promise<unknown>) => {
@@ -155,5 +163,26 @@ describe('useDirectoryVote submitBoard', () => {
 
     expect(await pending).toEqual({ status: 'cancelled' });
     expect(testState.publishDirectoryVote).not.toHaveBeenCalled();
+  });
+
+  it('cancels without checking or voting when the user moves to another directory while the board resolves', async () => {
+    let finishResolving: () => void = () => {};
+    const getCommunity = async () => ({ features: { pseudonymityMode: 'per-reply' }, challenges: [{ pendingApproval: true }] });
+    const { submitBoard, switchDirectory, unmount } = await mount(
+      getCommunity,
+      (address) =>
+        new Promise((resolve) => {
+          finishResolving = () => resolve({ status: 'resolved', target: { name: address, publicKey: '12D3KooWNewBoard' } });
+        }),
+    );
+
+    const pending = submitBoard();
+    await switchDirectory({ state: 'joining', criteria: { ...criteria, contestId: '5chan-dir-pol-vote-test-1', bucketChainId: 84532 } } as VoteTallyState);
+    finishResolving();
+
+    expect(await pending).toEqual({ status: 'cancelled' });
+    expect((testState.account as { pkc: { getCommunity: ReturnType<typeof vi.fn> } }).pkc.getCommunity).not.toHaveBeenCalled();
+    expect(testState.publishDirectoryVote).not.toHaveBeenCalled();
+    unmount();
   });
 });

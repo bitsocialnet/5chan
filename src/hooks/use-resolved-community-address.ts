@@ -4,7 +4,8 @@ import type { CommunitySyncState } from '@bitsocial/bitsocial-react-hooks';
 import { normalizeBoardAddress, useDirectories } from './use-directories';
 import { getDirectoryCodeForBoardAddress, pickDirectoryWinner, useDirectoryList, type DirectoryListBoard } from './use-directory-list';
 import type { DirectoryList } from '../lib/utils/directory-list-utils';
-import { getDirectoryBoardEligibility, getDirectoryBoardRequirements, type DirectoryBoardRecord } from '../lib/directory-board-requirements';
+import { getDirectoryBoardEligibility, type DirectoryBoardRecord } from '../lib/directory-board-requirements';
+import { useDirectoryBoardRequirements } from './use-directory-board-requirements';
 import useCommunityOfflineStore from '../stores/use-community-offline-store';
 import { areSameBoardAddress, getCommunityAddress, getBoardPath, isDirectoryRoute } from '../lib/utils/route-utils';
 import { isCommunityKnownOffline, type CommunityFreshnessState } from '../lib/utils/community-freshness-utils';
@@ -50,6 +51,7 @@ const getCommunityLifecycleState = (
   const directSyncStatus = (communityPublicKey && syncStatuses?.[communityPublicKey]) || syncStatuses?.[communityAddress];
   let syncState = directSyncStatus?.syncState;
   let matchedCommunity: StoredCommunity | undefined;
+  let matchedRecord: StoredCommunity | undefined;
   const normalizedAddress = normalizeBoardAddress(communityAddress);
 
   for (const [key, community] of Object.entries(communities || {})) {
@@ -64,6 +66,13 @@ const getCommunityLifecycleState = (
       (!matchedCommunity || (community.updatedAt !== undefined && (matchedCommunity.updatedAt === undefined || community.updatedAt > matchedCommunity.updatedAt)))
     ) {
       matchedCommunity = community;
+    }
+
+    // A board's requirements are judged only on a record signed by its own key when the key is
+    // known, never on a record from another key that shares its name.
+    const isPinnedRecord = !communityPublicKey || key === communityPublicKey || community?.publicKey === communityPublicKey;
+    if (community?.updatedAt !== undefined && isPinnedRecord && (matchedRecord?.updatedAt === undefined || community.updatedAt > matchedRecord.updatedAt)) {
+      matchedRecord = community;
     }
 
     if (!syncState) {
@@ -81,7 +90,7 @@ const getCommunityLifecycleState = (
     syncState,
     updatedAt: matchedCommunity?.updatedAt,
     // A community without updatedAt has not loaded its record yet.
-    record: matchedCommunity?.updatedAt !== undefined ? matchedCommunity : undefined,
+    record: matchedRecord,
   };
 };
 
@@ -158,7 +167,7 @@ const subscribeDirectoryWinner = (listener: () => void) => {
  */
 const useDirectoryWinnerAddress = (list: DirectoryList | null, enabled: boolean): string | undefined => {
   const boards = list?.boards;
-  const requirements = useMemo(() => getDirectoryBoardRequirements(list?.features), [list?.features]);
+  const requirements = useDirectoryBoardRequirements(list);
   const shouldSubscribe = enabled && !!boards?.length;
   const subscribe = useCallback(
     (onStoreChange: () => void) => {

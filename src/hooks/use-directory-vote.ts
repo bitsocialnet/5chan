@@ -23,7 +23,7 @@ export type DirectoryVoteOutcome =
   /** The board's record could not be loaded to check it against the directory's requirements. */
   | { status: 'board-unreachable' }
   | { status: 'board-ineligible'; unmet: DirectoryBoardRequirement[] }
-  /** The directory was left while the board's record was loading, so nothing was published. */
+  /** The directory was left while the board was resolving or its record loading, so nothing was published. */
   | { status: 'cancelled' }
   | { status: 'ineligible'; address: string; error: string; testnet: boolean }
   | { status: 'failed'; error: Error };
@@ -83,13 +83,13 @@ export const useDirectoryVote = (voteTally: VoteTallyState): DirectoryVoteState 
   const setVote = useDirectoryVotesStore((state) => state.setVote);
   const removeVote = useDirectoryVotesStore((state) => state.removeVote);
   const [pendingVote, setPendingVote] = useState<PendingDirectoryVote>();
-  const requirementsScopeRef = useRef<AbortController>(undefined);
+  const directoryScopeRef = useRef<AbortController>(undefined);
 
-  // Leaving the directory, or moving to another one, cancels a pending requirements check so a
-  // board submitted there is never voted for later.
+  // Leaving the directory, or moving to another one, cancels a vote still resolving its board or
+  // checking its record, so it is never published for a directory the user left.
   useEffect(() => {
     const scope = new AbortController();
-    requirementsScopeRef.current = scope;
+    directoryScopeRef.current = scope;
     return () => scope.abort();
   }, [criteria?.contestId]);
 
@@ -129,6 +129,8 @@ export const useDirectoryVote = (voteTally: VoteTallyState): DirectoryVoteState 
   const resolveAndVote = async (address: string, pending: PendingDirectoryVote, requirements?: DirectoryBoardRequirement[]): Promise<DirectoryVoteOutcome> => {
     if (!criteria || !voteSigner || !helia || (requirements && !pkc)) return { status: 'unavailable' };
 
+    // Taken before the first await: the ref moves on to the next directory's scope.
+    const scope = directoryScopeRef.current?.signal;
     setPendingVote(pending);
     let resolution: Awaited<ReturnType<typeof resolveDirectoryBoard>>;
     try {
@@ -137,12 +139,15 @@ export const useDirectoryVote = (voteTally: VoteTallyState): DirectoryVoteState 
       setPendingVote(undefined);
       return { status: 'failed', error: asError(error) };
     }
+    if (scope?.aborted) {
+      setPendingVote(undefined);
+      return { status: 'cancelled' };
+    }
     if (resolution.status !== 'resolved') {
       setPendingVote(undefined);
       return { status: 'board-not-found' };
     }
     if (requirements && pkc) {
-      const scope = requirementsScopeRef.current?.signal;
       const controller = new AbortController();
       const cancel = () => controller.abort();
       scope?.addEventListener('abort', cancel);

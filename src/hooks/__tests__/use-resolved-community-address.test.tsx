@@ -26,6 +26,7 @@ const testState = vi.hoisted(() => ({
       { address: 'bizraelis.bso', score: 10 },
     ],
   },
+  directoryDefaults: { directories: {} } as { directories: Record<string, { features?: Record<string, unknown> }> },
   offlineStates: {} as Record<string, { updatedAt?: number; state?: string }>,
   communities: {} as Record<
     string,
@@ -47,6 +48,7 @@ vi.mock('react-router-dom', async () => {
 
 vi.mock('../use-directories', () => ({
   useDirectories: () => testState.directories,
+  useDirectoryDefaults: () => testState.directoryDefaults,
   normalizeBoardAddress: (address: string) => address.replace(/\.(bso|eth)$/, ''),
 }));
 
@@ -141,6 +143,7 @@ describe('useResolvedCommunityAddress', () => {
       { address: 'bizraelis.bso', score: 10 },
     ];
     testState.list.features = undefined;
+    testState.directoryDefaults = { directories: {} };
     testState.offlineStates = {};
     testState.communities = {};
     testState.syncStatuses = {};
@@ -629,6 +632,47 @@ describe('useResolvedCommunityAddress', () => {
       await renderHook();
 
       expect(latestValue).toBe('business-and-finance.bso');
+    });
+
+    it('skips a lower candidate whose record has not loaded for one already known to qualify', async () => {
+      testState.list.boards = [...testState.list.boards, { address: 'biz-third.bso', score: 1 }];
+      testState.communities = {
+        '12D3KooWBusiness': topRecord({ pseudonymityMode: 'per-author' }),
+        'biz-third.bso': { ...lowerRecord({ pseudonymityMode: 'per-post' }), address: 'biz-third.bso', name: 'biz-third.bso' },
+      };
+
+      await renderHook();
+
+      expect(latestValue).toBe('biz-third.bso');
+    });
+
+    it('judges a board on the record signed by its own key, not a newer record from another key with its name', async () => {
+      testState.communities = {
+        '12D3KooWBusiness': topRecord({ pseudonymityMode: 'per-author' }),
+        '12D3KooWOtherKey': {
+          ...topRecord({ pseudonymityMode: 'per-post' }),
+          address: '12D3KooWOtherKey',
+          publicKey: '12D3KooWOtherKey',
+          updatedAt: freshUpdatedAt + 30,
+        },
+        'bizraelis.bso': lowerRecord({ pseudonymityMode: 'per-post' }),
+      };
+
+      await renderHook();
+
+      expect(latestValue).toBe('bizraelis.bso');
+    });
+
+    it('checks the latest directory defaults instead of the features bundled with the list', async () => {
+      testState.directoryDefaults = { directories: { biz: { features: { pseudonymityMode: 'per-reply' } } } };
+      testState.communities = {
+        '12D3KooWBusiness': topRecord({ pseudonymityMode: 'per-post' }),
+        'bizraelis.bso': lowerRecord({ pseudonymityMode: 'per-reply' }),
+      };
+
+      await renderHook();
+
+      expect(latestValue).toBe('bizraelis.bso');
     });
 
     it('keeps a qualifying top board over a qualifying lower board', async () => {

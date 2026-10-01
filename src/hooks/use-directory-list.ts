@@ -320,10 +320,10 @@ export const useDirectoryLists = (directoryCodes: string[] | undefined): Directo
 
 /**
  * Pick the winning board for a directory: the highest-ranked online board that meets the
- * directory's requirements. The winner only moves past the top online board to one already known
- * to qualify, so it never bounces between candidates while their records load. Without a
- * qualifying board the top online board still hosts, and if every candidate looks offline, the
- * highest-ranked board, so the user still lands somewhere.
+ * directory's requirements. The top online board keeps hosting until its record loads, and the
+ * winner only moves past it to a board whose record is known to qualify, so it never moves to a
+ * board that later turns out not to. Without a qualifying board the top online board still hosts,
+ * and if every candidate looks offline, the highest-ranked board, so the user still lands somewhere.
  */
 export const pickDirectoryWinner = (
   boards: DirectoryListBoard[],
@@ -338,7 +338,7 @@ export const pickDirectoryWinner = (
     topOnline ??= board;
     const eligibility = getEligibility(board);
     if (eligibility === 'eligible') return board;
-    if (eligibility === 'unknown') return topOnline;
+    if (eligibility === 'unknown' && board === topOnline) return topOnline;
   }
   return topOnline ?? ranked[0];
 };
