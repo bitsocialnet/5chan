@@ -317,7 +317,9 @@ const useThreadLiveUpdatesStore = create<ThreadLiveUpdatesState>((set, get) => {
         deadReason: reason,
         enabled: false,
         isUpdating: false,
-        ...(announce ? { faviconAlert: 'dead' as const, status: { type: 'error' as const, reason } } : {}),
+        // A thread found dead when it loads has no controls, so no countdown or update started before it loaded stays shown.
+        status: announce ? { type: 'error', reason } : { type: 'idle' },
+        ...(announce ? { faviconAlert: 'dead' as const } : {}),
       });
       writeAutoSession(threadCid, false);
     },

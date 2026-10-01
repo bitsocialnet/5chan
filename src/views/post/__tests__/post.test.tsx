@@ -239,6 +239,7 @@ vi.mock('../../../components/post-desktop/post-desktop', () => ({
         'data-pending-approval': post?.pendingApproval === undefined ? '' : String(post.pendingApproval),
         'data-reply-count': post?.replyCount === undefined ? '' : String(post.replyCount),
         'data-replies': replyPaginationOverride?.replies?.map((reply) => reply.cid).join(',') || '',
+        'data-reply-contents': replyPaginationOverride?.replies?.map((reply) => reply.content).join('|') || '',
         'data-roles-present': String(roles !== undefined),
         'data-transfer-enabled': String(typeof onTransfer === 'function'),
         'data-transferred': String(hasTransferredMarker(post)),
@@ -274,6 +275,7 @@ vi.mock('../../../components/post-mobile/post-mobile', () => ({
         'data-pending-approval': post?.pendingApproval === undefined ? '' : String(post.pendingApproval),
         'data-reply-count': post?.replyCount === undefined ? '' : String(post.replyCount),
         'data-replies': replyPaginationOverride?.replies?.map((reply) => reply.cid).join(',') || '',
+        'data-reply-contents': replyPaginationOverride?.replies?.map((reply) => reply.content).join('|') || '',
         'data-roles-present': String(roles !== undefined),
         'data-transfer-enabled': String(typeof onTransfer === 'function'),
         'data-transferred': String(hasTransferredMarker(post)),
@@ -1213,6 +1215,23 @@ describe('Post', () => {
         }),
       ]),
     );
+  });
+
+  it('shows the refreshed reply pages copy of a linked reply once it is newer than the reply loaded with the page', async () => {
+    const linkedReply = { cid: 'reply-cid', communityAddress: 'music-posting.eth', parentCid: 'root-cid', postCid: 'root-cid', timestamp: 2 };
+    testState.commentsByCid = {
+      'reply-cid': { ...linkedReply, content: 'original body', updatedAt: 100 },
+      'root-cid': { cid: 'root-cid', communityAddress: 'music-posting.eth', number: 31, postCid: 'root-cid', replyCount: 1, timestamp: 1, title: 'Root thread' },
+    };
+    testState.repliesByCommentCid = { 'root-cid': [{ ...linkedReply, content: 'original body', updatedAt: 90 }] };
+
+    await renderPostPage('/mu/thread/reply-cid');
+    const getReplyContents = () => container.querySelector('[data-testid="post-desktop"]')?.getAttribute('data-reply-contents');
+    expect(getReplyContents()).toBe('original body');
+
+    testState.repliesByCommentCid = { 'root-cid': [{ ...linkedReply, content: 'edited body', updatedAt: 200 }] };
+    await renderPostPage('/mu/thread/reply-cid');
+    expect(getReplyContents()).toBe('edited body');
   });
 
   it('evicts stale thread caches before refreshing a manual thread update', async () => {

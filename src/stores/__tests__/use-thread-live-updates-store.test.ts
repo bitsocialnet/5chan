@@ -214,7 +214,7 @@ describe('useThreadLiveUpdatesStore', () => {
     expect(getState()).toMatchObject({ isUpdating: false, status: { type: 'error', reason: 'connection' } });
   });
 
-  it('polls a hidden tab no faster than once a minute', async () => {
+  it('checks a hidden tab 10 seconds after it hides, then backs off from the one-minute step like 4chan', async () => {
     openThreadWithRefresh();
     getState().setEnabled(true);
 
@@ -327,5 +327,21 @@ describe('useThreadLiveUpdatesStore', () => {
     getState().forceUpdate();
     expect(getState().status).toEqual({ type: 'error', reason: 'deleted' });
     expect(refresh).not.toHaveBeenCalled();
+  });
+
+  it('clears an update or restored countdown that started before the thread loaded as archived', async () => {
+    openThreadWithRefresh(vi.fn(() => new Promise<boolean>(() => undefined)));
+    getState().forceUpdate();
+    expect(getState().status).toEqual({ type: 'updating' });
+    getState().markThreadDead('archived', false);
+    expect(getState()).toMatchObject({ isUpdating: false, status: { type: 'idle' } });
+
+    getState().resetState();
+    sessionStorage.setItem('5chan-thread-auto-update:thread-1', '1');
+    openThreadWithRefresh();
+    expect(getState().status).toEqual({ type: 'countdown', seconds: 10 });
+    getState().markThreadDead('archived', false);
+    await vi.advanceTimersByTimeAsync(3_000);
+    expect(getState()).toMatchObject({ enabled: false, status: { type: 'idle' } });
   });
 });

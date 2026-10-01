@@ -123,10 +123,10 @@ const mergeRepliesWithQueuedReply = (replies: Comment[], queuedReply: CommentWit
   }
 
   const nextReplies = [...replies];
-  nextReplies[queuedReplyIndex] = {
-    ...nextReplies[queuedReplyIndex],
-    ...queuedReply,
-  };
+  const feedReply = replies[queuedReplyIndex];
+  // The linked reply loads once, so after Update or Auto its copy in the refreshed reply pages is newer.
+  const isFeedReplyNewer = typeof feedReply?.updatedAt === 'number' && feedReply.updatedAt > (queuedReply.updatedAt ?? 0);
+  nextReplies[queuedReplyIndex] = isFeedReplyNewer ? { ...queuedReply, ...feedReply } : { ...feedReply, ...queuedReply };
   return nextReplies;
 };
 
