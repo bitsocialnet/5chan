@@ -511,5 +511,17 @@
   "thread_update_connection_error": "Anslutningsfel",
   "thread_update_thread_archived": "Denna tråd är arkiverad",
   "thread_update_thread_deleted": "Denna tråd har rensats bort eller raderats",
-  "fetch_new_replies_automatically": "Hämta nya svar automatiskt"
+  "fetch_new_replies_automatically": "Hämta nya svar automatiskt",
+  "directory_requirement_ids_per_thread": "Skribent-ID:n per tråd",
+  "directory_requirement_no_ids": "Inga skribent-ID:n",
+  "directory_requirement_pseudonymity_mode": "Pseudonymitetsläge {{mode}}",
+  "directory_requirement_sfw": "Markerad som arbetsplatssäker",
+  "directory_requirement_nsfw": "Inte markerad som arbetsplatssäker",
+  "directory_requirement_media_threads": "Trådlänkar måste vara mediefiler",
+  "directory_requirement_mod_queue": "Modereringskö för nya användare",
+  "directory_requirements_title": "Krav för att hosta /{{boardIdentifier}}/:",
+  "directory_requirements_footnote": "Boards måste också följa <rulesLink>reglerna för /{{boardIdentifier}}/</rulesLink> och förbli online. 5chan hoppar över ett board som är offline eller inte uppfyller ett krav och går vidare till nästa som kvalificerar sig.",
+  "directory_status_ineligible_reason": "Saknas: {{requirements}}",
+  "directory_vote_board_ineligible": "{{address}} kan inte skickas in till /{{boardIdentifier}}/ än. Saknas: {{requirements}}.",
+  "directory_vote_board_unreachable": "Det gick inte att läsa in {{address}} för att kontrollera dess inställningar. Ett board måste vara online för att kunna skickas in."
 }

@@ -511,5 +511,17 @@
   "thread_update_connection_error": "সংযোগ ত্রুটি",
   "thread_update_thread_archived": "এই থ্রেডটি আর্কাইভ করা হয়েছে",
   "thread_update_thread_deleted": "এই থ্রেডটি সরিয়ে ফেলা বা মুছে ফেলা হয়েছে",
-  "fetch_new_replies_automatically": "নতুন উত্তর স্বয়ংক্রিয়ভাবে আনুন"
+  "fetch_new_replies_automatically": "নতুন উত্তর স্বয়ংক্রিয়ভাবে আনুন",
+  "directory_requirement_ids_per_thread": "প্রতি থ্রেডে পোস্টকারীর আইডি",
+  "directory_requirement_no_ids": "পোস্টকারীর আইডি নেই",
+  "directory_requirement_pseudonymity_mode": "ছদ্মনাম মোড {{mode}}",
+  "directory_requirement_sfw": "কাজের জন্য নিরাপদ হিসেবে চিহ্নিত",
+  "directory_requirement_nsfw": "কাজের জন্য নিরাপদ হিসেবে চিহ্নিত নয়",
+  "directory_requirement_media_threads": "থ্রেডের লিংক অবশ্যই মিডিয়া ফাইল হতে হবে",
+  "directory_requirement_mod_queue": "নতুন পোস্টকারীদের জন্য মডারেশন সারি",
+  "directory_requirements_title": "/{{boardIdentifier}}/ হোস্ট করার শর্তাবলি:",
+  "directory_requirements_footnote": "এছাড়া বোর্ডগুলোকে <rulesLink>/{{boardIdentifier}}/-এর নিয়ম</rulesLink> মেনে চলতে হবে এবং অনলাইনে থাকতে হবে। কোনো বোর্ড অফলাইন থাকলে বা কোনো শর্ত পূরণ না করলে 5chan সেটি বাদ দিয়ে পরবর্তী যোগ্য বোর্ডটি বেছে নেয়।",
+  "directory_status_ineligible_reason": "যা নেই: {{requirements}}",
+  "directory_vote_board_ineligible": "{{address}} এখনো /{{boardIdentifier}}/-এ জমা দেওয়া যাবে না। যা নেই: {{requirements}}।",
+  "directory_vote_board_unreachable": "সেটিংস যাচাই করতে {{address}} লোড করা যায়নি। জমা দিতে হলে বোর্ডটিকে অনলাইনে থাকতে হবে।"
 }

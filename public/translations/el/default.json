@@ -511,5 +511,17 @@
   "thread_update_connection_error": "Σφάλμα σύνδεσης",
   "thread_update_thread_archived": "Αυτό το νήμα είναι αρχειοθετημένο",
   "thread_update_thread_deleted": "Αυτό το νήμα έχει αφαιρεθεί ή διαγραφεί",
-  "fetch_new_replies_automatically": "Αυτόματη λήψη νέων απαντήσεων"
+  "fetch_new_replies_automatically": "Αυτόματη λήψη νέων απαντήσεων",
+  "directory_requirement_ids_per_thread": "ID χρηστών ανά νήμα",
+  "directory_requirement_no_ids": "Χωρίς ID χρηστών",
+  "directory_requirement_pseudonymity_mode": "Λειτουργία ψευδωνυμίας {{mode}}",
+  "directory_requirement_sfw": "Επισημασμένος ως ασφαλής για εργασία",
+  "directory_requirement_nsfw": "Μη επισημασμένος ως ασφαλής για εργασία",
+  "directory_requirement_media_threads": "Οι σύνδεσμοι νημάτων πρέπει να είναι αρχεία πολυμέσων",
+  "directory_requirement_mod_queue": "Ουρά συντονισμού για νέους χρήστες",
+  "directory_requirements_title": "Απαιτήσεις για τη φιλοξενία του /{{boardIdentifier}}/:",
+  "directory_requirements_footnote": "Οι πίνακες πρέπει επίσης να τηρούν τους <rulesLink>κανόνες του /{{boardIdentifier}}/</rulesLink> και να παραμένουν σε σύνδεση. Το 5chan παρακάμπτει έναν πίνακα που είναι εκτός σύνδεσης ή δεν πληροί κάποια απαίτηση και περνά στον επόμενο που πληροί τις προϋποθέσεις.",
+  "directory_status_ineligible_reason": "Λείπουν: {{requirements}}",
+  "directory_vote_board_ineligible": "Το {{address}} δεν μπορεί ακόμη να υποβληθεί στο /{{boardIdentifier}}/. Λείπουν: {{requirements}}.",
+  "directory_vote_board_unreachable": "Δεν ήταν δυνατή η φόρτωση του {{address}} για τον έλεγχο των ρυθμίσεών του. Ένας πίνακας πρέπει να είναι σε σύνδεση για να υποβληθεί."
 }

@@ -511,5 +511,17 @@
   "thread_update_connection_error": "Errore di connessione",
   "thread_update_thread_archived": "Questo thread è archiviato",
   "thread_update_thread_deleted": "Questo thread è stato rimosso o eliminato",
-  "fetch_new_replies_automatically": "Carica automaticamente le nuove risposte"
+  "fetch_new_replies_automatically": "Carica automaticamente le nuove risposte",
+  "directory_requirement_ids_per_thread": "ID autore per thread",
+  "directory_requirement_no_ids": "Nessun ID autore",
+  "directory_requirement_pseudonymity_mode": "Modalità pseudonimato {{mode}}",
+  "directory_requirement_sfw": "Contrassegnata come sicura per il lavoro",
+  "directory_requirement_nsfw": "Non contrassegnata come sicura per il lavoro",
+  "directory_requirement_media_threads": "I link dei thread devono essere file multimediali",
+  "directory_requirement_mod_queue": "Coda di moderazione per i nuovi utenti",
+  "directory_requirements_title": "Requisiti per ospitare /{{boardIdentifier}}/:",
+  "directory_requirements_footnote": "Le board devono anche rispettare le <rulesLink>regole di /{{boardIdentifier}}/</rulesLink> e restare online. 5chan salta una board offline o che non soddisfa un requisito e passa alla successiva idonea.",
+  "directory_status_ineligible_reason": "Manca: {{requirements}}",
+  "directory_vote_board_ineligible": "Non è ancora possibile proporre {{address}} per /{{boardIdentifier}}/. Manca: {{requirements}}.",
+  "directory_vote_board_unreachable": "Impossibile caricare {{address}} per verificarne le impostazioni. Una board deve essere online per essere proposta."
 }

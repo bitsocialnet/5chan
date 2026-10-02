@@ -511,5 +511,17 @@
   "thread_update_connection_error": "కనెక్షన్ దోషం",
   "thread_update_thread_archived": "ఈ థ్రెడ్ ఆర్కైవ్ చేయబడింది",
   "thread_update_thread_deleted": "ఈ థ్రెడ్ తీసివేయబడింది లేదా తొలగించబడింది",
-  "fetch_new_replies_automatically": "కొత్త సమాధానాలను స్వయంచాలకంగా పొందండి"
+  "fetch_new_replies_automatically": "కొత్త సమాధానాలను స్వయంచాలకంగా పొందండి",
+  "directory_requirement_ids_per_thread": "ప్రతి థ్రెడ్‌కు పోస్టర్ IDలు",
+  "directory_requirement_no_ids": "పోస్టర్ IDలు లేవు",
+  "directory_requirement_pseudonymity_mode": "మారుపేరు మోడ్ {{mode}}",
+  "directory_requirement_sfw": "పనికి సురక్షితమైనదిగా గుర్తించబడింది",
+  "directory_requirement_nsfw": "పనికి సురక్షితమైనదిగా గుర్తించబడలేదు",
+  "directory_requirement_media_threads": "థ్రెడ్ లింక్‌లు మీడియా ఫైల్‌లు అయి ఉండాలి",
+  "directory_requirement_mod_queue": "కొత్తగా పోస్ట్ చేసేవారికి మోడరేషన్ క్యూ",
+  "directory_requirements_title": "/{{boardIdentifier}}/ ను హోస్ట్ చేయడానికి అవసరాలు:",
+  "directory_requirements_footnote": "బోర్డులు <rulesLink>/{{boardIdentifier}}/ నియమాలను</rulesLink> కూడా పాటించాలి మరియు ఆన్‌లైన్‌లో ఉండాలి. ఆఫ్‌లైన్‌లో ఉన్న లేదా ఏదైనా అవసరాన్ని తీర్చని బోర్డును 5chan దాటవేసి, అర్హత ఉన్న తదుపరి బోర్డును ఎంచుకుంటుంది.",
+  "directory_status_ineligible_reason": "లేనివి: {{requirements}}",
+  "directory_vote_board_ineligible": "{{address}} ను ఇంకా /{{boardIdentifier}}/ కు సమర్పించలేరు. లేనివి: {{requirements}}.",
+  "directory_vote_board_unreachable": "సెట్టింగ్‌లను తనిఖీ చేయడానికి {{address}} ను లోడ్ చేయడం సాధ్యపడలేదు. సమర్పించాలంటే బోర్డ్ ఆన్‌లైన్‌లో ఉండాలి."
 }

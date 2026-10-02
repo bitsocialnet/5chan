@@ -511,5 +511,17 @@
   "thread_update_connection_error": "Kapcsolódási hiba",
   "thread_update_thread_archived": "Ez a szál archiválva van",
   "thread_update_thread_deleted": "Ezt a szálat eltávolították vagy törölték",
-  "fetch_new_replies_automatically": "Új válaszok automatikus lekérése"
+  "fetch_new_replies_automatically": "Új válaszok automatikus lekérése",
+  "directory_requirement_ids_per_thread": "Szálankénti hozzászólói ID-k",
+  "directory_requirement_no_ids": "Nincsenek hozzászólói ID-k",
+  "directory_requirement_pseudonymity_mode": "Álnévhasználati mód {{mode}}",
+  "directory_requirement_sfw": "Munkahelyen biztonságosnak jelölve",
+  "directory_requirement_nsfw": "Nincs munkahelyen biztonságosnak jelölve",
+  "directory_requirement_media_threads": "A témák linkjeinek médiafájloknak kell lenniük",
+  "directory_requirement_mod_queue": "Moderációs sor új felhasználóknak",
+  "directory_requirements_title": "/{{boardIdentifier}}/ hosztolásának feltételei:",
+  "directory_requirements_footnote": "A boardoknak a <rulesLink>/{{boardIdentifier}}/ szabályait</rulesLink> is be kell tartaniuk, és online kell maradniuk. Az 5chan átugorja azt a boardot, amely offline vagy nem teljesít egy feltételt, és a következő megfelelőt választja.",
+  "directory_status_ineligible_reason": "Hiányzik: {{requirements}}",
+  "directory_vote_board_ineligible": "A(z) {{address}} még nem küldhető be a(z) /{{boardIdentifier}}/ könyvtárba. Hiányzik: {{requirements}}.",
+  "directory_vote_board_unreachable": "Nem sikerült betölteni a(z) {{address}} táblát a beállításai ellenőrzéséhez. Beküldéshez a táblának online kell lennie."
 }

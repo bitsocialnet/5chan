@@ -511,5 +511,17 @@
   "thread_update_connection_error": "Erreur de connexion",
   "thread_update_thread_archived": "Ce fil est archivé",
   "thread_update_thread_deleted": "Ce fil a été purgé ou supprimé",
-  "fetch_new_replies_automatically": "Récupérer automatiquement les nouvelles réponses"
+  "fetch_new_replies_automatically": "Récupérer automatiquement les nouvelles réponses",
+  "directory_requirement_ids_per_thread": "ID d'auteur par fil",
+  "directory_requirement_no_ids": "Aucun ID d'auteur",
+  "directory_requirement_pseudonymity_mode": "Mode de pseudonymat {{mode}}",
+  "directory_requirement_sfw": "Marqué comme sûr pour le travail",
+  "directory_requirement_nsfw": "Non marqué comme sûr pour le travail",
+  "directory_requirement_media_threads": "Les liens des fils doivent être des fichiers médias",
+  "directory_requirement_mod_queue": "File de modération pour les nouveaux utilisateurs",
+  "directory_requirements_title": "Conditions pour héberger /{{boardIdentifier}}/ :",
+  "directory_requirements_footnote": "Les boards doivent aussi respecter les <rulesLink>règles de /{{boardIdentifier}}/</rulesLink> et rester en ligne. 5chan ignore un board hors ligne ou qui ne remplit pas une condition et passe au suivant éligible.",
+  "directory_status_ineligible_reason": "Manquant : {{requirements}}",
+  "directory_vote_board_ineligible": "{{address}} ne peut pas encore être proposé pour /{{boardIdentifier}}/. Manquant : {{requirements}}.",
+  "directory_vote_board_unreachable": "Impossible de charger {{address}} pour vérifier ses paramètres. Un board doit être en ligne pour être proposé."
 }

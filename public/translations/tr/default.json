@@ -511,5 +511,17 @@
   "thread_update_connection_error": "Bağlantı hatası",
   "thread_update_thread_archived": "Bu konu arşivlendi",
   "thread_update_thread_deleted": "Bu konu kaldırıldı veya silindi",
-  "fetch_new_replies_automatically": "Yeni yanıtları otomatik olarak getir"
+  "fetch_new_replies_automatically": "Yeni yanıtları otomatik olarak getir",
+  "directory_requirement_ids_per_thread": "Konu başına gönderici ID'leri",
+  "directory_requirement_no_ids": "Gönderici ID'si yok",
+  "directory_requirement_pseudonymity_mode": "Takma ad modu {{mode}}",
+  "directory_requirement_sfw": "İş için güvenli olarak işaretli",
+  "directory_requirement_nsfw": "İş için güvenli olarak işaretli değil",
+  "directory_requirement_media_threads": "Konu bağlantıları medya dosyası olmalı",
+  "directory_requirement_mod_queue": "Yeni gönderenler için moderasyon kuyruğu",
+  "directory_requirements_title": "/{{boardIdentifier}}/ barındırma gereksinimleri:",
+  "directory_requirements_footnote": "Panolar ayrıca <rulesLink>/{{boardIdentifier}}/ kurallarına</rulesLink> uymalı ve çevrimiçi kalmalıdır. 5chan, çevrimdışı olan veya bir gereksinimi karşılamayan panoyu atlar ve uygun olan bir sonrakine geçer.",
+  "directory_status_ineligible_reason": "Eksik: {{requirements}}",
+  "directory_vote_board_ineligible": "{{address}} henüz /{{boardIdentifier}}/ dizinine gönderilemez. Eksik: {{requirements}}.",
+  "directory_vote_board_unreachable": "Ayarlarını kontrol etmek için {{address}} yüklenemedi. Bir panonun gönderilebilmesi için çevrimiçi olması gerekir."
 }

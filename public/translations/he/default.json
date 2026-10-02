@@ -511,5 +511,17 @@
   "thread_update_connection_error": "שגיאת חיבור",
   "thread_update_thread_archived": "השרשור הזה נמצא בארכיון",
   "thread_update_thread_deleted": "השרשור הזה הוסר או נמחק",
-  "fetch_new_replies_automatically": "טען תגובות חדשות באופן אוטומטי"
+  "fetch_new_replies_automatically": "טען תגובות חדשות באופן אוטומטי",
+  "directory_requirement_ids_per_thread": "מזהי מפרסמים לכל שרשור",
+  "directory_requirement_no_ids": "ללא מזהי מפרסמים",
+  "directory_requirement_pseudonymity_mode": "מצב פסבדונימיות {{mode}}",
+  "directory_requirement_sfw": "מסומן כבטוח לעבודה",
+  "directory_requirement_nsfw": "לא מסומן כבטוח לעבודה",
+  "directory_requirement_media_threads": "קישורי שרשורים חייבים להיות קובצי מדיה",
+  "directory_requirement_mod_queue": "תור ניהול למפרסמים חדשים",
+  "directory_requirements_title": "דרישות לאירוח /{{boardIdentifier}}/:",
+  "directory_requirements_footnote": "לוחות חייבים גם לציית ל<rulesLink>כללים של /{{boardIdentifier}}/</rulesLink> ולהישאר מקוונים. 5chan מדלג על לוח שאינו מקוון או שאינו עומד באחת הדרישות, ועובר ללוח הבא שעומד בהן.",
+  "directory_status_ineligible_reason": "חסר: {{requirements}}",
+  "directory_vote_board_ineligible": "עדיין לא ניתן להגיש את {{address}} ל-/{{boardIdentifier}}/. חסר: {{requirements}}.",
+  "directory_vote_board_unreachable": "לא ניתן היה לטעון את {{address}} כדי לבדוק את ההגדרות שלו. לוח חייב להיות מקוון כדי שניתן יהיה להגיש אותו."
 }

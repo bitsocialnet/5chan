@@ -1,6 +1,6 @@
 import { isKnown5chanDeveloper } from './author-display-utils';
 
-interface DirectoryFeatures {
+export interface DirectoryFeatures {
   postsPerPage?: number;
   pseudonymityMode?: string;
   nsfw?: boolean;
