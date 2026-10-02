@@ -169,3 +169,12 @@
   z-index: 999;
   box-shadow: none !important;
 }
+
+/* The viewer's pinned threads, drawn like 4chan's catalog in every theme. */
+.pinned {
+  border: 3px dashed #34345c;
+}
+
+.pinned:hover {
+  border-color: red;
+}

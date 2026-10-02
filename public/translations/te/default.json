@@ -523,5 +523,7 @@
   "directory_requirements_footnote": "బోర్డులు <rulesLink>/{{boardIdentifier}}/ నియమాలను</rulesLink> కూడా పాటించాలి మరియు ఆన్‌లైన్‌లో ఉండాలి. ఆఫ్‌లైన్‌లో ఉన్న లేదా ఏదైనా అవసరాన్ని తీర్చని బోర్డును 5chan దాటవేసి, అర్హత ఉన్న తదుపరి బోర్డును ఎంచుకుంటుంది.",
   "directory_status_ineligible_reason": "లేనివి: {{requirements}}",
   "directory_vote_board_ineligible": "{{address}} ను ఇంకా /{{boardIdentifier}}/ కు సమర్పించలేరు. లేనివి: {{requirements}}.",
-  "directory_vote_board_unreachable": "సెట్టింగ్‌లను తనిఖీ చేయడానికి {{address}} ను లోడ్ చేయడం సాధ్యపడలేదు. సమర్పించాలంటే బోర్డ్ ఆన్‌లైన్‌లో ఉండాలి."
+  "directory_vote_board_unreachable": "సెట్టింగ్‌లను తనిఖీ చేయడానికి {{address}} ను లోడ్ చేయడం సాధ్యపడలేదు. సమర్పించాలంటే బోర్డ్ ఆన్‌లైన్‌లో ఉండాలి.",
+  "pin_thread": "థ్రెడ్ పిన్ చేయి",
+  "unpin_thread": "థ్రెడ్ అన్‌పిన్ చేయి"
 }

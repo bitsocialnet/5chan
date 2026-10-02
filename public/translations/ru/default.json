@@ -523,5 +523,7 @@
   "directory_requirements_footnote": "Доски также должны соблюдать <rulesLink>правила /{{boardIdentifier}}/</rulesLink> и оставаться онлайн. 5chan пропускает доску, которая офлайн или не выполняет какое-либо требование, и переходит к следующей подходящей.",
   "directory_status_ineligible_reason": "Не хватает: {{requirements}}",
   "directory_vote_board_ineligible": "{{address}} пока нельзя добавить в /{{boardIdentifier}}/. Не хватает: {{requirements}}.",
-  "directory_vote_board_unreachable": "Не удалось загрузить {{address}}, чтобы проверить настройки. Доска должна быть онлайн, чтобы её можно было добавить."
+  "directory_vote_board_unreachable": "Не удалось загрузить {{address}}, чтобы проверить настройки. Доска должна быть онлайн, чтобы её можно было добавить.",
+  "pin_thread": "закрепить ветку",
+  "unpin_thread": "открепить ветку"
 }

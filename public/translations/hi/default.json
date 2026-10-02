@@ -523,5 +523,7 @@
   "directory_requirements_footnote": "बोर्ड को <rulesLink>/{{boardIdentifier}}/ के नियमों</rulesLink> का भी पालन करना होगा और ऑनलाइन रहना होगा। जो बोर्ड ऑफ़लाइन है या किसी आवश्यकता को पूरा नहीं करता, 5chan उसे छोड़कर अगले योग्य बोर्ड को चुनता है।",
   "directory_status_ineligible_reason": "कमी: {{requirements}}",
   "directory_vote_board_ineligible": "{{address}} को अभी /{{boardIdentifier}}/ में सबमिट नहीं किया जा सकता। कमी: {{requirements}}।",
-  "directory_vote_board_unreachable": "सेटिंग्स जांचने के लिए {{address}} लोड नहीं किया जा सका। सबमिट करने के लिए बोर्ड का ऑनलाइन होना ज़रूरी है।"
+  "directory_vote_board_unreachable": "सेटिंग्स जांचने के लिए {{address}} लोड नहीं किया जा सका। सबमिट करने के लिए बोर्ड का ऑनलाइन होना ज़रूरी है।",
+  "pin_thread": "धागा पिन करें",
+  "unpin_thread": "धागा अनपिन करें"
 }

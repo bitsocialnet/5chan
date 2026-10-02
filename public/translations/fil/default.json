@@ -523,5 +523,7 @@
   "directory_requirements_footnote": "Dapat ding sumunod ang mga board sa <rulesLink>mga patakaran ng /{{boardIdentifier}}/</rulesLink> at manatiling online. Nilalaktawan ng 5chan ang board na offline o hindi nakatugon sa isang kinakailangan at lumilipat ito sa susunod na kwalipikadong board.",
   "directory_status_ineligible_reason": "Kulang: {{requirements}}",
   "directory_vote_board_ineligible": "Hindi pa maisusumite ang {{address}} sa /{{boardIdentifier}}/. Kulang: {{requirements}}.",
-  "directory_vote_board_unreachable": "Hindi ma-load ang {{address}} para suriin ang mga setting nito. Kailangang online ang isang board para maisumite ito."
+  "directory_vote_board_unreachable": "Hindi ma-load ang {{address}} para suriin ang mga setting nito. Kailangang online ang isang board para maisumite ito.",
+  "pin_thread": "i-pin ang thread",
+  "unpin_thread": "i-unpin ang thread"
 }

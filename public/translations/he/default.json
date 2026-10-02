@@ -523,5 +523,7 @@
   "directory_requirements_footnote": "לוחות חייבים גם לציית ל<rulesLink>כללים של /{{boardIdentifier}}/</rulesLink> ולהישאר מקוונים. 5chan מדלג על לוח שאינו מקוון או שאינו עומד באחת הדרישות, ועובר ללוח הבא שעומד בהן.",
   "directory_status_ineligible_reason": "חסר: {{requirements}}",
   "directory_vote_board_ineligible": "עדיין לא ניתן להגיש את {{address}} ל-/{{boardIdentifier}}/. חסר: {{requirements}}.",
-  "directory_vote_board_unreachable": "לא ניתן היה לטעון את {{address}} כדי לבדוק את ההגדרות שלו. לוח חייב להיות מקוון כדי שניתן יהיה להגיש אותו."
+  "directory_vote_board_unreachable": "לא ניתן היה לטעון את {{address}} כדי לבדוק את ההגדרות שלו. לוח חייב להיות מקוון כדי שניתן יהיה להגיש אותו.",
+  "pin_thread": "הצמד ת’רד",
+  "unpin_thread": "בטל הצמדת ת’רד"
 }

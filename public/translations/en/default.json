@@ -543,5 +543,7 @@
   "directory_status_ineligible_reason": "Missing: {{requirements}}",
   "directory_vote_board_ineligible": "{{address}} can't be submitted to /{{boardIdentifier}}/ yet. Missing: {{requirements}}.",
   "directory_vote_board_unreachable": "Couldn't load {{address}} to check its settings. A board must be online to be submitted.",
-  "directory_status_ineligible": "ineligible"
+  "directory_status_ineligible": "ineligible",
+  "pin_thread": "Pin thread",
+  "unpin_thread": "Unpin thread"
 }

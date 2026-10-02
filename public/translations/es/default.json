@@ -523,5 +523,7 @@
   "directory_requirements_footnote": "Los tablones también deben seguir las <rulesLink>reglas de /{{boardIdentifier}}/</rulesLink> y mantenerse en línea. 5chan omite un tablón que esté desconectado o no cumpla un requisito y pasa al siguiente que reúna las condiciones.",
   "directory_status_ineligible_reason": "Falta: {{requirements}}",
   "directory_vote_board_ineligible": "{{address}} aún no se puede enviar a /{{boardIdentifier}}/. Falta: {{requirements}}.",
-  "directory_vote_board_unreachable": "No se pudo cargar {{address}} para comprobar su configuración. Un tablón debe estar en línea para poder enviarse."
+  "directory_vote_board_unreachable": "No se pudo cargar {{address}} para comprobar su configuración. Un tablón debe estar en línea para poder enviarse.",
+  "pin_thread": "Fijar hilo",
+  "unpin_thread": "Desfijar hilo"
 }

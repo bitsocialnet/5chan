@@ -523,5 +523,7 @@
   "directory_requirements_footnote": "Boardy muszą też przestrzegać <rulesLink>zasad /{{boardIdentifier}}/</rulesLink> i pozostawać online. 5chan pomija board, który jest offline lub nie spełnia któregoś wymagania, i przechodzi do następnego, który się kwalifikuje.",
   "directory_status_ineligible_reason": "Brakuje: {{requirements}}",
   "directory_vote_board_ineligible": "Nie można jeszcze zgłosić {{address}} do /{{boardIdentifier}}/. Brakuje: {{requirements}}.",
-  "directory_vote_board_unreachable": "Nie udało się wczytać {{address}}, aby sprawdzić ustawienia. Tablica musi być online, aby można ją było zgłosić."
+  "directory_vote_board_unreachable": "Nie udało się wczytać {{address}}, aby sprawdzić ustawienia. Tablica musi być online, aby można ją było zgłosić.",
+  "pin_thread": "przypnij wątek",
+  "unpin_thread": "odepnij wątek"
 }

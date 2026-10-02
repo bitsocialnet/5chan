@@ -523,5 +523,7 @@
   "directory_requirements_footnote": "板块还必须遵守 <rulesLink>/{{boardIdentifier}}/ 规则</rulesLink>并保持在线。如果某个板块离线或未满足任一要求，5chan 会跳过它，改用下一个符合条件的板块。",
   "directory_status_ineligible_reason": "缺少：{{requirements}}",
   "directory_vote_board_ineligible": "{{address}} 暂时无法提交到 /{{boardIdentifier}}/。缺少：{{requirements}}。",
-  "directory_vote_board_unreachable": "无法加载 {{address}} 以检查其设置。板块必须在线才能提交。"
+  "directory_vote_board_unreachable": "无法加载 {{address}} 以检查其设置。板块必须在线才能提交。",
+  "pin_thread": "固定主题",
+  "unpin_thread": "取消固定主题"
 }

@@ -523,5 +523,7 @@
   "directory_requirements_footnote": "Board juga harus mematuhi <rulesLink>aturan /{{boardIdentifier}}/</rulesLink> dan tetap online. 5chan melewati board yang offline atau tidak memenuhi suatu persyaratan dan beralih ke board berikutnya yang memenuhi syarat.",
   "directory_status_ineligible_reason": "Yang kurang: {{requirements}}",
   "directory_vote_board_ineligible": "{{address}} belum dapat dikirim ke /{{boardIdentifier}}/. Yang kurang: {{requirements}}.",
-  "directory_vote_board_unreachable": "Tidak dapat memuat {{address}} untuk memeriksa pengaturannya. Papan harus online agar dapat dikirim."
+  "directory_vote_board_unreachable": "Tidak dapat memuat {{address}} untuk memeriksa pengaturannya. Papan harus online agar dapat dikirim.",
+  "pin_thread": "sematkan utas",
+  "unpin_thread": "lepas sematan utas"
 }

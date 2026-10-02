@@ -523,5 +523,7 @@
   "directory_requirements_footnote": "Lautojen on myös noudatettava <rulesLink>laudan /{{boardIdentifier}}/ sääntöjä</rulesLink> ja pysyttävä verkossa. 5chan ohittaa laudan, joka on offline-tilassa tai ei täytä jotakin vaatimusta, ja siirtyy seuraavaan kelpaavaan.",
   "directory_status_ineligible_reason": "Puuttuu: {{requirements}}",
   "directory_vote_board_ineligible": "Lautaa {{address}} ei voi vielä lähettää hakemistoon /{{boardIdentifier}}/. Puuttuu: {{requirements}}.",
-  "directory_vote_board_unreachable": "Lautaa {{address}} ei voitu ladata sen asetusten tarkistamiseksi. Laudan on oltava verkossa, jotta sen voi lähettää."
+  "directory_vote_board_unreachable": "Lautaa {{address}} ei voitu ladata sen asetusten tarkistamiseksi. Laudan on oltava verkossa, jotta sen voi lähettää.",
+  "pin_thread": "kiinnitä keskustelu",
+  "unpin_thread": "irrota keskustelu"
 }

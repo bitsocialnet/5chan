@@ -523,5 +523,7 @@
   "directory_requirements_footnote": "Boards moeten ook de <rulesLink>regels van /{{boardIdentifier}}/</rulesLink> volgen en online blijven. 5chan slaat een board over dat offline is of niet aan een vereiste voldoet, en gaat door naar het volgende board dat in aanmerking komt.",
   "directory_status_ineligible_reason": "Ontbreekt: {{requirements}}",
   "directory_vote_board_ineligible": "{{address}} kan nog niet bij /{{boardIdentifier}}/ worden ingediend. Ontbreekt: {{requirements}}.",
-  "directory_vote_board_unreachable": "Kon {{address}} niet laden om de instellingen te controleren. Een board moet online zijn om te worden ingediend."
+  "directory_vote_board_unreachable": "Kon {{address}} niet laden om de instellingen te controleren. Een board moet online zijn om te worden ingediend.",
+  "pin_thread": "thread vastzetten",
+  "unpin_thread": "thread losmaken"
 }

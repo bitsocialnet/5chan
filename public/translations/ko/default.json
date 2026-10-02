@@ -523,5 +523,7 @@
   "directory_requirements_footnote": "게시판은 <rulesLink>/{{boardIdentifier}}/ 규칙</rulesLink>도 따라야 하며 온라인 상태를 유지해야 합니다. 5chan은 오프라인이거나 요건을 충족하지 못한 게시판을 건너뛰고 다음으로 자격을 갖춘 게시판을 사용합니다.",
   "directory_status_ineligible_reason": "누락: {{requirements}}",
   "directory_vote_board_ineligible": "{{address}}은(는) 아직 /{{boardIdentifier}}/에 제출할 수 없습니다. 누락: {{requirements}}.",
-  "directory_vote_board_unreachable": "설정을 확인하기 위해 {{address}}을(를) 불러올 수 없습니다. 게시판을 제출하려면 온라인 상태여야 합니다."
+  "directory_vote_board_unreachable": "설정을 확인하기 위해 {{address}}을(를) 불러올 수 없습니다. 게시판을 제출하려면 온라인 상태여야 합니다.",
+  "pin_thread": "스레드 고정",
+  "unpin_thread": "스레드 고정 해제"
 }

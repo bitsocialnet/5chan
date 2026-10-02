@@ -523,5 +523,7 @@
   "directory_requirements_footnote": "بردها همچنین باید از <rulesLink>قوانین /{{boardIdentifier}}/</rulesLink> پیروی کنند و آنلاین بمانند. 5chan بردی را که آفلاین است یا یکی از الزامات را برآورده نمی‌کند نادیده می‌گیرد و سراغ برد واجد شرایط بعدی می‌رود.",
   "directory_status_ineligible_reason": "موارد ناقص: {{requirements}}",
   "directory_vote_board_ineligible": "{{address}} هنوز نمی‌تواند در /{{boardIdentifier}}/ ثبت شود. موارد ناقص: {{requirements}}.",
-  "directory_vote_board_unreachable": "بارگذاری {{address}} برای بررسی تنظیماتش ممکن نشد. یک تابلو برای ثبت شدن باید آنلاین باشد."
+  "directory_vote_board_unreachable": "بارگذاری {{address}} برای بررسی تنظیماتش ممکن نشد. یک تابلو برای ثبت شدن باید آنلاین باشد.",
+  "pin_thread": "سنجاق کردن موضوع",
+  "unpin_thread": "برداشتن سنجاق موضوع"
 }

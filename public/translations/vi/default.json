@@ -523,5 +523,7 @@
   "directory_requirements_footnote": "Các diễn đàn cũng phải tuân thủ <rulesLink>quy tắc của /{{boardIdentifier}}/</rulesLink> và luôn trực tuyến. 5chan sẽ bỏ qua diễn đàn đang ngoại tuyến hoặc không đáp ứng một yêu cầu nào đó và chuyển sang diễn đàn đủ điều kiện tiếp theo.",
   "directory_status_ineligible_reason": "Còn thiếu: {{requirements}}",
   "directory_vote_board_ineligible": "Chưa thể gửi {{address}} vào /{{boardIdentifier}}/. Còn thiếu: {{requirements}}.",
-  "directory_vote_board_unreachable": "Không thể tải {{address}} để kiểm tra cài đặt. Bảng phải đang trực tuyến mới có thể được gửi."
+  "directory_vote_board_unreachable": "Không thể tải {{address}} để kiểm tra cài đặt. Bảng phải đang trực tuyến mới có thể được gửi.",
+  "pin_thread": "Ghim chủ đề",
+  "unpin_thread": "Bỏ ghim chủ đề"
 }

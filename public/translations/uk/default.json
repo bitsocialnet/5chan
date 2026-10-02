@@ -523,5 +523,7 @@
   "directory_requirements_footnote": "Дошки також мають дотримуватися <rulesLink>правил /{{boardIdentifier}}/</rulesLink> і залишатися онлайн. 5chan пропускає дошку, яка офлайн або не відповідає якійсь вимозі, і переходить до наступної відповідної.",
   "directory_status_ineligible_reason": "Бракує: {{requirements}}",
   "directory_vote_board_ineligible": "{{address}} поки не можна надіслати до /{{boardIdentifier}}/. Бракує: {{requirements}}.",
-  "directory_vote_board_unreachable": "Не вдалося завантажити {{address}}, щоб перевірити налаштування. Дошка має бути онлайн, щоб її можна було надіслати."
+  "directory_vote_board_unreachable": "Не вдалося завантажити {{address}}, щоб перевірити налаштування. Дошка має бути онлайн, щоб її можна було надіслати.",
+  "pin_thread": "закріпити нитку",
+  "unpin_thread": "відкріпити нитку"
 }

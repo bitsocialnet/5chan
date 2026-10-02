@@ -523,5 +523,7 @@
   "directory_requirements_footnote": "บอร์ดต้องปฏิบัติตาม<rulesLink>กฎของ /{{boardIdentifier}}/</rulesLink>และออนไลน์อยู่เสมอด้วย 5chan จะข้ามบอร์ดที่ออฟไลน์หรือไม่ผ่านข้อกำหนดข้อใดข้อหนึ่ง แล้วไปใช้บอร์ดถัดไปที่ผ่านเกณฑ์",
   "directory_status_ineligible_reason": "ขาด: {{requirements}}",
   "directory_vote_board_ineligible": "ยังส่ง {{address}} ไปยัง /{{boardIdentifier}}/ ไม่ได้ ขาด: {{requirements}}",
-  "directory_vote_board_unreachable": "โหลด {{address}} เพื่อตรวจสอบการตั้งค่าไม่สำเร็จ บอร์ดต้องออนไลน์อยู่จึงจะส่งได้"
+  "directory_vote_board_unreachable": "โหลด {{address}} เพื่อตรวจสอบการตั้งค่าไม่สำเร็จ บอร์ดต้องออนไลน์อยู่จึงจะส่งได้",
+  "pin_thread": "ปักหมุดเธรด",
+  "unpin_thread": "เลิกปักหมุดเธรด"
 }

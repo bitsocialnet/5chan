@@ -523,5 +523,7 @@
   "directory_requirements_footnote": "يجب أن تلتزم اللوحات أيضًا بـ<rulesLink>قواعد /{{boardIdentifier}}/</rulesLink> وأن تبقى متصلة. يتخطى 5chan أي لوحة غير متصلة أو لا تستوفي أحد المتطلبات وينتقل إلى اللوحة التالية المؤهلة.",
   "directory_status_ineligible_reason": "ينقصها: {{requirements}}",
   "directory_vote_board_ineligible": "لا يمكن إضافة {{address}} إلى /{{boardIdentifier}}/ بعد. ينقصها: {{requirements}}.",
-  "directory_vote_board_unreachable": "تعذّر تحميل {{address}} للتحقق من إعداداتها. يجب أن تكون اللوحة متصلة لإضافتها."
+  "directory_vote_board_unreachable": "تعذّر تحميل {{address}} للتحقق من إعداداتها. يجب أن تكون اللوحة متصلة لإضافتها.",
+  "pin_thread": "تثبيت الموضوع",
+  "unpin_thread": "إلغاء تثبيت الموضوع"
 }

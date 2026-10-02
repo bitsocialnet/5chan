@@ -523,5 +523,7 @@
   "directory_requirements_footnote": "Boardurile trebuie, de asemenea, să respecte <rulesLink>regulile /{{boardIdentifier}}/</rulesLink> și să rămână online. 5chan sare peste un board care este offline sau nu îndeplinește o cerință și trece la următorul eligibil.",
   "directory_status_ineligible_reason": "Lipsește: {{requirements}}",
   "directory_vote_board_ineligible": "{{address}} nu poate fi trimis încă la /{{boardIdentifier}}/. Lipsește: {{requirements}}.",
-  "directory_vote_board_unreachable": "Nu s-a putut încărca {{address}} pentru a-i verifica setările. Un board trebuie să fie online pentru a putea fi trimis."
+  "directory_vote_board_unreachable": "Nu s-a putut încărca {{address}} pentru a-i verifica setările. Un board trebuie să fie online pentru a putea fi trimis.",
+  "pin_thread": "fixează firul",
+  "unpin_thread": "anulează fixarea firului"
 }

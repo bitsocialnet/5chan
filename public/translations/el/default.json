@@ -523,5 +523,7 @@
   "directory_requirements_footnote": "Οι πίνακες πρέπει επίσης να τηρούν τους <rulesLink>κανόνες του /{{boardIdentifier}}/</rulesLink> και να παραμένουν σε σύνδεση. Το 5chan παρακάμπτει έναν πίνακα που είναι εκτός σύνδεσης ή δεν πληροί κάποια απαίτηση και περνά στον επόμενο που πληροί τις προϋποθέσεις.",
   "directory_status_ineligible_reason": "Λείπουν: {{requirements}}",
   "directory_vote_board_ineligible": "Το {{address}} δεν μπορεί ακόμη να υποβληθεί στο /{{boardIdentifier}}/. Λείπουν: {{requirements}}.",
-  "directory_vote_board_unreachable": "Δεν ήταν δυνατή η φόρτωση του {{address}} για τον έλεγχο των ρυθμίσεών του. Ένας πίνακας πρέπει να είναι σε σύνδεση για να υποβληθεί."
+  "directory_vote_board_unreachable": "Δεν ήταν δυνατή η φόρτωση του {{address}} για τον έλεγχο των ρυθμίσεών του. Ένας πίνακας πρέπει να είναι σε σύνδεση για να υποβληθεί.",
+  "pin_thread": "καρφίτσωμα νήματος",
+  "unpin_thread": "ξεκαρφίτσωμα νήματος"
 }

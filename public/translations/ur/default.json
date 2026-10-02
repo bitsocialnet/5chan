@@ -523,5 +523,7 @@
   "directory_requirements_footnote": "بورڈز کو <rulesLink>/{{boardIdentifier}}/ کے اصولوں</rulesLink> کی بھی پابندی کرنی ہوگی اور آن لائن رہنا ہوگا۔ جو بورڈ آف لائن ہو یا کوئی تقاضا پورا نہ کرے، 5chan اسے چھوڑ کر اگلے اہل بورڈ کی طرف بڑھ جاتا ہے۔",
   "directory_status_ineligible_reason": "کمی: {{requirements}}",
   "directory_vote_board_ineligible": "{{address}} ابھی /{{boardIdentifier}}/ میں جمع نہیں کیا جا سکتا۔ کمی: {{requirements}}۔",
-  "directory_vote_board_unreachable": "ترتیبات چیک کرنے کے لیے {{address}} لوڈ نہیں کیا جا سکا۔ جمع کرنے کے لیے بورڈ کا آن لائن ہونا ضروری ہے۔"
+  "directory_vote_board_unreachable": "ترتیبات چیک کرنے کے لیے {{address}} لوڈ نہیں کیا جا سکا۔ جمع کرنے کے لیے بورڈ کا آن لائن ہونا ضروری ہے۔",
+  "pin_thread": "دھاگہ پن کریں",
+  "unpin_thread": "دھاگہ ان پن کریں"
 }

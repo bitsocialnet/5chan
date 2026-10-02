@@ -4,6 +4,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import PostMenuDesktop from '../post-menu-desktop';
+import usePinnedCatalogThreadsStore from '../../../stores/use-pinned-catalog-threads-store';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
@@ -130,6 +131,7 @@ describe('PostMenuDesktop', () => {
     testState.hidden = false;
     testState.mediaInfo = undefined;
     testState.validUrl = true;
+    usePinnedCatalogThreadsStore.setState({ pinnedThreads: {} });
     container = document.createElement('div');
     document.body.appendChild(container);
     root = createRoot(container);
@@ -163,6 +165,48 @@ describe('PostMenuDesktop', () => {
       copyUserId?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
     expect(testState.copyToClipboardMock).toHaveBeenCalledWith('0xauthor');
+  });
+
+  it('pins and unpins a thread from the catalog menu, listed before hiding like 4chan', async () => {
+    const pinnedThreadMenu = { ...basePostMenu, comment: { cid: 'cid-1', replyCount: 9 } } as typeof basePostMenu;
+    const getMenuButtons = () => Array.from(document.body.querySelectorAll('button')).filter((node) => node.textContent !== '▶');
+    const clickMenuButton = async (label: string) => {
+      await act(async () => {
+        getMenuButtons()
+          .find((node) => node.textContent === label)
+          ?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      });
+    };
+    const remount = () => {
+      act(() => root.unmount());
+      root = createRoot(container);
+    };
+
+    await renderMenu('/mu', pinnedThreadMenu);
+    await openMenu();
+    expect(getMenuButtons().map((node) => node.textContent)).not.toContain('pin_thread');
+
+    remount();
+    await renderMenu('/mu/catalog', { ...basePostMenu, cid: 'reply-1' });
+    await openMenu();
+    expect(getMenuButtons().map((node) => node.textContent)).not.toContain('pin_thread');
+
+    remount();
+    await renderMenu('/mu/catalog', pinnedThreadMenu);
+    await openMenu();
+    expect(
+      getMenuButtons()
+        .map((node) => node.textContent)
+        .slice(0, 2),
+    ).toEqual(['pin_thread', 'hide_thread']);
+    await clickMenuButton('pin_thread');
+    expect(usePinnedCatalogThreadsStore.getState().pinnedThreads).toEqual({
+      'cid-1': { communityAddress: 'music-posting.eth', pinnedAt: expect.any(Number), readReplyCount: 9 },
+    });
+
+    await openMenu();
+    await clickMenuButton('unpin_thread');
+    expect(usePinnedCatalogThreadsStore.getState().pinnedThreads).toEqual({});
   });
 
   it('toggles hide and unhide labels outside the thread root route', async () => {

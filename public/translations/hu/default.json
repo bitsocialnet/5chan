@@ -523,5 +523,7 @@
   "directory_requirements_footnote": "A boardoknak a <rulesLink>/{{boardIdentifier}}/ szabályait</rulesLink> is be kell tartaniuk, és online kell maradniuk. Az 5chan átugorja azt a boardot, amely offline vagy nem teljesít egy feltételt, és a következő megfelelőt választja.",
   "directory_status_ineligible_reason": "Hiányzik: {{requirements}}",
   "directory_vote_board_ineligible": "A(z) {{address}} még nem küldhető be a(z) /{{boardIdentifier}}/ könyvtárba. Hiányzik: {{requirements}}.",
-  "directory_vote_board_unreachable": "Nem sikerült betölteni a(z) {{address}} táblát a beállításai ellenőrzéséhez. Beküldéshez a táblának online kell lennie."
+  "directory_vote_board_unreachable": "Nem sikerült betölteni a(z) {{address}} táblát a beállításai ellenőrzéséhez. Beküldéshez a táblának online kell lennie.",
+  "pin_thread": "szál kitűzése",
+  "unpin_thread": "szál kitűzésének megszüntetése"
 }

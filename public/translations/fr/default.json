@@ -523,5 +523,7 @@
   "directory_requirements_footnote": "Les boards doivent aussi respecter les <rulesLink>règles de /{{boardIdentifier}}/</rulesLink> et rester en ligne. 5chan ignore un board hors ligne ou qui ne remplit pas une condition et passe au suivant éligible.",
   "directory_status_ineligible_reason": "Manquant : {{requirements}}",
   "directory_vote_board_ineligible": "{{address}} ne peut pas encore être proposé pour /{{boardIdentifier}}/. Manquant : {{requirements}}.",
-  "directory_vote_board_unreachable": "Impossible de charger {{address}} pour vérifier ses paramètres. Un board doit être en ligne pour être proposé."
+  "directory_vote_board_unreachable": "Impossible de charger {{address}} pour vérifier ses paramètres. Un board doit être en ligne pour être proposé.",
+  "pin_thread": "Épingler le fil",
+  "unpin_thread": "Désépingler le fil"
 }

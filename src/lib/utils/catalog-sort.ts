@@ -10,6 +10,7 @@ export interface CatalogPost {
   replyCount?: number | null;
   lastReplyTimestamp?: number | null;
   timestamp?: number | null;
+  updatedAt?: number | null;
 }
 
 /** Sort types supported by the catalog feed */
@@ -59,4 +60,32 @@ export function sortCatalogFeedForDisplay<T extends CatalogPost>(posts: T[], sor
   });
 
   return [...pinned, ...unpinned];
+}
+
+/**
+ * Place the viewer's pinned threads right after the sticky threads, like 4chan's catalog, in the
+ * order of `pinnedPosts` (the order they were pinned), so a new pin goes after the earlier ones.
+ * A pinned thread that is also sticky stays with the sticky threads. Each pinned thread shows
+ * whichever copy, the feed's or the live one, has the newer update.
+ */
+export function placePinnedCatalogThreads<T extends CatalogPost>(posts: T[], pinnedPosts: T[]): T[] {
+  if (pinnedPosts.length === 0) return posts;
+
+  const feedPostsByCid = new Map(posts.map((post) => [post.cid, post]));
+  const newerPinnedPosts = pinnedPosts.map((pinnedPost) => {
+    const feedPost = feedPostsByCid.get(pinnedPost.cid);
+    return feedPost && (feedPost.updatedAt ?? 0) > (pinnedPost.updatedAt ?? 0) ? feedPost : pinnedPost;
+  });
+  // Stickiness comes from the feed copy, so a pin a mod stickied after the snapshot doesn't keep its old spot mid-feed.
+  const stickyPinnedCids = new Set(pinnedPosts.filter((post) => feedPostsByCid.get(post.cid)?.pinned).map((post) => post.cid));
+  const newerPinnedPostsByCid = new Map(newerPinnedPosts.map((post) => [post.cid, post]));
+
+  const otherPosts = posts.flatMap((post) => {
+    if (!newerPinnedPostsByCid.has(post.cid)) return [post];
+    return stickyPinnedCids.has(post.cid) ? [newerPinnedPostsByCid.get(post.cid) as T] : [];
+  });
+  const pinnedGroup = newerPinnedPosts.filter((post) => !stickyPinnedCids.has(post.cid));
+
+  const lastStickyIndex = otherPosts.map((post) => post.pinned).lastIndexOf(true);
+  return [...otherPosts.slice(0, lastStickyIndex + 1), ...pinnedGroup, ...otherPosts.slice(lastStickyIndex + 1)];
 }

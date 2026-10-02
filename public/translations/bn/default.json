@@ -523,5 +523,7 @@
   "directory_requirements_footnote": "এছাড়া বোর্ডগুলোকে <rulesLink>/{{boardIdentifier}}/-এর নিয়ম</rulesLink> মেনে চলতে হবে এবং অনলাইনে থাকতে হবে। কোনো বোর্ড অফলাইন থাকলে বা কোনো শর্ত পূরণ না করলে 5chan সেটি বাদ দিয়ে পরবর্তী যোগ্য বোর্ডটি বেছে নেয়।",
   "directory_status_ineligible_reason": "যা নেই: {{requirements}}",
   "directory_vote_board_ineligible": "{{address}} এখনো /{{boardIdentifier}}/-এ জমা দেওয়া যাবে না। যা নেই: {{requirements}}।",
-  "directory_vote_board_unreachable": "সেটিংস যাচাই করতে {{address}} লোড করা যায়নি। জমা দিতে হলে বোর্ডটিকে অনলাইনে থাকতে হবে।"
+  "directory_vote_board_unreachable": "সেটিংস যাচাই করতে {{address}} লোড করা যায়নি। জমা দিতে হলে বোর্ডটিকে অনলাইনে থাকতে হবে।",
+  "pin_thread": "থ্রেড পিন করুন",
+  "unpin_thread": "থ্রেড আনপিন করুন"
 }

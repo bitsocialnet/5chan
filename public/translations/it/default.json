@@ -523,5 +523,7 @@
   "directory_requirements_footnote": "Le board devono anche rispettare le <rulesLink>regole di /{{boardIdentifier}}/</rulesLink> e restare online. 5chan salta una board offline o che non soddisfa un requisito e passa alla successiva idonea.",
   "directory_status_ineligible_reason": "Manca: {{requirements}}",
   "directory_vote_board_ineligible": "Non è ancora possibile proporre {{address}} per /{{boardIdentifier}}/. Manca: {{requirements}}.",
-  "directory_vote_board_unreachable": "Impossibile caricare {{address}} per verificarne le impostazioni. Una board deve essere online per essere proposta."
+  "directory_vote_board_unreachable": "Impossibile caricare {{address}} per verificarne le impostazioni. Una board deve essere online per essere proposta.",
+  "pin_thread": "Fissa thread",
+  "unpin_thread": "Rimuovi fissaggio thread"
 }

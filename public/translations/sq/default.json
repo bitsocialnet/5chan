@@ -523,5 +523,7 @@
   "directory_requirements_footnote": "Bordet duhet gjithashtu të respektojnë <rulesLink>rregullat e /{{boardIdentifier}}/</rulesLink> dhe të qëndrojnë online. 5chan anashkalon një bord që është offline ose nuk plotëson një kërkesë dhe kalon te bordi tjetër që kualifikohet.",
   "directory_status_ineligible_reason": "Mungon: {{requirements}}",
   "directory_vote_board_ineligible": "{{address}} nuk mund të dërgohet ende te /{{boardIdentifier}}/. Mungon: {{requirements}}.",
-  "directory_vote_board_unreachable": "{{address}} nuk mund të ngarkohej për të kontrolluar cilësimet e tij. Një bord duhet të jetë online për t’u dërguar."
+  "directory_vote_board_unreachable": "{{address}} nuk mund të ngarkohej për të kontrolluar cilësimet e tij. Një bord duhet të jetë online për t’u dërguar.",
+  "pin_thread": "ngjit fijen",
+  "unpin_thread": "shkëput fijen"
 }

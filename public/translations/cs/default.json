@@ -523,5 +523,7 @@
   "directory_requirements_footnote": "Boardy musí také dodržovat <rulesLink>pravidla /{{boardIdentifier}}/</rulesLink> a zůstat online. 5chan přeskočí board, který je offline nebo nesplňuje některý požadavek, a použije další, který vyhovuje.",
   "directory_status_ineligible_reason": "Chybí: {{requirements}}",
   "directory_vote_board_ineligible": "{{address}} zatím nelze přidat do /{{boardIdentifier}}/. Chybí: {{requirements}}.",
-  "directory_vote_board_unreachable": "Nepodařilo se načíst {{address}} a ověřit jeho nastavení. Deska musí být online, aby ji bylo možné přidat."
+  "directory_vote_board_unreachable": "Nepodařilo se načíst {{address}} a ověřit jeho nastavení. Deska musí být online, aby ji bylo možné přidat.",
+  "pin_thread": "připnout vlákno",
+  "unpin_thread": "odepnout vlákno"
 }

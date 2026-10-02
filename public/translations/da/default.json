@@ -523,5 +523,7 @@
   "directory_requirements_footnote": "Boards skal også følge <rulesLink>reglerne for /{{boardIdentifier}}/</rulesLink> og forblive online. 5chan springer et board over, hvis det er offline eller ikke opfylder et krav, og går videre til det næste, der kvalificerer sig.",
   "directory_status_ineligible_reason": "Mangler: {{requirements}}",
   "directory_vote_board_ineligible": "{{address}} kan ikke indsendes til /{{boardIdentifier}}/ endnu. Mangler: {{requirements}}.",
-  "directory_vote_board_unreachable": "{{address}} kunne ikke indlæses for at tjekke dets indstillinger. Et board skal være online for at kunne indsendes."
+  "directory_vote_board_unreachable": "{{address}} kunne ikke indlæses for at tjekke dets indstillinger. Et board skal være online for at kunne indsendes.",
+  "pin_thread": "fastgør tråd",
+  "unpin_thread": "frigør tråd"
 }
