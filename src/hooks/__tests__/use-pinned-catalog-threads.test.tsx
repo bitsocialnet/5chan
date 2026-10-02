@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import usePinnedCatalogThreads from '../use-pinned-catalog-threads';
 import useMarkPinnedThreadRead from '../use-mark-pinned-thread-read';
 import usePinnedCatalogThreadsStore from '../../stores/use-pinned-catalog-threads-store';
+import useThreadLiveUpdatesStore from '../../stores/use-thread-live-updates-store';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
@@ -147,6 +148,7 @@ describe('usePinnedCatalogThreads', () => {
 describe('useMarkPinnedThreadRead', () => {
   beforeEach(() => {
     usePinnedCatalogThreadsStore.setState({ pinnedThreads: {} });
+    useThreadLiveUpdatesStore.getState().resetState();
     container = document.createElement('div');
     document.body.appendChild(container);
     root = createRoot(container);
@@ -171,5 +173,27 @@ describe('useMarkPinnedThreadRead', () => {
     expect(usePinnedCatalogThreadsStore.getState().pinnedThreads).toEqual({
       'thread-1': { communityAddress: 'music-posting.eth', pinnedAt: expect.any(Number), readReplyCount: 9 },
     });
+  });
+
+  it('keeps replies under the thread unread line unread until they are scrolled to', async () => {
+    pin('thread-1', 'music-posting.eth', 4);
+    const getReadReplyCount = () => usePinnedCatalogThreadsStore.getState().pinnedThreads['thread-1'].readReplyCount;
+
+    await act(async () => {
+      root.render(createElement(ReadHarness, { post: { cid: 'thread-1', replyCount: 9 } as Comment }));
+    });
+    expect(getReadReplyCount()).toBe(9);
+
+    // Auto loads 3 replies below the red line while the viewer is elsewhere on the page.
+    await act(async () => {
+      useThreadLiveUpdatesStore.setState({ threadCid: 'thread-1', unreadCount: 3 });
+      root.render(createElement(ReadHarness, { post: { cid: 'thread-1', replyCount: 12 } as Comment }));
+    });
+    expect(getReadReplyCount()).toBe(9);
+
+    await act(async () => {
+      useThreadLiveUpdatesStore.setState({ unreadCount: 0 });
+    });
+    expect(getReadReplyCount()).toBe(12);
   });
 });
