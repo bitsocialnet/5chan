@@ -512,6 +512,18 @@
   "thread_update_thread_archived": "このスレッドはアーカイブされています",
   "thread_update_thread_deleted": "このスレッドは落ちたか削除されました",
   "fetch_new_replies_automatically": "新しい返信を自動で取得",
+  "directory_requirement_ids_per_thread": "スレッドごとの投稿者ID",
+  "directory_requirement_no_ids": "投稿者IDなし",
+  "directory_requirement_pseudonymity_mode": "仮名性モード {{mode}}",
+  "directory_requirement_sfw": "職場安全に指定済み",
+  "directory_requirement_nsfw": "職場安全に未指定",
+  "directory_requirement_media_threads": "スレッドのリンクはメディアファイルであること",
+  "directory_requirement_mod_queue": "新規投稿者向けモデレーションキュー",
+  "directory_requirements_title": "/{{boardIdentifier}}/ をホストするための要件:",
+  "directory_requirements_footnote": "板は<rulesLink>/{{boardIdentifier}}/ のルール</rulesLink>にも従い、オンラインを維持する必要があります。5chan はオフラインの板や要件を満たさない板をスキップし、条件を満たす次の板を使用します。",
+  "directory_status_ineligible_reason": "不足: {{requirements}}",
+  "directory_vote_board_ineligible": "{{address}} はまだ /{{boardIdentifier}}/ に申請できません。不足: {{requirements}}。",
+  "directory_vote_board_unreachable": "{{address}} を読み込めず、設定を確認できませんでした。申請するには板がオンラインである必要があります。",
   "pin_thread": "スレッドをピン留め",
   "unpin_thread": "スレッドのピン留めを解除"
 }

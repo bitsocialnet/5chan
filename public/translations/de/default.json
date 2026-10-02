@@ -512,6 +512,18 @@
   "thread_update_thread_archived": "Dieser Thread ist archiviert",
   "thread_update_thread_deleted": "Dieser Thread wurde entfernt oder gelöscht",
   "fetch_new_replies_automatically": "Neue Antworten automatisch abrufen",
+  "directory_requirement_ids_per_thread": "Poster-IDs pro Thread",
+  "directory_requirement_no_ids": "Keine Poster-IDs",
+  "directory_requirement_pseudonymity_mode": "Pseudonymitätsmodus {{mode}}",
+  "directory_requirement_sfw": "Als arbeitsplatzsicher markiert",
+  "directory_requirement_nsfw": "Nicht als arbeitsplatzsicher markiert",
+  "directory_requirement_media_threads": "Thread-Links müssen Mediendateien sein",
+  "directory_requirement_mod_queue": "Moderations-Warteschlange für neue Nutzer",
+  "directory_requirements_title": "Anforderungen zum Hosten von /{{boardIdentifier}}/:",
+  "directory_requirements_footnote": "Boards müssen außerdem die <rulesLink>Regeln von /{{boardIdentifier}}/</rulesLink> einhalten und online bleiben. 5chan überspringt ein Board, das offline ist oder eine Anforderung nicht erfüllt, und wählt das nächste geeignete.",
+  "directory_status_ineligible_reason": "Fehlt: {{requirements}}",
+  "directory_vote_board_ineligible": "{{address}} kann noch nicht bei /{{boardIdentifier}}/ eingereicht werden. Fehlt: {{requirements}}.",
+  "directory_vote_board_unreachable": "{{address}} konnte nicht geladen werden, um seine Einstellungen zu prüfen. Ein Board muss online sein, um eingereicht zu werden.",
   "pin_thread": "Thread anheften",
   "unpin_thread": "Thread lösen"
 }

@@ -512,6 +512,18 @@
   "thread_update_thread_archived": "هذا الموضوع مؤرشف",
   "thread_update_thread_deleted": "تمت إزالة هذا الموضوع أو حذفه",
   "fetch_new_replies_automatically": "جلب الردود الجديدة تلقائياً",
+  "directory_requirement_ids_per_thread": "معرفات الناشرين لكل موضوع",
+  "directory_requirement_no_ids": "بدون معرفات للناشرين",
+  "directory_requirement_pseudonymity_mode": "وضع الاسم المستعار {{mode}}",
+  "directory_requirement_sfw": "مصنّفة آمنة للعمل",
+  "directory_requirement_nsfw": "غير مصنّفة آمنة للعمل",
+  "directory_requirement_media_threads": "يجب أن تكون روابط المواضيع ملفات وسائط",
+  "directory_requirement_mod_queue": "قائمة انتظار الإشراف للناشرين الجدد",
+  "directory_requirements_title": "متطلبات استضافة /{{boardIdentifier}}/:",
+  "directory_requirements_footnote": "يجب أن تلتزم اللوحات أيضًا بـ<rulesLink>قواعد /{{boardIdentifier}}/</rulesLink> وأن تبقى متصلة. يتخطى 5chan أي لوحة غير متصلة أو لا تستوفي أحد المتطلبات وينتقل إلى اللوحة التالية المؤهلة.",
+  "directory_status_ineligible_reason": "ينقصها: {{requirements}}",
+  "directory_vote_board_ineligible": "لا يمكن إضافة {{address}} إلى /{{boardIdentifier}}/ بعد. ينقصها: {{requirements}}.",
+  "directory_vote_board_unreachable": "تعذّر تحميل {{address}} للتحقق من إعداداتها. يجب أن تكون اللوحة متصلة لإضافتها.",
   "pin_thread": "تثبيت الموضوع",
   "unpin_thread": "إلغاء تثبيت الموضوع"
 }

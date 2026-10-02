@@ -512,6 +512,18 @@
   "thread_update_thread_archived": "เธรดนี้ถูกเก็บถาวรแล้ว",
   "thread_update_thread_deleted": "เธรดนี้ถูกตัดออกหรือถูกลบแล้ว",
   "fetch_new_replies_automatically": "ดึงคำตอบใหม่โดยอัตโนมัติ",
+  "directory_requirement_ids_per_thread": "ID ผู้โพสต์แยกตามเธรด",
+  "directory_requirement_no_ids": "ไม่มี ID ผู้โพสต์",
+  "directory_requirement_pseudonymity_mode": "โหมดนามแฝง {{mode}}",
+  "directory_requirement_sfw": "ระบุว่าปลอดภัยสำหรับงาน",
+  "directory_requirement_nsfw": "ไม่ได้ระบุว่าปลอดภัยสำหรับงาน",
+  "directory_requirement_media_threads": "ลิงก์ของกระทู้ต้องเป็นไฟล์มีเดีย",
+  "directory_requirement_mod_queue": "คิวผู้ดูแลสำหรับผู้โพสต์ใหม่",
+  "directory_requirements_title": "ข้อกำหนดในการโฮสต์ /{{boardIdentifier}}/:",
+  "directory_requirements_footnote": "บอร์ดต้องปฏิบัติตาม<rulesLink>กฎของ /{{boardIdentifier}}/</rulesLink>และออนไลน์อยู่เสมอด้วย 5chan จะข้ามบอร์ดที่ออฟไลน์หรือไม่ผ่านข้อกำหนดข้อใดข้อหนึ่ง แล้วไปใช้บอร์ดถัดไปที่ผ่านเกณฑ์",
+  "directory_status_ineligible_reason": "ขาด: {{requirements}}",
+  "directory_vote_board_ineligible": "ยังส่ง {{address}} ไปยัง /{{boardIdentifier}}/ ไม่ได้ ขาด: {{requirements}}",
+  "directory_vote_board_unreachable": "โหลด {{address}} เพื่อตรวจสอบการตั้งค่าไม่สำเร็จ บอร์ดต้องออนไลน์อยู่จึงจะส่งได้",
   "pin_thread": "ปักหมุดเธรด",
   "unpin_thread": "เลิกปักหมุดเธรด"
 }

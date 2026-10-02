@@ -512,6 +512,18 @@
   "thread_update_thread_archived": "Kjo temë është arkivuar",
   "thread_update_thread_deleted": "Kjo temë është hequr ose fshirë",
   "fetch_new_replies_automatically": "Merr automatikisht përgjigjet e reja",
+  "directory_requirement_ids_per_thread": "ID të postuesve për çdo fije",
+  "directory_requirement_no_ids": "Pa ID të postuesve",
+  "directory_requirement_pseudonymity_mode": "Modaliteti i pseudonimitetit {{mode}}",
+  "directory_requirement_sfw": "Shënuar si i sigurt për punë",
+  "directory_requirement_nsfw": "Jo i shënuar si i sigurt për punë",
+  "directory_requirement_media_threads": "Lidhjet e temave duhet të jenë skedarë media",
+  "directory_requirement_mod_queue": "Radha e moderimit për përdoruesit e rinj",
+  "directory_requirements_title": "Kërkesat për të pritur /{{boardIdentifier}}/:",
+  "directory_requirements_footnote": "Bordet duhet gjithashtu të respektojnë <rulesLink>rregullat e /{{boardIdentifier}}/</rulesLink> dhe të qëndrojnë online. 5chan anashkalon një bord që është offline ose nuk plotëson një kërkesë dhe kalon te bordi tjetër që kualifikohet.",
+  "directory_status_ineligible_reason": "Mungon: {{requirements}}",
+  "directory_vote_board_ineligible": "{{address}} nuk mund të dërgohet ende te /{{boardIdentifier}}/. Mungon: {{requirements}}.",
+  "directory_vote_board_unreachable": "{{address}} nuk mund të ngarkohej për të kontrolluar cilësimet e tij. Një bord duhet të jetë online për t’u dërguar.",
   "pin_thread": "ngjit fijen",
   "unpin_thread": "shkëput fijen"
 }

@@ -284,6 +284,38 @@
   }
 }
 
+/* Left-aligned list in a centered column under the submit form. */
+.requirements {
+  width: fit-content;
+  max-width: calc(100% - 10px);
+  margin: 6px auto 0;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.requirementsTitle {
+  font-weight: 700;
+}
+
+.requirements ul {
+  margin: 2px 0;
+  padding-left: 20px;
+}
+
+.requirements a {
+  color: var(--post-link-text-color);
+  text-decoration: var(--post-link-text-decoration);
+}
+
+.requirements a:hover {
+  color: var(--post-link-text-color-hover);
+}
+
+.requirementSetting {
+  font-family: monospace;
+  overflow-wrap: anywhere;
+}
+
 .voteNotice {
   width: 80%;
   max-width: 810px;

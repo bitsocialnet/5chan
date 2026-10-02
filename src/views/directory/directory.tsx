@@ -1,6 +1,7 @@
 import { type FormEvent, useEffect, useMemo, useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { Trans, useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import { useCommunity } from '@bitsocial/bitsocial-react-hooks';
 import { shouldShowSnow } from '../../stores/use-special-theme-store';
 import { BottomButton, BracketedCatalogButton, CatalogButton, ReturnButton, TopButton } from '../../components/board-buttons';
@@ -24,6 +25,8 @@ import { useVoteTally } from '../../hooks/use-vote-tally';
 import { type DirectoryVoteOutcome, useDirectoryVote } from '../../hooks/use-directory-vote';
 import { rankDirectoryBoardsByVoteTally, type RankedDirectoryVoteBoard } from '../../lib/directory-vote-ranking';
 import { isTestnetVotingChain, TESTNET_PASS_FAUCET_URL } from '../../lib/pubsub-voter';
+import { useDirectoryBoardRequirements } from '../../hooks/use-directory-board-requirements';
+import { getDirectoryBoardRequirementSetting, getUnmetDirectoryBoardRequirements, type DirectoryBoardRequirement } from '../../lib/directory-board-requirements';
 import postStyles from '../../components/post-styles';
 import styles from '../../components/directory-layout';
 
@@ -47,6 +50,27 @@ const computeBoardStatus = (
   if (isOnlineStatusLoading) return 'loading';
   if (!freshnessState.updatedAt) return 'unknown';
   return 'online';
+};
+
+const getRequirementLabel = (t: TFunction, requirement: DirectoryBoardRequirement): string => {
+  switch (requirement.type) {
+    case 'pseudonymityMode':
+      if (requirement.mode === 'per-post') return t('directory_requirement_ids_per_thread');
+      if (requirement.mode === 'per-reply') return t('directory_requirement_no_ids');
+      return t('directory_requirement_pseudonymity_mode', { mode: requirement.mode, interpolation: { escapeValue: false } });
+    case 'safeForWork':
+      return t(requirement.safeForWork ? 'directory_requirement_sfw' : 'directory_requirement_nsfw');
+    case 'requirePostLinkIsMedia':
+      return t('directory_requirement_media_threads');
+    case 'pendingApproval':
+      return t('directory_requirement_mod_queue');
+  }
+};
+
+// Labels can contain commas in some languages, so a semicolon keeps the list readable.
+const useRequirementList = () => {
+  const { t } = useTranslation();
+  return (requirements: DirectoryBoardRequirement[]) => requirements.map((requirement) => getRequirementLabel(t, requirement)).join('; ');
 };
 
 const PASS_LINK = '/pass';
@@ -101,8 +125,38 @@ const DirectoryMobileFooterControls = ({ communityAddress }: { communityAddress:
   </div>
 );
 
+/** What a board needs to host the directory; the record settings are what the submit form checks. */
+const DirectoryRequirements = ({ boardIdentifier, requirements }: { boardIdentifier: string; requirements: DirectoryBoardRequirement[] }) => {
+  const { t } = useTranslation();
+
+  return (
+    <div className={styles.requirements}>
+      <div className={styles.requirementsTitle}>{t('directory_requirements_title', { boardIdentifier })}</div>
+      <ul>
+        {requirements.map((requirement) => {
+          const setting = getDirectoryBoardRequirementSetting(requirement);
+          return (
+            <li key={setting}>
+              {getRequirementLabel(t, requirement)} (<code className={styles.requirementSetting}>{setting}</code>)
+            </li>
+          );
+        })}
+      </ul>
+      <Trans i18nKey='directory_requirements_footnote' values={{ boardIdentifier }} components={{ rulesLink: <Link to={`/rules#${boardIdentifier}`} /> }} />
+    </div>
+  );
+};
+
+interface DirectorySubmitBoardFormProps {
+  boardIdentifier: string;
+  requirements: DirectoryBoardRequirement[];
+  isBusy: boolean;
+  isPending: boolean;
+  onSubmit: (address: string) => Promise<boolean>;
+}
+
 /** Submitting a board is voting for it: the tally lists any board a Pass holder votes for. */
-const DirectorySubmitBoardForm = ({ isBusy, isPending, onSubmit }: { isBusy: boolean; isPending: boolean; onSubmit: (address: string) => Promise<boolean> }) => {
+const DirectorySubmitBoardForm = ({ boardIdentifier, requirements, isBusy, isPending, onSubmit }: DirectorySubmitBoardFormProps) => {
   const { t } = useTranslation();
   const isMobile = useIsMobile();
   const [isOpen, setIsOpen] = useState(false);
@@ -124,34 +178,38 @@ const DirectorySubmitBoardForm = ({ isBusy, isPending, onSubmit }: { isBusy: boo
   }
 
   return (
-    <form className={styles.submitBoardForm} onSubmit={handleSubmit}>
-      <label htmlFor={SUBMIT_BOARD_INPUT_ID}>{t('directory_submit_board')}:</label>{' '}
-      <input
-        id={SUBMIT_BOARD_INPUT_ID}
-        type='text'
-        value={address}
-        onChange={(event) => setAddress(event.target.value)}
-        placeholder='board.bso'
-        autoComplete='off'
-        autoCapitalize='off'
-        autoCorrect='off'
-        spellCheck={false}
-        // The form mounts only when the user opens it, so take them straight to the field.
-        autoFocus
-      />{' '}
-      [
-      <button type='submit' className={styles.actionButton} disabled={isBusy} aria-label={t('upvote')} title={t('upvote')}>
-        {isPending ? '...' : '+1'}
-      </button>
-      ]
-    </form>
+    <>
+      <form className={styles.submitBoardForm} onSubmit={handleSubmit}>
+        <label htmlFor={SUBMIT_BOARD_INPUT_ID}>{t('directory_submit_board')}:</label>{' '}
+        <input
+          id={SUBMIT_BOARD_INPUT_ID}
+          type='text'
+          value={address}
+          onChange={(event) => setAddress(event.target.value)}
+          placeholder='board.bso'
+          autoComplete='off'
+          autoCapitalize='off'
+          autoCorrect='off'
+          spellCheck={false}
+          // The form mounts only when the user opens it, so take them straight to the field.
+          autoFocus
+        />{' '}
+        [
+        <button type='submit' className={styles.actionButton} disabled={isBusy} aria-label={t('upvote')} title={t('upvote')}>
+          {isPending ? '...' : '+1'}
+        </button>
+        ]
+      </form>
+      <DirectoryRequirements boardIdentifier={boardIdentifier} requirements={requirements} />
+    </>
   );
 };
 
-type VoteNotice = Exclude<DirectoryVoteOutcome, { status: 'voted' } | { status: 'withdrawn' }> & { boardAddress?: string };
+type VoteNotice = Exclude<DirectoryVoteOutcome, { status: 'voted' } | { status: 'withdrawn' } | { status: 'cancelled' }> & { boardAddress?: string };
 
 const DirectoryVoteNotice = ({ notice, boardIdentifier, noContest }: { notice: VoteNotice; boardIdentifier: string; noContest: boolean }) => {
   const { t } = useTranslation();
+  const formatRequirements = useRequirementList();
 
   let content;
   if (notice.status === 'ineligible') {
@@ -170,6 +228,16 @@ const DirectoryVoteNotice = ({ notice, boardIdentifier, noContest }: { notice: V
     content = noContest ? t('directory_voting_no_contest', { boardIdentifier }) : t('directory_voting_unavailable');
   } else if (notice.status === 'board-not-found') {
     content = t('directory_vote_board_not_found', { address: notice.boardAddress });
+  } else if (notice.status === 'board-unreachable') {
+    content = t('directory_vote_board_unreachable', { address: notice.boardAddress, interpolation: { escapeValue: false } });
+  } else if (notice.status === 'board-ineligible') {
+    content = t('directory_vote_board_ineligible', {
+      address: notice.boardAddress,
+      boardIdentifier,
+      requirements: formatRequirements(notice.unmet),
+      // React escapes the text; i18next escaping would show entities for apostrophes and slashes.
+      interpolation: { escapeValue: false },
+    });
   } else {
     content = t('directory_vote_failed', { error: notice.error.message });
   }
@@ -183,6 +251,7 @@ const DirectoryVoteNotice = ({ notice, boardIdentifier, noContest }: { notice: V
 
 interface DirectoryRowProps {
   rankedBoard: RankedDirectoryVoteBoard;
+  requirements: DirectoryBoardRequirement[];
   nowSeconds: number;
   rank: number;
   isVoted: boolean;
@@ -191,8 +260,9 @@ interface DirectoryRowProps {
   onVote: () => void;
 }
 
-const DirectoryRow = ({ rankedBoard, nowSeconds, rank, isVoted, isVotePending, isVotingBusy, onVote }: DirectoryRowProps) => {
+const DirectoryRow = ({ rankedBoard, requirements, nowSeconds, rank, isVoted, isVotePending, isVotingBusy, onVote }: DirectoryRowProps) => {
   const { t } = useTranslation();
+  const formatRequirements = useRequirementList();
   const { board, chainVerified, nameResolved, weight } = rankedBoard;
   const statusUnavailableReason = t('directory_status_unavailable_reason');
   const ownerAddress = board.owner;
@@ -203,7 +273,17 @@ const DirectoryRow = ({ rankedBoard, nowSeconds, rank, isVoted, isVotePending, i
   const community = useCommunity(shouldCheckStatus && communityIdentifier ? { community: communityIdentifier } : undefined);
   const { isOffline, isOnlineStatusLoading } = useIsCommunityOffline(community, shouldCheckStatus ? board.address : undefined);
   const offlineState = useCommunityOfflineStore((state) => (shouldCheckStatus ? state.communityOfflineState[board.address] : undefined));
-  const status = shouldCheckStatus ? computeBoardStatus(community, offlineState, nowSeconds, isOffline, isOnlineStatusLoading) : 'unavailable';
+  const onlineStatus = shouldCheckStatus ? computeBoardStatus(community, offlineState, nowSeconds, isOffline, isOnlineStatusLoading) : 'unavailable';
+  // An online board whose loaded record misses a requirement can't host the directory.
+  const unmetRequirements =
+    onlineStatus === 'online' && community?.updatedAt !== undefined
+      ? getUnmetDirectoryBoardRequirements(requirements, { features: community.features, challenges: community.challenges })
+      : [];
+  const status = unmetRequirements.length > 0 ? 'ineligible' : onlineStatus;
+  const ineligibleReason =
+    unmetRequirements.length > 0
+      ? t('directory_status_ineligible_reason', { requirements: formatRequirements(unmetRequirements), interpolation: { escapeValue: false } })
+      : undefined;
   const boardLink = `/${board.address}`;
   const isVoteVerificationPending = weight !== undefined && (!chainVerified || nameResolved === false);
   const score = weight?.toString() ?? board.score ?? DIRECTORY_STATUS_UNAVAILABLE_MARKER;
@@ -241,6 +321,15 @@ const DirectoryRow = ({ rankedBoard, nowSeconds, rank, isVoted, isVotePending, i
           </span>
         ) : status === 'unknown' ? (
           <span className={styles.statusUnavailable}>{DIRECTORY_STATUS_UNAVAILABLE_MARKER}</span>
+        ) : status === 'ineligible' ? (
+          <span className={styles.statusOffline}>
+            {t('directory_status_ineligible')}
+            <Tooltip content={ineligibleReason}>
+              <button type='button' className={styles.statusUnavailableHelp} aria-label={ineligibleReason} tabIndex={0}>
+                ?
+              </button>
+            </Tooltip>
+          </span>
         ) : (
           <span className={status === 'offline' ? styles.statusOffline : styles.statusOnline}>
             {t(status === 'offline' ? 'directory_status_offline' : 'directory_status_online')}
@@ -292,10 +381,11 @@ const Directory = () => {
   const voteTally = useVoteTally(isValidDirectoryCode ? boardIdentifier : undefined);
   const tally = voteTally.state === 'ready' ? voteTally.tally : undefined;
   const isTestnetVote = !!voteTally.criteria && isTestnetVotingChain(voteTally.criteria.bucketChainId);
-  const { votedCommunity, pendingVote, toggleVote, voteForAddress } = useDirectoryVote(voteTally);
+  const { votedCommunity, pendingVote, toggleVote, voteForAddress, submitBoard } = useDirectoryVote(voteTally);
   const [voteNotice, setVoteNotice] = useState<VoteNotice>();
 
   const ranked = useMemo(() => (list ? rankDirectoryBoardsByVoteTally(list.boards, tally, { orderByVotes: !isTestnetVote }) : []), [list, tally, isTestnetVote]);
+  const requirements = useDirectoryBoardRequirements(list);
   const directoryTitle = list?.title || (boardIdentifier ? `/${boardIdentifier}/ - ${t('directory')}` : t('directory'));
 
   useEffect(() => {
@@ -309,6 +399,7 @@ const Directory = () => {
 
   const showVoteOutcome = (outcome: DirectoryVoteOutcome, boardAddress?: string) => {
     if (outcome.status === 'voted' || outcome.status === 'withdrawn') return true;
+    if (outcome.status === 'cancelled') return false;
     setVoteNotice({ ...outcome, boardAddress });
     return false;
   };
@@ -327,7 +418,7 @@ const Directory = () => {
 
   const handleSubmitBoard = async (address: string) => {
     setVoteNotice(undefined);
-    return showVoteOutcome(await voteForAddress(address), address.trim());
+    return showVoteOutcome(await submitBoard(address, requirements), address.trim());
   };
 
   const isLoadingShell = loading && ranked.length === 0;
@@ -388,6 +479,7 @@ const Directory = () => {
                 <DirectoryRow
                   key={rankedBoard.board.publicKey ?? rankedBoard.board.address}
                   rankedBoard={rankedBoard}
+                  requirements={requirements}
                   nowSeconds={nowSeconds}
                   rank={index + 1}
                   isVoted={isVotedBoard(rankedBoard.board)}
@@ -401,7 +493,15 @@ const Directory = () => {
         </>
       )}
 
-      {!isLoadingShell && <DirectorySubmitBoardForm isBusy={isVotingBusy} isPending={pendingVote?.source === 'form'} onSubmit={handleSubmitBoard} />}
+      {!isLoadingShell && (
+        <DirectorySubmitBoardForm
+          boardIdentifier={boardIdentifier!}
+          requirements={requirements}
+          isBusy={isVotingBusy}
+          isPending={pendingVote?.source === 'form'}
+          onSubmit={handleSubmitBoard}
+        />
+      )}
 
       <PageFooterDesktop firstRow={<DirectoryDesktopFooterControls communityAddress={communityAddress} />} styleRow={<ThreadFooterStyleRow />} />
       <PageFooterMobile>

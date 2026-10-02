@@ -512,6 +512,18 @@
   "thread_update_thread_archived": "Thread ini telah diarsipkan",
   "thread_update_thread_deleted": "Thread ini telah dipangkas atau dihapus",
   "fetch_new_replies_automatically": "Ambil balasan baru secara otomatis",
+  "directory_requirement_ids_per_thread": "ID pengirim per utas",
+  "directory_requirement_no_ids": "Tanpa ID pengirim",
+  "directory_requirement_pseudonymity_mode": "Mode pseudonimitas {{mode}}",
+  "directory_requirement_sfw": "Ditandai aman untuk kerja",
+  "directory_requirement_nsfw": "Tidak ditandai aman untuk kerja",
+  "directory_requirement_media_threads": "Tautan thread harus berupa file media",
+  "directory_requirement_mod_queue": "Antrian moderasi untuk pengguna baru",
+  "directory_requirements_title": "Persyaratan untuk meng-host /{{boardIdentifier}}/:",
+  "directory_requirements_footnote": "Board juga harus mematuhi <rulesLink>aturan /{{boardIdentifier}}/</rulesLink> dan tetap online. 5chan melewati board yang offline atau tidak memenuhi suatu persyaratan dan beralih ke board berikutnya yang memenuhi syarat.",
+  "directory_status_ineligible_reason": "Yang kurang: {{requirements}}",
+  "directory_vote_board_ineligible": "{{address}} belum dapat dikirim ke /{{boardIdentifier}}/. Yang kurang: {{requirements}}.",
+  "directory_vote_board_unreachable": "Tidak dapat memuat {{address}} untuk memeriksa pengaturannya. Papan harus online agar dapat dikirim.",
   "pin_thread": "sematkan utas",
   "unpin_thread": "lepas sematan utas"
 }

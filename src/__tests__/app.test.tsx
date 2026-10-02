@@ -82,6 +82,10 @@ vi.mock('../hooks/use-is-mobile', () => ({
   default: () => testState.isMobile,
 }));
 
+vi.mock('../hooks/use-directory-candidate-records', () => ({
+  useDirectoryCandidateRecords: () => undefined,
+}));
+
 vi.mock('../hooks/use-resolved-community-address', () => ({
   useResolvedCommunityAddress: (boardIdentifier?: string) => testState.resolvedCommunityAddress ?? boardIdentifier,
   useResolvedDirectoryBoardPath: () => ({

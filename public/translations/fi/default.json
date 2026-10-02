@@ -512,6 +512,18 @@
   "thread_update_thread_archived": "Tämä ketju on arkistoitu",
   "thread_update_thread_deleted": "Tämä ketju on karsittu tai poistettu",
   "fetch_new_replies_automatically": "Hae uudet vastaukset automaattisesti",
+  "directory_requirement_ids_per_thread": "Ketjukohtaiset kirjoittaja-ID:t",
+  "directory_requirement_no_ids": "Ei kirjoittaja-ID:itä",
+  "directory_requirement_pseudonymity_mode": "Pseudonyymitila {{mode}}",
+  "directory_requirement_sfw": "Merkitty työturvalliseksi",
+  "directory_requirement_nsfw": "Ei merkitty työturvalliseksi",
+  "directory_requirement_media_threads": "Ketjujen linkkien on oltava mediatiedostoja",
+  "directory_requirement_mod_queue": "Moderaatiojono uusille kirjoittajille",
+  "directory_requirements_title": "Vaatimukset laudan /{{boardIdentifier}}/ isännöintiin:",
+  "directory_requirements_footnote": "Lautojen on myös noudatettava <rulesLink>laudan /{{boardIdentifier}}/ sääntöjä</rulesLink> ja pysyttävä verkossa. 5chan ohittaa laudan, joka on offline-tilassa tai ei täytä jotakin vaatimusta, ja siirtyy seuraavaan kelpaavaan.",
+  "directory_status_ineligible_reason": "Puuttuu: {{requirements}}",
+  "directory_vote_board_ineligible": "Lautaa {{address}} ei voi vielä lähettää hakemistoon /{{boardIdentifier}}/. Puuttuu: {{requirements}}.",
+  "directory_vote_board_unreachable": "Lautaa {{address}} ei voitu ladata sen asetusten tarkistamiseksi. Laudan on oltava verkossa, jotta sen voi lähettää.",
   "pin_thread": "kiinnitä keskustelu",
   "unpin_thread": "irrota keskustelu"
 }

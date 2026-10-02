@@ -512,6 +512,18 @@
   "thread_update_thread_archived": "이 스레드는 아카이브되었습니다",
   "thread_update_thread_deleted": "이 스레드는 정리되었거나 삭제되었습니다",
   "fetch_new_replies_automatically": "새 답글 자동으로 가져오기",
+  "directory_requirement_ids_per_thread": "스레드별 작성자 ID",
+  "directory_requirement_no_ids": "작성자 ID 없음",
+  "directory_requirement_pseudonymity_mode": "가명 모드 {{mode}}",
+  "directory_requirement_sfw": "직장 안전으로 표시됨",
+  "directory_requirement_nsfw": "직장 안전으로 표시되지 않음",
+  "directory_requirement_media_threads": "스레드 링크는 미디어 파일이어야 함",
+  "directory_requirement_mod_queue": "새 작성자용 관리자 대기열",
+  "directory_requirements_title": "/{{boardIdentifier}}/ 호스팅 요건:",
+  "directory_requirements_footnote": "게시판은 <rulesLink>/{{boardIdentifier}}/ 규칙</rulesLink>도 따라야 하며 온라인 상태를 유지해야 합니다. 5chan은 오프라인이거나 요건을 충족하지 못한 게시판을 건너뛰고 다음으로 자격을 갖춘 게시판을 사용합니다.",
+  "directory_status_ineligible_reason": "누락: {{requirements}}",
+  "directory_vote_board_ineligible": "{{address}}은(는) 아직 /{{boardIdentifier}}/에 제출할 수 없습니다. 누락: {{requirements}}.",
+  "directory_vote_board_unreachable": "설정을 확인하기 위해 {{address}}을(를) 불러올 수 없습니다. 게시판을 제출하려면 온라인 상태여야 합니다.",
   "pin_thread": "스레드 고정",
   "unpin_thread": "스레드 고정 해제"
 }

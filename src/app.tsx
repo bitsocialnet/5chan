@@ -18,6 +18,7 @@ import { useDirectories } from './hooks/use-directories';
 import { useBrowserPureP2PAccountUpgrade } from './hooks/use-browser-pure-p2p-account-upgrade';
 import { useCommunityIdentifier } from './hooks/use-community-identifiers';
 import { useResolvedCommunityAddress, useResolvedDirectoryBoardPath } from './hooks/use-resolved-community-address';
+import { useDirectoryCandidateRecords } from './hooks/use-directory-candidate-records';
 import useSuspendOffscreenMediaPlayback from './hooks/use-suspend-offscreen-media-playback';
 import { normalizeAccountCommentIndex } from './lib/utils/account-comment-index-utils';
 import { getCommentCommunityAddress } from './lib/utils/comment-utils';
@@ -120,6 +121,12 @@ const getPostFormRouteKeyPath = (pathname: string) => pathname.replace(/\/settin
 
 const getPageOneCanonicalPath = (boardIdentifier: string, pathname: string) => `/${boardIdentifier}${pathname.endsWith('/settings') ? '/settings' : ''}`;
 
+// A leaf of its own, so candidate record updates do not rerender the board layout.
+const DirectoryCandidateRecords = ({ boardIdentifier }: { boardIdentifier: string | undefined }) => {
+  useDirectoryCandidateRecords(boardIdentifier);
+  return null;
+};
+
 const BoardLayout = () => {
   const params = useParams();
   const isNavigatingToPendingPost = usePendingPostNavigationStore((state) => state.isNavigatingToPendingPost);
@@ -200,6 +207,7 @@ const BoardLayout = () => {
 
   return (
     <div className={styles.boardLayout}>
+      <DirectoryCandidateRecords boardIdentifier={boardIdentifier} />
       <BoardsBar />
       <Suspense fallback={null}>
         <CreateBoardModal />
