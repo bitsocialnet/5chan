@@ -597,6 +597,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
     enabled: !showHiddenThreads,
     filter: pinnedThreadsFilter,
     hiddenCids,
+    live: isVisible,
   });
   const sortedFeed = useMemo(
     () => placePinnedCatalogThreads(sortCatalogFeedForDisplay(catalogBaseFeed, sortType), pinnedCatalogThreads),
@@ -622,7 +623,8 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   const { error, shortAddress, state, title } = community || {};
   const hasCommunityLoadFailed = useHasCommunityLoadFailed(communityIdentifier);
   const footerHasMore = showHiddenThreads ? isLoadingHiddenCatalogThreads : hasMore;
-  const footerCombinedFeedLength = catalogBaseFeed.length;
+  // Counts pinned threads too, so a board whose only thread to show is pinned is not reported empty.
+  const footerCombinedFeedLength = sortedFeed.length;
   const footerMoreThreadsSuggestion = showHiddenThreads ? null : moreThreadsSuggestion;
   const footerShowLoadingEllipsis = showHiddenThreads ? isLoadingHiddenCatalogThreads : effectiveInfiniteScroll;
 
@@ -722,7 +724,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
       footerShowLoadingEllipsis,
     ],
   );
-  const isFeedLoaded = feed.length > 0 || hiddenThreadsCount > 0 || state === 'failed';
+  const isFeedLoaded = feed.length > 0 || hiddenThreadsCount > 0 || pinnedCatalogThreads.length > 0 || state === 'failed';
   const hasActiveSearch = searchText.trim().length > 0;
   const showModEmptyState = isInModView && accountCommunityAddresses.length === 0;
   const showSearchNothingFound =

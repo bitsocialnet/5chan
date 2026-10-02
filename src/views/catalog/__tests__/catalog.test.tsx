@@ -53,6 +53,7 @@ const testState = vi.hoisted(() => ({
   accountCommunityAddresses: [] as string[],
   blockCidMock: vi.fn(),
   commentsByCid: {} as Record<string, TestComment>,
+  useCommentsCalls: [] as Array<{ autoUpdate?: boolean; commentCids: string[] }>,
   directoryByAddress: {
     'music-posting.eth': {
       address: 'music-posting.eth',
@@ -199,10 +200,13 @@ vi.mock('@bitsocial/bitsocial-react-hooks', async () => {
       };
     },
     useCommunity: () => testState.community,
-    useComments: ({ commentCids = [] }: { commentCids?: string[] } = {}) => ({
-      comments: commentCids.map((cid) => testState.commentsByCid[cid]),
-      state: 'succeeded',
-    }),
+    useComments: ({ autoUpdate, commentCids = [] }: { autoUpdate?: boolean; commentCids?: string[] } = {}) => {
+      testState.useCommentsCalls.push({ autoUpdate, commentCids });
+      return {
+        comments: commentCids.map((cid) => testState.commentsByCid[cid]),
+        state: 'succeeded',
+      };
+    },
   };
 });
 
@@ -443,6 +447,7 @@ describe('Catalog', () => {
       };
     });
     testState.commentsByCid = {};
+    testState.useCommentsCalls = [];
     usePinnedCatalogThreadsStore.setState({ pinnedThreads: {} });
     testState.directories = [{ address: 'music-posting.eth', directoryCode: 'mu', title: '/mu/ - Music' }];
     testState.directoryByAddress = {
@@ -574,6 +579,29 @@ describe('Catalog', () => {
       (element) => element.textContent?.replace('row:', '').split(',') ?? [],
     );
     expect(shownCids).toEqual(['post-8', 'post-1', 'post-2', 'post-3', 'post-4', 'post-5', 'post-6']);
+  });
+
+  it('shows a pinned archived thread on a board with no other threads instead of an empty catalog', async () => {
+    testState.feed = [];
+    testState.commentsByCid = { 'archived-post': { cid: 'archived-post', title: 'archived', communityAddress: 'music-posting.eth', timestamp: 1, archived: true } };
+    usePinnedCatalogThreadsStore.setState({ pinnedThreads: { 'archived-post': { communityAddress: 'music-posting.eth', pinnedAt: 1, readReplyCount: 0 } } });
+
+    await renderCatalog({ initialEntry: '/mu/catalog', routePath: '/:boardIdentifier/catalog' });
+
+    expect(Array.from(container.querySelectorAll('[data-testid="catalog-row"]')).map((element) => element.textContent)).toEqual(['row:archived-post']);
+    expect(container.textContent).not.toContain('no_threads');
+  });
+
+  it('pauses pinned thread updates while the catalog is cached out of view', async () => {
+    testState.feed = [{ cid: 'pinned-post', title: 'pinned', communityAddress: 'music-posting.eth' }];
+    testState.commentsByCid = { 'pinned-post': { cid: 'pinned-post', title: 'pinned', communityAddress: 'music-posting.eth', timestamp: 1 } };
+    usePinnedCatalogThreadsStore.setState({ pinnedThreads: { 'pinned-post': { communityAddress: 'music-posting.eth', pinnedAt: 1, readReplyCount: 0 } } });
+
+    await renderCatalog({ initialEntry: '/mu/catalog', routePath: '/:boardIdentifier/catalog' });
+    expect(testState.useCommentsCalls.at(-1)).toEqual({ autoUpdate: true, commentCids: ['pinned-post'] });
+
+    await renderCatalog({ catalogProps: { isVisible: false }, initialEntry: '/mu/catalog', routePath: '/:boardIdentifier/catalog' });
+    expect(testState.useCommentsCalls.at(-1)).toEqual({ autoUpdate: false, commentCids: ['pinned-post'] });
   });
 
   it('requests the selected sort directly on a single board', async () => {

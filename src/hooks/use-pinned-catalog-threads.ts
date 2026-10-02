@@ -11,6 +11,8 @@ interface UsePinnedCatalogThreadsOptions {
   /** The catalog's search and content filters, so a pinned thread a search leaves out stays out. */
   filter?: (comment: Comment) => boolean;
   hiddenCids: HiddenCidLookup;
+  /** Keep the threads updating. Off while the catalog is cached out of view, which keeps showing the last copies. */
+  live: boolean;
 }
 
 const NO_PINNED_POSTS: Comment[] = [];
@@ -21,7 +23,7 @@ const NO_PINNED_POSTS: Comment[] = [];
  * counts move without a reload. A pinned thread stays pinned when it leaves the board's pages or gets
  * archived, and shows as archived; only a purged thread, which is gone for good, is unpinned.
  */
-const usePinnedCatalogThreads = ({ communityAddresses, enabled, filter, hiddenCids }: UsePinnedCatalogThreadsOptions): Comment[] => {
+const usePinnedCatalogThreads = ({ communityAddresses, enabled, filter, hiddenCids, live }: UsePinnedCatalogThreadsOptions): Comment[] => {
   const pinnedThreads = usePinnedCatalogThreadsStore((state) => state.pinnedThreads);
   const unpinThread = usePinnedCatalogThreadsStore((state) => state.unpinThread);
   const pinnedCids = useMemo(
@@ -33,7 +35,7 @@ const usePinnedCatalogThreads = ({ communityAddresses, enabled, filter, hiddenCi
         : [],
     [communityAddresses, enabled, pinnedThreads],
   );
-  const { comments } = useComments({ commentCids: pinnedCids, autoUpdate: true });
+  const { comments } = useComments({ commentCids: pinnedCids, autoUpdate: live });
 
   const purgedCids = useMemo(() => comments.flatMap((comment) => (comment?.cid && isCommentPurged(comment) ? [comment.cid as string] : [])), [comments]);
   useEffect(() => {

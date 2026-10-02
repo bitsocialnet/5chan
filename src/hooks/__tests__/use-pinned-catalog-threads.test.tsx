@@ -80,6 +80,7 @@ describe('usePinnedCatalogThreads', () => {
           enabled: true,
           filter: (comment) => comment.title !== 'spoiler',
           hiddenCids: { hidden: true },
+          live: true,
         }),
       );
     });
@@ -99,7 +100,7 @@ describe('usePinnedCatalogThreads', () => {
       purged: { cid: 'purged', timestamp: 1, purged: true } as Partial<Comment>,
       'moderated-purged': { cid: 'moderated-purged', timestamp: 1, commentModeration: { purged: true } } as Partial<Comment>,
     };
-    const props = { communityAddresses: ['music-posting.eth'], hiddenCids: {} };
+    const props = { communityAddresses: ['music-posting.eth'], hiddenCids: {}, live: true };
 
     await act(async () => {
       root.render(createElement(PinnedThreadsHarness, { ...props, enabled: false }));
@@ -124,10 +125,22 @@ describe('usePinnedCatalogThreads', () => {
     testState.commentsByCid = { first: { cid: 'first', timestamp: 1 }, second: { cid: 'second', timestamp: 2 } };
 
     await act(async () => {
-      root.render(createElement(PinnedThreadsHarness, { communityAddresses: ['music-posting.eth'], enabled: true, hiddenCids: {} }));
+      root.render(createElement(PinnedThreadsHarness, { communityAddresses: ['music-posting.eth'], enabled: true, hiddenCids: {}, live: true }));
     });
 
     expect(pinnedPosts.map((post) => post.cid)).toEqual(['first', 'second']);
+  });
+
+  it('stops updating while the catalog is cached out of view and keeps showing the last copies', async () => {
+    pin('thread-1');
+    testState.commentsByCid = { 'thread-1': { cid: 'thread-1', timestamp: 1 } };
+
+    await act(async () => {
+      root.render(createElement(PinnedThreadsHarness, { communityAddresses: ['music-posting.eth'], enabled: true, hiddenCids: {}, live: false }));
+    });
+
+    expect(testState.useCommentsCalls.at(-1)).toEqual({ commentCids: ['thread-1'], autoUpdate: false });
+    expect(pinnedPosts.map((post) => post.cid)).toEqual(['thread-1']);
   });
 });
 
