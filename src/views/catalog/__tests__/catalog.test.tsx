@@ -592,6 +592,23 @@ describe('Catalog', () => {
     expect(container.textContent).not.toContain('no_threads');
   });
 
+  it('keeps showing the loading or failed board status instead of cached pinned threads', async () => {
+    testState.feed = [];
+    testState.hasMore = true;
+    testState.commentsByCid = { 'pinned-post': { cid: 'pinned-post', title: 'pinned', communityAddress: 'music-posting.eth', timestamp: 1 } };
+    usePinnedCatalogThreadsStore.setState({ pinnedThreads: { 'pinned-post': { communityAddress: 'music-posting.eth', pinnedAt: 1, readReplyCount: 0 } } });
+
+    await renderCatalog({ initialEntry: '/mu/catalog', routePath: '/:boardIdentifier/catalog' });
+    expect(container.querySelectorAll('[data-testid="catalog-row"]')).toHaveLength(0);
+    expect(container.textContent).toContain('loading_feed');
+
+    testState.hasMore = false;
+    testState.community = { ...testState.community, error: new Error('board offline'), state: 'failed' };
+    await renderCatalog({ initialEntry: '/mu/catalog', routePath: '/:boardIdentifier/catalog' });
+    expect(container.querySelectorAll('[data-testid="catalog-row"]')).toHaveLength(0);
+    expect(container.textContent).toContain('failed');
+  });
+
   it('pauses pinned thread updates while the catalog is cached out of view', async () => {
     testState.feed = [{ cid: 'pinned-post', title: 'pinned', communityAddress: 'music-posting.eth' }];
     testState.commentsByCid = { 'pinned-post': { cid: 'pinned-post', title: 'pinned', communityAddress: 'music-posting.eth', timestamp: 1 } };

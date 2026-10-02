@@ -215,7 +215,17 @@ const PinnedThreadPage = ({ cid, communityAddress }: { cid: string; communityAdd
 
 // Memoize CatalogPost to prevent rerenders when parent rerenders due to updatingState
 const CatalogPost = memo(
-  ({ matchedFilterColor, post, showHiddenPost = false }: { matchedFilterColor?: string; post: Comment; showHiddenPost?: boolean }) => {
+  ({
+    matchedFilterColor,
+    post,
+    showHiddenPost = false,
+    showPinnedThreads = false,
+  }: {
+    matchedFilterColor?: string;
+    post: Comment;
+    showHiddenPost?: boolean;
+    showPinnedThreads?: boolean;
+  }) => {
     const { t } = useTranslation();
     const resolvedPost = useMemo(() => withResolvedCommentCommunityAddress(post), [post]);
     const { cid, content, link, linkHeight, linkWidth, locked, pinned, replyCount, spoiler, communityAddress, title, thumbnailUrl } = resolvedPost || {};
@@ -228,8 +238,8 @@ const CatalogPost = memo(
     const { hidden } = useHide({ cid, comment: resolvedPost });
     const shouldMaskPost = hidden && !showHiddenPost;
     const pinnedThread = usePinnedCatalogThreadsStore((state) => (cid ? state.pinnedThreads[cid] : undefined));
-    // The hidden threads list shows threads as they are, like 4chan's hidden mode.
-    const isPinned = Boolean(pinnedThread) && !showHiddenPost;
+    // Only the catalog marks pins; its hidden threads list shows threads as they are, like 4chan's hidden mode.
+    const isPinned = Boolean(pinnedThread) && showPinnedThreads && !showHiddenPost;
     const newReplyCount = pinnedThread ? getPinnedThreadNewReplyCount(pinnedThread, replyCount) : 0;
 
     const location = useLocation();
@@ -444,7 +454,8 @@ const CatalogPost = memo(
       prev?.linkHeight === next?.linkHeight &&
       prevCommunityAddress === nextCommunityAddress &&
       prevProps.matchedFilterColor === nextProps.matchedFilterColor &&
-      prevProps.showHiddenPost === nextProps.showHiddenPost
+      prevProps.showHiddenPost === nextProps.showHiddenPost &&
+      prevProps.showPinnedThreads === nextProps.showPinnedThreads
     );
   },
 );
@@ -455,14 +466,22 @@ interface CatalogRowProps {
   matchedFilterColors?: Map<string, string>;
   row: Comment[];
   showHiddenPosts?: boolean;
+  /** Mark the viewer's pinned threads. Only the catalog does; search results show threads plainly. */
+  showPinnedThreads?: boolean;
 }
 
 const CatalogRow = memo(
-  ({ estimatedHeight, matchedFilterColors, row, showHiddenPosts = false }: CatalogRowProps) => {
+  ({ estimatedHeight, matchedFilterColors, row, showHiddenPosts = false, showPinnedThreads = false }: CatalogRowProps) => {
     return (
       <div className={styles.row} data-pretext-height={estimatedHeight}>
         {row.map((post, index) => (
-          <CatalogPost key={post?.cid || index} matchedFilterColor={matchedFilterColors?.get(post?.cid || '')} post={post} showHiddenPost={showHiddenPosts} />
+          <CatalogPost
+            key={post?.cid || index}
+            matchedFilterColor={matchedFilterColors?.get(post?.cid || '')}
+            post={post}
+            showHiddenPost={showHiddenPosts}
+            showPinnedThreads={showPinnedThreads}
+          />
         ))}
       </div>
     );
@@ -471,7 +490,8 @@ const CatalogRow = memo(
     if (
       prevProps.estimatedHeight !== nextProps.estimatedHeight ||
       prevProps.row.length !== nextProps.row.length ||
-      prevProps.showHiddenPosts !== nextProps.showHiddenPosts
+      prevProps.showHiddenPosts !== nextProps.showHiddenPosts ||
+      prevProps.showPinnedThreads !== nextProps.showPinnedThreads
     ) {
       return false;
     }

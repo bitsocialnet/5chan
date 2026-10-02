@@ -305,7 +305,7 @@ describe('CatalogRow', () => {
     const otherPost: TestComment = { cid: 'other-post', link: 'https://example.com/media.png', replyCount: 7, communityAddress: 'music-posting.eth', title: 'Other' };
     usePinnedCatalogThreadsStore.setState({ pinnedThreads: { 'pinned-post': { communityAddress: 'music-posting.eth', pinnedAt: 1, readReplyCount: 4 } } });
 
-    await renderWithRouter(createElement(CatalogRow, { row: [pinnedPost, otherPost] }));
+    await renderWithRouter(createElement(CatalogRow, { row: [pinnedPost, otherPost], showPinnedThreads: true }));
 
     const [pinnedMeta, otherMeta] = Array.from(container.querySelectorAll<HTMLElement>('[title^="(R)eplies"]'));
     expect(pinnedMeta.textContent).toBe('R: 7 (+3) / P: 2menu');
@@ -326,10 +326,14 @@ describe('CatalogRow', () => {
     const pinnedPost: TestComment = { cid: 'pinned-post', link: 'https://example.com/media.png', replyCount: 7, communityAddress: 'music-posting.eth', title: 'Pinned' };
     usePinnedCatalogThreadsStore.setState({ pinnedThreads: { 'pinned-post': { communityAddress: 'music-posting.eth', pinnedAt: 1, readReplyCount: 4 } } });
 
-    await renderWithRouter(createElement(CatalogRow, { row: [pinnedPost], showHiddenPosts: true }));
+    await renderWithRouter(createElement(CatalogRow, { row: [pinnedPost], showHiddenPosts: true, showPinnedThreads: true }));
 
     expect(container.querySelector<HTMLElement>('[title^="(R)eplies"]')?.textContent).toBe('R: 7menu');
     expect(container.querySelector<HTMLElement>('img[src="https://example.com/media.png"]')?.parentElement?.className).not.toContain('pinned');
+
+    // Search results render catalog rows too, without marking pins.
+    await renderWithRouter(createElement(CatalogRow, { row: [pinnedPost] }));
+    expect(container.querySelector<HTMLElement>('[title^="(R)eplies"]')?.textContent).toBe('R: 7menu');
   });
 
   it('renders the archived icon for archived threads', async () => {

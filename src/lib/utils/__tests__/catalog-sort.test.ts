@@ -109,6 +109,13 @@ describe('placePinnedCatalogThreads', () => {
     ).toEqual(['sticky-1', 'sticky-2', 'a']);
   });
 
+  it('keeps the pinned group together when a mod stickies a pinned thread after the feed snapshot', () => {
+    const posts: CatalogPost[] = [{ cid: 'sticky', pinned: true }, { cid: 'a' }, { cid: 'b' }, { cid: 'stickied-later', updatedAt: 1 }, { cid: 'c' }];
+    const pinnedPosts: CatalogPost[] = [{ cid: 'stickied-later', pinned: true, updatedAt: 2 }, { cid: 'pinned-2' }];
+
+    expect(placePinnedCatalogThreads(posts, pinnedPosts).map((post) => post.cid)).toEqual(['sticky', 'stickied-later', 'pinned-2', 'a', 'b', 'c']);
+  });
+
   it('shows the copy with the newer update', () => {
     const feedPost: CatalogPost = { cid: 'pinned', replyCount: 3, updatedAt: 100 };
     const livePost: CatalogPost = { cid: 'pinned', replyCount: 5, updatedAt: 200 };

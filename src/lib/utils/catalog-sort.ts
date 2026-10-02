@@ -76,7 +76,8 @@ export function placePinnedCatalogThreads<T extends CatalogPost>(posts: T[], pin
     const feedPost = feedPostsByCid.get(pinnedPost.cid);
     return feedPost && (feedPost.updatedAt ?? 0) > (pinnedPost.updatedAt ?? 0) ? feedPost : pinnedPost;
   });
-  const stickyPinnedCids = new Set(newerPinnedPosts.filter((post) => post.pinned && feedPostsByCid.has(post.cid)).map((post) => post.cid));
+  // Stickiness comes from the feed copy, so a pin a mod stickied after the snapshot doesn't keep its old spot mid-feed.
+  const stickyPinnedCids = new Set(pinnedPosts.filter((post) => feedPostsByCid.get(post.cid)?.pinned).map((post) => post.cid));
   const newerPinnedPostsByCid = new Map(newerPinnedPosts.map((post) => [post.cid, post]));
 
   const otherPosts = posts.flatMap((post) => {
