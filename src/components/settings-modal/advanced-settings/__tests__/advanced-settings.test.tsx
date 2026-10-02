@@ -306,6 +306,43 @@ describe('AdvancedSettings', () => {
     expect(reloadMock).toHaveBeenCalledOnce();
   });
 
+  it('turns browser pure p2p off and keeps a full node RPC entered while pure p2p is enabled', async () => {
+    testState.account = {
+      mediaIpfsGatewayUrl: 'https://media.old.example',
+      pkcOptions: {
+        httpRoutersOptions: ['https://peers.pleb.bot'],
+        libp2pJsClientsOptions: [{ key: 'libp2pjs' }],
+      },
+    };
+
+    await renderSettings(false);
+
+    const checkbox = container.querySelector<HTMLInputElement>('input[type="checkbox"]');
+    const nodeRpcInput = Array.from(container.querySelectorAll<HTMLInputElement>('input[type="text"]')).find(
+      (input) => input.placeholder === 'advanced_p2p_rpc_placeholder',
+    ) as HTMLInputElement;
+    expect(checkbox?.checked).toBe(true);
+
+    await dispatchInput(nodeRpcInput, '   ');
+    expect(checkbox?.checked).toBe(true);
+
+    await dispatchInput(nodeRpcInput, ' ws://localhost:9138 ');
+    expect(checkbox?.checked).toBe(false);
+
+    await clickButton('save_advanced_settings');
+
+    expect(testState.setAccountMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        pkcOptions: expect.objectContaining({
+          libp2pJsClientsOptions: undefined,
+          pkcRpcClientsOptions: ['ws://localhost:9138'],
+        }),
+      }),
+    );
+    expect(localStorage.getItem('5chan:pure-p2p-browser-enabled')).toBe('false');
+    expect(reloadMock).toHaveBeenCalledOnce();
+  });
+
   it('preserves custom browser gateway providers while pure p2p is unavailable', async () => {
     localStorage.setItem('5chan:pure-p2p-browser-enabled', 'false');
     setTestHostname('p2p.5chan.app');
