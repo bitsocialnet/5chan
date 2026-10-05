@@ -27,6 +27,7 @@ const testState = vi.hoisted(() => ({
   communityIdentifierRequests: [] as Array<string | undefined>,
   directoryListLoading: false,
   directoryFeatures: undefined as Record<string, unknown> | undefined,
+  isMobile: false,
   directoryBoards: [
     {
       address: 'anime-and-manga.bso',
@@ -156,6 +157,10 @@ vi.mock('../../../hooks/use-is-community-offline', () => ({
   },
 }));
 
+vi.mock('../../../hooks/use-is-mobile', () => ({
+  default: () => testState.isMobile,
+}));
+
 vi.mock('../../../hooks/use-now-seconds', () => ({
   useNowSeconds: () => testState.nowSeconds,
 }));
@@ -233,6 +238,7 @@ describe('Directory', () => {
     testState.communityIdentifierRequests = [];
     testState.directoryListLoading = false;
     testState.directoryFeatures = undefined;
+    testState.isMobile = false;
     testState.directoryBoards = [createDirectoryBoard('anime-and-manga.bso')];
     testState.directories = [
       {
@@ -270,6 +276,17 @@ describe('Directory', () => {
     act(() => root.unmount());
     window.alert = originalAlert;
     container.remove();
+  });
+
+  it('drops the owner column and View action on mobile, linking the board address instead', async () => {
+    testState.isMobile = true;
+    await renderDirectory();
+
+    const headers = Array.from(container.querySelectorAll('thead th')).map((header) => header.textContent?.trim());
+    expect(headers).toEqual(['No.', 'directory_board', 'directory_status', 'directory_score', 'directory_vote']);
+    const cells = Array.from(getDirectoryRow()?.querySelectorAll('td') ?? []).map((cell) => cell.textContent?.replace(/\s+/g, ' ').trim());
+    expect(cells).toEqual(['1', 'anime-and-manga.bso', 'online', '12', '[+1]']);
+    expect(getDirectoryRow()?.querySelector('td:nth-child(2) a')?.getAttribute('href')).toBe('/anime-and-manga.bso');
   });
 
   it('shows online status for a listed board after loading its community', async () => {

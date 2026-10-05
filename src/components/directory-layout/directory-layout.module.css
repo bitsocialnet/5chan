@@ -400,9 +400,27 @@
     margin-top: 10px;
   }
 
-  .postblock,
-  .ownerCell,
-  .actionsCell {
+  /* The name column takes the spare width; the other columns keep to their one-line content. */
+  .boardCol {
+    width: 100%;
+  }
+
+  .postblock {
+    padding: 3px 2px !important;
+  }
+
+  /* Keeps each row's links 24px apart so they stay separately tappable. */
+  .flashListing td {
+    padding-top: 5px;
+    padding-bottom: 5px;
+  }
+
+  .ownerCell {
+    white-space: normal;
+  }
+
+  /* A long translated label such as Unvote wraps instead of squeezing the board name. */
+  .actionButton {
     white-space: normal;
   }
 }

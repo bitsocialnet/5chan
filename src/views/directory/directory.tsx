@@ -254,13 +254,14 @@ interface DirectoryRowProps {
   requirements: DirectoryBoardRequirement[];
   nowSeconds: number;
   rank: number;
+  isMobile: boolean;
   isVoted: boolean;
   isVotePending: boolean;
   isVotingBusy: boolean;
   onVote: () => void;
 }
 
-const DirectoryRow = ({ rankedBoard, requirements, nowSeconds, rank, isVoted, isVotePending, isVotingBusy, onVote }: DirectoryRowProps) => {
+const DirectoryRow = ({ rankedBoard, requirements, nowSeconds, rank, isMobile, isVoted, isVotePending, isVotingBusy, onVote }: DirectoryRowProps) => {
   const { t } = useTranslation();
   const formatRequirements = useRequirementList();
   const { board, chainVerified, nameResolved, weight } = rankedBoard;
@@ -291,20 +292,31 @@ const DirectoryRow = ({ rankedBoard, requirements, nowSeconds, rank, isVoted, is
   return (
     <tr className={`${styles.dirRow} ${rank % 2 === 1 ? styles.rowOdd : ''}`}>
       <td className={styles.numberCell}>{rank}</td>
-      <td className={styles.boardCol}>{board.address}</td>
-      <td className={styles.ownerCell}>
-        <span className={developerBadge ? `${styles.ownerName} ${postStyles.capcodeAdmin}` : undefined}>
-          {ownerDisplay ?? t('directory_owner_anonymous')}
-          {developerBadge && (
-            <>
-              {' '}
-              <span className={styles.ownerCapcode}>
-                ## {developerBadge.label} <span className={`${postStyles.capcodeIcon} ${postStyles.capcodeAdminIcon}`} title={developerBadge.title} />
-              </span>
-            </>
-          )}
-        </span>
+      <td className={styles.boardCol}>
+        {/* Mobile drops the View action, so the address itself opens the board. */}
+        {isMobile ? (
+          <Link to={boardLink} className={styles.viewLink}>
+            {board.address}
+          </Link>
+        ) : (
+          board.address
+        )}
       </td>
+      {!isMobile && (
+        <td className={styles.ownerCell}>
+          <span className={developerBadge ? `${styles.ownerName} ${postStyles.capcodeAdmin}` : undefined}>
+            {ownerDisplay ?? t('directory_owner_anonymous')}
+            {developerBadge && (
+              <>
+                {' '}
+                <span className={styles.ownerCapcode}>
+                  ## {developerBadge.label} <span className={`${postStyles.capcodeIcon} ${postStyles.capcodeAdminIcon}`} title={developerBadge.title} />
+                </span>
+              </>
+            )}
+          </span>
+        </td>
+      )}
       <td className={styles.statusCell}>
         {status === 'unavailable' ? (
           <span className={styles.statusUnavailable}>
@@ -359,11 +371,17 @@ const DirectoryRow = ({ rankedBoard, requirements, nowSeconds, rank, isVoted, is
         >
           {isVotePending ? '...' : isVoted ? t('directory_unvote') : '+1'}
         </button>
-        ] [
-        <Link to={boardLink} className={styles.viewLink}>
-          {t('view')}
-        </Link>
         ]
+        {!isMobile && (
+          <>
+            {' '}
+            [
+            <Link to={boardLink} className={styles.viewLink}>
+              {t('view')}
+            </Link>
+            ]
+          </>
+        )}
       </td>
     </tr>
   );
@@ -383,6 +401,8 @@ const Directory = () => {
   const isTestnetVote = !!voteTally.criteria && isTestnetVotingChain(voteTally.criteria.bucketChainId);
   const { votedCommunity, pendingVote, toggleVote, voteForAddress, submitBoard } = useDirectoryVote(voteTally);
   const [voteNotice, setVoteNotice] = useState<VoteNotice>();
+  // Phones have no room for the owner column.
+  const isMobile = useIsMobile();
 
   const ranked = useMemo(() => (list ? rankDirectoryBoardsByVoteTally(list.boards, tally, { orderByVotes: !isTestnetVote }) : []), [list, tally, isTestnetVote]);
   const requirements = useDirectoryBoardRequirements(list);
@@ -459,9 +479,11 @@ const Directory = () => {
                 <th className={styles.postblock} scope='col'>
                   {t('directory_board')}
                 </th>
-                <th className={styles.postblock} scope='col'>
-                  {t('directory_owner')}
-                </th>
+                {!isMobile && (
+                  <th className={styles.postblock} scope='col'>
+                    {t('directory_owner')}
+                  </th>
+                )}
                 <th className={styles.postblock} scope='col'>
                   {t('directory_status')}
                 </th>
@@ -482,6 +504,7 @@ const Directory = () => {
                   requirements={requirements}
                   nowSeconds={nowSeconds}
                   rank={index + 1}
+                  isMobile={isMobile}
                   isVoted={isVotedBoard(rankedBoard.board)}
                   isVotePending={pendingVote?.source === 'row' && pendingVote.key === getRowKey(rankedBoard.board)}
                   isVotingBusy={isVotingBusy}
