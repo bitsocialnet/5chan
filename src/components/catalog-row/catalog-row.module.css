@@ -83,6 +83,13 @@
   overflow: hidden;
 }
 
+/* Thumbnails are sized from the post's peer-supplied linkWidth/linkHeight, which can disagree with the real file; letterbox instead of stretching. */
+.mediaWrapper img,
+.mediaWrapper canvas,
+.mediaWrapper video {
+  object-fit: contain;
+}
+
 .post img, .post canvas, .post video, .post audio {
   max-width: var(--maxWidth);
   max-height: var(--maxHeight);
