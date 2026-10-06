@@ -41,7 +41,7 @@ interface CatalogPostMediaProps {
   pinned?: boolean;
 }
 
-export const CatalogPostMedia = ({ cid, commentMediaInfo, linkWidth, linkHeight, matchedFilterColor, pinned = false }: CatalogPostMediaProps) => {
+export const CatalogPostMedia = ({ cid, commentMediaInfo, isOutOfFeed = false, linkWidth, linkHeight, matchedFilterColor, pinned = false }: CatalogPostMediaProps) => {
   void cid;
   const { patternThumbnailUrl, thumbnail, type, url } = commentMediaInfo || {};
   const iframeThumbnail = patternThumbnailUrl || thumbnail;
@@ -72,7 +72,9 @@ export const CatalogPostMedia = ({ cid, commentMediaInfo, linkWidth, linkHeight,
   };
   const loadingStyle = { opacity: isLoaded ? 1 : 0 };
 
-  const imageSize = useCatalogStyleStore((state) => state.imageSize);
+  const catalogImageSize = useCatalogStyleStore((state) => state.imageSize);
+  // The catalog image size setting only applies to catalog rows; out-of-feed cards (home popular threads) are laid out for 150px thumbnails.
+  const imageSize = isOutOfFeed ? 'Small' : catalogImageSize;
 
   let displayWidth, displayHeight;
   const maxThumbnailSize = imageSize === 'Large' ? 250 : 150;

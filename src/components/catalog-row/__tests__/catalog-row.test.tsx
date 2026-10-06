@@ -165,10 +165,10 @@ vi.mock('../../../hooks/use-directories', () => ({
 }));
 
 vi.mock('../../../stores/use-catalog-style-store', () => ({
-  default: () => ({
-    imageSize: testState.imageSize,
-    showOPComment: testState.showOPComment,
-  }),
+  default: <T,>(selector?: (state: { imageSize: 'Large' | 'Small'; showOPComment: boolean }) => T) => {
+    const state = { imageSize: testState.imageSize, showOPComment: testState.showOPComment };
+    return selector ? selector(state) : state;
+  },
 }));
 
 vi.mock('../../../hooks/use-author-privileges', () => ({
@@ -394,6 +394,36 @@ describe('CatalogRow', () => {
     expect(image).toBeTruthy();
     expect(image?.getAttribute('width')).toBeNull();
     expect(image?.getAttribute('height')).toBeNull();
+  });
+
+  it('keeps out-of-feed thumbnails at the small size when the catalog uses large images', async () => {
+    testState.imageSize = 'Large';
+    const renderImage = async (isOutOfFeed: boolean) => {
+      await act(async () => {
+        root.render(
+          createElement(CatalogPostMedia, {
+            cid: 'image-post',
+            commentMediaInfo: { type: 'image', url: 'https://example.com/file.png' },
+            isOutOfFeed,
+            linkHeight: 200,
+            linkWidth: 400,
+          }),
+        );
+      });
+      const image = container.querySelector<HTMLImageElement>('img[src="https://example.com/file.png"]');
+      return { image, wrapper: image?.parentElement };
+    };
+
+    const catalogMedia = await renderImage(false);
+    expect(catalogMedia.wrapper?.style.getPropertyValue('--width')).toBe('250px');
+    expect(catalogMedia.image?.getAttribute('width')).toBe('250');
+
+    const popularThreadMedia = await renderImage(true);
+    expect(popularThreadMedia.wrapper?.style.getPropertyValue('--width')).toBe('150px');
+    expect(popularThreadMedia.wrapper?.style.getPropertyValue('--height')).toBe('75px');
+    expect(popularThreadMedia.wrapper?.style.getPropertyValue('--maxWidth')).toBe('150px');
+    expect(popularThreadMedia.image?.getAttribute('width')).toBe('150');
+    expect(popularThreadMedia.image?.getAttribute('height')).toBe('75');
   });
 
   it('renders media posts with board links, counts, and hover previews in all view', async () => {
