@@ -163,4 +163,20 @@ describe('CreateBoardModal', () => {
     expect(container.textContent).toContain('create_board_start_failed:kubo offline');
     expect(testState.subscribeMock).toHaveBeenCalledWith('new-board-address');
   });
+  it('explains why a ws:// node on another computer cannot connect from an https page', async () => {
+    const originalLocation = window.location;
+    Object.defineProperty(window, 'location', { configurable: true, value: { ...originalLocation, protocol: 'https:' } });
+    testState.pkcRpcClientsOptions = ['ws://203.0.113.5:9138/secret'];
+    testState.rpcState = 'connecting';
+    try {
+      await render();
+
+      expect(container.textContent).toContain('create_board_requires_node');
+      expect(container.textContent).toContain('rpc_mixed_content_warning');
+      expect(container.textContent).not.toContain('loading');
+      expect(container.querySelector('form')).toBeNull();
+    } finally {
+      Object.defineProperty(window, 'location', { configurable: true, value: originalLocation });
+    }
+  });
 });

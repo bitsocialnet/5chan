@@ -558,5 +558,6 @@
   "return_to_board": "Zpět na desku",
   "create_board_start_failed": "Deska byla vytvořena, ale nepodařilo se ji spustit: {{error}}",
   "board_settings_owner_remote_notice": "Vlastníci desek mohou momentálně ukládat změny pouze z uzlu, který hostuje tuto desku. Připojte se k tomuto uzlu, nebo požádejte administrátora, aby změnu provedl.",
-  "board_settings_remote_removal": "\"{{field}}\": odebírání položek funguje pouze z uzlu, který hostuje tuto desku. Místo toho změňte hodnotu, například nastavte funkci na false."
+  "board_settings_remote_removal": "\"{{field}}\": odebírání položek funguje pouze z uzlu, který hostuje tuto desku. Místo toho změňte hodnotu, například nastavte funkci na false.",
+  "rpc_mixed_content_warning": "Tato stránka je načtena přes https, takže prohlížeč blokuje připojení ws:// k jiným počítačům a vaše adresa RPC se nemůže připojit. Použijte adresu wss://, uzel na tomto počítači (ws://localhost), stránku 5chan, kterou váš uzel poskytuje přes http, nebo desktopovou aplikaci 5chan."
 }

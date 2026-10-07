@@ -558,5 +558,6 @@
   "return_to_board": "Bumalik sa Board",
   "create_board_start_failed": "Nagawa ang board, pero hindi ito masimulan: {{error}}",
   "board_settings_owner_remote_notice": "Sa ngayon, ang mga may-ari ng board ay makakapag-save lamang ng mga pagbabago mula sa node na nagho-host ng board na ito. Kumonekta sa node na iyon, o hilingin sa isang administrator na gawin ang pagbabago.",
-  "board_settings_remote_removal": "\"{{field}}\": gumagana lamang ang pag-alis ng mga entry mula sa node na nagho-host ng board na ito. Sa halip, palitan ang value, halimbawa ay itakda sa false ang isang feature."
+  "board_settings_remote_removal": "\"{{field}}\": gumagana lamang ang pag-alis ng mga entry mula sa node na nagho-host ng board na ito. Sa halip, palitan ang value, halimbawa ay itakda sa false ang isang feature.",
+  "rpc_mixed_content_warning": "Naka-load ang page na ito sa https, kaya bina-block ng browser ang mga ws:// na koneksyon sa ibang computer at hindi makakonekta ang iyong RPC address. Gumamit ng wss:// na address, isang node sa computer na ito (ws://localhost), ang 5chan page na sine-serve ng iyong node sa http, o ang 5chan desktop app."
 }

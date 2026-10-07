@@ -558,5 +558,6 @@
   "return_to_board": "Tahtaya Dön",
   "create_board_start_failed": "Tahta oluşturuldu ancak başlatılamadı: {{error}}",
   "board_settings_owner_remote_notice": "Tahta sahipleri şu anda değişiklikleri yalnızca bu tahtayı barındıran düğümden kaydedebilir. O düğüme bağlanın veya bir yöneticiden değişikliği yapmasını isteyin.",
-  "board_settings_remote_removal": "\"{{field}}\": girdileri kaldırmak yalnızca bu tahtayı barındıran düğümden çalışır. Bunun yerine değeri değiştirin; örneğin bir özelliği false olarak ayarlayın."
+  "board_settings_remote_removal": "\"{{field}}\": girdileri kaldırmak yalnızca bu tahtayı barındıran düğümden çalışır. Bunun yerine değeri değiştirin; örneğin bir özelliği false olarak ayarlayın.",
+  "rpc_mixed_content_warning": "Bu sayfa https üzerinden yüklendiği için tarayıcı diğer bilgisayarlara yapılan ws:// bağlantılarını engeller ve RPC adresiniz bağlanamaz. Bir wss:// adresini, bu bilgisayardaki bir düğümü (ws://localhost), düğümünüzün http üzerinden sunduğu 5chan sayfasını veya 5chan masaüstü uygulamasını kullanın."
 }

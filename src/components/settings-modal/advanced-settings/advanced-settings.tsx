@@ -3,6 +3,7 @@ import { setAccount, useAccount, usePkcRpcSettings } from '@bitsocial/bitsocial-
 import { useTranslation } from 'react-i18next';
 import { getBrowserGatewayPkcOptions, getBrowserPureP2PPkcOptions, setPureP2PBrowserPreference } from '../../../lib/p2p-browser-config';
 import { canConfigureBrowserPureP2P, isBrowserPureP2PEnabled } from '../../../lib/p2p-runtime';
+import { isRpcUrlBlockedAsMixedContent } from '../../../lib/utils/url-utils';
 import styles from './advanced-settings.module.css';
 
 interface SettingsProps {
@@ -174,20 +175,33 @@ const P2pRPCSettings = ({ onP2pRpcChange, p2pRpcRef }: SettingsProps) => {
   const account = useAccount() as AccountShape | undefined;
   const protocolOptions = getProtocolOptions(account);
   const pkcRpcClientsOptions = getNodeRpcClientsOptions(protocolOptions);
+  // The field stays uncontrolled for saving; this copy only drives the warning, starting from the saved address.
+  const [typedRpcUrl, setTypedRpcUrl] = useState<string>();
+  const rpcUrl = typedRpcUrl ?? pkcRpcClientsOptions?.[0] ?? '';
+  const isBlockedAsMixedContent = isRpcUrlBlockedAsMixedContent(rpcUrl, window.location.protocol);
 
   return (
     <div className={styles.p2pRPCSettings}>
       <input
         type='text'
         aria-label={t('advanced_p2p_rpc_clients_aria')}
+        aria-describedby={isBlockedAsMixedContent ? 'p2p-rpc-mixed-content-warning' : undefined}
         defaultValue={pkcRpcClientsOptions}
         placeholder={t('advanced_p2p_rpc_placeholder')}
         ref={p2pRpcRef}
-        onChange={(event) => onP2pRpcChange?.(event.currentTarget.value)}
+        onChange={(event) => {
+          setTypedRpcUrl(event.currentTarget.value);
+          onP2pRpcChange?.(event.currentTarget.value);
+        }}
         autoCorrect='off'
         autoCapitalize='off'
         spellCheck='false'
       />
+      {isBlockedAsMixedContent && (
+        <span id='p2p-rpc-mixed-content-warning' className={`${styles.settingTip} ${styles.rpcWarning}`}>
+          {t('rpc_mixed_content_warning')}
+        </span>
+      )}
     </div>
   );
 };

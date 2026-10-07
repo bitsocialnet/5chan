@@ -558,5 +558,6 @@
   "return_to_board": "Vissza a táblához",
   "create_board_start_failed": "A tábla létrejött, de nem sikerült elindítani: {{error}}",
   "board_settings_owner_remote_notice": "A táblák tulajdonosai jelenleg csak a táblát kiszolgáló csomópontról menthetnek módosításokat. Csatlakozz ahhoz a csomóponthoz, vagy kérj meg egy rendszergazdát, hogy végezze el a módosítást.",
-  "board_settings_remote_removal": "\"{{field}}\": bejegyzéseket törölni csak a táblát kiszolgáló csomópontról lehet. Ehelyett módosítsd az értéket, például állíts egy funkciót false értékre."
+  "board_settings_remote_removal": "\"{{field}}\": bejegyzéseket törölni csak a táblát kiszolgáló csomópontról lehet. Ehelyett módosítsd az értéket, például állíts egy funkciót false értékre.",
+  "rpc_mixed_content_warning": "Ez az oldal https-en keresztül töltődött be, ezért a böngésző letiltja a más számítógépekhez irányuló ws:// kapcsolatokat, és az RPC-címe nem tud csatlakozni. Használjon wss:// címet, ezen a számítógépen futó csomópontot (ws://localhost), a csomópontja által http-n kiszolgált 5chan oldalt, vagy a 5chan asztali alkalmazást."
 }

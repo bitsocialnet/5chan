@@ -89,3 +89,8 @@
   margin: 0 2px 0 0;
   padding: 2px 4px 3px;
 }
+
+.p2pRPCSettings .rpcWarning {
+  margin-top: 4px;
+  color: red;
+}

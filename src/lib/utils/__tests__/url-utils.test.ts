@@ -15,6 +15,7 @@ import {
   getPublishURLFilename,
   is5chanLink,
   isPrivateNetworkHostname,
+  isRpcUrlBlockedAsMixedContent,
   isValidCrossboardPattern,
   isValidPublishURL,
   isValidURL,
@@ -158,5 +159,24 @@ describe('url-utils', () => {
     expect(isValidCrossboardPattern(`>>>/${ipnsKey}/test`)).toBe(true);
     expect(isValidCrossboardPattern('>>>/invalid/thread/extra')).toBe(false);
     expect(isValidCrossboardPattern('>>/biz/')).toBe(false);
+  });
+});
+
+describe('isRpcUrlBlockedAsMixedContent', () => {
+  it('flags a ws:// address on another computer only when the page is loaded over https', () => {
+    expect(isRpcUrlBlockedAsMixedContent('ws://203.0.113.5:9138/secret', 'https:')).toBe(true);
+    expect(isRpcUrlBlockedAsMixedContent(' ws://node.example:9138 ', 'https:')).toBe(true);
+    expect(isRpcUrlBlockedAsMixedContent('ws://203.0.113.5:9138/secret', 'http:')).toBe(false);
+    expect(isRpcUrlBlockedAsMixedContent('ws://203.0.113.5:9138/secret', 'file:')).toBe(false);
+  });
+
+  it('allows encrypted and loopback addresses, which browsers permit from https pages', () => {
+    expect(isRpcUrlBlockedAsMixedContent('wss://node.example/secret', 'https:')).toBe(false);
+    expect(isRpcUrlBlockedAsMixedContent('ws://localhost:9138', 'https:')).toBe(false);
+    expect(isRpcUrlBlockedAsMixedContent('ws://node.localhost:9138', 'https:')).toBe(false);
+    expect(isRpcUrlBlockedAsMixedContent('ws://127.0.0.1:9138', 'https:')).toBe(false);
+    expect(isRpcUrlBlockedAsMixedContent('ws://[::1]:9138', 'https:')).toBe(false);
+    expect(isRpcUrlBlockedAsMixedContent('', 'https:')).toBe(false);
+    expect(isRpcUrlBlockedAsMixedContent('not a url', 'https:')).toBe(false);
   });
 });

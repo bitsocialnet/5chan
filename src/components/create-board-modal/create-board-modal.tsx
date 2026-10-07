@@ -7,6 +7,7 @@ import { accountsStore as useAccountsStore } from '../../lib/bitsocial-internals
 import { BOARD_MANAGER_URL, SPAM_BLOCKER_CHALLENGE_NAME } from '../../data/board-defaults';
 import { buildCreateBoardOptions, CreateBoardFormValues } from '../../lib/utils/board-settings-utils';
 import { getBoardPath, getSettingsSectionPath } from '../../lib/utils/route-utils';
+import { isRpcUrlBlockedAsMixedContent } from '../../lib/utils/url-utils';
 import { useDirectories } from '../../hooks/use-directories';
 import useCreateBoardModalStore from '../../stores/use-create-board-modal-store';
 import LoadingEllipsis from '../loading-ellipsis';
@@ -32,7 +33,8 @@ const BoardManagerNotice = () => (
   />
 );
 
-const NodeRequiredNotice = () => {
+const NodeRequiredNotice = ({ isRpcBlockedAsMixedContent }: { isRpcBlockedAsMixedContent: boolean }) => {
+  const { t } = useTranslation();
   const { pathname, search } = useLocation();
   const settingsPath = getSettingsSectionPath(`${pathname.replace(/\/$/, '')}/settings`, 'advanced-settings', search);
 
@@ -41,6 +43,7 @@ const NodeRequiredNotice = () => {
       <p>
         <Trans i18nKey='create_board_requires_node' components={{ 1: <Link to={settingsPath} /> }} />
       </p>
+      {isRpcBlockedAsMixedContent && <p className={styles.error}>{t('rpc_mixed_content_warning')}</p>}
     </div>
   );
 };
@@ -269,8 +272,11 @@ const CreateBoardDialog = ({ onClose }: { onClose: () => void }) => {
   // The desktop app runs a full node and connects to it over RPC, so one check covers both setups.
   const isConnectedToNode = rpcState === 'connected';
   // The hook reports 'initializing' until it attaches to an RPC client, and forever when none is configured.
-  const hasNodeRpc = Boolean(account?.pkcOptions?.pkcRpcClientsOptions?.length);
-  const isConnectingToNode = hasNodeRpc && !isConnectedToNode && rpcState !== 'failed';
+  const rpcUrls: string[] = account?.pkcOptions?.pkcRpcClientsOptions ?? [];
+  // A ws:// address on another computer never connects from an https page, so it must not count as connecting.
+  const isRpcBlockedAsMixedContent = rpcUrls.some((rpcUrl) => isRpcUrlBlockedAsMixedContent(rpcUrl, window.location.protocol));
+  const hasUsableNodeRpc = rpcUrls.some((rpcUrl) => !isRpcUrlBlockedAsMixedContent(rpcUrl, window.location.protocol));
+  const isConnectingToNode = hasUsableNodeRpc && !isConnectedToNode && rpcState !== 'failed';
   const [createdBoard, setCreatedBoard] = useState<CreatedBoardResult>();
 
   return (
@@ -291,7 +297,7 @@ const CreateBoardDialog = ({ onClose }: { onClose: () => void }) => {
               <LoadingEllipsis string={t('loading')} />
             </div>
           ) : (
-            <NodeRequiredNotice />
+            <NodeRequiredNotice isRpcBlockedAsMixedContent={isRpcBlockedAsMixedContent} />
           )}
 
           <div className={styles.section}>

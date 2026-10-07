@@ -558,5 +558,6 @@
   "return_to_board": "返回板块",
   "create_board_start_failed": "板块已创建，但无法启动：{{error}}",
   "board_settings_owner_remote_notice": "目前，板块所有者只能在托管此板块的节点上保存更改。请连接到该节点，或请管理员进行此更改。",
-  "board_settings_remote_removal": "\"{{field}}\"：只有在托管此板块的节点上才能删除条目。请改为修改值，例如将某个功能设为 false。"
+  "board_settings_remote_removal": "\"{{field}}\"：只有在托管此板块的节点上才能删除条目。请改为修改值，例如将某个功能设为 false。",
+  "rpc_mixed_content_warning": "此页面通过 https 加载，因此浏览器会阻止到其他计算机的 ws:// 连接，你的 RPC 地址无法连接。请使用 wss:// 地址、本机上的节点（ws://localhost）、你的节点通过 http 提供的 5chan 页面，或 5chan 桌面应用。"
 }

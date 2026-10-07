@@ -558,5 +558,6 @@
   "return_to_board": "Înapoi la Tablou",
   "create_board_start_failed": "Tabloul a fost creat, dar nu a putut fi pornit: {{error}}",
   "board_settings_owner_remote_notice": "Proprietarii de tablouri pot salva momentan modificări doar de pe nodul care găzduiește acest tablou. Conectează-te la acel nod sau roagă un administrator să facă modificarea.",
-  "board_settings_remote_removal": "\"{{field}}\": eliminarea intrărilor funcționează doar de pe nodul care găzduiește acest tablou. Modifică în schimb valoarea, de exemplu setează o funcție la false."
+  "board_settings_remote_removal": "\"{{field}}\": eliminarea intrărilor funcționează doar de pe nodul care găzduiește acest tablou. Modifică în schimb valoarea, de exemplu setează o funcție la false.",
+  "rpc_mixed_content_warning": "Această pagină este încărcată prin https, așa că browserul blochează conexiunile ws:// către alte computere, iar adresa dvs. RPC nu se poate conecta. Folosiți o adresă wss://, un nod de pe acest computer (ws://localhost), pagina 5chan oferită de nodul dvs. prin http sau aplicația desktop 5chan."
 }

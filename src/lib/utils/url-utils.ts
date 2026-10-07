@@ -23,6 +23,31 @@ export const parseHttpUrl = (url: string): URL | null => {
   }
 };
 
+// Browsers treat loopback hosts as potentially trustworthy, so an https page may still open ws:// to them.
+const isLoopbackHostname = (hostname: string): boolean => {
+  const normalizedHostname = hostname.toLowerCase().replace(/^\[|\]$/g, '');
+  return (
+    normalizedHostname === 'localhost' || normalizedHostname.endsWith('.localhost') || normalizedHostname === '::1' || /^127(?:\.\d{1,3}){3}$/.test(normalizedHostname)
+  );
+};
+
+/**
+ * True when the browser will refuse this RPC address as mixed content: an unencrypted ws:// connection to
+ * another computer from a page loaded over https (5chan.app, the Android app). The desktop app loads over
+ * file:// or http://localhost, so this never applies there.
+ */
+export const isRpcUrlBlockedAsMixedContent = (rpcUrl: string, pageProtocol: string): boolean => {
+  if (pageProtocol !== 'https:') {
+    return false;
+  }
+  try {
+    const url = new URL(rpcUrl.trim());
+    return url.protocol === 'ws:' && !isLoopbackHostname(url.hostname);
+  } catch {
+    return false;
+  }
+};
+
 export const isPrivateNetworkHostname = (hostname: string): boolean => {
   const normalizedHostname = hostname.toLowerCase().replace(/^\[|\]$/g, '');
 

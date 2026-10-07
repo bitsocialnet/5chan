@@ -558,5 +558,6 @@
   "return_to_board": "Tillbaka till tavlan",
   "create_board_start_failed": "Tavlan skapades men kunde inte startas: {{error}}",
   "board_settings_owner_remote_notice": "Ägare av tavlor kan för närvarande bara spara ändringar från noden som är värd för denna tavla. Anslut till den noden eller be en administratör att göra ändringen.",
-  "board_settings_remote_removal": "\"{{field}}\": att ta bort poster fungerar bara från noden som är värd för denna tavla. Ändra värdet i stället, till exempel genom att sätta en funktion till false."
+  "board_settings_remote_removal": "\"{{field}}\": att ta bort poster fungerar bara från noden som är värd för denna tavla. Ändra värdet i stället, till exempel genom att sätta en funktion till false.",
+  "rpc_mixed_content_warning": "Den här sidan har laddats via https, så webbläsaren blockerar ws://-anslutningar till andra datorer och din RPC-adress kan inte ansluta. Använd en wss://-adress, en nod på den här datorn (ws://localhost), 5chan-sidan som din nod tillhandahåller via http, eller 5chan-skrivbordsappen."
 }

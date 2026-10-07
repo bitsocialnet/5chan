@@ -558,5 +558,6 @@
   "return_to_board": "ボードに戻る",
   "create_board_start_failed": "ボードは作成されましたが、起動できませんでした: {{error}}",
   "board_settings_owner_remote_notice": "現在、ボードのオーナーは、このボードをホストしているノードからのみ変更を保存できます。そのノードに接続するか、管理者に変更を依頼してください。",
-  "board_settings_remote_removal": "\"{{field}}\": 項目の削除は、このボードをホストしているノードからのみ行えます。代わりに値を変更してください。たとえば、機能を false に設定します。"
+  "board_settings_remote_removal": "\"{{field}}\": 項目の削除は、このボードをホストしているノードからのみ行えます。代わりに値を変更してください。たとえば、機能を false に設定します。",
+  "rpc_mixed_content_warning": "このページはhttpsで読み込まれているため、ブラウザは他のコンピューターへのws://接続をブロックし、RPCアドレスに接続できません。wss://アドレス、このコンピューター上のノード（ws://localhost）、ノードがhttpで提供する5chanページ、または5chanデスクトップアプリを使用してください。"
 }

@@ -429,4 +429,37 @@ describe('AdvancedSettings', () => {
 
     expect(alertSpy).toHaveBeenCalledWith('error');
   });
+  it('warns that an https page cannot reach a ws:// node on another computer', async () => {
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: { ...originalLocation, hostname: '5chan.app', protocol: 'https:', reload: reloadMock },
+    });
+    await renderSettings(false);
+    const nodeRpcInput = Array.from(container.querySelectorAll<HTMLInputElement>('input[type="text"]')).find(
+      (input) => input.placeholder === 'advanced_p2p_rpc_placeholder',
+    ) as HTMLInputElement;
+
+    // The saved remote ws:// address already shows the warning before the user types.
+    expect(container.textContent).toContain('rpc_mixed_content_warning');
+    expect(nodeRpcInput.getAttribute('aria-describedby')).toBe('p2p-rpc-mixed-content-warning');
+
+    await dispatchInput(nodeRpcInput, 'ws://localhost:9138');
+    expect(container.textContent).not.toContain('rpc_mixed_content_warning');
+
+    await dispatchInput(nodeRpcInput, 'ws://203.0.113.5:9138/secret');
+    expect(container.textContent).toContain('rpc_mixed_content_warning');
+
+    await dispatchInput(nodeRpcInput, 'wss://node.example/secret');
+    expect(container.textContent).not.toContain('rpc_mixed_content_warning');
+  });
+
+  it('does not warn about ws:// addresses on an http page', async () => {
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: { ...originalLocation, hostname: '127.0.0.1', protocol: 'http:', reload: reloadMock },
+    });
+    await renderSettings(false);
+
+    expect(container.textContent).not.toContain('rpc_mixed_content_warning');
+  });
 });

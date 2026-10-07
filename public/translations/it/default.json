@@ -558,5 +558,6 @@
   "return_to_board": "Torna alla board",
   "create_board_start_failed": "La board è stata creata, ma non è stato possibile avviarla: {{error}}",
   "board_settings_owner_remote_notice": "Al momento i proprietari delle board possono salvare le modifiche solo dal nodo che ospita questa board. Connettiti a quel nodo o chiedi a un amministratore di apportare la modifica.",
-  "board_settings_remote_removal": "\"{{field}}\": la rimozione di voci funziona solo dal nodo che ospita questa board. Modifica invece il valore, ad esempio imposta una funzionalità su false."
+  "board_settings_remote_removal": "\"{{field}}\": la rimozione di voci funziona solo dal nodo che ospita questa board. Modifica invece il valore, ad esempio imposta una funzionalità su false.",
+  "rpc_mixed_content_warning": "Questa pagina è caricata tramite https, quindi il browser blocca le connessioni ws:// verso altri computer e il tuo indirizzo RPC non riesce a connettersi. Usa un indirizzo wss://, un nodo su questo computer (ws://localhost), la pagina di 5chan che il tuo nodo fornisce tramite http, oppure l'app desktop di 5chan."
 }
