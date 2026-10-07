@@ -33,9 +33,9 @@ Currently, directory assignments are temporarily handpicked by developers throug
 
 ### Future Roadmap
 
-#### In-App Board Creation
+#### Board Creation Without Running a Node
 
-Creating boards directly from the 5chan web app (5chan.app) is planned. This requires connecting via RPC to a bitsocial node—technically already possible, but there's no default connection configured. A default connection would require a public RPC service (similar to what Infura provides for crypto wallets, but for bitsocial nodes). This would allow all users to be connected to a P2P node by default using a free tier subscription in the background, potentially monetized via ads injected in the RPC service-owned boards.
+Board creation already works in the desktop app and in any 5chan client connected via RPC to a bitsocial node, but the web app (5chan.app) has no default RPC connection configured. A default connection would require a public RPC service (similar to what Infura provides for crypto wallets, but for bitsocial nodes). This would allow all users to be connected to a P2P node by default using a free tier subscription in the background, potentially monetized via ads injected in the RPC service-owned boards.
 
 #### Directory Voting
 
@@ -72,7 +72,7 @@ Once created, anyone can connect to your community using any bitsocial client (s
 
 Without 5chan Board Manager, a community can still be opened in 5chan, but it will not behave like a conventional imageboard board: old threads will not be archived when they fall past the last page, bump limits will not be enforced, archived threads will not be purged after the retention window, and author-deleted content will not be automatically purged.
 
-**Note**: Creating boards directly from the 5chan web app is planned for the future (see [Future Roadmap](#future-roadmap)).
+**In-app creation**: The 5chan desktop app, which runs a full bitsocial node, and any 5chan client connected to a bitsocial node over RPC can create a board with the **[Create Board]** button in the top bar. The connected node hosts the board, so it must stay online. From the node that hosts the board, the owner can then edit all of its settings as JSON with **[Board Settings]** on the board page; admins can edit its public settings from any client. Run 5chan Board Manager for the board on the same node to get the lifecycle rules described above.
 
 ## Submitting Your Board to a Directory
 

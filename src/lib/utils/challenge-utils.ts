@@ -23,6 +23,7 @@ export type ChallengePublication = Partial<Omit<Comment, 'publishChallengeAnswer
   author?: unknown;
   commentCid?: string;
   communityAddress?: string;
+  communityEdit?: unknown;
   content?: string;
   link?: string;
   parentCid?: string;
@@ -82,7 +83,7 @@ export const redactGeneratedFortuneFromChallenge = <T>(challenge: T): T => {
   return redactedChallenge as T;
 };
 
-const getChallengeVerificationErrorMessages = (challengeVerification: ChallengeVerification): string[] => {
+export const getChallengeVerificationErrorMessages = (challengeVerification: ChallengeVerification): string[] => {
   const errorMessages: string[] = [];
   if (challengeVerification?.challengeErrors) {
     if (
@@ -139,6 +140,9 @@ export const getPublicationType = (publication: ChallengePublication | undefined
   }
   if (publication.commentCid) {
     return 'edit';
+  }
+  if (publication.communityEdit) {
+    return 'board edit';
   }
   return 'post';
 };

@@ -351,12 +351,14 @@ const FAQ_SECTIONS: FAQSection[] = [
         question: 'Can I create my own board?',
         answer: (
           <>
-            Yes. A 5chan board is a Bitsocial community. Today the practical route is to use{' '}
+            Yes. A 5chan board is a Bitsocial community, and the node that hosts it must stay online. In the 5chan desktop app, which runs a full node, or in any 5chan
+            client connected to a node over RPC, click [Create Board] in the top bar. The owner can later edit the board from [Board Settings] on the node that hosts it,
+            and admins from any client. To get imageboard lifecycle rules such as thread limits, bump limits, archived-thread retention, and purging of author-deleted
+            content, also run{' '}
             <a href='https://github.com/bitsocialnet/5chan-board-manager' {...externalLinkProps}>
               5chan Board Manager
             </a>{' '}
-            to run the board with imageboard lifecycle rules such as thread limits, bump limits, archived-thread retention, and purging of author-deleted content. Its
-            Docker setup can start the required Bitsocial node for you or connect to one you already operate.
+            for the board on the same node. Its Docker setup can start the required Bitsocial node for you or connect to one you already operate.
           </>
         ),
       },

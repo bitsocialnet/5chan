@@ -1,0 +1,24 @@
+.editorContainer {
+  font-family: monospace;
+  font-size: 13px;
+}
+
+.fallbackTextarea {
+  width: 100%;
+  height: 500px;
+  font-family: monospace;
+  font-size: 13px;
+}
+
+.fallbackWarning {
+  color: #b8860b;
+  background: #fff8e0;
+  border: 1px solid #e0c000;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.loadingMessage {
+  padding: 20px;
+  text-align: center;
+}

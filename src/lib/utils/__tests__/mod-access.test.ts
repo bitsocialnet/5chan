@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canAccessBoardModQueue, hasModQueueAccessRole } from '../mod-access';
+import { canAccessBoardModQueue, canEditBoardSettings, hasModQueueAccessRole } from '../mod-access';
 
 describe('hasModQueueAccessRole', () => {
   it('accepts board moderation roles', () => {
@@ -57,5 +57,15 @@ describe('canAccessBoardModQueue', () => {
         accountCommunityAddresses: ['tech-posting.eth'],
       }),
     ).toBe(false);
+  });
+});
+
+describe('canEditBoardSettings', () => {
+  it('allows owners, admins, and the node hosting the board, but not moderators', () => {
+    expect(canEditBoardSettings('owner', false)).toBe(true);
+    expect(canEditBoardSettings('admin', false)).toBe(true);
+    expect(canEditBoardSettings('moderator', false)).toBe(false);
+    expect(canEditBoardSettings(undefined, false)).toBe(false);
+    expect(canEditBoardSettings(undefined, true)).toBe(true);
   });
 });

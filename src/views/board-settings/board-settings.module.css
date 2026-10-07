@@ -1,0 +1,53 @@
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.2em;
+  font-weight: 700;
+}
+
+.boardName {
+  margin-top: 4px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.notice {
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.notice a {
+  color: inherit;
+  text-decoration: underline;
+}
+
+.controls {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+.status {
+  margin-top: 8px;
+  min-height: 1.4em;
+}
+
+.error {
+  color: red;
+}
+
+.loadingMessage {
+  padding: 20px;
+  text-align: center;
+}

@@ -61,6 +61,7 @@ import { ModEmptyState } from './components/mod-empty-state';
 import { QuotePreviewPostProvider } from './components/post';
 
 const AccountDataEditor = lazy(() => import('./views/account-data-editor'));
+const BoardSettings = lazy(() => import('./views/board-settings'));
 const BoardsBarEditModal = lazy(() => import('./components/boards-bar-edit-modal'));
 const CreateBoardModal = lazy(() => import('./components/create-board-modal'));
 const ChallengeModal = lazy(() => import('./components/challenge-modal'));
@@ -370,6 +371,14 @@ const App = () => {
               element={
                 <Suspense fallback={null}>
                   <AccountDataEditor />
+                </Suspense>
+              }
+            />
+            <Route
+              path='/:boardIdentifier/board-settings'
+              element={
+                <Suspense fallback={null}>
+                  <BoardSettings />
                 </Suspense>
               }
             />

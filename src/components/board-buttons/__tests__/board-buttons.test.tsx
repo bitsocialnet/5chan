@@ -22,6 +22,8 @@ type DirectoryEntry = {
 
 const testState = vi.hoisted(() => ({
   account: { blockedCids: {} as Record<string, boolean>, subscriptions: [] as string[] },
+  accountAuthorAddress: 'account-address',
+  communitiesByAddress: {} as Record<string, { roles?: Record<string, { role: string }>; settings?: Record<string, unknown> }>,
   accountCommunityAddresses: [] as string[],
   accountComment: undefined as { communityAddress?: string } | undefined,
   alertThresholdUnit: 'minutes' as 'hours' | 'minutes',
@@ -125,6 +127,15 @@ vi.mock('../../../hooks/use-directories', () => ({
     directories.find((entry) => address && [entry.address, entry.name, entry.publicKey, entry.directoryCode].includes(address)),
   useDirectories: () => testState.directories,
   useDirectoryByAddress: (address: string | undefined) => testState.directories.find((entry) => entry.address === address),
+}));
+
+vi.mock('../../../hooks/use-active-account-field', () => ({
+  useActiveAccountField: <T,>(selector: (account: { author: { address: string } }) => T) => selector({ author: { address: testState.accountAuthorAddress } }),
+}));
+
+vi.mock('../../../hooks/use-stable-community', () => ({
+  useCommunityField: <T,>(address: string | undefined, selector: (community: unknown) => T) =>
+    address && testState.communitiesByAddress[address] ? selector(testState.communitiesByAddress[address]) : undefined,
 }));
 
 vi.mock('../../../hooks/use-resolved-community-address', () => ({
@@ -267,6 +278,8 @@ describe('BoardButtons', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     testState.account = { blockedCids: {}, subscriptions: [] };
+    testState.accountAuthorAddress = 'account-address';
+    testState.communitiesByAddress = {};
     testState.accountCommunityAddresses = [];
     testState.accountComment = undefined;
     testState.alertThresholdUnit = 'minutes';
@@ -648,5 +661,24 @@ describe('BoardButtons', () => {
     expect(testState.setAlertThresholdMock).toHaveBeenCalledWith(1, 'hours');
     expect(testState.setViewModeMock).toHaveBeenCalledWith('feed');
     expect(testState.resetMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows [Board Settings] only to board owners, admins, or the node hosting the board', async () => {
+    testState.isMobile = false;
+    testState.communitiesByAddress = { 'music-posting.eth': { roles: { 'account-address': { role: 'moderator' } } } };
+    await renderWithRoute(createElement(DesktopBoardButtons), '/mu');
+    expect(findButtonLink('board_settings')).toBeUndefined();
+
+    testState.communitiesByAddress = { 'music-posting.eth': { roles: { 'account-address': { role: 'admin' } } } };
+    await renderWithRoute(createElement(DesktopBoardButtons), '/mu');
+    expect(findButtonLink('board_settings')?.getAttribute('href')).toBe('/mu/board-settings');
+
+    testState.communitiesByAddress = { 'music-posting.eth': { settings: { fetchThumbnailUrls: true } } };
+    await renderWithRoute(createElement(MobileBoardButtons), '/mu');
+    expect(findButtonLink('board_settings')?.getAttribute('href')).toBe('/mu/board-settings');
+
+    testState.resolvedCommunityAddress = undefined;
+    await renderWithRoute(createElement(DesktopBoardButtons), '/all');
+    expect(findButtonLink('board_settings')).toBeUndefined();
   });
 });

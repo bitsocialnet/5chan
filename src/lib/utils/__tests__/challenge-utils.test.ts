@@ -102,6 +102,7 @@ describe('challenge-utils', () => {
     expect(getPublicationType({ vote: 1 })).toBe('vote');
     expect(getPublicationType({ parentCid: 'reply-parent' })).toBe('reply');
     expect(getPublicationType({ commentCid: 'comment-cid' })).toBe('edit');
+    expect(getPublicationType({ communityEdit: { title: 'new title' } })).toBe('board edit');
     expect(getPublicationType({ title: 'new thread' })).toBe('post');
 
     expect(getVotePreview(undefined)).toBe('');
