@@ -105,21 +105,19 @@ export const getBoardSettingsEdit = (
   return { ok: true, edit };
 };
 
+export type BoardStaffRole = 'moderator' | 'admin';
+
 export interface CreateBoardFormValues {
   title: string;
   description: string;
-  rules: string;
-  moderators: string;
+  rules: string[];
+  moderators: Array<{ address: string; role: BoardStaffRole }>;
   challengeName: string;
   challengeOptions: Record<string, string>;
   useBoardDefaults: boolean;
 }
 
-const getNonEmptyLines = (value: string) =>
-  value
-    .split('\n')
-    .map((line) => line.trim())
-    .filter(Boolean);
+const getNonEmptyValues = (values: string[]) => values.map((value) => value.trim()).filter(Boolean);
 
 const getNonEmptyOptions = (options: Record<string, string>) => {
   const nonEmptyOptions: Record<string, string> = {};
@@ -146,11 +144,13 @@ const getSelectedChallenges = ({ challengeName, challengeOptions, useBoardDefaul
 export const buildCreateBoardOptions = (form: CreateBoardFormValues, ownerAddress: string | undefined): Record<string, unknown> => {
   const title = form.title.trim();
   const description = form.description.trim();
-  const rules = getNonEmptyLines(form.rules);
+  const rules = getNonEmptyValues(form.rules);
 
   const roles: Record<string, { role: string }> = {};
-  for (const address of getNonEmptyLines(form.moderators)) {
-    roles[address] = { role: 'moderator' };
+  for (const { address, role } of form.moderators) {
+    if (address.trim()) {
+      roles[address.trim()] = { role };
+    }
   }
   if (ownerAddress) {
     roles[ownerAddress] = { role: 'owner' };

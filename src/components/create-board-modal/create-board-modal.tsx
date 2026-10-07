@@ -1,11 +1,11 @@
-import { FormEvent, useState } from 'react';
+import { FormEvent, useRef, useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 import { useAccount, usePkcRpcSettings } from '@bitsocial/bitsocial-react-hooks';
 import type { PkcRpcChallengeSettings } from '@bitsocial/bitsocial-react-hooks';
 import { accountsStore as useAccountsStore } from '../../lib/bitsocial-internals/stores';
 import { BOARD_MANAGER_URL, SPAM_BLOCKER_CHALLENGE_NAME } from '../../data/board-defaults';
-import { buildCreateBoardOptions, CreateBoardFormValues } from '../../lib/utils/board-settings-utils';
+import { BoardStaffRole, buildCreateBoardOptions, CreateBoardFormValues } from '../../lib/utils/board-settings-utils';
 import { getBoardPath, getSettingsSectionPath } from '../../lib/utils/route-utils';
 import { isRpcUrlBlockedAsMixedContent } from '../../lib/utils/url-utils';
 import { useDirectories } from '../../hooks/use-directories';
@@ -19,6 +19,18 @@ type SubscribeAction = (communityAddress: string, accountName?: string) => Promi
 
 type CreateStatus = { type: 'idle' } | { type: 'creating' } | { type: 'error'; message: string };
 type CreatedBoardResult = { address: string; startError?: string };
+
+type RuleRow = { id: number; text: string };
+type ModeratorRow = { id: number; address: string; role: BoardStaffRole };
+type FormState = Omit<CreateBoardFormValues, 'challengeName' | 'rules' | 'moderators'> & {
+  // undefined until the user picks one, so the default follows the node's challenge list even when it loads late
+  challengeName?: string;
+  rules: RuleRow[];
+  moderators: ModeratorRow[];
+};
+
+let nextRowId = 0;
+const createRowId = () => nextRowId++;
 
 const BoardManagerNotice = () => (
   <Trans
@@ -115,22 +127,47 @@ const CreateBoardForm = ({
   const subscribe = useAccountsStore((state) => state.accountsActions.subscribe) as SubscribeAction;
   const challengeNames = Object.keys(availableChallenges);
 
-  // challengeName stays undefined until the user picks one, so the default follows the node's
-  // challenge list even when it loads after the form opens.
-  const [formState, setForm] = useState<Omit<CreateBoardFormValues, 'challengeName'> & { challengeName?: string }>({
+  const [formState, setForm] = useState<FormState>(() => ({
     title: '',
     description: '',
-    rules: '',
-    moderators: '',
+    rules: [{ id: createRowId(), text: '' }],
+    moderators: [],
     challengeOptions: {},
     useBoardDefaults: true,
-  });
+  }));
   const form: CreateBoardFormValues = {
     ...formState,
+    rules: formState.rules.map(({ text }) => text),
+    moderators: formState.moderators.map(({ address, role }) => ({ address, role })),
     challengeName: formState.challengeName ?? (challengeNames.includes(SPAM_BLOCKER_CHALLENGE_NAME) ? SPAM_BLOCKER_CHALLENGE_NAME : ''),
   };
   const [status, setStatus] = useState<CreateStatus>({ type: 'idle' });
-  const setField = <K extends keyof CreateBoardFormValues>(field: K, value: CreateBoardFormValues[K]) => setForm((current) => ({ ...current, [field]: value }));
+  const setField = <K extends keyof FormState>(field: K, value: FormState[K]) => setForm((current) => ({ ...current, [field]: value }));
+
+  // A row added with the button gets focus once its input mounts.
+  const rowIdToFocusRef = useRef<number | null>(null);
+  const focusIfAdded = (rowId: number) => (element: HTMLInputElement | null) => {
+    if (element && rowIdToFocusRef.current === rowId) {
+      rowIdToFocusRef.current = null;
+      element.focus();
+    }
+  };
+  const addRule = () => {
+    const id = createRowId();
+    rowIdToFocusRef.current = id;
+    setForm((current) => ({ ...current, rules: [...current.rules, { id, text: '' }] }));
+  };
+  const updateRule = (id: number, text: string) =>
+    setForm((current) => ({ ...current, rules: current.rules.map((rule) => (rule.id === id ? { ...rule, text } : rule)) }));
+  const removeRule = (id: number) => setForm((current) => ({ ...current, rules: current.rules.filter((rule) => rule.id !== id) }));
+  const addModerator = () => {
+    const id = createRowId();
+    rowIdToFocusRef.current = id;
+    setForm((current) => ({ ...current, moderators: [...current.moderators, { id, address: '', role: 'moderator' }] }));
+  };
+  const updateModerator = (id: number, changes: Partial<Omit<ModeratorRow, 'id'>>) =>
+    setForm((current) => ({ ...current, moderators: current.moderators.map((moderator) => (moderator.id === id ? { ...moderator, ...changes } : moderator)) }));
+  const removeModerator = (id: number) => setForm((current) => ({ ...current, moderators: current.moderators.filter((moderator) => moderator.id !== id) }));
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -180,34 +217,82 @@ const CreateBoardForm = ({
             </td>
           </tr>
           <tr>
+            <td id='create-board-rules-label'>{t('create_board_rules_field')}</td>
             <td>
-              <label htmlFor='create-board-rules'>{t('create_board_rules_field')}</label>
-            </td>
-            <td>
-              <textarea
-                id='create-board-rules'
-                rows={3}
-                value={form.rules}
-                placeholder={t('create_board_rules_placeholder')}
-                onChange={(e) => setField('rules', e.target.value)}
-              />
+              <div role='group' aria-labelledby='create-board-rules-label'>
+                {formState.rules.map((rule, index) => {
+                  const ruleLabel = t('create_board_rule_label', { number: index + 1 });
+                  return (
+                    <div key={rule.id} className={styles.listRow}>
+                      <input
+                        type='text'
+                        ref={focusIfAdded(rule.id)}
+                        value={rule.text}
+                        aria-label={ruleLabel}
+                        placeholder={ruleLabel}
+                        onChange={(e) => updateRule(rule.id, e.target.value)}
+                      />
+                      <button
+                        type='button'
+                        className={styles.removeRowButton}
+                        aria-label={t('create_board_remove_item', { item: ruleLabel })}
+                        title={t('create_board_remove_item', { item: ruleLabel })}
+                        onClick={() => removeRule(rule.id)}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  );
+                })}
+                <button type='button' className={styles.addRowButton} onClick={addRule}>
+                  {t('create_board_add_rule')}
+                </button>
+              </div>
             </td>
           </tr>
           <tr>
+            <td id='create-board-moderators-label'>{t('create_board_moderators_field')}</td>
             <td>
-              <label htmlFor='create-board-moderators'>{t('create_board_moderators_field')}</label>
-            </td>
-            <td>
-              <textarea
-                id='create-board-moderators'
-                rows={2}
-                value={form.moderators}
-                placeholder={t('create_board_moderators_placeholder')}
-                autoCapitalize='off'
-                autoCorrect='off'
-                spellCheck={false}
-                onChange={(e) => setField('moderators', e.target.value)}
-              />
+              <div role='group' aria-labelledby='create-board-moderators-label'>
+                {formState.moderators.map((moderator, index) => {
+                  const moderatorLabel = t('create_board_moderator_label', { number: index + 1 });
+                  return (
+                    <div key={moderator.id} className={styles.listRow}>
+                      <input
+                        type='text'
+                        ref={focusIfAdded(moderator.id)}
+                        value={moderator.address}
+                        aria-label={moderatorLabel}
+                        placeholder={t('create_board_moderator_address_placeholder')}
+                        autoCapitalize='off'
+                        autoCorrect='off'
+                        spellCheck={false}
+                        onChange={(e) => updateModerator(moderator.id, { address: e.target.value })}
+                      />
+                      <select
+                        value={moderator.role}
+                        aria-label={t('create_board_moderator_role_label', { number: index + 1 })}
+                        onChange={(e) => updateModerator(moderator.id, { role: e.target.value as BoardStaffRole })}
+                      >
+                        <option value='moderator'>{t('create_board_role_moderator')}</option>
+                        <option value='admin'>{t('create_board_role_admin')}</option>
+                      </select>
+                      <button
+                        type='button'
+                        className={styles.removeRowButton}
+                        aria-label={t('create_board_remove_item', { item: moderatorLabel })}
+                        title={t('create_board_remove_item', { item: moderatorLabel })}
+                        onClick={() => removeModerator(moderator.id)}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  );
+                })}
+                <button type='button' className={styles.addRowButton} onClick={addModerator}>
+                  {t('create_board_add_moderator')}
+                </button>
+              </div>
             </td>
           </tr>
           <tr>
@@ -294,7 +379,7 @@ const CreateBoardDialog = ({ onClose }: { onClose: () => void }) => {
             <CreateBoardForm availableChallenges={pkcRpcSettings?.challenges ?? {}} onCreated={setCreatedBoard} />
           ) : isConnectingToNode ? (
             <div className={styles.section}>
-              <LoadingEllipsis string={t('loading')} />
+              <LoadingEllipsis string={t('create_board_connecting_node')} />
             </div>
           ) : (
             <NodeRequiredNotice isRpcBlockedAsMixedContent={isRpcBlockedAsMixedContent} />

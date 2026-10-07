@@ -5,8 +5,8 @@ import { buildCreateBoardOptions, CreateBoardFormValues, getBoardSettingsEdit, g
 const emptyForm: CreateBoardFormValues = {
   title: '',
   description: '',
-  rules: '',
-  moderators: '',
+  rules: [],
+  moderators: [],
   challengeName: '',
   challengeOptions: {},
   useBoardDefaults: false,
@@ -73,13 +73,26 @@ describe('getBoardSettingsEdit', () => {
 });
 
 describe('buildCreateBoardOptions', () => {
-  it('makes the creator the owner and parses rules and moderators one per line', () => {
-    const options = buildCreateBoardOptions({ ...emptyForm, title: ' Tech ', rules: 'be nice\n\n no spam \n', moderators: 'mod1.bso\nmod2.bso' }, 'creator.bso');
+  it('makes the creator the owner, keeps each staff role, and drops empty rules and moderators', () => {
+    const options = buildCreateBoardOptions(
+      {
+        ...emptyForm,
+        title: ' Tech ',
+        rules: ['be nice', '  ', ' no spam '],
+        moderators: [
+          { address: ' mod1.bso ', role: 'moderator' },
+          { address: 'admin1.bso', role: 'admin' },
+          { address: '', role: 'moderator' },
+          { address: 'creator.bso', role: 'admin' },
+        ],
+      },
+      'creator.bso',
+    );
 
     expect(options).toEqual({
       title: 'Tech',
       rules: ['be nice', 'no spam'],
-      roles: { 'mod1.bso': { role: 'moderator' }, 'mod2.bso': { role: 'moderator' }, 'creator.bso': { role: 'owner' } },
+      roles: { 'mod1.bso': { role: 'moderator' }, 'admin1.bso': { role: 'admin' }, 'creator.bso': { role: 'owner' } },
       settings: { challenges: [] },
     });
   });

@@ -137,6 +137,9 @@
 
 .formTable {
   width: 100%;
+  /* Fixed layout keeps the field column inside the dialog; with auto layout, the inputs' intrinsic width at the
+     16px mobile font made the table wider than a narrow dialog. */
+  table-layout: fixed;
   border-spacing: 1px;
   margin-bottom: 8px;
 }
@@ -188,6 +191,7 @@
   font-size: 9pt;
   opacity: 0.8;
   margin: 2px 0;
+  overflow-wrap: anywhere;
 }
 
 .checkboxLabel {
@@ -231,4 +235,31 @@
   .formTable select {
     font-size: 16px;
   }
+}
+
+.listRow {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-bottom: 2px;
+}
+
+.formTable .listRow input[type="text"] {
+  flex: 1;
+  width: auto;
+  min-width: 0;
+}
+
+.formTable .listRow select {
+  width: auto;
+}
+
+.removeRowButton {
+  flex: none;
+  padding: 0 5px;
+  line-height: 16px;
+}
+
+.addRowButton {
+  margin-top: 1px;
 }

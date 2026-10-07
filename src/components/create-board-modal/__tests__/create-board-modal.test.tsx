@@ -69,6 +69,16 @@ const setInputValue = async (element: HTMLInputElement | HTMLTextAreaElement | n
   });
 };
 
+const clickButtonWithText = async (text: string) => {
+  const button = Array.from(container.querySelectorAll('button')).find((candidate) => candidate.textContent === text);
+  expect(button).toBeTruthy();
+  await act(async () => {
+    button?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+  });
+};
+
+const getInputs = (ariaLabel: string) => Array.from(container.querySelectorAll<HTMLInputElement>(`input[aria-label="${ariaLabel}"]`));
+
 const submitForm = async () => {
   const form = container.querySelector('form');
   expect(form).toBeTruthy();
@@ -113,11 +123,11 @@ describe('CreateBoardModal', () => {
     expect(container.textContent).toContain('create_board_requires_node');
   });
 
-  it('shows a loading line instead of the node notice while a configured RPC connects', async () => {
+  it('says it is connecting to the node instead of showing the node notice while a configured RPC connects', async () => {
     testState.rpcState = 'initializing';
     await render();
 
-    expect(container.textContent).toContain('loading');
+    expect(container.textContent).toContain('create_board_connecting_node');
     expect(container.textContent).not.toContain('create_board_requires_node');
     expect(container.querySelector('form')).toBeNull();
   });
@@ -128,7 +138,9 @@ describe('CreateBoardModal', () => {
 
     expect(container.querySelector<HTMLSelectElement>('#create-board-challenge')?.value).toBe(SPAM_BLOCKER);
     await setInputValue(container.querySelector<HTMLInputElement>('#create-board-title'), 'Tech');
-    await setInputValue(container.querySelector<HTMLTextAreaElement>('#create-board-rules'), 'be nice\nno spam');
+    await setInputValue(getInputs('create_board_rule_label')[0], 'be nice');
+    await clickButtonWithText('create_board_add_rule');
+    await setInputValue(getInputs('create_board_rule_label')[1], 'no spam');
     await submitForm();
 
     expect(testState.createCommunityMock).toHaveBeenCalledTimes(1);
@@ -173,10 +185,48 @@ describe('CreateBoardModal', () => {
 
       expect(container.textContent).toContain('create_board_requires_node');
       expect(container.textContent).toContain('rpc_mixed_content_warning');
-      expect(container.textContent).not.toContain('loading');
+      expect(container.textContent).not.toContain('create_board_connecting_node');
       expect(container.querySelector('form')).toBeNull();
     } finally {
       Object.defineProperty(window, 'location', { configurable: true, value: originalLocation });
     }
+  });
+  it('adds, focuses, and removes rule and moderator rows, keeping each moderator role', async () => {
+    testState.createCommunityMock.mockResolvedValue({ address: 'new-board-address', start: testState.startMock });
+    await render();
+
+    expect(getInputs('create_board_rule_label')).toHaveLength(1);
+    expect(getInputs('create_board_moderator_label')).toHaveLength(0);
+
+    await clickButtonWithText('create_board_add_rule');
+    expect(getInputs('create_board_rule_label')).toHaveLength(2);
+    expect(document.activeElement).toBe(getInputs('create_board_rule_label')[1]);
+    await setInputValue(getInputs('create_board_rule_label')[0], 'first rule');
+    await setInputValue(getInputs('create_board_rule_label')[1], 'second rule');
+
+    await clickButtonWithText('create_board_add_moderator');
+    expect(document.activeElement).toBe(getInputs('create_board_moderator_label')[0]);
+    await setInputValue(getInputs('create_board_moderator_label')[0], 'admin-address');
+    const roleSelect = container.querySelector<HTMLSelectElement>('select[aria-label="create_board_moderator_role_label"]');
+    expect(roleSelect?.value).toBe('moderator');
+    await act(async () => {
+      if (roleSelect) {
+        roleSelect.value = 'admin';
+        roleSelect.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    });
+
+    const removeFirstRule = container.querySelector<HTMLButtonElement>('button[aria-label="create_board_remove_item"]');
+    await act(async () => {
+      removeFirstRule?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+    expect(getInputs('create_board_rule_label').map((input) => input.value)).toEqual(['second rule']);
+
+    await submitForm();
+
+    expect(testState.createCommunityMock.mock.calls[0][0]).toMatchObject({
+      rules: ['second rule'],
+      roles: { 'admin-address': { role: 'admin' }, 'creator-address': { role: 'owner' } },
+    });
   });
 });
