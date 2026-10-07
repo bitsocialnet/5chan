@@ -2,6 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, use
 import { Link, useLocation, useNavigate, useNavigationType, useParams } from 'react-router-dom';
 import { Comment, useAccount, useAccountComments, useCommunity, useFeed } from '@bitsocial/bitsocial-react-hooks';
 import { useCommunityField } from '../../hooks/use-stable-community';
+import { useBoardHasArchive } from '../../hooks/use-board-has-archive';
 import { communitiesPagesStore as useCommunitiesPagesStore } from '../../lib/bitsocial-internals/stores';
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
 import { Trans, useTranslation } from 'react-i18next';
@@ -247,6 +248,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
   const setEnableInfiniteScroll = useFeedViewSettingsStore((state) => state.setEnableInfiniteScroll);
   const isMobile = useIsMobile();
   const isForcedInfiniteScroll = isInAllView || isInSubscriptionsView || isInModView;
+  const boardHasArchive = useBoardHasArchive(communityAddress);
   const effectiveInfiniteScroll = !shouldUseFlashTable && (enableInfiniteScroll || isForcedInfiniteScroll);
   const { guiPostsPerPage, maxGuiPages, paginationFeedPostsPerPage, infiniteFeedPostsPerPage } = useBoardFeedPageSize(communityDirectory);
 
@@ -637,6 +639,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
                 totalPages={totalPages}
                 footerStyle
                 isMultiboard={isForcedInfiniteScroll}
+                showArchiveLink={boardHasArchive}
               />
             }
           />
@@ -715,6 +718,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
       effectiveInfiniteScroll,
       shouldUseFlashTable,
       isForcedInfiniteScroll,
+      boardHasArchive,
       paginationBasePath,
       currentPage,
       totalPages,

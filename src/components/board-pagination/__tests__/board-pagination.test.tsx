@@ -132,6 +132,13 @@ describe('BoardPagination', () => {
     expect(container.textContent).toContain('archive');
   });
 
+  it('hides the archive link on a board without an archive', () => {
+    renderPagination(createElement(BoardPagination, { basePath: '/mu', currentPage: 1, footerStyle: true, totalPages: 3, showArchiveLink: false }));
+
+    expect(container.textContent).toContain('catalog');
+    expect(container.textContent).not.toContain('archive');
+  });
+
   it('returns nothing for single-page non-footer pagination', () => {
     renderPagination(createElement(BoardPagination, { basePath: '/mu', currentPage: 1, totalPages: 1 }));
 

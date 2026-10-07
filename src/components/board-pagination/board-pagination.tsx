@@ -26,6 +26,8 @@ interface BoardPaginationProps {
   getPageHref?: (page: number) => { pathname: string; search?: string };
   /** Replaces the trailing Catalog/Archive links. Feeds using it are paginated by their provider, so the infinite-scroll shortcut is dropped. */
   footerLinks?: BoardPaginationFooterLink[];
+  /** False for a board without an archive (community.features.noArchive), which drops the trailing Archive link. */
+  showArchiveLink?: boolean;
 }
 
 const BoardPagination = ({
@@ -37,6 +39,7 @@ const BoardPagination = ({
   isMultiboard = false,
   getPageHref,
   footerLinks,
+  showArchiveLink = true,
 }: BoardPaginationProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -116,9 +119,11 @@ const BoardPagination = ({
                     {t('catalog')}
                   </Link>
                 )}
-                <Link to={archiveHref} className={styles.pagelistSeparatorLink}>
-                  {t('archive')}
-                </Link>
+                {showArchiveLink && (
+                  <Link to={archiveHref} className={styles.pagelistSeparatorLink}>
+                    {t('archive')}
+                  </Link>
+                )}
               </>
             )}
           </div>
