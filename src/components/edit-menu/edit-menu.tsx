@@ -17,6 +17,7 @@ import capitalize from 'lodash/capitalize';
 import useIsMobile from '../../hooks/use-is-mobile';
 import useAuthorPrivileges from '../../hooks/use-author-privileges';
 import { useBoardPseudonymityMode } from '../../hooks/use-board-pseudonymity-mode';
+import { useBoardHasArchive } from '../../hooks/use-board-has-archive';
 import { getCommentCommunityAddress, withResolvedCommentCommunityAddress } from '../../lib/utils/comment-utils';
 import { canMoveCommentToTrash } from '../../lib/comment-transfer';
 import PostTransferModal from '../post-transfer-modal';
@@ -86,6 +87,8 @@ const EditMenu = ({ post }: { post: Comment }) => {
     postCid,
   });
   const pseudonymityMode = useBoardPseudonymityMode(communityAddress);
+  // A board without an archive rejects newly archived threads, but a thread archived earlier can still be unarchived
+  const canToggleArchived = useBoardHasArchive(communityAddress) || archived;
   const allowsPseudonymousDelete = pseudonymityMode !== undefined && pseudonymityMode !== 'none';
   const canAttemptAuthorDelete = isAccountCommentAuthor || allowsPseudonymousDelete;
   const canOpenEditMenu = isAccountMod || canAttemptAuthorDelete;
@@ -463,7 +466,7 @@ const EditMenu = ({ post }: { post: Comment }) => {
                       </label>
                       ]
                     </div>
-                    {!parentCid && (
+                    {!parentCid && canToggleArchived && (
                       <div className={styles.menuItem}>
                         [
                         <label>

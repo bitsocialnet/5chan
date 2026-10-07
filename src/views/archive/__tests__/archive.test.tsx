@@ -27,6 +27,7 @@ const testState = vi.hoisted(() => ({
   resolvedCommunityAddress: 'music-posting.eth' as string | undefined,
   community: {
     error: undefined as Error | undefined,
+    features: undefined as { noArchive?: boolean } | undefined,
     title: '/mu/ - Music',
   },
 }));
@@ -134,6 +135,7 @@ describe('Archive', () => {
     testState.isMobile = false;
     testState.community = {
       error: undefined,
+      features: undefined,
       title: '/mu/ - Music',
     };
     testState.loadMoreMock = vi.fn();
@@ -165,6 +167,16 @@ describe('Archive', () => {
     expect(rows[0]!.textContent).toContain('111');
     expect(rows[1]!.textContent).toContain('333');
     expect(rows[0]!.textContent).not.toContain('222');
+  });
+
+  it('redirects to not found on a board without an archive', async () => {
+    testState.community.features = { noArchive: true };
+    testState.feed = [{ cid: 'a', archived: true, threadCid: '111', title: 'Archived earlier' }];
+
+    const location = await renderArchiveRoute({ root, element: createElement(Archive), initialEntry: '/mu/archive', routePath: '/:boardIdentifier/archive' });
+
+    expect(location).toBe('/not-found');
+    expect(container.querySelector('#arc-list')).toBeNull();
   });
 
   it('requests the active sort for the archive feed', async () => {

@@ -6,6 +6,7 @@ import { useAccountCommunityAddresses } from '../use-account-community-addresses
 import { useAccountCommunitiesWithMetadata } from '../use-account-communities-with-metadata';
 import useAuthorPrivileges from '../use-author-privileges';
 import { useBoardFeedPageSize } from '../use-board-feed-page-size';
+import { useBoardHasArchive } from '../use-board-has-archive';
 import { useBoardPseudonymityMode } from '../use-board-pseudonymity-mode';
 import useCountLinksInReplies from '../use-count-links-in-replies';
 import { useFilteredDirectoryAddresses } from '../use-filtered-directory-addresses';
@@ -313,6 +314,16 @@ describe('selector hooks', () => {
     };
 
     expect(renderHookValue(() => useBoardPseudonymityMode('music.eth'))).toBe('directory-mode');
+  });
+
+  it('treats a board as having an archive unless its live record sets features.noArchive', () => {
+    expect(renderHookValue(() => useBoardHasArchive('random.bso'))).toBe(true);
+
+    testState.communitySnapshot = { features: { noArchive: false } };
+    expect(renderHookValue(() => useBoardHasArchive('random.bso'))).toBe(true);
+
+    testState.communitySnapshot = { features: { noArchive: true } };
+    expect(renderHookValue(() => useBoardHasArchive('random.bso'))).toBe(false);
   });
 
   it('counts link-bearing replies and supports a reply preview limit', () => {
