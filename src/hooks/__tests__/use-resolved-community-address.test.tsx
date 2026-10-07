@@ -20,13 +20,18 @@ const testState = vi.hoisted(() => ({
   ],
   list: {
     directoryCode: 'biz',
+    features: undefined as Record<string, unknown> | undefined,
     boards: [
       { address: 'business-and-finance.bso', publicKey: '12D3KooWBusiness', score: 100 },
       { address: 'bizraelis.bso', score: 10 },
     ],
   },
+  directoryDefaults: { directories: {} } as { directories: Record<string, { features?: Record<string, unknown> }> },
   offlineStates: {} as Record<string, { updatedAt?: number; state?: string }>,
-  communities: {} as Record<string, { address?: string; name?: string; publicKey?: string; state?: string; updatedAt?: number }>,
+  communities: {} as Record<
+    string,
+    { address?: string; name?: string; publicKey?: string; state?: string; updatedAt?: number; features?: Record<string, unknown>; challenges?: unknown[] }
+  >,
   syncStatuses: {} as Record<string, { syncState: CommunitySyncState }>,
   candidatePublicKeys: {} as Record<string, string | undefined>,
   communityStoreListeners: [] as Array<() => void>,
@@ -43,6 +48,7 @@ vi.mock('react-router-dom', async () => {
 
 vi.mock('../use-directories', () => ({
   useDirectories: () => testState.directories,
+  useDirectoryDefaults: () => testState.directoryDefaults,
   normalizeBoardAddress: (address: string) => address.replace(/\.(bso|eth)$/, ''),
 }));
 
@@ -136,6 +142,8 @@ describe('useResolvedCommunityAddress', () => {
       { address: 'business-and-finance.bso', publicKey: '12D3KooWBusiness', score: 100 },
       { address: 'bizraelis.bso', score: 10 },
     ];
+    testState.list.features = undefined;
+    testState.directoryDefaults = { directories: {} };
     testState.offlineStates = {};
     testState.communities = {};
     testState.syncStatuses = {};
@@ -564,6 +572,119 @@ describe('useResolvedCommunityAddress', () => {
     await renderHook();
 
     expect(latestValue).toBe('business-and-finance.bso');
+  });
+
+  describe('directory requirements', () => {
+    const freshUpdatedAt = 1_704_067_210 - 60;
+    const modQueue = [{ type: 'mod-queue', pendingApproval: true }];
+    const topRecord = (features: Record<string, unknown>) => ({
+      address: '12D3KooWBusiness',
+      name: 'business-and-finance.bso',
+      publicKey: '12D3KooWBusiness',
+      updatedAt: freshUpdatedAt,
+      features,
+      challenges: modQueue,
+    });
+    const lowerRecord = (features: Record<string, unknown>) => ({
+      address: 'bizraelis.bso',
+      name: 'bizraelis.bso',
+      updatedAt: freshUpdatedAt,
+      features,
+      challenges: modQueue,
+    });
+
+    beforeEach(() => {
+      testState.list.features = { pseudonymityMode: 'per-post', postsPerPage: 15 };
+    });
+
+    it('moves past an online board whose record misses a requirement to a lower board whose record meets them', async () => {
+      testState.communities = {
+        '12D3KooWBusiness': topRecord({ pseudonymityMode: 'per-author' }),
+        'bizraelis.bso': lowerRecord({ pseudonymityMode: 'per-post' }),
+      };
+
+      await renderHook();
+
+      expect(latestValue).toBe('bizraelis.bso');
+    });
+
+    it('holds the top board until a lower candidate record shows it qualifies', async () => {
+      testState.communities = { '12D3KooWBusiness': topRecord({ pseudonymityMode: 'per-author' }) };
+
+      await renderHook();
+
+      expect(latestValue).toBe('business-and-finance.bso');
+
+      testState.communities = { ...testState.communities, 'bizraelis.bso': lowerRecord({ pseudonymityMode: 'per-post' }) };
+      await act(async () => {
+        testState.communityStoreListeners.forEach((listener) => listener());
+      });
+
+      expect(latestValue).toBe('bizraelis.bso');
+    });
+
+    it('keeps the top online board when no candidate meets the requirements', async () => {
+      testState.communities = {
+        '12D3KooWBusiness': topRecord({ pseudonymityMode: 'per-author' }),
+        'bizraelis.bso': { ...lowerRecord({ pseudonymityMode: 'per-post' }), challenges: [] },
+      };
+
+      await renderHook();
+
+      expect(latestValue).toBe('business-and-finance.bso');
+    });
+
+    it('skips a lower candidate whose record has not loaded for one already known to qualify', async () => {
+      testState.list.boards = [...testState.list.boards, { address: 'biz-third.bso', score: 1 }];
+      testState.communities = {
+        '12D3KooWBusiness': topRecord({ pseudonymityMode: 'per-author' }),
+        'biz-third.bso': { ...lowerRecord({ pseudonymityMode: 'per-post' }), address: 'biz-third.bso', name: 'biz-third.bso' },
+      };
+
+      await renderHook();
+
+      expect(latestValue).toBe('biz-third.bso');
+    });
+
+    it('judges a board on the record signed by its own key, not a newer record from another key with its name', async () => {
+      testState.communities = {
+        '12D3KooWBusiness': topRecord({ pseudonymityMode: 'per-author' }),
+        '12D3KooWOtherKey': {
+          ...topRecord({ pseudonymityMode: 'per-post' }),
+          address: '12D3KooWOtherKey',
+          publicKey: '12D3KooWOtherKey',
+          updatedAt: freshUpdatedAt + 30,
+        },
+        'bizraelis.bso': lowerRecord({ pseudonymityMode: 'per-post' }),
+      };
+
+      await renderHook();
+
+      expect(latestValue).toBe('bizraelis.bso');
+    });
+
+    it('checks the latest directory defaults instead of the features bundled with the list', async () => {
+      testState.directoryDefaults = { directories: { biz: { features: { pseudonymityMode: 'per-reply' } } } };
+      testState.communities = {
+        '12D3KooWBusiness': topRecord({ pseudonymityMode: 'per-post' }),
+        'bizraelis.bso': lowerRecord({ pseudonymityMode: 'per-reply' }),
+      };
+
+      await renderHook();
+
+      expect(latestValue).toBe('bizraelis.bso');
+    });
+
+    it('keeps a qualifying top board over a qualifying lower board', async () => {
+      testState.communities = {
+        '12D3KooWBusiness': topRecord({ pseudonymityMode: 'per-post' }),
+        'bizraelis.bso': lowerRecord({ pseudonymityMode: 'per-post' }),
+      };
+
+      await renderHook();
+
+      expect(latestValue).toBe('business-and-finance.bso');
+    });
   });
 
   it('uses an explicit directory identifier for cached board feeds', async () => {

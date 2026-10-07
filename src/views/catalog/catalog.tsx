@@ -14,6 +14,7 @@ import useExpandedTimeFilter from '../../hooks/use-expanded-time-filter';
 import { filterHiddenComments, isCidHidden, useHiddenCids } from '../../hooks/use-hide';
 import useHiddenCatalogThreads from '../../hooks/use-hidden-catalog-threads';
 import usePruneHiddenCatalogThreads from '../../hooks/use-prune-hidden-catalog-threads';
+import usePinnedCatalogThreads from '../../hooks/use-pinned-catalog-threads';
 import { useSuggestionFeedLoader } from '../../hooks/use-suggestion-feed-loader';
 import useTimeFilter from '../../hooks/use-time-filter';
 import useIsMobile from '../../hooks/use-is-mobile';
@@ -34,7 +35,7 @@ import { ModEmptyState } from '../../components/mod-empty-state';
 import styles from './catalog.module.css';
 import { commentMatchesPattern } from '../../lib/utils/pattern-utils';
 import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
-import { sortCatalogFeedForDisplay } from '../../lib/utils/catalog-sort';
+import { placePinnedCatalogThreads, sortCatalogFeedForDisplay } from '../../lib/utils/catalog-sort';
 import { getCommentCommunityAddress } from '../../lib/utils/comment-utils';
 import { getSearchWithTimeFilter, getTimeFilterSuggestion, type TimeFilterSuggestion } from '../../lib/utils/time-filter-utils';
 import {
@@ -53,6 +54,7 @@ const MONTH_IN_SECONDS = 30 * 24 * 60 * 60;
 const YEAR_IN_SECONDS = 365 * 24 * 60 * 60;
 // Keep the hook on its indexed fast path when this view should not inject local posts.
 const EMPTY_ACCOUNT_COMMENT_LOOKUP = { commentIndices: [-1] };
+const NO_PINNED_THREADS: Comment[] = [];
 
 interface CatalogFooterProps {
   communityAddresses: string[];
@@ -65,6 +67,8 @@ interface CatalogFooterProps {
   onExpandTimeWindow?: (suggestion: TimeFilterSuggestion) => void | Promise<void>;
   /** When false, suppress the loading ellipsis (e.g. non-infinite mode) */
   showLoadingEllipsis?: boolean;
+  /** Pinned threads show even when the board has no other threads to list. */
+  hasPinnedThreads?: boolean;
 }
 
 // Defined outside Catalog to preserve component identity across renders (Virtuoso optimization)
@@ -80,6 +84,7 @@ const CatalogFooter = ({
   moreThreadsSuggestionSearch,
   onExpandTimeWindow,
   showLoadingEllipsis = true,
+  hasPinnedThreads = false,
 }: CatalogFooterProps) => {
   const { t } = useTranslation();
 
@@ -112,7 +117,7 @@ const CatalogFooter = ({
         />
       </div>
     );
-  } else if (combinedFeedLength === 0) {
+  } else if (combinedFeedLength === 0 && !hasPinnedThreads) {
     footerContent = t('no_threads');
   }
   if (hasMore || (communityAddresses && communityAddresses.length === 0)) {
@@ -248,6 +253,7 @@ const createCombinedFilter = (
   communityAddress: string,
   onFilterMatch?: (filterIndex: number, cid: string, communityAddress: string) => void,
   trackMatches = true,
+  excludeArchived = true,
 ) => {
   const contentFilter = createContentFilter(filterItems, communityAddress, onFilterMatch, trackMatches);
 
@@ -261,13 +267,13 @@ const createCombinedFilter = (
 
   return {
     filter: (comment: Comment) => {
-      if (isCommentArchived(comment)) return false;
+      if (excludeArchived && isCommentArchived(comment)) return false;
       if (!contentFilter.filter(comment)) return false;
       if (!searchFilter.filter(comment)) return false;
 
       return true;
     },
-    key: `${contentFilter.key}-${searchFilter.key}-exclude-archived`,
+    key: `${contentFilter.key}-${searchFilter.key}${excludeArchived ? '-exclude-archived' : ''}`,
   };
 };
 
@@ -585,7 +591,18 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   const moreThreadsSuggestionPathname = isInAllView ? '/all/catalog' : isInSubscriptionsView ? '/subs/catalog' : isInModView ? '/mod/catalog' : null;
 
   const catalogBaseFeed = showHiddenThreads ? hiddenCatalogThreads : cappedFeed;
-  const sortedFeed = useMemo(() => sortCatalogFeedForDisplay(catalogBaseFeed, sortType), [catalogBaseFeed, sortType]);
+  // Pinned threads stay through archiving, so they only go through the search and content filters.
+  const pinnedThreadsFilter = useMemo(
+    () => (hasActiveCatalogFiltering ? createCombinedFilter(filterItems, searchText, communityAddress || 'all', undefined, false, false).filter : undefined),
+    [communityAddress, filterItems, hasActiveCatalogFiltering, searchText],
+  );
+  const pinnedCatalogThreads = usePinnedCatalogThreads({
+    communityAddresses,
+    enabled: !showHiddenThreads,
+    filter: pinnedThreadsFilter,
+    hiddenCids,
+    live: isVisible,
+  });
 
   useEffect(() => {
     if (filteredComments.length > 0 && !resetTriggeredRef.current) {
@@ -605,6 +622,14 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   const community = useCommunity(communityIdentifier ? { community: communityIdentifier } : undefined);
   const { error, shortAddress, state, title } = community || {};
   const hasCommunityLoadFailed = useHasCommunityLoadFailed(communityIdentifier);
+  // Pinned threads can load from cache before the board does. They join once the board has threads
+  // or finished loading empty, so a loading or failed board still shows its status instead of them.
+  const shownPinnedCatalogThreads = feed.length > 0 || (!hasMore && state !== 'failed' && !hasCommunityLoadFailed) ? pinnedCatalogThreads : NO_PINNED_THREADS;
+  const sortedFeed = useMemo(
+    () => placePinnedCatalogThreads(sortCatalogFeedForDisplay(catalogBaseFeed, sortType), shownPinnedCatalogThreads),
+    [catalogBaseFeed, shownPinnedCatalogThreads, sortType],
+  );
+  const hasShownPinnedThreads = shownPinnedCatalogThreads.length > 0;
   const footerHasMore = showHiddenThreads ? isLoadingHiddenCatalogThreads : hasMore;
   const footerCombinedFeedLength = catalogBaseFeed.length;
   const footerMoreThreadsSuggestion = showHiddenThreads ? null : moreThreadsSuggestion;
@@ -632,6 +657,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
             moreThreadsSuggestionSearch={routerLocation.search}
             onExpandTimeWindow={expandSuggestionTimeWindow}
             showLoadingEllipsis={footerShowLoadingEllipsis}
+            hasPinnedThreads={hasShownPinnedThreads}
           />
           <PageFooterDesktop variant='catalog' firstRow={catalogFooterFirstRow} styleRow={catalogFooterStyleRow} />
           <PageFooterMobile>
@@ -661,6 +687,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
       isInModView,
       routerLocation.search,
       footerShowLoadingEllipsis,
+      hasShownPinnedThreads,
     ],
   );
   const catalogFooter = useMemo(
@@ -676,6 +703,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
           moreThreadsSuggestionSearch={routerLocation.search}
           onExpandTimeWindow={expandSuggestionTimeWindow}
           showLoadingEllipsis={footerShowLoadingEllipsis}
+          hasPinnedThreads={hasShownPinnedThreads}
         />
         <PageFooterDesktop variant='catalog' firstRow={catalogFooterFirstRow} styleRow={catalogFooterStyleRow} />
         <PageFooterMobile>
@@ -704,9 +732,10 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
       isInModView,
       routerLocation.search,
       footerShowLoadingEllipsis,
+      hasShownPinnedThreads,
     ],
   );
-  const isFeedLoaded = feed.length > 0 || hiddenThreadsCount > 0 || state === 'failed';
+  const isFeedLoaded = feed.length > 0 || hiddenThreadsCount > 0 || hasShownPinnedThreads || state === 'failed';
   const hasActiveSearch = searchText.trim().length > 0;
   const showModEmptyState = isInModView && accountCommunityAddresses.length === 0;
   const showSearchNothingFound =
@@ -869,7 +898,14 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
 
   const renderCatalogRow = useCallback(
     (index: number, row: Comment[]) => (
-      <CatalogRow estimatedHeight={rowHeightEstimates[index]} index={index} matchedFilterColors={matchedFilterColors} row={row} showHiddenPosts={showHiddenThreads} />
+      <CatalogRow
+        estimatedHeight={rowHeightEstimates[index]}
+        index={index}
+        matchedFilterColors={matchedFilterColors}
+        row={row}
+        showHiddenPosts={showHiddenThreads}
+        showPinnedThreads={true}
+      />
     ),
     [matchedFilterColors, rowHeightEstimates, showHiddenThreads],
   );
@@ -924,6 +960,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
                     matchedFilterColors={matchedFilterColors}
                     row={row}
                     showHiddenPosts={showHiddenThreads}
+                    showPinnedThreads={true}
                   />
                 ))}
                 {catalogFooter}

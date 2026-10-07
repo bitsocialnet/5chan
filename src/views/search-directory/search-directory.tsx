@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import capitalize from 'lodash/capitalize';
 import { BottomButton, TopButton } from '../../components/board-buttons';
 import { PageFooterDesktop, PageFooterMobile, ThreadFooterStyleRow } from '../../components/footer';
+import useIsMobile from '../../hooks/use-is-mobile';
 import { SEARCH_CATALOG_PATH, SEARCH_PATH } from '../../lib/search-navigation';
 import { getDirectorySearchProvider, getRankedSearchProviders } from '../../lib/search-providers';
 import useSearchProviderStore from '../../stores/use-search-provider-store';
@@ -105,6 +106,8 @@ const SearchDirectory = () => {
   const returnPath = getReturnPath(location.state);
   const rankedProviders = getRankedSearchProviders();
   const directoryProviderId = getDirectorySearchProvider().id;
+  // Phones have no room for the API column.
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     document.title = `${t('change_provider')} - ${t('archive_search_title')} - 5chan`;
@@ -131,9 +134,11 @@ const SearchDirectory = () => {
             <th className={styles.postblock} scope='col'>
               {t('search_provider')}
             </th>
-            <th className={styles.postblock} scope='col'>
-              API
-            </th>
+            {!isMobile && (
+              <th className={styles.postblock} scope='col'>
+                API
+              </th>
+            )}
             <th className={styles.postblock} scope='col'>
               {t('directory_status')}
             </th>
@@ -162,11 +167,13 @@ const SearchDirectory = () => {
                     {provider.name}
                   </a>
                 </td>
-                <td className={styles.ownerCell}>
-                  <a href={provider.apiUrl} target='_blank' rel='noreferrer noopener'>
-                    {new URL(provider.apiUrl).host}
-                  </a>
-                </td>
+                {!isMobile && (
+                  <td className={styles.ownerCell}>
+                    <a href={provider.apiUrl} target='_blank' rel='noreferrer noopener'>
+                      {new URL(provider.apiUrl).host}
+                    </a>
+                  </td>
+                )}
                 <td className={styles.statusCell}>{isAnswering ? <span className={styles.statusOnline}>{t('current_provider')}</span> : null}</td>
                 <td className={styles.scoreCell}>
                   <span className={styles.scoreValue}>{provider.score ?? DIRECTORY_SCORE_UNAVAILABLE_MARKER}</span>

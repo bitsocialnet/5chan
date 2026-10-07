@@ -5,6 +5,7 @@ import { useReplies } from '@bitsocial/bitsocial-react-hooks';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import CatalogRow, { CatalogPostMedia } from '../catalog-row';
+import usePinnedCatalogThreadsStore from '../../../stores/use-pinned-catalog-threads-store';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
@@ -137,6 +138,10 @@ vi.mock('../../../stores/use-special-theme-store', async (importOriginal) => ({
   shouldShowSnow: () => testState.showSnow,
 }));
 
+vi.mock('../../../hooks/use-post-page-number', () => ({
+  usePostPageNumber: ({ postCid }: { postCid?: string }) => (postCid ? 2 : undefined),
+}));
+
 vi.mock('../../../lib/utils/time-utils', () => ({
   getFormattedTimeAgo: (timestamp?: number) => `ago:${timestamp}`,
 }));
@@ -160,10 +165,10 @@ vi.mock('../../../hooks/use-directories', () => ({
 }));
 
 vi.mock('../../../stores/use-catalog-style-store', () => ({
-  default: () => ({
-    imageSize: testState.imageSize,
-    showOPComment: testState.showOPComment,
-  }),
+  default: <T,>(selector?: (state: { imageSize: 'Large' | 'Small'; showOPComment: boolean }) => T) => {
+    const state = { imageSize: testState.imageSize, showOPComment: testState.showOPComment };
+    return selector ? selector(state) : state;
+  },
 }));
 
 vi.mock('../../../hooks/use-author-privileges', () => ({
@@ -235,6 +240,7 @@ describe('CatalogRow', () => {
     testState.roleByAddress = {};
     testState.showOPComment = true;
     testState.showSnow = false;
+    usePinnedCatalogThreadsStore.setState({ pinnedThreads: {} });
     container = document.createElement('div');
     document.body.appendChild(container);
     root = createRoot(container);
@@ -291,6 +297,43 @@ describe('CatalogRow', () => {
 
     expect(container.querySelector('canvas')).toBeTruthy();
     expect(container.querySelector('img[src="https://example.com/source.gif"]')).toBeNull();
+  });
+
+  it('marks a pinned thread like 4chan: dashed thumbnail, new replies since it was read, and its board page', async () => {
+    testState.mediaInfoByLink['https://example.com/media.png'] = { type: 'image', url: 'https://example.com/media.png' };
+    const pinnedPost: TestComment = { cid: 'pinned-post', link: 'https://example.com/media.png', replyCount: 7, communityAddress: 'music-posting.eth', title: 'Pinned' };
+    const otherPost: TestComment = { cid: 'other-post', link: 'https://example.com/media.png', replyCount: 7, communityAddress: 'music-posting.eth', title: 'Other' };
+    usePinnedCatalogThreadsStore.setState({ pinnedThreads: { 'pinned-post': { communityAddress: 'music-posting.eth', pinnedAt: 1, readReplyCount: 4 } } });
+
+    await renderWithRouter(createElement(CatalogRow, { row: [pinnedPost, otherPost], showPinnedThreads: true }));
+
+    const [pinnedMeta, otherMeta] = Array.from(container.querySelectorAll<HTMLElement>('[title^="(R)eplies"]'));
+    expect(pinnedMeta.textContent).toBe('R: 7 (+3) / P: 2menu');
+    expect(pinnedMeta.title).toBe('(R)eplies / (L)ink Replies / (P)age');
+    expect(otherMeta.textContent).toBe('R: 7menu');
+    const [pinnedMedia, otherMedia] = Array.from(container.querySelectorAll<HTMLElement>('img[src="https://example.com/media.png"]')).map((image) => image.parentElement);
+    expect(pinnedMedia?.className).toContain('pinned');
+    expect(otherMedia?.className).not.toContain('pinned');
+
+    await act(async () => {
+      usePinnedCatalogThreadsStore.getState().markThreadRead('pinned-post', 7);
+    });
+    expect(pinnedMeta.textContent).toBe('R: 7(+0) / P: 2menu');
+  });
+
+  it('shows pinned threads plainly in the hidden threads list', async () => {
+    testState.mediaInfoByLink['https://example.com/media.png'] = { type: 'image', url: 'https://example.com/media.png' };
+    const pinnedPost: TestComment = { cid: 'pinned-post', link: 'https://example.com/media.png', replyCount: 7, communityAddress: 'music-posting.eth', title: 'Pinned' };
+    usePinnedCatalogThreadsStore.setState({ pinnedThreads: { 'pinned-post': { communityAddress: 'music-posting.eth', pinnedAt: 1, readReplyCount: 4 } } });
+
+    await renderWithRouter(createElement(CatalogRow, { row: [pinnedPost], showHiddenPosts: true, showPinnedThreads: true }));
+
+    expect(container.querySelector<HTMLElement>('[title^="(R)eplies"]')?.textContent).toBe('R: 7menu');
+    expect(container.querySelector<HTMLElement>('img[src="https://example.com/media.png"]')?.parentElement?.className).not.toContain('pinned');
+
+    // Search results render catalog rows too, without marking pins.
+    await renderWithRouter(createElement(CatalogRow, { row: [pinnedPost] }));
+    expect(container.querySelector<HTMLElement>('[title^="(R)eplies"]')?.textContent).toBe('R: 7menu');
   });
 
   it('renders the archived icon for archived threads', async () => {
@@ -351,6 +394,36 @@ describe('CatalogRow', () => {
     expect(image).toBeTruthy();
     expect(image?.getAttribute('width')).toBeNull();
     expect(image?.getAttribute('height')).toBeNull();
+  });
+
+  it('keeps out-of-feed thumbnails at the small size when the catalog uses large images', async () => {
+    testState.imageSize = 'Large';
+    const renderImage = async (isOutOfFeed: boolean) => {
+      await act(async () => {
+        root.render(
+          createElement(CatalogPostMedia, {
+            cid: 'image-post',
+            commentMediaInfo: { type: 'image', url: 'https://example.com/file.png' },
+            isOutOfFeed,
+            linkHeight: 200,
+            linkWidth: 400,
+          }),
+        );
+      });
+      const image = container.querySelector<HTMLImageElement>('img[src="https://example.com/file.png"]');
+      return { image, wrapper: image?.parentElement };
+    };
+
+    const catalogMedia = await renderImage(false);
+    expect(catalogMedia.wrapper?.style.getPropertyValue('--width')).toBe('250px');
+    expect(catalogMedia.image?.getAttribute('width')).toBe('250');
+
+    const popularThreadMedia = await renderImage(true);
+    expect(popularThreadMedia.wrapper?.style.getPropertyValue('--width')).toBe('150px');
+    expect(popularThreadMedia.wrapper?.style.getPropertyValue('--height')).toBe('75px');
+    expect(popularThreadMedia.wrapper?.style.getPropertyValue('--maxWidth')).toBe('150px');
+    expect(popularThreadMedia.image?.getAttribute('width')).toBe('150');
+    expect(popularThreadMedia.image?.getAttribute('height')).toBe('75');
   });
 
   it('renders media posts with board links, counts, and hover previews in all view', async () => {

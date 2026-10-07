@@ -12,6 +12,7 @@ interface SettingsProps {
   httpRoutersRef?: RefObject<HTMLTextAreaElement | null>;
   ethRpcRef?: RefObject<HTMLTextAreaElement | null>;
   p2pRpcRef?: RefObject<HTMLInputElement | null>;
+  onP2pRpcChange?: (value: string) => void;
   p2pDataPathRef?: RefObject<HTMLInputElement | null>;
   onPureP2PBrowserChange?: (enabled: boolean) => void;
   pureP2PBrowserEnabled?: boolean;
@@ -168,7 +169,7 @@ const BlockchainProvidersSettings = ({ ethRpcRef }: SettingsProps) => {
   );
 };
 
-const P2pRPCSettings = ({ p2pRpcRef }: SettingsProps) => {
+const P2pRPCSettings = ({ onP2pRpcChange, p2pRpcRef }: SettingsProps) => {
   const { t } = useTranslation();
   const account = useAccount() as AccountShape | undefined;
   const protocolOptions = getProtocolOptions(account);
@@ -182,6 +183,7 @@ const P2pRPCSettings = ({ p2pRpcRef }: SettingsProps) => {
         defaultValue={pkcRpcClientsOptions}
         placeholder={t('advanced_p2p_rpc_placeholder')}
         ref={p2pRpcRef}
+        onChange={(event) => onP2pRpcChange?.(event.currentTarget.value)}
         autoCorrect='off'
         autoCapitalize='off'
         spellCheck='false'
@@ -284,6 +286,11 @@ const AdvancedSettings = () => {
   const p2pDataPathRef = useRef<HTMLInputElement>(null);
   const pureP2PBrowserRef = useRef<HTMLInputElement>(null);
 
+  // Saving pure P2P drops pkcRpcClientsOptions, so entering a full node RPC switches the selection to gateway mode, which keeps it.
+  const handleP2pRpcChange = (value: string) => {
+    if (canConfigurePureP2PBrowser && value.trim()) setBrowserPureP2PSelection(false);
+  };
+
   const handleSave = async () => {
     const ipfsGatewayUrls = ipfsGatewayUrlsRef.current ? getTrimmedLines(ipfsGatewayUrlsRef.current.value) : protocolOptions?.ipfsGatewayUrls;
 
@@ -382,7 +389,7 @@ const AdvancedSettings = () => {
       <div className={styles.category}>
         <span className={styles.categoryTitle}>{t('advanced_full_node_websocket_rpc')}</span>
         <span className={styles.categorySettings}>
-          <P2pRPCSettings p2pRpcRef={p2pRpcRef} />
+          <P2pRPCSettings p2pRpcRef={p2pRpcRef} onP2pRpcChange={handleP2pRpcChange} />
         </span>
       </div>
       {isElectron && (

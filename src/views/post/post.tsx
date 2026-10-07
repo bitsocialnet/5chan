@@ -19,6 +19,7 @@ import { evictThreadRefreshCaches } from '../../lib/utils/thread-refresh-cache-u
 import { REPLIES_PER_PAGE } from '../../lib/constants';
 import { preservePublishedUserID } from '../../lib/utils/comment-user-id-utils';
 import useThreadUpdater from '../../hooks/use-thread-updater';
+import useMarkPinnedThreadRead from '../../hooks/use-mark-pinned-thread-read';
 import useThreadLiveUpdatesStore, { type RefreshThread } from '../../stores/use-thread-live-updates-store';
 import type { QueuedCommentRouteState } from '../../lib/utils/mod-queue-utils';
 import styles from '../../components/post-styles';
@@ -299,6 +300,7 @@ const PostPage = () => {
   }, [postCidForRefresh, postRefresh]);
 
   useThreadUpdater({ post: post?.cid ? post : undefined, refreshThread });
+  useMarkPinnedThreadRead(post?.cid ? post : undefined);
 
   return (
     <div className={styles.content}>

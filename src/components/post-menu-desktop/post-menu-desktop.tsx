@@ -11,6 +11,7 @@ import { getBoardPath } from '../../lib/utils/route-utils';
 import { useDirectories } from '../../hooks/use-directories';
 import { isCatalogView, isPostPageView } from '../../lib/utils/view-utils';
 import useHide from '../../hooks/use-hide';
+import usePinnedCatalogThreadsStore from '../../stores/use-pinned-catalog-threads-store';
 import capitalize from 'lodash/capitalize';
 import { PostMenuProps } from '../../lib/utils/post-menu-props';
 
@@ -173,6 +174,9 @@ const PostMenuDesktop = ({ postMenu }: PostMenuDesktopProps) => {
   const [menuBtnRotated, setMenuBtnRotated] = useState(false);
 
   const { hidden, unhide, hide } = useHide({ cid: cid || '', comment: postMenu.comment });
+  const isPinnedThread = usePinnedCatalogThreadsStore((state) => Boolean(cid && state.pinnedThreads[cid]));
+  const pinThread = usePinnedCatalogThreadsStore((state) => state.pinThread);
+  const unpinThread = usePinnedCatalogThreadsStore((state) => state.unpinThread);
 
   const location = useLocation();
   const params = useParams();
@@ -200,6 +204,13 @@ const PostMenuDesktop = ({ postMenu }: PostMenuDesktopProps) => {
 
   const handleClose = () => setMenuBtnRotated(false);
 
+  const togglePinnedThread = () => {
+    if (!cid || !communityAddress) return;
+    if (isPinnedThread) unpinThread(cid);
+    else pinThread({ cid, communityAddress, replyCount: postMenu.comment?.replyCount });
+    handleClose();
+  };
+
   return (
     <>
       <span className={isInCatalogView ? styles.postMenuBtnCatalogWrapper : styles.postMenuBtnWrapper} ref={refs.setReference} {...getReferenceProps()}>
@@ -225,6 +236,22 @@ const PostMenuDesktop = ({ postMenu }: PostMenuDesktopProps) => {
         createPortal(
           <FloatingFocusManager context={context} modal={false}>
             <div className={styles.postMenu} ref={refs.setFloating} style={floatingStyles} aria-labelledby={headingId} {...getFloatingProps()}>
+              {isInCatalogView && postCid === cid && communityAddress && (
+                <button
+                  type='button'
+                  className={styles.postMenuItem}
+                  tabIndex={0}
+                  onClick={togglePinnedThread}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      togglePinnedThread();
+                    }
+                  }}
+                >
+                  {isPinnedThread ? t('unpin_thread') : t('pin_thread')}
+                </button>
+              )}
               {!(isInPostPageView && postCid === cid) && (
                 <button
                   type='button'

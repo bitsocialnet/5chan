@@ -11,9 +11,23 @@ const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise
 
 const testState = vi.hoisted(() => ({
   boardIdentifier: 'a' as string | undefined,
-  communities: {} as Record<string, { address: string; name?: string; state?: string; syncState?: CommunitySyncState; hasCachedData?: boolean; updatedAt?: number }>,
+  communities: {} as Record<
+    string,
+    {
+      address: string;
+      name?: string;
+      state?: string;
+      syncState?: CommunitySyncState;
+      hasCachedData?: boolean;
+      updatedAt?: number;
+      features?: Record<string, unknown>;
+      challenges?: Array<Record<string, unknown>>;
+    }
+  >,
   communityIdentifierRequests: [] as Array<string | undefined>,
   directoryListLoading: false,
+  directoryFeatures: undefined as Record<string, unknown> | undefined,
+  isMobile: false,
   directoryBoards: [
     {
       address: 'anime-and-manga.bso',
@@ -42,6 +56,7 @@ const testState = vi.hoisted(() => ({
     pendingVote: undefined as { source: 'row'; key: string } | { source: 'form' } | undefined,
     toggleVote: (() => Promise.resolve({ status: 'voted' })) as (target: { name?: string; publicKey: string }) => Promise<Record<string, unknown>>,
     voteForAddress: (() => Promise.resolve({ status: 'voted' })) as (address: string, pending?: unknown) => Promise<Record<string, unknown>>,
+    submitBoard: (() => Promise.resolve({ status: 'voted' })) as (address: string, requirements: unknown) => Promise<Record<string, unknown>>,
   },
 }));
 
@@ -100,8 +115,11 @@ vi.mock('../../../components/tooltip/tooltip', () => ({
     createElement('span', { title: typeof content === 'string' ? content : undefined }, children),
 }));
 
+const directoryDefaults = { directories: {} };
+
 vi.mock('../../../hooks/use-directories', () => ({
   useDirectories: () => testState.directories,
+  useDirectoryDefaults: () => directoryDefaults,
 }));
 
 vi.mock('../../../hooks/use-directory-list', async () => {
@@ -112,6 +130,7 @@ vi.mock('../../../hooks/use-directory-list', async () => {
       list: {
         directoryCode: testState.boardIdentifier,
         title: '/a/ - Anime & Manga',
+        features: testState.directoryFeatures,
         boards: testState.directoryBoards,
       },
       loading: testState.directoryListLoading,
@@ -136,6 +155,10 @@ vi.mock('../../../hooks/use-is-community-offline', () => ({
     testState.offlineHookRequests.push({ address: community?.address, communityAddressHint });
     return testState.offlineHookValue;
   },
+}));
+
+vi.mock('../../../hooks/use-is-mobile', () => ({
+  default: () => testState.isMobile,
 }));
 
 vi.mock('../../../hooks/use-now-seconds', () => ({
@@ -184,6 +207,7 @@ const createCommunity = (address: string, updatedAt = testState.nowSeconds - 60)
   syncState: 'succeeded' as const,
   hasCachedData: true,
   updatedAt,
+  challenges: [{ pendingApproval: true }],
 });
 
 const getDirectoryRow = (address = 'anime-and-manga.bso') => Array.from(container.querySelectorAll('tbody tr')).find((row) => row.textContent?.includes(address));
@@ -208,10 +232,13 @@ describe('Directory', () => {
         syncState: 'succeeded',
         hasCachedData: true,
         updatedAt: testState.nowSeconds - 60,
+        challenges: [{ pendingApproval: true }],
       },
     };
     testState.communityIdentifierRequests = [];
     testState.directoryListLoading = false;
+    testState.directoryFeatures = undefined;
+    testState.isMobile = false;
     testState.directoryBoards = [createDirectoryBoard('anime-and-manga.bso')];
     testState.directories = [
       {
@@ -235,6 +262,7 @@ describe('Directory', () => {
       pendingVote: undefined,
       toggleVote: vi.fn(() => Promise.resolve({ status: 'voted' })),
       voteForAddress: vi.fn(() => Promise.resolve({ status: 'voted' })),
+      submitBoard: vi.fn(() => Promise.resolve({ status: 'voted' })),
     };
     originalAlert = window.alert;
     window.alert = vi.fn();
@@ -248,6 +276,17 @@ describe('Directory', () => {
     act(() => root.unmount());
     window.alert = originalAlert;
     container.remove();
+  });
+
+  it('drops the owner column and View action on mobile, linking the board address instead', async () => {
+    testState.isMobile = true;
+    await renderDirectory();
+
+    const headers = Array.from(container.querySelectorAll('thead th')).map((header) => header.textContent?.trim());
+    expect(headers).toEqual(['No.', 'directory_board', 'directory_status', 'directory_score', 'directory_vote']);
+    const cells = Array.from(getDirectoryRow()?.querySelectorAll('td') ?? []).map((cell) => cell.textContent?.replace(/\s+/g, ' ').trim());
+    expect(cells).toEqual(['1', 'anime-and-manga.bso', 'online', '12', '[+1]']);
+    expect(getDirectoryRow()?.querySelector('td:nth-child(2) a')?.getAttribute('href')).toBe('/anime-and-manga.bso');
   });
 
   it('shows online status for a listed board after loading its community', async () => {
@@ -283,7 +322,8 @@ describe('Directory', () => {
     expect(document.activeElement).toBe(getSubmitBoardInput());
   });
 
-  it('submits a typed board address as a vote and clears the form', async () => {
+  it('submits a typed board address as a vote checked against the directory requirements and clears the form', async () => {
+    testState.directoryFeatures = { pseudonymityMode: 'per-reply', safeForWork: true, requirePostLinkIsMedia: true, postsPerPage: 15 };
     await renderDirectory();
     await act(async () => getSubmitBoardButtons()[0].click());
 
@@ -293,8 +333,59 @@ describe('Directory', () => {
       input.form!.requestSubmit();
     });
 
-    expect(testState.directoryVote.voteForAddress).toHaveBeenCalledWith('new-board.bso');
+    expect(testState.directoryVote.submitBoard).toHaveBeenCalledWith('new-board.bso', [
+      { type: 'pseudonymityMode', mode: 'per-reply' },
+      { type: 'safeForWork', safeForWork: true },
+      { type: 'requirePostLinkIsMedia' },
+      { type: 'pendingApproval' },
+    ]);
+    expect(testState.directoryVote.voteForAddress).not.toHaveBeenCalled();
     expect(input.value).toBe('');
+  });
+
+  it('lists the directory requirements with their record settings once the submit form opens', async () => {
+    testState.directoryFeatures = { pseudonymityMode: 'per-post', safeForWork: false };
+    await renderDirectory();
+
+    expect(container.textContent).not.toContain('directory_requirements_title');
+
+    await act(async () => getSubmitBoardButtons()[0].click());
+
+    const items = Array.from(container.querySelectorAll('li')).map((item) => item.textContent);
+    expect(items).toEqual([
+      'directory_requirement_ids_per_thread (features.pseudonymityMode: per-post)',
+      'directory_requirement_nsfw (features.safeForWork: false)',
+      'directory_requirement_mod_queue (challenges[].pendingApproval: true)',
+    ]);
+    expect(container.textContent).toContain('directory_requirements_footnote');
+  });
+
+  it('keeps a submitted board that misses requirements in the form and names what is missing', async () => {
+    testState.directoryVote.submitBoard = vi.fn(() =>
+      Promise.resolve({ status: 'board-ineligible', unmet: [{ type: 'requirePostLinkIsMedia' }, { type: 'pendingApproval' }] }),
+    );
+    await renderDirectory();
+    await act(async () => getSubmitBoardButtons()[0].click());
+
+    const input = getSubmitBoardInput()!;
+    await act(async () => typeIntoInput(input, 'new-board.bso'));
+    await act(async () => {
+      input.form!.requestSubmit();
+    });
+
+    expect(container.querySelector('[role="status"]')?.textContent).toBe('directory_vote_board_ineligible');
+    expect(input.value).toBe('new-board.bso');
+  });
+
+  it('marks an online listed board whose record misses a requirement as ineligible', async () => {
+    testState.directoryFeatures = { pseudonymityMode: 'per-reply' };
+    testState.communities['anime-and-manga.bso'] = { ...createCommunity('anime-and-manga.bso'), features: { pseudonymityMode: 'per-author' } };
+
+    await renderDirectory();
+
+    const statusCell = getDirectoryRow()?.querySelectorAll('td')[3];
+    expect(statusCell?.textContent).toContain('directory_status_ineligible');
+    expect(statusCell?.querySelector('button')?.getAttribute('aria-label')).toBe('directory_status_ineligible_reason');
   });
 
   it('toggles a listed board vote by public key and shows the unvote action for the current vote', async () => {

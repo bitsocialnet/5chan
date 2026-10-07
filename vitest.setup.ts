@@ -1,3 +1,11 @@
+import { setPkcJs } from '@bitsocial/bitsocial-react-hooks/dist/lib/pkc-js/index.js';
+import PkcJsMock from '@bitsocial/bitsocial-react-hooks/dist/lib/pkc-js/pkc-js-mock.js';
+
+// Importing any bitsocial-react-hooks store creates a default account at module load. jsdom has no
+// window.defaultPkcOptions, so the real client would boot libp2p; its it-queue timers can fire after
+// jsdom teardown and fail the run with an unhandled dispatchEvent TypeError.
+setPkcJs(PkcJsMock);
+
 const storageState = new Map<string, string>();
 
 const storageProto = Storage.prototype;
