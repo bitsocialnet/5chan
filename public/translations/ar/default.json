@@ -522,5 +522,6 @@
   "directory_vote_board_ineligible": "لا يمكن إضافة {{address}} إلى /{{boardIdentifier}}/ بعد. ينقصها: {{requirements}}.",
   "directory_vote_board_unreachable": "تعذّر تحميل {{address}} للتحقق من إعداداتها. يجب أن تكون اللوحة متصلة لإضافتها.",
   "pin_thread": "تثبيت الموضوع",
-  "unpin_thread": "إلغاء تثبيت الموضوع"
+  "unpin_thread": "إلغاء تثبيت الموضوع",
+  "upload_awaiting_review": "تم الرفع، لكن يجب أن يراجع المضيف هذا الملف قبل أن يمكن عرضه. سيبدأ الرابط بالعمل بمجرد الموافقة عليه، وقد يستغرق ذلك بضع ساعات. يمكنك نشره الآن."
 }

@@ -522,5 +522,6 @@
   "directory_vote_board_ineligible": "{{address}} はまだ /{{boardIdentifier}}/ に申請できません。不足: {{requirements}}。",
   "directory_vote_board_unreachable": "{{address}} を読み込めず、設定を確認できませんでした。申請するには板がオンラインである必要があります。",
   "pin_thread": "スレッドをピン留め",
-  "unpin_thread": "スレッドのピン留めを解除"
+  "unpin_thread": "スレッドのピン留めを解除",
+  "upload_awaiting_review": "アップロードしましたが、表示できるようになる前にホストによるこのファイルの審査が必要です。承認されるとリンクが機能し始めます。数時間かかる場合があります。今すぐ投稿することもできます。"
 }

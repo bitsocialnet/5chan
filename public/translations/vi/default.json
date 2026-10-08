@@ -522,5 +522,6 @@
   "directory_vote_board_ineligible": "Chưa thể gửi {{address}} vào /{{boardIdentifier}}/. Còn thiếu: {{requirements}}.",
   "directory_vote_board_unreachable": "Không thể tải {{address}} để kiểm tra cài đặt. Bảng phải đang trực tuyến mới có thể được gửi.",
   "pin_thread": "Ghim chủ đề",
-  "unpin_thread": "Bỏ ghim chủ đề"
+  "unpin_thread": "Bỏ ghim chủ đề",
+  "upload_awaiting_review": "Đã tải lên, nhưng máy chủ lưu trữ phải xem xét tệp này trước khi có thể xem được. Liên kết sẽ hoạt động sau khi được phê duyệt, việc này có thể mất vài giờ. Bạn có thể đăng ngay bây giờ."
 }

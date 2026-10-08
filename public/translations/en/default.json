@@ -542,5 +542,6 @@
   "directory_vote_board_unreachable": "Couldn't load {{address}} to check its settings. A board must be online to be submitted.",
   "directory_status_ineligible": "ineligible",
   "pin_thread": "Pin thread",
-  "unpin_thread": "Unpin thread"
+  "unpin_thread": "Unpin thread",
+  "upload_awaiting_review": "Uploaded, but the host must review this file before it can be viewed. The link will start working once it is approved, which can take a few hours. You can post it now."
 }

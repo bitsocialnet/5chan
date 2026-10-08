@@ -522,5 +522,6 @@
   "directory_vote_board_ineligible": "{{address}} zatím nelze přidat do /{{boardIdentifier}}/. Chybí: {{requirements}}.",
   "directory_vote_board_unreachable": "Nepodařilo se načíst {{address}} a ověřit jeho nastavení. Deska musí být online, aby ji bylo možné přidat.",
   "pin_thread": "připnout vlákno",
-  "unpin_thread": "odepnout vlákno"
+  "unpin_thread": "odepnout vlákno",
+  "upload_awaiting_review": "Nahráno, ale hostitel musí tento soubor před zobrazením zkontrolovat. Odkaz začne fungovat po schválení, což může trvat několik hodin. Můžete ho zveřejnit už teď."
 }

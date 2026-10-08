@@ -522,5 +522,6 @@
   "directory_vote_board_ineligible": "{{address}}은(는) 아직 /{{boardIdentifier}}/에 제출할 수 없습니다. 누락: {{requirements}}.",
   "directory_vote_board_unreachable": "설정을 확인하기 위해 {{address}}을(를) 불러올 수 없습니다. 게시판을 제출하려면 온라인 상태여야 합니다.",
   "pin_thread": "스레드 고정",
-  "unpin_thread": "스레드 고정 해제"
+  "unpin_thread": "스레드 고정 해제",
+  "upload_awaiting_review": "업로드되었지만 표시되기 전에 호스트가 이 파일을 검토해야 합니다. 승인되면 링크가 작동하기 시작하며, 몇 시간이 걸릴 수 있습니다. 지금 바로 게시할 수 있습니다."
 }

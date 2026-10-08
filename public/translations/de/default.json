@@ -522,5 +522,6 @@
   "directory_vote_board_ineligible": "{{address}} kann noch nicht bei /{{boardIdentifier}}/ eingereicht werden. Fehlt: {{requirements}}.",
   "directory_vote_board_unreachable": "{{address}} konnte nicht geladen werden, um seine Einstellungen zu prüfen. Ein Board muss online sein, um eingereicht zu werden.",
   "pin_thread": "Thread anheften",
-  "unpin_thread": "Thread lösen"
+  "unpin_thread": "Thread lösen",
+  "upload_awaiting_review": "Hochgeladen, aber der Host muss diese Datei prüfen, bevor sie angezeigt werden kann. Der Link funktioniert, sobald sie freigegeben ist, was einige Stunden dauern kann. Du kannst sie jetzt schon posten."
 }

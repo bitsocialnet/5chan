@@ -522,5 +522,6 @@
   "directory_vote_board_ineligible": "Lautaa {{address}} ei voi vielä lähettää hakemistoon /{{boardIdentifier}}/. Puuttuu: {{requirements}}.",
   "directory_vote_board_unreachable": "Lautaa {{address}} ei voitu ladata sen asetusten tarkistamiseksi. Laudan on oltava verkossa, jotta sen voi lähettää.",
   "pin_thread": "kiinnitä keskustelu",
-  "unpin_thread": "irrota keskustelu"
+  "unpin_thread": "irrota keskustelu",
+  "upload_awaiting_review": "Ladattu, mutta palvelun on tarkistettava tämä tiedosto ennen kuin sitä voi katsoa. Linkki alkaa toimia, kun tiedosto on hyväksytty, mikä voi kestää muutaman tunnin. Voit julkaista sen nyt."
 }

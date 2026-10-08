@@ -39,22 +39,29 @@ describe('orchestrateUpload', () => {
     vi.mocked(uploadToCatbox).mockResolvedValue('https://files.catbox.moe/a.png');
     const file = new File(['a'], 'a.png', { type: 'image/png' });
 
-    const url = await orchestrateUpload(file, ['catbox']);
+    const { url } = await orchestrateUpload(file, ['catbox']);
 
     expect(url).toBe('https://files.catbox.moe/a.png');
     expect(uploadToCatbox).toHaveBeenCalledWith(file);
   });
 
   it('uploads via forge with metadata stripped', async () => {
-    vi.mocked(uploadToForge).mockResolvedValue('https://img.bitsocialforge.com/abc/photo.jpg');
+    vi.mocked(uploadToForge).mockResolvedValue({ url: 'https://img.bitsocialforge.com/abc/photo.jpg' });
     const file = new File([new Uint8Array(jpegWithComment)], 'photo.jpg', { type: 'image/jpeg' });
 
-    const url = await orchestrateUpload(file, ['forge']);
+    const { url } = await orchestrateUpload(file, ['forge']);
 
     expect(url).toBe('https://img.bitsocialforge.com/abc/photo.jpg');
     const uploaded = vi.mocked(uploadToForge).mock.calls[0][0];
     expect(uploaded.name).toBe('photo.jpg');
     expect(Array.from(new Uint8Array(await uploaded.arrayBuffer()))).toEqual(jpegWithoutComment);
+  });
+
+  it('passes through a forge upload that is awaiting review', async () => {
+    vi.mocked(uploadToForge).mockResolvedValue({ url: 'https://img.bitsocialforge.com/abc/game.swf', awaitingReview: true });
+    const file = new File(['FWS'], 'game.swf', { type: 'application/x-shockwave-flash' });
+
+    await expect(orchestrateUpload(file, ['forge'])).resolves.toEqual({ url: 'https://img.bitsocialforge.com/abc/game.swf', awaitingReview: true });
   });
 
   it('records the stage carried by a forge error instead of parsing its message', async () => {
@@ -100,7 +107,7 @@ describe('orchestrateUpload', () => {
     window.electronApi = electronApi;
 
     const file = new File(['x'], 'x.png', { type: 'image/png' });
-    const url = await orchestrateUpload(file, ['imgur']);
+    const { url } = await orchestrateUpload(file, ['imgur']);
 
     expect(url).toBe('https://i.imgur.com/abc.png');
     expect(electronApi.getPathForFile).toHaveBeenCalledWith(file);
@@ -116,7 +123,7 @@ describe('orchestrateUpload', () => {
     window.electronApi = electronApi;
 
     const file = new File(['x'], 'x.png', { type: 'image/png' });
-    const url = await orchestrateUpload(file, ['imgbb']);
+    const { url } = await orchestrateUpload(file, ['imgbb']);
 
     expect(url).toBe('https://i.ibb.co/example/image.png');
     expect(electronApi.automateUploadMedia).toHaveBeenCalledWith({
@@ -154,7 +161,7 @@ describe('orchestrateUpload', () => {
     window.electronApi = electronApi;
 
     const file = new File(['abc'], 'tegaki.png', { type: 'image/png' });
-    const url = await orchestrateUpload(file, ['imgur']);
+    const { url } = await orchestrateUpload(file, ['imgur']);
 
     expect(url).toBe('https://i.imgur.com/generated.png');
     expect(electronApi.automateUploadGeneratedMedia).toHaveBeenCalledWith({

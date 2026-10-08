@@ -152,7 +152,7 @@ describe('useFileUpload', () => {
     preferredProviderRef.value = 'catbox';
     vi.mocked(Capacitor.getPlatform).mockReturnValue('ios');
     window.electronApi = { isElectron: true } as any;
-    vi.mocked(orchestrateUpload).mockResolvedValue('https://files.catbox.moe/electron.png');
+    vi.mocked(orchestrateUpload).mockResolvedValue({ url: 'https://files.catbox.moe/electron.png' });
 
     const selectedFile = new File(['abc'], 'electron.png', { type: 'image/png' });
     const { onUploadComplete, hook } = mountHook();
@@ -179,7 +179,7 @@ describe('useFileUpload', () => {
     vi.mocked(Capacitor.getPlatform).mockReturnValue('web');
     window.electronApi = undefined;
     window.isElectron = true;
-    vi.mocked(orchestrateUpload).mockResolvedValue('https://files.catbox.moe/electron-fallback.png');
+    vi.mocked(orchestrateUpload).mockResolvedValue({ url: 'https://files.catbox.moe/electron-fallback.png' });
 
     const selectedFile = new File(['abc'], 'electron-fallback.png', { type: 'image/png' });
     const { onUploadComplete, hook } = mountHook();
@@ -199,7 +199,7 @@ describe('useFileUpload', () => {
   });
 
   it('uploads via web file picker + orchestrator with forge under the default settings', async () => {
-    vi.mocked(orchestrateUpload).mockResolvedValue('https://img.bitsocialforge.com/abc/web.png');
+    vi.mocked(orchestrateUpload).mockResolvedValue({ url: 'https://img.bitsocialforge.com/abc/web.png' });
 
     const selectedFile = new File(['abc'], 'web.png', { type: 'image/png' });
     const { onUploadComplete, hook } = mountHook();
@@ -223,6 +223,26 @@ describe('useFileUpload', () => {
     expect(hook().isUploading).toBe(false);
   });
 
+  it('inserts the link and tells the uploader when the host holds the file for review', async () => {
+    vi.mocked(orchestrateUpload).mockResolvedValue({ url: 'https://img.bitsocialforge.com/abc/game.swf', awaitingReview: true });
+
+    const selectedFile = new File(['FWS'], 'game.swf', { type: 'application/x-shockwave-flash' });
+    const { onUploadComplete, hook } = mountHook();
+
+    let uploadPromise: Promise<void> | undefined;
+    await act(async () => {
+      uploadPromise = hook().handleUpload();
+    });
+    await selectFileFromHiddenInput(selectedFile);
+    await act(async () => {
+      await uploadPromise;
+    });
+
+    expect(onUploadComplete).toHaveBeenCalledWith('https://img.bitsocialforge.com/abc/game.swf', 'game.swf');
+    expect(window.alert).toHaveBeenCalledWith('upload_awaiting_review');
+    expect(hook().isUploading).toBe(false);
+  });
+
   it('opens the web file picker before provider availability resolves', async () => {
     let resolveAvailability: (value: Record<string, string>) => void = () => undefined;
     vi.mocked(ensureProviderAvailability).mockImplementationOnce(
@@ -231,7 +251,7 @@ describe('useFileUpload', () => {
           resolveAvailability = resolve;
         }),
     );
-    vi.mocked(orchestrateUpload).mockResolvedValue('https://img.bitsocialforge.com/abc/early.png');
+    vi.mocked(orchestrateUpload).mockResolvedValue({ url: 'https://img.bitsocialforge.com/abc/early.png' });
     const selectedFile = new File(['abc'], 'early.png', { type: 'image/png' });
     const { onUploadComplete, hook } = mountHook();
 
@@ -296,7 +316,7 @@ describe('useFileUpload', () => {
     preferredProviderRef.value = 'catbox';
     vi.mocked(Capacitor.getPlatform).mockReturnValue('web');
     window.electronApi = { isElectron: true } as any;
-    vi.mocked(orchestrateUpload).mockResolvedValue('https://files.catbox.moe/tegaki.png');
+    vi.mocked(orchestrateUpload).mockResolvedValue({ url: 'https://files.catbox.moe/tegaki.png' });
 
     const file = new File(['abc'], 'tegaki.png', { type: 'image/png' });
     const { onUploadComplete, hook } = mountHook();
@@ -343,7 +363,7 @@ describe('useFileUpload', () => {
   });
 
   it('uploads a generated file via the orchestrator on web', async () => {
-    vi.mocked(orchestrateUpload).mockResolvedValue('https://img.bitsocialforge.com/abc/tegaki.png');
+    vi.mocked(orchestrateUpload).mockResolvedValue({ url: 'https://img.bitsocialforge.com/abc/tegaki.png' });
     const file = new File(['abc'], 'tegaki.png', { type: 'image/png' });
     const { onUploadComplete, hook } = mountHook();
 
@@ -649,7 +669,7 @@ describe('useFileUpload', () => {
     preferredProviderRef.value = 'catbox';
     vi.mocked(Capacitor.getPlatform).mockReturnValue('ios');
     window.electronApi = { isElectron: true } as any;
-    vi.mocked(orchestrateUpload).mockResolvedValue('https://imgur.com/abc');
+    vi.mocked(orchestrateUpload).mockResolvedValue({ url: 'https://imgur.com/abc' });
 
     const selectedFile = new File(['xyz'], 'pic.png', { type: 'image/png' });
     const { onUploadComplete, hook } = mountHook();

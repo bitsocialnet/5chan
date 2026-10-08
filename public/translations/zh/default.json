@@ -522,5 +522,6 @@
   "directory_vote_board_ineligible": "{{address}} 暂时无法提交到 /{{boardIdentifier}}/。缺少：{{requirements}}。",
   "directory_vote_board_unreachable": "无法加载 {{address}} 以检查其设置。板块必须在线才能提交。",
   "pin_thread": "固定主题",
-  "unpin_thread": "取消固定主题"
+  "unpin_thread": "取消固定主题",
+  "upload_awaiting_review": "已上传，但托管方需要先审核此文件才能查看。审核通过后链接即可使用，这可能需要几个小时。你现在就可以发布。"
 }

@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { FORGE_IMAGES_API_ORIGIN, FORGE_IMAGES_MEDIA_ORIGIN } from '../../forge-images-config';
 import { ForgeUploadError, uploadToForge } from '../forge-utils';
+import type { UploadedMedia } from '../../media-hosting/types';
 
 const jsonResponse = (status: number, body: unknown, statusText = '') =>
   ({
@@ -30,12 +31,25 @@ describe('uploadToForge', () => {
     vi.useRealTimers();
   });
 
-  it.each(['live', 'pending'])('returns the URL for a %s upload', async (status) => {
+  it('returns the URL for a live upload', async () => {
     const url = `${FORGE_IMAGES_MEDIA_ORIGIN}/9f86d08/photo.png`;
-    const fetchMock = vi.fn().mockResolvedValue(jsonResponse(200, { url, sha256: '9f86d08', status }));
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse(200, { url, sha256: '9f86d08', status: 'live' }));
     vi.stubGlobal('fetch', fetchMock);
 
-    await expect(uploadToForge(new File(['x'], 'photo.png', { type: 'image/png' }), { getToken })).resolves.toBe(url);
+    await expect(uploadToForge(new File(['x'], 'photo.png', { type: 'image/png' }), { getToken })).resolves.toEqual({ url });
+  });
+
+  it('returns a pending SWF at once, flagged as awaiting review, without probing it', async () => {
+    const url = `${FORGE_IMAGES_MEDIA_ORIGIN}/abc/game.swf`;
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse(200, { url, status: 'pending', mime: 'application/x-shockwave-flash' })));
+    const image = vi.fn();
+    vi.stubGlobal('Image', image);
+
+    await expect(uploadToForge(new File(['x'], 'game.swf', { type: 'application/x-shockwave-flash' }), { getToken })).resolves.toEqual({
+      url,
+      awaitingReview: true,
+    });
+    expect(image).not.toHaveBeenCalled();
   });
 
   describe('pending images', () => {
@@ -64,7 +78,7 @@ describe('uploadToForge', () => {
 
     it('waits until a pending image serves before returning its URL', async () => {
       loadResults = [false, false, true];
-      let result: string | undefined;
+      let result: UploadedMedia | undefined;
       void uploadToForge(new File(['x'], 'photo.png', { type: 'image/png' }), { getToken }).then((value) => {
         result = value;
       });
@@ -75,7 +89,7 @@ describe('uploadToForge', () => {
       await vi.advanceTimersByTimeAsync(2_000 + 4_000);
 
       expect(loadedSrcs).toEqual([url, url, url]);
-      expect(result).toBe(url);
+      expect(result).toEqual({ url });
     });
 
     it('fails with a retry message when the image is still in review after the bounded wait', async () => {
@@ -93,7 +107,7 @@ describe('uploadToForge', () => {
     it('does not wait for a live upload', async () => {
       vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse(200, { url, status: 'live', mime: 'image/png' })));
 
-      await expect(uploadToForge(new File(['x'], 'photo.png', { type: 'image/png' }), { getToken })).resolves.toBe(url);
+      await expect(uploadToForge(new File(['x'], 'photo.png', { type: 'image/png' }), { getToken })).resolves.toEqual({ url });
       expect(loadedSrcs).toEqual([]);
     });
   });

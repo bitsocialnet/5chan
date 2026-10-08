@@ -522,5 +522,6 @@
   "directory_vote_board_ineligible": "{{address}} henüz /{{boardIdentifier}}/ dizinine gönderilemez. Eksik: {{requirements}}.",
   "directory_vote_board_unreachable": "Ayarlarını kontrol etmek için {{address}} yüklenemedi. Bir panonun gönderilebilmesi için çevrimiçi olması gerekir.",
   "pin_thread": "konuyu sabitle",
-  "unpin_thread": "konunun sabitlemesini kaldır"
+  "unpin_thread": "konunun sabitlemesini kaldır",
+  "upload_awaiting_review": "Yüklendi, ancak görüntülenebilmesi için barındırıcının bu dosyayı incelemesi gerekiyor. Bağlantı onaylandığında çalışmaya başlayacak; bu birkaç saat sürebilir. Şimdi gönderebilirsin."
 }

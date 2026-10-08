@@ -522,5 +522,6 @@
   "directory_vote_board_ineligible": "{{address}} ne peut pas encore être proposé pour /{{boardIdentifier}}/. Manquant : {{requirements}}.",
   "directory_vote_board_unreachable": "Impossible de charger {{address}} pour vérifier ses paramètres. Un board doit être en ligne pour être proposé.",
   "pin_thread": "Épingler le fil",
-  "unpin_thread": "Désépingler le fil"
+  "unpin_thread": "Désépingler le fil",
+  "upload_awaiting_review": "Envoyé, mais l'hébergeur doit vérifier ce fichier avant qu'il puisse être affiché. Le lien fonctionnera une fois le fichier approuvé, ce qui peut prendre quelques heures. Vous pouvez le publier dès maintenant."
 }

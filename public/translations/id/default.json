@@ -522,5 +522,6 @@
   "directory_vote_board_ineligible": "{{address}} belum dapat dikirim ke /{{boardIdentifier}}/. Yang kurang: {{requirements}}.",
   "directory_vote_board_unreachable": "Tidak dapat memuat {{address}} untuk memeriksa pengaturannya. Papan harus online agar dapat dikirim.",
   "pin_thread": "sematkan utas",
-  "unpin_thread": "lepas sematan utas"
+  "unpin_thread": "lepas sematan utas",
+  "upload_awaiting_review": "Berhasil diunggah, tetapi host harus meninjau file ini sebelum dapat dilihat. Tautan akan berfungsi setelah disetujui, yang bisa memakan waktu beberapa jam. Anda bisa mempostingnya sekarang."
 }

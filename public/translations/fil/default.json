@@ -522,5 +522,6 @@
   "directory_vote_board_ineligible": "Hindi pa maisusumite ang {{address}} sa /{{boardIdentifier}}/. Kulang: {{requirements}}.",
   "directory_vote_board_unreachable": "Hindi ma-load ang {{address}} para suriin ang mga setting nito. Kailangang online ang isang board para maisumite ito.",
   "pin_thread": "i-pin ang thread",
-  "unpin_thread": "i-unpin ang thread"
+  "unpin_thread": "i-unpin ang thread",
+  "upload_awaiting_review": "Na-upload na, pero kailangang suriin muna ng host ang file na ito bago ito matingnan. Gagana ang link kapag naaprubahan na ito, na maaaring tumagal nang ilang oras. Puwede mo na itong i-post ngayon."
 }

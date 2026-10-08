@@ -522,5 +522,6 @@
   "directory_vote_board_ineligible": "Non è ancora possibile proporre {{address}} per /{{boardIdentifier}}/. Manca: {{requirements}}.",
   "directory_vote_board_unreachable": "Impossibile caricare {{address}} per verificarne le impostazioni. Una board deve essere online per essere proposta.",
   "pin_thread": "Fissa thread",
-  "unpin_thread": "Rimuovi fissaggio thread"
+  "unpin_thread": "Rimuovi fissaggio thread",
+  "upload_awaiting_review": "Caricato, ma l'host deve esaminare questo file prima che possa essere visualizzato. Il link inizierà a funzionare una volta approvato, il che può richiedere qualche ora. Puoi pubblicarlo subito."
 }

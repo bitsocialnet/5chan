@@ -522,5 +522,6 @@
   "directory_vote_board_ineligible": "{{address}} nuk mund të dërgohet ende te /{{boardIdentifier}}/. Mungon: {{requirements}}.",
   "directory_vote_board_unreachable": "{{address}} nuk mund të ngarkohej për të kontrolluar cilësimet e tij. Një bord duhet të jetë online për t’u dërguar.",
   "pin_thread": "ngjit fijen",
-  "unpin_thread": "shkëput fijen"
+  "unpin_thread": "shkëput fijen",
+  "upload_awaiting_review": "U ngarkua, por hosti duhet ta shqyrtojë këtë skedar para se të mund të shihet. Lidhja do të fillojë të funksionojë sapo të miratohet, gjë që mund të zgjasë disa orë. Mund ta postoni tani."
 }

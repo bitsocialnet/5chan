@@ -522,5 +522,6 @@
   "directory_vote_board_ineligible": "Nie można jeszcze zgłosić {{address}} do /{{boardIdentifier}}/. Brakuje: {{requirements}}.",
   "directory_vote_board_unreachable": "Nie udało się wczytać {{address}}, aby sprawdzić ustawienia. Tablica musi być online, aby można ją było zgłosić.",
   "pin_thread": "przypnij wątek",
-  "unpin_thread": "odepnij wątek"
+  "unpin_thread": "odepnij wątek",
+  "upload_awaiting_review": "Przesłano, ale host musi sprawdzić ten plik, zanim będzie można go wyświetlić. Link zacznie działać po zatwierdzeniu, co może potrwać kilka godzin. Możesz opublikować go już teraz."
 }

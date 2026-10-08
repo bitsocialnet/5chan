@@ -522,5 +522,6 @@
   "directory_vote_board_ineligible": "{{address}} kan inte skickas in till /{{boardIdentifier}}/ än. Saknas: {{requirements}}.",
   "directory_vote_board_unreachable": "Det gick inte att läsa in {{address}} för att kontrollera dess inställningar. Ett board måste vara online för att kunna skickas in.",
   "pin_thread": "fäst tråd",
-  "unpin_thread": "lossa tråd"
+  "unpin_thread": "lossa tråd",
+  "upload_awaiting_review": "Uppladdad, men värden måste granska filen innan den kan visas. Länken börjar fungera när den har godkänts, vilket kan ta några timmar. Du kan posta den nu."
 }

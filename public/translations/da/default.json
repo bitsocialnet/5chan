@@ -522,5 +522,6 @@
   "directory_vote_board_ineligible": "{{address}} kan ikke indsendes til /{{boardIdentifier}}/ endnu. Mangler: {{requirements}}.",
   "directory_vote_board_unreachable": "{{address}} kunne ikke indlæses for at tjekke dets indstillinger. Et board skal være online for at kunne indsendes.",
   "pin_thread": "fastgør tråd",
-  "unpin_thread": "frigør tråd"
+  "unpin_thread": "frigør tråd",
+  "upload_awaiting_review": "Uploadet, men værten skal gennemgå denne fil, før den kan vises. Linket begynder at virke, når den er godkendt, hvilket kan tage et par timer. Du kan poste den nu."
 }

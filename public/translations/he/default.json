@@ -522,5 +522,6 @@
   "directory_vote_board_ineligible": "עדיין לא ניתן להגיש את {{address}} ל-/{{boardIdentifier}}/. חסר: {{requirements}}.",
   "directory_vote_board_unreachable": "לא ניתן היה לטעון את {{address}} כדי לבדוק את ההגדרות שלו. לוח חייב להיות מקוון כדי שניתן יהיה להגיש אותו.",
   "pin_thread": "הצמד ת’רד",
-  "unpin_thread": "בטל הצמדת ת’רד"
+  "unpin_thread": "בטל הצמדת ת’רד",
+  "upload_awaiting_review": "הקובץ הועלה, אבל המארח צריך לבדוק אותו לפני שאפשר יהיה לצפות בו. הקישור יתחיל לעבוד לאחר שיאושר, וזה עשוי להימשך כמה שעות. אפשר לפרסם אותו עכשיו."
 }

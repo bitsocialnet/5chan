@@ -166,6 +166,7 @@ export function useFileUpload(options: UseFileUploadOptions) {
         setUploadedFileName(null);
         const { runtime, order } = await getAvailableProviderOrder();
         let result: UploadedFileResult | null = null;
+        let awaitingReview = false;
 
         if (runtime === 'android') {
           const cleanFile = await stripMediaMetadata(file);
@@ -177,13 +178,15 @@ export function useFileUpload(options: UseFileUploadOptions) {
           });
           result = pluginResult.url ? { url: pluginResult.url, fileName: pluginResult.fileName || file.name } : null;
         } else {
-          const url = await orchestrateUpload(file, order);
-          result = { url, fileName: file.name };
+          const uploaded = await orchestrateUpload(file, order);
+          result = { url: uploaded.url, fileName: file.name };
+          awaitingReview = uploaded.awaitingReview === true;
         }
 
         if (result?.url) {
           setUploadedFileName(result.fileName);
           onUploadComplete(result.url, result.fileName);
+          if (awaitingReview) window.alert(t('upload_awaiting_review'));
         }
         return result;
       } catch (error) {
@@ -193,7 +196,7 @@ export function useFileUpload(options: UseFileUploadOptions) {
         setIsUploading(false);
       }
     },
-    [getAvailableProviderOrder, handleUploadError, onUploadComplete, uploadMode],
+    [getAvailableProviderOrder, handleUploadError, onUploadComplete, t, uploadMode],
   );
 
   const handleUpload = useCallback(async () => {
@@ -232,15 +235,17 @@ export function useFileUpload(options: UseFileUploadOptions) {
       }
 
       const { order } = await orderPromise;
-      const url = await orchestrateUpload(file, order);
+      const uploaded = await orchestrateUpload(file, order);
       setUploadedFileName(file.name);
-      onUploadComplete(url, file.name);
+      onUploadComplete(uploaded.url, file.name);
+      // The link is inserted either way: it starts working once the host approves it.
+      if (uploaded.awaitingReview) window.alert(t('upload_awaiting_review'));
     } catch (error) {
       handleUploadError(error);
     } finally {
       setIsUploading(false);
     }
-  }, [getAvailableProviderOrder, handleUploadError, onUploadComplete, uploadMode]);
+  }, [getAvailableProviderOrder, handleUploadError, onUploadComplete, t, uploadMode]);
 
   return {
     isUploading,

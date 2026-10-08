@@ -522,5 +522,6 @@
   "directory_vote_board_ineligible": "{{address}} kan ikke sendes inn til /{{boardIdentifier}}/ ennå. Mangler: {{requirements}}.",
   "directory_vote_board_unreachable": "Kunne ikke laste inn {{address}} for å sjekke innstillingene. Et brett må være online for å kunne sendes inn.",
   "pin_thread": "fest tråd",
-  "unpin_thread": "løsne tråd"
+  "unpin_thread": "løsne tråd",
+  "upload_awaiting_review": "Lastet opp, men verten må gå gjennom denne filen før den kan vises. Lenken begynner å virke når den er godkjent, noe som kan ta noen timer. Du kan poste den nå."
 }

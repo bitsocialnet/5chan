@@ -522,5 +522,6 @@
   "directory_vote_board_ineligible": "{{address}} kan nog niet bij /{{boardIdentifier}}/ worden ingediend. Ontbreekt: {{requirements}}.",
   "directory_vote_board_unreachable": "Kon {{address}} niet laden om de instellingen te controleren. Een board moet online zijn om te worden ingediend.",
   "pin_thread": "thread vastzetten",
-  "unpin_thread": "thread losmaken"
+  "unpin_thread": "thread losmaken",
+  "upload_awaiting_review": "Geüpload, maar de host moet dit bestand controleren voordat het bekeken kan worden. De link werkt zodra het is goedgekeurd, wat een paar uur kan duren. Je kunt het nu al posten."
 }

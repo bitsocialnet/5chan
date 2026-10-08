@@ -1,5 +1,5 @@
 import { FORGE_IMAGES_API_ORIGIN, FORGE_IMAGES_MEDIA_ORIGIN, FORGE_IMAGES_TURNSTILE_SITEKEY } from '../forge-images-config';
-import type { UploadAttemptStage } from '../media-hosting/types';
+import type { UploadAttemptStage, UploadedMedia } from '../media-hosting/types';
 import { getTurnstileToken } from './turnstile-utils';
 
 /** Covers a 20 MB GIF (the largest launch cap) on a slow uplink; a hung request still fails. */
@@ -98,10 +98,12 @@ async function waitUntilImageServes(url: string, maxWaitMs: number): Promise<boo
  * pass moderation and start serving (up to a minute). An image still in review
  * after that fails instead: its URL inserted now would stay marked broken in the
  * post form even after it goes live, while a later retry dedups to `live` at once.
+ * Other pending files (new SWFs) wait for human review that can take hours, so
+ * their URL returns at once flagged `awaitingReview`; it serves once approved.
  * @throws ForgeUploadError with stage 'blocked' (Turnstile failed, or 403),
  * 'provider_error' (other API errors), 'timeout', or 'unknown' (network failure)
  */
-export async function uploadToForge(file: File, options: ForgeUploadOptions = {}): Promise<string> {
+export async function uploadToForge(file: File, options: ForgeUploadOptions = {}): Promise<UploadedMedia> {
   const { getToken = () => getTurnstileToken(FORGE_IMAGES_TURNSTILE_SITEKEY), timeoutMs = FORGE_UPLOAD_TIMEOUT_MS, pendingServeWaitMs = PENDING_SERVE_WAIT_MS } = options;
 
   let token: string;
@@ -145,10 +147,12 @@ export async function uploadToForge(file: File, options: ForgeUploadOptions = {}
   }
 
   const url = getUploadedUrl(body);
-  if (body?.status === 'pending' && typeof body.mime === 'string' && body.mime.startsWith('image/') && pendingServeWaitMs > 0) {
+  if (body?.status !== 'pending') return { url };
+  if (typeof body.mime === 'string' && body.mime.startsWith('image/') && pendingServeWaitMs > 0) {
     if (!(await waitUntilImageServes(url, pendingServeWaitMs))) {
       throw new ForgeUploadError('The image was uploaded but is still being reviewed. Try again in a minute.', 'provider_error');
     }
+    return { url };
   }
-  return url;
+  return { url, awaitingReview: true };
 }

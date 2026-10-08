@@ -17,6 +17,13 @@ export type UploadAttemptStage =
   | 'page_load' /** page load failed */
   | 'unknown';
 
+/** A successful upload. */
+export interface UploadedMedia {
+  url: string;
+  /** The host holds the file for review, so the URL does not serve yet (e.g. a new SWF on Forge Images). */
+  awaitingReview?: boolean;
+}
+
 /** Result of a single provider upload attempt */
 export interface ProviderAttempt {
   provider: ProviderId;
