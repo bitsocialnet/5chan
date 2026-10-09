@@ -9,12 +9,8 @@
  *   always-pass invisible test key 1x00000000000000000000BB
  */
 
-/**
- * PLACEHOLDER: the production Turnstile sitekey does not exist yet. Replace it
- * before release. Until then Cloudflare rejects the widget and every forge
- * upload fails at the 'blocked' stage.
- */
-const TURNSTILE_SITEKEY_PLACEHOLDER = 'FORGE_IMAGES_TURNSTILE_SITEKEY_PLACEHOLDER';
+/** Public Turnstile sitekey of the Forge Images widget (allowed hostnames include 5chan.app and localhost). */
+const TURNSTILE_SITEKEY = '0x4AAAAAAFScwbbNFZtx0XVP';
 
 const readEnv = (value: string | undefined, fallback: string): string => {
   const trimmed = typeof value === 'string' ? value.trim() : '';
@@ -27,4 +23,4 @@ export const FORGE_IMAGES_API_ORIGIN = readOrigin(import.meta.env.VITE_FORGE_IMA
 
 export const FORGE_IMAGES_MEDIA_ORIGIN = readOrigin(import.meta.env.VITE_FORGE_IMAGES_MEDIA_ORIGIN, 'https://img.bitsocialforge.com');
 
-export const FORGE_IMAGES_TURNSTILE_SITEKEY = readEnv(import.meta.env.VITE_FORGE_IMAGES_TURNSTILE_SITEKEY, TURNSTILE_SITEKEY_PLACEHOLDER);
+export const FORGE_IMAGES_TURNSTILE_SITEKEY = readEnv(import.meta.env.VITE_FORGE_IMAGES_TURNSTILE_SITEKEY, TURNSTILE_SITEKEY);
