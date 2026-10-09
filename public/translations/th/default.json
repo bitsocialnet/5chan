@@ -238,7 +238,6 @@
   "posts_auto_update_info": "โพสต์จะอัปเดตโดยอัตโนมัติทุก ~2 นาที ไม่สามารถปิดการใช้งานนี้ได้ในขณะนี้",
   "board_address_tooltip": "ที่อยู่โหนด P2P ของบอร์ดนี้",
   "upload_failed": "อัปโหลดล้มเหลว",
-  "upload_not_supported_web": "การอัปโหลดสื่อไม่รองรับโดยเบราว์เซอร์ของคุณเนื่องจากข้อจำกัดทางเทคนิค (CORS) รองรับในแอป 5chan สำหรับ Android และแอปเดสก์ท็อปสำหรับ Mac/Linux/Windows ดาวน์โหลดจากหน้าปล่อยอย่างเป็นทางการ: https://github.com/bitsocialnet/5chan/releases/latest",
   "file": "ไฟล์",
   "media_hosting_none": "ไม่มี",
   "media_hosting_none_tip": "ซ่อนปุ่มอัปโหลดไฟล์จากแบบฟอร์มโพสต์และตอบกลับ",
@@ -251,8 +250,6 @@
   "media_hosting_preferred_provider_label": "เลือกผู้ให้บริการ",
   "media_hosting_preferred_failure_guidance": "หากผู้ให้บริการที่คุณต้องการล้มเหลว แอปจะลองผู้ให้บริการอื่น (โหมดสุ่ม) หรือแสดงข้อผิดพลาด (โหมดที่ต้องการ)",
   "media_hosting_all_providers_failed_guidance": "ผู้ให้บริการอัปโหลดทั้งหมดล้มเหลว ลองอีกครั้งหรือวางลิงก์ด้วยตนเอง",
-  "upload_not_supported_web_before_link": "การอัปโหลดสื่อไม่รองรับโดยเบราว์เซอร์ของคุณเนื่องจากข้อจำกัดทางเทคนิค (CORS) รองรับในแอป 5chan สำหรับ Android และแอปเดสก์ท็อป Mac/Linux/Windows",
-  "upload_not_supported_web_link_text": "ดาวน์โหลดจากหน้าปล่อยรุ่นอย่างเป็นทางการ",
   "board_subscriptions": "การสมัครสมาชิกบอร์ด",
   "chain_ticker": "สัญลักษณ์เชน",
   "enable_infinite_scroll": "เปิดใช้งานการเลื่อนแบบไม่จำกัด",
@@ -525,5 +522,6 @@
   "directory_vote_board_ineligible": "ยังส่ง {{address}} ไปยัง /{{boardIdentifier}}/ ไม่ได้ ขาด: {{requirements}}",
   "directory_vote_board_unreachable": "โหลด {{address}} เพื่อตรวจสอบการตั้งค่าไม่สำเร็จ บอร์ดต้องออนไลน์อยู่จึงจะส่งได้",
   "pin_thread": "ปักหมุดเธรด",
-  "unpin_thread": "เลิกปักหมุดเธรด"
+  "unpin_thread": "เลิกปักหมุดเธรด",
+  "upload_awaiting_review": "อัปโหลดแล้ว แต่โฮสต์ต้องตรวจสอบไฟล์นี้ก่อนจึงจะดูได้ ลิงก์จะเริ่มใช้งานได้เมื่อได้รับการอนุมัติ ซึ่งอาจใช้เวลาหลายชั่วโมง คุณสามารถโพสต์ได้เลยตอนนี้"
 }

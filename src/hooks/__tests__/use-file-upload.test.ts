@@ -4,7 +4,8 @@ import { createRoot, Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Capacitor } from '@capacitor/core';
 import FileUploader from '../../plugins/file-uploader';
-import { orchestrateElectronUpload } from '../../lib/media-hosting/upload-orchestrator';
+import { ensureProviderAvailability } from '../../lib/media-hosting/provider-availability';
+import { orchestrateUpload } from '../../lib/media-hosting/upload-orchestrator';
 import { useFileUpload } from '../use-file-upload';
 
 // Enable React's act environment for hook state updates in tests.
@@ -28,7 +29,7 @@ vi.mock('../../lib/utils/catbox-utils', () => ({
 }));
 
 vi.mock('../../lib/media-hosting/upload-orchestrator', () => ({
-  orchestrateElectronUpload: vi.fn(),
+  orchestrateUpload: vi.fn(),
 }));
 
 const providerAvailabilityRef = vi.hoisted(() => ({
@@ -42,7 +43,10 @@ vi.mock('../../lib/media-hosting/provider-order', () => ({
   getProviderOrder: vi.fn((opts: { mode: string; preferredProvider: string; runtime: string; availability?: Record<string, string> }) => {
     const filterAvailable = (providers: string[]) => providers.filter((provider) => opts.availability?.[provider] !== 'unavailable');
     if (opts.mode === 'none') return [];
-    if (opts.runtime === 'web') return filterAvailable(opts.preferredProvider === 'catbox' ? ['catbox'] : []);
+    if (opts.runtime === 'web') {
+      if (opts.mode === 'preferred') return filterAvailable(opts.preferredProvider === 'forge' ? ['forge'] : []);
+      return filterAvailable(['forge']);
+    }
     if (opts.runtime === 'android') {
       if (opts.mode === 'preferred') return filterAvailable(['catbox', 'imgur', 'imgbb'].includes(opts.preferredProvider) ? [opts.preferredProvider] : []);
       return filterAvailable(['catbox', 'imgur', 'imgbb']);
@@ -52,7 +56,7 @@ vi.mock('../../lib/media-hosting/provider-order', () => ({
 }));
 
 const uploadModeRef = vi.hoisted(() => ({ value: 'random' as 'random' | 'preferred' | 'none' }));
-const preferredProviderRef = vi.hoisted(() => ({ value: 'catbox' as 'catbox' | 'imgur' | 'imgbb' }));
+const preferredProviderRef = vi.hoisted(() => ({ value: 'catbox' as 'forge' | 'catbox' | 'imgur' | 'imgbb' }));
 vi.mock('../../stores/use-media-hosting-store', () => ({
   default: (selector: (s: { uploadMode: string; preferredProvider: string }) => unknown) =>
     selector({ uploadMode: uploadModeRef.value, preferredProvider: preferredProviderRef.value }),
@@ -148,7 +152,7 @@ describe('useFileUpload', () => {
     preferredProviderRef.value = 'catbox';
     vi.mocked(Capacitor.getPlatform).mockReturnValue('ios');
     window.electronApi = { isElectron: true } as any;
-    vi.mocked(orchestrateElectronUpload).mockResolvedValue('https://files.catbox.moe/electron.png');
+    vi.mocked(orchestrateUpload).mockResolvedValue({ url: 'https://files.catbox.moe/electron.png' });
 
     const selectedFile = new File(['abc'], 'electron.png', { type: 'image/png' });
     const { onUploadComplete, hook } = mountHook();
@@ -163,7 +167,7 @@ describe('useFileUpload', () => {
       await uploadPromise;
     });
 
-    expect(orchestrateElectronUpload).toHaveBeenCalledWith(selectedFile, ['catbox']);
+    expect(orchestrateUpload).toHaveBeenCalledWith(selectedFile, ['catbox']);
     expect(onUploadComplete).toHaveBeenCalledWith('https://files.catbox.moe/electron.png', 'electron.png');
     expect(hook().uploadedFileName).toBe('electron.png');
     expect(hook().isUploading).toBe(false);
@@ -175,7 +179,7 @@ describe('useFileUpload', () => {
     vi.mocked(Capacitor.getPlatform).mockReturnValue('web');
     window.electronApi = undefined;
     window.isElectron = true;
-    vi.mocked(orchestrateElectronUpload).mockResolvedValue('https://files.catbox.moe/electron-fallback.png');
+    vi.mocked(orchestrateUpload).mockResolvedValue({ url: 'https://files.catbox.moe/electron-fallback.png' });
 
     const selectedFile = new File(['abc'], 'electron-fallback.png', { type: 'image/png' });
     const { onUploadComplete, hook } = mountHook();
@@ -189,25 +193,120 @@ describe('useFileUpload', () => {
       await uploadPromise;
     });
 
-    expect(orchestrateElectronUpload).toHaveBeenCalledWith(selectedFile, ['catbox']);
-    expect(window.alert).not.toHaveBeenCalledWith('upload_not_supported_web');
+    expect(orchestrateUpload).toHaveBeenCalledWith(selectedFile, ['catbox']);
+    expect(window.alert).not.toHaveBeenCalled();
     expect(onUploadComplete).toHaveBeenCalledWith('https://files.catbox.moe/electron-fallback.png', 'electron-fallback.png');
   });
 
-  it('shows web fallback alert and does not upload', async () => {
-    uploadModeRef.value = 'preferred';
-    preferredProviderRef.value = 'catbox';
-    vi.mocked(Capacitor.getPlatform).mockReturnValue('web');
-    window.electronApi = undefined;
+  it('uploads via web file picker + orchestrator with forge under the default settings', async () => {
+    vi.mocked(orchestrateUpload).mockResolvedValue({ url: 'https://img.bitsocialforge.com/abc/web.png' });
+
+    const selectedFile = new File(['abc'], 'web.png', { type: 'image/png' });
     const { onUploadComplete, hook } = mountHook();
 
+    let uploadPromise: Promise<void> | undefined;
     await act(async () => {
-      await hook().handleUpload();
+      uploadPromise = hook().handleUpload();
+    });
+    const accept = (document.querySelector('input[type="file"]') as HTMLInputElement | null)?.accept.split(',');
+    expect(accept).toEqual(expect.arrayContaining(['image/jpeg', 'image/png', 'image/gif', 'image/webp']));
+    await selectFileFromHiddenInput(selectedFile);
+    await act(async () => {
+      await uploadPromise;
     });
 
-    expect(window.alert).toHaveBeenCalledWith('upload_not_supported_web');
-    expect(orchestrateElectronUpload).not.toHaveBeenCalled();
+    expect(orchestrateUpload).toHaveBeenCalledWith(selectedFile, ['forge']);
     expect(FileUploader.pickAndUploadMedia).not.toHaveBeenCalled();
+    expect(window.alert).not.toHaveBeenCalled();
+    expect(onUploadComplete).toHaveBeenCalledWith('https://img.bitsocialforge.com/abc/web.png', 'web.png');
+    expect(hook().uploadedFileName).toBe('web.png');
+    expect(hook().isUploading).toBe(false);
+  });
+
+  it('inserts the link and tells the uploader when the host holds the file for review', async () => {
+    vi.mocked(orchestrateUpload).mockResolvedValue({ url: 'https://img.bitsocialforge.com/abc/game.swf', awaitingReview: true });
+
+    const selectedFile = new File(['FWS'], 'game.swf', { type: 'application/x-shockwave-flash' });
+    const { onUploadComplete, hook } = mountHook();
+
+    let uploadPromise: Promise<void> | undefined;
+    await act(async () => {
+      uploadPromise = hook().handleUpload();
+    });
+    await selectFileFromHiddenInput(selectedFile);
+    await act(async () => {
+      await uploadPromise;
+    });
+
+    expect(onUploadComplete).toHaveBeenCalledWith('https://img.bitsocialforge.com/abc/game.swf', 'game.swf');
+    expect(window.alert).toHaveBeenCalledWith('upload_awaiting_review');
+    expect(hook().isUploading).toBe(false);
+  });
+
+  it('opens the web file picker before provider availability resolves', async () => {
+    let resolveAvailability: (value: Record<string, string>) => void = () => undefined;
+    vi.mocked(ensureProviderAvailability).mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveAvailability = resolve;
+        }),
+    );
+    vi.mocked(orchestrateUpload).mockResolvedValue({ url: 'https://img.bitsocialforge.com/abc/early.png' });
+    const selectedFile = new File(['abc'], 'early.png', { type: 'image/png' });
+    const { onUploadComplete, hook } = mountHook();
+
+    let uploadPromise: Promise<void> | undefined;
+    await act(async () => {
+      uploadPromise = hook().handleUpload();
+    });
+    expect(document.querySelector('input[type="file"]')).not.toBeNull();
+    await selectFileFromHiddenInput(selectedFile);
+    expect(orchestrateUpload).not.toHaveBeenCalled();
+
+    await act(async () => {
+      resolveAvailability({});
+      await uploadPromise;
+    });
+
+    expect(orchestrateUpload).toHaveBeenCalledWith(selectedFile, ['forge']);
+    expect(onUploadComplete).toHaveBeenCalledWith('https://img.bitsocialforge.com/abc/early.png', 'early.png');
+  });
+
+  it('shows the generic no-providers error on web when forge is unreachable', async () => {
+    providerAvailabilityRef.value = { forge: 'unavailable' };
+    const selectedFile = new File(['abc'], 'web.png', { type: 'image/png' });
+    const { onUploadComplete, hook } = mountHook();
+
+    let uploadPromise: Promise<void> | undefined;
+    await act(async () => {
+      uploadPromise = hook().handleUpload();
+    });
+    await selectFileFromHiddenInput(selectedFile);
+    await act(async () => {
+      await uploadPromise;
+    });
+
+    expect(window.alert).toHaveBeenCalledWith('upload_failed: No reachable upload providers are available from this network');
+    expect(orchestrateUpload).not.toHaveBeenCalled();
+    expect(onUploadComplete).not.toHaveBeenCalled();
+    expect(hook().isUploading).toBe(false);
+  });
+
+  it('stays silent when the web picker is cancelled even if no provider is reachable', async () => {
+    providerAvailabilityRef.value = { forge: 'unavailable' };
+    const { onUploadComplete, hook } = mountHook();
+
+    let uploadPromise: Promise<void> | undefined;
+    await act(async () => {
+      uploadPromise = hook().handleUpload();
+    });
+    await selectFileFromHiddenInput(null);
+    await act(async () => {
+      await uploadPromise;
+    });
+
+    expect(window.alert).not.toHaveBeenCalled();
+    expect(orchestrateUpload).not.toHaveBeenCalled();
     expect(onUploadComplete).not.toHaveBeenCalled();
     expect(hook().isUploading).toBe(false);
   });
@@ -217,7 +316,7 @@ describe('useFileUpload', () => {
     preferredProviderRef.value = 'catbox';
     vi.mocked(Capacitor.getPlatform).mockReturnValue('web');
     window.electronApi = { isElectron: true } as any;
-    vi.mocked(orchestrateElectronUpload).mockResolvedValue('https://files.catbox.moe/tegaki.png');
+    vi.mocked(orchestrateUpload).mockResolvedValue({ url: 'https://files.catbox.moe/tegaki.png' });
 
     const file = new File(['abc'], 'tegaki.png', { type: 'image/png' });
     const { onUploadComplete, hook } = mountHook();
@@ -227,7 +326,7 @@ describe('useFileUpload', () => {
       result = await hook().uploadFile(file);
     });
 
-    expect(orchestrateElectronUpload).toHaveBeenCalledWith(file, ['catbox']);
+    expect(orchestrateUpload).toHaveBeenCalledWith(file, ['catbox']);
     expect(result).toEqual({ url: 'https://files.catbox.moe/tegaki.png', fileName: 'tegaki.png' });
     expect(onUploadComplete).toHaveBeenCalledWith('https://files.catbox.moe/tegaki.png', 'tegaki.png');
     expect(hook().uploadedFileName).toBe('tegaki.png');
@@ -263,11 +362,8 @@ describe('useFileUpload', () => {
     expect(hook().uploadedFileName).toBe('tegaki.png');
   });
 
-  it('does not upload generated files from web runtime', async () => {
-    uploadModeRef.value = 'preferred';
-    preferredProviderRef.value = 'catbox';
-    vi.mocked(Capacitor.getPlatform).mockReturnValue('web');
-    window.electronApi = undefined;
+  it('uploads a generated file via the orchestrator on web', async () => {
+    vi.mocked(orchestrateUpload).mockResolvedValue({ url: 'https://img.bitsocialforge.com/abc/tegaki.png' });
     const file = new File(['abc'], 'tegaki.png', { type: 'image/png' });
     const { onUploadComplete, hook } = mountHook();
 
@@ -276,11 +372,10 @@ describe('useFileUpload', () => {
       result = await hook().uploadFile(file);
     });
 
-    expect(result).toBeNull();
-    expect(window.alert).toHaveBeenCalledWith('upload_not_supported_web');
+    expect(orchestrateUpload).toHaveBeenCalledWith(file, ['forge']);
     expect(FileUploader.uploadGeneratedMedia).not.toHaveBeenCalled();
-    expect(orchestrateElectronUpload).not.toHaveBeenCalled();
-    expect(onUploadComplete).not.toHaveBeenCalled();
+    expect(result).toEqual({ url: 'https://img.bitsocialforge.com/abc/tegaki.png', fileName: 'tegaki.png' });
+    expect(onUploadComplete).toHaveBeenCalledWith('https://img.bitsocialforge.com/abc/tegaki.png', 'tegaki.png');
   });
 
   it('silently ignores file selection cancellation', async () => {
@@ -299,7 +394,7 @@ describe('useFileUpload', () => {
       await uploadPromise;
     });
 
-    expect(orchestrateElectronUpload).not.toHaveBeenCalled();
+    expect(orchestrateUpload).not.toHaveBeenCalled();
     expect(window.alert).not.toHaveBeenCalled();
     expect(onUploadComplete).not.toHaveBeenCalled();
     expect(hook().isUploading).toBe(false);
@@ -388,20 +483,40 @@ describe('useFileUpload', () => {
     expect(hook().isUploading).toBe(false);
   });
 
-  it('shows web unsupported alert when preferred provider not available on web', async () => {
+  it('shows the unsupported-provider error when the preferred provider is not available on web', async () => {
     uploadModeRef.value = 'preferred';
     preferredProviderRef.value = 'imgur';
     vi.mocked(Capacitor.getPlatform).mockReturnValue('web');
+    const file = new File(['abc'], 'web.png', { type: 'image/png' });
     const { onUploadComplete, hook } = mountHook();
+
+    await act(async () => {
+      await hook().uploadFile(file);
+    });
+
+    expect(window.alert).toHaveBeenCalledWith('upload_failed: imgur is not supported on web. upload_failed_preferred_guidance');
+    expect(orchestrateUpload).not.toHaveBeenCalled();
+    expect(onUploadComplete).not.toHaveBeenCalled();
+    expect(hook().isUploading).toBe(false);
+  });
+
+  it('keeps Android attempts for every registry provider in aggregated errors', async () => {
+    vi.mocked(Capacitor.getPlatform).mockReturnValue('android');
+    const error = new Error('All providers failed') as Error & { data: { attempts: unknown[] } };
+    error.data = {
+      attempts: [
+        { provider: 'forge', error: 'blocked', stage: 'blocked' },
+        { provider: 'not-a-provider', error: 'ignored' },
+      ],
+    };
+    vi.mocked(FileUploader.pickAndUploadMedia).mockRejectedValue(error);
+    const { hook } = mountHook();
 
     await act(async () => {
       await hook().handleUpload();
     });
 
-    expect(window.alert).toHaveBeenCalledWith('upload_not_supported_web');
-    expect(orchestrateElectronUpload).not.toHaveBeenCalled();
-    expect(onUploadComplete).not.toHaveBeenCalled();
-    expect(hook().isUploading).toBe(false);
+    expect(window.alert).toHaveBeenCalledWith('upload_failed. upload_failed_all_providers: forge: blocked (stage=blocked)');
   });
 
   it('does not call Android plugin when preferred Imgur is unavailable from this network', async () => {
@@ -554,7 +669,7 @@ describe('useFileUpload', () => {
     preferredProviderRef.value = 'catbox';
     vi.mocked(Capacitor.getPlatform).mockReturnValue('ios');
     window.electronApi = { isElectron: true } as any;
-    vi.mocked(orchestrateElectronUpload).mockResolvedValue('https://imgur.com/abc');
+    vi.mocked(orchestrateUpload).mockResolvedValue({ url: 'https://imgur.com/abc' });
 
     const selectedFile = new File(['xyz'], 'pic.png', { type: 'image/png' });
     const { onUploadComplete, hook } = mountHook();
@@ -568,7 +683,7 @@ describe('useFileUpload', () => {
       await uploadPromise;
     });
 
-    expect(orchestrateElectronUpload).toHaveBeenCalledWith(selectedFile, expect.any(Array));
+    expect(orchestrateUpload).toHaveBeenCalledWith(selectedFile, expect.any(Array));
     expect(onUploadComplete).toHaveBeenCalledWith('https://imgur.com/abc', 'pic.png');
     expect(hook().isUploading).toBe(false);
   });
@@ -584,7 +699,7 @@ describe('useFileUpload', () => {
       { provider: 'imgur', error: 'rate limit' },
       { provider: 'imgbb', error: 'blocked' },
     ];
-    vi.mocked(orchestrateElectronUpload).mockRejectedValue(err);
+    vi.mocked(orchestrateUpload).mockRejectedValue(err);
 
     const selectedFile = new File(['x'], 'fail.png', { type: 'image/png' });
     const { onUploadComplete, hook } = mountHook();

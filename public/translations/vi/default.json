@@ -238,7 +238,6 @@
   "posts_auto_update_info": "Bài đăng được cập nhật tự động cứ ~2 phút một lần. Hiện tại không thể tắt tính năng này.",
   "board_address_tooltip": "Địa chỉ nút peer-to-peer của bảng này",
   "upload_failed": "Tải lên thất bại",
-  "upload_not_supported_web": "Trình duyệt của bạn không hỗ trợ tải lên media do giới hạn kỹ thuật (CORS). Tính năng này được hỗ trợ trong ứng dụng 5chan cho Android và ứng dụng desktop cho Mac/Linux/Windows. Tải xuống từ trang phát hành chính thức: https://github.com/bitsocialnet/5chan/releases/latest",
   "file": "Tệp",
   "media_hosting_none": "Không có",
   "media_hosting_none_tip": "Ẩn nút tải tệp từ các biểu mẫu bài viết và trả lời",
@@ -251,8 +250,6 @@
   "media_hosting_preferred_provider_label": "Chọn nhà cung cấp",
   "media_hosting_preferred_failure_guidance": "Nếu nhà cung cấp ưu tiên của bạn thất bại, ứng dụng sẽ thử các nhà cung cấp khác (chế độ ngẫu nhiên) hoặc hiển thị lỗi (chế độ ưu tiên).",
   "media_hosting_all_providers_failed_guidance": "Tất cả nhà cung cấp tải lên đều thất bại. Thử lại hoặc dán liên kết thủ công.",
-  "upload_not_supported_web_before_link": "Tải lên phương tiện không được trình duyệt của bạn hỗ trợ do hạn chế kỹ thuật (CORS). Được hỗ trợ trong ứng dụng 5chan Android và ứng dụng desktop Mac/Linux/Windows.",
-  "upload_not_supported_web_link_text": "Tải xuống từ trang phát hành chính thức",
   "board_subscriptions": "Đăng ký bảng",
   "chain_ticker": "mã chuỗi",
   "enable_infinite_scroll": "Bật cuộn vô hạn",
@@ -525,5 +522,6 @@
   "directory_vote_board_ineligible": "Chưa thể gửi {{address}} vào /{{boardIdentifier}}/. Còn thiếu: {{requirements}}.",
   "directory_vote_board_unreachable": "Không thể tải {{address}} để kiểm tra cài đặt. Bảng phải đang trực tuyến mới có thể được gửi.",
   "pin_thread": "Ghim chủ đề",
-  "unpin_thread": "Bỏ ghim chủ đề"
+  "unpin_thread": "Bỏ ghim chủ đề",
+  "upload_awaiting_review": "Đã tải lên, nhưng máy chủ lưu trữ phải xem xét tệp này trước khi có thể xem được. Liên kết sẽ hoạt động sau khi được phê duyệt, việc này có thể mất vài giờ. Bạn có thể đăng ngay bây giờ."
 }

@@ -617,7 +617,7 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
     }
   };
   const uploadMode = useMediaHostingStore((state) => state.uploadMode);
-  const showUploadControls = getShowUploadControls(uploadMode, isWebRuntime());
+  const showUploadControls = getShowUploadControls(uploadMode);
   const displayedFileName = getPublishFileDisplayName(url, uploadedFileName, requireReplyLinkIsMedia);
   const youtubeThumbnailConversionNotice =
     youtubeThumbnailConversionCountdown !== null ? t('youtube_thumbnail_link_conversion_notice', { count: youtubeThumbnailConversionCountdown }) : null;

@@ -28,7 +28,7 @@ const mockSetUploadMode = vi.fn();
 const mockSetPreferredProvider = vi.fn();
 const uploadModeRef = vi.hoisted(() => ({ value: 'random' as 'random' | 'preferred' | 'none' }));
 const preferredProviderRef = vi.hoisted(() => ({
-  value: 'catbox' as 'catbox' | 'imgur' | 'imgbb',
+  value: 'catbox' as 'forge' | 'catbox' | 'imgur' | 'imgbb',
 }));
 vi.mock('../../../../stores/use-media-hosting-store', async (importOriginal) => {
   const mod = await importOriginal<typeof import('../../../../stores/use-media-hosting-store')>();
@@ -189,32 +189,40 @@ describe('MediaHostingSettings', () => {
     expect(mockSetUploadMode).toHaveBeenCalledWith('preferred');
   });
 
-  it('on web runtime, warning renders above mode radios and all radios are disabled', () => {
+  it('on web runtime, mode radios are enabled, forge is listed first and enabled, and other providers are disabled', async () => {
     uploadModeRef.value = 'preferred';
     mockGetPlatform.mockReturnValue('web');
     (window as unknown as { electronApi?: unknown }).electronApi = undefined;
     render();
 
-    const warningDiv = Array.from(container.querySelectorAll('div')).find((d) => d.textContent?.includes('upload_not_supported_web_before_link'));
-    expect(warningDiv).toBeTruthy();
-    const firstModeRadio = container.querySelector<HTMLInputElement>('input[name="media-hosting-provider"]');
-    expect(firstModeRadio).toBeTruthy();
-    expect(warningDiv!.compareDocumentPosition(firstModeRadio!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-
     const modeRadios = container.querySelectorAll<HTMLInputElement>('input[name="media-hosting-provider"]');
     expect(modeRadios.length).toBe(3);
     for (const radio of modeRadios) {
-      expect(radio.disabled).toBe(true);
+      expect(radio.disabled).toBe(false);
     }
 
-    const providerRadios = container.querySelectorAll<HTMLInputElement>('input[name="media-hosting-provider-provider"]');
-    expect(providerRadios.length).toBe(MEDIA_HOSTING_PROVIDERS.length);
-    for (const radio of providerRadios) {
-      expect(radio.disabled).toBe(true);
-    }
+    const providerRadios = Array.from(container.querySelectorAll<HTMLInputElement>('input[name="media-hosting-provider-provider"]'));
+    expect(providerRadios.map((radio) => [radio.value, radio.disabled])).toEqual([
+      ['forge', false],
+      ['catbox', true],
+      ['imgur', true],
+      ['imgbb', true],
+    ]);
+    await act(async () => {
+      providerRadios[0].click();
+    });
+    expect(mockSetPreferredProvider).toHaveBeenCalledWith('forge');
+  });
 
-    expect(container.textContent).toContain('upload_not_supported_web_before_link');
-    expect(container.textContent).toContain('upload_not_supported_web_link_text');
+  it('on web runtime, disables forge when it is unavailable from this network', () => {
+    uploadModeRef.value = 'preferred';
+    providerAvailabilityRef.value = { forge: 'unavailable' };
+    mockGetPlatform.mockReturnValue('web');
+    render();
+
+    const forgeRadio = container.querySelector<HTMLInputElement>('input[value="forge"]');
+    expect(forgeRadio?.disabled).toBe(true);
+    expect(container.textContent).toContain('media_hosting_provider_unavailable');
   });
 
   it('on web runtime, no Catbox-only web hint key is referenced', () => {
@@ -224,7 +232,7 @@ describe('MediaHostingSettings', () => {
     expect(container.textContent).not.toContain('media_hosting_provider_disabled_on_web');
   });
 
-  it('on electron runtime, all radios are enabled and no CORS warning is shown', () => {
+  it('on electron runtime, mode radios and electron providers are enabled; web-only forge is disabled', () => {
     uploadModeRef.value = 'preferred';
     mockGetPlatform.mockReturnValue('web');
     (window as unknown as { electronApi?: unknown }).electronApi = { isElectron: true };
@@ -236,12 +244,13 @@ describe('MediaHostingSettings', () => {
       expect(radio.disabled).toBe(false);
     }
 
-    const providerRadios = container.querySelectorAll<HTMLInputElement>('input[name="media-hosting-provider-provider"]');
-    expect(providerRadios.length).toBe(MEDIA_HOSTING_PROVIDERS.length);
-    for (const radio of providerRadios) {
-      expect(radio.disabled).toBe(false);
-    }
-
-    expect(container.textContent).not.toContain('upload_not_supported_web_before_link');
+    const providerRadios = Array.from(container.querySelectorAll<HTMLInputElement>('input[name="media-hosting-provider-provider"]'));
+    expect(providerRadios).toHaveLength(MEDIA_HOSTING_PROVIDERS.length);
+    expect(providerRadios.map((radio) => [radio.value, radio.disabled])).toEqual([
+      ['forge', true],
+      ['catbox', false],
+      ['imgur', false],
+      ['imgbb', false],
+    ]);
   });
 });

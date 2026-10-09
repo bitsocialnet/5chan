@@ -238,7 +238,6 @@
   "posts_auto_update_info": "पोस्ट प्रत्येक ~2 मिनिटात स्वयंचलितपणे अपडेट होतात. सध्या हे अक्षम करणे शक्य नाही.",
   "board_address_tooltip": "या बोर्डच्या पीअर-टू-पीअर नोडचा पत्ता",
   "upload_failed": "अपलोड अयशस्वी",
-  "upload_not_supported_web": "तांत्रिक मर्यादांमुळे (CORS) तुमचा ब्राउझर मीडिया अपलोडला समर्थन देत नाही. 5chan Android अॅप आणि Mac/Linux/Windows डेस्कटॉप अॅपमध्ये ते समर्थित आहे. अधिकृत रिलीझ पेजवरून डाउनलोड करा: https://github.com/bitsocialnet/5chan/releases/latest",
   "file": "फाइल",
   "media_hosting_none": "काहीही नाही",
   "media_hosting_none_tip": "पोस्ट आणि उत्तर फॉर्मवरून फाइल अपलोड बटन लपवते",
@@ -251,8 +250,6 @@
   "media_hosting_preferred_provider_label": "प्रदाता निवडा",
   "media_hosting_preferred_failure_guidance": "जर तुमचा पसंतीचा प्रदाता अयशस्वी झाला, तर अॅप इतर प्रदात्यांना वापरेल (यादृच्छिक मोड) किंवा त्रुटी दर्शवेल (पसंतीचा मोड).",
   "media_hosting_all_providers_failed_guidance": "सर्व अपलोड प्रदाते अयशस्वी झाले. पुन्हा प्रयत्न करा किंवा लिंक स्वहस्ते पेस्ट करा.",
-  "upload_not_supported_web_before_link": "तांत्रिक मर्यादांमुळे (CORS) तुमचा ब्राउझर मीडिया अपलोड समर्थित नाही. ते 5chan Android अॅप आणि Mac/Linux/Windows डेस्कटॉप अॅपमध्ये समर्थित आहे.",
-  "upload_not_supported_web_link_text": "अधिकृत रिलीझ पेजवरून डाउनलोड करा",
   "board_subscriptions": "बोर्ड सदस्यता",
   "chain_ticker": "चेन टिकर",
   "enable_infinite_scroll": "अनंत स्क्रोल सक्षम करा",
@@ -525,5 +522,6 @@
   "directory_vote_board_ineligible": "{{address}} अद्याप /{{boardIdentifier}}/ मध्ये सबमिट करता येत नाही. कमतरता: {{requirements}}.",
   "directory_vote_board_unreachable": "सेटिंग्ज तपासण्यासाठी {{address}} लोड करता आले नाही. सबमिट करण्यासाठी बोर्ड ऑनलाइन असणे आवश्यक आहे.",
   "pin_thread": "थ्रेड पिन करा",
-  "unpin_thread": "थ्रेड अनपिन करा"
+  "unpin_thread": "थ्रेड अनपिन करा",
+  "upload_awaiting_review": "अपलोड झाले, पण पाहता येण्यापूर्वी होस्टने या फाइलचे पुनरावलोकन करणे आवश्यक आहे. मंजुरी मिळाल्यावर लिंक काम करू लागेल, यास काही तास लागू शकतात. तुम्ही ती आता पोस्ट करू शकता."
 }

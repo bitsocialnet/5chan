@@ -238,7 +238,6 @@
   "posts_auto_update_info": "帖子每约2分钟自动更新一次。目前无法禁用此功能。",
   "board_address_tooltip": "此板块的点对点节点地址",
   "upload_failed": "上传失败",
-  "upload_not_supported_web": "由于技术限制（CORS），您的浏览器不支持上传媒体。5chan Android 应用和 Mac/Linux/Windows 桌面应用支持此功能。请从官方发布页面下载：https://github.com/bitsocialnet/5chan/releases/latest",
   "file": "文件",
   "media_hosting_none": "无",
   "media_hosting_none_tip": "隐藏帖子和回复表单中的文件上传按钮",
@@ -251,8 +250,6 @@
   "media_hosting_preferred_provider_label": "选择提供商",
   "media_hosting_preferred_failure_guidance": "如果首选提供商失败，应用将尝试其他提供商（随机模式）或显示错误（首选模式）。",
   "media_hosting_all_providers_failed_guidance": "所有上传提供商均失败。请重试或手动粘贴链接。",
-  "upload_not_supported_web_before_link": "由于技术限制（CORS），您的浏览器不支持上传媒体。在 5chan Android 应用和 Mac/Linux/Windows 桌面应用中支持。",
-  "upload_not_supported_web_link_text": "从官方发布页面下载",
   "board_subscriptions": "板块订阅",
   "chain_ticker": "链代币符号",
   "enable_infinite_scroll": "启用无限滚动",
@@ -525,5 +522,6 @@
   "directory_vote_board_ineligible": "{{address}} 暂时无法提交到 /{{boardIdentifier}}/。缺少：{{requirements}}。",
   "directory_vote_board_unreachable": "无法加载 {{address}} 以检查其设置。板块必须在线才能提交。",
   "pin_thread": "固定主题",
-  "unpin_thread": "取消固定主题"
+  "unpin_thread": "取消固定主题",
+  "upload_awaiting_review": "已上传，但托管方需要先审核此文件才能查看。审核通过后链接即可使用，这可能需要几个小时。你现在就可以发布。"
 }

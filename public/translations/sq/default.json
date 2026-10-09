@@ -238,7 +238,6 @@
   "posts_auto_update_info": "Postimet përditësohen automatikisht çdo ~2 minuta. Nuk është e mundur ta çaktivizoni këtë për momentin.",
   "board_address_tooltip": "Adresa e nyjës peer-to-peer të kësaj tabele",
   "upload_failed": "Ngarkimi dështoi",
-  "upload_not_supported_web": "Ngarkimi i mediave nuk mbështetet nga shfletuesi juaj për shkak të kufizimeve teknike (CORS). Mbështetet në aplikacionin 5chan për Android dhe aplikacionin desktop për Mac/Linux/Windows. Shkarkoni nga faqja zyrtare e publikimeve: https://github.com/bitsocialnet/5chan/releases/latest",
   "file": "Skedar",
   "media_hosting_none": "Asnjë",
   "media_hosting_none_tip": "Fsheh butonin e ngarkimit të skedarit nga formularët e postimit dhe përgjigjes",
@@ -251,8 +250,6 @@
   "media_hosting_preferred_provider_label": "Zgjidhni ofruesin",
   "media_hosting_preferred_failure_guidance": "Nëse ofruesi juaj i preferuar dështon, aplikacioni do të provojë ofrues të tjerë (modalitet i rastësishëm) ose do të shfaqë një gabim (modalitet i preferuar).",
   "media_hosting_all_providers_failed_guidance": "Të gjithë ofruesit e ngarkimit dështuan. Provoni përsëri ose ngjisni një lidhje manualisht.",
-  "upload_not_supported_web_before_link": "Ngarkimi i mediave nuk mbështetet nga shfletuesi juaj për shkak të kufizimeve teknike (CORS). Mbështetet në aplikacionin 5chan për Android dhe aplikacionin e desktopit Mac/Linux/Windows.",
-  "upload_not_supported_web_link_text": "Shkarkoni nga faqja e zyrës së publikimit",
   "board_subscriptions": "Abonime në tabela",
   "chain_ticker": "simboli i zinxhirit",
   "enable_infinite_scroll": "Aktivizo rrëshqitjen e pafundme",
@@ -525,5 +522,6 @@
   "directory_vote_board_ineligible": "{{address}} nuk mund të dërgohet ende te /{{boardIdentifier}}/. Mungon: {{requirements}}.",
   "directory_vote_board_unreachable": "{{address}} nuk mund të ngarkohej për të kontrolluar cilësimet e tij. Një bord duhet të jetë online për t’u dërguar.",
   "pin_thread": "ngjit fijen",
-  "unpin_thread": "shkëput fijen"
+  "unpin_thread": "shkëput fijen",
+  "upload_awaiting_review": "U ngarkua, por hosti duhet ta shqyrtojë këtë skedar para se të mund të shihet. Lidhja do të fillojë të funksionojë sapo të miratohet, gjë që mund të zgjasë disa orë. Mund ta postoni tani."
 }

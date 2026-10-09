@@ -238,7 +238,6 @@
   "posts_auto_update_info": "पोस्ट्स हर ~2 मिनट में स्वचालित रूप से अपडेट होते हैं। फिलहाल इसे अक्षम करना संभव नहीं है।",
   "board_address_tooltip": "इस बोर्ड के पीयर-टू-पीयर नोड का पता",
   "upload_failed": "अपलोड विफल",
-  "upload_not_supported_web": "तकनीकी सीमाओं (CORS) के कारण आपका ब्राउज़र मीडिया अपलोड का समर्थन नहीं करता। यह 5chan एंड्रॉइड ऐप और Mac/Linux/Windows डेस्कटॉप ऐप में समर्थित है। आधिकारिक रिलीज़ पेज से डाउनलोड करें: https://github.com/bitsocialnet/5chan/releases/latest",
   "file": "फ़ाइल",
   "media_hosting_none": "कोई नहीं",
   "media_hosting_none_tip": "पोस्ट और रिप्लाई फॉर्म से फ़ाइल अपलोड बटन को छिपाता है",
@@ -251,8 +250,6 @@
   "media_hosting_preferred_provider_label": "प्रदाता चुनें",
   "media_hosting_preferred_failure_guidance": "यदि आपका पसंदीदा प्रदाता विफल होता है, ऐप अन्य प्रदाताओं को आज़माएगा (यादृच्छिक मोड) या त्रुटि दिखाएगा (पसंदीदा मोड)।",
   "media_hosting_all_providers_failed_guidance": "सभी अपलोड प्रदाता विफल हो गए। पुनः प्रयास करें या लिंक मैन्युअल रूप से पेस्ट करें।",
-  "upload_not_supported_web_before_link": "तकनीकी सीमाओं (CORS) के कारण आपका ब्राउज़र मीडिया अपलोड का समर्थन नहीं करता। यह 5chan एंड्रॉइड ऐप और Mac/Linux/Windows डेस्कटॉप ऐप में समर्थित है।",
-  "upload_not_supported_web_link_text": "आधिकारिक रिलीज़ पेज से डाउनलोड करें",
   "board_subscriptions": "बोर्ड सदस्यता",
   "chain_ticker": "श्रृंखला टिकर",
   "enable_infinite_scroll": "अनंत स्क्रॉल सक्षम करें",
@@ -525,5 +522,6 @@
   "directory_vote_board_ineligible": "{{address}} को अभी /{{boardIdentifier}}/ में सबमिट नहीं किया जा सकता। कमी: {{requirements}}।",
   "directory_vote_board_unreachable": "सेटिंग्स जांचने के लिए {{address}} लोड नहीं किया जा सका। सबमिट करने के लिए बोर्ड का ऑनलाइन होना ज़रूरी है।",
   "pin_thread": "धागा पिन करें",
-  "unpin_thread": "धागा अनपिन करें"
+  "unpin_thread": "धागा अनपिन करें",
+  "upload_awaiting_review": "अपलोड हो गया, लेकिन देखे जाने से पहले होस्ट को इस फ़ाइल की समीक्षा करनी होगी। स्वीकृत होते ही लिंक काम करने लगेगा, जिसमें कुछ घंटे लग सकते हैं। आप इसे अभी पोस्ट कर सकते हैं।"
 }

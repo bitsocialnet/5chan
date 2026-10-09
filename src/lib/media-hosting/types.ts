@@ -1,5 +1,5 @@
 /** Supported media hosting provider identifiers */
-export type ProviderId = 'catbox' | 'imgur' | 'imgbb';
+export type ProviderId = 'forge' | 'catbox' | 'imgur' | 'imgbb';
 
 /** User-facing upload mode */
 export type UploadMode = 'random' | 'preferred' | 'none';
@@ -16,6 +16,13 @@ export type UploadAttemptStage =
   | 'timeout' /** upload or extraction timeout */
   | 'page_load' /** page load failed */
   | 'unknown';
+
+/** A successful upload. */
+export interface UploadedMedia {
+  url: string;
+  /** The host holds the file for review, so the URL does not serve yet (e.g. a new SWF on Forge Images). */
+  awaitingReview?: boolean;
+}
 
 /** Result of a single provider upload attempt */
 export interface ProviderAttempt {

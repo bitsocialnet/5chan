@@ -238,7 +238,6 @@
   "posts_auto_update_info": "Les messages se mettent à jour automatiquement toutes les ~2 minutes. Il n'est pas possible de désactiver cela pour le moment.",
   "board_address_tooltip": "L'adresse du nœud pair-à-pair de ce tableau",
   "upload_failed": "Échec du téléchargement",
-  "upload_not_supported_web": "Le téléchargement de médias n'est pas pris en charge par votre navigateur en raison de limitations techniques (CORS). Il est pris en charge dans l'application 5chan pour Android et l'application de bureau Mac/Linux/Windows. Téléchargez depuis la page officielle des versions : https://github.com/bitsocialnet/5chan/releases/latest",
   "file": "Fichier",
   "media_hosting_none": "Aucun",
   "media_hosting_none_tip": "Masque le bouton de téléchargement de fichiers des formulaires de publication et de réponse",
@@ -251,8 +250,6 @@
   "media_hosting_preferred_provider_label": "Choisir le fournisseur",
   "media_hosting_preferred_failure_guidance": "Si votre fournisseur préféré échoue, l'app essaiera d'autres fournisseurs (mode aléatoire) ou affichera une erreur (mode préféré).",
   "media_hosting_all_providers_failed_guidance": "Tous les fournisseurs de téléchargement ont échoué. Réessayez ou collez un lien manuellement.",
-  "upload_not_supported_web_before_link": "Le téléchargement de médias n'est pas pris en charge par votre navigateur en raison de limitations techniques (CORS). Il est pris en charge dans l'application 5chan Android et l'application de bureau Mac/Linux/Windows.",
-  "upload_not_supported_web_link_text": "Télécharger depuis la page de version officielle",
   "board_subscriptions": "Abonnements aux tableaux",
   "chain_ticker": "ticker de chaîne",
   "enable_infinite_scroll": "Activer le défilement infini",
@@ -525,5 +522,6 @@
   "directory_vote_board_ineligible": "{{address}} ne peut pas encore être proposé pour /{{boardIdentifier}}/. Manquant : {{requirements}}.",
   "directory_vote_board_unreachable": "Impossible de charger {{address}} pour vérifier ses paramètres. Un board doit être en ligne pour être proposé.",
   "pin_thread": "Épingler le fil",
-  "unpin_thread": "Désépingler le fil"
+  "unpin_thread": "Désépingler le fil",
+  "upload_awaiting_review": "Envoyé, mais l'hébergeur doit vérifier ce fichier avant qu'il puisse être affiché. Le lien fonctionnera une fois le fichier approuvé, ce qui peut prendre quelques heures. Vous pouvez le publier dès maintenant."
 }

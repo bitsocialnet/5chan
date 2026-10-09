@@ -238,7 +238,6 @@
   "posts_auto_update_info": "Gönderiler her ~2 dakikada otomatik olarak güncellenir. Şu anda bunu devre dışı bırakmak mümkün değildir.",
   "board_address_tooltip": "Bu panonun eşler arası düğüm adresi",
   "upload_failed": "Yükleme başarısız",
-  "upload_not_supported_web": "Teknik kısıtlamalar (CORS) nedeniyle tarayıcınız medya yüklemeyi desteklemiyor. 5chan Android uygulamasında ve Mac/Linux/Windows masaüstü uygulamasında destekleniyor. Resmi sürüm sayfasından indirin: https://github.com/bitsocialnet/5chan/releases/latest",
   "file": "Dosya",
   "media_hosting_none": "Yok",
   "media_hosting_none_tip": "Yazı ve yanıt formlarından dosya yükleme düğmesini gizler",
@@ -251,8 +250,6 @@
   "media_hosting_preferred_provider_label": "Sağlayıcı seç",
   "media_hosting_preferred_failure_guidance": "Tercih edilen sağlayıcı başarısız olursa, uygulama diğer sağlayıcıları dener (Rastgele mod) veya hata gösterir (Tercih modu).",
   "media_hosting_all_providers_failed_guidance": "Tüm yükleme sağlayıcıları başarısız oldu. Tekrar deneyin veya bir bağlantıyı manuel olarak yapıştırın.",
-  "upload_not_supported_web_before_link": "Teknik kısıtlamalar (CORS) nedeniyle medya yükleme tarayıcınız tarafından desteklenmiyor. 5chan Android uygulaması ve Mac/Linux/Windows masaüstü uygulamasında desteklenmektedir.",
-  "upload_not_supported_web_link_text": "Resmi sürüm sayfasından indir",
   "board_subscriptions": "Pano abonelikleri",
   "chain_ticker": "zincir ticker'ı",
   "enable_infinite_scroll": "Sonsuz kaydırmayı etkinleştir",
@@ -525,5 +522,6 @@
   "directory_vote_board_ineligible": "{{address}} henüz /{{boardIdentifier}}/ dizinine gönderilemez. Eksik: {{requirements}}.",
   "directory_vote_board_unreachable": "Ayarlarını kontrol etmek için {{address}} yüklenemedi. Bir panonun gönderilebilmesi için çevrimiçi olması gerekir.",
   "pin_thread": "konuyu sabitle",
-  "unpin_thread": "konunun sabitlemesini kaldır"
+  "unpin_thread": "konunun sabitlemesini kaldır",
+  "upload_awaiting_review": "Yüklendi, ancak görüntülenebilmesi için barındırıcının bu dosyayı incelemesi gerekiyor. Bağlantı onaylandığında çalışmaya başlayacak; bu birkaç saat sürebilir. Şimdi gönderebilirsin."
 }

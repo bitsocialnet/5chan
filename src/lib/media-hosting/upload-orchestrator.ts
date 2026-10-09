@@ -1,6 +1,7 @@
-import type { ProviderAttempt, ProviderId, UploadAttemptStage } from './types';
+import type { ProviderAttempt, ProviderId, UploadAttemptStage, UploadedMedia } from './types';
 import { stripMediaMetadata } from '../media-metadata/strip-media-metadata';
 import { uploadToCatbox } from '../utils/catbox-utils';
+import { uploadToForge } from '../utils/forge-utils';
 
 /** Attempt metadata inferred or parsed from plugin rejection. Used when plugins throw plain errors. */
 function parseAttemptMetadata(errorMessage: string): {
@@ -62,11 +63,12 @@ async function fileToByteArray(file: File): Promise<number[]> {
 }
 
 /**
- * Uploads a file via a single provider. Catbox uses the web API;
+ * Uploads a file via a single provider. Forge and catbox use their web APIs;
  * imgur/imgbb use Electron automation when available.
  */
-async function uploadViaProvider(provider: ProviderId, file: File): Promise<string> {
-  if (provider === 'catbox') return uploadToCatbox(await stripMediaMetadata(file));
+async function uploadViaProvider(provider: ProviderId, file: File): Promise<UploadedMedia> {
+  if (provider === 'forge') return uploadToForge(await stripMediaMetadata(file));
+  if (provider === 'catbox') return { url: await uploadToCatbox(await stripMediaMetadata(file)) };
   if (provider === 'imgur' || provider === 'imgbb') {
     const fn = typeof window !== 'undefined' && window.electronApi?.automateUploadMedia;
     if (fn) {
@@ -75,7 +77,7 @@ async function uploadViaProvider(provider: ProviderId, file: File): Promise<stri
         // Bytes for this route never transit JS; the Electron main process
         // strips metadata before automation (electron/strip-media-metadata.js).
         const { url } = await fn({ provider, filePath });
-        return url;
+        return { url };
       }
 
       const generatedFn = window.electronApi?.automateUploadGeneratedMedia;
@@ -89,32 +91,31 @@ async function uploadViaProvider(provider: ProviderId, file: File): Promise<stri
         mimeType: cleanFile.type || 'application/octet-stream',
         bytes: await fileToByteArray(cleanFile),
       });
-      return url;
+      return { url };
     }
     throw new Error(`Provider ${provider} requires Electron (automateUploadMedia not available)`);
   }
   throw new Error(`Unsupported provider: ${provider}`);
 }
 
-/** Rejection shape for plugin errors that include structured metadata (future Electron/Android) */
+/** Rejection shape for errors that include structured metadata (forge adapter, future Electron/Android plugins) */
 interface PluginRejectionMeta {
   stage?: UploadAttemptStage;
   matchedSelectors?: string[];
 }
 
 /**
- * Orchestrates Electron upload: tries each provider in order, returns URL on first success.
+ * Orchestrates a web or Electron upload: tries each provider in order, returns the first success.
  * Collects attempt errors with deterministic metadata (provider, stage, elapsedMs, matchedSelectors).
  * Throws with attempts if all fail.
  */
-export async function orchestrateElectronUpload(file: File, providerOrder: ProviderId[]): Promise<string> {
+export async function orchestrateUpload(file: File, providerOrder: ProviderId[]): Promise<UploadedMedia> {
   const attempts: ProviderAttempt[] = [];
 
   for (const provider of providerOrder) {
     const start = Date.now();
     try {
-      const url = await uploadViaProvider(provider, file);
-      return url;
+      return await uploadViaProvider(provider, file);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       const elapsedMs = Date.now() - start;
