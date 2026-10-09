@@ -112,6 +112,108 @@ describe('uploadToForge', () => {
     });
   });
 
+  describe('pending videos', () => {
+    const url = `${FORGE_IMAGES_MEDIA_ORIGIN}/abc/clip.mp4`;
+    /** Per probe: load the metadata, fail, or never settle. */
+    let probeResults: Array<'loaded' | 'error' | 'hang'>;
+    let videos: FakeVideo[];
+    let createElementSpy: ReturnType<typeof vi.spyOn>;
+
+    class FakeVideo {
+      onloadedmetadata: (() => void) | null = null;
+      onerror: (() => void) | null = null;
+      preload = '';
+      muted = false;
+      loadCalls = 0;
+      currentSrc: string | null = null;
+      set src(value: string) {
+        this.currentSrc = value;
+        const result = probeResults.shift() ?? 'error';
+        if (result === 'hang') return;
+        queueMicrotask(() => (result === 'loaded' ? this.onloadedmetadata?.() : this.onerror?.()));
+      }
+      removeAttribute(name: string) {
+        if (name === 'src') this.currentSrc = null;
+      }
+      load() {
+        this.loadCalls++;
+      }
+    }
+
+    const upload = (options: { pendingVideoServeWaitMs?: number } = {}) => {
+      let result: UploadedMedia | undefined;
+      void uploadToForge(new File(['x'], 'clip.mp4', { type: 'video/mp4' }), { getToken, ...options }).then((value) => {
+        result = value;
+      });
+      return () => result;
+    };
+
+    beforeEach(() => {
+      vi.useFakeTimers();
+      probeResults = [];
+      videos = [];
+      const createElement = document.createElement.bind(document);
+      createElementSpy = vi.spyOn(document, 'createElement').mockImplementation(((tagName: string, options?: ElementCreationOptions) => {
+        if (tagName !== 'video') return createElement(tagName, options);
+        const video = new FakeVideo();
+        videos.push(video);
+        return video as unknown as HTMLVideoElement;
+      }) as typeof document.createElement);
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse(200, { url, status: 'pending', mime: 'video/mp4' })));
+    });
+
+    afterEach(() => {
+      createElementSpy.mockRestore();
+    });
+
+    it('waits until a pending video serves, probing metadata only, and returns its URL', async () => {
+      probeResults = ['error', 'loaded'];
+      const result = upload();
+
+      await vi.advanceTimersByTimeAsync(1_000);
+      expect(videos).toHaveLength(1);
+      expect(result()).toBeUndefined();
+      await vi.advanceTimersByTimeAsync(2_000);
+
+      expect(result()).toEqual({ url });
+      expect(videos).toHaveLength(2);
+      for (const video of videos) {
+        expect(video).toMatchObject({ preload: 'metadata', muted: true, currentSrc: null, loadCalls: 1 });
+      }
+    });
+
+    it('returns the URL flagged as awaiting review when the video still does not serve after the bounded wait', async () => {
+      const result = upload({ pendingVideoServeWaitMs: 10_000 });
+
+      await vi.advanceTimersByTimeAsync(9_999);
+      expect(result()).toBeUndefined();
+      await vi.advanceTimersByTimeAsync(1);
+
+      expect(result()).toEqual({ url, awaitingReview: true });
+      expect(videos.length).toBeGreaterThan(1);
+    });
+
+    it('abandons a probe that never settles at its timeout, releasing the element', async () => {
+      probeResults = ['hang', 'loaded'];
+      const result = upload({ pendingVideoServeWaitMs: 30_000 });
+
+      await vi.advanceTimersByTimeAsync(1_000 + 9_999);
+      expect(videos[0]).toMatchObject({ currentSrc: url, loadCalls: 0 });
+      await vi.advanceTimersByTimeAsync(1);
+      expect(videos[0]).toMatchObject({ currentSrc: null, loadCalls: 1 });
+      await vi.advanceTimersByTimeAsync(2_000);
+
+      expect(result()).toEqual({ url });
+    });
+
+    it('does not probe a live video', async () => {
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse(200, { url, status: 'live', mime: 'video/mp4' })));
+
+      await expect(uploadToForge(new File(['x'], 'clip.mp4', { type: 'video/mp4' }), { getToken })).resolves.toEqual({ url });
+      expect(videos).toEqual([]);
+    });
+  });
+
   it('POSTs multipart with the turnstile field before the file part and no custom headers', async () => {
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse(200, { url: `${FORGE_IMAGES_MEDIA_ORIGIN}/abc.png`, status: 'pending' }));
     vi.stubGlobal('fetch', fetchMock);
