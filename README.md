@@ -72,29 +72,7 @@ Once created, anyone can connect to your community using any bitsocial client (s
 
 Without 5chan Board Manager, a community can still be opened in 5chan, but it will not behave like a conventional imageboard board: old threads will not be archived when they fall past the last page, bump limits will not be enforced, archived threads will not be purged after the retention window, and author-deleted content will not be automatically purged.
 
-**In-app creation**: The 5chan desktop app, which runs a full bitsocial node, and any 5chan client connected to a bitsocial node over RPC can create a board with the **[Create Board]** button in the top bar. The connected node hosts the board, so it must stay online. The node operator can edit its public and private settings as JSON with **[Board Settings]** on the board page; admins can save permitted public edits from other clients. Remote owners currently need to connect to the hosting node to save through this client, as explained below. Run 5chan Board Manager for the board on the same node to get the lifecycle rules described above.
-
-### Board Roles and Settings Access
-
-A board's `community.roles` assigns permissions to author identities. The `moderator`, `admin`, and `owner` values already have different effects in pkc-js 0.0.101, the version used by this client:
-
-| Action over pubsub | Moderator | Admin | Owner |
-| --- | --- | --- | --- |
-| Moderate content, such as removing posts, locking threads, and approving pending posts | Yes | Yes | Yes |
-| Edit public properties such as the title, description, rules, and features | No | Yes | Yes |
-| Change `roles` | No | No | Yes |
-| Edit the legacy `address` field | No | No | Yes |
-| Edit private `community.settings`, including challenge configuration | No | No | No |
-
-These permissions apply to signed publications accepted by the board's node. Remote edits use `createCommunityEdit()` and still go through the board's challenge handshake; having a role does not automatically bypass challenges. Challenge exclusions can be configured for specific roles.
-
-The **Create Board** form assigns the current account the `owner` role and lets you add other accounts as moderators or admins. **Board Settings** is available to remote owners and admins, but currently enables remote saving only for admins: bitsocial-react-hooks 0.1.47 routes owners through local editing even when their connected node does not host the board. Owners must connect to the hosting node to save through this client; pkc-js itself supports their signed remote edits. pkc-js rejects an admin's attempt to change `roles` or `address`. The editor sends only changed fields and rejects remote removals that pkc-js's deep-merge behavior would otherwise leave in place.
-
-Hosting access is separate from these roles. When the connected node hosts the board, **Board Settings** uses a local edit and lets the node operator edit private settings regardless of the selected account's role. An `owner` role entry alone does not provide the community's private key, privileged RPC access, or permission to start, stop, or delete its hosted database.
-
-The owner-only restriction is field-specific, not a general safeguard for every destructive change. In pkc-js 0.0.101, the check covers `roles` and legacy `address`, but not the newer public `name` field; this client's settings editor exposes `address`, not `name`. Do not infer that all identity-related edits are owner-only.
-
-See the upstream [permission checks](https://github.com/pkcprotocol/pkc-js/blob/d7bf2e0a8fd5f26e1d4ead27bbccea0085ea5873/src/runtime/node/community/local-community/publication-validation.ts#L490-L542) and [community-edit tests](https://github.com/pkcprotocol/pkc-js/blob/d7bf2e0a8fd5f26e1d4ead27bbccea0085ea5873/test/node-and-browser/publications/community-edit/community.edit.publication.test.ts#L105-L265), plus this client's [settings access checks](src/lib/utils/mod-access.ts), [settings view](src/views/board-settings/board-settings.tsx), and [edit handling](src/lib/utils/board-settings-utils.ts).
+**In-app creation**: The 5chan desktop app, which runs a full bitsocial node, and any 5chan client connected to a bitsocial node over RPC can create a board with the **[Create Board]** button in the top bar. The connected node hosts the board, so it must stay online. From the node that hosts the board, the owner can then edit all of its settings as JSON with **[Board Settings]** on the board page; admins can edit its public settings from any client. Run 5chan Board Manager for the board on the same node to get the lifecycle rules described above.
 
 ## Submitting Your Board to a Directory
 

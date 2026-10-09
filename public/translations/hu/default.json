@@ -567,5 +567,7 @@
   "create_board_remove_item": "{{item}} eltávolítása",
   "create_board_role_admin": "Rendszergazda",
   "create_board_role_moderator": "Moderátor",
-  "create_board_rule_label": "{{number}}. szabály"
+  "create_board_rule_label": "{{number}}. szabály",
+  "create_board_moderator_help": "A moderátorok moderálhatják a bejegyzéseket és a felhasználókat.",
+  "create_board_admin_help": "A rendszergazdák a tábla nyilvános beállításait is módosíthatják, de a szerepköröket nem kezelhetik."
 }

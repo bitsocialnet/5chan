@@ -567,5 +567,7 @@
   "create_board_remove_item": "Αφαίρεση: {{item}}",
   "create_board_role_admin": "Διαχειριστής",
   "create_board_role_moderator": "Συντονιστής",
-  "create_board_rule_label": "Κανόνας {{number}}"
+  "create_board_rule_label": "Κανόνας {{number}}",
+  "create_board_moderator_help": "Οι συντονιστές μπορούν να συντονίζουν αναρτήσεις και χρήστες.",
+  "create_board_admin_help": "Οι διαχειριστές μπορούν επίσης να επεξεργάζονται τις δημόσιες ρυθμίσεις του πίνακα, αλλά δεν μπορούν να διαχειρίζονται ρόλους."
 }

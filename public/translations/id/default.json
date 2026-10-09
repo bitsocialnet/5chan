@@ -567,5 +567,7 @@
   "create_board_remove_item": "Hapus {{item}}",
   "create_board_role_admin": "Administrator",
   "create_board_role_moderator": "Moderator",
-  "create_board_rule_label": "Aturan {{number}}"
+  "create_board_rule_label": "Aturan {{number}}",
+  "create_board_moderator_help": "Moderator dapat memoderasi postingan dan pengguna.",
+  "create_board_admin_help": "Administrator juga dapat mengedit pengaturan publik papan, tetapi tidak dapat mengelola peran."
 }

@@ -567,5 +567,7 @@
   "create_board_remove_item": "{{item}} काढा",
   "create_board_role_admin": "प्रशासक",
   "create_board_role_moderator": "मॉडरेटर",
-  "create_board_rule_label": "नियम {{number}}"
+  "create_board_rule_label": "नियम {{number}}",
+  "create_board_moderator_help": "मॉडरेटर पोस्ट आणि वापरकर्त्यांचे मॉडरेशन करू शकतात.",
+  "create_board_admin_help": "प्रशासक बोर्डच्या सार्वजनिक सेटिंग्जही बदलू शकतात, पण भूमिकांचे व्यवस्थापन करू शकत नाहीत."
 }

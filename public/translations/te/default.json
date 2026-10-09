@@ -567,5 +567,7 @@
   "create_board_remove_item": "{{item}} తొలగించు",
   "create_board_role_admin": "నిర్వాహకుడు",
   "create_board_role_moderator": "మోడరేటర్",
-  "create_board_rule_label": "నియమం {{number}}"
+  "create_board_rule_label": "నియమం {{number}}",
+  "create_board_moderator_help": "మోడరేటర్లు పోస్ట్‌లను మరియు వినియోగదారులను మోడరేట్ చేయగలరు.",
+  "create_board_admin_help": "నిర్వాహకులు బోర్డ్ యొక్క పబ్లిక్ సెట్టింగ్‌లను కూడా మార్చగలరు, కానీ పాత్రలను నిర్వహించలేరు."
 }

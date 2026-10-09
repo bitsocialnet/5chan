@@ -567,5 +567,7 @@
   "create_board_remove_item": "移除{{item}}",
   "create_board_role_admin": "管理员",
   "create_board_role_moderator": "版主",
-  "create_board_rule_label": "规则 {{number}}"
+  "create_board_rule_label": "规则 {{number}}",
+  "create_board_moderator_help": "版主可以管理帖子和用户。",
+  "create_board_admin_help": "管理员还可以修改板块的公开设置，但不能管理角色。"
 }

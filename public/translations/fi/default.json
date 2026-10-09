@@ -567,5 +567,7 @@
   "create_board_remove_item": "Poista {{item}}",
   "create_board_role_admin": "Järjestelmänvalvoja",
   "create_board_role_moderator": "Moderaattori",
-  "create_board_rule_label": "Sääntö {{number}}"
+  "create_board_rule_label": "Sääntö {{number}}",
+  "create_board_moderator_help": "Moderaattorit voivat valvoa viestejä ja käyttäjiä.",
+  "create_board_admin_help": "Järjestelmänvalvojat voivat myös muokata taulun julkisia asetuksia, mutta eivät voi hallita rooleja."
 }

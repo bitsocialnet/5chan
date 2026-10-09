@@ -567,5 +567,7 @@
   "create_board_remove_item": "Supprimer {{item}}",
   "create_board_role_admin": "Administrateur",
   "create_board_role_moderator": "Modérateur",
-  "create_board_rule_label": "Règle {{number}}"
+  "create_board_rule_label": "Règle {{number}}",
+  "create_board_moderator_help": "Les modérateurs peuvent modérer les publications et les utilisateurs.",
+  "create_board_admin_help": "Les administrateurs peuvent aussi modifier les paramètres publics du tableau, mais ne peuvent pas gérer les rôles."
 }

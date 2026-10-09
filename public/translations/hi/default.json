@@ -567,5 +567,7 @@
   "create_board_remove_item": "{{item}} हटाएं",
   "create_board_role_admin": "प्रशासक",
   "create_board_role_moderator": "मॉडरेटर",
-  "create_board_rule_label": "नियम {{number}}"
+  "create_board_rule_label": "नियम {{number}}",
+  "create_board_moderator_help": "मॉडरेटर पोस्ट और उपयोगकर्ताओं को मॉडरेट कर सकते हैं।",
+  "create_board_admin_help": "प्रशासक बोर्ड की सार्वजनिक सेटिंग्स भी बदल सकते हैं, लेकिन भूमिकाओं का प्रबंधन नहीं कर सकते।"
 }

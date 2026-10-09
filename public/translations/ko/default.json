@@ -567,5 +567,7 @@
   "create_board_remove_item": "{{item}} 제거",
   "create_board_role_admin": "관리자",
   "create_board_role_moderator": "모더레이터",
-  "create_board_rule_label": "규칙 {{number}}"
+  "create_board_rule_label": "규칙 {{number}}",
+  "create_board_moderator_help": "모더레이터는 게시물과 사용자를 관리할 수 있습니다.",
+  "create_board_admin_help": "관리자는 공개된 보드 설정도 수정할 수 있지만, 역할은 관리할 수 없습니다."
 }

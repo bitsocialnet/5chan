@@ -567,5 +567,7 @@
   "create_board_remove_item": "{{item}} সরান",
   "create_board_role_admin": "প্রশাসক",
   "create_board_role_moderator": "মডারেটর",
-  "create_board_rule_label": "নিয়ম {{number}}"
+  "create_board_rule_label": "নিয়ম {{number}}",
+  "create_board_moderator_help": "মডারেটররা পোস্ট ও ব্যবহারকারীদের মডারেট করতে পারেন।",
+  "create_board_admin_help": "প্রশাসকরা বোর্ডের সর্বজনীন সেটিংসও সম্পাদনা করতে পারেন, তবে ভূমিকা পরিচালনা করতে পারেন না।"
 }

@@ -567,5 +567,7 @@
   "create_board_remove_item": "{{item}} verwijderen",
   "create_board_role_admin": "Beheerder",
   "create_board_role_moderator": "Moderator",
-  "create_board_rule_label": "Regel {{number}}"
+  "create_board_rule_label": "Regel {{number}}",
+  "create_board_moderator_help": "Moderators kunnen berichten en gebruikers modereren.",
+  "create_board_admin_help": "Beheerders kunnen ook de openbare bordinstellingen bewerken, maar kunnen geen rollen beheren."
 }

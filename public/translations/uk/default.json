@@ -567,5 +567,7 @@
   "create_board_remove_item": "Видалити: {{item}}",
   "create_board_role_admin": "Адміністратор",
   "create_board_role_moderator": "Модератор",
-  "create_board_rule_label": "Правило {{number}}"
+  "create_board_rule_label": "Правило {{number}}",
+  "create_board_moderator_help": "Модератори можуть модерувати дописи та користувачів.",
+  "create_board_admin_help": "Адміністратори також можуть змінювати публічні налаштування дошки, але не можуть керувати ролями."
 }

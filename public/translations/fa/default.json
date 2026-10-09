@@ -567,5 +567,7 @@
   "create_board_remove_item": "حذف {{item}}",
   "create_board_role_admin": "مدیرکل",
   "create_board_role_moderator": "مدیر",
-  "create_board_rule_label": "قانون {{number}}"
+  "create_board_rule_label": "قانون {{number}}",
+  "create_board_moderator_help": "مدیران می‌توانند بر پست‌ها و کاربران نظارت کنند.",
+  "create_board_admin_help": "مدیران کل همچنین می‌توانند تنظیمات عمومی تابلو را ویرایش کنند، اما نمی‌توانند نقش‌ها را مدیریت کنند."
 }

@@ -567,5 +567,7 @@
   "create_board_remove_item": "Odstranit: {{item}}",
   "create_board_role_admin": "Administrátor",
   "create_board_role_moderator": "Moderátor",
-  "create_board_rule_label": "Pravidlo {{number}}"
+  "create_board_rule_label": "Pravidlo {{number}}",
+  "create_board_moderator_help": "Moderátoři mohou moderovat příspěvky a uživatele.",
+  "create_board_admin_help": "Administrátoři mohou také upravovat veřejná nastavení desky, ale nemohou spravovat role."
 }

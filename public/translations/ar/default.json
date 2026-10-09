@@ -567,5 +567,7 @@
   "create_board_remove_item": "إزالة {{item}}",
   "create_board_role_admin": "مسؤول",
   "create_board_role_moderator": "مشرف",
-  "create_board_rule_label": "القاعدة {{number}}"
+  "create_board_rule_label": "القاعدة {{number}}",
+  "create_board_moderator_help": "يمكن للمشرفين الإشراف على المنشورات والمستخدمين.",
+  "create_board_admin_help": "يمكن للمسؤولين أيضًا تعديل إعدادات اللوحة العامة، لكن لا يمكنهم إدارة الأدوار."
 }

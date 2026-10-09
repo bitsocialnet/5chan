@@ -567,5 +567,7 @@
   "create_board_remove_item": "{{item}} öğesini kaldır",
   "create_board_role_admin": "Yönetici",
   "create_board_role_moderator": "Moderatör",
-  "create_board_rule_label": "Kural {{number}}"
+  "create_board_rule_label": "Kural {{number}}",
+  "create_board_moderator_help": "Moderatörler gönderileri ve kullanıcıları denetleyebilir.",
+  "create_board_admin_help": "Yöneticiler tahtanın herkese açık ayarlarını da düzenleyebilir, ancak rolleri yönetemez."
 }

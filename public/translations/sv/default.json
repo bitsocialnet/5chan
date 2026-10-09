@@ -567,5 +567,7 @@
   "create_board_remove_item": "Ta bort {{item}}",
   "create_board_role_admin": "Administratör",
   "create_board_role_moderator": "Moderator",
-  "create_board_rule_label": "Regel {{number}}"
+  "create_board_rule_label": "Regel {{number}}",
+  "create_board_moderator_help": "Moderatorer kan moderera inlägg och användare.",
+  "create_board_admin_help": "Administratörer kan också redigera tavlans offentliga inställningar, men kan inte hantera roller."
 }

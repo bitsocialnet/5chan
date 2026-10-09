@@ -567,5 +567,7 @@
   "create_board_remove_item": "Hiq {{item}}",
   "create_board_role_admin": "Administrator",
   "create_board_role_moderator": "Moderator",
-  "create_board_rule_label": "Rregull {{number}}"
+  "create_board_rule_label": "Rregull {{number}}",
+  "create_board_moderator_help": "Moderatorët mund të moderojnë postimet dhe përdoruesit.",
+  "create_board_admin_help": "Administratorët mund të ndryshojnë edhe cilësimet publike të bordit, por nuk mund të menaxhojnë rolet."
 }

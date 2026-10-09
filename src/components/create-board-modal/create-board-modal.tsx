@@ -254,6 +254,12 @@ const CreateBoardForm = ({
             <td id='create-board-moderators-label'>{t('create_board_moderators_field')}</td>
             <td>
               <div role='group' aria-labelledby='create-board-moderators-label'>
+                <span id='create-board-moderator-help' className={styles.fieldTip}>
+                  {t('create_board_moderator_help')}
+                </span>
+                <span id='create-board-admin-help' className={styles.fieldTip}>
+                  {t('create_board_admin_help')}
+                </span>
                 {formState.moderators.map((moderator, index) => {
                   const moderatorLabel = t('create_board_moderator_label', { number: index + 1 });
                   return (
@@ -272,6 +278,7 @@ const CreateBoardForm = ({
                       <select
                         value={moderator.role}
                         aria-label={t('create_board_moderator_role_label', { number: index + 1 })}
+                        aria-describedby='create-board-moderator-help create-board-admin-help'
                         onChange={(e) => updateModerator(moderator.id, { role: e.target.value as BoardStaffRole })}
                       >
                         <option value='moderator'>{t('create_board_role_moderator')}</option>
@@ -292,6 +299,9 @@ const CreateBoardForm = ({
                 <button type='button' className={styles.addRowButton} onClick={addModerator}>
                   {t('create_board_add_moderator')}
                 </button>
+                {accountAddress && (
+                  <span className={styles.fieldTip}>{t('create_board_owner_notice', { address: accountAddress, interpolation: { escapeValue: false } })}</span>
+                )}
               </div>
             </td>
           </tr>
@@ -335,7 +345,6 @@ const CreateBoardForm = ({
           </tr>
         </tbody>
       </table>
-      {accountAddress && <p className={styles.fieldTip}>{t('create_board_owner_notice', { address: accountAddress, interpolation: { escapeValue: false } })}</p>}
       <p>
         <BoardManagerNotice />
       </p>
