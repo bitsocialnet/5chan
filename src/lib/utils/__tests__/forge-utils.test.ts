@@ -56,6 +56,7 @@ describe('uploadToForge', () => {
     const url = `${FORGE_IMAGES_MEDIA_ORIGIN}/abc/photo.png`;
     let loadResults: boolean[];
     let loadedSrcs: string[];
+    let fetchMock: ReturnType<typeof vi.fn>;
 
     class FakeImage {
       onload: (() => void) | null = null;
@@ -73,7 +74,8 @@ describe('uploadToForge', () => {
       loadResults = [];
       loadedSrcs = [];
       vi.stubGlobal('Image', FakeImage);
-      vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse(200, { url, status: 'pending', mime: 'image/png' })));
+      fetchMock = vi.fn().mockResolvedValue(jsonResponse(200, { url, status: 'pending', mime: 'image/png' }));
+      vi.stubGlobal('fetch', fetchMock);
     });
 
     it('waits until a pending image serves before returning its URL', async () => {
@@ -90,6 +92,8 @@ describe('uploadToForge', () => {
 
       expect(loadedSrcs).toEqual([url, url, url]);
       expect(result).toEqual({ url });
+      // The post form checks image links with an <img> load, so the wait must use the same check, not a HEAD request.
+      expect(fetchMock.mock.calls.map(([, init]) => (init as RequestInit | undefined)?.method)).toEqual(['POST']);
     });
 
     it('fails with a retry message when the image is still in review after the bounded wait', async () => {
@@ -114,10 +118,14 @@ describe('uploadToForge', () => {
 
   describe('pending videos', () => {
     const url = `${FORGE_IMAGES_MEDIA_ORIGIN}/abc/clip.mp4`;
-    /** Per probe: load the metadata, fail, or never settle. */
+    /** Per HEAD request: answer with this status, fail (network or CORS error), or never settle. */
+    let headResults: Array<number | 'reject' | 'hang'>;
+    let headRequests: Array<{ input: string; init: RequestInit }>;
+    /** Per metadata probe: load the metadata, fail, or never settle. */
     let probeResults: Array<'loaded' | 'error' | 'hang'>;
     let videos: FakeVideo[];
     let createElementSpy: ReturnType<typeof vi.spyOn>;
+    let fetchMock: ReturnType<typeof vi.fn>;
 
     class FakeVideo {
       onloadedmetadata: (() => void) | null = null;
@@ -140,6 +148,22 @@ describe('uploadToForge', () => {
       }
     }
 
+    const stubFetch = (status: 'live' | 'pending') => {
+      fetchMock = vi.fn((input: string, init?: RequestInit) => {
+        if (init?.method !== 'HEAD') return Promise.resolve(jsonResponse(200, { url, status, mime: 'video/mp4' }));
+        headRequests.push({ input, init });
+        const result = headResults.shift() ?? 404;
+        if (result === 'reject') return Promise.reject(new TypeError('Failed to fetch'));
+        if (result === 'hang') {
+          return new Promise<Response>((_resolve, reject) => {
+            init.signal?.addEventListener('abort', () => reject(new DOMException('The operation was aborted.', 'AbortError')));
+          });
+        }
+        return Promise.resolve(jsonResponse(result, null));
+      });
+      vi.stubGlobal('fetch', fetchMock);
+    };
+
     const upload = (options: { pendingVideoServeWaitMs?: number } = {}) => {
       let result: UploadedMedia | undefined;
       void uploadToForge(new File(['x'], 'clip.mp4', { type: 'video/mp4' }), { getToken, ...options }).then((value) => {
@@ -150,6 +174,8 @@ describe('uploadToForge', () => {
 
     beforeEach(() => {
       vi.useFakeTimers();
+      headResults = [];
+      headRequests = [];
       probeResults = [];
       videos = [];
       const createElement = document.createElement.bind(document);
@@ -159,14 +185,43 @@ describe('uploadToForge', () => {
         videos.push(video);
         return video as unknown as HTMLVideoElement;
       }) as typeof document.createElement);
-      vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse(200, { url, status: 'pending', mime: 'video/mp4' })));
+      stubFetch('pending');
     });
 
     afterEach(() => {
       createElementSpy.mockRestore();
     });
 
-    it('waits until a pending video serves, probing metadata only, and returns its URL', async () => {
+    it('treats a 2xx HEAD response as served without loading the video, so the codec does not matter', async () => {
+      headResults = [200];
+      const result = upload();
+
+      await vi.advanceTimersByTimeAsync(1_000);
+
+      expect(result()).toEqual({ url });
+      expect(videos).toEqual([]);
+      expect(headRequests).toHaveLength(1);
+      expect(headRequests[0].input).toBe(url);
+      expect(headRequests[0].init).toMatchObject({ method: 'HEAD', cache: 'no-store', mode: 'cors', credentials: 'omit', referrerPolicy: 'no-referrer' });
+      expect(headRequests[0].init.signal).toBeInstanceOf(AbortSignal);
+    });
+
+    it('keeps polling while HEAD answers 404, then returns the URL once it serves', async () => {
+      headResults = [404, 200];
+      const result = upload();
+
+      await vi.advanceTimersByTimeAsync(1_000);
+      expect(headRequests).toHaveLength(1);
+      expect(result()).toBeUndefined();
+      await vi.advanceTimersByTimeAsync(2_000);
+
+      expect(headRequests).toHaveLength(2);
+      expect(result()).toEqual({ url });
+      expect(videos).toEqual([]);
+    });
+
+    it('falls back to a metadata-only load when the HEAD request fails, and returns the URL once it serves', async () => {
+      headResults = ['reject', 'reject'];
       probeResults = ['error', 'loaded'];
       const result = upload();
 
@@ -190,10 +245,27 @@ describe('uploadToForge', () => {
       await vi.advanceTimersByTimeAsync(1);
 
       expect(result()).toEqual({ url, awaitingReview: true });
-      expect(videos.length).toBeGreaterThan(1);
+      expect(headRequests.length).toBeGreaterThan(1);
+      expect(videos).toEqual([]);
     });
 
-    it('abandons a probe that never settles at its timeout, releasing the element', async () => {
+    it('aborts a HEAD request that never settles at the probe timeout and retries on the next attempt', async () => {
+      headResults = ['hang', 200];
+      const result = upload({ pendingVideoServeWaitMs: 30_000 });
+
+      await vi.advanceTimersByTimeAsync(1_000 + 9_999);
+      expect(headRequests[0].init.signal?.aborted).toBe(false);
+      await vi.advanceTimersByTimeAsync(1);
+      expect(headRequests[0].init.signal?.aborted).toBe(true);
+      expect(result()).toBeUndefined();
+      await vi.advanceTimersByTimeAsync(2_000);
+
+      expect(result()).toEqual({ url });
+      expect(videos).toEqual([]);
+    });
+
+    it('abandons a metadata probe that never settles at its timeout, releasing the element', async () => {
+      headResults = ['reject', 'reject'];
       probeResults = ['hang', 'loaded'];
       const result = upload({ pendingVideoServeWaitMs: 30_000 });
 
@@ -207,9 +279,11 @@ describe('uploadToForge', () => {
     });
 
     it('does not probe a live video', async () => {
-      vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse(200, { url, status: 'live', mime: 'video/mp4' })));
+      stubFetch('live');
 
       await expect(uploadToForge(new File(['x'], 'clip.mp4', { type: 'video/mp4' }), { getToken })).resolves.toEqual({ url });
+      expect(fetchMock).toHaveBeenCalledOnce();
+      expect(headRequests).toEqual([]);
       expect(videos).toEqual([]);
     });
   });
