@@ -5,7 +5,7 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./vitest.setup.ts'],
     // These fixtures use node:test and run in the dedicated Jev helper workflow.
-    exclude: [...configDefaults.exclude, 'scripts/jev/tests/**'],
+    exclude: [...configDefaults.exclude, 'scripts/jev/tests/**', 'scripts/visual-qa/tests/**'],
     coverage: {
       include: ['src/**/*.{ts,tsx}', 'electron/**/*.{js,mjs}'],
       exclude: [
