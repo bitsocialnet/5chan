@@ -388,7 +388,7 @@ const PostTransferModal = ({ comment, onClose, onTransferStateChange, onTransfer
                 ...sourcePublishIdentity,
                 commentModeration: getTransferSourceModeration(
                   comment,
-                  getTransferBoardReference(resolvedTargetBoard, resolvedTargetBoardAddress),
+                  getTransferBoardReference(resolvedTargetBoard, resolvedTargetBoardAddress, targetCommentNumber),
                   getTransferSourceBoardReference(sourceBoard, sourceCommunityAddress),
                   getTransferSourceBoardRulesLink(sourceBoard),
                 ),

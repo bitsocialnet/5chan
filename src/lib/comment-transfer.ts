@@ -133,9 +133,10 @@ export const getTargetTransferModerationFlairs = (comment: Comment, fields: Post
   return [...copiedFlairs, TRANSFERRED_COMMENT_FLAIR];
 };
 
-export const getTransferBoardReference = (targetBoard: TransferBoardLike | undefined, targetBoardAddress: string): string => {
+export const getTransferBoardReference = (targetBoard: TransferBoardLike | undefined, targetBoardAddress: string, targetCommentNumber?: number): string => {
   const directoryCode = getTextField(targetBoard?.directoryCode);
-  if (directoryCode) return `>>>/${directoryCode}/`;
+  // The target can be pending approval and have no number yet; fall back to linking the board.
+  if (directoryCode) return targetCommentNumber !== undefined ? `>>>/${directoryCode}/${targetCommentNumber}` : `>>>/${directoryCode}/`;
   return getTextField(targetBoard?.address) ?? targetBoardAddress;
 };
 
