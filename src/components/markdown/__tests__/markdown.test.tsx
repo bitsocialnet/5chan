@@ -650,6 +650,17 @@ describe('Markdown', () => {
     expect(lazyLinks.map((node) => node.textContent)).toEqual(['>>42', '>>>/fit/77']);
   });
 
+  it('keeps punctuation that follows a cross-board number quote as text', async () => {
+    await renderMarkdown({
+      content: 'Moved to >>>/trash/123, see >>>/fit/77.',
+      communityAddress: 'music-posting.eth',
+    });
+
+    const lazyLinks = Array.from(container.querySelectorAll('[data-testid="external-number-quote-link"]'));
+    expect(lazyLinks.map((node) => node.textContent)).toEqual(['>>>/trash/123', '>>>/fit/77']);
+    expect(container.textContent).toBe('Moved to >>>/trash/123, see >>>/fit/77.');
+  });
+
   it('strikes through purged same-thread quotes instead of searching the board for them', async () => {
     await renderMarkdown({
       content: '>>161 >>42',
