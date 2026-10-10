@@ -104,6 +104,29 @@ function canLoadVideo(url: string, timeoutMs: number): Promise<boolean> {
 }
 
 /**
+ * Asks the media origin whether the video serves instead of decoding it, so a
+ * codec this browser cannot play (HEVC in Firefox) still counts as served once
+ * it is live. The HEAD request needs CORS on the media origin; when it fails
+ * outright (network or CORS error), this attempt falls back to a metadata load.
+ */
+async function isVideoServing(url: string, timeoutMs: number): Promise<boolean> {
+  const startedAt = Date.now();
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  let response: Response;
+  try {
+    response = await fetch(url, { method: 'HEAD', cache: 'no-store', mode: 'cors', credentials: 'omit', referrerPolicy: 'no-referrer', signal: controller.signal });
+  } catch {
+    // A timed-out request used this attempt's budget; the next attempt retries.
+    if (controller.signal.aborted) return false;
+    return canLoadVideo(url, timeoutMs - (Date.now() - startedAt));
+  } finally {
+    clearTimeout(timeoutId);
+  }
+  return response.ok;
+}
+
+/**
  * A new upload 404s until its moderation verdict lands (seconds for images,
  * longer for videos; forge-images ARCHITECTURE.md §2), so poll with backoff,
  * bounded, until the media serves.
@@ -191,7 +214,7 @@ export async function uploadToForge(file: File, options: ForgeUploadOptions = {}
     }
     return { url };
   }
-  if (mime.startsWith('video/') && pendingVideoServeWaitMs > 0 && (await waitUntilServes(url, pendingVideoServeWaitMs, canLoadVideo))) {
+  if (mime.startsWith('video/') && pendingVideoServeWaitMs > 0 && (await waitUntilServes(url, pendingVideoServeWaitMs, isVideoServing))) {
     return { url };
   }
   return { url, awaitingReview: true };
