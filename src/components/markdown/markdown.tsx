@@ -338,8 +338,11 @@ function tokenize(text: string, keyPrefix = '', parseSpoilers = true): Token[] {
       const boardIdentifier = match[matchIndexes.crossBoardNumberQuoteLinkBoard];
       const number = parseInt(match[matchIndexes.crossBoardNumberQuoteLinkNumber], 10);
       if (boardIdentifier && !Number.isNaN(number)) {
+        const raw = `>>>/${boardIdentifier}/${match[matchIndexes.crossBoardNumberQuoteLinkNumber]}`;
+        const trailingText = fullMatch.slice(raw.length);
+        const linkEnd = matchEnd - trailingText.length;
         tokens.push({
-          key: makeTokenKey(keyPrefix, 'crossBoardNumberQuoteLink', matchStart, matchEnd),
+          key: makeTokenKey(keyPrefix, 'crossBoardNumberQuoteLink', matchStart, linkEnd),
           type: 'crossBoardNumberQuoteLink',
           reference: {
             boardIdentifier,
@@ -348,6 +351,9 @@ function tokenize(text: string, keyPrefix = '', parseSpoilers = true): Token[] {
             raw: `>>>/${boardIdentifier}/${number}`,
           },
         });
+        if (trailingText) {
+          tokens.push({ key: makeTokenKey(keyPrefix, 'text', linkEnd, matchEnd), type: 'text', value: trailingText });
+        }
       } else {
         tokens.push({ key: makeTokenKey(keyPrefix, 'text', matchStart, matchEnd), type: 'text', value: fullMatch });
       }
