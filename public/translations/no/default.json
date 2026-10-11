@@ -523,5 +523,6 @@
   "directory_vote_board_unreachable": "Kunne ikke laste inn {{address}} for å sjekke innstillingene. Et brett må være online for å kunne sendes inn.",
   "pin_thread": "fest tråd",
   "unpin_thread": "løsne tråd",
-  "upload_awaiting_review": "Lastet opp, men verten må gå gjennom denne filen før den kan vises. Lenken begynner å virke når den er godkjent, noe som kan ta noen timer. Du kan poste den nå."
+  "upload_awaiting_review": "Lastet opp, men verten må gå gjennom denne filen før den kan vises. Lenken begynner å virke når den er godkjent, noe som kan ta noen timer. Du kan poste den nå.",
+  "board_unreachable_from_browsers": "Nettlesere kan ikke laste inn denne tavlen fordi denne datamaskinen ikke kan nås fra internett. Løs det ved å videresende port 4001 (TCP og UDP) på ruteren din til denne datamaskinen, eller ved å slå på UPnP på ruteren din. Hvis internettleverandøren din ikke tillater det, kan du heller hoste tavlen på en server."
 }

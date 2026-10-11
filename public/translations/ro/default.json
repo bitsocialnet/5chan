@@ -523,5 +523,6 @@
   "directory_vote_board_unreachable": "Nu s-a putut încărca {{address}} pentru a-i verifica setările. Un board trebuie să fie online pentru a putea fi trimis.",
   "pin_thread": "fixează firul",
   "unpin_thread": "anulează fixarea firului",
-  "upload_awaiting_review": "Încărcat, dar gazda trebuie să verifice acest fișier înainte să poată fi vizualizat. Linkul va începe să funcționeze după aprobare, ceea ce poate dura câteva ore. Îl poți publica acum."
+  "upload_awaiting_review": "Încărcat, dar gazda trebuie să verifice acest fișier înainte să poată fi vizualizat. Linkul va începe să funcționeze după aprobare, ceea ce poate dura câteva ore. Îl poți publica acum.",
+  "board_unreachable_from_browsers": "Browserele nu pot încărca acest tablou, deoarece acest calculator nu poate fi accesat de pe internet. Ca să rezolvi asta, redirecționează portul 4001 (TCP și UDP) din routerul tău către acest calculator sau activează UPnP pe router. Dacă furnizorul tău de internet nu permite asta, găzduiește în schimb tabloul pe un server."
 }

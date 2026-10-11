@@ -523,5 +523,6 @@
   "directory_vote_board_unreachable": "Impossible de charger {{address}} pour vérifier ses paramètres. Un board doit être en ligne pour être proposé.",
   "pin_thread": "Épingler le fil",
   "unpin_thread": "Désépingler le fil",
-  "upload_awaiting_review": "Envoyé, mais l'hébergeur doit vérifier ce fichier avant qu'il puisse être affiché. Le lien fonctionnera une fois le fichier approuvé, ce qui peut prendre quelques heures. Vous pouvez le publier dès maintenant."
+  "upload_awaiting_review": "Envoyé, mais l'hébergeur doit vérifier ce fichier avant qu'il puisse être affiché. Le lien fonctionnera une fois le fichier approuvé, ce qui peut prendre quelques heures. Vous pouvez le publier dès maintenant.",
+  "board_unreachable_from_browsers": "Les navigateurs ne peuvent pas charger ce tableau, car cet ordinateur n'est pas joignable depuis Internet. Pour corriger cela, redirigez le port 4001 (TCP et UDP) de votre routeur vers cet ordinateur, ou activez l'UPnP sur votre routeur. Si votre fournisseur d'accès à Internet ne le permet pas, hébergez plutôt le tableau sur un serveur."
 }

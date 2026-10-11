@@ -523,5 +523,6 @@
   "directory_vote_board_unreachable": "Nem sikerült betölteni a(z) {{address}} táblát a beállításai ellenőrzéséhez. Beküldéshez a táblának online kell lennie.",
   "pin_thread": "szál kitűzése",
   "unpin_thread": "szál kitűzésének megszüntetése",
-  "upload_awaiting_review": "Feltöltve, de a tárhelynek ellenőriznie kell ezt a fájlt, mielőtt megtekinthető lesz. A link a jóváhagyás után kezd működni, ami néhány órát is igénybe vehet. Már most közzéteheted."
+  "upload_awaiting_review": "Feltöltve, de a tárhelynek ellenőriznie kell ezt a fájlt, mielőtt megtekinthető lesz. A link a jóváhagyás után kezd működni, ami néhány órát is igénybe vehet. Már most közzéteheted.",
+  "board_unreachable_from_browsers": "A böngészők nem tudják betölteni ezt a táblát, mert ez a számítógép nem érhető el az internetről. A javításhoz irányítsd át a routereden a 4001-es portot (TCP és UDP) erre a számítógépre, vagy kapcsold be az UPnP-t a routereden. Ha az internetszolgáltatód ezt nem engedi, inkább egy szerveren futtasd a táblát."
 }

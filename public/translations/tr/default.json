@@ -523,5 +523,6 @@
   "directory_vote_board_unreachable": "Ayarlarını kontrol etmek için {{address}} yüklenemedi. Bir panonun gönderilebilmesi için çevrimiçi olması gerekir.",
   "pin_thread": "konuyu sabitle",
   "unpin_thread": "konunun sabitlemesini kaldır",
-  "upload_awaiting_review": "Yüklendi, ancak görüntülenebilmesi için barındırıcının bu dosyayı incelemesi gerekiyor. Bağlantı onaylandığında çalışmaya başlayacak; bu birkaç saat sürebilir. Şimdi gönderebilirsin."
+  "upload_awaiting_review": "Yüklendi, ancak görüntülenebilmesi için barındırıcının bu dosyayı incelemesi gerekiyor. Bağlantı onaylandığında çalışmaya başlayacak; bu birkaç saat sürebilir. Şimdi gönderebilirsin.",
+  "board_unreachable_from_browsers": "Bu bilgisayara internetten erişilemediği için tarayıcılar bu tahtayı yükleyemiyor. Sorunu çözmek için modeminizde 4001 numaralı portu (TCP ve UDP) bu bilgisayara yönlendirin veya modeminizde UPnP'yi etkinleştirin. İnternet sağlayıcınız buna izin vermiyorsa tahtayı bunun yerine bir sunucuda barındırın."
 }

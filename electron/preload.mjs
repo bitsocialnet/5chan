@@ -17,6 +17,7 @@ contextBridge.exposeInMainWorld('electronApi', {
   isElectron: true,
   copyToClipboard: (text) => ipcRenderer.invoke('copy-to-clipboard', text),
   getPlatform: () => ipcRenderer.invoke('get-platform'),
+  getNodeReachability: () => ipcRenderer.invoke('get-node-reachability'),
   automateUploadMedia: (options) => ipcRenderer.invoke('automate-upload-media', options),
   automateUploadGeneratedMedia: (options) => ipcRenderer.invoke('automate-upload-generated-media', options),
   downloadAndInstallUpdate: (options) => ipcRenderer.invoke('download-and-install-update', options),

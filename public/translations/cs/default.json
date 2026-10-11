@@ -523,5 +523,6 @@
   "directory_vote_board_unreachable": "Nepodařilo se načíst {{address}} a ověřit jeho nastavení. Deska musí být online, aby ji bylo možné přidat.",
   "pin_thread": "připnout vlákno",
   "unpin_thread": "odepnout vlákno",
-  "upload_awaiting_review": "Nahráno, ale hostitel musí tento soubor před zobrazením zkontrolovat. Odkaz začne fungovat po schválení, což může trvat několik hodin. Můžete ho zveřejnit už teď."
+  "upload_awaiting_review": "Nahráno, ale hostitel musí tento soubor před zobrazením zkontrolovat. Odkaz začne fungovat po schválení, což může trvat několik hodin. Můžete ho zveřejnit už teď.",
+  "board_unreachable_from_browsers": "Prohlížeče nemohou tuto desku načíst, protože tento počítač není dostupný z internetu. Chcete-li to opravit, přesměrujte na routeru port 4001 (TCP i UDP) na tento počítač, nebo na routeru zapněte UPnP. Pokud to váš poskytovatel internetu neumožňuje, provozujte desku místo toho na serveru."
 }

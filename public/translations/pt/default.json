@@ -523,5 +523,6 @@
   "directory_vote_board_unreachable": "Não foi possível carregar {{address}} para verificar suas configurações. Um board precisa estar online para ser enviado.",
   "pin_thread": "Fixar tópico",
   "unpin_thread": "Desafixar tópico",
-  "upload_awaiting_review": "Enviado, mas o host precisa revisar este arquivo antes que ele possa ser visualizado. O link começará a funcionar assim que for aprovado, o que pode levar algumas horas. Você já pode publicá-lo."
+  "upload_awaiting_review": "Enviado, mas o host precisa revisar este arquivo antes que ele possa ser visualizado. O link começará a funcionar assim que for aprovado, o que pode levar algumas horas. Você já pode publicá-lo.",
+  "board_unreachable_from_browsers": "Os navegadores não conseguem carregar este quadro porque este computador não pode ser acessado pela internet. Para resolver, redirecione a porta 4001 (TCP e UDP) do seu roteador para este computador ou ative o UPnP no seu roteador. Se o seu provedor de internet não permitir isso, hospede o quadro em um servidor."
 }

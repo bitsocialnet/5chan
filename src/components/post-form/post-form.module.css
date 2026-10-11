@@ -51,6 +51,16 @@
   font-weight: 700;
 }
 
+.unreachableBoard {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 10px 15px;
+  text-align: center;
+  color: red;
+  font-size: 10pt;
+  font-weight: 400;
+}
+
 .postFormTable td:first-child {
   background-color: var(--post-form-field-title-background-color);
   color: var(--post-form-field-title-color);

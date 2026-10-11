@@ -523,5 +523,6 @@
   "directory_vote_board_unreachable": "Tidak dapat memuat {{address}} untuk memeriksa pengaturannya. Papan harus online agar dapat dikirim.",
   "pin_thread": "sematkan utas",
   "unpin_thread": "lepas sematan utas",
-  "upload_awaiting_review": "Berhasil diunggah, tetapi host harus meninjau file ini sebelum dapat dilihat. Tautan akan berfungsi setelah disetujui, yang bisa memakan waktu beberapa jam. Anda bisa mempostingnya sekarang."
+  "upload_awaiting_review": "Berhasil diunggah, tetapi host harus meninjau file ini sebelum dapat dilihat. Tautan akan berfungsi setelah disetujui, yang bisa memakan waktu beberapa jam. Anda bisa mempostingnya sekarang.",
+  "board_unreachable_from_browsers": "Browser tidak dapat memuat papan ini karena komputer ini tidak dapat dijangkau dari internet. Untuk memperbaikinya, teruskan port 4001 (TCP dan UDP) di router Anda ke komputer ini, atau aktifkan UPnP di router Anda. Jika penyedia internet Anda tidak mengizinkannya, jalankan papan ini di sebuah server sebagai gantinya."
 }

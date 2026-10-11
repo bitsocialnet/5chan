@@ -32,6 +32,7 @@ declare global {
       isElectron: boolean;
       copyToClipboard: (text: string) => Promise<{ success: boolean; error?: string }>;
       getPlatform: () => Promise<{ platform: NodeJS.Platform; arch: string; version: string }>;
+      getNodeReachability?: () => Promise<'public' | 'private' | 'unknown'>;
       automateUploadMedia: (options: { provider: ProviderId; filePath: string }) => Promise<{ url: string; provider: ProviderId }>;
       automateUploadGeneratedMedia?: (options: {
         provider: ProviderId;

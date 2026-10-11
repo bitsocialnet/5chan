@@ -3,6 +3,7 @@ import { app, BrowserWindow, Menu, MenuItem, Tray, shell, dialog, nativeTheme, n
 import { automateUploadMedia } from './media-upload-automation.js';
 import { prepareStrippedUploadFile } from './strip-media-metadata.js';
 import { downloadAndInstallUpdate } from './app-updater.js';
+import { getNodeReachability } from './node-reachability.js';
 import isDev from 'electron-is-dev';
 import fs from 'fs';
 import path from 'path';
@@ -400,6 +401,9 @@ ipcMain.handle('copy-to-clipboard', async (event, text) => {
     return { success: false, error: error.message };
   }
 });
+
+// Whether peers on the internet can dial this app's node, so the UI can warn that browsers cannot load boards it hosts
+ipcMain.handle('get-node-reachability', () => getNodeReachability());
 
 // Handle request for platform info
 ipcMain.handle('get-platform', async () => {

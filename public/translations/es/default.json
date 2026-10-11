@@ -523,5 +523,6 @@
   "directory_vote_board_unreachable": "No se pudo cargar {{address}} para comprobar su configuración. Un tablón debe estar en línea para poder enviarse.",
   "pin_thread": "Fijar hilo",
   "unpin_thread": "Desfijar hilo",
-  "upload_awaiting_review": "Subido, pero el alojamiento debe revisar este archivo antes de que pueda verse. El enlace empezará a funcionar cuando se apruebe, lo que puede tardar unas horas. Puedes publicarlo ahora."
+  "upload_awaiting_review": "Subido, pero el alojamiento debe revisar este archivo antes de que pueda verse. El enlace empezará a funcionar cuando se apruebe, lo que puede tardar unas horas. Puedes publicarlo ahora.",
+  "board_unreachable_from_browsers": "Los navegadores no pueden cargar este tablero porque este equipo no es accesible desde internet. Para solucionarlo, redirige el puerto 4001 (TCP y UDP) de tu router a este equipo, o activa UPnP en tu router. Si tu proveedor de internet no lo permite, aloja el tablero en un servidor."
 }

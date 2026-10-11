@@ -523,5 +523,6 @@
   "directory_vote_board_unreachable": "Impossibile caricare {{address}} per verificarne le impostazioni. Una board deve essere online per essere proposta.",
   "pin_thread": "Fissa thread",
   "unpin_thread": "Rimuovi fissaggio thread",
-  "upload_awaiting_review": "Caricato, ma l'host deve esaminare questo file prima che possa essere visualizzato. Il link inizierà a funzionare una volta approvato, il che può richiedere qualche ora. Puoi pubblicarlo subito."
+  "upload_awaiting_review": "Caricato, ma l'host deve esaminare questo file prima che possa essere visualizzato. Il link inizierà a funzionare una volta approvato, il che può richiedere qualche ora. Puoi pubblicarlo subito.",
+  "board_unreachable_from_browsers": "I browser non riescono a caricare questa board perché questo computer non è raggiungibile da internet. Per risolvere, inoltra la porta 4001 (TCP e UDP) dal tuo router a questo computer, oppure attiva UPnP sul tuo router. Se il tuo operatore internet non lo consente, ospita invece la board su un server."
 }
