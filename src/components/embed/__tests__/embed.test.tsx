@@ -3,7 +3,7 @@ import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import Embed from '../embed';
-import { canEmbed, getYouTubeVideoId } from '../../../lib/utils/embed-utils';
+import { canEmbed, getVimeoVideo, getYouTubeVideoId } from '../../../lib/utils/embed-utils';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
@@ -76,5 +76,38 @@ describe('Embed', () => {
     expect(canEmbed(new URL('https://www.reddit.com/r/test/comments/abc123/example/'))).toBe(true);
     expect(canEmbed(new URL('https://www.reddit.com/r/test/'))).toBe(false);
     expect(canEmbed(new URL('https://example.com/plain-link'))).toBe(false);
+  });
+
+  it('renders vimeo player embeds and keeps the privacy hash for unlisted videos', async () => {
+    await renderEmbed('https://vimeo.com/22439234');
+
+    expect(container.querySelector<HTMLIFrameElement>('iframe')?.getAttribute('src')).toBe('https://player.vimeo.com/video/22439234?dnt=1');
+
+    await renderEmbed('https://vimeo.com/22439234/8272103f6e');
+
+    expect(container.querySelector<HTMLIFrameElement>('iframe')?.getAttribute('src')).toBe('https://player.vimeo.com/video/22439234?dnt=1&h=8272103f6e');
+
+    await renderEmbed('https://player.vimeo.com/video/22439234?h=8272103f6e&badge=0');
+
+    expect(container.querySelector<HTMLIFrameElement>('iframe')?.getAttribute('src')).toBe('https://player.vimeo.com/video/22439234?dnt=1&h=8272103f6e');
+
+    await renderEmbed('https://vimeo.com/user123');
+
+    expect(container.innerHTML).toBe('');
+  });
+
+  it('extracts vimeo videos from channel, showcase, album and group urls and rejects other vimeo pages', () => {
+    expect(getVimeoVideo(new URL('https://www.vimeo.com/22439234'))).toEqual({ id: '22439234' });
+    expect(getVimeoVideo(new URL('https://vimeo.com/channels/staffpicks/22439234'))).toEqual({ id: '22439234' });
+    expect(getVimeoVideo(new URL('https://vimeo.com/showcase/111/video/22439234'))).toEqual({ id: '22439234' });
+    expect(getVimeoVideo(new URL('https://vimeo.com/album/111/video/22439234'))).toEqual({ id: '22439234' });
+    expect(getVimeoVideo(new URL('https://vimeo.com/groups/shortfilms/videos/22439234'))).toEqual({ id: '22439234' });
+    expect(getVimeoVideo(new URL('https://vimeo.com/22439234/settings'))).toEqual({ id: '22439234' });
+    expect(getVimeoVideo(new URL('https://vimeo.com/channels/staffpicks'))).toBeUndefined();
+    expect(getVimeoVideo(new URL('https://vimeo.com/showcase/111'))).toBeUndefined();
+    expect(getVimeoVideo(new URL('https://example.com/22439234'))).toBeUndefined();
+
+    expect(canEmbed(new URL('https://vimeo.com/22439234'))).toBe(true);
+    expect(canEmbed(new URL('https://vimeo.com/user123'))).toBe(false);
   });
 });

@@ -10,7 +10,9 @@ import {
   streamableHosts,
   tiktokHosts,
   twitchHosts,
+  getVimeoVideo,
   getYouTubeVideoId,
+  vimeoHosts,
   xHosts,
   youtubeHosts,
 } from '../../lib/utils/embed-utils';
@@ -54,6 +56,9 @@ const Embed = ({ url }: EmbedProps) => {
   }
   if (soundcloudHosts.has(parsedUrl.host)) {
     return <SoundcloudEmbed parsedUrl={parsedUrl} />;
+  }
+  if (vimeoHosts.has(parsedUrl.host)) {
+    return <VimeoEmbed parsedUrl={parsedUrl} />;
   }
 };
 
@@ -263,6 +268,33 @@ const StreamableEmbed = ({ parsedUrl }: EmbedComponentProps) => {
       sandbox={remoteEmbedSandbox}
       title={parsedUrl.href}
       src={`https://streamable.com/e/${videoId}`}
+    />
+  );
+};
+
+const VimeoEmbed = ({ parsedUrl }: EmbedComponentProps) => {
+  const video = getVimeoVideo(parsedUrl);
+  if (!video) {
+    return null;
+  }
+
+  // dnt=1 stops the player from setting tracking cookies or recording session analytics.
+  const searchParams = new URLSearchParams({ dnt: '1' });
+  if (video.hash) {
+    searchParams.set('h', video.hash);
+  }
+
+  return (
+    <iframe
+      className={styles.videoEmbed}
+      height='100%'
+      width='100%'
+      referrerPolicy='no-referrer'
+      allow='accelerometer; encrypted-media; gyroscope; picture-in-picture; web-share'
+      allowFullScreen
+      sandbox={remoteEmbedSandbox}
+      title={parsedUrl.href}
+      src={`https://player.vimeo.com/video/${video.id}?${searchParams.toString()}`}
     />
   );
 };

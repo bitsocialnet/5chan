@@ -35,7 +35,6 @@ Source: https://github.com/bitsocialnet/5chan/blob/master/README.md
 [![Release](https://img.shields.io/github/v/release/bitsocialnet/5chan)](https://github.com/bitsocialnet/5chan/releases/latest)
 [![License](https://img.shields.io/badge/license-GPL--3.0--or--later-red.svg)](https://github.com/bitsocialnet/5chan/blob/master/LICENSE)
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/bitsocialnet/5chan)
 
 <img src="https://github.com/plebeius-eth/assets/blob/main/5chan-logo.jpg" width="378" height="123">
 
@@ -207,6 +206,7 @@ For an unexpected repo-specific issue, tell the contributor and continue indepen
 - Keep diffs scoped. Preserve unrelated edits; do not reformat, rename, or refactor adjacent code without a task-related reason.
 - Simplicity must preserve correctness, clarity, accessibility, validation, security, and useful tests.
 - For a bug tied to a file or line, inspect `git log`/`git blame`, then relevant `git show`, before fixing it. See [bug-investigation.md](docs/agent-playbooks/bug-investigation.md).
+- Never work around a `@bitsocial/bitsocial-react-hooks` bug in 5chan. We maintain that library, so fix the root cause there, release it, and bump it here; without access to its repository, open an issue there with the evidence instead.
 - Use existing evidence or a focused test before adding instrumentation. Add runtime logging when it resolves uncertainty; remove task-owned instrumentation after verification.
 
 ## Task router
@@ -566,10 +566,11 @@ Desktop and mobile intentionally differ: desktop stays maximally compact, while 
 
 ### Buttons
 
-- **Shape:** square corners (`0` radius).
+- **Shape:** square corners (`0` radius) on styled buttons; native buttons keep the browser's own shape.
 - **Desktop:** prefer text links, bracketed actions, or image-backed icon buttons over filled button components.
+- **Native buttons:** where a surface shows a visible `<button>` (post form, challenge, settings, and other modals), keep the browser's default appearance, including its hover, focus, and disabled states. Layout, spacing, `cursor`, `text-transform`, and theme-wide adjustments such as the dark-theme `--filter80` dimming are fine; custom text or background colors, borders, radius, and icons are not. Do not color-code actions, for example green for confirm and red for cancel. The plain browser control is part of the classic imageboard look.
 - **Mobile:** use theme-colored rectangular buttons with compact padding, bold `10pt` text, and existing button fade assets.
-- **Hover / Focus:** hover changes color to the theme hover red; focus must stay visible and keyboard accessible.
+- **Hover / Focus:** on text and mobile buttons, hover changes color to the theme hover red; focus must stay visible and keyboard accessible.
 
 ### Cards / Containers
 
@@ -624,6 +625,7 @@ Desktop and mobile intentionally differ: desktop stays maximally compact, while 
 - Do not use pill, capsule, chip, or rounded badge shapes for labels, tags, statuses, transports, or counts.
 - Do not add hover background fills, color fades, or CSS transitions/animations to rows, cards, or list items.
 - Do not replace compact text links with large icon-button toolbars unless the existing surface already uses that pattern.
+- Do not restyle native buttons or color-code actions (for example green confirm and red cancel); keep the browser's default button appearance.
 - Do not introduce a new design system that competes with Yotsuba, Yotsuba B, Futaba, or the existing theme variable model.
 - Do not make Bitsocial, crypto, or decentralization visuals dominate routine browsing.
 - Do not add an emoji picker, emoji shortcode/emote system, or Twemoji-style emoji rendering; emoji pass through as raw Unicode only.

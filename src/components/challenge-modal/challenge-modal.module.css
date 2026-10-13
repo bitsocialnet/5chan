@@ -154,11 +154,6 @@
   margin-top: 10px;
 }
 
-.iframeFooter span {
-  display: inline-flex;
-  gap: 5px;
-}
-
 .iframeInstruction {
   font-size: 11px;
   color: var(--text-secondary, #666);

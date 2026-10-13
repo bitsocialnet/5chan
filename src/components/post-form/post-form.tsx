@@ -59,7 +59,7 @@ import useIsMobile from '../../hooks/use-is-mobile';
 import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
 import { normalizeAccountCommentIndex } from '../../lib/utils/account-comment-index-utils';
 import useFetchGifFirstFrame from '../../hooks/use-fetch-gif-first-frame';
-import { useYouTubeThumbnailLinkConversion } from '../../hooks/use-youtube-thumbnail-link-conversion';
+import { useVideoThumbnailLinkConversion } from '../../hooks/use-video-thumbnail-link-conversion';
 import usePublishSubmissionGuard from '../../hooks/use-publish-submission-guard';
 import usePublishPost from '../../hooks/use-publish-post';
 import usePublishReply from '../../hooks/use-publish-reply';
@@ -894,7 +894,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
 
   const onPublishPost = () =>
     runPublishSubmission(async () => {
-      const appliedYouTubeConversion = await applyPendingConversion();
+      const appliedThumbnailConversion = await applyPendingConversion();
 
       const currentTitle = subjectRef.current?.value.trim() || '';
       const currentDisplayName = nameRef.current?.value.trim() || undefined;
@@ -967,7 +967,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
       await publishPost({
         displayName: currentDisplayName,
         content: publishContent,
-        ...getPublishLinkOptions(currentUrl, appliedYouTubeConversion || (hasRestoredDraftRef.current && Boolean(currentUrl))),
+        ...getPublishLinkOptions(currentUrl, appliedThumbnailConversion || (hasRestoredDraftRef.current && Boolean(currentUrl))),
         ...publishOptions,
         ...(hasRestoredDraftRef.current && draft.communityAddress ? { communityAddress: draft.communityAddress } : {}),
         ...(hasRestoredDraftRef.current && draft.spoiler ? { spoiler: true } : {}),
@@ -1061,7 +1061,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
 
   const onPublishReply = () =>
     runPublishSubmission(async () => {
-      const appliedYouTubeConversion = await applyPendingConversion();
+      const appliedThumbnailConversion = await applyPendingConversion();
 
       const currentUrl = urlRef.current?.value.trim() || '';
       const currentDisplayName = nameRef.current?.value.trim() || undefined;
@@ -1120,7 +1120,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
       await publishReply({
         displayName: currentDisplayName,
         content: publishContent,
-        ...getPublishLinkOptions(currentUrl, appliedYouTubeConversion || (hasRestoredDraftRef.current && Boolean(currentUrl))),
+        ...getPublishLinkOptions(currentUrl, appliedThumbnailConversion || (hasRestoredDraftRef.current && Boolean(currentUrl))),
         ...flagPublishOptions,
         ...(hasRestoredDraftRef.current && draft.spoiler ? { spoiler: true } : {}),
       });
@@ -1139,9 +1139,9 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
   const {
     applyPendingConversion,
     cancelPendingConversion,
-    noticeCountdown: youtubeThumbnailConversionCountdown,
+    notice: thumbnailConversionNotice,
     queueLinkConversion,
-  } = useYouTubeThumbnailLinkConversion({
+  } = useVideoThumbnailLinkConversion({
     enabled: requireCurrentLinkIsMedia && !(isInPostView && noReplyLinks),
     onContentChange: handleConvertedContentChange,
     onLinkChange: setLinkValue,
@@ -1206,7 +1206,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
     }
   };
   const uploadMode = useMediaHostingStore((state) => state.uploadMode);
-  const showUploadControls = getShowUploadControls(uploadMode, isWebRuntime());
+  const showUploadControls = getShowUploadControls(uploadMode);
 
   return (
     <>
@@ -1233,7 +1233,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
             handleLinkChange={handleLinkChange}
             handleLinkBlur={handleLinkBlur}
             handleOptionsChange={handleOptionsChange}
-            disableLinkInput={isUploading || youtubeThumbnailConversionCountdown !== null || (isInPostView && noReplyLinks)}
+            disableLinkInput={isUploading || thumbnailConversionNotice !== null || (isInPostView && noReplyLinks)}
             mediaLoadResult={mediaLoadResult}
             onMediaLoadStatusChange={handleMediaLoadStatusChange}
             setPublishPostOptions={setPublishPostOptions}
@@ -1275,8 +1275,12 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
         <tfoot>
           {moderationPostingWarning ? <PostFormErrorRow>{moderationPostingWarning}</PostFormErrorRow> : null}
           {lengthError ? <PostFormErrorRow>{lengthError}</PostFormErrorRow> : null}
-          {youtubeThumbnailConversionCountdown !== null ? (
-            <PostFormErrorRow ariaLive='polite'>{t('youtube_thumbnail_link_conversion_notice', { count: youtubeThumbnailConversionCountdown })}</PostFormErrorRow>
+          {thumbnailConversionNotice ? (
+            <PostFormErrorRow ariaLive='polite'>
+              {thumbnailConversionNotice.site === 'vimeo'
+                ? t('vimeo_thumbnail_link_conversion_notice', { count: thumbnailConversionNotice.countdown })
+                : t('youtube_thumbnail_link_conversion_notice', { count: thumbnailConversionNotice.countdown })}
+            </PostFormErrorRow>
           ) : currentMediaLoadError ? (
             <PostFormErrorRow>{currentMediaLoadError}</PostFormErrorRow>
           ) : formError ? (

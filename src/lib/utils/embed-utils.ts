@@ -33,6 +33,32 @@ export const bitchuteHosts = new Set<string>(['bitchute.com', 'www.bitchute.com'
 export const streamableHosts = new Set<string>(['streamable.com', 'www.streamable.com']);
 export const spotifyHosts = new Set<string>(['spotify.com', 'www.spotify.com', 'open.spotify.com']);
 export const soundcloudHosts = new Set<string>(['soundcloud.com', 'www.soundcloud.com', 'on.soundcloud.com', 'api.soundcloud.com', 'w.soundcloud.com']);
+export const vimeoHosts = new Set<string>(['vimeo.com', 'www.vimeo.com', 'player.vimeo.com']);
+
+export interface VimeoVideo {
+  id: string;
+  // Unlisted videos only play when the embed carries their privacy hash.
+  hash?: string;
+}
+
+// Covers vimeo.com/{id}, unlisted vimeo.com/{id}/{hash}, channels/{name}/{id},
+// album|showcase/{id}/video/{id}, groups/{name}/videos/{id} and player.vimeo.com/video/{id}?h={hash}.
+export const getVimeoVideo = (parsedUrl: URL): VimeoVideo | undefined => {
+  if (!vimeoHosts.has(parsedUrl.host)) {
+    return undefined;
+  }
+
+  const pathParts = parsedUrl.pathname.split('/').filter(Boolean);
+  const videoKeywordIndex = Math.max(pathParts.lastIndexOf('video'), pathParts.lastIndexOf('videos'));
+  const idIndex = videoKeywordIndex >= 0 ? videoKeywordIndex + 1 : pathParts[0] === 'channels' ? 2 : 0;
+  const id = pathParts[idIndex];
+  if (!id || !/^\d+$/.test(id)) {
+    return undefined;
+  }
+
+  const hash = parsedUrl.searchParams.get('h') || pathParts[idIndex + 1];
+  return hash && /^[\da-f]+$/i.test(hash) ? { id, hash } : { id };
+};
 
 const canEmbedHosts = new Set<string>([
   ...youtubeHosts,
@@ -46,6 +72,7 @@ const canEmbedHosts = new Set<string>([
   ...soundcloudHosts,
   ...streamableHosts,
   ...spotifyHosts,
+  ...vimeoHosts,
 ]);
 
 export const getYouTubeVideoId = (parsedUrl: URL): string | null => {
@@ -85,6 +112,10 @@ export const canEmbed = (parsedUrl: URL): boolean => {
   if (redditHosts.has(parsedUrl.host)) {
     // Reddit posts are not embeddable if the URL does not include '/comments/'
     return parsedUrl.pathname.includes('/comments/');
+  }
+
+  if (vimeoHosts.has(parsedUrl.host)) {
+    return Boolean(getVimeoVideo(parsedUrl));
   }
 
   return canEmbedHosts.has(parsedUrl.host) || (parsedUrl.host.startsWith('yt.') && parsedUrl.searchParams.has('v'));

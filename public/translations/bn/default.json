@@ -238,7 +238,6 @@
   "posts_auto_update_info": "পোস্টগুলি প্রতি ~2 মিনিটে স্বয়ংক্রিয়ভাবে আপডেট হয়। বর্তমানে এটি অক্ষম করা সম্ভব নয়।",
   "board_address_tooltip": "এই বোর্ডের পিয়ার-টু-পিয়ার নোডের ঠিকানা",
   "upload_failed": "আপলোড ব্যর্থ",
-  "upload_not_supported_web": "প্রযুক্তিগত সীমাবদ্ধতার কারণে (CORS) আপনার ব্রাউজার মিডিয়া আপলোড সমর্থন করে না। এটি 5chan অ্যান্ড্রয়েড অ্যাপ এবং Mac/Linux/Windows ডেস্কটপ অ্যাপে সমর্থিত। অফিসিয়াল রিলিজ পৃষ্ঠা থেকে ডাউনলোড করুন: https://github.com/bitsocialnet/5chan/releases/latest",
   "file": "ফাইল",
   "media_hosting_none": "কোনো নয়",
   "media_hosting_none_tip": "পোস্ট এবং রিপ্লাই ফর্ম থেকে ফাইল আপলোড বাটন লুকায়",
@@ -251,8 +250,6 @@
   "media_hosting_preferred_provider_label": "প্রদানকারী নির্বাচন করুন",
   "media_hosting_preferred_failure_guidance": "যদি আপনার পছন্দের প্রদানকারী ব্যর্থ হয়, অ্যাপটি অন্যান্য প্রদানকারীদের চেষ্টা করবে (এলোমেলো মোড) বা একটি ত্রুটি দেখাবে (পছন্দের মোড)।",
   "media_hosting_all_providers_failed_guidance": "সমস্ত আপলোড প্রদানকারী ব্যর্থ। আবার চেষ্টা করুন বা লিঙ্ক ম্যানুয়ালি পেস্ট করুন।",
-  "upload_not_supported_web_before_link": "প্রযুক্তিগত সীমাবদ্ধতার কারণে (CORS) আপনার ব্রাউজার মিডিয়া আপলোড সমর্থন করে না। এটি 5chan অ্যান্ড্রয়েড অ্যাপ এবং Mac/Linux/Windows ডেস্কটপ অ্যাপে সমর্থিত।",
-  "upload_not_supported_web_link_text": "অফিসিয়াল রিলিজ পৃষ্ঠা থেকে ডাউনলোড করুন",
   "board_subscriptions": "বোর্ড সাবস্ক্রিপশন",
   "chain_ticker": "চেইন টিকার",
   "enable_infinite_scroll": "অসীম স্ক্রল সক্ষম করুন",
@@ -569,5 +566,12 @@
   "create_board_role_moderator": "মডারেটর",
   "create_board_rule_label": "নিয়ম {{number}}",
   "create_board_moderator_help": "মডারেটররা পোস্ট ও ব্যবহারকারীদের মডারেট করতে পারেন।",
-  "create_board_admin_help": "প্রশাসকরা বোর্ডের সর্বজনীন সেটিংসও সম্পাদনা করতে পারেন, তবে ভূমিকা পরিচালনা করতে পারেন না।"
+  "create_board_admin_help": "প্রশাসকরা বোর্ডের সর্বজনীন সেটিংসও সম্পাদনা করতে পারেন, তবে ভূমিকা পরিচালনা করতে পারেন না।",
+  "upload_awaiting_review": "আপলোড হয়েছে, তবে দেখা যাওয়ার আগে হোস্টকে এই ফাইলটি পর্যালোচনা করতে হবে। অনুমোদিত হলে লিঙ্কটি কাজ করা শুরু করবে, এতে কয়েক ঘণ্টা লাগতে পারে। আপনি এখনই এটি পোস্ট করতে পারেন।",
+  "vimeo_thumbnail_link_conversion_notice": "Vimeo লিংক শনাক্ত হয়েছে। {{count}}-এর মধ্যে থাম্বনেইল ছবি পেস্ট করা হচ্ছে...",
+  "persistent_boards_bar": "বোর্ড বার উপরে রাখুন",
+  "persistent_boards_bar_tip": "স্ক্রল করার সময় বোর্ডের তালিকা দেখা যায়।",
+  "use_traditional_board_list": "প্রচলিত বোর্ড তালিকা ব্যবহার করুন",
+  "auto_hide_on_scroll": "স্ক্রল করলে স্বয়ংক্রিয়ভাবে লুকান",
+  "open_challenge": "চ্যালেঞ্জ খুলুন"
 }

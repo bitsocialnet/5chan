@@ -98,12 +98,10 @@ const getIframeSessionId = (challengeUrl: string) => {
 interface IframeChallengeProps {
   challenge: string;
   confirmMessage: string;
-  onCancel: () => void;
   onDone: () => void;
   onAutoComplete: (challengeAnswers: string[]) => void;
   onReady: () => void;
   openLabel: string;
-  closeLabel: string;
   rememberPermissionLabel: string;
   publicationDetails: React.ReactNode;
 }
@@ -122,12 +120,10 @@ const getIframeSandbox = (iframeOrigin: string) => {
 const IframeChallenge = ({
   challenge,
   confirmMessage,
-  onCancel,
   onDone,
   onAutoComplete,
   onReady,
   openLabel,
-  closeLabel,
   rememberPermissionLabel,
   publicationDetails,
 }: IframeChallengeProps) => {
@@ -217,10 +213,6 @@ const IframeChallenge = ({
     handleLoadIframe('manual');
   }, [handleLoadIframe]);
 
-  const handleInlineCancel = useCallback(() => {
-    onCancel();
-  }, [onCancel]);
-
   const sendThemeToIframe = useCallback(() => {
     postThemeToIframe(iframeRef.current, iframeFrame?.origin ?? '', theme);
   }, [iframeFrame?.origin, theme]);
@@ -278,18 +270,13 @@ const IframeChallenge = ({
             </label>
           )}
         </div>
-        <div className={`${styles.challengeFooter} ${styles.iframeFooter}`}>
-          <span>
-            {!inlineErrorMessage && (
-              <button type='button' onClick={handleInlineConfirm}>
-                {openLabel}
-              </button>
-            )}
-            <button type='button' onClick={handleInlineCancel}>
-              {closeLabel}
+        {!inlineErrorMessage && (
+          <div className={`${styles.challengeFooter} ${styles.iframeFooter}`}>
+            <button type='button' onClick={handleInlineConfirm}>
+              {openLabel}
             </button>
-          </span>
-        </div>
+          </div>
+        )}
       </>
     );
   }
@@ -544,12 +531,10 @@ const Challenge = ({ challenge, closeModal, abandonModal }: ChallengeProps) => {
             key={currentChallengeIndex}
             challenge={currentChallenge?.challenge ?? ''}
             confirmMessage={iframeConfirmMessage}
-            onCancel={abandonModal}
             onDone={onIframeDone}
             onAutoComplete={onIframeAutoComplete}
             onReady={onIframeReady}
-            openLabel={capitalize(t('open'))}
-            closeLabel={t('close')}
+            openLabel={t('open_challenge')}
             rememberPermissionLabel={t('trusted_board_link_checkbox')}
             publicationDetails={publicationDetails}
           />

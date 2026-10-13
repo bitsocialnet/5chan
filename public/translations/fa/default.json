@@ -238,7 +238,6 @@
   "posts_auto_update_info": "پست‌ها هر ~2 دقیقه به‌طور خودکار به‌روز می‌شوند. فعلاً امکان غیرفعال کردن آن وجود ندارد.",
   "board_address_tooltip": "آدرس گره هم‌تا-همتای این تخته",
   "upload_failed": "آپلود ناموفق بود",
-  "upload_not_supported_web": "آپلود رسانه توسط مرورگر شما به دلیل محدودیت‌های فنی (CORS) پشتیبانی نمی‌شود. در اپلیکیشن 5chan اندروید و اپلیکیشن دسکتاپ Mac/Linux/Windows پشتیبانی می‌شود. از صفحه انتشار رسمی دانلود کنید: https://github.com/bitsocialnet/5chan/releases/latest",
   "file": "فایل",
   "media_hosting_none": "هیچ کدام",
   "media_hosting_none_tip": "دکمه بارگذاری فایل را از فرم‌های پست و پاسخ مخفی می‌کند",
@@ -251,8 +250,6 @@
   "media_hosting_preferred_provider_label": "ارائه‌دهنده را انتخاب کنید",
   "media_hosting_preferred_failure_guidance": "اگر ارائه‌دهنده ترجیحی شما ناموفق باشد، برنامه ارائه‌دهندگان دیگر را امتحان می‌کند (حالت تصادفی) یا خطا نمایش می‌دهد (حالت ترجیحی).",
   "media_hosting_all_providers_failed_guidance": "همه ارائه‌دهندگان آپلود ناموفق بودند. دوباره تلاش کنید یا لینک را دستی جایگذاری کنید.",
-  "upload_not_supported_web_before_link": "آپلود رسانه به دلیل محدودیت‌های فنی (CORS) توسط مرورگر شما پشتیبانی نمی‌شود. در اپلیکیشن 5chan اندروید و اپلیکیشن دسکتاپ Mac/Linux/Windows پشتیبانی می‌شود.",
-  "upload_not_supported_web_link_text": "دانلود از صفحه انتشار رسمی",
   "board_subscriptions": "اشتراک‌های تابلو",
   "chain_ticker": "نماد زنجیره",
   "enable_infinite_scroll": "فعال کردن اسکرول بی‌نهایت",
@@ -569,5 +566,12 @@
   "create_board_role_moderator": "مدیر",
   "create_board_rule_label": "قانون {{number}}",
   "create_board_moderator_help": "مدیران می‌توانند بر پست‌ها و کاربران نظارت کنند.",
-  "create_board_admin_help": "مدیران کل همچنین می‌توانند تنظیمات عمومی تابلو را ویرایش کنند، اما نمی‌توانند نقش‌ها را مدیریت کنند."
+  "create_board_admin_help": "مدیران کل همچنین می‌توانند تنظیمات عمومی تابلو را ویرایش کنند، اما نمی‌توانند نقش‌ها را مدیریت کنند.",
+  "upload_awaiting_review": "بارگذاری شد، اما میزبان باید این فایل را پیش از قابل‌مشاهده شدن بررسی کند. پیوند پس از تأیید کار خواهد کرد که ممکن است چند ساعت طول بکشد. می‌توانید همین حالا آن را ارسال کنید.",
+  "vimeo_thumbnail_link_conversion_notice": "پیوند Vimeo شناسایی شد. در حال چسباندن تصویر بندانگشتی در {{count}}...",
+  "persistent_boards_bar": "نوار بردها را بالا نگه دار",
+  "persistent_boards_bar_tip": "فهرست بردها هنگام اسکرول نمایان می‌ماند.",
+  "use_traditional_board_list": "استفاده از فهرست سنتی بردها",
+  "auto_hide_on_scroll": "پنهان‌سازی خودکار هنگام اسکرول",
+  "open_challenge": "باز کردن چالش"
 }

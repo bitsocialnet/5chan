@@ -55,6 +55,40 @@ describe('thread-scroll-utils', () => {
     });
   });
 
+  const appendPinnedTopBar = (mode: 'fixed' | 'auto-hide') => {
+    const pinnedBar = document.createElement('div');
+    pinnedBar.dataset.pinnedTopBar = mode;
+    Object.defineProperty(pinnedBar, 'offsetHeight', { configurable: true, value: 30 });
+    document.body.appendChild(pinnedBar);
+  };
+
+  it('keeps the thread top below a pinned boards bar', () => {
+    appendThreadContainer({ cid: 'thread-cid', top: 240 });
+    appendPinnedTopBar('fixed');
+
+    expect(scrollThreadContainerToTop('thread-cid')).toBe(true);
+
+    expect(scrollToMock).toHaveBeenCalledWith({ behavior: 'auto', left: 0, top: 242 });
+  });
+
+  it('lets an auto-hiding boards bar slide out when scrolling down to the thread top', () => {
+    appendThreadContainer({ cid: 'thread-cid', top: 240 });
+    appendPinnedTopBar('auto-hide');
+
+    scrollThreadContainerToTop('thread-cid');
+
+    expect(scrollToMock).toHaveBeenCalledWith({ behavior: 'auto', left: 0, top: 272 });
+  });
+
+  it('keeps the thread top below an auto-hiding boards bar when scrolling up to it', () => {
+    appendThreadContainer({ cid: 'thread-cid', top: -20 });
+    appendPinnedTopBar('auto-hide');
+
+    scrollThreadContainerToTop('thread-cid');
+
+    expect(scrollToMock).toHaveBeenCalledWith({ behavior: 'auto', left: 0, top: -18 });
+  });
+
   it('ignores preview copies when resolving the scroll target', () => {
     const previewWrapper = document.createElement('div');
     previewWrapper.dataset.threadScrollPreview = 'true';

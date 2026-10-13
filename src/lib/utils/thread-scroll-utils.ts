@@ -1,4 +1,14 @@
 const THREAD_SCROLL_PREVIEW_SELECTOR = '[data-thread-scroll-preview="true"]';
+// The persistent boards bar marks itself while pinned over the top of the page: "fixed" stays in view,
+// "auto-hide" slides out while the page scrolls down and back in while it scrolls up.
+const PINNED_TOP_BAR_SELECTOR = '[data-pinned-top-bar]';
+
+const getPinnedTopBarOffset = (targetTop: number) => {
+  const pinnedTopBar = document.querySelector<HTMLElement>(PINNED_TOP_BAR_SELECTOR);
+  if (!pinnedTopBar) return 0;
+  const coversTarget = pinnedTopBar.dataset.pinnedTopBar === 'fixed' || targetTop < window.scrollY;
+  return coversTarget ? pinnedTopBar.offsetHeight : 0;
+};
 
 type ThreadTopNavigationState = {
   scrollThreadContainerCid?: string;
@@ -36,9 +46,9 @@ export const scrollThreadContainerToTop = (cid?: string) => {
   const threadContainer = findPreferredScrollTarget(`[data-thread-container-cid="${cid}"]`);
   if (!threadContainer) return false;
 
-  const desiredTop = window.scrollY + threadContainer.getBoundingClientRect().top;
+  const targetTop = window.scrollY + threadContainer.getBoundingClientRect().top;
   window.scrollTo({
-    top: desiredTop,
+    top: targetTop - getPinnedTopBarOffset(targetTop),
     left: 0,
     behavior: 'auto',
   });
