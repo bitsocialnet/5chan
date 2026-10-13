@@ -524,5 +524,11 @@
   "pin_thread": "fixează firul",
   "unpin_thread": "anulează fixarea firului",
   "upload_awaiting_review": "Încărcat, dar gazda trebuie să verifice acest fișier înainte să poată fi vizualizat. Linkul va începe să funcționeze după aprobare, ceea ce poate dura câteva ore. Îl poți publica acum.",
+  "vimeo_thumbnail_link_conversion_notice": "Link Vimeo detectat. Lipesc imaginea miniatură în {{count}}...",
+  "persistent_boards_bar": "Păstrează bara de boarduri sus",
+  "persistent_boards_bar_tip": "Lista de boarduri rămâne vizibilă în timp ce derulezi.",
+  "use_traditional_board_list": "Folosește lista tradițională de boarduri",
+  "auto_hide_on_scroll": "Ascunde automat la derulare",
+  "open_challenge": "Deschide provocarea",
   "board_unreachable_from_browsers": "Browserele nu pot încărca acest tablou, deoarece acest calculator nu poate fi accesat de pe internet. Ca să rezolvi asta, redirecționează portul 4001 (TCP și UDP) din routerul tău către acest calculator sau activează UPnP pe router. Dacă furnizorul tău de internet nu permite asta, găzduiește în schimb tabloul pe un server."
 }

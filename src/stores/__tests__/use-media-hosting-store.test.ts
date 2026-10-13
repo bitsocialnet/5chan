@@ -25,7 +25,7 @@ describe('useMediaHostingStore', () => {
     expect(forge).toEqual({
       id: 'forge',
       label: 'Forge Images',
-      homepageUrl: 'https://bitsocialforge.com',
+      homepageUrl: 'https://images.bitsocialforge.com',
       availabilityProbeUrls: [
         `${FORGE_IMAGES_MEDIA_ORIGIN}/2aa4fa20701cdd6d8d56046069001186b5267e3ee7d0ef618ad2f4a683723e11.png`,
         `${FORGE_IMAGES_API_ORIGIN}/health.png`,

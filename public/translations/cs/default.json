@@ -524,5 +524,11 @@
   "pin_thread": "připnout vlákno",
   "unpin_thread": "odepnout vlákno",
   "upload_awaiting_review": "Nahráno, ale hostitel musí tento soubor před zobrazením zkontrolovat. Odkaz začne fungovat po schválení, což může trvat několik hodin. Můžete ho zveřejnit už teď.",
+  "vimeo_thumbnail_link_conversion_notice": "Byl zjištěn odkaz na Vimeo. Vkládám náhledový obrázek za {{count}}...",
+  "persistent_boards_bar": "Ponechat lištu nástěnek nahoře",
+  "persistent_boards_bar_tip": "Seznam nástěnek zůstane viditelný i při posouvání.",
+  "use_traditional_board_list": "Použít tradiční seznam nástěnek",
+  "auto_hide_on_scroll": "Automaticky skrýt při posouvání",
+  "open_challenge": "Otevřít výzvu",
   "board_unreachable_from_browsers": "Prohlížeče nemohou tuto desku načíst, protože tento počítač není dostupný z internetu. Chcete-li to opravit, přesměrujte na routeru port 4001 (TCP i UDP) na tento počítač, nebo na routeru zapněte UPnP. Pokud to váš poskytovatel internetu neumožňuje, provozujte desku místo toho na serveru."
 }

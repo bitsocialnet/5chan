@@ -12,7 +12,7 @@ Secondary users include board owners, board moderators, and contributors buildin
 
 ## Product Purpose
 
-5chan exists to preserve the classic imageboard habit while removing the dependency on global admins. It keeps the familiar imageboard directory structure and browsing experience, but runs on the Bitsocial protocol so anyone can create, own, and moderate boards independently.
+5chan is meant to replace 4chan for people who already use it. It exists to preserve the classic imageboard habit while removing the dependency on global admins. It keeps the familiar imageboard directory structure and browsing experience, but runs on the Bitsocial protocol so anyone can create, own, and moderate boards independently.
 
 Success means experienced imageboard users do not need to relearn how to browse, post, reply, search, use catalogs, read threads, or understand board identity. The decentralization should matter structurally, but it should not make the core user experience feel unfamiliar.
 
@@ -22,13 +22,15 @@ Success means experienced imageboard users do not need to relearn how to browse,
 
 The voice is plain and direct. Prefer short labels, conventional imageboard wording, and visible system behavior over explanatory product copy.
 
+Describe 5chan with claims that hold literally: "decentralized", "no global admins", "posts are shared peer-to-peer". Avoid absolutes such as "fully decentralized", "no servers", or "all content", which the website's domain, optional media hosts, and curated directory lists let critics dispute.
+
 ## Anti-references
 
 Do not make 5chan look like a modern social network, crypto app, SaaS dashboard, mobile-first content platform, or polished community product. Avoid feed algorithms, engagement framing, large hero layouts, decorative cards, rounded modern controls, soft gradients, animated brand flourishes, and "Web3" visual language.
 
 Do not modernize classic imageboard affordances unless there is a concrete usability, accessibility, or protocol-driven reason. When 5chan needs custom decentralized features, they should look like they belong inside the existing classic imageboard UI.
 
-Do not imply official affiliation with any existing imageboard. The design goal is alignment with long-standing imageboard user expectations, not brand ownership or endorsement.
+Do not imply official affiliation with any existing imageboard. The design goal is alignment with long-standing imageboard user expectations, not brand ownership or endorsement. Naming 4chan as what 5chan is meant to replace is fine; claiming its brand, affiliation, or endorsement is not.
 
 ## Text and Expression
 

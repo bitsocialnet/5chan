@@ -1075,6 +1075,43 @@ describe('ReplyModal', () => {
     });
   });
 
+  it('moves Vimeo links into reply content and publishes the oEmbed thumbnail as a jpg file link', async () => {
+    const vimeoLink = 'https://vimeo.com/1070224898';
+    const thumbnailLink = 'https://i.vimeocdn.com/video/1998712625-bf894a18-d_1280.jpg';
+    testState.fetchMock.mockImplementation(async (url: string) =>
+      url.startsWith('https://vimeo.com/api/oembed.json?')
+        ? { ok: true, json: async () => ({ thumbnail_url: 'https://i.vimeocdn.com/video/1998712625-bf894a18-d_640?region=us' }) }
+        : { ok: false, status: 404 },
+    );
+    testState.openEmpty = true;
+    testState.selectedText = 'reply body';
+    testState.directoryByAddress['music-posting.eth'] = {
+      address: 'music-posting.eth',
+      features: { requireReplyLinkIsMedia: true },
+      title: '/mu/ - Music',
+    };
+
+    await renderReplyModal('/mu/thread/post-1');
+
+    const textarea = container.querySelector<HTMLTextAreaElement>('textarea') as HTMLTextAreaElement;
+    const linkInput = container.querySelectorAll<HTMLInputElement>('input[type="text"]')[2];
+    textarea.setSelectionRange('reply'.length, 'reply'.length);
+
+    await dispatchInput(linkInput, vimeoLink);
+
+    expect(container.textContent).toContain('vimeo_thumbnail_link_conversion_notice:{"count":3}');
+
+    await clickButtonByText('post');
+
+    expect(testState.fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining('https://vimeo.com/api/oembed.json?url=https%3A%2F%2Fvimeo.com%2F1070224898'),
+      expect.anything(),
+    );
+    expect(linkInput.value).toBe(thumbnailLink);
+    expect(textarea.value).toBe(`reply ${vimeoLink} body`);
+    expect(testState.publishReplyMock).toHaveBeenCalledWith(expect.objectContaining({ content: `reply ${vimeoLink} body`, link: thumbnailLink }));
+  });
+
   it('automatically moves YouTube links into reply content when reply media links are optional', async () => {
     const youtubeLink = 'https://youtu.be/replyoptional';
     const thumbnailLink = 'https://img.youtube.com/vi/replyoptional/maxresdefault.jpg';

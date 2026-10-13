@@ -524,5 +524,11 @@
   "pin_thread": "konuyu sabitle",
   "unpin_thread": "konunun sabitlemesini kaldır",
   "upload_awaiting_review": "Yüklendi, ancak görüntülenebilmesi için barındırıcının bu dosyayı incelemesi gerekiyor. Bağlantı onaylandığında çalışmaya başlayacak; bu birkaç saat sürebilir. Şimdi gönderebilirsin.",
+  "vimeo_thumbnail_link_conversion_notice": "Vimeo bağlantısı algılandı. Küçük resim {{count}} içinde yapıştırılıyor...",
+  "persistent_boards_bar": "Pano çubuğunu üstte tut",
+  "persistent_boards_bar_tip": "Kaydırırken pano listesi görünür kalır.",
+  "use_traditional_board_list": "Geleneksel pano listesini kullan",
+  "auto_hide_on_scroll": "Kaydırırken otomatik gizle",
+  "open_challenge": "Zorluğu aç",
   "board_unreachable_from_browsers": "Bu bilgisayara internetten erişilemediği için tarayıcılar bu tahtayı yükleyemiyor. Sorunu çözmek için modeminizde 4001 numaralı portu (TCP ve UDP) bu bilgisayara yönlendirin veya modeminizde UPnP'yi etkinleştirin. İnternet sağlayıcınız buna izin vermiyorsa tahtayı bunun yerine bir sunucuda barındırın."
 }

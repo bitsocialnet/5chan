@@ -32,12 +32,12 @@ const FAQ_SECTIONS: FAQSection[] = [
         question: 'What is 5chan?',
         answer: (
           <>
-            5chan is a serverless, adminless, decentralized imageboard built on the{' '}
+            5chan is meant to replace 4chan for people who already use it. It's a decentralized, open-source imageboard built on the{' '}
             <a href='https://bitsocial.net' {...externalLinkProps}>
               Bitsocial
             </a>{' '}
-            protocol. It keeps the familiar board, thread, and anonymous posting flow of imageboards, but boards are Bitsocial communities owned by their operators
-            instead of by one global website administrator.
+            protocol. It keeps 4chan's familiar board, thread, and anonymous posting flow, but boards are Bitsocial communities owned by their operators instead of by one
+            global website administrator.
           </>
         ),
       },
@@ -432,6 +432,18 @@ const FAQ_SECTIONS: FAQSection[] = [
           <>
             Subscribe to a board to keep it in your top bar and in <Link to='/subs'>/subs/</Link>. Subscriptions are stored in your local account data, so back up your
             account if you want to move them to another device.
+          </>
+        ),
+      },
+      {
+        id: 'yous',
+        question: 'Why are my (You)s missing on another device?',
+        answer: (
+          <>
+            5chan adds <code>(You)</code> to quotes of your posts by checking the post history stored in your local account data. Posts made on another device or browser
+            are not in that history, and most boards replace your address with a per-thread or per-reply ID, so 5chan cannot recognize them as yours. On the device you
+            posted from, use Download Backup in the account settings, then use Import Account Backup here and select the imported account. The import is a separate copy,
+            so posts made from this device under your previous account keep their <code>(You)</code> only while that account is selected.
           </>
         ),
       },

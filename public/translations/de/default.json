@@ -524,5 +524,11 @@
   "pin_thread": "Thread anheften",
   "unpin_thread": "Thread lösen",
   "upload_awaiting_review": "Hochgeladen, aber der Host muss diese Datei prüfen, bevor sie angezeigt werden kann. Der Link funktioniert, sobald sie freigegeben ist, was einige Stunden dauern kann. Du kannst sie jetzt schon posten.",
+  "vimeo_thumbnail_link_conversion_notice": "Vimeo-Link erkannt. Vorschaubild wird in {{count}} eingefügt...",
+  "persistent_boards_bar": "Boardleiste oben fixieren",
+  "persistent_boards_bar_tip": "Die Boardliste bleibt beim Scrollen sichtbar.",
+  "use_traditional_board_list": "Klassische Boardliste verwenden",
+  "auto_hide_on_scroll": "Beim Scrollen automatisch ausblenden",
+  "open_challenge": "Herausforderung öffnen",
   "board_unreachable_from_browsers": "Browser können dieses Board nicht laden, weil dieser Computer aus dem Internet nicht erreichbar ist. Um das zu beheben, leite Port 4001 (TCP und UDP) in deinem Router an diesen Computer weiter oder aktiviere UPnP in deinem Router. Wenn dein Internetanbieter das nicht zulässt, hoste das Board stattdessen auf einem Server."
 }

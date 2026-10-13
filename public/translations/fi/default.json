@@ -524,5 +524,11 @@
   "pin_thread": "kiinnitä keskustelu",
   "unpin_thread": "irrota keskustelu",
   "upload_awaiting_review": "Ladattu, mutta palvelun on tarkistettava tämä tiedosto ennen kuin sitä voi katsoa. Linkki alkaa toimia, kun tiedosto on hyväksytty, mikä voi kestää muutaman tunnin. Voit julkaista sen nyt.",
+  "vimeo_thumbnail_link_conversion_notice": "Vimeo-linkki havaittu. Liitetään pikkukuva {{count}} kuluttua...",
+  "persistent_boards_bar": "Pidä taululuettelo ylhäällä",
+  "persistent_boards_bar_tip": "Taululuettelo pysyy näkyvissä vierittäessä.",
+  "use_traditional_board_list": "Käytä perinteistä taululuetteloa",
+  "auto_hide_on_scroll": "Piilota automaattisesti vierittäessä",
+  "open_challenge": "Avaa haaste",
   "board_unreachable_from_browsers": "Selaimet eivät pysty lataamaan tätä taulua, koska tähän tietokoneeseen ei saada yhteyttä internetistä. Korjaa tämä ohjaamalla portti 4001 (TCP ja UDP) reitittimessäsi tähän tietokoneeseen tai ottamalla UPnP käyttöön reitittimessäsi. Jos operaattorisi ei salli sitä, ylläpidä taulua sen sijaan palvelimella."
 }

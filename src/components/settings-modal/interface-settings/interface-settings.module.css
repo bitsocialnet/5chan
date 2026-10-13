@@ -54,3 +54,25 @@
 .updateStatus {
   margin-left: 8px;
 }
+
+/* Options of the setting above, with the same corner connector as 4chan's settings. */
+.subSetting {
+  margin-left: 25px;
+}
+
+.subSetting label::before {
+  border-bottom: 1px solid;
+  border-left: 1px solid;
+  content: " ";
+  display: inline-block;
+  height: 8px;
+  margin: 0 4px 5px 0;
+  width: 8px;
+}
+
+/* The boards bar is already fixed on mobile, so the option only matters on desktop. */
+@media (max-width: 640px) {
+  .desktopOnlySetting {
+    display: none;
+  }
+}

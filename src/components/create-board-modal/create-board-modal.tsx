@@ -51,8 +51,8 @@ const CreateBoardModal = () => {
           <div className={styles.section}>
             <h3>Decentralization</h3>
             <p>
-              Devs can change directories via commits in the open-source repo. No centralized servers; anyone can fork, modify, and redeploy to their own domain. 5chan is
-              adminless with no central authority.
+              Devs can change directories via commits in the open-source repo. The client is static, so anyone can fork, modify, and redeploy it to their own domain.
+              5chan has no global admins.
             </p>
           </div>
         </div>

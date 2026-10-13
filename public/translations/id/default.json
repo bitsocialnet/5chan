@@ -524,5 +524,11 @@
   "pin_thread": "sematkan utas",
   "unpin_thread": "lepas sematan utas",
   "upload_awaiting_review": "Berhasil diunggah, tetapi host harus meninjau file ini sebelum dapat dilihat. Tautan akan berfungsi setelah disetujui, yang bisa memakan waktu beberapa jam. Anda bisa mempostingnya sekarang.",
+  "vimeo_thumbnail_link_conversion_notice": "Tautan Vimeo terdeteksi. Menempelkan gambar thumbnail dalam {{count}}...",
+  "persistent_boards_bar": "Pertahankan bilah papan di atas",
+  "persistent_boards_bar_tip": "Daftar papan tetap terlihat saat Anda menggulir.",
+  "use_traditional_board_list": "Gunakan daftar papan tradisional",
+  "auto_hide_on_scroll": "Sembunyikan otomatis saat menggulir",
+  "open_challenge": "Buka tantangan",
   "board_unreachable_from_browsers": "Browser tidak dapat memuat papan ini karena komputer ini tidak dapat dijangkau dari internet. Untuk memperbaikinya, teruskan port 4001 (TCP dan UDP) di router Anda ke komputer ini, atau aktifkan UPnP di router Anda. Jika penyedia internet Anda tidak mengizinkannya, jalankan papan ini di sebuah server sebagai gantinya."
 }

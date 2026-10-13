@@ -22,6 +22,7 @@ const testState = vi.hoisted(() => ({
   addChallengeMock: vi.fn(),
   authorOptions: undefined as Record<string, any> | undefined,
   authorPrivilegesOptions: undefined as Record<string, any> | undefined,
+  boardHasArchive: true,
   isMobile: false,
   modOptions: undefined as Record<string, any> | undefined,
   pseudonymityMode: undefined as string | undefined,
@@ -110,6 +111,10 @@ vi.mock('../../../hooks/use-is-mobile', () => ({
 
 vi.mock('../../../hooks/use-board-pseudonymity-mode', () => ({
   useBoardPseudonymityMode: () => testState.pseudonymityMode,
+}));
+
+vi.mock('../../../hooks/use-board-has-archive', () => ({
+  useBoardHasArchive: () => testState.boardHasArchive,
 }));
 
 vi.mock('../../post-transfer-modal/post-transfer-modal', () => ({
@@ -215,6 +220,7 @@ describe('EditMenu', () => {
     };
     testState.authorOptions = undefined;
     testState.authorPrivilegesOptions = undefined;
+    testState.boardHasArchive = true;
     testState.isMobile = false;
     testState.modOptions = undefined;
     testState.pseudonymityMode = undefined;
@@ -572,6 +578,27 @@ describe('EditMenu', () => {
     });
     await openMenu();
     expect(getCheckbox('archived')).toBeNull();
+  });
+
+  it('hides the archive control on a board without an archive unless the thread is already archived', async () => {
+    testState.boardHasArchive = false;
+    testState.privileges = {
+      isAccountCommentAuthor: false,
+      isAccountMod: true,
+      isCommentAuthorMod: false,
+    };
+
+    await renderMenu(basePost);
+    await openMenu();
+    expect(getCheckbox('archived')).toBeNull();
+    expect(getCheckbox('locked')).not.toBeNull();
+
+    // Remount so the menu's edit state starts from the archived thread
+    act(() => root.unmount());
+    root = createRoot(container);
+    await renderMenu({ ...basePost, cid: 'archived-thread', commentModeration: { archived: true } });
+    await openMenu();
+    expect(getCheckbox('archived')?.checked).toBe(true);
   });
 
   it('does not publish author-side edits for author moderators when deletion did not change', async () => {

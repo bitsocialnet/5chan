@@ -5,6 +5,7 @@ import capitalize from 'lodash/capitalize';
 import useExpandedMediaStore from '../../../stores/use-expanded-media-store';
 import useFeedViewSettingsStore from '../../../stores/use-feed-view-settings-store';
 import useHomepageIntroductionStore from '../../../stores/use-homepage-introduction-store';
+import usePersistentBoardsBarStore from '../../../stores/use-persistent-boards-bar-store';
 import Version from '../../version';
 import StyleSelector from '../../style-selector';
 import LazySection, { createSectionLoader } from '../lazy-section';
@@ -48,6 +49,12 @@ const InterfaceSettings = () => {
   const { enableInfiniteScroll, setEnableInfiniteScroll } = useFeedViewSettingsStore();
   const showIntroduction = useHomepageIntroductionStore((state) => state.showIntroduction);
   const setShowIntroduction = useHomepageIntroductionStore((state) => state.setShowIntroduction);
+  const persistentBoardsBar = usePersistentBoardsBarStore((state) => state.persistentBoardsBar);
+  const setPersistentBoardsBar = usePersistentBoardsBarStore((state) => state.setPersistentBoardsBar);
+  const traditionalBoardList = usePersistentBoardsBarStore((state) => state.traditionalBoardList);
+  const setTraditionalBoardList = usePersistentBoardsBarStore((state) => state.setTraditionalBoardList);
+  const autoHideBoardsBar = usePersistentBoardsBarStore((state) => state.autoHideBoardsBar);
+  const setAutoHideBoardsBar = usePersistentBoardsBarStore((state) => state.setAutoHideBoardsBar);
 
   return (
     <div className={styles.interfaceSettings}>
@@ -106,6 +113,40 @@ const InterfaceSettings = () => {
           {capitalize(t('enable_infinite_scroll'))}
         </label>
         <div className={styles.settingTip}>{capitalize(t('enable_infinite_scroll_tip'))}</div>
+      </div>
+      <div className={`${styles.setting} ${styles.desktopOnlySetting}`}>
+        <label>
+          <input
+            type='checkbox'
+            aria-label={capitalize(t('persistent_boards_bar'))}
+            checked={persistentBoardsBar}
+            onChange={(e) => setPersistentBoardsBar(e.target.checked)}
+          />
+          {capitalize(t('persistent_boards_bar'))}
+        </label>
+        <div className={styles.settingTip}>{capitalize(t('persistent_boards_bar_tip'))}</div>
+        <div className={styles.subSetting}>
+          <label>
+            <input
+              type='checkbox'
+              aria-label={capitalize(t('use_traditional_board_list'))}
+              checked={traditionalBoardList}
+              onChange={(e) => setTraditionalBoardList(e.target.checked)}
+            />
+            {capitalize(t('use_traditional_board_list'))}
+          </label>
+        </div>
+        <div className={styles.subSetting}>
+          <label>
+            <input
+              type='checkbox'
+              aria-label={capitalize(t('auto_hide_on_scroll'))}
+              checked={autoHideBoardsBar}
+              onChange={(e) => setAutoHideBoardsBar(e.target.checked)}
+            />
+            {capitalize(t('auto_hide_on_scroll'))}
+          </label>
+        </div>
       </div>
     </div>
   );

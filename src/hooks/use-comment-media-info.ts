@@ -3,6 +3,7 @@ import { useLocation, useParams } from 'react-router-dom';
 import { getCommentMediaInfo, fetchWebpageThumbnailIfNeeded, CommentMediaInfo } from '../lib/utils/media-utils';
 import { isPendingPostView, isPostPageView } from '../lib/utils/view-utils';
 import { useFeedCacheContext } from './use-feed-cache-context';
+import { useVimeoThumbnail } from './use-vimeo-thumbnail';
 
 /**
  * Hook to fetch and cache media info with thumbnail dimensions for comments.
@@ -68,7 +69,7 @@ export const useCommentMediaInfo = (link: string, thumbnailUrl: string, linkWidt
     };
   }, [link, thumbnailUrl, linkWidth, linkHeight, isCachedFeed, isInPostPageView, isInPendingPostView]);
 
-  return useMemo(() => {
+  const mediaInfo = useMemo(() => {
     const mediaInfo = getCommentMediaInfo(link, thumbnailUrl, linkWidth, linkHeight);
     if (thumbnailDimensions && mediaInfo) {
       return {
@@ -79,4 +80,6 @@ export const useCommentMediaInfo = (link: string, thumbnailUrl: string, linkWidt
     }
     return mediaInfo;
   }, [link, thumbnailUrl, linkWidth, linkHeight, thumbnailDimensions]);
+
+  return useVimeoThumbnail(mediaInfo);
 };

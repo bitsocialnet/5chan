@@ -524,5 +524,11 @@
   "pin_thread": "thread vastzetten",
   "unpin_thread": "thread losmaken",
   "upload_awaiting_review": "Geüpload, maar de host moet dit bestand controleren voordat het bekeken kan worden. De link werkt zodra het is goedgekeurd, wat een paar uur kan duren. Je kunt het nu al posten.",
+  "vimeo_thumbnail_link_conversion_notice": "Vimeo-link gedetecteerd. Miniatuurafbeelding wordt over {{count}} geplakt...",
+  "persistent_boards_bar": "Houd de bordenbalk bovenaan",
+  "persistent_boards_bar_tip": "De bordenlijst blijft zichtbaar terwijl je scrolt.",
+  "use_traditional_board_list": "Traditionele bordenlijst gebruiken",
+  "auto_hide_on_scroll": "Automatisch verbergen bij scrollen",
+  "open_challenge": "Uitdaging openen",
   "board_unreachable_from_browsers": "Browsers kunnen dit bord niet laden, omdat deze computer niet bereikbaar is vanaf internet. Los dit op door poort 4001 (TCP en UDP) op je router door te sturen naar deze computer, of door UPnP aan te zetten op je router. Als je internetprovider dat niet toestaat, host het bord dan op een server."
 }

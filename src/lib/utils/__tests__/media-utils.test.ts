@@ -49,11 +49,15 @@ import {
   getMediaDimensions,
   getPostMediaTypeLabel,
   getTwimgMediaFilePublishUrl,
+  getVimeoThumbnailFileUrlFromLink,
+  getVimeoThumbnailLookupUrl,
+  getVimeoThumbnailUrlSnapshot,
   getYouTubeEmbedPostMediaFileLink,
   getYouTubeThumbnailCandidateUrlsFromLink,
   getYouTubeThumbnailFallbackUrls,
   getYouTubeThumbnailUrlFromLink,
   isMissingYouTubeThumbnailImage,
+  subscribeVimeoThumbnailUrl,
 } from '../media-utils';
 
 const clearMemoizedCache = (fn: unknown) => {
@@ -335,9 +339,10 @@ describe('media-utils', () => {
   });
 
   it('returns expected media dimensions for embeds, audio, and sized media', () => {
-    testState.canEmbedHosts = new Set(['www.youtube.com', 'www.reddit.com']);
+    testState.canEmbedHosts = new Set(['www.youtube.com', 'www.reddit.com', 'vimeo.com']);
 
     expect(getMediaDimensions({ type: 'iframe', url: 'https://www.youtube.com/watch?v=abc123' })).toBe('800x450');
+    expect(getMediaDimensions({ type: 'iframe', url: 'https://vimeo.com/22439234' })).toBe('800x450');
     expect(getMediaDimensions({ type: 'iframe', url: 'https://www.reddit.com/r/example/comments/abc123' })).toBe('500x520');
     expect(getMediaDimensions({ type: 'audio', url: 'https://example.com/file.mp3' })).toBe('700x240');
     expect(getMediaDimensions({ linkHeight: 480, linkWidth: 640, type: 'image', url: 'https://example.com/file.png' })).toBe('640x480');
@@ -461,5 +466,127 @@ describe('media-utils', () => {
       url: 'https://example.com/failure',
     });
     expect(consoleErrorSpy).toHaveBeenCalled();
+  });
+
+  describe('vimeo oEmbed thumbnails', () => {
+    // Resolved lookups are kept for the session, so each test uses its own video id.
+    const resolveVimeoThumbnail = async (vimeoUrl: string) => {
+      const listener = vi.fn();
+      const unsubscribe = subscribeVimeoThumbnailUrl(vimeoUrl, listener);
+      await vi.waitFor(() => expect(listener).toHaveBeenCalled());
+      unsubscribe();
+      return getVimeoThumbnailUrlSnapshot(vimeoUrl);
+    };
+
+    it('looks up thumbnails only for vimeo embeds that have none, keeping unlisted hashes', () => {
+      expect(getVimeoThumbnailLookupUrl({ type: 'iframe', url: 'https://www.vimeo.com/channels/staffpicks/22439234' })).toBe('https://vimeo.com/22439234');
+      expect(getVimeoThumbnailLookupUrl({ type: 'iframe', url: 'https://player.vimeo.com/video/22439234?h=8272103f6e' })).toBe('https://vimeo.com/22439234/8272103f6e');
+      expect(getVimeoThumbnailLookupUrl({ thumbnail: 'https://i.vimeocdn.com/video/1-a-d_640', type: 'iframe', url: 'https://vimeo.com/22439234' })).toBeUndefined();
+      expect(getVimeoThumbnailLookupUrl({ type: 'iframe', url: 'https://www.youtube.com/watch?v=abc123' })).toBeUndefined();
+      expect(getVimeoThumbnailLookupUrl({ type: 'webpage', url: 'https://vimeo.com/22439234' })).toBeUndefined();
+    });
+
+    it('resolves the oEmbed thumbnail once, persists it, and notifies subscribers', async () => {
+      const thumbnailUrl = 'https://i.vimeocdn.com/video/145027281-cf3e-d_640?region=us';
+      testState.fetchMock.mockResolvedValue({ ok: true, json: async () => ({ thumbnail_url: thumbnailUrl }) });
+
+      expect(await resolveVimeoThumbnail('https://vimeo.com/1001')).toBe(thumbnailUrl);
+      expect(testState.fetchMock).toHaveBeenCalledOnce();
+      expect(testState.fetchMock).toHaveBeenCalledWith(
+        'https://vimeo.com/api/oembed.json?url=https%3A%2F%2Fvimeo.com%2F1001&width=640',
+        expect.objectContaining({ signal: expect.any(AbortSignal) }),
+      );
+      await vi.waitFor(() => expect(testState.localForageSetItemMock).toHaveBeenCalledWith('https://vimeo.com/1001', thumbnailUrl));
+
+      subscribeVimeoThumbnailUrl('https://vimeo.com/1001', vi.fn())();
+      expect(testState.fetchMock).toHaveBeenCalledOnce();
+    });
+
+    it('uses a persisted thumbnail without calling oEmbed', async () => {
+      testState.cachedThumbnails.set('https://vimeo.com/1002', 'https://i.vimeocdn.com/video/cached-d_640');
+
+      expect(await resolveVimeoThumbnail('https://vimeo.com/1002')).toBe('https://i.vimeocdn.com/video/cached-d_640');
+      expect(testState.fetchMock).not.toHaveBeenCalled();
+    });
+
+    it('treats thumbnails outside the vimeo cdn and missing videos as final answers', async () => {
+      testState.fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ({ thumbnail_url: 'https://evil.example/thumb.jpg' }) });
+      expect(await resolveVimeoThumbnail('https://vimeo.com/1003')).toBeUndefined();
+      expect(testState.localForageSetItemMock).not.toHaveBeenCalled();
+
+      testState.fetchMock.mockResolvedValueOnce({ ok: false, status: 404, json: async () => ({}) });
+      expect(await resolveVimeoThumbnail('https://vimeo.com/1004')).toBeUndefined();
+
+      subscribeVimeoThumbnailUrl('https://vimeo.com/1004', vi.fn())();
+      expect(testState.fetchMock).toHaveBeenCalledTimes(2);
+    });
+
+    it('retries network errors and server errors on a later subscribe once the backoff passes', async () => {
+      const vimeoUrl = 'https://vimeo.com/1005';
+      const thumbnailUrl = 'https://i.vimeocdn.com/video/retry-d_640';
+      const subscribeOnce = async () => {
+        subscribeVimeoThumbnailUrl(vimeoUrl, listener)();
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      };
+      const listener = vi.fn();
+      testState.fetchMock
+        .mockRejectedValueOnce(new TypeError('Failed to fetch'))
+        .mockResolvedValueOnce({ ok: false, status: 503, json: async () => ({}) })
+        .mockResolvedValueOnce({ ok: true, json: async () => ({ thumbnail_url: thumbnailUrl }) });
+      vi.useFakeTimers({ toFake: ['Date'] });
+
+      try {
+        vi.setSystemTime(1_000_000);
+        await subscribeOnce();
+        await subscribeOnce();
+        expect(testState.fetchMock).toHaveBeenCalledTimes(1);
+
+        vi.setSystemTime(1_030_000);
+        await subscribeOnce();
+        expect(testState.fetchMock).toHaveBeenCalledTimes(2);
+        expect(listener).not.toHaveBeenCalled();
+
+        vi.setSystemTime(1_060_000);
+        const unsubscribe = subscribeVimeoThumbnailUrl(vimeoUrl, listener);
+        await vi.waitFor(() => expect(listener).toHaveBeenCalled());
+        unsubscribe();
+        expect(testState.fetchMock).toHaveBeenCalledTimes(3);
+        expect(getVimeoThumbnailUrlSnapshot(vimeoUrl)).toBe(thumbnailUrl);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('turns the oEmbed thumbnail into a 1280px jpg file link for media-only boards', async () => {
+      testState.fetchMock.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ thumbnail_url: 'https://i.vimeocdn.com/video/1998712625-bf894a18-d_640?region=us' }),
+      });
+      expect(await getVimeoThumbnailFileUrlFromLink(' https://vimeo.com/1007 ')).toBe('https://i.vimeocdn.com/video/1998712625-bf894a18-d_1280.jpg');
+
+      testState.cachedThumbnails.set('https://vimeo.com/1008', 'https://i.vimeocdn.com/video/unexpected-format.png');
+      testState.fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ({ thumbnail_url: 'https://i.vimeocdn.com/video/unexpected-format.png' }) });
+      expect(await getVimeoThumbnailFileUrlFromLink('https://vimeo.com/1008')).toBeUndefined();
+
+      expect(await getVimeoThumbnailFileUrlFromLink('https://vimeo.com/user123')).toBeUndefined();
+    });
+
+    it('shares one in-flight lookup between subscribers', async () => {
+      let resolveResponse: (value: unknown) => void = () => {};
+      testState.fetchMock.mockReturnValueOnce(new Promise((resolve) => (resolveResponse = resolve)));
+      const firstListener = vi.fn();
+      const secondListener = vi.fn();
+
+      const unsubscribeFirst = subscribeVimeoThumbnailUrl('https://vimeo.com/1006', firstListener);
+      const unsubscribeSecond = subscribeVimeoThumbnailUrl('https://vimeo.com/1006', secondListener);
+      await vi.waitFor(() => expect(testState.fetchMock).toHaveBeenCalledOnce());
+      resolveResponse({ ok: true, json: async () => ({ thumbnail_url: 'https://i.vimeocdn.com/video/shared-d_640' }) });
+
+      await vi.waitFor(() => expect(secondListener).toHaveBeenCalled());
+      expect(firstListener).toHaveBeenCalled();
+      expect(testState.fetchMock).toHaveBeenCalledOnce();
+      unsubscribeFirst();
+      unsubscribeSecond();
+    });
   });
 });

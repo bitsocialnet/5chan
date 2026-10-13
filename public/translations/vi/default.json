@@ -524,5 +524,11 @@
   "pin_thread": "Ghim chủ đề",
   "unpin_thread": "Bỏ ghim chủ đề",
   "upload_awaiting_review": "Đã tải lên, nhưng máy chủ lưu trữ phải xem xét tệp này trước khi có thể xem được. Liên kết sẽ hoạt động sau khi được phê duyệt, việc này có thể mất vài giờ. Bạn có thể đăng ngay bây giờ.",
+  "vimeo_thumbnail_link_conversion_notice": "Đã phát hiện liên kết Vimeo. Đang dán ảnh thu nhỏ sau {{count}}...",
+  "persistent_boards_bar": "Giữ thanh bảng ở trên cùng",
+  "persistent_boards_bar_tip": "Danh sách bảng vẫn hiển thị khi bạn cuộn trang.",
+  "use_traditional_board_list": "Dùng danh sách bảng truyền thống",
+  "auto_hide_on_scroll": "Tự động ẩn khi cuộn",
+  "open_challenge": "Mở thử thách",
   "board_unreachable_from_browsers": "Trình duyệt không thể tải bảng này vì không thể truy cập máy tính này từ internet. Để khắc phục, hãy chuyển tiếp cổng 4001 (TCP và UDP) trên router của bạn đến máy tính này, hoặc bật UPnP trên router của bạn. Nếu nhà mạng của bạn không cho phép, thay vào đó hãy lưu trữ bảng trên một máy chủ."
 }

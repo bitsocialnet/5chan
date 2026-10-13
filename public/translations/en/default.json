@@ -1,7 +1,7 @@
 {
   "what_is_5chan": "What is 5chan?",
   "go": "go",
-  "5chan_description": "5chan is a fully decentralized and open-source imageboard, where anyone can create and cryptographically own unlimited boards. Board owners host and moderate their board, and set its <1>Rules</1>. All data is text-only and it's shared peer-to-peer, including links to embed images. Check out the <2>FAQs</2> to learn more. Feel free to click on a board below that interests you and jump right in!",
+  "5chan_description": "5chan is a decentralized and open-source imageboard where anyone can create and cryptographically own unlimited boards. Board owners host and moderate their board, and set its <1>Rules</1>. Posts are text-only and shared peer-to-peer, with images embedded from links. Check out the <2>FAQs</2> to learn more. Feel free to click on a board below that interests you and jump right in!",
   "no_global_rules_info": "5chan is a serverless app, this website is just one way to open it. To avoid relying on the website's uptime, <1>download the app</1>.",
   "app_p2p_info": "You can always connect to any board, fully P2P, nobody can stop you. Simply paste its address in the search field above.",
   "boards": "boards",
@@ -544,5 +544,11 @@
   "pin_thread": "Pin thread",
   "unpin_thread": "Unpin thread",
   "upload_awaiting_review": "Uploaded, but the host must review this file before it can be viewed. The link will start working once it is approved, which can take a few hours. You can post it now.",
+  "vimeo_thumbnail_link_conversion_notice": "Vimeo link detected. Pasting thumbnail image in {{count}}...",
+  "persistent_boards_bar": "Keep the boards bar at the top",
+  "persistent_boards_bar_tip": "The board list stays visible while you scroll.",
+  "use_traditional_board_list": "Use traditional board list",
+  "auto_hide_on_scroll": "Auto-hide on scroll",
+  "open_challenge": "Open challenge",
   "board_unreachable_from_browsers": "Browsers can't load this board because this computer isn't reachable from the internet. To fix it, forward port 4001 (TCP and UDP) on your router to this computer, or enable UPnP on your router. If your internet provider doesn't allow that, host the board on a server instead."
 }

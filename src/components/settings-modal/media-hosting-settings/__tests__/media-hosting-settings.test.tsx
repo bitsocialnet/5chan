@@ -3,7 +3,6 @@ import { createElement } from 'react';
 import { createRoot, Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import MediaHostingSettings from '../media-hosting-settings';
-import { MEDIA_HOSTING_PROVIDERS } from '../../../../stores/use-media-hosting-store';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
@@ -72,6 +71,7 @@ describe('MediaHostingSettings', () => {
   });
 
   it('renders mode options: Random, Preferred, None', () => {
+    mockGetPlatform.mockReturnValue('android');
     render();
     const radios = container.querySelectorAll('input[name="media-hosting-provider"]');
     expect(radios.length).toBe(3);
@@ -80,20 +80,38 @@ describe('MediaHostingSettings', () => {
     expect(container.textContent).toContain('media_hosting_none');
   });
 
-  it('shows provider list when Preferred is selected', () => {
+  it('shows provider list with hostname links when Preferred is selected', () => {
     uploadModeRef.value = 'preferred';
+    mockGetPlatform.mockReturnValue('android');
     render();
-    for (const provider of MEDIA_HOSTING_PROVIDERS) {
-      expect(container.textContent).toContain(provider.label);
-      expect(container.textContent).toContain(provider.homepageUrl);
-    }
+    const links = Array.from(container.querySelectorAll('a'));
+    expect(links.map((link) => [link.textContent, link.getAttribute('href')])).toEqual([
+      ['catbox.moe', 'https://catbox.moe'],
+      ['imgur.com', 'https://imgur.com'],
+      ['imgbb.com', 'https://imgbb.com'],
+    ]);
+    expect(container.textContent).not.toContain('https://');
   });
 
   it('default selected is random', () => {
+    mockGetPlatform.mockReturnValue('android');
     render();
     const randomRadio = container.querySelector<HTMLInputElement>('input[value="random"]');
     expect(randomRadio).not.toBeNull();
     expect(randomRadio?.checked).toBe(true);
+  });
+
+  it('on web runtime, hides Random and shows the default settings as Preferred with Forge Images', () => {
+    render();
+    expect(container.querySelector('input[value="random"]')).toBeNull();
+    expect(container.textContent).not.toContain('media_hosting_random');
+    expect(container.querySelector<HTMLInputElement>('input[value="preferred"]')?.checked).toBe(true);
+
+    const providerRadios = Array.from(container.querySelectorAll<HTMLInputElement>('input[name="media-hosting-provider-provider"]'));
+    expect(providerRadios.map((radio) => [radio.value, radio.checked, radio.disabled])).toEqual([['forge', true, false]]);
+    const link = container.querySelector('a');
+    expect(link?.textContent).toBe('images.bitsocialforge.com');
+    expect(link?.getAttribute('href')).toBe('https://images.bitsocialforge.com');
   });
 
   it('clicking None updates store via setUploadMode', async () => {
@@ -189,29 +207,23 @@ describe('MediaHostingSettings', () => {
     expect(mockSetUploadMode).toHaveBeenCalledWith('preferred');
   });
 
-  it('on web runtime, mode radios are enabled, forge is listed first and enabled, and other providers are disabled', async () => {
+  it('on web runtime, lists only Forge Images and None alongside Preferred', async () => {
     uploadModeRef.value = 'preferred';
     mockGetPlatform.mockReturnValue('web');
     (window as unknown as { electronApi?: unknown }).electronApi = undefined;
     render();
 
-    const modeRadios = container.querySelectorAll<HTMLInputElement>('input[name="media-hosting-provider"]');
-    expect(modeRadios.length).toBe(3);
-    for (const radio of modeRadios) {
-      expect(radio.disabled).toBe(false);
-    }
+    const modeRadios = Array.from(container.querySelectorAll<HTMLInputElement>('input[name="media-hosting-provider"]'));
+    expect(modeRadios.map((radio) => [radio.value, radio.disabled])).toEqual([
+      ['preferred', false],
+      ['none', false],
+    ]);
 
     const providerRadios = Array.from(container.querySelectorAll<HTMLInputElement>('input[name="media-hosting-provider-provider"]'));
-    expect(providerRadios.map((radio) => [radio.value, radio.disabled])).toEqual([
-      ['forge', false],
-      ['catbox', true],
-      ['imgur', true],
-      ['imgbb', true],
-    ]);
-    await act(async () => {
-      providerRadios[0].click();
-    });
-    expect(mockSetPreferredProvider).toHaveBeenCalledWith('forge');
+    expect(providerRadios.map((radio) => [radio.value, radio.disabled])).toEqual([['forge', false]]);
+    expect(container.textContent).not.toContain('Catbox');
+    expect(container.textContent).not.toContain('Imgur');
+    expect(container.textContent).not.toContain('ImgBB');
   });
 
   it('on web runtime, disables forge when it is unavailable from this network', () => {
@@ -232,7 +244,7 @@ describe('MediaHostingSettings', () => {
     expect(container.textContent).not.toContain('media_hosting_provider_disabled_on_web');
   });
 
-  it('on electron runtime, mode radios and electron providers are enabled; web-only forge is disabled', () => {
+  it('on electron runtime, mode radios and electron providers are enabled; web-only forge is not listed', () => {
     uploadModeRef.value = 'preferred';
     mockGetPlatform.mockReturnValue('web');
     (window as unknown as { electronApi?: unknown }).electronApi = { isElectron: true };
@@ -245,12 +257,11 @@ describe('MediaHostingSettings', () => {
     }
 
     const providerRadios = Array.from(container.querySelectorAll<HTMLInputElement>('input[name="media-hosting-provider-provider"]'));
-    expect(providerRadios).toHaveLength(MEDIA_HOSTING_PROVIDERS.length);
     expect(providerRadios.map((radio) => [radio.value, radio.disabled])).toEqual([
-      ['forge', true],
       ['catbox', false],
       ['imgur', false],
       ['imgbb', false],
     ]);
+    expect(container.textContent).not.toContain('Forge Images');
   });
 });

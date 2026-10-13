@@ -38,7 +38,7 @@ import { useDirectoryEntry } from '../../hooks/use-directory-entry';
 import usePublishReply from '../../hooks/use-publish-reply';
 import useIsMobile from '../../hooks/use-is-mobile';
 import { useFileUpload } from '../../hooks/use-file-upload';
-import { useYouTubeThumbnailLinkConversion } from '../../hooks/use-youtube-thumbnail-link-conversion';
+import { useVideoThumbnailLinkConversion } from '../../hooks/use-video-thumbnail-link-conversion';
 import usePublishSubmissionGuard from '../../hooks/use-publish-submission-guard';
 import { useCommunityField } from '../../hooks/use-stable-community';
 import { OEKAKI_WEB_WARNING_TEXT } from '../../lib/oekaki/oekaki-copy';
@@ -224,7 +224,7 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
 
   const onPublishReply = () =>
     runPublishSubmission(async () => {
-      const appliedYouTubeConversion = await applyPendingConversion();
+      const appliedThumbnailConversion = await applyPendingConversion();
 
       const currentContent = textRef.current?.value || '';
       const currentDisplayName = nameRef.current?.value.trim() || undefined;
@@ -280,7 +280,7 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
       await publishReply({
         displayName: currentDisplayName,
         content: publishContent,
-        ...getPublishLinkOptions(currentUrl, appliedYouTubeConversion),
+        ...getPublishLinkOptions(currentUrl, appliedThumbnailConversion),
         ...flagPublishOptions,
       });
     });
@@ -520,9 +520,9 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
   const {
     applyPendingConversion,
     cancelPendingConversion,
-    noticeCountdown: youtubeThumbnailConversionCountdown,
+    notice: thumbnailConversion,
     queueLinkConversion,
-  } = useYouTubeThumbnailLinkConversion({
+  } = useVideoThumbnailLinkConversion({
     enabled: !noReplyLinks,
     onContentChange: handleConvertedContentChange,
     onLinkChange: setLinkValue,
@@ -619,8 +619,11 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
   const uploadMode = useMediaHostingStore((state) => state.uploadMode);
   const showUploadControls = getShowUploadControls(uploadMode);
   const displayedFileName = getPublishFileDisplayName(url, uploadedFileName, requireReplyLinkIsMedia);
-  const youtubeThumbnailConversionNotice =
-    youtubeThumbnailConversionCountdown !== null ? t('youtube_thumbnail_link_conversion_notice', { count: youtubeThumbnailConversionCountdown }) : null;
+  const thumbnailConversionNotice = !thumbnailConversion
+    ? null
+    : thumbnailConversion.site === 'vimeo'
+      ? t('vimeo_thumbnail_link_conversion_notice', { count: thumbnailConversion.countdown })
+      : t('youtube_thumbnail_link_conversion_notice', { count: thumbnailConversion.countdown });
 
   const modalContent = (
     <animated.div
@@ -729,7 +732,7 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
             ref={urlRef}
             aria-label={requireReplyLinkIsMedia ? t('link_to_file') : t('link')}
             placeholder={requireReplyLinkIsMedia ? FILE_LINK_PLACEHOLDER : capitalize(t('link'))}
-            disabled={isUploading || youtubeThumbnailConversionCountdown !== null || noReplyLinks}
+            disabled={isUploading || thumbnailConversion !== null || noReplyLinks}
             defaultValue={draft?.link}
             onChange={(e) => {
               handleLinkChange(e.target.value);
@@ -799,9 +802,9 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
           </button>
         </div>
         {moderationPostingWarning ? <div className={styles.error}>{moderationPostingWarning}</div> : null}
-        {youtubeThumbnailConversionNotice ? (
+        {thumbnailConversionNotice ? (
           <div className={styles.error} aria-live='polite'>
-            {youtubeThumbnailConversionNotice}
+            {thumbnailConversionNotice}
           </div>
         ) : lengthError ? (
           <div className={styles.error}>{lengthError}</div>

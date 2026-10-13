@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { getPreferredOrder, getRandomOrder, getProviderOrder } from '../provider-order';
+import { getPreferredOrder, getRandomOrder, getProviderOrder, resolveUploadSettings } from '../provider-order';
 
 describe('provider-order', () => {
   describe('getPreferredOrder', () => {
@@ -33,6 +33,20 @@ describe('provider-order', () => {
 
     it('handles single element', () => {
       expect(getRandomOrder(['catbox'])).toEqual(['catbox']);
+    });
+  });
+
+  describe('resolveUploadSettings', () => {
+    it('maps Random to Preferred when the runtime has a single provider', () => {
+      expect(resolveUploadSettings({ mode: 'random', preferredProvider: 'catbox', runtime: 'web' })).toEqual({ mode: 'preferred', preferredProvider: 'forge' });
+    });
+
+    it('keeps Random when the runtime has several providers', () => {
+      expect(resolveUploadSettings({ mode: 'random', preferredProvider: 'imgur', runtime: 'electron' })).toEqual({ mode: 'random', preferredProvider: 'imgur' });
+    });
+
+    it('keeps None', () => {
+      expect(resolveUploadSettings({ mode: 'none', preferredProvider: 'forge', runtime: 'web' })).toEqual({ mode: 'none', preferredProvider: 'forge' });
     });
   });
 
@@ -78,42 +92,11 @@ describe('provider-order', () => {
       ).toEqual(['imgbb']);
     });
 
-    it('returns empty when preferred provider not supported on runtime', () => {
-      expect(
-        getProviderOrder({
-          mode: 'preferred',
-          preferredProvider: 'catbox',
-          runtime: 'web',
-        }),
-      ).toEqual([]);
-      expect(
-        getProviderOrder({
-          mode: 'preferred',
-          preferredProvider: 'forge',
-          runtime: 'electron',
-        }),
-      ).toEqual([]);
-      expect(
-        getProviderOrder({
-          mode: 'preferred',
-          preferredProvider: 'forge',
-          runtime: 'android',
-        }),
-      ).toEqual([]);
-      expect(
-        getProviderOrder({
-          mode: 'preferred',
-          preferredProvider: 'imgur',
-          runtime: 'web',
-        }),
-      ).toEqual([]);
-      expect(
-        getProviderOrder({
-          mode: 'preferred',
-          preferredProvider: 'imgbb',
-          runtime: 'web',
-        }),
-      ).toEqual([]);
+    it("falls back to the runtime's first provider when the preferred one is not supported there", () => {
+      expect(getProviderOrder({ mode: 'preferred', preferredProvider: 'catbox', runtime: 'web' })).toEqual(['forge']);
+      expect(getProviderOrder({ mode: 'preferred', preferredProvider: 'imgbb', runtime: 'web' })).toEqual(['forge']);
+      expect(getProviderOrder({ mode: 'preferred', preferredProvider: 'forge', runtime: 'electron' })).toEqual(['catbox']);
+      expect(getProviderOrder({ mode: 'preferred', preferredProvider: 'forge', runtime: 'android' })).toEqual(['catbox']);
     });
 
     it('returns shuffled list when mode is random', () => {

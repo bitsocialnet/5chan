@@ -524,5 +524,11 @@
   "pin_thread": "Fixar tópico",
   "unpin_thread": "Desafixar tópico",
   "upload_awaiting_review": "Enviado, mas o host precisa revisar este arquivo antes que ele possa ser visualizado. O link começará a funcionar assim que for aprovado, o que pode levar algumas horas. Você já pode publicá-lo.",
+  "vimeo_thumbnail_link_conversion_notice": "Link do Vimeo detectado. Colando imagem em miniatura em {{count}}...",
+  "persistent_boards_bar": "Manter a barra de boards no topo",
+  "persistent_boards_bar_tip": "A lista de boards continua visível enquanto você rola a página.",
+  "use_traditional_board_list": "Usar a lista tradicional de boards",
+  "auto_hide_on_scroll": "Ocultar automaticamente ao rolar",
+  "open_challenge": "Abrir desafio",
   "board_unreachable_from_browsers": "Os navegadores não conseguem carregar este quadro porque este computador não pode ser acessado pela internet. Para resolver, redirecione a porta 4001 (TCP e UDP) do seu roteador para este computador ou ative o UPnP no seu roteador. Se o seu provedor de internet não permitir isso, hospede o quadro em um servidor."
 }

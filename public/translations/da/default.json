@@ -524,5 +524,11 @@
   "pin_thread": "fastgør tråd",
   "unpin_thread": "frigør tråd",
   "upload_awaiting_review": "Uploadet, men værten skal gennemgå denne fil, før den kan vises. Linket begynder at virke, når den er godkendt, hvilket kan tage et par timer. Du kan poste den nu.",
+  "vimeo_thumbnail_link_conversion_notice": "Vimeo-link registreret. Indsætter miniaturebillede om {{count}}...",
+  "persistent_boards_bar": "Hold tavlelinjen øverst",
+  "persistent_boards_bar_tip": "Tavlelisten forbliver synlig, mens du scroller.",
+  "use_traditional_board_list": "Brug traditionel tavleliste",
+  "auto_hide_on_scroll": "Skjul automatisk ved scrolling",
+  "open_challenge": "Åbn udfordring",
   "board_unreachable_from_browsers": "Browsere kan ikke indlæse denne tavle, fordi denne computer ikke kan nås fra internettet. Løs det ved at videresende port 4001 (TCP og UDP) på din router til denne computer eller ved at slå UPnP til på din router. Hvis din internetudbyder ikke tillader det, kan du i stedet hoste tavlen på en server."
 }

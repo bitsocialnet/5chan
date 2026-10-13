@@ -524,5 +524,11 @@
   "pin_thread": "Épingler le fil",
   "unpin_thread": "Désépingler le fil",
   "upload_awaiting_review": "Envoyé, mais l'hébergeur doit vérifier ce fichier avant qu'il puisse être affiché. Le lien fonctionnera une fois le fichier approuvé, ce qui peut prendre quelques heures. Vous pouvez le publier dès maintenant.",
+  "vimeo_thumbnail_link_conversion_notice": "Lien Vimeo détecté. Collage de l'image miniature dans {{count}}...",
+  "persistent_boards_bar": "Garder la barre des boards en haut",
+  "persistent_boards_bar_tip": "La liste des boards reste visible pendant le défilement.",
+  "use_traditional_board_list": "Utiliser la liste classique des boards",
+  "auto_hide_on_scroll": "Masquer automatiquement au défilement",
+  "open_challenge": "Ouvrir le défi",
   "board_unreachable_from_browsers": "Les navigateurs ne peuvent pas charger ce tableau, car cet ordinateur n'est pas joignable depuis Internet. Pour corriger cela, redirigez le port 4001 (TCP et UDP) de votre routeur vers cet ordinateur, ou activez l'UPnP sur votre routeur. Si votre fournisseur d'accès à Internet ne le permet pas, hébergez plutôt le tableau sur un serveur."
 }

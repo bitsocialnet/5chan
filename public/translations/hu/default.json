@@ -524,5 +524,11 @@
   "pin_thread": "szál kitűzése",
   "unpin_thread": "szál kitűzésének megszüntetése",
   "upload_awaiting_review": "Feltöltve, de a tárhelynek ellenőriznie kell ezt a fájlt, mielőtt megtekinthető lesz. A link a jóváhagyás után kezd működni, ami néhány órát is igénybe vehet. Már most közzéteheted.",
+  "vimeo_thumbnail_link_conversion_notice": "Vimeo-link észlelve. Bélyegkép beillesztése {{count}} múlva...",
+  "persistent_boards_bar": "A táblasáv maradjon felül",
+  "persistent_boards_bar_tip": "A táblák listája görgetés közben is látható marad.",
+  "use_traditional_board_list": "Hagyományos táblalista használata",
+  "auto_hide_on_scroll": "Automatikus elrejtés görgetéskor",
+  "open_challenge": "Kihívás megnyitása",
   "board_unreachable_from_browsers": "A böngészők nem tudják betölteni ezt a táblát, mert ez a számítógép nem érhető el az internetről. A javításhoz irányítsd át a routereden a 4001-es portot (TCP és UDP) erre a számítógépre, vagy kapcsold be az UPnP-t a routereden. Ha az internetszolgáltatód ezt nem engedi, inkább egy szerveren futtasd a táblát."
 }

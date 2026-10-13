@@ -72,6 +72,18 @@
   cursor: pointer;
 }
 
+.boardNavDesktop.persistent {
+  position: fixed;
+  top: 0;
+  left: var(--frames-sidebar-width, 0px);
+  right: 0;
+  z-index: 3;
+  padding: 2px 5px;
+  background-color: var(--boardsbar-mobile-background-color);
+  border-bottom: var(--boardsbar-mobile-border-bottom);
+  display: flow-root;
+  transition: transform 0.2s ease-in-out;
+}
 
 .boardNavMobile {
   padding: 2px 4px;
@@ -122,8 +134,21 @@
   cursor: pointer;
 }
 
+/* The pinned desktop bar swaps its bracketed links for the page links. */
+.boardNavDesktop .pageJump {
+  padding-top: 0;
+}
+
+.boardNavDesktop .pageJump button {
+  color: var(--boardsbar-desktop-link-text-color);
+}
+
+.boardNavDesktop .pageJump button:hover {
+  color: var(--boardsbar-desktop-link-text-color-hover);
+}
+
 @media (max-width: 640px) {
-  .boardNavDesktop {
+  .boardNavDesktop, .persistentSpacer {
     display: none;
   }
 }
@@ -131,5 +156,19 @@
 @media (min-width: 640px) {
   .boardNavMobile {
     display: none;
+  }
+
+  /* Without the traditional board list, desktop pins the mobile board select instead. */
+  .boardNavMobile.persistentOnDesktop {
+    display: block;
+    top: 0;
+    left: var(--frames-sidebar-width, 0px);
+    right: 0;
+    width: auto;
+  }
+
+  /* The spacer query above also matches exactly 640px, where this bar is already pinned. */
+  .boardNavMobile.persistentOnDesktop + .persistentSpacer {
+    display: block;
   }
 }

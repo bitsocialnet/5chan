@@ -31,6 +31,8 @@ const testState = vi.hoisted(() => ({
   floatingOnOpenChange: null as ((open: boolean) => void) | null,
   numberToCid: {} as Record<string, Record<number, string>>,
   unavailableCids: new Set<string>(),
+  vimeoLookupEnabled: [] as boolean[],
+  vimeoThumbnailByUrl: {} as Record<string, string>,
 }));
 
 vi.mock('react-i18next', () => ({
@@ -88,6 +90,14 @@ vi.mock('@bitsocial/bitsocial-react-hooks/dist/stores/communities-pages', () => 
 
 vi.mock('../../../hooks/use-is-mobile', () => ({
   default: () => testState.isMobile,
+}));
+
+vi.mock('../../../hooks/use-vimeo-thumbnail', () => ({
+  useVimeoThumbnail: (mediaInfo: { url?: string } | undefined, enabled = true) => {
+    testState.vimeoLookupEnabled.push(enabled);
+    const thumbnail = enabled && mediaInfo?.url ? testState.vimeoThumbnailByUrl[mediaInfo.url] : undefined;
+    return thumbnail ? { ...mediaInfo, thumbnail } : mediaInfo;
+  },
 }));
 
 vi.mock('../../../lib/mathjax/mathjax-typeset', () => ({
@@ -256,6 +266,8 @@ describe('Markdown', () => {
     testState.floatingOnOpenChange = null;
     testState.numberToCid = {};
     testState.unavailableCids = new Set<string>();
+    testState.vimeoLookupEnabled = [];
+    testState.vimeoThumbnailByUrl = {};
 
     container = document.createElement('div');
     document.body.appendChild(container);
@@ -741,6 +753,40 @@ describe('Markdown', () => {
       testState.floatingOnOpenChange?.(false);
     });
     expect(container.querySelector('[data-testid="floating-portal"]')).toBeNull();
+  });
+
+  it('looks up vimeo oEmbed thumbnails only while an inline link is hovered on desktop', async () => {
+    const vimeoUrl = 'https://vimeo.com/22439234';
+    testState.embeddableHosts = new Set(['vimeo.com']);
+    testState.mediaInfoByHref = { [vimeoUrl]: { type: 'iframe', url: vimeoUrl } };
+    testState.vimeoThumbnailByUrl = { [vimeoUrl]: 'https://i.vimeocdn.com/video/145027281-abc-d_640' };
+
+    await renderMarkdown({ content: vimeoUrl });
+
+    expect(testState.vimeoLookupEnabled.length).toBeGreaterThan(0);
+    expect(testState.vimeoLookupEnabled.every((enabled) => !enabled)).toBe(true);
+    expect(container.querySelector('[data-testid="floating-portal"]')).toBeNull();
+
+    await act(async () => {
+      testState.floatingOnOpenChange?.(true);
+    });
+
+    expect(testState.vimeoLookupEnabled.at(-1)).toBe(true);
+    expect(container.querySelector('[data-floating="true"]')).toBeTruthy();
+  });
+
+  it('does not look up vimeo thumbnails for inline links on mobile', async () => {
+    const vimeoUrl = 'https://vimeo.com/22439234';
+    testState.isMobile = true;
+    testState.embeddableHosts = new Set(['vimeo.com']);
+    testState.mediaInfoByHref = { [vimeoUrl]: { type: 'iframe', url: vimeoUrl } };
+
+    await renderMarkdown({ content: vimeoUrl });
+    await act(async () => {
+      testState.floatingOnOpenChange?.(true);
+    });
+
+    expect(testState.vimeoLookupEnabled.every((enabled) => !enabled)).toBe(true);
   });
 
   it('does not mount hover portals on mobile while allowing inline embeds', async () => {

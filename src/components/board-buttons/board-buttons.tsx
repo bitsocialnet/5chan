@@ -9,6 +9,7 @@ import { useAccountCommunityAddresses } from '../../hooks/use-account-community-
 import { useFilteredDirectoryAddresses } from '../../hooks/use-filtered-directory-addresses';
 import { getBoardPath, isDirectoryRoute } from '../../lib/utils/route-utils';
 import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
+import { useBoardHasArchive } from '../../hooks/use-board-has-archive';
 import { useCommunityIdentifier } from '../../hooks/use-community-identifiers';
 import { normalizeAccountCommentIndex } from '../../lib/utils/account-comment-index-utils';
 import useHiddenCatalogThreads from '../../hooks/use-hidden-catalog-threads';
@@ -120,13 +121,14 @@ export const ArchiveButton = ({ address, isInAllView, isInSubscriptionsView, isI
   const navigate = useNavigate();
   const params = useParams();
   const directories = useDirectories();
+  const boardHasArchive = useBoardHasArchive(address);
 
   const isInvalidArchiveContext = isInAllView || isInSubscriptionsView || isInModView;
   const boardIdentifier = params.boardIdentifier;
   const archiveBoardIdentifier = address ? getBoardPath(address, directories) : boardIdentifier ? getBoardPath(boardIdentifier, directories) : '';
   const archivePath = archiveBoardIdentifier ? `/${archiveBoardIdentifier}/archive` : '';
 
-  if (isInvalidArchiveContext || !archivePath) {
+  if (isInvalidArchiveContext || !archivePath || !boardHasArchive) {
     return null;
   }
 
@@ -786,6 +788,9 @@ export const DesktopBoardButtons = () => {
   const boardIdentifier = params.boardIdentifier;
   const showDirectoryButton = boardIdentifier && isDirectoryRoute(boardIdentifier, directories);
   const showCatalogButton = shouldShowCatalogButton(boardIdentifier, directories, { isInAllView, isInSubscriptionsView, isInModView });
+  const boardHasArchive = useBoardHasArchive(communityAddress);
+  // Decided here because a hidden ArchiveButton would leave the brackets drawn around it empty
+  const showArchiveButton = !isMultiboard && boardHasArchive;
 
   return (
     <>
@@ -837,7 +842,7 @@ export const DesktopBoardButtons = () => {
             {isInCatalogView ? (
               <>
                 [<ReturnButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />]
-                {!(isInAllView || isInSubscriptionsView || isInModView) && (
+                {showArchiveButton && (
                   <>
                     {' '}
                     [<ArchiveButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />]
@@ -853,7 +858,7 @@ export const DesktopBoardButtons = () => {
                     [<CatalogButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />]
                   </>
                 )}
-                {!(isInAllView || isInSubscriptionsView || isInModView) && (
+                {showArchiveButton && (
                   <>
                     {' '}
                     [<ArchiveButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />]

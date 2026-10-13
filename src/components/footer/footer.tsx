@@ -18,6 +18,7 @@ import {
 } from '../board-buttons';
 import { isAllView, isSubscriptionsView, isModView } from '../../lib/utils/view-utils';
 import useReplyModalStore from '../../stores/use-reply-modal-store';
+import usePersistentBoardsBarStore from '../../stores/use-persistent-boards-bar-store';
 import { getPageDraftKey } from '../../lib/utils/location-draft-utils';
 import useThreadLiveUpdatesStore from '../../stores/use-thread-live-updates-store';
 import useCountLinksInReplies from '../../hooks/use-count-links-in-replies';
@@ -42,19 +43,26 @@ interface PageFooterDesktopProps {
   variant?: 'catalog';
 }
 
-export const PageFooterDesktop = ({ firstRow, styleRow, variant }: PageFooterDesktopProps) => (
-  <footer className={variant === 'catalog' ? `${styles.footer} ${styles.footerCatalog}` : styles.footer}>
-    <hr />
-    {firstRow != null ? <div className={styles.firstRow}>{firstRow}</div> : null}
-    {styleRow != null ? <div className={styles.styleRow}>{styleRow}</div> : null}
-    <div className={styles.boardsBarRow}>
-      <BoardsBar />
-    </div>
-    <div className={styles.legalMeta}>
-      <SiteLegalMeta order='license-first' />
-    </div>
-  </footer>
-);
+export const PageFooterDesktop = ({ firstRow, styleRow, variant }: PageFooterDesktopProps) => {
+  // Like 4chan, the bottom board list goes away while the top one is pinned.
+  const persistentBoardsBar = usePersistentBoardsBarStore((state) => state.persistentBoardsBar);
+
+  return (
+    <footer className={variant === 'catalog' ? `${styles.footer} ${styles.footerCatalog}` : styles.footer}>
+      <hr />
+      {firstRow != null ? <div className={styles.firstRow}>{firstRow}</div> : null}
+      {styleRow != null ? <div className={styles.styleRow}>{styleRow}</div> : null}
+      {!persistentBoardsBar && (
+        <div className={styles.boardsBarRow}>
+          <BoardsBar />
+        </div>
+      )}
+      <div className={styles.legalMeta}>
+        <SiteLegalMeta order='license-first' />
+      </div>
+    </footer>
+  );
+};
 
 /* -----------------------------------------------------------------------------
  * StyleOnlyFooterFirstRow

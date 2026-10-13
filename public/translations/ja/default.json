@@ -524,5 +524,11 @@
   "pin_thread": "スレッドをピン留め",
   "unpin_thread": "スレッドのピン留めを解除",
   "upload_awaiting_review": "アップロードしましたが、表示できるようになる前にホストによるこのファイルの審査が必要です。承認されるとリンクが機能し始めます。数時間かかる場合があります。今すぐ投稿することもできます。",
+  "vimeo_thumbnail_link_conversion_notice": "Vimeoリンクを検出しました。{{count}}後にサムネイル画像を貼り付けます...",
+  "persistent_boards_bar": "板バーを上部に固定する",
+  "persistent_boards_bar_tip": "スクロール中も板の一覧が表示されたままになります。",
+  "use_traditional_board_list": "従来の板一覧を使用する",
+  "auto_hide_on_scroll": "スクロール時に自動で隠す",
+  "open_challenge": "チャレンジを開く",
   "board_unreachable_from_browsers": "インターネットからこのコンピューターに接続できないため、ブラウザーではこのボードを読み込めません。解決するには、ルーターでポート 4001（TCP と UDP）をこのコンピューターに転送するか、ルーターで UPnP を有効にしてください。プロバイダーがこれを許可していない場合は、代わりにサーバーでボードをホストしてください。"
 }

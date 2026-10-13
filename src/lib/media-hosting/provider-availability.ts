@@ -1,4 +1,4 @@
-import { MEDIA_HOSTING_PROVIDERS } from './providers';
+import { getRuntimeProviders, MEDIA_HOSTING_PROVIDERS } from './providers';
 import type { MediaHostingRuntime, ProviderId } from './types';
 
 export type ProviderAvailabilityStatus = 'unknown' | 'checking' | 'available' | 'unavailable';
@@ -44,10 +44,6 @@ function setProviderStatus(provider: ProviderId, status: ProviderAvailabilitySta
   emit();
 }
 
-function getRuntimeSupportedProviders(runtime: MediaHostingRuntime): ProviderId[] {
-  return MEDIA_HOSTING_PROVIDERS.filter((provider) => provider.supportedRuntimes.includes(runtime)).map((provider) => provider.id);
-}
-
 function shouldProbeProvider(provider: ProviderId): boolean {
   if (inFlight.has(provider)) return false;
   const entry = entries[provider];
@@ -91,9 +87,9 @@ export function subscribeProviderAvailability(listener: Listener, runtime?: Medi
 }
 
 function startProviderAvailabilityProbes(runtime: MediaHostingRuntime) {
-  for (const provider of getRuntimeSupportedProviders(runtime)) {
-    if (shouldProbeProvider(provider)) {
-      void probeProviderAvailability(provider);
+  for (const { id } of getRuntimeProviders(runtime)) {
+    if (shouldProbeProvider(id)) {
+      void probeProviderAvailability(id);
     }
   }
 }
@@ -133,7 +129,7 @@ export async function probeProviderAvailability(provider: ProviderId): Promise<P
 }
 
 export async function ensureProviderAvailability(runtime: MediaHostingRuntime): Promise<ProviderAvailabilitySnapshot> {
-  await Promise.all(getRuntimeSupportedProviders(runtime).map((provider) => probeProviderAvailability(provider)));
+  await Promise.all(getRuntimeProviders(runtime).map((provider) => probeProviderAvailability(provider.id)));
   return getProviderAvailabilitySnapshot();
 }
 

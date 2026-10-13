@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, Navigate, useParams } from 'react-router-dom';
 import { useFeed, useCommunity } from '@bitsocial/bitsocial-react-hooks';
 import { useTranslation } from 'react-i18next';
 import { shouldShowSnow } from '../../stores/use-special-theme-store';
@@ -9,6 +9,7 @@ import { PageFooterDesktop, PageFooterMobile, ThreadFooterStyleRow } from '../..
 import LoadingEllipsis from '../../components/loading-ellipsis';
 import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
 import { useCommunityField } from '../../hooks/use-stable-community';
+import { useBoardHasArchive } from '../../hooks/use-board-has-archive';
 import { getBoardPath } from '../../lib/utils/route-utils';
 import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
 import { removeMarkdown } from '../../lib/utils/post-utils';
@@ -163,13 +164,9 @@ const ArchiveMobileFooterControls = ({ communityAddress }: { communityAddress: s
   </div>
 );
 
-const Archive = () => {
+const ArchiveListing = ({ boardIdentifier, communityAddress }: { boardIdentifier: string | undefined; communityAddress: string | undefined }) => {
   const { t } = useTranslation();
-  const params = useParams();
-  const boardIdentifier = params.boardIdentifier;
   const directories = useDirectories();
-
-  const communityAddress = useResolvedCommunityAddress(boardIdentifier);
 
   const boardPath = useMemo(() => {
     if (!communityAddress) {
@@ -308,6 +305,19 @@ const Archive = () => {
       </PageFooterMobile>
     </div>
   );
+};
+
+const Archive = () => {
+  const boardIdentifier = useParams().boardIdentifier;
+  const communityAddress = useResolvedCommunityAddress(boardIdentifier);
+  const boardHasArchive = useBoardHasArchive(communityAddress);
+
+  // Like 4chan's /b/archive, a board without an archive has no archive page
+  if (!boardHasArchive) {
+    return <Navigate to='/not-found' replace />;
+  }
+
+  return <ArchiveListing boardIdentifier={boardIdentifier} communityAddress={communityAddress} />;
 };
 
 export default Archive;

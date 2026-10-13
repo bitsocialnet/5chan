@@ -524,5 +524,11 @@
   "pin_thread": "przypnij wątek",
   "unpin_thread": "odepnij wątek",
   "upload_awaiting_review": "Przesłano, ale host musi sprawdzić ten plik, zanim będzie można go wyświetlić. Link zacznie działać po zatwierdzeniu, co może potrwać kilka godzin. Możesz opublikować go już teraz.",
+  "vimeo_thumbnail_link_conversion_notice": "Wykryto link Vimeo. Wklejam miniaturę za {{count}}...",
+  "persistent_boards_bar": "Przypnij pasek tablic u góry",
+  "persistent_boards_bar_tip": "Lista tablic pozostaje widoczna podczas przewijania.",
+  "use_traditional_board_list": "Użyj tradycyjnej listy tablic",
+  "auto_hide_on_scroll": "Automatycznie ukrywaj podczas przewijania",
+  "open_challenge": "Otwórz wyzwanie",
   "board_unreachable_from_browsers": "Przeglądarki nie mogą załadować tej tablicy, ponieważ ten komputer nie jest dostępny z internetu. Aby to naprawić, przekieruj na swoim routerze port 4001 (TCP i UDP) na ten komputer albo włącz UPnP na routerze. Jeśli dostawca internetu na to nie pozwala, zamiast tego hostuj tablicę na serwerze."
 }

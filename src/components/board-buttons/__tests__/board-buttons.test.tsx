@@ -26,6 +26,7 @@ const testState = vi.hoisted(() => ({
   accountComment: undefined as { communityAddress?: string } | undefined,
   alertThresholdUnit: 'minutes' as 'hours' | 'minutes',
   alertThresholdValue: 5,
+  boardHasArchive: true,
   commentsByCid: {} as Record<string, any>,
   directories: [
     { address: 'music-posting.eth', features: {}, name: 'music-posting.eth', publicKey: 'music-public-key', title: '/mu/ - Music' },
@@ -125,6 +126,10 @@ vi.mock('../../../hooks/use-directories', () => ({
     directories.find((entry) => address && [entry.address, entry.name, entry.publicKey, entry.directoryCode].includes(address)),
   useDirectories: () => testState.directories,
   useDirectoryByAddress: (address: string | undefined) => testState.directories.find((entry) => entry.address === address),
+}));
+
+vi.mock('../../../hooks/use-board-has-archive', () => ({
+  useBoardHasArchive: () => testState.boardHasArchive,
 }));
 
 vi.mock('../../../hooks/use-resolved-community-address', () => ({
@@ -271,6 +276,7 @@ describe('BoardButtons', () => {
     testState.accountComment = undefined;
     testState.alertThresholdUnit = 'minutes';
     testState.alertThresholdValue = 5;
+    testState.boardHasArchive = true;
     testState.commentsByCid = {};
     testState.directories = [
       { address: 'music-posting.eth', features: {}, name: 'music-posting.eth', publicKey: 'music-public-key', title: '/mu/ - Music' },
@@ -354,6 +360,21 @@ describe('BoardButtons', () => {
     expect(testState.subscribeMock).toHaveBeenCalledTimes(1);
     expect(testState.navigateMock).toHaveBeenCalledWith('/mu/archive');
     expect(globalThis.alert).not.toHaveBeenCalled();
+  });
+
+  it('hides the archive button without leaving empty brackets on a board without an archive', async () => {
+    testState.boardHasArchive = false;
+
+    await renderWithRoute(createElement(DesktopBoardButtons), '/mu');
+    expect(container.textContent).not.toContain('archive');
+    expect(container.textContent).not.toMatch(/\[\s*\]/);
+
+    await renderWithRoute(createElement(DesktopBoardButtons), '/mu/catalog');
+    expect(container.textContent).not.toContain('archive');
+    expect(container.textContent).not.toMatch(/\[\s*\]/);
+
+    await renderWithRoute(createElement(MobileBoardButtons), '/mu/catalog');
+    expect(Array.from(container.querySelectorAll('button')).some((button) => button.textContent === 'archive')).toBe(false);
   });
 
   it('does not render the directory button on a full board address route', async () => {

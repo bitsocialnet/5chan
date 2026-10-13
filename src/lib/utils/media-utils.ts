@@ -1,5 +1,5 @@
 import { localForageLru } from '../bitsocial-internals/utils';
-import { canEmbed, getYouTubeVideoId, youtubeHosts } from './embed-utils';
+import { canEmbed, getVimeoVideo, getYouTubeVideoId, youtubeHosts } from './embed-utils';
 import memoize from 'memoizee';
 import { isPrivateNetworkHostname, isValidURL, parseHttpUrl } from './url-utils';
 import { Capacitor, CapacitorHttp } from '@capacitor/core';
@@ -460,6 +460,7 @@ const EMBED_DIMENSIONS = {
   'x.com': '550x580',
   'twitter.com': '550x580',
   'soundcloud.com': '700x166',
+  'vimeo.com': '800x450',
 } as const;
 
 export const getMediaDimensions = memoize(
@@ -515,4 +516,136 @@ export const fetchWebpageThumbnailIfNeeded = async (commentMediaInfo: CommentMed
     return { ...commentMediaInfo, thumbnail };
   }
   return commentMediaInfo;
+};
+
+const VIMEO_OEMBED_URL = 'https://vimeo.com/api/oembed.json';
+const VIMEO_THUMBNAIL_HOSTNAME = 'i.vimeocdn.com';
+// Thumbnails render at most 250px wide; 640 stays sharp on high-density screens.
+const VIMEO_THUMBNAIL_WIDTH = '640';
+const VIMEO_THUMBNAIL_FILE_WIDTH = 1280;
+const VIMEO_OEMBED_TIMEOUT_MS = 5000;
+const VIMEO_OEMBED_RETRY_MS = 30_000;
+// null marks a video Vimeo answered for without a usable thumbnail, so it is not looked up again this session.
+const vimeoThumbnailUrls = new Map<string, string | null>();
+const pendingVimeoThumbnailLookups = new Map<string, Promise<string | undefined>>();
+const vimeoThumbnailRetryTimes = new Map<string, number>();
+const vimeoThumbnailListeners = new Set<() => void>();
+
+const parseVimeoThumbnailUrl = (value: unknown): string | undefined => {
+  const parsedUrl = typeof value === 'string' ? parseHttpUrl(value) : undefined;
+  return parsedUrl?.protocol === 'https:' && parsedUrl.hostname === VIMEO_THUMBNAIL_HOSTNAME ? parsedUrl.href : undefined;
+};
+
+const getVimeoCanonicalUrl = (link: string): string | undefined => {
+  const parsedUrl = parseHttpUrl(link.trim());
+  const video = parsedUrl ? getVimeoVideo(parsedUrl) : undefined;
+  return video ? `https://vimeo.com/${video.id}${video.hash ? `/${video.hash}` : ''}` : undefined;
+};
+
+export const isVimeoVideoLink = (link: string): boolean => Boolean(getVimeoCanonicalUrl(link));
+
+// Vimeo thumbnail URLs carry an image ID and hash that can't be derived from the video ID,
+// so Vimeo embeds without a community thumbnail look one up through oEmbed.
+export const getVimeoThumbnailLookupUrl = (commentMediaInfo: CommentMediaInfo | undefined): string | undefined => {
+  if (commentMediaInfo?.type !== 'iframe' || commentMediaInfo.thumbnail || commentMediaInfo.patternThumbnailUrl) {
+    return undefined;
+  }
+
+  return getVimeoCanonicalUrl(commentMediaInfo.url);
+};
+
+// Resolves to the thumbnail, null when Vimeo has none to give, or undefined when the lookup should be retried later.
+const fetchVimeoThumbnailUrl = async (vimeoUrl: string): Promise<string | null | undefined> => {
+  const cachedThumbnailUrl = parseVimeoThumbnailUrl(await getCachedThumbnail(vimeoUrl).catch(() => null));
+  if (cachedThumbnailUrl) {
+    return cachedThumbnailUrl;
+  }
+
+  const controller = new AbortController();
+  const timeoutId = globalThis.setTimeout(() => controller.abort(), VIMEO_OEMBED_TIMEOUT_MS);
+
+  try {
+    const searchParams = new URLSearchParams({ url: vimeoUrl, width: VIMEO_THUMBNAIL_WIDTH });
+    const response = await fetch(`${VIMEO_OEMBED_URL}?${searchParams.toString()}`, { signal: controller.signal });
+    if (!response.ok) {
+      // Missing or private videos are final answers; rate limits and server errors are retried.
+      return response.status >= 400 && response.status < 500 && response.status !== 429 ? null : undefined;
+    }
+
+    const thumbnailUrl = parseVimeoThumbnailUrl((await response.json())?.thumbnail_url);
+    if (thumbnailUrl) {
+      setCachedThumbnail(vimeoUrl, thumbnailUrl).catch((error) => console.error('Failed to cache Vimeo thumbnail:', error));
+    }
+    return thumbnailUrl ?? null;
+  } catch {
+    return undefined;
+  } finally {
+    globalThis.clearTimeout(timeoutId);
+  }
+};
+
+const loadVimeoThumbnailUrl = (vimeoUrl: string): Promise<string | undefined> => {
+  const resolvedThumbnailUrl = vimeoThumbnailUrls.get(vimeoUrl);
+  if (resolvedThumbnailUrl !== undefined) {
+    return Promise.resolve(resolvedThumbnailUrl ?? undefined);
+  }
+
+  const pendingLookup = pendingVimeoThumbnailLookups.get(vimeoUrl);
+  if (pendingLookup) {
+    return pendingLookup;
+  }
+
+  if (Date.now() < (vimeoThumbnailRetryTimes.get(vimeoUrl) ?? 0)) {
+    return Promise.resolve(undefined);
+  }
+
+  const lookup = fetchVimeoThumbnailUrl(vimeoUrl).then((thumbnailUrl) => {
+    pendingVimeoThumbnailLookups.delete(vimeoUrl);
+    if (thumbnailUrl === undefined) {
+      // A later subscribe (remount or hover) retries once the backoff passes.
+      vimeoThumbnailRetryTimes.set(vimeoUrl, Date.now() + VIMEO_OEMBED_RETRY_MS);
+      return undefined;
+    }
+
+    vimeoThumbnailRetryTimes.delete(vimeoUrl);
+    vimeoThumbnailUrls.set(vimeoUrl, thumbnailUrl);
+    vimeoThumbnailListeners.forEach((listener) => listener());
+    return thumbnailUrl ?? undefined;
+  });
+  pendingVimeoThumbnailLookups.set(vimeoUrl, lookup);
+  return lookup;
+};
+
+export const subscribeVimeoThumbnailUrl = (vimeoUrl: string | undefined, listener: () => void): (() => void) => {
+  if (!vimeoUrl) {
+    return () => {};
+  }
+
+  vimeoThumbnailListeners.add(listener);
+  void loadVimeoThumbnailUrl(vimeoUrl);
+  return () => {
+    vimeoThumbnailListeners.delete(listener);
+  };
+};
+
+export const getVimeoThumbnailUrlSnapshot = (vimeoUrl: string | undefined): string | undefined => {
+  return vimeoUrl ? (vimeoThumbnailUrls.get(vimeoUrl) ?? undefined) : undefined;
+};
+
+// Media-only boards need a link with an image extension. Vimeo's CDN serves any `-d_{width}`
+// rendition as JPEG when `.jpg` is appended, and 1280 matches YouTube's maxresdefault width.
+const getVimeoThumbnailFileUrl = (thumbnailUrl: string): string | undefined => {
+  const parsedUrl = parseVimeoThumbnailUrl(thumbnailUrl) ? new URL(thumbnailUrl) : undefined;
+  const sizeSuffix = /-d(?:_\d+(?:x\d+)?)?$/;
+  if (!parsedUrl || !sizeSuffix.test(parsedUrl.pathname)) {
+    return undefined;
+  }
+
+  return `${parsedUrl.origin}${parsedUrl.pathname.replace(sizeSuffix, `-d_${VIMEO_THUMBNAIL_FILE_WIDTH}`)}.jpg`;
+};
+
+export const getVimeoThumbnailFileUrlFromLink = async (link: string): Promise<string | undefined> => {
+  const vimeoUrl = getVimeoCanonicalUrl(link);
+  const thumbnailUrl = vimeoUrl ? await loadVimeoThumbnailUrl(vimeoUrl) : undefined;
+  return thumbnailUrl ? getVimeoThumbnailFileUrl(thumbnailUrl) : undefined;
 };

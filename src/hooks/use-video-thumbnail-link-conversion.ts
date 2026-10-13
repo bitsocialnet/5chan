@@ -1,19 +1,32 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { getBestAvailableYouTubeThumbnailUrlFromLink, getYouTubeThumbnailUrlFromLink } from '../lib/utils/media-utils';
+import {
+  getBestAvailableYouTubeThumbnailUrlFromLink,
+  getVimeoThumbnailFileUrlFromLink,
+  getYouTubeThumbnailUrlFromLink,
+  isVimeoVideoLink,
+} from '../lib/utils/media-utils';
 
-const YOUTUBE_THUMBNAIL_LINK_CONVERSION_DELAY_SECONDS = 3;
-const YOUTUBE_THUMBNAIL_LINK_CONVERSION_INTERVAL_MS = 1000;
+const VIDEO_THUMBNAIL_LINK_CONVERSION_DELAY_SECONDS = 3;
+const VIDEO_THUMBNAIL_LINK_CONVERSION_INTERVAL_MS = 1000;
 
 type ElementRef<T extends HTMLElement> = {
   readonly current: T | null;
 };
 
-interface PendingYouTubeThumbnailLinkConversion {
+export type VideoThumbnailLinkSite = 'youtube' | 'vimeo';
+
+interface PendingVideoThumbnailLinkConversion {
+  site: VideoThumbnailLinkSite;
   thumbnailLinkPromise: Promise<string | undefined>;
-  youtubeLink: string;
+  videoLink: string;
 }
 
-interface UseYouTubeThumbnailLinkConversionOptions {
+interface VideoThumbnailLinkConversionNotice {
+  countdown: number;
+  site: VideoThumbnailLinkSite;
+}
+
+interface UseVideoThumbnailLinkConversionOptions {
   enabled: boolean;
   onContentChange: (content: string, selectionStart: number, selectionEnd: number) => void;
   onLinkChange: (link: string) => void;
@@ -26,14 +39,14 @@ const clampSelectionPosition = (position: number | null | undefined, contentLeng
   return Math.max(0, Math.min(position, contentLength));
 };
 
-const getContentWithInsertedYouTubeLink = (content: string, youtubeLink: string, selectionStart?: number | null, selectionEnd?: number | null) => {
+const getContentWithInsertedVideoLink = (content: string, videoLink: string, selectionStart?: number | null, selectionEnd?: number | null) => {
   const start = clampSelectionPosition(selectionStart, content.length);
   const end = Math.max(start, clampSelectionPosition(selectionEnd, content.length));
   const before = content.slice(0, start);
   const after = content.slice(end);
   const leadingSeparator = before && !/\s$/.test(before) ? ' ' : '';
   const trailingSeparator = after && !/^\s/.test(after) ? ' ' : '';
-  const insertedText = `${leadingSeparator}${youtubeLink}${trailingSeparator}`;
+  const insertedText = `${leadingSeparator}${videoLink}${trailingSeparator}`;
   const nextSelection = before.length + insertedText.length;
 
   return {
@@ -43,20 +56,25 @@ const getContentWithInsertedYouTubeLink = (content: string, youtubeLink: string,
   };
 };
 
-const getPendingConversion = (link: string): PendingYouTubeThumbnailLinkConversion | null => {
-  const youtubeLink = link.trim();
-  const preferredThumbnailLink = getYouTubeThumbnailUrlFromLink(youtubeLink);
-
-  if (!youtubeLink || !preferredThumbnailLink || youtubeLink === preferredThumbnailLink) {
+const getPendingConversion = (link: string): PendingVideoThumbnailLinkConversion | null => {
+  const videoLink = link.trim();
+  if (!videoLink) {
     return null;
   }
 
-  return { thumbnailLinkPromise: getBestAvailableYouTubeThumbnailUrlFromLink(youtubeLink), youtubeLink };
+  const preferredYouTubeThumbnailLink = getYouTubeThumbnailUrlFromLink(videoLink);
+  if (preferredYouTubeThumbnailLink) {
+    return videoLink === preferredYouTubeThumbnailLink
+      ? null
+      : { site: 'youtube', thumbnailLinkPromise: getBestAvailableYouTubeThumbnailUrlFromLink(videoLink), videoLink };
+  }
+
+  return isVimeoVideoLink(videoLink) ? { site: 'vimeo', thumbnailLinkPromise: getVimeoThumbnailFileUrlFromLink(videoLink), videoLink } : null;
 };
 
-export const useYouTubeThumbnailLinkConversion = ({ enabled, onContentChange, onLinkChange, textRef, urlRef }: UseYouTubeThumbnailLinkConversionOptions) => {
-  const [noticeCountdown, setNoticeCountdown] = useState<number | null>(null);
-  const pendingConversionRef = useRef<PendingYouTubeThumbnailLinkConversion | null>(null);
+export const useVideoThumbnailLinkConversion = ({ enabled, onContentChange, onLinkChange, textRef, urlRef }: UseVideoThumbnailLinkConversionOptions) => {
+  const [notice, setNotice] = useState<VideoThumbnailLinkConversionNotice | null>(null);
+  const pendingConversionRef = useRef<PendingVideoThumbnailLinkConversion | null>(null);
   const timeoutRef = useRef<number | null>(null);
 
   const clearCountdownTimer = useCallback(() => {
@@ -69,7 +87,7 @@ export const useYouTubeThumbnailLinkConversion = ({ enabled, onContentChange, on
   const cancelPendingConversion = useCallback(() => {
     clearCountdownTimer();
     pendingConversionRef.current = null;
-    setNoticeCountdown(null);
+    setNotice(null);
   }, [clearCountdownTimer]);
 
   const applyPendingConversion = useCallback(async () => {
@@ -80,25 +98,25 @@ export const useYouTubeThumbnailLinkConversion = ({ enabled, onContentChange, on
 
     const currentLink = urlRef.current?.value.trim() || '';
     const pendingConversion = pendingConversionRef.current ?? getPendingConversion(currentLink);
-    if (!pendingConversion || currentLink !== pendingConversion.youtubeLink) {
+    if (!pendingConversion || currentLink !== pendingConversion.videoLink) {
       cancelPendingConversion();
       return false;
     }
 
     const thumbnailLink = await pendingConversion.thumbnailLinkPromise;
     const latestLink = urlRef.current?.value.trim() || '';
-    if (!thumbnailLink || latestLink !== pendingConversion.youtubeLink) {
+    if (!thumbnailLink || latestLink !== pendingConversion.videoLink) {
       cancelPendingConversion();
       return false;
     }
 
     clearCountdownTimer();
     pendingConversionRef.current = null;
-    setNoticeCountdown(null);
+    setNotice(null);
 
     const textarea = textRef.current;
     const currentContent = textarea?.value || '';
-    const nextContent = getContentWithInsertedYouTubeLink(currentContent, pendingConversion.youtubeLink, textarea?.selectionStart, textarea?.selectionEnd);
+    const nextContent = getContentWithInsertedVideoLink(currentContent, pendingConversion.videoLink, textarea?.selectionStart, textarea?.selectionEnd);
 
     if (textarea) {
       textarea.value = nextContent.content;
@@ -118,8 +136,9 @@ export const useYouTubeThumbnailLinkConversion = ({ enabled, onContentChange, on
       clearCountdownTimer();
 
       const tick = (seconds: number) => {
-        if (!pendingConversionRef.current) {
-          setNoticeCountdown(null);
+        const pendingConversion = pendingConversionRef.current;
+        if (!pendingConversion) {
+          setNotice(null);
           return;
         }
 
@@ -128,8 +147,8 @@ export const useYouTubeThumbnailLinkConversion = ({ enabled, onContentChange, on
           return;
         }
 
-        setNoticeCountdown(seconds);
-        timeoutRef.current = window.setTimeout(() => tick(seconds - 1), YOUTUBE_THUMBNAIL_LINK_CONVERSION_INTERVAL_MS);
+        setNotice({ countdown: seconds, site: pendingConversion.site });
+        timeoutRef.current = window.setTimeout(() => tick(seconds - 1), VIDEO_THUMBNAIL_LINK_CONVERSION_INTERVAL_MS);
       };
 
       tick(remainingSeconds);
@@ -150,12 +169,12 @@ export const useYouTubeThumbnailLinkConversion = ({ enabled, onContentChange, on
         return false;
       }
 
-      if (pendingConversionRef.current?.youtubeLink === pendingConversion.youtubeLink) {
+      if (pendingConversionRef.current?.videoLink === pendingConversion.videoLink) {
         return true;
       }
 
       pendingConversionRef.current = pendingConversion;
-      scheduleConversionCountdown(YOUTUBE_THUMBNAIL_LINK_CONVERSION_DELAY_SECONDS);
+      scheduleConversionCountdown(VIDEO_THUMBNAIL_LINK_CONVERSION_DELAY_SECONDS);
       return true;
     },
     [cancelPendingConversion, enabled, scheduleConversionCountdown],
@@ -178,7 +197,7 @@ export const useYouTubeThumbnailLinkConversion = ({ enabled, onContentChange, on
   return {
     applyPendingConversion,
     cancelPendingConversion,
-    noticeCountdown,
+    notice,
     queueLinkConversion,
   };
 };
