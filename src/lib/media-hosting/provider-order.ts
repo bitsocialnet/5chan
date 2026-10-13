@@ -54,3 +54,8 @@ export function getProviderOrder(options: {
   }
   return [];
 }
+
+/** Whether an upload can be attempted: an enabled provider remains that is not known to be unreachable. */
+export function hasUsableUploadProvider(options: Parameters<typeof getProviderOrder>[0]): boolean {
+  return getProviderOrder(options).length > 0;
+}

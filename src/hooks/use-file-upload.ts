@@ -117,6 +117,7 @@ export function useFileUpload(options: UseFileUploadOptions) {
   const { onUploadComplete } = options;
   const uploadMode = useMediaHostingStore((s) => s.uploadMode);
   const preferredProvider = useMediaHostingStore((s) => s.preferredProvider);
+  const setShowLinkField = useMediaHostingStore((s) => s.setShowLinkField);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
 
@@ -145,6 +146,8 @@ export function useFileUpload(options: UseFileUploadOptions) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       if (errorMessage === FILE_SELECTION_CANCELLED_ERROR) return;
 
+      // A failed upload leaves pasting a link as the only way to attach the file, so reveal the field.
+      setShowLinkField(true);
       const err = normalizeAndroidRejection(error) as Error & { attempts?: ProviderAttempt[] };
       if (err.attempts && err.attempts.length > 0) {
         window.alert(formatAggregatedError(err.attempts, t));
@@ -154,7 +157,7 @@ export function useFileUpload(options: UseFileUploadOptions) {
         window.alert(`${t('upload_failed')}: ${errorMessage}`);
       }
     },
-    [t, uploadMode],
+    [setShowLinkField, t, uploadMode],
   );
 
   const uploadFile = useCallback(

@@ -573,5 +573,7 @@
   "use_traditional_board_list": "Brug traditionel tavleliste",
   "auto_hide_on_scroll": "Skjul automatisk ved scrolling",
   "open_challenge": "Åbn udfordring",
-  "board_unreachable_from_browsers": "Browsere kan ikke indlæse denne tavle, fordi denne computer ikke kan nås fra internettet. Løs det ved at videresende port 4001 (TCP og UDP) på din router til denne computer eller ved at slå UPnP til på din router. Hvis din internetudbyder ikke tillader det, kan du i stedet hoste tavlen på en server."
+  "board_unreachable_from_browsers": "Browsere kan ikke indlæse denne tavle, fordi denne computer ikke kan nås fra internettet. Løs det ved at videresende port 4001 (TCP og UDP) på din router til denne computer eller ved at slå UPnP til på din router. Hvis din internetudbyder ikke tillader det, kan du i stedet hoste tavlen på en server.",
+  "media_hosting_show_link_field": "Vis feltet \"Link til fil\"",
+  "media_hosting_show_link_field_tip": "Lader dig poste et billede eller en video ved at indsætte et direkte link til det"
 }

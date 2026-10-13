@@ -573,5 +573,7 @@
   "use_traditional_board_list": "Usar a lista tradicional de boards",
   "auto_hide_on_scroll": "Ocultar automaticamente ao rolar",
   "open_challenge": "Abrir desafio",
-  "board_unreachable_from_browsers": "Os navegadores não conseguem carregar este quadro porque este computador não pode ser acessado pela internet. Para resolver, redirecione a porta 4001 (TCP e UDP) do seu roteador para este computador ou ative o UPnP no seu roteador. Se o seu provedor de internet não permitir isso, hospede o quadro em um servidor."
+  "board_unreachable_from_browsers": "Os navegadores não conseguem carregar este quadro porque este computador não pode ser acessado pela internet. Para resolver, redirecione a porta 4001 (TCP e UDP) do seu roteador para este computador ou ative o UPnP no seu roteador. Se o seu provedor de internet não permitir isso, hospede o quadro em um servidor.",
+  "media_hosting_show_link_field": "Mostrar o campo \"Link para o arquivo\"",
+  "media_hosting_show_link_field_tip": "Permite postar uma imagem ou um vídeo colando um link direto para ele"
 }

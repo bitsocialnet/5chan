@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import useMediaHostingStore from '../../../stores/use-media-hosting-store';
-import { resolveUploadSettings } from '../../../lib/media-hosting/provider-order';
+import { hasUsableUploadProvider, resolveUploadSettings } from '../../../lib/media-hosting/provider-order';
 import { getRuntimeProviders } from '../../../lib/media-hosting/providers';
 import { getMediaHostingRuntime } from '../../../lib/media-hosting/show-upload-controls';
 import { useProviderAvailability } from '../../../hooks/use-provider-availability';
@@ -15,11 +15,15 @@ const MediaHostingSettings = () => {
   const storedPreferredProvider = useMediaHostingStore((state) => state.preferredProvider);
   const setUploadMode = useMediaHostingStore((state) => state.setUploadMode);
   const setPreferredProvider = useMediaHostingStore((state) => state.setPreferredProvider);
+  const showLinkField = useMediaHostingStore((state) => state.showLinkField);
+  const setShowLinkField = useMediaHostingStore((state) => state.setShowLinkField);
   const runtime = getMediaHostingRuntime();
   // Only list providers this runtime can upload to (web: just the CORS-enabled ones).
   const providers = getRuntimeProviders(runtime);
   const { mode: uploadMode, preferredProvider } = resolveUploadSettings({ mode: storedUploadMode, preferredProvider: storedPreferredProvider, runtime });
   const availability = useProviderAvailability(runtime);
+  // With no provider left to upload to, the field is the only way to attach media, so it cannot be hidden.
+  const linkFieldRequired = !hasUsableUploadProvider({ mode: storedUploadMode, preferredProvider: storedPreferredProvider, runtime, availability });
 
   return (
     <div className={styles.interfaceSettings}>
@@ -94,6 +98,19 @@ const MediaHostingSettings = () => {
           </label>
           <div className={styles.settingTip}>{t('media_hosting_none_tip')}</div>
         </div>
+      </div>
+      <div className={styles.setting}>
+        <label>
+          <input
+            type='checkbox'
+            aria-label={t('media_hosting_show_link_field')}
+            checked={showLinkField || linkFieldRequired}
+            disabled={linkFieldRequired}
+            onChange={(e) => setShowLinkField(e.target.checked)}
+          />
+          {t('media_hosting_show_link_field')}
+        </label>
+        <div className={styles.settingTip}>{t('media_hosting_show_link_field_tip')}</div>
       </div>
     </div>
   );

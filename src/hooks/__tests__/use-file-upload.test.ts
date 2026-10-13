@@ -57,9 +57,10 @@ vi.mock('../../lib/media-hosting/provider-order', () => ({
 
 const uploadModeRef = vi.hoisted(() => ({ value: 'random' as 'random' | 'preferred' | 'none' }));
 const preferredProviderRef = vi.hoisted(() => ({ value: 'catbox' as 'forge' | 'catbox' | 'imgur' | 'imgbb' }));
+const setShowLinkFieldMock = vi.hoisted(() => vi.fn());
 vi.mock('../../stores/use-media-hosting-store', () => ({
-  default: (selector: (s: { uploadMode: string; preferredProvider: string }) => unknown) =>
-    selector({ uploadMode: uploadModeRef.value, preferredProvider: preferredProviderRef.value }),
+  default: (selector: (s: { uploadMode: string; preferredProvider: string; setShowLinkField: (showLinkField: boolean) => void }) => unknown) =>
+    selector({ uploadMode: uploadModeRef.value, preferredProvider: preferredProviderRef.value, setShowLinkField: setShowLinkFieldMock }),
 }));
 
 type HookSnapshot = ReturnType<typeof useFileUpload>;
@@ -287,6 +288,7 @@ describe('useFileUpload', () => {
     });
 
     expect(window.alert).toHaveBeenCalledWith('upload_failed: No reachable upload providers are available from this network');
+    expect(setShowLinkFieldMock).toHaveBeenCalledWith(true);
     expect(orchestrateUpload).not.toHaveBeenCalled();
     expect(onUploadComplete).not.toHaveBeenCalled();
     expect(hook().isUploading).toBe(false);
@@ -396,6 +398,7 @@ describe('useFileUpload', () => {
 
     expect(orchestrateUpload).not.toHaveBeenCalled();
     expect(window.alert).not.toHaveBeenCalled();
+    expect(setShowLinkFieldMock).not.toHaveBeenCalled();
     expect(onUploadComplete).not.toHaveBeenCalled();
     expect(hook().isUploading).toBe(false);
   });
@@ -412,6 +415,7 @@ describe('useFileUpload', () => {
     });
 
     expect(window.alert).toHaveBeenCalledWith('upload_failed: boom. upload_failed_preferred_guidance');
+    expect(setShowLinkFieldMock).toHaveBeenCalledWith(true);
     expect(onUploadComplete).not.toHaveBeenCalled();
     expect(hook().isUploading).toBe(false);
   });
@@ -459,6 +463,7 @@ describe('useFileUpload', () => {
     });
 
     expect(window.alert).toHaveBeenCalledWith('upload_failed. upload_failed_all_providers: catbox: timeout; imgbb: rate limit');
+    expect(setShowLinkFieldMock).toHaveBeenCalledWith(true);
     expect(onUploadComplete).not.toHaveBeenCalled();
     expect(hook().isUploading).toBe(false);
   });

@@ -573,5 +573,7 @@
   "use_traditional_board_list": "Klassische Boardliste verwenden",
   "auto_hide_on_scroll": "Beim Scrollen automatisch ausblenden",
   "open_challenge": "Herausforderung öffnen",
-  "board_unreachable_from_browsers": "Browser können dieses Board nicht laden, weil dieser Computer aus dem Internet nicht erreichbar ist. Um das zu beheben, leite Port 4001 (TCP und UDP) in deinem Router an diesen Computer weiter oder aktiviere UPnP in deinem Router. Wenn dein Internetanbieter das nicht zulässt, hoste das Board stattdessen auf einem Server."
+  "board_unreachable_from_browsers": "Browser können dieses Board nicht laden, weil dieser Computer aus dem Internet nicht erreichbar ist. Um das zu beheben, leite Port 4001 (TCP und UDP) in deinem Router an diesen Computer weiter oder aktiviere UPnP in deinem Router. Wenn dein Internetanbieter das nicht zulässt, hoste das Board stattdessen auf einem Server.",
+  "media_hosting_show_link_field": "Feld „Link zur Datei“ anzeigen",
+  "media_hosting_show_link_field_tip": "Ermöglicht es, ein Bild oder Video per Direktlink zu posten"
 }

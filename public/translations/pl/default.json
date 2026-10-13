@@ -573,5 +573,7 @@
   "use_traditional_board_list": "Użyj tradycyjnej listy tablic",
   "auto_hide_on_scroll": "Automatycznie ukrywaj podczas przewijania",
   "open_challenge": "Otwórz wyzwanie",
-  "board_unreachable_from_browsers": "Przeglądarki nie mogą załadować tej tablicy, ponieważ ten komputer nie jest dostępny z internetu. Aby to naprawić, przekieruj na swoim routerze port 4001 (TCP i UDP) na ten komputer albo włącz UPnP na routerze. Jeśli dostawca internetu na to nie pozwala, zamiast tego hostuj tablicę na serwerze."
+  "board_unreachable_from_browsers": "Przeglądarki nie mogą załadować tej tablicy, ponieważ ten komputer nie jest dostępny z internetu. Aby to naprawić, przekieruj na swoim routerze port 4001 (TCP i UDP) na ten komputer albo włącz UPnP na routerze. Jeśli dostawca internetu na to nie pozwala, zamiast tego hostuj tablicę na serwerze.",
+  "media_hosting_show_link_field": "Pokaż pole „Link do pliku”",
+  "media_hosting_show_link_field_tip": "Pozwala opublikować obraz lub film przez wklejenie bezpośredniego linku do niego"
 }

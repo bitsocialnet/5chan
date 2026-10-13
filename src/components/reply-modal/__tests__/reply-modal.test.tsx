@@ -67,6 +67,7 @@ const testState = vi.hoisted(() => ({
     },
   } as Record<string, { address: string; features?: Record<string, unknown> }>,
   fetchMock: vi.fn(),
+  showLinkField: false,
   showUploadControls: true,
   uploadComplete: undefined as ((url: string) => void) | undefined,
   uploadedFileName: null as string | null,
@@ -170,9 +171,11 @@ vi.mock('../../../lib/media-hosting/show-upload-controls', () => ({
 }));
 
 vi.mock('../../../stores/use-media-hosting-store', () => ({
-  default: (selector: (state: { uploadMode: string }) => unknown) =>
+  default: (selector: (state: { uploadMode: string; preferredProvider: string; showLinkField: boolean }) => unknown) =>
     selector({
       uploadMode: testState.uploadMode,
+      preferredProvider: 'forge',
+      showLinkField: testState.showLinkField,
     }),
 }));
 
@@ -510,6 +513,7 @@ describe('ReplyModal', () => {
       ok: true,
     });
     vi.stubGlobal('fetch', testState.fetchMock);
+    testState.showLinkField = false;
     testState.showUploadControls = true;
     testState.uploadComplete = undefined;
     testState.uploadedFileName = null;
@@ -1602,6 +1606,52 @@ describe('ReplyModal', () => {
     expect(linkInput?.getAttribute('placeholder')).toBe('https://website.com/image.jpg');
     expect(container.textContent).not.toContain('warning');
     expect(container.textContent).not.toContain('Spoiler?');
+  });
+
+  it('hides the link to file field while an upload provider is enabled and still publishes the uploaded link', async () => {
+    testState.uploadMode = 'random';
+    await renderReplyModal('/all/thread/post-1');
+
+    const linkInput = container.querySelector<HTMLInputElement>('input[aria-label="link_to_file"]');
+    expect((linkInput?.parentElement as HTMLElement | null)?.hidden).toBe(true);
+    expect(container.textContent).toContain('choose_file');
+
+    await act(async () => {
+      testState.uploadComplete?.('https://forgeimg.net/abc/uploaded.png');
+    });
+    expect(linkInput?.value).toBe('https://forgeimg.net/abc/uploaded.png');
+
+    await dispatchInput(container.querySelector('textarea') as HTMLTextAreaElement, 'uploaded reply');
+    await clickButtonByText('post');
+
+    expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
+    expect(testState.setPublishReplyOptionsMock).toHaveBeenCalledWith({ link: 'https://forgeimg.net/abc/uploaded.png' });
+  });
+
+  it('shows the link to file field when the setting is on, no upload provider is enabled, or Tegaki runs on web', async () => {
+    const isLinkFieldHidden = () => (container.querySelector<HTMLInputElement>('input[aria-label="link_to_file"]')?.parentElement as HTMLElement | null)?.hidden;
+    testState.uploadMode = 'random';
+    testState.showLinkField = true;
+    await renderReplyModal('/all/thread/post-1');
+    expect(isLinkFieldHidden()).toBe(false);
+
+    testState.showLinkField = false;
+    testState.uploadMode = 'none';
+    testState.showUploadControls = false;
+    await rerenderReplyModal('/all/thread/post-1');
+    expect(isLinkFieldHidden()).toBe(false);
+
+    testState.uploadMode = 'random';
+    testState.showUploadControls = true;
+    testState.directoryByAddress['oekaki-posting.bso'] = {
+      address: 'oekaki-posting.bso',
+      directoryCode: 'i',
+      features: { requireReplyLink: true, requireReplyLinkIsMedia: true },
+      title: '/i/ - Oekaki',
+    };
+    testState.communities['oekaki-posting.bso'] = { address: 'oekaki-posting.bso' };
+    await renderReplyModal('/i/thread/post-1', 'oekaki-posting.bso');
+    expect(isLinkFieldHidden()).toBe(false);
   });
 
   it('only shows pasted link filenames after media-only links are confirmed as files', async () => {

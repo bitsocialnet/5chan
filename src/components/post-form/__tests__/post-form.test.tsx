@@ -66,6 +66,7 @@ const testState = vi.hoisted(() => ({
   setAccountMock: vi.fn(),
   setPublishPostOptionsMock: vi.fn(),
   setPublishReplyOptionsMock: vi.fn(),
+  showLinkField: false,
   showUploadControls: true,
   communities: {
     'music-posting.eth': { address: 'music-posting.eth' },
@@ -445,9 +446,11 @@ vi.mock('../../../lib/media-hosting/show-upload-controls', () => ({
 }));
 
 vi.mock('../../../stores/use-media-hosting-store', () => ({
-  default: (selector: (state: { uploadMode: string }) => unknown) =>
+  default: (selector: (state: { uploadMode: string; preferredProvider: string; showLinkField: boolean }) => unknown) =>
     selector({
       uploadMode: testState.uploadMode,
+      preferredProvider: 'forge',
+      showLinkField: testState.showLinkField,
     }),
 }));
 
@@ -636,6 +639,7 @@ describe('PostForm', () => {
     testState.replyIndex = undefined;
     testState.resolvedCommunityAddress = undefined;
     testState.rolesByCommunity = {};
+    testState.showLinkField = false;
     testState.showUploadControls = true;
     testState.uploadComplete = undefined;
     testState.uploadMode = 'always';
@@ -1194,6 +1198,29 @@ describe('PostForm', () => {
     expect(Array.from(container.querySelectorAll('button')).some((button) => button.textContent === 'Draw')).toBe(false);
   });
 
+  it('keeps the link to file field visible for Tegaki on web, where drawings are pasted as links', async () => {
+    testState.uploadMode = 'random';
+    testState.directories.push({
+      address: 'oekaki-posting.bso',
+      directoryCode: 'i',
+      features: { requirePostLink: true, requirePostLinkIsMedia: true },
+      title: '/i/ - Oekaki',
+    });
+    testState.communities['oekaki-posting.bso'] = { address: 'oekaki-posting.bso' };
+    testState.resolvedCommunityAddress = 'oekaki-posting.bso';
+
+    await renderPostForm('/i');
+    await clickByText(container, 'start_new_thread');
+    expect(container.querySelector<HTMLInputElement>('input[aria-label="link_to_file"]')?.closest('tr')?.hidden).toBe(false);
+
+    act(() => root.unmount());
+    root = createRoot(container);
+    testState.mediaHostingRuntime = 'electron';
+    await renderPostForm('/i');
+    await clickByText(container, 'start_new_thread');
+    expect(container.querySelector<HTMLInputElement>('input[aria-label="link_to_file"]')?.closest('tr')?.hidden).toBe(true);
+  });
+
   it('restores each location post form visibility and draft after navigation', async () => {
     testState.resolvedCommunityAddress = 'music-posting.eth';
     await renderNavigablePostForm('/biz');
@@ -1735,6 +1762,58 @@ describe('PostForm', () => {
     await clickByText(container, 'start_new_thread');
 
     expect(container.textContent).toContain('warning: posting as 5chan dev');
+  });
+
+  it('hides the link to file field while an upload provider is enabled and still publishes the uploaded link', async () => {
+    testState.uploadMode = 'random';
+    testState.directories[0] = { address: 'music-posting.eth', features: { requirePostLinkIsMedia: true }, title: '/mu/ - Music' };
+    testState.resolvedCommunityAddress = 'music-posting.eth';
+
+    await renderPostForm('/mu');
+    await clickByText(container, 'start_new_thread');
+
+    const table = container.querySelector('table') as HTMLTableElement;
+    const linkInput = table.querySelector<HTMLInputElement>('input[aria-label="link_to_file"]');
+    expect(linkInput?.closest('tr')?.hidden).toBe(true);
+    expect(table.textContent).toContain('choose_file');
+
+    await act(async () => {
+      testState.uploadComplete?.('https://forgeimg.net/abc/uploaded.png');
+    });
+    expect(linkInput?.value).toBe('https://forgeimg.net/abc/uploaded.png');
+
+    await dispatchInput(table.querySelector('textarea') as HTMLTextAreaElement, 'uploaded body');
+    await clickByText(table, 'post');
+
+    expect(testState.publishPostMock).toHaveBeenCalledTimes(1);
+    expect(testState.publishedPostOptions?.link).toBe('https://forgeimg.net/abc/uploaded.png');
+  });
+
+  it('shows the link to file field when the setting is on or no upload provider is enabled', async () => {
+    testState.uploadMode = 'random';
+    testState.showLinkField = true;
+    await renderPostForm('/all');
+    await clickByText(container, 'start_new_thread');
+    expect(container.querySelector<HTMLInputElement>('input[aria-label="link_to_file"]')?.closest('tr')?.hidden).toBe(false);
+
+    act(() => root.unmount());
+    root = createRoot(container);
+    testState.showLinkField = false;
+    testState.uploadMode = 'none';
+    testState.showUploadControls = false;
+    await renderPostForm('/all');
+    await clickByText(container, 'start_new_thread');
+    expect(container.querySelector<HTMLInputElement>('input[aria-label="link_to_file"]')?.closest('tr')?.hidden).toBe(false);
+  });
+
+  it('keeps a plain link field visible on boards that accept any link', async () => {
+    testState.uploadMode = 'random';
+    testState.resolvedCommunityAddress = 'flash-posting.bso';
+
+    await renderPostForm('/f');
+    await clickByText(container, 'start_new_thread');
+
+    expect(container.querySelector<HTMLInputElement>('input[aria-label="link"]')?.closest('tr')?.hidden).toBe(false);
   });
 
   it('shows the pasted file-link filename next to the upload button', async () => {

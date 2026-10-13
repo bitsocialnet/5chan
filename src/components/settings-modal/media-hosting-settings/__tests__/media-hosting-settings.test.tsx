@@ -25,6 +25,8 @@ vi.mock('../../../../hooks/use-provider-availability', () => ({
 
 const mockSetUploadMode = vi.fn();
 const mockSetPreferredProvider = vi.fn();
+const mockSetShowLinkField = vi.fn();
+const showLinkFieldRef = vi.hoisted(() => ({ value: false }));
 const uploadModeRef = vi.hoisted(() => ({ value: 'random' as 'random' | 'preferred' | 'none' }));
 const preferredProviderRef = vi.hoisted(() => ({
   value: 'catbox' as 'forge' | 'catbox' | 'imgur' | 'imgbb',
@@ -39,6 +41,8 @@ vi.mock('../../../../stores/use-media-hosting-store', async (importOriginal) => 
         preferredProvider: preferredProviderRef.value,
         setUploadMode: mockSetUploadMode,
         setPreferredProvider: mockSetPreferredProvider,
+        showLinkField: showLinkFieldRef.value,
+        setShowLinkField: mockSetShowLinkField,
       }),
   };
 });
@@ -58,6 +62,7 @@ describe('MediaHostingSettings', () => {
     uploadModeRef.value = 'random';
     preferredProviderRef.value = 'catbox';
     providerAvailabilityRef.value = {};
+    showLinkFieldRef.value = false;
     mockGetPlatform.mockReturnValue('web');
     (window as unknown as { electronApi?: unknown }).electronApi = undefined;
     container = document.createElement('div');
@@ -263,5 +268,47 @@ describe('MediaHostingSettings', () => {
       ['imgbb', false],
     ]);
     expect(container.textContent).not.toContain('Forge Images');
+  });
+
+  describe('show link field checkbox', () => {
+    const getCheckbox = () => container.querySelector<HTMLInputElement>('input[type="checkbox"][aria-label="media_hosting_show_link_field"]');
+
+    it('is unchecked by default while Forge Images can take uploads, and toggles the setting', async () => {
+      render();
+
+      const checkbox = getCheckbox();
+      expect(checkbox?.checked).toBe(false);
+      expect(checkbox?.disabled).toBe(false);
+      expect(container.textContent).toContain('media_hosting_show_link_field_tip');
+
+      await act(async () => {
+        checkbox?.click();
+      });
+      expect(mockSetShowLinkField).toHaveBeenCalledWith(true);
+    });
+
+    it('reflects the stored setting', () => {
+      showLinkFieldRef.value = true;
+      render();
+
+      expect(getCheckbox()?.checked).toBe(true);
+      expect(getCheckbox()?.disabled).toBe(false);
+    });
+
+    it('is checked and locked when no provider is enabled', () => {
+      uploadModeRef.value = 'none';
+      render();
+
+      expect(getCheckbox()?.checked).toBe(true);
+      expect(getCheckbox()?.disabled).toBe(true);
+    });
+
+    it('is checked and locked when every enabled provider is unavailable', () => {
+      providerAvailabilityRef.value = { forge: 'unavailable' };
+      render();
+
+      expect(getCheckbox()?.checked).toBe(true);
+      expect(getCheckbox()?.disabled).toBe(true);
+    });
   });
 });

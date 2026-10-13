@@ -64,6 +64,7 @@ import usePublishSubmissionGuard from '../../hooks/use-publish-submission-guard'
 import usePublishPost from '../../hooks/use-publish-post';
 import usePublishReply from '../../hooks/use-publish-reply';
 import { useFileUpload } from '../../hooks/use-file-upload';
+import { useShowLinkField } from '../../hooks/use-show-link-field';
 import { getShowUploadControls, isWebRuntime } from '../../lib/media-hosting/show-upload-controls';
 import { OEKAKI_WEB_WARNING_TEXT } from '../../lib/oekaki/oekaki-copy';
 import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
@@ -246,6 +247,7 @@ interface PostFormFieldsProps {
   setPublishReplyOptions: (opts: Record<string, unknown>) => void;
   isUploading: boolean;
   uploadedFileName: string | null | undefined;
+  showLinkField: boolean;
   showUploadControls: boolean;
   showOekakiControls: boolean;
   showSpoilerForPost: boolean;
@@ -306,6 +308,7 @@ const PostFormFields = ({
   setPublishReplyOptions,
   isUploading,
   uploadedFileName,
+  showLinkField,
   showUploadControls,
   showOekakiControls,
   showSpoilerForPost,
@@ -469,7 +472,8 @@ const PostFormFields = ({
         </td>
       </tr>
     )}
-    <tr>
+    {/* Hidden rather than unmounted: publishing and uploads read and write the input through urlRef. */}
+    <tr hidden={!showLinkField}>
       <td>{requireCurrentLinkIsMedia ? t('link_to_file') : t('link')}</td>
       <td className={styles.linkField}>
         <input
@@ -1208,6 +1212,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
   };
   const uploadMode = useMediaHostingStore((state) => state.uploadMode);
   const showUploadControls = getShowUploadControls(uploadMode);
+  const showLinkField = useShowLinkField({ requireMediaLink: requireCurrentLinkIsMedia, showOekakiControls });
 
   return (
     <>
@@ -1241,6 +1246,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
             setPublishReplyOptions={setPublishReplyOptions}
             isUploading={isUploading}
             uploadedFileName={uploadedFileName}
+            showLinkField={showLinkField}
             showUploadControls={showUploadControls && !(isInPostView && noReplyLinks)}
             showOekakiControls={showOekakiControls && !(isInPostView && noReplyLinks)}
             showSpoilerForPost={showSpoilerForPost}

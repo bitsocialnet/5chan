@@ -573,5 +573,7 @@
   "use_traditional_board_list": "Traditionele bordenlijst gebruiken",
   "auto_hide_on_scroll": "Automatisch verbergen bij scrollen",
   "open_challenge": "Uitdaging openen",
-  "board_unreachable_from_browsers": "Browsers kunnen dit bord niet laden, omdat deze computer niet bereikbaar is vanaf internet. Los dit op door poort 4001 (TCP en UDP) op je router door te sturen naar deze computer, of door UPnP aan te zetten op je router. Als je internetprovider dat niet toestaat, host het bord dan op een server."
+  "board_unreachable_from_browsers": "Browsers kunnen dit bord niet laden, omdat deze computer niet bereikbaar is vanaf internet. Los dit op door poort 4001 (TCP en UDP) op je router door te sturen naar deze computer, of door UPnP aan te zetten op je router. Als je internetprovider dat niet toestaat, host het bord dan op een server.",
+  "media_hosting_show_link_field": "Veld \"Link naar bestand\" tonen",
+  "media_hosting_show_link_field_tip": "Hiermee kun je een afbeelding of video plaatsen door er een directe link naar te plakken"
 }

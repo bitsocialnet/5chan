@@ -573,5 +573,7 @@
   "use_traditional_board_list": "Gamitin ang tradisyunal na listahan ng boards",
   "auto_hide_on_scroll": "Awtomatikong itago kapag nag-i-scroll",
   "open_challenge": "Buksan ang hamon",
-  "board_unreachable_from_browsers": "Hindi ma-load ng mga browser ang board na ito dahil hindi maabot ang computer na ito mula sa internet. Para maayos ito, i-forward ang port 4001 (TCP at UDP) sa iyong router papunta sa computer na ito, o i-enable ang UPnP sa iyong router. Kung hindi ito pinapayagan ng iyong internet provider, i-host na lang ang board sa isang server."
+  "board_unreachable_from_browsers": "Hindi ma-load ng mga browser ang board na ito dahil hindi maabot ang computer na ito mula sa internet. Para maayos ito, i-forward ang port 4001 (TCP at UDP) sa iyong router papunta sa computer na ito, o i-enable ang UPnP sa iyong router. Kung hindi ito pinapayagan ng iyong internet provider, i-host na lang ang board sa isang server.",
+  "media_hosting_show_link_field": "Ipakita ang field na \"Link sa File\"",
+  "media_hosting_show_link_field_tip": "Hinahayaan kang mag-post ng larawan o video sa pamamagitan ng pag-paste ng direktang link nito"
 }

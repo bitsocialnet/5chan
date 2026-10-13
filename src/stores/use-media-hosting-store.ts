@@ -9,8 +9,11 @@ export const MEDIA_HOSTING_PROVIDERS = PROVIDER_REGISTRY;
 interface MediaHostingStore {
   uploadMode: UploadMode;
   preferredProvider: ProviderId;
+  /** Show the "Link To File" field even while an upload provider can take the file. */
+  showLinkField: boolean;
   setUploadMode: (mode: UploadMode) => void;
   setPreferredProvider: (provider: ProviderId) => void;
+  setShowLinkField: (showLinkField: boolean) => void;
 }
 
 const PERSIST_VERSION = 2;
@@ -27,8 +30,10 @@ const useMediaHostingStore = create<MediaHostingStore>()(
     (set) => ({
       uploadMode: 'random',
       preferredProvider: 'catbox',
+      showLinkField: false,
       setUploadMode: (mode) => set({ uploadMode: mode }),
       setPreferredProvider: (provider) => set({ preferredProvider: provider }),
+      setShowLinkField: (showLinkField) => set({ showLinkField }),
     }),
     {
       name: 'media-hosting-storage',

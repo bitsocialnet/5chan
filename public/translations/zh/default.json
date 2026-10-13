@@ -573,5 +573,7 @@
   "use_traditional_board_list": "使用传统版块列表",
   "auto_hide_on_scroll": "滚动时自动隐藏",
   "open_challenge": "打开挑战",
-  "board_unreachable_from_browsers": "由于无法从互联网访问这台电脑，浏览器无法加载此板块。要解决此问题，请在你的路由器上将端口 4001（TCP 和 UDP）转发到这台电脑，或在路由器上启用 UPnP。如果你的宽带运营商不允许这样做，请改为将板块托管在服务器上。"
+  "board_unreachable_from_browsers": "由于无法从互联网访问这台电脑，浏览器无法加载此板块。要解决此问题，请在你的路由器上将端口 4001（TCP 和 UDP）转发到这台电脑，或在路由器上启用 UPnP。如果你的宽带运营商不允许这样做，请改为将板块托管在服务器上。",
+  "media_hosting_show_link_field": "显示“链接到文件”字段",
+  "media_hosting_show_link_field_tip": "可通过粘贴直链来发布图片或视频"
 }

@@ -16,6 +16,7 @@ describe('useMediaHostingStore', () => {
     setItemSpy.mockRestore();
     useMediaHostingStore.getState().setUploadMode('random');
     useMediaHostingStore.getState().setPreferredProvider('catbox');
+    useMediaHostingStore.getState().setShowLinkField(false);
   });
 
   it('exports MEDIA_HOSTING_PROVIDERS with ids, labels, homepage URLs, runtime metadata', () => {
@@ -80,6 +81,25 @@ describe('useMediaHostingStore', () => {
     useMediaHostingStore.getState().setPreferredProvider('imgur');
 
     expect(setItemSpy).toHaveBeenCalledWith(STORAGE_KEY, expect.stringContaining('"preferredProvider":"imgur"'));
+  });
+
+  it('hides the link field by default and persists the setting', () => {
+    expect(useMediaHostingStore.getState().showLinkField).toBe(false);
+
+    useMediaHostingStore.getState().setShowLinkField(true);
+
+    expect(useMediaHostingStore.getState().showLinkField).toBe(true);
+    expect(setItemSpy).toHaveBeenCalledWith(STORAGE_KEY, expect.stringContaining('"showLinkField":true'));
+  });
+
+  it('keeps the link field hidden for state persisted before the setting existed', async () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ state: { uploadMode: 'preferred', preferredProvider: 'forge' }, version: 2 }));
+
+    await useMediaHostingStore.persist.rehydrate();
+
+    const { uploadMode, showLinkField } = useMediaHostingStore.getState();
+    expect(uploadMode).toBe('preferred');
+    expect(showLinkField).toBe(false);
   });
 
   it('migrates legacy selectedProvider state to random + catbox', async () => {

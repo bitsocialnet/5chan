@@ -573,5 +573,7 @@
   "use_traditional_board_list": "Geleneksel pano listesini kullan",
   "auto_hide_on_scroll": "Kaydırırken otomatik gizle",
   "open_challenge": "Zorluğu aç",
-  "board_unreachable_from_browsers": "Bu bilgisayara internetten erişilemediği için tarayıcılar bu tahtayı yükleyemiyor. Sorunu çözmek için modeminizde 4001 numaralı portu (TCP ve UDP) bu bilgisayara yönlendirin veya modeminizde UPnP'yi etkinleştirin. İnternet sağlayıcınız buna izin vermiyorsa tahtayı bunun yerine bir sunucuda barındırın."
+  "board_unreachable_from_browsers": "Bu bilgisayara internetten erişilemediği için tarayıcılar bu tahtayı yükleyemiyor. Sorunu çözmek için modeminizde 4001 numaralı portu (TCP ve UDP) bu bilgisayara yönlendirin veya modeminizde UPnP'yi etkinleştirin. İnternet sağlayıcınız buna izin vermiyorsa tahtayı bunun yerine bir sunucuda barındırın.",
+  "media_hosting_show_link_field": "\"Dosyaya bağlantı\" alanını göster",
+  "media_hosting_show_link_field_tip": "Doğrudan bağlantısını yapıştırarak bir resim veya video paylaşmanızı sağlar"
 }

@@ -38,6 +38,7 @@ import { useDirectoryEntry } from '../../hooks/use-directory-entry';
 import usePublishReply from '../../hooks/use-publish-reply';
 import useIsMobile from '../../hooks/use-is-mobile';
 import { useFileUpload } from '../../hooks/use-file-upload';
+import { useShowLinkField } from '../../hooks/use-show-link-field';
 import { useVideoThumbnailLinkConversion } from '../../hooks/use-video-thumbnail-link-conversion';
 import usePublishSubmissionGuard from '../../hooks/use-publish-submission-guard';
 import { useCommunityField } from '../../hooks/use-stable-community';
@@ -618,6 +619,7 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
   };
   const uploadMode = useMediaHostingStore((state) => state.uploadMode);
   const showUploadControls = getShowUploadControls(uploadMode);
+  const showLinkField = useShowLinkField({ requireMediaLink: requireReplyLinkIsMedia, showOekakiControls: showOekakiControls && !noReplyLinks });
   const displayedFileName = getPublishFileDisplayName(url, uploadedFileName, requireReplyLinkIsMedia);
   const thumbnailConversionNotice = !thumbnailConversion
     ? null
@@ -726,7 +728,8 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
             }}
           />
         </div>
-        <div className={styles.link}>
+        {/* Hidden rather than unmounted: publishing and uploads read and write the input through urlRef. */}
+        <div className={styles.link} hidden={!showLinkField}>
           <input
             type='text'
             ref={urlRef}

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { getPreferredOrder, getRandomOrder, getProviderOrder, resolveUploadSettings } from '../provider-order';
+import { getPreferredOrder, getRandomOrder, getProviderOrder, hasUsableUploadProvider, resolveUploadSettings } from '../provider-order';
 
 describe('provider-order', () => {
   describe('getPreferredOrder', () => {
@@ -171,6 +171,36 @@ describe('provider-order', () => {
       });
       expect(order).toHaveLength(3);
       expect([...order].sort()).toEqual(['catbox', 'imgbb', 'imgur']);
+    });
+  });
+
+  describe('hasUsableUploadProvider', () => {
+    it('is true while the default web provider can take uploads', () => {
+      expect(hasUsableUploadProvider({ mode: 'random', preferredProvider: 'catbox', runtime: 'web' })).toBe(true);
+      expect(hasUsableUploadProvider({ mode: 'random', preferredProvider: 'catbox', runtime: 'web', availability: { forge: 'available' } })).toBe(true);
+    });
+
+    it('is false when uploads are turned off', () => {
+      expect(hasUsableUploadProvider({ mode: 'none', preferredProvider: 'forge', runtime: 'web' })).toBe(false);
+    });
+
+    it('is false when every enabled provider is unreachable', () => {
+      expect(hasUsableUploadProvider({ mode: 'random', preferredProvider: 'catbox', runtime: 'web', availability: { forge: 'unavailable' } })).toBe(false);
+      expect(
+        hasUsableUploadProvider({
+          mode: 'random',
+          preferredProvider: 'catbox',
+          runtime: 'electron',
+          availability: { catbox: 'unavailable', imgur: 'unavailable', imgbb: 'unavailable' },
+        }),
+      ).toBe(false);
+      expect(hasUsableUploadProvider({ mode: 'preferred', preferredProvider: 'imgur', runtime: 'android', availability: { imgur: 'unavailable' } })).toBe(false);
+    });
+
+    it('is true while random mode still has a reachable provider', () => {
+      expect(
+        hasUsableUploadProvider({ mode: 'random', preferredProvider: 'catbox', runtime: 'electron', availability: { catbox: 'unavailable', imgur: 'unavailable' } }),
+      ).toBe(true);
     });
   });
 });
