@@ -165,6 +165,24 @@ describe('CreateBoardModal', () => {
     expect(container.querySelector('form')).toBeTruthy();
     expect(testState.subscribeMock).not.toHaveBeenCalled();
   });
+  it('keeps every close control disabled until creation reports a result', async () => {
+    let resolveCreation: (community: Record<string, unknown>) => void = () => {};
+    testState.createCommunityMock.mockReturnValue(new Promise((resolve) => (resolveCreation = resolve)));
+    await render();
+    const getCloseControls = () =>
+      Array.from(container.querySelectorAll<HTMLButtonElement>('button')).filter(
+        (button) => button.textContent === 'close' || button.getAttribute('aria-label') === 'close' || button.getAttribute('aria-label') === 'Close create board modal',
+      );
+    expect(getCloseControls()).toHaveLength(3);
+
+    await submitForm();
+    expect(getCloseControls().every((button) => button.disabled)).toBe(true);
+
+    await act(async () => resolveCreation({ address: 'new-board-address', start: testState.startMock }));
+    expect(container.textContent).toContain('create_board_created');
+    expect(getCloseControls().every((button) => !button.disabled)).toBe(true);
+  });
+
   it('still shows the created board when starting it fails', async () => {
     testState.startMock.mockRejectedValue(new Error('kubo offline'));
     testState.createCommunityMock.mockResolvedValue({ address: 'new-board-address', start: testState.startMock });

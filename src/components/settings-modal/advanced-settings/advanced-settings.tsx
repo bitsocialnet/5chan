@@ -177,8 +177,8 @@ const P2pRPCSettings = ({ onP2pRpcChange, p2pRpcRef }: SettingsProps) => {
   const pkcRpcClientsOptions = getNodeRpcClientsOptions(protocolOptions);
   // The field stays uncontrolled for saving; this copy only drives the warning, starting from the saved address.
   const [typedRpcUrl, setTypedRpcUrl] = useState<string>();
-  const rpcUrl = typedRpcUrl ?? pkcRpcClientsOptions?.[0] ?? '';
-  const isBlockedAsMixedContent = isRpcUrlBlockedAsMixedContent(rpcUrl, window.location.protocol);
+  const rpcUrls = typedRpcUrl !== undefined ? [typedRpcUrl] : (pkcRpcClientsOptions ?? []);
+  const isBlockedAsMixedContent = rpcUrls.some((rpcUrl) => isRpcUrlBlockedAsMixedContent(rpcUrl, window.location.protocol));
 
   return (
     <div className={styles.p2pRPCSettings}>

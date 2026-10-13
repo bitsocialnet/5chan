@@ -552,7 +552,6 @@
   "go_to_board": "Siirry tauluun",
   "return_to_board": "Palaa tauluun",
   "create_board_start_failed": "Taulu luotiin, mutta sitä ei voitu käynnistää: {{error}}",
-  "board_settings_owner_remote_notice": "Taulujen omistajat voivat tällä hetkellä tallentaa muutoksia vain taulua isännöivästä solmusta. Yhdistä kyseiseen solmuun tai pyydä järjestelmänvalvojaa tekemään muutos.",
   "board_settings_remote_removal": "\"{{field}}\": merkintöjen poistaminen toimii vain taulua isännöivästä solmusta. Muuta sen sijaan arvoa, esimerkiksi aseta ominaisuuden arvoksi false.",
   "rpc_mixed_content_warning": "Tämä sivu on ladattu https-yhteydellä, joten selain estää ws://-yhteydet muihin tietokoneisiin eikä RPC-osoitteesi voi muodostaa yhteyttä. Käytä wss://-osoitetta, tällä tietokoneella toimivaa solmua (ws://localhost), 5chan-sivua, jota solmusi tarjoaa http-yhteydellä, tai 5chan-työpöytäsovellusta.",
   "create_board_add_moderator": "Lisää moderaattori",

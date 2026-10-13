@@ -41,6 +41,9 @@ const isPlainObject = (value: unknown): value is Record<string, unknown> => type
 
 // Returns the first path where `after` drops something `before` had: a shorter array, a missing key, or null.
 const findRemovedPath = (before: unknown, after: unknown, path: string): string | undefined => {
+  if (after === null && before !== null && before !== undefined) {
+    return path;
+  }
   if (Array.isArray(before) && Array.isArray(after)) {
     if (after.length < before.length) {
       return path;
@@ -53,7 +56,7 @@ const findRemovedPath = (before: unknown, after: unknown, path: string): string 
   }
   if (isPlainObject(before) && isPlainObject(after)) {
     for (const [key, value] of Object.entries(before)) {
-      if (!(key in after) || after[key] === null) {
+      if (!(key in after)) {
         return `${path}.${key}`;
       }
       const removedPath = findRemovedPath(value, after[key], `${path}.${key}`);

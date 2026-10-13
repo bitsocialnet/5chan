@@ -71,7 +71,7 @@ Once created, anyone can connect to your community using any bitsocial client (s
 
 Without 5chan Board Manager, a community can still be opened in 5chan, but it will not behave like a conventional imageboard board: old threads will not be archived when they fall past the last page, bump limits will not be enforced, archived threads will not be purged after the retention window, and author-deleted content will not be automatically purged.
 
-**In-app creation**: The 5chan desktop app, which runs a full bitsocial node, and any 5chan client connected to a bitsocial node over RPC can create a board with the **[Create Board]** button in the top bar. The connected node hosts the board, so it must stay online. From the node that hosts the board, the owner can then edit all of its settings as JSON with **[Board Settings]** on the board page; admins can edit its public settings from any client. Run 5chan Board Manager for the board on the same node to get the lifecycle rules described above.
+**In-app creation**: The 5chan desktop app, which runs a full bitsocial node, and any 5chan client connected to a bitsocial node over RPC can create a board with the **[Create Board]** button in the top bar. The connected node hosts the board, so it must stay online. The owner and admins can then edit the board as JSON with **[Board Settings]** on the board page from any client: admins can change its public settings, the owner can also change roles and the address, and private settings such as challenges can only be edited on the node that hosts the board. Run 5chan Board Manager for the board on the same node to get the lifecycle rules described above.
 
 ## Submitting Your Board to a Directory
 

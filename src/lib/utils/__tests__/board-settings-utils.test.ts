@@ -57,10 +57,12 @@ describe('getBoardSettingsEdit', () => {
     const removedRule = JSON.stringify({ ...baseline, rules: ['no spam'] });
     const removedRole = JSON.stringify({ ...baseline, roles: { owner: { role: 'owner' } } });
     const nulledFeature = JSON.stringify({ ...baseline, features: { noUpvotes: null } });
+    const nulledTitle = JSON.stringify({ ...baseline, title: null });
 
     expect(getBoardSettingsEdit(baseline, removedRule, remoteKeys, false)).toEqual({ ok: false, error: 'remote_removal', field: 'rules' });
     expect(getBoardSettingsEdit(baseline, removedRole, remoteKeys, false)).toEqual({ ok: false, error: 'remote_removal', field: 'roles.mod' });
     expect(getBoardSettingsEdit(baseline, nulledFeature, remoteKeys, false)).toEqual({ ok: false, error: 'remote_removal', field: 'features.noUpvotes' });
+    expect(getBoardSettingsEdit(baseline, nulledTitle, remoteKeys, false)).toEqual({ ok: false, error: 'remote_removal', field: 'title' });
     expect(getBoardSettingsEdit(baseline, removedRole, hostedKeys, true)).toEqual({ ok: true, edit: { roles: { owner: { role: 'owner' } } } });
   });
 

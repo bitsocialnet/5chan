@@ -552,7 +552,6 @@
   "go_to_board": "Aller au tableau",
   "return_to_board": "Retour au tableau",
   "create_board_start_failed": "Le tableau a été créé, mais n'a pas pu être démarré : {{error}}",
-  "board_settings_owner_remote_notice": "Les propriétaires de tableaux ne peuvent actuellement enregistrer des modifications que depuis le nœud qui héberge ce tableau. Connectez-vous à ce nœud ou demandez à un administrateur d'effectuer la modification.",
   "board_settings_remote_removal": "\"{{field}}\" : la suppression d'entrées ne fonctionne que depuis le nœud qui héberge ce tableau. Modifiez plutôt la valeur, par exemple en définissant une fonctionnalité sur false.",
   "rpc_mixed_content_warning": "Cette page est chargée en https, donc le navigateur bloque les connexions ws:// vers d'autres ordinateurs et votre adresse RPC ne peut pas se connecter. Utilisez une adresse wss://, un nœud sur cet ordinateur (ws://localhost), la page 5chan servie par votre nœud en http, ou l'application de bureau 5chan.",
   "create_board_add_moderator": "Ajouter un modérateur",

@@ -453,6 +453,17 @@ describe('AdvancedSettings', () => {
     expect(container.textContent).not.toContain('rpc_mixed_content_warning');
   });
 
+  it('warns when any saved RPC address is blocked, not only the first one', async () => {
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: { ...originalLocation, hostname: '5chan.app', protocol: 'https:', reload: reloadMock },
+    });
+    testState.account.pkcOptions.pkcRpcClientsOptions = ['wss://node.example/secret', 'ws://203.0.113.5:9138/secret'];
+    await renderSettings(false);
+
+    expect(container.textContent).toContain('rpc_mixed_content_warning');
+  });
+
   it('does not warn about ws:// addresses on an http page', async () => {
     Object.defineProperty(window, 'location', {
       configurable: true,

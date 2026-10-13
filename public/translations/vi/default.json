@@ -552,7 +552,6 @@
   "go_to_board": "Đi tới bảng",
   "return_to_board": "Quay lại Bảng",
   "create_board_start_failed": "Đã tạo bảng nhưng không thể khởi động: {{error}}",
-  "board_settings_owner_remote_notice": "Hiện tại, chủ sở hữu bảng chỉ có thể lưu thay đổi từ nút đang lưu trữ bảng này. Hãy kết nối với nút đó hoặc nhờ một quản trị viên thực hiện thay đổi.",
   "board_settings_remote_removal": "\"{{field}}\": việc xóa mục chỉ hoạt động từ nút đang lưu trữ bảng này. Thay vào đó, hãy thay đổi giá trị, ví dụ đặt một tính năng thành false.",
   "rpc_mixed_content_warning": "Trang này được tải qua https, nên trình duyệt chặn các kết nối ws:// tới máy tính khác và địa chỉ RPC của bạn không thể kết nối. Hãy dùng địa chỉ wss://, một nút trên máy tính này (ws://localhost), trang 5chan mà nút của bạn cung cấp qua http, hoặc ứng dụng desktop 5chan.",
   "create_board_add_moderator": "Thêm người điều hành",

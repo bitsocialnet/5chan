@@ -552,7 +552,6 @@
   "go_to_board": "Buka papan",
   "return_to_board": "Kembali ke Papan",
   "create_board_start_failed": "Papan berhasil dibuat, tetapi tidak dapat dimulai: {{error}}",
-  "board_settings_owner_remote_notice": "Saat ini pemilik papan hanya dapat menyimpan perubahan dari node yang menghosting papan ini. Hubungkan ke node tersebut, atau minta administrator untuk melakukan perubahan.",
   "board_settings_remote_removal": "\"{{field}}\": menghapus entri hanya bisa dilakukan dari node yang menghosting papan ini. Ubah nilainya sebagai gantinya, misalnya atur sebuah fitur ke false.",
   "rpc_mixed_content_warning": "Halaman ini dimuat melalui https, sehingga browser memblokir koneksi ws:// ke komputer lain dan alamat RPC Anda tidak dapat terhubung. Gunakan alamat wss://, node di komputer ini (ws://localhost), halaman 5chan yang disajikan node Anda melalui http, atau aplikasi desktop 5chan.",
   "create_board_add_moderator": "Tambahkan moderator",

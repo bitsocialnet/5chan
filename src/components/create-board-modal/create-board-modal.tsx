@@ -116,9 +116,11 @@ const ChallengeOptionInputs = ({
 const CreateBoardForm = ({
   availableChallenges,
   onCreated,
+  onCreatingChange,
 }: {
   availableChallenges: Record<string, PkcRpcChallengeSettings>;
   onCreated: (result: CreatedBoardResult) => void;
+  onCreatingChange: (isCreating: boolean) => void;
 }) => {
   const { t } = useTranslation();
   const account = useAccount();
@@ -172,6 +174,7 @@ const CreateBoardForm = ({
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setStatus({ type: 'creating' });
+    onCreatingChange(true);
     try {
       const community = await createCommunity(buildCreateBoardOptions(form, accountAddress));
       if (!community?.address) {
@@ -191,6 +194,8 @@ const CreateBoardForm = ({
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       setStatus({ type: 'error', message: t('create_board_failed', { error: message, interpolation: { escapeValue: false } }) });
+    } finally {
+      onCreatingChange(false);
     }
   };
 
@@ -372,20 +377,22 @@ const CreateBoardDialog = ({ onClose }: { onClose: () => void }) => {
   const hasUsableNodeRpc = rpcUrls.some((rpcUrl) => !isRpcUrlBlockedAsMixedContent(rpcUrl, window.location.protocol));
   const isConnectingToNode = hasUsableNodeRpc && !isConnectedToNode && rpcState !== 'failed';
   const [createdBoard, setCreatedBoard] = useState<CreatedBoardResult>();
+  // Creation can't be cancelled, so the dialog stays open until it reports the new board's address or an error.
+  const [isCreating, setIsCreating] = useState(false);
 
   return (
     <div className={styles.backdrop}>
-      <button type='button' className={styles.backdropButton} aria-label='Close create board modal' onClick={onClose} />
+      <button type='button' className={styles.backdropButton} aria-label='Close create board modal' onClick={onClose} disabled={isCreating} />
       <dialog open className={styles.createBoardDialog} aria-modal='true' aria-labelledby='create-board-modal-title'>
         <div className={styles.hd}>
           <h2 id='create-board-modal-title'>{t('create_a_board')}</h2>
-          <button type='button' className={styles.closeButton} onClick={onClose} title={t('close')} aria-label={t('close')} />
+          <button type='button' className={styles.closeButton} onClick={onClose} title={t('close')} aria-label={t('close')} disabled={isCreating} />
         </div>
         <div className={styles.bd}>
           {createdBoard ? (
             <CreatedBoard {...createdBoard} />
           ) : isConnectedToNode ? (
-            <CreateBoardForm availableChallenges={pkcRpcSettings?.challenges ?? {}} onCreated={setCreatedBoard} />
+            <CreateBoardForm availableChallenges={pkcRpcSettings?.challenges ?? {}} onCreated={setCreatedBoard} onCreatingChange={setIsCreating} />
           ) : isConnectingToNode ? (
             <div className={styles.section}>
               <LoadingEllipsis string={t('create_board_connecting_node')} />
@@ -430,7 +437,7 @@ const CreateBoardDialog = ({ onClose }: { onClose: () => void }) => {
           </div>
         </div>
         <div className={styles.createBoardFooter}>
-          <button type='button' onClick={onClose}>
+          <button type='button' onClick={onClose} disabled={isCreating}>
             {t('close')}
           </button>
         </div>

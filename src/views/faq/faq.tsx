@@ -352,9 +352,9 @@ const FAQ_SECTIONS: FAQSection[] = [
         answer: (
           <>
             Yes. A 5chan board is a Bitsocial community, and the node that hosts it must stay online. In the 5chan desktop app, which runs a full node, or in any 5chan
-            client connected to a node over RPC, click [Create Board] in the top bar. The owner can later edit the board from [Board Settings] on the node that hosts it,
-            and admins from any client. To get imageboard lifecycle rules such as thread limits, bump limits, archived-thread retention, and purging of author-deleted
-            content, also run{' '}
+            client connected to a node over RPC, click [Create Board] in the top bar. The owner and admins can later edit the board from [Board Settings] in any client,
+            except private settings such as challenges, which only the node that hosts it can edit. To get imageboard lifecycle rules such as thread limits, bump limits,
+            archived-thread retention, and purging of author-deleted content, also run{' '}
             <a href='https://github.com/bitsocialnet/5chan-board-manager' {...externalLinkProps}>
               5chan Board Manager
             </a>{' '}

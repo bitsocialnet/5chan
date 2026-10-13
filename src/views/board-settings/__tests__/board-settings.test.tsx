@@ -78,6 +78,8 @@ const remoteBoard = {
   roles: { 'owner-address': { role: 'owner' }, 'admin-address': { role: 'admin' }, 'mod-address': { role: 'moderator' } },
   updatedAt: 1,
   signature: { signature: 'sig' },
+  syncState: 'succeeded',
+  lastSuccessfulFetchAt: 2,
 };
 
 const getEditor = () => container.querySelector<HTMLTextAreaElement>('[data-testid="json-editor"]');
@@ -185,13 +187,55 @@ describe('BoardSettings', () => {
     expect(container.textContent).toContain('board_settings_save_failed:not allowed');
     expect(getEditor()?.value).toBe(JSON.stringify({ title: 'New title' }));
   });
-  it('keeps an owner on a board hosted elsewhere read-only, since the hooks would try a local edit', async () => {
+
+  it('lets an owner on a board hosted elsewhere publish an edit', async () => {
     testState.account = { author: { address: 'owner-address' } };
     await render();
 
-    expect(container.textContent).toContain('board_settings_owner_remote_notice');
-    const saveButton = Array.from(container.querySelectorAll('button')).find((button) => button.textContent === 'save_changes');
-    expect(saveButton?.disabled).toBe(true);
+    expect(container.textContent).toContain('board_settings_remote_notice');
+    await setEditorValue(JSON.stringify({ title: 'Technology' }));
+    await clickButton('save_changes');
+
+    expect(testState.publishCommunityEditMock).toHaveBeenCalledTimes(1);
+    expect(container.textContent).toContain('board_settings_saved');
+  });
+
+  it('diffs the draft against the settings it was started from, not a board update that arrived later', async () => {
+    await render();
+    await setEditorValue(JSON.stringify({ title: 'Technology', rules: ['be nice'] }));
+
+    testState.community = { ...remoteBoard, rules: ['be nice', 'added by another admin'], updatedAt: 3 };
+    await render();
+    await clickButton('save_changes');
+
+    const options = testState.publishCommunityEditMock.mock.calls[0][0] as PublishOptions;
+    expect(options.title).toBe('Technology');
+    expect(options).not.toHaveProperty('rules');
+    expect(container.textContent).toContain('board_settings_saved');
+
+    // The saved draft becomes the new starting point, so saving it again has nothing to send.
+    await clickButton('save_changes');
+    expect(container.textContent).toContain('board_settings_no_changes');
+  });
+
+  it('waits for a fresh fetch before denying access based on a cached board record', async () => {
+    testState.account = { author: { address: 'mod-address' } };
+    testState.community = { ...remoteBoard, syncState: 'loading', lastSuccessfulFetchAt: undefined };
+    await render();
+
+    expect(container.textContent).not.toContain('navigate:');
+
+    testState.community = { ...remoteBoard, syncState: 'succeeded', lastSuccessfulFetchAt: 2 };
+    await render();
+    expect(container.textContent).toBe('navigate:/not-allowed');
+  });
+
+  it('stops loading when the board lookup fails without any board data', async () => {
+    testState.community = { syncState: 'failed', state: 'failed' };
+    await render();
+
+    expect(container.textContent).toContain('community_offline_info');
+    expect(container.textContent).not.toContain('navigate:');
   });
 
   it('rejects removals that a remote board would silently ignore', async () => {

@@ -552,7 +552,6 @@
   "go_to_board": "Ir al tablero",
   "return_to_board": "Volver al Tablero",
   "create_board_start_failed": "El tablero se creó, pero no se pudo iniciar: {{error}}",
-  "board_settings_owner_remote_notice": "Por ahora, los propietarios de tableros solo pueden guardar cambios desde el nodo que aloja este tablero. Conéctate a ese nodo o pide a un administrador que haga el cambio.",
   "board_settings_remote_removal": "\"{{field}}\": eliminar entradas solo funciona desde el nodo que aloja este tablero. Cambia el valor en su lugar; por ejemplo, establece una función en false.",
   "rpc_mixed_content_warning": "Esta página se carga mediante https, así que el navegador bloquea las conexiones ws:// a otros equipos y tu dirección RPC no puede conectarse. Usa una dirección wss://, un nodo en este equipo (ws://localhost), la página de 5chan que tu nodo sirve por http o la app de escritorio de 5chan.",
   "create_board_add_moderator": "Añadir moderador",

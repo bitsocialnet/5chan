@@ -552,7 +552,6 @@
   "go_to_board": "Shko te bordi",
   "return_to_board": "Kthehu te Bordi",
   "create_board_start_failed": "Bordi u krijua, por nuk mund të nisej: {{error}}",
-  "board_settings_owner_remote_notice": "Pronarët e bordeve aktualisht mund t'i ruajnë ndryshimet vetëm nga nyja që e hoston këtë bord. Lidhuni me atë nyje ose kërkojini një administratori ta bëjë ndryshimin.",
   "board_settings_remote_removal": "\"{{field}}\": heqja e elementeve funksionon vetëm nga nyja që e hoston këtë bord. Në vend të kësaj, ndryshoni vlerën, për shembull vendosni një veçori në false.",
   "rpc_mixed_content_warning": "Kjo faqe është ngarkuar përmes https, ndaj shfletuesi bllokon lidhjet ws:// me kompjuterë të tjerë dhe adresa juaj RPC nuk mund të lidhet. Përdorni një adresë wss://, një nyje në këtë kompjuter (ws://localhost), faqen e 5chan që nyja juaj ofron përmes http, ose aplikacionin desktop të 5chan.",
   "create_board_add_moderator": "Shto moderator",

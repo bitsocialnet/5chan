@@ -552,7 +552,6 @@
   "go_to_board": "Gå til tavle",
   "return_to_board": "Tilbage til tavlen",
   "create_board_start_failed": "Tavlen blev oprettet, men kunne ikke startes: {{error}}",
-  "board_settings_owner_remote_notice": "Tavleejere kan i øjeblikket kun gemme ændringer fra den node, der hoster denne tavle. Opret forbindelse til den node, eller bed en administrator om at foretage ændringen.",
   "board_settings_remote_removal": "\"{{field}}\": fjernelse af poster virker kun fra den node, der hoster denne tavle. Skift i stedet værdien, for eksempel ved at sætte en funktion til false.",
   "rpc_mixed_content_warning": "Denne side er indlæst via https, så browseren blokerer ws://-forbindelser til andre computere, og din RPC-adresse kan ikke oprette forbindelse. Brug en wss://-adresse, en node på denne computer (ws://localhost), den 5chan-side, som din node leverer via http, eller 5chan desktop-appen.",
   "create_board_add_moderator": "Tilføj moderator",
