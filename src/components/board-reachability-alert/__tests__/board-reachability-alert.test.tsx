@@ -34,8 +34,13 @@ const render = async (communityAddress: string) => {
     root.render(createElement(BoardReachabilityAlert, { className: 'alert', communityAddress }));
   });
   await act(async () => {
-    await Promise.resolve();
+    await new Promise((resolve) => setTimeout(resolve, 0));
   });
+};
+
+const remount = () => {
+  act(() => root.unmount());
+  root = createRoot(container);
 };
 
 describe('BoardReachabilityAlert', () => {
@@ -62,13 +67,24 @@ describe('BoardReachabilityAlert', () => {
     expect(getNodeReachability).toHaveBeenCalledTimes(1);
   });
 
-  it('stays hidden when the node is public or its reachability is still unknown', async () => {
-    getNodeReachability.mockResolvedValue('public');
+  it('keeps the warning when the post form remounts on navigation, without asking the node again', async () => {
     await render('hosted-board');
-    expect(container.textContent).toBe('');
+    remount();
 
-    getNodeReachability.mockResolvedValue('unknown');
+    await act(async () => {
+      const { default: BoardReachabilityAlert } = await import('../board-reachability-alert');
+      root.render(createElement(BoardReachabilityAlert, { className: 'alert', communityAddress: 'hosted-board' }));
+    });
+
+    expect(container.textContent).toBe('board_unreachable_from_browsers');
+    expect(getNodeReachability).toHaveBeenCalledTimes(1);
+  });
+
+  it.each(['public', 'unknown'])('stays hidden when the node reachability is %s', async (reachability) => {
+    getNodeReachability.mockResolvedValue(reachability);
     await render('hosted-board');
+
+    expect(getNodeReachability).toHaveBeenCalledTimes(1);
     expect(container.textContent).toBe('');
   });
 
