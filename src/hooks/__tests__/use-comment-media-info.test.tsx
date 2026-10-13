@@ -18,6 +18,9 @@ const testState = vi.hoisted(() => ({
   params: {} as Record<string, string>,
   pathname: '/all',
   thumbnailMediaInfo: undefined as CommentMediaInfo | undefined,
+  vimeoListeners: new Set<() => void>(),
+  vimeoSubscribeMock: vi.fn<(vimeoUrl: string | undefined) => void>(),
+  vimeoThumbnailUrls: new Map<string, string>(),
 }));
 
 vi.mock('react-router-dom', async () => {
@@ -33,6 +36,14 @@ vi.mock('../../lib/utils/media-utils', () => ({
   fetchWebpageThumbnailIfNeeded: (mediaInfo: CommentMediaInfo) => testState.fetchWebpageThumbnailIfNeededMock(mediaInfo),
   getCommentMediaInfo: (link: string, thumbnailUrl: string, linkWidth: number, linkHeight: number) =>
     testState.getCommentMediaInfoMock(link, thumbnailUrl, linkWidth, linkHeight),
+  getVimeoThumbnailLookupUrl: (mediaInfo?: CommentMediaInfo) =>
+    mediaInfo?.type === 'iframe' && !mediaInfo.thumbnail && mediaInfo.url.startsWith('https://vimeo.com/') ? mediaInfo.url : undefined,
+  getVimeoThumbnailUrlSnapshot: (vimeoUrl?: string) => (vimeoUrl ? testState.vimeoThumbnailUrls.get(vimeoUrl) : undefined),
+  subscribeVimeoThumbnailUrl: (vimeoUrl: string | undefined, listener: () => void) => {
+    testState.vimeoSubscribeMock(vimeoUrl);
+    testState.vimeoListeners.add(listener);
+    return () => testState.vimeoListeners.delete(listener);
+  },
 }));
 
 let latestValue: CommentMediaInfo | undefined;
@@ -84,6 +95,8 @@ describe('useCommentMediaInfo', () => {
     testState.params = {};
     testState.pathname = '/all';
     testState.thumbnailMediaInfo = undefined;
+    testState.vimeoListeners = new Set();
+    testState.vimeoThumbnailUrls = new Map();
     testState.getCommentMediaInfoMock.mockImplementation(() => testState.mediaInfo);
     testState.fetchWebpageThumbnailIfNeededMock.mockImplementation(async () => testState.thumbnailMediaInfo ?? (testState.mediaInfo as CommentMediaInfo));
 
@@ -192,5 +205,31 @@ describe('useCommentMediaInfo', () => {
     // The actual thread/pending post outside the cache still resolves its thumbnail.
     await renderHook(props);
     expect(testState.fetchWebpageThumbnailIfNeededMock).toHaveBeenCalledOnce();
+  });
+
+  it('adds the resolved oEmbed thumbnail to vimeo embeds without one', async () => {
+    const vimeoUrl = 'https://vimeo.com/22439234';
+    testState.mediaInfo = { type: 'iframe', url: vimeoUrl };
+
+    await renderHook({ link: vimeoUrl, linkHeight: 0, linkWidth: 0, thumbnailUrl: '' });
+
+    expect(testState.vimeoSubscribeMock).toHaveBeenCalledWith(vimeoUrl);
+    expect(latestValue).toEqual(testState.mediaInfo);
+
+    await act(async () => {
+      testState.vimeoThumbnailUrls.set(vimeoUrl, 'https://i.vimeocdn.com/video/145027281-abc-d_640');
+      testState.vimeoListeners.forEach((listener) => listener());
+    });
+
+    expect(latestValue).toEqual({ ...testState.mediaInfo, thumbnail: 'https://i.vimeocdn.com/video/145027281-abc-d_640' });
+  });
+
+  it('keeps the community thumbnail on vimeo embeds without an oEmbed lookup', async () => {
+    testState.mediaInfo = { thumbnail: 'https://i.vimeocdn.com/video/community-d_1280x720', type: 'iframe', url: 'https://vimeo.com/22439234' };
+
+    await renderHook({ link: 'https://vimeo.com/22439234', linkHeight: 0, linkWidth: 0, thumbnailUrl: 'https://i.vimeocdn.com/video/community-d_1280x720' });
+
+    expect(testState.vimeoSubscribeMock).not.toHaveBeenCalledWith(expect.any(String));
+    expect(latestValue).toEqual(testState.mediaInfo);
   });
 });

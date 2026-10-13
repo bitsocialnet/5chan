@@ -416,6 +416,11 @@ vi.mock('../../../lib/utils/media-utils', () => {
         return undefined;
       }
     },
+    isVimeoVideoLink: (link: string) => /^https:\/\/vimeo\.com\/\d+$/.test(link.trim()),
+    getVimeoThumbnailFileUrlFromLink: async (link: string) => {
+      const videoId = link.trim().match(/^https:\/\/vimeo\.com\/(\d+)$/)?.[1];
+      return videoId ? `https://i.vimeocdn.com/video/${videoId}-abc-d_1280.jpg` : undefined;
+    },
     getBestAvailableYouTubeThumbnailUrlFromLink: async (link: string) => {
       if (testState.bestAvailableYouTubeThumbnailMock) {
         return testState.bestAvailableYouTubeThumbnailMock(link);
@@ -861,6 +866,35 @@ describe('PostForm', () => {
     expect(testState.publishPostMock).toHaveBeenCalledTimes(1);
     expect(testState.publishedPostOptions?.link).toBe(thumbnailLink);
     expect(testState.publishedPostOptions?.content).toBe(`test ${youtubeLink}`);
+  });
+
+  it('converts Vimeo links to thumbnail file links on media-only post forms', async () => {
+    const vimeoLink = 'https://vimeo.com/1070224898';
+    const thumbnailLink = 'https://i.vimeocdn.com/video/1070224898-abc-d_1280.jpg';
+
+    await renderPostForm('/all');
+    await clickByText(container, 'start_new_thread');
+
+    const table = container.querySelector('table') as HTMLTableElement;
+    const select = table.querySelector('select') as HTMLSelectElement;
+    const textarea = table.querySelector('textarea') as HTMLTextAreaElement;
+    const linkInput = table.querySelectorAll<HTMLInputElement>('input[type="text"]')[3];
+
+    await dispatchChange(select, 'music-posting.eth');
+    await dispatchInput(textarea, 'test');
+    textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+    await dispatchInput(linkInput, vimeoLink);
+
+    expect(linkInput.disabled).toBe(true);
+    expect(table.textContent).toContain('vimeo_thumbnail_link_conversion_notice');
+    expect(table.textContent).not.toContain('youtube_thumbnail_link_conversion_notice');
+
+    await clickByText(table, 'post');
+
+    expect(linkInput.value).toBe(thumbnailLink);
+    expect(testState.publishPostMock).toHaveBeenCalledTimes(1);
+    expect(testState.publishedPostOptions?.link).toBe(thumbnailLink);
+    expect(testState.publishedPostOptions?.content).toBe(`test ${vimeoLink}`);
   });
 
   it('requires a link when live community features require post links', async () => {

@@ -3,6 +3,7 @@ import {
   canMoveCommentToTrash,
   canTransferComment,
   getTargetTransferModerationFlairs,
+  getTransferBoardReference,
   getTransferPublishIdentity,
   getTransferPublishPayload,
   getTransferSourceBoardReference,
@@ -149,6 +150,13 @@ describe('comment-transfer', () => {
       removed: true,
       reason: 'Moved to >>>/g/, this post did not belong to /mu/ ([rules](/rules#mu))',
     });
+  });
+
+  it('links the moved post by number in the target board reference when the number is known', () => {
+    const trashBoard = { address: TRASH_BOARD_ADDRESS, directoryCode: TRASH_BOARD_CODE, title: TRASH_BOARD_TITLE };
+    expect(getTransferBoardReference(trashBoard, TRASH_BOARD_ADDRESS, 123)).toBe('>>>/trash/123');
+    expect(getTransferBoardReference(trashBoard, TRASH_BOARD_ADDRESS)).toBe('>>>/trash/');
+    expect(getTransferBoardReference(undefined, 'target-board.eth', 123)).toBe('target-board.eth');
   });
 
   it('formats source board references and rules links from directory metadata', () => {

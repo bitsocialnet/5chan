@@ -4,12 +4,14 @@ on:
   pull_request:
     paths:
       - 'scripts/jev/**'
+      - 'scripts/visual-qa/**'
       - 'scripts/pw-session.sh'
       - '.github/workflows/jev-helpers.yml'
   push:
     branches: [master]
     paths:
       - 'scripts/jev/**'
+      - 'scripts/visual-qa/**'
       - 'scripts/pw-session.sh'
       - '.github/workflows/jev-helpers.yml'
 
@@ -26,4 +28,4 @@ jobs:
         with:
           node-version: '22.12.0'
       - name: Verify bounded helpers without browser or provider calls
-        run: node --test scripts/jev/tests/*.test.mjs
+        run: node --test scripts/jev/tests/*.test.mjs scripts/visual-qa/tests/*.test.mjs

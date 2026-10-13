@@ -1,4 +1,4 @@
-import { memo, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, ReactNode, RefObject, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAccountComment } from '@bitsocial/bitsocial-react-hooks';
@@ -8,6 +8,7 @@ import { isAllView, isCatalogView, isModView, isSearchView, isSubscriptionsView 
 import { useAccountCommunityAddresses } from '../../hooks/use-account-community-addresses';
 import { useDirectories, DirectoryCommunity } from '../../hooks/use-directories';
 import { useBoardPath, useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
+import useIsMobile from '../../hooks/use-is-mobile';
 import { normalizeAccountCommentIndex } from '../../lib/utils/account-comment-index-utils';
 import { getPendingPostRoutePost } from '../../lib/utils/pending-post-route-state';
 import { getBoardPath, extractDirectoryFromTitle } from '../../lib/utils/route-utils';
@@ -17,6 +18,7 @@ import useCreateBoardModalStore from '../../stores/use-create-board-modal-store'
 import useBoardsBarEditModalStore from '../../stores/use-boards-bar-edit-modal-store';
 import useBoardsBarVisibilityStore from '../../stores/use-boards-bar-visibility-store';
 import useDirectoryModalStore from '../../stores/use-directory-modal-store';
+import usePersistentBoardsBarStore from '../../stores/use-persistent-boards-bar-store';
 import { BOARD_CODE_GROUPS, getAllBoardCodes } from '../../constants/board-codes';
 import styles from './boards-bar.module.css';
 import capitalize from 'lodash/capitalize';
@@ -32,9 +34,122 @@ const findBoardAddressByCode = (code: string, directories: DirectoryCommunity[])
   return entry?.address || null;
 };
 
-// Takes no props and renders one Link per directory board, so a parent rerender is pure
-// waste: it was re-rendering ~80 Links on every store notification.
-const BoardsBarDesktop = memo(() => {
+// The persistent bar is position: fixed, so a spacer has to keep its height in the page flow.
+// That height changes when the bar wraps to more lines or the subscriptions list changes.
+const useElementHeight = (ref: RefObject<HTMLElement | null>, enabled: boolean) => {
+  const [height, setHeight] = useState(0);
+
+  // Layout effect so the spacer has its height before the first paint with the bar fixed.
+  useLayoutEffect(() => {
+    const element = ref.current;
+    if (!enabled || !element) return;
+    const measure = () => setHeight(element.offsetHeight);
+    measure();
+    if (typeof ResizeObserver === 'undefined') {
+      window.addEventListener('resize', measure);
+      return () => window.removeEventListener('resize', measure);
+    }
+    const observer = new ResizeObserver(measure);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [ref, enabled]);
+
+  return height;
+};
+
+// Slides a fixed bar out of view while the page scrolls down and back in on scroll up or near the top.
+const useVisibleWhileScrollingUp = (enabled: boolean) => {
+  const [visible, setVisible] = useState(true);
+  const prevScrollPosRef = useRef(0);
+
+  useEffect(() => {
+    if (!enabled) return;
+    prevScrollPosRef.current = window.scrollY;
+
+    const debouncedHandleScroll = debounce(() => {
+      const currentScrollPos = window.scrollY;
+      const prevScrollPos = prevScrollPosRef.current;
+
+      setVisible(prevScrollPos > currentScrollPos || currentScrollPos < 10);
+      prevScrollPosRef.current = currentScrollPos;
+    }, 50);
+
+    window.addEventListener('scroll', debouncedHandleScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener('scroll', debouncedHandleScroll);
+      debouncedHandleScroll.cancel();
+      // Start visible the next time auto-hide is enabled instead of reusing a stale hidden state.
+      setVisible(true);
+    };
+  }, [enabled]);
+
+  return !enabled || visible;
+};
+
+interface PinnableBarProps {
+  className: string;
+  pinned: boolean;
+  autoHide: boolean;
+  children: ReactNode;
+}
+
+const hiddenAboveViewportStyle = { transform: 'translateY(-100%)' };
+
+// Wraps a boards bar that can be pinned to the top of the page. Scroll visibility lives here, so
+// hiding or showing the bar does not re-render the board links passed in as children.
+const PinnableBar = ({ className, pinned, autoHide, children }: PinnableBarProps) => {
+  const barRef = useRef<HTMLDivElement>(null);
+  const barHeight = useElementHeight(barRef, pinned);
+  const visible = useVisibleWhileScrollingUp(autoHide);
+  const pinnedTopBarMode = autoHide ? 'auto-hide' : 'fixed';
+
+  return (
+    <>
+      <div
+        ref={barRef}
+        className={className}
+        style={visible ? undefined : hiddenAboveViewportStyle}
+        // Scrolling to the top of a thread offsets by this bar whenever it will cover the page top.
+        data-pinned-top-bar={pinned ? pinnedTopBarMode : undefined}
+      >
+        {children}
+      </div>
+      {pinned && <div className={styles.persistentSpacer} style={{ height: barHeight }} />}
+    </>
+  );
+};
+
+const scrollToBottom = () => {
+  window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' });
+};
+
+// 4chan's compact page links: the mobile bar always shows them, and the pinned desktop bar uses
+// them in place of its bracketed links.
+const PageJump = () => {
+  const { t } = useTranslation();
+  const location = useLocation();
+
+  return (
+    <div className={styles.pageJump}>
+      <button type='button' title={capitalize(t('bottom'))} aria-label={capitalize(t('bottom'))} onClick={scrollToBottom}>
+        ▼
+      </button>
+      <Link
+        to={`${!location.pathname.endsWith('settings') ? location.pathname.replace(/\/$/, '') + '/settings' : location.pathname}${location.search}`}
+        state={location.state}
+      >
+        {t('settings')}
+      </Link>
+      <Link to={SEARCH_PATH}>{capitalize(t('search'))}</Link>
+      <Link to='/'>{t('home')}</Link>
+    </div>
+  );
+};
+
+// Renders one Link per directory board and takes only boolean props, so a parent rerender is
+// pure waste: it was re-rendering ~80 Links on every store notification.
+const BoardsBarDesktop = memo(({ persistent, autoHide }: { persistent: boolean; autoHide: boolean }) => {
   const { t } = useTranslation();
   const location = useLocation();
   const params = useParams();
@@ -145,7 +260,7 @@ const BoardsBarDesktop = memo(() => {
   };
 
   return (
-    <div className={styles.boardNavDesktop}>
+    <PinnableBar className={persistent ? `${styles.boardNavDesktop} ${styles.persistent}` : styles.boardNavDesktop} pinned={persistent} autoHide={autoHide}>
       <span className={styles.boardList}>
         [<Link to={`/all${catalogSuffix}`}>all</Link> / <Link to={`/subs${catalogSuffix}`}>subs</Link>
         {accountCommunityAddresses.length > 0 && (
@@ -218,22 +333,33 @@ const BoardsBarDesktop = memo(() => {
         </button>
         ]
       </span>
-      <span className={styles.navTopRight}>
-        [
-        <Link
-          to={`${!location.pathname.endsWith('settings') ? location.pathname.replace(/\/$/, '') + '/settings' : location.pathname}${location.search}`}
-          state={location.state}
-        >
-          {t('settings')}
-        </Link>
-        ] [<Link to={SEARCH_PATH}>{capitalize(t('search'))}</Link>] [<Link to='/'>{t('home')}</Link>]
-      </span>
-    </div>
+      {persistent ? (
+        <PageJump />
+      ) : (
+        <span className={styles.navTopRight}>
+          [
+          <Link
+            to={`${!location.pathname.endsWith('settings') ? location.pathname.replace(/\/$/, '') + '/settings' : location.pathname}${location.search}`}
+            state={location.state}
+          >
+            {t('settings')}
+          </Link>
+          ] [<Link to={SEARCH_PATH}>{capitalize(t('search'))}</Link>] [<Link to='/'>{t('home')}</Link>]
+        </span>
+      )}
+    </PinnableBar>
   );
 });
 BoardsBarDesktop.displayName = 'BoardsBarDesktop';
 
-const BoardsBarMobile = memo(({ communityAddress }: { communityAddress?: string }) => {
+interface BoardsBarMobileProps {
+  communityAddress?: string;
+  // Pinned on desktop in place of the traditional board list.
+  pinnedOnDesktop: boolean;
+  autoHide: boolean;
+}
+
+const BoardsBarMobile = memo(({ communityAddress, pinnedOnDesktop, autoHide }: BoardsBarMobileProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const directories = useDirectories();
@@ -296,56 +422,47 @@ const BoardsBarMobile = memo(({ communityAddress }: { communityAddress?: string 
     </select>
   );
 
-  // navbar animation on scroll
-  const [visible, setVisible] = useState(true);
-  const prevScrollPosRef = useRef(0);
-
-  useEffect(() => {
-    const debouncedHandleScroll = debounce(() => {
-      const currentScrollPos = window.scrollY;
-      const prevScrollPos = prevScrollPosRef.current;
-
-      setVisible(prevScrollPos > currentScrollPos || currentScrollPos < 10);
-      prevScrollPosRef.current = currentScrollPos;
-    }, 50);
-
-    window.addEventListener('scroll', debouncedHandleScroll, { passive: true });
-
-    return () => {
-      window.removeEventListener('scroll', debouncedHandleScroll);
-      debouncedHandleScroll.cancel();
-    };
-  }, []);
-
   return (
-    <div className={styles.boardNavMobile} style={{ transform: visible ? 'translateY(0)' : 'translateY(-23px)' }}>
+    <PinnableBar
+      className={pinnedOnDesktop ? `${styles.boardNavMobile} ${styles.persistentOnDesktop}` : styles.boardNavMobile}
+      pinned={pinnedOnDesktop}
+      autoHide={autoHide}
+    >
       <div className={styles.boardSelect}>
         <strong>{t('board')}</strong>
         {boardSelect}
       </div>
-      <div className={styles.pageJump}>
-        <Link to={`${location.pathname.replace(/\/$/, '') + '/settings'}${location.search}`} state={location.state}>
-          {t('settings')}
-        </Link>
-        <Link to={SEARCH_PATH}>{capitalize(t('search'))}</Link>
-        <Link to='/'>{t('home')}</Link>
-      </div>
-    </div>
+      <PageJump />
+    </PinnableBar>
   );
 });
 BoardsBarMobile.displayName = 'BoardsBarMobile';
 
-const BoardsBar = memo(() => {
+// Only the top instance (persistable) follows the persistent setting; the footer renders a second
+// copy that must stay in place.
+const BoardsBar = memo(({ persistable = false }: { persistable?: boolean }) => {
   const params = useParams();
   const location = useLocation();
   const accountComment = useAccountComment({ commentIndex: normalizeAccountCommentIndex(params?.accountCommentIndex) });
   const resolvedCommunityAddress = useResolvedCommunityAddress();
   const communityAddress = resolvedCommunityAddress || getCommentCommunityAddress(accountComment) || getCommentCommunityAddress(getPendingPostRoutePost(location.state));
+  const persistentBoardsBar = usePersistentBoardsBarStore((state) => state.persistentBoardsBar) && persistable;
+  const traditionalBoardList = usePersistentBoardsBarStore((state) => state.traditionalBoardList);
+  const autoHide = usePersistentBoardsBarStore((state) => state.autoHideBoardsBar) && persistentBoardsBar;
+  // Without the traditional board list, desktop pins the mobile board select instead, like 4chan.
+  const pinBoardSelect = persistentBoardsBar && !traditionalBoardList;
+  const isMobile = useIsMobile();
+  const pinnedBoardSelectOnDesktop = pinBoardSelect && !isMobile;
 
   return (
     <>
-      <BoardsBarDesktop />
-      <BoardsBarMobile communityAddress={communityAddress} />
+      {!pinBoardSelect && <BoardsBarDesktop persistent={persistentBoardsBar} autoHide={autoHide} />}
+      <BoardsBarMobile
+        communityAddress={communityAddress}
+        pinnedOnDesktop={pinnedBoardSelectOnDesktop}
+        // On mobile the bar always hides while scrolling down; on desktop only when auto-hide is on.
+        autoHide={!pinnedBoardSelectOnDesktop || autoHide}
+      />
     </>
   );
 });

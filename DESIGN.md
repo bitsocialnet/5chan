@@ -194,10 +194,11 @@ Desktop and mobile intentionally differ: desktop stays maximally compact, while 
 
 ### Buttons
 
-- **Shape:** square corners (`0` radius).
+- **Shape:** square corners (`0` radius) on styled buttons; native buttons keep the browser's own shape.
 - **Desktop:** prefer text links, bracketed actions, or image-backed icon buttons over filled button components.
+- **Native buttons:** where a surface shows a visible `<button>` (post form, challenge, settings, and other modals), keep the browser's default appearance, including its hover, focus, and disabled states. Layout, spacing, `cursor`, `text-transform`, and theme-wide adjustments such as the dark-theme `--filter80` dimming are fine; custom text or background colors, borders, radius, and icons are not. Do not color-code actions, for example green for confirm and red for cancel. The plain browser control is part of the classic imageboard look.
 - **Mobile:** use theme-colored rectangular buttons with compact padding, bold `10pt` text, and existing button fade assets.
-- **Hover / Focus:** hover changes color to the theme hover red; focus must stay visible and keyboard accessible.
+- **Hover / Focus:** on text and mobile buttons, hover changes color to the theme hover red; focus must stay visible and keyboard accessible.
 
 ### Cards / Containers
 
@@ -252,6 +253,7 @@ Desktop and mobile intentionally differ: desktop stays maximally compact, while 
 - Do not use pill, capsule, chip, or rounded badge shapes for labels, tags, statuses, transports, or counts.
 - Do not add hover background fills, color fades, or CSS transitions/animations to rows, cards, or list items.
 - Do not replace compact text links with large icon-button toolbars unless the existing surface already uses that pattern.
+- Do not restyle native buttons or color-code actions (for example green confirm and red cancel); keep the browser's default button appearance.
 - Do not introduce a new design system that competes with Yotsuba, Yotsuba B, Futaba, or the existing theme variable model.
 - Do not make Bitsocial, crypto, or decentralization visuals dominate routine browsing.
 - Do not add an emoji picker, emoji shortcode/emote system, or Twemoji-style emoji rendering; emoji pass through as raw Unicode only.

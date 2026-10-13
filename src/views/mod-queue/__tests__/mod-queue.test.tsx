@@ -737,7 +737,7 @@ describe('ModQueueView', () => {
       communityAddress: 'music-posting.eth',
       commentModeration: {
         approved: false,
-        reason: 'Moved to >>>/trash/, this post did not belong to /mu/ ([rules](/rules#mu))',
+        reason: 'Moved to >>>/trash/12, this post did not belong to /mu/ ([rules](/rules#mu))',
       },
     });
     expect(testState.deleteAccountMock).toHaveBeenCalledWith(temporaryAccountName);

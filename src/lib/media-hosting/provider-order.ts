@@ -1,5 +1,5 @@
 import type { MediaHostingRuntime, ProviderId, UploadMode } from './types';
-import { MEDIA_HOSTING_PROVIDERS } from './providers';
+import { getRuntimeProviders } from './providers';
 import type { ProviderAvailabilitySnapshot } from './provider-availability';
 
 /** Returns [preferredProvider] for preferred mode */
@@ -17,9 +17,19 @@ export function getRandomOrder(providers: readonly ProviderId[], rng: () => numb
   return result;
 }
 
-/** Filter providers to those supported on the given runtime */
-function getSupportedProviders(runtime: MediaHostingRuntime): ProviderId[] {
-  return MEDIA_HOSTING_PROVIDERS.filter((p) => p.supportedRuntimes.includes(runtime)).map((p) => p.id);
+/**
+ * Maps stored settings to what the runtime can honor: Random needs at least two providers,
+ * and a preferred provider the runtime cannot use falls back to the first one it can.
+ */
+export function resolveUploadSettings(options: { mode: UploadMode; preferredProvider: ProviderId; runtime: MediaHostingRuntime }): {
+  mode: UploadMode;
+  preferredProvider: ProviderId;
+} {
+  const providers = getRuntimeProviders(options.runtime).map((provider) => provider.id);
+  return {
+    mode: options.mode === 'random' && providers.length < 2 ? 'preferred' : options.mode,
+    preferredProvider: providers.includes(options.preferredProvider) ? options.preferredProvider : (providers[0] ?? options.preferredProvider),
+  };
 }
 
 /** Get ordered provider list for an upload attempt */
@@ -29,8 +39,11 @@ export function getProviderOrder(options: {
   runtime: MediaHostingRuntime;
   availability?: ProviderAvailabilitySnapshot;
 }): ProviderId[] {
-  const { mode, preferredProvider, runtime, availability } = options;
-  const supported = getSupportedProviders(runtime).filter((provider) => availability?.[provider] !== 'unavailable');
+  const { runtime, availability } = options;
+  const { mode, preferredProvider } = resolveUploadSettings(options);
+  const supported = getRuntimeProviders(runtime)
+    .map((provider) => provider.id)
+    .filter((provider) => availability?.[provider] !== 'unavailable');
 
   if (mode === 'none') return [];
   if (mode === 'preferred') {

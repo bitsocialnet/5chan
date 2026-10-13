@@ -14,6 +14,7 @@ import {
   ThreadFooterStyleRow,
 } from '../footer';
 import useThreadLiveUpdatesStore from '../../../stores/use-thread-live-updates-store';
+import usePersistentBoardsBarStore from '../../../stores/use-persistent-boards-bar-store';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
@@ -143,6 +144,7 @@ describe('footer', () => {
     act(() => root.unmount());
     container.remove();
     useThreadLiveUpdatesStore.getState().resetState();
+    usePersistentBoardsBarStore.setState({ persistentBoardsBar: false });
   });
 
   it('renders the desktop footer shell with optional style row, boards bar, and legal metadata', async () => {
@@ -157,6 +159,14 @@ describe('footer', () => {
     expect(container.querySelector('[data-testid="style-row"]')?.textContent).toBe('style-row');
     expect(container.querySelector('[data-testid="boards-bar"]')?.textContent).toBe('boards-bar');
     expect(container.querySelector('[data-testid="site-legal-meta"]')?.getAttribute('data-order')).toBe('license-first');
+  });
+
+  it('hides the bottom boards bar while the top one is pinned', async () => {
+    usePersistentBoardsBarStore.setState({ persistentBoardsBar: true });
+    await renderWithRouter(createElement(PageFooterDesktop, {}));
+
+    expect(container.querySelector('[data-testid="boards-bar"]')).toBeNull();
+    expect(container.querySelector('[data-testid="site-legal-meta"]')).toBeTruthy();
   });
 
   it('renders style-only, catalog, and mobile footer wrappers with shared controls', async () => {

@@ -208,7 +208,7 @@ const BoardLayout = () => {
   return (
     <div className={styles.boardLayout}>
       <DirectoryCandidateRecords boardIdentifier={boardIdentifier} />
-      <BoardsBar />
+      <BoardsBar persistable />
       <Suspense fallback={null}>
         <CreateBoardModal />
       </Suspense>

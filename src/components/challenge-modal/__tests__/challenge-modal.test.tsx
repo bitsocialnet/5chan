@@ -39,6 +39,9 @@ vi.mock('react-i18next', () => ({
       if (key === 'trusted_board_link_checkbox') {
         return 'Always allow boards to open this website';
       }
+      if (key === 'open_challenge') {
+        return 'Open challenge';
+      }
       return key;
     },
   }),
@@ -143,6 +146,14 @@ const dispatchInput = async (element: HTMLInputElement, value: string) => {
 
 const clickButton = async (text: string) => {
   const button = Array.from(container.querySelectorAll('button')).find((candidate) => candidate.textContent === text);
+  await act(async () => {
+    button?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+  });
+};
+
+const clickTitleBarClose = async () => {
+  const button = container.querySelector<HTMLButtonElement>('#challenge-modal-title button[aria-label="close"]');
+  expect(button).not.toBeNull();
   await act(async () => {
     button?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
   });
@@ -349,7 +360,7 @@ describe('ChallengeModal', () => {
     expect(publicationTextarea?.disabled).toBe(true);
     expect(container.querySelector('iframe')).toBeNull();
 
-    await clickButton('Open');
+    await clickButton('Open challenge');
 
     const iframe = container.querySelector('iframe');
     expect(iframe).not.toBeNull();
@@ -391,7 +402,7 @@ describe('ChallengeModal', () => {
     await act(async () => {
       checkbox?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
-    await clickButton('Open');
+    await clickButton('Open challenge');
 
     expect(useTrustedBoardUrlPermissionsStore.getState().isOriginTrusted('https://spamblocker.bitsocial.net')).toBe(true);
     expect(useTrustedBoardUrlPermissionsStore.getState().getTrustedOrigins()).toEqual([
@@ -437,7 +448,7 @@ describe('ChallengeModal', () => {
     expect(container.textContent).not.toContain('For post:');
     expect(container.textContent).not.toContain('For {{publicationType}}: {{excerpt}}');
 
-    await clickButton('Open');
+    await clickButton('Open challenge');
 
     const iframe = container.querySelector('iframe');
     expect(iframe).not.toBeNull();
@@ -470,7 +481,7 @@ describe('ChallengeModal', () => {
     ];
 
     await renderModal();
-    await clickButton('Open');
+    await clickButton('Open challenge');
 
     await act(async () => {
       window.dispatchEvent(
@@ -508,7 +519,7 @@ describe('ChallengeModal', () => {
     ];
 
     await renderModal();
-    await clickButton('Open');
+    await clickButton('Open challenge');
 
     await act(async () => {
       window.dispatchEvent(
@@ -527,7 +538,7 @@ describe('ChallengeModal', () => {
     expect(testState.removeChallengeMock).not.toHaveBeenCalled();
     expect(container.textContent).toContain('mu wants to open flags.5chan.app.');
 
-    await clickButton('Open');
+    await clickButton('Open challenge');
 
     await act(async () => {
       window.dispatchEvent(
@@ -559,7 +570,7 @@ describe('ChallengeModal', () => {
     ];
 
     await renderModal();
-    await clickButton('Open');
+    await clickButton('Open challenge');
 
     await act(async () => {
       window.dispatchEvent(
@@ -631,7 +642,7 @@ describe('ChallengeModal', () => {
     expect(container.querySelector<HTMLTextAreaElement>('textarea')?.value).toBe('>>17\nA reply body with enough context');
   });
 
-  it('abandons iframe challenges when the custom confirmation is closed', async () => {
+  it('abandons iframe challenges when the custom confirmation is closed from the title bar', async () => {
     testState.challenges = [
       createStoredChallenge({
         challenge: 'https://spamblocker.bitsocial.net/api/v1/iframe/session-123',
@@ -640,7 +651,12 @@ describe('ChallengeModal', () => {
     ];
 
     await renderModal();
-    await clickButton('close');
+
+    const buttonLabels = Array.from(container.querySelectorAll('button')).map((button) => button.textContent);
+    expect(buttonLabels).toContain('Open challenge');
+    expect(buttonLabels).not.toContain('close');
+
+    await clickTitleBarClose();
 
     expect(confirmSpy).not.toHaveBeenCalled();
     expect(testState.abandonCurrentChallengeMock).toHaveBeenCalledOnce();
@@ -662,8 +678,9 @@ describe('ChallengeModal', () => {
     expect(container.textContent).toContain('Error: Unable to load challenge without your address. Please sign in and try again.');
     expect(container.textContent).not.toContain('Open');
     expect(container.querySelector('iframe')).toBeNull();
+    expect(Array.from(container.querySelectorAll('button')).map((button) => button.textContent)).not.toContain('close');
 
-    await clickButton('close');
+    await clickTitleBarClose();
     expect(testState.abandonCurrentChallengeMock).toHaveBeenCalledOnce();
   });
 

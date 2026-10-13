@@ -5,6 +5,7 @@ import { useDismiss, useFloating, useFocus, useHover, useInteractions, offset, s
 import { getLinkMediaInfo, getHasThumbnail } from '../../lib/utils/media-utils';
 import { isCatalogView } from '../../lib/utils/view-utils';
 import useIsMobile from '../../hooks/use-is-mobile';
+import { useVimeoThumbnail } from '../../hooks/use-vimeo-thumbnail';
 import CommentMedia from '../comment-media';
 import CodeBlock from '../code-block';
 import TexMath from '../tex-math';
@@ -52,6 +53,8 @@ const ContentLinkEmbed = ({ children, href, linkMediaInfo }: ContentLinkEmbedPro
   const [showMedia, setShowMedia] = useState(false);
   const [placement, setPlacement] = useState<Placement>('right');
   const availableWidthRef = useRef<number>(0);
+  // Only hovered links look up a Vimeo thumbnail, so a reply full of links doesn't fan out oEmbed requests.
+  const previewMediaInfo = useVimeoThumbnail(linkMediaInfo, isOpen && !isMobile);
 
   const { refs, floatingStyles, update, context } = useFloating({
     open: isOpen,
@@ -126,10 +129,17 @@ const ContentLinkEmbed = ({ children, href, linkMediaInfo }: ContentLinkEmbedPro
           <CommentMedia commentMediaInfo={linkMediaInfo} disableToggle={true} isReply={false} setShowThumbnail={setShowMedia} showThumbnail={false} />
         </>
       )}
-      {isOpen && !isMobile && getHasThumbnail(linkMediaInfo, href) && (
+      {isOpen && !isMobile && getHasThumbnail(previewMediaInfo, href) && (
         <FloatingPortal>
           <div className={styles.floatingEmbed} ref={refs.setFloating} style={floatingStyles} {...getFloatingProps()}>
-            <CommentMedia commentMediaInfo={linkMediaInfo} disableToggle={true} isFloatingEmbed={true} isReply={false} setShowThumbnail={() => {}} showThumbnail={true} />
+            <CommentMedia
+              commentMediaInfo={previewMediaInfo}
+              disableToggle={true}
+              isFloatingEmbed={true}
+              isReply={false}
+              setShowThumbnail={() => {}}
+              showThumbnail={true}
+            />
           </div>
         </FloatingPortal>
       )}
@@ -338,8 +348,11 @@ function tokenize(text: string, keyPrefix = '', parseSpoilers = true): Token[] {
       const boardIdentifier = match[matchIndexes.crossBoardNumberQuoteLinkBoard];
       const number = parseInt(match[matchIndexes.crossBoardNumberQuoteLinkNumber], 10);
       if (boardIdentifier && !Number.isNaN(number)) {
+        const raw = `>>>/${boardIdentifier}/${match[matchIndexes.crossBoardNumberQuoteLinkNumber]}`;
+        const trailingText = fullMatch.slice(raw.length);
+        const linkEnd = matchEnd - trailingText.length;
         tokens.push({
-          key: makeTokenKey(keyPrefix, 'crossBoardNumberQuoteLink', matchStart, matchEnd),
+          key: makeTokenKey(keyPrefix, 'crossBoardNumberQuoteLink', matchStart, linkEnd),
           type: 'crossBoardNumberQuoteLink',
           reference: {
             boardIdentifier,
@@ -348,6 +361,9 @@ function tokenize(text: string, keyPrefix = '', parseSpoilers = true): Token[] {
             raw: `>>>/${boardIdentifier}/${number}`,
           },
         });
+        if (trailingText) {
+          tokens.push({ key: makeTokenKey(keyPrefix, 'text', linkEnd, matchEnd), type: 'text', value: trailingText });
+        }
       } else {
         tokens.push({ key: makeTokenKey(keyPrefix, 'text', matchStart, matchEnd), type: 'text', value: fullMatch });
       }
