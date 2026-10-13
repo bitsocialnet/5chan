@@ -1789,6 +1789,24 @@ describe('PostForm', () => {
     expect(testState.publishedPostOptions?.link).toBe('https://forgeimg.net/abc/uploaded.png');
   });
 
+  it('reveals a hidden link to file field that holds a link the board cannot post as a file', async () => {
+    testState.uploadMode = 'random';
+    testState.directories[0] = { address: 'music-posting.eth', features: { requirePostLinkIsMedia: true }, title: '/mu/ - Music' };
+    testState.resolvedCommunityAddress = 'music-posting.eth';
+
+    await renderPostForm('/mu');
+    await clickByText(container, 'start_new_thread');
+
+    const linkInput = container.querySelector<HTMLInputElement>('input[aria-label="link_to_file"]') as HTMLInputElement;
+    await act(async () => {
+      testState.uploadComplete?.('https://forgeimg.net/abc/movie.swf');
+    });
+    expect(linkInput.closest('tr')?.hidden).toBe(false);
+
+    await dispatchInput(linkInput, '');
+    expect(linkInput.closest('tr')?.hidden).toBe(true);
+  });
+
   it('shows the link to file field when the setting is on or no upload provider is enabled', async () => {
     testState.uploadMode = 'random';
     testState.showLinkField = true;

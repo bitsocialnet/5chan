@@ -1212,7 +1212,11 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
   };
   const uploadMode = useMediaHostingStore((state) => state.uploadMode);
   const showUploadControls = getShowUploadControls(uploadMode);
-  const showLinkField = useShowLinkField({ requireMediaLink: requireCurrentLinkIsMedia, showOekakiControls });
+  const showLinkField = useShowLinkField({
+    link: url,
+    requireMediaLink: requireCurrentLinkIsMedia,
+    showOekakiControls: showOekakiControls && !(isInPostView && noReplyLinks),
+  });
 
   return (
     <>

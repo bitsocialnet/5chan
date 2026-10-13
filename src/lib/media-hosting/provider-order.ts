@@ -32,8 +32,8 @@ export function resolveUploadSettings(options: { mode: UploadMode; preferredProv
   };
 }
 
-/** Get ordered provider list for an upload attempt */
-export function getProviderOrder(options: {
+/** Providers the stored settings enable on this runtime, minus any known to be unreachable, in display order. */
+function getEnabledProviders(options: {
   mode: UploadMode;
   preferredProvider: ProviderId;
   runtime: MediaHostingRuntime;
@@ -45,17 +45,22 @@ export function getProviderOrder(options: {
     .map((provider) => provider.id)
     .filter((provider) => availability?.[provider] !== 'unavailable');
 
-  if (mode === 'none') return [];
   if (mode === 'preferred') {
     return supported.includes(preferredProvider) ? [preferredProvider] : [];
   }
   if (mode === 'random') {
-    return getRandomOrder(supported);
+    return supported;
   }
   return [];
 }
 
+/** Get ordered provider list for an upload attempt */
+export function getProviderOrder(options: Parameters<typeof getEnabledProviders>[0]): ProviderId[] {
+  const providers = getEnabledProviders(options);
+  return resolveUploadSettings(options).mode === 'random' ? getRandomOrder(providers) : providers;
+}
+
 /** Whether an upload can be attempted: an enabled provider remains that is not known to be unreachable. */
-export function hasUsableUploadProvider(options: Parameters<typeof getProviderOrder>[0]): boolean {
-  return getProviderOrder(options).length > 0;
+export function hasUsableUploadProvider(options: Parameters<typeof getEnabledProviders>[0]): boolean {
+  return getEnabledProviders(options).length > 0;
 }

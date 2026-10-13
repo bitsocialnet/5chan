@@ -1628,6 +1628,20 @@ describe('ReplyModal', () => {
     expect(testState.setPublishReplyOptionsMock).toHaveBeenCalledWith({ link: 'https://forgeimg.net/abc/uploaded.png' });
   });
 
+  it('reveals a hidden link to file field that holds a link the board cannot post as a file', async () => {
+    testState.uploadMode = 'random';
+    await renderReplyModal('/all/thread/post-1');
+
+    const linkInput = container.querySelector<HTMLInputElement>('input[aria-label="link_to_file"]') as HTMLInputElement;
+    await act(async () => {
+      testState.uploadComplete?.('https://forgeimg.net/abc/movie.swf');
+    });
+    expect((linkInput.parentElement as HTMLElement).hidden).toBe(false);
+
+    await dispatchInput(linkInput, '');
+    expect((linkInput.parentElement as HTMLElement).hidden).toBe(true);
+  });
+
   it('shows the link to file field when the setting is on, no upload provider is enabled, or Tegaki runs on web', async () => {
     const isLinkFieldHidden = () => (container.querySelector<HTMLInputElement>('input[aria-label="link_to_file"]')?.parentElement as HTMLElement | null)?.hidden;
     testState.uploadMode = 'random';

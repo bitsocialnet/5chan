@@ -141,8 +141,10 @@ const FAQ_SECTIONS: FAQSection[] = [
         question: 'How do I post an image or video?',
         answer: (
           <>
-            Paste a direct media URL into the <code>[Link]</code> field. 5chan detects images, GIFs, video, audio, and supported embeds. Direct links work best. If the
-            link is detected as a webpage instead of media, try a direct file URL or a different host.
+            Click <code>[Choose File]</code> to upload it through a media hosting service, or paste a direct media URL into the <code>[Link To File]</code> field. That
+            field is hidden while an upload service is available; turn on Show "Link To File" field in{' '}
+            <Link to='/all/settings?section=media-hosting-settings'>Media Hosting settings</Link> to use it. 5chan detects images, GIFs, video, audio, and supported
+            embeds. Direct links work best. If the link is detected as a webpage instead of media, try a direct file URL or a different host.
           </>
         ),
       },
@@ -151,9 +153,8 @@ const FAQ_SECTIONS: FAQSection[] = [
         question: 'Can I upload media directly?',
         answer: (
           <>
-            Yes in the Android and desktop apps, where 5chan can hand the file to a media hosting service. Browser uploads are limited by CORS and should use an external
-            host first. The board post itself stores text and links; the external media host may still see your IP address when you upload or when other users load the
-            file.
+            Yes. <code>[Choose File]</code> hands the file to a media hosting service: Forge Images in the browser, and Catbox, Imgur, or ImgBB in the Android and desktop
+            apps. The board post itself stores text and links; the external media host may still see your IP address when you upload or when other users load the file.
           </>
         ),
       },
@@ -172,7 +173,8 @@ const FAQ_SECTIONS: FAQSection[] = [
         question: 'Can I reply with an image?',
         answer: (
           <>
-            Yes, unless that board disables or restricts media replies. Open the reply box and add a direct media URL in the <code>[Link]</code> field before submitting.
+            Yes, unless that board disables or restricts media replies. Open the reply box and click <code>[Choose File]</code>, or add a direct media URL in the{' '}
+            <code>[Link To File]</code> field before submitting.
           </>
         ),
       },

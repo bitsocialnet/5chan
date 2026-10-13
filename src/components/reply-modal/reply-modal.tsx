@@ -619,7 +619,7 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
   };
   const uploadMode = useMediaHostingStore((state) => state.uploadMode);
   const showUploadControls = getShowUploadControls(uploadMode);
-  const showLinkField = useShowLinkField({ requireMediaLink: requireReplyLinkIsMedia, showOekakiControls: showOekakiControls && !noReplyLinks });
+  const showLinkField = useShowLinkField({ link: url, requireMediaLink: requireReplyLinkIsMedia, showOekakiControls: showOekakiControls && !noReplyLinks });
   const displayedFileName = getPublishFileDisplayName(url, uploadedFileName, requireReplyLinkIsMedia);
   const thumbnailConversionNotice = !thumbnailConversion
     ? null
