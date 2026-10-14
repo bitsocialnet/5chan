@@ -48,10 +48,11 @@ export function postFormData(url: string, body: FormData, { signal, onBodySent }
       settle();
       reject(abortError());
     };
+    // Some browsers only dispatch upload events to listeners registered before open().
+    if (onBodySent) xhr.upload.onload = () => onBodySent();
     signal?.addEventListener('abort', abort, { once: true });
 
     xhr.open('POST', url);
-    if (onBodySent) xhr.upload.onload = () => onBodySent();
     xhr.send(body);
   });
 }

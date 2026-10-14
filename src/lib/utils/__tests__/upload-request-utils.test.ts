@@ -14,6 +14,7 @@ class FakeXhr {
   url = '';
   sentBody: unknown;
   abortCalls = 0;
+  uploadListenerAtOpen = false;
 
   constructor() {
     FakeXhr.instances.push(this);
@@ -21,6 +22,7 @@ class FakeXhr {
   open(method: string, url: string) {
     this.method = method;
     this.url = url;
+    this.uploadListenerAtOpen = this.upload.onload !== null;
   }
   send(body: unknown) {
     this.sentBody = body;
@@ -72,11 +74,12 @@ describe('postFormData', () => {
     await expect(response.json()).rejects.toThrow(SyntaxError);
   });
 
-  it('reports when the body has been sent, before the answer arrives', async () => {
+  it('reports when the body has been sent, with the listener registered before open()', async () => {
     const onBodySent = vi.fn();
     const pending = postFormData('https://api.example/upload', new FormData(), { onBodySent });
     const xhr = lastXhr();
 
+    expect(xhr.uploadListenerAtOpen).toBe(true);
     expect(onBodySent).not.toHaveBeenCalled();
     xhr.upload.onload?.();
     expect(onBodySent).toHaveBeenCalledOnce();
