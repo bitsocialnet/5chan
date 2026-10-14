@@ -59,7 +59,7 @@ const isAppAlias = (find) => !(typeof find === 'string' && (find.startsWith('nod
 // dependencies in node_modules/.vite, so each render keeps Vite's cache, and the peer client's .pkc
 // storage (created in the working directory), in a directory of its own.
 const cacheDir = await mkdtemp(path.join(os.tmpdir(), 'fivechan-static-shell-'));
-trace('starting the Vite server');
+trace(`starting the Vite server for ${packageRoot} with cache ${cacheDir}`);
 const server = await createServer({
   configFile: false,
   root: packageRoot,
@@ -138,7 +138,7 @@ try {
 } finally {
   trace('closing the Vite server');
   await server.close();
-  trace('removing the cache directory');
+  trace(`removing the cache directory ${cacheDir}`);
   // Windows can neither remove the working directory nor files the peer client still holds open.
   // The directory is in the OS temp directory, so a failed cleanup must not fail the render.
   process.chdir(packageRoot);
