@@ -41,7 +41,6 @@ import { useFileUpload } from '../../hooks/use-file-upload';
 import { useShowLinkField } from '../../hooks/use-show-link-field';
 import { getFileAttachment } from '../../lib/media-hosting/attached-media';
 import type { AttachedMedia } from '../../lib/media-hosting/types';
-import RemoveAttachmentButton from '../remove-attachment-button';
 import { useVideoThumbnailLinkConversion } from '../../hooks/use-video-thumbnail-link-conversion';
 import usePublishSubmissionGuard from '../../hooks/use-publish-submission-guard';
 import { useCommunityField } from '../../hooks/use-stable-community';
@@ -186,6 +185,11 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
   const quoteInsertNumber = modalState?.quoteInsertNumber ?? null;
   const quoteInsertSelectedText = modalState?.quoteInsertSelectedText ?? null;
   const draft = modalState?.draft;
+  const uploadMode = useMediaHostingStore((state) => state.uploadMode);
+  const canAttachFile = getShowUploadControls(uploadMode) && !noReplyLinks;
+  // An attachment can only be swapped by choosing another file, so one the modal can no longer upload
+  // (uploads turned off, or replies here cannot carry links) is ignored instead of left stuck in it.
+  const attachment = canAttachFile ? draft?.attachment : undefined;
   const initialDraftRef = useRef(draft);
   const lastProcessedQuoteInsertRequestIdRef = useRef(quoteInsertRequestId);
 
@@ -233,7 +237,6 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
       const currentContent = textRef.current?.value || '';
       const currentDisplayName = nameRef.current?.value.trim() || undefined;
       const currentUrl = urlRef.current?.value.trim() || '';
-      const attachment = draft?.attachment;
       const currentOptions = optionsRef.current?.value || '';
       const currentOptionsError = getPostOptionsValidationError(currentOptions, postOptionsDirectoryCode);
       const publishContent = getContentWithOptions(currentContent, currentOptions, fortuneEntryRef, diceRollRef, postOptionsDirectoryCode);
@@ -617,7 +620,6 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
       isReplyFormActiveRef.current = false;
     };
   }, [showReplyModal]);
-  const attachment = draft?.attachment;
   const clearLink = () => {
     cancelPendingConversion();
     setLinkValue('');
@@ -627,6 +629,7 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
   };
   // A Bitsocial comment carries one link, so an attachment replaces the link field's value.
   const attachMedia = (nextAttachment: AttachedMedia) => {
+    if (!canAttachFile) return;
     clearLink();
     updateDraft({ attachment: nextAttachment });
   };
@@ -634,12 +637,8 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
     const chosen = await chooseFile();
     if (chosen) attachMedia(chosen);
   };
-  const handleRemoveAttachment = () => {
-    updateDraft({ attachment: undefined });
-    clearLink();
-  };
   const handleDetachDrawing = (file: File) => {
-    if (attachment?.kind === 'file' && attachment.file === file) {
+    if (draft?.attachment?.kind === 'file' && draft.attachment.file === file) {
       updateDraft({ attachment: undefined });
     }
   };
@@ -656,11 +655,8 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
     }
     return uploaded.url;
   };
-  const uploadMode = useMediaHostingStore((state) => state.uploadMode);
-  const showUploadControls = getShowUploadControls(uploadMode);
   const showLinkField = useShowLinkField({ requireMediaLink: requireReplyLinkIsMedia, showOekakiControls: showOekakiControls && !noReplyLinks });
   const displayedFileName = getPublishFileDisplayName(url, attachment?.name, requireReplyLinkIsMedia);
-  const showRemoveAttachment = !isUploading && (Boolean(attachment) || (!showLinkField && Boolean(url)));
   const thumbnailConversionNotice = !thumbnailConversion
     ? null
     : thumbnailConversion.site === 'vimeo'
@@ -816,20 +812,16 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
           </div>
         )}
         <div className={styles.footer}>
-          {/* An attachment stays listed with its [×] even when uploads become unavailable, so it can be removed. */}
-          {((showUploadControls && !noReplyLinks) || attachment) && (
+          {canAttachFile && (
             <span className={styles.uploadContainer}>
-              {showUploadControls && !noReplyLinks && (
-                <span className={styles.uploadButton}>
-                  <button type='button' onClick={handleChooseFile} disabled={isUploading}>
-                    {t('choose_file')}
-                  </button>
-                </span>
-              )}
+              <span className={styles.uploadButton}>
+                <button type='button' onClick={handleChooseFile} disabled={isUploading}>
+                  {t('choose_file')}
+                </button>
+              </span>
               <span className={styles.uploadFileName} title={displayedFileName || t('no_file_chosen')}>
                 {isUploading ? <LoadingEllipsis string={t('uploading')} /> : displayedFileName || t('no_file_chosen')}
               </span>
-              {showRemoveAttachment && <RemoveAttachmentButton onClick={handleRemoveAttachment} />}
             </span>
           )}
           {showSpoilerForReply && (

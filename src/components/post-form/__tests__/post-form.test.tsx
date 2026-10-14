@@ -1806,14 +1806,29 @@ describe('PostForm', () => {
     expect(linkInput.disabled).toBe(true);
     expect(linkInput.value).toBe('');
     expect(testState.setPublishPostOptionsMock).toHaveBeenLastCalledWith({ link: '' });
+  });
 
-    await act(async () => {
-      table.querySelector<HTMLButtonElement>('button[aria-label="remove"]')?.click();
-    });
+  it('replaces the attached file when another one is chosen', async () => {
+    const first = { kind: 'file', file: new File(['png'], 'chosen.png', { type: 'image/png' }), name: 'chosen.png', mimeType: 'image/png' };
+    const second = { kind: 'file', file: new File(['gif'], 'second.gif', { type: 'image/gif' }), name: 'second.gif', mimeType: 'image/gif' };
+    testState.uploadMode = 'random';
+    testState.chooseFileMock.mockResolvedValueOnce(first).mockResolvedValueOnce(second);
+    testState.uploadAttachmentMock.mockResolvedValue({ url: 'https://forgeimg.net/abc/second.gif', fileName: 'second.gif' });
+    testState.resolvedCommunityAddress = 'music-posting.eth';
 
-    expect(linkInput.disabled).toBe(false);
+    await renderPostForm('/mu');
+    await clickByText(container, 'start_new_thread');
+    const table = container.querySelector('table') as HTMLTableElement;
+    await clickByText(table, 'choose_file');
+    await clickByText(table, 'choose_file');
+
+    expect(table.textContent).toContain('second.gif');
     expect(table.textContent).not.toContain('chosen.png');
     expect(table.querySelector('button[aria-label="remove"]')).toBeNull();
+
+    await clickByText(table, 'post');
+    expect(testState.uploadAttachmentMock).toHaveBeenCalledTimes(1);
+    expect(testState.uploadAttachmentMock).toHaveBeenCalledWith(second);
   });
 
   it('keeps the attachment and does not publish when its upload fails', async () => {
@@ -1878,11 +1893,12 @@ describe('PostForm', () => {
     expect(container.querySelector('textarea')?.matches(':disabled')).toBe(true);
   });
 
-  it('keeps an attachment removable after uploads are turned off', async () => {
+  it('ignores an attachment once uploads are turned off', async () => {
     const file = new File(['png'], 'chosen.png', { type: 'image/png' });
     testState.uploadMode = 'random';
     testState.chooseFileMock.mockResolvedValue({ kind: 'file', file, name: 'chosen.png', mimeType: 'image/png' });
-    await renderPostForm('/all');
+    testState.resolvedCommunityAddress = 'music-posting.eth';
+    await renderPostForm('/mu');
     await clickByText(container, 'start_new_thread');
     await clickByText(container.querySelector('table') as HTMLTableElement, 'choose_file');
 
@@ -1890,15 +1906,17 @@ describe('PostForm', () => {
     testState.showUploadControls = false;
     act(() => root.unmount());
     root = createRoot(container);
-    await renderPostForm('/all');
+    await renderPostForm('/mu');
 
     const table = container.querySelector('table') as HTMLTableElement;
-    expect(table.textContent).toContain('chosen.png');
+    expect(table.textContent).not.toContain('chosen.png');
     expect(Array.from(table.querySelectorAll('button')).some((button) => button.textContent === 'choose_file')).toBe(false);
-    await act(async () => {
-      table.querySelector<HTMLButtonElement>('button[aria-label="remove"]')?.click();
-    });
-    expect(table.querySelector<HTMLInputElement>('input[aria-label="link_to_file"]')?.disabled).toBe(false);
+    expect(table.querySelector<HTMLInputElement>('input[aria-label="link"]')?.disabled).toBe(false);
+
+    await dispatchInput(table.querySelector('textarea') as HTMLTextAreaElement, 'text only');
+    await clickByText(table, 'post');
+    expect(testState.uploadAttachmentMock).not.toHaveBeenCalled();
+    expect(testState.publishPostMock).toHaveBeenCalledTimes(1);
   });
 
   it('validates the post before uploading the attached file', async () => {

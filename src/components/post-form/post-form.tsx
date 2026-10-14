@@ -67,7 +67,6 @@ import { useFileUpload } from '../../hooks/use-file-upload';
 import { useShowLinkField } from '../../hooks/use-show-link-field';
 import { getFileAttachment } from '../../lib/media-hosting/attached-media';
 import type { AttachedMedia } from '../../lib/media-hosting/types';
-import RemoveAttachmentButton from '../remove-attachment-button';
 import { getShowUploadControls, isWebRuntime } from '../../lib/media-hosting/show-upload-controls';
 import { OEKAKI_WEB_WARNING_TEXT } from '../../lib/oekaki/oekaki-copy';
 import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
@@ -251,8 +250,6 @@ interface PostFormFieldsProps {
   isUploading: boolean;
   attachedFileName: string | undefined;
   showLinkField: boolean;
-  showRemoveAttachment: boolean;
-  showFileRow: boolean;
   showUploadControls: boolean;
   showOekakiControls: boolean;
   showSpoilerForPost: boolean;
@@ -277,7 +274,6 @@ interface PostFormFieldsProps {
   onPublishReply: () => void | Promise<void>;
   onPublishPost: () => void | Promise<void>;
   handleChooseFile: () => void;
-  onRemoveAttachment: () => void;
   onAttachDrawing: (file: File) => void;
   onDetachDrawing: (file: File) => void;
   isPublishSubmissionInFlight: boolean;
@@ -315,8 +311,6 @@ const PostFormFields = ({
   isUploading,
   attachedFileName,
   showLinkField,
-  showRemoveAttachment,
-  showFileRow,
   showUploadControls,
   showOekakiControls,
   showSpoilerForPost,
@@ -341,7 +335,6 @@ const PostFormFields = ({
   onPublishReply,
   onPublishPost,
   handleChooseFile,
-  onRemoveAttachment,
   onAttachDrawing,
   onDetachDrawing,
   isPublishSubmissionInFlight,
@@ -513,7 +506,7 @@ const PostFormFields = ({
         </span>
       </td>
     </tr>
-    {showFileRow && (
+    {showUploadControls && (
       <tr className={styles.uploadButton}>
         <td>{t('file')}</td>
         <td>
@@ -536,7 +529,6 @@ const PostFormFields = ({
               getPostFormFileDisplayLabel(url, attachedFileName, t('no_file_chosen'), requireCurrentLinkIsMedia)
             )}
           </span>
-          {showRemoveAttachment && <RemoveAttachmentButton onClick={onRemoveAttachment} />}
         </td>
       </tr>
     )}
@@ -813,6 +805,11 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
   const requireReplyLink = getRequireReplyLink(replyLinkFeatures);
   const requireReplyLinkIsMedia = getRequireReplyLinkIsMedia(replyLinkFeatures, isInAllView || isInSubscriptionsView);
   const noReplyLinks = getNoReplyLinks(replyLinkFeatures);
+  const uploadMode = useMediaHostingStore((state) => state.uploadMode);
+  const canAttachFile = getShowUploadControls(uploadMode) && !(isInPostView && noReplyLinks);
+  // An attachment can only be swapped by choosing another file, so one the form can no longer upload
+  // (uploads turned off, or replies here cannot carry links) is ignored instead of left stuck in it.
+  const attachment = canAttachFile ? draft.attachment : undefined;
   const requireCurrentLinkIsMedia = isInPostView ? requireReplyLinkIsMedia : requirePostLinkIsMedia;
   const currentMediaLoadError = getLinkMediaLoadStatus(url, mediaLoadResult) === 'error' ? getLinkMediaLoadError(url, t) : null;
   const flagOptions = getCommentFlagOptionsForDirectory(directoryEntry);
@@ -929,7 +926,6 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
       const currentDisplayName = nameRef.current?.value.trim() || undefined;
       const currentContent = textRef.current?.value || '';
       const currentUrl = urlRef.current?.value.trim() || '';
-      const { attachment } = draft;
       const currentOptions = optionsRef.current?.value || '';
       const currentOptionsError = getPostOptionsValidationError(currentOptions, postOptionsDirectoryCode);
       const publishContent = getContentWithOptions(currentContent, currentOptions, fortuneEntryRef, diceRollRef, postOptionsDirectoryCode);
@@ -1111,7 +1107,6 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
       const appliedThumbnailConversion = await applyPendingConversion();
 
       const currentUrl = urlRef.current?.value.trim() || '';
-      const { attachment } = draft;
       const currentDisplayName = nameRef.current?.value.trim() || undefined;
       const currentOptions = optionsRef.current?.value || '';
       const currentOptionsError = getPostOptionsValidationError(currentOptions, postOptionsDirectoryCode);
@@ -1251,25 +1246,20 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
     }
   };
   // A Bitsocial comment carries one link, so an attachment replaces the link field's value.
-  const attachMedia = (attachment: AttachedMedia) => {
+  const attachMedia = (nextAttachment: AttachedMedia) => {
+    if (!canAttachFile) return;
     clearLink();
-    updateDraft({ attachment });
+    updateDraft({ attachment: nextAttachment });
   };
   const handleChooseFile = async () => {
-    const attachment = await chooseFile();
-    if (attachment) attachMedia(attachment);
-  };
-  const handleRemoveAttachment = () => {
-    updateDraft({ attachment: undefined });
-    clearLink();
+    const chosen = await chooseFile();
+    if (chosen) attachMedia(chosen);
   };
   const handleDetachDrawing = (file: File) => {
     if (draft.attachment?.kind === 'file' && draft.attachment.file === file) {
       updateDraft({ attachment: undefined });
     }
   };
-  const uploadMode = useMediaHostingStore((state) => state.uploadMode);
-  const showUploadControls = getShowUploadControls(uploadMode);
   const showLinkField = useShowLinkField({
     requireMediaLink: requireCurrentLinkIsMedia,
     showOekakiControls: showOekakiControls && !(isInPostView && noReplyLinks),
@@ -1302,18 +1292,15 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
               handleLinkChange={handleLinkChange}
               handleLinkBlur={handleLinkBlur}
               handleOptionsChange={handleOptionsChange}
-              disableLinkInput={isUploading || thumbnailConversionNotice !== null || (isInPostView && noReplyLinks) || Boolean(draft.attachment)}
+              disableLinkInput={isUploading || thumbnailConversionNotice !== null || (isInPostView && noReplyLinks) || Boolean(attachment)}
               mediaLoadResult={mediaLoadResult}
               onMediaLoadStatusChange={handleMediaLoadStatusChange}
               setPublishPostOptions={setPublishPostOptions}
               setPublishReplyOptions={setPublishReplyOptions}
               isUploading={isUploading}
-              attachedFileName={draft.attachment?.name}
+              attachedFileName={attachment?.name}
               showLinkField={showLinkField}
-              showRemoveAttachment={!isUploading && (Boolean(draft.attachment) || (!showLinkField && Boolean(url)))}
-              showUploadControls={showUploadControls && !(isInPostView && noReplyLinks)}
-              // An attachment stays listed with its [×] even when uploads become unavailable, so it can be removed.
-              showFileRow={(showUploadControls && !(isInPostView && noReplyLinks)) || Boolean(draft.attachment)}
+              showUploadControls={canAttachFile}
               showOekakiControls={showOekakiControls && !(isInPostView && noReplyLinks)}
               showSpoilerForPost={showSpoilerForPost}
               showSpoilerForReply={showSpoilerForReply}
@@ -1337,7 +1324,6 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
               onPublishReply={onPublishReply}
               onPublishPost={onPublishPost}
               handleChooseFile={handleChooseFile}
-              onRemoveAttachment={handleRemoveAttachment}
               onAttachDrawing={(file) => attachMedia(getFileAttachment(file))}
               onDetachDrawing={handleDetachDrawing}
               isPublishSubmissionInFlight={isPublishSubmissionInFlight}

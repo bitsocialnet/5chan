@@ -1636,7 +1636,7 @@ describe('ReplyModal', () => {
       expect(testState.updateDraftMock).toHaveBeenCalledWith(expect.any(String), { attachment: undefined });
     });
 
-    it('disables and clears a visible link field while a file is attached, and [×] restores it', async () => {
+    it('disables and clears a visible link field while a file is attached', async () => {
       testState.showLinkField = true;
       testState.chooseFileMock.mockResolvedValue(pngAttachment);
       await renderReplyModal('/all/thread/post-1');
@@ -1647,14 +1647,23 @@ describe('ReplyModal', () => {
       expect(linkInput().disabled).toBe(true);
       expect(linkInput().value).toBe('');
       expect(testState.setPublishReplyOptionsMock).toHaveBeenLastCalledWith({ link: '' });
+    });
 
-      await act(async () => {
-        container.querySelector<HTMLButtonElement>('button[aria-label="remove"]')?.click();
-      });
-      await rerenderReplyModal('/all/thread/post-1');
+    it('replaces the attached file when another one is chosen', async () => {
+      const gifAttachment = { kind: 'file', file: new File(['gif'], 'second.gif', { type: 'image/gif' }), name: 'second.gif', mimeType: 'image/gif' };
+      testState.chooseFileMock.mockResolvedValueOnce(pngAttachment).mockResolvedValueOnce(gifAttachment);
+      testState.uploadAttachmentMock.mockResolvedValue({ url: 'https://forgeimg.net/abc/second.gif', fileName: 'second.gif' });
+      await renderReplyModal('/all/thread/post-1');
 
-      expect(linkInput().disabled).toBe(false);
+      await chooseFile();
+      await chooseFile();
+      expect(container.textContent).toContain('second.gif');
+      expect(container.textContent).not.toContain('chosen.png');
       expect(container.querySelector('button[aria-label="remove"]')).toBeNull();
+
+      await clickButtonByText('post');
+      expect(testState.uploadAttachmentMock).toHaveBeenCalledTimes(1);
+      expect(testState.uploadAttachmentMock).toHaveBeenCalledWith(gifAttachment);
     });
 
     it('validates the reply before uploading the attached file', async () => {
@@ -1714,14 +1723,36 @@ describe('ReplyModal', () => {
       expect(testState.setPublishReplyOptionsMock).not.toHaveBeenCalled();
     });
 
-    it('keeps an attachment removable when the board turns out to disallow reply links', async () => {
-      testState.replyDraft = { ...emptyDraft, attachment: pngAttachment };
+    it('ignores an attachment once the board turns out to disallow reply links', async () => {
+      testState.replyDraft = { ...emptyDraft, content: 'text only', attachment: pngAttachment };
       testState.communities['music-posting.eth'] = { address: 'music-posting.eth', features: { noReplyLinks: true } };
       await renderReplyModal('/all/thread/post-1');
 
-      expect(container.textContent).toContain('chosen.png');
+      expect(container.textContent).not.toContain('chosen.png');
       expect(Array.from(container.querySelectorAll('button')).some((button) => button.textContent === 'choose_file')).toBe(false);
-      expect(container.querySelector('button[aria-label="remove"]')).not.toBeNull();
+
+      await dispatchInput(container.querySelector('textarea') as HTMLTextAreaElement, 'text only');
+      await clickButtonByText('post');
+      expect(container.textContent).not.toContain('reply_links_not_allowed_alert');
+      expect(testState.uploadAttachmentMock).not.toHaveBeenCalled();
+      expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
+    });
+
+    it('ignores an attachment once uploads are turned off', async () => {
+      testState.chooseFileMock.mockResolvedValue(pngAttachment);
+      await renderReplyModal('/all/thread/post-1');
+      await chooseFile();
+
+      testState.uploadMode = 'none';
+      testState.showUploadControls = false;
+      await rerenderReplyModal('/all/thread/post-1');
+
+      expect(container.textContent).not.toContain('chosen.png');
+      expect(linkInput().disabled).toBe(false);
+      await dispatchInput(container.querySelector('textarea') as HTMLTextAreaElement, 'text only');
+      await clickButtonByText('post');
+      expect(testState.uploadAttachmentMock).not.toHaveBeenCalled();
+      expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
     });
 
     it('locks the reply fields while the attachment uploads', async () => {
