@@ -1204,6 +1204,8 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
 
   const handleLinkChange = (nextUrl: string) => {
     setLinkValue(nextUrl);
+    // A comment carries one link, so a typed link replaces the attached file, as a chosen file replaces the link.
+    if (attachment && nextUrl.trim()) updateDraft({ attachment: undefined });
     if (queueLinkConversion(nextUrl)) {
       setFormError(null);
     }
@@ -1294,7 +1296,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
               handleLinkChange={handleLinkChange}
               handleLinkBlur={handleLinkBlur}
               handleOptionsChange={handleOptionsChange}
-              disableLinkInput={isUploading || thumbnailConversionNotice !== null || (isInPostView && noReplyLinks) || Boolean(attachment)}
+              disableLinkInput={isUploading || thumbnailConversionNotice !== null || (isInPostView && noReplyLinks)}
               mediaLoadResult={mediaLoadResult}
               onMediaLoadStatusChange={handleMediaLoadStatusChange}
               setPublishPostOptions={setPublishPostOptions}

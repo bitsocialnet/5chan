@@ -1790,23 +1790,34 @@ describe('PostForm', () => {
     expect(linkInput.value).toBe('https://forgeimg.net/abc/uploaded.png');
   });
 
-  it('disables and clears a visible link to file field while a file is attached', async () => {
+  it('clears a visible link field when a file is attached, and a typed link replaces the file', async () => {
     const file = new File(['png'], 'chosen.png', { type: 'image/png' });
     testState.uploadMode = 'random';
     testState.showLinkField = true;
+    testState.resolvedCommunityAddress = 'music-posting.eth';
     testState.chooseFileMock.mockResolvedValue({ kind: 'file', file, name: 'chosen.png', mimeType: 'image/png' });
 
-    await renderPostForm('/all');
+    await renderPostForm('/mu');
     await clickByText(container, 'start_new_thread');
 
     const table = container.querySelector('table') as HTMLTableElement;
-    const linkInput = table.querySelector<HTMLInputElement>('input[aria-label="link_to_file"]') as HTMLInputElement;
+    // /mu has no media-only link rule, so the field is labelled as a plain link.
+    const linkInput = table.querySelector<HTMLInputElement>('input[aria-label="link"]') as HTMLInputElement;
     await dispatchInput(linkInput, 'https://example.com/typed.png');
     await clickByText(table, 'choose_file');
 
-    expect(linkInput.disabled).toBe(true);
+    expect(linkInput.disabled).toBe(false);
     expect(linkInput.value).toBe('');
     expect(testState.setPublishPostOptionsMock).toHaveBeenLastCalledWith({ link: '' });
+
+    // After a failed upload the revealed field must still work as the fallback.
+    await dispatchInput(linkInput, 'https://example.com/fallback.png');
+    expect(table.textContent).not.toContain('chosen.png');
+
+    await dispatchInput(table.querySelector('textarea') as HTMLTextAreaElement, 'fallback body');
+    await clickByText(table, 'post');
+    expect(testState.uploadAttachmentMock).not.toHaveBeenCalled();
+    expect(testState.publishedPostOptions?.link).toBe('https://example.com/fallback.png');
   });
 
   it('replaces the attached file when another one is chosen', async () => {

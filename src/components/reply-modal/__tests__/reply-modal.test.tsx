@@ -1658,7 +1658,7 @@ describe('ReplyModal', () => {
       expect(testState.updateDraftMock).toHaveBeenCalledWith(expect.any(String), { attachment: undefined });
     });
 
-    it('disables and clears a visible link field while a file is attached', async () => {
+    it('clears a visible link field when a file is attached, and a typed link replaces the file', async () => {
       testState.showLinkField = true;
       testState.chooseFileMock.mockResolvedValue(pngAttachment);
       await renderReplyModal('/all/thread/post-1');
@@ -1666,9 +1666,21 @@ describe('ReplyModal', () => {
       await dispatchInput(linkInput(), 'https://example.com/typed.png');
       await chooseFile();
 
-      expect(linkInput().disabled).toBe(true);
+      expect(linkInput().disabled).toBe(false);
       expect(linkInput().value).toBe('');
       expect(testState.setPublishReplyOptionsMock).toHaveBeenLastCalledWith({ link: '' });
+
+      // After a failed upload the revealed field must still work as the fallback.
+      await dispatchInput(linkInput(), 'https://example.com/fallback.png');
+      await rerenderReplyModal('/all/thread/post-1');
+      expect(testState.replyDraft?.attachment).toBeUndefined();
+      expect(container.textContent).not.toContain('chosen.png');
+
+      await dispatchInput(container.querySelector('textarea') as HTMLTextAreaElement, 'fallback reply');
+      await clickButtonByText('post');
+      expect(testState.uploadAttachmentMock).not.toHaveBeenCalled();
+      expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
+      expect(testState.setPublishReplyOptionsMock).toHaveBeenCalledWith({ link: 'https://example.com/fallback.png' });
     });
 
     it('replaces the attached file when another one is chosen', async () => {

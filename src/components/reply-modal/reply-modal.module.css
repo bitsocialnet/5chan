@@ -155,6 +155,12 @@
   width: 130px;
 }
 
+/* The fieldset only locks the form while an upload runs; it adds no box of its own. */
+.uploadLock {
+  border: 0;
+  min-width: 0;
+}
+
 /* Takes the footer's free space while an upload runs, in place of the disabled file controls; longer translations wrap instead of being cut. */
 .uploadStatus {
   flex: 1 1 auto;

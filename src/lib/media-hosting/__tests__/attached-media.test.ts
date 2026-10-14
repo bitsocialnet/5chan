@@ -21,4 +21,11 @@ describe('isPublishFileAttachment', () => {
     expect(isPublishFileAttachment(picked('game.swf', ''))).toBe(false);
     expect(isPublishFileAttachment(picked('unknown', ''))).toBe(false);
   });
+
+  it('falls back to the file extension for a generic or nonstandard MIME type, but not for a SWF one', () => {
+    expect(isPublishFileAttachment(picked('photo.png', 'application/octet-stream'))).toBe(true);
+    expect(isPublishFileAttachment(picked('photo.jpg', 'image/jpg'))).toBe(true);
+    expect(isPublishFileAttachment(picked('game.swf', 'application/octet-stream'))).toBe(false);
+    expect(isPublishFileAttachment(picked('renamed.png', 'application/x-shockwave-flash'))).toBe(false);
+  });
 });

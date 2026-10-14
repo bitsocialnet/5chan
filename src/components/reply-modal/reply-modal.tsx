@@ -547,6 +547,8 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
 
   const handleLinkChange = (nextUrl: string) => {
     setLinkValue(nextUrl);
+    // A comment carries one link, so a typed link replaces the attached file, as a chosen file replaces the link.
+    if (attachment && nextUrl.trim()) updateDraft({ attachment: undefined });
     if (queueLinkConversion(nextUrl)) {
       setError(null);
     }
@@ -707,7 +709,7 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
         />
       </div>
       {/* Locks the fields while the attachment uploads, so the reply cannot change after it was submitted. */}
-      <fieldset className={`${styles.replyForm} ${styles.uploadLock}`} disabled={isUploading}>
+      <fieldset className={styles.uploadLock} disabled={isUploading}>
         <div className={styles.name}>
           <input
             key={account?.id ?? account?.name ?? account?.author?.address}
@@ -772,7 +774,7 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
             ref={urlRef}
             aria-label={requireReplyLinkIsMedia ? t('link_to_file') : t('link')}
             placeholder={requireReplyLinkIsMedia ? FILE_LINK_PLACEHOLDER : capitalize(t('link'))}
-            disabled={isUploading || thumbnailConversion !== null || noReplyLinks || Boolean(attachment)}
+            disabled={isUploading || thumbnailConversion !== null || noReplyLinks}
             defaultValue={draft?.link}
             onChange={(e) => {
               handleLinkChange(e.target.value);
