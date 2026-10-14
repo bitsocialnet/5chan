@@ -20,6 +20,11 @@ contextBridge.exposeInMainWorld('electronApi', {
   getNodeReachability: () => ipcRenderer.invoke('get-node-reachability'),
   automateUploadMedia: (options) => ipcRenderer.invoke('automate-upload-media', options),
   automateUploadGeneratedMedia: (options) => ipcRenderer.invoke('automate-upload-generated-media', options),
+  getForgeTurnstileToken: async (sitekey) => {
+    const { token, error } = await ipcRenderer.invoke('get-forge-turnstile-token', sitekey);
+    if (error) throw new Error(error);
+    return token;
+  },
   downloadAndInstallUpdate: (options) => ipcRenderer.invoke('download-and-install-update', options),
   getPathForFile: (file) => {
     try {

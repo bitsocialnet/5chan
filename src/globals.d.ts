@@ -40,6 +40,7 @@ declare global {
         mimeType: string;
         bytes: number[];
       }) => Promise<{ url: string; provider: ProviderId }>;
+      getForgeTurnstileToken?: (sitekey: string) => Promise<string>;
       downloadAndInstallUpdate?: (options: { url: string; fileName: string }) => Promise<void>;
       getPathForFile?: (file: File) => string | null;
     };

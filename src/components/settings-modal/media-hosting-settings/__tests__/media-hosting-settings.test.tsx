@@ -91,6 +91,7 @@ describe('MediaHostingSettings', () => {
     render();
     const links = Array.from(container.querySelectorAll('a'));
     expect(links.map((link) => [link.textContent, link.getAttribute('href')])).toEqual([
+      ['images.bitsocialforge.com', 'https://images.bitsocialforge.com'],
       ['catbox.moe', 'https://catbox.moe'],
       ['imgur.com', 'https://imgur.com'],
       ['imgbb.com', 'https://imgbb.com'],
@@ -249,7 +250,7 @@ describe('MediaHostingSettings', () => {
     expect(container.textContent).not.toContain('media_hosting_provider_disabled_on_web');
   });
 
-  it('on electron runtime, mode radios and electron providers are enabled; web-only forge is not listed', () => {
+  it('on electron runtime, mode radios and every provider are enabled, Forge Images first', () => {
     uploadModeRef.value = 'preferred';
     mockGetPlatform.mockReturnValue('web');
     (window as unknown as { electronApi?: unknown }).electronApi = { isElectron: true };
@@ -263,11 +264,11 @@ describe('MediaHostingSettings', () => {
 
     const providerRadios = Array.from(container.querySelectorAll<HTMLInputElement>('input[name="media-hosting-provider-provider"]'));
     expect(providerRadios.map((radio) => [radio.value, radio.disabled])).toEqual([
+      ['forge', false],
       ['catbox', false],
       ['imgur', false],
       ['imgbb', false],
     ]);
-    expect(container.textContent).not.toContain('Forge Images');
   });
 
   describe('show link field checkbox', () => {

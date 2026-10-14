@@ -95,8 +95,11 @@ describe('provider-order', () => {
     it("falls back to the runtime's first provider when the preferred one is not supported there", () => {
       expect(getProviderOrder({ mode: 'preferred', preferredProvider: 'catbox', runtime: 'web' })).toEqual(['forge']);
       expect(getProviderOrder({ mode: 'preferred', preferredProvider: 'imgbb', runtime: 'web' })).toEqual(['forge']);
-      expect(getProviderOrder({ mode: 'preferred', preferredProvider: 'forge', runtime: 'electron' })).toEqual(['catbox']);
-      expect(getProviderOrder({ mode: 'preferred', preferredProvider: 'forge', runtime: 'android' })).toEqual(['catbox']);
+    });
+
+    it('honors a preferred forge on Electron and Android', () => {
+      expect(getProviderOrder({ mode: 'preferred', preferredProvider: 'forge', runtime: 'electron' })).toEqual(['forge']);
+      expect(getProviderOrder({ mode: 'preferred', preferredProvider: 'forge', runtime: 'android' })).toEqual(['forge']);
     });
 
     it('returns shuffled list when mode is random', () => {
@@ -105,8 +108,8 @@ describe('provider-order', () => {
         preferredProvider: 'catbox',
         runtime: 'electron',
       });
-      expect(order).toHaveLength(3);
-      expect([...order].sort()).toEqual(['catbox', 'imgbb', 'imgur']);
+      expect(order).toHaveLength(4);
+      expect([...order].sort()).toEqual(['catbox', 'forge', 'imgbb', 'imgur']);
     });
 
     it('filters unavailable providers from random mode', () => {
@@ -116,8 +119,8 @@ describe('provider-order', () => {
         runtime: 'electron',
         availability: { imgur: 'unavailable' },
       });
-      expect(order).toHaveLength(2);
-      expect([...order].sort()).toEqual(['catbox', 'imgbb']);
+      expect(order).toHaveLength(3);
+      expect([...order].sort()).toEqual(['catbox', 'forge', 'imgbb']);
     });
 
     it('returns empty when preferred provider is unavailable', () => {
@@ -152,25 +155,14 @@ describe('provider-order', () => {
       ).toEqual([]);
     });
 
-    it('never includes forge in electron random mode', () => {
-      const order = getProviderOrder({
-        mode: 'random',
-        preferredProvider: 'catbox',
-        runtime: 'electron',
-        availability: { forge: 'available' },
-      });
-      expect([...order].sort()).toEqual(['catbox', 'imgbb', 'imgur']);
-    });
-
-    it('uses catbox, imgur, and imgbb (never forge) for android random mode', () => {
+    it('includes forge with the automated providers in android random mode', () => {
       const order = getProviderOrder({
         mode: 'random',
         preferredProvider: 'catbox',
         runtime: 'android',
         availability: { forge: 'available' },
       });
-      expect(order).toHaveLength(3);
-      expect([...order].sort()).toEqual(['catbox', 'imgbb', 'imgur']);
+      expect([...order].sort()).toEqual(['catbox', 'forge', 'imgbb', 'imgur']);
     });
   });
 
@@ -191,7 +183,7 @@ describe('provider-order', () => {
           mode: 'random',
           preferredProvider: 'catbox',
           runtime: 'electron',
-          availability: { catbox: 'unavailable', imgur: 'unavailable', imgbb: 'unavailable' },
+          availability: { forge: 'unavailable', catbox: 'unavailable', imgur: 'unavailable', imgbb: 'unavailable' },
         }),
       ).toBe(false);
       expect(hasUsableUploadProvider({ mode: 'preferred', preferredProvider: 'imgur', runtime: 'android', availability: { imgur: 'unavailable' } })).toBe(false);

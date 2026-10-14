@@ -21,9 +21,9 @@ export const MEDIA_HOSTING_PROVIDERS: readonly ProviderDefinition[] = [
     // Both serve the same frozen 1x1 PNG: the pinned blob proves the media serve path,
     // health.png proves the upload API is healthy (it answers a non-image 503 otherwise).
     availabilityProbeUrls: [`${FORGE_IMAGES_MEDIA_ORIGIN}/2aa4fa20701cdd6d8d56046069001186b5267e3ee7d0ef618ad2f4a683723e11.png`, `${FORGE_IMAGES_API_ORIGIN}/health.png`],
-    // Web only for now: Electron production loads file://, where Turnstile cannot run,
-    // and Android uploads entirely through the native FileUploader plugin.
-    supportedRuntimes: ['web'],
+    // A direct upload everywhere. Electron gets its Turnstile token from a main-process
+    // window (electron/forge-turnstile.js); Android uploads from the WebView, not the plugin.
+    supportedRuntimes: ['web', 'electron', 'android'],
   },
   {
     id: 'catbox',

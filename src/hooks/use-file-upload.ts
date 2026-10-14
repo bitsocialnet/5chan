@@ -107,6 +107,82 @@ function readFileAsBase64(file: File): Promise<string> {
   });
 }
 
+/** Groups the order for Android: forge on its own, each run of other providers as one plugin call. */
+function splitAndroidProviderOrder(order: ProviderId[]): ProviderId[][] {
+  const batches: ProviderId[][] = [];
+  for (const provider of order) {
+    const lastBatch = batches[batches.length - 1];
+    if (provider !== 'forge' && lastBatch && lastBatch[0] !== 'forge') {
+      lastBatch.push(provider);
+    } else {
+      batches.push([provider]);
+    }
+  }
+  return batches;
+}
+
+/** The media as a File for a web-layer upload. A picked file streams from Capacitor's local server, not across the bridge as base64. */
+async function getAttachedFile(media: AttachedMedia): Promise<File> {
+  if (media.kind === 'file') return media.file;
+  const response = await fetch(media.webPath);
+  if (!response.ok) throw new Error('Picked file is no longer available. Choose it again.');
+  const blob = await response.blob();
+  return new File([blob], media.name, { type: media.mimeType || blob.type });
+}
+
+async function uploadViaAndroidPlugin(media: AttachedMedia, providerOrder: ProviderId[]): Promise<UploadedFileResult> {
+  if (media.kind === 'picked') {
+    // The plugin strips metadata before upload (android MediaMetadataStripper).
+    const pluginResult = await FileUploader.uploadPickedMedia({ id: media.id, providerOrder });
+    return { url: pluginResult.url, fileName: pluginResult.fileName || media.name };
+  }
+  const cleanFile = await stripMediaMetadata(media.file);
+  const pluginResult = await FileUploader.uploadGeneratedMedia({
+    providerOrder,
+    fileName: cleanFile.name,
+    mimeType: cleanFile.type || 'application/octet-stream',
+    base64: await readFileAsBase64(cleanFile),
+  });
+  return { url: pluginResult.url, fileName: pluginResult.fileName || media.name };
+}
+
+/** The attempts behind a failed upload, or one per provider when the failure did not report any. */
+function getFailedAttempts(error: unknown, providers: ProviderId[]): ProviderAttempt[] {
+  const { attempts } = normalizeAndroidRejection(error);
+  if (attempts?.length) return attempts;
+  const message = error instanceof Error ? error.message : String(error);
+  return providers.map((provider) => ({ provider, success: false, error: message }));
+}
+
+interface UploadedAttachment extends UploadedFileResult {
+  awaitingReview: boolean;
+}
+
+/**
+ * Android uploads to forge from the WebView, which can run its Turnstile check and which forge
+ * allows by CORS, and to the other providers through the native plugin, trying them in order.
+ * When all fail, their attempts are merged into one error.
+ */
+async function uploadOnAndroid(media: AttachedMedia, order: ProviderId[], onPhaseChange: (phase: UploadPhase) => void): Promise<UploadedAttachment> {
+  const batches = splitAndroidProviderOrder(order);
+  const attempts: ProviderAttempt[] = [];
+  for (const batch of batches) {
+    onPhaseChange('uploading');
+    try {
+      if (batch[0] === 'forge') {
+        const uploaded = await orchestrateUpload(await getAttachedFile(media), batch, onPhaseChange);
+        return { url: uploaded.url, fileName: media.name, awaitingReview: uploaded.awaitingReview === true };
+      }
+      return { ...(await uploadViaAndroidPlugin(media, batch)), awaitingReview: false };
+    } catch (error) {
+      // A lone batch keeps its own error, as uploads did before forge joined the Android order.
+      if (batches.length === 1) throw error;
+      attempts.push(...getFailedAttempts(error, batch));
+    }
+  }
+  throw Object.assign(new Error('All providers failed'), { attempts });
+}
+
 const UPLOAD_FILE_ACCEPT = 'image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,.swf,application/x-shockwave-flash,application/vnd.adobe.flash.movie';
 
 export function useFileUpload() {
@@ -167,7 +243,7 @@ export function useFileUpload() {
       if (runtime === 'android') {
         // The native picker keeps the file native-side, so videos never cross the bridge as base64.
         const picked = await FileUploader.pickMedia();
-        return { kind: 'picked', id: picked.id, name: picked.fileName, mimeType: picked.mimeType };
+        return { kind: 'picked', id: picked.id, name: picked.fileName, mimeType: picked.mimeType, webPath: picked.webPath };
       }
       // Electron keeps the focus fallback; browsers emit `cancel`, and Safari can deliver
       // `change` after the fallback window, which would drop the selection.
@@ -188,34 +264,21 @@ export function useFileUpload() {
       try {
         setUploadPhase('uploading');
         const { runtime, order } = await getAvailableProviderOrder();
-        let result: UploadedFileResult;
-        let awaitingReview = false;
+        let uploaded: UploadedAttachment;
 
-        if (media.kind === 'picked') {
-          // The plugin strips metadata before upload (android MediaMetadataStripper).
-          const pluginResult = await FileUploader.uploadPickedMedia({ id: media.id, providerOrder: order });
-          result = { url: pluginResult.url, fileName: pluginResult.fileName || media.name };
-        } else if (runtime === 'android') {
-          const cleanFile = await stripMediaMetadata(media.file);
-          const pluginResult = await FileUploader.uploadGeneratedMedia({
-            providerOrder: order,
-            fileName: cleanFile.name,
-            mimeType: cleanFile.type || 'application/octet-stream',
-            base64: await readFileAsBase64(cleanFile),
-          });
-          result = { url: pluginResult.url, fileName: pluginResult.fileName || media.name };
+        if (media.kind === 'picked' || runtime === 'android') {
+          uploaded = await uploadOnAndroid(media, order, setUploadPhase);
         } else {
-          const uploaded = await orchestrateUpload(media.file, order, setUploadPhase);
-          result = { url: uploaded.url, fileName: media.name };
-          awaitingReview = uploaded.awaitingReview === true;
+          const result = await orchestrateUpload(media.file, order, setUploadPhase);
+          uploaded = { url: result.url, fileName: media.name, awaitingReview: result.awaitingReview === true };
         }
 
-        if (!result.url) {
+        if (!uploaded.url) {
           throw new Error('The upload returned no link');
         }
         // The link is used either way: it starts working once the host approves it.
-        if (awaitingReview) window.alert(t('upload_awaiting_review'));
-        return result;
+        if (uploaded.awaitingReview) window.alert(t('upload_awaiting_review'));
+        return { url: uploaded.url, fileName: uploaded.fileName };
       } catch (error) {
         handleUploadError(error);
         return null;

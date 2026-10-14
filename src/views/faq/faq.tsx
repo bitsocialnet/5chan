@@ -154,8 +154,8 @@ const FAQ_SECTIONS: FAQSection[] = [
         answer: (
           <>
             Yes. When you submit a post, 5chan hands the file you attached with <code>[Choose File]</code> to a media hosting service: Forge Images in the browser, and
-            Catbox, Imgur, or ImgBB in the Android and desktop apps. The board post itself stores text and links; the external media host may still see your IP address
-            when you upload or when other users load the file.
+            Forge Images, Catbox, Imgur, or ImgBB in the Android and desktop apps. The board post itself stores text and links; the external media host may still see your
+            IP address when you upload or when other users load the file.
           </>
         ),
       },

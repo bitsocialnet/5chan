@@ -24,7 +24,7 @@ export class ForgeUploadError extends Error {
 }
 
 interface ForgeUploadOptions {
-  /** Returns a fresh single-use Turnstile token. Defaults to the lazy-loaded Turnstile widget. */
+  /** Returns a fresh single-use Turnstile token. Defaults to the Turnstile widget for this runtime. */
   getToken?: () => Promise<string>;
   timeoutMs?: number;
   pendingServeWaitMs?: number;
@@ -150,6 +150,15 @@ async function waitUntilServes(url: string, maxWaitMs: number, canLoad: (url: st
 }
 
 /**
+ * Electron's packaged renderer loads from file://, which has no hostname Turnstile
+ * accepts, so the main process runs the widget in its own window there.
+ */
+function getForgeTurnstileToken(): Promise<string> {
+  const getElectronToken = window.electronApi?.getForgeTurnstileToken;
+  return getElectronToken ? getElectronToken(FORGE_IMAGES_TURNSTILE_SITEKEY) : getTurnstileToken(FORGE_IMAGES_TURNSTILE_SITEKEY);
+}
+
+/**
  * Upload a file to Forge Images (API contract: forge-images docs/ARCHITECTURE.md §4).
  * Returns the media URL for `live` uploads, and for `pending` images once they
  * pass moderation and start serving (up to a minute). An image still in review
@@ -165,7 +174,7 @@ async function waitUntilServes(url: string, maxWaitMs: number, canLoad: (url: st
  */
 export async function uploadToForge(file: File, options: ForgeUploadOptions = {}): Promise<UploadedMedia> {
   const {
-    getToken = () => getTurnstileToken(FORGE_IMAGES_TURNSTILE_SITEKEY),
+    getToken = getForgeTurnstileToken,
     timeoutMs = FORGE_UPLOAD_TIMEOUT_MS,
     pendingServeWaitMs = PENDING_SERVE_WAIT_MS,
     pendingVideoServeWaitMs = PENDING_VIDEO_SERVE_WAIT_MS,

@@ -105,7 +105,7 @@ interface PluginRejectionMeta {
 }
 
 /**
- * Orchestrates a web or Electron upload: tries each provider in order, returns the first success.
+ * Orchestrates a web or Electron upload, or an Android forge attempt: tries each provider in order, returns the first success.
  * Collects attempt errors with deterministic metadata (provider, stage, elapsedMs, matchedSelectors).
  * Throws with attempts if all fail. `onPhaseChange` hears 'uploading' as each provider
  * starts and 'checking' once a provider that reports it has received the file.

@@ -1,6 +1,7 @@
 import './log.js';
 import { app, BrowserWindow, Menu, MenuItem, Tray, shell, dialog, nativeTheme, nativeImage, ipcMain, clipboard } from 'electron';
 import { automateUploadMedia } from './media-upload-automation.js';
+import { getForgeTurnstileToken } from './forge-turnstile.js';
 import { prepareStrippedUploadFile } from './strip-media-metadata.js';
 import { downloadAndInstallUpdate } from './app-updater.js';
 import { getNodeReachability } from './node-reachability.js';
@@ -446,6 +447,16 @@ ipcMain.handle('automate-upload-generated-media', async (event, options) => {
   } finally {
     // Best-effort cleanup: a failed rm must not reject a successful upload.
     await fs.promises.rm(tempDir, { force: true, recursive: true }).catch(() => {});
+  }
+});
+
+// Forge Images uploads need a Turnstile token, which Cloudflare will not issue to the file:// renderer.
+// Failures resolve as { error }: a rejection reaches the renderer wrapped in Electron's IPC prefix.
+ipcMain.handle('get-forge-turnstile-token', async (event, sitekey) => {
+  try {
+    return { token: await getForgeTurnstileToken({ sitekey, parent: BrowserWindow.fromWebContents(event.sender) }) };
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : String(error) };
   }
 });
 

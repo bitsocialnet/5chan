@@ -31,7 +31,7 @@ describe('useMediaHostingStore', () => {
         `${FORGE_IMAGES_MEDIA_ORIGIN}/2aa4fa20701cdd6d8d56046069001186b5267e3ee7d0ef618ad2f4a683723e11.png`,
         `${FORGE_IMAGES_API_ORIGIN}/health.png`,
       ],
-      supportedRuntimes: ['web'],
+      supportedRuntimes: ['web', 'electron', 'android'],
     });
     const catbox = MEDIA_HOSTING_PROVIDERS.find((p) => p.id === 'catbox');
     expect(catbox).toEqual({

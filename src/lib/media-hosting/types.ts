@@ -45,5 +45,5 @@ export interface ProviderAttempt {
 export type AttachedMedia =
   /** A browser or Electron file, or a generated drawing. */
   | { kind: 'file'; file: File; name: string; mimeType: string }
-  /** A file picked by the Android plugin, which keeps it native-side and streams it from its content URI at upload. */
-  | { kind: 'picked'; id: string; name: string; mimeType: string };
+  /** A file picked by the Android plugin, which keeps it native-side and streams it from its content URI at upload; the WebView reads it from webPath. */
+  | { kind: 'picked'; id: string; name: string; mimeType: string; webPath: string };

@@ -6,6 +6,8 @@ interface PickedMedia {
   id: string;
   fileName: string;
   mimeType: string;
+  /** WebView-local URL that streams the picked file, for uploads made from the web layer (Forge Images). */
+  webPath: string;
 }
 
 interface UploadPickedMediaOptions {

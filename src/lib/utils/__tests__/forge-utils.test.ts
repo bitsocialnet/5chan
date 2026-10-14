@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { FORGE_IMAGES_API_ORIGIN, FORGE_IMAGES_MEDIA_ORIGIN } from '../../forge-images-config';
+import { FORGE_IMAGES_API_ORIGIN, FORGE_IMAGES_MEDIA_ORIGIN, FORGE_IMAGES_TURNSTILE_SITEKEY } from '../../forge-images-config';
 import { ForgeUploadError, uploadToForge } from '../forge-utils';
 import { postFormData } from '../upload-request-utils';
 import type { UploadedMedia } from '../../media-hosting/types';
@@ -311,6 +311,21 @@ describe('uploadToForge', () => {
     expect(Array.from(body.keys())).toEqual(['turnstile', 'file']);
     expect(body.get('turnstile')).toBe('turnstile-token');
     expect((body.get('file') as File).name).toBe('photo.png');
+  });
+
+  it('gets the token from the Electron main process when it runs in the desktop app', async () => {
+    const getForgeTurnstileToken = vi.fn(async () => 'electron-token');
+    window.electronApi = { isElectron: true, getForgeTurnstileToken } as unknown as typeof window.electronApi;
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse(200, { url: `${FORGE_IMAGES_MEDIA_ORIGIN}/abc.png`, status: 'live' })));
+
+    try {
+      await uploadToForge(new File(['x'], 'photo.png', { type: 'image/png' }));
+    } finally {
+      window.electronApi = undefined;
+    }
+
+    expect(getForgeTurnstileToken).toHaveBeenCalledWith(FORGE_IMAGES_TURNSTILE_SITEKEY);
+    expect(vi.mocked(postFormData).mock.calls[0][1].get('turnstile')).toBe('electron-token');
   });
 
   it('reports the automated checks once the file has been sent', async () => {

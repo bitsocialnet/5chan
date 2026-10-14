@@ -33,6 +33,8 @@ vi.mock('../../lib/media-hosting/upload-orchestrator', () => ({
   orchestrateUpload: vi.fn(),
 }));
 
+const androidOrderRef = vi.hoisted(() => ({ value: null as string[] | null }));
+
 const providerAvailabilityRef = vi.hoisted(() => ({
   value: {} as Record<string, 'unknown' | 'checking' | 'available' | 'unavailable'>,
 }));
@@ -49,6 +51,7 @@ vi.mock('../../lib/media-hosting/provider-order', () => ({
       return filterAvailable(['forge']);
     }
     if (opts.runtime === 'android') {
+      if (androidOrderRef.value) return androidOrderRef.value;
       if (opts.mode === 'preferred') return filterAvailable(['catbox', 'imgur', 'imgbb'].includes(opts.preferredProvider) ? [opts.preferredProvider] : []);
       return filterAvailable(['catbox', 'imgur', 'imgbb']);
     }
@@ -124,7 +127,13 @@ const upload = async (hook: () => HookSnapshot, media: AttachedMedia) => {
 };
 
 const fileMedia = (file: File): AttachedMedia => ({ kind: 'file', file, name: file.name, mimeType: file.type });
-const pickedMedia: AttachedMedia = { kind: 'picked', id: 'picked-1', name: 'android.jpg', mimeType: 'image/jpeg' };
+const pickedMedia: AttachedMedia = {
+  kind: 'picked',
+  id: 'picked-1',
+  name: 'android.jpg',
+  mimeType: 'image/jpeg',
+  webPath: 'https://localhost/_capacitor_content_/media/picked-1',
+};
 
 describe('useFileUpload', () => {
   beforeEach(() => {
@@ -132,6 +141,7 @@ describe('useFileUpload', () => {
     uploadModeRef.value = 'random';
     preferredProviderRef.value = 'catbox';
     providerAvailabilityRef.value = {};
+    androidOrderRef.value = null;
     latestHook = null;
     container = document.createElement('div');
     document.body.append(container);
@@ -183,9 +193,14 @@ describe('useFileUpload', () => {
       expect(orchestrateUpload).not.toHaveBeenCalled();
     });
 
-    it('picks natively on Android and keeps only the opaque id', async () => {
+    it('picks natively on Android and keeps the file native-side', async () => {
       vi.mocked(Capacitor.getPlatform).mockReturnValue('android');
-      vi.mocked(FileUploader.pickMedia).mockResolvedValue({ id: 'picked-1', fileName: 'android.jpg', mimeType: 'image/jpeg' });
+      vi.mocked(FileUploader.pickMedia).mockResolvedValue({
+        id: 'picked-1',
+        fileName: 'android.jpg',
+        mimeType: 'image/jpeg',
+        webPath: 'https://localhost/_capacitor_content_/media/picked-1',
+      });
       const hook = mountHook();
 
       let chosen: AttachedMedia | null = null;
@@ -418,6 +433,70 @@ describe('useFileUpload', () => {
         'upload_failed. upload_failed_all_providers: catbox: timeout; imgbb: rate limit; imgur: Provider error: CREATE_ALBUM_FAIL (stage=provider_error, 2200ms, tried=[#file-input])',
       );
       expect(setShowLinkFieldMock).toHaveBeenCalledWith(true);
+    });
+
+    it('uploads a picked Android file to forge from the WebView', async () => {
+      androidOrderRef.value = ['forge', 'catbox'];
+      vi.mocked(Capacitor.getPlatform).mockReturnValue('android');
+      const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({ ok: true, blob: async () => new Blob(['jpg'], { type: 'image/jpeg' }) } as Response);
+      vi.mocked(orchestrateUpload).mockResolvedValue({ url: 'https://forgeimg.net/abc.jpg' });
+      const hook = mountHook();
+
+      expect(await upload(hook, pickedMedia)).toEqual({ url: 'https://forgeimg.net/abc.jpg', fileName: 'android.jpg' });
+      expect(fetchMock).toHaveBeenCalledWith('https://localhost/_capacitor_content_/media/picked-1');
+      const [file, order] = vi.mocked(orchestrateUpload).mock.calls[0];
+      expect(order).toEqual(['forge']);
+      expect(file).toBeInstanceOf(File);
+      expect([file.name, file.type, file.size]).toEqual(['android.jpg', 'image/jpeg', 3]);
+      expect(FileUploader.uploadPickedMedia).not.toHaveBeenCalled();
+    });
+
+    it('uploads a generated Android file to forge without the plugin and reports a held file', async () => {
+      androidOrderRef.value = ['forge'];
+      vi.mocked(Capacitor.getPlatform).mockReturnValue('android');
+      vi.mocked(orchestrateUpload).mockResolvedValue({ url: 'https://forgeimg.net/abc.png', awaitingReview: true });
+      const file = new File(['abc'], 'tegaki.png', { type: 'image/png' });
+      const hook = mountHook();
+
+      expect(await upload(hook, fileMedia(file))).toEqual({ url: 'https://forgeimg.net/abc.png', fileName: 'tegaki.png' });
+      expect(orchestrateUpload).toHaveBeenCalledWith(file, ['forge'], expect.any(Function));
+      expect(window.alert).toHaveBeenCalledWith('upload_awaiting_review');
+      expect(FileUploader.uploadGeneratedMedia).not.toHaveBeenCalled();
+    });
+
+    it('hands the providers around forge to the plugin in order, one call per run', async () => {
+      androidOrderRef.value = ['catbox', 'forge', 'imgbb', 'imgur'];
+      vi.mocked(Capacitor.getPlatform).mockReturnValue('android');
+      vi.spyOn(globalThis, 'fetch').mockResolvedValue({ ok: true, blob: async () => new Blob(['jpg']) } as Response);
+      const catboxRejection = new Error('All providers failed') as Error & { data: { attempts: unknown[] } };
+      catboxRejection.data = { attempts: [{ provider: 'catbox', error: 'timeout' }] };
+      vi.mocked(FileUploader.uploadPickedMedia)
+        .mockRejectedValueOnce(catboxRejection)
+        .mockResolvedValueOnce({ url: 'https://i.ibb.co/example/android.jpg', fileName: 'android.jpg', provider: 'imgbb' });
+      vi.mocked(orchestrateUpload).mockRejectedValue(
+        Object.assign(new Error('All providers failed'), { attempts: [{ provider: 'forge', success: false, error: 'down' }] }),
+      );
+      const hook = mountHook();
+
+      expect(await upload(hook, pickedMedia)).toEqual({ url: 'https://i.ibb.co/example/android.jpg', fileName: 'android.jpg' });
+      expect(vi.mocked(FileUploader.uploadPickedMedia).mock.calls.map(([options]) => options.providerOrder)).toEqual([['catbox'], ['imgbb', 'imgur']]);
+      expect(window.alert).not.toHaveBeenCalled();
+    });
+
+    it('merges forge and plugin attempts when every Android provider fails', async () => {
+      androidOrderRef.value = ['forge', 'catbox'];
+      vi.mocked(Capacitor.getPlatform).mockReturnValue('android');
+      vi.spyOn(globalThis, 'fetch').mockResolvedValue({ ok: false } as Response);
+      const rejection = new Error('All providers failed') as Error & { data: { attempts: unknown[] } };
+      rejection.data = { attempts: [{ provider: 'catbox', error: 'timeout', stage: 'timeout' }] };
+      vi.mocked(FileUploader.uploadPickedMedia).mockRejectedValue(rejection);
+      const hook = mountHook();
+
+      expect(await upload(hook, pickedMedia)).toBeNull();
+      expect(orchestrateUpload).not.toHaveBeenCalled();
+      expect(window.alert).toHaveBeenCalledWith(
+        'upload_failed. upload_failed_all_providers: forge: Picked file is no longer available. Choose it again.; catbox: timeout (stage=timeout)',
+      );
     });
 
     it('keeps Android attempts for every registry provider in aggregated errors', async () => {

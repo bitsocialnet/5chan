@@ -14,7 +14,7 @@ import type { AttachedMedia } from '../../media-hosting/types';
 
 const t = ((key: string) => key) as TFunction;
 const keys = { requiredLinkAlertKey: 'link_required', requiredMediaLinkAlertKey: 'media_link_required', noLinksAlertKey: 'no_links', t };
-const attachmentOf = (name: string, mimeType: string): AttachedMedia => ({ kind: 'picked', id: name, name, mimeType });
+const attachmentOf = (name: string, mimeType: string): AttachedMedia => ({ kind: 'picked', id: name, name, mimeType, webPath: '' });
 
 describe('getEffectivePostLinkFeatures', () => {
   it('uses live community feature values before directory defaults', () => {

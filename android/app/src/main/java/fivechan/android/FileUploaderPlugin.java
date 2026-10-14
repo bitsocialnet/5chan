@@ -11,6 +11,7 @@ import android.util.Log;
 import androidx.activity.result.ActivityResult;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.getcapacitor.Bridge;
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
@@ -211,7 +212,22 @@ public class FileUploaderPlugin extends Plugin {
         ret.put("id", id);
         ret.put("fileName", getDisplayName(uri));
         ret.put("mimeType", mimeType != null ? mimeType : "");
+        ret.put("webPath", getWebPath(uri));
         call.resolve(ret);
+    }
+
+    /**
+     * URL the WebView reads the picked file from through Capacitor's local server (as
+     * Capacitor.convertFileSrc builds it), so a web-side upload such as Forge Images streams the
+     * file instead of copying it across the bridge as base64.
+     */
+    private String getWebPath(Uri uri) {
+        String localUrl = getBridge().getLocalUrl();
+        String uriString = uri.toString();
+        if (uriString.startsWith("file://")) {
+            return localUrl + uriString.replace("file://", Bridge.CAPACITOR_FILE_START);
+        }
+        return localUrl + uriString.replace("content:/", Bridge.CAPACITOR_CONTENT_START);
     }
 
     /** Uploads a picked file, metadata-stripped when possible. Runs off the main thread. */
