@@ -17,14 +17,19 @@ vi.mock('electron', () => ({
     const webContents = new EventEmitter();
     const page = electronState.createPage();
     let destroyed = false;
+    let stoppedLoading = Promise.resolve();
+    const read = (code) => (code === 'window.turnstileInteraction' ? page.interaction : page.result);
     webContents.setWindowOpenHandler = vi.fn();
-    webContents.executeJavaScript = vi.fn((code) => (code === 'window.turnstileInteraction' ? page.interaction : page.result));
+    // As in Electron, webContents.executeJavaScript waits until the page stops loading; mainFrame's does not.
+    webContents.executeJavaScript = vi.fn((code) => stoppedLoading.then(() => read(code)));
+    webContents.mainFrame = { executeJavaScript: vi.fn(read) };
     Object.assign(win, {
       options,
       webContents,
       loadURL: vi.fn((url) => {
         setTimeout(() => (page.failLoad ? webContents.emit('did-fail-load', {}, -105, 'ERR_NAME_NOT_RESOLVED', url, true) : webContents.emit('dom-ready')));
-        return page.load ? page.load() : Promise.resolve();
+        stoppedLoading = page.load ? page.load() : Promise.resolve();
+        return stoppedLoading;
       }),
       show: vi.fn(),
       isDestroyed: () => destroyed,
@@ -121,6 +126,32 @@ describe('getForgeTurnstileToken', () => {
     electronState.windows[0].emit('closed');
 
     await expect(tokenPromise).rejects.toThrow('Turnstile check was closed');
+  });
+
+  it('rejects when the challenge window is reloaded', async () => {
+    electronState.createPage = () => ({ interaction: Promise.resolve(), result: never() });
+
+    const tokenPromise = getForgeTurnstileToken({ sitekey: 'key', parent: null });
+    await vi.waitFor(() => expect(electronState.windows[0].show).toHaveBeenCalledOnce());
+    electronState.windows[0].webContents.emit('did-start-navigation', { isMainFrame: true, isSameDocument: false });
+
+    await expect(tokenPromise).rejects.toThrow('Turnstile check was reloaded');
+    expect(electronState.windows[0].destroy).toHaveBeenCalledOnce();
+  });
+
+  it('gives up when the page never answers', async () => {
+    vi.useFakeTimers();
+    try {
+      electronState.createPage = () => ({ interaction: never(), result: never() });
+
+      const assertion = expect(getForgeTurnstileToken({ sitekey: 'key', parent: null })).rejects.toThrow('Turnstile check timed out');
+      await vi.advanceTimersByTimeAsync(180_000);
+
+      await assertion;
+      expect(electronState.windows[0].destroy).toHaveBeenCalledOnce();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it.each([undefined, '', 'bad key', 'a&b=c'])('rejects the sitekey %j without opening a window', async (sitekey) => {

@@ -2,7 +2,7 @@ import { registerPlugin } from '@capacitor/core';
 import type { ProviderAttempt, ProviderId } from '../lib/media-hosting/types';
 
 interface PickedMedia {
-  /** Opaque handle for the picked file; the plugin keeps its content URI so the web layer never names native files. */
+  /** Opaque handle the plugin uploads the picked file by, so the web layer cannot make it upload an arbitrary native file. */
   id: string;
   fileName: string;
   mimeType: string;

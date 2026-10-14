@@ -141,19 +141,25 @@ export async function getForgeTurnstileToken({ sitekey, parent }) {
   const timeoutId = setTimeout(() => abort(new Error('Turnstile check timed out')), WINDOW_TIMEOUT_MS);
 
   try {
-    // Wait for dom-ready, not loadURL: the load event also waits on Cloudflare's script and
-    // iframe, so a stalled challenge host would hold it past the page's own timeouts.
+    // Wait for dom-ready, and read through mainFrame: loadURL and webContents.executeJavaScript both
+    // wait until the page stops loading, which includes Cloudflare's script and iframe, so a stalled
+    // challenge host would hold them past the page's own timeouts.
     const domReady = new Promise((resolve) => win.webContents.once('dom-ready', resolve));
     // Rejects with ERR_ABORTED when the window closes mid-load; did-fail-load reports real failures.
     win.loadURL(`${PAGE_ORIGIN}${PAGE_PATH}?sitekey=${sitekey}`).catch(() => {});
     await Promise.race([domReady, aborted]);
-    win.webContents.executeJavaScript('window.turnstileInteraction').then(
+    // A reload (context menu or Cmd/Ctrl+R) discards the page the reads below wait on, so they would never settle.
+    win.webContents.on('did-start-navigation', (details) => {
+      if (details.isMainFrame && !details.isSameDocument) abort(new Error('Turnstile check was reloaded'));
+    });
+    const frame = win.webContents.mainFrame;
+    frame.executeJavaScript('window.turnstileInteraction').then(
       () => {
         if (!win.isDestroyed()) win.show();
       },
       () => {},
     );
-    const result = await Promise.race([win.webContents.executeJavaScript('window.turnstileResult'), aborted]);
+    const result = await Promise.race([frame.executeJavaScript('window.turnstileResult'), aborted]);
     if (typeof result?.token === 'string' && result.token) return result.token;
     throw new Error(typeof result?.error === 'string' ? result.error : 'Turnstile returned no token');
   } finally {
