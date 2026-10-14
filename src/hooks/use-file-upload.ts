@@ -5,12 +5,13 @@ import { formatAggregatedError, formatPreferredModeError, type ProviderAttempt }
 import { getProviderOrder } from '../lib/media-hosting/provider-order';
 import { getMediaHostingRuntime } from '../lib/media-hosting/show-upload-controls';
 import { MEDIA_HOSTING_PROVIDERS } from '../lib/media-hosting/providers';
+import { getFileAttachment } from '../lib/media-hosting/attached-media';
 import { orchestrateUpload } from '../lib/media-hosting/upload-orchestrator';
 import { stripMediaMetadata } from '../lib/media-metadata/strip-media-metadata';
 import { ensureProviderAvailability } from '../lib/media-hosting/provider-availability';
 import { selectFileViaInput } from '../lib/utils/file-picker-utils';
 import useMediaHostingStore from '../stores/use-media-hosting-store';
-import type { ProviderId, UploadAttemptStage } from '../lib/media-hosting/types';
+import type { AttachedMedia, ProviderId, UploadAttemptStage } from '../lib/media-hosting/types';
 
 /** Maps Android plugin stage strings to UploadAttemptStage (avoids unsafe cast). Includes pass-through for valid stages. */
 const ANDROID_STAGE_MAP: Record<string, UploadAttemptStage> = {
@@ -88,10 +89,6 @@ function normalizeAndroidRejection(error: unknown): Error & { attempts?: Provide
   return err as Error & { attempts?: ProviderAttempt[] };
 }
 
-interface UseFileUploadOptions {
-  onUploadComplete: (url: string, fileName: string) => void;
-}
-
 export interface UploadedFileResult {
   url: string;
   fileName: string;
@@ -112,17 +109,18 @@ function readFileAsBase64(file: File): Promise<string> {
 
 const UPLOAD_FILE_ACCEPT = 'image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,.swf,application/x-shockwave-flash,application/vnd.adobe.flash.movie';
 
-export function useFileUpload(options: UseFileUploadOptions) {
+export function useFileUpload() {
   const { t } = useTranslation();
-  const { onUploadComplete } = options;
   const uploadMode = useMediaHostingStore((s) => s.uploadMode);
   const preferredProvider = useMediaHostingStore((s) => s.preferredProvider);
   const setShowLinkField = useMediaHostingStore((s) => s.setShowLinkField);
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
 
   const getAvailableProviderOrder = useCallback(async () => {
     const runtime = getMediaHostingRuntime();
+    if (uploadMode === 'none') {
+      throw new Error('Uploads are turned off in the media hosting settings');
+    }
     const supportedOrder = getProviderOrder({ mode: uploadMode, preferredProvider, runtime });
     const availability = await ensureProviderAvailability(runtime);
     const order = getProviderOrder({ mode: uploadMode, preferredProvider, runtime, availability });
@@ -144,7 +142,6 @@ export function useFileUpload(options: UseFileUploadOptions) {
   const handleUploadError = useCallback(
     (error: unknown) => {
       const errorMessage = error instanceof Error ? error.message : String(error);
-      if (errorMessage === FILE_SELECTION_CANCELLED_ERROR) return;
 
       // A failed upload leaves pasting a link as the only way to attach the file, so reveal the field.
       setShowLinkField(true);
@@ -160,37 +157,63 @@ export function useFileUpload(options: UseFileUploadOptions) {
     [setShowLinkField, t, uploadMode],
   );
 
-  const uploadFile = useCallback(
-    async (file: File): Promise<UploadedFileResult | null> => {
-      if (uploadMode === 'none') return null;
+  /** Opens the file picker and returns the chosen media without uploading it, or null when cancelled. */
+  const chooseFile = useCallback(async (): Promise<AttachedMedia | null> => {
+    if (uploadMode === 'none') return null;
 
+    const runtime = getMediaHostingRuntime();
+    try {
+      if (runtime === 'android') {
+        // The native picker keeps the file native-side, so videos never cross the bridge as base64.
+        const picked = await FileUploader.pickMedia();
+        return { kind: 'picked', id: picked.id, name: picked.fileName, mimeType: picked.mimeType };
+      }
+      // Electron keeps the focus fallback; browsers emit `cancel`, and Safari can deliver
+      // `change` after the fallback window, which would drop the selection.
+      const file = await selectFileViaInput(UPLOAD_FILE_ACCEPT, { resolveOnWindowFocus: runtime === 'electron' });
+      return file ? getFileAttachment(file) : null;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      if (errorMessage !== FILE_SELECTION_CANCELLED_ERROR) {
+        window.alert(`${t('error')}: ${errorMessage}`);
+      }
+      return null;
+    }
+  }, [t, uploadMode]);
+
+  /** Uploads attached media through the enabled providers; alerts and returns null when the upload fails. */
+  const uploadAttachment = useCallback(
+    async (media: AttachedMedia): Promise<UploadedFileResult | null> => {
       try {
         setIsUploading(true);
-        setUploadedFileName(null);
         const { runtime, order } = await getAvailableProviderOrder();
-        let result: UploadedFileResult | null = null;
+        let result: UploadedFileResult;
         let awaitingReview = false;
 
-        if (runtime === 'android') {
-          const cleanFile = await stripMediaMetadata(file);
+        if (media.kind === 'picked') {
+          // The plugin strips metadata before upload (android MediaMetadataStripper).
+          const pluginResult = await FileUploader.uploadPickedMedia({ id: media.id, providerOrder: order });
+          result = { url: pluginResult.url, fileName: pluginResult.fileName || media.name };
+        } else if (runtime === 'android') {
+          const cleanFile = await stripMediaMetadata(media.file);
           const pluginResult = await FileUploader.uploadGeneratedMedia({
             providerOrder: order,
             fileName: cleanFile.name,
             mimeType: cleanFile.type || 'application/octet-stream',
             base64: await readFileAsBase64(cleanFile),
           });
-          result = pluginResult.url ? { url: pluginResult.url, fileName: pluginResult.fileName || file.name } : null;
+          result = { url: pluginResult.url, fileName: pluginResult.fileName || media.name };
         } else {
-          const uploaded = await orchestrateUpload(file, order);
-          result = { url: uploaded.url, fileName: file.name };
+          const uploaded = await orchestrateUpload(media.file, order);
+          result = { url: uploaded.url, fileName: media.name };
           awaitingReview = uploaded.awaitingReview === true;
         }
 
-        if (result?.url) {
-          setUploadedFileName(result.fileName);
-          onUploadComplete(result.url, result.fileName);
-          if (awaitingReview) window.alert(t('upload_awaiting_review'));
+        if (!result.url) {
+          throw new Error('The upload returned no link');
         }
+        // The link is used either way: it starts working once the host approves it.
+        if (awaitingReview) window.alert(t('upload_awaiting_review'));
         return result;
       } catch (error) {
         handleUploadError(error);
@@ -199,61 +222,12 @@ export function useFileUpload(options: UseFileUploadOptions) {
         setIsUploading(false);
       }
     },
-    [getAvailableProviderOrder, handleUploadError, onUploadComplete, t, uploadMode],
+    [getAvailableProviderOrder, handleUploadError, t],
   );
-
-  const handleUpload = useCallback(async () => {
-    if (uploadMode === 'none') return;
-
-    try {
-      setIsUploading(true);
-      setUploadedFileName(null);
-      const runtime = getMediaHostingRuntime();
-      const orderPromise = getAvailableProviderOrder();
-      if (runtime === 'android') {
-        const { order } = await orderPromise;
-        // The native picker uploads straight from the device; the plugin strips
-        // metadata before upload (android MediaMetadataStripper).
-        const result = await FileUploader.pickAndUploadMedia({ providerOrder: order });
-        if (result.url) {
-          if (result.fileName) setUploadedFileName(result.fileName);
-          onUploadComplete(result.url, result.fileName);
-        }
-        return;
-      }
-
-      if (runtime === 'web') {
-        // Browsers only open a file picker during the click's short-lived user
-        // activation, which the availability probes can outlast, so web opens the
-        // picker first and awaits the provider order after a file is chosen.
-        orderPromise.catch(() => undefined);
-      } else {
-        await orderPromise;
-      }
-      // Electron keeps the focus fallback; browsers emit `cancel`, and Safari can deliver
-      // `change` after the fallback window, which would drop the selection.
-      const file = await selectFileViaInput(UPLOAD_FILE_ACCEPT, { resolveOnWindowFocus: runtime === 'electron' });
-      if (!file) {
-        throw new Error(FILE_SELECTION_CANCELLED_ERROR);
-      }
-
-      const { order } = await orderPromise;
-      const uploaded = await orchestrateUpload(file, order);
-      setUploadedFileName(file.name);
-      onUploadComplete(uploaded.url, file.name);
-      // The link is inserted either way: it starts working once the host approves it.
-      if (uploaded.awaitingReview) window.alert(t('upload_awaiting_review'));
-    } catch (error) {
-      handleUploadError(error);
-    } finally {
-      setIsUploading(false);
-    }
-  }, [getAvailableProviderOrder, handleUploadError, onUploadComplete, t, uploadMode]);
 
   return {
     isUploading,
-    uploadedFileName,
-    handleUpload,
-    uploadFile,
+    chooseFile,
+    uploadAttachment,
   };
 }

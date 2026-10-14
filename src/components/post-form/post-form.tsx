@@ -65,6 +65,9 @@ import usePublishPost from '../../hooks/use-publish-post';
 import usePublishReply from '../../hooks/use-publish-reply';
 import { useFileUpload } from '../../hooks/use-file-upload';
 import { useShowLinkField } from '../../hooks/use-show-link-field';
+import { getFileAttachment } from '../../lib/media-hosting/attached-media';
+import type { AttachedMedia } from '../../lib/media-hosting/types';
+import RemoveAttachmentButton from '../remove-attachment-button';
 import { getShowUploadControls, isWebRuntime } from '../../lib/media-hosting/show-upload-controls';
 import { OEKAKI_WEB_WARNING_TEXT } from '../../lib/oekaki/oekaki-copy';
 import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
@@ -111,8 +114,8 @@ const mergeFlairs = (...flairGroups: Array<Comment['flairs'] | undefined>): Comm
   return flairs.length > 0 ? flairs : undefined;
 };
 
-const getPostFormFileDisplayLabel = (url: string, uploadedFileName: string | null | undefined, noFileLabel: string, requireFile: boolean): string => {
-  const raw = getPublishFileDisplayName(url, uploadedFileName, requireFile);
+const getPostFormFileDisplayLabel = (url: string, attachedFileName: string | undefined, noFileLabel: string, requireFile: boolean): string => {
+  const raw = getPublishFileDisplayName(url, attachedFileName, requireFile);
   if (!raw) return noFileLabel;
   return truncateWithEllipsisInMiddle(raw, POST_FORM_FILE_DISPLAY_MAX_LENGTH);
 };
@@ -179,7 +182,7 @@ const PostFormActions = ({
   isInPostView,
   onPublishReply,
   onPublishPost,
-  handleUpload,
+  handleChooseFile,
   isPublishSubmissionInFlight,
   isUploading,
   showUploadControls,
@@ -190,7 +193,7 @@ const PostFormActions = ({
   isInPostView: boolean;
   onPublishReply: () => void | Promise<void>;
   onPublishPost: () => void | Promise<void>;
-  handleUpload: () => void;
+  handleChooseFile: () => void;
   isPublishSubmissionInFlight: boolean;
   isUploading: boolean;
   showUploadControls: boolean;
@@ -211,7 +214,7 @@ const PostFormActions = ({
   }
   if (variant === 'upload' && showUploadControls) {
     return (
-      <button type='button' onClick={handleUpload} disabled={isUploading}>
+      <button type='button' onClick={handleChooseFile} disabled={isUploading}>
         {t('choose_file')}
       </button>
     );
@@ -246,8 +249,9 @@ interface PostFormFieldsProps {
   setPublishPostOptions: (opts: Record<string, unknown>) => void;
   setPublishReplyOptions: (opts: Record<string, unknown>) => void;
   isUploading: boolean;
-  uploadedFileName: string | null | undefined;
+  attachedFileName: string | undefined;
   showLinkField: boolean;
+  showRemoveAttachment: boolean;
   showUploadControls: boolean;
   showOekakiControls: boolean;
   showSpoilerForPost: boolean;
@@ -271,9 +275,10 @@ interface PostFormFieldsProps {
   onBbcodePreviewToggle: () => void;
   onPublishReply: () => void | Promise<void>;
   onPublishPost: () => void | Promise<void>;
-  handleUpload: () => void;
-  uploadFile: ReturnType<typeof useFileUpload>['uploadFile'];
-  onOekakiClearUploadedUrl: (url: string) => void;
+  handleChooseFile: () => void;
+  onRemoveAttachment: () => void;
+  onAttachDrawing: (file: File) => void;
+  onDetachDrawing: (file: File) => void;
   isPublishSubmissionInFlight: boolean;
   disableReplyPublish: boolean;
   draft: PostFormDraft;
@@ -307,8 +312,9 @@ const PostFormFields = ({
   setPublishPostOptions,
   setPublishReplyOptions,
   isUploading,
-  uploadedFileName,
+  attachedFileName,
   showLinkField,
+  showRemoveAttachment,
   showUploadControls,
   showOekakiControls,
   showSpoilerForPost,
@@ -332,9 +338,10 @@ const PostFormFields = ({
   onBbcodePreviewToggle,
   onPublishReply,
   onPublishPost,
-  handleUpload,
-  uploadFile,
-  onOekakiClearUploadedUrl,
+  handleChooseFile,
+  onRemoveAttachment,
+  onAttachDrawing,
+  onDetachDrawing,
   isPublishSubmissionInFlight,
   disableReplyPublish,
   draft,
@@ -367,7 +374,7 @@ const PostFormFields = ({
           isInPostView={isInPostView}
           onPublishReply={onPublishReply}
           onPublishPost={onPublishPost}
-          handleUpload={handleUpload}
+          handleChooseFile={handleChooseFile}
           disableReplyPublish={disableReplyPublish}
           isPublishSubmissionInFlight={isPublishSubmissionInFlight}
           isUploading={isUploading}
@@ -410,7 +417,7 @@ const PostFormFields = ({
             isInPostView={isInPostView}
             onPublishReply={onPublishReply}
             onPublishPost={onPublishPost}
-            handleUpload={handleUpload}
+            handleChooseFile={handleChooseFile}
             disableReplyPublish={disableReplyPublish}
             isPublishSubmissionInFlight={isPublishSubmissionInFlight}
             isUploading={isUploading}
@@ -514,19 +521,20 @@ const PostFormFields = ({
             isInPostView={isInPostView}
             onPublishReply={onPublishReply}
             onPublishPost={onPublishPost}
-            handleUpload={handleUpload}
+            handleChooseFile={handleChooseFile}
             disableReplyPublish={disableReplyPublish}
             isPublishSubmissionInFlight={isPublishSubmissionInFlight}
             isUploading={isUploading}
             showUploadControls={showUploadControls}
           />
-          <span title={getPublishFileDisplayName(url, uploadedFileName, requireCurrentLinkIsMedia) || undefined}>
+          <span title={getPublishFileDisplayName(url, attachedFileName, requireCurrentLinkIsMedia) || undefined}>
             {isUploading ? (
               <LoadingEllipsis string={t('uploading')} />
             ) : (
-              getPostFormFileDisplayLabel(url, uploadedFileName, t('no_file_chosen'), requireCurrentLinkIsMedia)
+              getPostFormFileDisplayLabel(url, attachedFileName, t('no_file_chosen'), requireCurrentLinkIsMedia)
             )}
           </span>
+          {showRemoveAttachment && <RemoveAttachmentButton onClick={onRemoveAttachment} />}
         </td>
       </tr>
     )}
@@ -556,7 +564,7 @@ const PostFormFields = ({
       <tr>
         <td>Draw</td>
         <td>
-          <OekakiDrawingControls disabled={isUploading} uploadFile={uploadFile} onClearUploadedUrl={onOekakiClearUploadedUrl} />
+          <OekakiDrawingControls disabled={isUploading} onAttachDrawing={onAttachDrawing} onDetachDrawing={onDetachDrawing} />
         </td>
       </tr>
     )}
@@ -897,6 +905,19 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
     return didLoad ? null : errorMessage;
   };
 
+  // Uploads the attachment once the post is submitted and keeps its link in the form, so a retry
+  // after a failed publish does not upload the file again.
+  const uploadAttachedMedia = async (attachment: AttachedMedia): Promise<string | null> => {
+    const uploaded = await uploadAttachment(attachment);
+    if (!uploaded) return null;
+    updateDraft({ attachment: undefined });
+    setLinkValue(uploaded.url);
+    if (urlRef.current) {
+      urlRef.current.value = uploaded.url;
+    }
+    return uploaded.url;
+  };
+
   const onPublishPost = () =>
     runPublishSubmission(async () => {
       const appliedThumbnailConversion = await applyPendingConversion();
@@ -905,6 +926,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
       const currentDisplayName = nameRef.current?.value.trim() || undefined;
       const currentContent = textRef.current?.value || '';
       const currentUrl = urlRef.current?.value.trim() || '';
+      const { attachment } = draft;
       const currentOptions = optionsRef.current?.value || '';
       const currentOptionsError = getPostOptionsValidationError(currentOptions, postOptionsDirectoryCode);
       const publishContent = getContentWithOptions(currentContent, currentOptions, fortuneEntryRef, diceRollRef, postOptionsDirectoryCode);
@@ -923,12 +945,13 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
         return;
       }
 
-      if (!currentTitle && !publishContent.trim() && !currentUrl) {
+      if (!currentTitle && !publishContent.trim() && !currentUrl && !attachment) {
         setFormError(`${t('error')}: ${t('empty_comment_alert')}`);
         return;
       }
       const linkValidationError = getPublishLinkValidationError({
         link: currentUrl,
+        attachment,
         requireLink: requirePostLink,
         requireMedia: requirePostLinkIsMedia,
         requiredLinkAlertKey: 'post_link_required_alert',
@@ -967,12 +990,20 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
         ...(flairs ? { flairs } : {}),
       };
 
+      // Upload only after every check passed, so a rejected post never leaves a file on the host.
+      const uploadedLink = attachment ? await uploadAttachedMedia(attachment) : undefined;
+      if (uploadedLink === null) {
+        return;
+      }
+
       nonokoRedirectPathRef.current = hasNonokoOption(currentOptions) ? getBoardIndexPath() : null;
       pendingPostBoardPathRef.current = pendingPostBoardPath;
       await publishPost({
         displayName: currentDisplayName,
         content: publishContent,
-        ...getPublishLinkOptions(currentUrl, appliedThumbnailConversion || (hasRestoredDraftRef.current && Boolean(currentUrl))),
+        ...(uploadedLink
+          ? { link: uploadedLink }
+          : getPublishLinkOptions(currentUrl, appliedThumbnailConversion || (hasRestoredDraftRef.current && Boolean(currentUrl)))),
         ...publishOptions,
         ...(hasRestoredDraftRef.current && draft.communityAddress ? { communityAddress: draft.communityAddress } : {}),
         ...(hasRestoredDraftRef.current && draft.spoiler ? { spoiler: true } : {}),
@@ -1069,6 +1100,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
       const appliedThumbnailConversion = await applyPendingConversion();
 
       const currentUrl = urlRef.current?.value.trim() || '';
+      const { attachment } = draft;
       const currentDisplayName = nameRef.current?.value.trim() || undefined;
       const currentOptions = optionsRef.current?.value || '';
       const currentOptionsError = getPostOptionsValidationError(currentOptions, postOptionsDirectoryCode);
@@ -1085,13 +1117,14 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
         return;
       }
 
-      if (!publishContent.trim() && !currentUrl) {
+      if (!publishContent.trim() && !currentUrl && !attachment) {
         setFormError(`${t('error')}: ${t('empty_comment_alert')}`);
         return;
       }
 
       const linkValidationError = getPublishLinkValidationError({
         link: currentUrl,
+        attachment,
         noLinks: noReplyLinks,
         requireLink: requireReplyLink,
         requireMedia: requireReplyLinkIsMedia,
@@ -1121,11 +1154,18 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
 
       const flagPublishOptions = getCommentFlagPublishOptionsForDirectory(directoryEntry, flagRef.current?.value);
 
+      const uploadedLink = attachment ? await uploadAttachedMedia(attachment) : undefined;
+      if (uploadedLink === null) {
+        return;
+      }
+
       nonokoRedirectPathRef.current = hasNonokoOption(currentOptions) ? getBoardIndexPath() : null;
       await publishReply({
         displayName: currentDisplayName,
         content: publishContent,
-        ...getPublishLinkOptions(currentUrl, appliedThumbnailConversion || (hasRestoredDraftRef.current && Boolean(currentUrl))),
+        ...(uploadedLink
+          ? { link: uploadedLink }
+          : getPublishLinkOptions(currentUrl, appliedThumbnailConversion || (hasRestoredDraftRef.current && Boolean(currentUrl)))),
         ...flagPublishOptions,
         ...(hasRestoredDraftRef.current && draft.spoiler ? { spoiler: true } : {}),
       });
@@ -1191,29 +1231,35 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
     }
   }, [replyIndex, closeForm, navigate, resetFields]);
 
-  const { isUploading, uploadedFileName, handleUpload, uploadFile } = useFileUpload({
-    onUploadComplete: (uploadedUrl: string) => {
-      if (uploadedUrl) {
-        cancelPendingConversion();
-        setLinkValue(uploadedUrl);
-        if (urlRef.current) {
-          urlRef.current.value = uploadedUrl;
-        }
-      }
-    },
-  });
-  const handleOekakiClearUploadedUrl = (uploadedUrl: string) => {
-    if ((urlRef.current?.value || url) !== uploadedUrl) return;
+  const { isUploading, chooseFile, uploadAttachment } = useFileUpload();
+  const clearLink = () => {
     cancelPendingConversion();
     setLinkValue('');
     if (urlRef.current) {
       urlRef.current.value = '';
     }
   };
+  // A Bitsocial comment carries one link, so an attachment replaces the link field's value.
+  const attachMedia = (attachment: AttachedMedia) => {
+    clearLink();
+    updateDraft({ attachment });
+  };
+  const handleChooseFile = async () => {
+    const attachment = await chooseFile();
+    if (attachment) attachMedia(attachment);
+  };
+  const handleRemoveAttachment = () => {
+    updateDraft({ attachment: undefined });
+    clearLink();
+  };
+  const handleDetachDrawing = (file: File) => {
+    if (draft.attachment?.kind === 'file' && draft.attachment.file === file) {
+      updateDraft({ attachment: undefined });
+    }
+  };
   const uploadMode = useMediaHostingStore((state) => state.uploadMode);
   const showUploadControls = getShowUploadControls(uploadMode);
   const showLinkField = useShowLinkField({
-    link: url,
     requireMediaLink: requireCurrentLinkIsMedia,
     showOekakiControls: showOekakiControls && !(isInPostView && noReplyLinks),
   });
@@ -1243,14 +1289,15 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
             handleLinkChange={handleLinkChange}
             handleLinkBlur={handleLinkBlur}
             handleOptionsChange={handleOptionsChange}
-            disableLinkInput={isUploading || thumbnailConversionNotice !== null || (isInPostView && noReplyLinks)}
+            disableLinkInput={isUploading || thumbnailConversionNotice !== null || (isInPostView && noReplyLinks) || Boolean(draft.attachment)}
             mediaLoadResult={mediaLoadResult}
             onMediaLoadStatusChange={handleMediaLoadStatusChange}
             setPublishPostOptions={setPublishPostOptions}
             setPublishReplyOptions={setPublishReplyOptions}
             isUploading={isUploading}
-            uploadedFileName={uploadedFileName}
+            attachedFileName={draft.attachment?.name}
             showLinkField={showLinkField}
+            showRemoveAttachment={!isUploading && (Boolean(draft.attachment) || (!showLinkField && Boolean(url)))}
             showUploadControls={showUploadControls && !(isInPostView && noReplyLinks)}
             showOekakiControls={showOekakiControls && !(isInPostView && noReplyLinks)}
             showSpoilerForPost={showSpoilerForPost}
@@ -1274,9 +1321,10 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
             onBbcodePreviewToggle={handleBbcodePreviewToggle}
             onPublishReply={onPublishReply}
             onPublishPost={onPublishPost}
-            handleUpload={handleUpload}
-            uploadFile={uploadFile}
-            onOekakiClearUploadedUrl={handleOekakiClearUploadedUrl}
+            handleChooseFile={handleChooseFile}
+            onRemoveAttachment={handleRemoveAttachment}
+            onAttachDrawing={(file) => attachMedia(getFileAttachment(file))}
+            onDetachDrawing={handleDetachDrawing}
             isPublishSubmissionInFlight={isPublishSubmissionInFlight}
             disableReplyPublish={isResolvingExternalQuotes}
             draft={draft}

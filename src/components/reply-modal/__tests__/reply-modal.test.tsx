@@ -30,8 +30,8 @@ const testState = vi.hoisted(() => ({
       title?: string;
     }
   >,
-  handleUploadMock: vi.fn(),
-  uploadFileMock: vi.fn(),
+  chooseFileMock: vi.fn(),
+  uploadAttachmentMock: vi.fn(),
   isMobile: false,
   mediaHostingRuntime: 'web' as 'web' | 'android' | 'electron',
   isResolvingExternalQuotes: false,
@@ -43,7 +43,7 @@ const testState = vi.hoisted(() => ({
   offlineWarningVisible: false,
   openEmpty: false,
   locationDraftKey: '/mu/thread/post-1',
-  replyDraft: undefined as { content: string; flag?: string; link: string; options: string; spoiler: boolean } | undefined,
+  replyDraft: undefined as { attachment?: unknown; content: string; flag?: string; link: string; options: string; spoiler: boolean } | undefined,
   updateDraftMock: vi.fn(),
   publishReplyMock: vi.fn(),
   publishReplyError: null as string | null,
@@ -69,8 +69,6 @@ const testState = vi.hoisted(() => ({
   fetchMock: vi.fn(),
   showLinkField: false,
   showUploadControls: true,
-  uploadComplete: undefined as ((url: string) => void) | undefined,
-  uploadedFileName: null as string | null,
   uploadMode: 'always',
 }));
 
@@ -260,15 +258,11 @@ vi.mock('../../../hooks/use-is-mobile', () => ({
 }));
 
 vi.mock('../../../hooks/use-file-upload', () => ({
-  useFileUpload: ({ onUploadComplete }: { onUploadComplete: (url: string) => void }) => {
-    testState.uploadComplete = onUploadComplete;
-    return {
-      handleUpload: testState.handleUploadMock,
-      uploadFile: testState.uploadFileMock,
-      isUploading: testState.isUploading,
-      uploadedFileName: testState.uploadedFileName,
-    };
-  },
+  useFileUpload: () => ({
+    chooseFile: testState.chooseFileMock,
+    uploadAttachment: testState.uploadAttachmentMock,
+    isUploading: testState.isUploading,
+  }),
 }));
 
 vi.mock('../../loading-ellipsis/loading-ellipsis', () => ({
@@ -458,8 +452,9 @@ describe('ReplyModal', () => {
       },
     };
     testState.directoryListsByCode = {};
-    testState.handleUploadMock.mockReset();
-    testState.uploadFileMock.mockReset();
+    testState.chooseFileMock.mockReset();
+    testState.chooseFileMock.mockResolvedValue(null);
+    testState.uploadAttachmentMock.mockReset();
     testState.isMobile = false;
     testState.isResolvingExternalQuotes = false;
     testState.isUploading = false;
@@ -515,8 +510,6 @@ describe('ReplyModal', () => {
     vi.stubGlobal('fetch', testState.fetchMock);
     testState.showLinkField = false;
     testState.showUploadControls = true;
-    testState.uploadComplete = undefined;
-    testState.uploadedFileName = null;
     testState.uploadMode = 'always';
     testState.mediaHostingRuntime = 'web';
     window.sessionStorage.clear();
@@ -1510,13 +1503,8 @@ describe('ReplyModal', () => {
     });
     expect(testState.setPublishReplyOptionsMock).toHaveBeenCalledWith({ displayName: 'Alicia' });
 
-    await act(async () => {
-      testState.uploadComplete?.('https://cdn.example/uploaded.png');
-    });
-
-    expect(linkInput?.value).toBe('https://cdn.example/uploaded.png');
-    expect(container.textContent).toContain('uploaded.png');
-    expect(testState.setPublishReplyOptionsMock).toHaveBeenCalledWith({ link: 'https://cdn.example/uploaded.png' });
+    await dispatchInput(linkInput, 'https://cdn.example/pasted.png');
+    expect(testState.setPublishReplyOptionsMock).toHaveBeenCalledWith({ link: 'https://cdn.example/pasted.png' });
 
     testState.replyIndex = 3;
     await rerenderReplyModal('/mu/thread/post-1');
@@ -1608,38 +1596,94 @@ describe('ReplyModal', () => {
     expect(container.textContent).not.toContain('Spoiler?');
   });
 
-  it('hides the link to file field while an upload provider is enabled and still publishes the uploaded link', async () => {
-    testState.uploadMode = 'random';
-    await renderReplyModal('/all/thread/post-1');
+  describe('attached files', () => {
+    const emptyDraft = { content: '', link: '', options: '', spoiler: false };
+    const pngFile = new File(['png'], 'chosen.png', { type: 'image/png' });
+    const pngAttachment = { kind: 'file', file: pngFile, name: 'chosen.png', mimeType: 'image/png' };
+    const linkInput = () => container.querySelector<HTMLInputElement>('input[aria-label="link_to_file"]') as HTMLInputElement;
 
-    const linkInput = container.querySelector<HTMLInputElement>('input[aria-label="link_to_file"]');
-    expect((linkInput?.parentElement as HTMLElement | null)?.hidden).toBe(true);
-    expect(container.textContent).toContain('choose_file');
-
-    await act(async () => {
-      testState.uploadComplete?.('https://forgeimg.net/abc/uploaded.png');
+    beforeEach(() => {
+      testState.uploadMode = 'random';
+      // The mocked draft store is static, so write drafts back and rerender like the real store would.
+      testState.updateDraftMock.mockImplementation((_locationKey: string, nextDraft: Record<string, unknown>) => {
+        testState.replyDraft = { ...emptyDraft, ...testState.replyDraft, ...nextDraft };
+      });
     });
-    expect(linkInput?.value).toBe('https://forgeimg.net/abc/uploaded.png');
 
-    await dispatchInput(container.querySelector('textarea') as HTMLTextAreaElement, 'uploaded reply');
-    await clickButtonByText('post');
+    const chooseFile = async () => {
+      await clickButtonByText('choose_file');
+      await rerenderReplyModal('/all/thread/post-1');
+    };
 
-    expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
-    expect(testState.setPublishReplyOptionsMock).toHaveBeenCalledWith({ link: 'https://forgeimg.net/abc/uploaded.png' });
-  });
+    it('hides the link field, uploads only on submit, then publishes the uploaded link', async () => {
+      testState.chooseFileMock.mockResolvedValue(pngAttachment);
+      testState.uploadAttachmentMock.mockImplementation(async () => {
+        expect(testState.publishReplyMock).not.toHaveBeenCalled();
+        return { url: 'https://forgeimg.net/abc/uploaded.png', fileName: 'chosen.png' };
+      });
+      await renderReplyModal('/all/thread/post-1');
+      expect((linkInput().parentElement as HTMLElement).hidden).toBe(true);
 
-  it('reveals a hidden link to file field that holds a link the board cannot post as a file', async () => {
-    testState.uploadMode = 'random';
-    await renderReplyModal('/all/thread/post-1');
+      await chooseFile();
+      expect(container.textContent).toContain('chosen.png');
+      expect(testState.uploadAttachmentMock).not.toHaveBeenCalled();
 
-    const linkInput = container.querySelector<HTMLInputElement>('input[aria-label="link_to_file"]') as HTMLInputElement;
-    await act(async () => {
-      testState.uploadComplete?.('https://forgeimg.net/abc/movie.swf');
+      await dispatchInput(container.querySelector('textarea') as HTMLTextAreaElement, 'uploaded reply');
+      await clickButtonByText('post');
+
+      expect(testState.uploadAttachmentMock).toHaveBeenCalledWith(pngAttachment);
+      expect(testState.publishReplyMock).toHaveBeenCalledWith(expect.objectContaining({ link: 'https://forgeimg.net/abc/uploaded.png' }));
+      expect(testState.updateDraftMock).toHaveBeenCalledWith(expect.any(String), { attachment: undefined });
     });
-    expect((linkInput.parentElement as HTMLElement).hidden).toBe(false);
 
-    await dispatchInput(linkInput, '');
-    expect((linkInput.parentElement as HTMLElement).hidden).toBe(true);
+    it('disables and clears a visible link field while a file is attached, and [×] restores it', async () => {
+      testState.showLinkField = true;
+      testState.chooseFileMock.mockResolvedValue(pngAttachment);
+      await renderReplyModal('/all/thread/post-1');
+
+      await dispatchInput(linkInput(), 'https://example.com/typed.png');
+      await chooseFile();
+
+      expect(linkInput().disabled).toBe(true);
+      expect(linkInput().value).toBe('');
+      expect(testState.setPublishReplyOptionsMock).toHaveBeenLastCalledWith({ link: '' });
+
+      await act(async () => {
+        container.querySelector<HTMLButtonElement>('button[aria-label="remove"]')?.click();
+      });
+      await rerenderReplyModal('/all/thread/post-1');
+
+      expect(linkInput().disabled).toBe(false);
+      expect(container.querySelector('button[aria-label="remove"]')).toBeNull();
+    });
+
+    it('validates the reply before uploading the attached file', async () => {
+      testState.chooseFileMock.mockResolvedValue({
+        kind: 'file',
+        file: new File(['FWS'], 'movie.swf', { type: 'application/x-shockwave-flash' }),
+        name: 'movie.swf',
+        mimeType: 'application/x-shockwave-flash',
+      });
+      await renderReplyModal('/all/thread/post-1');
+      await chooseFile();
+      await clickButtonByText('post');
+
+      expect(container.textContent).toContain('error: link_not_image_or_video_alert');
+      expect(testState.uploadAttachmentMock).not.toHaveBeenCalled();
+      expect(testState.publishReplyMock).not.toHaveBeenCalled();
+    });
+
+    it('keeps the attachment and does not publish when its upload fails', async () => {
+      testState.chooseFileMock.mockResolvedValue(pngAttachment);
+      testState.uploadAttachmentMock.mockResolvedValue(null);
+      await renderReplyModal('/all/thread/post-1');
+      await chooseFile();
+      await clickButtonByText('post');
+
+      expect(testState.uploadAttachmentMock).toHaveBeenCalledTimes(1);
+      expect(testState.publishReplyMock).not.toHaveBeenCalled();
+      expect(testState.replyDraft?.attachment).toBe(pngAttachment);
+    });
   });
 
   it('shows the link to file field when the setting is on, no upload provider is enabled, or Tegaki runs on web', async () => {

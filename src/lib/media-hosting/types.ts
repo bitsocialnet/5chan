@@ -37,3 +37,10 @@ export interface ProviderAttempt {
   /** Selectors tried (e.g. when file input / submit not found); from plugin or parsed from error */
   matchedSelectors?: string[];
 }
+
+/** Media chosen in a post or reply form. It is only uploaded once the post is submitted. */
+export type AttachedMedia =
+  /** A browser or Electron file, or a generated drawing. */
+  | { kind: 'file'; file: File; name: string; mimeType: string }
+  /** A file picked by the Android plugin, which keeps it native-side and streams it from its content URI at upload. */
+  | { kind: 'picked'; id: string; name: string; mimeType: string };

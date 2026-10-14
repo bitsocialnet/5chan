@@ -2,7 +2,6 @@ import { useRef, useState } from 'react';
 import { getMediaHostingRuntime } from '../../lib/media-hosting/show-upload-controls';
 import { loadTegaki, TEGAKI_DRAWING_FILE_NAME, type TegakiGlobal } from '../../lib/oekaki/tegaki-loader';
 import { OEKAKI_MOBILE_PORTRAIT_MESSAGE, OEKAKI_WEB_DOWNLOAD_MESSAGE } from '../../lib/oekaki/oekaki-copy';
-import type { UploadedFileResult } from '../../hooks/use-file-upload';
 import styles from './oekaki-drawing-controls.module.css';
 
 const DEFAULT_DIMENSION = '400';
@@ -13,8 +12,10 @@ const PNG_MIME_TYPE = 'image/png';
 interface OekakiDrawingControlsProps {
   disabled?: boolean;
   className?: string;
-  uploadFile: (file: File) => Promise<UploadedFileResult | null>;
-  onClearUploadedUrl: (url: string) => void;
+  /** Attaches the finished drawing to the form; it is uploaded with the post, like a chosen file. */
+  onAttachDrawing: (file: File) => void;
+  /** Drops the drawing from the form if it is still the attachment. */
+  onDetachDrawing: (file: File) => void;
 }
 
 const parseDimension = (value: string): number => {
@@ -81,18 +82,17 @@ const destroyTegaki = (tegaki: TegakiGlobal): void => {
   }
 };
 
-const OekakiDrawingControls = ({ disabled = false, className, uploadFile, onClearUploadedUrl }: OekakiDrawingControlsProps) => {
+const OekakiDrawingControls = ({ disabled = false, className, onAttachDrawing, onDetachDrawing }: OekakiDrawingControlsProps) => {
   const [width, setWidth] = useState(DEFAULT_DIMENSION);
   const [height, setHeight] = useState(DEFAULT_DIMENSION);
   const [saveReplay, setSaveReplay] = useState(true);
   const [drawingFile, setDrawingFile] = useState<File | null>(null);
   const [isOpening, setIsOpening] = useState(false);
   const [isTegakiOpen, setIsTegakiOpen] = useState(false);
-  const [isUploadingDrawing, setIsUploadingDrawing] = useState(false);
-  const uploadedDrawingUrlRef = useRef<string | null>(null);
+  const [isSavingDrawing, setIsSavingDrawing] = useState(false);
   const tegakiSessionOpenRef = useRef(false);
   const runtime = getMediaHostingRuntime();
-  const isBusy = disabled || isOpening || isTegakiOpen || isUploadingDrawing;
+  const isBusy = disabled || isOpening || isTegakiOpen || isSavingDrawing;
   const hasDrawing = drawingFile !== null;
 
   const closeTegakiSession = () => {
@@ -100,41 +100,17 @@ const OekakiDrawingControls = ({ disabled = false, className, uploadFile, onClea
     setIsTegakiOpen(false);
   };
 
-  const handleDrawingFile = async (file: File) => {
-    const previousUploadedUrl = uploadedDrawingUrlRef.current;
+  const handleDrawingFile = (file: File) => {
     setDrawingFile(file);
 
     if (runtime === 'web') {
-      uploadedDrawingUrlRef.current = null;
-      if (previousUploadedUrl) {
-        onClearUploadedUrl(previousUploadedUrl);
-      }
       if (window.confirm(OEKAKI_WEB_DOWNLOAD_MESSAGE)) {
         downloadDrawing(file);
       }
       return;
     }
 
-    setIsUploadingDrawing(true);
-    try {
-      const result = await uploadFile(file);
-      if (result?.url) {
-        uploadedDrawingUrlRef.current = result.url;
-        return;
-      }
-      uploadedDrawingUrlRef.current = null;
-      if (previousUploadedUrl) {
-        onClearUploadedUrl(previousUploadedUrl);
-      }
-    } catch (error) {
-      uploadedDrawingUrlRef.current = null;
-      if (previousUploadedUrl) {
-        onClearUploadedUrl(previousUploadedUrl);
-      }
-      throw error;
-    } finally {
-      setIsUploadingDrawing(false);
-    }
+    onAttachDrawing(file);
   };
 
   const openTegaki = async () => {
@@ -156,13 +132,13 @@ const OekakiDrawingControls = ({ disabled = false, className, uploadFile, onClea
         saveReplay,
         onDone: () => {
           const canvas = tegaki.flatten();
-          setIsUploadingDrawing(true);
+          setIsSavingDrawing(true);
           void canvasToBlob(canvas)
             .then(makeDrawingFile)
-            .then(async (file) => {
+            .then((file) => {
               destroyTegaki(tegaki);
               closeTegakiSession();
-              await handleDrawingFile(file);
+              handleDrawingFile(file);
             })
             .catch((error) => {
               destroyTegaki(tegaki);
@@ -170,7 +146,7 @@ const OekakiDrawingControls = ({ disabled = false, className, uploadFile, onClea
               window.alert(error instanceof Error ? error.message : String(error));
             })
             .finally(() => {
-              setIsUploadingDrawing(false);
+              setIsSavingDrawing(false);
             });
         },
         onCancel: () => {
@@ -195,12 +171,10 @@ const OekakiDrawingControls = ({ disabled = false, className, uploadFile, onClea
   };
 
   const clearDrawing = () => {
-    const uploadedUrl = uploadedDrawingUrlRef.current;
-    setDrawingFile(null);
-    uploadedDrawingUrlRef.current = null;
-    if (uploadedUrl) {
-      onClearUploadedUrl(uploadedUrl);
+    if (drawingFile && runtime !== 'web') {
+      onDetachDrawing(drawingFile);
     }
+    setDrawingFile(null);
   };
 
   return (

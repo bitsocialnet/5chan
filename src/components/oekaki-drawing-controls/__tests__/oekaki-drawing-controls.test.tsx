@@ -4,7 +4,6 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import OekakiDrawingControls from '../oekaki-drawing-controls';
 import { OEKAKI_MOBILE_PORTRAIT_MESSAGE, OEKAKI_WEB_DOWNLOAD_MESSAGE } from '../../../lib/oekaki/oekaki-copy';
-import type { UploadedFileResult } from '../../../hooks/use-file-upload';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
@@ -75,17 +74,13 @@ class MockImage {
   }
 }
 
-const renderControls = async ({
-  uploadFile = vi.fn<(file: File) => Promise<UploadedFileResult | null>>().mockResolvedValue(null),
-  onClearUploadedUrl = vi.fn(),
-}: {
-  uploadFile?: (file: File) => Promise<UploadedFileResult | null>;
-  onClearUploadedUrl?: (url: string) => void;
-} = {}) => {
+const renderControls = async () => {
+  const onAttachDrawing = vi.fn<(file: File) => void>();
+  const onDetachDrawing = vi.fn<(file: File) => void>();
   await act(async () => {
-    root.render(createElement(OekakiDrawingControls, { uploadFile, onClearUploadedUrl }));
+    root.render(createElement(OekakiDrawingControls, { onAttachDrawing, onDetachDrawing }));
   });
-  return { uploadFile, onClearUploadedUrl };
+  return { onAttachDrawing, onDetachDrawing };
 };
 
 const getButton = (label: string): HTMLButtonElement => {
@@ -296,48 +291,49 @@ describe('OekakiDrawingControls', () => {
     expect(URL.createObjectURL).not.toHaveBeenCalled();
   });
 
-  it('clears the uploaded drawing URL when Clear is clicked', async () => {
+  it('attaches the finished drawing to the form instead of uploading it', async () => {
     testState.runtime = 'electron';
-    const uploadFile = vi.fn<(file: File) => Promise<UploadedFileResult | null>>().mockResolvedValue({
-      url: 'https://files.example/tegaki.png',
-      fileName: 'tegaki.png',
-    });
-    const onClearUploadedUrl = vi.fn();
 
-    await renderControls({ uploadFile, onClearUploadedUrl });
+    const { onAttachDrawing } = await renderControls();
     await clickButton('Draw');
     await triggerTegakiDone();
-    await clickButton('Clear');
 
-    expect(onClearUploadedUrl).toHaveBeenCalledWith('https://files.example/tegaki.png');
+    expect(onAttachDrawing).toHaveBeenCalledTimes(1);
+    expect(onAttachDrawing.mock.calls[0][0]).toBeInstanceOf(File);
+    expect(onAttachDrawing.mock.calls[0][0].type).toBe('image/png');
+    expect(globalThis.confirm).not.toHaveBeenCalled();
   });
 
-  it('clears a stale uploaded URL when re-uploading an edited drawing fails', async () => {
-    testState.runtime = 'electron';
-    const uploadFile = vi
-      .fn<(file: File) => Promise<UploadedFileResult | null>>()
-      .mockResolvedValueOnce({ url: 'https://files.example/first.png', fileName: 'tegaki.png' })
-      .mockResolvedValueOnce(null);
-    const onClearUploadedUrl = vi.fn();
+  it('replaces the attachment with an edited drawing and detaches the current one on Clear', async () => {
+    testState.runtime = 'android';
 
-    await renderControls({ uploadFile, onClearUploadedUrl });
+    const { onAttachDrawing, onDetachDrawing } = await renderControls();
     await clickButton('Draw');
     await triggerTegakiDone();
     await clickButton('Edit');
     await triggerTegakiDone();
+    await clickButton('Clear');
 
-    expect(uploadFile).toHaveBeenCalledTimes(2);
-    expect(onClearUploadedUrl).toHaveBeenCalledWith('https://files.example/first.png');
+    expect(onAttachDrawing).toHaveBeenCalledTimes(2);
+    expect(onDetachDrawing).toHaveBeenCalledTimes(1);
+    expect(onDetachDrawing).toHaveBeenCalledWith(onAttachDrawing.mock.calls[1][0]);
+    expect(getButton('Clear').disabled).toBe(true);
+  });
+
+  it('keeps web drawings out of the form, where they are downloaded instead', async () => {
+    const { onAttachDrawing, onDetachDrawing } = await renderControls();
+    await clickButton('Draw');
+    await triggerTegakiDone();
+    await clickButton('Clear');
+
+    expect(onAttachDrawing).not.toHaveBeenCalled();
+    expect(onDetachDrawing).not.toHaveBeenCalled();
   });
 
   it('starts edited drawings from a fresh Tegaki session with the saved image loaded', async () => {
     testState.runtime = 'electron';
-    const uploadFile = vi.fn<(file: File) => Promise<UploadedFileResult | null>>().mockResolvedValue({
-      url: 'https://files.example/tegaki.png',
-      fileName: 'tegaki.png',
-    });
 
-    await renderControls({ uploadFile });
+    await renderControls();
     await clickButton('Draw');
     await triggerTegakiDone();
     await clickButton('Edit');
@@ -350,12 +346,8 @@ describe('OekakiDrawingControls', () => {
 
   it('destroys Tegaki when an edited drawing cannot be loaded', async () => {
     testState.runtime = 'electron';
-    const uploadFile = vi.fn<(file: File) => Promise<UploadedFileResult | null>>().mockResolvedValue({
-      url: 'https://files.example/tegaki.png',
-      fileName: 'tegaki.png',
-    });
 
-    await renderControls({ uploadFile });
+    await renderControls();
     await clickButton('Draw');
     await triggerTegakiDone();
     testState.onOpenImageLoadedMock.mockImplementationOnce(() => {

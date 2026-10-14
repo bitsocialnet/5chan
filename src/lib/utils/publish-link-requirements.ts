@@ -1,4 +1,6 @@
 import type { TFunction } from 'i18next';
+import { isPublishFileAttachment } from '../media-hosting/attached-media';
+import type { AttachedMedia } from '../media-hosting/types';
 import { isPublishFileMediaLink } from './media-link-validation-utils';
 import { isValidPublishURL } from './url-utils';
 
@@ -71,6 +73,7 @@ export const getNoReplyLinks = (features: EffectiveReplyLinkFeatures | undefined
 
 export const getPublishLinkValidationError = ({
   link,
+  attachment,
   noLinks = false,
   requireLink,
   requireMedia,
@@ -80,6 +83,8 @@ export const getPublishLinkValidationError = ({
   t,
 }: {
   link: string;
+  /** A file that becomes the comment's link once it is uploaded at submit. */
+  attachment?: AttachedMedia;
   noLinks?: boolean;
   requireLink: boolean;
   requireMedia: boolean;
@@ -88,11 +93,14 @@ export const getPublishLinkValidationError = ({
   noLinksAlertKey?: string;
   t: TFunction;
 }): string | null => {
-  if (link && noLinks && noLinksAlertKey) {
+  if ((link || attachment) && noLinks && noLinksAlertKey) {
     return `${t('error')}: ${t(noLinksAlertKey)}`;
   }
-  if (!link && requireLink) {
+  if (!link && !attachment && requireLink) {
     return `${t('error')}: ${t(requireMedia ? requiredMediaLinkAlertKey : requiredLinkAlertKey)}`;
+  }
+  if (attachment) {
+    return requireMedia && !isPublishFileAttachment(attachment) ? `${t('error')}: ${t('link_not_image_or_video_alert')}` : null;
   }
   if (link && !isValidPublishURL(link)) {
     return `${t('error')}: ${t('invalid_url_alert')}`;

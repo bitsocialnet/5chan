@@ -39,6 +39,9 @@ import usePublishReply from '../../hooks/use-publish-reply';
 import useIsMobile from '../../hooks/use-is-mobile';
 import { useFileUpload } from '../../hooks/use-file-upload';
 import { useShowLinkField } from '../../hooks/use-show-link-field';
+import { getFileAttachment } from '../../lib/media-hosting/attached-media';
+import type { AttachedMedia } from '../../lib/media-hosting/types';
+import RemoveAttachmentButton from '../remove-attachment-button';
 import { useVideoThumbnailLinkConversion } from '../../hooks/use-video-thumbnail-link-conversion';
 import usePublishSubmissionGuard from '../../hooks/use-publish-submission-guard';
 import { useCommunityField } from '../../hooks/use-stable-community';
@@ -230,6 +233,7 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
       const currentContent = textRef.current?.value || '';
       const currentDisplayName = nameRef.current?.value.trim() || undefined;
       const currentUrl = urlRef.current?.value.trim() || '';
+      const attachment = draft?.attachment;
       const currentOptions = optionsRef.current?.value || '';
       const currentOptionsError = getPostOptionsValidationError(currentOptions, postOptionsDirectoryCode);
       const publishContent = getContentWithOptions(currentContent, currentOptions, fortuneEntryRef, diceRollRef, postOptionsDirectoryCode);
@@ -244,13 +248,14 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
         return;
       }
 
-      if (!publishContent.trim() && !currentUrl) {
+      if (!publishContent.trim() && !currentUrl && !attachment) {
         setError(t('error') + ': ' + t('empty_comment_alert'));
         return;
       }
 
       const linkValidationError = getPublishLinkValidationError({
         link: currentUrl,
+        attachment,
         noLinks: noReplyLinks,
         requireLink: requireReplyLink,
         requireMedia: requireReplyLinkIsMedia,
@@ -277,11 +282,17 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
       const flagPublishOptions = getCommentFlagPublishOptionsForDirectory(directoryEntry, flagRef.current?.value);
 
       setError(null);
+      // Upload only after every check passed, so a rejected reply never leaves a file on the host.
+      const uploadedLink = attachment ? await uploadAttachedMedia(attachment) : undefined;
+      if (uploadedLink === null) {
+        return;
+      }
+
       nonokoRedirectPathRef.current = hasNonokoOption(currentOptions) ? `/${postOptionsDirectoryCode || params.boardIdentifier || communityAddress}` : null;
       await publishReply({
         displayName: currentDisplayName,
         content: publishContent,
-        ...getPublishLinkOptions(currentUrl, appliedThumbnailConversion),
+        ...(uploadedLink ? { link: uploadedLink } : getPublishLinkOptions(currentUrl, appliedThumbnailConversion)),
         ...flagPublishOptions,
       });
     });
@@ -598,29 +609,50 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
     checkContentLengthRef.current(publishContent, t, optionsRef.current?.value || '', postOptionsDirectoryCode);
   }, [showReplyModal, quoteInsertRequestId, quoteInsertNumber, quoteInsertSelectedText, postOptionsDirectoryCode, setPublishReplyOptions, t, updateDraft]);
 
-  const { isUploading, uploadedFileName, handleUpload, uploadFile } = useFileUpload({
-    onUploadComplete: (uploadedUrl: string) => {
-      if (uploadedUrl) {
-        cancelPendingConversion();
-        setLinkValue(uploadedUrl);
-        if (urlRef.current) {
-          urlRef.current.value = uploadedUrl;
-        }
-      }
-    },
-  });
-  const handleOekakiClearUploadedUrl = (uploadedUrl: string) => {
-    if ((urlRef.current?.value || url) !== uploadedUrl) return;
+  const { isUploading, chooseFile, uploadAttachment } = useFileUpload();
+  const attachment = draft?.attachment;
+  const clearLink = () => {
     cancelPendingConversion();
     setLinkValue('');
     if (urlRef.current) {
       urlRef.current.value = '';
     }
   };
+  // A Bitsocial comment carries one link, so an attachment replaces the link field's value.
+  const attachMedia = (nextAttachment: AttachedMedia) => {
+    clearLink();
+    updateDraft({ attachment: nextAttachment });
+  };
+  const handleChooseFile = async () => {
+    const chosen = await chooseFile();
+    if (chosen) attachMedia(chosen);
+  };
+  const handleRemoveAttachment = () => {
+    updateDraft({ attachment: undefined });
+    clearLink();
+  };
+  const handleDetachDrawing = (file: File) => {
+    if (attachment?.kind === 'file' && attachment.file === file) {
+      updateDraft({ attachment: undefined });
+    }
+  };
+  // Uploads the attachment once the reply is submitted and keeps its link in the form, so a retry
+  // after a failed publish does not upload the file again.
+  const uploadAttachedMedia = async (media: AttachedMedia): Promise<string | null> => {
+    const uploaded = await uploadAttachment(media);
+    if (!uploaded) return null;
+    updateDraft({ attachment: undefined });
+    setLinkValue(uploaded.url);
+    if (urlRef.current) {
+      urlRef.current.value = uploaded.url;
+    }
+    return uploaded.url;
+  };
   const uploadMode = useMediaHostingStore((state) => state.uploadMode);
   const showUploadControls = getShowUploadControls(uploadMode);
-  const showLinkField = useShowLinkField({ link: url, requireMediaLink: requireReplyLinkIsMedia, showOekakiControls: showOekakiControls && !noReplyLinks });
-  const displayedFileName = getPublishFileDisplayName(url, uploadedFileName, requireReplyLinkIsMedia);
+  const showLinkField = useShowLinkField({ requireMediaLink: requireReplyLinkIsMedia, showOekakiControls: showOekakiControls && !noReplyLinks });
+  const displayedFileName = getPublishFileDisplayName(url, attachment?.name, requireReplyLinkIsMedia);
+  const showRemoveAttachment = !isUploading && (Boolean(attachment) || (!showLinkField && Boolean(url)));
   const thumbnailConversionNotice = !thumbnailConversion
     ? null
     : thumbnailConversion.site === 'vimeo'
@@ -735,7 +767,7 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
             ref={urlRef}
             aria-label={requireReplyLinkIsMedia ? t('link_to_file') : t('link')}
             placeholder={requireReplyLinkIsMedia ? FILE_LINK_PLACEHOLDER : capitalize(t('link'))}
-            disabled={isUploading || thumbnailConversion !== null || noReplyLinks}
+            disabled={isUploading || thumbnailConversion !== null || noReplyLinks || Boolean(attachment)}
             defaultValue={draft?.link}
             onChange={(e) => {
               handleLinkChange(e.target.value);
@@ -746,7 +778,12 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
         {showOekakiControls && !noReplyLinks && (
           <div className={styles.oekakiRow}>
             <span className={styles.oekakiLabel}>Draw</span>
-            <OekakiDrawingControls className={styles.oekakiControls} disabled={isUploading} uploadFile={uploadFile} onClearUploadedUrl={handleOekakiClearUploadedUrl} />
+            <OekakiDrawingControls
+              className={styles.oekakiControls}
+              disabled={isUploading}
+              onAttachDrawing={(file) => attachMedia(getFileAttachment(file))}
+              onDetachDrawing={handleDetachDrawing}
+            />
           </div>
         )}
         {showOekakiControls && !noReplyLinks && isWebRuntime() ? <div className={styles.oekakiWarning}>{OEKAKI_WEB_WARNING_TEXT}</div> : null}
@@ -773,13 +810,14 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
           {showUploadControls && !noReplyLinks && (
             <span className={styles.uploadContainer}>
               <span className={styles.uploadButton}>
-                <button type='button' onClick={handleUpload} disabled={isUploading}>
+                <button type='button' onClick={handleChooseFile} disabled={isUploading}>
                   {t('choose_file')}
                 </button>
               </span>
               <span className={styles.uploadFileName} title={displayedFileName || t('no_file_chosen')}>
                 {isUploading ? <LoadingEllipsis string={t('uploading')} /> : displayedFileName || t('no_file_chosen')}
               </span>
+              {showRemoveAttachment && <RemoveAttachmentButton onClick={handleRemoveAttachment} />}
             </span>
           )}
           {showSpoilerForReply && (

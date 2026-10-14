@@ -1,6 +1,9 @@
 import { create } from 'zustand';
+import type { AttachedMedia } from '../lib/media-hosting/types';
 
 export type PostFormDraft = {
+  /** File chosen with Choose File or drawn in Oekaki; uploaded only when the post is submitted. */
+  attachment?: AttachedMedia;
   communityAddress?: string;
   content: string;
   flag?: string;

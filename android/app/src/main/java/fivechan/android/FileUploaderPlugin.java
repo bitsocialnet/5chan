@@ -24,6 +24,9 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -37,15 +40,12 @@ public class FileUploaderPlugin extends Plugin {
     private static final String PROVIDER_CATBOX = "catbox";
     private static final long CATBOX_TIMEOUT_SEC = 30;
     private static final int MAX_GENERATED_UPLOAD_BYTES = 20 * 1024 * 1024;
+    /** Content URIs returned by pickMedia, keyed by the opaque id handed to the web layer. */
+    private final Map<String, Uri> pickedMediaUris = new ConcurrentHashMap<>();
 
     @PluginMethod
-    public void pickAndUploadMedia(PluginCall call) {
-        Log.d(TAG, "pickAndUploadMedia called");
-        List<String> providerOrder = getProviderOrder(call);
-        if (providerOrder.isEmpty()) {
-            call.reject("No supported upload providers selected");
-            return;
-        }
+    public void pickMedia(PluginCall call) {
+        Log.d(TAG, "pickMedia called");
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("*/*");
         String[] mimeTypes = {
@@ -57,7 +57,29 @@ public class FileUploaderPlugin extends Plugin {
             "application/vnd.adobe.flash.movie"
         };
         intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);
-        startActivityForResult(call, intent, "pickFileResult");
+        startActivityForResult(call, intent, "pickMediaResult");
+    }
+
+    /**
+     * Uploads a file chosen with pickMedia, identified by the id that call returned. Only
+     * user-picked URIs can be uploaded: the web layer never passes a URI, so it cannot make
+     * the plugin read other content the app has access to.
+     */
+    @PluginMethod
+    public void uploadPickedMedia(PluginCall call) {
+        Log.d(TAG, "uploadPickedMedia called");
+        List<String> providerOrder = getProviderOrder(call);
+        if (providerOrder.isEmpty()) {
+            call.reject("No supported upload providers selected");
+            return;
+        }
+        String id = call.getString("id");
+        Uri uri = id != null ? pickedMediaUris.get(id) : null;
+        if (uri == null) {
+            call.reject("Picked file is no longer available. Choose it again.");
+            return;
+        }
+        new Thread(() -> uploadPickedUri(uri, providerOrder, call)).start();
     }
 
     @PluginMethod
@@ -152,8 +174,8 @@ public class FileUploaderPlugin extends Plugin {
     }
 
     @ActivityCallback
-    private void pickFileResult(PluginCall call, ActivityResult result) {
-        Log.d(TAG, "pickFileResult callback received");
+    private void pickMediaResult(PluginCall call, ActivityResult result) {
+        Log.d(TAG, "pickMediaResult callback received");
         if (call == null) {
             return;
         }
@@ -175,51 +197,68 @@ public class FileUploaderPlugin extends Plugin {
             return;
         }
 
-        List<String> providerOrder = getProviderOrder(call);
-        if (providerOrder.isEmpty()) {
-            call.reject("No supported upload providers selected");
-            return;
+        // The read grant from ACTION_GET_CONTENT lasts for this activity, so the file can be
+        // uploaded later, when the post is submitted.
+        String id = UUID.randomUUID().toString();
+        pickedMediaUris.put(id, uri);
+        String mimeType = null;
+        try {
+            mimeType = getContext().getContentResolver().getType(uri);
+        } catch (Exception e) {
+            Log.w(TAG, "Could not query picked file type", e);
         }
+        JSObject ret = new JSObject();
+        ret.put("id", id);
+        ret.put("fileName", getDisplayName(uri));
+        ret.put("mimeType", mimeType != null ? mimeType : "");
+        call.resolve(ret);
+    }
 
-        new Thread(
-                        () -> {
-                            File strippedFile = null;
-                            try {
-                                StrippedPickedMedia stripped = stripPickedMediaMetadata(uri);
-                                if (stripped == null) {
-                                    tryProvidersSequentially(uri, providerOrder, call);
-                                    return;
-                                }
-                                // Route stripped images like a generated upload (cache file for
-                                // catbox, bytes for WebView injection) so the original picked URI
-                                // is never handed to a provider page. Display name and mime type
-                                // stay those of the original file.
-                                strippedFile =
-                                        FileUtils.writeBytesToCacheFile(
-                                                getContext(), stripped.fileName, stripped.bytes);
-                                tryProvidersSequentially(
-                                        Uri.fromFile(strippedFile),
-                                        providerOrder,
-                                        call,
-                                        stripped.fileName,
-                                        stripped.bytes,
-                                        stripped.mimeType);
-                            } catch (Throwable e) {
-                                // Throwable, not Exception: an OutOfMemoryError must still
-                                // settle the call or the web layer awaits it forever.
-                                Log.e(TAG, "Upload failed", e);
-                                try {
-                                    call.reject("Upload failed: " + e.getMessage());
-                                } catch (Exception rejectEx) {
-                                    Log.e(TAG, "Failed to reject call", rejectEx);
-                                }
-                            } finally {
-                                if (strippedFile != null && strippedFile.exists() && !strippedFile.delete()) {
-                                    Log.w(TAG, "Could not delete stripped upload cache file: " + strippedFile.getAbsolutePath());
-                                }
-                            }
-                        })
-                .start();
+    /** Uploads a picked file, metadata-stripped when possible. Runs off the main thread. */
+    private void uploadPickedUri(Uri uri, List<String> providerOrder, PluginCall call) {
+        File strippedFile = null;
+        try {
+            StrippedPickedMedia stripped = stripPickedMediaMetadata(uri);
+            if (stripped == null) {
+                tryProvidersSequentially(uri, providerOrder, call);
+                return;
+            }
+            // Route stripped images like a generated upload (cache file for
+            // catbox, bytes for WebView injection) so the original picked URI
+            // is never handed to a provider page. Display name and mime type
+            // stay those of the original file.
+            strippedFile = FileUtils.writeBytesToCacheFile(getContext(), stripped.fileName, stripped.bytes);
+            tryProvidersSequentially(
+                    Uri.fromFile(strippedFile),
+                    providerOrder,
+                    call,
+                    stripped.fileName,
+                    stripped.bytes,
+                    stripped.mimeType);
+        } catch (Throwable e) {
+            // Throwable, not Exception: an OutOfMemoryError must still
+            // settle the call or the web layer awaits it forever.
+            Log.e(TAG, "Upload failed", e);
+            try {
+                call.reject("Upload failed: " + e.getMessage());
+            } catch (Exception rejectEx) {
+                Log.e(TAG, "Failed to reject call", rejectEx);
+            }
+        } finally {
+            if (strippedFile != null && strippedFile.exists() && !strippedFile.delete()) {
+                Log.w(TAG, "Could not delete stripped upload cache file: " + strippedFile.getAbsolutePath());
+            }
+        }
+    }
+
+    /** Display name from the content provider; unlike getFileName below, it does not copy the file to read it. */
+    private String getDisplayName(Uri uri) {
+        try {
+            return FileUtils.getFileName(getContext(), uri);
+        } catch (Exception e) {
+            Log.w(TAG, "Could not query picked file name", e);
+            return "unknown";
+        }
     }
 
     /** Stripped copy of a picked file plus the original file's display name and mime type. */

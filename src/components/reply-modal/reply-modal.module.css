@@ -143,16 +143,19 @@
 
 .uploadFileName {
   display: inline-block;
-  width: calc(100% - 75px);
+  flex: 1 1 auto;
+  min-width: 0;
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
 }
 
+/* Grows to fit the file name and its [×], and gives way to the spoiler toggle when the footer is full. */
 .uploadContainer {
   display: inline-flex;
   align-items: center;
-  width: 130px;
+  flex: 0 1 150px;
+  min-width: 0;
 }
 
 .oekakiRow {

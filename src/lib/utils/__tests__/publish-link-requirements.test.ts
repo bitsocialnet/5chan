@@ -10,8 +10,11 @@ import {
   getRequireReplyLink,
   getRequireReplyLinkIsMedia,
 } from '../publish-link-requirements';
+import type { AttachedMedia } from '../../media-hosting/types';
 
 const t = ((key: string) => key) as TFunction;
+const keys = { requiredLinkAlertKey: 'link_required', requiredMediaLinkAlertKey: 'media_link_required', noLinksAlertKey: 'no_links', t };
+const attachmentOf = (name: string, mimeType: string): AttachedMedia => ({ kind: 'picked', id: name, name, mimeType });
 
 describe('getEffectivePostLinkFeatures', () => {
   it('uses live community feature values before directory defaults', () => {
@@ -45,6 +48,24 @@ describe('getEffectiveReplyLinkFeatures', () => {
 });
 
 describe('getPublishLinkValidationError', () => {
+  it('counts an attached file as the required link', () => {
+    expect(getPublishLinkValidationError({ link: '', attachment: attachmentOf('a.png', 'image/png'), requireLink: true, requireMedia: true, ...keys })).toBeNull();
+    expect(getPublishLinkValidationError({ link: '', attachment: attachmentOf('a.webm', 'video/webm'), requireLink: true, requireMedia: true, ...keys })).toBeNull();
+    expect(getPublishLinkValidationError({ link: '', requireLink: true, requireMedia: true, ...keys })).toBe('error: media_link_required');
+  });
+
+  it('rejects an attached file that is not an image or video on media-only boards', () => {
+    const swf = attachmentOf('a.swf', 'application/x-shockwave-flash');
+    expect(getPublishLinkValidationError({ link: '', attachment: swf, requireLink: true, requireMedia: true, ...keys })).toBe('error: link_not_image_or_video_alert');
+    expect(getPublishLinkValidationError({ link: '', attachment: swf, requireLink: true, requireMedia: false, ...keys })).toBeNull();
+  });
+
+  it('rejects an attached file where links are not allowed', () => {
+    expect(
+      getPublishLinkValidationError({ link: '', attachment: attachmentOf('a.png', 'image/png'), noLinks: true, requireLink: false, requireMedia: false, ...keys }),
+    ).toBe('error: no_links');
+  });
+
   it('does not require an empty link when only media links are enabled', () => {
     expect(
       getPublishLinkValidationError({

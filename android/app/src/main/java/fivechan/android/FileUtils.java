@@ -43,7 +43,7 @@ public class FileUtils {
         }
     }
 
-    private static String getFileName(Context context, Uri uri) {
+    static String getFileName(Context context, Uri uri) {
         String result = null;
         if ("content".equals(uri.getScheme())) {
             try (Cursor cursor = context.getContentResolver().query(uri, null, null, null, null)) {
