@@ -12,6 +12,9 @@ import { createServer, loadConfigFromFile } from 'vite';
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const plan = JSON.parse(process.argv[2] || '{}');
+// Progress goes to stderr, which the build prints only when a render fails or times out.
+const startedAt = Date.now();
+const trace = (step) => process.stderr.write(`static shell render +${Date.now() - startedAt}ms: ${step}\n`);
 const variants = plan.variants ?? {};
 
 const dom = new JSDOM('<!doctype html><html><head></head><body><div id="root"></div></body></html>', { url: 'http://localhost/#/', pretendToBeVisual: true });
@@ -56,6 +59,7 @@ const isAppAlias = (find) => !(typeof find === 'string' && (find.startsWith('nod
 // dependencies in node_modules/.vite, so each render keeps Vite's cache, and the peer client's .pkc
 // storage (created in the working directory), in a directory of its own.
 const cacheDir = await mkdtemp(path.join(os.tmpdir(), 'fivechan-static-shell-'));
+trace('starting the Vite server');
 const server = await createServer({
   configFile: false,
   root: packageRoot,
@@ -80,9 +84,13 @@ net.Socket.prototype.connect = function () {
 };
 dgram.Socket.prototype.send = () => {};
 try {
+  trace('loading the app');
   const { renderStaticShell } = await server.ssrLoadModule('/src/static-shell.tsx');
   const rendered = {};
-  for (const [name, variant] of Object.entries(variants)) rendered[name] = (await renderStaticShell(variant)).html;
+  for (const [name, variant] of Object.entries(variants)) {
+    trace(`rendering the ${name} variant`);
+    rendered[name] = (await renderStaticShell(variant)).html;
+  }
   // `boards: { widths: { name: width }, banner }` renders every directory board's index page at each
   // width; `addresses: true` renders each candidate board address. Both record the theme category
   // React's first commit gives the board, to check against getBoardThemeCategories. A board's peer work
@@ -102,6 +110,7 @@ try {
         const frames = {};
         let category;
         for (const [name, width] of Object.entries(plan.boards.widths)) {
+          trace(`rendering /${code}/ at ${name} width`);
           const { html, bodyClass, selects } = await renderStaticShell({ hash: `#/${code}`, width, banner: plan.boards.banner });
           frames[name] = { html, bodyClass, selects };
           category ??= categoryOf(bodyClass);
@@ -110,7 +119,10 @@ try {
       }
     }
     if (plan.addresses) {
-      for (const address of Object.keys(expected.addresses)) boards.addresses[address] = categoryOf((await renderStaticShell({ hash: `#/${address}` })).bodyClass);
+      for (const address of Object.keys(expected.addresses)) {
+        trace(`rendering ${address}`);
+        boards.addresses[address] = categoryOf((await renderStaticShell({ hash: `#/${address}` })).bodyClass);
+      }
     }
   }
   // Whatever the app saved on its own while rendering, as it would on a first visit.
@@ -120,13 +132,17 @@ try {
     storage[key] = localStorage.getItem(key);
   }
   if (process.env.STATIC_SHELL_DEBUG) process.stderr.write(`static shell: ${blockedConnections} connections blocked\n`);
+  trace('writing the result');
   // A large result outlives a synchronous exit on a pipe, so exit once it is flushed.
   await new Promise((resolve) => write(JSON.stringify({ variants: rendered, boards, storage }), resolve));
 } finally {
+  trace('closing the Vite server');
   await server.close();
+  trace('removing the cache directory');
   // Windows can neither remove the working directory nor files the peer client still holds open.
   // The directory is in the OS temp directory, so a failed cleanup must not fail the render.
   process.chdir(packageRoot);
   await rm(cacheDir, { recursive: true, force: true, maxRetries: 3 }).catch(() => {});
 }
+trace('done');
 process.exit(0);

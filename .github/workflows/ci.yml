@@ -254,6 +254,7 @@ jobs:
     name: Package Linux (Ubuntu)
     runs-on: ubuntu-22.04
     needs: quality
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
         with:
@@ -317,6 +318,7 @@ jobs:
     name: Package Mac (Intel)
     runs-on: macos-15-intel
     needs: quality
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
         with:
@@ -383,6 +385,7 @@ jobs:
     name: Package Mac (Apple Silicon)
     runs-on: macos-latest
     needs: quality
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
         with:
@@ -449,6 +452,7 @@ jobs:
     name: Package Windows
     runs-on: windows-2022
     needs: quality
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
         with:

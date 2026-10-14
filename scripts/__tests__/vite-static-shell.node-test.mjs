@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
 import test from 'node:test';
 import { JSDOM } from 'jsdom';
-import { BANNER_PLACEHOLDER, STATIC_SHELL_ATTRIBUTE, assembleBoardFrame, buildBoardFrames, injectStaticShell, injectThemeScript, inlineStartupStylesheets } from '../vite-static-shell.mjs';
+import { BANNER_PLACEHOLDER, STATIC_SHELL_ATTRIBUTE, assembleBoardFrame, buildBoardFrames, injectStaticShell, injectThemeScript, inlineStartupStylesheets, runRenderScript } from '../vite-static-shell.mjs';
 
 const ATTRIBUTE = 'data-fivechan-app-preload';
 
@@ -202,4 +205,43 @@ test('keeps JSON data from ending its script element early', () => {
   assert.deepEqual(data.boards.codes.x, ['</script><script>alert(1)</script>', '<!--']);
   assert.throws(() => injectStaticShell(withTheme.replace('<div id="root"></div>', '<div id="root">x</div>'), { home: '', boards: {} }), /no empty/);
   assert.throws(() => injectStaticShell('<html><head></head><body><div id="root"></div></body></html>', { home: '', boards: {} }), /theme script first/);
+});
+
+// Stands in for scripts/static-shell/render.mjs: counts its runs, and hangs, fails or prints JSON as the plan says.
+const FAKE_RENDER = `
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+const plan = JSON.parse(process.argv[2]);
+const runs = existsSync(plan.counter) ? Number(readFileSync(plan.counter, 'utf8')) + 1 : 1;
+writeFileSync(plan.counter, String(runs));
+process.stderr.write('static shell render: run ' + runs + '\\n');
+if (plan.mode === 'fail') process.exit(3);
+if (plan.mode === 'hang' || (plan.mode === 'hang-once' && runs === 1)) setInterval(() => {}, 1000);
+else process.stdout.write(JSON.stringify({ runs }));
+`;
+
+const withFakeRender = async (t, mode) => {
+  const dir = await mkdtemp(path.join(os.tmpdir(), 'fivechan-render-test-'));
+  t.after(() => rm(dir, { recursive: true, force: true }));
+  const script = path.join(dir, 'render.mjs');
+  await writeFile(script, FAKE_RENDER);
+  const messages = [];
+  t.mock.method(process.stderr, 'write', (message) => messages.push(String(message)) > 0);
+  return { messages, run: (options) => runRenderScript(script, { mode, counter: path.join(dir, 'runs') }, { cwd: dir, timeoutMs: 500, ...options }) };
+};
+
+test('kills a render that never exits and retries it, reporting where it stopped', async (t) => {
+  const { messages, run } = await withFakeRender(t, 'hang-once');
+  assert.deepEqual(await run(), { runs: 2 });
+  assert.match(messages.join(''), /did not finish within 0\.5s \(attempt 1 of 2\)\nstatic shell render: run 1/);
+});
+
+test('gives up on a render that keeps hanging', async (t) => {
+  const { run } = await withFakeRender(t, 'hang');
+  await assert.rejects(run(), (error) => error.killed === true);
+});
+
+test('does not retry a render that fails', async (t) => {
+  const { messages, run } = await withFakeRender(t, 'fail');
+  await assert.rejects(run(), (error) => error.code === 3);
+  assert.equal(messages.filter((message) => message.includes('(attempt')).length, 1);
 });

@@ -318,6 +318,33 @@ export function injectStaticShell(html, { home, boards, storage = {} }) {
 
 const execFileAsync = promisify(execFile);
 
+/**
+ * Runs a render script for one plan and parses the JSON it prints. The renders take about two
+ * minutes on the slowest CI runner (macOS Intel), but a render process occasionally never exits
+ * there, which held the build until the 6-hour job limit. A stuck render is killed at `timeoutMs`
+ * and retried; its progress on stderr shows where it stopped.
+ */
+export const runRenderScript = async (scriptPath, plan, { cwd, timeoutMs = 8 * 60_000, attempts = 2 } = {}) => {
+  for (let attempt = 1; ; attempt += 1) {
+    try {
+      const { stdout } = await execFileAsync(process.execPath, [scriptPath, JSON.stringify(plan)], {
+        cwd,
+        encoding: 'utf8',
+        maxBuffer: 64 * 1024 * 1024,
+        timeout: timeoutMs,
+        killSignal: 'SIGKILL',
+      });
+      return JSON.parse(stdout);
+    } catch (error) {
+      const timedOut = error.killed === true;
+      const reason = timedOut ? `did not finish within ${timeoutMs / 1000}s` : `failed: ${error.stack}`;
+      // Vite reports a later plugin's error (the PWA build's missing index.html) instead of this one.
+      process.stderr.write(`static shell: render ${JSON.stringify(plan).slice(0, 120)} ${reason} (attempt ${attempt} of ${attempts})\n${String(error.stderr ?? '').slice(-4000)}\n`);
+      if (!timedOut || attempt >= attempts) throw error;
+    }
+  }
+};
+
 // Every theme category the renders observed must match getBoardThemeCategories, which the theme
 // script and the dev server use.
 const verifyThemeCategories = (expected, observed) => {
@@ -332,20 +359,7 @@ export function staticShellPlugin({ preloadAttribute }) {
   let base = '/';
   let command;
   let devServer;
-  const render = async (plan) => {
-    try {
-      const { stdout } = await execFileAsync(process.execPath, [path.join(packageRoot, 'scripts/static-shell/render.mjs'), JSON.stringify(plan)], {
-        cwd: packageRoot,
-        encoding: 'utf8',
-        maxBuffer: 64 * 1024 * 1024,
-      });
-      return JSON.parse(stdout);
-    } catch (error) {
-      // Vite reports a later plugin's error (the PWA build's missing index.html) instead of this one.
-      process.stderr.write(`static shell: render ${JSON.stringify(plan).slice(0, 120)} failed: ${error.stack}\n${String(error.stderr ?? '').slice(-4000)}\n`);
-      throw error;
-    }
-  };
+  const render = (plan) => runRenderScript(path.join(packageRoot, 'scripts/static-shell/render.mjs'), plan, { cwd: packageRoot });
   return {
     name: 'fivechan-static-shell',
     // After vite:build-html has emitted index.html with every plugin's tags.
