@@ -610,6 +610,13 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
   }, [showReplyModal, quoteInsertRequestId, quoteInsertNumber, quoteInsertSelectedText, postOptionsDirectoryCode, setPublishReplyOptions, t, updateDraft]);
 
   const { isUploading, chooseFile, uploadAttachment } = useFileUpload();
+  const isReplyFormActiveRef = useRef(false);
+  useEffect(() => {
+    isReplyFormActiveRef.current = showReplyModal;
+    return () => {
+      isReplyFormActiveRef.current = false;
+    };
+  }, [showReplyModal]);
   const attachment = draft?.attachment;
   const clearLink = () => {
     cancelPendingConversion();
@@ -640,7 +647,8 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
   // after a failed publish does not upload the file again.
   const uploadAttachedMedia = async (media: AttachedMedia): Promise<string | null> => {
     const uploaded = await uploadAttachment(media);
-    if (!uploaded) return null;
+    // A modal closed during the upload must not publish, nor leave its link in the shared publish store.
+    if (!uploaded || !isReplyFormActiveRef.current) return null;
     updateDraft({ attachment: undefined });
     setLinkValue(uploaded.url);
     if (urlRef.current) {
@@ -702,7 +710,8 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
           aria-label={t('close')}
         />
       </div>
-      <div className={styles.replyForm}>
+      {/* Locks the fields while the attachment uploads, so the reply cannot change after it was submitted. */}
+      <fieldset className={`${styles.replyForm} ${styles.uploadLock}`} disabled={isUploading}>
         <div className={styles.name}>
           <input
             key={account?.id ?? account?.name ?? account?.author?.address}
@@ -807,13 +816,16 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
           </div>
         )}
         <div className={styles.footer}>
-          {showUploadControls && !noReplyLinks && (
+          {/* An attachment stays listed with its [×] even when uploads become unavailable, so it can be removed. */}
+          {((showUploadControls && !noReplyLinks) || attachment) && (
             <span className={styles.uploadContainer}>
-              <span className={styles.uploadButton}>
-                <button type='button' onClick={handleChooseFile} disabled={isUploading}>
-                  {t('choose_file')}
-                </button>
-              </span>
+              {showUploadControls && !noReplyLinks && (
+                <span className={styles.uploadButton}>
+                  <button type='button' onClick={handleChooseFile} disabled={isUploading}>
+                    {t('choose_file')}
+                  </button>
+                </span>
+              )}
               <span className={styles.uploadFileName} title={displayedFileName || t('no_file_chosen')}>
                 {isUploading ? <LoadingEllipsis string={t('uploading')} /> : displayedFileName || t('no_file_chosen')}
               </span>
@@ -856,7 +868,7 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
         )}
         {publishReplyStateMessage && <div className={styles.status}>{publishReplyStateMessage}</div>}
         <BoardOfflineAlert className={styles.offlineBoard} hidden={isInAllView || isInSubscriptionsView || isInModView} communityAddress={communityAddress} />
-      </div>
+      </fieldset>
     </animated.div>
   );
 

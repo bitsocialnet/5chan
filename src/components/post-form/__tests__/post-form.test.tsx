@@ -1835,6 +1835,72 @@ describe('PostForm', () => {
     expect(table.textContent).toContain('chosen.png');
   });
 
+  it('does not publish an upload that finishes after the form closed', async () => {
+    const file = new File(['png'], 'chosen.png', { type: 'image/png' });
+    let finishUpload: (value: { url: string; fileName: string }) => void = () => undefined;
+    testState.uploadMode = 'random';
+    testState.resolvedCommunityAddress = 'music-posting.eth';
+    testState.chooseFileMock.mockResolvedValue({ kind: 'file', file, name: 'chosen.png', mimeType: 'image/png' });
+    testState.uploadAttachmentMock.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          finishUpload = resolve;
+        }),
+    );
+
+    await renderPostForm('/mu');
+    await clickByText(container, 'start_new_thread');
+    const table = container.querySelector('table') as HTMLTableElement;
+    await clickByText(table, 'choose_file');
+    await clickByText(table, 'post');
+    // Navigating away unmounts the form while the upload is still running.
+    act(() => root.unmount());
+    root = createRoot(container);
+
+    testState.setPublishPostOptionsMock.mockClear();
+    await act(async () => {
+      finishUpload({ url: 'https://forgeimg.net/abc/late.png', fileName: 'chosen.png' });
+    });
+
+    expect(testState.publishPostMock).not.toHaveBeenCalled();
+    expect(testState.setPublishPostOptionsMock).not.toHaveBeenCalled();
+  });
+
+  it('locks the form fields while the attachment uploads', async () => {
+    testState.isUploading = true;
+
+    await renderPostForm('/all');
+    await clickByText(container, 'start_new_thread');
+
+    const fieldset = container.querySelector('fieldset') as HTMLFieldSetElement;
+    expect(fieldset.disabled).toBe(true);
+    expect(fieldset.contains(container.querySelector('textarea'))).toBe(true);
+    expect(container.querySelector('textarea')?.matches(':disabled')).toBe(true);
+  });
+
+  it('keeps an attachment removable after uploads are turned off', async () => {
+    const file = new File(['png'], 'chosen.png', { type: 'image/png' });
+    testState.uploadMode = 'random';
+    testState.chooseFileMock.mockResolvedValue({ kind: 'file', file, name: 'chosen.png', mimeType: 'image/png' });
+    await renderPostForm('/all');
+    await clickByText(container, 'start_new_thread');
+    await clickByText(container.querySelector('table') as HTMLTableElement, 'choose_file');
+
+    testState.uploadMode = 'none';
+    testState.showUploadControls = false;
+    act(() => root.unmount());
+    root = createRoot(container);
+    await renderPostForm('/all');
+
+    const table = container.querySelector('table') as HTMLTableElement;
+    expect(table.textContent).toContain('chosen.png');
+    expect(Array.from(table.querySelectorAll('button')).some((button) => button.textContent === 'choose_file')).toBe(false);
+    await act(async () => {
+      table.querySelector<HTMLButtonElement>('button[aria-label="remove"]')?.click();
+    });
+    expect(table.querySelector<HTMLInputElement>('input[aria-label="link_to_file"]')?.disabled).toBe(false);
+  });
+
   it('validates the post before uploading the attached file', async () => {
     const file = new File(['FWS'], 'movie.swf', { type: 'application/x-shockwave-flash' });
     testState.uploadMode = 'random';

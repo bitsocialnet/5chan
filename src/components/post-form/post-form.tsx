@@ -252,6 +252,7 @@ interface PostFormFieldsProps {
   attachedFileName: string | undefined;
   showLinkField: boolean;
   showRemoveAttachment: boolean;
+  showFileRow: boolean;
   showUploadControls: boolean;
   showOekakiControls: boolean;
   showSpoilerForPost: boolean;
@@ -315,6 +316,7 @@ const PostFormFields = ({
   attachedFileName,
   showLinkField,
   showRemoveAttachment,
+  showFileRow,
   showUploadControls,
   showOekakiControls,
   showSpoilerForPost,
@@ -511,7 +513,7 @@ const PostFormFields = ({
         </span>
       </td>
     </tr>
-    {showUploadControls && (
+    {showFileRow && (
       <tr className={styles.uploadButton}>
         <td>{t('file')}</td>
         <td>
@@ -909,7 +911,8 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
   // after a failed publish does not upload the file again.
   const uploadAttachedMedia = async (attachment: AttachedMedia): Promise<string | null> => {
     const uploaded = await uploadAttachment(attachment);
-    if (!uploaded) return null;
+    // A form closed during the upload must not publish, nor leave its options in the shared publish store.
+    if (!uploaded || !isFormMountedRef.current) return null;
     updateDraft({ attachment: undefined });
     setLinkValue(uploaded.url);
     if (urlRef.current) {
@@ -1038,6 +1041,14 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
   const cid = params?.commentCid || '';
   const { isResolvingExternalQuotes, publishReply, publishReplyError, publishReplyStateMessage, resetPublishReplyOptions, replyIndex, setPublishReplyOptions } =
     usePublishReply({ cid, communityAddress, postCid });
+
+  const isFormMountedRef = useRef(false);
+  useEffect(() => {
+    isFormMountedRef.current = true;
+    return () => {
+      isFormMountedRef.current = false;
+    };
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -1266,92 +1277,97 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
 
   return (
     <>
-      <table className={styles.postFormTable}>
-        <tbody>
-          <PostFormFields
-            t={t}
-            account={account}
-            displayName={displayName}
-            nameRef={nameRef}
-            bbcodePreviewContent={bbcodePreviewContent}
-            isInPostView={isInPostView}
-            isBbcodePreviewing={isBbcodePreviewing}
-            postCid={postCid}
-            subjectRef={subjectRef}
-            optionsRef={optionsRef}
-            flagRef={flagRef}
-            flashTagRef={flashTagRef}
-            textRef={textRef}
-            urlRef={urlRef}
-            url={url}
-            handleContentChange={handleContentChange}
-            handleContentValueChange={handleContentValueChange}
-            handleLinkChange={handleLinkChange}
-            handleLinkBlur={handleLinkBlur}
-            handleOptionsChange={handleOptionsChange}
-            disableLinkInput={isUploading || thumbnailConversionNotice !== null || (isInPostView && noReplyLinks) || Boolean(draft.attachment)}
-            mediaLoadResult={mediaLoadResult}
-            onMediaLoadStatusChange={handleMediaLoadStatusChange}
-            setPublishPostOptions={setPublishPostOptions}
-            setPublishReplyOptions={setPublishReplyOptions}
-            isUploading={isUploading}
-            attachedFileName={draft.attachment?.name}
-            showLinkField={showLinkField}
-            showRemoveAttachment={!isUploading && (Boolean(draft.attachment) || (!showLinkField && Boolean(url)))}
-            showUploadControls={showUploadControls && !(isInPostView && noReplyLinks)}
-            showOekakiControls={showOekakiControls && !(isInPostView && noReplyLinks)}
-            showSpoilerForPost={showSpoilerForPost}
-            showSpoilerForReply={showSpoilerForReply}
-            isInAllView={isInAllView}
-            isInSubscriptionsView={isInSubscriptionsView}
-            isInModView={isInModView}
-            directories={directories}
-            accountCommunityAddresses={accountCommunityAddresses}
-            subscriptions={subscriptions}
-            communityAddress={effectiveBoardAddress}
-            rulesPath={rulesPath}
-            requireCurrentLinkIsMedia={requireCurrentLinkIsMedia}
-            flagOptions={flagOptions}
-            flashTagOptions={FLASH_TAG_OPTIONS}
-            showFlashTagSelector={showFlashTagSelector}
-            showFlashUploadPrompt={showFlashUploadPrompt}
-            showMathTagsPrompt={showMathTagsPrompt}
-            showCodeTagsPrompt={showCodeTagsPrompt}
-            showBbcodeToolbar={showBbcodeToolbar}
-            onBbcodePreviewToggle={handleBbcodePreviewToggle}
-            onPublishReply={onPublishReply}
-            onPublishPost={onPublishPost}
-            handleChooseFile={handleChooseFile}
-            onRemoveAttachment={handleRemoveAttachment}
-            onAttachDrawing={(file) => attachMedia(getFileAttachment(file))}
-            onDetachDrawing={handleDetachDrawing}
-            isPublishSubmissionInFlight={isPublishSubmissionInFlight}
-            disableReplyPublish={isResolvingExternalQuotes}
-            draft={draft}
-            updateDraft={updateDraft}
-          />
-        </tbody>
-        <tfoot>
-          {moderationPostingWarning ? <PostFormErrorRow>{moderationPostingWarning}</PostFormErrorRow> : null}
-          {lengthError ? <PostFormErrorRow>{lengthError}</PostFormErrorRow> : null}
-          {thumbnailConversionNotice ? (
-            <PostFormErrorRow ariaLive='polite'>
-              {thumbnailConversionNotice.site === 'vimeo'
-                ? t('vimeo_thumbnail_link_conversion_notice', { count: thumbnailConversionNotice.countdown })
-                : t('youtube_thumbnail_link_conversion_notice', { count: thumbnailConversionNotice.countdown })}
-            </PostFormErrorRow>
-          ) : currentMediaLoadError ? (
-            <PostFormErrorRow>{currentMediaLoadError}</PostFormErrorRow>
-          ) : formError ? (
-            <PostFormErrorRow>
-              {isPostOptionsValidationError(formError) ? <PostOptionsErrorMessage error={formError} directories={directories} /> : formError}
-            </PostFormErrorRow>
-          ) : null}
-          {submissionError ? <PostFormErrorRow>{submissionError}</PostFormErrorRow> : null}
-          {publishPostError ? <PostFormErrorRow>{publishPostError}</PostFormErrorRow> : null}
-          {publishReplyError ? <PostFormErrorRow>{publishReplyError}</PostFormErrorRow> : null}
-        </tfoot>
-      </table>
+      {/* Locks the fields while the attachment uploads, so the post cannot change after it was submitted. */}
+      <fieldset className={styles.uploadLock} disabled={isUploading}>
+        <table className={styles.postFormTable}>
+          <tbody>
+            <PostFormFields
+              t={t}
+              account={account}
+              displayName={displayName}
+              nameRef={nameRef}
+              bbcodePreviewContent={bbcodePreviewContent}
+              isInPostView={isInPostView}
+              isBbcodePreviewing={isBbcodePreviewing}
+              postCid={postCid}
+              subjectRef={subjectRef}
+              optionsRef={optionsRef}
+              flagRef={flagRef}
+              flashTagRef={flashTagRef}
+              textRef={textRef}
+              urlRef={urlRef}
+              url={url}
+              handleContentChange={handleContentChange}
+              handleContentValueChange={handleContentValueChange}
+              handleLinkChange={handleLinkChange}
+              handleLinkBlur={handleLinkBlur}
+              handleOptionsChange={handleOptionsChange}
+              disableLinkInput={isUploading || thumbnailConversionNotice !== null || (isInPostView && noReplyLinks) || Boolean(draft.attachment)}
+              mediaLoadResult={mediaLoadResult}
+              onMediaLoadStatusChange={handleMediaLoadStatusChange}
+              setPublishPostOptions={setPublishPostOptions}
+              setPublishReplyOptions={setPublishReplyOptions}
+              isUploading={isUploading}
+              attachedFileName={draft.attachment?.name}
+              showLinkField={showLinkField}
+              showRemoveAttachment={!isUploading && (Boolean(draft.attachment) || (!showLinkField && Boolean(url)))}
+              showUploadControls={showUploadControls && !(isInPostView && noReplyLinks)}
+              // An attachment stays listed with its [×] even when uploads become unavailable, so it can be removed.
+              showFileRow={(showUploadControls && !(isInPostView && noReplyLinks)) || Boolean(draft.attachment)}
+              showOekakiControls={showOekakiControls && !(isInPostView && noReplyLinks)}
+              showSpoilerForPost={showSpoilerForPost}
+              showSpoilerForReply={showSpoilerForReply}
+              isInAllView={isInAllView}
+              isInSubscriptionsView={isInSubscriptionsView}
+              isInModView={isInModView}
+              directories={directories}
+              accountCommunityAddresses={accountCommunityAddresses}
+              subscriptions={subscriptions}
+              communityAddress={effectiveBoardAddress}
+              rulesPath={rulesPath}
+              requireCurrentLinkIsMedia={requireCurrentLinkIsMedia}
+              flagOptions={flagOptions}
+              flashTagOptions={FLASH_TAG_OPTIONS}
+              showFlashTagSelector={showFlashTagSelector}
+              showFlashUploadPrompt={showFlashUploadPrompt}
+              showMathTagsPrompt={showMathTagsPrompt}
+              showCodeTagsPrompt={showCodeTagsPrompt}
+              showBbcodeToolbar={showBbcodeToolbar}
+              onBbcodePreviewToggle={handleBbcodePreviewToggle}
+              onPublishReply={onPublishReply}
+              onPublishPost={onPublishPost}
+              handleChooseFile={handleChooseFile}
+              onRemoveAttachment={handleRemoveAttachment}
+              onAttachDrawing={(file) => attachMedia(getFileAttachment(file))}
+              onDetachDrawing={handleDetachDrawing}
+              isPublishSubmissionInFlight={isPublishSubmissionInFlight}
+              disableReplyPublish={isResolvingExternalQuotes}
+              draft={draft}
+              updateDraft={updateDraft}
+            />
+          </tbody>
+          <tfoot>
+            {moderationPostingWarning ? <PostFormErrorRow>{moderationPostingWarning}</PostFormErrorRow> : null}
+            {lengthError ? <PostFormErrorRow>{lengthError}</PostFormErrorRow> : null}
+            {thumbnailConversionNotice ? (
+              <PostFormErrorRow ariaLive='polite'>
+                {thumbnailConversionNotice.site === 'vimeo'
+                  ? t('vimeo_thumbnail_link_conversion_notice', { count: thumbnailConversionNotice.countdown })
+                  : t('youtube_thumbnail_link_conversion_notice', { count: thumbnailConversionNotice.countdown })}
+              </PostFormErrorRow>
+            ) : currentMediaLoadError ? (
+              <PostFormErrorRow>{currentMediaLoadError}</PostFormErrorRow>
+            ) : formError ? (
+              <PostFormErrorRow>
+                {isPostOptionsValidationError(formError) ? <PostOptionsErrorMessage error={formError} directories={directories} /> : formError}
+              </PostFormErrorRow>
+            ) : null}
+            {submissionError ? <PostFormErrorRow>{submissionError}</PostFormErrorRow> : null}
+            {publishPostError ? <PostFormErrorRow>{publishPostError}</PostFormErrorRow> : null}
+            {publishReplyError ? <PostFormErrorRow>{publishReplyError}</PostFormErrorRow> : null}
+          </tfoot>
+        </table>
+      </fieldset>
       {publishReplyStateMessage && <div className={styles.status}>{publishReplyStateMessage}</div>}
     </>
   );

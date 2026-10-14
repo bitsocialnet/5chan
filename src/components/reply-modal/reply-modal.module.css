@@ -235,3 +235,8 @@
   margin-top: 1px;
   overflow-wrap: anywhere;
 }
+
+.uploadLock {
+  border: 0;
+  min-width: 0;
+}

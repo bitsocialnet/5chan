@@ -1673,6 +1673,65 @@ describe('ReplyModal', () => {
       expect(testState.publishReplyMock).not.toHaveBeenCalled();
     });
 
+    it('does not publish an upload that finishes after the modal closed', async () => {
+      let finishUpload: (value: { url: string; fileName: string }) => void = () => undefined;
+      testState.chooseFileMock.mockResolvedValue(pngAttachment);
+      testState.uploadAttachmentMock.mockImplementation(
+        () =>
+          new Promise((resolve) => {
+            finishUpload = resolve;
+          }),
+      );
+      await renderReplyModal('/all/thread/post-1');
+      await chooseFile();
+      await clickButtonByText('post');
+
+      await act(async () => {
+        root.render(
+          createElement(
+            MemoryRouter,
+            { initialEntries: ['/all/thread/post-1'] },
+            createElement(ReplyModal, {
+              closeModal: testState.closeModalMock,
+              locationDraftKey: '/all/thread/post-1',
+              parentCid: 'parent-cid',
+              parentNumber: 42,
+              postCid: 'post-cid',
+              scrollY: 120,
+              showReplyModal: false,
+              communityAddress: 'music-posting.eth',
+              threadNumber: 42,
+            }),
+          ),
+        );
+      });
+      testState.setPublishReplyOptionsMock.mockClear();
+      await act(async () => {
+        finishUpload({ url: 'https://forgeimg.net/abc/late.png', fileName: 'chosen.png' });
+      });
+
+      expect(testState.publishReplyMock).not.toHaveBeenCalled();
+      expect(testState.setPublishReplyOptionsMock).not.toHaveBeenCalled();
+    });
+
+    it('keeps an attachment removable when the board turns out to disallow reply links', async () => {
+      testState.replyDraft = { ...emptyDraft, attachment: pngAttachment };
+      testState.communities['music-posting.eth'] = { address: 'music-posting.eth', features: { noReplyLinks: true } };
+      await renderReplyModal('/all/thread/post-1');
+
+      expect(container.textContent).toContain('chosen.png');
+      expect(Array.from(container.querySelectorAll('button')).some((button) => button.textContent === 'choose_file')).toBe(false);
+      expect(container.querySelector('button[aria-label="remove"]')).not.toBeNull();
+    });
+
+    it('locks the reply fields while the attachment uploads', async () => {
+      testState.isUploading = true;
+      await renderReplyModal('/all/thread/post-1');
+
+      expect(container.querySelector('fieldset')?.disabled).toBe(true);
+      expect(container.querySelector('textarea')?.matches(':disabled')).toBe(true);
+    });
+
     it('keeps the attachment and does not publish when its upload fails', async () => {
       testState.chooseFileMock.mockResolvedValue(pngAttachment);
       testState.uploadAttachmentMock.mockResolvedValue(null);

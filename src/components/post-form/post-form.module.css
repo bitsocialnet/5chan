@@ -283,3 +283,8 @@
 .status {
   padding: 5px;
 }
+
+.uploadLock {
+  border: 0;
+  min-width: 0;
+}
