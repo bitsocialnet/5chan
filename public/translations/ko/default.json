@@ -575,5 +575,6 @@
   "open_challenge": "챌린지 열기",
   "board_unreachable_from_browsers": "인터넷에서 이 컴퓨터에 접속할 수 없어 브라우저에서 이 보드를 불러올 수 없습니다. 해결하려면 공유기에서 포트 4001(TCP 및 UDP)을 이 컴퓨터로 포트포워딩하거나 공유기에서 UPnP를 켜세요. 인터넷 통신사에서 이를 허용하지 않으면 대신 서버에서 보드를 호스팅하세요.",
   "media_hosting_show_link_field": "\"파일 링크\" 입력란 표시",
-  "media_hosting_show_link_field_tip": "직접 링크를 붙여 넣어 이미지나 동영상을 게시할 수 있습니다"
+  "media_hosting_show_link_field_tip": "직접 링크를 붙여 넣어 이미지나 동영상을 게시할 수 있습니다",
+  "running_automated_checks": "자동 검사 실행 중..."
 }

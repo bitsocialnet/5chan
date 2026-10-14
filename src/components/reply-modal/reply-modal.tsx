@@ -612,7 +612,7 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
     checkContentLengthRef.current(publishContent, t, optionsRef.current?.value || '', postOptionsDirectoryCode);
   }, [showReplyModal, quoteInsertRequestId, quoteInsertNumber, quoteInsertSelectedText, postOptionsDirectoryCode, setPublishReplyOptions, t, updateDraft]);
 
-  const { isUploading, chooseFile, uploadAttachment } = useFileUpload();
+  const { isUploading, uploadPhase, chooseFile, uploadAttachment } = useFileUpload();
   const isReplyFormActiveRef = useRef(false);
   useEffect(() => {
     isReplyFormActiveRef.current = showReplyModal;
@@ -812,35 +812,44 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
           </div>
         )}
         <div className={styles.footer}>
-          {canAttachFile && (
-            <span className={styles.uploadContainer}>
-              <span className={styles.uploadButton}>
-                <button type='button' onClick={handleChooseFile} disabled={isUploading}>
-                  {t('choose_file')}
-                </button>
-              </span>
-              <span className={styles.uploadFileName} title={displayedFileName || t('no_file_chosen')}>
-                {isUploading ? <LoadingEllipsis string={t('uploading')} /> : displayedFileName || t('no_file_chosen')}
-              </span>
+          {isUploading ? (
+            // The file controls are disabled during the upload, so they give way and the status reads in full in this narrow footer.
+            <span className={styles.uploadStatus}>
+              <LoadingEllipsis string={t(uploadPhase === 'checking' ? 'running_automated_checks' : 'uploading')} />
             </span>
-          )}
-          {showSpoilerForReply && (
-            <span className={styles.spoilerButton}>
-              [
-              <label>
-                <input
-                  type='checkbox'
-                  aria-label={capitalize(t('spoiler'))}
-                  defaultChecked={draft?.spoiler}
-                  onChange={(e) => {
-                    updateDraft({ spoiler: e.target.checked });
-                    setPublishReplyOptions({ spoiler: e.target.checked });
-                  }}
-                />
-                {capitalize(t('spoiler'))}?
-              </label>
-              ]
-            </span>
+          ) : (
+            <>
+              {canAttachFile && (
+                <span className={styles.uploadContainer}>
+                  <span className={styles.uploadButton}>
+                    <button type='button' onClick={handleChooseFile}>
+                      {t('choose_file')}
+                    </button>
+                  </span>
+                  <span className={styles.uploadFileName} title={displayedFileName || t('no_file_chosen')}>
+                    {displayedFileName || t('no_file_chosen')}
+                  </span>
+                </span>
+              )}
+              {showSpoilerForReply && (
+                <span className={styles.spoilerButton}>
+                  [
+                  <label>
+                    <input
+                      type='checkbox'
+                      aria-label={capitalize(t('spoiler'))}
+                      defaultChecked={draft?.spoiler}
+                      onChange={(e) => {
+                        updateDraft({ spoiler: e.target.checked });
+                        setPublishReplyOptions({ spoiler: e.target.checked });
+                      }}
+                    />
+                    {capitalize(t('spoiler'))}?
+                  </label>
+                  ]
+                </span>
+              )}
+            </>
           )}
           <button className={styles.publishButton} disabled={isResolvingExternalQuotes || isPublishSubmissionInFlight} type='button' onClick={onPublishReply}>
             {t('post')}

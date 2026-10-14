@@ -66,7 +66,7 @@ import usePublishReply from '../../hooks/use-publish-reply';
 import { useFileUpload } from '../../hooks/use-file-upload';
 import { useShowLinkField } from '../../hooks/use-show-link-field';
 import { getFileAttachment } from '../../lib/media-hosting/attached-media';
-import type { AttachedMedia } from '../../lib/media-hosting/types';
+import type { AttachedMedia, UploadPhase } from '../../lib/media-hosting/types';
 import { getShowUploadControls, isWebRuntime } from '../../lib/media-hosting/show-upload-controls';
 import { OEKAKI_WEB_WARNING_TEXT } from '../../lib/oekaki/oekaki-copy';
 import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
@@ -248,6 +248,7 @@ interface PostFormFieldsProps {
   setPublishPostOptions: (opts: Record<string, unknown>) => void;
   setPublishReplyOptions: (opts: Record<string, unknown>) => void;
   isUploading: boolean;
+  uploadPhase: UploadPhase | null;
   attachedFileName: string | undefined;
   showLinkField: boolean;
   showUploadControls: boolean;
@@ -309,6 +310,7 @@ const PostFormFields = ({
   setPublishPostOptions,
   setPublishReplyOptions,
   isUploading,
+  uploadPhase,
   attachedFileName,
   showLinkField,
   showUploadControls,
@@ -524,7 +526,7 @@ const PostFormFields = ({
           />
           <span title={getPublishFileDisplayName(url, attachedFileName, requireCurrentLinkIsMedia) || undefined}>
             {isUploading ? (
-              <LoadingEllipsis string={t('uploading')} />
+              <LoadingEllipsis string={t(uploadPhase === 'checking' ? 'running_automated_checks' : 'uploading')} />
             ) : (
               getPostFormFileDisplayLabel(url, attachedFileName, t('no_file_chosen'), requireCurrentLinkIsMedia)
             )}
@@ -1237,7 +1239,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
     }
   }, [replyIndex, closeForm, navigate, resetFields]);
 
-  const { isUploading, chooseFile, uploadAttachment } = useFileUpload();
+  const { isUploading, uploadPhase, chooseFile, uploadAttachment } = useFileUpload();
   const clearLink = () => {
     cancelPendingConversion();
     setLinkValue('');
@@ -1298,6 +1300,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
               setPublishPostOptions={setPublishPostOptions}
               setPublishReplyOptions={setPublishReplyOptions}
               isUploading={isUploading}
+              uploadPhase={uploadPhase}
               attachedFileName={attachment?.name}
               showLinkField={showLinkField}
               showUploadControls={canAttachFile}

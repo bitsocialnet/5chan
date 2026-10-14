@@ -575,5 +575,6 @@
   "open_challenge": "Åpne utfordring",
   "board_unreachable_from_browsers": "Nettlesere kan ikke laste inn denne tavlen fordi denne datamaskinen ikke kan nås fra internett. Løs det ved å videresende port 4001 (TCP og UDP) på ruteren din til denne datamaskinen, eller ved å slå på UPnP på ruteren din. Hvis internettleverandøren din ikke tillater det, kan du heller hoste tavlen på en server.",
   "media_hosting_show_link_field": "Vis feltet \"Lenke til fil\"",
-  "media_hosting_show_link_field_tip": "Lar deg poste et bilde eller en video ved å lime inn en direkte lenke til det"
+  "media_hosting_show_link_field_tip": "Lar deg poste et bilde eller en video ved å lime inn en direkte lenke til det",
+  "running_automated_checks": "kjører automatiske kontroller..."
 }

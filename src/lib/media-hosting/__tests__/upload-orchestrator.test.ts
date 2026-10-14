@@ -57,6 +57,19 @@ describe('orchestrateUpload', () => {
     expect(Array.from(new Uint8Array(await uploaded.arrayBuffer()))).toEqual(jpegWithoutComment);
   });
 
+  it('reports uploading as each provider starts and checking once forge has the file', async () => {
+    vi.mocked(uploadToForge).mockImplementation(async (_file, options) => {
+      options?.onChecking?.();
+      throw new ForgeUploadError('Upload failed: 503', 'provider_error');
+    });
+    vi.mocked(uploadToCatbox).mockResolvedValue('https://files.catbox.moe/a.png');
+    const onPhaseChange = vi.fn();
+
+    await orchestrateUpload(new File(['a'], 'a.png', { type: 'image/png' }), ['forge', 'catbox'], onPhaseChange);
+
+    expect(onPhaseChange.mock.calls.map(([phase]) => phase)).toEqual(['uploading', 'checking', 'uploading']);
+  });
+
   it('passes through a forge upload that is awaiting review', async () => {
     vi.mocked(uploadToForge).mockResolvedValue({ url: 'https://forgeimg.net/abc/game.swf', awaitingReview: true });
     const file = new File(['FWS'], 'game.swf', { type: 'application/x-shockwave-flash' });

@@ -1,6 +1,7 @@
 import { FORGE_IMAGES_API_ORIGIN, FORGE_IMAGES_MEDIA_ORIGIN, FORGE_IMAGES_TURNSTILE_SITEKEY } from '../forge-images-config';
 import type { UploadAttemptStage, UploadedMedia } from '../media-hosting/types';
 import { getTurnstileToken } from './turnstile-utils';
+import { postFormData } from './upload-request-utils';
 
 /** Covers a 50 MiB video (the largest anonymous cap) on a slow uplink; a hung request still fails. */
 const FORGE_UPLOAD_TIMEOUT_MS = 300_000;
@@ -28,6 +29,11 @@ interface ForgeUploadOptions {
   timeoutMs?: number;
   pendingServeWaitMs?: number;
   pendingVideoServeWaitMs?: number;
+  /**
+   * Called once the file has been sent. From then on the wait is Forge's automated
+   * checks (metadata strip, blocklist, moderation), not the transfer.
+   */
+  onChecking?: () => void;
 }
 
 interface ForgeUploadResponse {
@@ -163,6 +169,7 @@ export async function uploadToForge(file: File, options: ForgeUploadOptions = {}
     timeoutMs = FORGE_UPLOAD_TIMEOUT_MS,
     pendingServeWaitMs = PENDING_SERVE_WAIT_MS,
     pendingVideoServeWaitMs = PENDING_VIDEO_SERVE_WAIT_MS,
+    onChecking,
   } = options;
 
   let token: string;
@@ -174,7 +181,8 @@ export async function uploadToForge(file: File, options: ForgeUploadOptions = {}
 
   const formData = new FormData();
   // Text fields go before the file part so the API can reject a bad token
-  // without reading the whole body. No custom headers: this stays a CORS simple request.
+  // without reading the whole body. No custom headers; the API answers the
+  // preflight that reporting the sent body can trigger.
   formData.append('turnstile', token);
   formData.append('file', file);
 
@@ -184,18 +192,14 @@ export async function uploadToForge(file: File, options: ForgeUploadOptions = {}
 
   let body: ForgeUploadResponse | null;
   try {
-    const response = await fetch(`${FORGE_IMAGES_API_ORIGIN}/api/upload`, {
-      method: 'POST',
-      body: formData,
-      signal: controller.signal,
-    });
+    const response = await postFormData(`${FORGE_IMAGES_API_ORIGIN}/api/upload`, formData, { signal: controller.signal, onBodySent: onChecking });
     if (!response.ok) {
       const errorBody: unknown = await response.json().catch(() => null);
       const detail = getApiErrorMessage(errorBody) ?? `Upload failed: ${response.status} ${response.statusText}`.trim();
       // 403 is turnstile_failed or banned: an abuse-control block, not a bad file.
       throw new ForgeUploadError(detail, response.status === 403 ? 'blocked' : 'provider_error');
     }
-    body = await response.json().catch(() => null);
+    body = (await response.json().catch(() => null)) as ForgeUploadResponse | null;
     if (controller.signal.aborted) throw timeoutError();
   } catch (error) {
     if (error instanceof ForgeUploadError) throw error;

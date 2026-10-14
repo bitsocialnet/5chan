@@ -40,7 +40,7 @@ const testState = vi.hoisted(() => ({
   uploadAttachmentMock: vi.fn(),
   isOffline: false,
   isOnlineStatusLoading: false,
-  isUploading: false,
+  uploadPhase: null as 'uploading' | 'checking' | null,
   isResolvingExternalQuotes: false,
   mediaHostingRuntime: 'web' as 'web' | 'android' | 'electron',
   mediaLinkLoadMock: vi.fn<(link: string) => Promise<boolean>>(),
@@ -347,7 +347,8 @@ vi.mock('../../../hooks/use-file-upload', () => ({
   useFileUpload: () => ({
     chooseFile: testState.chooseFileMock,
     uploadAttachment: testState.uploadAttachmentMock,
-    isUploading: testState.isUploading,
+    isUploading: testState.uploadPhase !== null,
+    uploadPhase: testState.uploadPhase,
   }),
 }));
 
@@ -614,7 +615,7 @@ describe('PostForm', () => {
     testState.gifFrameStatus = 'idle';
     testState.isOffline = false;
     testState.isOnlineStatusLoading = false;
-    testState.isUploading = false;
+    testState.uploadPhase = null;
     testState.isResolvingExternalQuotes = false;
     testState.mediaHostingRuntime = 'web';
     testState.mediaLinkLoadMock.mockReset();
@@ -1882,7 +1883,7 @@ describe('PostForm', () => {
   });
 
   it('locks the form fields while the attachment uploads', async () => {
-    testState.isUploading = true;
+    testState.uploadPhase = 'uploading';
 
     await renderPostForm('/all');
     await clickByText(container, 'start_new_thread');
@@ -2070,12 +2071,21 @@ describe('PostForm', () => {
   });
 
   it('uses the shared loading ellipsis while a post form upload is running', async () => {
-    testState.isUploading = true;
+    testState.uploadPhase = 'uploading';
 
     await renderPostForm('/all');
     await clickByText(container, 'start_new_thread');
 
     expect(container.querySelector('[data-testid="loading-ellipsis"]')?.textContent).toBe('uploading');
+  });
+
+  it('says the host is running automated checks once the file has been sent', async () => {
+    testState.uploadPhase = 'checking';
+
+    await renderPostForm('/all');
+    await clickByText(container, 'start_new_thread');
+
+    expect(container.querySelector('[data-testid="loading-ellipsis"]')?.textContent).toBe('running_automated_checks');
   });
 
   it('redirects to the pending route when a post publish index is already available on mount', async () => {

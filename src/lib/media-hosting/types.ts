@@ -17,6 +17,9 @@ export type UploadAttemptStage =
   | 'page_load' /** page load failed */
   | 'unknown';
 
+/** What a running upload is doing: sending the file, or waiting while the host runs its automated checks on it. */
+export type UploadPhase = 'uploading' | 'checking';
+
 /** A successful upload. */
 export interface UploadedMedia {
   url: string;

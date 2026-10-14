@@ -575,5 +575,6 @@
   "open_challenge": "Deschide provocarea",
   "board_unreachable_from_browsers": "Browserele nu pot încărca acest tablou, deoarece acest calculator nu poate fi accesat de pe internet. Ca să rezolvi asta, redirecționează portul 4001 (TCP și UDP) din routerul tău către acest calculator sau activează UPnP pe router. Dacă furnizorul tău de internet nu permite asta, găzduiește în schimb tabloul pe un server.",
   "media_hosting_show_link_field": "Afișează câmpul „Link către fișier”",
-  "media_hosting_show_link_field_tip": "Îți permite să postezi o imagine sau un videoclip lipind un link direct către acesta"
+  "media_hosting_show_link_field_tip": "Îți permite să postezi o imagine sau un videoclip lipind un link direct către acesta",
+  "running_automated_checks": "se rulează verificări automate..."
 }

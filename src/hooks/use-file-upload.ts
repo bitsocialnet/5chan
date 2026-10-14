@@ -11,7 +11,7 @@ import { stripMediaMetadata } from '../lib/media-metadata/strip-media-metadata';
 import { ensureProviderAvailability } from '../lib/media-hosting/provider-availability';
 import { selectFileViaInput } from '../lib/utils/file-picker-utils';
 import useMediaHostingStore from '../stores/use-media-hosting-store';
-import type { AttachedMedia, ProviderId, UploadAttemptStage } from '../lib/media-hosting/types';
+import type { AttachedMedia, ProviderId, UploadAttemptStage, UploadPhase } from '../lib/media-hosting/types';
 
 /** Maps Android plugin stage strings to UploadAttemptStage (avoids unsafe cast). Includes pass-through for valid stages. */
 const ANDROID_STAGE_MAP: Record<string, UploadAttemptStage> = {
@@ -114,7 +114,8 @@ export function useFileUpload() {
   const uploadMode = useMediaHostingStore((s) => s.uploadMode);
   const preferredProvider = useMediaHostingStore((s) => s.preferredProvider);
   const setShowLinkField = useMediaHostingStore((s) => s.setShowLinkField);
-  const [isUploading, setIsUploading] = useState(false);
+  /** Null while no upload runs. */
+  const [uploadPhase, setUploadPhase] = useState<UploadPhase | null>(null);
 
   const getAvailableProviderOrder = useCallback(async () => {
     const runtime = getMediaHostingRuntime();
@@ -185,7 +186,7 @@ export function useFileUpload() {
   const uploadAttachment = useCallback(
     async (media: AttachedMedia): Promise<UploadedFileResult | null> => {
       try {
-        setIsUploading(true);
+        setUploadPhase('uploading');
         const { runtime, order } = await getAvailableProviderOrder();
         let result: UploadedFileResult;
         let awaitingReview = false;
@@ -204,7 +205,7 @@ export function useFileUpload() {
           });
           result = { url: pluginResult.url, fileName: pluginResult.fileName || media.name };
         } else {
-          const uploaded = await orchestrateUpload(media.file, order);
+          const uploaded = await orchestrateUpload(media.file, order, setUploadPhase);
           result = { url: uploaded.url, fileName: media.name };
           awaitingReview = uploaded.awaitingReview === true;
         }
@@ -219,14 +220,15 @@ export function useFileUpload() {
         handleUploadError(error);
         return null;
       } finally {
-        setIsUploading(false);
+        setUploadPhase(null);
       }
     },
     [getAvailableProviderOrder, handleUploadError, t],
   );
 
   return {
-    isUploading,
+    isUploading: uploadPhase !== null,
+    uploadPhase,
     chooseFile,
     uploadAttachment,
   };

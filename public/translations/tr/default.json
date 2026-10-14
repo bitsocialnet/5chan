@@ -575,5 +575,6 @@
   "open_challenge": "Zorluğu aç",
   "board_unreachable_from_browsers": "Bu bilgisayara internetten erişilemediği için tarayıcılar bu tahtayı yükleyemiyor. Sorunu çözmek için modeminizde 4001 numaralı portu (TCP ve UDP) bu bilgisayara yönlendirin veya modeminizde UPnP'yi etkinleştirin. İnternet sağlayıcınız buna izin vermiyorsa tahtayı bunun yerine bir sunucuda barındırın.",
   "media_hosting_show_link_field": "\"Dosyaya bağlantı\" alanını göster",
-  "media_hosting_show_link_field_tip": "Doğrudan bağlantısını yapıştırarak bir resim veya video paylaşmanızı sağlar"
+  "media_hosting_show_link_field_tip": "Doğrudan bağlantısını yapıştırarak bir resim veya video paylaşmanızı sağlar",
+  "running_automated_checks": "otomatik kontroller yapılıyor..."
 }

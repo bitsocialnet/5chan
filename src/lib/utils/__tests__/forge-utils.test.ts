@@ -1,7 +1,17 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { FORGE_IMAGES_API_ORIGIN, FORGE_IMAGES_MEDIA_ORIGIN } from '../../forge-images-config';
 import { ForgeUploadError, uploadToForge } from '../forge-utils';
+import { postFormData } from '../upload-request-utils';
 import type { UploadedMedia } from '../../media-hosting/types';
+
+// The upload POST goes through the stubbed fetch so these tests control its answer;
+// upload-request-utils.test.ts covers the XHR transport itself.
+vi.mock('../upload-request-utils', () => ({
+  postFormData: vi.fn((url: string, body: FormData, options: { signal?: AbortSignal; onBodySent?: () => void } = {}) => {
+    options.onBodySent?.();
+    return fetch(url, { method: 'POST', body, signal: options.signal });
+  }),
+}));
 
 const jsonResponse = (status: number, body: unknown, statusText = '') =>
   ({
@@ -24,6 +34,7 @@ async function uploadError(file = new File(['x'], 'x.png', { type: 'image/png' }
 describe('uploadToForge', () => {
   beforeEach(() => {
     getToken.mockClear();
+    vi.mocked(postFormData).mockClear();
   });
 
   afterEach(() => {
@@ -288,22 +299,28 @@ describe('uploadToForge', () => {
     });
   });
 
-  it('POSTs multipart with the turnstile field before the file part and no custom headers', async () => {
-    const fetchMock = vi.fn().mockResolvedValue(jsonResponse(200, { url: `${FORGE_IMAGES_MEDIA_ORIGIN}/abc.png`, status: 'pending' }));
-    vi.stubGlobal('fetch', fetchMock);
+  it('POSTs multipart with the turnstile field before the file part', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse(200, { url: `${FORGE_IMAGES_MEDIA_ORIGIN}/abc.png`, status: 'pending' })));
     const file = new File(['x'], 'photo.png', { type: 'image/png' });
 
     await uploadToForge(file, { getToken });
 
     expect(getToken).toHaveBeenCalledOnce();
-    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const [url, body] = vi.mocked(postFormData).mock.calls[0];
     expect(url).toBe(`${FORGE_IMAGES_API_ORIGIN}/api/upload`);
-    expect(init.method).toBe('POST');
-    expect(init.headers).toBeUndefined();
-    const body = init.body as FormData;
     expect(Array.from(body.keys())).toEqual(['turnstile', 'file']);
     expect(body.get('turnstile')).toBe('turnstile-token');
     expect((body.get('file') as File).name).toBe('photo.png');
+  });
+
+  it('reports the automated checks once the file has been sent', async () => {
+    const onChecking = vi.fn();
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse(200, { url: `${FORGE_IMAGES_MEDIA_ORIGIN}/abc.png`, status: 'live' })));
+
+    await uploadToForge(new File(['x'], 'photo.png', { type: 'image/png' }), { getToken, onChecking });
+
+    expect(vi.mocked(postFormData).mock.calls[0][2]?.onBodySent).toBe(onChecking);
+    expect(onChecking).toHaveBeenCalledOnce();
   });
 
   it('fails at the blocked stage without uploading when no Turnstile token is available', async () => {

@@ -35,7 +35,7 @@ const testState = vi.hoisted(() => ({
   isMobile: false,
   mediaHostingRuntime: 'web' as 'web' | 'android' | 'electron',
   isResolvingExternalQuotes: false,
-  isUploading: false,
+  uploadPhase: null as 'uploading' | 'checking' | null,
   navigateMock: vi.fn(),
   offlineTitle: '' as string | false,
   offlineStates: {} as Record<string, { isOffline: boolean; isOnlineStatusLoading: boolean; offlineTitle: string | false }>,
@@ -261,7 +261,8 @@ vi.mock('../../../hooks/use-file-upload', () => ({
   useFileUpload: () => ({
     chooseFile: testState.chooseFileMock,
     uploadAttachment: testState.uploadAttachmentMock,
-    isUploading: testState.isUploading,
+    isUploading: testState.uploadPhase !== null,
+    uploadPhase: testState.uploadPhase,
   }),
 }));
 
@@ -457,7 +458,7 @@ describe('ReplyModal', () => {
     testState.uploadAttachmentMock.mockReset();
     testState.isMobile = false;
     testState.isResolvingExternalQuotes = false;
-    testState.isUploading = false;
+    testState.uploadPhase = null;
     testState.navigateMock.mockReset();
     testState.offlineTitle = '';
     testState.offlineStates = {};
@@ -741,11 +742,32 @@ describe('ReplyModal', () => {
   });
 
   it('uses the shared loading ellipsis while a reply upload is running', async () => {
-    testState.isUploading = true;
+    testState.uploadPhase = 'uploading';
 
     await renderReplyModal('/mu/thread/post-1');
 
     expect(container.querySelector('[data-testid="loading-ellipsis"]')?.textContent).toBe('uploading');
+  });
+
+  it('shows the automated checks in place of the file and spoiler controls, then restores them unchanged', async () => {
+    const hasChooseFileButton = () => [...container.querySelectorAll('button')].some((button) => button.textContent === 'choose_file');
+    testState.openEmpty = true;
+    testState.selectedText = '';
+    testState.replyDraft = { content: 'reply', link: '', options: '', spoiler: true };
+    testState.uploadPhase = 'checking';
+
+    await renderReplyModal('/mu/thread/post-1');
+
+    expect(container.querySelector('[data-testid="loading-ellipsis"]')?.textContent).toBe('running_automated_checks');
+    expect(hasChooseFileButton()).toBe(false);
+    expect(container.querySelector('input[type="checkbox"]')).toBeNull();
+
+    testState.uploadPhase = null;
+    await rerenderReplyModal('/mu/thread/post-1');
+
+    expect(container.querySelector('[data-testid="loading-ellipsis"]')).toBeNull();
+    expect(hasChooseFileButton()).toBe(true);
+    expect(container.querySelector<HTMLInputElement>('input[type="checkbox"]')?.checked).toBe(true);
   });
 
   it('does not render an offline warning when the shared offline hook reports the board as online', async () => {
@@ -1756,7 +1778,7 @@ describe('ReplyModal', () => {
     });
 
     it('locks the reply fields while the attachment uploads', async () => {
-      testState.isUploading = true;
+      testState.uploadPhase = 'uploading';
       await renderReplyModal('/all/thread/post-1');
 
       expect(container.querySelector('fieldset')?.disabled).toBe(true);

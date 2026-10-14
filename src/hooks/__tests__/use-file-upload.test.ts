@@ -7,7 +7,7 @@ import FileUploader from '../../plugins/file-uploader';
 import { ensureProviderAvailability } from '../../lib/media-hosting/provider-availability';
 import { orchestrateUpload } from '../../lib/media-hosting/upload-orchestrator';
 import { useFileUpload } from '../use-file-upload';
-import type { AttachedMedia } from '../../lib/media-hosting/types';
+import type { AttachedMedia, UploadPhase } from '../../lib/media-hosting/types';
 
 // Enable React's act environment for hook state updates in tests.
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -248,7 +248,7 @@ describe('useFileUpload', () => {
       const hook = mountHook();
 
       expect(await upload(hook, fileMedia(file))).toEqual({ url: 'https://forgeimg.net/abc/web.png', fileName: 'web.png' });
-      expect(orchestrateUpload).toHaveBeenCalledWith(file, ['forge']);
+      expect(orchestrateUpload).toHaveBeenCalledWith(file, ['forge'], expect.any(Function));
       expect(window.alert).not.toHaveBeenCalled();
       expect(hook().isUploading).toBe(false);
     });
@@ -262,12 +262,14 @@ describe('useFileUpload', () => {
       expect(window.alert).toHaveBeenCalledWith('upload_awaiting_review');
     });
 
-    it('reports isUploading while the upload runs', async () => {
+    it('reports the upload phase while the upload runs', async () => {
       let resolveUpload: (value: { url: string }) => void = () => undefined;
+      let reportPhase: ((phase: UploadPhase) => void) | undefined;
       vi.mocked(orchestrateUpload).mockImplementationOnce(
-        () =>
+        (_file, _order, onPhaseChange) =>
           new Promise((resolve) => {
             resolveUpload = resolve;
+            reportPhase = onPhaseChange;
           }),
       );
       const hook = mountHook();
@@ -276,13 +278,18 @@ describe('useFileUpload', () => {
       await act(async () => {
         uploadPromise = hook().uploadAttachment(fileMedia(new File(['abc'], 'slow.png', { type: 'image/png' })));
       });
-      expect(hook().isUploading).toBe(true);
+      expect(hook()).toMatchObject({ isUploading: true, uploadPhase: 'uploading' });
+
+      await act(async () => {
+        reportPhase?.('checking');
+      });
+      expect(hook()).toMatchObject({ isUploading: true, uploadPhase: 'checking' });
 
       await act(async () => {
         resolveUpload({ url: 'https://forgeimg.net/abc/slow.png' });
         await uploadPromise;
       });
-      expect(hook().isUploading).toBe(false);
+      expect(hook()).toMatchObject({ isUploading: false, uploadPhase: null });
     });
 
     it('uploads an Electron file through the orchestrator', async () => {
@@ -294,7 +301,7 @@ describe('useFileUpload', () => {
       const hook = mountHook();
 
       expect(await upload(hook, fileMedia(file))).toEqual({ url: 'https://files.catbox.moe/electron.png', fileName: 'electron.png' });
-      expect(orchestrateUpload).toHaveBeenCalledWith(file, ['catbox']);
+      expect(orchestrateUpload).toHaveBeenCalledWith(file, ['catbox'], expect.any(Function));
     });
 
     it('treats runtime as Electron when window.isElectron is true even if electronApi is unavailable', async () => {
@@ -306,7 +313,7 @@ describe('useFileUpload', () => {
 
       await upload(hook, fileMedia(file));
 
-      expect(orchestrateUpload).toHaveBeenCalledWith(file, ['catbox']);
+      expect(orchestrateUpload).toHaveBeenCalledWith(file, ['catbox'], expect.any(Function));
       expect(window.alert).not.toHaveBeenCalled();
     });
 
