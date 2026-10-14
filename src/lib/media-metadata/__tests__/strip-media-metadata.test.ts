@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { stripMediaMetadata } from '../strip-media-metadata';
 
 function ascii(text: string): number[] {
@@ -371,6 +371,18 @@ describe('stripMediaMetadata', () => {
       const file = makeFile([], 'empty.jpg', 'image/jpeg');
 
       expect(await stripMediaMetadata(file)).toBe(file);
+    });
+
+    it('reads only the header of a format it does not handle', async () => {
+      // A large picked video must not be copied into memory just to be passed through.
+      const mp4 = [...u32be(0x18), ...ascii('ftypmp42'), ...Array.from({ length: 1024 }, () => 0)];
+      const file = makeFile(mp4, 'clip.mp4', 'video/mp4');
+      const readWhole = vi.spyOn(file, 'arrayBuffer');
+      const slice = vi.spyOn(file, 'slice');
+
+      expect(await stripMediaMetadata(file)).toBe(file);
+      expect(readWhole).not.toHaveBeenCalled();
+      expect(slice).toHaveBeenCalledWith(0, 16);
     });
 
     it('returns files over the size cap unchanged without reading them', async () => {

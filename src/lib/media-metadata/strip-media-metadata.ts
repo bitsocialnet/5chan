@@ -12,6 +12,9 @@
 /** Files larger than this pass through untouched to avoid large in-memory copies. */
 const MAX_PROCESSABLE_BYTES = 64 * 1024 * 1024;
 
+/** Header bytes read to detect the format before reading the whole file (the WebP check needs 16). */
+const FORMAT_SNIFF_BYTES = 16;
+
 const PNG_SIGNATURE = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
 
 /** JPEG segments removed: APP1 (Exif and XMP), APP13 (IPTC/Photoshop), COM. */
@@ -38,6 +41,8 @@ const WEBP_VP8X_METADATA_FLAGS = 0x0c;
 export async function stripMediaMetadata(file: File): Promise<File> {
   if (file.size > MAX_PROCESSABLE_BYTES) return file;
   try {
+    // Sniff the header first, so a video or other pass-through file is never read whole.
+    if (detectFormat(new Uint8Array(await file.slice(0, FORMAT_SNIFF_BYTES).arrayBuffer())) === null) return file;
     const bytes = new Uint8Array(await file.arrayBuffer());
     const stripped = stripBytes(bytes);
     if (stripped === null) return file;
@@ -47,19 +52,22 @@ export async function stripMediaMetadata(file: File): Promise<File> {
   }
 }
 
-/** Detects the format by magic bytes (mime/extension are never trusted). Null means "keep original". */
-function stripBytes(bytes: Uint8Array<ArrayBuffer>): Uint8Array<ArrayBuffer> | null {
-  if (bytes.length >= 4 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) {
-    return stripJpeg(bytes);
-  }
-  if (bytes.length >= 8 && PNG_SIGNATURE.every((b, i) => bytes[i] === b)) {
-    return stripPng(bytes);
-  }
-  if (bytes.length >= 16 && readFourCc(bytes, 0) === 'RIFF' && readFourCc(bytes, 8) === 'WEBP') {
-    return stripWebp(bytes);
-  }
+/** Detects the format by magic bytes (mime/extension are never trusted). */
+function detectFormat(bytes: Uint8Array): 'jpeg' | 'png' | 'webp' | null {
+  if (bytes.length >= 4 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) return 'jpeg';
+  if (bytes.length >= 8 && PNG_SIGNATURE.every((b, i) => bytes[i] === b)) return 'png';
+  if (bytes.length >= 16 && readFourCc(bytes, 0) === 'RIFF' && readFourCc(bytes, 8) === 'WEBP') return 'webp';
   // GIF passes through deliberately (rewriting animations is risky and GIFs
   // carry no GPS-class metadata); video and unknown formats pass through too.
+  return null;
+}
+
+/** Null means "keep original". */
+function stripBytes(bytes: Uint8Array<ArrayBuffer>): Uint8Array<ArrayBuffer> | null {
+  const format = detectFormat(bytes);
+  if (format === 'jpeg') return stripJpeg(bytes);
+  if (format === 'png') return stripPng(bytes);
+  if (format === 'webp') return stripWebp(bytes);
   return null;
 }
 
