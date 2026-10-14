@@ -11,6 +11,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { gzipSync } from 'node:zlib';
 import { bounded, freePort, withBrowser } from '../react-perf/browser.mjs';
+import { parseShard, pickShard } from '../react-perf/shard.mjs';
 import config from './config.mjs';
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
@@ -21,7 +22,7 @@ for (let index = 0; index < args.length; index += 1) {
   if (name === '--help') options.help = true;
   else if (name === '--check') options.check = true;
   else if (name === '--headed') options.headed = true;
-  else if (['--samples', '--profile', '--network', '--build', '--output', '--route'].includes(name)) {
+  else if (['--samples', '--profile', '--network', '--build', '--output', '--route', '--shard'].includes(name)) {
     const value = args[++index];
     if (!value || value.startsWith('--')) throw new Error(`${name} requires a value`);
     options[name.slice(2)] = value;
@@ -30,7 +31,7 @@ for (let index = 0; index < args.length; index += 1) {
 if (options.help) {
   console.log(
     [
-      'perf:load [--samples N] [--profile mid|cpu4|off] [--network blocked|live] [--route NAME] [--build DIR] [--output DIR] [--check] [--headed]',
+      'perf:load [--samples N] [--profile mid|cpu4|off] [--network blocked|live] [--route NAME] [--shard INDEX/COUNT] [--build DIR] [--output DIR] [--check] [--headed]',
       'Serves an existing production build (run `yarn build` first) and cold-loads each configured route in a fresh context',
       'with service workers blocked (CDP throttling does not reliably cover worker fetches). `blocked` aborts every request',
       'outside the app origin; `live` allows peer traffic.',
@@ -55,8 +56,11 @@ if (!['blocked', 'live'].includes(options.network)) throw new Error(`Unknown net
 const samples = Number(options.samples);
 if (!Number.isInteger(samples) || samples < 1 || samples > 20) throw new Error('--samples must be an integer from 1 to 20');
 if (options.check && options.network !== 'blocked') throw new Error('--check requires --network blocked');
-const routes = config.routes.filter((route) => !options.route || route.name === options.route);
-if (!routes.length) throw new Error(`No matching route: ${options.route}`);
+const matchingRoutes = config.routes.filter((route) => !options.route || route.name === options.route);
+if (!matchingRoutes.length) throw new Error(`No matching route: ${options.route}`);
+const routes = pickShard(matchingRoutes, parseShard(options.shard));
+if (!routes.length) throw new Error(`Shard ${options.shard} selects no routes`);
+if (options.shard) process.stderr.write(`[load] shard ${options.shard} runs: ${routes.map((route) => route.name).join(', ')}\n`);
 
 const buildDir = path.resolve(packageRoot, options.build);
 const output = path.resolve(packageRoot, options.output || `.react-perf/load-${new Date().toISOString().replaceAll(':', '-')}`);

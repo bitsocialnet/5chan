@@ -10,11 +10,43 @@ on:
 permissions:
   contents: read
 
+# A newer push to the same PR supersedes its older run, which frees runners on the org's shared job limit.
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
-  quality:
-    name: Quality + Smoke
+  changes:
+    name: Detect Electron Changes
     runs-on: ubuntu-22.04
-    timeout-minutes: 45
+    timeout-minutes: 5
+    outputs:
+      electron: ${{ steps.filter.outputs.electron }}
+    steps:
+      - uses: actions/checkout@v4
+        if: github.event_name == 'pull_request'
+        with:
+          fetch-depth: 2
+
+      # Pushes always package every platform; PRs package Windows and Apple Silicon only when Electron, packaging,
+      # or production build inputs change, since those jobs are the only Windows/macOS builds a PR gets.
+      - name: Check packaging inputs
+        id: filter
+        if: github.event_name == 'pull_request'
+        run: |
+          # The PR merge commit's first parent is the base branch tip.
+          changed=$(git diff --no-renames --name-only HEAD^1 HEAD)
+          printf '%s\n' "$changed"
+          if printf '%s\n' "$changed" | grep -qE '^(electron/|forge\.config\.js$|vite\.config\.js$|package\.json$|yarn\.lock$|\.yarnrc\.yml$|public/(icon|windows-icon)|scripts/(static-shell/|vite-[^/]+\.mjs$|generate-asset-manifest\.js$|sync-directories\.js$|find-forge-executable\.js$|verify-electron-native-modules\.js$)|\.github/workflows/ci\.yml$)'; then
+            echo "electron=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "electron=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  checks:
+    name: Tests + Static Checks
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with:
@@ -40,10 +72,24 @@ jobs:
           yarn ai-workflow:check
           yarn ai-workflow:test
 
+      - name: Lint
+        run: yarn lint
+
+      - name: Type check
+        run: yarn type-check
+
+      - name: React Doctor diagnostics
+        run: yarn doctor:check
+        env:
+          PERF_BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || (github.event.before != '0000000000000000000000000000000000000000' && github.event.before) || '' }}
+
       - name: Run Vitest
+        if: github.event_name == 'pull_request'
         run: yarn test --run
 
+      # Pushes collect coverage instead. It runs test files one at a time, which #1132 needed for a stable coverage run.
       - name: Collect coverage
+        if: github.event_name != 'pull_request'
         run: yarn test:coverage
 
       - name: Write coverage badge payload
@@ -58,16 +104,37 @@ jobs:
           path: badges/coverage.json
           if-no-files-found: error
 
-      - name: Lint
-        run: yarn lint
+      - name: Upload coverage summary
+        if: always() && github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-summary
+          path: coverage/coverage-summary.json
+          if-no-files-found: warn
 
-      - name: Type check
-        run: yarn type-check
+  build:
+    name: Build + Smoke
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: React Doctor diagnostics
-        run: yarn doctor:check
-        env:
-          PERF_BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || (github.event.before != '0000000000000000000000000000000000000000' && github.event.before) || '' }}
+      - name: Setup Node.js v22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: corepack enable
+
+      - name: Install dependencies
+        run: |
+          for i in 1 2 3; do
+            echo "yarn install attempt $i"
+            yarn install --immutable && break
+            sleep 5
+            [ "$i" = "3" ] && exit 1
+          done
 
       - name: Build React app
         run: yarn build
@@ -102,28 +169,115 @@ jobs:
       - name: Smoke test built web app
         run: node scripts/smoke-web-app.js --start-preview
 
+  load:
+    name: Cold Load (${{ matrix.shard }}/${{ strategy.job-total }})
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js v22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: corepack enable
+
+      - name: Install dependencies
+        run: |
+          for i in 1 2 3; do
+            echo "yarn install attempt $i"
+            yarn install --immutable && break
+            sleep 5
+            [ "$i" = "3" ] && exit 1
+          done
+
+      # Rebuilding here is faster than waiting for the Build + Smoke job and downloading its output.
+      - name: Build React app
+        run: yarn build
+        env:
+          CI: ''
+
       - name: Install performance browser
         run: yarn perf:install --with-deps
-      - name: Check React runtime scenarios
-        run: yarn perf:check --output .react-perf/ci
+
       - name: Check cold-load layout stability and static shell handoff
-        run: yarn perf:load --check --profile cpu4 --samples 2 --output .react-perf/ci-load
-      - name: Upload React performance evidence
+        run: yarn perf:load --check --profile cpu4 --samples 2 --shard ${{ matrix.shard }}/${{ strategy.job-total }} --output .react-perf/ci-load
+
+      - name: Upload cold-load evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: react-performance
+          name: react-performance-load-${{ matrix.shard }}
           path: .react-perf/
           include-hidden-files: true
           if-no-files-found: warn
 
-      - name: Upload coverage summary
+  perf:
+    name: React Runtime (${{ matrix.shard }}/${{ strategy.job-total }})
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js v22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: corepack enable
+
+      - name: Install dependencies
+        run: |
+          for i in 1 2 3; do
+            echo "yarn install attempt $i"
+            yarn install --immutable && break
+            sleep 5
+            [ "$i" = "3" ] && exit 1
+          done
+
+      - name: Install performance browser
+        run: yarn perf:install --with-deps
+
+      - name: Check React runtime scenarios
+        run: yarn perf:check --shard ${{ matrix.shard }}/${{ strategy.job-total }} --output .react-perf/ci
+
+      - name: Upload React performance evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-summary
-          path: coverage/coverage-summary.json
+          name: react-performance-runtime-${{ matrix.shard }}
+          path: .react-perf/
+          include-hidden-files: true
           if-no-files-found: warn
+
+  # Keeps the required "Quality + Smoke" check: it passes only when every split quality job passed.
+  quality:
+    name: Quality + Smoke
+    runs-on: ubuntu-22.04
+    needs: [changes, checks, build, load, perf]
+    # always(): a timed-out or cancelled quality job must fail this required check, not skip it.
+    if: always()
+    timeout-minutes: 5
+    steps:
+      - name: Require every quality job to pass
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "Quality job results: $RESULTS"
+          for result in $RESULTS; do
+            [ "$result" = "success" ] || exit 1
+          done
 
   publish-coverage-badge:
     name: Publish Badges
@@ -208,7 +362,6 @@ jobs:
   android-build:
     name: Android Build
     runs-on: ubuntu-22.04
-    needs: quality
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
@@ -253,7 +406,6 @@ jobs:
   package-linux:
     name: Package Linux (Ubuntu)
     runs-on: ubuntu-22.04
-    needs: quality
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
@@ -317,7 +469,8 @@ jobs:
   package-mac-intel:
     name: Package Mac (Intel)
     runs-on: macos-15-intel
-    needs: quality
+    # The slowest packaging job runs on pushes only; PRs cover macOS packaging on Apple Silicon.
+    if: github.event_name != 'pull_request'
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
@@ -384,7 +537,8 @@ jobs:
   package-mac-arm:
     name: Package Mac (Apple Silicon)
     runs-on: macos-latest
-    needs: quality
+    needs: changes
+    if: github.event_name != 'pull_request' || needs.changes.outputs.electron == 'true'
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
@@ -451,7 +605,8 @@ jobs:
   package-windows:
     name: Package Windows
     runs-on: windows-2022
-    needs: quality
+    needs: changes
+    if: github.event_name != 'pull_request' || needs.changes.outputs.electron == 'true'
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4

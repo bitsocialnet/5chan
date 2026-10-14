@@ -4,6 +4,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { assertHealthy, checkBudgets, summarize } from './budgets.mjs';
 import { bounded, startServer, startTrace, withBrowser } from './browser.mjs';
 import { runSelftest, settle, snapshot } from './selftest.mjs';
+import { parseShard, pickShard } from './shard.mjs';
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const [command = 'check', ...args] = process.argv.slice(2);
@@ -11,7 +12,7 @@ const options = {};
 for (let index = 0; index < args.length; index += 1) {
   const name = args[index];
   if (name === '--headed') options.headed = true;
-  else if (['--target', '--scenario', '--url', '--cpu', '--samples', '--output', '--actions'].includes(name)) {
+  else if (['--target', '--scenario', '--url', '--cpu', '--samples', '--output', '--actions', '--shard'].includes(name)) {
     const value = args[++index];
     if (!value || value.startsWith('--')) throw new Error(`${name} requires a value`);
     options[name.slice(2)] = value;
@@ -20,7 +21,7 @@ for (let index = 0; index < args.length; index += 1) {
 }
 if (options.help) {
   console.log(
-    'perf:check | perf:record | perf:test\nOptions: --target NAME --scenario NAME --url EXISTING_APP_URL --cpu 1|4 --samples N --output DIRECTORY --headed\n--actions FILE imports a trusted local scenario module (default export with name/path/prepare/run), for an ad hoc interaction.\nChecks replay configured real-app scenarios. Records also replay actions and save JSON plus native Chrome traces.\nNew recordings compare against the configured budgets; missing profiling or exceeded budgets returns nonzero.',
+    'perf:check | perf:record | perf:test\nOptions: --target NAME --scenario NAME --url EXISTING_APP_URL --cpu 1|4 --samples N --output DIRECTORY --shard INDEX/COUNT --headed\n--actions FILE imports a trusted local scenario module (default export with name/path/prepare/run), for an ad hoc interaction.\nChecks replay configured real-app scenarios. Records also replay actions and save JSON plus native Chrome traces.\nNew recordings compare against the configured budgets; missing profiling or exceeded budgets returns nonzero.',
   );
   process.exit(0);
 }
@@ -29,6 +30,7 @@ const cpu = Number(options.cpu || (command === 'check' ? 4 : 1));
 const samples = Number(options.samples || (command === 'check' ? 3 : 1));
 if (![1, 4].includes(cpu)) throw new Error('--cpu must be 1 or 4');
 if (!Number.isInteger(samples) || samples < 1 || samples > 10) throw new Error('--samples must be an integer from 1 to 10');
+const shard = parseShard(options.shard);
 const output = path.resolve(packageRoot, options.output || `.react-perf/${command}-${new Date().toISOString().replaceAll(':', '-')}`);
 await mkdir(output, { recursive: true, mode: 0o700 });
 const report = { schemaVersion: 1, command, cpu, samples, viewport: { width: 1280, height: 900 }, output, startedAt: new Date().toISOString(), cases: [], ok: false };
@@ -199,8 +201,11 @@ try {
     let customScenario;
     if (options.actions) customScenario = (await import(pathToFileURL(path.resolve(process.cwd(), options.actions)).href)).default;
     for (const target of targets) {
-      const scenarios = customScenario ? [customScenario] : target.scenarios.filter((scenario) => !options.scenario || scenario.name === options.scenario);
-      if (!scenarios.length) throw new Error(`No matching scenarios for ${target.name}`);
+      const matching = customScenario ? [customScenario] : target.scenarios.filter((scenario) => !options.scenario || scenario.name === options.scenario);
+      if (!matching.length) throw new Error(`No matching scenarios for ${target.name}`);
+      const scenarios = pickShard(matching, shard);
+      if (!scenarios.length) continue;
+      if (shard) process.stderr.write(`[perf] Shard ${options.shard} runs ${target.name}: ${scenarios.map((scenario) => scenario.name).join(', ')}\n`);
       let setup;
       let server;
       try {
@@ -226,6 +231,7 @@ try {
         }
       }
     }
+    if (shard && !report.cases.length) throw new Error(`Shard ${options.shard} selects no scenarios`);
   });
   report.ok = command === 'selftest' ? !!report.selftest?.ok : report.cases.length > 0 && report.cases.every((result) => result.ok);
 } catch (error) {
