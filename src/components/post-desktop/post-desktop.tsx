@@ -1239,7 +1239,7 @@ const PostDesktop = ({
               data={filteredReplies}
               itemContent={(index, reply) => (
                 <div
-                  className={`${styles.replyContainer} ${reply.cid === unreadMarkerCid ? styles.newPostsMarker : ''}`}
+                  className={`${styles.replyContainer} ${unreadMarkerCid && reply.cid === unreadMarkerCid ? styles.newPostsMarker : ''}`}
                   data-pretext-height={replyHeightEstimates?.[index]}
                   ref={(element) => reportReplyHeightAuditSample(element, replyHeightEstimates?.[index], reply.cid)}
                 >
@@ -1270,7 +1270,7 @@ const PostDesktop = ({
             showReplies &&
             !hasMore &&
             visibleReplies.map((reply) => (
-              <div key={reply.cid} className={`${styles.replyContainer} ${reply.cid === unreadMarkerCid ? styles.newPostsMarker : ''}`}>
+              <div key={reply.cid} className={`${styles.replyContainer} ${unreadMarkerCid && reply.cid === unreadMarkerCid ? styles.newPostsMarker : ''}`}>
                 <Reply
                   reply={reply}
                   roles={roles}

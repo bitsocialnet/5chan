@@ -928,7 +928,7 @@ const PostMobile = ({
 
                   return (
                     <div
-                      className={`${styles.replyContainer} ${reply.cid === unreadMarkerCid ? styles.newPostsMarker : ''}`}
+                      className={`${styles.replyContainer} ${unreadMarkerCid && reply.cid === unreadMarkerCid ? styles.newPostsMarker : ''}`}
                       data-pretext-height={replyHeightEstimates?.[index]}
                       data-pretext-reply-backlink-count={backlinkCount}
                       data-pretext-reply-content-length={import.meta.env.DEV ? reply.content?.length || 0 : undefined}
@@ -964,7 +964,7 @@ const PostMobile = ({
               showReplies &&
               !hasMore &&
               visibleReplies.map((reply) => (
-                <div key={reply.cid} className={`${styles.replyContainer} ${reply.cid === unreadMarkerCid ? styles.newPostsMarker : ''}`}>
+                <div key={reply.cid} className={`${styles.replyContainer} ${unreadMarkerCid && reply.cid === unreadMarkerCid ? styles.newPostsMarker : ''}`}>
                   <Reply
                     postReplyCount={replyCount}
                     reply={reply}

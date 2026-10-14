@@ -742,6 +742,24 @@ describe('post community address compatibility', () => {
     expect(container.textContent).not.toContain('account.author.shortAddress');
   });
 
+  it('does not draw the unread marker under a publishing reply without a cid', async () => {
+    const post = makeLegacyThread();
+    const reply = post.replies?.pages?.new?.comments?.[0];
+    if (!reply) {
+      throw new Error('missing fixture reply');
+    }
+    reply.cid = undefined;
+    reply.state = 'publishing';
+
+    await renderWithRoute(createElement(PostDesktop, { post, showAllReplies: true }), '/mu/thread/post-1');
+    expect(container.querySelector('.replyContainer')).not.toBeNull();
+    expect(container.querySelector('.newPostsMarker')).toBeNull();
+
+    await renderWithRoute(createElement(PostMobile, { post, showAllReplies: true }), '/mu/thread/post-1');
+    expect(container.querySelector('.replyContainer')).not.toBeNull();
+    expect(container.querySelector('.newPostsMarker')).toBeNull();
+  });
+
   it('forwards Pretext-backed reply estimates into Virtuoso for desktop and mobile thread views', async () => {
     testState.hasMoreReplies = true;
 
