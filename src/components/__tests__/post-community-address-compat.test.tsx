@@ -742,7 +742,11 @@ describe('post community address compatibility', () => {
     expect(container.textContent).not.toContain('account.author.shortAddress');
   });
 
-  it('does not draw the unread marker under a publishing reply without a cid', async () => {
+  it.each([
+    { hasMoreReplies: false, list: 'plain' },
+    { hasMoreReplies: true, list: 'virtualized' },
+  ])('does not draw the unread marker under a publishing reply without a cid in the $list reply list', async ({ hasMoreReplies }) => {
+    testState.hasMoreReplies = hasMoreReplies;
     const post = makeLegacyThread();
     const reply = post.replies?.pages?.new?.comments?.[0];
     if (!reply) {
@@ -751,13 +755,12 @@ describe('post community address compatibility', () => {
     reply.cid = undefined;
     reply.state = 'publishing';
 
-    await renderWithRoute(createElement(PostDesktop, { post, showAllReplies: true }), '/mu/thread/post-1');
-    expect(container.querySelector('.replyContainer')).not.toBeNull();
-    expect(container.querySelector('.newPostsMarker')).toBeNull();
-
-    await renderWithRoute(createElement(PostMobile, { post, showAllReplies: true }), '/mu/thread/post-1');
-    expect(container.querySelector('.replyContainer')).not.toBeNull();
-    expect(container.querySelector('.newPostsMarker')).toBeNull();
+    for (const PostComponent of [PostDesktop, PostMobile]) {
+      await renderWithRoute(createElement(PostComponent, { post, showAllReplies: true }), '/mu/thread/post-1');
+      expect(Boolean(container.querySelector('[data-testid="virtuoso"]'))).toBe(hasMoreReplies);
+      expect(container.querySelector('.replyContainer')).not.toBeNull();
+      expect(container.querySelector('.newPostsMarker')).toBeNull();
+    }
   });
 
   it('forwards Pretext-backed reply estimates into Virtuoso for desktop and mobile thread views', async () => {
