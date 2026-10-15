@@ -576,5 +576,6 @@
   "board_unreachable_from_browsers": "Trình duyệt không thể tải bảng này vì không thể truy cập máy tính này từ internet. Để khắc phục, hãy chuyển tiếp cổng 4001 (TCP và UDP) trên router của bạn đến máy tính này, hoặc bật UPnP trên router của bạn. Nếu nhà mạng của bạn không cho phép, thay vào đó hãy lưu trữ bảng trên một máy chủ.",
   "media_hosting_show_link_field": "Hiển thị ô \"Liên kết đến tệp\"",
   "media_hosting_show_link_field_tip": "Cho phép bạn đăng ảnh hoặc video bằng cách dán liên kết trực tiếp đến tệp đó",
-  "running_automated_checks": "đang chạy kiểm tra tự động..."
+  "running_automated_checks": "đang chạy kiểm tra tự động...",
+  "unsupported_file_type_alert": "Loại tệp không được hỗ trợ. Hãy dùng tệp JPG, PNG, GIF, WebP, MP4, WebM hoặc SWF."
 }

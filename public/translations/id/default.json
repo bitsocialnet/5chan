@@ -576,5 +576,6 @@
   "board_unreachable_from_browsers": "Browser tidak dapat memuat papan ini karena komputer ini tidak dapat dijangkau dari internet. Untuk memperbaikinya, teruskan port 4001 (TCP dan UDP) di router Anda ke komputer ini, atau aktifkan UPnP di router Anda. Jika penyedia internet Anda tidak mengizinkannya, jalankan papan ini di sebuah server sebagai gantinya.",
   "media_hosting_show_link_field": "Tampilkan kolom \"Tautan ke File\"",
   "media_hosting_show_link_field_tip": "Memungkinkan Anda memposting gambar atau video dengan menempelkan tautan langsungnya",
-  "running_automated_checks": "menjalankan pemeriksaan otomatis..."
+  "running_automated_checks": "menjalankan pemeriksaan otomatis...",
+  "unsupported_file_type_alert": "Jenis file tidak didukung. Gunakan file JPG, PNG, GIF, WebP, MP4, WebM, atau SWF."
 }

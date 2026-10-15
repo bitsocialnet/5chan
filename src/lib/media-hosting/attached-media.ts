@@ -15,3 +15,42 @@ export const isPublishFileAttachment = (media: AttachedMedia): boolean => {
 };
 
 export const getFileAttachment = (file: File): AttachedMedia => ({ kind: 'file', file, name: file.name, mimeType: file.type });
+
+/** The `accept` list for the upload file picker. */
+export const UPLOAD_FILE_ACCEPT = 'image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,.swf,application/x-shockwave-flash,application/vnd.adobe.flash.movie';
+
+// A dropped file skips the picker's `accept` filter, so check it the same way, with the file-name
+// fallback for files the OS reports with an empty or generic MIME type.
+const isAcceptedUploadFile = (file: File) => {
+  const media = getFileAttachment(file);
+  return isPublishFileAttachment(media) || SWF_MIME_TYPES.has(media.mimeType) || media.name.toLowerCase().endsWith('.swf');
+};
+
+// Structural, so React's synthetic drag events fit without lib depending on React.
+export type FileDragEvent = { dataTransfer: DataTransfer; preventDefault: () => void };
+
+const isFileDrag = (event: FileDragEvent) => event.dataTransfer.types.includes('Files');
+
+/**
+ * Drag-and-drop props for a form area, so a file dropped on it is attached like one chosen with the picker.
+ * Text drags pass through untouched. File drops are always cancelled, so a file dropped while attaching is
+ * disabled or an upload runs is ignored instead of the browser opening it, and one of an unsupported type
+ * is reported through `onUnsupportedFile`, since the picker never offers it.
+ */
+export function getFileDropHandlers(onDropFile: (media: AttachedMedia) => void, enabled: boolean, onUnsupportedFile?: () => void) {
+  return {
+    onDragOver: (event: FileDragEvent) => {
+      if (!isFileDrag(event)) return;
+      event.preventDefault();
+      event.dataTransfer.dropEffect = enabled ? 'copy' : 'none';
+    },
+    onDrop: (event: FileDragEvent) => {
+      if (!isFileDrag(event)) return;
+      event.preventDefault();
+      const file = event.dataTransfer.files[0];
+      if (!enabled || !file) return;
+      if (isAcceptedUploadFile(file)) onDropFile(getFileAttachment(file));
+      else onUnsupportedFile?.();
+    },
+  };
+}

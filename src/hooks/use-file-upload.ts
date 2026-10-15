@@ -5,7 +5,7 @@ import { formatAggregatedError, formatPreferredModeError, type ProviderAttempt }
 import { getProviderOrder } from '../lib/media-hosting/provider-order';
 import { getMediaHostingRuntime } from '../lib/media-hosting/show-upload-controls';
 import { MEDIA_HOSTING_PROVIDERS } from '../lib/media-hosting/providers';
-import { getFileAttachment } from '../lib/media-hosting/attached-media';
+import { getFileAttachment, UPLOAD_FILE_ACCEPT } from '../lib/media-hosting/attached-media';
 import { orchestrateUpload } from '../lib/media-hosting/upload-orchestrator';
 import { stripMediaMetadata } from '../lib/media-metadata/strip-media-metadata';
 import { ensureProviderAvailability } from '../lib/media-hosting/provider-availability';
@@ -182,8 +182,6 @@ async function uploadOnAndroid(media: AttachedMedia, order: ProviderId[], onPhas
   }
   throw Object.assign(new Error('All providers failed'), { attempts });
 }
-
-const UPLOAD_FILE_ACCEPT = 'image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,.swf,application/x-shockwave-flash,application/vnd.adobe.flash.movie';
 
 export function useFileUpload() {
   const { t } = useTranslation();

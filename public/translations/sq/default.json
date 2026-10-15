@@ -576,5 +576,6 @@
   "board_unreachable_from_browsers": "Shfletuesit nuk mund ta ngarkojnë këtë bord, sepse ky kompjuter nuk është i arritshëm nga interneti. Për ta rregulluar, ridrejtoni portën 4001 (TCP dhe UDP) në routerin tuaj te ky kompjuter, ose aktivizoni UPnP në routerin tuaj. Nëse ofruesi juaj i internetit nuk e lejon këtë, strehoni bordin në një server në vend të kësaj.",
   "media_hosting_show_link_field": "Shfaq fushën \"Lidhje me skedarin\"",
   "media_hosting_show_link_field_tip": "Të lejon të postosh një imazh ose video duke ngjitur një lidhje të drejtpërdrejtë për të",
-  "running_automated_checks": "duke kryer kontrolle automatike..."
+  "running_automated_checks": "duke kryer kontrolle automatike...",
+  "unsupported_file_type_alert": "Lloji i skedarit nuk mbështetet. Përdorni një skedar JPG, PNG, GIF, WebP, MP4, WebM ose SWF."
 }

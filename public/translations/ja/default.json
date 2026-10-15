@@ -576,5 +576,6 @@
   "board_unreachable_from_browsers": "インターネットからこのコンピューターに接続できないため、ブラウザーではこのボードを読み込めません。解決するには、ルーターでポート 4001（TCP と UDP）をこのコンピューターに転送するか、ルーターで UPnP を有効にしてください。プロバイダーがこれを許可していない場合は、代わりにサーバーでボードをホストしてください。",
   "media_hosting_show_link_field": "「ファイルへのリンク」欄を表示",
   "media_hosting_show_link_field_tip": "直接リンクを貼り付けて画像や動画を投稿できます",
-  "running_automated_checks": "自動チェックを実行中..."
+  "running_automated_checks": "自動チェックを実行中...",
+  "unsupported_file_type_alert": "サポートされていないファイル形式です。JPG、PNG、GIF、WebP、MP4、WebM、SWF のいずれかのファイルを使用してください。"
 }

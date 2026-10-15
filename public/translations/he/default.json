@@ -576,5 +576,6 @@
   "board_unreachable_from_browsers": "דפדפנים לא יכולים לטעון את הלוח הזה כי המחשב הזה לא נגיש מהאינטרנט. כדי לתקן זאת, יש להפנות את פורט 4001 (TCP ו-UDP) בראוטר אל המחשב הזה, או להפעיל UPnP בראוטר. אם ספק האינטרנט שלך לא מאפשר זאת, יש לארח את הלוח בשרת במקום זאת.",
   "media_hosting_show_link_field": "הצגת השדה \"קישור לקובץ\"",
   "media_hosting_show_link_field_tip": "מאפשר לפרסם תמונה או סרטון על ידי הדבקת קישור ישיר אליו",
-  "running_automated_checks": "מריץ בדיקות אוטומטיות..."
+  "running_automated_checks": "מריץ בדיקות אוטומטיות...",
+  "unsupported_file_type_alert": "סוג הקובץ אינו נתמך. השתמשו בקובץ JPG, PNG, GIF, WebP, MP4, WebM או SWF."
 }

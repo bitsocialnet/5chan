@@ -596,5 +596,6 @@
   "board_unreachable_from_browsers": "Browsers can't load this board because this computer isn't reachable from the internet. To fix it, forward port 4001 (TCP and UDP) on your router to this computer, or enable UPnP on your router. If your internet provider doesn't allow that, host the board on a server instead.",
   "media_hosting_show_link_field": "Show \"Link To File\" field",
   "media_hosting_show_link_field_tip": "Lets you post an image or video by pasting a direct link to it",
-  "running_automated_checks": "running automated checks..."
+  "running_automated_checks": "running automated checks...",
+  "unsupported_file_type_alert": "Unsupported file type. Use a JPG, PNG, GIF, WebP, MP4, WebM or SWF file."
 }

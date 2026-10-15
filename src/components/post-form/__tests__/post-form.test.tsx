@@ -1790,6 +1790,58 @@ describe('PostForm', () => {
     expect(linkInput.value).toBe('https://forgeimg.net/abc/uploaded.png');
   });
 
+  it('attaches a file dropped on the form, then uploads it once the post is submitted', async () => {
+    const file = new File(['png'], 'dropped.png', { type: 'image/png' });
+    testState.uploadMode = 'random';
+    testState.resolvedCommunityAddress = 'music-posting.eth';
+    testState.uploadAttachmentMock.mockResolvedValue({ url: 'https://forgeimg.net/abc/dropped.png', fileName: 'dropped.png' });
+
+    await renderPostForm('/mu');
+    await clickByText(container, 'start_new_thread');
+
+    const table = container.querySelector('table') as HTMLTableElement;
+    const textarea = table.querySelector('textarea') as HTMLTextAreaElement;
+    const drop = new Event('drop', { bubbles: true, cancelable: true });
+    Object.defineProperty(drop, 'dataTransfer', { value: { types: ['Files'], files: [file], dropEffect: 'none' } });
+    await act(async () => {
+      textarea.dispatchEvent(drop);
+    });
+
+    expect(drop.defaultPrevented).toBe(true);
+    expect(table.textContent).toContain('dropped.png');
+    expect(testState.chooseFileMock).not.toHaveBeenCalled();
+
+    await dispatchInput(textarea, 'dropped body');
+    await clickByText(table, 'post');
+
+    expect(testState.uploadAttachmentMock).toHaveBeenCalledWith({ kind: 'file', file, name: 'dropped.png', mimeType: 'image/png' });
+    expect(testState.publishedPostOptions?.link).toBe('https://forgeimg.net/abc/dropped.png');
+  });
+
+  it('reports a dropped file of an unsupported type until a supported one is attached', async () => {
+    testState.uploadMode = 'random';
+    await renderPostForm('/mu');
+    await clickByText(container, 'start_new_thread');
+
+    const table = container.querySelector('table') as HTMLTableElement;
+    const textarea = table.querySelector('textarea') as HTMLTextAreaElement;
+    const dropFile = async (file: File) => {
+      const drop = new Event('drop', { bubbles: true, cancelable: true });
+      Object.defineProperty(drop, 'dataTransfer', { value: { types: ['Files'], files: [file], dropEffect: 'none' } });
+      await act(async () => {
+        textarea.dispatchEvent(drop);
+      });
+    };
+
+    await dropFile(new File(['pdf'], 'notes.pdf', { type: 'application/pdf' }));
+    expect(table.querySelector('tfoot')?.textContent).toContain('error: unsupported_file_type_alert');
+    expect(table.textContent).not.toContain('notes.pdf');
+
+    await dropFile(new File(['png'], 'dropped.png', { type: 'image/png' }));
+    expect(table.textContent).not.toContain('unsupported_file_type_alert');
+    expect(table.textContent).toContain('dropped.png');
+  });
+
   it('clears a visible link field when a file is attached, and a typed link replaces the file', async () => {
     const file = new File(['png'], 'chosen.png', { type: 'image/png' });
     testState.uploadMode = 'random';

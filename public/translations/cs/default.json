@@ -576,5 +576,6 @@
   "board_unreachable_from_browsers": "Prohlížeče nemohou tuto desku načíst, protože tento počítač není dostupný z internetu. Chcete-li to opravit, přesměrujte na routeru port 4001 (TCP i UDP) na tento počítač, nebo na routeru zapněte UPnP. Pokud to váš poskytovatel internetu neumožňuje, provozujte desku místo toho na serveru.",
   "media_hosting_show_link_field": "Zobrazit pole „Odkaz na soubor“",
   "media_hosting_show_link_field_tip": "Umožňuje přidat obrázek nebo video vložením přímého odkazu na něj",
-  "running_automated_checks": "probíhají automatické kontroly..."
+  "running_automated_checks": "probíhají automatické kontroly...",
+  "unsupported_file_type_alert": "Nepodporovaný typ souboru. Použijte soubor JPG, PNG, GIF, WebP, MP4, WebM nebo SWF."
 }

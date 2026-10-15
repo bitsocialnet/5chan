@@ -576,5 +576,6 @@
   "board_unreachable_from_browsers": "A böngészők nem tudják betölteni ezt a táblát, mert ez a számítógép nem érhető el az internetről. A javításhoz irányítsd át a routereden a 4001-es portot (TCP és UDP) erre a számítógépre, vagy kapcsold be az UPnP-t a routereden. Ha az internetszolgáltatód ezt nem engedi, inkább egy szerveren futtasd a táblát.",
   "media_hosting_show_link_field": "„Link a fájlhoz” mező megjelenítése",
   "media_hosting_show_link_field_tip": "Lehetővé teszi, hogy képet vagy videót a közvetlen linkjének beillesztésével küldj be",
-  "running_automated_checks": "automatikus ellenőrzések futnak..."
+  "running_automated_checks": "automatikus ellenőrzések futnak...",
+  "unsupported_file_type_alert": "Nem támogatott fájltípus. Használj JPG, PNG, GIF, WebP, MP4, WebM vagy SWF fájlt."
 }

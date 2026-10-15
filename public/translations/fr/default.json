@@ -576,5 +576,6 @@
   "board_unreachable_from_browsers": "Les navigateurs ne peuvent pas charger ce tableau, car cet ordinateur n'est pas joignable depuis Internet. Pour corriger cela, redirigez le port 4001 (TCP et UDP) de votre routeur vers cet ordinateur, ou activez l'UPnP sur votre routeur. Si votre fournisseur d'accès à Internet ne le permet pas, hébergez plutôt le tableau sur un serveur.",
   "media_hosting_show_link_field": "Afficher le champ « Lien vers le fichier »",
   "media_hosting_show_link_field_tip": "Permet de publier une image ou une vidéo en collant un lien direct vers celle-ci",
-  "running_automated_checks": "vérifications automatiques en cours..."
+  "running_automated_checks": "vérifications automatiques en cours...",
+  "unsupported_file_type_alert": "Type de fichier non pris en charge. Utilisez un fichier JPG, PNG, GIF, WebP, MP4, WebM ou SWF."
 }

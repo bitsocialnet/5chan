@@ -576,5 +576,6 @@
   "board_unreachable_from_browsers": "I browser non riescono a caricare questa board perché questo computer non è raggiungibile da internet. Per risolvere, inoltra la porta 4001 (TCP e UDP) dal tuo router a questo computer, oppure attiva UPnP sul tuo router. Se il tuo operatore internet non lo consente, ospita invece la board su un server.",
   "media_hosting_show_link_field": "Mostra il campo \"Link al file\"",
   "media_hosting_show_link_field_tip": "Consente di pubblicare un'immagine o un video incollandone il link diretto",
-  "running_automated_checks": "controlli automatici in corso..."
+  "running_automated_checks": "controlli automatici in corso...",
+  "unsupported_file_type_alert": "Tipo di file non supportato. Usa un file JPG, PNG, GIF, WebP, MP4, WebM o SWF."
 }

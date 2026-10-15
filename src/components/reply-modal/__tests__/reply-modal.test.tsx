@@ -1700,6 +1700,44 @@ describe('ReplyModal', () => {
       expect(testState.uploadAttachmentMock).toHaveBeenCalledWith(gifAttachment);
     });
 
+    const dropFile = async (file: File) => {
+      const drop = new Event('drop', { bubbles: true, cancelable: true });
+      Object.defineProperty(drop, 'dataTransfer', { value: { types: ['Files'], files: [file], dropEffect: 'none' } });
+      await act(async () => {
+        (container.querySelector('textarea') as HTMLTextAreaElement).dispatchEvent(drop);
+      });
+      await rerenderReplyModal('/all/thread/post-1');
+      return drop;
+    };
+
+    it('attaches a file dropped on the modal, then uploads it once the reply is submitted', async () => {
+      testState.uploadAttachmentMock.mockResolvedValue({ url: 'https://forgeimg.net/abc/dropped.png', fileName: 'chosen.png' });
+      await renderReplyModal('/all/thread/post-1');
+
+      const drop = await dropFile(pngFile);
+      expect(drop.defaultPrevented).toBe(true);
+      expect(container.textContent).toContain('chosen.png');
+      expect(testState.chooseFileMock).not.toHaveBeenCalled();
+
+      await dispatchInput(container.querySelector('textarea') as HTMLTextAreaElement, 'dropped reply');
+      await clickButtonByText('post');
+
+      expect(testState.uploadAttachmentMock).toHaveBeenCalledWith(pngAttachment);
+      expect(testState.publishReplyMock).toHaveBeenCalledWith(expect.objectContaining({ link: 'https://forgeimg.net/abc/dropped.png' }));
+    });
+
+    it('reports a dropped file of an unsupported type until a supported one is attached', async () => {
+      await renderReplyModal('/all/thread/post-1');
+
+      await dropFile(new File(['pdf'], 'notes.pdf', { type: 'application/pdf' }));
+      expect(container.textContent).toContain('error: unsupported_file_type_alert');
+      expect(testState.replyDraft?.attachment).toBeUndefined();
+
+      await dropFile(pngFile);
+      expect(container.textContent).not.toContain('unsupported_file_type_alert');
+      expect(container.textContent).toContain('chosen.png');
+    });
+
     it('validates the reply before uploading the attached file', async () => {
       testState.chooseFileMock.mockResolvedValue({
         kind: 'file',
