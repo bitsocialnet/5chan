@@ -31,6 +31,22 @@ export const getBoardFeedPageSizeConstants = (guiPostsPerPage: number) => ({
 });
 
 /**
+ * Number of GUI pages needed to show every item, capped at maxGuiPages.
+ * Always at least one page so an empty board still renders page 1.
+ */
+export const getTotalGuiPages = (totalItems: number, guiPostsPerPage: number, maxGuiPages: number): number => {
+  if (guiPostsPerPage <= 0 || maxGuiPages <= 0) {
+    return 1;
+  }
+  return Math.min(maxGuiPages, Math.floor(totalItems / guiPostsPerPage) || 1);
+};
+
+/**
+ * Clamp a requested 1-based page to the valid range for the current item count.
+ */
+export const clampGuiPage = (page: number, totalGuiPages: number): number => Math.max(1, Math.min(page, totalGuiPages));
+
+/**
  * Slice items for a given page with page clamping.
  * When total items shrink, the requested page is clamped to the last valid page.
  */
@@ -39,10 +55,9 @@ export const getPageSlice = <T>(items: T[], page: number, guiPostsPerPage: numbe
     return [];
   }
 
-  const totalItems = items.length;
-  const totalGuiPages = Math.min(maxGuiPages, Math.ceil(totalItems / guiPostsPerPage) || 1);
-  const clampedPage = Math.max(1, Math.min(page, totalGuiPages));
-  const start = (clampedPage - 1) * guiPostsPerPage;
+  const totalGuiPages = getTotalGuiPages(items.length, guiPostsPerPage, maxGuiPages);
+  const clampedPage = clampGuiPage(page, totalGuiPages);
+  const start = clampedPage * guiPostsPerPage;
   const end = start + guiPostsPerPage;
 
   return items.slice(start, end);
