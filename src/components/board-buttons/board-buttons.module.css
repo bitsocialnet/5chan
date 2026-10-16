@@ -22,6 +22,11 @@
   padding-bottom: 0;
 }
 
+/* Status messages are sentence case; the surrounding button rows capitalize every word. */
+.threadUpdateStatus {
+  text-transform: none;
+}
+
 .mobileThreadUpdateStatus {
   height: 20px;
   line-height: 20px;

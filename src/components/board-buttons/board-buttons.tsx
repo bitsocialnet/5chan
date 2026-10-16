@@ -350,11 +350,15 @@ export const ThreadUpdateStatus = ({ isMobile = false }: { isMobile?: boolean })
   const content = status.type === 'error' ? <span className={styles.threadUpdateError}>{text}</span> : text;
   if (isMobile)
     return (
-      <div className={styles.mobileThreadUpdateStatus} data-testid='thread-update-status'>
+      <div className={`${styles.threadUpdateStatus} ${styles.mobileThreadUpdateStatus}`} data-testid='thread-update-status'>
         {content}
       </div>
     );
-  return <span data-testid='thread-update-status'>{content}</span>;
+  return (
+    <span className={styles.threadUpdateStatus} data-testid='thread-update-status'>
+      {content}
+    </span>
+  );
 };
 
 const scrollToBottom = () => {
