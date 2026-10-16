@@ -2,7 +2,7 @@ import { Fragment } from 'react';
 import { HashLink } from 'react-router-hash-link';
 import { Link } from 'react-router-dom';
 import type { DirectoryCommunity } from '../../hooks/use-directories';
-import { SAGE_FAQ_LINK_LABEL, SAGE_FAQ_PATH, SAGE_OPTION, type PostOptionsValidationError } from '../../lib/utils/post-options-utils';
+import { SAGE_FAQ_LINK_LABEL, SAGE_FAQ_PATH, isSageOption, type PostOptionsValidationError } from '../../lib/utils/post-options-utils';
 
 interface PostOptionsErrorMessageProps {
   directories?: DirectoryCommunity[];
@@ -37,7 +37,7 @@ const DirectoryLinks = ({ codes, directories }: { codes: string[]; directories: 
 const UnsupportedOption = ({ option }: { option: string }) => (
   <>
     {option}
-    {option === SAGE_OPTION && (
+    {isSageOption(option) && (
       <>
         {' '}
         [<HashLink to={SAGE_FAQ_PATH}>{SAGE_FAQ_LINK_LABEL}</HashLink>]

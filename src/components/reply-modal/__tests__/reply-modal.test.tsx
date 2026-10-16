@@ -99,14 +99,21 @@ vi.mock('react-router-dom', async () => {
   };
 });
 
-vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
-  setAccount: (account: unknown) => testState.setAccountMock(account),
-  useAccount: () => testState.account,
-  useCommunity: (options?: { community?: { name?: string; publicKey?: string } }) => {
-    const communityKey = options?.community?.name ?? options?.community?.publicKey;
-    return communityKey ? testState.communities[communityKey] : undefined;
-  },
-}));
+vi.mock('@bitsocial/bitsocial-react-hooks', async () => {
+  const { getAvailablePostSortTypes, getPreloadedPostSortType } = await vi.importActual<typeof import('@bitsocial/bitsocial-react-hooks/dist/lib/page-sorts.js')>(
+    '@bitsocial/bitsocial-react-hooks/dist/lib/page-sorts.js',
+  );
+  return {
+    getAvailablePostSortTypes,
+    getPreloadedPostSortType,
+    setAccount: (account: unknown) => testState.setAccountMock(account),
+    useAccount: () => testState.account,
+    useCommunity: (options?: { community?: { name?: string; publicKey?: string } }) => {
+      const communityKey = options?.community?.name ?? options?.community?.publicKey;
+      return communityKey ? testState.communities[communityKey] : undefined;
+    },
+  };
+});
 
 vi.mock('@bitsocial/bitsocial-react-hooks/dist/stores/communities', () => ({
   default: <T,>(selector: (state: { communities: typeof testState.communities }) => T) =>
@@ -1338,6 +1345,32 @@ describe('ReplyModal', () => {
 
     expect(container.textContent).toContain('Unsupported options: sage [learn why].');
     expect(container.querySelector<HTMLAnchorElement>('a[href="/faq#sage"]')?.textContent).toBe('learn why');
+  });
+
+  it('publishes sage and nonokosage replies with the marker line on boards whose bump order skips sage', async () => {
+    testState.openEmpty = true;
+    testState.selectedText = '';
+    testState.communities['random-nsfw.bso'] = {
+      ...testState.communities['random-nsfw.bso'],
+      pageSorts: { posts: { active: { name: '@pkcprotocol/active-page-sort', publicOptions: { noBumpKeywords: 'sage' } } } },
+      posts: { pages: { active: { comments: [], nextCid: 'next' } }, pageCids: { active: 'first' } },
+    } as (typeof testState.communities)[string];
+
+    await renderReplyModal('/b/thread/post-1', 'random-nsfw.bso');
+
+    const optionsInput = container.querySelectorAll<HTMLInputElement>('input[type="text"]')[1];
+    const textarea = container.querySelector<HTMLTextAreaElement>('textarea');
+
+    await dispatchInput(optionsInput, 'nonokosage');
+    await waitForOptionsValidation();
+
+    expect(container.textContent).not.toContain('Unsupported options');
+
+    await dispatchInput(textarea as HTMLTextAreaElement, 'quiet reply');
+    await clickButtonByText('post');
+
+    expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
+    expect(testState.publishReplyMock).toHaveBeenCalledWith(expect.objectContaining({ content: 'quiet reply\nsage' }));
   });
 
   it('supports fortune on the /s5s/ route when directory metadata is not loaded', async () => {

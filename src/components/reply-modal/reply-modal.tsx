@@ -18,12 +18,14 @@ import {
   type FortuneEntry,
   type PostOptionsValidationError,
   POST_OPTIONS_VALIDATION_DELAY_MS,
+  appendSageMarker,
   getContentWithPostOptionState as getContentWithOptions,
   getPostOptionsDirectoryCode,
   getPostOptionsPublishContentLength,
   getPostOptionsValidationError,
   hasNonokoOption,
   isPostOptionsValidationError,
+  isSageSupportedByBoard,
 } from '../../lib/utils/post-options-utils';
 import { isMathDirectoryCode } from '../../lib/math-tags';
 import { hasModQueueAccessRole } from '../../lib/utils/mod-access';
@@ -136,6 +138,7 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
   const showOekakiControls = postOptionsDirectoryCode === 'i' || directoryEntry?.directoryCode === 'i';
   const showTexButton = isMathDirectoryCode(postOptionsDirectoryCode) || isMathDirectoryCode(directoryEntry?.directoryCode);
   const communityFeatures = useCommunityField(communityAddress, (community) => community?.features);
+  const isSageSupported = useCommunityField(communityAddress, isSageSupportedByBoard) ?? false;
   const replyLinkFeatures = getEffectiveReplyLinkFeatures(communityFeatures, directoryEntry?.features);
   const requireReplyLink = getRequireReplyLink(replyLinkFeatures);
   const requireReplyLinkIsMedia = getRequireReplyLinkIsMedia(replyLinkFeatures, isInAllView || isInSubscriptionsView);
@@ -221,8 +224,8 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
   );
 
   const checkPostOptionsRef = useRef(
-    debounce((options: string, directoryCode: string | undefined) => {
-      const nextOptionsError = getPostOptionsValidationError(options, directoryCode);
+    debounce((options: string, directoryCode: string | undefined, isSageSupported: boolean) => {
+      const nextOptionsError = getPostOptionsValidationError(options, directoryCode, isSageSupported);
       if (nextOptionsError) {
         setLengthError(null);
         setError(nextOptionsError);
@@ -238,7 +241,7 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
       const currentDisplayName = nameRef.current?.value.trim() || undefined;
       const currentUrl = urlRef.current?.value.trim() || '';
       const currentOptions = optionsRef.current?.value || '';
-      const currentOptionsError = getPostOptionsValidationError(currentOptions, postOptionsDirectoryCode);
+      const currentOptionsError = getPostOptionsValidationError(currentOptions, postOptionsDirectoryCode, isSageSupported);
       const publishContent = getContentWithOptions(currentContent, currentOptions, fortuneEntryRef, diceRollRef, postOptionsDirectoryCode);
 
       checkContentLengthRef.current.cancel();
@@ -294,7 +297,8 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
       nonokoRedirectPathRef.current = hasNonokoOption(currentOptions) ? `/${postOptionsDirectoryCode || params.boardIdentifier || communityAddress}` : null;
       await publishReply({
         displayName: currentDisplayName,
-        content: publishContent,
+        // The empty and length checks above ignore the sage marker, like 4chan ignores the options field.
+        content: appendSageMarker(publishContent, currentOptions),
         ...(uploadedLink ? { link: uploadedLink } : getPublishLinkOptions(currentUrl, appliedThumbnailConversion)),
         ...flagPublishOptions,
       });
@@ -501,7 +505,7 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
     updateDraft({ options });
     handleContentValueChange(textRef.current?.value || '', undefined, undefined, options);
     setError((currentError) => (isPostOptionsValidationError(currentError) ? null : currentError));
-    checkPostOptionsRef.current(options, postOptionsDirectoryCode);
+    checkPostOptionsRef.current(options, postOptionsDirectoryCode, isSageSupported);
   };
 
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {

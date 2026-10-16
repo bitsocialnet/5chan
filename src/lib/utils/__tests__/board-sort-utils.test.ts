@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getBoardSortType, isBoardMissingSortType } from '../board-sort-utils';
+import { getBoardNoBumpKeywords, getBoardSortType, isBoardMissingSortType } from '../board-sort-utils';
 
 const makePageSorts = (sortTypes: string[]) => ({ posts: Object.fromEntries(sortTypes.map((sortType) => [sortType, { name: sortType }])) });
 
@@ -44,5 +44,14 @@ describe('board-sort-utils', () => {
     expect(isBoardMissingSortType(makeLargeBoard(['hot'], null), 'active')).toBe(false);
     expect(isBoardMissingSortType(undefined, 'active')).toBe(false);
     expect(isBoardMissingSortType({ pageSorts: makePageSorts(['hot']), posts: { pages: {}, pageCids: {} } }, 'active')).toBe(false);
+  });
+
+  it('reads the no-bump keywords of the sort the board feed uses', () => {
+    const noBumpActive = { name: '@pkcprotocol/active-page-sort', publicOptions: { noBumpKeywords: ' sage , nobump,' } };
+
+    expect(getBoardNoBumpKeywords(makeLargeBoard(['active'], { posts: { active: noBumpActive } }))).toEqual(['sage', 'nobump']);
+    expect(getBoardNoBumpKeywords(makeLargeBoard(['active']))).toEqual([]);
+    // keywords configured on a sort the board feed does not use do not apply
+    expect(getBoardNoBumpKeywords(makeLargeBoard(['hot', 'new'], { posts: { hot: { name: 'hot' }, new: noBumpActive } }))).toEqual([]);
   });
 });

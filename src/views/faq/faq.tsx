@@ -264,13 +264,10 @@ const FAQ_SECTIONS: FAQSection[] = [
         question: 'What is "sage"?',
         answer: (
           <>
-            On imageboards, entering <code>sage</code> in the <code>[Options]</code> field while replying means "do not bump this thread." 5chan cannot implement it as a
-            real option yet because boards use the <code>active</code> sort type from pkc-js, and a reply cannot opt out of updating that active order until pkc-js
-            supports configurable page sorts. That work is tracked in{' '}
-            <a href='https://github.com/pkcprotocol/pkc-js/issues/73' {...externalLinkProps}>
-              pkc-js issue #73
-            </a>
-            {'. '}pkc-js is a core Bitsocial library, so <code>sage</code> has to land there before 5chan can make it work. It is not a downvote.
+            On imageboards, entering <code>sage</code> in the <code>[Options]</code> field while replying means "do not bump this thread." Bitsocial boards compute their
+            own bump order, so <code>sage</code> works on boards whose operator set that order to skip replies marked <code>sage</code>. 5chan marks the reply by adding{' '}
+            <code>sage</code> as its last line and hides that line when showing the reply, though other Bitsocial clients may show it. On a board without that setting,
+            5chan rejects the option instead of posting a reply that would still bump the thread. It is not a downvote.
           </>
         ),
       },
@@ -289,7 +286,8 @@ const FAQ_SECTIONS: FAQSection[] = [
         question: 'Can I use nonoko and sage at the same time?',
         answer: (
           <>
-            Not yet. <code>nonoko</code> works now, but <code>sage</code> and <code>nonokosage</code> are still blocked on the pkc-js page-sort work above.
+            Yes, on boards that support <code>sage</code>. Enter <code>nonokosage</code> in the <code>[Options]</code> field: your reply does not bump the thread and you
+            return to the board index.
           </>
         ),
       },

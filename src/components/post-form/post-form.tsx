@@ -30,6 +30,7 @@ import {
   type FortuneEntry,
   type PostOptionsValidationError,
   POST_OPTIONS_VALIDATION_DELAY_MS,
+  appendSageMarker,
   getContentWithPostOptionState as getContentWithOptions,
   getNonokoPendingRouteState,
   getPostOptionsDirectoryCode,
@@ -37,6 +38,7 @@ import {
   getPostOptionsValidationError,
   hasNonokoOption,
   isPostOptionsValidationError,
+  isSageSupportedByBoard,
 } from '../../lib/utils/post-options-utils';
 import { truncateWithEllipsisInMiddle } from '../../lib/utils/string-utils';
 import { getHostname, isValidURL } from '../../lib/utils/url-utils';
@@ -800,6 +802,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
   const postOptionsDirectoryCode = getPostOptionsDirectoryCode(directoryEntry, location.pathname);
   const showOekakiControls = postOptionsDirectoryCode === 'i' || directoryEntry?.directoryCode === 'i';
   const communityFeatures = useCommunityField(effectiveBoardAddress, (community) => community?.features);
+  const isSageSupported = useCommunityField(effectiveBoardAddress, isSageSupportedByBoard) ?? false;
   const postLinkFeatures = getEffectivePostLinkFeatures(communityFeatures, directoryEntry?.features);
   const replyLinkFeatures = getEffectiveReplyLinkFeatures(communityFeatures, directoryEntry?.features);
   const requirePostLink = getRequirePostLink(postLinkFeatures);
@@ -847,8 +850,8 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
   ).current;
 
   const checkPostOptions = useRef(
-    debounce((options: string, directoryCode: string | undefined) => {
-      const nextOptionsError = getPostOptionsValidationError(options, directoryCode);
+    debounce((options: string, directoryCode: string | undefined, isSageSupported: boolean) => {
+      const nextOptionsError = getPostOptionsValidationError(options, directoryCode, isSageSupported);
       if (nextOptionsError) {
         setFormError(nextOptionsError);
       }
@@ -929,7 +932,8 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
       const currentContent = textRef.current?.value || '';
       const currentUrl = urlRef.current?.value.trim() || '';
       const currentOptions = optionsRef.current?.value || '';
-      const currentOptionsError = getPostOptionsValidationError(currentOptions, postOptionsDirectoryCode);
+      // Sage only changes how replies bump a thread, so a new thread accepts it without a marker.
+      const currentOptionsError = getPostOptionsValidationError(currentOptions, postOptionsDirectoryCode, isSageSupported);
       const publishContent = getContentWithOptions(currentContent, currentOptions, fortuneEntryRef, diceRollRef, postOptionsDirectoryCode);
 
       checkContentLength.cancel();
@@ -1090,7 +1094,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
     updateDraft({ options });
     handleContentValueChange(textRef.current?.value || '', options);
     setFormError((currentError) => (isPostOptionsValidationError(currentError) ? null : currentError));
-    checkPostOptions(options, postOptionsDirectoryCode);
+    checkPostOptions(options, postOptionsDirectoryCode, isSageSupported);
   };
 
   const handleBbcodePreviewToggle = () => {
@@ -1111,7 +1115,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
       const currentUrl = urlRef.current?.value.trim() || '';
       const currentDisplayName = nameRef.current?.value.trim() || undefined;
       const currentOptions = optionsRef.current?.value || '';
-      const currentOptionsError = getPostOptionsValidationError(currentOptions, postOptionsDirectoryCode);
+      const currentOptionsError = getPostOptionsValidationError(currentOptions, postOptionsDirectoryCode, isSageSupported);
       const publishContent = getContentWithOptions(textRef.current?.value || '', currentOptions, fortuneEntryRef, diceRollRef, postOptionsDirectoryCode);
 
       checkContentLength.cancel();
@@ -1170,7 +1174,8 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
       nonokoRedirectPathRef.current = hasNonokoOption(currentOptions) ? getBoardIndexPath() : null;
       await publishReply({
         displayName: currentDisplayName,
-        content: publishContent,
+        // The empty and length checks above ignore the sage marker, like 4chan ignores the options field.
+        content: appendSageMarker(publishContent, currentOptions),
         ...(uploadedLink
           ? { link: uploadedLink }
           : getPublishLinkOptions(currentUrl, appliedThumbnailConversion || (hasRestoredDraftRef.current && Boolean(currentUrl)))),

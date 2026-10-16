@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
+  appendSageMarker,
   getContentWithPostOptionState,
   getNonokoPendingAccountCommentIndex,
   getNonokoPendingRouteState,
@@ -7,7 +8,9 @@ import {
   getPostOptionsValidationError,
   getUnsupportedPostOptionsMessage,
   hasNonokoOption,
+  isSageSupportedByBoard,
   stripGeneratedFortuneMarkup,
+  stripSageMarker,
 } from '../post-options-utils';
 
 describe('post-options-utils', () => {
@@ -15,11 +18,41 @@ describe('post-options-utils', () => {
     expect(getUnsupportedPostOptionsMessage('dice+1d6 dice+1d20', 'qst')).toBe('Unsupported options: dice+1d20.');
   });
 
-  it('supports nonoko while keeping sage unsupported', () => {
+  it('supports nonoko everywhere and sage only on boards whose bump order skips sage replies', () => {
     expect(getUnsupportedPostOptionsMessage('nonoko', undefined)).toBeNull();
     expect(getUnsupportedPostOptionsMessage('sage', 'b')).toBe('Unsupported options: sage [learn why].');
+    expect(getUnsupportedPostOptionsMessage('nonokosage', 'b')).toBe('Unsupported options: nonokosage [learn why].');
+    expect(getUnsupportedPostOptionsMessage('sage', 'b', true)).toBeNull();
+    expect(getUnsupportedPostOptionsMessage('nonoko sage nonokosage', 'b', true)).toBeNull();
     expect(hasNonokoOption('fortune nonoko')).toBe(true);
-    expect(hasNonokoOption('nonokosage')).toBe(false);
+    expect(hasNonokoOption('nonokosage')).toBe(true);
+    expect(hasNonokoOption('sage')).toBe(false);
+  });
+
+  it('reads sage support from the keywords of the board no-bump sort', () => {
+    const makeBoard = (activePageSort: object) => ({
+      updatedAt: 1,
+      pageSorts: { posts: { active: activePageSort } },
+      posts: { pages: { active: { comments: [], nextCid: 'next' } }, pageCids: { active: 'first' } },
+    });
+
+    expect(isSageSupportedByBoard(makeBoard({ name: '@pkcprotocol/active-page-sort', publicOptions: { noBumpKeywords: 'nobump, sage' } }))).toBe(true);
+    expect(isSageSupportedByBoard(makeBoard({ publicOptions: { noBumpKeywords: 'nobump' } }))).toBe(false);
+    expect(isSageSupportedByBoard(makeBoard({ name: 'active' }))).toBe(false);
+    expect(isSageSupportedByBoard(undefined)).toBe(false);
+  });
+
+  it('marks sage replies with a last line the no-bump sort matches and hides it for display', () => {
+    expect(appendSageMarker('reply', 'sage')).toBe('reply\nsage');
+    expect(appendSageMarker('', 'nonokosage')).toBe('sage');
+    expect(appendSageMarker('reply', 'nonoko')).toBe('reply');
+
+    expect(stripSageMarker('reply\nsage')).toBe('reply');
+    expect(stripSageMarker('sage')).toBe('');
+    expect(stripSageMarker('reply\nsage\n')).toBe('reply');
+    // prose mentioning the keyword is not the marker
+    expect(stripSageMarker('sage is overused')).toBe('sage is overused');
+    expect(stripSageMarker('please sage')).toBe('please sage');
   });
 
   it('describes board-specific options with supported directories', () => {

@@ -31,3 +31,19 @@ export const isBoardMissingSortType = (community: Community | undefined, sortTyp
   const availableSortTypes = getAvailablePostSortTypes(community);
   return availableSortTypes.length > 0 && !availableSortTypes.includes(sortType);
 };
+
+/**
+ * A keyword no-bump sort (the `active` variant pkc-js ships as its page-sort reference) publishes its
+ * keywords as the comma-separated `noBumpKeywords` option in `community.pageSorts`. A reply that has
+ * one of them as a whole line of its content does not bump its thread. Every rendered reply runs this,
+ * so boards without `pageSorts.posts` stop at the optional chain before the board sort is computed.
+ */
+export const getBoardNoBumpKeywords = (community: Community | undefined): string[] => {
+  const noBumpKeywords = community?.pageSorts?.posts?.[getBoardSortType(community)]?.publicOptions?.noBumpKeywords;
+  return typeof noBumpKeywords === 'string'
+    ? noBumpKeywords
+        .split(',')
+        .map((keyword) => keyword.trim())
+        .filter(Boolean)
+    : [];
+};

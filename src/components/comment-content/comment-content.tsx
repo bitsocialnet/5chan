@@ -12,6 +12,7 @@ import { isPostPageView } from '../../lib/utils/view-utils';
 import { useCompleteThreadCids } from '../../hooks/use-complete-thread-cids';
 import useIsMobile from '../../hooks/use-is-mobile';
 import useStateString from '../../hooks/use-state-string';
+import { useCommunityField } from '../../hooks/use-stable-community';
 import LoadingEllipsis from '../loading-ellipsis';
 import BbcodeContent from '../bbcode-content';
 import ErrorDisplay from '../error-display';
@@ -23,7 +24,7 @@ import capitalize from 'lodash/capitalize';
 import { getCommentCommunityAddress, withResolvedCommentCommunityAddress } from '../../lib/utils/comment-utils';
 import { formatErrorMessageForDisplay } from '../../lib/utils/error-utils';
 import { hasModQueueAccessRole } from '../../lib/utils/mod-access';
-import { stripGeneratedFortuneMarkup } from '../../lib/utils/post-options-utils';
+import { isSageSupportedByBoard, stripGeneratedFortuneMarkup, stripSageMarker } from '../../lib/utils/post-options-utils';
 import BoardCheckStatus from './board-check-status';
 
 const QuotedCidLink = ({ cid, isPurged, postCid }: { cid: string; isPurged?: boolean; postCid: string }) => {
@@ -108,8 +109,10 @@ const CommentContent = ({
   const resolvedPost = withResolvedCommentCommunityAddress(post);
 
   const { cid, content, deleted, parentCid, postCid, pendingApproval, publishingState, quotedCids, reason, removed, state } = resolvedPost || {};
-  const visibleContent = !cid && content ? stripGeneratedFortuneMarkup(content) : content;
   const communityAddress = getCommentCommunityAddress(resolvedPost);
+  const hidesSageMarker = useCommunityField(parentCid ? communityAddress : undefined, isSageSupportedByBoard);
+  const contentWithoutSage = hidesSageMarker && content ? stripSageMarker(content) : content;
+  const visibleContent = !cid && contentWithoutSage ? stripGeneratedFortuneMarkup(contentWithoutSage) : contentWithoutSage;
   const authorAddress = resolvedPost?.author?.address;
   const authorRole = getRoleByAddress(roles, authorAddress);
   const isPrivilegedAuthor = hasModQueueAccessRole(authorRole);

@@ -1,7 +1,11 @@
+import type { Community } from '@bitsocial/bitsocial-react-hooks';
+import { getBoardNoBumpKeywords } from './board-sort-utils';
+
 export const POST_OPTIONS_VALIDATION_DELAY_MS = 700;
 export const SAGE_FAQ_LINK_LABEL = 'learn why';
 export const SAGE_FAQ_PATH = '/faq#sage';
-export const SAGE_OPTION = 'sage';
+const SAGE_OPTION = 'sage';
+const NONOKOSAGE_OPTION = 'nonokosage';
 const FORTUNE_DIRECTORY_CODES = new Set(['b', 's5s']);
 const DICE_DIRECTORY_CODES = new Set(['qst', 'tg']);
 const POST_OPTION_ROUTE_DIRECTORY_CODES = new Set([...FORTUNE_DIRECTORY_CODES, ...DICE_DIRECTORY_CODES]);
@@ -97,9 +101,19 @@ export const getPostOptionsDirectoryCode = (directory: PostOptionsDirectory | nu
   return directory?.title?.match(/^\/([^/]+)\//)?.[1] ?? getRouteDirectoryCode(pathname);
 };
 
-const isSupportedPostOption = (option: string, directoryCode: string | undefined): boolean => {
+/** `nonokosage` is 4chan's shorthand for `nonoko` plus `sage`. */
+export const isSageOption = (option: string): boolean => option === SAGE_OPTION || option === NONOKOSAGE_OPTION;
+
+/** Sage needs the board's bump order to skip replies carrying the `sage` keyword; see appendSageMarker. */
+export const isSageSupportedByBoard = (community: Community | undefined): boolean => getBoardNoBumpKeywords(community).includes(SAGE_OPTION);
+
+const isSupportedPostOption = (option: string, directoryCode: string | undefined, isSageSupported: boolean): boolean => {
   if (option === 'nonoko') {
     return true;
+  }
+
+  if (isSageOption(option)) {
+    return isSageSupported;
   }
 
   if (option === 'fortune') {
@@ -117,7 +131,7 @@ const getSupportedDirectoryCodes = (option: string): string[] => {
   return parseDiceOption(option) ? [...DICE_DIRECTORY_CODES] : [];
 };
 
-export const getPostOptionsValidationError = (value: string, directoryCode: string | undefined): PostOptionsValidationError | null => {
+export const getPostOptionsValidationError = (value: string, directoryCode: string | undefined, isSageSupported = false): PostOptionsValidationError | null => {
   let hasDiceOption = false;
   const unsupportedOptions: string[] = [];
   const supportedDirectoryCodesByOption: Array<{ option: string; directoryCodes: string[] }> = [];
@@ -133,7 +147,7 @@ export const getPostOptionsValidationError = (value: string, directoryCode: stri
       continue;
     }
 
-    if (isSupportedPostOption(option, directoryCode)) {
+    if (isSupportedPostOption(option, directoryCode, isSageSupported)) {
       continue;
     }
 
@@ -151,13 +165,13 @@ export const getPostOptionsValidationError = (value: string, directoryCode: stri
   return unsupportedOptions.length > 0 ? { unsupportedOptions, supportedDirectoryCodesByOption } : null;
 };
 
-export const getUnsupportedPostOptionsMessage = (value: string, directoryCode: string | undefined): string | null => {
-  const error = getPostOptionsValidationError(value, directoryCode);
+export const getUnsupportedPostOptionsMessage = (value: string, directoryCode: string | undefined, isSageSupported = false): string | null => {
+  const error = getPostOptionsValidationError(value, directoryCode, isSageSupported);
   if (!error) {
     return null;
   }
 
-  const unsupportedOptionsLabel = error.unsupportedOptions.map((option) => (option === SAGE_OPTION ? `${option} [${SAGE_FAQ_LINK_LABEL}]` : option)).join(', ');
+  const unsupportedOptionsLabel = error.unsupportedOptions.map((option) => (isSageOption(option) ? `${option} [${SAGE_FAQ_LINK_LABEL}]` : option)).join(', ');
   let message = `Unsupported options: ${unsupportedOptionsLabel}.`;
 
   for (const { option, directoryCodes } of error.supportedDirectoryCodesByOption) {
@@ -167,7 +181,21 @@ export const getUnsupportedPostOptionsMessage = (value: string, directoryCode: s
   return message;
 };
 
-export const hasNonokoOption = (value: string): boolean => parsePostOptions(value).includes('nonoko');
+export const hasNonokoOption = (value: string): boolean => parsePostOptions(value).some((option) => option === 'nonoko' || option === NONOKOSAGE_OPTION);
+
+// The board's keyword no-bump sort matches a whole line of the reply, so the marker is its own last line.
+const SAGE_MARKER_PATTERN = new RegExp(`(?:^|\\n)${SAGE_OPTION}\\n*$`);
+
+/** Mark a reply as sage for the board's bump order. Validation only lets sage through on boards that support it. */
+export const appendSageMarker = (content: string, options: string): string => {
+  if (!parsePostOptions(options).some(isSageOption)) {
+    return content;
+  }
+  return content ? `${content}\n${SAGE_OPTION}` : SAGE_OPTION;
+};
+
+/** 4chan never shows sage, so the marker line is hidden on boards whose bump order reads it. */
+export const stripSageMarker = (content: string): string => content.replace(SAGE_MARKER_PATTERN, '');
 
 export const isFortuneDirectoryCode = (directoryCode: string | undefined): boolean => !!directoryCode && FORTUNE_DIRECTORY_CODES.has(directoryCode);
 

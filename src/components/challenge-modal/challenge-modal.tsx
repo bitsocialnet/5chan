@@ -2,8 +2,9 @@ import { useRef, useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Challenge as ChallengeType, useAccount, useComment } from '@bitsocial/bitsocial-react-hooks';
 import { getPublicationPreview, getPublicationType, getVotePreview, publishPublicationChallengeAnswers } from '../../lib/utils/challenge-utils';
-import { stripGeneratedFortuneMarkup } from '../../lib/utils/post-options-utils';
+import { isSageSupportedByBoard, stripGeneratedFortuneMarkup, stripSageMarker } from '../../lib/utils/post-options-utils';
 import useIsMobile from '../../hooks/use-is-mobile';
+import { useCommunityField } from '../../hooks/use-stable-community';
 import useChallengesStore from '../../stores/use-challenges-store';
 import useTrustedBoardUrlPermissionsStore from '../../stores/use-trusted-board-url-permissions-store';
 import useTheme from '../../hooks/use-theme';
@@ -312,11 +313,15 @@ const Challenge = ({ challenge, closeModal, abandonModal }: ChallengeProps) => {
   const publicationTarget = challenge?.[2];
 
   const publicationType = getPublicationType(publication);
-  const publicationContent = publicationType === 'vote' ? getPublicationPreview(publicationTarget) : getPublicationPreview(publication);
   const votePreview = getVotePreview(publication);
 
   const { author, content, link, title, parentCid, shortCommunityAddress, communityAddress } = publication || {};
-  const visibleContent = content ? stripGeneratedFortuneMarkup(content) : '';
+  // A sage reply's marker line stays hidden here, as it is on the published reply.
+  const hidesSageMarker = useCommunityField(parentCid ? communityAddress : undefined, isSageSupportedByBoard);
+  const shownContent = hidesSageMarker && content ? stripSageMarker(content) : content;
+  const publicationContent =
+    publicationType === 'vote' ? getPublicationPreview(publicationTarget) : getPublicationPreview(publication && { ...publication, content: shownContent });
+  const visibleContent = shownContent ? stripGeneratedFortuneMarkup(shownContent) : '';
   const { displayName } = author || {};
   const parentAddress = useParentAddress(parentCid);
   const community = shortCommunityAddress || communityAddress;

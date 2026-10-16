@@ -47,6 +47,7 @@ type TestComment = {
 };
 
 const testState = vi.hoisted(() => ({
+  boardRecord: undefined as Record<string, unknown> | undefined,
   community: {} as { challenges?: unknown },
   useCommunity: vi.fn(),
   commentsByCid: {} as Record<string, TestComment>,
@@ -122,12 +123,24 @@ vi.mock('react-router-dom', async () => {
   };
 });
 
-vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
-  useComment: ({ commentCid }: { commentCid?: string }) => (commentCid ? testState.commentsByCid[commentCid] : undefined),
-  useCommunity: (options: unknown) => {
-    testState.useCommunity(options);
-    return testState.community;
-  },
+vi.mock('@bitsocial/bitsocial-react-hooks', async () => {
+  const { getAvailablePostSortTypes, getPreloadedPostSortType } = await vi.importActual<typeof import('@bitsocial/bitsocial-react-hooks/dist/lib/page-sorts.js')>(
+    '@bitsocial/bitsocial-react-hooks/dist/lib/page-sorts.js',
+  );
+  return {
+    getAvailablePostSortTypes,
+    getPreloadedPostSortType,
+    useComment: ({ commentCid }: { commentCid?: string }) => (commentCid ? testState.commentsByCid[commentCid] : undefined),
+    useCommunity: (options: unknown) => {
+      testState.useCommunity(options);
+      return testState.community;
+    },
+  };
+});
+
+vi.mock('../../../hooks/use-stable-community', () => ({
+  useCommunityField: <T,>(address: string | undefined, selector: (community: unknown) => T) =>
+    address && testState.boardRecord ? selector(testState.boardRecord) : undefined,
 }));
 
 vi.mock('../../../hooks/use-community-identifiers', () => ({
@@ -252,6 +265,7 @@ const queryMarkdownText = () => Array.from(container.querySelectorAll('[data-tes
 describe('CommentContent', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    testState.boardRecord = undefined;
     testState.community = {};
     testState.commentsByCid = {};
     testState.formattedDate = '2024-01-01 12:00:00';
@@ -295,6 +309,23 @@ describe('CommentContent', () => {
     const previews = container.querySelectorAll('[data-testid="reply-quote-preview"]');
     expect(previews).toHaveLength(1);
     expect(previews[0]?.textContent).toBe('quoted-2');
+  });
+
+  it('hides the sage marker of replies only on boards whose bump order reads it', async () => {
+    const reply = { cid: 'reply-1', communityAddress: 'music-posting.eth', content: 'quiet reply\nsage', parentCid: 'post-1', postCid: 'post-1' };
+
+    await renderContent(reply);
+    expect(queryMarkdownText()).toEqual(['quiet reply\nsage']);
+
+    testState.boardRecord = {
+      pageSorts: { posts: { active: { name: '@pkcprotocol/active-page-sort', publicOptions: { noBumpKeywords: 'sage' } } } },
+      posts: { pages: { active: { comments: [{ cid: 'post-1' }], nextCid: 'next' } }, pageCids: { active: 'first' } },
+    };
+    await renderContent({ ...reply });
+    expect(queryMarkdownText()).toEqual(['quiet reply']);
+
+    await renderContent({ cid: 'post-1', communityAddress: 'music-posting.eth', content: 'thread\nsage', postCid: 'post-1' });
+    expect(queryMarkdownText()).toEqual(['thread\nsage']);
   });
 
   it('marks quotes of purged same-thread replies once the thread is completely loaded', async () => {
