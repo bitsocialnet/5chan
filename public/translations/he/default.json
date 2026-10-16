@@ -577,5 +577,6 @@
   "media_hosting_show_link_field": "הצגת השדה \"קישור לקובץ\"",
   "media_hosting_show_link_field_tip": "מאפשר לפרסם תמונה או סרטון על ידי הדבקת קישור ישיר אליו",
   "running_automated_checks": "מריץ בדיקות אוטומטיות...",
-  "unsupported_file_type_alert": "סוג הקובץ אינו נתמך. השתמשו בקובץ JPG, PNG, GIF, WebP, MP4, WebM או SWF."
+  "unsupported_file_type_alert": "סוג הקובץ אינו נתמך. השתמשו בקובץ JPG, PNG, GIF, WebP, MP4, WebM או SWF.",
+  "boards_without_bump_order": "לא מוצגים כי הם לא מפרסמים סדר bump: {{boards}}"
 }

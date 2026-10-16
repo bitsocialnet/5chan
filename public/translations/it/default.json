@@ -577,5 +577,6 @@
   "media_hosting_show_link_field": "Mostra il campo \"Link al file\"",
   "media_hosting_show_link_field_tip": "Consente di pubblicare un'immagine o un video incollandone il link diretto",
   "running_automated_checks": "controlli automatici in corso...",
-  "unsupported_file_type_alert": "Tipo di file non supportato. Usa un file JPG, PNG, GIF, WebP, MP4, WebM o SWF."
+  "unsupported_file_type_alert": "Tipo di file non supportato. Usa un file JPG, PNG, GIF, WebP, MP4, WebM o SWF.",
+  "boards_without_bump_order": "Non mostrate perché non pubblicano un ordine di bump: {{boards}}"
 }

@@ -10,6 +10,7 @@ import LoadingEllipsis from '../../components/loading-ellipsis';
 import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
 import { useCommunityField } from '../../hooks/use-stable-community';
 import { useBoardHasArchive } from '../../hooks/use-board-has-archive';
+import { useBoardSortType } from '../../hooks/use-board-sort-type';
 import { getBoardPath } from '../../lib/utils/route-utils';
 import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
 import { removeMarkdown } from '../../lib/utils/post-utils';
@@ -31,8 +32,6 @@ type BoardFeedComment = {
     archived?: boolean;
   };
 };
-
-const BOARD_SORT_TYPE = 'active';
 
 const ARCHIVE_FILTER_KEY = 'archived-only';
 const SECONDS_PER_DAY = 60 * 60 * 24;
@@ -188,14 +187,15 @@ const ArchiveListing = ({ boardIdentifier, communityAddress }: { boardIdentifier
   const communityAddresses = useMemo(() => (communityAddress ? [communityAddress] : []), [communityAddress]);
   const communities = useCommunityIdentifiers(communityAddresses);
   const communityIdentifier = useCommunityIdentifier(communityAddress);
+  const boardSortType = useBoardSortType(communityAddress);
 
   const feedOptions = useMemo(
     () => ({
       communities,
-      sortType: BOARD_SORT_TYPE,
+      sortType: boardSortType,
       filter: archiveFilter,
     }),
-    [communities, archiveFilter],
+    [communities, boardSortType, archiveFilter],
   );
 
   const { feed, hasMore, loadMore } = useFeed(feedOptions);

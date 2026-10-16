@@ -577,5 +577,6 @@
   "media_hosting_show_link_field": "显示“链接到文件”字段",
   "media_hosting_show_link_field_tip": "可通过粘贴直链来发布图片或视频",
   "running_automated_checks": "正在运行自动检查...",
-  "unsupported_file_type_alert": "不支持的文件类型。请使用 JPG、PNG、GIF、WebP、MP4、WebM 或 SWF 文件。"
+  "unsupported_file_type_alert": "不支持的文件类型。请使用 JPG、PNG、GIF、WebP、MP4、WebM 或 SWF 文件。",
+  "boards_without_bump_order": "未显示，因为这些版块不发布顶贴顺序：{{boards}}"
 }

@@ -577,5 +577,6 @@
   "media_hosting_show_link_field": "\"फ़ाइल का लिंक\" फ़ील्ड दिखाएँ",
   "media_hosting_show_link_field_tip": "सीधा लिंक पेस्ट करके इमेज या वीडियो पोस्ट करने देता है",
   "running_automated_checks": "स्वचालित जाँच चल रही है...",
-  "unsupported_file_type_alert": "फ़ाइल प्रकार समर्थित नहीं है. JPG, PNG, GIF, WebP, MP4, WebM या SWF फ़ाइल का उपयोग करें."
+  "unsupported_file_type_alert": "फ़ाइल प्रकार समर्थित नहीं है. JPG, PNG, GIF, WebP, MP4, WebM या SWF फ़ाइल का उपयोग करें.",
+  "boards_without_bump_order": "नहीं दिखाए गए क्योंकि ये बंप क्रम प्रकाशित नहीं करते: {{boards}}"
 }

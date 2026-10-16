@@ -597,5 +597,6 @@
   "media_hosting_show_link_field": "Show \"Link To File\" field",
   "media_hosting_show_link_field_tip": "Lets you post an image or video by pasting a direct link to it",
   "running_automated_checks": "running automated checks...",
-  "unsupported_file_type_alert": "Unsupported file type. Use a JPG, PNG, GIF, WebP, MP4, WebM or SWF file."
+  "unsupported_file_type_alert": "Unsupported file type. Use a JPG, PNG, GIF, WebP, MP4, WebM or SWF file.",
+  "boards_without_bump_order": "Not shown because they do not publish a bump order: {{boards}}"
 }

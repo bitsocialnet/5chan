@@ -8,6 +8,7 @@ import { usePostPageNumber } from '../use-post-page-number';
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
 
 const testState = vi.hoisted(() => ({
+  boardSortType: 'active',
   community: { address: 'music.eth', features: {} },
   feedsOptions: {} as Record<string, unknown>,
   loadedFeeds: {} as Record<string, unknown>,
@@ -44,6 +45,10 @@ vi.mock('../use-board-feed-page-size', () => ({
   useBoardFeedPageSize: () => testState.sizes,
 }));
 
+vi.mock('../use-board-sort-type', () => ({
+  useBoardSortType: () => testState.boardSortType,
+}));
+
 let latestValue: number | undefined;
 let container: HTMLDivElement;
 let root: Root;
@@ -64,6 +69,7 @@ const renderHook = (props: { enabled?: boolean; postCid?: string; communityAddre
 describe('usePostPageNumber', () => {
   beforeEach(() => {
     latestValue = undefined;
+    testState.boardSortType = 'active';
     testState.community = { address: 'music.eth', features: {} };
     testState.feedsOptions = {};
     testState.loadedFeeds = {};
@@ -114,13 +120,22 @@ describe('usePostPageNumber', () => {
     });
   });
 
-  it('always preloads the active sort', () => {
-    renderHook({ postCid: 'post-1', communityAddress: 'music.eth' });
+  it('preloads and matches the board sort when the board does not publish bump order', () => {
+    testState.boardSortType = 'hot';
+    testState.feedsOptions = {
+      activeFeed: { sortType: 'active', communityAddresses: ['music.eth'] },
+      boardFeed: { sortType: 'hot', communityAddresses: ['music.eth'] },
+    };
+    testState.loadedFeeds = {
+      activeFeed: [{ cid: 'post-3' }],
+      boardFeed: [{ cid: 'post-1' }, { cid: 'post-2' }, { cid: 'post-3' }],
+    };
 
+    expect(renderHook({ postCid: 'post-3', communityAddress: 'music.eth' })).toBe(2);
     expect(testState.preloadOptions).toEqual({
       communities: [{ name: 'music.eth' }],
       postsPerPage: 20,
-      sortType: 'active',
+      sortType: 'hot',
     });
   });
 

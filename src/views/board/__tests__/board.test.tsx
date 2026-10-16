@@ -187,11 +187,13 @@ const getScopedFeed = (options?: { filter?: { filter: (comment: TestComment) => 
 
 vi.mock('@bitsocial/bitsocial-react-hooks', async () => {
   // Real sort helpers so the raw board state follows the package's single-page contract.
-  const { getPostPageSortType, resolvePostSortType } = await vi.importActual<typeof import('@bitsocial/bitsocial-react-hooks/dist/lib/page-sorts.js')>(
-    '@bitsocial/bitsocial-react-hooks/dist/lib/page-sorts.js',
-  );
+  const { getAvailablePostSortTypes, getPostPageSortType, getPreloadedPostSortType, resolvePostSortType } = await vi.importActual<
+    typeof import('@bitsocial/bitsocial-react-hooks/dist/lib/page-sorts.js')
+  >('@bitsocial/bitsocial-react-hooks/dist/lib/page-sorts.js');
   return {
+    getAvailablePostSortTypes,
     getPostPageSortType,
+    getPreloadedPostSortType,
     resolvePostSortType,
     useAccount: () => testState.account,
     useAccountComments: (options?: { commentIndices?: number[]; communityAddress?: string; newerThan?: number; sortType?: 'new' | 'old' }) => {
@@ -226,6 +228,7 @@ vi.mock('@bitsocial/bitsocial-react-hooks', async () => {
 });
 
 vi.mock('../../../hooks/use-stable-community', () => ({
+  getCommunityByAddress: (communities: Record<string, unknown> | undefined, address: string | undefined) => (address ? communities?.[address] : undefined),
   useCommunityField: (_address: string | undefined, selector: (community: typeof testState.communitySnapshot) => unknown) => selector(testState.communitySnapshot),
 }));
 
@@ -506,7 +509,7 @@ describe('Board', () => {
     act(() => root.unmount());
     container.remove();
     communitiesPagesStore.setState({ communitiesPages: {}, comments: {} });
-    communitiesStore.setState({ syncStatuses: {} });
+    communitiesStore.setState({ communities: {}, syncStatuses: {} });
     clearStableLastVisitTimeFilterName();
     localStorage.clear();
   });
@@ -556,6 +559,51 @@ describe('Board', () => {
         }),
       ]),
     );
+  });
+
+  it('requests the board default sort on a board that does not publish bump order', async () => {
+    const posts = { pageCids: { hot: 'hot-cid', new: 'new-cid' }, pages: { hot: { comments: [], nextCid: 'hot-next' } } };
+    const pageSorts = { posts: { hot: { name: 'hot' }, new: { name: 'new' } } };
+    testState.community = { ...testState.community, posts };
+    testState.communitySnapshot = { ...testState.communitySnapshot, pageSorts, posts } as typeof testState.communitySnapshot;
+
+    await renderBoard({
+      boardProps: { boardIdentifier: 'mu', viewType: 'board' },
+      initialEntry: '/mu',
+      routePath: '/:boardIdentifier/*',
+    });
+
+    const boardFeedSortTypes = testState.feedOptionsCalls.filter((call) => call.communitiesLength === 1).map((call) => call.sortType);
+    expect(boardFeedSortTypes.length).toBeGreaterThan(0);
+    expect(new Set(boardFeedSortTypes)).toEqual(new Set(['hot']));
+    expect(container.textContent).not.toContain('boards_without_bump_order');
+  });
+
+  it('names multiboard boards that publish threads but no bump order', async () => {
+    const makeBoard = (address: string, sortTypes: string[]) => ({
+      address,
+      pageSorts: { posts: Object.fromEntries(sortTypes.map((sortType) => [sortType, { name: sortType }])) },
+      posts: {
+        pageCids: Object.fromEntries(sortTypes.map((sortType) => [sortType, `${sortType}-cid`])),
+        pages: { [sortTypes[0]]: { comments: [], nextCid: 'next' } },
+      },
+    });
+    testState.filteredDirectoryAddresses = ['music-posting.eth', 'sports-posting.bso'];
+    communitiesStore.setState({
+      communities: {
+        'music-posting.eth': makeBoard('music-posting.eth', ['hot', 'active']),
+        'sports-posting.bso': makeBoard('sports-posting.bso', ['hot']),
+      },
+    });
+
+    await renderBoard({
+      boardProps: { viewType: 'all' },
+      initialEntry: '/all',
+      routePath: '/all/*',
+    });
+
+    expect(testState.feedOptionsCalls).toEqual(expect.arrayContaining([expect.objectContaining({ communitiesLength: 2, sortType: 'active' })]));
+    expect(container.textContent).toContain('boards_without_bump_order');
   });
 
   it('warns when a loaded board address is not verified', async () => {

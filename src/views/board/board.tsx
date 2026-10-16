@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate, useNavigationType, useParams } from 're
 import { Comment, useAccount, useAccountComments, useCommunity, useFeed } from '@bitsocial/bitsocial-react-hooks';
 import { useCommunityField } from '../../hooks/use-stable-community';
 import { useBoardHasArchive } from '../../hooks/use-board-has-archive';
+import { useBoardSortType } from '../../hooks/use-board-sort-type';
 import { communitiesPagesStore as useCommunitiesPagesStore } from '../../lib/bitsocial-internals/stores';
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
 import { Trans, useTranslation } from 'react-i18next';
@@ -38,6 +39,7 @@ import ErrorDisplay from '../../components/error-display';
 import FlashBoardTable from '../../components/flash-board-table';
 import LoadingEllipsis from '../../components/loading-ellipsis';
 import BoardPagination from '../../components/board-pagination';
+import { BoardsMissingSortNotice } from '../../components/boards-missing-sort-notice';
 import { CatalogButton } from '../../components/board-buttons';
 import { PageFooterDesktop, PageFooterMobile, footerStyles } from '../../components/footer';
 import { ModEmptyState } from '../../components/mod-empty-state';
@@ -51,9 +53,6 @@ const YEAR_IN_SECONDS = 365 * 24 * 60 * 60;
 // Keep the hook on its indexed fast path when this view should not inject local posts.
 const EMPTY_ACCOUNT_COMMENT_LOOKUP = { commentIndices: [-1] };
 const EMPTY_COMMUNITIES_PAGES = {};
-
-/** Board feed always uses 'active' sort; catalog dropdown does not affect board ordering. */
-const BOARD_SORT_TYPE = 'active' as const;
 
 // Rounded row heights accumulate into visible shifts when Virtuoso replaces rows with padding.
 const measureBoardItemSize = (element: HTMLElement, field: 'offsetHeight' | 'offsetWidth') =>
@@ -178,6 +177,7 @@ const BoardFooter = ({
   return (
     <div className={styles.footer}>
       {footerContent}
+      {!isSingleCommunityBoard && <BoardsMissingSortNotice communityAddresses={communityAddresses} />}
       <div>
         {communityState === 'failed' ? (
           <span className='red'>{communityState}</span>
@@ -239,6 +239,8 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
   }, [isInAllView, isInSubscriptionsView, isInModView, communityAddress, filteredDirectoryAddresses, subscriptions, accountCommunityAddresses]);
   const communities = useCommunityIdentifiers(communityAddresses);
   const communityIdentifier = useCommunityIdentifier(communityAddress);
+  // The catalog dropdown does not affect board ordering.
+  const boardSortType = useBoardSortType(isMultiboardView ? undefined : communityAddress);
 
   const communityDirectory = useDirectoryByAddress(isInAllView || isInSubscriptionsView || isInModView ? undefined : communityAddress);
   const specialBoard = getSpecialBoardByAddress(isInAllView || isInSubscriptionsView || isInModView ? undefined : communityAddress);
@@ -263,12 +265,12 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
   const feedOptions = useMemo(
     () => ({
       communities,
-      sortType: BOARD_SORT_TYPE,
+      sortType: boardSortType,
       postsPerPage: effectiveInfiniteScroll ? infiniteFeedPostsPerPage : paginationFeedPostsPerPage,
       filter: excludeArchivedFilter,
       newerThan: multiboardTimeFilterSeconds,
     }),
-    [communities, effectiveInfiniteScroll, infiniteFeedPostsPerPage, paginationFeedPostsPerPage, excludeArchivedFilter, multiboardTimeFilterSeconds],
+    [communities, boardSortType, effectiveInfiniteScroll, infiniteFeedPostsPerPage, paginationFeedPostsPerPage, excludeArchivedFilter, multiboardTimeFilterSeconds],
   );
 
   const { feed, hasMore, loadMore, reset, expandTimeWindow, state: feedState } = useFeed(feedOptions);
@@ -290,7 +292,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
     loadMore: loadMoreWeeklyFeed,
   } = useFeed({
     communities: shouldProbeWeeklyFeed ? communities : [],
-    sortType: BOARD_SORT_TYPE,
+    sortType: boardSortType,
     postsPerPage: suggestionPostsPerPage,
     filter: excludeArchivedFilter,
     newerThan: WEEK_IN_SECONDS,
@@ -301,7 +303,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
     loadMore: loadMoreMonthlyFeed,
   } = useFeed({
     communities: shouldProbeMonthlyFeed ? communities : [],
-    sortType: BOARD_SORT_TYPE,
+    sortType: boardSortType,
     postsPerPage: suggestionPostsPerPage,
     filter: excludeArchivedFilter,
     newerThan: MONTH_IN_SECONDS,
@@ -312,7 +314,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
     loadMore: loadMoreYearlyFeed,
   } = useFeed({
     communities: shouldProbeYearlyFeed ? communities : [],
-    sortType: BOARD_SORT_TYPE,
+    sortType: boardSortType,
     postsPerPage: suggestionPostsPerPage,
     filter: excludeArchivedFilter,
     newerThan: YEAR_IN_SECONDS,
@@ -417,9 +419,9 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
             accountId: account?.id,
             communitiesPages,
             community: communityData,
-            sortType: BOARD_SORT_TYPE,
+            sortType: boardSortType,
           }),
-    [account?.id, communitiesPages, communityData, isMultiboardView],
+    [account?.id, boardSortType, communitiesPages, communityData, isMultiboardView],
   );
   const isRawBoardThreadStateFullyLoaded = rawBoardThreadState?.isFullyLoaded ?? false;
   const isRawBoardThreadStateEmpty = isRawBoardThreadStateFullyLoaded && (rawBoardThreadState?.rootThreadCids.size ?? 0) === 0;
@@ -730,7 +732,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
   );
 
   const virtuosoRef = useRef<VirtuosoHandle | null>(null);
-  const virtuosoStateKey = feedCacheKey ? `${feedCacheKey}-${BOARD_SORT_TYPE}` : `${routerLocation.pathname}${routerLocation.search}-${BOARD_SORT_TYPE}`;
+  const virtuosoStateKey = feedCacheKey ? `${feedCacheKey}-${boardSortType}` : `${routerLocation.pathname}${routerLocation.search}-${boardSortType}`;
   const navigationType = useNavigationType();
   const boardViewportBuffer = isMultiboardView ? (isMobile ? { bottom: 1400, top: 2400 } : { bottom: 1200, top: 2400 }) : { bottom: 1200, top: 1200 };
   const boardMinOverscanItemCount = isMultiboardView && isMobile ? { bottom: 4, top: 8 } : undefined;

@@ -577,5 +577,6 @@
   "media_hosting_show_link_field": "Pokaż pole „Link do pliku”",
   "media_hosting_show_link_field_tip": "Pozwala opublikować obraz lub film przez wklejenie bezpośredniego linku do niego",
   "running_automated_checks": "trwają automatyczne kontrole...",
-  "unsupported_file_type_alert": "Nieobsługiwany typ pliku. Użyj pliku JPG, PNG, GIF, WebP, MP4, WebM lub SWF."
+  "unsupported_file_type_alert": "Nieobsługiwany typ pliku. Użyj pliku JPG, PNG, GIF, WebP, MP4, WebM lub SWF.",
+  "boards_without_bump_order": "Nie pokazano, ponieważ nie publikują kolejności bump: {{boards}}"
 }

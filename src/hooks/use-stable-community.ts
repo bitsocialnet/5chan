@@ -36,7 +36,7 @@ const getNormalizedCommunityIndex = (communities: Record<string, unknown>) => {
   return index;
 };
 
-const getCommunityByAddress = (communities: Record<string, unknown> | undefined, communityAddress: string | undefined) => {
+export const getCommunityByAddress = (communities: Record<string, unknown> | undefined, communityAddress: string | undefined) => {
   if (!communities || !communityAddress) {
     return undefined;
   }

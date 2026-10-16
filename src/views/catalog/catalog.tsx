@@ -6,6 +6,7 @@ import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
 import { useDirectories, useDirectoryByAddress } from '../../hooks/use-directories';
 import { useCommunityIdentifier, useCommunityIdentifiers } from '../../hooks/use-community-identifiers';
 import { useBoardFeedPageSize } from '../../hooks/use-board-feed-page-size';
+import { useBoardSortType } from '../../hooks/use-board-sort-type';
 import { useAccountCommunityAddresses } from '../../hooks/use-account-community-addresses';
 import { useFilteredDirectoryAddresses } from '../../hooks/use-filtered-directory-addresses';
 import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
@@ -32,6 +33,7 @@ import { ReturnButton, ArchiveButton, TopButton, RefreshButton } from '../../com
 import LoadingEllipsis from '../../components/loading-ellipsis';
 import ErrorDisplay from '../../components/error-display';
 import { ModEmptyState } from '../../components/mod-empty-state';
+import { BoardsMissingSortNotice } from '../../components/boards-missing-sort-notice';
 import styles from './catalog.module.css';
 import { commentMatchesPattern } from '../../lib/utils/pattern-utils';
 import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
@@ -61,6 +63,7 @@ interface CatalogFooterProps {
   hasMore: boolean;
   combinedFeedLength: number;
   currentTimeFilterName: string;
+  isMultiboard: boolean;
   moreThreadsSuggestion: TimeFilterSuggestion | null;
   moreThreadsSuggestionPathname: string | null;
   moreThreadsSuggestionSearch: string;
@@ -79,6 +82,7 @@ const CatalogFooter = ({
   hasMore,
   combinedFeedLength,
   currentTimeFilterName,
+  isMultiboard,
   moreThreadsSuggestion,
   moreThreadsSuggestionPathname,
   moreThreadsSuggestionSearch,
@@ -132,7 +136,12 @@ const CatalogFooter = ({
       </>
     );
   }
-  return <div className={styles.footer}>{footerContent}</div>;
+  return (
+    <div className={styles.footer}>
+      {footerContent}
+      {isMultiboard && <BoardsMissingSortNotice communityAddresses={communityAddresses} />}
+    </div>
+  );
 };
 
 // Separate component for the loading state when there's no feed
@@ -360,8 +369,10 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
     }
   }, [isInAllView, isInSubscriptionsView, isInModView, routerLocation.pathname, routerLocation.search, navigate]);
 
+  // Like 4chan's catalog, every display order re-sorts the board's own thread list, so the feed never
+  // requests a sort the board may not publish.
   const sortType = useSortingStore((state) => state.sortType);
-  const feedSortType = sortType === 'new' ? 'new' : 'active';
+  const feedSortType = useBoardSortType(isMultiboard ? undefined : communityAddress);
   const catalogVirtualizationMode = useMemo(() => resolveCatalogVirtualizationMode(routerLocation.search, 'item-size'), [routerLocation.search]);
   const themeKey = typeof document !== 'undefined' ? document.body.className : '';
   const hadVisibleHiddenThreadsRef = useRef(false);
@@ -411,7 +422,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   } = useHiddenCatalogThreads({
     candidateComments: feed,
     communityAddresses,
-    sortType: feedSortType,
+    sortType: sortType === 'new' ? 'new' : 'active',
   });
   const hiddenThreadsCount = hiddenCatalogThreads.length;
   const requestedShowHiddenThreads = useHiddenCatalogThreadsStore((state) => state.shownScopeKey === hiddenCatalogThreadsScopeKey);
@@ -652,6 +663,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
             hasMore={footerHasMore}
             combinedFeedLength={footerCombinedFeedLength}
             currentTimeFilterName={currentTimeFilterName}
+            isMultiboard={isMultiboard}
             moreThreadsSuggestion={footerMoreThreadsSuggestion}
             moreThreadsSuggestionPathname={moreThreadsSuggestionPathname}
             moreThreadsSuggestionSearch={routerLocation.search}
@@ -676,6 +688,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
       footerHasMore,
       footerCombinedFeedLength,
       currentTimeFilterName,
+      isMultiboard,
       footerMoreThreadsSuggestion,
       moreThreadsSuggestionPathname,
       expandSuggestionTimeWindow,
@@ -698,6 +711,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
           hasMore={footerHasMore}
           combinedFeedLength={footerCombinedFeedLength}
           currentTimeFilterName={currentTimeFilterName}
+          isMultiboard={isMultiboard}
           moreThreadsSuggestion={footerMoreThreadsSuggestion}
           moreThreadsSuggestionPathname={moreThreadsSuggestionPathname}
           moreThreadsSuggestionSearch={routerLocation.search}
@@ -721,6 +735,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
       footerHasMore,
       footerCombinedFeedLength,
       currentTimeFilterName,
+      isMultiboard,
       footerMoreThreadsSuggestion,
       moreThreadsSuggestionPathname,
       expandSuggestionTimeWindow,

@@ -577,5 +577,6 @@
   "media_hosting_show_link_field": "نمایش فیلد «لینک به فایل»",
   "media_hosting_show_link_field_tip": "امکان ارسال تصویر یا ویدیو را با چسباندن لینک مستقیم آن فراهم می‌کند",
   "running_automated_checks": "در حال انجام بررسی‌های خودکار...",
-  "unsupported_file_type_alert": "نوع فایل پشتیبانی نمی‌شود. از فایل JPG، PNG، GIF، WebP، MP4، WebM یا SWF استفاده کنید."
+  "unsupported_file_type_alert": "نوع فایل پشتیبانی نمی‌شود. از فایل JPG، PNG، GIF، WebP، MP4، WebM یا SWF استفاده کنید.",
+  "boards_without_bump_order": "نمایش داده نمی‌شوند چون ترتیب بامپ منتشر نمی‌کنند: {{boards}}"
 }

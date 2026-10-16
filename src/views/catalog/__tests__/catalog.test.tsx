@@ -172,11 +172,13 @@ const getScopedFeed = (options?: { filter?: FeedFilter; newerThan?: number; post
 
 vi.mock('@bitsocial/bitsocial-react-hooks', async () => {
   // Real sort helpers for the raw board state read by usePruneHiddenCatalogThreads.
-  const { getPostPageSortType, resolvePostSortType } = await vi.importActual<typeof import('@bitsocial/bitsocial-react-hooks/dist/lib/page-sorts.js')>(
-    '@bitsocial/bitsocial-react-hooks/dist/lib/page-sorts.js',
-  );
+  const { getAvailablePostSortTypes, getPostPageSortType, getPreloadedPostSortType, resolvePostSortType } = await vi.importActual<
+    typeof import('@bitsocial/bitsocial-react-hooks/dist/lib/page-sorts.js')
+  >('@bitsocial/bitsocial-react-hooks/dist/lib/page-sorts.js');
   return {
+    getAvailablePostSortTypes,
     getPostPageSortType,
+    getPreloadedPostSortType,
     resolvePostSortType,
     useAccount: () => testState.account,
     useAccountComments: (options?: { commentIndices?: number[]; communityAddress?: string; newerThan?: number; sortType?: 'new' | 'old' }) => {
@@ -879,10 +881,11 @@ describe('Catalog', () => {
     expect(latestLocation).toBe('/all/catalog?t=24h');
     expect(testState.feedOptionsCalls).toEqual(
       expect.arrayContaining([
+        // creation date is selected, but the catalog re-sorts the boards' bump order locally
         expect.objectContaining({
           newerThan: 48 * 60 * 60,
           postsPerPage: 24,
-          sortType: 'new',
+          sortType: 'active',
         }),
       ]),
     );
@@ -963,8 +966,8 @@ describe('Catalog', () => {
 
     expect(testState.feedOptionsCalls).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ newerThan: 30 * 24 * 60 * 60, postsPerPage: 24, sortType: 'new' }),
-        expect.objectContaining({ newerThan: 365 * 24 * 60 * 60, postsPerPage: 24, sortType: 'new' }),
+        expect.objectContaining({ newerThan: 30 * 24 * 60 * 60, postsPerPage: 24, sortType: 'active' }),
+        expect.objectContaining({ newerThan: 365 * 24 * 60 * 60, postsPerPage: 24, sortType: 'active' }),
       ]),
     );
   });

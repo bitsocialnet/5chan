@@ -1,6 +1,9 @@
 import { create } from 'zustand';
 
-/** Catalog-only sort state. Used by catalog view sort selector. */
+/**
+ * Catalog-only display order. Used by catalog view sort selector. 'active' keeps the board's own order
+ * (bump order wherever the board publishes it); the others re-sort it locally.
+ */
 type CatalogSortType = 'active' | 'new' | 'replyCount';
 
 interface SortingStore {

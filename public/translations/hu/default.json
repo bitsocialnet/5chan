@@ -577,5 +577,6 @@
   "media_hosting_show_link_field": "„Link a fájlhoz” mező megjelenítése",
   "media_hosting_show_link_field_tip": "Lehetővé teszi, hogy képet vagy videót a közvetlen linkjének beillesztésével küldj be",
   "running_automated_checks": "automatikus ellenőrzések futnak...",
-  "unsupported_file_type_alert": "Nem támogatott fájltípus. Használj JPG, PNG, GIF, WebP, MP4, WebM vagy SWF fájlt."
+  "unsupported_file_type_alert": "Nem támogatott fájltípus. Használj JPG, PNG, GIF, WebP, MP4, WebM vagy SWF fájlt.",
+  "boards_without_bump_order": "Nem jelennek meg, mert nem tesznek közzé bump sorrendet: {{boards}}"
 }

@@ -60,7 +60,7 @@ export function findPostPageInFeed(feed: CommentWithCid[], postCid: string, guiP
 /**
  * Strict board-feed filter criteria.
  * A feed is a "board feed" iff:
- * - sortType === 'active'
+ * - sortType is the board's own sort (bump order wherever the board publishes it)
  * - single-board feed (one community)
  * - no filter, no newerThan, no modQueue, no accountComments
  */
@@ -77,11 +77,11 @@ const getCommunityIdentifiers = (opts: FeedOptionsLike | LegacyFeedOptionsLike):
 /**
  * Supports canonical `communities` and legacy string-array feed options.
  */
-export function isBoardFeedOptions(opts: FeedOptionsLike | LegacyFeedOptionsLike, communityAddress: string): boolean {
+export function isBoardFeedOptions(opts: FeedOptionsLike | LegacyFeedOptionsLike, communityAddress: string, boardSortType: string): boolean {
   const communities = getCommunityIdentifiers(opts);
 
   return (
-    opts.sortType === 'active' &&
+    opts.sortType === boardSortType &&
     communities.length === 1 &&
     (communities[0]?.name === communityAddress || communities[0]?.publicKey === communityAddress) &&
     !opts.filter &&
@@ -100,6 +100,7 @@ export function isBoardFeedOptions(opts: FeedOptionsLike | LegacyFeedOptionsLike
  * @param communityAddress - Board community address
  * @param postCid - CID of the post (OP) to locate
  * @param guiPostsPerPage - Posts per GUI page
+ * @param boardSortType - The post sort the board's feed uses
  * @returns 1-based page number, or undefined if not found in any matching feed
  */
 export function findPostPageInLoadedBoardFeeds(
@@ -108,12 +109,13 @@ export function findPostPageInLoadedBoardFeeds(
   communityAddress: string,
   postCid: string,
   guiPostsPerPage: number,
+  boardSortType: string,
 ): number | undefined {
   if (!communityAddress || !postCid || guiPostsPerPage <= 0) return undefined;
 
   for (const feedName of Object.keys(feedsOptions)) {
     const opts = feedsOptions[feedName];
-    if (!opts || !isBoardFeedOptions(opts as FeedOptionsLike, communityAddress)) continue;
+    if (!opts || !isBoardFeedOptions(opts as FeedOptionsLike, communityAddress, boardSortType)) continue;
 
     const feed = loadedFeeds[feedName];
     if (!feed || !Array.isArray(feed)) continue;

@@ -577,5 +577,6 @@
   "media_hosting_show_link_field": "Vis feltet \"Link til fil\"",
   "media_hosting_show_link_field_tip": "Lader dig poste et billede eller en video ved at indsætte et direkte link til det",
   "running_automated_checks": "kører automatiske kontroller...",
-  "unsupported_file_type_alert": "Filtypen understøttes ikke. Brug en JPG-, PNG-, GIF-, WebP-, MP4-, WebM- eller SWF-fil."
+  "unsupported_file_type_alert": "Filtypen understøttes ikke. Brug en JPG-, PNG-, GIF-, WebP-, MP4-, WebM- eller SWF-fil.",
+  "boards_without_bump_order": "Vises ikke, fordi de ikke udgiver en bump-rækkefølge: {{boards}}"
 }

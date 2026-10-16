@@ -577,5 +577,6 @@
   "media_hosting_show_link_field": "Ipakita ang field na \"Link sa File\"",
   "media_hosting_show_link_field_tip": "Hinahayaan kang mag-post ng larawan o video sa pamamagitan ng pag-paste ng direktang link nito",
   "running_automated_checks": "nagpapatakbo ng mga awtomatikong pagsusuri...",
-  "unsupported_file_type_alert": "Hindi suportado ang uri ng file. Gumamit ng JPG, PNG, GIF, WebP, MP4, WebM o SWF na file."
+  "unsupported_file_type_alert": "Hindi suportado ang uri ng file. Gumamit ng JPG, PNG, GIF, WebP, MP4, WebM o SWF na file.",
+  "boards_without_bump_order": "Hindi ipinapakita dahil hindi sila naglalathala ng bump order: {{boards}}"
 }

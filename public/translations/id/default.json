@@ -577,5 +577,6 @@
   "media_hosting_show_link_field": "Tampilkan kolom \"Tautan ke File\"",
   "media_hosting_show_link_field_tip": "Memungkinkan Anda memposting gambar atau video dengan menempelkan tautan langsungnya",
   "running_automated_checks": "menjalankan pemeriksaan otomatis...",
-  "unsupported_file_type_alert": "Jenis file tidak didukung. Gunakan file JPG, PNG, GIF, WebP, MP4, WebM, atau SWF."
+  "unsupported_file_type_alert": "Jenis file tidak didukung. Gunakan file JPG, PNG, GIF, WebP, MP4, WebM, atau SWF.",
+  "boards_without_bump_order": "Tidak ditampilkan karena tidak menerbitkan urutan bump: {{boards}}"
 }

@@ -10,10 +10,12 @@ import { useFilteredDirectoryAddresses } from '../../hooks/use-filtered-director
 import { getBoardPath, isDirectoryRoute } from '../../lib/utils/route-utils';
 import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
 import { useBoardHasArchive } from '../../hooks/use-board-has-archive';
+import { useBoardSortType } from '../../hooks/use-board-sort-type';
 import { useCommunityIdentifier } from '../../hooks/use-community-identifiers';
 import { useActiveAccountField } from '../../hooks/use-active-account-field';
 import { useCommunityField } from '../../hooks/use-stable-community';
 import { canEditBoardSettings } from '../../lib/utils/mod-access';
+import { BUMP_ORDER_SORT_TYPE } from '../../lib/utils/board-sort-utils';
 import { normalizeAccountCommentIndex } from '../../lib/utils/account-comment-index-utils';
 import useHiddenCatalogThreads from '../../hooks/use-hidden-catalog-threads';
 import useCatalogFiltersStore from '../../stores/use-catalog-filters-store';
@@ -387,9 +389,11 @@ export const TopButton = () => {
   );
 };
 
-const SortOptions = () => {
+/** `address` is the single board shown; the first option is that board's own thread order. */
+const SortOptions = ({ address }: { address?: string }) => {
   const { t } = useTranslation();
   const { sortType, setSortType } = useSortingStore();
+  const boardSortType = useBoardSortType(address);
 
   const handleSortChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const type = event.target.value as 'active' | 'new' | 'replyCount';
@@ -399,7 +403,7 @@ const SortOptions = () => {
     <>
       <span>{t('sort_by')}</span>:&nbsp;
       <select className='capitalize' value={sortType} onChange={handleSortChange}>
-        <option value='active'>{t('bump_order')}</option>
+        <option value='active'>{boardSortType === BUMP_ORDER_SORT_TYPE ? t('bump_order') : boardSortType}</option>
         <option value='new'>{t('creation_date')}</option>
         <option value='replyCount'>{t('reply_count')}</option>
       </select>
@@ -678,7 +682,7 @@ export const MobileBoardButtons = () => {
                 )}
                 {isInCatalogView && (
                   <div className={styles.mobileCatalogOptionsPadding}>
-                    <SortOptions /> <ImageSizeOptions />
+                    <SortOptions address={isMultiboard ? undefined : communityAddress} /> <ImageSizeOptions />
                     <ShowOPCommentOption /> <CatalogFilters /> <CatalogSearch />
                   </div>
                 )}
@@ -924,7 +928,7 @@ export const DesktopBoardButtons = () => {
             <span className={styles.rightSideButtons}>
               {isInCatalogView && (
                 <>
-                  <SortOptions />
+                  <SortOptions address={isMultiboard ? undefined : communityAddress} />
                   <ImageSizeOptions />
                   <ShowOPCommentOption />
                 </>

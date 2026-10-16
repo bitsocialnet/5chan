@@ -577,5 +577,6 @@
   "media_hosting_show_link_field": "Εμφάνιση πεδίου «Σύνδεσμος προς αρχείο»",
   "media_hosting_show_link_field_tip": "Σας επιτρέπει να δημοσιεύσετε μια εικόνα ή ένα βίντεο επικολλώντας έναν άμεσο σύνδεσμο προς αυτό",
   "running_automated_checks": "εκτέλεση αυτόματων ελέγχων...",
-  "unsupported_file_type_alert": "Μη υποστηριζόμενος τύπος αρχείου. Χρησιμοποιήστε αρχείο JPG, PNG, GIF, WebP, MP4, WebM ή SWF."
+  "unsupported_file_type_alert": "Μη υποστηριζόμενος τύπος αρχείου. Χρησιμοποιήστε αρχείο JPG, PNG, GIF, WebP, MP4, WebM ή SWF.",
+  "boards_without_bump_order": "Δεν εμφανίζονται επειδή δεν δημοσιεύουν τάξη bump: {{boards}}"
 }

@@ -577,5 +577,6 @@
   "media_hosting_show_link_field": "\"ফাইলের লিংক\" ফিল্ড দেখান",
   "media_hosting_show_link_field_tip": "সরাসরি লিংক পেস্ট করে ছবি বা ভিডিও পোস্ট করতে দেয়",
   "running_automated_checks": "স্বয়ংক্রিয় পরীক্ষা চলছে...",
-  "unsupported_file_type_alert": "এই ধরনের ফাইল সমর্থিত নয়। JPG, PNG, GIF, WebP, MP4, WebM বা SWF ফাইল ব্যবহার করুন।"
+  "unsupported_file_type_alert": "এই ধরনের ফাইল সমর্থিত নয়। JPG, PNG, GIF, WebP, MP4, WebM বা SWF ফাইল ব্যবহার করুন।",
+  "boards_without_bump_order": "দেখানো হয়নি কারণ এগুলো বাম্প অর্ডার প্রকাশ করে না: {{boards}}"
 }

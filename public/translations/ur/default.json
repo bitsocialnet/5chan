@@ -577,5 +577,6 @@
   "media_hosting_show_link_field": "\"فائل کا لنک\" فیلڈ دکھائیں",
   "media_hosting_show_link_field_tip": "براہ راست لنک چسپاں کر کے تصویر یا ویڈیو پوسٹ کرنے دیتا ہے",
   "running_automated_checks": "خودکار جانچ جاری ہے...",
-  "unsupported_file_type_alert": "فائل کی قسم معاون نہیں ہے۔ JPG، PNG، GIF، WebP، MP4، WebM یا SWF فائل استعمال کریں۔"
+  "unsupported_file_type_alert": "فائل کی قسم معاون نہیں ہے۔ JPG، PNG، GIF، WebP، MP4، WebM یا SWF فائل استعمال کریں۔",
+  "boards_without_bump_order": "نہیں دکھائے گئے کیونکہ یہ بمپ آرڈر شائع نہیں کرتے: {{boards}}"
 }

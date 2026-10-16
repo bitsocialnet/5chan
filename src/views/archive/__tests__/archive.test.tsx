@@ -48,18 +48,25 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
-vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
-  useFeed: (options: { filter?: { filter?: (comment: TestComment) => boolean }; sortType?: string }) => {
-    testState.feedOptions = options;
-    return {
-      feed: options.filter?.filter ? testState.feed.filter((comment) => options.filter?.filter?.(comment)) : testState.feed,
-      hasMore: testState.hasMore,
-      loadMore: testState.loadMoreMock,
-      reset: vi.fn(),
-    };
-  },
-  useCommunity: () => testState.community,
-}));
+vi.mock('@bitsocial/bitsocial-react-hooks', async () => {
+  const { getAvailablePostSortTypes, getPreloadedPostSortType } = await vi.importActual<typeof import('@bitsocial/bitsocial-react-hooks/dist/lib/page-sorts.js')>(
+    '@bitsocial/bitsocial-react-hooks/dist/lib/page-sorts.js',
+  );
+  return {
+    getAvailablePostSortTypes,
+    getPreloadedPostSortType,
+    useFeed: (options: { filter?: { filter?: (comment: TestComment) => boolean }; sortType?: string }) => {
+      testState.feedOptions = options;
+      return {
+        feed: options.filter?.filter ? testState.feed.filter((comment) => options.filter?.filter?.(comment)) : testState.feed,
+        hasMore: testState.hasMore,
+        loadMore: testState.loadMoreMock,
+        reset: vi.fn(),
+      };
+    },
+    useCommunity: () => testState.community,
+  };
+});
 
 vi.mock('../../../hooks/use-directories', () => ({
   useDirectories: () => testState.directories,

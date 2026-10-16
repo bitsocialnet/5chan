@@ -1,6 +1,6 @@
 /**
  * Catalog feed sorting utility for deterministic and testable behavior.
- * Used when displaying catalog feeds with replyCount sort.
+ * Used when displaying catalog feeds with the creation date and replyCount sorts.
  */
 
 /** Minimal post shape for catalog sorting */
@@ -16,17 +16,38 @@ export interface CatalogPost {
 /** Sort types supported by the catalog feed */
 type CatalogSortType = 'active' | 'new' | 'replyCount';
 
+const compareByCreationDate = (a: CatalogPost, b: CatalogPost): number => {
+  const tsA = a.timestamp ?? 0;
+  const tsB = b.timestamp ?? 0;
+  if (tsB !== tsA) return tsB - tsA;
+
+  const cidA = a.cid ?? '';
+  const cidB = b.cid ?? '';
+  return cidA.localeCompare(cidB);
+};
+
+const compareByReplyCount = (a: CatalogPost, b: CatalogPost): number => {
+  const rcA = a.replyCount ?? 0;
+  const rcB = b.replyCount ?? 0;
+  if (rcB !== rcA) return rcB - rcA;
+
+  const bumpA = a.lastReplyTimestamp ?? a.timestamp ?? 0;
+  const bumpB = b.lastReplyTimestamp ?? b.timestamp ?? 0;
+  if (bumpB !== bumpA) return bumpB - bumpA;
+
+  return compareByCreationDate(a, b);
+};
+
 /**
- * Sort catalog feed for display.
+ * Sort catalog feed for display. The feed arrives in the board's own order, bump order wherever the
+ * board publishes it, and like 4chan's catalog the other orders re-sort that thread list locally.
+ * Sticky threads stay first.
+ * - For 'active': returns input order unchanged (no extra sort cost).
+ * - For 'new': deterministic sort by timestamp desc, cid.
  * - For 'replyCount': deterministic sort by replyCount desc, bump order, timestamp, cid.
- * - For 'active' | 'new': returns input order unchanged (no extra sort cost).
  */
 export function sortCatalogFeedForDisplay<T extends CatalogPost>(posts: T[], sortType: CatalogSortType): T[] {
-  if (sortType === 'active' || sortType === 'new') {
-    return posts;
-  }
-
-  if (sortType !== 'replyCount') {
+  if (sortType !== 'new' && sortType !== 'replyCount') {
     return posts;
   }
 
@@ -41,23 +62,7 @@ export function sortCatalogFeedForDisplay<T extends CatalogPost>(posts: T[], sor
     }
   }
 
-  unpinned.sort((a, b) => {
-    const rcA = a.replyCount ?? 0;
-    const rcB = b.replyCount ?? 0;
-    if (rcB !== rcA) return rcB - rcA;
-
-    const bumpA = a.lastReplyTimestamp ?? a.timestamp ?? 0;
-    const bumpB = b.lastReplyTimestamp ?? b.timestamp ?? 0;
-    if (bumpB !== bumpA) return bumpB - bumpA;
-
-    const tsA = a.timestamp ?? 0;
-    const tsB = b.timestamp ?? 0;
-    if (tsB !== tsA) return tsB - tsA;
-
-    const cidA = a.cid ?? '';
-    const cidB = b.cid ?? '';
-    return cidA.localeCompare(cidB);
-  });
+  unpinned.sort(sortType === 'new' ? compareByCreationDate : compareByReplyCount);
 
   return [...pinned, ...unpinned];
 }

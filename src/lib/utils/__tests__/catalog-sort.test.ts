@@ -62,7 +62,20 @@ describe('sortCatalogFeedForDisplay', () => {
     });
   });
 
-  describe('non-replyCount sorts', () => {
+  describe('new sort', () => {
+    it('re-sorts the board order by creation date, keeping sticky threads first', () => {
+      const posts: CatalogPost[] = [
+        { cid: 'sticky', pinned: true, timestamp: 1 },
+        { cid: 'bumped-old', timestamp: 100, lastReplyTimestamp: 900 },
+        { cid: 'newest', timestamp: 300 },
+        { cid: 'tie-b', timestamp: 200 },
+        { cid: 'tie-a', timestamp: 200 },
+      ];
+      expect(sortCatalogFeedForDisplay(posts, 'new').map((p) => p.cid)).toEqual(['sticky', 'newest', 'tie-a', 'tie-b', 'bumped-old']);
+    });
+  });
+
+  describe('active sort', () => {
     it('returns original order for active sort', () => {
       const posts: CatalogPost[] = [
         { cid: 'c', replyCount: 10 },
@@ -70,17 +83,6 @@ describe('sortCatalogFeedForDisplay', () => {
         { cid: 'b', replyCount: 50 },
       ];
       const result = sortCatalogFeedForDisplay(posts, 'active');
-      expect(result).toBe(posts);
-      expect(result.map((p) => p.cid)).toEqual(['c', 'a', 'b']);
-    });
-
-    it('returns original order for new sort', () => {
-      const posts: CatalogPost[] = [
-        { cid: 'c', replyCount: 10 },
-        { cid: 'a', replyCount: 100 },
-        { cid: 'b', replyCount: 50 },
-      ];
-      const result = sortCatalogFeedForDisplay(posts, 'new');
       expect(result).toBe(posts);
       expect(result.map((p) => p.cid)).toEqual(['c', 'a', 'b']);
     });

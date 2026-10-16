@@ -577,5 +577,6 @@
   "media_hosting_show_link_field": "Показывать поле «Ссылка на файл»",
   "media_hosting_show_link_field_tip": "Позволяет опубликовать изображение или видео, вставив прямую ссылку на него",
   "running_automated_checks": "выполняются автоматические проверки...",
-  "unsupported_file_type_alert": "Неподдерживаемый тип файла. Используйте файл JPG, PNG, GIF, WebP, MP4, WebM или SWF."
+  "unsupported_file_type_alert": "Неподдерживаемый тип файла. Используйте файл JPG, PNG, GIF, WebP, MP4, WebM или SWF.",
+  "boards_without_bump_order": "Не показаны, потому что не публикуют порядок bump: {{boards}}"
 }
