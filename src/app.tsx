@@ -1,4 +1,5 @@
-import { ComponentType, lazy, Suspense, use, useCallback, useEffect } from 'react';
+import { Component, ComponentType, lazy, type ReactNode, Suspense, use, useCallback, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Navigate, Outlet, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
 import { useAccount, useCommunity } from '@bitsocial/bitsocial-react-hooks';
@@ -15,7 +16,7 @@ import { useResolvedCommunityAddress } from './hooks/use-resolved-community-addr
 import { QuotePreviewPostContext } from './hooks/use-quote-preview-post';
 import useSuspendOffscreenMediaPlayback from './hooks/use-suspend-offscreen-media-playback';
 import { getPageDraftKey } from './lib/utils/location-draft-utils';
-import { BOARD_ROUTES_ID, loadBoardRoutes, registerRouteTree } from './route-modules';
+import { BOARD_ROUTES_ID, isBoardRoutesLoadError, loadBoardRoutes, registerRouteTree, reloadBoardRoutes } from './route-modules';
 import styles from './app.module.css';
 import Home from './views/home';
 import NotAllowed from './views/not-allowed';
@@ -83,6 +84,53 @@ const PendingPostRoute = () => {
   const { PendingPostView } = use(loadBoardRoutes());
   return <PendingPostView />;
 };
+
+type BoardRoutesErrorBoundaryProps = {
+  children: ReactNode;
+  fallback: ReactNode;
+};
+
+/**
+ * Renders `fallback` when importing the board routes failed (a failed download, usually), where the
+ * uncaught error would unmount the whole app and leave a blank page. Other errors pass through.
+ */
+class BoardRoutesErrorBoundary extends Component<BoardRoutesErrorBoundaryProps, { error: unknown; failed: boolean }> {
+  state = { error: undefined as unknown, failed: false };
+
+  static getDerivedStateFromError(error: unknown) {
+    return { error, failed: true };
+  }
+
+  render() {
+    if (!this.state.failed) {
+      return this.props.children;
+    }
+    if (!isBoardRoutesLoadError(this.state.error)) {
+      throw this.state.error;
+    }
+    return this.props.fallback;
+  }
+}
+
+const BoardRoutesLoadError = () => {
+  const { t } = useTranslation();
+  return (
+    <div className={styles.loadError} role='alert'>
+      {t('thread_update_connection_error')} [
+      <button type='button' onClick={() => void reloadBoardRoutes()}>
+        {t('refresh')}
+      </button>
+      ]
+    </div>
+  );
+};
+
+const boardLayoutElement = (
+  <BoardRoutesErrorBoundary fallback={<BoardRoutesLoadError />}>
+    <BoardLayoutRoute />
+  </BoardRoutesErrorBoundary>
+);
+
 // Quote previews render a post from the board routes chunk. Outside the board routes (a board's rules)
 // the preview waits for it.
 const QuotePreviewPost = (props: PostProps) => {
@@ -90,9 +138,11 @@ const QuotePreviewPost = (props: PostProps) => {
   return <Post {...props} />;
 };
 const renderQuotePreviewPost = (props: PostProps) => (
-  <Suspense fallback={null}>
-    <QuotePreviewPost {...props} />
-  </Suspense>
+  <BoardRoutesErrorBoundary fallback={null}>
+    <Suspense fallback={null}>
+      <QuotePreviewPost {...props} />
+    </Suspense>
+  </BoardRoutesErrorBoundary>
 );
 
 // Preload all theme assets (buttons, backgrounds) immediately on app load
@@ -237,7 +287,7 @@ const appRoutes = (
         </Suspense>
       }
     />
-    <Route id={BOARD_ROUTES_ID} element={<BoardLayoutRoute />}>
+    <Route id={BOARD_ROUTES_ID} element={boardLayoutElement}>
       {/* Canonical multiboard routes (time filter lives in ?t=) */}
       <Route path='/all' element={boardFeedElement} />
       <Route path='/all/settings' element={boardFeedElement} />

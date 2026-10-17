@@ -3,6 +3,26 @@
   color-scheme: var(--color-scheme, revert) !important;
 }
 
+.loadError {
+  color: red;
+  margin: 12px 5px;
+  text-align: center;
+}
+
+.loadError button {
+  appearance: none;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--post-link-text-color);
+  cursor: pointer;
+  font: inherit;
+}
+
+.loadError button:hover {
+  color: var(--post-link-text-color-hover);
+}
+
 @media (min-width: 640px) {
   .app {
     padding: 5px;

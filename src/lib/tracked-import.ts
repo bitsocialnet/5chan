@@ -1,17 +1,18 @@
+import type { ReactPromise } from 'react';
+
 /** A promise with the fields React reads when it is passed to `use()`. */
-type TrackedPromise<T> = Promise<T> & {
-  reason?: unknown;
-  status?: 'fulfilled' | 'rejected';
-  value?: T;
-};
+type TrackedPromise<T> = Promise<T> & ReactPromise<T>;
 
 /**
  * Caches a dynamic import and tags its promise with the state `use()` reads, so a component whose
  * chunk is already loaded renders in the same commit as the update that shows it. `lazy()` cannot
  * do that: it only resolves its payload the first time the component renders, and React schedules
  * that resolution as a separate task, so the component suspends once even when its chunk is cached.
+ *
+ * A failed import stays failed. Browsers (WebKit and Chromium) keep a module that failed to download
+ * for the rest of the page's life and fail every later import of it without fetching it again.
  */
-export const createTrackedImport = <T>(load: () => Promise<T>): (() => Promise<T>) => {
+export const createTrackedImport = <T>(load: () => Promise<T>): (() => TrackedPromise<T>) => {
   let tracked: TrackedPromise<T> | undefined;
 
   return () => {
@@ -19,12 +20,10 @@ export const createTrackedImport = <T>(load: () => Promise<T>): (() => Promise<T
       const pending: TrackedPromise<T> = load();
       pending.then(
         (value) => {
-          pending.status = 'fulfilled';
-          pending.value = value;
+          Object.assign(pending, { status: 'fulfilled', value });
         },
         (reason) => {
-          pending.status = 'rejected';
-          pending.reason = reason;
+          Object.assign(pending, { status: 'rejected', reason });
         },
       );
       tracked = pending;

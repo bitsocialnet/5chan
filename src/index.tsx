@@ -62,8 +62,12 @@ const renderRoot = async () => {
   }
 
   // index.html preloads the board routes with the app on the routes that may render them, marking each
-  // link (ROUTE_PRELOAD_SCRIPT in scripts/vite-app-preload.mjs); see app-with-board-routes.ts.
-  const { default: App } = await (document.querySelector('link[data-fivechan-route-preload]') ? import('./app-with-board-routes') : import('./app'));
+  // link (ROUTE_PRELOAD_SCRIPT in scripts/vite-app-preload.mjs); see app-with-board-routes.ts. When the
+  // board routes fail to download, the app still mounts and reports it on the route instead of leaving
+  // the static frame up.
+  const { default: App } = await (document.querySelector('link[data-fivechan-route-preload]')
+    ? import('./app-with-board-routes').catch(() => import('./app'))
+    : import('./app'));
   // index.html already started downloading the route's code-split modules; the first render waits for
   // them so it does not suspend. A failed chunk surfaces when the route renders.
   const routeModules = loadRouteModules(parsePath(window.location.hash.slice(1)).pathname || '/').catch((error) => console.error(error));
