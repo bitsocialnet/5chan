@@ -1,14 +1,15 @@
 import type { Comment } from '@bitsocial/bitsocial-react-hooks';
-import { feedsStore, repliesStore, feedOptionsToFeedName, communitiesPagesStore } from '../bitsocial-internals/stores';
+import { feedsStore, repliesStore, feedOptionsToFeedName, communitiesPagesStore, communitiesStore } from '../bitsocial-internals/stores';
+import { getBoardSortType } from './board-sort-utils';
 import type { DirectoryCommunity } from './directory-list-utils';
 import type { ExternalQuoteReference, ExternalQuoteSearchStatus } from './external-quote-utils';
 import { getExternalQuoteBoardAddress, getExternalQuoteBoardLabel } from './external-quote-utils';
 import { getCommentCommunityAddress } from './comment-utils';
 import { getBoardPath } from './route-utils';
 
-const BOARD_FEED_SORT_TYPE = 'new';
 const BOARD_SEARCH_POSTS_PER_PAGE = 25;
-const THREAD_REPLIES_SORT_TYPE = 'best';
+// The thread view's reply sort, so the search reads pages every 5chan board publishes.
+const THREAD_REPLIES_SORT_TYPE = 'old';
 const THREAD_SEARCH_REPLIES_PER_PAGE = 25;
 const WAIT_FOR_STORE_TIMEOUT_MS = 30000;
 const WAIT_FOR_STORE_INTERVAL_MS = 100;
@@ -57,8 +58,25 @@ const isUnavailableComment = (
   } | null,
 ) => Boolean(comment?.deleted || comment?.removed || comment?.commentModeration?.purged);
 
-const getBoardFeedName = (accountId: string, communityAddress: string) =>
-  `external-quote-board-${accountId}-${communityAddress}-${BOARD_FEED_SORT_TYPE}-${BOARD_SEARCH_POSTS_PER_PAGE}`;
+const getBoardFeedName = (accountId: string, communityAddress: string, sortType: string) =>
+  `external-quote-board-${accountId}-${communityAddress}-${sortType}-${BOARD_SEARCH_POSTS_PER_PAGE}`;
+
+// A board configured with `settings.pages` may publish no sort but its own, so the search follows the
+// sort the board view reads, which needs the board's record first.
+const loadBoardSortType = async (communityAddress: string, account: ResolverAccount) => {
+  const { addCommunityToStore, communities } = communitiesStore.getState();
+  let loadError: unknown;
+  if (!communities[communityAddress]) {
+    addCommunityToStore(communityAddress, account).catch((error: unknown) => {
+      loadError = error;
+    });
+  }
+  const community = await waitFor(() => {
+    if (loadError) throw loadError;
+    return communitiesStore.getState().communities[communityAddress];
+  });
+  return getBoardSortType(community);
+};
 
 const getCachedComment = (cid?: string) => (cid ? communitiesPagesStore.getState().comments[cid] : undefined);
 
@@ -157,10 +175,11 @@ const loadBoardThreads = async ({
     quoteDisplay,
   });
 
-  const feedName = getBoardFeedName(accountId, communityAddress);
+  const boardSortType = await loadBoardSortType(communityAddress, account);
+  const feedName = getBoardFeedName(accountId, communityAddress, boardSortType);
   const feedState = feedsStore.getState();
   if (!feedState.feedsOptions[feedName]) {
-    await feedState.addFeedToStore(feedName, [{ address: communityAddress }], [communityAddress], BOARD_FEED_SORT_TYPE, account, false, BOARD_SEARCH_POSTS_PER_PAGE);
+    await feedState.addFeedToStore(feedName, [{ address: communityAddress }], [communityAddress], boardSortType, account, false, BOARD_SEARCH_POSTS_PER_PAGE);
   }
 
   await waitForBoardFeedPage(feedName, 0, 1);
