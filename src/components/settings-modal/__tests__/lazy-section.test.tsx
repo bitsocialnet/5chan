@@ -51,6 +51,17 @@ describe('createSectionLoader', () => {
     expect(container.querySelector('[data-testid="section"]')).not.toBeNull();
   });
 
+  it('offers a reload in place of a section that failed to download', async () => {
+    const load = createSectionLoader(() => Promise.reject(new TypeError('Importing a module script failed.')));
+
+    await act(async () => {
+      root.render(renderSection(load));
+    });
+
+    expect(container.querySelector('[role="alert"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="section"]')).toBeNull();
+  });
+
   it('suspends while the section is still loading', async () => {
     let resolveImport: (module: { default: React.ComponentType }) => void = () => {};
     const load = createSectionLoader(

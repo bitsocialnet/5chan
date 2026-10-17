@@ -822,7 +822,7 @@ describe('App', () => {
     expect(rendersBoardRoutes('mu')).toBe(true);
   });
 
-  it('lets an error other than the board routes failing to load reach the root', async () => {
+  it('lets an error other than a failed import reach the root', async () => {
     const error = new Error('boards bar failed');
     testState.boardsBarError = error;
     // act rethrows an error that reaches the root uncaught.
@@ -830,95 +830,124 @@ describe('App', () => {
     expect(container.querySelector('[role="alert"]')).toBeNull();
   });
 
-  it('reloads within 3 s when refetching the board routes stalls', async () => {
+  describe('when a lazily imported module failed to download', () => {
     const originalLocation = window.location;
-    const reload = vi.fn();
-    Object.defineProperty(window, 'location', { configurable: true, value: { ...originalLocation, reload } });
-    vi.stubGlobal(
-      'fetch',
-      vi.fn(() => new Promise(() => {})),
-    );
-    const routeFiles = document.createElement('script');
-    routeFiles.type = 'application/json';
-    routeFiles.id = 'fivechan-route-preload';
-    routeFiles.textContent = JSON.stringify(['./assets/board-routes.js']);
-    document.head.appendChild(routeFiles);
-    vi.useFakeTimers();
-    try {
-      const { reloadBoardRoutes } = await import('../route-modules');
-      void reloadBoardRoutes();
-      await vi.advanceTimersByTimeAsync(2999);
-      expect(reload).not.toHaveBeenCalled();
-      await vi.advanceTimersByTimeAsync(1);
-      expect(reload).toHaveBeenCalledTimes(1);
-    } finally {
-      vi.useRealTimers();
-      vi.unstubAllGlobals();
-      routeFiles.remove();
-      Object.defineProperty(window, 'location', { configurable: true, value: originalLocation });
-    }
-  });
+    let calls: string[];
+    let cleanups: Array<() => void>;
+    let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
 
-  it('offers a reload instead of a blank page when the board routes failed to download', async () => {
-    const originalLocation = window.location;
-    const calls: string[] = [];
-    const reload = vi.fn(() => calls.push('reload'));
-    Object.defineProperty(window, 'location', { configurable: true, value: { ...originalLocation, reload } });
-    const fetchMock = vi.fn(async (file: string, init?: RequestInit) => {
-      calls.push(`fetch ${file} ${init?.cache}`);
-      return new Response();
-    });
-    vi.stubGlobal('fetch', fetchMock);
-    const routeFiles = document.createElement('script');
-    routeFiles.type = 'application/json';
-    routeFiles.id = 'fivechan-route-preload';
-    routeFiles.textContent = JSON.stringify(['./assets/board-routes.js', './assets/post.js']);
-    document.head.appendChild(routeFiles);
-    vi.resetModules();
-    vi.doMock('../board-routes', () => {
-      throw new TypeError('Importing a module script failed.');
-    });
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
-    try {
-      const { default: FailingApp } = await import('../app');
-      const failingRouteModules = await import('../route-modules');
-      const renderFailingApp = async (entry: string) => {
-        await act(async () => {
-          root.render(createElement(MemoryRouter, { initialEntries: [entry] }, createElement(FailingApp), createElement(LocationProbe)));
-        });
-        await act(async () => {
-          await vi.dynamicImportSettled();
-        });
-        await flushEffects();
-      };
-
-      // From the home page, the first board navigation downloads the board routes.
-      await renderFailingApp('/');
-      expect(container.querySelector('[data-testid="home-view"]')).toBeTruthy();
-      await act(async () => {
-        navigateFromTest!('/mu');
+    // A fresh App whose import of `path` fails, as after its chunk failed to download. `mock` restores
+    // the module's mock from the top of this file afterwards.
+    const importFailingApp = async (path: string, mock?: () => object) => {
+      vi.resetModules();
+      vi.doMock(path, () => {
+        throw new TypeError('Importing a module script failed.');
       });
+      cleanups.push(() => (mock ? vi.doMock(path, mock) : vi.doUnmock(path)));
+      const { default: FailingApp } = await import('../app');
+      const { loadRouteModules: loadFailingRouteModules } = await import('../route-modules');
+      return { FailingApp, loadFailingRouteModules };
+    };
+    const settle = async () => {
       await act(async () => {
         await vi.dynamicImportSettled();
       });
       await flushEffects();
-      expect(container.querySelector('[role="alert"]')?.textContent).toContain('thread_update_connection_error');
+    };
+    const renderFailingApp = async (FailingApp: React.ComponentType, entry: string) => {
+      await act(async () => {
+        root.render(createElement(MemoryRouter, { initialEntries: [entry] }, createElement(FailingApp), createElement(LocationProbe)));
+      });
+      await settle();
+    };
+    const navigateTo = async (to: string) => {
+      await act(async () => {
+        navigateFromTest!(to);
+      });
+      await settle();
+    };
+    const alert = () => container.querySelector('[role="alert"]');
+
+    beforeEach(() => {
+      calls = [];
+      cleanups = [];
+      Object.defineProperty(window, 'location', { configurable: true, value: { ...originalLocation, reload: vi.fn(() => calls.push('reload')) } });
+      vi.stubGlobal(
+        'fetch',
+        vi.fn(async (file: string, init?: RequestInit) => {
+          calls.push(`fetch ${file} ${init?.cache}`);
+          return new Response();
+        }),
+      );
+      consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    });
+
+    afterEach(() => {
+      cleanups.forEach((cleanup) => cleanup());
+      document.head.querySelectorAll('link[data-fivechan-route-preload]').forEach((link) => link.remove());
+      consoleErrorSpy.mockRestore();
+      vi.unstubAllGlobals();
+      Object.defineProperty(window, 'location', { configurable: true, value: originalLocation });
+    });
+
+    it('offers a reload instead of a blank page on the board routes', async () => {
+      // index.html's preloads of the board routes on a cold board load, which the reload fetches again.
+      const routePreloads = ['/assets/board-routes.js', '/assets/post.js'].map((href) => {
+        const link = document.createElement('link');
+        link.rel = 'modulepreload';
+        link.href = href;
+        link.setAttribute('data-fivechan-route-preload', '');
+        document.head.appendChild(link);
+        return link.href;
+      });
+      const { FailingApp, loadFailingRouteModules } = await importFailingApp('../board-routes');
+
+      // From the home page, the first board navigation downloads the board routes.
+      await renderFailingApp(FailingApp, '/');
+      expect(container.querySelector('[data-testid="home-view"]')).toBeTruthy();
+      await navigateTo('/mu');
+      expect(alert()?.textContent).toContain('thread_update_connection_error');
       await clickButtonByText('refresh');
       // WebKit would serve the failed download again after a plain reload.
-      expect(calls).toEqual(['fetch ./assets/board-routes.js reload', 'fetch ./assets/post.js reload', 'reload']);
+      expect(calls).toEqual([...routePreloads.map((href) => `fetch ${href} reload`), 'reload']);
 
       // The first render after loadRouteModules failed, as on a cold board load.
       act(() => root.unmount());
       root = createRoot(container);
-      await expect(failingRouteModules.loadRouteModules('/mu/thread/comment-1')).rejects.toThrow();
-      await renderFailingApp('/mu/thread/comment-1');
-      expect(container.querySelector('[role="alert"]')?.textContent).toContain('thread_update_connection_error');
-    } finally {
-      consoleErrorSpy.mockRestore();
-      vi.doUnmock('../board-routes');
-      vi.unstubAllGlobals();
-      routeFiles.remove();
-      Object.defineProperty(window, 'location', { configurable: true, value: originalLocation });
-    }
+      await expect(loadFailingRouteModules('/mu/thread/comment-1')).rejects.toThrow();
+      await renderFailingApp(FailingApp, '/mu/thread/comment-1');
+      expect(alert()?.textContent).toContain('thread_update_connection_error');
+    });
+
+    it('offers a reload in place of a lazy view, and other pages still render', async () => {
+      const { FailingApp } = await importFailingApp('../views/faq');
+      await renderFailingApp(FailingApp, '/');
+      await navigateTo('/faq');
+      expect(alert()?.textContent).toContain('thread_update_connection_error');
+      await navigateTo('/');
+      expect(container.querySelector('[data-testid="home-view"]')).toBeTruthy();
+      expect(alert()).toBeNull();
+    });
+
+    it('offers a reload at the top of the screen in place of a modal', async () => {
+      const { FailingApp, loadFailingRouteModules } = await importFailingApp('../components/settings-modal', () => ({ default: MockSettingsModal }));
+      await loadFailingRouteModules('/mu');
+      await renderFailingApp(FailingApp, '/mu');
+      await navigateTo('/mu/settings');
+      expect(alert()?.textContent).toContain('thread_update_connection_error');
+      expect(alert()?.className).toContain('floating');
+      expect(container.querySelector('[data-testid="boards-bar"]')).toBeTruthy();
+    });
+
+    it('reports a modal that downloads with the first render without blanking the page or the other modals', async () => {
+      const { FailingApp } = await importFailingApp('../components/directory-modal', () => ({ default: makeNamedComponent('directory-modal') }));
+      await renderFailingApp(FailingApp, '/');
+      expect(alert()?.textContent).toContain('thread_update_connection_error');
+      expect(alert()?.className).toContain('floating');
+      expect(container.querySelector('[data-testid="home-view"]')).toBeTruthy();
+      // Posting needs the challenge modal.
+      expect(container.querySelector('[data-testid="challenge-modal"]')).toBeTruthy();
+      expect(container.querySelector('[data-testid="disclaimer-modal"]')).toBeTruthy();
+    });
   });
 });

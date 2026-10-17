@@ -1,8 +1,8 @@
-import { Component, ComponentType, lazy, type ReactNode, Suspense, use, useCallback, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
+import { ComponentType, Suspense, use, useCallback, useEffect } from 'react';
 import { Navigate, Outlet, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
 import { useAccount, useCommunity } from '@bitsocial/bitsocial-react-hooks';
+import { lazyImport } from './lib/import-failures';
 import { preloadThemeAssets, preloadUiIcons, scheduleIdlePreload } from './lib/utils/preload-utils';
 import { hasModQueueAccessRole } from './lib/utils/mod-access';
 import type { PostProps } from './lib/utils/post-props';
@@ -16,26 +16,27 @@ import { useResolvedCommunityAddress } from './hooks/use-resolved-community-addr
 import { QuotePreviewPostContext } from './hooks/use-quote-preview-post';
 import useSuspendOffscreenMediaPlayback from './hooks/use-suspend-offscreen-media-playback';
 import { getPageDraftKey } from './lib/utils/location-draft-utils';
-import { BOARD_ROUTES_ID, isBoardRoutesLoadError, loadBoardRoutes, registerRouteTree, reloadBoardRoutes } from './route-modules';
+import { BOARD_ROUTES_ID, loadBoardRoutes, registerRouteTree } from './route-modules';
 import styles from './app.module.css';
 import Home from './views/home';
 import NotAllowed from './views/not-allowed';
 import NotFound from './views/not-found';
 import FramesLayout from './components/frames-layout';
 import ExternalQuoteStatus from './components/external-quote-status';
+import ImportErrorBoundary from './components/import-error-boundary';
 import Prefetcher from './components/prefetcher';
 import { ModEmptyState } from './components/mod-empty-state';
 
-const AccountDataEditor = lazy(() => import('./views/account-data-editor'));
-const BoardSettings = lazy(() => import('./views/board-settings'));
-const ChallengeModal = lazy(() => import('./components/challenge-modal'));
-const DirectoryModal = lazy(() => import('./components/directory-modal'));
-const DisclaimerModal = lazy(() => import('./components/disclaimer-modal'));
+const AccountDataEditor = lazyImport(() => import('./views/account-data-editor'));
+const BoardSettings = lazyImport(() => import('./views/board-settings'));
+const ChallengeModal = lazyImport(() => import('./components/challenge-modal'));
+const DirectoryModal = lazyImport(() => import('./components/directory-modal'));
+const DisclaimerModal = lazyImport(() => import('./components/disclaimer-modal'));
 const loadReplyModal = () => import('./components/reply-modal');
-const ReplyModal = lazy(loadReplyModal);
-const SettingsUpgradeModal = lazy(() => import('./components/settings-upgrade-modal'));
+const ReplyModal = lazyImport(loadReplyModal);
+const SettingsUpgradeModal = lazyImport(() => import('./components/settings-upgrade-modal'));
 const loadSettingsModal = () => import('./components/settings-modal');
-const SettingsModal = lazy(loadSettingsModal);
+const SettingsModal = lazyImport(loadSettingsModal);
 // Views that visitors rarely land on load after the first render instead of before it (see the idle
 // preload below).
 const secondaryViewLoaders = {
@@ -52,11 +53,13 @@ const secondaryViewLoaders = {
 // Each lazy view gets its own boundary. One around a layout's outlet would also catch eager views
 // that suspend (on translations, for example) and commit the layout with an empty page first.
 const lazyView = (load: () => Promise<{ default: ComponentType }>) => {
-  const View = lazy(load);
+  const View = lazyImport(load);
   return () => (
-    <Suspense fallback={null}>
-      <View />
-    </Suspense>
+    <ImportErrorBoundary>
+      <Suspense fallback={null}>
+        <View />
+      </Suspense>
+    </ImportErrorBoundary>
   );
 };
 const Archive = lazyView(secondaryViewLoaders.archive);
@@ -85,50 +88,10 @@ const PendingPostRoute = () => {
   return <PendingPostView />;
 };
 
-type BoardRoutesErrorBoundaryProps = {
-  children: ReactNode;
-  fallback: ReactNode;
-};
-
-/**
- * Renders `fallback` when importing the board routes failed (a failed download, usually), where the
- * uncaught error would unmount the whole app and leave a blank page. Other errors pass through.
- */
-class BoardRoutesErrorBoundary extends Component<BoardRoutesErrorBoundaryProps, { error: unknown; failed: boolean }> {
-  state = { error: undefined as unknown, failed: false };
-
-  static getDerivedStateFromError(error: unknown) {
-    return { error, failed: true };
-  }
-
-  render() {
-    if (!this.state.failed) {
-      return this.props.children;
-    }
-    if (!isBoardRoutesLoadError(this.state.error)) {
-      throw this.state.error;
-    }
-    return this.props.fallback;
-  }
-}
-
-const BoardRoutesLoadError = () => {
-  const { t } = useTranslation();
-  return (
-    <div className={styles.loadError} role='alert'>
-      {t('thread_update_connection_error')} [
-      <button type='button' onClick={() => void reloadBoardRoutes()}>
-        {t('refresh')}
-      </button>
-      ]
-    </div>
-  );
-};
-
 const boardLayoutElement = (
-  <BoardRoutesErrorBoundary fallback={<BoardRoutesLoadError />}>
+  <ImportErrorBoundary>
     <BoardLayoutRoute />
-  </BoardRoutesErrorBoundary>
+  </ImportErrorBoundary>
 );
 
 // Quote previews render a post from the board routes chunk. Outside the board routes (a board's rules)
@@ -138,11 +101,11 @@ const QuotePreviewPost = (props: PostProps) => {
   return <Post {...props} />;
 };
 const renderQuotePreviewPost = (props: PostProps) => (
-  <BoardRoutesErrorBoundary fallback={null}>
+  <ImportErrorBoundary fallback={null}>
     <Suspense fallback={null}>
       <QuotePreviewPost {...props} />
     </Suspense>
-  </BoardRoutesErrorBoundary>
+  </ImportErrorBoundary>
 );
 
 // Preload all theme assets (buttons, backgrounds) immediately on app load
@@ -189,36 +152,49 @@ const GlobalLayout = () => {
     <>
       <ExternalQuoteStatus />
       <Prefetcher />
+      {/* A boundary per modal, so one that failed to download does not take the others (challenges) with it. */}
       <Suspense fallback={null}>
-        <DirectoryModal />
-        <DisclaimerModal />
+        <ImportErrorBoundary floating>
+          <DirectoryModal />
+        </ImportErrorBoundary>
+        <ImportErrorBoundary floating>
+          <DisclaimerModal />
+        </ImportErrorBoundary>
       </Suspense>
-      <Suspense fallback={null}>
-        <ChallengeModal />
-      </Suspense>
-      <Suspense fallback={null}>
-        <SettingsUpgradeModal />
-      </Suspense>
-      {activeCid && threadCid && activeCommunityAddress && (
+      <ImportErrorBoundary floating>
         <Suspense fallback={null}>
-          <ReplyModal
-            key={locationDraftKey}
-            closeModal={closeModal}
-            locationDraftKey={locationDraftKey}
-            parentCid={activeCid}
-            parentNumber={parentNumber}
-            threadNumber={threadNumber}
-            postCid={threadCid}
-            scrollY={scrollY}
-            showReplyModal={showReplyModal}
-            communityAddress={activeCommunityAddress}
-          />
+          <ChallengeModal />
         </Suspense>
+      </ImportErrorBoundary>
+      <ImportErrorBoundary floating>
+        <Suspense fallback={null}>
+          <SettingsUpgradeModal />
+        </Suspense>
+      </ImportErrorBoundary>
+      {activeCid && threadCid && activeCommunityAddress && (
+        <ImportErrorBoundary floating>
+          <Suspense fallback={null}>
+            <ReplyModal
+              key={locationDraftKey}
+              closeModal={closeModal}
+              locationDraftKey={locationDraftKey}
+              parentCid={activeCid}
+              parentNumber={parentNumber}
+              threadNumber={threadNumber}
+              postCid={threadCid}
+              scrollY={scrollY}
+              showReplyModal={showReplyModal}
+              communityAddress={activeCommunityAddress}
+            />
+          </Suspense>
+        </ImportErrorBoundary>
       )}
       {isInSettingsView && (
-        <Suspense fallback={null}>
-          <SettingsModal />
-        </Suspense>
+        <ImportErrorBoundary floating>
+          <Suspense fallback={null}>
+            <SettingsModal />
+          </Suspense>
+        </ImportErrorBoundary>
       )}
       <FramesLayout>
         <Outlet />
@@ -274,17 +250,21 @@ const appRoutes = (
     <Route
       path='/settings/account-data'
       element={
-        <Suspense fallback={null}>
-          <AccountDataEditor />
-        </Suspense>
+        <ImportErrorBoundary>
+          <Suspense fallback={null}>
+            <AccountDataEditor />
+          </Suspense>
+        </ImportErrorBoundary>
       }
     />
     <Route
       path='/:boardIdentifier/board-settings'
       element={
-        <Suspense fallback={null}>
-          <BoardSettings />
-        </Suspense>
+        <ImportErrorBoundary>
+          <Suspense fallback={null}>
+            <BoardSettings />
+          </Suspense>
+        </ImportErrorBoundary>
       }
     />
     <Route id={BOARD_ROUTES_ID} element={boardLayoutElement}>

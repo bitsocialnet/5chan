@@ -1,4 +1,5 @@
 import type { ReactPromise } from 'react';
+import { markImportFailures } from './import-failures';
 
 /** A promise with the fields React reads when it is passed to `use()`. */
 type TrackedPromise<T> = Promise<T> & ReactPromise<T>;
@@ -9,15 +10,14 @@ type TrackedPromise<T> = Promise<T> & ReactPromise<T>;
  * do that: it only resolves its payload the first time the component renders, and React schedules
  * that resolution as a separate task, so the component suspends once even when its chunk is cached.
  *
- * A failed import stays failed. Browsers (WebKit and Chromium) keep a module that failed to download
- * for the rest of the page's life and fail every later import of it without fetching it again.
+ * A failed import stays failed, and counts as an import failure (see lib/import-failures).
  */
 export const createTrackedImport = <T>(load: () => Promise<T>): (() => TrackedPromise<T>) => {
   let tracked: TrackedPromise<T> | undefined;
 
   return () => {
     if (!tracked) {
-      const pending: TrackedPromise<T> = load();
+      const pending: TrackedPromise<T> = markImportFailures(load)();
       pending.then(
         (value) => {
           Object.assign(pending, { status: 'fulfilled', value });

@@ -9,6 +9,7 @@ import AppUpdateRegistration from './components/app-update-registration';
 import { App as CapacitorApp } from '@capacitor/app';
 import { configureP2PBrowserPkcOptions } from './lib/p2p-browser-config';
 import { canonicalizeNestedHashRoute } from './lib/utils/hash-route-utils';
+import { recordFailedDownloads } from './lib/import-failures';
 import { loadRouteModules } from './route-modules';
 
 // Only enable analytics on 5chan.app (Vercel deployment)
@@ -32,6 +33,7 @@ if (typeof window !== 'undefined' && e2eStartHash && window.location.hash.length
 }
 
 configureP2PBrowserPkcOptions();
+recordFailedDownloads();
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 const renderApp = (tree: React.ReactNode) => {

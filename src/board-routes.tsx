@@ -1,9 +1,10 @@
 // The board, catalog, thread, and pending-post routes: their layout and views, with the post form,
 // feeds, and post components only they render. app.tsx loads this module on demand (see
 // route-modules.ts), so the home page does not download it before its first render.
-import { Activity, lazy, Suspense, useEffect } from 'react';
+import { Activity, Suspense, useEffect } from 'react';
 import { Navigate, Outlet, useLocation, useParams } from 'react-router-dom';
 import { useAccountComment } from '@bitsocial/bitsocial-react-hooks';
+import { lazyImport } from './lib/import-failures';
 import { initSnow, removeSnow } from './lib/snow';
 import { isAllView, isCatalogView, isModView, isSubscriptionsView } from './lib/utils/view-utils';
 import useCreateBoardModalStore from './stores/use-create-board-modal-store';
@@ -42,13 +43,14 @@ import FeedCacheContainer from './components/feed-cache-container';
 import PostForm from './components/post-form';
 import BoardBlotter from './components/board-blotter';
 import BoardsBar from './components/boards-bar';
+import ImportErrorBoundary from './components/import-error-boundary';
 
 export { Post } from './components/post';
 export { default as PendingPostView } from './views/pending-post';
 export { default as PostView } from './views/post';
 
-const BoardsBarEditModal = lazy(() => import('./components/boards-bar-edit-modal'));
-const CreateBoardModal = lazy(() => import('./components/create-board-modal'));
+const BoardsBarEditModal = lazyImport(() => import('./components/boards-bar-edit-modal'));
+const CreateBoardModal = lazyImport(() => import('./components/create-board-modal'));
 
 const getPostFormRouteKeyPath = (pathname: string) => pathname.replace(/\/settings$/, '').replace(/\/$/, '');
 
@@ -142,12 +144,16 @@ export const BoardLayout = () => {
     <div className={styles.boardLayout}>
       <DirectoryCandidateRecords boardIdentifier={boardIdentifier} />
       <BoardsBar persistable />
-      <Suspense fallback={null}>
-        <CreateBoardModal />
-      </Suspense>
-      <Suspense fallback={null}>
-        <BoardsBarEditModal />
-      </Suspense>
+      <ImportErrorBoundary floating>
+        <Suspense fallback={null}>
+          <CreateBoardModal />
+        </Suspense>
+      </ImportErrorBoundary>
+      <ImportErrorBoundary floating>
+        <Suspense fallback={null}>
+          <BoardsBarEditModal />
+        </Suspense>
+      </ImportErrorBoundary>
       <BoardHeader />
       {isMobile
         ? (communityAddress || isInAllView || isInModView || isInSubscriptionsView || pendingPostCommunityAddress || isOnModQueueRoute) &&

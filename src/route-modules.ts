@@ -20,30 +20,6 @@ export const provideBoardRoutes = (module: typeof import('./board-routes')) => {
 
 export const loadBoardRoutes = createTrackedImport(() => (providedBoardRoutes ? Promise.resolve(providedBoardRoutes) : import('./board-routes')));
 
-/** Whether `error` is the board routes' import failure (a failed download, usually), which only a reload can retry (see createTrackedImport). */
-export const isBoardRoutesLoadError = (error: unknown): boolean => {
-  const boardRoutes = loadBoardRoutes();
-  return boardRoutes.status === 'rejected' && boardRoutes.reason === error;
-};
-
-const BOARD_ROUTES_REFETCH_WAIT_MS = 3000;
-
-/**
- * Reloads the page to retry the board routes' download. WebKit can serve a module that failed to
- * download from its memory cache again after a reload, seconds later, without fetching it. Starting a
- * fetch of the board route files that bypasses the cache replaces those entries, so this waits for
- * those fetches, but no longer than a stalled connection allows, then reloads. index.html lists the
- * files (ROUTE_PRELOAD_DATA_ID in scripts/vite-app-preload.mjs).
- */
-export const reloadBoardRoutes = async () => {
-  const files: string[] = JSON.parse(document.getElementById('fivechan-route-preload')?.textContent || '[]');
-  await Promise.race([
-    Promise.allSettled(files.map((file) => fetch(file, { cache: 'reload' }))),
-    new Promise((resolve) => setTimeout(resolve, BOARD_ROUTES_REFETCH_WAIT_MS)),
-  ]);
-  window.location.reload();
-};
-
 let routeTree: ReactNode;
 let routeObjects: RouteObject[] | undefined;
 
