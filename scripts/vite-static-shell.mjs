@@ -220,6 +220,7 @@ const rebaseCssUrls = (css, stylesheetDirectory) =>
 // paint wait for them behind the startup JavaScript, so their rules are inlined in the same order.
 // Each keeps a disabled <link> with its URL: disabled stylesheets are not fetched, and Vite's runtime
 // helper skips inserting a stylesheet that is already linked, so the file is never loaded twice.
+// The lazy chunks' stylesheets that follow them are inlined the same way (see collectLazyStylesheets).
 export function inlineStartupStylesheets(html, preloadAttribute, base, readAsset) {
   return html.replace(new RegExp(`<link\\b[^>]*\\s${preloadAttribute}\\b[^>]*>`, 'g'), (tag) => {
     if (!/\brel="preload" as="style"/.test(tag)) return tag;

@@ -1,6 +1,12 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { APP_PRELOAD_ATTRIBUTE, collectDynamicEntryDependencies, createDynamicEntryPreloadTags, dynamicEntryPreloadPlugin } from '../vite-app-preload.mjs';
+import {
+  APP_PRELOAD_ATTRIBUTE,
+  collectDynamicEntryDependencies,
+  collectLazyStylesheets,
+  createDynamicEntryPreloadTags,
+  dynamicEntryPreloadPlugin,
+} from '../vite-app-preload.mjs';
 
 const chunk = (fileName, { facadeModuleId, imports = [], dynamicImports = [], importedCss = [] } = {}) => ({
   type: 'chunk',
@@ -65,6 +71,7 @@ test('preloads bootstrap -> index -> app, including index-only dependencies and 
         ['modulepreload', `${base}assets/posts-FFFFFFFF.js`],
         ['preload', `${base}assets/posts-KKKKKKKK.css`],
         ['preload', `${base}assets/app-HHHHHHHH.css`],
+        ['preload', `${base}assets/reply-modal-LLLLLLLL.css`],
       ],
     );
     assert.equal(new Set(tags.map((tag) => tag.attrs.href)).size, tags.length);
@@ -94,6 +101,25 @@ test('handles circular static imports and missing dependency chunks without addi
   );
 });
 
+test('links the stylesheets of lazily imported chunks after their imports and before their own lazy chunks', () => {
+  const bundle = createBundle();
+  bundle['assets/reply-modal-GGGGGGGG.js'].imports.push('assets/posts-FFFFFFFF.js', 'assets/editor-PPPPPPPP.js');
+  bundle['assets/reply-modal-GGGGGGGG.js'].dynamicImports.push('assets/emoji-QQQQQQQQ.js', 'assets/app-CCCCCCCC.js');
+  bundle['assets/editor-PPPPPPPP.js'] = chunk('assets/editor-PPPPPPPP.js', { importedCss: ['assets/editor-RRRRRRRR.css'] });
+  bundle['assets/emoji-QQQQQQQQ.js'] = chunk('assets/emoji-QQQQQQQQ.js', { importedCss: ['assets/emoji-SSSSSSSS.css'] });
+  const startupFiles = new Set([
+    ...collectDynamicEntryDependencies(bundle, 'assets/index-AAAAAAAA.js'),
+    ...collectDynamicEntryDependencies(bundle, 'assets/app-CCCCCCCC.js', { ownerFileName: 'assets/index-AAAAAAAA.js' }),
+  ]);
+  // The index and posts stylesheets are startup stylesheets already; JavaScript chunks are not collected.
+  // The emoji chunk loads only after the reply modal's module runs, so its rules come after the modal's.
+  assert.deepEqual(collectLazyStylesheets(bundle, 'assets/app-CCCCCCCC.js', startupFiles), [
+    'assets/editor-RRRRRRRR.css',
+    'assets/reply-modal-LLLLLLLL.css',
+    'assets/emoji-SSSSSSSS.css',
+  ]);
+});
+
 test('emits preload tags only for files the HTML does not already reference', () => {
   const tags = createDynamicEntryPreloadTags({ bundle: createBundle(), html, base: './', entryFacadeSuffix: '/src/app.tsx', ownerFacadeSuffix: '/src/index.tsx' });
   assert.deepEqual(
@@ -105,6 +131,7 @@ test('emits preload tags only for files the HTML does not already reference', ()
       ['modulepreload', './assets/posts-FFFFFFFF.js'],
       ['preload', './assets/posts-KKKKKKKK.css'],
       ['preload', './assets/app-HHHHHHHH.css'],
+      ['preload', './assets/reply-modal-LLLLLLLL.css'],
     ],
   );
   for (const tag of tags) {
