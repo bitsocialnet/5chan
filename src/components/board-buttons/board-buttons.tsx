@@ -16,6 +16,7 @@ import { useActiveAccountField } from '../../hooks/use-active-account-field';
 import { useCommunityField } from '../../hooks/use-stable-community';
 import { canEditBoardSettings } from '../../lib/utils/mod-access';
 import { BUMP_ORDER_SORT_TYPE } from '../../lib/utils/board-sort-utils';
+import type { CatalogSortType } from '../../lib/utils/catalog-sort';
 import { normalizeAccountCommentIndex } from '../../lib/utils/account-comment-index-utils';
 import useHiddenCatalogThreads from '../../hooks/use-hidden-catalog-threads';
 import useCatalogFiltersStore from '../../stores/use-catalog-filters-store';
@@ -265,7 +266,7 @@ const HiddenCatalogThreadsToggle = ({
   }
   const { hiddenCatalogThreads, isLoadingHiddenCatalogThreads, scopeKey } = useHiddenCatalogThreads({
     communityAddresses,
-    sortType: sortType === 'new' ? 'new' : 'active',
+    sortType,
   });
   const storedHiddenThreadsCount = useHiddenCatalogThreadsStore((state) => state.scopeHiddenThreadsCounts[scopeKey] || 0);
   const hiddenThreadsCount = Math.max(hiddenCatalogThreads.length, storedHiddenThreadsCount);
@@ -396,7 +397,7 @@ const SortOptions = ({ address }: { address?: string }) => {
   const boardSortType = useBoardSortType(address);
 
   const handleSortChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const type = event.target.value as 'active' | 'new' | 'replyCount';
+    const type = event.target.value as CatalogSortType;
     setSortType(type);
   };
   return (
@@ -404,6 +405,7 @@ const SortOptions = ({ address }: { address?: string }) => {
       <span>{t('sort_by')}</span>:&nbsp;
       <select className='capitalize' value={sortType} onChange={handleSortChange}>
         <option value='active'>{boardSortType === BUMP_ORDER_SORT_TYPE ? t('bump_order') : boardSortType}</option>
+        <option value='lastReply'>{t('last_reply')}</option>
         <option value='new'>{t('creation_date')}</option>
         <option value='replyCount'>{t('reply_count')}</option>
       </select>

@@ -578,5 +578,6 @@
   "media_hosting_show_link_field_tip": "Låter dig posta en bild eller video genom att klistra in en direktlänk till den",
   "running_automated_checks": "kör automatiska kontroller...",
   "unsupported_file_type_alert": "Filtypen stöds inte. Använd en JPG-, PNG-, GIF-, WebP-, MP4-, WebM- eller SWF-fil.",
-  "boards_without_bump_order": "Visas inte eftersom de inte publicerar någon bump-ordning: {{boards}}"
+  "boards_without_bump_order": "Visas inte eftersom de inte publicerar någon bump-ordning: {{boards}}",
+  "last_reply": "Senaste svar"
 }

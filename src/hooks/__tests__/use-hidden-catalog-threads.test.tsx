@@ -3,6 +3,7 @@ import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Comment } from '@bitsocial/bitsocial-react-hooks';
+import type { CatalogSortType } from '../../lib/utils/catalog-sort';
 import useHiddenCatalogThreads from '../use-hidden-catalog-threads';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -42,7 +43,7 @@ const Result = ({
 }: {
   candidateComments?: Comment[];
   communityAddresses: string[];
-  sortType?: 'active' | 'new';
+  sortType?: CatalogSortType;
 }) => {
   const { hiddenCatalogThreads, scopeKey } = useHiddenCatalogThreads({ candidateComments, communityAddresses, sortType });
   return (
@@ -152,5 +153,32 @@ describe('useHiddenCatalogThreads', () => {
     });
 
     expect(container.querySelector('[data-testid="hidden-cids"]')?.textContent).toBe('hidden-mu-thread');
+  });
+
+  it('lists hidden threads in the selected catalog order, by last reply for bump order', async () => {
+    testState.account = { blockedCids: { newest: true, 'busiest-oldest': true, 'last-replied': true } };
+    testState.commentsByCid = {
+      newest: { cid: 'newest', communityAddress: 'music-posting.eth', postCid: 'newest', timestamp: 300, replyCount: 1, lastReplyTimestamp: 310 } as Comment,
+      'busiest-oldest': { cid: 'busiest-oldest', communityAddress: 'music-posting.eth', postCid: 'busiest-oldest', timestamp: 100, replyCount: 9 } as Comment,
+      'last-replied': {
+        cid: 'last-replied',
+        communityAddress: 'music-posting.eth',
+        postCid: 'last-replied',
+        timestamp: 200,
+        replyCount: 4,
+        lastReplyTimestamp: 900,
+      } as Comment,
+    };
+    const renderOrder = async (sortType: CatalogSortType) => {
+      await act(async () => {
+        root.render(createElement(Result, { communityAddresses: ['music-posting.eth'], sortType }));
+      });
+      return container.querySelector('[data-testid="hidden-cids"]')?.textContent;
+    };
+
+    expect(await renderOrder('lastReply')).toBe('last-replied,newest,busiest-oldest');
+    expect(await renderOrder('active')).toBe('last-replied,newest,busiest-oldest');
+    expect(await renderOrder('new')).toBe('newest,last-replied,busiest-oldest');
+    expect(await renderOrder('replyCount')).toBe('busiest-oldest,last-replied,newest');
   });
 });

@@ -578,5 +578,6 @@
   "media_hosting_show_link_field_tip": "Doğrudan bağlantısını yapıştırarak bir resim veya video paylaşmanızı sağlar",
   "running_automated_checks": "otomatik kontroller yapılıyor...",
   "unsupported_file_type_alert": "Desteklenmeyen dosya türü. JPG, PNG, GIF, WebP, MP4, WebM veya SWF dosyası kullanın.",
-  "boards_without_bump_order": "Bump sırası yayınlamadıkları için gösterilmiyor: {{boards}}"
+  "boards_without_bump_order": "Bump sırası yayınlamadıkları için gösterilmiyor: {{boards}}",
+  "last_reply": "Son yanıt"
 }

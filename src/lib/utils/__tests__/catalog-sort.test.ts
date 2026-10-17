@@ -75,6 +75,21 @@ describe('sortCatalogFeedForDisplay', () => {
     });
   });
 
+  describe('lastReply sort', () => {
+    it('re-sorts the board order by latest reply, saged or not, counting a thread without replies from its post', () => {
+      // In bump order, 'saged' sits below 'bumped' because its latest reply was a sage.
+      const posts: CatalogPost[] = [
+        { cid: 'sticky', pinned: true, timestamp: 1 },
+        { cid: 'bumped', timestamp: 100, lastReplyTimestamp: 500 },
+        { cid: 'saged', timestamp: 90, lastReplyTimestamp: 800 },
+        { cid: 'no-replies', timestamp: 600 },
+        { cid: 'tie-older', timestamp: 50, lastReplyTimestamp: 400 },
+        { cid: 'tie-newer', timestamp: 60, lastReplyTimestamp: 400 },
+      ];
+      expect(sortCatalogFeedForDisplay(posts, 'lastReply').map((p) => p.cid)).toEqual(['sticky', 'saged', 'no-replies', 'bumped', 'tie-newer', 'tie-older']);
+    });
+  });
+
   describe('active sort', () => {
     it('returns original order for active sort', () => {
       const posts: CatalogPost[] = [

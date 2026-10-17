@@ -578,5 +578,6 @@
   "media_hosting_show_link_field_tip": "Permite publicar una imagen o un video pegando un enlace directo a él",
   "running_automated_checks": "ejecutando comprobaciones automáticas...",
   "unsupported_file_type_alert": "Tipo de archivo no compatible. Usa un archivo JPG, PNG, GIF, WebP, MP4, WebM o SWF.",
-  "boards_without_bump_order": "No se muestran porque no publican un orden de bump: {{boards}}"
+  "boards_without_bump_order": "No se muestran porque no publican un orden de bump: {{boards}}",
+  "last_reply": "Última respuesta"
 }

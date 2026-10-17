@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { type Comment, useAccount, useComments } from '@bitsocial/bitsocial-react-hooks';
 import { isCommentArchived } from '../lib/utils/comment-moderation-utils';
+import { sortCatalogFeedForDisplay, type CatalogSortType } from '../lib/utils/catalog-sort';
 import { getCommentCommunityAddress } from '../lib/utils/comment-utils';
 import useHiddenCatalogThreadsStore from '../stores/use-hidden-catalog-threads-store';
 import { findDirectoryByAddress, normalizeBoardAddress, useDirectories, type DirectoryCommunity } from './use-directories';
@@ -8,7 +9,7 @@ import { findDirectoryByAddress, normalizeBoardAddress, useDirectories, type Dir
 type HiddenCatalogThreadsOptions = {
   candidateComments?: readonly Comment[];
   communityAddresses: readonly string[];
-  sortType: 'active' | 'new';
+  sortType: CatalogSortType;
 };
 
 type HiddenCatalogThreadsResult = {
@@ -80,26 +81,10 @@ const isThreadPost = (comment: Comment): boolean => {
   return Boolean(cid && !parentCid && (!postCid || postCid === cid));
 };
 
-const getTimestamp = (value: unknown): number => (typeof value === 'number' && Number.isFinite(value) ? value : 0);
-
-const sortHiddenThreads = (threads: Comment[], sortType: 'active' | 'new'): Comment[] =>
-  [...threads].sort((a, b) => {
-    if (a.pinned !== b.pinned) {
-      return a.pinned ? -1 : 1;
-    }
-
-    const activeTimestampDifference = sortType === 'active' ? getTimestamp(b.lastReplyTimestamp || b.timestamp) - getTimestamp(a.lastReplyTimestamp || a.timestamp) : 0;
-    if (activeTimestampDifference !== 0) {
-      return activeTimestampDifference;
-    }
-
-    const timestampDifference = getTimestamp(b.timestamp) - getTimestamp(a.timestamp);
-    if (timestampDifference !== 0) {
-      return timestampDifference;
-    }
-
-    return String(a.cid || '').localeCompare(String(b.cid || ''));
-  });
+// The board's feed drops the threads the viewer hid, so their place in bump order is unknown and
+// last reply is the closest order for them. The other catalog orders apply as they are.
+const sortHiddenThreads = (threads: Comment[], sortType: CatalogSortType): Comment[] =>
+  sortCatalogFeedForDisplay(threads, sortType === 'active' ? 'lastReply' : sortType);
 
 const getHiddenThreadCandidates = ({
   blockedCidList,
@@ -158,7 +143,7 @@ const mergeCommentsByCid = (comments: readonly (Comment | undefined)[], candidat
   return mergedComments;
 };
 
-const getHiddenCatalogThreads = (hiddenThreadCandidates: readonly Comment[], sortType: 'active' | 'new'): Comment[] =>
+const getHiddenCatalogThreads = (hiddenThreadCandidates: readonly Comment[], sortType: CatalogSortType): Comment[] =>
   sortHiddenThreads(
     hiddenThreadCandidates.filter((comment) => !isCommentArchived(comment)),
     sortType,

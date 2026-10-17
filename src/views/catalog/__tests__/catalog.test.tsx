@@ -11,6 +11,7 @@ import { clearStableLastVisitTimeFilterName, LAST_VISIT_STORAGE_KEY } from '../.
 import useHiddenCatalogThreadsStore from '../../../stores/use-hidden-catalog-threads-store';
 import usePinnedCatalogThreadsStore from '../../../stores/use-pinned-catalog-threads-store';
 import { getCatalogRowHeightEstimates } from '../../../lib/utils/pretext-height-estimates';
+import type { CatalogSortType } from '../../../lib/utils/catalog-sort';
 
 vi.mock('../../../lib/utils/pretext-height-estimates', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../../lib/utils/pretext-height-estimates')>();
@@ -89,7 +90,7 @@ const testState = vi.hoisted(() => ({
   setCurrentCommunityAddressMock: vi.fn(),
   setResetFunctionMock: vi.fn(),
   showOPComment: true,
-  sortType: 'new' as 'active' | 'new',
+  sortType: 'active' as CatalogSortType,
   unblockCidMock: vi.fn(),
   virtuosoInitialScrollTops: [] as Array<number | undefined>,
   windowWidth: 900,
@@ -382,11 +383,6 @@ vi.mock('../../../lib/utils/pattern-utils', () => ({
   },
 }));
 
-vi.mock('../../../lib/utils/catalog-sort', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../../../lib/utils/catalog-sort')>()),
-  sortCatalogFeedForDisplay: (feed: TestComment[]) => feed,
-}));
-
 let container: HTMLDivElement;
 let latestLocation = '';
 let root: Root;
@@ -473,7 +469,7 @@ describe('Catalog', () => {
     testState.resolvedCommunityAddress = 'music-posting.eth';
     testState.searchText = '';
     testState.showOPComment = true;
-    testState.sortType = 'new';
+    testState.sortType = 'active';
     testState.unblockCidMock.mockReset();
     testState.unblockCidMock.mockResolvedValue(undefined);
     testState.virtuosoInitialScrollTops = [];

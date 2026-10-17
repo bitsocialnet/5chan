@@ -578,5 +578,6 @@
   "media_hosting_show_link_field_tip": "Cho phép bạn đăng ảnh hoặc video bằng cách dán liên kết trực tiếp đến tệp đó",
   "running_automated_checks": "đang chạy kiểm tra tự động...",
   "unsupported_file_type_alert": "Loại tệp không được hỗ trợ. Hãy dùng tệp JPG, PNG, GIF, WebP, MP4, WebM hoặc SWF.",
-  "boards_without_bump_order": "Không hiển thị vì không công bố thứ tự bump: {{boards}}"
+  "boards_without_bump_order": "Không hiển thị vì không công bố thứ tự bump: {{boards}}",
+  "last_reply": "Trả lời cuối cùng"
 }

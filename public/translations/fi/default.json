@@ -578,5 +578,6 @@
   "media_hosting_show_link_field_tip": "Voit julkaista kuvan tai videon liittämällä suoran linkin siihen",
   "running_automated_checks": "suoritetaan automaattisia tarkistuksia...",
   "unsupported_file_type_alert": "Tiedostotyyppiä ei tueta. Käytä JPG-, PNG-, GIF-, WebP-, MP4-, WebM- tai SWF-tiedostoa.",
-  "boards_without_bump_order": "Ei näytetä, koska ne eivät julkaise bump-järjestystä: {{boards}}"
+  "boards_without_bump_order": "Ei näytetä, koska ne eivät julkaise bump-järjestystä: {{boards}}",
+  "last_reply": "Viimeisin vastaus"
 }

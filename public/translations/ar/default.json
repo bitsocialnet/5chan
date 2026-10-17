@@ -578,5 +578,6 @@
   "media_hosting_show_link_field_tip": "يتيح لك نشر صورة أو فيديو بلصق رابط مباشر له",
   "running_automated_checks": "جارٍ إجراء الفحوصات التلقائية...",
   "unsupported_file_type_alert": "نوع الملف غير مدعوم. استخدم ملف JPG أو PNG أو GIF أو WebP أو MP4 أو WebM أو SWF.",
-  "boards_without_bump_order": "غير معروضة لأنها لا تنشر ترتيب الدفع: {{boards}}"
+  "boards_without_bump_order": "غير معروضة لأنها لا تنشر ترتيب الدفع: {{boards}}",
+  "last_reply": "آخر رد"
 }

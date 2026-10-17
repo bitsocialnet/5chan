@@ -578,5 +578,6 @@
   "media_hosting_show_link_field_tip": "Lar deg poste et bilde eller en video ved å lime inn en direkte lenke til det",
   "running_automated_checks": "kjører automatiske kontroller...",
   "unsupported_file_type_alert": "Filtypen støttes ikke. Bruk en JPG-, PNG-, GIF-, WebP-, MP4-, WebM- eller SWF-fil.",
-  "boards_without_bump_order": "Vises ikke fordi de ikke publiserer en bump-rekkefølge: {{boards}}"
+  "boards_without_bump_order": "Vises ikke fordi de ikke publiserer en bump-rekkefølge: {{boards}}",
+  "last_reply": "Siste svar"
 }

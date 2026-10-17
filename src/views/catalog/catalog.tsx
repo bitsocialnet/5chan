@@ -422,7 +422,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   } = useHiddenCatalogThreads({
     candidateComments: feed,
     communityAddresses,
-    sortType: sortType === 'new' ? 'new' : 'active',
+    sortType,
   });
   const hiddenThreadsCount = hiddenCatalogThreads.length;
   const requestedShowHiddenThreads = useHiddenCatalogThreadsStore((state) => state.shownScopeKey === hiddenCatalogThreadsScopeKey);

@@ -578,5 +578,6 @@
   "media_hosting_show_link_field_tip": "Îți permite să postezi o imagine sau un videoclip lipind un link direct către acesta",
   "running_automated_checks": "se rulează verificări automate...",
   "unsupported_file_type_alert": "Tip de fișier neacceptat. Folosește un fișier JPG, PNG, GIF, WebP, MP4, WebM sau SWF.",
-  "boards_without_bump_order": "Nu sunt afișate deoarece nu publică o ordine bump: {{boards}}"
+  "boards_without_bump_order": "Nu sunt afișate deoarece nu publică o ordine bump: {{boards}}",
+  "last_reply": "Ultimul răspuns"
 }

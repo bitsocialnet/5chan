@@ -578,5 +578,6 @@
   "media_hosting_show_link_field_tip": "Umožňuje přidat obrázek nebo video vložením přímého odkazu na něj",
   "running_automated_checks": "probíhají automatické kontroly...",
   "unsupported_file_type_alert": "Nepodporovaný typ souboru. Použijte soubor JPG, PNG, GIF, WebP, MP4, WebM nebo SWF.",
-  "boards_without_bump_order": "Nezobrazeno, protože nezveřejňují pořadí bump: {{boards}}"
+  "boards_without_bump_order": "Nezobrazeno, protože nezveřejňují pořadí bump: {{boards}}",
+  "last_reply": "Poslední odpověď"
 }

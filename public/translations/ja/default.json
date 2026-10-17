@@ -578,5 +578,6 @@
   "media_hosting_show_link_field_tip": "直接リンクを貼り付けて画像や動画を投稿できます",
   "running_automated_checks": "自動チェックを実行中...",
   "unsupported_file_type_alert": "サポートされていないファイル形式です。JPG、PNG、GIF、WebP、MP4、WebM、SWF のいずれかのファイルを使用してください。",
-  "boards_without_bump_order": "バンプ順を公開していないため表示されません: {{boards}}"
+  "boards_without_bump_order": "バンプ順を公開していないため表示されません: {{boards}}",
+  "last_reply": "最終返信"
 }

@@ -578,5 +578,6 @@
   "media_hosting_show_link_field_tip": "Ermöglicht es, ein Bild oder Video per Direktlink zu posten",
   "running_automated_checks": "Automatische Prüfungen laufen...",
   "unsupported_file_type_alert": "Nicht unterstützter Dateityp. Verwende eine JPG-, PNG-, GIF-, WebP-, MP4-, WebM- oder SWF-Datei.",
-  "boards_without_bump_order": "Nicht angezeigt, weil sie keine Bump-Reihenfolge veröffentlichen: {{boards}}"
+  "boards_without_bump_order": "Nicht angezeigt, weil sie keine Bump-Reihenfolge veröffentlichen: {{boards}}",
+  "last_reply": "Letzte Antwort"
 }

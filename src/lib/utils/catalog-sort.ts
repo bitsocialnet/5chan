@@ -1,6 +1,6 @@
 /**
  * Catalog feed sorting utility for deterministic and testable behavior.
- * Used when displaying catalog feeds with the creation date and replyCount sorts.
+ * Used when displaying catalog feeds with the last reply, creation date and replyCount sorts.
  */
 
 /** Minimal post shape for catalog sorting */
@@ -13,8 +13,8 @@ export interface CatalogPost {
   updatedAt?: number | null;
 }
 
-/** Sort types supported by the catalog feed */
-type CatalogSortType = 'active' | 'new' | 'replyCount';
+/** 4chan's catalog orders: bump order (the board's own), last reply, creation date and reply count. */
+export type CatalogSortType = 'active' | 'lastReply' | 'new' | 'replyCount';
 
 const compareByCreationDate = (a: CatalogPost, b: CatalogPost): number => {
   const tsA = a.timestamp ?? 0;
@@ -24,6 +24,15 @@ const compareByCreationDate = (a: CatalogPost, b: CatalogPost): number => {
   const cidA = a.cid ?? '';
   const cidB = b.cid ?? '';
   return cidA.localeCompare(cidB);
+};
+
+// Unlike bump order, every reply counts, saged or past the bump limit. A thread without replies
+// counts from its own post, as in 4chan's catalog.
+const getLastReplyTimestamp = (post: CatalogPost): number => post.lastReplyTimestamp || post.timestamp || 0;
+
+const compareByLastReply = (a: CatalogPost, b: CatalogPost): number => {
+  const lastReplyDifference = getLastReplyTimestamp(b) - getLastReplyTimestamp(a);
+  return lastReplyDifference !== 0 ? lastReplyDifference : compareByCreationDate(a, b);
 };
 
 const compareByReplyCount = (a: CatalogPost, b: CatalogPost): number => {
@@ -38,16 +47,23 @@ const compareByReplyCount = (a: CatalogPost, b: CatalogPost): number => {
   return compareByCreationDate(a, b);
 };
 
+const LOCAL_SORT_COMPARATORS: Record<Exclude<CatalogSortType, 'active'>, (a: CatalogPost, b: CatalogPost) => number> = {
+  lastReply: compareByLastReply,
+  new: compareByCreationDate,
+  replyCount: compareByReplyCount,
+};
+
 /**
  * Sort catalog feed for display. The feed arrives in the board's own order, bump order wherever the
  * board publishes it, and like 4chan's catalog the other orders re-sort that thread list locally.
  * Sticky threads stay first.
  * - For 'active': returns input order unchanged (no extra sort cost).
+ * - For 'lastReply': deterministic sort by lastReplyTimestamp (or timestamp) desc, timestamp, cid.
  * - For 'new': deterministic sort by timestamp desc, cid.
  * - For 'replyCount': deterministic sort by replyCount desc, bump order, timestamp, cid.
  */
 export function sortCatalogFeedForDisplay<T extends CatalogPost>(posts: T[], sortType: CatalogSortType): T[] {
-  if (sortType !== 'new' && sortType !== 'replyCount') {
+  if (sortType === 'active') {
     return posts;
   }
 
@@ -62,7 +78,7 @@ export function sortCatalogFeedForDisplay<T extends CatalogPost>(posts: T[], sor
     }
   }
 
-  unpinned.sort(sortType === 'new' ? compareByCreationDate : compareByReplyCount);
+  unpinned.sort(LOCAL_SORT_COMPARATORS[sortType]);
 
   return [...pinned, ...unpinned];
 }

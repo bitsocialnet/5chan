@@ -578,5 +578,6 @@
   "media_hosting_show_link_field_tip": "నేరుగా లింక్‌ను అతికించి చిత్రం లేదా వీడియోను పోస్ట్ చేయడానికి అనుమతిస్తుంది",
   "running_automated_checks": "స్వయంచాలక తనిఖీలు జరుగుతున్నాయి...",
   "unsupported_file_type_alert": "ఈ ఫైల్ రకానికి మద్దతు లేదు. JPG, PNG, GIF, WebP, MP4, WebM లేదా SWF ఫైల్‌ను ఉపయోగించండి.",
-  "boards_without_bump_order": "బంప్ క్రమాన్ని ప్రచురించనందున చూపబడలేదు: {{boards}}"
+  "boards_without_bump_order": "బంప్ క్రమాన్ని ప్రచురించనందున చూపబడలేదు: {{boards}}",
+  "last_reply": "చివరి సమాధానం"
 }
