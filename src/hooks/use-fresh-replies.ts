@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { Comment, useAccountComments } from '@bitsocial/bitsocial-react-hooks';
 import { sortRepliesForDisplay } from '../lib/utils/replies-preview-utils';
 import { getCommentCommunityAddress } from '../lib/utils/comment-utils';
+import { preservePublishedUserID } from '../lib/utils/comment-user-id-utils';
 import { normalizeBoardAddress } from '../lib/utils/directory-list-lookup-utils';
 
 // Keep the hook on its indexed fast path when there are no reply indices to resolve.
@@ -110,7 +111,8 @@ const useFreshReplies = (replies: Comment[] = [], options: UseFreshRepliesOption
         }
 
         hasFreshReplies = true;
-        return freshReply;
+        // An unindexed reply is the published copy, so it carries the board-assigned User ID.
+        return preservePublishedUserID(freshReply, reply);
       }
 
       const freshReply = accountCommentsByIndex.get(reply.index);

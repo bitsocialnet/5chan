@@ -8,6 +8,7 @@ import useFreshReplies from '../use-fresh-replies';
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
 
 type TestComment = {
+  author?: { address?: string; shortAddress?: string };
   cid?: string;
   content?: string;
   index?: number;
@@ -179,6 +180,33 @@ describe('useFreshReplies', () => {
     expect(latestValue[1]).toBe(testState.replies[1] as never);
     expect(testState.accountCommentsCalls).toContainEqual({ commentIndices: [-1] });
     expect(testState.accountCommentsCalls).toContainEqual({ filter: expect.any(Function) });
+  });
+
+  it('keeps the published pseudonymous User ID when a cid-matched account comment replaces the reply', () => {
+    testState.replies = [
+      {
+        author: { address: 'board-assigned-address', shortAddress: 'P3ST67vtJzHU' },
+        cid: 'reply-cid',
+        content: 'published reply',
+        communityAddress: 'music.eth',
+      },
+    ];
+    testState.accountComments = [
+      {
+        author: { address: 'account-address', shortAddress: 'M8AAccount' },
+        cid: 'reply-cid',
+        content: 'published reply',
+        index: 5,
+        communityAddress: 'music.eth',
+      },
+    ];
+
+    renderHook();
+
+    expect(latestValue[0]?.author?.shortAddress).toBe('P3ST67vtJzHU');
+    // The account copy still provides the local fields that author controls rely on.
+    expect(latestValue[0]?.author?.address).toBe('account-address');
+    expect(latestValue[0]?.index).toBe(5);
   });
 
   it('orders replies by final post number after a pending reply is approved', () => {
