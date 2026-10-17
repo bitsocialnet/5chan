@@ -6,6 +6,8 @@ import {
   collectLazyStylesheets,
   createDynamicEntryPreloadTags,
   dynamicEntryPreloadPlugin,
+  ROUTE_PRELOAD_DATA_ID,
+  ROUTE_PRELOAD_SCRIPT,
 } from '../vite-app-preload.mjs';
 
 const chunk = (fileName, { facadeModuleId, imports = [], dynamicImports = [], importedCss = [] } = {}) => ({
@@ -56,7 +58,7 @@ const createBootstrapBundle = () => {
 test('preloads bootstrap -> index -> app, including index-only dependencies and theme CSS', () => {
   for (const base of ['./', '/nested/']) {
     const bootstrapHtml = `<head><script type="module" crossorigin src="${base}assets/bootstrap-MMMMMMMM.js"></script><link rel="modulepreload" crossorigin href="${base}assets/vendor-BBBBBBBB.js"></head>`;
-    const plugin = dynamicEntryPreloadPlugin();
+    const plugin = dynamicEntryPreloadPlugin({ routeFacadeSuffix: null });
     plugin.configResolved({ base });
     const tags = plugin.transformIndexHtml.handler(bootstrapHtml, { bundle: createBootstrapBundle() });
     assert.deepEqual(
@@ -144,6 +146,102 @@ test('emits preload tags only for files the HTML does not already reference', ()
   }
 });
 
+test('lists the board routes chunk graph for the route preload script, without startup files or stylesheets', () => {
+  const bundle = createBundle();
+  bundle['assets/app-CCCCCCCC.js'].dynamicImports.push('assets/board-routes-TTTTTTTT.js');
+  bundle['assets/board-routes-TTTTTTTT.js'] = chunk('assets/board-routes-TTTTTTTT.js', {
+    facadeModuleId: '/repo/src/board-routes.tsx',
+    imports: ['assets/vendor-BBBBBBBB.js', 'assets/posts-FFFFFFFF.js', 'assets/virtuoso-UUUUUUUU.js'],
+    importedCss: ['assets/board-routes-VVVVVVVV.css'],
+  });
+  bundle['assets/virtuoso-UUUUUUUU.js'] = chunk('assets/virtuoso-UUUUUUUU.js');
+  const tags = createDynamicEntryPreloadTags({
+    bundle,
+    html,
+    base: './',
+    entryFacadeSuffix: '/src/app.tsx',
+    ownerFacadeSuffix: '/src/index.tsx',
+    routeFacadeSuffix: '/src/board-routes.tsx',
+  });
+  // Its stylesheet is linked with the other lazy stylesheets, never preloaded as a startup file.
+  assert.ok(tags.some((tag) => tag.attrs?.href === './assets/board-routes-VVVVVVVV.css'));
+  assert.ok(!tags.some((tag) => tag.attrs?.href === './assets/board-routes-TTTTTTTT.js'));
+  const [data, script] = tags.slice(0, 2);
+  assert.deepEqual(data.attrs, { type: 'application/json', id: ROUTE_PRELOAD_DATA_ID });
+  assert.deepEqual(JSON.parse(data.children), ['./assets/board-routes-TTTTTTTT.js', './assets/virtuoso-UUUUUUUU.js']);
+  assert.equal(script.children, ROUTE_PRELOAD_SCRIPT);
+});
+
+test('the route preload script preloads the board routes everywhere but the home page and the pages outside the board layout', () => {
+  const preloadedFor = (hash) => {
+    const appended = [];
+    const document = {
+      getElementById: (id) => (id === ROUTE_PRELOAD_DATA_ID ? { textContent: '["./assets/board-routes.js","./assets/post.js"]' } : null),
+      createElement: () => ({
+        setAttribute(name, value) {
+          this[name] = value;
+        },
+      }),
+      head: { appendChild: (link) => appended.push(link) },
+    };
+    new Function('location', 'document', ROUTE_PRELOAD_SCRIPT)({ hash }, document);
+    return appended;
+  };
+  for (const hash of [
+    '',
+    '#',
+    '#/',
+    '#/faq',
+    '#/rules',
+    '#/rules/b',
+    '#/blotter/',
+    '#/pass',
+    '#/settings/account-data',
+    '#/not-found',
+    '#/biz/board-settings',
+    '#/?lang=de',
+  ]) {
+    assert.deepEqual(preloadedFor(hash), [], hash);
+  }
+  for (const hash of [
+    '#/biz',
+    '#/biz/',
+    '#/biz/2',
+    '#/biz/catalog',
+    '#/biz/thread/Qm123',
+    '#/biz/thread/Qm123#p1',
+    '#/all?t=week',
+    '#/subs',
+    '#/pending/0',
+    '#/faq/2',
+    '#/biz/settings',
+  ]) {
+    assert.deepEqual(
+      preloadedFor(hash).map((link) => [link.rel, link.crossOrigin, link.href, link['data-fivechan-route-preload']]),
+      [
+        ['modulepreload', '', './assets/board-routes.js', ''],
+        ['modulepreload', '', './assets/post.js', ''],
+      ],
+      hash,
+    );
+  }
+});
+
+test('fails when the board routes entry is missing from the bundle', () => {
+  assert.throws(
+    () =>
+      createDynamicEntryPreloadTags({
+        bundle: createBundle(),
+        html,
+        base: './',
+        entryFacadeSuffix: '/src/app.tsx',
+        ownerFacadeSuffix: '/src/index.tsx',
+        routeFacadeSuffix: '/src/app-with-board-routes.ts',
+      }),
+    /app-with-board-routes/,
+  );
+});
+
 test('returns nothing when the app chunk is missing from the bundle', () => {
   const bundle = createBundle();
   delete bundle['assets/app-CCCCCCCC.js'];
@@ -151,7 +249,7 @@ test('returns nothing when the app chunk is missing from the bundle', () => {
 });
 
 test('the plugin only transforms build HTML that carries a bundle', () => {
-  const plugin = dynamicEntryPreloadPlugin();
+  const plugin = dynamicEntryPreloadPlugin({ routeFacadeSuffix: null });
   assert.equal(plugin.apply, 'build');
   plugin.configResolved({ base: '/' });
   assert.equal(plugin.transformIndexHtml.handler(html, {}), undefined);

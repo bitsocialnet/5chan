@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { Link, MemoryRouter, useLocation, useNavigate } from 'react-router-dom';
+import { Link, MemoryRouter, parsePath, useLocation, useNavigate } from 'react-router-dom';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import usePendingPostNavigationStore from '../stores/use-pending-post-navigation-store';
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -253,7 +253,7 @@ vi.mock('../views/post/post', () => ({
 }));
 
 vi.mock('../components/post', () => ({
-  QuotePreviewPostProvider: ({ children }: { children: React.ReactNode }) => children,
+  Post: makeNamedComponent('post'),
 }));
 
 vi.mock('../views/rules/rules', () => ({
@@ -314,6 +314,8 @@ let navigateFromTest: ReturnType<typeof useNavigate> | undefined;
 let container: HTMLDivElement;
 let root: Root;
 let App: typeof import('../app').default | null = null;
+let loadRouteModules: typeof import('../route-modules').loadRouteModules;
+let rendersBoardRoutes: typeof import('../route-modules').rendersBoardRoutes;
 
 const LocationProbe = () => {
   const location = useLocation();
@@ -337,11 +339,15 @@ const flushEffects = async (count = 8) => {
 const renderApp = async (initialEntry: string | { pathname: string; state?: unknown }) => {
   if (!App) {
     App = (await import('../app')).default;
+    ({ loadRouteModules } = await import('../route-modules'));
   }
+  // As index.tsx does, so the first render does not suspend on the route's code-split modules.
+  await loadRouteModules(parsePath(typeof initialEntry === 'string' ? initialEntry : initialEntry.pathname).pathname || '/');
 
   latestHash = '';
   latestLocation = typeof initialEntry === 'string' ? initialEntry : initialEntry.pathname;
-  act(() => {
+  // Awaited: lazy views suspend, and React only retries them after an awaited act.
+  await act(async () => {
     root.render(createElement(MemoryRouter, { initialEntries: [initialEntry] }, createElement(App!), createElement(LocationProbe)));
   });
   // Secondary views are lazy; let their modules resolve so React retries the suspended route.
@@ -386,6 +392,7 @@ const dispatchTextInput = async (element: HTMLTextAreaElement, value: string) =>
 describe('App', () => {
   beforeAll(async () => {
     App = (await import('../app')).default;
+    ({ loadRouteModules, rendersBoardRoutes } = await import('../route-modules'));
   }, 30000);
 
   beforeEach(() => {
@@ -740,5 +747,73 @@ describe('App', () => {
     expect(testState.removeSnowMock).toHaveBeenCalled();
 
     root = createRoot(container);
+  });
+
+  it('renders board, thread, and pending-post routes in the first commit once loadRouteModules resolved', async () => {
+    testState.accountComments = { 0: {} };
+    for (const [entry, view] of [
+      ['/mu', 'feed-cache-container'],
+      ['/mu/thread/comment-1', 'post-view'],
+      [{ pathname: '/pending/0', state: { pendingPost: { communityAddress: 'music-posting.eth', index: 0 } } }, 'pending-post-view'],
+    ] as const) {
+      const pathname = typeof entry === 'string' ? entry : entry.pathname;
+      expect(rendersBoardRoutes(pathname)).toBe(true);
+      await loadRouteModules(pathname);
+      // Not awaited: a route that suspended here would not have committed by the next line.
+      act(() => {
+        root.render(createElement(MemoryRouter, { initialEntries: [entry] }, createElement(App!), createElement(LocationProbe)));
+      });
+      expect(container.querySelector('[data-testid="board-header"]')).toBeTruthy();
+      expect(container.querySelector(`[data-testid="${view}"]`)).toBeTruthy();
+      act(() => root.unmount());
+      root = createRoot(container);
+    }
+  });
+
+  it("preloads the board routes from index.html on every route that renders them, by the app's route tree", async () => {
+    const { ROUTE_PRELOAD_SCRIPT } = await import('../../scripts/vite-app-preload.mjs');
+    const preloads = (pathname: string) => {
+      const appended: unknown[] = [];
+      new Function('location', 'document', ROUTE_PRELOAD_SCRIPT)(
+        { hash: `#${pathname}` },
+        {
+          getElementById: () => ({ textContent: '["./assets/board-routes.js"]' }),
+          createElement: () => ({ setAttribute() {} }),
+          head: { appendChild: (link: unknown) => appended.push(link) },
+        },
+      );
+      return appended.length > 0;
+    };
+    const boardPaths = [
+      '/all',
+      '/all/catalog/settings',
+      '/subs',
+      '/mod',
+      '/mod/queue',
+      '/search',
+      '/search/directory',
+      '/mu',
+      '/mu/',
+      '/mu/2',
+      '/mu/settings',
+      '/mu/catalog',
+      '/mu/archive',
+      '/mu/directory',
+      '/mu/thread/comment-1',
+      '/mu/thread/comment-1/settings',
+      '/mu/mod/queue',
+      '/pending/0',
+      '/faq/2',
+      '/directory',
+    ];
+    const otherPaths = ['/', '/faq', '/pass', '/rules', '/rules/mu', '/blotter', '/settings/account-data', '/mu/board-settings', '/not-allowed', '/not-found'];
+    for (const pathname of boardPaths) {
+      expect([pathname, rendersBoardRoutes(pathname), preloads(pathname)]).toEqual([pathname, true, true]);
+    }
+    for (const pathname of otherPaths) {
+      expect([pathname, rendersBoardRoutes(pathname), preloads(pathname)]).toEqual([pathname, false, false]);
+    }
+    // HashRouter reads a hash without its leading slash the same way.
+    expect(rendersBoardRoutes('mu')).toBe(true);
   });
 });
