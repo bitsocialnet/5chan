@@ -37,7 +37,6 @@ __metadata:
     "@ruffle-rs/ruffle": "npm:0.6.0"
     "@types/babel__core": "npm:7.20.5"
     "@types/lodash": "npm:4.17.25"
-    "@types/memoizee": "npm:0.4.12"
     "@types/node": "npm:22.20.4"
     "@types/react": "npm:19.3.0"
     "@types/react-dom": "npm:19.3.0"
@@ -79,7 +78,6 @@ __metadata:
     lint-staged: "npm:17.6.0"
     lodash: "npm:4.18.1"
     mathjax-full: "npm:3.2.2"
-    memoizee: "npm:0.4.17"
     node-fetch: "npm:3.3.2"
     oxc-parser: "npm:0.152.0"
     oxfmt: "npm:0.71.0"
@@ -7869,13 +7867,6 @@ __metadata:
   version: 4.17.25
   resolution: "@types/lodash@npm:4.17.25"
   checksum: 10c0/ca2049f16bf527e04d6e27702e3912a484faaff587de77a5c58e0d243b9292a655e1d7f7e5bdf2ffdf49a76da10673097f8dd4901990679058d47ccd99051877
-  languageName: node
-  linkType: hard
-
-"@types/memoizee@npm:0.4.12":
-  version: 0.4.12
-  resolution: "@types/memoizee@npm:0.4.12"
-  checksum: 10c0/573ca0c7e3db4306679bd0fbee92063e03406cd14d2bc4409d9a61ba731f1bb3925d3183a28ed6a8f480b3326ca03bdef6766c1649aa29592200f97fd0d38955
   languageName: node
   linkType: hard
 
