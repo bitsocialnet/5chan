@@ -1,7 +1,7 @@
 {
-  "maxRawBytes": 2127060,
+  "maxRawBytes": 2164828,
   "allowanceBytes": 32768,
   "allowanceReason": "yarn build syncs board directory data from bitsocialnet/lists, and that data is in the startup bundle",
-  "ceilingReason": "index.html carries the static board frames: a desktop and a mobile template shared by every directory board plus each board's title and winner line (about 59 KB raw, 6 KB gzip)",
-  "maxHomeRawBytes": 1458546
+  "ceilingReason": "index.html carries the static board frames: a desktop and a mobile template shared by every directory board plus each board's title and winner line (about 59 KB raw, 6 KB gzip); the English interface strings ship with the app (about 37 KB raw), as every language falls back to them and the first render waits for them",
+  "maxHomeRawBytes": 1496006
 }
