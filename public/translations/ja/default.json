@@ -579,5 +579,7 @@
   "running_automated_checks": "自動チェックを実行中...",
   "unsupported_file_type_alert": "サポートされていないファイル形式です。JPG、PNG、GIF、WebP、MP4、WebM、SWF のいずれかのファイルを使用してください。",
   "boards_without_bump_order": "バンプ順を公開していないため表示されません: {{boards}}",
-  "last_reply": "最終返信"
+  "last_reply": "最終返信",
+  "boards_not_loaded": "時間内に読み込まれなかったため表示されません: {{boards}}",
+  "loading_boards_to_sort": "並べ替えの前にすべてのボードを読み込んでいます: {{loaded}} / {{total}}"
 }

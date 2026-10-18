@@ -579,5 +579,7 @@
   "running_automated_checks": "automatische controles uitvoeren...",
   "unsupported_file_type_alert": "Niet-ondersteund bestandstype. Gebruik een JPG-, PNG-, GIF-, WebP-, MP4-, WebM- of SWF-bestand.",
   "boards_without_bump_order": "Niet getoond omdat ze geen bump-volgorde publiceren: {{boards}}",
-  "last_reply": "Laatste reactie"
+  "last_reply": "Laatste reactie",
+  "boards_not_loaded": "Niet getoond omdat ze niet op tijd zijn geladen: {{boards}}",
+  "loading_boards_to_sort": "Alle borden laden voor het sorteren: {{loaded}} van {{total}}"
 }

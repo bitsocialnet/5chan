@@ -579,5 +579,7 @@
   "running_automated_checks": "స్వయంచాలక తనిఖీలు జరుగుతున్నాయి...",
   "unsupported_file_type_alert": "ఈ ఫైల్ రకానికి మద్దతు లేదు. JPG, PNG, GIF, WebP, MP4, WebM లేదా SWF ఫైల్‌ను ఉపయోగించండి.",
   "boards_without_bump_order": "బంప్ క్రమాన్ని ప్రచురించనందున చూపబడలేదు: {{boards}}",
-  "last_reply": "చివరి సమాధానం"
+  "last_reply": "చివరి సమాధానం",
+  "boards_not_loaded": "సమయానికి లోడ్ కానందున చూపబడలేదు: {{boards}}",
+  "loading_boards_to_sort": "క్రమబద్ధీకరించే ముందు అన్ని బోర్డులు లోడ్ అవుతున్నాయి: {{total}}లో {{loaded}}"
 }

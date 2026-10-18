@@ -579,5 +579,7 @@
   "running_automated_checks": "מריץ בדיקות אוטומטיות...",
   "unsupported_file_type_alert": "סוג הקובץ אינו נתמך. השתמשו בקובץ JPG, PNG, GIF, WebP, MP4, WebM או SWF.",
   "boards_without_bump_order": "לא מוצגים כי הם לא מפרסמים סדר bump: {{boards}}",
-  "last_reply": "תגובה אחרונה"
+  "last_reply": "תגובה אחרונה",
+  "boards_not_loaded": "לא מוצגים כי הם לא נטענו בזמן: {{boards}}",
+  "loading_boards_to_sort": "טוען את כל הלוחות לפני המיון: {{loaded}} מתוך {{total}}"
 }

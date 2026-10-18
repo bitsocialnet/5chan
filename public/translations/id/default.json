@@ -579,5 +579,7 @@
   "running_automated_checks": "menjalankan pemeriksaan otomatis...",
   "unsupported_file_type_alert": "Jenis file tidak didukung. Gunakan file JPG, PNG, GIF, WebP, MP4, WebM, atau SWF.",
   "boards_without_bump_order": "Tidak ditampilkan karena tidak menerbitkan urutan bump: {{boards}}",
-  "last_reply": "Balasan terakhir"
+  "last_reply": "Balasan terakhir",
+  "boards_not_loaded": "Tidak ditampilkan karena tidak termuat tepat waktu: {{boards}}",
+  "loading_boards_to_sort": "Memuat semua papan sebelum mengurutkan: {{loaded}} dari {{total}}"
 }

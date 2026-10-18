@@ -1,4 +1,4 @@
-import { useDeferredValue, useEffect, useMemo, useRef, useCallback, useLayoutEffect } from 'react';
+import { useDeferredValue, useEffect, useMemo, useRef, useCallback, useLayoutEffect, useState } from 'react';
 import { Link, useLocation, useNavigate, useNavigationType, useParams } from 'react-router-dom';
 import { Trans, useTranslation } from 'react-i18next';
 import { Comment, useAccount, useCommunity, useFeed, useAccountComments } from '@bitsocial/bitsocial-react-hooks';
@@ -18,6 +18,7 @@ import usePruneHiddenCatalogThreads from '../../hooks/use-prune-hidden-catalog-t
 import usePinnedCatalogThreads from '../../hooks/use-pinned-catalog-threads';
 import { useSuggestionFeedLoader } from '../../hooks/use-suggestion-feed-loader';
 import useTimeFilter from '../../hooks/use-time-filter';
+import useMultiboardCatalogSnapshot from '../../hooks/use-multiboard-catalog-snapshot';
 import useIsMobile from '../../hooks/use-is-mobile';
 import useContentWidth from '../../hooks/use-content-width';
 import useCatalogStyleStore from '../../stores/use-catalog-style-store';
@@ -34,6 +35,7 @@ import LoadingEllipsis from '../../components/loading-ellipsis';
 import ErrorDisplay from '../../components/error-display';
 import { ModEmptyState } from '../../components/mod-empty-state';
 import { BoardsMissingSortNotice } from '../../components/boards-missing-sort-notice';
+import { BoardsNotLoadedNotice } from '../../components/boards-not-loaded-notice';
 import styles from './catalog.module.css';
 import { commentMatchesPattern } from '../../lib/utils/pattern-utils';
 import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
@@ -57,6 +59,9 @@ const YEAR_IN_SECONDS = 365 * 24 * 60 * 60;
 // Keep the hook on its indexed fast path when this view should not inject local posts.
 const EMPTY_ACCOUNT_COMMENT_LOOKUP = { commentIndices: [-1] };
 const NO_PINNED_THREADS: Comment[] = [];
+// A local sort is only right over every thread, so a multiboard catalog sorted by last reply,
+// creation date or reply count loads every board's threads in one page instead of scrolling.
+const ALL_THREADS_POSTS_PER_PAGE = 100_000;
 
 interface CatalogFooterProps {
   communityAddresses: string[];
@@ -72,6 +77,8 @@ interface CatalogFooterProps {
   showLoadingEllipsis?: boolean;
   /** Pinned threads show even when the board has no other threads to list. */
   hasPinnedThreads?: boolean;
+  /** Boards left out of a sorted multiboard catalog because they did not load in time. */
+  notLoadedBoardAddresses?: string[];
 }
 
 // Defined outside Catalog to preserve component identity across renders (Virtuoso optimization)
@@ -89,6 +96,7 @@ const CatalogFooter = ({
   onExpandTimeWindow,
   showLoadingEllipsis = true,
   hasPinnedThreads = false,
+  notLoadedBoardAddresses,
 }: CatalogFooterProps) => {
   const { t } = useTranslation();
 
@@ -140,6 +148,7 @@ const CatalogFooter = ({
     <div className={styles.footer}>
       {footerContent}
       {isMultiboard && <BoardsMissingSortNotice communityAddresses={communityAddresses} />}
+      {notLoadedBoardAddresses && <BoardsNotLoadedNotice communityAddresses={notLoadedBoardAddresses} />}
     </div>
   );
 };
@@ -165,6 +174,8 @@ interface CatalogLoadingProps {
   subscriptionsLength: number;
   error: Error | undefined;
   hasActiveSearch: boolean;
+  /** Shown instead of the boards' loading state, e.g. while a sorted multiboard catalog loads every board. */
+  progressString?: string;
 }
 
 const CatalogLoading = ({
@@ -176,11 +187,12 @@ const CatalogLoading = ({
   subscriptionsLength,
   error,
   hasActiveSearch,
+  progressString,
 }: CatalogLoadingProps) => {
   const { t } = useTranslation();
 
   const rawFeedStateString = useFeedStateString(communityAddresses);
-  const loadingStateString = rawFeedStateString || (combinedFeedLength === 0 ? t('loading_feed') : t('looking_for_more_posts'));
+  const loadingStateString = progressString || rawFeedStateString || (combinedFeedLength === 0 ? t('loading_feed') : t('looking_for_more_posts'));
 
   return (
     <div className={styles.stateString}>
@@ -373,6 +385,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   // requests a sort the board may not publish.
   const sortType = useSortingStore((state) => state.sortType);
   const feedSortType = useBoardSortType(isMultiboard ? undefined : communityAddress);
+  const isMultiboardLocalSort = isMultiboard && sortType !== 'active';
   const catalogVirtualizationMode = useMemo(() => resolveCatalogVirtualizationMode(routerLocation.search, 'item-size'), [routerLocation.search]);
   const themeKey = typeof document !== 'undefined' ? document.body.className : '';
   const hadVisibleHiddenThreadsRef = useRef(false);
@@ -394,7 +407,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
     return {
       communities,
       sortType: feedSortType,
-      postsPerPage: isMultiboard ? multiboardCatalogPostsPerPage : paginationFeedPostsPerPage,
+      postsPerPage: isMultiboardLocalSort ? ALL_THREADS_POSTS_PER_PAGE : isMultiboard ? multiboardCatalogPostsPerPage : paginationFeedPostsPerPage,
       filter: hasActiveCatalogFiltering ? createCombinedFilter(filterItems, searchText, communityAddress || 'all', handleFilterMatch) : excludeArchivedFilter,
       newerThan: multiboardTimeFilterSeconds,
     };
@@ -403,6 +416,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
     feedSortType,
     hasActiveCatalogFiltering,
     isMultiboard,
+    isMultiboardLocalSort,
     paginationFeedPostsPerPage,
     multiboardCatalogPostsPerPage,
     filterItems,
@@ -413,7 +427,13 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
     excludeArchivedFilter,
   ]);
 
-  const { feed, hasMore, loadMore, reset, expandTimeWindow } = useFeed(feedOptions);
+  const { feed, hasMore, loadMore, reset, expandTimeWindow, communityKeysWithMore } = useFeed(feedOptions);
+  // a refresh takes the sorted multiboard catalog again
+  const [refreshCount, setRefreshCount] = useState(0);
+  const refreshFeed = useCallback(() => {
+    setRefreshCount((count) => count + 1);
+    return reset();
+  }, [reset]);
   const {
     hiddenCatalogThreads,
     hiddenThreadCandidates,
@@ -602,6 +622,16 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   const moreThreadsSuggestionPathname = isInAllView ? '/all/catalog' : isInSubscriptionsView ? '/subs/catalog' : isInModView ? '/mod/catalog' : null;
 
   const catalogBaseFeed = showHiddenThreads ? hiddenCatalogThreads : cappedFeed;
+  const isSortSnapshotShown = isMultiboardLocalSort && !showHiddenThreads;
+  const sortSnapshot = useMultiboardCatalogSnapshot({
+    enabled: isSortSnapshotShown,
+    feed: catalogBaseFeed,
+    communityKeysWithMore,
+    communityAddresses,
+    communities,
+    sortType,
+    snapshotKey: JSON.stringify([communityAddresses, feedOptions.filter.key, currentTimeFilterSeconds, refreshCount]),
+  });
   // Pinned threads stay through archiving, so they only go through the search and content filters.
   const pinnedThreadsFilter = useMemo(
     () => (hasActiveCatalogFiltering ? createCombinedFilter(filterItems, searchText, communityAddress || 'all', undefined, false, false).filter : undefined),
@@ -626,25 +656,30 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   const setResetFunction = useFeedResetStore((state) => state.setResetFunction);
   useEffect(() => {
     if (isVisible) {
-      setResetFunction(reset);
+      setResetFunction(refreshFeed);
     }
-  }, [reset, setResetFunction, isVisible]);
+  }, [refreshFeed, setResetFunction, isVisible]);
 
   const community = useCommunity(communityIdentifier ? { community: communityIdentifier } : undefined);
   const { error, shortAddress, state, title } = community || {};
   const hasCommunityLoadFailed = useHasCommunityLoadFailed(communityIdentifier);
   // Pinned threads can load from cache before the board does. They join once the board has threads
   // or finished loading empty, so a loading or failed board still shows its status instead of them.
-  const shownPinnedCatalogThreads = feed.length > 0 || (!hasMore && state !== 'failed' && !hasCommunityLoadFailed) ? pinnedCatalogThreads : NO_PINNED_THREADS;
+  const shownPinnedCatalogThreads =
+    !sortSnapshot.isLoading && (feed.length > 0 || (!hasMore && state !== 'failed' && !hasCommunityLoadFailed)) ? pinnedCatalogThreads : NO_PINNED_THREADS;
   const sortedFeed = useMemo(
-    () => placePinnedCatalogThreads(sortCatalogFeedForDisplay(catalogBaseFeed, sortType), shownPinnedCatalogThreads),
-    [catalogBaseFeed, shownPinnedCatalogThreads, sortType],
+    () => placePinnedCatalogThreads(isSortSnapshotShown ? sortSnapshot.threads : sortCatalogFeedForDisplay(catalogBaseFeed, sortType), shownPinnedCatalogThreads),
+    [catalogBaseFeed, isSortSnapshotShown, shownPinnedCatalogThreads, sortSnapshot.threads, sortType],
   );
   const hasShownPinnedThreads = shownPinnedCatalogThreads.length > 0;
-  const footerHasMore = showHiddenThreads ? isLoadingHiddenCatalogThreads : hasMore;
-  const footerCombinedFeedLength = catalogBaseFeed.length;
-  const footerMoreThreadsSuggestion = showHiddenThreads ? null : moreThreadsSuggestion;
-  const footerShowLoadingEllipsis = showHiddenThreads ? isLoadingHiddenCatalogThreads : effectiveInfiniteScroll;
+  const footerHasMore = showHiddenThreads ? isLoadingHiddenCatalogThreads : isSortSnapshotShown ? sortSnapshot.isLoading : hasMore;
+  const footerCombinedFeedLength = isSortSnapshotShown ? sortSnapshot.threads.length : catalogBaseFeed.length;
+  const footerMoreThreadsSuggestion = showHiddenThreads || sortSnapshot.isLoading ? null : moreThreadsSuggestion;
+  const footerShowLoadingEllipsis = showHiddenThreads ? isLoadingHiddenCatalogThreads : effectiveInfiniteScroll && !isSortSnapshotShown;
+  const footerNotLoadedBoardAddresses = isSortSnapshotShown && sortSnapshot.missingBoardAddresses.length > 0 ? sortSnapshot.missingBoardAddresses : undefined;
+  const sortSnapshotProgressString = sortSnapshot.isLoading
+    ? t('loading_boards_to_sort', { loaded: sortSnapshot.loadedBoardCount, total: sortSnapshot.boardCount })
+    : undefined;
 
   const catalogFooterFirstRow = useMemo(
     () => <CatalogFooterFirstRow communityAddress={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />,
@@ -670,6 +705,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
             onExpandTimeWindow={expandSuggestionTimeWindow}
             showLoadingEllipsis={footerShowLoadingEllipsis}
             hasPinnedThreads={hasShownPinnedThreads}
+            notLoadedBoardAddresses={footerNotLoadedBoardAddresses}
           />
           <PageFooterDesktop variant='catalog' firstRow={catalogFooterFirstRow} styleRow={catalogFooterStyleRow} />
           <PageFooterMobile>
@@ -701,6 +737,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
       routerLocation.search,
       footerShowLoadingEllipsis,
       hasShownPinnedThreads,
+      footerNotLoadedBoardAddresses,
     ],
   );
   const catalogFooter = useMemo(
@@ -718,6 +755,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
           onExpandTimeWindow={expandSuggestionTimeWindow}
           showLoadingEllipsis={footerShowLoadingEllipsis}
           hasPinnedThreads={hasShownPinnedThreads}
+          notLoadedBoardAddresses={footerNotLoadedBoardAddresses}
         />
         <PageFooterDesktop variant='catalog' firstRow={catalogFooterFirstRow} styleRow={catalogFooterStyleRow} />
         <PageFooterMobile>
@@ -748,6 +786,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
       routerLocation.search,
       footerShowLoadingEllipsis,
       hasShownPinnedThreads,
+      footerNotLoadedBoardAddresses,
     ],
   );
   const isFeedLoaded = feed.length > 0 || hiddenThreadsCount > 0 || hasShownPinnedThreads || state === 'failed';
@@ -960,7 +999,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
                 itemContent={renderCatalogRow}
                 useWindowScroll={true}
                 components={footerComponents}
-                endReached={!showHiddenThreads && effectiveInfiniteScroll && footerHasMore ? loadMore : undefined}
+                endReached={!showHiddenThreads && !isSortSnapshotShown && effectiveInfiniteScroll && footerHasMore ? loadMore : undefined}
                 ref={virtuosoRef}
                 restoreStateFrom={lastVirtuosoState}
                 initialScrollTop={lastVirtuosoState?.scrollTop}
@@ -1024,7 +1063,9 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
                 subscriptionsLength={isInSubscriptionsView ? subscriptions?.length || 0 : 1}
                 error={error}
                 hasActiveSearch={hasActiveSearch}
+                progressString={sortSnapshotProgressString}
               />
+              {footerNotLoadedBoardAddresses && <BoardsNotLoadedNotice communityAddresses={footerNotLoadedBoardAddresses} />}
             </div>
             <PageFooterDesktop variant='catalog' firstRow={catalogFooterFirstRow} styleRow={catalogFooterStyleRow} />
             <PageFooterMobile>

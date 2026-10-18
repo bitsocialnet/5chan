@@ -579,5 +579,7 @@
   "running_automated_checks": "Automatische Prüfungen laufen...",
   "unsupported_file_type_alert": "Nicht unterstützter Dateityp. Verwende eine JPG-, PNG-, GIF-, WebP-, MP4-, WebM- oder SWF-Datei.",
   "boards_without_bump_order": "Nicht angezeigt, weil sie keine Bump-Reihenfolge veröffentlichen: {{boards}}",
-  "last_reply": "Letzte Antwort"
+  "last_reply": "Letzte Antwort",
+  "boards_not_loaded": "Nicht angezeigt, weil sie nicht rechtzeitig geladen wurden: {{boards}}",
+  "loading_boards_to_sort": "Alle Boards werden vor dem Sortieren geladen: {{loaded}} von {{total}}"
 }

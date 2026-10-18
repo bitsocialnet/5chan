@@ -579,5 +579,7 @@
   "running_automated_checks": "εκτέλεση αυτόματων ελέγχων...",
   "unsupported_file_type_alert": "Μη υποστηριζόμενος τύπος αρχείου. Χρησιμοποιήστε αρχείο JPG, PNG, GIF, WebP, MP4, WebM ή SWF.",
   "boards_without_bump_order": "Δεν εμφανίζονται επειδή δεν δημοσιεύουν τάξη bump: {{boards}}",
-  "last_reply": "Τελευταία απάντηση"
+  "last_reply": "Τελευταία απάντηση",
+  "boards_not_loaded": "Δεν εμφανίζονται επειδή δεν φορτώθηκαν εγκαίρως: {{boards}}",
+  "loading_boards_to_sort": "Φόρτωση όλων των σανίδων πριν την ταξινόμηση: {{loaded}} από {{total}}"
 }

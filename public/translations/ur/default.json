@@ -579,5 +579,7 @@
   "running_automated_checks": "خودکار جانچ جاری ہے...",
   "unsupported_file_type_alert": "فائل کی قسم معاون نہیں ہے۔ JPG، PNG، GIF، WebP، MP4، WebM یا SWF فائل استعمال کریں۔",
   "boards_without_bump_order": "نہیں دکھائے گئے کیونکہ یہ بمپ آرڈر شائع نہیں کرتے: {{boards}}",
-  "last_reply": "آخری جواب"
+  "last_reply": "آخری جواب",
+  "boards_not_loaded": "نہیں دکھائے گئے کیونکہ یہ وقت پر لوڈ نہیں ہوئے: {{boards}}",
+  "loading_boards_to_sort": "ترتیب دینے سے پہلے تمام بورڈ لوڈ ہو رہے ہیں: {{total}} میں سے {{loaded}}"
 }

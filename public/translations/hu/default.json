@@ -579,5 +579,7 @@
   "running_automated_checks": "automatikus ellenőrzések futnak...",
   "unsupported_file_type_alert": "Nem támogatott fájltípus. Használj JPG, PNG, GIF, WebP, MP4, WebM vagy SWF fájlt.",
   "boards_without_bump_order": "Nem jelennek meg, mert nem tesznek közzé bump sorrendet: {{boards}}",
-  "last_reply": "Utolsó válasz"
+  "last_reply": "Utolsó válasz",
+  "boards_not_loaded": "Nem jelennek meg, mert nem töltődtek be időben: {{boards}}",
+  "loading_boards_to_sort": "Minden tábla betöltése rendezés előtt: {{loaded}} / {{total}}"
 }

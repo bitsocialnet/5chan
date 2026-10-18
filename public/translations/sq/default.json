@@ -579,5 +579,7 @@
   "running_automated_checks": "duke kryer kontrolle automatike...",
   "unsupported_file_type_alert": "Lloji i skedarit nuk mbështetet. Përdorni një skedar JPG, PNG, GIF, WebP, MP4, WebM ose SWF.",
   "boards_without_bump_order": "Nuk shfaqen sepse nuk publikojnë renditje bump: {{boards}}",
-  "last_reply": "Përgjigja e fundit"
+  "last_reply": "Përgjigja e fundit",
+  "boards_not_loaded": "Nuk shfaqen sepse nuk u ngarkuan në kohë: {{boards}}",
+  "loading_boards_to_sort": "Po ngarkohen të gjitha tabelat para renditjes: {{loaded}} nga {{total}}"
 }

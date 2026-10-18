@@ -579,5 +579,7 @@
   "running_automated_checks": "স্বয়ংক্রিয় পরীক্ষা চলছে...",
   "unsupported_file_type_alert": "এই ধরনের ফাইল সমর্থিত নয়। JPG, PNG, GIF, WebP, MP4, WebM বা SWF ফাইল ব্যবহার করুন।",
   "boards_without_bump_order": "দেখানো হয়নি কারণ এগুলো বাম্প অর্ডার প্রকাশ করে না: {{boards}}",
-  "last_reply": "শেষ উত্তর"
+  "last_reply": "শেষ উত্তর",
+  "boards_not_loaded": "দেখানো হয়নি কারণ এগুলো সময়মতো লোড হয়নি: {{boards}}",
+  "loading_boards_to_sort": "সাজানোর আগে সব বোর্ড লোড হচ্ছে: {{total}}টির মধ্যে {{loaded}}টি"
 }

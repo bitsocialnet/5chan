@@ -579,5 +579,7 @@
   "running_automated_checks": "выполняются автоматические проверки...",
   "unsupported_file_type_alert": "Неподдерживаемый тип файла. Используйте файл JPG, PNG, GIF, WebP, MP4, WebM или SWF.",
   "boards_without_bump_order": "Не показаны, потому что не публикуют порядок bump: {{boards}}",
-  "last_reply": "Последний ответ"
+  "last_reply": "Последний ответ",
+  "boards_not_loaded": "Не показаны, потому что не загрузились вовремя: {{boards}}",
+  "loading_boards_to_sort": "Загрузка всех досок перед сортировкой: {{loaded}} из {{total}}"
 }

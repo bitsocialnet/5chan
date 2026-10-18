@@ -579,5 +579,7 @@
   "running_automated_checks": "กำลังตรวจสอบอัตโนมัติ...",
   "unsupported_file_type_alert": "ไม่รองรับประเภทไฟล์นี้ ใช้ไฟล์ JPG, PNG, GIF, WebP, MP4, WebM หรือ SWF",
   "boards_without_bump_order": "ไม่แสดงเพราะไม่ได้เผยแพร่ลำดับ bump: {{boards}}",
-  "last_reply": "การตอบกลับล่าสุด"
+  "last_reply": "การตอบกลับล่าสุด",
+  "boards_not_loaded": "ไม่แสดงเพราะโหลดไม่ทันเวลา: {{boards}}",
+  "loading_boards_to_sort": "กำลังโหลดทุกบอร์ดก่อนเรียงลำดับ: {{loaded}} จาก {{total}}"
 }

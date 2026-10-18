@@ -579,5 +579,7 @@
   "running_automated_checks": "جارٍ إجراء الفحوصات التلقائية...",
   "unsupported_file_type_alert": "نوع الملف غير مدعوم. استخدم ملف JPG أو PNG أو GIF أو WebP أو MP4 أو WebM أو SWF.",
   "boards_without_bump_order": "غير معروضة لأنها لا تنشر ترتيب الدفع: {{boards}}",
-  "last_reply": "آخر رد"
+  "last_reply": "آخر رد",
+  "boards_not_loaded": "غير معروضة لأنها لم تُحمَّل في الوقت المناسب: {{boards}}",
+  "loading_boards_to_sort": "تحميل كل اللوحات قبل الترتيب: {{loaded}} من {{total}}"
 }

@@ -579,5 +579,7 @@
   "running_automated_checks": "正在运行自动检查...",
   "unsupported_file_type_alert": "不支持的文件类型。请使用 JPG、PNG、GIF、WebP、MP4、WebM 或 SWF 文件。",
   "boards_without_bump_order": "未显示，因为这些版块不发布顶贴顺序：{{boards}}",
-  "last_reply": "最后回复"
+  "last_reply": "最后回复",
+  "boards_not_loaded": "未显示，因为这些板块未能及时加载：{{boards}}",
+  "loading_boards_to_sort": "排序前正在加载所有板块：{{loaded}} / {{total}}"
 }

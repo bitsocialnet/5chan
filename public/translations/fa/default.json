@@ -579,5 +579,7 @@
   "running_automated_checks": "در حال انجام بررسی‌های خودکار...",
   "unsupported_file_type_alert": "نوع فایل پشتیبانی نمی‌شود. از فایل JPG، PNG، GIF، WebP، MP4، WebM یا SWF استفاده کنید.",
   "boards_without_bump_order": "نمایش داده نمی‌شوند چون ترتیب بامپ منتشر نمی‌کنند: {{boards}}",
-  "last_reply": "آخرین پاسخ"
+  "last_reply": "آخرین پاسخ",
+  "boards_not_loaded": "نمایش داده نمی‌شوند چون به‌موقع بارگذاری نشدند: {{boards}}",
+  "loading_boards_to_sort": "در حال بارگذاری همهٔ تابلوها پیش از مرتب‌سازی: {{loaded}} از {{total}}"
 }

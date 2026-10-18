@@ -579,5 +579,7 @@
   "running_automated_checks": "स्वयंचलित तपासण्या सुरू आहेत...",
   "unsupported_file_type_alert": "फाइल प्रकार समर्थित नाही. JPG, PNG, GIF, WebP, MP4, WebM किंवा SWF फाइल वापरा.",
   "boards_without_bump_order": "दाखवले नाहीत कारण ते बंप क्रम प्रकाशित करत नाहीत: {{boards}}",
-  "last_reply": "शेवटचा प्रतिसाद"
+  "last_reply": "शेवटचा प्रतिसाद",
+  "boards_not_loaded": "दाखवले नाहीत कारण ते वेळेत लोड झाले नाहीत: {{boards}}",
+  "loading_boards_to_sort": "क्रमवारी लावण्यापूर्वी सर्व बोर्ड लोड होत आहेत: {{total}} पैकी {{loaded}}"
 }

@@ -579,5 +579,7 @@
   "running_automated_checks": "otomatik kontroller yapılıyor...",
   "unsupported_file_type_alert": "Desteklenmeyen dosya türü. JPG, PNG, GIF, WebP, MP4, WebM veya SWF dosyası kullanın.",
   "boards_without_bump_order": "Bump sırası yayınlamadıkları için gösterilmiyor: {{boards}}",
-  "last_reply": "Son yanıt"
+  "last_reply": "Son yanıt",
+  "boards_not_loaded": "Zamanında yüklenmedikleri için gösterilmiyor: {{boards}}",
+  "loading_boards_to_sort": "Sıralamadan önce tüm panolar yükleniyor: {{total}} panodan {{loaded}}"
 }

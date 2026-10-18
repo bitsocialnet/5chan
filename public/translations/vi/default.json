@@ -579,5 +579,7 @@
   "running_automated_checks": "đang chạy kiểm tra tự động...",
   "unsupported_file_type_alert": "Loại tệp không được hỗ trợ. Hãy dùng tệp JPG, PNG, GIF, WebP, MP4, WebM hoặc SWF.",
   "boards_without_bump_order": "Không hiển thị vì không công bố thứ tự bump: {{boards}}",
-  "last_reply": "Trả lời cuối cùng"
+  "last_reply": "Trả lời cuối cùng",
+  "boards_not_loaded": "Không hiển thị vì không tải kịp: {{boards}}",
+  "loading_boards_to_sort": "Đang tải mọi bảng trước khi sắp xếp: {{loaded}} trên {{total}}"
 }

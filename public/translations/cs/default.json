@@ -579,5 +579,7 @@
   "running_automated_checks": "probíhají automatické kontroly...",
   "unsupported_file_type_alert": "Nepodporovaný typ souboru. Použijte soubor JPG, PNG, GIF, WebP, MP4, WebM nebo SWF.",
   "boards_without_bump_order": "Nezobrazeno, protože nezveřejňují pořadí bump: {{boards}}",
-  "last_reply": "Poslední odpověď"
+  "last_reply": "Poslední odpověď",
+  "boards_not_loaded": "Nezobrazeno, protože se nenačetly včas: {{boards}}",
+  "loading_boards_to_sort": "Načítání všech desek před seřazením: {{loaded}} z {{total}}"
 }

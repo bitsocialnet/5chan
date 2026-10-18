@@ -579,5 +579,7 @@
   "running_automated_checks": "se rulează verificări automate...",
   "unsupported_file_type_alert": "Tip de fișier neacceptat. Folosește un fișier JPG, PNG, GIF, WebP, MP4, WebM sau SWF.",
   "boards_without_bump_order": "Nu sunt afișate deoarece nu publică o ordine bump: {{boards}}",
-  "last_reply": "Ultimul răspuns"
+  "last_reply": "Ultimul răspuns",
+  "boards_not_loaded": "Nu sunt afișate deoarece nu s-au încărcat la timp: {{boards}}",
+  "loading_boards_to_sort": "Se încarcă toate panourile înainte de sortare: {{loaded}} din {{total}}"
 }

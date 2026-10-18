@@ -579,5 +579,7 @@
   "running_automated_checks": "suoritetaan automaattisia tarkistuksia...",
   "unsupported_file_type_alert": "Tiedostotyyppiä ei tueta. Käytä JPG-, PNG-, GIF-, WebP-, MP4-, WebM- tai SWF-tiedostoa.",
   "boards_without_bump_order": "Ei näytetä, koska ne eivät julkaise bump-järjestystä: {{boards}}",
-  "last_reply": "Viimeisin vastaus"
+  "last_reply": "Viimeisin vastaus",
+  "boards_not_loaded": "Ei näytetä, koska ne eivät latautuneet ajoissa: {{boards}}",
+  "loading_boards_to_sort": "Ladataan kaikki taulut ennen lajittelua: {{loaded}}/{{total}}"
 }

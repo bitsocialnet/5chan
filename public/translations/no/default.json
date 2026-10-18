@@ -579,5 +579,7 @@
   "running_automated_checks": "kjører automatiske kontroller...",
   "unsupported_file_type_alert": "Filtypen støttes ikke. Bruk en JPG-, PNG-, GIF-, WebP-, MP4-, WebM- eller SWF-fil.",
   "boards_without_bump_order": "Vises ikke fordi de ikke publiserer en bump-rekkefølge: {{boards}}",
-  "last_reply": "Siste svar"
+  "last_reply": "Siste svar",
+  "boards_not_loaded": "Vises ikke fordi de ikke ble lastet inn i tide: {{boards}}",
+  "loading_boards_to_sort": "Laster inn alle tavler før sortering: {{loaded}} av {{total}}"
 }

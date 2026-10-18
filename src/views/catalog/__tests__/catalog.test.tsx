@@ -34,6 +34,7 @@ type TestComment = {
   postCid?: string;
   removed?: boolean;
   state?: string;
+  replyCount?: number;
   timestamp?: number;
 };
 
@@ -74,6 +75,7 @@ const testState = vi.hoisted(() => ({
   filterItems: [] as FilterItem[],
   filteredDirectoryAddresses: ['music-posting.eth'] as string[],
   hasMore: false,
+  communityKeysWithMore: [] as string[],
   imageSize: 'Small' as 'Large' | 'Small',
   incrementFilterCountMock: vi.fn(),
   expandTimeWindowMock: vi.fn(),
@@ -197,6 +199,7 @@ vi.mock('@bitsocial/bitsocial-react-hooks', async () => {
       return {
         feed: getScopedFeed(options),
         hasMore: testState.hasMore,
+        communityKeysWithMore: testState.communityKeysWithMore,
         expandTimeWindow: testState.expandTimeWindowMock,
         loadMore: testState.loadMoreMock,
         reset: testState.resetMock,
@@ -459,6 +462,7 @@ describe('Catalog', () => {
     testState.filterItems = [];
     testState.filteredDirectoryAddresses = ['music-posting.eth'];
     testState.hasMore = false;
+    testState.communityKeysWithMore = [];
     testState.imageSize = 'Small';
     testState.pageSizes = {
       guiPostsPerPage: 2,
@@ -765,6 +769,43 @@ describe('Catalog', () => {
     const hiddenRow = container.querySelector<HTMLElement>('[data-testid="catalog-row"]');
     expect(hiddenRow?.textContent).toBe('row:raw-feed-hidden-thread');
     expect(hiddenRow?.dataset.showHidden).toBe('true');
+  });
+
+  it('loads every board before showing a multiboard catalog sorted by reply count', async () => {
+    testState.sortType = 'replyCount';
+    testState.directories = [
+      { address: 'music-posting.eth', directoryCode: 'mu', title: '/mu/ - Music' },
+      { address: 'sports-posting.bso', directoryCode: 'sp', title: '/sp/ - Sports' },
+    ];
+    testState.filteredDirectoryAddresses = ['music-posting.eth', 'sports-posting.bso'];
+    testState.hasMore = true;
+    testState.communityKeysWithMore = ['sports-posting.bso'];
+    testState.feed = [
+      { cid: 'quiet', title: 'quiet', communityAddress: 'music-posting.eth', replyCount: 1 },
+      { cid: 'busy', title: 'busy', communityAddress: 'music-posting.eth', replyCount: 9 },
+    ];
+
+    await renderCatalog({ catalogProps: { viewType: 'all' }, initialEntry: '/all/catalog', routePath: '/all/*' });
+
+    expect(testState.feedOptionsCalls).toEqual(expect.arrayContaining([expect.objectContaining({ communitiesLength: 2, postsPerPage: 100_000 })]));
+    expect(container.querySelectorAll('[data-testid="catalog-row"]')).toHaveLength(0);
+    expect(container.textContent).toContain('loading_boards_to_sort');
+
+    // the last board fails to load, so the catalog shows without it and names it
+    await act(async () => {
+      communitiesStore.setState((state: any) => ({ errors: { ...state.errors, 'sports-posting.bso': [new Error('offline')] } }));
+    });
+
+    expect(Array.from(container.querySelectorAll('[data-testid="catalog-row"]')).map((element) => element.textContent)).toEqual(['row:busy,quiet']);
+    expect(container.textContent).toContain('boards_not_loaded');
+    expect(container.textContent).not.toContain('loading_boards_to_sort');
+
+    await act(async () => {
+      communitiesStore.setState((state: any) => {
+        const { 'sports-posting.bso': _removedError, ...errors } = state.errors;
+        return { errors };
+      });
+    });
   });
 
   it('uses the multiboard board scope for hidden catalog mode', async () => {

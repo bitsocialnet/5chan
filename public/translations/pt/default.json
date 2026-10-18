@@ -579,5 +579,7 @@
   "running_automated_checks": "executando verificações automáticas...",
   "unsupported_file_type_alert": "Tipo de arquivo não suportado. Use um arquivo JPG, PNG, GIF, WebP, MP4, WebM ou SWF.",
   "boards_without_bump_order": "Não exibidos porque não publicam uma ordem de bump: {{boards}}",
-  "last_reply": "Última resposta"
+  "last_reply": "Última resposta",
+  "boards_not_loaded": "Não exibidos porque não carregaram a tempo: {{boards}}",
+  "loading_boards_to_sort": "Carregando todos os quadros antes de ordenar: {{loaded}} de {{total}}"
 }
