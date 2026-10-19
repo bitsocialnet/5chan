@@ -1,6 +1,6 @@
 import { localForageLru } from '../bitsocial-internals/utils';
 import { canEmbed, getVimeoVideo, getYouTubeVideoId, youtubeHosts } from './embed-utils';
-import memoize from 'memoizee';
+import { memoize } from './memoize';
 import { isPrivateNetworkHostname, isValidURL, parseHttpUrl } from './url-utils';
 import { Capacitor, CapacitorHttp } from '@capacitor/core';
 

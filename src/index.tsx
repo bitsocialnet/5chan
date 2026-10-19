@@ -1,7 +1,7 @@
 import './polyfills.js';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { HashRouter as Router } from 'react-router-dom';
+import { HashRouter as Router, parsePath } from 'react-router-dom';
 import './lib/init-translations';
 import './index.css';
 import './themes.css';
@@ -9,6 +9,8 @@ import AppUpdateRegistration from './components/app-update-registration';
 import { App as CapacitorApp } from '@capacitor/app';
 import { configureP2PBrowserPkcOptions } from './lib/p2p-browser-config';
 import { canonicalizeNestedHashRoute } from './lib/utils/hash-route-utils';
+import { recordFailedDownloads } from './lib/import-failures';
+import { loadRouteModules } from './route-modules';
 
 // Only enable analytics on 5chan.app (Vercel deployment)
 // Exclude Electron (file:// or localhost), Capacitor/APK (capacitor:// or localhost), and IPFS (ipfs:// or different domain)
@@ -31,6 +33,7 @@ if (typeof window !== 'undefined' && e2eStartHash && window.location.hash.length
 }
 
 configureP2PBrowserPkcOptions();
+recordFailedDownloads();
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 const renderApp = (tree: React.ReactNode) => {
@@ -60,10 +63,20 @@ const renderRoot = async () => {
     return;
   }
 
-  const App = (await import('./app')).default;
+  // index.html preloads the board routes with the app on the routes that may render them, marking each
+  // link (ROUTE_PRELOAD_SCRIPT in scripts/vite-app-preload.mjs); see app-with-board-routes.ts. When the
+  // board routes fail to download, the app still mounts and reports it on the route instead of leaving
+  // the static frame up.
+  const { default: App } = await (document.querySelector('link[data-fivechan-route-preload]')
+    ? import('./app-with-board-routes').catch(() => import('./app'))
+    : import('./app'));
+  // index.html already started downloading the route's code-split modules; the first render waits for
+  // them so it does not suspend. A failed chunk surfaces when the route renders.
+  const routeModules = loadRouteModules(parsePath(window.location.hash.slice(1)).pathname || '/').catch((error) => console.error(error));
   if (shouldLoadAnalytics) {
     Analytics = (await import('@vercel/analytics/react')).Analytics;
   }
+  await routeModules;
 
   renderApp(
     <React.StrictMode>

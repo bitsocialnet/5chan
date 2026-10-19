@@ -4,12 +4,13 @@
 // in jsdom before accounts or peer content have loaded, which is also all that React's first commit
 // can show, so the handoff does not move anything.
 import { createRoot } from 'react-dom/client';
-import { HashRouter } from 'react-router-dom';
+import { HashRouter, parsePath } from 'react-router-dom';
 import i18next from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import en from '../public/translations/en/default.json';
 import App from './app';
 import { MOBILE_BREAKPOINT_WIDTH, useIsMobileBreakpoint } from './hooks/use-window-width';
+import { loadRouteModules } from './route-modules';
 import useFeedCacheStore from './stores/use-feed-cache-store';
 import { communitiesPagesStore, communitiesStore, feedsStore, repliesPagesStore, repliesStore } from './lib/bitsocial-internals/stores';
 
@@ -72,6 +73,8 @@ export const renderStaticShell = async ({ hash = '#/', width = 1024, banner }: S
   await setViewportWidth(width);
   resetDataStores();
   window.location.hash = hash;
+  // As in index.tsx, so the first commit renders the route rather than a Suspense fallback.
+  await loadRouteModules(parsePath(hash.replace(/^#/, '')).pathname || '/');
   document.body.className = '';
   if (banner) window.__FIVECHAN_SHELL_BANNER__ = banner;
   const container = document.createElement('div');

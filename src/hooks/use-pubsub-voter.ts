@@ -1,22 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useAccount } from '@bitsocial/bitsocial-react-hooks';
 import { PubsubVoter, type NameResolver, type PubsubVoterOptions } from '@bitsocial/pubsub-voting';
+import { getBrowserHeliaNode, getBrowserNameResolvers } from '../lib/browser-libp2p-account';
 import { getOrCreateBrowserPubsubVoter } from '../lib/pubsub-voter';
 
-type HeliaNode = PubsubVoterOptions['helia'];
+export { getBrowserHeliaNode, getBrowserNameResolvers };
 
-interface BrowserLibp2pAccount {
-  pkc?: {
-    nameResolvers?: NameResolver[];
-    clients?: {
-      libp2pJsClients?: {
-        libp2pjs?: {
-          heliaNode?: HeliaNode;
-        };
-      };
-    };
-  };
-}
+type HeliaNode = PubsubVoterOptions['helia'];
 
 interface VoterConstruction {
   helia: HeliaNode;
@@ -30,16 +20,6 @@ export type PubsubVoterState =
   | { state: 'constructing'; voter?: undefined; error?: undefined }
   | { state: 'ready'; voter: PubsubVoter; error?: undefined }
   | { state: 'failed'; voter?: undefined; error: Error };
-
-export const getBrowserHeliaNode = (account: unknown): HeliaNode | undefined => {
-  if (!account || typeof account !== 'object') return undefined;
-  return (account as BrowserLibp2pAccount).pkc?.clients?.libp2pJsClients?.libp2pjs?.heliaNode;
-};
-
-export const getBrowserNameResolvers = (account: unknown): NameResolver[] | undefined => {
-  if (!account || typeof account !== 'object') return undefined;
-  return (account as BrowserLibp2pAccount).pkc?.nameResolvers;
-};
 
 export const usePubsubVoter = (): PubsubVoterState => {
   const account = useAccount();

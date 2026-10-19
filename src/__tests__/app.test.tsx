@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { Link, MemoryRouter, useLocation, useNavigate } from 'react-router-dom';
+import { Link, MemoryRouter, parsePath, useLocation, useNavigate } from 'react-router-dom';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import usePendingPostNavigationStore from '../stores/use-pending-post-navigation-store';
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -49,6 +49,8 @@ const testState = vi.hoisted(() => ({
   resolvedDirectoryBoardPath: undefined as string | undefined,
   isDirectoryCandidate: false,
   communities: {} as Record<string, unknown>,
+  boardsBarError: undefined as Error | undefined,
+  directoryVoteRefreshDownloadFailed: false,
   useThemeMock: vi.fn(),
 }));
 
@@ -92,6 +94,10 @@ vi.mock('../hooks/use-resolved-community-address', () => ({
     boardPath: testState.resolvedDirectoryBoardPath,
     isDirectoryCandidate: testState.isDirectoryCandidate,
   }),
+}));
+
+vi.mock('../hooks/use-directory-vote-refresh', () => ({
+  useDirectoryVoteRefresh: () => testState.directoryVoteRefreshDownloadFailed,
 }));
 
 vi.mock('../hooks/use-theme', () => ({
@@ -147,6 +153,9 @@ function makeNamedComponent(name: string) {
 }
 
 const MockBoardsBar = () => {
+  if (testState.boardsBarError) {
+    throw testState.boardsBarError;
+  }
   const location = useLocation();
   const settingsPath = !location.pathname.endsWith('settings') ? location.pathname.replace(/\/$/, '') + '/settings' : location.pathname;
   return createElement('div', { 'data-testid': 'boards-bar' }, createElement(Link, { to: settingsPath }, 'Settings'));
@@ -253,7 +262,7 @@ vi.mock('../views/post/post', () => ({
 }));
 
 vi.mock('../components/post', () => ({
-  QuotePreviewPostProvider: ({ children }: { children: React.ReactNode }) => children,
+  Post: makeNamedComponent('post'),
 }));
 
 vi.mock('../views/rules/rules', () => ({
@@ -314,6 +323,8 @@ let navigateFromTest: ReturnType<typeof useNavigate> | undefined;
 let container: HTMLDivElement;
 let root: Root;
 let App: typeof import('../app').default | null = null;
+let loadRouteModules: typeof import('../route-modules').loadRouteModules;
+let rendersBoardRoutes: typeof import('../route-modules').rendersBoardRoutes;
 
 const LocationProbe = () => {
   const location = useLocation();
@@ -337,11 +348,15 @@ const flushEffects = async (count = 8) => {
 const renderApp = async (initialEntry: string | { pathname: string; state?: unknown }) => {
   if (!App) {
     App = (await import('../app')).default;
+    ({ loadRouteModules } = await import('../route-modules'));
   }
+  // As index.tsx does, so the first render does not suspend on the route's code-split modules.
+  await loadRouteModules(parsePath(typeof initialEntry === 'string' ? initialEntry : initialEntry.pathname).pathname || '/');
 
   latestHash = '';
   latestLocation = typeof initialEntry === 'string' ? initialEntry : initialEntry.pathname;
-  act(() => {
+  // Awaited: lazy views suspend, and React only retries them after an awaited act.
+  await act(async () => {
     root.render(createElement(MemoryRouter, { initialEntries: [initialEntry] }, createElement(App!), createElement(LocationProbe)));
   });
   // Secondary views are lazy; let their modules resolve so React retries the suspended route.
@@ -386,6 +401,7 @@ const dispatchTextInput = async (element: HTMLTextAreaElement, value: string) =>
 describe('App', () => {
   beforeAll(async () => {
     App = (await import('../app')).default;
+    ({ loadRouteModules, rendersBoardRoutes } = await import('../route-modules'));
   }, 30000);
 
   beforeEach(() => {
@@ -418,6 +434,8 @@ describe('App', () => {
     testState.resolvedDirectoryBoardPath = undefined;
     testState.isDirectoryCandidate = false;
     testState.communities = {};
+    testState.boardsBarError = undefined;
+    testState.directoryVoteRefreshDownloadFailed = false;
     testState.useThemeMock.mockReset();
     testState.createAccountMock.mockReset().mockResolvedValue(undefined);
     testState.setActiveAccountMock.mockReset().mockResolvedValue(undefined);
@@ -740,5 +758,224 @@ describe('App', () => {
     expect(testState.removeSnowMock).toHaveBeenCalled();
 
     root = createRoot(container);
+  });
+
+  it('renders board, thread, and pending-post routes in the first commit once loadRouteModules resolved', async () => {
+    testState.accountComments = { 0: {} };
+    for (const [entry, view] of [
+      ['/mu', 'feed-cache-container'],
+      ['/mu/thread/comment-1', 'post-view'],
+      [{ pathname: '/pending/0', state: { pendingPost: { communityAddress: 'music-posting.eth', index: 0 } } }, 'pending-post-view'],
+    ] as const) {
+      const pathname = typeof entry === 'string' ? entry : entry.pathname;
+      expect(rendersBoardRoutes(pathname)).toBe(true);
+      await loadRouteModules(pathname);
+      // Not awaited: a route that suspended here would not have committed by the next line.
+      act(() => {
+        root.render(createElement(MemoryRouter, { initialEntries: [entry] }, createElement(App!), createElement(LocationProbe)));
+      });
+      expect(container.querySelector('[data-testid="board-header"]')).toBeTruthy();
+      expect(container.querySelector(`[data-testid="${view}"]`)).toBeTruthy();
+      act(() => root.unmount());
+      root = createRoot(container);
+    }
+  });
+
+  it("preloads the board routes from index.html on every route that renders them, by the app's route tree", async () => {
+    const { ROUTE_PRELOAD_SCRIPT } = await import('../../scripts/vite-app-preload.mjs');
+    const preloads = (pathname: string) => {
+      const appended: unknown[] = [];
+      new Function('location', 'document', ROUTE_PRELOAD_SCRIPT)(
+        { hash: `#${pathname}` },
+        {
+          getElementById: () => ({ textContent: '["./assets/board-routes.js"]' }),
+          createElement: () => ({ setAttribute() {} }),
+          head: { appendChild: (link: unknown) => appended.push(link) },
+        },
+      );
+      return appended.length > 0;
+    };
+    const boardPaths = [
+      '/all',
+      '/all/catalog/settings',
+      '/subs',
+      '/mod',
+      '/mod/queue',
+      '/search',
+      '/search/directory',
+      '/mu',
+      '/mu/',
+      '/mu/2',
+      '/mu/settings',
+      '/mu/catalog',
+      '/mu/archive',
+      '/mu/directory',
+      '/mu/thread/comment-1',
+      '/mu/thread/comment-1/settings',
+      '/mu/mod/queue',
+      '/pending/0',
+      '/faq/2',
+      '/directory',
+    ];
+    const otherPaths = ['/', '/faq', '/pass', '/rules', '/rules/mu', '/blotter', '/settings/account-data', '/mu/board-settings', '/not-allowed', '/not-found'];
+    for (const pathname of boardPaths) {
+      expect([pathname, rendersBoardRoutes(pathname), preloads(pathname)]).toEqual([pathname, true, true]);
+    }
+    for (const pathname of otherPaths) {
+      expect([pathname, rendersBoardRoutes(pathname), preloads(pathname)]).toEqual([pathname, false, false]);
+    }
+    // HashRouter reads a hash without its leading slash the same way.
+    expect(rendersBoardRoutes('mu')).toBe(true);
+  });
+
+  it('offers a reload at the top of the screen when the directory vote refresh failed to download', async () => {
+    await renderApp('/');
+    expect(container.querySelector('[role="alert"]')).toBeNull();
+
+    // A new root: the layout is part of a constant route tree, so a re-render would not reach it.
+    act(() => root.unmount());
+    root = createRoot(container);
+    testState.directoryVoteRefreshDownloadFailed = true;
+    await renderApp('/');
+    expect(container.querySelector('[role="alert"]')?.className).toContain('floating');
+    expect(container.querySelector('[data-testid="home-view"]')).toBeTruthy();
+  });
+
+  it('lets an error other than a failed import reach the root', async () => {
+    const error = new Error('boards bar failed');
+    testState.boardsBarError = error;
+    // act rethrows an error that reaches the root uncaught.
+    await expect(renderApp('/mu')).rejects.toBe(error);
+    expect(container.querySelector('[role="alert"]')).toBeNull();
+  });
+
+  describe('when a lazily imported module failed to download', () => {
+    const originalLocation = window.location;
+    let calls: string[];
+    let cleanups: Array<() => void>;
+    let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+
+    // A fresh App whose import of `path` fails, as after its chunk failed to download. `mock` restores
+    // the module's mock from the top of this file afterwards.
+    const importFailingApp = async (path: string, mock?: () => object, error: Error = new TypeError('Importing a module script failed.')) => {
+      vi.resetModules();
+      vi.doMock(path, () => {
+        throw error;
+      });
+      cleanups.push(() => (mock ? vi.doMock(path, mock) : vi.doUnmock(path)));
+      const { default: FailingApp } = await import('../app');
+      const { loadRouteModules: loadFailingRouteModules } = await import('../route-modules');
+      return { FailingApp, loadFailingRouteModules };
+    };
+    const settle = async () => {
+      await act(async () => {
+        await vi.dynamicImportSettled();
+      });
+      await flushEffects();
+    };
+    const renderFailingApp = async (FailingApp: React.ComponentType, entry: string) => {
+      await act(async () => {
+        root.render(createElement(MemoryRouter, { initialEntries: [entry] }, createElement(FailingApp), createElement(LocationProbe)));
+      });
+      await settle();
+    };
+    const navigateTo = async (to: string) => {
+      await act(async () => {
+        navigateFromTest!(to);
+      });
+      await settle();
+    };
+    const alert = () => container.querySelector('[role="alert"]');
+
+    beforeEach(() => {
+      calls = [];
+      cleanups = [];
+      Object.defineProperty(window, 'location', { configurable: true, value: { ...originalLocation, reload: vi.fn(() => calls.push('reload')) } });
+      vi.stubGlobal(
+        'fetch',
+        vi.fn(async (file: string, init?: RequestInit) => {
+          calls.push(`fetch ${file} ${init?.cache}`);
+          return new Response();
+        }),
+      );
+      consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    });
+
+    afterEach(() => {
+      cleanups.forEach((cleanup) => cleanup());
+      document.head.querySelectorAll('link[data-fivechan-route-preload]').forEach((link) => link.remove());
+      consoleErrorSpy.mockRestore();
+      vi.unstubAllGlobals();
+      Object.defineProperty(window, 'location', { configurable: true, value: originalLocation });
+    });
+
+    it('offers a reload instead of a blank page on the board routes', async () => {
+      // index.html's preloads of the board routes on a cold board load, which the reload fetches again.
+      const routePreloads = ['/assets/board-routes.js', '/assets/post.js'].map((href) => {
+        const link = document.createElement('link');
+        link.rel = 'modulepreload';
+        link.href = href;
+        link.setAttribute('data-fivechan-route-preload', '');
+        document.head.appendChild(link);
+        return link.href;
+      });
+      const { FailingApp, loadFailingRouteModules } = await importFailingApp('../board-routes');
+
+      // From the home page, the first board navigation downloads the board routes.
+      await renderFailingApp(FailingApp, '/');
+      expect(container.querySelector('[data-testid="home-view"]')).toBeTruthy();
+      await navigateTo('/mu');
+      expect(alert()?.textContent).toContain('thread_update_connection_error');
+      await clickButtonByText('refresh');
+      // WebKit would serve the failed download again after a plain reload.
+      expect(calls).toEqual([...routePreloads.map((href) => `fetch ${href} reload`), 'reload']);
+
+      // The first render after loadRouteModules failed, as on a cold board load.
+      act(() => root.unmount());
+      root = createRoot(container);
+      await expect(loadFailingRouteModules('/mu/thread/comment-1')).rejects.toThrow();
+      await renderFailingApp(FailingApp, '/mu/thread/comment-1');
+      expect(alert()?.textContent).toContain('thread_update_connection_error');
+    });
+
+    it('offers a reload in place of a lazy view, and other pages still render', async () => {
+      const { FailingApp } = await importFailingApp('../views/faq');
+      await renderFailingApp(FailingApp, '/');
+      await navigateTo('/faq');
+      expect(alert()?.textContent).toContain('thread_update_connection_error');
+      await navigateTo('/');
+      expect(container.querySelector('[data-testid="home-view"]')).toBeTruthy();
+      expect(alert()).toBeNull();
+    });
+
+    it('lets an error a lazy view throws while evaluating reach the root', async () => {
+      const error = new ReferenceError('faq is not defined');
+      const { FailingApp } = await importFailingApp('../views/faq', undefined, error);
+      await renderFailingApp(FailingApp, '/');
+      // act rethrows an error that reaches the root uncaught (Vitest wraps a mock's error as its cause).
+      await expect(navigateTo('/faq')).rejects.toMatchObject({ cause: error });
+      expect(alert()).toBeNull();
+    });
+
+    it('offers a reload at the top of the screen in place of a modal', async () => {
+      const { FailingApp, loadFailingRouteModules } = await importFailingApp('../components/settings-modal', () => ({ default: MockSettingsModal }));
+      await loadFailingRouteModules('/mu');
+      await renderFailingApp(FailingApp, '/mu');
+      await navigateTo('/mu/settings');
+      expect(alert()?.textContent).toContain('thread_update_connection_error');
+      expect(alert()?.className).toContain('floating');
+      expect(container.querySelector('[data-testid="boards-bar"]')).toBeTruthy();
+    });
+
+    it('reports a modal that downloads with the first render without blanking the page or the other modals', async () => {
+      const { FailingApp } = await importFailingApp('../components/directory-modal', () => ({ default: makeNamedComponent('directory-modal') }));
+      await renderFailingApp(FailingApp, '/');
+      expect(alert()?.textContent).toContain('thread_update_connection_error');
+      expect(alert()?.className).toContain('floating');
+      expect(container.querySelector('[data-testid="home-view"]')).toBeTruthy();
+      // Posting needs the challenge modal.
+      expect(container.querySelector('[data-testid="challenge-modal"]')).toBeTruthy();
+      expect(container.querySelector('[data-testid="disclaimer-modal"]')).toBeTruthy();
+    });
   });
 });

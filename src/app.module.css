@@ -3,11 +3,6 @@
   color-scheme: var(--color-scheme, revert) !important;
 }
 
-.boardLayout {
-  overflow-y: hidden;
-  min-height: 100vh;
-}
-
 @media (min-width: 640px) {
   .app {
     padding: 5px;

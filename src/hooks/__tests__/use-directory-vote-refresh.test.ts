@@ -1,10 +1,16 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import * as React from 'react';
+import { createElement } from 'react';
+import { createRoot, type Root } from 'react-dom/client';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Criteria, PubsubVoterOptions } from '@bitsocial/pubsub-voting';
 import type { AccountVoteSigner } from '../../lib/directory-vote-signer';
 import useDirectoryVotesStore from '../../stores/use-directory-votes-store';
-import { refreshDueDirectoryVotes } from '../use-directory-vote-refresh';
+import { refreshDueDirectoryVotes } from '../use-directory-vote';
+import { useDirectoryVoteRefresh } from '../use-directory-vote-refresh';
 
 const mocks = vi.hoisted(() => ({
+  account: undefined as unknown,
+  refreshAccountDirectoryVotes: vi.fn(),
   criteria: [] as Criteria[],
   headBlock: BigInt(0),
   loadDirectoryVoteCriteria: vi.fn(),
@@ -12,7 +18,12 @@ const mocks = vi.hoisted(() => ({
   topics: {} as Record<string, string>,
 }));
 
-vi.mock('@bitsocial/bitsocial-react-hooks', () => ({ useAccount: () => undefined }));
+vi.mock('@bitsocial/bitsocial-react-hooks', () => ({ useAccount: () => mocks.account }));
+
+vi.mock('../use-directory-vote', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../use-directory-vote')>()),
+  refreshAccountDirectoryVotes: (...args: unknown[]) => mocks.refreshAccountDirectoryVotes(...args),
+}));
 
 vi.mock('@bitsocial/pubsub-voting', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@bitsocial/pubsub-voting')>()),
@@ -127,5 +138,125 @@ describe('refreshDueDirectoryVotes', () => {
 
     expect(mocks.publishDirectoryVote).not.toHaveBeenCalled();
     expect(Object.values(useDirectoryVotesStore.getState().votes)).toEqual([storedVote]);
+  });
+});
+
+describe('refreshAccountDirectoryVotes', () => {
+  // The secp256k1 private key `1` and its well-known Ethereum address.
+  const PRIVATE_KEY_ONE_BASE64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE=';
+  const PRIVATE_KEY_ONE_ADDRESS = '0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf';
+
+  beforeEach(() => {
+    mocks.criteria = [criteria];
+    mocks.headBlock = BigInt(361 * 1800);
+    mocks.topics = { [criteria.contestId]: 'topic-a' };
+    mocks.publishDirectoryVote.mockReset();
+    mocks.publishDirectoryVote.mockResolvedValue({ status: 'published', topic: 'topic-a', blockNumber: 999_000 });
+    useDirectoryVotesStore.setState({ votes: {} });
+  });
+
+  // The hook tests below replace this export, so load the module's own implementation.
+  const loadActual = () => vi.importActual<typeof import('../use-directory-vote')>('../use-directory-vote');
+
+  it("re-signs the votes of the wallet derived from the account's private key", async () => {
+    useDirectoryVotesStore.getState().setVote({ ...storedVote, address: PRIVATE_KEY_ONE_ADDRESS });
+    const { refreshAccountDirectoryVotes } = await loadActual();
+
+    await refreshAccountDirectoryVotes({ privateKey: PRIVATE_KEY_ONE_BASE64, helia, nameResolvers: undefined });
+
+    expect(mocks.publishDirectoryVote).toHaveBeenCalledWith(expect.objectContaining({ address: PRIVATE_KEY_ONE_ADDRESS }));
+  });
+
+  it('does nothing for a malformed private key', async () => {
+    useDirectoryVotesStore.getState().setVote({ ...storedVote, address: PRIVATE_KEY_ONE_ADDRESS });
+    const { refreshAccountDirectoryVotes } = await loadActual();
+
+    await refreshAccountDirectoryVotes({ privateKey: 'AAAA', helia, nameResolvers: undefined });
+
+    expect(mocks.publishDirectoryVote).not.toHaveBeenCalled();
+  });
+});
+
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+const act = (React as { act?: (callback: () => void) => void }).act as (callback: () => void) => void;
+
+let downloadFailed: boolean | undefined;
+
+const RefreshHarness = () => {
+  downloadFailed = useDirectoryVoteRefresh();
+  return null;
+};
+
+describe('useDirectoryVoteRefresh', () => {
+  let container: HTMLDivElement;
+  let root: Root;
+
+  beforeEach(() => {
+    mocks.account = { signer: { privateKey: 'account-key' }, pkc: { clients: { libp2pJsClients: { libp2pjs: { heliaNode: helia } } } } };
+    mocks.refreshAccountDirectoryVotes.mockReset();
+    mocks.refreshAccountDirectoryVotes.mockResolvedValue(undefined);
+    useDirectoryVotesStore.setState({ votes: {} });
+    container = document.createElement('div');
+    root = createRoot(container);
+  });
+
+  afterEach(() => {
+    act(() => root.unmount());
+  });
+
+  const mount = () => act(() => root.render(createElement(RefreshHarness)));
+
+  it('does not load the refresh while no vote is stored', async () => {
+    mount();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(mocks.refreshAccountDirectoryVotes).not.toHaveBeenCalled();
+  });
+
+  it("refreshes the account's votes on start once one is stored", async () => {
+    useDirectoryVotesStore.getState().setVote(storedVote);
+
+    mount();
+
+    await vi.waitFor(() => expect(mocks.refreshAccountDirectoryVotes).toHaveBeenCalledWith({ privateKey: 'account-key', helia, nameResolvers: undefined }));
+  });
+
+  it('does not report a refresh that failed after its code loaded', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    mocks.refreshAccountDirectoryVotes.mockRejectedValue(new Error('publishing failed'));
+    useDirectoryVotesStore.getState().setVote(storedVote);
+
+    mount();
+
+    await vi.waitFor(() => expect(warn).toHaveBeenCalled());
+    expect(downloadFailed).toBe(false);
+    warn.mockRestore();
+  });
+
+  it('reports a failed download of the refresh code, which only a reload can retry', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    vi.resetModules();
+    vi.doMock('../use-directory-vote', () => {
+      throw new TypeError('Importing a module script failed.');
+    });
+    try {
+      const { useDirectoryVoteRefresh: useFreshDirectoryVoteRefresh } = await import('../use-directory-vote-refresh');
+      const { default: useFreshDirectoryVotesStore } = await import('../../stores/use-directory-votes-store');
+      useFreshDirectoryVotesStore.getState().setVote(storedVote);
+      const FreshHarness = () => {
+        downloadFailed = useFreshDirectoryVoteRefresh();
+        return null;
+      };
+
+      act(() => root.render(createElement(FreshHarness)));
+
+      await vi.waitFor(() => expect(downloadFailed).toBe(true));
+    } finally {
+      vi.doMock('../use-directory-vote', async (importOriginal) => ({
+        ...(await importOriginal<typeof import('../use-directory-vote')>()),
+        refreshAccountDirectoryVotes: (...args: unknown[]) => mocks.refreshAccountDirectoryVotes(...args),
+      }));
+      warn.mockRestore();
+    }
   });
 });
