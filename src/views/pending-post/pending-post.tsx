@@ -61,7 +61,7 @@ const PendingPost = () => {
   const navigate = useNavigate();
   const directories = useDirectories();
   const routeBoardPath = getPendingPostRouteBoardPath(location.state);
-  const postBoardPath = postCommunityAddress ? getBoardPath(postCommunityAddress, directories) : undefined;
+  const postBoardPath = postCommunityAddress ? getBoardPath({ address: postCommunityAddress, communities: directories }) : undefined;
   const pendingBoardPath = postBoardPath || routeBoardPath;
   const hasActiveChallenge = useChallengesStore((state) => state.challenges.length > 0);
   const retryingAccountCommentIndex = useFailedPostRetryStore((state) => state.retryingAccountCommentIndex);

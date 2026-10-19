@@ -82,7 +82,7 @@ const BoardsList = ({ multisub }: { multisub: DirectoryCommunity[] }) => {
 
   const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, address: string) => {
     e.preventDefault();
-    const boardPath = getBoardPath(address, multisub);
+    const boardPath = getBoardPath({ address: address, communities: multisub });
     const targetPath = boardPath + (useCatalogLinks ? '/catalog' : '');
     showDisclaimerModal(address, navigate, targetPath);
   };
@@ -90,7 +90,7 @@ const BoardsList = ({ multisub }: { multisub: DirectoryCommunity[] }) => {
   // Helper to generate link URL with optional catalog suffix
   const getBoardLink = (address: string | null): string => {
     if (!address) return '#';
-    const boardPath = getBoardPath(address, multisub);
+    const boardPath = getBoardPath({ address: address, communities: multisub });
     return `/${boardPath}${useCatalogLinks ? '/catalog' : ''}`;
   };
 

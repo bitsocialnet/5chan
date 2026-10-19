@@ -99,7 +99,7 @@ vi.mock('../../../hooks/use-directories', () => ({
 }));
 
 vi.mock('../../../lib/utils/route-utils', () => ({
-  getBoardPath: (address: string) => (address === 'music-posting.eth' ? 'mu' : address),
+  getBoardPath: ({ address }: { address: string }) => (address === 'music-posting.eth' ? 'mu' : address),
 }));
 
 vi.mock('../../../lib/utils/quote-link-utils', () => ({

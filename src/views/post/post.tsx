@@ -166,7 +166,8 @@ const PostPage = () => {
   const directories = useDirectories();
   const { boardPath: resolvedCommentBoardPath, isDirectoryCandidate: isCommentDirectoryCandidate } = useResolvedDirectoryBoardPath(authoritativeCommentCommunityAddress);
   const canonicalCommentBoardPath = authoritativeCommentCommunityAddress
-    ? (resolvedCommentBoardPath ?? (isCommentDirectoryCandidate ? authoritativeCommentCommunityAddress : getBoardPath(authoritativeCommentCommunityAddress, directories)))
+    ? (resolvedCommentBoardPath ??
+      (isCommentDirectoryCandidate ? authoritativeCommentCommunityAddress : getBoardPath({ address: authoritativeCommentCommunityAddress, communities: directories })))
     : undefined;
   const consumedThreadTopScrollRef = useRef<string | null>(null);
   const previousThreadCidRef = useRef<string>(undefined);

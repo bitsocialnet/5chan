@@ -44,7 +44,7 @@ vi.mock('../../../lib/bitsocial-internals/stores', () => ({
 
 vi.mock('../../../hooks/use-directories', () => ({ useDirectories: () => [] }));
 vi.mock('../../../lib/utils/route-utils', () => ({
-  getBoardPath: (address: string) => address,
+  getBoardPath: ({ address }: { address: string }) => address,
   getSettingsSectionPath: (pathname: string, section: string) => `${pathname}?section=${section}`,
 }));
 

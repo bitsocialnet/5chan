@@ -100,7 +100,7 @@ const buildResolvedTarget = ({
   directories: DirectoryCommunity[];
   communityAddress: string;
 }): ResolvedExternalQuoteTarget => {
-  const boardPath = getBoardPath(communityAddress, directories);
+  const boardPath = getBoardPath({ address: communityAddress, communities: directories });
   return {
     boardPath,
     cid,

@@ -48,7 +48,7 @@ const BoardSettings = ({ boardIdentifier, communityAddress }: { boardIdentifier:
   // pkc-js only exposes private settings to the node that hosts the board.
   const isHostedOnConnectedNode = Boolean(community?.settings);
   const pageState = getPageState(community, isHostedOnConnectedNode, canEditBoardSettings(accountRole, isHostedOnConnectedNode));
-  const boardPath = communityAddress ? getBoardPath(communityAddress, directories) : boardIdentifier;
+  const boardPath = communityAddress ? getBoardPath({ address: communityAddress, communities: directories }) : boardIdentifier;
 
   const editableKeys = useMemo(() => getEditableBoardKeys(isHostedOnConnectedNode), [isHostedOnConnectedNode]);
   const baseline = useMemo(() => getEditableBoardSettings(community, editableKeys), [community, editableKeys]);

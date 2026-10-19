@@ -64,7 +64,7 @@ type CopyLinkButtonProps =
 const CopyLinkButton = ({ cid, communityAddress, linkType, onClose }: CopyLinkButtonProps) => {
   const { t } = useTranslation();
   const directories = useDirectories();
-  const boardIdentifier = getBoardPath(communityAddress, directories);
+  const boardIdentifier = getBoardPath({ address: communityAddress, communities: directories });
   const copyShareLink = async () => {
     await copyShareLinkSafe(boardIdentifier, linkType, linkType === 'thread' ? cid : undefined);
     onClose();

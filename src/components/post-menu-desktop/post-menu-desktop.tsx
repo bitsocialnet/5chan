@@ -1,4 +1,4 @@
-import { memo, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useLocation, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -46,7 +46,10 @@ type CopyLinkButtonProps =
 const CopyLinkButton = ({ cid, communityAddress, linkType, onClose }: CopyLinkButtonProps) => {
   const { t } = useTranslation();
   const directories = useDirectories();
-  const boardIdentifier = getBoardPath(communityAddress, directories);
+  const [boardIdentifier, setBoardIdentifier] = useState(() => getBoardPath({ address: communityAddress, communities: directories }));
+  useEffect(() => {
+    setBoardIdentifier(getBoardPath({ address: communityAddress, communities: directories }));
+  }, [communityAddress, directories]);
   const copyShareLink = async () => {
     await safeCopyShareLink(boardIdentifier, linkType, linkType === 'thread' ? cid : undefined);
     onClose();

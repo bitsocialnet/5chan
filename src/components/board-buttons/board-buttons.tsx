@@ -94,9 +94,9 @@ export const CatalogButton = ({ address, isInAllView, isInSubscriptionsView, isI
     }
     let boardPath = '';
     if (address) {
-      boardPath = getBoardPath(address, directories);
+      boardPath = getBoardPath({ address: address, communities: directories });
     } else if (Array.isArray(directories) && directories.length > 0 && directories[0]?.address) {
-      boardPath = getBoardPath(directories[0].address, directories);
+      boardPath = getBoardPath({ address: directories[0].address, communities: directories });
     }
     return `/${boardPath}/catalog`;
   };
@@ -131,7 +131,11 @@ export const ArchiveButton = ({ address, isInAllView, isInSubscriptionsView, isI
 
   const isInvalidArchiveContext = isInAllView || isInSubscriptionsView || isInModView;
   const boardIdentifier = params.boardIdentifier;
-  const archiveBoardIdentifier = address ? getBoardPath(address, directories) : boardIdentifier ? getBoardPath(boardIdentifier, directories) : '';
+  const archiveBoardIdentifier = address
+    ? getBoardPath({ address: address, communities: directories })
+    : boardIdentifier
+      ? getBoardPath({ address: boardIdentifier, communities: directories })
+      : '';
   const archivePath = archiveBoardIdentifier ? `/${archiveBoardIdentifier}/archive` : '';
 
   if (isInvalidArchiveContext || !archivePath || !boardHasArchive) {
@@ -169,7 +173,7 @@ const BoardSettingsButton = ({ address, isMobile = false }: { address?: string; 
   }
 
   const link = (
-    <Link className='button' to={`/${getBoardPath(address, directories)}/board-settings`}>
+    <Link className='button' to={`/${getBoardPath({ address: address, communities: directories })}/board-settings`}>
       {t('board_settings')}
     </Link>
   );
@@ -200,9 +204,9 @@ export const ReturnButton = ({ address, isInAllView, isInSubscriptionsView, isIn
     }
     let boardPath = '';
     if (address) {
-      boardPath = getBoardPath(address, directories);
+      boardPath = getBoardPath({ address: address, communities: directories });
     } else if (Array.isArray(directories) && directories.length > 0 && directories[0]?.address) {
-      boardPath = getBoardPath(directories[0].address, directories);
+      boardPath = getBoardPath({ address: directories[0].address, communities: directories });
     }
     return `/${boardPath}`;
   };
@@ -973,7 +977,7 @@ const SearchOPsBar = () => {
   const isInModView = isModView(location.pathname);
   const directories = useDirectories();
   const resolvedAddress = useResolvedCommunityAddress();
-  const boardPath = resolvedAddress ? getBoardPath(resolvedAddress, directories) : params?.boardIdentifier || params?.communityAddress;
+  const boardPath = resolvedAddress ? getBoardPath({ address: resolvedAddress, communities: directories }) : params?.boardIdentifier || params?.communityAddress;
 
   if (!shouldShowCatalogButton(params.boardIdentifier, directories, { isInAllView, isInSubscriptionsView, isInModView })) {
     return null;

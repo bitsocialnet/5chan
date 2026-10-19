@@ -171,7 +171,7 @@ const ArchiveListing = ({ boardIdentifier, communityAddress }: { boardIdentifier
     if (!communityAddress) {
       return boardIdentifier;
     }
-    return getBoardPath(communityAddress, directories);
+    return getBoardPath({ address: communityAddress, communities: directories });
   }, [boardIdentifier, directories, communityAddress]);
 
   const boardTitle = useCommunityField(communityAddress, (community) => community?.title) || `/${boardIdentifier || communityAddress || t('archive')}/`;

@@ -82,7 +82,7 @@ export const getModQueueCommentRoute = (boardPath: string | undefined, commentCi
   boardPath && commentCid ? `/${boardPath}/thread/${commentCid}` : undefined;
 
 export const getModQueueBoardFilterKey = (communityAddress: string, directories: DirectoryCommunity[]): string => {
-  const boardPath = getBoardPath(communityAddress, directories);
+  const boardPath = getBoardPath({ address: communityAddress, communities: directories });
   return boardPath !== communityAddress ? boardPath : communityAddress;
 };
 
@@ -101,7 +101,7 @@ export const getModQueueBoardFilterGroups = (
   const filterKeyByAddress = new Map<string, string>();
 
   for (const address of accountCommunityAddresses) {
-    const boardPath = getBoardPath(address, directories);
+    const boardPath = getBoardPath({ address: address, communities: directories });
     const filterKey = boardPath !== address ? boardPath : address;
     const existingGroup = groupsByFilterKey.get(filterKey);
     if (existingGroup) {

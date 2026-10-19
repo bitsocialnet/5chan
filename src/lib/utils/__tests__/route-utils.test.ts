@@ -53,10 +53,10 @@ describe('directory mapping helpers', () => {
   });
 
   it('maps addresses to canonical board paths and back', () => {
-    expect(getBoardPath('business.eth', communities)).toBe('biz');
-    expect(getBoardPath('music-posting.eth', communities)).toBe('mu');
-    expect(getBoardPath('12D3KooWQdQ6TkVA1Xe9zzaFP6vXBgsLeMAewpLpLwbsAYKivnQy', communities)).toBe('mu');
-    expect(getBoardPath('unknown.example', communities)).toBe('unknown.example');
+    expect(getBoardPath({ address: 'business.eth', communities: communities })).toBe('biz');
+    expect(getBoardPath({ address: 'music-posting.eth', communities: communities })).toBe('mu');
+    expect(getBoardPath({ address: '12D3KooWQdQ6TkVA1Xe9zzaFP6vXBgsLeMAewpLpLwbsAYKivnQy', communities: communities })).toBe('mu');
+    expect(getBoardPath({ address: 'unknown.example', communities: communities })).toBe('unknown.example');
 
     expect(getCommunityAddress('biz', communities)).toBe('business.eth');
     expect(getCommunityAddress('b', communities)).toBe('random.eth');
@@ -64,8 +64,8 @@ describe('directory mapping helpers', () => {
   });
 
   it('maps hidden special boards without treating them as directory routes', () => {
-    expect(getBoardPath(TRASH_BOARD_ADDRESS, communities)).toBe(TRASH_BOARD_CODE);
-    expect(getBoardPath(TRASH_BOARD_PUBLIC_KEY, communities)).toBe(TRASH_BOARD_CODE);
+    expect(getBoardPath({ address: TRASH_BOARD_ADDRESS, communities: communities })).toBe(TRASH_BOARD_CODE);
+    expect(getBoardPath({ address: TRASH_BOARD_PUBLIC_KEY, communities: communities })).toBe(TRASH_BOARD_CODE);
     expect(getCommunityAddress(TRASH_BOARD_CODE, communities)).toBe(TRASH_BOARD_ADDRESS);
     expect(getCommunityAddress('off-topic.eth', communities)).toBe(TRASH_BOARD_ADDRESS);
 
