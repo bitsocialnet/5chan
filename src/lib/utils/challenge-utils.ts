@@ -119,10 +119,17 @@ export const alertChallengeVerificationFailed = (challengeVerification: Challeng
       }
     }
 
-    const finalMessage = errorMessages.filter(Boolean).join(' ');
+    const messages = [...new Set(errorMessages.map((message) => message.trim()).filter(Boolean))];
     const publicationCommunityAddress = getCommentCommunityAddress(publication);
+    const boardIdentifier = resolveBoardIdentifier(publicationCommunityAddress);
 
-    alert(`Error from ${resolveBoardIdentifier(publicationCommunityAddress)}: ${finalMessage || 'unknown error'}`);
+    // Boards often run several challenges (e.g. a .bso name, a whitelist, the spam blocker), and each
+    // failed one adds its own error; one per line keeps them readable instead of one run-on sentence.
+    if (messages.length > 1) {
+      alert(`Error from ${boardIdentifier}:\n${messages.map((message) => `- ${message}`).join('\n')}`);
+    } else {
+      alert(`Error from ${boardIdentifier}: ${messages[0] || 'unknown error'}`);
+    }
   } else {
     console.log('Challenge verification succeeded:', challengeVerification);
   }

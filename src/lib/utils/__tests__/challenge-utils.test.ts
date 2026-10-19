@@ -35,10 +35,10 @@ describe('challenge-utils', () => {
       'Publication:',
       expect.objectContaining({ communityAddress: 'bizraelis.bso' }),
     );
-    expect(alertMock).toHaveBeenCalledWith('Error from /biz/: invalid captcha try again later');
+    expect(alertMock).toHaveBeenCalledWith('Error from /biz/:\n- invalid captcha\n- try again later');
   });
 
-  it('alerts with joined array challenge errors and falls back to the raw board address when unmapped', () => {
+  it('lists array challenge errors and falls back to the raw board address when unmapped', () => {
     alertChallengeVerificationFailed(
       {
         challengeErrors: ['first error', 'second error'],
@@ -47,7 +47,29 @@ describe('challenge-utils', () => {
       { communityAddress: 'unknown-board.eth' },
     );
 
-    expect(alertMock).toHaveBeenCalledWith('Error from unknown-board.eth: first error second error');
+    expect(alertMock).toHaveBeenCalledWith('Error from unknown-board.eth:\n- first error\n- second error');
+  });
+
+  it('lists each failed challenge of a board on its own line and drops repeats', () => {
+    alertChallengeVerificationFailed(
+      {
+        challengeErrors: {
+          0: 'Posting in this community requires a name that ends with .bso',
+          1: 'Or posting in this community requires being whitelisted.',
+          2: 'Bitsocial spam blocker: you are blocked from posting (reference 2e39b829)',
+        },
+        challengeSuccess: false,
+        reason: 'Bitsocial spam blocker: you are blocked from posting (reference 2e39b829)',
+      } as never,
+      { communityAddress: 'bizraelis.bso' },
+    );
+
+    expect(alertMock).toHaveBeenCalledWith(
+      'Error from /biz/:\n' +
+        '- Posting in this community requires a name that ends with .bso\n' +
+        '- Or posting in this community requires being whitelisted.\n' +
+        '- Bitsocial spam blocker: you are blocked from posting (reference 2e39b829)',
+    );
   });
 
   it('uses communityAddress when the upgraded publication no longer exposes communityAddress', () => {
