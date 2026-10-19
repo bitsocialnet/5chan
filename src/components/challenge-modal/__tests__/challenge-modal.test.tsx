@@ -500,6 +500,46 @@ describe('ChallengeModal', () => {
     expect(testState.removeChallengeMock).toHaveBeenCalledOnce();
   });
 
+  it('hides Finish Challenge once the iframe announces it submits the answer itself', async () => {
+    const publication = createPublication();
+    testState.challenges = [
+      createStoredChallenge(
+        {
+          challenge: 'https://spamblocker.bitsocial.net/api/v1/iframe/session-123',
+          type: 'url/iframe',
+        },
+        publication,
+      ),
+    ];
+
+    await renderModal();
+    await clickButton('Open challenge');
+    const findFinishButton = () => Array.from(container.querySelectorAll('button')).find((candidate) => candidate.textContent === 'Finish Challenge');
+    expect(findFinishButton()).toBeDefined();
+
+    // Another session's announcement must not hide the button.
+    await act(async () => {
+      window.dispatchEvent(
+        new MessageEvent('message', {
+          data: { type: 'challengeCompletionManaged', sessionId: 'other-session' },
+          origin: 'https://spamblocker.bitsocial.net',
+        }),
+      );
+    });
+    expect(findFinishButton()).toBeDefined();
+
+    await act(async () => {
+      window.dispatchEvent(
+        new MessageEvent('message', {
+          data: { type: 'challengeCompletionManaged', sessionId: 'session-123' },
+          origin: 'https://spamblocker.bitsocial.net',
+        }),
+      );
+    });
+    expect(findFinishButton()).toBeUndefined();
+    expect(publication.publishChallengeAnswers).not.toHaveBeenCalled();
+  });
+
   it('advances through multiple iframe challenges before publishing answers', async () => {
     const publication = createPublication();
     testState.challenges = [

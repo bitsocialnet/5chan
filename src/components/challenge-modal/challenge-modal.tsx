@@ -134,6 +134,10 @@ const IframeChallenge = ({
   const [iframeFrame, setIframeFrame] = useState<IframeFrameState | null>(null);
   const [inlineErrorMessage, setInlineErrorMessage] = useState('');
   const [rememberPermission, setRememberPermission] = useState(false);
+  // Set when the challenge page announces it posts the answer itself (the Bitsocial spam
+  // blocker does, after showing the user any rejection). Finishing manually would submit
+  // the challenge before the page knows its outcome, so the button is hidden.
+  const [completionManaged, setCompletionManaged] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const attemptedLoadRef = useRef(false);
   const mountedRef = useRef(false);
@@ -240,7 +244,12 @@ const IframeChallenge = ({
       if (handledAutoCompleteRef.current) return;
       const data = event.data;
       if (!data || typeof data !== 'object') return;
-      if ((data as { type?: string }).type !== 'challengeAnswer') return;
+      const messageType = (data as { type?: string }).type;
+      if (messageType === 'challengeCompletionManaged') {
+        if ((data as { sessionId?: unknown }).sessionId === expectedSessionId) setCompletionManaged(true);
+        return;
+      }
+      if (messageType !== 'challengeAnswer') return;
       const challengeAnswers = (data as { challengeAnswers?: unknown }).challengeAnswers;
       if (!Array.isArray(challengeAnswers)) return;
       const sessionId = (data as { sessionId?: unknown }).sessionId;
@@ -294,13 +303,15 @@ const IframeChallenge = ({
           title='Challenge authentication'
         />
       </div>
-      <div className={`${styles.challengeFooter} ${styles.iframeFooter}`}>
-        <div className={styles.iframeCloseButton}>
-          <button type='button' aria-label='Finish challenge' onClick={onDone}>
-            Finish Challenge
-          </button>
+      {!completionManaged && (
+        <div className={`${styles.challengeFooter} ${styles.iframeFooter}`}>
+          <div className={styles.iframeCloseButton}>
+            <button type='button' aria-label='Finish challenge' onClick={onDone}>
+              Finish Challenge
+            </button>
+          </div>
         </div>
-      </div>
+      )}
     </>
   );
 };
