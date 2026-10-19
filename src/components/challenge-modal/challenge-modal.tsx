@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useCallback } from 'react';
+import { useRef, useState, useEffect, useLayoutEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Challenge as ChallengeType, useAccount, useComment } from '@bitsocial/bitsocial-react-hooks';
 import { getPublicationPreview, getPublicationType, getVotePreview, publishPublicationChallengeAnswers } from '../../lib/utils/challenge-utils';
@@ -232,7 +232,9 @@ const IframeChallenge = ({
     }
   }, [iframeFrame, sendThemeToIframe]);
 
-  useEffect(() => {
+  // A layout effect runs in the same task as the commit that inserts the iframe, so the listener
+  // exists before the iframe can post anything; a message sent before a passive effect runs is lost.
+  useLayoutEffect(() => {
     const iframeOrigin = iframeFrame?.origin ?? '';
     if (!iframeOrigin || !expectedSessionId) {
       handledAutoCompleteRef.current = false;
