@@ -1,3 +1,27 @@
+## [0.10.1](https://github.com/bitsocialnet/5chan/compare/v0.10.0...v0.10.1) (2026-10-19)
+
+
+### Bug Fixes
+
+* **catalog:** sort multiboard catalogs once every board has loaded ([494bf43](https://github.com/bitsocialnet/5chan/commit/494bf43249236520589149392d38365f3c13e487))
+* **challenge-modal:** hide Finish Challenge when the iframe submits itself ([#1257](https://github.com/bitsocialnet/5chan/issues/1257)) ([5b82484](https://github.com/bitsocialnet/5chan/commit/5b824848992b2ac29073b7e6645bb08767def022))
+* **challenge:** list each failed challenge on its own line in the alert ([#1262](https://github.com/bitsocialnet/5chan/issues/1262)) ([10f4151](https://github.com/bitsocialnet/5chan/commit/10f415107447c45e0cfae2319235ef14402dd6b0))
+* **post ids:** show the board-assigned ID on your own pseudonymous replies ([f0fac17](https://github.com/bitsocialnet/5chan/commit/f0fac176a8f88b4a0cc7aba1aa507cddf15cd5b8))
+* **quotes:** resolve cross-board quotes from the sorts boards publish ([#1255](https://github.com/bitsocialnet/5chan/issues/1255)) ([3950d0b](https://github.com/bitsocialnet/5chan/commit/3950d0be21195e73dc1cb8961486270333cfa90a))
+* **startup:** stop Safari's blank page and load the home page sooner ([#1260](https://github.com/bitsocialnet/5chan/issues/1260)) ([8eda732](https://github.com/bitsocialnet/5chan/commit/8eda732f25027d660252a9b379732cc29609f5a3))
+* **thread:** keep the update status in sentence case ([21603a8](https://github.com/bitsocialnet/5chan/commit/21603a80aafaf5775da2330db1b7d4d6bb6dc36f))
+
+
+### Features
+
+* **boards:** follow the post sorts each board publishes ([#1199](https://github.com/bitsocialnet/5chan/issues/1199)) ([438bafc](https://github.com/bitsocialnet/5chan/commit/438bafcdbc9ff8b745606fd828018bf13dd699ab))
+* **catalog:** add 4chan's "Last reply" sort ([1d285d7](https://github.com/bitsocialnet/5chan/commit/1d285d7c790960544ba7df0d6dd85e84de734f24))
+* **post-options:** support sage on boards whose bump order skips it ([#1200](https://github.com/bitsocialnet/5chan/issues/1200)) ([5b15980](https://github.com/bitsocialnet/5chan/commit/5b159807eafaa3e30354da295042d771fa6a7478))
+* **upload:** add Forge Images to the desktop and Android apps ([#1250](https://github.com/bitsocialnet/5chan/issues/1250)) ([b273bb7](https://github.com/bitsocialnet/5chan/commit/b273bb741de35d6c06094db5a40c46ef5067932d))
+* **upload:** attach files dropped on the post and reply forms ([#1251](https://github.com/bitsocialnet/5chan/issues/1251)) ([8015dc6](https://github.com/bitsocialnet/5chan/commit/8015dc667cada3abfd4cb247639954db31bab3c5))
+
+
+
 # [0.10.0](https://github.com/bitsocialnet/5chan/compare/v0.9.21...v0.10.0) (2026-10-15)
 
 

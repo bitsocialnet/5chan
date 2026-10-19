@@ -103,7 +103,7 @@ const downloads = [macSection, winSection, linuxSection, androidSection, htmlSec
 
 // One-liner summary of what changed in this release. Update before each release.
 const oneLinerDescription =
-  'This version adds media uploads to the web app, so you can attach images and videos straight from your browser, plus board creation and board settings in the app, directory voting, a 4chan-style thread auto-updater with unread markers and tab alerts, pinned catalog threads, a desktop board sidebar and boards bar options, Vimeo embeds, and a faster startup.';
+  "This version adds media uploads to the desktop and Android apps, drag-and-drop file attachments, 4chan's Last reply catalog sort and sage on boards that support it, fixes Safari's blank page on startup and loads the home page sooner, keeps the catalog order stable while scrolling /all/ and /subs/, and makes challenge errors easier to read.";
 
 const releaseBody = `${oneLinerDescription}
 

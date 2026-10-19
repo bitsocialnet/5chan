@@ -1,6 +1,13 @@
 {
   "entries": [
     {
+      "id": "release-0.10.1",
+      "kind": "release",
+      "timestamp": 1792411200,
+      "message": "v0.10.1: Desktop and Android uploads, drag-and-drop files, Last reply sort",
+      "version": "0.10.1"
+    },
+    {
       "id": "release-0.10.0",
       "kind": "release",
       "timestamp": 1792065600,
