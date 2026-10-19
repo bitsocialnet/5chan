@@ -23,7 +23,7 @@ import NotAllowed from './views/not-allowed';
 import NotFound from './views/not-found';
 import FramesLayout from './components/frames-layout';
 import ExternalQuoteStatus from './components/external-quote-status';
-import ImportErrorBoundary from './components/import-error-boundary';
+import ImportErrorBoundary, { ImportError } from './components/import-error-boundary';
 import Prefetcher from './components/prefetcher';
 import { ModEmptyState } from './components/mod-empty-state';
 
@@ -125,7 +125,7 @@ const preloadLazyChunks = () => {
 const GlobalLayout = () => {
   useTheme({ applyDocumentEffects: true });
   useSuspendOffscreenMediaPlayback();
-  useDirectoryVoteRefresh();
+  const directoryVoteRefreshDownloadFailed = useDirectoryVoteRefresh();
 
   const location = useLocation();
   const { pathname } = location;
@@ -152,6 +152,7 @@ const GlobalLayout = () => {
     <>
       <ExternalQuoteStatus />
       <Prefetcher />
+      {directoryVoteRefreshDownloadFailed && <ImportError floating />}
       {/* A boundary per modal, so one that failed to download does not take the others (challenges) with it. */}
       <Suspense fallback={null}>
         <ImportErrorBoundary floating>

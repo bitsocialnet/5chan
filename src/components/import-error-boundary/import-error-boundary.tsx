@@ -25,7 +25,7 @@ type ImportErrorBoundaryProps = {
 };
 
 /**
- * Renders `fallback` (ImportError by default) when a lazy component under it failed to import (see
+ * Renders `fallback` (ImportError by default) when a lazy component under it failed to download (see
  * lib/import-failures), where the uncaught error would unmount the whole app and leave a blank page.
  * Other errors pass through.
  */

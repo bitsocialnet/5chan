@@ -11,21 +11,36 @@ const failedDownloads = new Set<string>();
 
 const REFETCH_WAIT_MS = 3000;
 
-/** Wraps a dynamic import so that its rejection counts as an import failure (see isImportFailure). */
+// What a dynamic import rejects with when its module or one of the module's dependencies failed to
+// download, in WebKit, Chromium and Firefox, and what Vite's preload helper throws for a stylesheet.
+// An error the module itself throws while evaluating is not a failed download: a reload would only
+// repeat it, so it reaches the root like any other error.
+const DOWNLOAD_FAILURE_MESSAGES = [
+  /^Importing a module script failed\.?$/,
+  /^Failed to fetch dynamically imported module/,
+  /^error loading dynamically imported module/,
+  /^Unable to preload CSS for /,
+];
+
+// The error may arrive wrapped, with the browser's as its cause (as Vitest's module mocks do).
+const isDownloadFailure = (error: unknown, depth = 0): boolean =>
+  error instanceof Error && (DOWNLOAD_FAILURE_MESSAGES.some((message) => message.test(error.message)) || (depth < 3 && isDownloadFailure(error.cause, depth + 1)));
+
+/** Wraps a dynamic import so that its rejection for a failed download counts as an import failure (see isImportFailure). */
 export const markImportFailures =
   <T>(load: () => Promise<T>): (() => Promise<T>) =>
   () =>
     load().catch((error: unknown) => {
-      if (typeof error === 'object' && error !== null) {
-        importFailures.add(error);
+      if (isDownloadFailure(error)) {
+        importFailures.add(error as Error);
       }
       throw error;
     });
 
-/** lazy() for a dynamic import whose rejection counts as an import failure. */
+/** lazy() for a dynamic import whose rejection for a failed download counts as an import failure. */
 export const lazyImport = <T extends ComponentType<any>>(load: () => Promise<{ default: T }>) => lazy(markImportFailures(load));
 
-/** Whether `error` rejected an import wrapped by markImportFailures (a failed download, usually). */
+/** Whether `error` rejected an import wrapped by markImportFailures because a download failed. */
 export const isImportFailure = (error: unknown): boolean => typeof error === 'object' && error !== null && importFailures.has(error);
 
 /**

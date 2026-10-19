@@ -31,6 +31,23 @@ describe('import failures', () => {
     expect(isImportFailure('failed')).toBe(false);
   });
 
+  it('counts failed downloads, not errors a module throws while evaluating', async () => {
+    const { isImportFailure, markImportFailures } = await importModule();
+    const rejectWith = async (error: Error) => {
+      await markImportFailures(() => Promise.reject(error))().catch(() => {});
+      return isImportFailure(error);
+    };
+
+    // WebKit, Chromium, Firefox, and Vite's preload helper for a stylesheet.
+    expect(await rejectWith(new TypeError('Importing a module script failed.'))).toBe(true);
+    expect(await rejectWith(new TypeError('Failed to fetch dynamically imported module: https://5chan.app/assets/faq.js'))).toBe(true);
+    expect(await rejectWith(new TypeError('error loading dynamically imported module: https://5chan.app/assets/faq.js'))).toBe(true);
+    expect(await rejectWith(new Error('Unable to preload CSS for https://5chan.app/assets/faq.css'))).toBe(true);
+    expect(await rejectWith(new Error('wrapped', { cause: new TypeError('Importing a module script failed.') }))).toBe(true);
+    expect(await rejectWith(new ReferenceError('board is not defined'))).toBe(false);
+    expect(await rejectWith(new TypeError("Cannot read properties of undefined (reading 'title')"))).toBe(false);
+  });
+
   describe('reloadAfterImportFailure', () => {
     const originalLocation = window.location;
     let calls: string[];

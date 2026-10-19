@@ -50,6 +50,7 @@ const testState = vi.hoisted(() => ({
   isDirectoryCandidate: false,
   communities: {} as Record<string, unknown>,
   boardsBarError: undefined as Error | undefined,
+  directoryVoteRefreshDownloadFailed: false,
   useThemeMock: vi.fn(),
 }));
 
@@ -93,6 +94,10 @@ vi.mock('../hooks/use-resolved-community-address', () => ({
     boardPath: testState.resolvedDirectoryBoardPath,
     isDirectoryCandidate: testState.isDirectoryCandidate,
   }),
+}));
+
+vi.mock('../hooks/use-directory-vote-refresh', () => ({
+  useDirectoryVoteRefresh: () => testState.directoryVoteRefreshDownloadFailed,
 }));
 
 vi.mock('../hooks/use-theme', () => ({
@@ -430,6 +435,7 @@ describe('App', () => {
     testState.isDirectoryCandidate = false;
     testState.communities = {};
     testState.boardsBarError = undefined;
+    testState.directoryVoteRefreshDownloadFailed = false;
     testState.useThemeMock.mockReset();
     testState.createAccountMock.mockReset().mockResolvedValue(undefined);
     testState.setActiveAccountMock.mockReset().mockResolvedValue(undefined);
@@ -822,6 +828,19 @@ describe('App', () => {
     expect(rendersBoardRoutes('mu')).toBe(true);
   });
 
+  it('offers a reload at the top of the screen when the directory vote refresh failed to download', async () => {
+    await renderApp('/');
+    expect(container.querySelector('[role="alert"]')).toBeNull();
+
+    // A new root: the layout is part of a constant route tree, so a re-render would not reach it.
+    act(() => root.unmount());
+    root = createRoot(container);
+    testState.directoryVoteRefreshDownloadFailed = true;
+    await renderApp('/');
+    expect(container.querySelector('[role="alert"]')?.className).toContain('floating');
+    expect(container.querySelector('[data-testid="home-view"]')).toBeTruthy();
+  });
+
   it('lets an error other than a failed import reach the root', async () => {
     const error = new Error('boards bar failed');
     testState.boardsBarError = error;
@@ -838,10 +857,10 @@ describe('App', () => {
 
     // A fresh App whose import of `path` fails, as after its chunk failed to download. `mock` restores
     // the module's mock from the top of this file afterwards.
-    const importFailingApp = async (path: string, mock?: () => object) => {
+    const importFailingApp = async (path: string, mock?: () => object, error: Error = new TypeError('Importing a module script failed.')) => {
       vi.resetModules();
       vi.doMock(path, () => {
-        throw new TypeError('Importing a module script failed.');
+        throw error;
       });
       cleanups.push(() => (mock ? vi.doMock(path, mock) : vi.doUnmock(path)));
       const { default: FailingApp } = await import('../app');
@@ -926,6 +945,15 @@ describe('App', () => {
       expect(alert()?.textContent).toContain('thread_update_connection_error');
       await navigateTo('/');
       expect(container.querySelector('[data-testid="home-view"]')).toBeTruthy();
+      expect(alert()).toBeNull();
+    });
+
+    it('lets an error a lazy view throws while evaluating reach the root', async () => {
+      const error = new ReferenceError('faq is not defined');
+      const { FailingApp } = await importFailingApp('../views/faq', undefined, error);
+      await renderFailingApp(FailingApp, '/');
+      // act rethrows an error that reaches the root uncaught (Vitest wraps a mock's error as its cause).
+      await expect(navigateTo('/faq')).rejects.toMatchObject({ cause: error });
       expect(alert()).toBeNull();
     });
 

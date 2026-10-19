@@ -180,8 +180,10 @@ describe('refreshAccountDirectoryVotes', () => {
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (callback: () => void) => void }).act as (callback: () => void) => void;
 
+let downloadFailed: boolean | undefined;
+
 const RefreshHarness = () => {
-  useDirectoryVoteRefresh();
+  downloadFailed = useDirectoryVoteRefresh();
   return null;
 };
 
@@ -217,5 +219,44 @@ describe('useDirectoryVoteRefresh', () => {
     mount();
 
     await vi.waitFor(() => expect(mocks.refreshAccountDirectoryVotes).toHaveBeenCalledWith({ privateKey: 'account-key', helia, nameResolvers: undefined }));
+  });
+
+  it('does not report a refresh that failed after its code loaded', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    mocks.refreshAccountDirectoryVotes.mockRejectedValue(new Error('publishing failed'));
+    useDirectoryVotesStore.getState().setVote(storedVote);
+
+    mount();
+
+    await vi.waitFor(() => expect(warn).toHaveBeenCalled());
+    expect(downloadFailed).toBe(false);
+    warn.mockRestore();
+  });
+
+  it('reports a failed download of the refresh code, which only a reload can retry', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    vi.resetModules();
+    vi.doMock('../use-directory-vote', () => {
+      throw new TypeError('Importing a module script failed.');
+    });
+    try {
+      const { useDirectoryVoteRefresh: useFreshDirectoryVoteRefresh } = await import('../use-directory-vote-refresh');
+      const { default: useFreshDirectoryVotesStore } = await import('../../stores/use-directory-votes-store');
+      useFreshDirectoryVotesStore.getState().setVote(storedVote);
+      const FreshHarness = () => {
+        downloadFailed = useFreshDirectoryVoteRefresh();
+        return null;
+      };
+
+      act(() => root.render(createElement(FreshHarness)));
+
+      await vi.waitFor(() => expect(downloadFailed).toBe(true));
+    } finally {
+      vi.doMock('../use-directory-vote', async (importOriginal) => ({
+        ...(await importOriginal<typeof import('../use-directory-vote')>()),
+        refreshAccountDirectoryVotes: (...args: unknown[]) => mocks.refreshAccountDirectoryVotes(...args),
+      }));
+      warn.mockRestore();
+    }
   });
 });
