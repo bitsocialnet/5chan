@@ -39,6 +39,3 @@ jobs:
           plugins: 'code-review@claude-code-plugins'
           prompt: '/code-review:code-review --comment ${{ github.repository }}/pull/${{ github.event.pull_request.number }}'
           claude_args: '--allowedTools "mcp__github_inline_comment__create_inline_comment"'
-          # Temporary: print the full Claude transcript to diagnose reviews that skip the Opus bug
-          # agents. Logs on this public repo are public, so remove this after one captured run.
-          show_full_output: true
