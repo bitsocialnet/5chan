@@ -29,7 +29,8 @@ export function truncateWithEllipsisInMiddle(str: string, maxLength: number = 50
   if (!str || str.length <= maxLength) return str;
   const ellipsis = '...';
   if (maxLength <= ellipsis.length) return str.slice(0, maxLength);
-  const half = Math.floor((maxLength - ellipsis.length) / 2);
-  const right = half > 0 ? str.slice(-half) : '';
-  return str.slice(0, half) + ellipsis + right;
+  const keep = Math.floor((maxLength - ellipsis.length) / 2);
+  const head = str.slice(0, keep);
+  const tail = keep > 0 ? str.slice(keep) : '';
+  return head + ellipsis + tail;
 }
