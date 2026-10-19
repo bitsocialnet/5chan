@@ -500,6 +500,83 @@ describe('ChallengeModal', () => {
     expect(testState.removeChallengeMock).toHaveBeenCalledOnce();
   });
 
+  it('hides Finish Challenge once the iframe announces it submits the answer itself', async () => {
+    const publication = createPublication();
+    testState.challenges = [
+      createStoredChallenge(
+        {
+          challenge: 'https://spamblocker.bitsocial.net/api/v1/iframe/session-123',
+          type: 'url/iframe',
+        },
+        publication,
+      ),
+    ];
+
+    await renderModal();
+    await clickButton('Open challenge');
+    const findFinishButton = () => Array.from(container.querySelectorAll('button')).find((candidate) => candidate.textContent === 'Finish Challenge');
+    expect(findFinishButton()).toBeDefined();
+
+    // Another session's announcement must not hide the button.
+    await act(async () => {
+      window.dispatchEvent(
+        new MessageEvent('message', {
+          data: { type: 'challengeCompletionManaged', sessionId: 'other-session' },
+          origin: 'https://spamblocker.bitsocial.net',
+        }),
+      );
+    });
+    expect(findFinishButton()).toBeDefined();
+
+    await act(async () => {
+      window.dispatchEvent(
+        new MessageEvent('message', {
+          data: { type: 'challengeCompletionManaged', sessionId: 'session-123' },
+          origin: 'https://spamblocker.bitsocial.net',
+        }),
+      );
+    });
+    expect(findFinishButton()).toBeUndefined();
+    expect(publication.publishChallengeAnswers).not.toHaveBeenCalled();
+  });
+
+  it('receives the completion announcement an iframe posts as soon as it is inserted', async () => {
+    testState.challenges = [
+      createStoredChallenge({
+        challenge: 'https://spamblocker.bitsocial.net/api/v1/iframe/session-123',
+        type: 'url/iframe',
+      }),
+    ];
+    await renderModal();
+
+    // Run the open step with real scheduling: act() would flush passive effects together with the
+    // commit and hide the window in which a message posted by a freshly inserted iframe is lost.
+    const actEnvironment = globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean };
+    actEnvironment.IS_REACT_ACT_ENVIRONMENT = false;
+    const announceOnInsert = new MutationObserver(() => {
+      if (!container.querySelector('iframe')) return;
+      announceOnInsert.disconnect();
+      window.dispatchEvent(
+        new MessageEvent('message', {
+          data: { type: 'challengeCompletionManaged', sessionId: 'session-123' },
+          origin: 'https://spamblocker.bitsocial.net',
+        }),
+      );
+    });
+    announceOnInsert.observe(container, { childList: true, subtree: true });
+    try {
+      const openButton = Array.from(container.querySelectorAll('button')).find((candidate) => candidate.textContent === 'Open challenge');
+      openButton?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    } finally {
+      announceOnInsert.disconnect();
+      actEnvironment.IS_REACT_ACT_ENVIRONMENT = true;
+    }
+
+    expect(container.querySelector('iframe')).not.toBeNull();
+    expect(Array.from(container.querySelectorAll('button')).some((candidate) => candidate.textContent === 'Finish Challenge')).toBe(false);
+  });
+
   it('advances through multiple iframe challenges before publishing answers', async () => {
     const publication = createPublication();
     testState.challenges = [
