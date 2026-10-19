@@ -794,7 +794,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
   const subscriptions = account?.subscriptions || [];
   const directories = useDirectories();
   const directoryEntry = useDirectoryEntry(effectiveBoardAddress, params?.boardIdentifier);
-  const effectiveBoardPath = effectiveBoardAddress ? getBoardPath(effectiveBoardAddress, directories) : undefined;
+  const effectiveBoardPath = effectiveBoardAddress ? getBoardPath({ address: effectiveBoardAddress, communities: directories }) : undefined;
   const pendingPostBoardPath = effectiveBoardPath;
   const rulesPath = effectiveBoardPath && isDirectoryRoute(effectiveBoardPath, directories) ? `/rules#${effectiveBoardPath}` : '/rules';
   const showSpoilerForPost = directoryEntry?.features?.noSpoilers !== true;
@@ -888,7 +888,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
 
   const getBoardIndexPath = () => {
     if (effectiveBoardAddress) {
-      return `/${getBoardPath(effectiveBoardAddress, directories)}`;
+      return `/${getBoardPath({ address: effectiveBoardAddress, communities: directories })}`;
     }
 
     return params?.boardIdentifier ? `/${params.boardIdentifier}` : null;

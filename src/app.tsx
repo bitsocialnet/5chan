@@ -200,7 +200,8 @@ const BoardLayout = () => {
 
   // Normalize address URLs to directory codes: /anime-and-manga.eth/thread/xxx -> /a/thread/xxx
   if (boardIdentifier && !isDirectoryBoard(boardIdentifier, directories)) {
-    const canonicalBoardIdentifier = resolvedDirectoryBoardPath ?? (isDirectoryCandidate ? boardIdentifier : getBoardPath(boardIdentifier, directories));
+    const canonicalBoardIdentifier =
+      resolvedDirectoryBoardPath ?? (isDirectoryCandidate ? boardIdentifier : getBoardPath({ address: boardIdentifier, communities: directories }));
     if (canonicalBoardIdentifier !== boardIdentifier) {
       const canonicalPath = pathname.replace(`/${boardIdentifier}`, `/${canonicalBoardIdentifier}`);
       return <Navigate to={canonicalPath + (search || '') + (hash || '')} replace />;

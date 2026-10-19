@@ -108,7 +108,7 @@ const PopularThreadsBox = ({ directories, directoryAddresses }: { directories: D
             const communityAddress = getCommentCommunityAddress(post);
             const directoryEntry = findDirectoryByAddress(directories, communityAddress);
             const boardTitle = getPopularThreadBoardTitle(directoryEntry?.title);
-            const boardPath = communityAddress ? getBoardPath(communityAddress, directories) : '';
+            const boardPath = communityAddress ? getBoardPath({ address: communityAddress, communities: directories }) : '';
             return <PopularThreadCard key={post.cid} post={post} boardTitle={boardTitle} boardPath={boardPath} />;
           })
         )}

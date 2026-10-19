@@ -59,7 +59,7 @@ vi.mock('../../../hooks/use-directories', () => ({
 }));
 
 vi.mock('../../../lib/utils/route-utils', () => ({
-  getBoardPath: (address: string) => testState.getBoardPathMock(address),
+  getBoardPath: ({ address }: { address: string }) => testState.getBoardPathMock(address),
 }));
 
 vi.mock('../../../stores/use-challenges-store', () => ({

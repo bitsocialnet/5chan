@@ -31,7 +31,7 @@ vi.mock('../use-indexed-boards', () => {
   return { useIndexedBoards: () => state };
 });
 
-vi.mock('../../lib/utils/route-utils', () => ({ getBoardPath: (address: string) => address }));
+vi.mock('../../lib/utils/route-utils', () => ({ getBoardPath: ({ address }: { address: string }) => address }));
 
 let container: HTMLDivElement;
 let root: Root;

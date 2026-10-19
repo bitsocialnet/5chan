@@ -196,7 +196,7 @@ const PostInfo = ({
   const isReply = parentCid;
   const { showOmittedReplies } = useShowOmittedReplies();
   const directories = useDirectories();
-  const boardPath = communityAddress ? getBoardPath(communityAddress, directories) : undefined;
+  const boardPath = communityAddress ? getBoardPath({ address: communityAddress, communities: directories }) : undefined;
   const directoryEntry = useDirectoryEntry(communityAddress);
   const showAuthorFlags = hasCommentFlagsForDirectory(directoryEntry) && !(deleted || removed || purged);
   const postMenuProps = selectPostMenuProps(post);
@@ -613,7 +613,7 @@ const PostMedia = ({
   const requirePostLinkIsMedia = directoryEntry?.features?.requirePostLinkIsMedia === true;
   const fileLabel = youtubeFileLink || requirePostLinkIsMedia ? t('file') : t('link');
   const mediaTypeLabel = type ? getPostMediaTypeLabel(commentMediaInfo, type, t).toLowerCase() : '';
-  const boardPath = communityAddress ? getBoardPath(communityAddress, directories) : undefined;
+  const boardPath = communityAddress ? getBoardPath({ address: communityAddress, communities: directories }) : undefined;
   const displayBoardPath =
     boardPath && communityAddress && boardPath !== communityAddress
       ? boardPath
@@ -737,7 +737,7 @@ const Reply = ({
   const userID = getCommentUserID(post);
   const purged = post?.commentModeration?.purged;
   const directories = useDirectories();
-  const boardPath = communityAddress ? getBoardPath(communityAddress, directories) : undefined;
+  const boardPath = communityAddress ? getBoardPath({ address: communityAddress, communities: directories }) : undefined;
 
   const location = useLocation();
   const route = boardPath ? `/${boardPath}/thread/${cid}` : `/thread/${cid}`;
@@ -829,7 +829,7 @@ const PostDesktop = ({
   const isMultiboardView = isInAllView || isInSubscriptionsView || isInModView || isInSearchView;
   const showBoardLabel = isMultiboardView && (!parentCid || isInSearchView);
   const directories = useDirectories();
-  const boardPath = communityAddress ? getBoardPath(communityAddress, directories) : undefined;
+  const boardPath = communityAddress ? getBoardPath({ address: communityAddress, communities: directories }) : undefined;
   const deleteFailedPostRedirectPath = isInPendingPostView ? (boardPath ? `/${boardPath}` : '/') : undefined;
   const displayBoardPath =
     boardPath && communityAddress

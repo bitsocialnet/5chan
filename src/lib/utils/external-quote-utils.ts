@@ -57,7 +57,7 @@ export const getExternalQuoteBoardAddress = (reference: ExternalQuoteReference, 
 
 export const getExternalQuoteBoardLabel = (reference: ExternalQuoteReference, directories: DirectoryCommunity[]) => {
   const address = getAddressForCanonicalReference(reference, directories);
-  return getBoardPath(address, directories);
+  return getBoardPath({ address: address, communities: directories });
 };
 
 export const extractUnresolvedExternalQuoteReferences = ({

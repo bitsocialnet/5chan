@@ -248,7 +248,7 @@ vi.mock('../../hooks/use-directory-entry', () => ({
 }));
 
 vi.mock('../../lib/utils/route-utils', () => ({
-  getBoardPath: (address?: string) => (address ? 'mu' : undefined),
+  getBoardPath: ({ address }: { address?: string }) => (address ? 'mu' : undefined),
 }));
 
 vi.mock('../../hooks/use-author-address-click', () => ({

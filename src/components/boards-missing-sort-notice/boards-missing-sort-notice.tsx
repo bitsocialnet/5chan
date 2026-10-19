@@ -14,7 +14,7 @@ const BoardsMissingSortNotice = ({ communityAddresses }: { communityAddresses: r
     return null;
   }
 
-  const boards = missingAddresses.map((address) => `/${getBoardPath(address, directories)}/`).join(', ');
+  const boards = missingAddresses.map((address) => `/${getBoardPath({ address: address, communities: directories })}/`).join(', ');
   return <div>{t('boards_without_bump_order', { boards, interpolation: { escapeValue: false } })}</div>;
 };
 

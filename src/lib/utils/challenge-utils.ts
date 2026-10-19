@@ -9,7 +9,7 @@ const resolveBoardIdentifier = (communityAddress: unknown): string => {
     return 'unknown board';
   }
 
-  const boardPath = getBoardPath(communityAddress, getFallbackDirectoriesData().communities);
+  const boardPath = getBoardPath({ address: communityAddress, communities: getFallbackDirectoriesData().communities });
   return boardPath === communityAddress ? communityAddress : `/${boardPath}/`;
 };
 

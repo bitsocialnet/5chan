@@ -85,21 +85,27 @@ const getAddressToDirectoryMap = (communities: DirectoryCommunity[]): Map<string
   return map;
 };
 
+export type BoardPathInput = {
+  /** Community address, or a directory code that a special board also answers to. */
+  address: string;
+  communities: DirectoryCommunity[];
+};
+
 /**
  * Convert community address to URL path (directory code if available, otherwise full address).
  * Uses findDirectoryByAddress for alias resolution (.bso/.eth) so music-posting.eth maps to mu.
  */
-export const getBoardPath = (communityAddress: string, communities: DirectoryCommunity[]): string => {
-  const specialBoard = getSpecialBoardByAddress(communityAddress) ?? getSpecialBoardByCode(communityAddress);
+export const getBoardPath = ({ address, communities }: BoardPathInput): string => {
+  const specialBoard = getSpecialBoardByAddress(address) ?? getSpecialBoardByCode(address);
   if (specialBoard) return specialBoard.directoryCode;
 
   const addressToDirectory = getAddressToDirectoryMap(communities);
-  let directory = addressToDirectory.get(communityAddress);
-  if (!directory) {
-    const entry = findDirectoryByAddress(communities, communityAddress);
+  let directory = addressToDirectory.get(address);
+  if (directory) {
+    const entry = findDirectoryByAddress(communities, address);
     directory = entry ? (getDirectoryCode(entry) ?? undefined) : undefined;
   }
-  return directory || communityAddress;
+  return directory || address;
 };
 
 /**

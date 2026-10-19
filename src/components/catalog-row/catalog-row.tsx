@@ -251,7 +251,7 @@ const CatalogPost = memo(
     const directories = useDirectories();
     const directoryEntry = findDirectoryByAddress(directories, communityAddress);
     const requirePostLinkIsMedia = directoryEntry?.features?.requirePostLinkIsMedia === true;
-    const boardPath = communityAddress ? getBoardPath(communityAddress, directories) : '';
+    const boardPath = communityAddress ? getBoardPath({ address: communityAddress, communities: directories }) : '';
     const postMenuProps = useMemo(() => selectPostMenuProps(resolvedPost), [resolvedPost]);
 
     const postLink = boardPath ? `/${boardPath}/thread/${cid}` : `/thread/${cid}`;

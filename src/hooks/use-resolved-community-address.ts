@@ -266,6 +266,6 @@ export const useBoardPath = (communityAddress: string | undefined): string | und
       return undefined;
     }
 
-    return getBoardPath(communityAddress, directories);
+    return getBoardPath({ address: communityAddress, communities: directories });
   }, [communityAddress, directories]);
 };

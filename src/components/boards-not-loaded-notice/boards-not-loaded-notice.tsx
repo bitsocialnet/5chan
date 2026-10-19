@@ -11,7 +11,7 @@ const BoardsNotLoadedNotice = ({ communityAddresses }: { communityAddresses: rea
     return null;
   }
 
-  const boards = communityAddresses.map((address) => `/${getBoardPath(address, directories)}/`).join(', ');
+  const boards = communityAddresses.map((address) => `/${getBoardPath({ address: address, communities: directories })}/`).join(', ');
   return <div>{t('boards_not_loaded', { boards, interpolation: { escapeValue: false } })}</div>;
 };
 

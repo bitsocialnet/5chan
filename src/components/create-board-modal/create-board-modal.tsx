@@ -77,7 +77,7 @@ const CreatedBoard = ({ address, startError }: CreatedBoardResult) => {
       {/* The app already applied (or the user declined) the 5chan defaults; without a defaults flag `board add` fails outside a TTY. */}
       <pre className={styles.command}>5chan board add {address} --skip-apply-defaults</pre>
       <p>
-        [<Link to={`/${getBoardPath(address, directories)}`}>{t('go_to_board')}</Link>]
+        [<Link to={`/${getBoardPath({ address: address, communities: directories })}`}>{t('go_to_board')}</Link>]
       </p>
     </div>
   );

@@ -34,7 +34,7 @@ export const useBoardSearch = (query: string, selectedProviderId: string | null)
     () =>
       searchBoards({ candidates: getVendoredDirectoryLists(), directories, indexed, specialBoards: SPECIAL_BOARDS, subscriptions }, query).map((board) => ({
         ...board,
-        boardPath: getBoardPath(board.address, directories),
+        boardPath: getBoardPath({ address: board.address, communities: directories }),
       })),
     [directories, indexed, query, subscriptions],
   );

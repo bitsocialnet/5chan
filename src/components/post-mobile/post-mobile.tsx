@@ -94,7 +94,7 @@ const PostInfoAndMedia = ({
     resolvedPost || {};
   const archived = isCommentArchived(resolvedPost);
   const purged = resolvedPost?.commentModeration?.purged;
-  const boardPath = communityAddress ? getBoardPath(communityAddress, directories) : undefined;
+  const boardPath = communityAddress ? getBoardPath({ address: communityAddress, communities: directories }) : undefined;
   const directoryEntry = useDirectoryEntry(communityAddress);
   const showAuthorFlags = hasCommentFlagsForDirectory(directoryEntry) && !(deleted || removed || purged);
   const displayBoardPath =
@@ -491,7 +491,7 @@ const Reply = ({
   const userID = getCommentUserID(post);
   const purged = post?.commentModeration?.purged;
   const directories = useDirectories();
-  const boardPath = communityAddress ? getBoardPath(communityAddress, directories) : undefined;
+  const boardPath = communityAddress ? getBoardPath({ address: communityAddress, communities: directories }) : undefined;
   const location = useLocation();
   const route = boardPath ? `/${boardPath}/thread/${cid}` : `/thread/${cid}`;
   const isRouteLinkToReply = cid ? location.pathname.startsWith(route) : false;
@@ -560,7 +560,7 @@ const PostMobile = ({
   const directories = useDirectories();
   const directoryEntry = findDirectoryByAddress(directories, communityAddress);
   const requirePostLinkIsMedia = directoryEntry?.features?.requirePostLinkIsMedia === true;
-  const boardPath = communityAddress ? getBoardPath(communityAddress, directories) : undefined;
+  const boardPath = communityAddress ? getBoardPath({ address: communityAddress, communities: directories }) : undefined;
   const prefetchThread = usePrefetchIntent({ commentCid: cid, communityAddress });
   const modQueueThreadRoute = getModQueueCommentRoute(boardPath, resolvedPost?.cid);
   const modQueueThreadRouteState = getQueuedCommentRouteState(resolvedPost);

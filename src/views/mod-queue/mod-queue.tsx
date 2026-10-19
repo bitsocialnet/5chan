@@ -937,7 +937,8 @@ const ModQueueContent = memo(
                   {filteredFeed.map((comment, index) => {
                     const commentCommunityAddress = getCommentCommunityAddress(comment);
                     const path =
-                      addressToPathMap.get(commentCommunityAddress || '') ?? (commentCommunityAddress ? getBoardPath(commentCommunityAddress, directories) : undefined);
+                      addressToPathMap.get(commentCommunityAddress || '') ??
+                      (commentCommunityAddress ? getBoardPath({ address: commentCommunityAddress, communities: directories }) : undefined);
                     return (
                       <ModQueueRow
                         key={comment.cid}
@@ -981,7 +982,8 @@ const ModQueueContent = memo(
                   {filteredFeed.map((comment) => {
                     const commentCommunityAddress = getCommentCommunityAddress(comment);
                     const path =
-                      addressToPathMap.get(commentCommunityAddress || '') ?? (commentCommunityAddress ? getBoardPath(commentCommunityAddress, directories) : undefined);
+                      addressToPathMap.get(commentCommunityAddress || '') ??
+                      (commentCommunityAddress ? getBoardPath({ address: commentCommunityAddress, communities: directories }) : undefined);
                     return (
                       <ModQueueCard
                         key={comment.cid}
@@ -1136,7 +1138,7 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
   const addressToPathMap = useMemo(() => {
     const map = new Map<string, string>();
     for (const addr of communityAddresses) {
-      map.set(addr, getBoardPath(addr, directories));
+      map.set(addr, getBoardPath({ address: communityAddresses[0], communities: directories }));
     }
     return map;
   }, [communityAddresses, directories]);
@@ -1145,7 +1147,9 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
   const compactRowItemContent = useCallback(
     (index: number, comment: Comment) => {
       const commentCommunityAddress = getCommentCommunityAddress(comment);
-      const path = addressToPathMap.get(commentCommunityAddress || '') ?? (commentCommunityAddress ? getBoardPath(commentCommunityAddress, directories) : undefined);
+      const path =
+        addressToPathMap.get(commentCommunityAddress || '') ??
+        (commentCommunityAddress ? getBoardPath({ address: commentCommunityAddress, communities: directories }) : undefined);
       return (
         <ModQueueRow
           key={comment.cid}
@@ -1163,7 +1167,9 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
   const compactCardItemContent = useCallback(
     (_index: number, comment: Comment) => {
       const commentCommunityAddress = getCommentCommunityAddress(comment);
-      const path = addressToPathMap.get(commentCommunityAddress || '') ?? (commentCommunityAddress ? getBoardPath(commentCommunityAddress, directories) : undefined);
+      const path =
+        addressToPathMap.get(commentCommunityAddress || '') ??
+        (commentCommunityAddress ? getBoardPath({ address: commentCommunityAddress, communities: directories }) : undefined);
       return (
         <ModQueueCard
           key={comment.cid}

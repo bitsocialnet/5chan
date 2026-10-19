@@ -167,7 +167,7 @@ const DesktopQuotePreview = ({
   const handleClick = (e: React.MouseEvent, cid: string | undefined, communityAddress: string | undefined, isOpQuote = false) => {
     e.preventDefault();
     if (cid && communityAddress) {
-      const boardPath = getBoardPath(communityAddress, directories);
+      const boardPath = getBoardPath({ address: communityAddress, communities: directories });
       const threadRoute = `/${boardPath}/thread/${cid}`;
       if (isOpQuote) {
         if (isOnThreadPage && scrollThreadContainerToTop(cid)) return;
@@ -199,7 +199,7 @@ const DesktopQuotePreview = ({
   };
 
   const backlinkCommunityAddress = getCommentCommunityAddress(normalizedBacklinkReply);
-  const backlinkBoardPath = backlinkCommunityAddress ? getBoardPath(backlinkCommunityAddress, directories) : undefined;
+  const backlinkBoardPath = backlinkCommunityAddress ? getBoardPath({ address: backlinkCommunityAddress, communities: directories }) : undefined;
   const backlinkRoute = normalizedBacklinkReply?.cid
     ? backlinkBoardPath
       ? `/${backlinkBoardPath}/thread/${normalizedBacklinkReply.cid}`
@@ -236,7 +236,7 @@ const DesktopQuotePreview = ({
   const quotelinkUnavailable = Boolean(isQuotelinkUnavailable || quoteTargetAvailability === 'unavailable');
   const quotelinkPendingResolution = !quotelinkUnavailable && quoteTargetAvailability === 'unresolved';
   const quotelinkClassName = quotelinkUnavailable ? `${styles.quoteLink} ${styles.quoteLinkUnavailable}` : styles.quoteLink;
-  const quotelinkBoardPath = resolvedQuotelinkCommunityAddress ? getBoardPath(resolvedQuotelinkCommunityAddress, directories) : undefined;
+  const quotelinkBoardPath = resolvedQuotelinkCommunityAddress ? getBoardPath({ address: resolvedQuotelinkCommunityAddress, communities: directories }) : undefined;
   const quotelinkRoute = normalizedQuotelinkReply?.cid
     ? quotelinkBoardPath
       ? `/${quotelinkBoardPath}/thread/${normalizedQuotelinkReply.cid}`
@@ -343,7 +343,7 @@ const MobileQuotePreview = ({
   const handleClick = (e: React.MouseEvent, cid: string | undefined, communityAddress: string | undefined, isOpQuote = false) => {
     e.preventDefault();
     if (cid && communityAddress) {
-      const boardPath = getBoardPath(communityAddress, directories);
+      const boardPath = getBoardPath({ address: communityAddress, communities: directories });
       const threadRoute = `/${boardPath}/thread/${cid}`;
       if (isOpQuote) {
         if (isOnThreadPage && scrollThreadContainerToTop(cid)) return;
@@ -388,7 +388,7 @@ const MobileQuotePreview = ({
       {normalizedBacklinkReply?.number &&
         (() => {
           const backlinkCommunityAddress = getCommentCommunityAddress(normalizedBacklinkReply);
-          const backlinkBoardPath = backlinkCommunityAddress ? getBoardPath(backlinkCommunityAddress, directories) : undefined;
+          const backlinkBoardPath = backlinkCommunityAddress ? getBoardPath({ address: backlinkCommunityAddress, communities: directories }) : undefined;
           const backlinkRoute = normalizedBacklinkReply?.cid
             ? backlinkBoardPath
               ? `/${backlinkBoardPath}/thread/${normalizedBacklinkReply.cid}`
@@ -455,7 +455,9 @@ const MobileQuotePreview = ({
         !quotelinkPendingResolution &&
         resolvedQuotelinkNumber &&
         (() => {
-          const quotelinkBoardPath = resolvedQuotelinkCommunityAddress ? getBoardPath(resolvedQuotelinkCommunityAddress, directories) : undefined;
+          const quotelinkBoardPath = resolvedQuotelinkCommunityAddress
+            ? getBoardPath({ address: resolvedQuotelinkCommunityAddress, communities: directories })
+            : undefined;
           const quotelinkRoute = resolvedQuotelinkCid
             ? quotelinkBoardPath
               ? `/${quotelinkBoardPath}/thread/${resolvedQuotelinkCid}`
