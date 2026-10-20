@@ -175,6 +175,68 @@ describe('usePopularPosts', () => {
     expect(latestValue.popularPosts.map((post) => post.cid)).toEqual([`${addresses[0]}-only`]);
   });
 
+  it('waits for boards still loading instead of revealing the first eight boards to arrive', async () => {
+    const addresses = Array.from({ length: 12 }, (_, index) => `board-${index}.eth`);
+    testState.loadingTimestamps = addresses.map(() => 1_704_067_195);
+    const quietCommunities = addresses.slice(0, 8).map((address, index) => createCommunity(address, [createPost(address, 'quiet', 8 - index)]));
+
+    await renderHook(addresses, [...quietCommunities, undefined, undefined, undefined, undefined]);
+
+    expect(latestValue.isLoading).toBe(true);
+
+    const busyCommunities = addresses.slice(8).map((address, index) => createCommunity(address, [createPost(address, 'busy', 100 - index)]));
+    const keepRankingRandom = mockRandomSequence([0.999_999]);
+    await renderHook(addresses, [...quietCommunities, ...busyCommunities]);
+
+    expect(latestValue.isLoading).toBe(false);
+    expect(latestValue.popularPosts.slice(0, 4).map((post) => post.cid)).toEqual(addresses.slice(8).map((address) => `${address}-busy`));
+
+    keepRankingRandom.mockRestore();
+  });
+
+  it('samples only from the most popular boards, ordered by popularity', async () => {
+    const addresses = Array.from({ length: 20 }, (_, index) => `board-${index}.eth`);
+    const communities = addresses.map((address, index) => createCommunity(address, [createPost(address, 'top', 40 - index)]));
+    const random = mockRandomSequence([0.3, 0.9, 0.1, 0.7, 0.5, 0.2, 0.8, 0.4, 0.6, 0, 0.99, 0.35, 0.65, 0.15, 0.85]);
+
+    await renderHook(addresses, communities);
+
+    const replyCounts = latestValue.popularPosts.map((post) => post.replyCount as number);
+    expect(latestValue.isLoading).toBe(false);
+    expect(replyCounts).toHaveLength(8);
+    expect(Math.min(...replyCounts)).toBeGreaterThan(40 - 16);
+    expect(replyCounts).toEqual([...replyCounts].sort((a, b) => b - a));
+
+    random.mockRestore();
+  });
+
+  it('stops waiting for a slow board once the box can be filled', async () => {
+    const addresses = Array.from({ length: 9 }, (_, index) => `board-${index}.eth`);
+    const loadedCommunities = addresses.slice(0, 8).map((address, index) => createCommunity(address, [createPost(address, 'top', 20 - index)]));
+    testState.loadingTimestamps = addresses.map(() => 1_704_067_195);
+
+    await renderHook(addresses, [...loadedCommunities, undefined]);
+
+    expect(latestValue.isLoading).toBe(true);
+
+    testState.currentTime = 1_704_067_203;
+    await renderHook(addresses, [...loadedCommunities, undefined]);
+
+    expect(latestValue.isLoading).toBe(false);
+    expect(latestValue.popularPosts).toHaveLength(8);
+  });
+
+  it('takes one thread from a board listed twice', async () => {
+    const addresses = ['board-0.eth', 'board-0.eth', 'board-1.eth'];
+    const repeatedCommunity = createCommunity(addresses[0], [createPost(addresses[0], 'top', 20), createPost(addresses[0], 'backup', 10)]);
+    testState.loadingTimestamps = addresses.map(() => 1_704_067_180);
+
+    await renderHook(addresses, [repeatedCommunity, repeatedCommunity, createCommunity(addresses[2], [createPost(addresses[2], 'top', 5)])]);
+
+    expect(latestValue.isLoading).toBe(false);
+    expect(latestValue.popularPosts.map((post) => post.cid)).toEqual(['board-0.eth-top', 'board-1.eth-top']);
+  });
+
   it('keeps loading forever when no board ever produces a thread', async () => {
     const addresses = ['board-0.eth'];
     testState.currentTime = 1_704_067_240;
