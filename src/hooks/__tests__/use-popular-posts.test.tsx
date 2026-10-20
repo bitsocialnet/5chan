@@ -237,6 +237,17 @@ describe('usePopularPosts', () => {
     expect(latestValue.popularPosts.map((post) => post.cid)).toEqual(['board-0.eth-top', 'board-1.eth-top']);
   });
 
+  it('reads threads from whichever page a board preloads', async () => {
+    const addresses = ['board-0.eth'];
+    testState.loadingTimestamps = [1_704_067_180];
+    const post = createPost(addresses[0], 'active-top', 9);
+
+    await renderHook(addresses, [{ address: addresses[0], updatedAt: 1_704_067_150, posts: { pages: { active: { comments: [post] } } } }]);
+
+    expect(latestValue.isLoading).toBe(false);
+    expect(latestValue.popularPosts.map((popularPost) => popularPost.cid)).toEqual(['board-0.eth-active-top']);
+  });
+
   it('keeps loading forever when no board ever produces a thread', async () => {
     const addresses = ['board-0.eth'];
     testState.currentTime = 1_704_067_240;
