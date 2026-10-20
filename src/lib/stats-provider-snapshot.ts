@@ -5,6 +5,9 @@ import { isBoardAddressShape } from './utils/directory-list-lookup-utils';
 
 // A provider is only worth waiting for while it is faster than loading the boards over P2P.
 const PROVIDER_TIMEOUT_MS = 5_000;
+// Providers rewrite their snapshot every minute or so; an older one means the provider stopped
+// following the boards, and the boxes load them over P2P instead.
+const MAX_SNAPSHOT_AGE_SECONDS = 60 * 60;
 const BOARDS_PATH = 'api/v1/5chan/boards';
 
 export type ProviderBoardStats = {
@@ -87,6 +90,7 @@ const fetchSnapshot = async (provider: StatsProvider): Promise<StatsProviderSnap
 
   const snapshot = parseStatsProviderSnapshot(await response.json(), provider.id);
   if (!snapshot) throw new Error('Stats provider returned an invalid response');
+  if (Date.now() / 1000 - snapshot.generatedAt > MAX_SNAPSHOT_AGE_SECONDS) throw new Error('Stats provider returned an outdated snapshot');
   return snapshot;
 };
 
@@ -111,20 +115,34 @@ export const getStatsProviderSnapshot = (): Promise<StatsProviderSnapshot | null
   return snapshotRequest;
 };
 
-/** Renders a provider thread with the regular post components, like a page comment from the board. */
+const firstBoolean = (...values: unknown[]): boolean | undefined => values.find((value): value is boolean => typeof value === 'boolean');
+
+/**
+ * Renders a provider thread with the regular post components. The update's signed edit is applied
+ * the way pkc-js builds a board's page comments, so an edited or author-deleted thread reads the
+ * same as over P2P.
+ */
 const toProviderComment = (boardAddress: string, thread: ProviderThreadPayload): Comment => {
-  const update = { ...thread.raw.commentUpdate };
+  const { comment, commentUpdate } = thread.raw;
+  const update = { ...commentUpdate };
   // Nested reply pages are large and the home page never renders them.
   delete update.replies;
+  const edit = isRecord(commentUpdate.edit) ? commentUpdate.edit : undefined;
 
   return {
-    ...thread.raw.comment,
+    ...comment,
     ...update,
+    author: { ...(isRecord(comment.author) ? comment.author : {}), ...(isRecord(commentUpdate.author) ? commentUpdate.author : {}) },
     cid: thread.cid,
     communityAddress: boardAddress,
-    depth: 0,
+    content: edit?.content || comment.content,
+    deleted: edit?.deleted,
+    flairs: commentUpdate.flairs || edit?.flairs || comment.flairs,
+    nsfw: firstBoolean(commentUpdate.nsfw, edit?.nsfw) ?? comment.nsfw,
     postCid: thread.cid,
     raw: thread.raw,
+    signature: comment.signature,
+    spoiler: firstBoolean(commentUpdate.spoiler, edit?.spoiler) ?? comment.spoiler,
     state: 'succeeded',
   } as Comment;
 };

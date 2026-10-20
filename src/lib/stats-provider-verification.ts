@@ -8,6 +8,8 @@ import type { ProviderThreadVerifier } from './stats-provider-snapshot';
  * from its address fails here, and the box falls back to P2P when no thread passes.
  */
 export const verifyProviderThread: ProviderThreadVerifier = async (thread, board) => {
+  // Only a board's threads can be popular threads, never a reply.
+  if (thread.raw.comment.depth !== 0) return false;
   if (!board.publicKey || thread.raw.comment.communityPublicKey !== board.publicKey) return false;
   // The community's signature still covers the preloaded reply pages; the box never shows them.
   const result = await validateComment(thread, { validateReplies: false });

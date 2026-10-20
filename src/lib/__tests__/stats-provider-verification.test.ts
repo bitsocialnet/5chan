@@ -9,7 +9,7 @@ vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
 const thread = {
   cid: 'thread-cid',
   raw: {
-    comment: { communityPublicKey: 'board-key', content: 'content' },
+    comment: { communityPublicKey: 'board-key', content: 'content', depth: 0 },
     commentUpdate: { cid: 'thread-cid', replyCount: 3 },
   },
 };
@@ -30,6 +30,13 @@ describe('verifyProviderThread', () => {
     vi.mocked(validateComment).mockResolvedValue({ valid: false, reason: 'comment.raw.comment hashes to another cid' });
 
     await expect(verifyProviderThread(thread, { address: 'board.bso', publicKey: 'board-key' })).resolves.toBe(false);
+  });
+
+  it('rejects a reply listed as a thread without validating it', async () => {
+    const reply = { ...thread, raw: { ...thread.raw, comment: { ...thread.raw.comment, depth: 1 } } };
+
+    await expect(verifyProviderThread(reply, { address: 'board.bso', publicKey: 'board-key' })).resolves.toBe(false);
+    expect(validateComment).not.toHaveBeenCalled();
   });
 
   it('rejects a thread listed under a board it does not belong to without validating it', async () => {
