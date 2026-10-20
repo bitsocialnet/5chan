@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Comment, type Community } from '@bitsocial/bitsocial-react-hooks';
+import { Comment, getPreloadedPostSortType, type Community } from '@bitsocial/bitsocial-react-hooks';
 import { getCommentMediaInfo, getHasThumbnail } from '../lib/utils/media-utils';
 import useCommunitiesLoadingStartTimestamps from '../stores/use-communities-loading-start-timestamps-store';
 import { useCurrentTime } from './use-current-time';
@@ -80,7 +80,10 @@ function getBoardTopThreads(communities: Array<Community | undefined>, community
   // it is the same board either way and must contribute only one thread.
   const seenAddresses = new Set<string>();
   const rankedBoardThreads = communityAddresses.flatMap((boardAddress, index) => {
-    const comments = communities[index]?.posts?.pages?.hot?.comments;
+    // A board preloads one page of threads under whichever sort it chooses, not always hot.
+    const community = communities[index];
+    const preloadedSortType = getPreloadedPostSortType(community);
+    const comments = preloadedSortType ? community?.posts?.pages?.[preloadedSortType]?.comments : undefined;
     if (!boardAddress || !comments || seenAddresses.has(boardAddress)) {
       return [];
     }
