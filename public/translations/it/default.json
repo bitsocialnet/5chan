@@ -581,5 +581,10 @@
   "boards_without_bump_order": "Non mostrate perché non pubblicano un ordine di bump: {{boards}}",
   "last_reply": "Ultima risposta",
   "boards_not_loaded": "Non mostrate perché non si sono caricate in tempo: {{boards}}",
-  "loading_boards_to_sort": "Caricamento di tutte le bacheche prima dell'ordinamento: {{loaded}} di {{total}}"
+  "loading_boards_to_sort": "Caricamento di tutte le bacheche prima dell'ordinamento: {{loaded}} di {{total}}",
+  "stats_providers": "Provider di Statistiche",
+  "stats_providers_tip": "Caricano i thread popolari e le statistiche della pagina iniziale con una sola richiesta invece che da ogni board. I thread vengono verificati tramite le loro firme; i conteggi di post e utenti sono quelli riportati dal provider.",
+  "use_pure_p2p_stats": "Usa invece il P2P puro (lento)",
+  "pure_p2p_stats_tip": "Le statistiche in P2P puro restano sempre la soluzione di riserva se i provider di statistiche smettono di funzionare.",
+  "stats_reported_by": "Riportate da {{provider}}"
 }

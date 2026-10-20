@@ -581,5 +581,10 @@
   "boards_without_bump_order": "Vises ikke fordi de ikke publiserer en bump-rekkefølge: {{boards}}",
   "last_reply": "Siste svar",
   "boards_not_loaded": "Vises ikke fordi de ikke ble lastet inn i tide: {{boards}}",
-  "loading_boards_to_sort": "Laster inn alle tavler før sortering: {{loaded}} av {{total}}"
+  "loading_boards_to_sort": "Laster inn alle tavler før sortering: {{loaded}} av {{total}}",
+  "stats_providers": "Statistikkleverandører",
+  "stats_providers_tip": "De laster forsidens populære tråder og statistikk i én forespørsel i stedet for fra hvert board. Tråder kontrolleres mot signaturene sine; antall innlegg og brukere er slik leverandøren oppgir dem.",
+  "use_pure_p2p_stats": "Bruk ren P2P i stedet (tregt)",
+  "pure_p2p_stats_tip": "Ren P2P-statistikk er alltid reserveløsningen hvis statistikkleverandørene går ned.",
+  "stats_reported_by": "Rapportert av {{provider}}"
 }

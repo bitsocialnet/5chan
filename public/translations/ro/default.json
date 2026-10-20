@@ -581,5 +581,10 @@
   "boards_without_bump_order": "Nu sunt afișate deoarece nu publică o ordine bump: {{boards}}",
   "last_reply": "Ultimul răspuns",
   "boards_not_loaded": "Nu sunt afișate deoarece nu s-au încărcat la timp: {{boards}}",
-  "loading_boards_to_sort": "Se încarcă toate panourile înainte de sortare: {{loaded}} din {{total}}"
+  "loading_boards_to_sort": "Se încarcă toate panourile înainte de sortare: {{loaded}} din {{total}}",
+  "stats_providers": "Furnizori de Statistici",
+  "stats_providers_tip": "Aceștia încarcă threadurile populare și statisticile paginii principale într-o singură cerere, în loc să le preia de la fiecare board. Threadurile sunt verificate pe baza semnăturilor lor; numărul de postări și de utilizatori este cel raportat de furnizor.",
+  "use_pure_p2p_stats": "Folosește în schimb P2P pur (lent)",
+  "pure_p2p_stats_tip": "Statisticile prin P2P pur rămân mereu varianta de rezervă în cazul în care furnizorii de statistici nu mai funcționează.",
+  "stats_reported_by": "Raportate de {{provider}}"
 }

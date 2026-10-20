@@ -581,5 +581,10 @@
   "boards_without_bump_order": "バンプ順を公開していないため表示されません: {{boards}}",
   "last_reply": "最終返信",
   "boards_not_loaded": "時間内に読み込まれなかったため表示されません: {{boards}}",
-  "loading_boards_to_sort": "並べ替えの前にすべてのボードを読み込んでいます: {{loaded}} / {{total}}"
+  "loading_boards_to_sort": "並べ替えの前にすべてのボードを読み込んでいます: {{loaded}} / {{total}}",
+  "stats_providers": "統計プロバイダー",
+  "stats_providers_tip": "ホームページの人気のあるスレッドと統計を、各掲示板からではなく1回のリクエストで読み込みます。スレッドは署名で検証されますが、投稿数とユーザー数はプロバイダーが報告したとおりの値です。",
+  "use_pure_p2p_stats": "代わりに純粋なP2Pを使用（低速）",
+  "pure_p2p_stats_tip": "統計プロバイダーが停止した場合は、常に純粋なP2Pによる統計がフォールバックとして使われます。",
+  "stats_reported_by": "報告元: {{provider}}"
 }

@@ -581,5 +581,10 @@
   "boards_without_bump_order": "Nie pokazano, ponieważ nie publikują kolejności bump: {{boards}}",
   "last_reply": "Ostatnia odpowiedź",
   "boards_not_loaded": "Nie pokazano, ponieważ nie wczytały się na czas: {{boards}}",
-  "loading_boards_to_sort": "Wczytywanie wszystkich tablic przed sortowaniem: {{loaded}} z {{total}}"
+  "loading_boards_to_sort": "Wczytywanie wszystkich tablic przed sortowaniem: {{loaded}} z {{total}}",
+  "stats_providers": "Dostawcy statystyk",
+  "stats_providers_tip": "Wczytują popularne wątki i statystyki strony głównej jednym żądaniem zamiast z każdego boardu osobno. Wątki są weryfikowane na podstawie ich podpisów; liczby postów i użytkowników są takie, jakie podaje dostawca.",
+  "use_pure_p2p_stats": "Użyj zamiast tego czystego P2P (wolno)",
+  "pure_p2p_stats_tip": "Statystyki z czystego P2P są zawsze rozwiązaniem zapasowym na wypadek awarii dostawców statystyk.",
+  "stats_reported_by": "Podane przez {{provider}}"
 }

@@ -581,5 +581,10 @@
   "boards_without_bump_order": "Tidak ditampilkan karena tidak menerbitkan urutan bump: {{boards}}",
   "last_reply": "Balasan terakhir",
   "boards_not_loaded": "Tidak ditampilkan karena tidak termuat tepat waktu: {{boards}}",
-  "loading_boards_to_sort": "Memuat semua papan sebelum mengurutkan: {{loaded}} dari {{total}}"
+  "loading_boards_to_sort": "Memuat semua papan sebelum mengurutkan: {{loaded}} dari {{total}}",
+  "stats_providers": "Penyedia Statistik",
+  "stats_providers_tip": "Penyedia ini memuat thread populer dan statistik beranda dalam satu permintaan, alih-alih dari setiap board. Thread diperiksa berdasarkan tanda tangannya; jumlah posting dan pengguna sesuai dengan yang dilaporkan penyedia.",
+  "use_pure_p2p_stats": "Gunakan P2P murni saja (lambat)",
+  "pure_p2p_stats_tip": "Statistik P2P murni selalu menjadi cadangan jika penyedia statistik sedang tidak berfungsi.",
+  "stats_reported_by": "Dilaporkan oleh {{provider}}"
 }

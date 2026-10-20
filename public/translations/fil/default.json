@@ -581,5 +581,10 @@
   "boards_without_bump_order": "Hindi ipinapakita dahil hindi sila naglalathala ng bump order: {{boards}}",
   "last_reply": "Huling sagot",
   "boards_not_loaded": "Hindi ipinapakita dahil hindi sila nag-load sa oras: {{boards}}",
-  "loading_boards_to_sort": "Nilo-load ang bawat board bago mag-sort: {{loaded}} sa {{total}}"
+  "loading_boards_to_sort": "Nilo-load ang bawat board bago mag-sort: {{loaded}} sa {{total}}",
+  "stats_providers": "Mga Provider ng Estadistika",
+  "stats_providers_tip": "Nilo-load nila ang mga popular na thread at estadistika ng homepage sa isang request sa halip na mula sa bawat board. Sinusuri ang mga thread batay sa kanilang mga lagda; ang bilang ng mga post at user ay ayon sa iniuulat ng provider.",
+  "use_pure_p2p_stats": "Gumamit na lang ng purong P2P (mabagal)",
+  "pure_p2p_stats_tip": "Ang purong P2P na estadistika ay laging fallback kung sakaling mag-down ang mga provider ng estadistika.",
+  "stats_reported_by": "Iniulat ng {{provider}}"
 }

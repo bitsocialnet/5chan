@@ -581,5 +581,10 @@
   "boards_without_bump_order": "未显示，因为这些版块不发布顶贴顺序：{{boards}}",
   "last_reply": "最后回复",
   "boards_not_loaded": "未显示，因为这些板块未能及时加载：{{boards}}",
-  "loading_boards_to_sort": "排序前正在加载所有板块：{{loaded}} / {{total}}"
+  "loading_boards_to_sort": "排序前正在加载所有板块：{{loaded}} / {{total}}",
+  "stats_providers": "统计提供商",
+  "stats_providers_tip": "它们通过一次请求加载首页的热门主题和统计，而不是逐个从每个板块加载。主题会根据其签名进行验证；帖子数和用户数则以提供商报告的为准。",
+  "use_pure_p2p_stats": "改用纯 P2P（较慢）",
+  "pure_p2p_stats_tip": "如果统计提供商宕机，始终会回退到纯 P2P 统计。",
+  "stats_reported_by": "由 {{provider}} 报告"
 }

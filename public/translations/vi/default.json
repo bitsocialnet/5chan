@@ -581,5 +581,10 @@
   "boards_without_bump_order": "Không hiển thị vì không công bố thứ tự bump: {{boards}}",
   "last_reply": "Trả lời cuối cùng",
   "boards_not_loaded": "Không hiển thị vì không tải kịp: {{boards}}",
-  "loading_boards_to_sort": "Đang tải mọi bảng trước khi sắp xếp: {{loaded}} trên {{total}}"
+  "loading_boards_to_sort": "Đang tải mọi bảng trước khi sắp xếp: {{loaded}} trên {{total}}",
+  "stats_providers": "Nhà cung cấp Thống kê",
+  "stats_providers_tip": "Các nhà cung cấp này tải chủ đề phổ biến và thống kê của trang chủ trong một yêu cầu duy nhất thay vì tải từ từng bảng. Chủ đề được kiểm tra theo chữ ký của chúng; số bài viết và người dùng là số liệu do nhà cung cấp báo cáo.",
+  "use_pure_p2p_stats": "Dùng P2P thuần túy thay thế (chậm)",
+  "pure_p2p_stats_tip": "Thống kê P2P thuần túy luôn là phương án dự phòng khi các nhà cung cấp thống kê ngừng hoạt động.",
+  "stats_reported_by": "Do {{provider}} báo cáo"
 }

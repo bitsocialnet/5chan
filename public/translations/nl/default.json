@@ -581,5 +581,10 @@
   "boards_without_bump_order": "Niet getoond omdat ze geen bump-volgorde publiceren: {{boards}}",
   "last_reply": "Laatste reactie",
   "boards_not_loaded": "Niet getoond omdat ze niet op tijd zijn geladen: {{boards}}",
-  "loading_boards_to_sort": "Alle borden laden voor het sorteren: {{loaded}} van {{total}}"
+  "loading_boards_to_sort": "Alle borden laden voor het sorteren: {{loaded}} van {{total}}",
+  "stats_providers": "Statistiekproviders",
+  "stats_providers_tip": "Ze laden de populaire threads en statistieken van de startpagina in één verzoek in plaats van via elk board. Threads worden gecontroleerd aan de hand van hun handtekeningen; aantallen berichten en gebruikers zijn zoals de provider ze opgeeft.",
+  "use_pure_p2p_stats": "In plaats daarvan puur P2P gebruiken (traag)",
+  "pure_p2p_stats_tip": "Pure P2P-statistieken zijn altijd de terugvaloptie als statistiekproviders uitvallen.",
+  "stats_reported_by": "Gemeld door {{provider}}"
 }

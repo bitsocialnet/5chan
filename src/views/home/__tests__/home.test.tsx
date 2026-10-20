@@ -5,6 +5,8 @@ import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useFeedStateString } from '../../../hooks/use-state-string';
 import useHomepageIntroductionStore from '../../../stores/use-homepage-introduction-store';
+import useStatsProvidersStore from '../../../stores/use-stats-providers-store';
+import { getStatsProviderSnapshot } from '../../../lib/stats-provider-snapshot';
 import Home from '../home';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -22,6 +24,14 @@ const testState = vi.hoisted(() => ({
   communities: {} as Record<string, unknown>,
   communityStats: {} as Record<string, { allPostCount?: number; allReplyCount?: number; weekActiveUserCount?: number; state?: string }>,
   feedStateString: 'Downloading boards',
+  providerSnapshot: null as unknown,
+}));
+
+// React reads a promise marked fulfilled synchronously, so the first render does not suspend.
+const fulfilled = <T,>(value: T) => Object.assign(Promise.resolve(value), { status: 'fulfilled', value });
+
+vi.mock('../../../lib/stats-provider-snapshot', () => ({
+  getStatsProviderSnapshot: vi.fn(() => fulfilled(testState.providerSnapshot)),
 }));
 
 vi.mock('react-i18next', () => ({
@@ -145,6 +155,8 @@ describe('Home', () => {
       'tech-posting.eth': { allPostCount: 7, allReplyCount: 4, weekActiveUserCount: 5 },
     };
     testState.feedStateString = 'Downloading boards';
+    testState.providerSnapshot = null;
+    useStatsProvidersStore.setState({ usePureP2PStats: false });
     testState.statsScope = 'directory';
     testState.setStatsScopeMock.mockImplementation((value: 'directory' | 'all') => {
       testState.statsScope = value;
@@ -319,6 +331,45 @@ describe('Home', () => {
     });
 
     expect(testState.setStatsScopeMock).toHaveBeenCalledWith('all');
+  });
+
+  it('shows provider-reported stats without collecting them over P2P', () => {
+    testState.providerSnapshot = {
+      boards: new Map([
+        ['music-posting.eth', { stats: { allPostCount: 10, allReplyCount: 20, weekActiveUserCount: 3 }, threads: [] }],
+        ['tech-posting.eth', { stats: null, threads: [] }],
+        ['unlisted.eth', { stats: { allPostCount: 99, allReplyCount: 0, weekActiveUserCount: 9 }, threads: [] }],
+      ]),
+      generatedAt: 1,
+      providerId: 'stats-bitsocial-net',
+    };
+
+    renderHome();
+
+    expect(container.textContent).toContain('total_posts 30');
+    expect(container.textContent).toContain('current_users 3');
+    expect(container.textContent).toContain('boards_loaded 1');
+    expect(container.querySelector('.yellowOfflineIcon')).toBeNull();
+    expect(container.querySelector('[data-testid="stats-metadata-loader"]')).toBeNull();
+    expect(container.querySelectorAll('[data-testid="stats-collector"]')).toHaveLength(0);
+    expect(container.querySelector('h2[title="stats_reported_by"]')).not.toBeNull();
+  });
+
+  it('collects stats over P2P when the provider reports none for these boards', () => {
+    testState.providerSnapshot = { boards: new Map(), generatedAt: 1, providerId: 'stats-bitsocial-net' };
+
+    renderHome();
+
+    expect(container.querySelectorAll('[data-testid="stats-collector"]')).toHaveLength(2);
+  });
+
+  it('does not contact a stats provider in pure P2P mode', () => {
+    useStatsProvidersStore.setState({ usePureP2PStats: true });
+
+    renderHome();
+
+    expect(vi.mocked(getStatsProviderSnapshot)).not.toHaveBeenCalled();
+    expect(container.querySelectorAll('[data-testid="stats-collector"]')).toHaveLength(2);
   });
 
   it('searches a board address instead of opening the board, so the results page can list it', async () => {

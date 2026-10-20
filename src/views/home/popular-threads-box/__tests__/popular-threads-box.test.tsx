@@ -4,6 +4,9 @@ import { createRoot, type Root } from 'react-dom/client';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useFeedStateString } from '../../../../hooks/use-state-string';
+import usePopularPosts from '../../../../hooks/use-popular-posts';
+import { getProviderPopularPosts, getStatsProviderSnapshot } from '../../../../lib/stats-provider-snapshot';
+import useStatsProvidersStore from '../../../../stores/use-stats-providers-store';
 import PopularThreadsBox from '../popular-threads-box';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -33,6 +36,21 @@ const testState = vi.hoisted(() => ({
     thumbnailUrl: string;
     title: string;
   }>,
+  providerPopularPosts: [] as unknown[],
+  providerSnapshot: null as unknown,
+  account: { id: 'account' } as unknown,
+}));
+
+// React reads a promise marked fulfilled synchronously, so the first render does not suspend.
+const fulfilled = <T,>(value: T) => Object.assign(Promise.resolve(value), { status: 'fulfilled', value });
+
+vi.mock('../../../../lib/stats-provider-snapshot', () => ({
+  getStatsProviderSnapshot: vi.fn(() => fulfilled(testState.providerSnapshot)),
+  getProviderPopularPosts: vi.fn(() => fulfilled(testState.providerPopularPosts)),
+}));
+
+vi.mock('../../../../lib/stats-provider-verification', () => ({
+  verifyProviderThread: vi.fn(),
 }));
 
 vi.mock('react-i18next', () => ({
@@ -42,6 +60,7 @@ vi.mock('react-i18next', () => ({
 }));
 
 vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
+  useAccount: () => testState.account,
   useCommunities: ({ communities }: { communities: unknown[] }) => {
     testState.requestedCommunities.push(communities);
     return { communities: testState.communities };
@@ -51,7 +70,7 @@ vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
 vi.mock('../../../../hooks/use-community-identifiers', () => ({
   useCommunityIdentifiers: (addresses?: string[]) => {
     testState.requestedCommunityIdentifiers.push(addresses || []);
-    return addresses || [];
+    return (addresses || []).map((address) => ({ name: address, publicKey: `${address}-key` }));
   },
 }));
 
@@ -100,6 +119,10 @@ describe('PopularThreadsBox', () => {
     testState.requestedCommunityIdentifiers = [];
     testState.requestedCommunities = [];
     testState.revealedPopularPosts = undefined;
+    testState.providerPopularPosts = [];
+    testState.providerSnapshot = null;
+    testState.account = { id: 'account' };
+    useStatsProvidersStore.setState({ usePureP2PStats: false });
     testState.popularPosts = [
       {
         cid: 'thread-1',
@@ -134,7 +157,7 @@ describe('PopularThreadsBox', () => {
 
     renderPopularThreadsBox();
 
-    expect(testState.requestedCommunityIdentifiers).toEqual([[]]);
+    expect(testState.requestedCommunityIdentifiers.at(-1)).toEqual([]);
     expect(testState.requestedCommunities).toEqual([[]]);
     expect(container.textContent).toContain('thread title');
   });
@@ -175,6 +198,59 @@ describe('PopularThreadsBox', () => {
 
     expect(container.textContent).toContain('Television & Film');
     expect(container.textContent).not.toContain('Television & Film Directory');
+  });
+
+  it('shows verified provider threads without loading the boards over P2P', () => {
+    testState.providerSnapshot = { boards: new Map(), generatedAt: 1, providerId: 'stats-bitsocial-net' };
+    testState.providerPopularPosts = [{ ...testState.popularPosts[0], cid: 'provider-thread', title: 'provider thread title' }];
+
+    renderPopularThreadsBox();
+
+    expect(container.textContent).toContain('provider thread title');
+    expect(vi.mocked(getProviderPopularPosts)).toHaveBeenCalledWith(
+      testState.providerSnapshot,
+      directories.map((entry) => ({ address: entry.address, publicKey: `${entry.address}-key` })),
+      expect.any(Function),
+    );
+    expect(vi.mocked(usePopularPosts)).not.toHaveBeenCalled();
+    expect(testState.requestedCommunities).toEqual([]);
+  });
+
+  it('waits for the account before verifying provider threads', () => {
+    testState.providerSnapshot = { boards: new Map(), generatedAt: 1, providerId: 'stats-bitsocial-net' };
+    testState.account = undefined;
+
+    renderPopularThreadsBox();
+
+    expect(vi.mocked(getProviderPopularPosts)).not.toHaveBeenCalled();
+    expect(vi.mocked(usePopularPosts)).not.toHaveBeenCalled();
+    expect(container.textContent).toContain('loading');
+  });
+
+  it('falls back to P2P when the provider has no usable threads', () => {
+    testState.providerSnapshot = { boards: new Map(), generatedAt: 1, providerId: 'stats-bitsocial-net' };
+
+    renderPopularThreadsBox();
+
+    expect(container.textContent).toContain('thread title');
+    expect(vi.mocked(usePopularPosts)).toHaveBeenCalled();
+  });
+
+  it('falls back to P2P when no stats provider answers', () => {
+    renderPopularThreadsBox();
+
+    expect(vi.mocked(getProviderPopularPosts)).not.toHaveBeenCalled();
+    expect(container.textContent).toContain('thread title');
+    expect(testState.requestedCommunities.at(-1)).toEqual(directories.map((entry) => ({ name: entry.address, publicKey: `${entry.address}-key` })));
+  });
+
+  it('does not contact a stats provider in pure P2P mode', () => {
+    useStatsProvidersStore.setState({ usePureP2PStats: true });
+
+    renderPopularThreadsBox();
+
+    expect(vi.mocked(getStatsProviderSnapshot)).not.toHaveBeenCalled();
+    expect(container.textContent).toContain('thread title');
   });
 
   it('subscribes to feed state only while popular threads are loading', () => {
