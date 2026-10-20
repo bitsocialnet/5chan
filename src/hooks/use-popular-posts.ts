@@ -76,11 +76,15 @@ const byScoreDescending = (a: PopularPostCandidate, b: PopularPostCandidate) => 
  * back to its next best thread.
  */
 function getBoardTopThreads(communities: Array<Community | undefined>, communityAddresses: string[], scoreTimestamp: number): PopularPostCandidate[] {
+  // Directories dedupe by public key, so one address can still be listed twice;
+  // it is the same board either way and must contribute only one thread.
+  const seenAddresses = new Set<string>();
   const rankedBoardThreads = communityAddresses.flatMap((boardAddress, index) => {
     const comments = communities[index]?.posts?.pages?.hot?.comments;
-    if (!boardAddress || !comments) {
+    if (!boardAddress || !comments || seenAddresses.has(boardAddress)) {
       return [];
     }
+    seenAddresses.add(boardAddress);
 
     const threads = Object.values(comments as Record<string, Comment>)
       .filter(isEligiblePost)

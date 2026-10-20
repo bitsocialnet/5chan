@@ -226,6 +226,17 @@ describe('usePopularPosts', () => {
     expect(latestValue.popularPosts).toHaveLength(8);
   });
 
+  it('takes one thread from a board listed twice', async () => {
+    const addresses = ['board-0.eth', 'board-0.eth', 'board-1.eth'];
+    const repeatedCommunity = createCommunity(addresses[0], [createPost(addresses[0], 'top', 20), createPost(addresses[0], 'backup', 10)]);
+    testState.loadingTimestamps = addresses.map(() => 1_704_067_180);
+
+    await renderHook(addresses, [repeatedCommunity, repeatedCommunity, createCommunity(addresses[2], [createPost(addresses[2], 'top', 5)])]);
+
+    expect(latestValue.isLoading).toBe(false);
+    expect(latestValue.popularPosts.map((post) => post.cid)).toEqual(['board-0.eth-top', 'board-1.eth-top']);
+  });
+
   it('keeps loading forever when no board ever produces a thread', async () => {
     const addresses = ['board-0.eth'];
     testState.currentTime = 1_704_067_240;
