@@ -5,18 +5,25 @@ import useCommunitiesLoadingStartTimestamps from '../stores/use-communities-load
 import { useCurrentTime } from './use-current-time';
 
 const MAX_POSTS = 8;
+// Each page load samples the box from the most popular boards, so a refresh
+// rotates threads without surfacing boards that have gone quiet.
+const CANDIDATE_POOL_SIZE = MAX_POSTS * 2;
 const BOARD_LOADING_TIMEOUT_SECONDS = 30;
+// Once the box can be filled, stop waiting for boards that are still loading
+// after this long, so one slow or offline board cannot hold the box back.
+const FILLED_BOX_BOARD_WAIT_SECONDS = 8;
 
 // Activity relevance halves every 3 days
 const HALF_LIFE_SECONDS = 72 * 3600;
 
 type PopularPostCandidate = {
-  boardAddress: string;
   post: Comment;
+  score: number;
 };
 
 type PopularPostsCacheEntry = {
-  randomizedBoardAddresses: string[];
+  // Fixed per page load so the ranking does not drift while boards load.
+  scoreTimestamp: number;
   posts: Comment[];
   revealed: boolean;
 };
@@ -35,7 +42,7 @@ function popularityScore(post: Comment, nowSeconds: number): number {
   return Math.max(replies, 0.1) / (1 + ageSeconds / HALF_LIFE_SECONDS);
 }
 
-function isBoardStillLoading(community: Community | undefined, loadingStartTimestamp: number | undefined, nowSeconds: number): boolean {
+function isBoardStillLoading(community: Community | undefined, loadingStartTimestamp: number | undefined, nowSeconds: number, timeoutSeconds: number): boolean {
   if (community?.updatedAt) {
     return false;
   }
@@ -44,32 +51,88 @@ function isBoardStillLoading(community: Community | undefined, loadingStartTimes
     return true;
   }
 
-  return nowSeconds - loadingStartTimestamp < BOARD_LOADING_TIMEOUT_SECONDS;
+  return nowSeconds - loadingStartTimestamp < timeoutSeconds;
 }
 
-function shuffleBoardAddresses(boardAddresses: string[]): string[] {
-  const shuffledBoardAddresses = [...boardAddresses];
-
-  for (let index = shuffledBoardAddresses.length - 1; index > 0; index -= 1) {
-    const randomIndex = Math.floor(Math.random() * (index + 1));
-    [shuffledBoardAddresses[index], shuffledBoardAddresses[randomIndex]] = [shuffledBoardAddresses[randomIndex], shuffledBoardAddresses[index]];
+function isEligiblePost(post: Comment): boolean {
+  const { deleted, link, linkHeight, linkWidth, locked, pinned, removed, thumbnailUrl } = post;
+  if (deleted || removed || locked || pinned) {
+    return false;
   }
 
-  return shuffledBoardAddresses;
+  try {
+    return getHasThumbnail(getCommentMediaInfo(link, thumbnailUrl, linkWidth, linkHeight), link);
+  } catch {
+    // skip posts with malformed media URLs
+    return false;
+  }
+}
+
+const byScoreDescending = (a: PopularPostCandidate, b: PopularPostCandidate) => b.score - a.score;
+
+/**
+ * Returns each board's most popular thread, most popular first. A board
+ * whose best thread shares media with a more popular board's pick falls
+ * back to its next best thread.
+ */
+function getBoardTopThreads(communities: Array<Community | undefined>, communityAddresses: string[], scoreTimestamp: number): PopularPostCandidate[] {
+  const rankedBoardThreads = communityAddresses.flatMap((boardAddress, index) => {
+    const comments = communities[index]?.posts?.pages?.hot?.comments;
+    if (!boardAddress || !comments) {
+      return [];
+    }
+
+    const threads = Object.values(comments as Record<string, Comment>)
+      .filter(isEligiblePost)
+      .map((post) => ({ post, score: popularityScore(post, scoreTimestamp) }))
+      .sort(byScoreDescending);
+    return threads.length ? [threads] : [];
+  });
+  rankedBoardThreads.sort((a, b) => byScoreDescending(a[0], b[0]));
+
+  const selectedLinks = new Set<string>();
+  const topThreads: PopularPostCandidate[] = [];
+  for (const threads of rankedBoardThreads) {
+    const topThread = threads.find(({ post }) => !selectedLinks.has(post.link));
+    if (topThread) {
+      topThreads.push(topThread);
+      selectedLinks.add(topThread.post.link);
+    }
+  }
+
+  return topThreads.sort(byScoreDescending);
+}
+
+function shuffle<T>(items: T[]): T[] {
+  const shuffledItems = [...items];
+
+  for (let index = shuffledItems.length - 1; index > 0; index -= 1) {
+    const randomIndex = Math.floor(Math.random() * (index + 1));
+    [shuffledItems[index], shuffledItems[randomIndex]] = [shuffledItems[randomIndex], shuffledItems[index]];
+  }
+
+  return shuffledItems;
+}
+
+function pickPopularPosts(topThreads: PopularPostCandidate[]): Comment[] {
+  return shuffle(topThreads.slice(0, CANDIDATE_POOL_SIZE))
+    .slice(0, MAX_POSTS)
+    .sort(byScoreDescending)
+    .map(({ post }) => post);
 }
 
 function getPopularPostsInputKey(communityAddresses: string[]): string {
   return [...communityAddresses].sort().join(',');
 }
 
-function getPopularPostsCacheEntry(inputKey: string, communityAddresses: string[]): PopularPostsCacheEntry {
+function getPopularPostsCacheEntry(inputKey: string): PopularPostsCacheEntry {
   const cachedEntry = popularPostsCacheByInputKey.get(inputKey);
   if (cachedEntry) {
     return cachedEntry;
   }
 
   const cacheEntry = {
-    randomizedBoardAddresses: shuffleBoardAddresses(communityAddresses),
+    scoreTimestamp: Math.floor(Date.now() / 1000),
     posts: [],
     revealed: false,
   };
@@ -87,73 +150,44 @@ export function clearPopularPostsCacheForTest() {
 }
 
 /**
- * Each board contributes at most one time-decayed popular thread, but the
- * board order is shuffled once per page load so repeat navigation keeps the
- * same threads until a real browser refresh creates a fresh module instance.
+ * Ranks every board's most popular thread once the boards have loaded, then
+ * shows a random sample from the top of that ranking, one thread per board.
+ * Waiting for the boards matters: they load in a fixed order, so revealing
+ * the first boards to arrive would show the same boards on every visit.
  *
- * The first revealed set is frozen until the user refreshes or changes
- * the board filter, so threads never disappear during background loads.
+ * The revealed set is frozen until a real browser refresh creates a fresh
+ * module instance or the board filter changes, so threads never disappear
+ * during background loads or repeat navigation.
  */
 const usePopularPosts = (communities: Array<Community | undefined>, communityAddresses: string[]) => {
   const inputKey = getPopularPostsInputKey(communityAddresses);
-  const cacheEntry = getPopularPostsCacheEntry(inputKey, communityAddresses);
+  const cacheEntry = getPopularPostsCacheEntry(inputKey);
+  const { scoreTimestamp } = cacheEntry;
 
   const currentTime = useCurrentTime(cacheEntry.revealed ? false : 5);
   const nowSeconds = Math.floor(currentTime);
   const loadingStartTimestamps = useCommunitiesLoadingStartTimestamps(communityAddresses);
 
-  const candidates = useMemo<PopularPostCandidate[]>(() => {
-    if (cacheEntry.revealed || cacheEntry.posts.length >= MAX_POSTS) {
+  const topThreads = useMemo<PopularPostCandidate[]>(() => {
+    if (cacheEntry.revealed) {
       return [];
     }
 
     try {
-      const selectedLinks = new Set<string>();
-      const allPosts: PopularPostCandidate[] = [];
-      const communitiesByAddress = new Map(communityAddresses.map((boardAddress, index) => [boardAddress, communities[index]]));
-
-      cacheEntry.randomizedBoardAddresses.forEach((boardAddress) => {
-        const community = communitiesByAddress.get(boardAddress);
-        if (!boardAddress || !community?.posts?.pages?.hot?.comments) {
-          return;
-        }
-
-        const subPosts: Comment[] = [];
-        for (const post of Object.values(community.posts.pages.hot.comments as Record<string, Comment>)) {
-          const { deleted, link, linkHeight, linkWidth, locked, pinned, removed, thumbnailUrl } = post;
-
-          try {
-            const commentMediaInfo = getCommentMediaInfo(link, thumbnailUrl, linkWidth, linkHeight);
-            const hasThumbnail = getHasThumbnail(commentMediaInfo, link);
-
-            if (hasThumbnail && !deleted && !removed && !locked && !pinned) {
-              subPosts.push(post);
-            }
-          } catch {
-            // skip posts with malformed media URLs
-          }
-        }
-
-        subPosts.sort((a, b) => popularityScore(b, nowSeconds) - popularityScore(a, nowSeconds));
-
-        const bestPost = subPosts.find((post) => !selectedLinks.has(post.link));
-        if (bestPost) {
-          allPosts.push({ boardAddress, post: bestPost });
-          selectedLinks.add(bestPost.link);
-        }
-      });
-
-      return allPosts;
+      return getBoardTopThreads(communities, communityAddresses, scoreTimestamp);
     } catch (err) {
       console.error('Error in usePopularPosts:', err);
       return [];
     }
-  }, [nowSeconds, communities, communityAddresses, cacheEntry]);
+  }, [communities, communityAddresses, cacheEntry.revealed, scoreTimestamp]);
 
-  const hasPendingBoards = communityAddresses.some((_, index) => isBoardStillLoading(communities[index], loadingStartTimestamps[index], nowSeconds));
+  const boardLoadingTimeoutSeconds = topThreads.length >= MAX_POSTS ? FILLED_BOX_BOARD_WAIT_SECONDS : BOARD_LOADING_TIMEOUT_SECONDS;
+  const hasPendingBoards = communityAddresses.some((_, index) =>
+    isBoardStillLoading(communities[index], loadingStartTimestamps[index], nowSeconds, boardLoadingTimeoutSeconds),
+  );
 
-  if (!cacheEntry.revealed && (candidates.length >= MAX_POSTS || (!hasPendingBoards && candidates.length > 0))) {
-    cacheEntry.posts = candidates.slice(0, MAX_POSTS).map(({ post }) => post);
+  if (!cacheEntry.revealed && !hasPendingBoards && topThreads.length > 0) {
+    cacheEntry.posts = pickPopularPosts(topThreads);
     cacheEntry.revealed = true;
   }
 
