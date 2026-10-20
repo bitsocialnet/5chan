@@ -11,7 +11,7 @@ __metadata:
   dependencies:
     "@babel/core": "npm:7.29.7"
     "@bbob/parser": "npm:4.4.1"
-    "@bitsocial/bitsocial-react-hooks": "npm:0.1.54"
+    "@bitsocial/bitsocial-react-hooks": "npm:0.1.55"
     "@bitsocial/bso-resolver": "npm:0.0.10"
     "@bitsocial/pubsub-voting": "npm:0.7.8"
     "@capacitor/android": "npm:8.5.2"
@@ -1808,9 +1808,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@bitsocial/bitsocial-react-hooks@npm:0.1.54":
-  version: 0.1.54
-  resolution: "@bitsocial/bitsocial-react-hooks@npm:0.1.54"
+"@bitsocial/bitsocial-react-hooks@npm:0.1.55":
+  version: 0.1.55
+  resolution: "@bitsocial/bitsocial-react-hooks@npm:0.1.55"
   dependencies:
     "@bitsocial/bso-resolver": "npm:0.0.10"
     "@pkcprotocol/pkc-js": "npm:0.0.109"
@@ -1820,13 +1820,15 @@ __metadata:
     multiformats: "npm:13.4.2"
     peer-id: "npm:0.16.0"
     quick-lru: "npm:5.1.1"
+    safe-stable-stringify: "npm:2.4.3"
+    typestub-ipfs-only-hash: "npm:4.0.0"
     uint8arrays: "npm:3.1.1"
     uuid: "npm:14.0.1"
     viem: "npm:2.55.8"
     zustand: "npm:4.5.7"
   peerDependencies:
     react: ">=16.8"
-  checksum: 10c0/c4b23776f3a54726b46855e8433a0048975ec17364d7a4b1db892284963bf9cb378c81127fa75a203a82a29136e9185d9580cde94f3ea032f8fbd8cfaeee948b
+  checksum: 10c0/30cf4f724fc964fbb3157fa5159e2f0f68c28de390d15325206e3933b87334e3d67ab80e3c5732d5b4a9d5265ba22f468c788f46583c645dd127f0ed3903a015
   languageName: node
   linkType: hard
 
