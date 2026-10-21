@@ -581,5 +581,10 @@
   "boards_without_bump_order": "Não exibidos porque não publicam uma ordem de bump: {{boards}}",
   "last_reply": "Última resposta",
   "boards_not_loaded": "Não exibidos porque não carregaram a tempo: {{boards}}",
-  "loading_boards_to_sort": "Carregando todos os quadros antes de ordenar: {{loaded}} de {{total}}"
+  "loading_boards_to_sort": "Carregando todos os quadros antes de ordenar: {{loaded}} de {{total}}",
+  "stats_providers": "Provedores de Estatísticas",
+  "stats_providers_tip": "Eles carregam os tópicos populares e as estatísticas da página inicial em uma única requisição, em vez de buscá-los em cada board. Os tópicos são verificados por meio de suas assinaturas; as contagens de postagens e usuários são as informadas pelo provedor.",
+  "use_pure_p2p_stats": "Usar P2P puro em vez disso (lento)",
+  "pure_p2p_stats_tip": "As estatísticas via P2P puro são sempre a alternativa caso os provedores de estatísticas fiquem fora do ar.",
+  "stats_reported_by": "Informadas por {{provider}}"
 }

@@ -581,5 +581,10 @@
   "boards_without_bump_order": "Bump sırası yayınlamadıkları için gösterilmiyor: {{boards}}",
   "last_reply": "Son yanıt",
   "boards_not_loaded": "Zamanında yüklenmedikleri için gösterilmiyor: {{boards}}",
-  "loading_boards_to_sort": "Sıralamadan önce tüm panolar yükleniyor: {{total}} panodan {{loaded}}"
+  "loading_boards_to_sort": "Sıralamadan önce tüm panolar yükleniyor: {{total}} panodan {{loaded}}",
+  "stats_providers": "İstatistik Sağlayıcıları",
+  "stats_providers_tip": "Bunlar, ana sayfanın popüler konularını ve istatistiklerini her panodan ayrı ayrı almak yerine tek bir istekle yükler. Konular imzalarına göre doğrulanır; gönderi ve kullanıcı sayıları sağlayıcının bildirdiği gibidir.",
+  "use_pure_p2p_stats": "Bunun yerine saf P2P kullan (yavaş)",
+  "pure_p2p_stats_tip": "İstatistik sağlayıcıları çökerse saf P2P istatistikleri her zaman yedek olarak kullanılır.",
+  "stats_reported_by": "Bildiren: {{provider}}"
 }

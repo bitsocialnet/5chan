@@ -601,5 +601,10 @@
   "boards_without_bump_order": "Not shown because they do not publish a bump order: {{boards}}",
   "last_reply": "Last reply",
   "boards_not_loaded": "Not shown because they did not load in time: {{boards}}",
-  "loading_boards_to_sort": "Loading every board before sorting: {{loaded}} of {{total}}"
+  "loading_boards_to_sort": "Loading every board before sorting: {{loaded}} of {{total}}",
+  "stats_providers": "Stats Providers",
+  "stats_providers_tip": "They load the home page's popular threads and stats in one request instead of from every board. Threads are checked against their signatures; post and user counts are as the provider reports them.",
+  "use_pure_p2p_stats": "Use pure P2P instead (slow)",
+  "pure_p2p_stats_tip": "Pure P2P stats are always the fallback in case stats providers go down.",
+  "stats_reported_by": "Reported by {{provider}}"
 }

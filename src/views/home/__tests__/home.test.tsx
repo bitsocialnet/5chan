@@ -5,6 +5,8 @@ import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useFeedStateString } from '../../../hooks/use-state-string';
 import useHomepageIntroductionStore from '../../../stores/use-homepage-introduction-store';
+import useStatsProvidersStore from '../../../stores/use-stats-providers-store';
+import { getStatsProviderSnapshot } from '../../../lib/stats-provider-snapshot';
 import Home from '../home';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -22,6 +24,18 @@ const testState = vi.hoisted(() => ({
   communities: {} as Record<string, unknown>,
   communityStats: {} as Record<string, { allPostCount?: number; allReplyCount?: number; weekActiveUserCount?: number; state?: string }>,
   feedStateString: 'Downloading boards',
+  providerSnapshot: null as unknown,
+}));
+
+// The app requests the snapshot once per page load, so every render reads the same promise.
+const requests = new Map<unknown, Promise<unknown>>();
+const request = (value: unknown) => {
+  if (!requests.has(value)) requests.set(value, Promise.resolve(value));
+  return requests.get(value);
+};
+
+vi.mock('../../../lib/stats-provider-snapshot', () => ({
+  getStatsProviderSnapshot: vi.fn(() => request(testState.providerSnapshot)),
 }));
 
 vi.mock('react-i18next', () => ({
@@ -116,8 +130,8 @@ vi.mock('../../../components/site-legal-meta', () => ({
 let container: HTMLDivElement;
 let root: Root;
 
-const renderHome = () => {
-  act(() => {
+const renderHome = async () => {
+  await act(async () => {
     root.render(createElement(MemoryRouter, {}, createElement(Home)));
   });
 };
@@ -125,6 +139,7 @@ const renderHome = () => {
 describe('Home', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    requests.clear();
     useHomepageIntroductionStore.getState().setShowIntroduction(true);
     document.title = 'before';
     testState.closeDirectoryModalMock.mockReset();
@@ -145,6 +160,8 @@ describe('Home', () => {
       'tech-posting.eth': { allPostCount: 7, allReplyCount: 4, weekActiveUserCount: 5 },
     };
     testState.feedStateString = 'Downloading boards';
+    testState.providerSnapshot = null;
+    useStatsProvidersStore.setState({ usePureP2PStats: false });
     testState.statsScope = 'directory';
     testState.setStatsScopeMock.mockImplementation((value: 'directory' | 'all') => {
       testState.statsScope = value;
@@ -161,8 +178,8 @@ describe('Home', () => {
     localStorage.removeItem('homepage-introduction');
   });
 
-  it('keeps the introduction dismissed after returning home and restores it when the preference changes', () => {
-    renderHome();
+  it('keeps the introduction dismissed after returning home and restores it when the preference changes', async () => {
+    await renderHome();
     expect(container.textContent).toContain('what_is_5chan');
 
     const closeButton = container.querySelector<HTMLButtonElement>('button[aria-label="close"]');
@@ -174,7 +191,7 @@ describe('Home', () => {
     expect(JSON.parse(localStorage.getItem('homepage-introduction')!).state.showIntroduction).toBe(false);
 
     act(() => root.render(null));
-    renderHome();
+    await renderHome();
     expect(container.textContent).not.toContain('what_is_5chan');
 
     act(() => useHomepageIntroductionStore.getState().setShowIntroduction(true));
@@ -182,8 +199,8 @@ describe('Home', () => {
     expect(container.querySelector('button[aria-label="close"]')).not.toBeNull();
   });
 
-  it('renders the home view chrome, child sections, collectors, and aggregated stats', () => {
-    renderHome();
+  it('renders the home view chrome, child sections, collectors, and aggregated stats', async () => {
+    await renderHome();
 
     // Nothing is loading, so the loading indicator/ellipsis never mount and the live client-state
     // subscription is never opened. Stats previously subscribed with an empty list regardless.
@@ -205,10 +222,10 @@ describe('Home', () => {
     expect(container.querySelector<HTMLAnchorElement>('a[href="/pass"]')?.textContent).toBe('support_5chan');
   });
 
-  it('shows the stats state string while no board stats have loaded yet', () => {
+  it('shows the stats state string while no board stats have loaded yet', async () => {
     testState.communityStats = {};
 
-    renderHome();
+    await renderHome();
 
     expect(vi.mocked(useFeedStateString)).toHaveBeenCalledWith(['music-posting.eth', 'tech-posting.eth']);
     expect(container.querySelector('.yellowOfflineIcon')).not.toBeNull();
@@ -218,12 +235,12 @@ describe('Home', () => {
     expect(container.textContent).not.toContain('boards_loaded');
   });
 
-  it('shows partial stats while some boards are still loading', () => {
+  it('shows partial stats while some boards are still loading', async () => {
     testState.communityStats = {
       'music-posting.eth': { allPostCount: 5, weekActiveUserCount: 2 },
     };
 
-    renderHome();
+    await renderHome();
 
     expect(vi.mocked(useFeedStateString)).toHaveBeenCalledWith(['music-posting.eth', 'tech-posting.eth']);
     expect(container.querySelector('.yellowOfflineIcon')).not.toBeNull();
@@ -235,7 +252,7 @@ describe('Home', () => {
     expect(container.textContent).toContain('boards_loaded 1');
   });
 
-  it('loads every listed board when the slow stats scope is selected', () => {
+  it('loads every listed board when the slow stats scope is selected', async () => {
     testState.statsScope = 'all';
     testState.directories = [
       { address: 'business-and-finance.bso', title: '/biz/ - Business & Finance', directoryCode: 'biz' },
@@ -255,7 +272,7 @@ describe('Home', () => {
       'tech-posting.eth': { allPostCount: 7, allReplyCount: 2, weekActiveUserCount: 4 },
     };
 
-    renderHome();
+    await renderHome();
 
     const collectorAddresses = Array.from(container.querySelectorAll('[data-testid="stats-collector"]')).map((collector) => collector.getAttribute('data-address'));
     expect(testState.directoryListCodes).toEqual(['biz', 'g']);
@@ -269,13 +286,13 @@ describe('Home', () => {
     expect(container.textContent).toContain('boards_loaded 2');
   });
 
-  it('shows zero totals after every directory has loaded zero-count stats', () => {
+  it('shows zero totals after every directory has loaded zero-count stats', async () => {
     testState.communityStats = {
       'music-posting.eth': { allPostCount: 0, weekActiveUserCount: 0 },
       'tech-posting.eth': { allPostCount: 0, weekActiveUserCount: 0 },
     };
 
-    renderHome();
+    await renderHome();
 
     expect(container.querySelectorAll('[data-testid="loading-ellipsis"]')).toHaveLength(0);
     expect(container.querySelector('.yellowOfflineIcon')).toBeNull();
@@ -285,13 +302,13 @@ describe('Home', () => {
     expect(container.textContent).toContain('boards_loaded 2');
   });
 
-  it('does not keep aggregate stats loading after a directory stats fetch fails', () => {
+  it('does not keep aggregate stats loading after a directory stats fetch fails', async () => {
     testState.communityStats = {
       'music-posting.eth': { allPostCount: 5, weekActiveUserCount: 2 },
       'tech-posting.eth': { state: 'failed' },
     };
 
-    renderHome();
+    await renderHome();
 
     expect(container.querySelectorAll('[data-testid="loading-ellipsis"]')).toHaveLength(0);
     expect(container.querySelector('.yellowOfflineIcon')).toBeNull();
@@ -301,8 +318,8 @@ describe('Home', () => {
     expect(container.textContent).toContain('boards_loaded 2');
   });
 
-  it('switches the stats scope from the options menu', () => {
-    renderHome();
+  it('switches the stats scope from the options menu', async () => {
+    await renderHome();
 
     const optionsButton = Array.from(container.querySelectorAll('button')).find((button) => button.textContent === 'options ▼');
     expect(optionsButton).toBeTruthy();
@@ -321,8 +338,49 @@ describe('Home', () => {
     expect(testState.setStatsScopeMock).toHaveBeenCalledWith('all');
   });
 
+  it('shows provider-reported stats without collecting them over P2P', async () => {
+    testState.providerSnapshot = {
+      boards: new Map([
+        ['music-posting.eth', { stats: { allPostCount: 10, allReplyCount: 20, weekActiveUserCount: 3 }, threads: [] }],
+        ['tech-posting.eth', { stats: null, threads: [] }],
+        ['unlisted.eth', { stats: { allPostCount: 99, allReplyCount: 0, weekActiveUserCount: 9 }, threads: [] }],
+      ]),
+      generatedAt: 1,
+      providerId: 'stats-bitsocial-net',
+    };
+
+    await renderHome();
+
+    expect(container.textContent).toContain('total_posts 30');
+    expect(container.textContent).toContain('current_users 3');
+    expect(container.textContent).toContain('boards_loaded 1');
+    expect(container.querySelector('.yellowOfflineIcon')).toBeNull();
+    expect(container.querySelector('[data-testid="stats-metadata-loader"]')).toBeNull();
+    expect(container.querySelectorAll('[data-testid="stats-collector"]')).toHaveLength(0);
+    expect(container.querySelector('h2[title="stats_reported_by"]')).not.toBeNull();
+    // The Stats box reads the provider's stats, which leave out the threads.
+    expect(vi.mocked(getStatsProviderSnapshot)).toHaveBeenCalledWith('stats');
+  });
+
+  it('collects stats over P2P when the provider reports none for these boards', async () => {
+    testState.providerSnapshot = { boards: new Map(), generatedAt: 1, providerId: 'stats-bitsocial-net' };
+
+    await renderHome();
+
+    expect(container.querySelectorAll('[data-testid="stats-collector"]')).toHaveLength(2);
+  });
+
+  it('does not contact a stats provider in pure P2P mode', async () => {
+    useStatsProvidersStore.setState({ usePureP2PStats: true });
+
+    await renderHome();
+
+    expect(vi.mocked(getStatsProviderSnapshot)).not.toHaveBeenCalled();
+    expect(container.querySelectorAll('[data-testid="stats-collector"]')).toHaveLength(2);
+  });
+
   it('searches a board address instead of opening the board, so the results page can list it', async () => {
-    renderHome();
+    await renderHome();
 
     const input = container.querySelector<HTMLInputElement>('input[type="text"]');
     const form = container.querySelector('form');
@@ -340,7 +398,7 @@ describe('Home', () => {
   });
 
   it('navigates ordinary search terms to the archive search route', async () => {
-    renderHome();
+    await renderHome();
 
     const input = container.querySelector<HTMLInputElement>('input[type="text"]');
     const form = container.querySelector('form');
@@ -353,7 +411,7 @@ describe('Home', () => {
   });
 
   it('does nothing when the search form is submitted empty', async () => {
-    renderHome();
+    await renderHome();
 
     const input = container.querySelector<HTMLInputElement>('input[type="text"]');
     const form = container.querySelector('form');
@@ -365,8 +423,8 @@ describe('Home', () => {
     expect(testState.navigateMock).not.toHaveBeenCalled();
   });
 
-  it('closes the directory modal when the home view unmounts', () => {
-    renderHome();
+  it('closes the directory modal when the home view unmounts', async () => {
+    await renderHome();
     expect(testState.closeDirectoryModalMock).not.toHaveBeenCalled();
 
     act(() => root.unmount());

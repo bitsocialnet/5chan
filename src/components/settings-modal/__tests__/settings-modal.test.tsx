@@ -52,6 +52,10 @@ vi.mock('../media-hosting-settings/media-hosting-settings', () => ({
   default: () => <div data-testid='media-hosting-settings-panel'>media-hosting-settings</div>,
 }));
 
+vi.mock('../stats-providers-settings/stats-providers-settings', () => ({
+  default: () => <div data-testid='stats-providers-settings-panel'>stats-providers-settings</div>,
+}));
+
 vi.mock('../advanced-settings/advanced-settings', () => ({
   default: () => <div data-testid='advanced-settings-panel'>advanced-settings</div>,
 }));
@@ -210,6 +214,7 @@ describe('SettingsModal', () => {
 
     expect(container.querySelector('[data-testid="interface-settings-panel"]')).not.toBeNull();
     expect(container.querySelector('[data-testid="media-hosting-settings-panel"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="stats-providers-settings-panel"]')).not.toBeNull();
     expect(container.querySelector('[data-testid="account-settings"]')).not.toBeNull();
     expect(container.querySelector('[data-testid="subscriptions-settings-panel"]')).not.toBeNull();
     expect(container.querySelector('[data-testid="trusted-board-links-settings-panel"]')).not.toBeNull();
@@ -227,6 +232,7 @@ describe('SettingsModal', () => {
 
     expect(container.querySelector('[data-testid="interface-settings-panel"]')).toBeNull();
     expect(container.querySelector('[data-testid="media-hosting-settings-panel"]')).toBeNull();
+    expect(container.querySelector('[data-testid="stats-providers-settings-panel"]')).toBeNull();
     expect(container.querySelector('[data-testid="account-settings"]')).toBeNull();
     expect(container.querySelector('[data-testid="subscriptions-settings-panel"]')).toBeNull();
     expect(container.querySelector('[data-testid="trusted-board-links-settings-panel"]')).toBeNull();

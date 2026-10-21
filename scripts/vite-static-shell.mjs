@@ -36,6 +36,7 @@ const HOME_PREFERENCE_KEYS = [
   '5chan-boards-use-catalog',
   'showWorksafeContentOnly',
   'showNsfwContentOnly',
+  '5chan-pure-p2p-stats',
   '5chan-frames',
 ];
 

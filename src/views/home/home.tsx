@@ -1,4 +1,4 @@
-import { memo, useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent as ReactKeyboardEvent } from 'react';
+import { memo, useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Trans, useTranslation } from 'react-i18next';
 import styles from './home.module.css';
@@ -14,10 +14,14 @@ import HomeLogo from '../../components/home-logo';
 import useDirectoryModalStore from '../../stores/use-directory-modal-store';
 import useHomepageStatsOptionsStore, { type HomepageStatsScope } from '../../stores/use-homepage-stats-options-store';
 import useHomepageIntroductionStore from '../../stores/use-homepage-introduction-store';
+import useStatsProvidersStore from '../../stores/use-stats-providers-store';
+import { getStatsProviderSnapshot } from '../../lib/stats-provider-snapshot';
+import { getStatsProvider } from '../../lib/stats-providers';
 import { extractDirectoryFromTitle } from '../../lib/utils/route-utils';
 import { getSearchSubmitPath } from '../../lib/search-navigation';
 import { isWebRuntime } from '../../lib/media-hosting/show-upload-controls';
 import { useFeedStateString } from '../../hooks/use-state-string';
+import { usePromiseResult } from '../../hooks/use-promise-result';
 
 // https://github.com/bitsocialnet/lists/tree/master/5chan-directories
 
@@ -222,10 +226,134 @@ const StatsLoadingEllipsis = memo(({ addresses }: { addresses: string[] }) => {
 });
 StatsLoadingEllipsis.displayName = 'StatsLoadingEllipsis';
 
-const Stats = ({ directories }: { directories: DirectoryCommunity[] }) => {
+type StatsTotals = {
+  boardsLoaded: number;
+  boardsWithStats: number;
+  currentUsers: number;
+  totalPosts: number;
+};
+
+const StatsBox = ({ children, title, titleSuffix }: { children: ReactNode; title?: string; titleSuffix?: ReactNode }) => {
   const { t } = useTranslation();
-  const statsScope = useHomepageStatsOptionsStore((state) => state.statsScope);
+
+  return (
+    <div className={styles.box}>
+      <div className={`${styles.boxBar} ${styles.color2ColorBar}`}>
+        <h2 className={styles.statsTitle} title={title}>
+          {t('stats')}
+          {titleSuffix}
+        </h2>
+        <StatsOptionsModal />
+      </div>
+      <div className={`${styles.boxContent} ${styles.stats}`}>{children}</div>
+    </div>
+  );
+};
+
+const StatsValues = ({ boardsLoaded, currentUsers, totalPosts }: StatsTotals) => {
+  const { t } = useTranslation();
+
+  return (
+    <>
+      <div className={styles.stat}>
+        <b>{t('total_posts')}</b> {totalPosts}
+      </div>
+      <div className={styles.stat}>
+        <b>{t('current_users')}</b> {currentUsers}
+      </div>
+      <div className={styles.stat}>
+        <b>{t('boards_loaded')}</b> {boardsLoaded}
+      </div>
+    </>
+  );
+};
+
+/** Collects every board's stats over P2P: the fallback when no stats provider answers. */
+const P2PStats = ({ collectorAddresses }: { collectorAddresses: string[] }) => {
   const communitiesStats = useCommunitiesStatsStore((state) => state.communityStats);
+
+  const totals = useMemo(() => {
+    let totalPosts = 0;
+    let currentUsers = 0;
+    let boardsLoaded = 0;
+    let boardsWithStats = 0;
+
+    for (const address of collectorAddresses) {
+      const stats = communitiesStats[address];
+      if (!hasResolvedStats(stats)) {
+        continue;
+      }
+
+      boardsLoaded++;
+      if (hasLoadedStats(stats)) {
+        boardsWithStats++;
+        totalPosts += stats.allPostCount + (stats.allReplyCount ?? 0);
+        currentUsers += stats.weekActiveUserCount || 0;
+      }
+    }
+
+    return {
+      totalPosts,
+      currentUsers,
+      boardsLoaded,
+      boardsWithStats,
+    };
+  }, [collectorAddresses, communitiesStats]);
+  const hasDisplayableStats = totals.boardsWithStats > 0 || (collectorAddresses.length > 0 && totals.boardsLoaded === collectorAddresses.length);
+  const isStatsLoading = !hasDisplayableStats || totals.boardsLoaded < collectorAddresses.length;
+
+  return (
+    <>
+      <CommunityStatsMetadataLoader communityAddresses={collectorAddresses} />
+      {collectorAddresses.map((address) => (
+        <CommunityStatsCollector key={address} communityAddress={address} />
+      ))}
+      <StatsBox titleSuffix={isStatsLoading && <StatsLoadingIndicator addresses={collectorAddresses} />}>
+        {hasDisplayableStats ? <StatsValues {...totals} /> : <StatsLoadingEllipsis addresses={collectorAddresses} />}
+      </StatsBox>
+    </>
+  );
+};
+
+/** Sums the per-board stats a stats provider reported, so the box does not wait for every board to load. */
+const ProviderStats = ({ collectorAddresses }: { collectorAddresses: string[] }) => {
+  const { t } = useTranslation();
+  const snapshot = usePromiseResult(getStatsProviderSnapshot('stats'));
+
+  const totals = useMemo(() => {
+    const totals: StatsTotals = { boardsLoaded: 0, boardsWithStats: 0, currentUsers: 0, totalPosts: 0 };
+    for (const address of collectorAddresses) {
+      const stats = snapshot?.value?.boards.get(address)?.stats;
+      if (!stats) continue;
+      totals.boardsLoaded++;
+      totals.boardsWithStats++;
+      totals.totalPosts += stats.allPostCount + stats.allReplyCount;
+      totals.currentUsers += stats.weekActiveUserCount;
+    }
+    return totals;
+  }, [collectorAddresses, snapshot]);
+
+  if (!snapshot) {
+    return (
+      <StatsBox>
+        <LoadingEllipsis string={t('loading')} />
+      </StatsBox>
+    );
+  }
+  const provider = snapshot.value ? getStatsProvider(snapshot.value.providerId) : undefined;
+  if (!provider || totals.boardsWithStats === 0) {
+    return <P2PStats collectorAddresses={collectorAddresses} />;
+  }
+  return (
+    <StatsBox title={t('stats_reported_by', { provider: provider.name })}>
+      <StatsValues {...totals} />
+    </StatsBox>
+  );
+};
+
+const Stats = ({ directories }: { directories: DirectoryCommunity[] }) => {
+  const statsScope = useHomepageStatsOptionsStore((state) => state.statsScope);
+  const usePureP2PStats = useStatsProvidersStore((state) => state.usePureP2PStats);
   const defaultDirectoryAddresses = useMemo(() => directories.map((directory) => directory.address), [directories]);
   const allDirectoryCodes = useMemo(
     () =>
@@ -255,70 +383,10 @@ const Stats = ({ directories }: { directories: DirectoryCommunity[] }) => {
     );
   }, [defaultDirectoryAddresses, directories, listsByCode, statsScope]);
 
-  const { totalPosts, currentUsers, boardsLoaded, boardsWithStats } = useMemo(() => {
-    let totalPosts = 0;
-    let currentUsers = 0;
-    let boardsLoaded = 0;
-    let boardsWithStats = 0;
-
-    for (const address of collectorAddresses) {
-      const stats = communitiesStats[address];
-      if (!hasResolvedStats(stats)) {
-        continue;
-      }
-
-      boardsLoaded++;
-      if (hasLoadedStats(stats)) {
-        boardsWithStats++;
-        totalPosts += stats.allPostCount + (stats.allReplyCount ?? 0);
-        currentUsers += stats.weekActiveUserCount || 0;
-      }
-    }
-
-    return {
-      totalPosts,
-      currentUsers,
-      boardsLoaded,
-      boardsWithStats,
-    };
-  }, [collectorAddresses, communitiesStats]);
-  const hasDisplayableStats = boardsWithStats > 0 || (collectorAddresses.length > 0 && boardsLoaded === collectorAddresses.length);
-  const isStatsLoading = !hasDisplayableStats || boardsLoaded < collectorAddresses.length;
-
-  return (
-    <>
-      <CommunityStatsMetadataLoader communityAddresses={collectorAddresses} />
-      {collectorAddresses.map((address) => (
-        <CommunityStatsCollector key={address} communityAddress={address} />
-      ))}
-      <div className={styles.box}>
-        <div className={`${styles.boxBar} ${styles.color2ColorBar}`}>
-          <h2 className={styles.statsTitle}>
-            {t('stats')}
-            {isStatsLoading && <StatsLoadingIndicator addresses={collectorAddresses} />}
-          </h2>
-          <StatsOptionsModal />
-        </div>
-        <div className={`${styles.boxContent} ${styles.stats}`}>
-          {hasDisplayableStats ? (
-            <>
-              <div className={styles.stat}>
-                <b>{t('total_posts')}</b> {totalPosts}
-              </div>
-              <div className={styles.stat}>
-                <b>{t('current_users')}</b> {currentUsers}
-              </div>
-              <div className={styles.stat}>
-                <b>{t('boards_loaded')}</b> {boardsLoaded}
-              </div>
-            </>
-          ) : (
-            <StatsLoadingEllipsis addresses={collectorAddresses} />
-          )}
-        </div>
-      </div>
-    </>
-  );
+  if (usePureP2PStats) {
+    return <P2PStats collectorAddresses={collectorAddresses} />;
+  }
+  return <ProviderStats collectorAddresses={collectorAddresses} />;
 };
 
 const Home = () => {

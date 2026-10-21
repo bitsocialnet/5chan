@@ -14,6 +14,7 @@ const loadCryptoAddressSetting = createSectionLoader(() => import('./crypto-addr
 const loadCryptoWalletsSetting = createSectionLoader(() => import('./crypto-wallets-setting/crypto-wallets-setting'));
 const loadInterfaceSettings = createSectionLoader(() => import('./interface-settings/interface-settings'));
 const loadMediaHostingSettings = createSectionLoader(() => import('./media-hosting-settings/media-hosting-settings'));
+const loadStatsProvidersSettings = createSectionLoader(() => import('./stats-providers-settings/stats-providers-settings'));
 const loadAdvancedSettings = createSectionLoader(() => import('./advanced-settings/advanced-settings'));
 const loadSubscriptionsSetting = createSectionLoader(() => import('./subscriptions-setting/subscriptions-setting'));
 const loadTrustedBoardLinksSetting = createSectionLoader(() => import('./trusted-board-links-setting/trusted-board-links-setting'));
@@ -22,6 +23,7 @@ const loadP2PStatsSettings = createSectionLoader(() => import('./p2p-stats-setti
 const alwaysVisibleSectionLoaders = [
   loadInterfaceSettings,
   loadMediaHostingSettings,
+  loadStatsProvidersSettings,
   loadAccountSettings,
   loadCryptoAddressSetting,
   loadCryptoWalletsSetting,
@@ -33,6 +35,7 @@ const alwaysVisibleSectionLoaders = [
 const allSectionIds = [
   'interface-settings',
   'media-hosting-settings',
+  'stats-providers-settings',
   'account-settings',
   'subscriptions-settings',
   'board-link-permissions-settings',
@@ -108,6 +111,7 @@ const SettingsModal = () => {
 
   const showInterfaceSettings = visibleExpandedSections.has('interface-settings');
   const showMediaHostingSettings = visibleExpandedSections.has('media-hosting-settings');
+  const showStatsProvidersSettings = visibleExpandedSections.has('stats-providers-settings');
   const showAccountSettings = visibleExpandedSections.has('account-settings');
   const showSubscriptionsSettings = visibleExpandedSections.has('subscriptions-settings');
   const showBoardLinkPermissionsSettings = visibleExpandedSections.has('board-link-permissions-settings');
@@ -202,6 +206,17 @@ const SettingsModal = () => {
         {showMediaHostingSettings && (
           <Suspense fallback={null}>
             <LazySection load={loadMediaHostingSettings} />
+          </Suspense>
+        )}
+        <div id='stats-providers-settings' className={`${styles.setting} ${styles.category}`}>
+          <button type='button' className={styles.categoryButton} onClick={() => handleCategoryClick('stats-providers-settings')}>
+            <span className={showStatsProvidersSettings ? styles.hideButton : styles.showButton} />
+            {t('stats_providers')}
+          </button>
+        </div>
+        {showStatsProvidersSettings && (
+          <Suspense fallback={null}>
+            <LazySection load={loadStatsProvidersSettings} />
           </Suspense>
         )}
         <div id='account-settings' className={`${styles.setting} ${styles.category}`}>

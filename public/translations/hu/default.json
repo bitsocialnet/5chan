@@ -581,5 +581,10 @@
   "boards_without_bump_order": "Nem jelennek meg, mert nem tesznek közzé bump sorrendet: {{boards}}",
   "last_reply": "Utolsó válasz",
   "boards_not_loaded": "Nem jelennek meg, mert nem töltődtek be időben: {{boards}}",
-  "loading_boards_to_sort": "Minden tábla betöltése rendezés előtt: {{loaded}} / {{total}}"
+  "loading_boards_to_sort": "Minden tábla betöltése rendezés előtt: {{loaded}} / {{total}}",
+  "stats_providers": "Statisztikai szolgáltatók",
+  "stats_providers_tip": "Ezek a szolgáltatók egyetlen kéréssel töltik be a kezdőlap népszerű szálait és statisztikáit, ahelyett hogy minden boardról külön kellene lekérni őket. Az alkalmazás a szálakat az aláírásuk alapján ellenőrzi; a bejegyzés- és felhasználószámok úgy jelennek meg, ahogy a szolgáltató közli őket.",
+  "use_pure_p2p_stats": "Inkább tiszta P2P használata (lassú)",
+  "pure_p2p_stats_tip": "A tiszta P2P-statisztikák mindig tartalékként szolgálnak arra az esetre, ha a statisztikai szolgáltatók leállnak.",
+  "stats_reported_by": "Jelentette: {{provider}}"
 }

@@ -581,5 +581,10 @@
   "boards_without_bump_order": "범프 순서를 게시하지 않아 표시되지 않음: {{boards}}",
   "last_reply": "마지막 답글",
   "boards_not_loaded": "제때 로드되지 않아 표시되지 않음: {{boards}}",
-  "loading_boards_to_sort": "정렬 전에 모든 게시판을 로드하는 중: {{total}}개 중 {{loaded}}개"
+  "loading_boards_to_sort": "정렬 전에 모든 게시판을 로드하는 중: {{total}}개 중 {{loaded}}개",
+  "stats_providers": "통계 제공업체",
+  "stats_providers_tip": "각 게시판에서 따로 불러오는 대신 한 번의 요청으로 홈페이지의 인기 있는 스레드와 통계를 불러옵니다. 스레드는 서명으로 검증되며, 게시물 수와 사용자 수는 제공업체가 보고한 값 그대로입니다.",
+  "use_pure_p2p_stats": "대신 순수 P2P 사용 (느림)",
+  "pure_p2p_stats_tip": "통계 제공업체가 중단되더라도 항상 순수 P2P 통계가 대체 수단으로 사용됩니다.",
+  "stats_reported_by": "{{provider}}에서 보고함"
 }

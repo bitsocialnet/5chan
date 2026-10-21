@@ -581,5 +581,10 @@
   "boards_without_bump_order": "Ei näytetä, koska ne eivät julkaise bump-järjestystä: {{boards}}",
   "last_reply": "Viimeisin vastaus",
   "boards_not_loaded": "Ei näytetä, koska ne eivät latautuneet ajoissa: {{boards}}",
-  "loading_boards_to_sort": "Ladataan kaikki taulut ennen lajittelua: {{loaded}}/{{total}}"
+  "loading_boards_to_sort": "Ladataan kaikki taulut ennen lajittelua: {{loaded}}/{{total}}",
+  "stats_providers": "Tilastojen palveluntarjoajat",
+  "stats_providers_tip": "Ne lataavat etusivun suositut langat ja tilastot yhdellä pyynnöllä sen sijaan, että ne haettaisiin jokaiselta boardilta. Langat tarkistetaan niiden allekirjoitusten avulla; viesti- ja käyttäjämäärät ovat sellaisia kuin palveluntarjoaja ne ilmoittaa.",
+  "use_pure_p2p_stats": "Käytä sen sijaan puhdasta P2P:tä (hidas)",
+  "pure_p2p_stats_tip": "Puhtaan P2P:n tilastot ovat aina varavaihtoehto, jos tilastojen palveluntarjoajat lakkaavat toimimasta.",
+  "stats_reported_by": "Ilmoittaja: {{provider}}"
 }

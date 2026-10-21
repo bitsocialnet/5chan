@@ -581,5 +581,10 @@
   "boards_without_bump_order": "Nuk shfaqen sepse nuk publikojnë renditje bump: {{boards}}",
   "last_reply": "Përgjigja e fundit",
   "boards_not_loaded": "Nuk shfaqen sepse nuk u ngarkuan në kohë: {{boards}}",
-  "loading_boards_to_sort": "Po ngarkohen të gjitha tabelat para renditjes: {{loaded}} nga {{total}}"
+  "loading_boards_to_sort": "Po ngarkohen të gjitha tabelat para renditjes: {{loaded}} nga {{total}}",
+  "stats_providers": "Ofruesit e Statistikave",
+  "stats_providers_tip": "Ata ngarkojnë threadet e njohur dhe statistikat e faqes kryesore me një kërkesë të vetme, në vend që t’i marrin nga çdo bord. Threadet verifikohen përmes nënshkrimeve të tyre; numri i postimeve dhe i përdoruesve është ashtu siç e raporton ofruesi.",
+  "use_pure_p2p_stats": "Përdor P2P të pastër në vend të kësaj (ngadalë)",
+  "pure_p2p_stats_tip": "Statistikat përmes P2P të pastër janë gjithmonë alternativa rezervë në rast se ofruesit e statistikave nuk funksionojnë.",
+  "stats_reported_by": "Raportuar nga {{provider}}"
 }

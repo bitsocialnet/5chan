@@ -581,5 +581,10 @@
   "boards_without_bump_order": "Nezobrazeno, protože nezveřejňují pořadí bump: {{boards}}",
   "last_reply": "Poslední odpověď",
   "boards_not_loaded": "Nezobrazeno, protože se nenačetly včas: {{boards}}",
-  "loading_boards_to_sort": "Načítání všech desek před seřazením: {{loaded}} z {{total}}"
+  "loading_boards_to_sort": "Načítání všech desek před seřazením: {{loaded}} z {{total}}",
+  "stats_providers": "Poskytovatelé statistik",
+  "stats_providers_tip": "Načítají oblíbená vlákna a statistiky domovské stránky jedním požadavkem místo z každé nástěnky zvlášť. Vlákna se ověřují podle jejich podpisů; počty příspěvků a uživatelů jsou takové, jak je uvádí poskytovatel.",
+  "use_pure_p2p_stats": "Použít místo toho čisté P2P (pomalé)",
+  "pure_p2p_stats_tip": "Statistiky z čistého P2P jsou vždy záložní možností pro případ, že poskytovatelé statistik přestanou fungovat.",
+  "stats_reported_by": "Uvádí {{provider}}"
 }
