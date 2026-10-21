@@ -39,7 +39,6 @@ jobs:
           plugin_marketplaces: 'https://github.com/anthropics/claude-code.git'
           plugins: 'code-review@claude-code-plugins'
           prompt: '/code-review:code-review --comment ${{ github.repository }}/pull/${{ github.event.pull_request.number }}'
-          show_full_output: true
           # Without the system prompt the main agent skipped the command's agents and skimmed the diff
           # itself, calling a 33-file refactor "mechanical", then posted "No issues found" on a pull
           # request with three planted bugs. With it, every step's agents run and all three were caught.
