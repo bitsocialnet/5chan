@@ -80,47 +80,78 @@ describe('stats provider snapshot', () => {
     expect(parseStatsProviderSnapshot(null, 'first')).toBeNull();
   });
 
-  it('fails over to the next provider and requests the snapshot once per page load', async () => {
-    const fetchMock = mockFetchResponses(new Error('offline'), createSnapshotResponse([{ address: 'music.bso', stats: null, threads: [] }]));
+  it('fails over to the next provider and requests each document once per page load', async () => {
+    const fetchMock = mockFetchResponses(new Error('offline'), createSnapshotResponse([{ address: 'music.bso', stats: null, threads: [] }]), createSnapshotResponse([]));
 
-    const snapshot = await getStatsProviderSnapshot();
-    await getStatsProviderSnapshot();
+    const snapshot = await getStatsProviderSnapshot('boards');
+    await getStatsProviderSnapshot('boards');
+    const stats = await getStatsProviderSnapshot('stats');
+    await getStatsProviderSnapshot('stats');
 
     expect(snapshot?.providerId).toBe('second');
-    expect(fetchMock.mock.calls.map(([url]) => String(url))).toEqual(['https://first.example/api/v1/5chan/boards', 'https://second.example/api/v1/5chan/boards']);
+    expect(stats?.providerId).toBe('first');
+    expect(fetchMock.mock.calls.map(([url]) => String(url))).toEqual([
+      'https://first.example/api/v1/5chan/boards',
+      'https://second.example/api/v1/5chan/boards',
+      'https://first.example/api/v1/5chan/stats',
+    ]);
+  });
+
+  it('skips a provider that has not started answering in time but waits for a slow download', async () => {
+    vi.useFakeTimers({ now: NOW * 1000 });
+    let finishDownload: (value: unknown) => void = () => {};
+    const slowDownload = { ok: true, json: () => new Promise((resolve) => (finishDownload = resolve)) };
+    const fetchMock = vi
+      .fn()
+      .mockReturnValueOnce(new Promise(() => {}))
+      .mockResolvedValueOnce(slowDownload);
+    vi.stubGlobal('fetch', fetchMock);
+
+    const request = getStatsProviderSnapshot('boards');
+    await vi.advanceTimersByTimeAsync(5_000);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+
+    // The second provider answered at once; its body takes longer than the answer timeout.
+    await vi.advanceTimersByTimeAsync(8_000);
+    finishDownload(createSnapshotResponse([]));
+    await expect(request).resolves.toMatchObject({ providerId: 'second' });
   });
 
   it('skips a provider that answers with an error status or an outdated snapshot', async () => {
     mockFetchResponses(httpStatus(502), { ...createSnapshotResponse([]), generatedAt: NOW - 2 * 3600 });
 
-    await expect(getStatsProviderSnapshot()).resolves.toBeNull();
+    await expect(getStatsProviderSnapshot('boards')).resolves.toBeNull();
   });
 
   it('resolves to null when no provider answers, so the boxes fall back to P2P', async () => {
     mockFetchResponses(new Error('offline'), { version: 1 });
 
-    await expect(getStatsProviderSnapshot()).resolves.toBeNull();
+    await expect(getStatsProviderSnapshot('stats')).resolves.toBeNull();
   });
 
-  it('takes over the request index.html started instead of requesting the snapshot again', async () => {
+  it('takes over the requests index.html started instead of requesting the snapshots again', async () => {
     const fetchMock = mockFetchResponses();
+    const prefetchedResponse = (boards: unknown[]) => Promise.resolve({ ok: true, json: async () => createSnapshotResponse(boards) } as Response);
     window.__FIVECHAN_STATS_PREFETCH__ = {
-      url: 'https://first.example/api/v1/5chan/boards',
-      response: Promise.resolve({ ok: true, json: async () => createSnapshotResponse([]) } as Response),
+      'https://first.example/api/v1/5chan/stats': prefetchedResponse([{ address: 'music.bso', stats: null }]),
+      'https://first.example/api/v1/5chan/boards': prefetchedResponse([]),
     };
 
-    const snapshot = await getStatsProviderSnapshot();
+    const stats = await getStatsProviderSnapshot('stats');
+    expect(window.__FIVECHAN_STATS_PREFETCH__).toEqual({ 'https://first.example/api/v1/5chan/boards': expect.any(Promise) });
+    const boards = await getStatsProviderSnapshot('boards');
 
-    expect(snapshot?.providerId).toBe('first');
+    expect([...(stats?.boards.keys() ?? [])]).toEqual(['music.bso']);
+    expect(boards?.providerId).toBe('first');
     expect(fetchMock).not.toHaveBeenCalled();
-    expect(window.__FIVECHAN_STATS_PREFETCH__).toBeUndefined();
+    expect(window.__FIVECHAN_STATS_PREFETCH__).toEqual({});
   });
 
   it('moves on to the next provider when the request index.html started fails', async () => {
     const fetchMock = mockFetchResponses(createSnapshotResponse([]));
-    window.__FIVECHAN_STATS_PREFETCH__ = { url: 'https://first.example/api/v1/5chan/boards', response: Promise.reject(new Error('offline')) };
+    window.__FIVECHAN_STATS_PREFETCH__ = { 'https://first.example/api/v1/5chan/boards': Promise.reject(new Error('offline')) };
 
-    const snapshot = await getStatsProviderSnapshot();
+    const snapshot = await getStatsProviderSnapshot('boards');
 
     expect(snapshot?.providerId).toBe('second');
     expect(fetchMock.mock.calls.map(([url]) => String(url))).toEqual(['https://second.example/api/v1/5chan/boards']);

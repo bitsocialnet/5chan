@@ -122,7 +122,7 @@ const ProviderPopularThreads = ({ boardAddresses, directories }: PopularThreadsS
     () => boardAddresses.map((address, index) => ({ address, publicKey: communityIdentifiers[index]?.publicKey })),
     [boardAddresses, communityIdentifiers],
   );
-  const snapshot = usePromiseResult(getStatsProviderSnapshot())?.value;
+  const snapshot = usePromiseResult(getStatsProviderSnapshot('boards'))?.value;
   // Verifying a thread uses the account's pkc instance, which exists once accounts have loaded.
   const posts = usePromiseResult(snapshot && account ? getProviderPopularPosts(snapshot, boardRefs, verifyProviderThread) : undefined)?.value;
 

@@ -318,7 +318,7 @@ const P2PStats = ({ collectorAddresses }: { collectorAddresses: string[] }) => {
 /** Sums the per-board stats a stats provider reported, so the box does not wait for every board to load. */
 const ProviderStats = ({ collectorAddresses }: { collectorAddresses: string[] }) => {
   const { t } = useTranslation();
-  const snapshot = usePromiseResult(getStatsProviderSnapshot());
+  const snapshot = usePromiseResult(getStatsProviderSnapshot('stats'));
 
   const totals = useMemo(() => {
     const totals: StatsTotals = { boardsLoaded: 0, boardsWithStats: 0, currentUsers: 0, totalPosts: 0 };

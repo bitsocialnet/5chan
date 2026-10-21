@@ -9,7 +9,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 import { APP_PRELOAD_ATTRIBUTE, dynamicEntryPreloadPlugin } from './scripts/vite-app-preload.mjs';
 import { staticShellPlugin } from './scripts/vite-static-shell.mjs';
 import { statsProviderPrefetchPlugin } from './scripts/vite-stats-provider-prefetch.mjs';
-import { getStatsProviderBoardsUrl, PURE_P2P_STATS_STORAGE_KEY, STATS_PROVIDER_TIMEOUT_MS, STATS_PROVIDERS } from './src/lib/stats-providers.ts';
+import { getStatsProviderUrl, PURE_P2P_STATS_STORAGE_KEY, STATS_PROVIDER_DOWNLOAD_TIMEOUT_MS, STATS_PROVIDERS } from './src/lib/stats-providers.ts';
 
 const { version: packageVersion } = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8'));
 const appVersion = `${process.env.VITE_APP_VERSION || packageVersion}`.trim() || packageVersion;
@@ -349,8 +349,9 @@ export default defineConfig({
     babel({ presets: [reactCompilerPreset()] }),
     dynamicEntryPreloadPlugin(),
     statsProviderPrefetchPlugin({
-      url: getStatsProviderBoardsUrl(STATS_PROVIDERS[0]),
-      timeoutMs: STATS_PROVIDER_TIMEOUT_MS,
+      // The Stats box's small document first, so it is not queued behind the threads.
+      urls: [getStatsProviderUrl(STATS_PROVIDERS[0], 'stats'), getStatsProviderUrl(STATS_PROVIDERS[0], 'boards')],
+      timeoutMs: STATS_PROVIDER_DOWNLOAD_TIMEOUT_MS,
       pureP2PStorageKey: PURE_P2P_STATS_STORAGE_KEY,
     }),
     staticShellPlugin({ preloadAttribute: APP_PRELOAD_ATTRIBUTE }),

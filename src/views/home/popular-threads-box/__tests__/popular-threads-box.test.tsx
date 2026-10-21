@@ -212,6 +212,8 @@ describe('PopularThreadsBox', () => {
     await renderPopularThreadsBox();
 
     expect(container.textContent).toContain('provider thread title');
+    expect(vi.mocked(getStatsProviderSnapshot).mock.calls).toEqual(expect.arrayContaining([['boards']]));
+    expect(vi.mocked(getStatsProviderSnapshot)).not.toHaveBeenCalledWith('stats');
     expect(vi.mocked(getProviderPopularPosts)).toHaveBeenCalledWith(
       testState.providerSnapshot,
       directories.map((entry) => ({ address: entry.address, publicKey: `${entry.address}-key` })),

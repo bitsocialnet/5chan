@@ -1,6 +1,13 @@
 import type { Comment } from '@bitsocial/bitsocial-react-hooks';
 import { getBoardTopThreads, getPopularThreadPool, toPopularPosts } from './popular-threads';
-import { getStatsProviderBoardsUrl, STATS_PROVIDER_TIMEOUT_MS, STATS_PROVIDERS, type StatsProvider } from './stats-providers';
+import {
+  getStatsProviderUrl,
+  STATS_PROVIDER_DOWNLOAD_TIMEOUT_MS,
+  STATS_PROVIDER_TIMEOUT_MS,
+  STATS_PROVIDERS,
+  type StatsProvider,
+  type StatsProviderDocument,
+} from './stats-providers';
 import { isBoardAddressShape } from './utils/directory-list-lookup-utils';
 
 // Providers rewrite their snapshot every minute or so; an older one means the provider stopped
@@ -9,8 +16,8 @@ const MAX_SNAPSHOT_AGE_SECONDS = 60 * 60;
 
 declare global {
   interface Window {
-    // The request index.html starts on the home page (scripts/vite-stats-provider-prefetch.mjs).
-    __FIVECHAN_STATS_PREFETCH__?: { url: string; response: Promise<Response> };
+    // The requests index.html starts on the home page, by URL (scripts/vite-stats-provider-prefetch.mjs).
+    __FIVECHAN_STATS_PREFETCH__?: Record<string, Promise<Response>>;
   }
 }
 
@@ -86,19 +93,30 @@ export const parseStatsProviderSnapshot = (value: unknown, providerId: string): 
 
 /** The response to the request index.html started for this URL, which only the first request takes over. */
 const takePrefetchedResponse = (url: string): Promise<Response> | undefined => {
-  if (typeof window === 'undefined') return undefined;
-  const prefetch = window.__FIVECHAN_STATS_PREFETCH__;
-  delete window.__FIVECHAN_STATS_PREFETCH__;
-  return prefetch?.url === url ? prefetch.response : undefined;
+  const prefetches = typeof window === 'undefined' ? undefined : window.__FIVECHAN_STATS_PREFETCH__;
+  const response = prefetches?.[url];
+  delete prefetches?.[url];
+  return response;
 };
 
-const fetchSnapshot = async (provider: StatsProvider): Promise<StatsProviderSnapshot> => {
-  const url = getStatsProviderBoardsUrl(provider);
-  const response = await (takePrefetchedResponse(url) ??
-    fetch(url, {
-      headers: { Accept: 'application/json' },
-      signal: AbortSignal.timeout(STATS_PROVIDER_TIMEOUT_MS),
-    }));
+/** Rejects when the provider has not started answering in time; its download has a limit of its own. */
+const answeredInTime = (response: Promise<Response>): Promise<Response> => {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error('Stats provider did not answer in time')), STATS_PROVIDER_TIMEOUT_MS);
+  });
+  return Promise.race([response, timeout]).finally(() => clearTimeout(timer));
+};
+
+const fetchSnapshot = async (provider: StatsProvider, document: StatsProviderDocument): Promise<StatsProviderSnapshot> => {
+  const url = getStatsProviderUrl(provider, document);
+  const response = await answeredInTime(
+    takePrefetchedResponse(url) ??
+      fetch(url, {
+        headers: { Accept: 'application/json' },
+        signal: AbortSignal.timeout(STATS_PROVIDER_DOWNLOAD_TIMEOUT_MS),
+      }),
+  );
   if (!response.ok) throw new Error(`Stats provider returned ${response.status}`);
 
   const snapshot = parseStatsProviderSnapshot(await response.json(), provider.id);
@@ -108,10 +126,10 @@ const fetchSnapshot = async (provider: StatsProvider): Promise<StatsProviderSnap
 };
 
 /** Each provider in order; null when none answers, so the caller falls back to pure P2P. */
-const fetchSnapshotFromChain = async (providers: readonly StatsProvider[]): Promise<StatsProviderSnapshot | null> => {
+const fetchSnapshotFromChain = async (providers: readonly StatsProvider[], document: StatsProviderDocument): Promise<StatsProviderSnapshot | null> => {
   for (const provider of providers) {
     try {
-      return await fetchSnapshot(provider);
+      return await fetchSnapshot(provider, document);
     } catch {
       // Hand over to the next provider.
     }
@@ -119,13 +137,17 @@ const fetchSnapshotFromChain = async (providers: readonly StatsProvider[]): Prom
   return null;
 };
 
-// One request per page load: the home boxes freeze what they show until a refresh anyway.
-let snapshotRequest: Promise<StatsProviderSnapshot | null> | undefined;
+// One request per document and page load: the home boxes freeze what they show until a refresh anyway.
+const snapshotRequests = new Map<StatsProviderDocument, Promise<StatsProviderSnapshot | null>>();
 const popularPostsRequests = new Map<string, Promise<Comment[]>>();
 
-export const getStatsProviderSnapshot = (): Promise<StatsProviderSnapshot | null> => {
-  snapshotRequest ??= fetchSnapshotFromChain(STATS_PROVIDERS);
-  return snapshotRequest;
+export const getStatsProviderSnapshot = (document: StatsProviderDocument): Promise<StatsProviderSnapshot | null> => {
+  let request = snapshotRequests.get(document);
+  if (!request) {
+    request = fetchSnapshotFromChain(STATS_PROVIDERS, document);
+    snapshotRequests.set(document, request);
+  }
+  return request;
 };
 
 const firstBoolean = (...values: unknown[]): boolean | undefined => values.find((value): value is boolean => typeof value === 'boolean');
@@ -194,6 +216,6 @@ export const getProviderPopularPosts = (snapshot: StatsProviderSnapshot, boardRe
 };
 
 export const clearStatsProviderRequestsForTest = () => {
-  snapshotRequest = undefined;
+  snapshotRequests.clear();
   popularPostsRequests.clear();
 };

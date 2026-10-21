@@ -358,6 +358,8 @@ describe('Home', () => {
     expect(container.querySelector('[data-testid="stats-metadata-loader"]')).toBeNull();
     expect(container.querySelectorAll('[data-testid="stats-collector"]')).toHaveLength(0);
     expect(container.querySelector('h2[title="stats_reported_by"]')).not.toBeNull();
+    // The Stats box reads the provider's stats, which leave out the threads.
+    expect(vi.mocked(getStatsProviderSnapshot)).toHaveBeenCalledWith('stats');
   });
 
   it('collects stats over P2P when the provider reports none for these boards', async () => {

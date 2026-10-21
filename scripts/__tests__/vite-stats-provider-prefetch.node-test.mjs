@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createStatsProviderPrefetchTags, STATS_PREFETCH_DATA_ID, STATS_PREFETCH_SCRIPT } from '../vite-stats-provider-prefetch.mjs';
 
-const OPTIONS = { url: 'https://stats.example/api/v1/5chan/boards', timeoutMs: 5000, pureP2PStorageKey: '5chan-pure-p2p-stats' };
+const URLS = ['https://stats.example/api/v1/5chan/stats', 'https://stats.example/api/v1/5chan/boards'];
+const OPTIONS = { urls: URLS, timeoutMs: 15000, pureP2PStorageKey: '5chan-pure-p2p-stats' };
 
 const runScript = (hash, storage = {}) => {
   const window = {};
@@ -12,7 +13,7 @@ const runScript = (hash, storage = {}) => {
   const AbortSignal = { timeout: (ms) => ({ timeoutMs: ms }) };
   const fetch = (url, init) => {
     requests.push({ url, accept: init.headers.Accept, timeoutMs: init.signal.timeoutMs });
-    return Promise.resolve('response');
+    return Promise.resolve(`response for ${url}`);
   };
   new Function('window', 'location', 'document', 'localStorage', 'AbortSignal', 'fetch', STATS_PREFETCH_SCRIPT)(
     window,
@@ -33,12 +34,18 @@ test('puts the settings block before the script, first in <head>', () => {
   assert.deepEqual([data.injectTo, script.injectTo], ['head-prepend', 'head-prepend']);
 });
 
-test('requests the snapshot on the home page and hands the response to the app', () => {
+test('requests the snapshots on the home page and hands the responses to the app by URL', async () => {
   for (const hash of ['', '#', '#/', '#/?lang=de']) {
     const { prefetch, requests } = runScript(hash);
-    assert.deepEqual(requests, [{ url: OPTIONS.url, accept: 'application/json', timeoutMs: OPTIONS.timeoutMs }], hash);
-    assert.equal(prefetch.url, OPTIONS.url, hash);
-    assert.ok(prefetch.response instanceof Promise, hash);
+    assert.deepEqual(
+      requests,
+      URLS.map((url) => ({ url, accept: 'application/json', timeoutMs: OPTIONS.timeoutMs })),
+      hash,
+    );
+    assert.deepEqual(Object.keys(prefetch), URLS, hash);
+    for (const url of URLS) {
+      assert.equal(await prefetch[url], `response for ${url}`, hash);
+    }
   }
 });
 
