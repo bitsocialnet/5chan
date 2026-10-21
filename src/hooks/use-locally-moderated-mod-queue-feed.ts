@@ -37,7 +37,7 @@ const applyLocalModerationEdits = (comment: Comment, editSummary: LocalModeratio
   let editedComment: Comment | undefined;
   for (const propertyName of LOCAL_MODERATION_EDIT_FIELDS) {
     const edit = editSummary[propertyName];
-    if (!edit || edit.value === undefined || !shouldApplyLocalModerationEdit(comment, propertyName, edit, now)) {
+    if (!edit?.value || !shouldApplyLocalModerationEdit(comment, propertyName, edit, now)) {
       continue;
     }
     editedComment = { ...(editedComment ?? comment), [propertyName]: edit.value } as Comment;

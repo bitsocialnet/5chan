@@ -23,12 +23,19 @@ interface EffectiveReplyLinkFeatures {
   noReplyLinks?: unknown;
 }
 
+// A community's own setting wins; the directory entry fills in what the community leaves unset.
+const pickFeature = (
+  key: keyof PublishLinkFeatures,
+  communityFeatures: PublishLinkFeatures | undefined,
+  directoryFeatures: PublishLinkFeatures | undefined,
+): unknown => communityFeatures?.[key] || directoryFeatures?.[key];
+
 export const getEffectivePostLinkFeatures = (
   communityFeatures: PublishLinkFeatures | undefined,
   directoryFeatures: PublishLinkFeatures | undefined,
 ): EffectivePostLinkFeatures | undefined => {
-  const requirePostLink = communityFeatures?.requirePostLink ?? directoryFeatures?.requirePostLink;
-  const requirePostLinkIsMedia = communityFeatures?.requirePostLinkIsMedia ?? directoryFeatures?.requirePostLinkIsMedia;
+  const requirePostLink = pickFeature('requirePostLink', communityFeatures, directoryFeatures);
+  const requirePostLinkIsMedia = pickFeature('requirePostLinkIsMedia', communityFeatures, directoryFeatures);
 
   if (requirePostLink === undefined && requirePostLinkIsMedia === undefined) {
     return undefined;
@@ -44,9 +51,9 @@ export const getEffectiveReplyLinkFeatures = (
   communityFeatures: PublishLinkFeatures | undefined,
   directoryFeatures: PublishLinkFeatures | undefined,
 ): EffectiveReplyLinkFeatures | undefined => {
-  const requireReplyLink = communityFeatures?.requireReplyLink ?? directoryFeatures?.requireReplyLink;
-  const requireReplyLinkIsMedia = communityFeatures?.requireReplyLinkIsMedia ?? directoryFeatures?.requireReplyLinkIsMedia;
-  const noReplyLinks = communityFeatures?.noReplyLinks ?? directoryFeatures?.noReplyLinks;
+  const requireReplyLink = pickFeature('requireReplyLink', communityFeatures, directoryFeatures);
+  const requireReplyLinkIsMedia = pickFeature('requireReplyLinkIsMedia', communityFeatures, directoryFeatures);
+  const noReplyLinks = pickFeature('noReplyLinks', communityFeatures, directoryFeatures);
 
   if (requireReplyLink === undefined && requireReplyLinkIsMedia === undefined && noReplyLinks === undefined) {
     return undefined;
