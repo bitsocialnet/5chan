@@ -100,14 +100,15 @@ export const getPublishLinkValidationError = ({
   noLinksAlertKey?: string;
   t: TFunction;
 }): string | null => {
-  if ((link || attachment) && noLinks && noLinksAlertKey) {
-    return `${t('error')}: ${t(noLinksAlertKey)}`;
-  }
-  if (!link && !attachment && requireLink) {
-    return `${t('error')}: ${t(requireMedia ? requiredMediaLinkAlertKey : requiredLinkAlertKey)}`;
-  }
+  // An attached file is validated on its own: it has no URL to check until it is uploaded.
   if (attachment) {
     return requireMedia && !isPublishFileAttachment(attachment) ? `${t('error')}: ${t('link_not_image_or_video_alert')}` : null;
+  }
+  if (link && noLinks && noLinksAlertKey) {
+    return `${t('error')}: ${t(noLinksAlertKey)}`;
+  }
+  if (!link && requireLink) {
+    return `${t('error')}: ${t(requireMedia ? requiredMediaLinkAlertKey : requiredLinkAlertKey)}`;
   }
   if (link && !isValidPublishURL(link)) {
     return `${t('error')}: ${t('invalid_url_alert')}`;
