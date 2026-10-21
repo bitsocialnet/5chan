@@ -23,7 +23,7 @@ interface EffectiveReplyLinkFeatures {
   noReplyLinks?: unknown;
 }
 
-// A community's own setting wins; the directory entry fills in what the community leaves unset.
+// A community's own setting wins, and the directory entry fills in whatever the community leaves unset.
 const pickFeature = (
   key: keyof PublishLinkFeatures,
   communityFeatures: PublishLinkFeatures | undefined,
