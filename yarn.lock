@@ -11,7 +11,7 @@ __metadata:
   dependencies:
     "@babel/core": "npm:7.29.7"
     "@bbob/parser": "npm:4.4.1"
-    "@bitsocial/bitsocial-react-hooks": "npm:0.1.56"
+    "@bitsocial/bitsocial-react-hooks": "npm:0.1.57"
     "@bitsocial/bso-resolver": "npm:0.0.10"
     "@bitsocial/pubsub-voting": "npm:0.7.8"
     "@capacitor/android": "npm:8.5.2"
@@ -29,7 +29,7 @@ __metadata:
     "@electron-forge/plugin-auto-unpack-natives": "npm:8.0.1"
     "@electron/rebuild": "npm:4.2.0"
     "@floating-ui/react": "npm:0.27.20"
-    "@pkcprotocol/pkc-js": "npm:0.0.109"
+    "@pkcprotocol/pkc-js": "npm:0.0.119"
     "@playwright/cli": "npm:0.1.22"
     "@react-spring/web": "npm:10.1.2"
     "@reforged/maker-appimage": "npm:5.3.1"
@@ -1808,12 +1808,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@bitsocial/bitsocial-react-hooks@npm:0.1.56":
-  version: 0.1.56
-  resolution: "@bitsocial/bitsocial-react-hooks@npm:0.1.56"
+"@bitsocial/bitsocial-react-hooks@npm:0.1.57":
+  version: 0.1.57
+  resolution: "@bitsocial/bitsocial-react-hooks@npm:0.1.57"
   dependencies:
     "@bitsocial/bso-resolver": "npm:0.0.10"
-    "@pkcprotocol/pkc-js": "npm:0.0.109"
+    "@pkcprotocol/pkc-js": "npm:0.0.119"
     "@pkcprotocol/pkc-logger": "npm:0.1.0"
     ethers: "npm:5.8.0"
     localforage: "npm:1.10.0"
@@ -1828,7 +1828,7 @@ __metadata:
     zustand: "npm:4.5.7"
   peerDependencies:
     react: ">=16.8"
-  checksum: 10c0/bcd22ce33215161f2555a51fe2e6290961d09f1f8fba908347aa6d2b7bd95fc6acfa9c505d9c46b0028cb6b263d51c156f9b6d02c898f1f72fcd4140e86c1285
+  checksum: 10c0/aaa79db09e886bf37ce3b3ee1c1dc69bca7832322b1bb152c89c6de43d61ec06519bb2418d86d15eabdd2052b28d5c1bfd0a598275d985e0ef9ad8213ea67fb7
   languageName: node
   linkType: hard
 
@@ -6993,9 +6993,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@pkcprotocol/pkc-js@npm:0.0.109":
-  version: 0.0.109
-  resolution: "@pkcprotocol/pkc-js@npm:0.0.109"
+"@pkcprotocol/pkc-js@npm:0.0.119":
+  version: 0.0.119
+  resolution: "@pkcprotocol/pkc-js@npm:0.0.119"
   dependencies:
     "@enhances/with-resolvers": "npm:0.0.5"
     "@helia/bitswap": "npm:4.0.14"
@@ -7059,7 +7059,7 @@ __metadata:
     uuid: "npm:13.0.0"
     ws: "npm:8.20.0"
     zod: "npm:4.3.6"
-  checksum: 10c0/87b6357eebeeebbda8b3ebea582ec2b053b9bfd50fa8f00a322cbd605fce5faca013a72cfa8924e1280339e306665633750ca4a91448fd180ea8ed9cacd6ecc0
+  checksum: 10c0/89aa652e79cc42f735d47fd89d3054a116f22ae6f63f78fa204b3f9fcc5ed01202cdfc3fd3fcaace9b97dd3aa5872d0645362ff00de8db7b716af0cedbddac2d
   languageName: node
   linkType: hard
 
