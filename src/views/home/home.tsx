@@ -1,4 +1,4 @@
-import { Suspense, memo, use, useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from 'react';
+import { memo, useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Trans, useTranslation } from 'react-i18next';
 import styles from './home.module.css';
@@ -21,6 +21,7 @@ import { extractDirectoryFromTitle } from '../../lib/utils/route-utils';
 import { getSearchSubmitPath } from '../../lib/search-navigation';
 import { isWebRuntime } from '../../lib/media-hosting/show-upload-controls';
 import { useFeedStateString } from '../../hooks/use-state-string';
+import { usePromiseResult } from '../../hooks/use-promise-result';
 
 // https://github.com/bitsocialnet/lists/tree/master/5chan-directories
 
@@ -317,12 +318,12 @@ const P2PStats = ({ collectorAddresses }: { collectorAddresses: string[] }) => {
 /** Sums the per-board stats a stats provider reported, so the box does not wait for every board to load. */
 const ProviderStats = ({ collectorAddresses }: { collectorAddresses: string[] }) => {
   const { t } = useTranslation();
-  const snapshot = use(getStatsProviderSnapshot());
+  const snapshot = usePromiseResult(getStatsProviderSnapshot());
 
   const totals = useMemo(() => {
     const totals: StatsTotals = { boardsLoaded: 0, boardsWithStats: 0, currentUsers: 0, totalPosts: 0 };
     for (const address of collectorAddresses) {
-      const stats = snapshot?.boards.get(address)?.stats;
+      const stats = snapshot?.value?.boards.get(address)?.stats;
       if (!stats) continue;
       totals.boardsLoaded++;
       totals.boardsWithStats++;
@@ -332,7 +333,14 @@ const ProviderStats = ({ collectorAddresses }: { collectorAddresses: string[] })
     return totals;
   }, [collectorAddresses, snapshot]);
 
-  const provider = snapshot ? getStatsProvider(snapshot.providerId) : undefined;
+  if (!snapshot) {
+    return (
+      <StatsBox>
+        <LoadingEllipsis string={t('loading')} />
+      </StatsBox>
+    );
+  }
+  const provider = snapshot.value ? getStatsProvider(snapshot.value.providerId) : undefined;
   if (!provider || totals.boardsWithStats === 0) {
     return <P2PStats collectorAddresses={collectorAddresses} />;
   }
@@ -344,7 +352,6 @@ const ProviderStats = ({ collectorAddresses }: { collectorAddresses: string[] })
 };
 
 const Stats = ({ directories }: { directories: DirectoryCommunity[] }) => {
-  const { t } = useTranslation();
   const statsScope = useHomepageStatsOptionsStore((state) => state.statsScope);
   const usePureP2PStats = useStatsProvidersStore((state) => state.usePureP2PStats);
   const defaultDirectoryAddresses = useMemo(() => directories.map((directory) => directory.address), [directories]);
@@ -379,17 +386,7 @@ const Stats = ({ directories }: { directories: DirectoryCommunity[] }) => {
   if (usePureP2PStats) {
     return <P2PStats collectorAddresses={collectorAddresses} />;
   }
-  return (
-    <Suspense
-      fallback={
-        <StatsBox>
-          <LoadingEllipsis string={t('loading')} />
-        </StatsBox>
-      }
-    >
-      <ProviderStats collectorAddresses={collectorAddresses} />
-    </Suspense>
-  );
+  return <ProviderStats collectorAddresses={collectorAddresses} />;
 };
 
 const Home = () => {

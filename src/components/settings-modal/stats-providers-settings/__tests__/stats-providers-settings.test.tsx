@@ -2,7 +2,8 @@ import * as React from 'react';
 import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import useStatsProvidersStore, { PURE_P2P_STATS_STORAGE_KEY } from '../../../../stores/use-stats-providers-store';
+import useStatsProvidersStore from '../../../../stores/use-stats-providers-store';
+import { PURE_P2P_STATS_STORAGE_KEY } from '../../../../lib/stats-providers';
 import StatsProvidersSettings from '../stats-providers-settings';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;

@@ -1,4 +1,4 @@
-import { Suspense, memo, use, useMemo, type ReactNode } from 'react';
+import { memo, useMemo, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Comment, useAccount, useCommunities } from '@bitsocial/bitsocial-react-hooks';
@@ -18,6 +18,7 @@ import { useCommunityIdentifiers } from '../../../hooks/use-community-identifier
 import { getCommentCommunityAddress } from '../../../lib/utils/comment-utils';
 import { getBoardPath } from '../../../lib/utils/route-utils';
 import usePrefetchIntent from '../../../hooks/use-prefetch-intent';
+import { usePromiseResult } from '../../../hooks/use-promise-result';
 import { CATALOG_PREVIEW_MARKDOWN_OPTIONS, removeMarkdown } from '../../../lib/utils/post-utils';
 
 interface PopularThreadProps {
@@ -121,20 +122,19 @@ const ProviderPopularThreads = ({ boardAddresses, directories }: PopularThreadsS
     () => boardAddresses.map((address, index) => ({ address, publicKey: communityIdentifiers[index]?.publicKey })),
     [boardAddresses, communityIdentifiers],
   );
-  const snapshot = use(getStatsProviderSnapshot());
-
+  const snapshot = usePromiseResult(getStatsProviderSnapshot())?.value;
   // Verifying a thread uses the account's pkc instance, which exists once accounts have loaded.
-  if (snapshot && !account) {
+  const posts = usePromiseResult(snapshot && account ? getProviderPopularPosts(snapshot, boardRefs, verifyProviderThread) : undefined)?.value;
+
+  if (snapshot === null || posts?.length === 0) {
+    return <P2PPopularThreads boardAddresses={boardAddresses} directories={directories} />;
+  }
+  if (!posts) {
     return (
       <PopularThreadsLoadingContent>
         <LoadingEllipsis string={t('loading')} />
       </PopularThreadsLoadingContent>
     );
-  }
-  const posts = snapshot ? use(getProviderPopularPosts(snapshot, boardRefs, verifyProviderThread)) : [];
-
-  if (posts.length === 0) {
-    return <P2PPopularThreads boardAddresses={boardAddresses} directories={directories} />;
   }
   return <PopularThreadsList directories={directories} posts={posts} />;
 };
@@ -168,15 +168,7 @@ const PopularThreadsBox = ({ directories, directoryAddresses }: { directories: D
       {usePureP2PStats ? (
         <P2PPopularThreads boardAddresses={filteredBoardAddresses} directories={directories} />
       ) : (
-        <Suspense
-          fallback={
-            <PopularThreadsLoadingContent>
-              <LoadingEllipsis string={t('loading')} />
-            </PopularThreadsLoadingContent>
-          }
-        >
-          <ProviderPopularThreads boardAddresses={filteredBoardAddresses} directories={directories} />
-        </Suspense>
+        <ProviderPopularThreads boardAddresses={filteredBoardAddresses} directories={directories} />
       )}
     </div>
   );

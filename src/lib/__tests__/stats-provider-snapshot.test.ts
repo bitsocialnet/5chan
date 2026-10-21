@@ -7,7 +7,8 @@ import {
   type ProviderThreadPayload,
 } from '../stats-provider-snapshot';
 
-vi.mock('../stats-providers', () => ({
+vi.mock('../stats-providers', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../stats-providers')>()),
   STATS_PROVIDERS: [
     { apiUrl: 'https://first.example', id: 'first', name: 'first.example', siteUrl: 'https://first.example' },
     { apiUrl: 'https://second.example/', id: 'second', name: 'second.example', siteUrl: 'https://second.example' },
@@ -99,6 +100,30 @@ describe('stats provider snapshot', () => {
     mockFetchResponses(new Error('offline'), { version: 1 });
 
     await expect(getStatsProviderSnapshot()).resolves.toBeNull();
+  });
+
+  it('takes over the request index.html started instead of requesting the snapshot again', async () => {
+    const fetchMock = mockFetchResponses();
+    window.__FIVECHAN_STATS_PREFETCH__ = {
+      url: 'https://first.example/api/v1/5chan/boards',
+      response: Promise.resolve({ ok: true, json: async () => createSnapshotResponse([]) } as Response),
+    };
+
+    const snapshot = await getStatsProviderSnapshot();
+
+    expect(snapshot?.providerId).toBe('first');
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(window.__FIVECHAN_STATS_PREFETCH__).toBeUndefined();
+  });
+
+  it('moves on to the next provider when the request index.html started fails', async () => {
+    const fetchMock = mockFetchResponses(createSnapshotResponse([]));
+    window.__FIVECHAN_STATS_PREFETCH__ = { url: 'https://first.example/api/v1/5chan/boards', response: Promise.reject(new Error('offline')) };
+
+    const snapshot = await getStatsProviderSnapshot();
+
+    expect(snapshot?.providerId).toBe('second');
+    expect(fetchMock.mock.calls.map(([url]) => String(url))).toEqual(['https://second.example/api/v1/5chan/boards']);
   });
 
   it('shows only threads that pass verification, one per board, most popular first', async () => {

@@ -1,6 +1,5 @@
 import { create } from 'zustand';
-
-export const PURE_P2P_STATS_STORAGE_KEY = '5chan-pure-p2p-stats';
+import { PURE_P2P_STATS_STORAGE_KEY } from '../lib/stats-providers';
 
 interface StatsProvidersStore {
   /** Skips every stats provider and loads the home page's popular threads and stats over P2P. */

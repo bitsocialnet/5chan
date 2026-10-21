@@ -41,12 +41,16 @@ const testState = vi.hoisted(() => ({
   account: { id: 'account' } as unknown,
 }));
 
-// React reads a promise marked fulfilled synchronously, so the first render does not suspend.
-const fulfilled = <T,>(value: T) => Object.assign(Promise.resolve(value), { status: 'fulfilled', value });
+// The app requests each result once, so every render reads the same promise.
+const requests = new Map<unknown, Promise<unknown>>();
+const request = (value: unknown) => {
+  if (!requests.has(value)) requests.set(value, Promise.resolve(value));
+  return requests.get(value);
+};
 
 vi.mock('../../../../lib/stats-provider-snapshot', () => ({
-  getStatsProviderSnapshot: vi.fn(() => fulfilled(testState.providerSnapshot)),
-  getProviderPopularPosts: vi.fn(() => fulfilled(testState.providerPopularPosts)),
+  getStatsProviderSnapshot: vi.fn(() => request(testState.providerSnapshot)),
+  getProviderPopularPosts: vi.fn(() => request(testState.providerPopularPosts)),
 }));
 
 vi.mock('../../../../lib/stats-provider-verification', () => ({
@@ -104,8 +108,8 @@ const directories = [
 let container: HTMLDivElement;
 let root: Root;
 
-const renderPopularThreadsBox = () => {
-  act(() => {
+const renderPopularThreadsBox = async () => {
+  await act(async () => {
     root.render(createElement(MemoryRouter, {}, createElement(PopularThreadsBox, { directories, directoryAddresses: directories.map((entry) => entry.address) })));
   });
 };
@@ -113,6 +117,7 @@ const renderPopularThreadsBox = () => {
 describe('PopularThreadsBox', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    requests.clear();
     testState.communities = directories.map((entry) => ({ address: entry.address }));
     testState.feedStateString = 'Downloading boards';
     testState.isLoading = false;
@@ -144,25 +149,25 @@ describe('PopularThreadsBox', () => {
     container.remove();
   });
 
-  it('does not subscribe to feed state once popular threads are visible', () => {
-    renderPopularThreadsBox();
+  it('does not subscribe to feed state once popular threads are visible', async () => {
+    await renderPopularThreadsBox();
 
     expect(container.textContent).toContain('Music');
     expect(container.textContent).toContain('thread title');
     expect(vi.mocked(useFeedStateString)).not.toHaveBeenCalled();
   });
 
-  it('does not subscribe to board communities once the popular posts cache is revealed', () => {
+  it('does not subscribe to board communities once the popular posts cache is revealed', async () => {
     testState.revealedPopularPosts = testState.popularPosts;
 
-    renderPopularThreadsBox();
+    await renderPopularThreadsBox();
 
     expect(testState.requestedCommunityIdentifiers.at(-1)).toEqual([]);
     expect(testState.requestedCommunities).toEqual([[]]);
     expect(container.textContent).toContain('thread title');
   });
 
-  it('preserves literal preview markers without applying body markdown styles', () => {
+  it('preserves literal preview markers without applying body markdown styles', async () => {
     testState.popularPosts = [
       {
         cid: 'thread-markers',
@@ -174,7 +179,7 @@ describe('PopularThreadsBox', () => {
       },
     ];
 
-    renderPopularThreadsBox();
+    await renderPopularThreadsBox();
 
     expect(container.textContent).toContain('>we got 5chan before Half Life 3');
     expect(container.textContent).toContain('*poisons u*');
@@ -182,7 +187,7 @@ describe('PopularThreadsBox', () => {
     expect(container.querySelector('.spoilertext')).toBeNull();
   });
 
-  it('does not show a stale directory suffix in board titles', () => {
+  it('does not show a stale directory suffix in board titles', async () => {
     testState.popularPosts = [
       {
         cid: 'thread-tv',
@@ -194,17 +199,17 @@ describe('PopularThreadsBox', () => {
       },
     ];
 
-    renderPopularThreadsBox();
+    await renderPopularThreadsBox();
 
     expect(container.textContent).toContain('Television & Film');
     expect(container.textContent).not.toContain('Television & Film Directory');
   });
 
-  it('shows verified provider threads without loading the boards over P2P', () => {
+  it('shows verified provider threads without loading the boards over P2P', async () => {
     testState.providerSnapshot = { boards: new Map(), generatedAt: 1, providerId: 'stats-bitsocial-net' };
     testState.providerPopularPosts = [{ ...testState.popularPosts[0], cid: 'provider-thread', title: 'provider thread title' }];
 
-    renderPopularThreadsBox();
+    await renderPopularThreadsBox();
 
     expect(container.textContent).toContain('provider thread title');
     expect(vi.mocked(getProviderPopularPosts)).toHaveBeenCalledWith(
@@ -216,48 +221,48 @@ describe('PopularThreadsBox', () => {
     expect(testState.requestedCommunities).toEqual([]);
   });
 
-  it('waits for the account before verifying provider threads', () => {
+  it('waits for the account before verifying provider threads', async () => {
     testState.providerSnapshot = { boards: new Map(), generatedAt: 1, providerId: 'stats-bitsocial-net' };
     testState.account = undefined;
 
-    renderPopularThreadsBox();
+    await renderPopularThreadsBox();
 
     expect(vi.mocked(getProviderPopularPosts)).not.toHaveBeenCalled();
     expect(vi.mocked(usePopularPosts)).not.toHaveBeenCalled();
     expect(container.textContent).toContain('loading');
   });
 
-  it('falls back to P2P when the provider has no usable threads', () => {
+  it('falls back to P2P when the provider has no usable threads', async () => {
     testState.providerSnapshot = { boards: new Map(), generatedAt: 1, providerId: 'stats-bitsocial-net' };
 
-    renderPopularThreadsBox();
+    await renderPopularThreadsBox();
 
     expect(container.textContent).toContain('thread title');
     expect(vi.mocked(usePopularPosts)).toHaveBeenCalled();
   });
 
-  it('falls back to P2P when no stats provider answers', () => {
-    renderPopularThreadsBox();
+  it('falls back to P2P when no stats provider answers', async () => {
+    await renderPopularThreadsBox();
 
     expect(vi.mocked(getProviderPopularPosts)).not.toHaveBeenCalled();
     expect(container.textContent).toContain('thread title');
     expect(testState.requestedCommunities.at(-1)).toEqual(directories.map((entry) => ({ name: entry.address, publicKey: `${entry.address}-key` })));
   });
 
-  it('does not contact a stats provider in pure P2P mode', () => {
+  it('does not contact a stats provider in pure P2P mode', async () => {
     useStatsProvidersStore.setState({ usePureP2PStats: true });
 
-    renderPopularThreadsBox();
+    await renderPopularThreadsBox();
 
     expect(vi.mocked(getStatsProviderSnapshot)).not.toHaveBeenCalled();
     expect(container.textContent).toContain('thread title');
   });
 
-  it('subscribes to feed state only while popular threads are loading', () => {
+  it('subscribes to feed state only while popular threads are loading', async () => {
     testState.isLoading = true;
     testState.popularPosts = [];
 
-    renderPopularThreadsBox();
+    await renderPopularThreadsBox();
 
     expect(container.textContent).toContain('Downloading boards');
     expect(vi.mocked(useFeedStateString)).toHaveBeenCalledWith(['music-posting.eth', 'tech-posting.eth', 'tv-posting.eth']);

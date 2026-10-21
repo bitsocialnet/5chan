@@ -1,14 +1,18 @@
 import type { Comment } from '@bitsocial/bitsocial-react-hooks';
 import { getBoardTopThreads, getPopularThreadPool, toPopularPosts } from './popular-threads';
-import { STATS_PROVIDERS, type StatsProvider } from './stats-providers';
+import { getStatsProviderBoardsUrl, STATS_PROVIDER_TIMEOUT_MS, STATS_PROVIDERS, type StatsProvider } from './stats-providers';
 import { isBoardAddressShape } from './utils/directory-list-lookup-utils';
 
-// A provider is only worth waiting for while it is faster than loading the boards over P2P.
-const PROVIDER_TIMEOUT_MS = 5_000;
 // Providers rewrite their snapshot every minute or so; an older one means the provider stopped
 // following the boards, and the boxes load them over P2P instead.
 const MAX_SNAPSHOT_AGE_SECONDS = 60 * 60;
-const BOARDS_PATH = 'api/v1/5chan/boards';
+
+declare global {
+  interface Window {
+    // The request index.html starts on the home page (scripts/vite-stats-provider-prefetch.mjs).
+    __FIVECHAN_STATS_PREFETCH__?: { url: string; response: Promise<Response> };
+  }
+}
 
 export type ProviderBoardStats = {
   allPostCount: number;
@@ -80,12 +84,21 @@ export const parseStatsProviderSnapshot = (value: unknown, providerId: string): 
   return { boards, generatedAt: value.generatedAt, providerId };
 };
 
+/** The response to the request index.html started for this URL, which only the first request takes over. */
+const takePrefetchedResponse = (url: string): Promise<Response> | undefined => {
+  if (typeof window === 'undefined') return undefined;
+  const prefetch = window.__FIVECHAN_STATS_PREFETCH__;
+  delete window.__FIVECHAN_STATS_PREFETCH__;
+  return prefetch?.url === url ? prefetch.response : undefined;
+};
+
 const fetchSnapshot = async (provider: StatsProvider): Promise<StatsProviderSnapshot> => {
-  const apiBase = provider.apiUrl.endsWith('/') ? provider.apiUrl : `${provider.apiUrl}/`;
-  const response = await fetch(new URL(BOARDS_PATH, apiBase), {
-    headers: { Accept: 'application/json' },
-    signal: AbortSignal.timeout(PROVIDER_TIMEOUT_MS),
-  });
+  const url = getStatsProviderBoardsUrl(provider);
+  const response = await (takePrefetchedResponse(url) ??
+    fetch(url, {
+      headers: { Accept: 'application/json' },
+      signal: AbortSignal.timeout(STATS_PROVIDER_TIMEOUT_MS),
+    }));
   if (!response.ok) throw new Error(`Stats provider returned ${response.status}`);
 
   const snapshot = parseStatsProviderSnapshot(await response.json(), provider.id);
