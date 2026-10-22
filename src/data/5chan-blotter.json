@@ -1,6 +1,13 @@
 {
   "entries": [
     {
+      "id": "release-0.10.2",
+      "kind": "release",
+      "timestamp": 1792670400,
+      "message": "v0.10.2: Faster home page threads and stats, quicker Safari startup",
+      "version": "0.10.2"
+    },
+    {
       "id": "release-0.10.1",
       "kind": "release",
       "timestamp": 1792411200,

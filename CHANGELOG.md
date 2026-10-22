@@ -1,3 +1,23 @@
+## [0.10.2](https://github.com/bitsocialnet/5chan/compare/v0.10.1...v0.10.2) (2026-10-22)
+
+
+### Bug Fixes
+
+* **home:** read popular threads from the page each board preloads ([#1264](https://github.com/bitsocialnet/5chan/issues/1264)) ([640187d](https://github.com/bitsocialnet/5chan/commit/640187d9071400484dd8502a1c549965e7fee063))
+* **home:** rotate popular threads across the most active boards ([#1263](https://github.com/bitsocialnet/5chan/issues/1263)) ([c89d89d](https://github.com/bitsocialnet/5chan/commit/c89d89d57cd78d0c175ed55938a510448410e69c))
+* **settings:** show the stats provider as a selected radio ([9e824fc](https://github.com/bitsocialnet/5chan/commit/9e824fc860e280660888da770e3950d412dbb39f))
+
+
+### Features
+
+* **home:** load popular threads and stats from stats providers ([#1265](https://github.com/bitsocialnet/5chan/issues/1265)) ([860a59b](https://github.com/bitsocialnet/5chan/commit/860a59b31ae5f079cd2f662898436f875f930717))
+
+
+### Performance Improvements
+
+* **ci:** cache Yarn dependencies across CI jobs ([fb50b22](https://github.com/bitsocialnet/5chan/commit/fb50b2267998b1c35a1d4aa474fe9b22437c20e1))
+* **p2p:** prune the helia routing cache that stalled Safari cold starts ([#1267](https://github.com/bitsocialnet/5chan/issues/1267)) ([8cee89a](https://github.com/bitsocialnet/5chan/commit/8cee89a467598788ea18a39f756ffad64609700f))
+
 ## [0.10.1](https://github.com/bitsocialnet/5chan/compare/v0.10.0...v0.10.1) (2026-10-19)
 
 

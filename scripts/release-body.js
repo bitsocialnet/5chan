@@ -103,7 +103,7 @@ const downloads = [macSection, winSection, linuxSection, androidSection, htmlSec
 
 // One-liner summary of what changed in this release. Update before each release.
 const oneLinerDescription =
-  "This version adds media uploads to the desktop and Android apps, drag-and-drop file attachments, 4chan's Last reply catalog sort and sage on boards that support it, fixes Safari's blank page on startup and loads the home page sooner, keeps the catalog order stable while scrolling /all/ and /subs/, and makes challenge errors easier to read.";
+  "This version loads the home page's popular threads and stats from a stats provider in one request instead of from every board, with a pure P2P option in the new Stats Providers settings, speeds up startup in Safari, and shows popular threads from the most active boards instead of the same few.";
 
 const releaseBody = `${oneLinerDescription}
 
