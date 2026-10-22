@@ -3,6 +3,7 @@ import { Navigate, Outlet, Route, Routes, useLocation, useParams } from 'react-r
 import { useShallow } from 'zustand/react/shallow';
 import { useAccount, useCommunity } from '@bitsocial/bitsocial-react-hooks';
 import { lazyImport } from './lib/import-failures';
+import { DELEGATED_ROUTING_CACHE_TTL_MS, clearExpiredDelegatedRoutingCache, pruneExpiredDelegatedRoutingCache } from './lib/delegated-routing-cache';
 import { preloadThemeAssets, preloadUiIcons, scheduleIdlePreload } from './lib/utils/preload-utils';
 import { hasModQueueAccessRole } from './lib/utils/mod-access';
 import type { PostProps } from './lib/utils/post-props';
@@ -355,6 +356,14 @@ const App = () => {
   // Start after the first route has committed, in idle time, so these downloads never compete with it.
   useEffect(() => {
     scheduleIdlePreload(preloadLazyChunks);
+  }, []);
+  // Keeps the P2P routing cache small: see delegated-routing-cache.ts for the Safari cold-start cost
+  // of a large one. Runs after the first commit, before the hooks' pkc-js import finishes and the node
+  // opens the cache.
+  useEffect(() => {
+    void clearExpiredDelegatedRoutingCache();
+    const interval = setInterval(() => void pruneExpiredDelegatedRoutingCache(), DELEGATED_ROUTING_CACHE_TTL_MS);
+    return () => clearInterval(interval);
   }, []);
 
   return (
