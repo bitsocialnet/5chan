@@ -58,6 +58,18 @@ jobs:
           node-version: 22
       - run: corepack enable
 
+      - name: Resolve Yarn cache path
+        id: yarn-cache
+        shell: bash
+        run: echo "dir=$(corepack yarn config get cacheFolder)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Yarn package tarballs
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.yarn-cache.outputs.dir }}
+          key: ${{ runner.os }}-${{ runner.arch }}-yarn-v2-${{ hashFiles('yarn.lock', 'package.json', '.yarnrc.yml') }}
+          restore-keys: ${{ runner.os }}-${{ runner.arch }}-yarn-v2-
+
       - name: Install dependencies
         run: |
           for i in 1 2 3; do
@@ -127,6 +139,18 @@ jobs:
           node-version: 22
       - run: corepack enable
 
+      - name: Resolve Yarn cache path
+        id: yarn-cache
+        shell: bash
+        run: echo "dir=$(corepack yarn config get cacheFolder)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Yarn package tarballs
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.yarn-cache.outputs.dir }}
+          key: ${{ runner.os }}-${{ runner.arch }}-yarn-v2-${{ hashFiles('yarn.lock', 'package.json', '.yarnrc.yml') }}
+          restore-keys: ${{ runner.os }}-${{ runner.arch }}-yarn-v2-
+
       - name: Install dependencies
         run: |
           for i in 1 2 3; do
@@ -188,6 +212,18 @@ jobs:
           node-version: 22
       - run: corepack enable
 
+      - name: Resolve Yarn cache path
+        id: yarn-cache
+        shell: bash
+        run: echo "dir=$(corepack yarn config get cacheFolder)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Yarn package tarballs
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.yarn-cache.outputs.dir }}
+          key: ${{ runner.os }}-${{ runner.arch }}-yarn-v2-${{ hashFiles('yarn.lock', 'package.json', '.yarnrc.yml') }}
+          restore-keys: ${{ runner.os }}-${{ runner.arch }}-yarn-v2-
+
       - name: Install dependencies
         run: |
           for i in 1 2 3; do
@@ -236,6 +272,18 @@ jobs:
         with:
           node-version: 22
       - run: corepack enable
+
+      - name: Resolve Yarn cache path
+        id: yarn-cache
+        shell: bash
+        run: echo "dir=$(corepack yarn config get cacheFolder)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Yarn package tarballs
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.yarn-cache.outputs.dir }}
+          key: ${{ runner.os }}-${{ runner.arch }}-yarn-v2-${{ hashFiles('yarn.lock', 'package.json', '.yarnrc.yml') }}
+          restore-keys: ${{ runner.os }}-${{ runner.arch }}-yarn-v2-
 
       - name: Install dependencies
         run: |
@@ -383,6 +431,18 @@ jobs:
           node-version: 22
       - run: corepack enable
 
+      - name: Resolve Yarn cache path
+        id: yarn-cache
+        shell: bash
+        run: echo "dir=$(corepack yarn config get cacheFolder)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Yarn package tarballs
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.yarn-cache.outputs.dir }}
+          key: ${{ runner.os }}-${{ runner.arch }}-yarn-v2-${{ hashFiles('yarn.lock', 'package.json', '.yarnrc.yml') }}
+          restore-keys: ${{ runner.os }}-${{ runner.arch }}-yarn-v2-
+
       - name: Install dependencies
         run: |
           for i in 1 2 3; do
@@ -417,6 +477,18 @@ jobs:
         with:
           node-version: 22
       - run: corepack enable
+
+      - name: Resolve Yarn cache path
+        id: yarn-cache
+        shell: bash
+        run: echo "dir=$(corepack yarn config get cacheFolder)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Yarn package tarballs
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.yarn-cache.outputs.dir }}
+          key: ${{ runner.os }}-${{ runner.arch }}-yarn-v2-${{ hashFiles('yarn.lock', 'package.json', '.yarnrc.yml') }}
+          restore-keys: ${{ runner.os }}-${{ runner.arch }}-yarn-v2-
 
       - name: Cache electron binaries
         uses: actions/cache@v4
@@ -482,6 +554,18 @@ jobs:
         with:
           node-version: 22
       - run: corepack enable
+
+      - name: Resolve Yarn cache path
+        id: yarn-cache
+        shell: bash
+        run: echo "dir=$(corepack yarn config get cacheFolder)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Yarn package tarballs
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.yarn-cache.outputs.dir }}
+          key: ${{ runner.os }}-${{ runner.arch }}-yarn-v2-${{ hashFiles('yarn.lock', 'package.json', '.yarnrc.yml') }}
+          restore-keys: ${{ runner.os }}-${{ runner.arch }}-yarn-v2-
 
       - name: Install setuptools for native modules
         run: pip3 install --break-system-packages setuptools || pip3 install --user setuptools || true
@@ -550,6 +634,18 @@ jobs:
         with:
           node-version: 22
       - run: corepack enable
+
+      - name: Resolve Yarn cache path
+        id: yarn-cache
+        shell: bash
+        run: echo "dir=$(corepack yarn config get cacheFolder)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Yarn package tarballs
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.yarn-cache.outputs.dir }}
+          key: ${{ runner.os }}-${{ runner.arch }}-yarn-v2-${{ hashFiles('yarn.lock', 'package.json', '.yarnrc.yml') }}
+          restore-keys: ${{ runner.os }}-${{ runner.arch }}-yarn-v2-
 
       - name: Install setuptools for native modules
         run: pip3 install --break-system-packages setuptools || pip3 install --user setuptools || true
@@ -628,8 +724,8 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ steps.yarn-cache.outputs.dir }}
-          key: ${{ runner.os }}-yarn-v1-${{ hashFiles('yarn.lock', 'package.json', '.yarnrc.yml') }}
-          restore-keys: ${{ runner.os }}-yarn-v1-
+          key: ${{ runner.os }}-${{ runner.arch }}-yarn-v2-${{ hashFiles('yarn.lock', 'package.json', '.yarnrc.yml') }}
+          restore-keys: ${{ runner.os }}-${{ runner.arch }}-yarn-v2-
 
       - name: Cache electron binaries
         uses: actions/cache@v4
