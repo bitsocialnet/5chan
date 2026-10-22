@@ -241,7 +241,6 @@
   "file": "Talaksan",
   "media_hosting_none": "Wala",
   "media_hosting_none_tip": "Itinatago ang button ng pag-upload ng file mula sa mga form ng post at reply",
-  "media_hosting": "Media Hosting",
   "advanced_settings": "Mga advanced na setting",
   "upload_failed_all_providers": "Lahat ng mga provider ay nabigo",
   "upload_failed_preferred_guidance": "Pumili ng ibang provider o itakda sa random.",
@@ -586,5 +585,6 @@
   "stats_providers_tip": "Nilo-load nila ang mga popular na thread at estadistika ng homepage sa isang request sa halip na mula sa bawat board. Sinusuri ang mga thread batay sa kanilang mga lagda; ang bilang ng mga post at user ay ayon sa iniuulat ng provider.",
   "use_pure_p2p_stats": "Gumamit na lang ng purong P2P (mabagal)",
   "pure_p2p_stats_tip": "Ang purong P2P na estadistika ay laging fallback kung sakaling mag-down ang mga provider ng estadistika.",
-  "stats_reported_by": "Iniulat ng {{provider}}"
+  "stats_reported_by": "Iniulat ng {{provider}}",
+  "media_hosting_providers": "Mga Provider ng Media Hosting"
 }

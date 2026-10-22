@@ -14,9 +14,13 @@ const StatsProvidersSettings = () => {
       <div className={styles.setting}>
         {STATS_PROVIDERS.map((provider) => (
           <div key={provider.id}>
-            <a href={provider.siteUrl} target='_blank' rel='noopener noreferrer'>
-              {provider.name}
-            </a>
+            <label>
+              {/* There is only one provider, so it is always selected and there is nothing to choose. */}
+              <input type='radio' aria-label={provider.name} name='stats-provider' value={provider.id} checked disabled />
+              <a href={provider.siteUrl} target='_blank' rel='noopener noreferrer'>
+                {provider.name}
+              </a>
+            </label>
           </div>
         ))}
         <div className={styles.settingTip}>{t('stats_providers_tip')}</div>

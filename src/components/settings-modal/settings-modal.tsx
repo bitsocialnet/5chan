@@ -200,7 +200,7 @@ const SettingsModal = () => {
         <div id='media-hosting-settings' className={`${styles.setting} ${styles.category}`}>
           <button type='button' className={styles.categoryButton} onClick={() => handleCategoryClick('media-hosting-settings')}>
             <span className={showMediaHostingSettings ? styles.hideButton : styles.showButton} />
-            {t('media_hosting')}
+            {t('media_hosting_providers')}
           </button>
         </div>
         {showMediaHostingSettings && (

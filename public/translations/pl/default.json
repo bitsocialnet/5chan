@@ -241,7 +241,6 @@
   "file": "Plik",
   "media_hosting_none": "Brak",
   "media_hosting_none_tip": "Ukrywa przycisk przesyłania pliku z formularzy postów i odpowiedzi",
-  "media_hosting": "Hosting mediów",
   "advanced_settings": "Ustawienia zaawansowane",
   "upload_failed_all_providers": "Wszyscy dostawcy zawiedli",
   "upload_failed_preferred_guidance": "Wybierz innego dostawcę lub ustaw na losowy.",
@@ -586,5 +585,6 @@
   "stats_providers_tip": "Wczytują popularne wątki i statystyki strony głównej jednym żądaniem zamiast z każdego boardu osobno. Wątki są weryfikowane na podstawie ich podpisów; liczby postów i użytkowników są takie, jakie podaje dostawca.",
   "use_pure_p2p_stats": "Użyj zamiast tego czystego P2P (wolno)",
   "pure_p2p_stats_tip": "Statystyki z czystego P2P są zawsze rozwiązaniem zapasowym na wypadek awarii dostawców statystyk.",
-  "stats_reported_by": "Podane przez {{provider}}"
+  "stats_reported_by": "Podane przez {{provider}}",
+  "media_hosting_providers": "Dostawcy hostingu mediów"
 }

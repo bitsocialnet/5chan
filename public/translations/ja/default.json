@@ -241,7 +241,6 @@
   "file": "ファイル",
   "media_hosting_none": "なし",
   "media_hosting_none_tip": "投稿とコメントフォームのファイルアップロードボタンを非表示にします",
-  "media_hosting": "メディアホスティング",
   "advanced_settings": "詳細設定",
   "upload_failed_all_providers": "すべてのプロバイダーが失敗しました",
   "upload_failed_preferred_guidance": "別のプロバイダーを選択するか、ランダムに設定してください。",
@@ -586,5 +585,6 @@
   "stats_providers_tip": "ホームページの人気のあるスレッドと統計を、各掲示板からではなく1回のリクエストで読み込みます。スレッドは署名で検証されますが、投稿数とユーザー数はプロバイダーが報告したとおりの値です。",
   "use_pure_p2p_stats": "代わりに純粋なP2Pを使用（低速）",
   "pure_p2p_stats_tip": "統計プロバイダーが停止した場合は、常に純粋なP2Pによる統計がフォールバックとして使われます。",
-  "stats_reported_by": "報告元: {{provider}}"
+  "stats_reported_by": "報告元: {{provider}}",
+  "media_hosting_providers": "メディアホスティングプロバイダー"
 }

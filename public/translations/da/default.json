@@ -241,7 +241,6 @@
   "file": "Fil",
   "media_hosting_none": "Ingen",
   "media_hosting_none_tip": "Skjuler filoverføringsknappen fra post- og svarformularer",
-  "media_hosting": "Mediahosting",
   "advanced_settings": "Avancerede indstillinger",
   "upload_failed_all_providers": "Alle udbydere mislykkedes",
   "upload_failed_preferred_guidance": "Vælg en anden udbyder eller sæt til tilfældig.",
@@ -586,5 +585,6 @@
   "stats_providers_tip": "De indlæser forsidens populære tråde og statistik i én forespørgsel i stedet for fra hvert board. Tråde kontrolleres mod deres signaturer; antal opslag og brugere er, som udbyderen oplyser dem.",
   "use_pure_p2p_stats": "Brug ren P2P i stedet (langsomt)",
   "pure_p2p_stats_tip": "Ren P2P-statistik er altid reserveløsningen, hvis statistikudbyderne går ned.",
-  "stats_reported_by": "Rapporteret af {{provider}}"
+  "stats_reported_by": "Rapporteret af {{provider}}",
+  "media_hosting_providers": "Mediahostingudbydere"
 }

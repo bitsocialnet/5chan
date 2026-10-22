@@ -241,7 +241,6 @@
   "file": "Fájl",
   "media_hosting_none": "Nincs",
   "media_hosting_none_tip": "Elrejti a fájlfeltöltés gombot a poszt- és válaszűrlapokból",
-  "media_hosting": "Médiahosting",
   "advanced_settings": "Haladó beállítások",
   "upload_failed_all_providers": "Minden szolgáltató sikertelen volt",
   "upload_failed_preferred_guidance": "Válasszon másik szolgáltatót vagy állítsa véletlenszerűre.",
@@ -586,5 +585,6 @@
   "stats_providers_tip": "Ezek a szolgáltatók egyetlen kéréssel töltik be a kezdőlap népszerű szálait és statisztikáit, ahelyett hogy minden boardról külön kellene lekérni őket. Az alkalmazás a szálakat az aláírásuk alapján ellenőrzi; a bejegyzés- és felhasználószámok úgy jelennek meg, ahogy a szolgáltató közli őket.",
   "use_pure_p2p_stats": "Inkább tiszta P2P használata (lassú)",
   "pure_p2p_stats_tip": "A tiszta P2P-statisztikák mindig tartalékként szolgálnak arra az esetre, ha a statisztikai szolgáltatók leállnak.",
-  "stats_reported_by": "Jelentette: {{provider}}"
+  "stats_reported_by": "Jelentette: {{provider}}",
+  "media_hosting_providers": "Médiahosting-szolgáltatók"
 }

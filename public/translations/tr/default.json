@@ -241,7 +241,6 @@
   "file": "Dosya",
   "media_hosting_none": "Yok",
   "media_hosting_none_tip": "Yazı ve yanıt formlarından dosya yükleme düğmesini gizler",
-  "media_hosting": "Ortam Barındırma",
   "advanced_settings": "Gelişmiş ayarlar",
   "upload_failed_all_providers": "Tüm sağlayıcılar başarısız oldu",
   "upload_failed_preferred_guidance": "Farklı bir sağlayıcı seçin veya rastgeleye ayarlayın.",
@@ -586,5 +585,6 @@
   "stats_providers_tip": "Bunlar, ana sayfanın popüler konularını ve istatistiklerini her panodan ayrı ayrı almak yerine tek bir istekle yükler. Konular imzalarına göre doğrulanır; gönderi ve kullanıcı sayıları sağlayıcının bildirdiği gibidir.",
   "use_pure_p2p_stats": "Bunun yerine saf P2P kullan (yavaş)",
   "pure_p2p_stats_tip": "İstatistik sağlayıcıları çökerse saf P2P istatistikleri her zaman yedek olarak kullanılır.",
-  "stats_reported_by": "Bildiren: {{provider}}"
+  "stats_reported_by": "Bildiren: {{provider}}",
+  "media_hosting_providers": "Ortam Barındırma Sağlayıcıları"
 }

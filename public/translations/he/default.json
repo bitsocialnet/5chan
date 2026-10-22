@@ -241,7 +241,6 @@
   "file": "קובץ",
   "media_hosting_none": "ללא",
   "media_hosting_none_tip": "מסתיר את כפתור העלאת הקבצים מטפסי פוסט ותשובה",
-  "media_hosting": "אירוח מדיה",
   "advanced_settings": "הגדרות מתקדמות",
   "upload_failed_all_providers": "כל הספקים נכשלו",
   "upload_failed_preferred_guidance": "בחר ספק אחר או הגדר לאקראי.",
@@ -586,5 +585,6 @@
   "stats_providers_tip": "הם טוענים את האשכולות הפופולריים והסטטיסטיקות של דף הבית בבקשה אחת במקום מכל לוח בנפרד. האשכולות נבדקים מול החתימות שלהם; מספרי הפוסטים והמשתמשים הם כפי שהספק מדווח עליהם.",
   "use_pure_p2p_stats": "שימוש ב-P2P טהור במקום זאת (איטי)",
   "pure_p2p_stats_tip": "סטטיסטיקות P2P טהור הן תמיד חלופת הגיבוי למקרה שספקי הסטטיסטיקות מפסיקים לפעול.",
-  "stats_reported_by": "דווחו על ידי {{provider}}"
+  "stats_reported_by": "דווחו על ידי {{provider}}",
+  "media_hosting_providers": "ספקי אירוח מדיה"
 }

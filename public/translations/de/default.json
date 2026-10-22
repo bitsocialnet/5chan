@@ -241,7 +241,6 @@
   "file": "Datei",
   "media_hosting_none": "Keine",
   "media_hosting_none_tip": "Verbirgt die Datei-Upload-Schaltfläche aus Post- und Antwortformularen",
-  "media_hosting": "Medienhosting",
   "advanced_settings": "Erweiterte Einstellungen",
   "upload_failed_all_providers": "Alle Anbieter sind fehlgeschlagen",
   "upload_failed_preferred_guidance": "Wählen Sie einen anderen Anbieter oder setzen Sie auf Zufall.",
@@ -586,5 +585,6 @@
   "stats_providers_tip": "Diese Anbieter laden die beliebten Threads und Statistiken der Startseite mit einer einzigen Anfrage statt von jedem Board einzeln. Threads werden anhand ihrer Signaturen geprüft; Beitrags- und Benutzerzahlen entsprechen den Angaben des Anbieters.",
   "use_pure_p2p_stats": "Stattdessen reines P2P verwenden (langsam)",
   "pure_p2p_stats_tip": "Reine P2P-Statistiken dienen immer als Fallback, falls die Statistikanbieter ausfallen.",
-  "stats_reported_by": "Gemeldet von {{provider}}"
+  "stats_reported_by": "Gemeldet von {{provider}}",
+  "media_hosting_providers": "Medienhosting-Anbieter"
 }

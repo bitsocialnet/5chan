@@ -241,7 +241,6 @@
   "file": "Berkas",
   "media_hosting_none": "Tidak ada",
   "media_hosting_none_tip": "Menyembunyikan tombol unggah file dari formulir posting dan balasan",
-  "media_hosting": "Hosting Media",
   "advanced_settings": "Pengaturan lanjutan",
   "upload_failed_all_providers": "Semua penyedia gagal",
   "upload_failed_preferred_guidance": "Pilih penyedia lain atau atur ke acak.",
@@ -586,5 +585,6 @@
   "stats_providers_tip": "Penyedia ini memuat thread populer dan statistik beranda dalam satu permintaan, alih-alih dari setiap board. Thread diperiksa berdasarkan tanda tangannya; jumlah posting dan pengguna sesuai dengan yang dilaporkan penyedia.",
   "use_pure_p2p_stats": "Gunakan P2P murni saja (lambat)",
   "pure_p2p_stats_tip": "Statistik P2P murni selalu menjadi cadangan jika penyedia statistik sedang tidak berfungsi.",
-  "stats_reported_by": "Dilaporkan oleh {{provider}}"
+  "stats_reported_by": "Dilaporkan oleh {{provider}}",
+  "media_hosting_providers": "Penyedia Hosting Media"
 }

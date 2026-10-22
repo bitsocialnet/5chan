@@ -241,7 +241,6 @@
   "file": "파일",
   "media_hosting_none": "없음",
   "media_hosting_none_tip": "게시물 및 댓글 양식에서 파일 업로드 버튼을 숨깁니다",
-  "media_hosting": "미디어 호스팅",
   "advanced_settings": "고급 설정",
   "upload_failed_all_providers": "모든 제공업체가 실패했습니다",
   "upload_failed_preferred_guidance": "다른 제공업체를 선택하거나 무작위로 설정하세요.",
@@ -586,5 +585,6 @@
   "stats_providers_tip": "각 게시판에서 따로 불러오는 대신 한 번의 요청으로 홈페이지의 인기 있는 스레드와 통계를 불러옵니다. 스레드는 서명으로 검증되며, 게시물 수와 사용자 수는 제공업체가 보고한 값 그대로입니다.",
   "use_pure_p2p_stats": "대신 순수 P2P 사용 (느림)",
   "pure_p2p_stats_tip": "통계 제공업체가 중단되더라도 항상 순수 P2P 통계가 대체 수단으로 사용됩니다.",
-  "stats_reported_by": "{{provider}}에서 보고함"
+  "stats_reported_by": "{{provider}}에서 보고함",
+  "media_hosting_providers": "미디어 호스팅 제공업체"
 }

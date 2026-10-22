@@ -241,7 +241,6 @@
   "file": "Fil",
   "media_hosting_none": "Ingen",
   "media_hosting_none_tip": "Döljer knappen för filöverföring från inläggs- och svarsformulär",
-  "media_hosting": "Mediahosting",
   "advanced_settings": "Avancerade inställningar",
   "upload_failed_all_providers": "Alla leverantörer misslyckades",
   "upload_failed_preferred_guidance": "Välj en annan leverantör eller sätt till slumpmässig.",
@@ -586,5 +585,6 @@
   "stats_providers_tip": "De laddar startsidans populära trådar och statistik i en enda begäran i stället för från varje board. Trådar kontrolleras mot sina signaturer; antal inlägg och användare är så som leverantören anger dem.",
   "use_pure_p2p_stats": "Använd rent P2P i stället (långsamt)",
   "pure_p2p_stats_tip": "Ren P2P-statistik är alltid reservlösningen om statistikleverantörerna slutar fungera.",
-  "stats_reported_by": "Rapporterat av {{provider}}"
+  "stats_reported_by": "Rapporterat av {{provider}}",
+  "media_hosting_providers": "Mediahostingleverantörer"
 }

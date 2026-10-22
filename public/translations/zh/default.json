@@ -241,7 +241,6 @@
   "file": "文件",
   "media_hosting_none": "无",
   "media_hosting_none_tip": "隐藏帖子和回复表单中的文件上传按钮",
-  "media_hosting": "媒体托管",
   "advanced_settings": "高级设置",
   "upload_failed_all_providers": "所有提供商均失败",
   "upload_failed_preferred_guidance": "选择其他提供商或设置为随机。",
@@ -586,5 +585,6 @@
   "stats_providers_tip": "它们通过一次请求加载首页的热门主题和统计，而不是逐个从每个板块加载。主题会根据其签名进行验证；帖子数和用户数则以提供商报告的为准。",
   "use_pure_p2p_stats": "改用纯 P2P（较慢）",
   "pure_p2p_stats_tip": "如果统计提供商宕机，始终会回退到纯 P2P 统计。",
-  "stats_reported_by": "由 {{provider}} 报告"
+  "stats_reported_by": "由 {{provider}} 报告",
+  "media_hosting_providers": "媒体托管提供商"
 }

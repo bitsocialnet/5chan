@@ -241,7 +241,6 @@
   "file": "Bestand",
   "media_hosting_none": "Geen",
   "media_hosting_none_tip": "Verbergt de knop voor bestandsupload uit post- en antwoordformulieren",
-  "media_hosting": "Mediahosting",
   "advanced_settings": "Geavanceerde instellingen",
   "upload_failed_all_providers": "Alle providers zijn mislukt",
   "upload_failed_preferred_guidance": "Kies een andere provider of zet op willekeurig.",
@@ -586,5 +585,6 @@
   "stats_providers_tip": "Ze laden de populaire threads en statistieken van de startpagina in één verzoek in plaats van via elk board. Threads worden gecontroleerd aan de hand van hun handtekeningen; aantallen berichten en gebruikers zijn zoals de provider ze opgeeft.",
   "use_pure_p2p_stats": "In plaats daarvan puur P2P gebruiken (traag)",
   "pure_p2p_stats_tip": "Pure P2P-statistieken zijn altijd de terugvaloptie als statistiekproviders uitvallen.",
-  "stats_reported_by": "Gemeld door {{provider}}"
+  "stats_reported_by": "Gemeld door {{provider}}",
+  "media_hosting_providers": "Mediahostingproviders"
 }

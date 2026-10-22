@@ -278,7 +278,6 @@
   "file": "File",
   "media_hosting_none": "None",
   "media_hosting_none_tip": "Hides the file upload button from post and reply forms",
-  "media_hosting": "Media Hosting",
   "advanced_settings": "Advanced settings",
   "upload_failed_all_providers": "All providers failed",
   "upload_failed_preferred_guidance": "Choose a different provider or set to random.",
@@ -606,5 +605,6 @@
   "stats_providers_tip": "They load the home page's popular threads and stats in one request instead of from every board. Threads are checked against their signatures; post and user counts are as the provider reports them.",
   "use_pure_p2p_stats": "Use pure P2P instead (slow)",
   "pure_p2p_stats_tip": "Pure P2P stats are always the fallback in case stats providers go down.",
-  "stats_reported_by": "Reported by {{provider}}"
+  "stats_reported_by": "Reported by {{provider}}",
+  "media_hosting_providers": "Media Hosting Providers"
 }

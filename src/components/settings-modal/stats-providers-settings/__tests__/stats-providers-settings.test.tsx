@@ -35,6 +35,9 @@ describe('StatsProvidersSettings', () => {
     const providerLink = container.querySelector<HTMLAnchorElement>('a[href="https://stats.bitsocial.net"]');
     expect(providerLink?.textContent).toBe('stats.bitsocial.net');
     expect(providerLink?.rel).toBe('noopener noreferrer');
+    const providerRadio = container.querySelector<HTMLInputElement>('input[type="radio"][value="stats-bitsocial-net"]');
+    expect(providerRadio?.checked).toBe(true);
+    expect(providerRadio?.disabled).toBe(true);
     expect(container.textContent).toContain('use_pure_p2p_stats');
     expect(container.textContent).toContain('pure_p2p_stats_tip');
   });

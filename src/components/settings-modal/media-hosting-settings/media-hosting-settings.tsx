@@ -27,7 +27,7 @@ const MediaHostingSettings = () => {
 
   return (
     <div className={styles.interfaceSettings}>
-      <div role='radiogroup' aria-label={t('media_hosting')}>
+      <div role='radiogroup' aria-label={t('media_hosting_providers')}>
         {providers.length > 1 && (
           <div className={styles.setting}>
             <label>

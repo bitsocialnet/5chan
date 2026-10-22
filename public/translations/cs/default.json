@@ -241,7 +241,6 @@
   "file": "Soubor",
   "media_hosting_none": "Žádné",
   "media_hosting_none_tip": "Skrývá tlačítko pro nahrávání souborů z formulářů příspěvků a odpovědí",
-  "media_hosting": "Hostování médií",
   "advanced_settings": "Pokročilé nastavení",
   "upload_failed_all_providers": "Všichni poskytovatelé selhali",
   "upload_failed_preferred_guidance": "Zvolte jiného poskytovatele nebo nastavte náhodné.",
@@ -586,5 +585,6 @@
   "stats_providers_tip": "Načítají oblíbená vlákna a statistiky domovské stránky jedním požadavkem místo z každé nástěnky zvlášť. Vlákna se ověřují podle jejich podpisů; počty příspěvků a uživatelů jsou takové, jak je uvádí poskytovatel.",
   "use_pure_p2p_stats": "Použít místo toho čisté P2P (pomalé)",
   "pure_p2p_stats_tip": "Statistiky z čistého P2P jsou vždy záložní možností pro případ, že poskytovatelé statistik přestanou fungovat.",
-  "stats_reported_by": "Uvádí {{provider}}"
+  "stats_reported_by": "Uvádí {{provider}}",
+  "media_hosting_providers": "Poskytovatelé hostování médií"
 }

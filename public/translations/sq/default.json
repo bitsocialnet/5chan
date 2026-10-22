@@ -241,7 +241,6 @@
   "file": "Skedar",
   "media_hosting_none": "Asnjë",
   "media_hosting_none_tip": "Fsheh butonin e ngarkimit të skedarit nga formularët e postimit dhe përgjigjes",
-  "media_hosting": "Hostimi i Mediave",
   "advanced_settings": "Cilësimet e avancuara",
   "upload_failed_all_providers": "Të gjithë ofruesit dështuan",
   "upload_failed_preferred_guidance": "Zgjidhni një ofrues tjetër ose vendosni në rastësishëm.",
@@ -586,5 +585,6 @@
   "stats_providers_tip": "Ata ngarkojnë threadet e njohur dhe statistikat e faqes kryesore me një kërkesë të vetme, në vend që t’i marrin nga çdo bord. Threadet verifikohen përmes nënshkrimeve të tyre; numri i postimeve dhe i përdoruesve është ashtu siç e raporton ofruesi.",
   "use_pure_p2p_stats": "Përdor P2P të pastër në vend të kësaj (ngadalë)",
   "pure_p2p_stats_tip": "Statistikat përmes P2P të pastër janë gjithmonë alternativa rezervë në rast se ofruesit e statistikave nuk funksionojnë.",
-  "stats_reported_by": "Raportuar nga {{provider}}"
+  "stats_reported_by": "Raportuar nga {{provider}}",
+  "media_hosting_providers": "Ofruesit e Hostimit të Mediave"
 }

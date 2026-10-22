@@ -143,8 +143,8 @@ const FAQ_SECTIONS: FAQSection[] = [
           <>
             Click <code>[Choose File]</code> to attach it; it is uploaded to a media hosting service when you submit the post. Or paste a direct media URL into the{' '}
             <code>[Link To File]</code> field. That field is hidden while an upload service is available; turn on Show "Link To File" field in{' '}
-            <Link to='/all/settings?section=media-hosting-settings'>Media Hosting settings</Link> to use it. 5chan detects images, GIFs, video, audio, and supported
-            embeds. Direct links work best. If the link is detected as a webpage instead of media, try a direct file URL or a different host.
+            <Link to='/all/settings?section=media-hosting-settings'>Media Hosting Providers settings</Link> to use it. 5chan detects images, GIFs, video, audio, and
+            supported embeds. Direct links work best. If the link is detected as a webpage instead of media, try a direct file URL or a different host.
           </>
         ),
       },

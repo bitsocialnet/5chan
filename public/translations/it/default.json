@@ -241,7 +241,6 @@
   "file": "File",
   "media_hosting_none": "Nessuno",
   "media_hosting_none_tip": "Nasconde il pulsante di caricamento del file dai moduli di post e risposta",
-  "media_hosting": "Hosting Media",
   "advanced_settings": "Impostazioni avanzate",
   "upload_failed_all_providers": "Tutti i provider sono falliti",
   "upload_failed_preferred_guidance": "Scegli un provider diverso o imposta su casuale.",
@@ -586,5 +585,6 @@
   "stats_providers_tip": "Caricano i thread popolari e le statistiche della pagina iniziale con una sola richiesta invece che da ogni board. I thread vengono verificati tramite le loro firme; i conteggi di post e utenti sono quelli riportati dal provider.",
   "use_pure_p2p_stats": "Usa invece il P2P puro (lento)",
   "pure_p2p_stats_tip": "Le statistiche in P2P puro restano sempre la soluzione di riserva se i provider di statistiche smettono di funzionare.",
-  "stats_reported_by": "Riportate da {{provider}}"
+  "stats_reported_by": "Riportate da {{provider}}",
+  "media_hosting_providers": "Provider di Hosting Media"
 }

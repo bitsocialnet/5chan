@@ -241,7 +241,6 @@
   "file": "Archivo",
   "media_hosting_none": "Ninguno",
   "media_hosting_none_tip": "Oculta el botón de carga de archivos de los formularios de publicación y respuesta",
-  "media_hosting": "Alojamiento de Medios",
   "advanced_settings": "Configuración avanzada",
   "upload_failed_all_providers": "Todos los proveedores fallaron",
   "upload_failed_preferred_guidance": "Elige un proveedor diferente o configura en aleatorio.",
@@ -586,5 +585,6 @@
   "stats_providers_tip": "Cargan los hilos populares y las estadísticas de la página de inicio en una sola solicitud en lugar de hacerlo desde cada board. Los hilos se verifican con sus firmas; los recuentos de publicaciones y usuarios son los que informa el proveedor.",
   "use_pure_p2p_stats": "Usar P2P puro en su lugar (lento)",
   "pure_p2p_stats_tip": "Las estadísticas por P2P puro son siempre la alternativa de respaldo si los proveedores de estadísticas dejan de funcionar.",
-  "stats_reported_by": "Informadas por {{provider}}"
+  "stats_reported_by": "Informadas por {{provider}}",
+  "media_hosting_providers": "Proveedores de Alojamiento de Medios"
 }

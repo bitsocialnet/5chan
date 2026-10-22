@@ -241,7 +241,6 @@
   "file": "Tệp",
   "media_hosting_none": "Không có",
   "media_hosting_none_tip": "Ẩn nút tải tệp từ các biểu mẫu bài viết và trả lời",
-  "media_hosting": "Lưu trữ Phương tiện",
   "advanced_settings": "Cài đặt nâng cao",
   "upload_failed_all_providers": "Tất cả nhà cung cấp đều thất bại",
   "upload_failed_preferred_guidance": "Chọn nhà cung cấp khác hoặc đặt thành ngẫu nhiên.",
@@ -586,5 +585,6 @@
   "stats_providers_tip": "Các nhà cung cấp này tải chủ đề phổ biến và thống kê của trang chủ trong một yêu cầu duy nhất thay vì tải từ từng bảng. Chủ đề được kiểm tra theo chữ ký của chúng; số bài viết và người dùng là số liệu do nhà cung cấp báo cáo.",
   "use_pure_p2p_stats": "Dùng P2P thuần túy thay thế (chậm)",
   "pure_p2p_stats_tip": "Thống kê P2P thuần túy luôn là phương án dự phòng khi các nhà cung cấp thống kê ngừng hoạt động.",
-  "stats_reported_by": "Do {{provider}} báo cáo"
+  "stats_reported_by": "Do {{provider}} báo cáo",
+  "media_hosting_providers": "Nhà cung cấp Lưu trữ Phương tiện"
 }

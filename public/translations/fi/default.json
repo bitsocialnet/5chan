@@ -241,7 +241,6 @@
   "file": "Tiedosto",
   "media_hosting_none": "Ei mikään",
   "media_hosting_none_tip": "Piilottaa tiedostonlatausnapin post- ja vastauslomakkeista",
-  "media_hosting": "Mediahosting",
   "advanced_settings": "Lisäasetukset",
   "upload_failed_all_providers": "Kaikki palveluntarjoajat epäonnistuivat",
   "upload_failed_preferred_guidance": "Valitse toinen palveluntarjoaja tai aseta satunnaiseksi.",
@@ -586,5 +585,6 @@
   "stats_providers_tip": "Ne lataavat etusivun suositut langat ja tilastot yhdellä pyynnöllä sen sijaan, että ne haettaisiin jokaiselta boardilta. Langat tarkistetaan niiden allekirjoitusten avulla; viesti- ja käyttäjämäärät ovat sellaisia kuin palveluntarjoaja ne ilmoittaa.",
   "use_pure_p2p_stats": "Käytä sen sijaan puhdasta P2P:tä (hidas)",
   "pure_p2p_stats_tip": "Puhtaan P2P:n tilastot ovat aina varavaihtoehto, jos tilastojen palveluntarjoajat lakkaavat toimimasta.",
-  "stats_reported_by": "Ilmoittaja: {{provider}}"
+  "stats_reported_by": "Ilmoittaja: {{provider}}",
+  "media_hosting_providers": "Mediahostingin palveluntarjoajat"
 }
