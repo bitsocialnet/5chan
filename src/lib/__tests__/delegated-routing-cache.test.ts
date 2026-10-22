@@ -1,18 +1,30 @@
-import { describe, expect, it, vi } from 'vitest';
-import { DELEGATED_ROUTING_CACHE_NAME, clearExpiredDelegatedRoutingCache, pruneExpiredDelegatedRoutingCache } from '../delegated-routing-cache';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import {
+  DELEGATED_ROUTING_CACHE_NAME,
+  clearExpiredDelegatedRoutingCache,
+  pruneExpiredDelegatedRoutingCache,
+  scheduleDelegatedRoutingCacheMaintenance,
+} from '../delegated-routing-cache';
 
 const KEY = 'fivechanDelegatedRoutingCacheActiveAt';
 const FIVE_MINUTES = 5 * 60 * 1000;
 
-const setup = ({ lastActive, now = 1_000_000_000 }: { lastActive?: number; now?: number } = {}) => {
+const fakeStorage = (lastActive?: number) => {
   const values = new Map<string, string>();
   if (lastActive !== undefined) {
     values.set(KEY, String(lastActive));
   }
-  const storage = {
-    getItem: vi.fn((key: string) => values.get(key) ?? null),
-    setItem: vi.fn((key: string, value: string) => void values.set(key, value)),
+  return {
+    values,
+    storage: {
+      getItem: vi.fn((key: string) => values.get(key) ?? null),
+      setItem: vi.fn((key: string, value: string) => void values.set(key, value)),
+    },
   };
+};
+
+const setup = ({ lastActive, now = 1_000_000_000 }: { lastActive?: number; now?: number } = {}) => {
+  const { values, storage } = fakeStorage(lastActive);
   const cacheStorage = { delete: vi.fn().mockResolvedValue(true) };
   const listeners: Record<string, () => void> = {};
   const target = { addEventListener: vi.fn((type: string, listener: () => void) => void (listeners[type] = listener)) };
@@ -74,6 +86,26 @@ describe('clearExpiredDelegatedRoutingCache', () => {
     await expect(clearExpiredDelegatedRoutingCache({ storage: throwingStorage, cacheStorage, target: undefined })).resolves.toBe(false);
     expect(cacheStorage.delete).toHaveBeenCalledWith(DELEGATED_ROUTING_CACHE_NAME);
   });
+
+  it('still runs when reading localStorage itself throws', async () => {
+    const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+    Object.defineProperty(globalThis, 'localStorage', {
+      configurable: true,
+      get() {
+        throw new Error('SecurityError: storage is blocked');
+      },
+    });
+    try {
+      const cacheStorage = { delete: vi.fn().mockResolvedValue(true) };
+      await expect(clearExpiredDelegatedRoutingCache({ cacheStorage, target: undefined })).resolves.toBe(true);
+    } finally {
+      if (descriptor) {
+        Object.defineProperty(globalThis, 'localStorage', descriptor);
+      } else {
+        delete (globalThis as { localStorage?: unknown }).localStorage;
+      }
+    }
+  });
 });
 
 describe('pruneExpiredDelegatedRoutingCache', () => {
@@ -111,5 +143,63 @@ describe('pruneExpiredDelegatedRoutingCache', () => {
   it('returns 0 when the Cache API fails', async () => {
     const cacheStorage = { has: vi.fn().mockRejectedValue(new Error('SecurityError')), open: vi.fn() };
     await expect(pruneExpiredDelegatedRoutingCache({ now: () => now, cacheStorage })).resolves.toBe(0);
+  });
+});
+
+describe('scheduleDelegatedRoutingCacheMaintenance', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  const fakeCacheStorage = () => {
+    const cache = { keys: vi.fn().mockResolvedValue([]), match: vi.fn(), delete: vi.fn() };
+    return {
+      delete: vi.fn().mockResolvedValue(true),
+      has: vi.fn().mockResolvedValue(true),
+      open: vi.fn().mockResolvedValue(cache),
+    };
+  };
+
+  it('clears a stale cache at start, prunes after the first delay, then refreshes the stamp and prunes every tick', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(1_000_000_000);
+    const { values, storage } = fakeStorage(1_000_000_000 - FIVE_MINUTES);
+    const cacheStorage = fakeCacheStorage();
+    const stop = scheduleDelegatedRoutingCacheMaintenance({ storage, cacheStorage, target: undefined, firstPruneDelayMs: 1_000, tickMs: 2_000 });
+
+    await vi.advanceTimersByTimeAsync(0);
+    expect(cacheStorage.delete).toHaveBeenCalledWith(DELEGATED_ROUTING_CACHE_NAME);
+    expect(cacheStorage.open).not.toHaveBeenCalled();
+
+    await vi.advanceTimersByTimeAsync(1_000);
+    expect(cacheStorage.open).toHaveBeenCalledTimes(1);
+
+    await vi.advanceTimersByTimeAsync(1_000);
+    expect(cacheStorage.open).toHaveBeenCalledTimes(2);
+    expect(values.get(KEY)).toBe(String(1_000_000_000 + 2_000));
+
+    stop();
+    await vi.advanceTimersByTimeAsync(10_000);
+    expect(cacheStorage.open).toHaveBeenCalledTimes(2);
+    expect(cacheStorage.delete).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps the cache of a tab that is still running: its ticks keep the stamp within a TTL', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(1_000_000_000);
+    const { storage } = fakeStorage();
+    const firstTab = fakeCacheStorage();
+    const stopFirstTab = scheduleDelegatedRoutingCacheMaintenance({ storage, cacheStorage: firstTab, target: undefined });
+    await vi.advanceTimersByTimeAsync(0);
+    expect(firstTab.delete).toHaveBeenCalledTimes(1);
+
+    await vi.advanceTimersByTimeAsync(3 * FIVE_MINUTES);
+    const secondTab = fakeCacheStorage();
+    const stopSecondTab = scheduleDelegatedRoutingCacheMaintenance({ storage, cacheStorage: secondTab, target: undefined });
+    await vi.advanceTimersByTimeAsync(0);
+    expect(secondTab.delete).not.toHaveBeenCalled();
+
+    stopFirstTab();
+    stopSecondTab();
   });
 });

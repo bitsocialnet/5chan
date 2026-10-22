@@ -16,16 +16,30 @@
 export const DELEGATED_ROUTING_CACHE_NAME = 'delegated-routing-v1-cache';
 /** The client's default cacheTTL; each entry carries its expiry in an x-cache-expires header. */
 export const DELEGATED_ROUTING_CACHE_TTL_MS = 5 * 60 * 1000;
+// Long enough after start for the node's first lookups, which share the origin's cache queue, and
+// short enough that a session shorter than a TTL still prunes what earlier sessions left.
+const FIRST_PRUNE_DELAY_MS = 30 * 1000;
 const LAST_ACTIVE_STORAGE_KEY = 'fivechanDelegatedRoutingCacheActiveAt';
+
+type ActivityStorage = Pick<Storage, 'getItem' | 'setItem'> | undefined;
+
+// The localStorage getter itself throws when the browser blocks storage.
+const defaultStorage = (): ActivityStorage => {
+  try {
+    return globalThis.localStorage;
+  } catch {
+    return undefined;
+  }
+};
 
 interface ClearExpiredDelegatedRoutingCacheOptions {
   now?: () => number;
-  storage?: Pick<Storage, 'getItem' | 'setItem'> | undefined;
+  storage?: ActivityStorage;
   cacheStorage?: Pick<CacheStorage, 'delete'> | undefined;
   target?: Pick<Window, 'addEventListener'> | undefined;
 }
 
-const readLastActive = (storage: ClearExpiredDelegatedRoutingCacheOptions['storage']): number => {
+const readLastActive = (storage: ActivityStorage): number => {
   try {
     return Number(storage?.getItem(LAST_ACTIVE_STORAGE_KEY)) || 0;
   } catch {
@@ -33,7 +47,7 @@ const readLastActive = (storage: ClearExpiredDelegatedRoutingCacheOptions['stora
   }
 };
 
-const writeLastActive = (storage: ClearExpiredDelegatedRoutingCacheOptions['storage'], now: () => number): void => {
+const writeLastActive = (storage: ActivityStorage, now: () => number): void => {
   try {
     storage?.setItem(LAST_ACTIVE_STORAGE_KEY, String(now()));
   } catch {
@@ -48,7 +62,7 @@ const writeLastActive = (storage: ClearExpiredDelegatedRoutingCacheOptions['stor
  */
 export const clearExpiredDelegatedRoutingCache = async ({
   now = Date.now,
-  storage = globalThis.localStorage,
+  storage = defaultStorage(),
   cacheStorage = globalThis.caches,
   target = globalThis,
 }: ClearExpiredDelegatedRoutingCacheOptions = {}): Promise<boolean> => {
@@ -103,4 +117,42 @@ export const pruneExpiredDelegatedRoutingCache = async ({
   } catch {
     return 0;
   }
+};
+
+interface ScheduleDelegatedRoutingCacheMaintenanceOptions {
+  now?: () => number;
+  storage?: ActivityStorage;
+  cacheStorage?: Pick<CacheStorage, 'delete' | 'has' | 'open'> | undefined;
+  target?: Pick<Window, 'addEventListener'> | undefined;
+  timers?: Pick<typeof globalThis, 'setTimeout' | 'clearTimeout' | 'setInterval' | 'clearInterval'>;
+  firstPruneDelayMs?: number;
+  tickMs?: number;
+}
+
+/**
+ * Runs the maintenance of one app session: clears the cache when the previous session is stale,
+ * prunes expired entries shortly after start and then every half TTL, and refreshes the activity
+ * stamp on each tick, so a tab opened while another tab is still running sees a live session and
+ * never deletes the cache that tab still uses. Returns a function that stops the timers.
+ */
+export const scheduleDelegatedRoutingCacheMaintenance = ({
+  now = Date.now,
+  storage = defaultStorage(),
+  cacheStorage = globalThis.caches,
+  target = globalThis,
+  timers = globalThis,
+  firstPruneDelayMs = FIRST_PRUNE_DELAY_MS,
+  tickMs = DELEGATED_ROUTING_CACHE_TTL_MS / 2,
+}: ScheduleDelegatedRoutingCacheMaintenanceOptions = {}): (() => void) => {
+  void clearExpiredDelegatedRoutingCache({ now, storage, cacheStorage, target });
+  const prune = () => void pruneExpiredDelegatedRoutingCache({ now, cacheStorage });
+  const firstPrune = timers.setTimeout(prune, firstPruneDelayMs);
+  const tick = timers.setInterval(() => {
+    writeLastActive(storage, now);
+    prune();
+  }, tickMs);
+  return () => {
+    timers.clearTimeout(firstPrune);
+    timers.clearInterval(tick);
+  };
 };
