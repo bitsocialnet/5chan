@@ -394,8 +394,8 @@
   "post_form_flash_upload_prompt": "Recommended SWF host: <catbox>Catbox</catbox>. Upload a .swf, then paste the direct https://files.catbox.moe/...swf link in Link. Other hosts must provide a direct HTTPS .swf URL with CORS enabled.",
   "youtube_video": "YouTube-video",
   "youtube_thumbnail_link_conversion_notice": "YouTube-länk upptäckt. Klistrar in miniatyrbild om {{count}}...",
-  "stats_scope_all_listed_boards": "Alla listade boards (långsamt)",
-  "stats_scope_directory_boards": "Endast katalogens boards (snabbt)",
+  "stats_scope_all_listed_boards": "Alla listade boards",
+  "stats_scope_directory_boards": "Endast katalogens boards",
   "boards_loaded": "laddade boards:",
   "link_not_image_or_video_alert": "Länken är inte en bild eller video.",
   "not_a_file": "inte en fil",
@@ -586,5 +586,7 @@
   "use_pure_p2p_stats": "Använd rent P2P i stället (långsamt)",
   "pure_p2p_stats_tip": "Ren P2P-statistik är alltid reservlösningen om statistikleverantörerna slutar fungera.",
   "stats_reported_by": "Rapporterat av {{provider}}",
-  "media_hosting_providers": "Mediahostingleverantörer"
+  "media_hosting_providers": "Mediahostingleverantörer",
+  "stats_scope_directory_boards_p2p": "Endast katalogens boards (snabbt)",
+  "stats_scope_all_listed_boards_p2p": "Alla listade boards (långsamt)"
 }

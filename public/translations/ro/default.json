@@ -394,8 +394,8 @@
   "post_form_flash_upload_prompt": "Recommended SWF host: <catbox>Catbox</catbox>. Upload a .swf, then paste the direct https://files.catbox.moe/...swf link in Link. Other hosts must provide a direct HTTPS .swf URL with CORS enabled.",
   "youtube_video": "video YouTube",
   "youtube_thumbnail_link_conversion_notice": "Link YouTube detectat. Lipesc imaginea miniatură în {{count}}...",
-  "stats_scope_all_listed_boards": "Toate boardurile listate (lent)",
-  "stats_scope_directory_boards": "Doar boardurile din director (rapid)",
+  "stats_scope_all_listed_boards": "Toate boardurile listate",
+  "stats_scope_directory_boards": "Doar boardurile din director",
   "boards_loaded": "boarduri încărcate:",
   "link_not_image_or_video_alert": "Linkul nu este o imagine sau un videoclip.",
   "not_a_file": "nu este fișier",
@@ -586,5 +586,7 @@
   "use_pure_p2p_stats": "Folosește în schimb P2P pur (lent)",
   "pure_p2p_stats_tip": "Statisticile prin P2P pur rămân mereu varianta de rezervă în cazul în care furnizorii de statistici nu mai funcționează.",
   "stats_reported_by": "Raportate de {{provider}}",
-  "media_hosting_providers": "Furnizori de Găzduire Media"
+  "media_hosting_providers": "Furnizori de Găzduire Media",
+  "stats_scope_directory_boards_p2p": "Doar boardurile din director (rapid)",
+  "stats_scope_all_listed_boards_p2p": "Toate boardurile listate (lent)"
 }

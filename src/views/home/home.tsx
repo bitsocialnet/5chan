@@ -121,13 +121,14 @@ const hasLoadedStats = (stat: HomepageStats | undefined): stat is HomepageStats 
 const hasFailedStats = (stat: HomepageStats | undefined): boolean => stat?.state === 'failed';
 const hasResolvedStats = (stat: HomepageStats | undefined): boolean => hasLoadedStats(stat) || hasFailedStats(stat);
 
-const STATS_SCOPE_OPTIONS: Array<{ scope: HomepageStatsScope; labelKey: string }> = [
-  { scope: 'directory', labelKey: 'stats_scope_directory_boards' },
-  { scope: 'all', labelKey: 'stats_scope_all_listed_boards' },
+// Only P2P collection gets slower as the scope grows, so only its labels mention load speed.
+const STATS_SCOPE_OPTIONS: Array<{ scope: HomepageStatsScope; labelKey: string; p2pLabelKey: string }> = [
+  { scope: 'directory', labelKey: 'stats_scope_directory_boards', p2pLabelKey: 'stats_scope_directory_boards_p2p' },
+  { scope: 'all', labelKey: 'stats_scope_all_listed_boards', p2pLabelKey: 'stats_scope_all_listed_boards_p2p' },
 ];
 const EMPTY_STATS_LIST: string[] = [];
 
-const StatsOptionsModal = () => {
+const StatsOptionsModal = ({ isP2P }: { isP2P: boolean }) => {
   const { t } = useTranslation();
   const [showFilterModal, setShowFilterModal] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
@@ -187,7 +188,7 @@ const StatsOptionsModal = () => {
               onKeyDown={(event) => handleScopeKey(event, option.scope)}
               onClick={() => selectScope(option.scope)}
             >
-              {t(option.labelKey)}
+              {t(isP2P ? option.p2pLabelKey : option.labelKey)}
             </button>
           ))}
         </div>
@@ -233,7 +234,7 @@ type StatsTotals = {
   totalPosts: number;
 };
 
-const StatsBox = ({ children, title, titleSuffix }: { children: ReactNode; title?: string; titleSuffix?: ReactNode }) => {
+const StatsBox = ({ children, isP2P = false, title, titleSuffix }: { children: ReactNode; isP2P?: boolean; title?: string; titleSuffix?: ReactNode }) => {
   const { t } = useTranslation();
 
   return (
@@ -243,7 +244,7 @@ const StatsBox = ({ children, title, titleSuffix }: { children: ReactNode; title
           {t('stats')}
           {titleSuffix}
         </h2>
-        <StatsOptionsModal />
+        <StatsOptionsModal isP2P={isP2P} />
       </div>
       <div className={`${styles.boxContent} ${styles.stats}`}>{children}</div>
     </div>
@@ -308,7 +309,7 @@ const P2PStats = ({ collectorAddresses }: { collectorAddresses: string[] }) => {
       {collectorAddresses.map((address) => (
         <CommunityStatsCollector key={address} communityAddress={address} />
       ))}
-      <StatsBox titleSuffix={isStatsLoading && <StatsLoadingIndicator addresses={collectorAddresses} />}>
+      <StatsBox isP2P titleSuffix={isStatsLoading && <StatsLoadingIndicator addresses={collectorAddresses} />}>
         {hasDisplayableStats ? <StatsValues {...totals} /> : <StatsLoadingEllipsis addresses={collectorAddresses} />}
       </StatsBox>
     </>

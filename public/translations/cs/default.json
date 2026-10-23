@@ -394,8 +394,8 @@
   "post_form_flash_upload_prompt": "Recommended SWF host: <catbox>Catbox</catbox>. Upload a .swf, then paste the direct https://files.catbox.moe/...swf link in Link. Other hosts must provide a direct HTTPS .swf URL with CORS enabled.",
   "youtube_video": "video YouTube",
   "youtube_thumbnail_link_conversion_notice": "Byl zjištěn odkaz na YouTube. Vkládám náhledový obrázek za {{count}}...",
-  "stats_scope_all_listed_boards": "Všechny uvedené nástěnky (pomalé)",
-  "stats_scope_directory_boards": "Pouze nástěnky v adresáři (rychlé)",
+  "stats_scope_all_listed_boards": "Všechny uvedené nástěnky",
+  "stats_scope_directory_boards": "Pouze nástěnky v adresáři",
   "boards_loaded": "načtené nástěnky:",
   "link_not_image_or_video_alert": "Odkaz není obrázek ani video.",
   "not_a_file": "není soubor",
@@ -586,5 +586,7 @@
   "use_pure_p2p_stats": "Použít místo toho čisté P2P (pomalé)",
   "pure_p2p_stats_tip": "Statistiky z čistého P2P jsou vždy záložní možností pro případ, že poskytovatelé statistik přestanou fungovat.",
   "stats_reported_by": "Uvádí {{provider}}",
-  "media_hosting_providers": "Poskytovatelé hostování médií"
+  "media_hosting_providers": "Poskytovatelé hostování médií",
+  "stats_scope_directory_boards_p2p": "Pouze nástěnky v adresáři (rychlé)",
+  "stats_scope_all_listed_boards_p2p": "Všechny uvedené nástěnky (pomalé)"
 }

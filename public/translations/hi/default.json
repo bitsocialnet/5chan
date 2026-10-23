@@ -394,8 +394,8 @@
   "post_form_flash_upload_prompt": "Recommended SWF host: <catbox>Catbox</catbox>. Upload a .swf, then paste the direct https://files.catbox.moe/...swf link in Link. Other hosts must provide a direct HTTPS .swf URL with CORS enabled.",
   "youtube_video": "YouTube वीडियो",
   "youtube_thumbnail_link_conversion_notice": "YouTube लिंक मिला। {{count}} में थंबनेल इमेज पेस्ट की जा रही है...",
-  "stats_scope_all_listed_boards": "सभी सूचीबद्ध बोर्ड (धीमा)",
-  "stats_scope_directory_boards": "सिर्फ डायरेक्टरी बोर्ड (तेज़)",
+  "stats_scope_all_listed_boards": "सभी सूचीबद्ध बोर्ड",
+  "stats_scope_directory_boards": "सिर्फ डायरेक्टरी बोर्ड",
   "boards_loaded": "लोड किए गए बोर्ड:",
   "link_not_image_or_video_alert": "लिंक कोई छवि या वीडियो नहीं है.",
   "not_a_file": "फ़ाइल नहीं है",
@@ -586,5 +586,7 @@
   "use_pure_p2p_stats": "इसके बजाय शुद्ध P2P का उपयोग करें (धीमा)",
   "pure_p2p_stats_tip": "आँकड़ा प्रदाताओं के बंद होने की स्थिति में शुद्ध P2P आँकड़े हमेशा बैकअप विकल्प के रूप में उपलब्ध रहते हैं।",
   "stats_reported_by": "{{provider}} द्वारा रिपोर्ट किए गए",
-  "media_hosting_providers": "मीडिया होस्टिंग प्रदाता"
+  "media_hosting_providers": "मीडिया होस्टिंग प्रदाता",
+  "stats_scope_directory_boards_p2p": "सिर्फ डायरेक्टरी बोर्ड (तेज़)",
+  "stats_scope_all_listed_boards_p2p": "सभी सूचीबद्ध बोर्ड (धीमा)"
 }

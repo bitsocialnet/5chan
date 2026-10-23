@@ -394,8 +394,8 @@
   "post_form_flash_upload_prompt": "Recommended SWF host: <catbox>Catbox</catbox>. Upload a .swf, then paste the direct https://files.catbox.moe/...swf link in Link. Other hosts must provide a direct HTTPS .swf URL with CORS enabled.",
   "youtube_video": "YouTube-video",
   "youtube_thumbnail_link_conversion_notice": "YouTube-link gedetecteerd. Miniatuurafbeelding wordt over {{count}} geplakt...",
-  "stats_scope_all_listed_boards": "Alle vermelde boards (traag)",
-  "stats_scope_directory_boards": "Alleen directory-boards (snel)",
+  "stats_scope_all_listed_boards": "Alle vermelde boards",
+  "stats_scope_directory_boards": "Alleen directory-boards",
   "boards_loaded": "geladen boards:",
   "link_not_image_or_video_alert": "De link is geen afbeelding of video.",
   "not_a_file": "geen bestand",
@@ -586,5 +586,7 @@
   "use_pure_p2p_stats": "In plaats daarvan puur P2P gebruiken (traag)",
   "pure_p2p_stats_tip": "Pure P2P-statistieken zijn altijd de terugvaloptie als statistiekproviders uitvallen.",
   "stats_reported_by": "Gemeld door {{provider}}",
-  "media_hosting_providers": "Mediahostingproviders"
+  "media_hosting_providers": "Mediahostingproviders",
+  "stats_scope_directory_boards_p2p": "Alleen directory-boards (snel)",
+  "stats_scope_all_listed_boards_p2p": "Alle vermelde boards (traag)"
 }

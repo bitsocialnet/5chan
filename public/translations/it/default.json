@@ -394,8 +394,8 @@
   "post_form_flash_upload_prompt": "Recommended SWF host: <catbox>Catbox</catbox>. Upload a .swf, then paste the direct https://files.catbox.moe/...swf link in Link. Other hosts must provide a direct HTTPS .swf URL with CORS enabled.",
   "youtube_video": "video YouTube",
   "youtube_thumbnail_link_conversion_notice": "Link YouTube rilevato. Incollando l'immagine di anteprima tra {{count}}...",
-  "stats_scope_all_listed_boards": "Tutte le board elencate (lento)",
-  "stats_scope_directory_boards": "Solo board della directory (veloce)",
+  "stats_scope_all_listed_boards": "Tutte le board elencate",
+  "stats_scope_directory_boards": "Solo board della directory",
   "boards_loaded": "board caricati:",
   "link_not_image_or_video_alert": "Il link non è un'immagine né un video.",
   "not_a_file": "non è un file",
@@ -586,5 +586,7 @@
   "use_pure_p2p_stats": "Usa invece il P2P puro (lento)",
   "pure_p2p_stats_tip": "Le statistiche in P2P puro restano sempre la soluzione di riserva se i provider di statistiche smettono di funzionare.",
   "stats_reported_by": "Riportate da {{provider}}",
-  "media_hosting_providers": "Provider di Hosting Media"
+  "media_hosting_providers": "Provider di Hosting Media",
+  "stats_scope_directory_boards_p2p": "Solo board della directory (veloce)",
+  "stats_scope_all_listed_boards_p2p": "Tutte le board elencate (lento)"
 }

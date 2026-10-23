@@ -394,8 +394,8 @@
   "post_form_flash_upload_prompt": "Recommended SWF host: <catbox>Catbox</catbox>. Upload a .swf, then paste the direct https://files.catbox.moe/...swf link in Link. Other hosts must provide a direct HTTPS .swf URL with CORS enabled.",
   "youtube_video": "video YouTube",
   "youtube_thumbnail_link_conversion_notice": "Tautan YouTube terdeteksi. Menempelkan gambar thumbnail dalam {{count}}...",
-  "stats_scope_all_listed_boards": "Semua board yang terdaftar (lambat)",
-  "stats_scope_directory_boards": "Hanya board direktori (cepat)",
+  "stats_scope_all_listed_boards": "Semua board yang terdaftar",
+  "stats_scope_directory_boards": "Hanya board direktori",
   "boards_loaded": "board dimuat:",
   "link_not_image_or_video_alert": "Tautan bukan gambar atau video.",
   "not_a_file": "bukan file",
@@ -586,5 +586,7 @@
   "use_pure_p2p_stats": "Gunakan P2P murni saja (lambat)",
   "pure_p2p_stats_tip": "Statistik P2P murni selalu menjadi cadangan jika penyedia statistik sedang tidak berfungsi.",
   "stats_reported_by": "Dilaporkan oleh {{provider}}",
-  "media_hosting_providers": "Penyedia Hosting Media"
+  "media_hosting_providers": "Penyedia Hosting Media",
+  "stats_scope_directory_boards_p2p": "Hanya board direktori (cepat)",
+  "stats_scope_all_listed_boards_p2p": "Semua board yang terdaftar (lambat)"
 }

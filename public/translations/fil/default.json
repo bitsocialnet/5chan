@@ -394,8 +394,8 @@
   "post_form_flash_upload_prompt": "Recommended SWF host: <catbox>Catbox</catbox>. Upload a .swf, then paste the direct https://files.catbox.moe/...swf link in Link. Other hosts must provide a direct HTTPS .swf URL with CORS enabled.",
   "youtube_video": "video sa YouTube",
   "youtube_thumbnail_link_conversion_notice": "May nakita na link ng YouTube. Ipi-paste ang thumbnail image sa loob ng {{count}}...",
-  "stats_scope_all_listed_boards": "Lahat ng nakalistang board (mabagal)",
-  "stats_scope_directory_boards": "Mga board ng directory lang (mabilis)",
+  "stats_scope_all_listed_boards": "Lahat ng nakalistang board",
+  "stats_scope_directory_boards": "Mga board ng directory lang",
   "boards_loaded": "mga board na na-load:",
   "link_not_image_or_video_alert": "Ang link ay hindi larawan o video.",
   "not_a_file": "hindi file",
@@ -586,5 +586,7 @@
   "use_pure_p2p_stats": "Gumamit na lang ng purong P2P (mabagal)",
   "pure_p2p_stats_tip": "Ang purong P2P na estadistika ay laging fallback kung sakaling mag-down ang mga provider ng estadistika.",
   "stats_reported_by": "Iniulat ng {{provider}}",
-  "media_hosting_providers": "Mga Provider ng Media Hosting"
+  "media_hosting_providers": "Mga Provider ng Media Hosting",
+  "stats_scope_directory_boards_p2p": "Mga board ng directory lang (mabilis)",
+  "stats_scope_all_listed_boards_p2p": "Lahat ng nakalistang board (mabagal)"
 }

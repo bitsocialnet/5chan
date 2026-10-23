@@ -394,8 +394,8 @@
   "post_form_flash_upload_prompt": "Recommended SWF host: <catbox>Catbox</catbox>. Upload a .swf, then paste the direct https://files.catbox.moe/...swf link in Link. Other hosts must provide a direct HTTPS .swf URL with CORS enabled.",
   "youtube_video": "video YouTube",
   "youtube_thumbnail_link_conversion_notice": "U zbulua lidhje YouTube. Po ngjis imazhin miniaturë pas {{count}}...",
-  "stats_scope_all_listed_boards": "Të gjitha bordet e listuara (ngadalë)",
-  "stats_scope_directory_boards": "Vetëm bordet e drejtorisë (shpejt)",
+  "stats_scope_all_listed_boards": "Të gjitha bordet e listuara",
+  "stats_scope_directory_boards": "Vetëm bordet e drejtorisë",
   "boards_loaded": "bordet e ngarkuara:",
   "link_not_image_or_video_alert": "Lidhja nuk është imazh ose video.",
   "not_a_file": "nuk është skedar",
@@ -586,5 +586,7 @@
   "use_pure_p2p_stats": "Përdor P2P të pastër në vend të kësaj (ngadalë)",
   "pure_p2p_stats_tip": "Statistikat përmes P2P të pastër janë gjithmonë alternativa rezervë në rast se ofruesit e statistikave nuk funksionojnë.",
   "stats_reported_by": "Raportuar nga {{provider}}",
-  "media_hosting_providers": "Ofruesit e Hostimit të Mediave"
+  "media_hosting_providers": "Ofruesit e Hostimit të Mediave",
+  "stats_scope_directory_boards_p2p": "Vetëm bordet e drejtorisë (shpejt)",
+  "stats_scope_all_listed_boards_p2p": "Të gjitha bordet e listuara (ngadalë)"
 }

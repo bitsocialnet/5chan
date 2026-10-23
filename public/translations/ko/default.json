@@ -394,8 +394,8 @@
   "post_form_flash_upload_prompt": "Recommended SWF host: <catbox>Catbox</catbox>. Upload a .swf, then paste the direct https://files.catbox.moe/...swf link in Link. Other hosts must provide a direct HTTPS .swf URL with CORS enabled.",
   "youtube_video": "YouTube 동영상",
   "youtube_thumbnail_link_conversion_notice": "YouTube 링크가 감지되었습니다. {{count}} 후에 썸네일 이미지를 붙여넣는 중...",
-  "stats_scope_all_listed_boards": "등록된 모든 게시판 (느림)",
-  "stats_scope_directory_boards": "디렉터리 게시판만 (빠름)",
+  "stats_scope_all_listed_boards": "등록된 모든 게시판",
+  "stats_scope_directory_boards": "디렉터리 게시판만",
   "boards_loaded": "불러온 게시판:",
   "link_not_image_or_video_alert": "링크가 이미지 또는 동영상이 아닙니다.",
   "not_a_file": "파일이 아님",
@@ -586,5 +586,7 @@
   "use_pure_p2p_stats": "대신 순수 P2P 사용 (느림)",
   "pure_p2p_stats_tip": "통계 제공업체가 중단되더라도 항상 순수 P2P 통계가 대체 수단으로 사용됩니다.",
   "stats_reported_by": "{{provider}}에서 보고함",
-  "media_hosting_providers": "미디어 호스팅 제공업체"
+  "media_hosting_providers": "미디어 호스팅 제공업체",
+  "stats_scope_directory_boards_p2p": "디렉터리 게시판만 (빠름)",
+  "stats_scope_all_listed_boards_p2p": "등록된 모든 게시판 (느림)"
 }

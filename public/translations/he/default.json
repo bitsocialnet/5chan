@@ -394,8 +394,8 @@
   "post_form_flash_upload_prompt": "Recommended SWF host: <catbox>Catbox</catbox>. Upload a .swf, then paste the direct https://files.catbox.moe/...swf link in Link. Other hosts must provide a direct HTTPS .swf URL with CORS enabled.",
   "youtube_video": "סרטון YouTube",
   "youtube_thumbnail_link_conversion_notice": "זוהה קישור YouTube. מדביק תמונת ממוזערת בעוד {{count}}...",
-  "stats_scope_all_listed_boards": "כל הלוחות הרשומים (איטי)",
-  "stats_scope_directory_boards": "רק לוחות מהספרייה (מהיר)",
+  "stats_scope_all_listed_boards": "כל הלוחות הרשומים",
+  "stats_scope_directory_boards": "רק לוחות מהספרייה",
   "boards_loaded": "לוחות שנטענו:",
   "link_not_image_or_video_alert": "הקישור אינו תמונה או וידאו.",
   "not_a_file": "לא קובץ",
@@ -586,5 +586,7 @@
   "use_pure_p2p_stats": "שימוש ב-P2P טהור במקום זאת (איטי)",
   "pure_p2p_stats_tip": "סטטיסטיקות P2P טהור הן תמיד חלופת הגיבוי למקרה שספקי הסטטיסטיקות מפסיקים לפעול.",
   "stats_reported_by": "דווחו על ידי {{provider}}",
-  "media_hosting_providers": "ספקי אירוח מדיה"
+  "media_hosting_providers": "ספקי אירוח מדיה",
+  "stats_scope_directory_boards_p2p": "רק לוחות מהספרייה (מהיר)",
+  "stats_scope_all_listed_boards_p2p": "כל הלוחות הרשומים (איטי)"
 }

@@ -394,8 +394,8 @@
   "post_form_flash_upload_prompt": "Recommended SWF host: <catbox>Catbox</catbox>. Upload a .swf, then paste the direct https://files.catbox.moe/...swf link in Link. Other hosts must provide a direct HTTPS .swf URL with CORS enabled.",
   "youtube_video": "видео YouTube",
   "youtube_thumbnail_link_conversion_notice": "Обнаружена ссылка YouTube. Вставка миниатюры через {{count}}...",
-  "stats_scope_all_listed_boards": "Все перечисленные доски (медленно)",
-  "stats_scope_directory_boards": "Только доски каталога (быстро)",
+  "stats_scope_all_listed_boards": "Все перечисленные доски",
+  "stats_scope_directory_boards": "Только доски каталога",
   "boards_loaded": "загруженные доски:",
   "link_not_image_or_video_alert": "Ссылка не является изображением или видео.",
   "not_a_file": "не файл",
@@ -586,5 +586,7 @@
   "use_pure_p2p_stats": "Использовать вместо этого чистый P2P (медленно)",
   "pure_p2p_stats_tip": "Статистика через чистый P2P всегда остаётся запасным вариантом на случай, если провайдеры статистики перестанут работать.",
   "stats_reported_by": "По данным {{provider}}",
-  "media_hosting_providers": "Провайдеры хостинга медиа"
+  "media_hosting_providers": "Провайдеры хостинга медиа",
+  "stats_scope_directory_boards_p2p": "Только доски каталога (быстро)",
+  "stats_scope_all_listed_boards_p2p": "Все перечисленные доски (медленно)"
 }

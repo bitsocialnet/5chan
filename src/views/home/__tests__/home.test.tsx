@@ -328,7 +328,7 @@ describe('Home', () => {
       optionsButton?.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
     });
 
-    const option = Array.from(container.querySelectorAll('button')).find((button) => button.textContent === 'stats_scope_all_listed_boards');
+    const option = Array.from(container.querySelectorAll('button')).find((button) => button.textContent === 'stats_scope_all_listed_boards_p2p');
     expect(option).toBeTruthy();
 
     act(() => {
@@ -336,6 +336,25 @@ describe('Home', () => {
     });
 
     expect(testState.setStatsScopeMock).toHaveBeenCalledWith('all');
+  });
+
+  it('leaves load speed out of the scope options when a stats provider reports the stats', async () => {
+    testState.providerSnapshot = {
+      boards: new Map([['music-posting.eth', { stats: { allPostCount: 1, allReplyCount: 0, weekActiveUserCount: 1 }, threads: [] }]]),
+      generatedAt: 1,
+      providerId: 'stats-bitsocial-net',
+    };
+    await renderHome();
+
+    const optionsButton = Array.from(container.querySelectorAll('button')).find((button) => button.textContent === 'options ▼');
+    act(() => {
+      optionsButton?.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    });
+
+    const optionLabels = Array.from(container.querySelectorAll('button')).map((button) => button.textContent);
+    expect(optionLabels).toContain('stats_scope_directory_boards');
+    expect(optionLabels).toContain('stats_scope_all_listed_boards');
+    expect(optionLabels).not.toContain('stats_scope_all_listed_boards_p2p');
   });
 
   it('shows provider-reported stats without collecting them over P2P', async () => {

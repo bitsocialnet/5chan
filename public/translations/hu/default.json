@@ -394,8 +394,8 @@
   "post_form_flash_upload_prompt": "Recommended SWF host: <catbox>Catbox</catbox>. Upload a .swf, then paste the direct https://files.catbox.moe/...swf link in Link. Other hosts must provide a direct HTTPS .swf URL with CORS enabled.",
   "youtube_video": "YouTube-videó",
   "youtube_thumbnail_link_conversion_notice": "YouTube-link észlelve. Bélyegkép beillesztése {{count}} múlva...",
-  "stats_scope_all_listed_boards": "Az összes listázott board (lassú)",
-  "stats_scope_directory_boards": "Csak a könyvtár boardjai (gyors)",
+  "stats_scope_all_listed_boards": "Az összes listázott board",
+  "stats_scope_directory_boards": "Csak a könyvtár boardjai",
   "boards_loaded": "betöltött boardok:",
   "link_not_image_or_video_alert": "A hivatkozás nem kép vagy videó.",
   "not_a_file": "nem fájl",
@@ -586,5 +586,7 @@
   "use_pure_p2p_stats": "Inkább tiszta P2P használata (lassú)",
   "pure_p2p_stats_tip": "A tiszta P2P-statisztikák mindig tartalékként szolgálnak arra az esetre, ha a statisztikai szolgáltatók leállnak.",
   "stats_reported_by": "Jelentette: {{provider}}",
-  "media_hosting_providers": "Médiahosting-szolgáltatók"
+  "media_hosting_providers": "Médiahosting-szolgáltatók",
+  "stats_scope_directory_boards_p2p": "Csak a könyvtár boardjai (gyors)",
+  "stats_scope_all_listed_boards_p2p": "Az összes listázott board (lassú)"
 }

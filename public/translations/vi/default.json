@@ -394,8 +394,8 @@
   "post_form_flash_upload_prompt": "Recommended SWF host: <catbox>Catbox</catbox>. Upload a .swf, then paste the direct https://files.catbox.moe/...swf link in Link. Other hosts must provide a direct HTTPS .swf URL with CORS enabled.",
   "youtube_video": "video YouTube",
   "youtube_thumbnail_link_conversion_notice": "Đã phát hiện liên kết YouTube. Đang dán ảnh thu nhỏ sau {{count}}...",
-  "stats_scope_all_listed_boards": "Tất cả bảng được liệt kê (chậm)",
-  "stats_scope_directory_boards": "Chỉ bảng trong thư mục (nhanh)",
+  "stats_scope_all_listed_boards": "Tất cả bảng được liệt kê",
+  "stats_scope_directory_boards": "Chỉ bảng trong thư mục",
   "boards_loaded": "bảng đã tải:",
   "link_not_image_or_video_alert": "Liên kết không phải là hình ảnh hoặc video.",
   "not_a_file": "không phải tệp",
@@ -586,5 +586,7 @@
   "use_pure_p2p_stats": "Dùng P2P thuần túy thay thế (chậm)",
   "pure_p2p_stats_tip": "Thống kê P2P thuần túy luôn là phương án dự phòng khi các nhà cung cấp thống kê ngừng hoạt động.",
   "stats_reported_by": "Do {{provider}} báo cáo",
-  "media_hosting_providers": "Nhà cung cấp Lưu trữ Phương tiện"
+  "media_hosting_providers": "Nhà cung cấp Lưu trữ Phương tiện",
+  "stats_scope_directory_boards_p2p": "Chỉ bảng trong thư mục (nhanh)",
+  "stats_scope_all_listed_boards_p2p": "Tất cả bảng được liệt kê (chậm)"
 }

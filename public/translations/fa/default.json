@@ -394,8 +394,8 @@
   "post_form_flash_upload_prompt": "Recommended SWF host: <catbox>Catbox</catbox>. Upload a .swf, then paste the direct https://files.catbox.moe/...swf link in Link. Other hosts must provide a direct HTTPS .swf URL with CORS enabled.",
   "youtube_video": "ویدیوی YouTube",
   "youtube_thumbnail_link_conversion_notice": "پیوند YouTube شناسایی شد. در حال چسباندن تصویر بندانگشتی در {{count}}...",
-  "stats_scope_all_listed_boards": "همهٔ بردهای فهرست‌شده (کند)",
-  "stats_scope_directory_boards": "فقط بردهای دایرکتوری (سریع)",
+  "stats_scope_all_listed_boards": "همهٔ بردهای فهرست‌شده",
+  "stats_scope_directory_boards": "فقط بردهای دایرکتوری",
   "boards_loaded": "بردهای بارگذاری‌شده:",
   "link_not_image_or_video_alert": "پیوند تصویر یا ویدیو نیست.",
   "not_a_file": "فایل نیست",
@@ -586,5 +586,7 @@
   "use_pure_p2p_stats": "استفاده از P2P خالص به‌جای آن (کند)",
   "pure_p2p_stats_tip": "اگر ارائه‌دهندگان آمار از دسترس خارج شوند، آمار P2P خالص همیشه گزینهٔ پشتیبان است.",
   "stats_reported_by": "گزارش‌شده توسط {{provider}}",
-  "media_hosting_providers": "ارائه‌دهندگان میزبانی رسانه"
+  "media_hosting_providers": "ارائه‌دهندگان میزبانی رسانه",
+  "stats_scope_directory_boards_p2p": "فقط بردهای دایرکتوری (سریع)",
+  "stats_scope_all_listed_boards_p2p": "همهٔ بردهای فهرست‌شده (کند)"
 }

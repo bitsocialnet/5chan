@@ -394,8 +394,8 @@
   "post_form_flash_upload_prompt": "Recommended SWF host: <catbox>Catbox</catbox>. Upload a .swf, then paste the direct https://files.catbox.moe/...swf link in Link. Other hosts must provide a direct HTTPS .swf URL with CORS enabled.",
   "youtube_video": "YouTube-video",
   "youtube_thumbnail_link_conversion_notice": "YouTube-linkki havaittu. Liitetään pikkukuva {{count}} kuluttua...",
-  "stats_scope_all_listed_boards": "Kaikki listatut boardit (hidas)",
-  "stats_scope_directory_boards": "Vain hakemiston boardit (nopea)",
+  "stats_scope_all_listed_boards": "Kaikki listatut boardit",
+  "stats_scope_directory_boards": "Vain hakemiston boardit",
   "boards_loaded": "ladatut boardit:",
   "link_not_image_or_video_alert": "Linkki ei ole kuva tai video.",
   "not_a_file": "ei ole tiedosto",
@@ -586,5 +586,7 @@
   "use_pure_p2p_stats": "Käytä sen sijaan puhdasta P2P:tä (hidas)",
   "pure_p2p_stats_tip": "Puhtaan P2P:n tilastot ovat aina varavaihtoehto, jos tilastojen palveluntarjoajat lakkaavat toimimasta.",
   "stats_reported_by": "Ilmoittaja: {{provider}}",
-  "media_hosting_providers": "Mediahostingin palveluntarjoajat"
+  "media_hosting_providers": "Mediahostingin palveluntarjoajat",
+  "stats_scope_directory_boards_p2p": "Vain hakemiston boardit (nopea)",
+  "stats_scope_all_listed_boards_p2p": "Kaikki listatut boardit (hidas)"
 }

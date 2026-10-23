@@ -394,8 +394,8 @@
   "post_form_flash_upload_prompt": "Recommended SWF host: <catbox>Catbox</catbox>. Upload a .swf, then paste the direct https://files.catbox.moe/...swf link in Link. Other hosts must provide a direct HTTPS .swf URL with CORS enabled.",
   "youtube_video": "YouTube動画",
   "youtube_thumbnail_link_conversion_notice": "YouTubeリンクを検出しました。{{count}}後にサムネイル画像を貼り付けます...",
-  "stats_scope_all_listed_boards": "掲載されているすべての掲示板（低速）",
-  "stats_scope_directory_boards": "ディレクトリの掲示板のみ（高速）",
+  "stats_scope_all_listed_boards": "掲載されているすべての掲示板",
+  "stats_scope_directory_boards": "ディレクトリの掲示板のみ",
   "boards_loaded": "読み込まれた板:",
   "link_not_image_or_video_alert": "リンクは画像または動画ではありません。",
   "not_a_file": "ファイルではありません",
@@ -586,5 +586,7 @@
   "use_pure_p2p_stats": "代わりに純粋なP2Pを使用（低速）",
   "pure_p2p_stats_tip": "統計プロバイダーが停止した場合は、常に純粋なP2Pによる統計がフォールバックとして使われます。",
   "stats_reported_by": "報告元: {{provider}}",
-  "media_hosting_providers": "メディアホスティングプロバイダー"
+  "media_hosting_providers": "メディアホスティングプロバイダー",
+  "stats_scope_directory_boards_p2p": "ディレクトリの掲示板のみ（高速）",
+  "stats_scope_all_listed_boards_p2p": "掲載されているすべての掲示板（低速）"
 }

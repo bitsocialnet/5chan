@@ -394,8 +394,8 @@
   "post_form_flash_upload_prompt": "Recommended SWF host: <catbox>Catbox</catbox>. Upload a .swf, then paste the direct https://files.catbox.moe/...swf link in Link. Other hosts must provide a direct HTTPS .swf URL with CORS enabled.",
   "youtube_video": "βίντεο YouTube",
   "youtube_thumbnail_link_conversion_notice": "Εντοπίστηκε σύνδεσμος YouTube. Επικόλληση μικρογραφίας σε {{count}}...",
-  "stats_scope_all_listed_boards": "Όλα τα καταχωρισμένα boards (αργό)",
-  "stats_scope_directory_boards": "Μόνο boards καταλόγου (γρήγορο)",
+  "stats_scope_all_listed_boards": "Όλα τα καταχωρισμένα boards",
+  "stats_scope_directory_boards": "Μόνο boards καταλόγου",
   "boards_loaded": "φορτωμένοι πίνακες:",
   "link_not_image_or_video_alert": "Ο σύνδεσμος δεν είναι εικόνα ή βίντεο.",
   "not_a_file": "δεν είναι αρχείο",
@@ -586,5 +586,7 @@
   "use_pure_p2p_stats": "Χρήση καθαρού P2P αντί γι’ αυτό (αργό)",
   "pure_p2p_stats_tip": "Τα στατιστικά καθαρού P2P είναι πάντα η εφεδρική λύση σε περίπτωση που οι πάροχοι στατιστικών τεθούν εκτός λειτουργίας.",
   "stats_reported_by": "Αναφέρθηκαν από {{provider}}",
-  "media_hosting_providers": "Πάροχοι Φιλοξενίας Πολυμέσων"
+  "media_hosting_providers": "Πάροχοι Φιλοξενίας Πολυμέσων",
+  "stats_scope_directory_boards_p2p": "Μόνο boards καταλόγου (γρήγορο)",
+  "stats_scope_all_listed_boards_p2p": "Όλα τα καταχωρισμένα boards (αργό)"
 }

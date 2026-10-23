@@ -394,8 +394,8 @@
   "post_form_flash_upload_prompt": "Recommended SWF host: <catbox>Catbox</catbox>. Upload a .swf, then paste the direct https://files.catbox.moe/...swf link in Link. Other hosts must provide a direct HTTPS .swf URL with CORS enabled.",
   "youtube_video": "YouTube-video",
   "youtube_thumbnail_link_conversion_notice": "YouTube-lenke oppdaget. Limer inn miniatyrbilde om {{count}}...",
-  "stats_scope_all_listed_boards": "Alle oppførte boards (tregt)",
-  "stats_scope_directory_boards": "Bare katalog-boards (raskt)",
+  "stats_scope_all_listed_boards": "Alle oppførte boards",
+  "stats_scope_directory_boards": "Bare katalog-boards",
   "boards_loaded": "lastede boards:",
   "link_not_image_or_video_alert": "Lenken er ikke et bilde eller en video.",
   "not_a_file": "ikke en fil",
@@ -586,5 +586,7 @@
   "use_pure_p2p_stats": "Bruk ren P2P i stedet (tregt)",
   "pure_p2p_stats_tip": "Ren P2P-statistikk er alltid reserveløsningen hvis statistikkleverandørene går ned.",
   "stats_reported_by": "Rapportert av {{provider}}",
-  "media_hosting_providers": "Mediahostingleverandører"
+  "media_hosting_providers": "Mediahostingleverandører",
+  "stats_scope_directory_boards_p2p": "Bare katalog-boards (raskt)",
+  "stats_scope_all_listed_boards_p2p": "Alle oppførte boards (tregt)"
 }
