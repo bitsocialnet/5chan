@@ -129,7 +129,11 @@ const Thumbnail = ({
         <button type='button' className={`${styles.gifPlaceholder} ${styles.mediaToggleButton}`} aria-label='Loading GIF thumbnail' onClick={handleOpenMedia} />
       ) : (
         <button type='button' className={styles.mediaToggleButton} aria-label='Open GIF' onClick={handleOpenMedia}>
-          {gifFrameUrl ? <img src={gifFrameUrl} alt='' onLoad={() => requestMediaFileSize(url)} /> : url && <GifFirstFrameCanvas src={url} />}
+          {gifFrameUrl ? (
+            <img src={gifFrameUrl} alt='' onLoad={() => requestMediaFileSize(url)} />
+          ) : (
+            url && <GifFirstFrameCanvas src={url} onLoad={() => requestMediaFileSize(url)} />
+          )}
         </button>
       );
   } else if (type === 'video') {
@@ -154,10 +158,18 @@ const Thumbnail = ({
       </button>
     ) : null;
   } else if (type === 'audio') {
-    thumbnailComponent = <audio src={url} aria-label='Audio preview' controls />;
+    thumbnailComponent = <audio src={url} aria-label='Audio preview' controls onLoadedMetadata={() => requestMediaFileSize(url)} />;
   } else if (type === 'swf') {
     thumbnailComponent = (
-      <button type='button' className={styles.swfPlaceholder} onClick={() => setShowThumbnail(false)}>
+      <button
+        type='button'
+        className={styles.swfPlaceholder}
+        onClick={() => {
+          // Nothing loads an SWF before it is opened, so this is the first point its size can be read.
+          requestMediaFileSize(url);
+          setShowThumbnail(false);
+        }}
+      >
         [SWF]
       </button>
     );

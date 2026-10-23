@@ -238,6 +238,33 @@ describe('CommentMedia', () => {
     expect(testState.fetchMediaFileSize).toHaveBeenCalledWith('https://files.example.com/clip.webm');
   });
 
+  it('asks for an audio file size once its metadata loads and an SWF file size once it is opened', async () => {
+    testState.fetchMediaFileSize.mockResolvedValue(3145728);
+
+    await renderMedia({
+      commentMediaInfo: { type: 'audio', url: 'https://files.example.com/track.mp3' },
+      setShowThumbnail: setShowThumbnailMock,
+      showThumbnail: true,
+    });
+    await act(async () => {
+      container.querySelector('audio')?.dispatchEvent(new Event('loadedmetadata'));
+      await Promise.resolve();
+    });
+    expect(testState.fetchMediaFileSize).toHaveBeenCalledWith('https://files.example.com/track.mp3');
+
+    await renderMedia({
+      commentMediaInfo: { type: 'swf', url: 'https://files.example.com/game.swf' },
+      setShowThumbnail: setShowThumbnailMock,
+      showThumbnail: true,
+    });
+    expect(testState.fetchMediaFileSize).not.toHaveBeenCalledWith('https://files.example.com/game.swf');
+    const placeholder = Array.from(container.querySelectorAll('button')).find((node) => node.textContent === '[SWF]');
+    await act(async () => {
+      placeholder?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+    expect(testState.fetchMediaFileSize).toHaveBeenCalledWith('https://files.example.com/game.swf');
+  });
+
   it('marks expanded reply images so virtualized feed rows use live height', async () => {
     await renderMedia({
       commentMediaInfo: {
