@@ -112,6 +112,7 @@ const renderMedia = async (props: Record<string, unknown>) => {
 describe('CommentMedia', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    testState.fetchMediaFileSize.mockResolvedValue(null);
     testState.canEmbed = false;
     testState.fitExpandedImagesToScreen = false;
     testState.getHasThumbnailResult = true;
@@ -198,7 +199,7 @@ describe('CommentMedia', () => {
 
   it('keeps the media type label and asks only once when the host does not expose the file size', async () => {
     testState.isMobile = true;
-    testState.fetchMediaFileSize.mockResolvedValue(undefined);
+    testState.fetchMediaFileSize.mockResolvedValue(null);
 
     await renderMedia({
       commentMediaInfo: { linkHeight: 300, linkWidth: 300, type: 'image', url: 'https://no-cors.example.com/photo.jpg' },
@@ -218,6 +219,31 @@ describe('CommentMedia', () => {
 
     expect(testState.fetchMediaFileSize).toHaveBeenCalledTimes(1);
     expect(container.textContent).toBe(' image');
+  });
+
+  it('asks again on a later load when a file size read fails', async () => {
+    testState.isMobile = true;
+    testState.fetchMediaFileSize.mockResolvedValueOnce(undefined).mockResolvedValueOnce(19125);
+
+    await renderMedia({
+      commentMediaInfo: { linkHeight: 300, linkWidth: 300, type: 'image', url: 'https://slow.example.com/photo.jpg' },
+      setShowThumbnail: setShowThumbnailMock,
+      showThumbnail: true,
+    });
+
+    const image = container.querySelector('img[src="https://slow.example.com/photo.jpg"]');
+    await act(async () => {
+      image?.dispatchEvent(new Event('load'));
+      await Promise.resolve();
+    });
+    expect(container.textContent).toBe(' image');
+    await act(async () => {
+      image?.dispatchEvent(new Event('load'));
+      await Promise.resolve();
+    });
+
+    expect(testState.fetchMediaFileSize).toHaveBeenCalledTimes(2);
+    expect(container.textContent).toBe('19 KB JPG');
   });
 
   it('asks for a video file size once its thumbnail metadata loads', async () => {

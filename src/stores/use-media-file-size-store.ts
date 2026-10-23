@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { fetchMediaFileSize } from '../lib/utils/media-utils';
 
 interface MediaFileSizeState {
-  // null marks a file whose host did not expose its size, so it is not asked again this session.
+  // null marks a file whose host answered without its size or blocks reads, so it is not asked again this session.
   fileSizes: Record<string, number | null>;
 }
 
@@ -19,7 +19,9 @@ export const requestMediaFileSize = (url: string | undefined) => {
   pendingUrls.add(url);
   void fetchMediaFileSize(url).then((fileSize) => {
     pendingUrls.delete(url);
-    useMediaFileSizeStore.setState((state) => ({ fileSizes: { ...state.fileSizes, [url]: fileSize ?? null } }));
+    // A failed read (a timeout, a dropped connection, an error response) is not stored, so a later load event asks again.
+    if (fileSize === undefined) return;
+    useMediaFileSizeStore.setState((state) => ({ fileSizes: { ...state.fileSizes, [url]: fileSize } }));
   });
 };
 

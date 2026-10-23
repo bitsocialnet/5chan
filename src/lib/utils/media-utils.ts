@@ -512,15 +512,17 @@ const MEDIA_FILE_SIZE_TIMEOUT_MS = 10_000;
 // without CORS headers or a length; a GET then works, and Chrome can answer it from the <img> load's cache.
 // Origins that answered neither are not asked again.
 const mediaFileSizeOriginModes = new Map<string, 'head' | 'cache' | 'blocked'>();
-const pendingOriginProbes = new Map<string, Promise<number | undefined>>();
+const pendingOriginProbes = new Map<string, Promise<number | null | undefined>>();
 
-const readContentLength = async (url: string, init: RequestInit): Promise<number | undefined> => {
+// The file's size, null when the host answered without one, or undefined for an error response.
+const readContentLength = async (url: string, init: RequestInit): Promise<number | null | undefined> => {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), MEDIA_FILE_SIZE_TIMEOUT_MS);
   try {
     const response = await fetch(url, { ...init, signal: controller.signal });
-    const contentLength = response.status === 200 ? Number(response.headers.get('content-length')) : NaN;
-    return Number.isSafeInteger(contentLength) && contentLength > 0 ? contentLength : undefined;
+    if (response.status !== 200) return undefined;
+    const contentLength = Number(response.headers.get('content-length'));
+    return Number.isSafeInteger(contentLength) && contentLength > 0 ? contentLength : null;
   } finally {
     clearTimeout(timeout);
     // Only the headers are needed, so drop any body.
@@ -528,14 +530,21 @@ const readContentLength = async (url: string, init: RequestInit): Promise<number
   }
 };
 
-const readMediaFileSize = async (url: string, origin: string): Promise<number | undefined> => {
+// Parallel reads of a new origin can settle it while this read is in flight, so this checks the map as it is
+// now. A read that returned a size proves the origin answers, so it also lifts a block another read set.
+const recordOriginMode = (origin: string, mode: 'head' | 'cache') => {
+  const currentMode = mediaFileSizeOriginModes.get(origin);
+  if (!currentMode || currentMode === 'blocked') mediaFileSizeOriginModes.set(origin, mode);
+};
+
+const readMediaFileSize = async (url: string, origin: string): Promise<number | null | undefined> => {
   const originMode = mediaFileSizeOriginModes.get(origin);
-  if (originMode === 'blocked') return undefined;
+  if (originMode === 'blocked') return null;
   if (originMode !== 'cache') {
     try {
       const fileSize = await readContentLength(url, { method: 'HEAD', cache: 'no-store' });
-      if (fileSize !== undefined) {
-        if (!originMode) mediaFileSizeOriginModes.set(origin, 'head');
+      if (typeof fileSize === 'number') {
+        if (!originMode) recordOriginMode(origin, 'head');
         return fileSize;
       }
     } catch {}
@@ -543,24 +552,25 @@ const readMediaFileSize = async (url: string, origin: string): Promise<number | 
   try {
     const fileSize = await readContentLength(url, { cache: 'force-cache' });
     // A missing file or a response without a length says nothing about which read works, so the next file probes again.
-    if (fileSize !== undefined && !originMode) mediaFileSizeOriginModes.set(origin, 'cache');
+    if (typeof fileSize === 'number' && !originMode) recordOriginMode(origin, 'cache');
     return fileSize;
   } catch (error) {
-    // A failed fetch can't tell a CORS block from a dropped connection, so only block origins that never
-    // answered, and not after a timeout, which a slow connection or a long request queue can cause.
+    // A failed fetch can't tell a CORS block from a dropped connection, so only an origin that has never answered
+    // is blocked, and not after a timeout, which a slow connection or a long request queue can cause.
     const timedOut = error instanceof DOMException && error.name === 'AbortError';
-    if (!originMode && !timedOut) mediaFileSizeOriginModes.set(origin, 'blocked');
-    return undefined;
+    if (!timedOut && !mediaFileSizeOriginModes.has(origin)) mediaFileSizeOriginModes.set(origin, 'blocked');
+    return mediaFileSizeOriginModes.get(origin) === 'blocked' ? null : undefined;
   }
 };
 
 // Posts carry no file size, so read the host's Content-Length, which is CORS-safelisted and readable
-// whenever the host sends Access-Control-Allow-Origin.
-export const fetchMediaFileSize = async (url: string): Promise<number | undefined> => {
+// whenever the host sends Access-Control-Allow-Origin. Resolves to null when the host answered without a size
+// or blocks reads, and to undefined when the read failed in a way a later read may not.
+export const fetchMediaFileSize = async (url: string): Promise<number | null | undefined> => {
   // Keyed by origin: an http:// link on an https page is blocked as mixed content, which says nothing about
   // the same host's https:// files.
   const origin = parseHttpUrl(url)?.origin;
-  if (!origin) return undefined;
+  if (!origin) return null;
   // Until an origin's first read settles which read works, queue its other reads behind it.
   if (!mediaFileSizeOriginModes.has(origin)) {
     const pendingProbe = pendingOriginProbes.get(origin);
