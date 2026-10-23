@@ -213,6 +213,20 @@ describe('useImageFiltersStore', () => {
     expect(getState().matchedLinks).toEqual({ [OTHER_LINK]: OTHER_DIGESTS.sha256 });
   });
 
+  it('counts only list changes that remove a key, so a sorted catalog keeps its order through a quick filter', async () => {
+    digestsState.results.set(OTHER_LINK, OTHER_DIGESTS);
+    const startRevision = getState().listRevision;
+    getState().quickFilter(OTHER_LINK, 'post-1', '/b', 'image');
+    await flushHashing();
+
+    // The link's line became the image's SHA-256, which hides the same posts.
+    expect(getState().imageFilters).toBe(OTHER_DIGESTS.sha256);
+    expect(getState().listRevision).toBe(startRevision);
+
+    getState().undoQuickFilters();
+    expect(getState().listRevision).toBe(startRevision + 1);
+  });
+
   it('matches images hashed earlier in the session when their hash is added to the list', () => {
     digestsState.cache.set(OTHER_LINK, OTHER_DIGESTS);
     getState().setImageFilters(OTHER_DIGESTS.sha256);

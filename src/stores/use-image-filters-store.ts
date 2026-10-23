@@ -27,7 +27,11 @@ interface ImageFiltersState {
    * whose link carries no hash hides before it loads again instead of after it is hashed.
    */
   matchedLinks: Record<string, string>;
-  /** Counts list changes, so a view that keeps a snapshot of the threads it showed can take it again. */
+  /**
+   * Counts list changes that remove a key, so a view that keeps a snapshot of the threads it showed
+   * can take it again and show the threads that key hid. An added key needs no new snapshot, as the
+   * threads it hides drop out of the snapshot already.
+   */
   listRevision: number;
   /** Filtered posts the viewer chose to show anyway. Like 4chan X, a reload filters them again. */
   shownCids: Record<string, boolean>;
@@ -81,9 +85,10 @@ const getMatchedLinks = (matchedLinks: Record<string, string>, filterKeys: Set<s
   return changed ? keepNewestMatches(nextMatchedLinks) : matchedLinks;
 };
 
-const withList = (state: Pick<ImageFiltersState, 'matchedLinks' | 'listRevision'>, imageFilters: string) => {
+const withList = (state: Pick<ImageFiltersState, 'filterKeys' | 'matchedLinks' | 'listRevision'>, imageFilters: string, { keepsHiddenThreads = false } = {}) => {
   const filterKeys = parseImageFilterKeys(imageFilters);
-  return { imageFilters, filterKeys, matchedLinks: getMatchedLinks(state.matchedLinks, filterKeys), listRevision: state.listRevision + 1 };
+  const removesKey = !keepsHiddenThreads && [...state.filterKeys].some((key) => !filterKeys.has(key));
+  return { imageFilters, filterKeys, matchedLinks: getMatchedLinks(state.matchedLinks, filterKeys), listRevision: state.listRevision + (removesKey ? 1 : 0) };
 };
 
 const useImageFiltersStore = create<ImageFiltersState>()(
@@ -122,7 +127,11 @@ const useImageFiltersStore = create<ImageFiltersState>()(
         const imageFilters = alreadyListed ? removeImageFilterLines(state.imageFilters, [line]) : replaceImageFilterLine(state.imageFilters, line, hash);
         const notice = state.quickFilterNotice;
         const noticeKeys = notice?.keys.flatMap((key) => (key !== line ? [key] : alreadyListed ? [] : [hash])) ?? [];
-        set({ ...withList(state, imageFilters), quickFilterNotice: notice && noticeKeys.length > 0 ? { ...notice, keys: noticeKeys } : null });
+        // The link's image hashed to this hash, so the hash hides every post the link did.
+        set({
+          ...withList(state, imageFilters, { keepsHiddenThreads: true }),
+          quickFilterNotice: notice && noticeKeys.length > 0 ? { ...notice, keys: noticeKeys } : null,
+        });
         hashLoadedImagesForNewNeeds(state.filterKeys);
       };
 
@@ -191,7 +200,7 @@ const useImageFiltersStore = create<ImageFiltersState>()(
           matchedLinks && typeof matchedLinks === 'object' && !Array.isArray(matchedLinks)
             ? Object.fromEntries(Object.entries(matchedLinks).filter((entry): entry is [string, string] => typeof entry[1] === 'string'))
             : {};
-        return { ...current, ...withList({ matchedLinks: storedMatches, listRevision: current.listRevision }, imageFilters) };
+        return { ...current, ...withList({ ...current, matchedLinks: storedMatches }, imageFilters) };
       },
     },
   ),

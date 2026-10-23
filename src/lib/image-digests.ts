@@ -147,6 +147,9 @@ export const hashImage = (url: string, { md5 = false }: { md5?: boolean } = {}):
         unreadableFileCounts.set(host, unreadableFiles);
         if (unreadableFiles >= UNREADABLE_FILES_BEFORE_SKIPPING_HOST) unreadableHosts.add(host);
       }
+      // A failed read for the MD5 keeps the SHA-256 an earlier read found.
+      const earlierDigests = digestsByUrl.get(url);
+      if (earlierDigests) return earlierDigests;
       rememberDigests(url, null);
       return null;
     },

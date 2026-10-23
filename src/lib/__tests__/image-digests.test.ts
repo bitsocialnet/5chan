@@ -56,6 +56,16 @@ describe('hashImage', () => {
     expect(FakeWorker.askedMd5).toEqual([false, true]);
   });
 
+  it('keeps the SHA-256 when a later read for the MD5 fails', async () => {
+    const { getCachedImageDigests, hashImage } = await loadImageDigests();
+    FakeWorker.replies.set('https://files.catbox.moe/a.png', { digests: DIGESTS });
+    await hashImage('https://files.catbox.moe/a.png');
+
+    FakeWorker.replies.set('https://files.catbox.moe/a.png', { error: 'unreadable-file' });
+    await expect(hashImage('https://files.catbox.moe/a.png', { md5: true })).resolves.toEqual({ sha256: DIGESTS.sha256 });
+    expect(getCachedImageDigests('https://files.catbox.moe/a.png')).toEqual({ sha256: DIGESTS.sha256 });
+  });
+
   it('stops reading from a host only after several unreadable files and none readable', async () => {
     const { hashImage } = await loadImageDigests();
     for (const name of ['a', 'b', 'c', 'd']) FakeWorker.replies.set(`https://preview.redd.it/${name}.png`, { error: 'unreadable-host' });
