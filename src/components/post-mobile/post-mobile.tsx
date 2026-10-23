@@ -175,7 +175,7 @@ const PostInfoAndMedia = ({
   const userIDBackgroundColor = hashStringToColor(userID);
   const userIDTextColor = getTextColorForBackground(userIDBackgroundColor);
 
-  const { hidden } = useHide({ cid: cid || '' });
+  const { hidden } = useHide({ cid: cid || '', comment: resolvedPost });
 
   // Selector-scoped: see post-desktop.tsx.
   const openReplyModal = useReplyModalStore((state) => state.openReplyModal);
@@ -495,7 +495,7 @@ const Reply = ({
   const location = useLocation();
   const route = boardPath ? `/${boardPath}/thread/${cid}` : `/thread/${cid}`;
   const isRouteLinkToReply = cid ? location.pathname.startsWith(route) : false;
-  const { hidden } = useHide({ cid });
+  const { hidden } = useHide({ cid, comment: post });
   const { canDeleteFailedPost, canRetryFailedPost, isDeletingFailedPost, isRetryingFailedPost, onDeleteFailedPost, onRetryFailedPost } = useDeleteFailedPost(post);
   const failedPublishNotice = canDeleteFailedPost ? (
     <FailedPublishNotice
@@ -646,7 +646,7 @@ const PostMobile = ({
   }, [isInPostView, isInPendingPostView, reset, setResetFunction]);
 
   const isInPostPageView = isPostPageView(location.pathname, params);
-  const { hidden, unhide } = useHide({ cid });
+  const { hidden, unhide } = useHide({ cid, comment: resolvedPost });
 
   const stateString = useStateString(resolvedPost) || t('loading_post');
   const hasFailedState = state === 'failed';

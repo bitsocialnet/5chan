@@ -6,6 +6,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import CatalogRow, { CatalogPostMedia } from '../catalog-row';
 import usePinnedCatalogThreadsStore from '../../../stores/use-pinned-catalog-threads-store';
+import useImageFiltersStore from '../../../stores/use-image-filters-store';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
@@ -281,6 +282,25 @@ describe('CatalogRow', () => {
     });
 
     expect(container.querySelector<HTMLImageElement>('img[src="assets/filedeleted-res.gif"]')).toBeTruthy();
+  });
+
+  it('offers each loaded catalog image to the MD5 filter for hashing', async () => {
+    const hashLoadedImage = vi.fn();
+    const originalHashLoadedImage = useImageFiltersStore.getState().hashLoadedImage;
+    useImageFiltersStore.setState({ hashLoadedImage });
+    try {
+      await act(async () => {
+        root.render(createElement(CatalogPostMedia, { cid: 'post-1', commentMediaInfo: { type: 'image', url: 'https://files.catbox.moe/a.png' } }));
+      });
+      await act(async () => {
+        container.querySelector('img[src="https://files.catbox.moe/a.png"]')?.dispatchEvent(new Event('load', { bubbles: true }));
+      });
+
+      expect(hashLoadedImage).toHaveBeenCalledWith('https://files.catbox.moe/a.png');
+      expect(container.querySelector<HTMLImageElement>('img[src="https://files.catbox.moe/a.png"]')?.style.opacity).toBe('1');
+    } finally {
+      useImageFiltersStore.setState({ hashLoadedImage: originalHashLoadedImage });
+    }
   });
 
   it('renders a still canvas instead of the animated GIF when the first-frame fetch fails', async () => {

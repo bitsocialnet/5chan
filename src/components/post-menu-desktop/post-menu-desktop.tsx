@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { autoUpdate, flip, FloatingFocusManager, offset, shift, useClick, useDismiss, useFloating, useId, useInteractions, useRole } from '@floating-ui/react';
 import styles from './post-menu-desktop.module.css';
 import { getCommentMediaInfo } from '../../lib/utils/media-utils';
+import { isImageFilterableMediaType } from '../../lib/utils/image-filter-utils';
 import { copyShareLinkToClipboard, isValidURL, type ShareLinkType } from '../../lib/utils/url-utils';
 import { copyToClipboard } from '../../lib/utils/clipboard-utils';
 import { getBoardPath } from '../../lib/utils/route-utils';
@@ -12,6 +13,7 @@ import { useDirectories } from '../../hooks/use-directories';
 import { isCatalogView, isPostPageView } from '../../lib/utils/view-utils';
 import useHide from '../../hooks/use-hide';
 import usePinnedCatalogThreadsStore from '../../stores/use-pinned-catalog-threads-store';
+import useImageFiltersStore from '../../stores/use-image-filters-store';
 import capitalize from 'lodash/capitalize';
 import { PostMenuProps } from '../../lib/utils/post-menu-props';
 
@@ -113,6 +115,32 @@ const CopyUserIdButton = ({ address, onClose }: { address: string; onClose: () =
       }}
     >
       {t('copy_user_id')}
+    </button>
+  );
+};
+
+const FilterImageButton = ({ cid, link, mediaType, onClose }: { cid: string; link: string; mediaType: string | undefined; onClose: () => void }) => {
+  const { t } = useTranslation();
+  const quickFilter = useImageFiltersStore((state) => state.quickFilter);
+  const { pathname } = useLocation();
+  const filterImage = () => {
+    quickFilter(link, cid, pathname, mediaType);
+    onClose();
+  };
+  return (
+    <button
+      type='button'
+      className={styles.postMenuItem}
+      tabIndex={0}
+      onClick={filterImage}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          filterImage();
+        }
+      }}
+    >
+      {t('filter_image_md5')}
     </button>
   );
 };
@@ -280,6 +308,7 @@ const PostMenuDesktop = ({ postMenu }: PostMenuDesktopProps) => {
                   {hidden ? (postCid === cid ? t('unhide_thread') : t('unhide_post')) : postCid === cid ? t('hide_thread') : t('hide_post')}
                 </button>
               )}
+              {cid && link && isValidURL(link) && isImageFilterableMediaType(type) && <FilterImageButton cid={cid} link={link} mediaType={type} onClose={handleClose} />}
               {cid && communityAddress && <CopyLinkButton cid={cid} communityAddress={communityAddress} linkType='thread' onClose={handleClose} />}
               {cid && <CopyContentIdButton cid={cid} onClose={handleClose} />}
               {authorAddress && <CopyUserIdButton address={authorAddress} onClose={handleClose} />}

@@ -12,6 +12,7 @@ import { isAllView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import { findDirectoryByAddress, useDirectories } from '../../hooks/use-directories';
 import { getBoardPath } from '../../lib/utils/route-utils';
 import useCatalogStyleStore from '../../stores/use-catalog-style-store';
+import useImageFiltersStore from '../../stores/use-image-filters-store';
 import useEditCommentPrivileges from '../../hooks/use-author-privileges';
 import { useCommentMediaInfo } from '../../hooks/use-comment-media-info';
 import useCountLinksInReplies from '../../hooks/use-count-links-in-replies';
@@ -56,6 +57,11 @@ export const CatalogPostMedia = ({ cid, commentMediaInfo, isOutOfFeed = false, l
   const [hasError, setHasError] = useState(false);
   const handleLoad = () => setIsLoaded(true);
   const handleError = () => setHasError(true);
+  const hashLoadedImage = useImageFiltersStore((state) => state.hashLoadedImage);
+  const handleImageLoad = () => {
+    handleLoad();
+    hashLoadedImage(url);
+  };
   const handleIframeLoad = (event: SyntheticEvent<HTMLImageElement>) => {
     if (handleIframeThumbnailLoad(event.currentTarget)) {
       return;
@@ -114,7 +120,7 @@ export const CatalogPostMedia = ({ cid, commentMediaInfo, isOutOfFeed = false, l
   } else if (type === 'gif' && gifFrameStatus === 'failed' && !hasError) {
     thumbnailComponent = url && <GifFirstFrameCanvas src={url} onLoad={handleLoad} onError={handleError} style={loadingStyle} />;
   } else if (type === 'image' && !hasError) {
-    thumbnailComponent = <img src={url} alt='' onLoad={handleLoad} onError={handleError} style={loadingStyle} width={numericWidth} height={numericHeight} />;
+    thumbnailComponent = <img src={url} alt='' onLoad={handleImageLoad} onError={handleError} style={loadingStyle} width={numericWidth} height={numericHeight} />;
   } else if (type === 'video' && !hasError) {
     thumbnailComponent = thumbnail ? (
       <img src={thumbnail} alt='' onLoad={handleLoad} onError={handleError} style={loadingStyle} width={numericWidth} height={numericHeight} />

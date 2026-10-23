@@ -12,7 +12,7 @@ import { useFilteredDirectoryAddresses } from '../../hooks/use-filtered-director
 import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
 import { useFeedStateString } from '../../hooks/use-state-string';
 import useExpandedTimeFilter from '../../hooks/use-expanded-time-filter';
-import { filterHiddenComments, isCidHidden, useHiddenCids } from '../../hooks/use-hide';
+import { filterHiddenComments, isCidHidden, useHiddenCids, useIsImageFiltered } from '../../hooks/use-hide';
 import useHiddenCatalogThreads from '../../hooks/use-hidden-catalog-threads';
 import usePruneHiddenCatalogThreads from '../../hooks/use-prune-hidden-catalog-threads';
 import usePinnedCatalogThreads from '../../hooks/use-pinned-catalog-threads';
@@ -330,6 +330,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
 
   const account = useAccount();
   const hiddenCids = useHiddenCids();
+  const isImageFiltered = useIsImageFiltered();
   const subscriptions = account?.subscriptions;
   const accountCommunityAddresses = useAccountCommunityAddresses();
   const filteredDirectoryAddresses = useFilteredDirectoryAddresses();
@@ -472,7 +473,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
     hiddenThreadCandidates,
     sortType: feedSortType,
   });
-  const visibleFeed = useMemo(() => filterHiddenComments(feed, hiddenCids), [feed, hiddenCids]);
+  const visibleFeed = useMemo(() => filterHiddenComments(feed, hiddenCids, isImageFiltered), [feed, hiddenCids, isImageFiltered]);
   const { currentTimeFilterName, currentTimeFilterSeconds, expandSuggestionTimeWindow } = useExpandedTimeFilter({
     timeFilterName,
     timeFilterSeconds: multiboardTimeFilterSeconds,
@@ -500,7 +501,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
     filter: suggestionFilter,
     newerThan: WEEK_IN_SECONDS,
   });
-  const visibleWeeklyFeed = useMemo(() => filterHiddenComments(weeklyFeed, hiddenCids), [hiddenCids, weeklyFeed]);
+  const visibleWeeklyFeed = useMemo(() => filterHiddenComments(weeklyFeed, hiddenCids, isImageFiltered), [hiddenCids, isImageFiltered, weeklyFeed]);
   const {
     feed: monthlyFeed,
     hasMore: monthlyFeedHasMore,
@@ -512,7 +513,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
     filter: suggestionFilter,
     newerThan: MONTH_IN_SECONDS,
   });
-  const visibleMonthlyFeed = useMemo(() => filterHiddenComments(monthlyFeed, hiddenCids), [hiddenCids, monthlyFeed]);
+  const visibleMonthlyFeed = useMemo(() => filterHiddenComments(monthlyFeed, hiddenCids, isImageFiltered), [hiddenCids, isImageFiltered, monthlyFeed]);
   const {
     feed: yearlyFeed,
     hasMore: yearlyFeedHasMore,
@@ -524,7 +525,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
     filter: suggestionFilter,
     newerThan: YEAR_IN_SECONDS,
   });
-  const visibleYearlyFeed = useMemo(() => filterHiddenComments(yearlyFeed, hiddenCids), [hiddenCids, yearlyFeed]);
+  const visibleYearlyFeed = useMemo(() => filterHiddenComments(yearlyFeed, hiddenCids, isImageFiltered), [hiddenCids, isImageFiltered, yearlyFeed]);
   useSuggestionFeedLoader({
     currentFeedLength: visibleFeed.length,
     feedLength: visibleWeeklyFeed.length,
@@ -632,11 +633,13 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
     sortType,
     snapshotKey: JSON.stringify([communityAddresses, feedOptions.filter.key, currentTimeFilterSeconds, refreshCount]),
   });
-  // Pinned threads stay through archiving, so they only go through the search and content filters.
-  const pinnedThreadsFilter = useMemo(
-    () => (hasActiveCatalogFiltering ? createCombinedFilter(filterItems, searchText, communityAddress || 'all', undefined, false, false).filter : undefined),
-    [communityAddress, filterItems, hasActiveCatalogFiltering, searchText],
-  );
+  // Pinned threads stay through archiving, so they only go through the search, content and image filters.
+  const pinnedThreadsFilter = useMemo(() => {
+    const contentFilter = hasActiveCatalogFiltering
+      ? createCombinedFilter(filterItems, searchText, communityAddress || 'all', undefined, false, false).filter
+      : undefined;
+    return (comment: Comment) => !isImageFiltered(comment) && (!contentFilter || contentFilter(comment));
+  }, [communityAddress, filterItems, hasActiveCatalogFiltering, isImageFiltered, searchText]);
   const pinnedCatalogThreads = usePinnedCatalogThreads({
     communityAddresses,
     enabled: !showHiddenThreads,

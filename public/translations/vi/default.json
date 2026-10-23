@@ -586,5 +586,11 @@
   "use_pure_p2p_stats": "Dùng P2P thuần túy thay thế (chậm)",
   "pure_p2p_stats_tip": "Thống kê P2P thuần túy luôn là phương án dự phòng khi các nhà cung cấp thống kê ngừng hoạt động.",
   "stats_reported_by": "Do {{provider}} báo cáo",
-  "media_hosting_providers": "Nhà cung cấp Lưu trữ Phương tiện"
+  "media_hosting_providers": "Nhà cung cấp Lưu trữ Phương tiện",
+  "undo": "hoàn tác",
+  "filter_image_md5": "Lọc MD5 hình ảnh",
+  "md5_filtered": "Đã lọc MD5.",
+  "x_md5s_filtered": "Đã lọc {{count}} MD5.",
+  "md5_filter": "Bộ lọc MD5",
+  "md5_filter_help": "Ẩn các bài viết có những tệp này, mỗi dòng một tệp: mã băm SHA-256 hoặc MD5 (các dòng MD5 của 4chan X cũng dùng được) hoặc một liên kết. Tệp trên Forge được so khớp theo mã băm SHA-256 trong liên kết của nó. Các hình ảnh khác được tính mã băm sau khi tải xong nếu máy chủ của chúng cho phép, nên một mã băm trong danh sách sẽ ẩn cùng hình ảnh đó dù nó được đăng ở đâu. Mọi tệp khác chỉ được so khớp theo đúng liên kết của nó. Các dòng bắt đầu bằng # sẽ bị bỏ qua."
 }

@@ -239,7 +239,7 @@ const PostInfo = ({
     return Math.max(postsByAuthorInThread?.get(userID) ?? 0, 1);
   })();
 
-  const { hidden } = useHide({ cid: cid || '' });
+  const { hidden } = useHide({ cid: cid || '', comment: post });
 
   // Selector-scoped: every post row mounts this, so a full-store subscription rerendered
   // the whole feed whenever any reply-modal field changed.
@@ -742,7 +742,7 @@ const Reply = ({
   const location = useLocation();
   const route = boardPath ? `/${boardPath}/thread/${cid}` : `/thread/${cid}`;
   const isRouteLinkToReply = cid ? location.pathname.startsWith(route) : false;
-  const { hidden } = useHide({ cid });
+  const { hidden } = useHide({ cid, comment: post });
 
   const commentMediaInfo = useCommentMediaInfo(link, thumbnailUrl, linkWidth, linkHeight);
   const hasThumbnail = getHasThumbnail(commentMediaInfo, link);
@@ -840,7 +840,7 @@ const PostDesktop = ({
           : getShortAddress(communityAddress)
       : undefined;
 
-  const { hidden, unhide, hide } = useHide({ cid });
+  const { hidden, unhide, hide } = useHide({ cid, comment: resolvedPost });
   const isHidden = hidden && !isInPostPageView;
   // The board label lives in the file line when media is rendered, and in a line of its own otherwise.
   const hasRenderedMedia = !!link && !isHidden && !(deleted || removed || purged) && isValidURL(link);

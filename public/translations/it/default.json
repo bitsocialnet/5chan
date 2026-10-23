@@ -586,5 +586,11 @@
   "use_pure_p2p_stats": "Usa invece il P2P puro (lento)",
   "pure_p2p_stats_tip": "Le statistiche in P2P puro restano sempre la soluzione di riserva se i provider di statistiche smettono di funzionare.",
   "stats_reported_by": "Riportate da {{provider}}",
-  "media_hosting_providers": "Provider di Hosting Media"
+  "media_hosting_providers": "Provider di Hosting Media",
+  "undo": "annulla",
+  "filter_image_md5": "Filtra MD5 immagine",
+  "md5_filtered": "MD5 filtrato.",
+  "x_md5s_filtered": "{{count}} MD5 filtrati.",
+  "md5_filter": "Filtro MD5",
+  "md5_filter_help": "Nasconde i post con questi file, uno per riga: un hash SHA-256 o MD5 (funzionano anche le righe MD5 di 4chan X) o un link. Un file di Forge viene riconosciuto dall'hash SHA-256 nel suo link. Per le altre immagini viene calcolato l'hash una volta caricate, se il loro host lo consente, quindi un hash in elenco nasconde la stessa immagine ovunque venga pubblicata. Qualsiasi altro file viene riconosciuto solo dal suo link esatto. Le righe che iniziano con # vengono ignorate."
 }

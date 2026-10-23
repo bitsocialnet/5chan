@@ -24,6 +24,7 @@ import NotAllowed from './views/not-allowed';
 import NotFound from './views/not-found';
 import FramesLayout from './components/frames-layout';
 import ExternalQuoteStatus from './components/external-quote-status';
+import ImageFilterNotice from './components/image-filter-notice';
 import ImportErrorBoundary, { ImportError } from './components/import-error-boundary';
 import Prefetcher from './components/prefetcher';
 import { ModEmptyState } from './components/mod-empty-state';
@@ -152,6 +153,7 @@ const GlobalLayout = () => {
   return (
     <>
       <ExternalQuoteStatus />
+      <ImageFilterNotice />
       <Prefetcher />
       {directoryVoteRefreshDownloadFailed && <ImportError floating />}
       {/* A boundary per modal, so one that failed to download does not take the others (challenges) with it. */}

@@ -586,5 +586,11 @@
   "use_pure_p2p_stats": "Bunun yerine saf P2P kullan (yavaş)",
   "pure_p2p_stats_tip": "İstatistik sağlayıcıları çökerse saf P2P istatistikleri her zaman yedek olarak kullanılır.",
   "stats_reported_by": "Bildiren: {{provider}}",
-  "media_hosting_providers": "Ortam Barındırma Sağlayıcıları"
+  "media_hosting_providers": "Ortam Barındırma Sağlayıcıları",
+  "undo": "geri al",
+  "filter_image_md5": "Görüntü MD5'ini filtrele",
+  "md5_filtered": "MD5 filtrelendi.",
+  "x_md5s_filtered": "{{count}} MD5 filtrelendi.",
+  "md5_filter": "MD5 filtresi",
+  "md5_filter_help": "Bu dosyaları içeren gönderileri gizler, her satıra bir tane: SHA-256 veya MD5 hash değeri (4chan X'in MD5 satırları da çalışır) ya da bir bağlantı. Forge dosyası, bağlantısındaki SHA-256 hash değeriyle eşleştirilir. Diğer görsellerin hash değeri, sunucuları izin veriyorsa yüklendikten sonra hesaplanır; böylece listedeki bir hash aynı görseli nerede paylaşılırsa paylaşılsın gizler. Bunların dışındaki her dosya yalnızca tam bağlantısıyla eşleştirilir. # ile başlayan satırlar yok sayılır."
 }

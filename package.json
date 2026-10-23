@@ -18,6 +18,7 @@
     "@capawesome/capacitor-android-edge-to-edge-support": "8.0.8",
     "@chenglou/pretext": "0.0.9",
     "@floating-ui/react": "0.27.20",
+    "@noble/hashes": "2.0.1",
     "@pkcprotocol/pkc-js": "0.0.119",
     "@react-spring/web": "10.1.2",
     "@ruffle-rs/ruffle": "0.6.0",

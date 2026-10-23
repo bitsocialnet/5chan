@@ -29,6 +29,7 @@ __metadata:
     "@electron-forge/plugin-auto-unpack-natives": "npm:8.0.1"
     "@electron/rebuild": "npm:4.2.0"
     "@floating-ui/react": "npm:0.27.20"
+    "@noble/hashes": "npm:2.0.1"
     "@pkcprotocol/pkc-js": "npm:0.0.119"
     "@playwright/cli": "npm:0.1.22"
     "@react-spring/web": "npm:10.1.2"
