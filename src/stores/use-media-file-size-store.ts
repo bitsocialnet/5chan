@@ -12,8 +12,8 @@ const useMediaFileSizeStore = create<MediaFileSizeState>(() => ({
 
 const pendingUrls = new Set<string>();
 
-// Called from media and thumbnail load events (and when an SWF is opened), so posts whose media never shows
-// (spoilers, failed loads) never trigger a read, and image reads can reuse the browser's cached copy.
+// Called from media and thumbnail load events, so posts whose media never shows (spoilers, failed loads)
+// never trigger a read, and image reads can reuse the browser's cached copy.
 export const requestMediaFileSize = (url: string | undefined) => {
   if (!url || pendingUrls.has(url) || Object.hasOwn(useMediaFileSizeStore.getState().fileSizes, url)) return;
   pendingUrls.add(url);

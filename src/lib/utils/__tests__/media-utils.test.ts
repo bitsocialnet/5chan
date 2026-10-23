@@ -422,6 +422,36 @@ describe('media-utils', () => {
     expect(testState.fetchMock).toHaveBeenCalledTimes(2);
   });
 
+  it('probes a host again after a missing file or a timeout instead of settling how to read it', async () => {
+    testState.fetchMock
+      .mockResolvedValueOnce(new Response(null, { status: 404 }))
+      .mockResolvedValueOnce(new Response(null, { status: 404 }))
+      .mockResolvedValueOnce(new Response(null, { status: 200, headers: { 'content-length': '2048' } }));
+    await expect(fetchMediaFileSize('https://deleted.example.com/gone.jpg')).resolves.toBeUndefined();
+    await expect(fetchMediaFileSize('https://deleted.example.com/kept.jpg')).resolves.toBe(2048);
+    expect(getFileSizeReads()).toEqual(['HEAD no-store', 'GET force-cache', 'HEAD no-store']);
+
+    testState.fetchMock.mockClear();
+    testState.fetchMock
+      .mockRejectedValueOnce(new DOMException('This operation was aborted', 'AbortError'))
+      .mockRejectedValueOnce(new DOMException('This operation was aborted', 'AbortError'))
+      .mockResolvedValueOnce(new Response(null, { status: 200, headers: { 'content-length': '4096' } }));
+    await expect(fetchMediaFileSize('https://slow.example.com/first.jpg')).resolves.toBeUndefined();
+    await expect(fetchMediaFileSize('https://slow.example.com/second.jpg')).resolves.toBe(4096);
+    expect(getFileSizeReads()).toEqual(['HEAD no-store', 'GET force-cache', 'HEAD no-store']);
+  });
+
+  it('keeps an http link that fails from blocking the same host over https', async () => {
+    testState.fetchMock
+      .mockRejectedValueOnce(new TypeError('Failed to fetch'))
+      .mockRejectedValueOnce(new TypeError('Failed to fetch'))
+      .mockResolvedValueOnce(new Response(null, { status: 200, headers: { 'content-length': '4096' } }));
+
+    await expect(fetchMediaFileSize('http://mixed.example.com/old.jpg')).resolves.toBeUndefined();
+    await expect(fetchMediaFileSize('https://mixed.example.com/new.jpg')).resolves.toBe(4096);
+    expect(testState.fetchMock).toHaveBeenCalledTimes(3);
+  });
+
   it('reports no media file size when the response omits it', async () => {
     testState.fetchMock.mockResolvedValueOnce(new Response(null, { status: 200 })).mockResolvedValueOnce(new Response(null, { status: 200 }));
     await expect(fetchMediaFileSize('https://chunked.example.com/file.jpg')).resolves.toBeUndefined();

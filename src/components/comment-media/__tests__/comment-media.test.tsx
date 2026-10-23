@@ -238,7 +238,7 @@ describe('CommentMedia', () => {
     expect(testState.fetchMediaFileSize).toHaveBeenCalledWith('https://files.example.com/clip.webm');
   });
 
-  it('asks for an audio file size once its metadata loads and an SWF file size once it is opened', async () => {
+  it('asks for an audio file size once its metadata loads and an SWF file size once Ruffle loads it', async () => {
     testState.fetchMediaFileSize.mockResolvedValue(3145728);
 
     await renderMedia({
@@ -255,14 +255,53 @@ describe('CommentMedia', () => {
     await renderMedia({
       commentMediaInfo: { type: 'swf', url: 'https://files.example.com/game.swf' },
       setShowThumbnail: setShowThumbnailMock,
-      showThumbnail: true,
+      showThumbnail: false,
     });
-    expect(testState.fetchMediaFileSize).not.toHaveBeenCalledWith('https://files.example.com/game.swf');
-    const placeholder = Array.from(container.querySelectorAll('button')).find((node) => node.textContent === '[SWF]');
+    await vi.waitFor(() => expect(testState.fetchMediaFileSize).toHaveBeenCalledWith('https://files.example.com/game.swf'));
+  });
+
+  it('asks for the size of opened spoiler media, which never loads its thumbnail', async () => {
+    testState.fetchMediaFileSize.mockResolvedValue(2097152);
+
+    await renderMedia({
+      commentMediaInfo: { type: 'video', url: 'https://files.example.com/spoiled.webm' },
+      setShowThumbnail: setShowThumbnailMock,
+      showThumbnail: false,
+      spoiler: true,
+    });
     await act(async () => {
-      placeholder?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      container.querySelector('video[src="https://files.example.com/spoiled.webm"]')?.dispatchEvent(new Event('loadedmetadata'));
+      await Promise.resolve();
     });
-    expect(testState.fetchMediaFileSize).toHaveBeenCalledWith('https://files.example.com/game.swf');
+    expect(testState.fetchMediaFileSize).toHaveBeenCalledWith('https://files.example.com/spoiled.webm');
+
+    await renderMedia({
+      commentMediaInfo: { type: 'gif', url: 'https://files.example.com/spoiled.gif' },
+      setShowThumbnail: setShowThumbnailMock,
+      showThumbnail: false,
+      spoiler: true,
+    });
+    await act(async () => {
+      container.querySelector('img[src="https://files.example.com/spoiled.gif"]')?.dispatchEvent(new Event('load'));
+      await Promise.resolve();
+    });
+    expect(testState.fetchMediaFileSize).toHaveBeenCalledWith('https://files.example.com/spoiled.gif');
+  });
+
+  it('keeps the spoiler prefix on the mobile caption once the file size is known', async () => {
+    testState.isMobile = true;
+    testState.fetchMediaFileSize.mockResolvedValue(2097152);
+    const commentMediaInfo = { type: 'video', url: 'https://files.example.com/reposted.webm' };
+
+    await renderMedia({ commentMediaInfo, setShowThumbnail: setShowThumbnailMock, showThumbnail: true });
+    await act(async () => {
+      container.querySelector('video')?.dispatchEvent(new Event('loadedmetadata'));
+      await Promise.resolve();
+    });
+    expect(container.textContent).toContain('2 MB WEBM');
+
+    await renderMedia({ commentMediaInfo, setShowThumbnail: setShowThumbnailMock, showThumbnail: true, spoiler: true });
+    expect(container.textContent).toContain('spoiler - 2 MB WEBM');
   });
 
   it('marks expanded reply images so virtualized feed rows use live height', async () => {

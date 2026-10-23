@@ -161,15 +161,7 @@ const Thumbnail = ({
     thumbnailComponent = <audio src={url} aria-label='Audio preview' controls onLoadedMetadata={() => requestMediaFileSize(url)} />;
   } else if (type === 'swf') {
     thumbnailComponent = (
-      <button
-        type='button'
-        className={styles.swfPlaceholder}
-        onClick={() => {
-          // Nothing loads an SWF before it is opened, so this is the first point its size can be read.
-          requestMediaFileSize(url);
-          setShowThumbnail(false);
-        }}
-      >
+      <button type='button' className={styles.swfPlaceholder} onClick={() => setShowThumbnail(false)}>
         [SWF]
       </button>
     );
@@ -234,6 +226,8 @@ const Media = ({ commentMediaInfo, disableToggle, fileSize, isReply, setShowThum
     fitExpandedImagesToScreen ? styles.fitToScreen : ''
   }`;
   const mediaDimensions = getMediaDimensions(commentMediaInfo);
+  // Opened media can skip its thumbnail (spoilers, inline embeds), so it requests its own size.
+  const handleMediaLoad = () => requestMediaFileSize(url);
 
   return (
     <span className={mediaClass} data-expanded-media='true'>
@@ -241,16 +235,16 @@ const Media = ({ commentMediaInfo, disableToggle, fileSize, isReply, setShowThum
         <Embed url={url} />
       ) : type === 'gif' ? (
         disableToggle ? (
-          <img src={url} alt='' />
+          <img src={url} alt='' onLoad={handleMediaLoad} />
         ) : (
           <button type='button' className={styles.mediaToggleButton} aria-label='Collapse GIF' onClick={() => setShowThumbnail(true)}>
-            <img src={url} alt='' />
+            <img src={url} alt='' onLoad={handleMediaLoad} />
           </button>
         )
       ) : type === 'video' ? (
-        <video src={url} aria-label={t('video')} controls autoPlay loop muted={!unmuteExpandedVideoSound} />
+        <video src={url} aria-label={t('video')} controls autoPlay loop muted={!unmuteExpandedVideoSound} onLoadedMetadata={handleMediaLoad} />
       ) : type === 'swf' && url ? (
-        <RufflePlayer url={url} />
+        <RufflePlayer url={url} onLoad={handleMediaLoad} />
       ) : type === 'webpage' ? (
         disableToggle ? (
           <img src={thumbnail} alt='' />
@@ -391,7 +385,9 @@ const Image = ({
         </div>
       )}
       {type && !isImageExpanded && (
-        <div className={styles.fileInfo}>{getMobileFileSizeLabel(url, fileSize) ?? `${spoiler ? `${t('spoiler')} - ` : ''} ${getDisplayMediaInfoType(type, t)}`}</div>
+        <div
+          className={styles.fileInfo}
+        >{`${spoiler ? `${t('spoiler')} - ` : ''}${getMobileFileSizeLabel(url, fileSize) ?? ` ${getDisplayMediaInfoType(type, t)}`}`}</div>
       )}
     </span>
   ) : (
@@ -513,7 +509,7 @@ const CommentMedia = ({
               )}
               {isMobile && type && (
                 <div className={styles.fileInfo}>
-                  {getMobileFileSizeLabel(url, fileSize) ?? `${spoiler ? `${t('spoiler')} - ` : ''} ${getDisplayMediaInfoType(type, t)}`}
+                  {`${spoiler ? `${t('spoiler')} - ` : ''}${getMobileFileSizeLabel(url, fileSize) ?? ` ${getDisplayMediaInfoType(type, t)}`}`}
                 </div>
               )}
             </span>

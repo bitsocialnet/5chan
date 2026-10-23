@@ -508,11 +508,11 @@ export const getMobileFileSizeLabel = (url: string | undefined, fileSize: number
 };
 
 const MEDIA_FILE_SIZE_TIMEOUT_MS = 10_000;
-// Which read worked on a host's first probe. HEAD transfers no body, but some hosts answer it without CORS
-// headers or a length; a GET then works, and Chrome can answer it from the <img> load's cache. Hosts that
-// answered neither are not asked again.
-const mediaFileSizeHostModes = new Map<string, 'head' | 'cache' | 'blocked'>();
-const pendingHostProbes = new Map<string, Promise<number | undefined>>();
+// Which read worked on an origin's first answered probe. HEAD transfers no body, but some hosts answer it
+// without CORS headers or a length; a GET then works, and Chrome can answer it from the <img> load's cache.
+// Origins that answered neither are not asked again.
+const mediaFileSizeOriginModes = new Map<string, 'head' | 'cache' | 'blocked'>();
+const pendingOriginProbes = new Map<string, Promise<number | undefined>>();
 
 const readContentLength = async (url: string, init: RequestInit): Promise<number | undefined> => {
   const controller = new AbortController();
@@ -528,25 +528,28 @@ const readContentLength = async (url: string, init: RequestInit): Promise<number
   }
 };
 
-const readMediaFileSize = async (url: string, host: string): Promise<number | undefined> => {
-  const hostMode = mediaFileSizeHostModes.get(host);
-  if (hostMode === 'blocked') return undefined;
-  if (hostMode !== 'cache') {
+const readMediaFileSize = async (url: string, origin: string): Promise<number | undefined> => {
+  const originMode = mediaFileSizeOriginModes.get(origin);
+  if (originMode === 'blocked') return undefined;
+  if (originMode !== 'cache') {
     try {
       const fileSize = await readContentLength(url, { method: 'HEAD', cache: 'no-store' });
       if (fileSize !== undefined) {
-        if (!hostMode) mediaFileSizeHostModes.set(host, 'head');
+        if (!originMode) mediaFileSizeOriginModes.set(origin, 'head');
         return fileSize;
       }
     } catch {}
   }
   try {
     const fileSize = await readContentLength(url, { cache: 'force-cache' });
-    if (!hostMode) mediaFileSizeHostModes.set(host, 'cache');
+    // A missing file or a response without a length says nothing about which read works, so the next file probes again.
+    if (fileSize !== undefined && !originMode) mediaFileSizeOriginModes.set(origin, 'cache');
     return fileSize;
-  } catch {
-    // A failed fetch can't tell a CORS block from a dropped connection, so only block hosts that never answered.
-    if (!hostMode) mediaFileSizeHostModes.set(host, 'blocked');
+  } catch (error) {
+    // A failed fetch can't tell a CORS block from a dropped connection, so only block origins that never
+    // answered, and not after a timeout, which a slow connection or a long request queue can cause.
+    const timedOut = error instanceof DOMException && error.name === 'AbortError';
+    if (!originMode && !timedOut) mediaFileSizeOriginModes.set(origin, 'blocked');
     return undefined;
   }
 };
@@ -554,19 +557,21 @@ const readMediaFileSize = async (url: string, host: string): Promise<number | un
 // Posts carry no file size, so read the host's Content-Length, which is CORS-safelisted and readable
 // whenever the host sends Access-Control-Allow-Origin.
 export const fetchMediaFileSize = async (url: string): Promise<number | undefined> => {
-  const host = parseHttpUrl(url)?.host;
-  if (!host) return undefined;
-  // Until a host's first read settles which read works, queue its other reads behind it.
-  if (!mediaFileSizeHostModes.has(host)) {
-    const pendingProbe = pendingHostProbes.get(host);
+  // Keyed by origin: an http:// link on an https page is blocked as mixed content, which says nothing about
+  // the same host's https:// files.
+  const origin = parseHttpUrl(url)?.origin;
+  if (!origin) return undefined;
+  // Until an origin's first read settles which read works, queue its other reads behind it.
+  if (!mediaFileSizeOriginModes.has(origin)) {
+    const pendingProbe = pendingOriginProbes.get(origin);
     if (!pendingProbe) {
-      const probe = readMediaFileSize(url, host).finally(() => pendingHostProbes.delete(host));
-      pendingHostProbes.set(host, probe);
+      const probe = readMediaFileSize(url, origin).finally(() => pendingOriginProbes.delete(origin));
+      pendingOriginProbes.set(origin, probe);
       return probe;
     }
     await pendingProbe;
   }
-  return readMediaFileSize(url, host);
+  return readMediaFileSize(url, origin);
 };
 
 const thumbnailUrlsDb = localForageLru.createInstance({ name: '5chanThumbnailUrls', size: 500 });
