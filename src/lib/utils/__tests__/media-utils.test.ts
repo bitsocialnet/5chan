@@ -412,14 +412,34 @@ describe('media-utils', () => {
     await expect(fetchMediaFileSize('https://flaky.example.com/third.jpg')).resolves.toBe(8192);
   });
 
-  it('probes a new host once for concurrent reads and stops asking it when both reads are blocked', async () => {
+  it('blocks an origin only after three different files fail', async () => {
     testState.fetchMock.mockRejectedValue(new TypeError('Failed to fetch'));
 
-    const fileSizes = await Promise.all(['first', 'second', 'third'].map((name) => fetchMediaFileSize(`https://no-cors.example.com/${name}.jpg`)));
+    await expect(fetchMediaFileSize('https://no-cors.example.com/first.jpg')).resolves.toBeUndefined();
+    await expect(fetchMediaFileSize('https://no-cors.example.com/first.jpg')).resolves.toBeUndefined();
+    await expect(fetchMediaFileSize('https://no-cors.example.com/second.jpg')).resolves.toBeUndefined();
+    await expect(fetchMediaFileSize('https://no-cors.example.com/third.jpg')).resolves.toBeNull();
     await expect(fetchMediaFileSize('https://no-cors.example.com/later.jpg')).resolves.toBeNull();
 
-    expect(fileSizes).toEqual([null, null, null]);
-    expect(testState.fetchMock).toHaveBeenCalledTimes(2);
+    expect(testState.fetchMock).toHaveBeenCalledTimes(8);
+  });
+
+  it("reads a new origin's files one at a time until it learns how to read them", async () => {
+    let activeReads = 0;
+    let maxActiveReads = 0;
+    testState.fetchMock.mockImplementation(async () => {
+      activeReads += 1;
+      maxActiveReads = Math.max(maxActiveReads, activeReads);
+      await Promise.resolve();
+      activeReads -= 1;
+      throw new TypeError('Failed to fetch');
+    });
+
+    const fileSizes = await Promise.all(['a', 'b', 'c', 'd'].map((name) => fetchMediaFileSize(`https://queued.example.com/${name}.jpg`)));
+
+    expect(fileSizes).toEqual([undefined, undefined, null, null]);
+    expect(maxActiveReads).toBe(1);
+    expect(testState.fetchMock).toHaveBeenCalledTimes(6);
   });
 
   it('probes a host again after a missing file or a timeout instead of settling how to read it', async () => {
@@ -441,7 +461,7 @@ describe('media-utils', () => {
     expect(getFileSizeReads()).toEqual(['HEAD no-store', 'GET force-cache', 'HEAD no-store']);
   });
 
-  it('keeps one parallel read that fails from blocking an origin another read found readable', async () => {
+  it('keeps a failed read from blocking an origin another read found readable', async () => {
     testState.fetchMock
       .mockResolvedValueOnce(new Response(null, { status: 404 }))
       .mockResolvedValueOnce(new Response(null, { status: 404 }))
@@ -450,21 +470,22 @@ describe('media-utils', () => {
       .mockRejectedValueOnce(new TypeError('Failed to fetch'))
       .mockResolvedValueOnce(new Response(null, { status: 200, headers: { 'content-length': '2048' } }));
 
-    // The deleted first file settles nothing, so the queued reads all start together once it fails.
+    // The deleted first file settles nothing; the next read settles the origin, so the failure after it blocks nothing.
     const fileSizes = await Promise.all(['gone', 'kept', 'flaky'].map((name) => fetchMediaFileSize(`https://busy.example.com/${name}.jpg`)));
     expect(fileSizes).toEqual([undefined, 1024, undefined]);
     await expect(fetchMediaFileSize('https://busy.example.com/later.jpg')).resolves.toBe(2048);
   });
 
-  it('keeps an http link that fails from blocking the same host over https', async () => {
-    testState.fetchMock
-      .mockRejectedValueOnce(new TypeError('Failed to fetch'))
-      .mockRejectedValueOnce(new TypeError('Failed to fetch'))
-      .mockResolvedValueOnce(new Response(null, { status: 200, headers: { 'content-length': '4096' } }));
+  it('keeps http links that fail from blocking the same host over https', async () => {
+    testState.fetchMock.mockRejectedValueOnce(new TypeError('Failed to fetch')).mockRejectedValueOnce(new TypeError('Failed to fetch'));
+    testState.fetchMock.mockRejectedValueOnce(new TypeError('Failed to fetch')).mockRejectedValueOnce(new TypeError('Failed to fetch'));
+    testState.fetchMock.mockRejectedValueOnce(new TypeError('Failed to fetch')).mockRejectedValueOnce(new TypeError('Failed to fetch'));
+    testState.fetchMock.mockResolvedValueOnce(new Response(null, { status: 200, headers: { 'content-length': '4096' } }));
 
-    await expect(fetchMediaFileSize('http://mixed.example.com/old.jpg')).resolves.toBeNull();
+    for (const name of ['one', 'two']) await expect(fetchMediaFileSize(`http://mixed.example.com/${name}.jpg`)).resolves.toBeUndefined();
+    await expect(fetchMediaFileSize('http://mixed.example.com/three.jpg')).resolves.toBeNull();
     await expect(fetchMediaFileSize('https://mixed.example.com/new.jpg')).resolves.toBe(4096);
-    expect(testState.fetchMock).toHaveBeenCalledTimes(3);
+    expect(testState.fetchMock).toHaveBeenCalledTimes(7);
   });
 
   it('reports a missing size as final and a partial response as a failed read', async () => {

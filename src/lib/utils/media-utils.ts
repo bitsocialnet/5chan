@@ -510,9 +510,12 @@ export const getMobileFileSizeLabel = (url: string | undefined, fileSize: number
 const MEDIA_FILE_SIZE_TIMEOUT_MS = 10_000;
 // Which read worked on an origin's first answered probe. HEAD transfers no body, but some hosts answer it
 // without CORS headers or a length; a GET then works, and Chrome can answer it from the <img> load's cache.
-// Origins that answered neither are not asked again.
 const mediaFileSizeOriginModes = new Map<string, 'head' | 'cache' | 'blocked'>();
 const pendingOriginProbes = new Map<string, Promise<number | null | undefined>>();
+// One failed file says little about its origin: a missing file's error response can lack CORS headers.
+// An origin is blocked only after this many of its files failed and none answered, as image-digests.ts does.
+const FAILED_FILES_BEFORE_BLOCKING_ORIGIN = 3;
+const failedOriginFileUrls = new Map<string, Set<string>>();
 
 // The file's size, null when the host answered without one, or undefined for an error response.
 const readContentLength = async (url: string, init: RequestInit): Promise<number | null | undefined> => {
@@ -558,7 +561,11 @@ const readMediaFileSize = async (url: string, origin: string): Promise<number | 
     // A failed fetch can't tell a CORS block from a dropped connection, so only an origin that has never answered
     // is blocked, and not after a timeout, which a slow connection or a long request queue can cause.
     const timedOut = error instanceof DOMException && error.name === 'AbortError';
-    if (!timedOut && !mediaFileSizeOriginModes.has(origin)) mediaFileSizeOriginModes.set(origin, 'blocked');
+    if (!timedOut && !mediaFileSizeOriginModes.has(origin)) {
+      const failedUrls = failedOriginFileUrls.get(origin) ?? new Set<string>();
+      failedOriginFileUrls.set(origin, failedUrls.add(url));
+      if (failedUrls.size >= FAILED_FILES_BEFORE_BLOCKING_ORIGIN) mediaFileSizeOriginModes.set(origin, 'blocked');
+    }
     return mediaFileSizeOriginModes.get(origin) === 'blocked' ? null : undefined;
   }
 };
@@ -571,8 +578,9 @@ export const fetchMediaFileSize = async (url: string): Promise<number | null | u
   // the same host's https:// files.
   const origin = parseHttpUrl(url)?.origin;
   if (!origin) return null;
-  // Until an origin's first read settles which read works, queue its other reads behind it.
-  if (!mediaFileSizeOriginModes.has(origin)) {
+  // Until a read settles which read works, an origin's reads run one at a time, so a host without CORS
+  // fails a few files instead of every file on the page.
+  while (!mediaFileSizeOriginModes.has(origin)) {
     const pendingProbe = pendingOriginProbes.get(origin);
     if (!pendingProbe) {
       const probe = readMediaFileSize(url, origin).finally(() => pendingOriginProbes.delete(origin));
