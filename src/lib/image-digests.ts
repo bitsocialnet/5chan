@@ -10,6 +10,12 @@ const MAX_CONCURRENT_READS = 2;
 /** Digests by link for this session. null marks a file that could not be read, so it is not read again. */
 const digestsByUrl = new Map<string, ImageDigests | null>();
 const pendingReads = new Map<string, { md5: boolean; read: Promise<ImageDigests | null> }>();
+// One unreadable file says little about its host: a missing file's error page can lack CORS headers,
+// and some hosts allow reading only some files. A host is skipped only after this many unreadable
+// files and none readable.
+const UNREADABLE_FILES_BEFORE_SKIPPING_HOST = 3;
+const readableHosts = new Set<string>();
+const unreadableFileCounts = new Map<string, number>();
 const unreadableHosts = new Set<string>();
 const queuedReads: Array<() => void> = [];
 let activeReads = 0;
@@ -132,10 +138,15 @@ export const hashImage = (url: string, { md5 = false }: { md5?: boolean } = {}):
     (result) => {
       pendingReads.delete(url);
       if ('digests' in result) {
+        readableHosts.add(host);
         rememberDigests(url, result.digests);
         return result.digests;
       }
-      if (result.error === 'unreadable-host') unreadableHosts.add(host);
+      if (result.error === 'unreadable-host' && !readableHosts.has(host)) {
+        const unreadableFiles = (unreadableFileCounts.get(host) ?? 0) + 1;
+        unreadableFileCounts.set(host, unreadableFiles);
+        if (unreadableFiles >= UNREADABLE_FILES_BEFORE_SKIPPING_HOST) unreadableHosts.add(host);
+      }
       rememberDigests(url, null);
       return null;
     },

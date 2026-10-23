@@ -38,6 +38,25 @@ describe('readImageDigests', () => {
       error: 'unreadable-file',
     });
 
+    let cancelled = false;
+    const chunk = new Uint8Array(1024 * 1024);
+    let sent = 0;
+    // No content-length, and more bytes than the limit: reading stops at the limit instead of buffering it all.
+    const endlessBody = new ReadableStream<Uint8Array>({
+      pull(controller) {
+        sent += chunk.byteLength;
+        controller.enqueue(chunk);
+      },
+      cancel() {
+        cancelled = true;
+      },
+    });
+    await expect(readImageDigests('https://i.imgur.com/endless.png', { md5: false }, async () => new Response(endlessBody))).resolves.toEqual({
+      error: 'unreadable-file',
+    });
+    expect(cancelled).toBe(true);
+    expect(sent).toBeLessThanOrEqual(MAX_HASHED_IMAGE_BYTES + 2 * chunk.byteLength);
+
     const largeResponse = new Response('abc', { headers: { 'content-length': String(MAX_HASHED_IMAGE_BYTES + 1) } });
     await expect(readImageDigests('https://i.imgur.com/huge.png', { md5: false }, async () => largeResponse)).resolves.toEqual({ error: 'unreadable-file' });
   });

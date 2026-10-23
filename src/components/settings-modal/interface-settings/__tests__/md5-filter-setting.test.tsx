@@ -63,4 +63,10 @@ describe('Md5FilterSetting', () => {
 
     expect(scrollIntoView).toHaveBeenCalledOnce();
   });
+
+  it('scrolls to the list for the legacy #md5-filter link too', () => {
+    render('/b/settings#md5-filter');
+
+    expect(scrollIntoView).toHaveBeenCalledOnce();
+  });
 });

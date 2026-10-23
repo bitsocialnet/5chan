@@ -56,17 +56,25 @@ describe('hashImage', () => {
     expect(FakeWorker.askedMd5).toEqual([false, true]);
   });
 
-  it('stops reading from a host that sends no CORS headers, but keeps reading a host where one file failed', async () => {
+  it('stops reading from a host only after several unreadable files and none readable', async () => {
     const { hashImage } = await loadImageDigests();
-    FakeWorker.replies.set('https://preview.redd.it/a.png', { error: 'unreadable-host' });
-    FakeWorker.replies.set('https://i.imgur.com/b.png', { digests: DIGESTS });
+    for (const name of ['a', 'b', 'c', 'd']) FakeWorker.replies.set(`https://preview.redd.it/${name}.png`, { error: 'unreadable-host' });
+    FakeWorker.replies.set('https://i.imgur.com/ok.png', { digests: DIGESTS });
+    for (const name of ['x', 'y', 'z']) FakeWorker.replies.set(`https://i.imgur.com/${name}.png`, { error: 'unreadable-host' });
+    FakeWorker.replies.set('https://i.imgur.com/last.png', { digests: DIGESTS });
 
-    await expect(hashImage('https://preview.redd.it/a.png')).resolves.toBeNull();
-    await expect(hashImage('https://preview.redd.it/b.png')).resolves.toBeNull();
-    await expect(hashImage('https://i.imgur.com/missing.png')).resolves.toBeNull();
-    await expect(hashImage('https://i.imgur.com/b.png', { md5: true })).resolves.toEqual(DIGESTS);
+    for (const name of ['a', 'b', 'c', 'd']) await expect(hashImage(`https://preview.redd.it/${name}.png`)).resolves.toBeNull();
+    // A host that allowed one read keeps being read, whatever later files do.
+    await hashImage('https://i.imgur.com/ok.png');
+    for (const name of ['x', 'y', 'z']) await hashImage(`https://i.imgur.com/${name}.png`);
+    await expect(hashImage('https://i.imgur.com/last.png', { md5: true })).resolves.toEqual(DIGESTS);
     await expect(hashImage('data:image/png;base64,AAAA')).resolves.toBeNull();
 
-    expect(FakeWorker.posted).toEqual(['https://preview.redd.it/a.png', 'https://i.imgur.com/missing.png', 'https://i.imgur.com/b.png']);
+    expect(FakeWorker.posted.filter((url) => url.includes('redd.it'))).toEqual([
+      'https://preview.redd.it/a.png',
+      'https://preview.redd.it/b.png',
+      'https://preview.redd.it/c.png',
+    ]);
+    expect(FakeWorker.posted).toContain('https://i.imgur.com/last.png');
   });
 });

@@ -27,6 +27,8 @@ interface ImageFiltersState {
    * whose link carries no hash hides before it loads again instead of after it is hashed.
    */
   matchedLinks: Record<string, string>;
+  /** Counts list changes, so a view that keeps a snapshot of the threads it showed can take it again. */
+  listRevision: number;
   /** Filtered posts the viewer chose to show anyway. Like 4chan X, a reload filters them again. */
   shownCids: Record<string, boolean>;
   /**
@@ -79,9 +81,9 @@ const getMatchedLinks = (matchedLinks: Record<string, string>, filterKeys: Set<s
   return changed ? keepNewestMatches(nextMatchedLinks) : matchedLinks;
 };
 
-const withList = (state: Pick<ImageFiltersState, 'matchedLinks'>, imageFilters: string) => {
+const withList = (state: Pick<ImageFiltersState, 'matchedLinks' | 'listRevision'>, imageFilters: string) => {
   const filterKeys = parseImageFilterKeys(imageFilters);
-  return { imageFilters, filterKeys, matchedLinks: getMatchedLinks(state.matchedLinks, filterKeys) };
+  return { imageFilters, filterKeys, matchedLinks: getMatchedLinks(state.matchedLinks, filterKeys), listRevision: state.listRevision + 1 };
 };
 
 const useImageFiltersStore = create<ImageFiltersState>()(
@@ -128,6 +130,7 @@ const useImageFiltersStore = create<ImageFiltersState>()(
         imageFilters: '',
         filterKeys: new Set<string>(),
         matchedLinks: {},
+        listRevision: 0,
         shownCids: {},
         quickFilterNotice: null,
         setImageFilters: (imageFilters) => {
@@ -188,7 +191,7 @@ const useImageFiltersStore = create<ImageFiltersState>()(
           matchedLinks && typeof matchedLinks === 'object' && !Array.isArray(matchedLinks)
             ? Object.fromEntries(Object.entries(matchedLinks).filter((entry): entry is [string, string] => typeof entry[1] === 'string'))
             : {};
-        return { ...current, ...withList({ matchedLinks: storedMatches }, imageFilters) };
+        return { ...current, ...withList({ matchedLinks: storedMatches, listRevision: current.listRevision }, imageFilters) };
       },
     },
   ),

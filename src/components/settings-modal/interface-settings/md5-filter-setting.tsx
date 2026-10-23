@@ -10,7 +10,9 @@ const Md5FilterSetting = () => {
   const { t } = useTranslation();
   const imageFilters = useImageFiltersStore((state) => state.imageFilters);
   const setImageFilters = useImageFiltersStore((state) => state.setImageFilters);
-  const isLinkedSection = new URLSearchParams(useLocation().search).get('section') === MD5_FILTER_SECTION_ID;
+  const { hash, search } = useLocation();
+  // The settings modal opens a section from ?section= or from a legacy #hash, so both scroll here.
+  const isLinkedSection = new URLSearchParams(search).get('section') === MD5_FILTER_SECTION_ID || hash.slice(1) === MD5_FILTER_SECTION_ID;
   const settingRef = useRef<HTMLDivElement>(null);
 
   // The list is the last interface setting, so a link to it would otherwise open below the fold.

@@ -13,6 +13,7 @@ import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-
 import { useFeedStateString } from '../../hooks/use-state-string';
 import useExpandedTimeFilter from '../../hooks/use-expanded-time-filter';
 import { filterHiddenComments, isCidHidden, useHiddenCids, useIsImageFiltered } from '../../hooks/use-hide';
+import useImageFiltersStore from '../../stores/use-image-filters-store';
 import useHiddenCatalogThreads from '../../hooks/use-hidden-catalog-threads';
 import usePruneHiddenCatalogThreads from '../../hooks/use-prune-hidden-catalog-threads';
 import usePinnedCatalogThreads from '../../hooks/use-pinned-catalog-threads';
@@ -331,6 +332,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   const account = useAccount();
   const hiddenCids = useHiddenCids();
   const isImageFiltered = useIsImageFiltered();
+  const imageFilterListRevision = useImageFiltersStore((state) => state.listRevision);
   const subscriptions = account?.subscriptions;
   const accountCommunityAddresses = useAccountCommunityAddresses();
   const filteredDirectoryAddresses = useFilteredDirectoryAddresses();
@@ -631,7 +633,8 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
     communityAddresses,
     communities,
     sortType,
-    snapshotKey: JSON.stringify([communityAddresses, feedOptions.filter.key, currentTimeFilterSeconds, refreshCount]),
+    // The snapshot keeps only the threads it was taken with, so a thread the image filter left out comes back when the list changes.
+    snapshotKey: JSON.stringify([communityAddresses, feedOptions.filter.key, currentTimeFilterSeconds, refreshCount, imageFilterListRevision]),
   });
   // Pinned threads stay through archiving, so they only go through the search, content and image filters.
   const pinnedThreadsFilter = useMemo(() => {

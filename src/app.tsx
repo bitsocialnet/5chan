@@ -7,6 +7,7 @@ import { scheduleDelegatedRoutingCacheMaintenance } from './lib/delegated-routin
 import { preloadThemeAssets, preloadUiIcons, scheduleIdlePreload } from './lib/utils/preload-utils';
 import { hasModQueueAccessRole } from './lib/utils/mod-access';
 import type { PostProps } from './lib/utils/post-props';
+import useImageFiltersStore from './stores/use-image-filters-store';
 import useReplyModalStore from './stores/use-reply-modal-store';
 import { useAccountCommunityAddresses } from './hooks/use-account-community-addresses';
 import useTheme from './hooks/use-theme';
@@ -24,7 +25,6 @@ import NotAllowed from './views/not-allowed';
 import NotFound from './views/not-found';
 import FramesLayout from './components/frames-layout';
 import ExternalQuoteStatus from './components/external-quote-status';
-import ImageFilterNotice from './components/image-filter-notice';
 import ImportErrorBoundary, { ImportError } from './components/import-error-boundary';
 import Prefetcher from './components/prefetcher';
 import { ModEmptyState } from './components/mod-empty-state';
@@ -32,6 +32,7 @@ import { ModEmptyState } from './components/mod-empty-state';
 const AccountDataEditor = lazyImport(() => import('./views/account-data-editor'));
 const BoardSettings = lazyImport(() => import('./views/board-settings'));
 const ChallengeModal = lazyImport(() => import('./components/challenge-modal'));
+const ImageFilterNotice = lazyImport(() => import('./components/image-filter-notice'));
 const DirectoryModal = lazyImport(() => import('./components/directory-modal'));
 const DisclaimerModal = lazyImport(() => import('./components/disclaimer-modal'));
 const loadReplyModal = () => import('./components/reply-modal');
@@ -149,11 +150,19 @@ const GlobalLayout = () => {
   const closeReplyModal = useReplyModalStore((state) => state.closeModal);
   const closeModal = useCallback(() => closeReplyModal(locationDraftKey), [closeReplyModal, locationDraftKey]);
   const isInSettingsView = pathname.endsWith('/settings');
+  // The notice only exists after a quick filter, so its code loads then instead of with the app.
+  const hasImageFilterNotice = useImageFiltersStore((state) => state.quickFilterNotice !== null);
 
   return (
     <>
       <ExternalQuoteStatus />
-      <ImageFilterNotice />
+      {hasImageFilterNotice && (
+        <ImportErrorBoundary floating>
+          <Suspense fallback={null}>
+            <ImageFilterNotice />
+          </Suspense>
+        </ImportErrorBoundary>
+      )}
       <Prefetcher />
       {directoryVoteRefreshDownloadFailed && <ImportError floating />}
       {/* A boundary per modal, so one that failed to download does not take the others (challenges) with it. */}

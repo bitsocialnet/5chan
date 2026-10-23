@@ -26,6 +26,31 @@ const getSha256 = async (bytes: Uint8Array<ArrayBuffer>): Promise<string> => {
   return bytesToHex(sha256(bytes));
 };
 
+// A host can leave out or understate content-length, so the limit applies to the bytes as they arrive.
+const readBodyWithinLimit = async (response: Response): Promise<Uint8Array<ArrayBuffer> | undefined> => {
+  const reader = response.body?.getReader();
+  if (!reader) return new Uint8Array(0);
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    size += value.byteLength;
+    if (size > MAX_HASHED_IMAGE_BYTES) {
+      void reader.cancel();
+      return undefined;
+    }
+    chunks.push(value);
+  }
+  const bytes = new Uint8Array(size);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return bytes;
+};
+
 export const readImageDigests = async (url: string, { md5: withMd5 }: { md5: boolean }, fetchImage: typeof fetch = fetch): Promise<ImageDigestsResult> => {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), READ_TIMEOUT_MS);
@@ -43,7 +68,7 @@ export const readImageDigests = async (url: string, { md5: withMd5 }: { md5: boo
         response = await read('no-cache');
       } catch {
         // A host without CORS headers fails like a dropped connection, so check that the file can be
-        // fetched at all before blaming the host: a host is skipped for the rest of the session.
+        // fetched at all before blaming the host.
         const reachable = await fetchImage(url, { mode: 'no-cors', cache: 'force-cache', signal: controller.signal }).then(
           () => true,
           () => false,
@@ -55,8 +80,8 @@ export const readImageDigests = async (url: string, { md5: withMd5 }: { md5: boo
       void response.body?.cancel();
       return { error: 'unreadable-file' };
     }
-    const bytes = new Uint8Array(await response.arrayBuffer());
-    if (bytes.byteLength > MAX_HASHED_IMAGE_BYTES) {
+    const bytes = await readBodyWithinLimit(response);
+    if (!bytes) {
       return { error: 'unreadable-file' };
     }
     const sha256Hex = await getSha256(bytes);
