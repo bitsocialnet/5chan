@@ -24,7 +24,8 @@ const ignoredPackagedPaths = [
   /yarn\.lock$/,
   // .bin directories contain symlinks that escape the app directory
   /^\/node_modules\/(.*\/)?\.bin($|\/)/,
-  /^\/node_modules\/\.cache($|\/)/,
+  // Tool caches and Yarn metadata (.cache, .vite, .vitest-cache, .yarn-state.yml); package names never start with a dot
+  /^\/node_modules\/\.[^/]+($|\/)/,
   /\.o(bj)?$/,
   /\/node_gyp_bins($|\/)/,
   /\/\.git($|\/)/,

@@ -22,7 +22,7 @@ vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string) =>
       (
-        ({
+        {
           check: 'check',
           crypto_address_not_resolved: 'Crypto address is not resolved yet.',
           crypto_address_not_yours: 'Crypto address is not yours.',
@@ -32,7 +32,7 @@ vi.mock('react-i18next', () => ({
           loading: 'loading',
           save: 'save',
           saved: 'saved',
-        }) as Record<string, string>
+        } as Record<string, string>
       )[key] ?? key,
   }),
 }));
