@@ -492,6 +492,83 @@ export const getMediaDimensions = memoize(
   { max: 1000 },
 );
 
+// Same rounding as 4chan's file rows (extension.js): MB to two decimals, KB to whole numbers, bytes up to 1024.
+export const formatFileSize = (bytes: number): string => {
+  if (bytes >= 1048576) return `${Math.round((bytes / 1048576) * 100) / 100} MB`;
+  if (bytes > 1024) return `${Math.round(bytes / 1024)} KB`;
+  return `${bytes} B`;
+};
+
+// 4chan's mobile thumbnail caption, e.g. "42 KB JPG".
+export const getMobileFileSizeLabel = (url: string | undefined, fileSize: number | undefined): string | undefined => {
+  if (!url || fileSize === undefined) return undefined;
+  const parsedUrl = parseHttpUrl(url);
+  const extension = parsedUrl ? getDirectMediaExtension(parsedUrl) : '';
+  return extension ? `${formatFileSize(fileSize)} ${extension.toUpperCase()}` : undefined;
+};
+
+const MEDIA_FILE_SIZE_TIMEOUT_MS = 10_000;
+// Which read worked on a host's first probe. HEAD transfers no body, but some hosts answer it without CORS
+// headers or a length; a GET then works, and Chrome can answer it from the <img> load's cache. Hosts that
+// answered neither are not asked again.
+const mediaFileSizeHostModes = new Map<string, 'head' | 'cache' | 'blocked'>();
+const pendingHostProbes = new Map<string, Promise<number | undefined>>();
+
+const readContentLength = async (url: string, init: RequestInit): Promise<number | undefined> => {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), MEDIA_FILE_SIZE_TIMEOUT_MS);
+  try {
+    const response = await fetch(url, { ...init, signal: controller.signal });
+    const contentLength = response.status === 200 ? Number(response.headers.get('content-length')) : NaN;
+    return Number.isSafeInteger(contentLength) && contentLength > 0 ? contentLength : undefined;
+  } finally {
+    clearTimeout(timeout);
+    // Only the headers are needed, so drop any body.
+    controller.abort();
+  }
+};
+
+const readMediaFileSize = async (url: string, host: string): Promise<number | undefined> => {
+  const hostMode = mediaFileSizeHostModes.get(host);
+  if (hostMode === 'blocked') return undefined;
+  if (hostMode !== 'cache') {
+    try {
+      const fileSize = await readContentLength(url, { method: 'HEAD', cache: 'no-store' });
+      if (fileSize !== undefined) {
+        if (!hostMode) mediaFileSizeHostModes.set(host, 'head');
+        return fileSize;
+      }
+    } catch {}
+  }
+  try {
+    const fileSize = await readContentLength(url, { cache: 'force-cache' });
+    if (!hostMode) mediaFileSizeHostModes.set(host, 'cache');
+    return fileSize;
+  } catch {
+    // A failed fetch can't tell a CORS block from a dropped connection, so only block hosts that never answered.
+    if (!hostMode) mediaFileSizeHostModes.set(host, 'blocked');
+    return undefined;
+  }
+};
+
+// Posts carry no file size, so read the host's Content-Length, which is CORS-safelisted and readable
+// whenever the host sends Access-Control-Allow-Origin.
+export const fetchMediaFileSize = async (url: string): Promise<number | undefined> => {
+  const host = parseHttpUrl(url)?.host;
+  if (!host) return undefined;
+  // Until a host's first read settles which read works, queue its other reads behind it.
+  if (!mediaFileSizeHostModes.has(host)) {
+    const pendingProbe = pendingHostProbes.get(host);
+    if (!pendingProbe) {
+      const probe = readMediaFileSize(url, host).finally(() => pendingHostProbes.delete(host));
+      pendingHostProbes.set(host, probe);
+      return probe;
+    }
+    await pendingProbe;
+  }
+  return readMediaFileSize(url, host);
+};
+
 const thumbnailUrlsDb = localForageLru.createInstance({ name: '5chanThumbnailUrls', size: 500 });
 
 const getCachedThumbnail = async (url: string): Promise<string | null> => {

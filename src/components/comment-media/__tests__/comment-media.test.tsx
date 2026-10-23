@@ -15,6 +15,7 @@ const testState = vi.hoisted(() => ({
   gifFrameStatus: 'idle' as 'failed' | 'idle' | 'loading' | 'ready',
   gifFrameUrl: null as string | null,
   gifFrameRequests: vi.fn(),
+  fetchMediaFileSize: vi.fn(),
   hostname: 'example.com',
   isMobile: false,
   unmuteExpandedVideoSound: false,
@@ -27,22 +28,29 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
-vi.mock('../../../lib/utils/media-utils', () => ({
-  getDisplayMediaInfoType: (type: string) => type,
-  getHasThumbnail: () => testState.getHasThumbnailResult,
-  getMediaDimensions: () => '640x480',
-  getYouTubeThumbnailFallbackUrls: (thumbnailUrl?: string) => {
-    if (!thumbnailUrl?.includes('img.youtube.com/vi/')) return thumbnailUrl ? [thumbnailUrl] : [];
-    const videoId = thumbnailUrl.split('/vi/')[1]?.split('/')[0];
-    return [
-      `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
-      `https://img.youtube.com/vi/${videoId}/sddefault.jpg`,
-      `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`,
-      `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
-    ];
-  },
-  isMissingYouTubeThumbnailImage: (thumbnailUrl: string, width: number, height: number) => thumbnailUrl.includes('img.youtube.com/vi/') && width === 120 && height === 90,
-}));
+vi.mock('../../../lib/utils/media-utils', async (importOriginal) => {
+  const { formatFileSize, getMobileFileSizeLabel } = await importOriginal<typeof import('../../../lib/utils/media-utils')>();
+  return {
+    fetchMediaFileSize: (url: string) => testState.fetchMediaFileSize(url),
+    formatFileSize,
+    getMobileFileSizeLabel,
+    getDisplayMediaInfoType: (type: string) => type,
+    getHasThumbnail: () => testState.getHasThumbnailResult,
+    getMediaDimensions: () => '640x480',
+    getYouTubeThumbnailFallbackUrls: (thumbnailUrl?: string) => {
+      if (!thumbnailUrl?.includes('img.youtube.com/vi/')) return thumbnailUrl ? [thumbnailUrl] : [];
+      const videoId = thumbnailUrl.split('/vi/')[1]?.split('/')[0];
+      return [
+        `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+        `https://img.youtube.com/vi/${videoId}/sddefault.jpg`,
+        `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`,
+        `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
+      ];
+    },
+    isMissingYouTubeThumbnailImage: (thumbnailUrl: string, width: number, height: number) =>
+      thumbnailUrl.includes('img.youtube.com/vi/') && width === 120 && height === 90,
+  };
+});
 
 vi.mock('../../../lib/utils/url-utils', () => ({
   getHostname: () => testState.hostname,
@@ -159,6 +167,75 @@ describe('CommentMedia', () => {
 
     expect(container.textContent).toContain('https://cdn.example.com/image');
     expect(container.textContent).toContain('640x480');
+  });
+
+  it('replaces the mobile media type with the 4chan file size once the image loads', async () => {
+    testState.isMobile = true;
+    testState.fetchMediaFileSize.mockResolvedValue(19125);
+
+    await renderMedia({
+      commentMediaInfo: { linkHeight: 300, linkWidth: 300, type: 'image', url: 'https://files.example.com/v0zbnp.jpeg' },
+      setShowThumbnail: setShowThumbnailMock,
+      showThumbnail: true,
+    });
+
+    expect(container.textContent).toContain('image');
+    const image = container.querySelector('img[src="https://files.example.com/v0zbnp.jpeg"]');
+    await act(async () => {
+      image?.dispatchEvent(new Event('load'));
+      await Promise.resolve();
+    });
+
+    expect(testState.fetchMediaFileSize).toHaveBeenCalledWith('https://files.example.com/v0zbnp.jpeg');
+    expect(container.textContent).toBe('19 KB JPEG');
+
+    await act(async () => {
+      image?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    expect(container.textContent).toContain('(19 KB, 640x480)');
+  });
+
+  it('keeps the media type label and asks only once when the host does not expose the file size', async () => {
+    testState.isMobile = true;
+    testState.fetchMediaFileSize.mockResolvedValue(undefined);
+
+    await renderMedia({
+      commentMediaInfo: { linkHeight: 300, linkWidth: 300, type: 'image', url: 'https://no-cors.example.com/photo.jpg' },
+      setShowThumbnail: setShowThumbnailMock,
+      showThumbnail: true,
+    });
+
+    const image = container.querySelector('img[src="https://no-cors.example.com/photo.jpg"]');
+    await act(async () => {
+      image?.dispatchEvent(new Event('load'));
+      await Promise.resolve();
+    });
+    await act(async () => {
+      image?.dispatchEvent(new Event('load'));
+      await Promise.resolve();
+    });
+
+    expect(testState.fetchMediaFileSize).toHaveBeenCalledTimes(1);
+    expect(container.textContent).toBe(' image');
+  });
+
+  it('asks for a video file size once its thumbnail metadata loads', async () => {
+    testState.fetchMediaFileSize.mockResolvedValue(2097152);
+
+    await renderMedia({
+      commentMediaInfo: { type: 'video', url: 'https://files.example.com/clip.webm' },
+      setShowThumbnail: setShowThumbnailMock,
+      showThumbnail: true,
+    });
+
+    expect(testState.fetchMediaFileSize).not.toHaveBeenCalled();
+    await act(async () => {
+      container.querySelector('video')?.dispatchEvent(new Event('loadedmetadata'));
+      await Promise.resolve();
+    });
+
+    expect(testState.fetchMediaFileSize).toHaveBeenCalledWith('https://files.example.com/clip.webm');
   });
 
   it('marks expanded reply images so virtualized feed rows use live height', async () => {

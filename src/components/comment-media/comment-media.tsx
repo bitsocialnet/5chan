@@ -1,9 +1,10 @@
 import React, { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CommentMediaInfo, getDisplayMediaInfoType, getHasThumbnail, getMediaDimensions } from '../../lib/utils/media-utils';
+import { CommentMediaInfo, formatFileSize, getDisplayMediaInfoType, getHasThumbnail, getMediaDimensions, getMobileFileSizeLabel } from '../../lib/utils/media-utils';
 import { getHostname, parseHttpUrl } from '../../lib/utils/url-utils';
 import useExpandedMediaStore from '../../stores/use-expanded-media-store';
 import useImageFiltersStore from '../../stores/use-image-filters-store';
+import { requestMediaFileSize, useMediaFileSize } from '../../stores/use-media-file-size-store';
 import useFetchGifFirstFrame from '../../hooks/use-fetch-gif-first-frame';
 import useIsMobile from '../../hooks/use-is-mobile';
 import { useYouTubeThumbnailFallback } from '../../hooks/use-youtube-thumbnail-fallback';
@@ -128,16 +129,16 @@ const Thumbnail = ({
         <button type='button' className={`${styles.gifPlaceholder} ${styles.mediaToggleButton}`} aria-label='Loading GIF thumbnail' onClick={handleOpenMedia} />
       ) : (
         <button type='button' className={styles.mediaToggleButton} aria-label='Open GIF' onClick={handleOpenMedia}>
-          {gifFrameUrl ? <img src={gifFrameUrl} alt='' /> : url && <GifFirstFrameCanvas src={url} />}
+          {gifFrameUrl ? <img src={gifFrameUrl} alt='' onLoad={() => requestMediaFileSize(url)} /> : url && <GifFirstFrameCanvas src={url} />}
         </button>
       );
   } else if (type === 'video') {
     thumbnailComponent = thumbnail ? (
-      <img src={thumbnail} alt='Video thumbnail' />
+      <img src={thumbnail} alt='Video thumbnail' onLoad={() => requestMediaFileSize(url)} />
     ) : (
       // show first frame of the video, as a workaround for Safari not loading thumbnails
       <button type='button' className={styles.mediaToggleButton} aria-label='Open video' onClick={handleOpenMedia}>
-        <video src={`${url}#t=0.001`} aria-label='Video thumbnail' />
+        <video src={`${url}#t=0.001`} aria-label='Video thumbnail' onLoadedMetadata={() => requestMediaFileSize(url)} />
       </button>
     );
   } else if (type === 'webpage') {
@@ -211,7 +212,7 @@ const Thumbnail = ({
   );
 };
 
-const Media = ({ commentMediaInfo, disableToggle, isReply, setShowThumbnail }: MediaProps) => {
+const Media = ({ commentMediaInfo, disableToggle, fileSize, isReply, setShowThumbnail }: MediaProps & { fileSize?: number }) => {
   const { t } = useTranslation();
   const { thumbnail, type, url } = commentMediaInfo || {};
   const isMobile = useIsMobile();
@@ -252,7 +253,7 @@ const Media = ({ commentMediaInfo, disableToggle, isReply, setShowThumbnail }: M
           <a href={url} target='_blank' rel='noopener noreferrer'>
             {url && url.length > 30 ? url.slice(0, 30) + '...' : url}
           </a>{' '}
-          ({getDisplayMediaInfoType(type, t)}
+          ({fileSize !== undefined ? formatFileSize(fileSize) : getDisplayMediaInfoType(type, t)}
           {mediaDimensions && `, ${mediaDimensions}`})
         </div>
       )}
@@ -283,6 +284,7 @@ interface ImageProps {
   disableToggle?: boolean;
   displayHeight: string;
   displayWidth: string;
+  fileSize?: number;
   initialExpanded?: boolean;
   isOutOfFeed: boolean;
   onMediaLoadFailureChange?: (url: string | undefined) => void;
@@ -295,6 +297,7 @@ const Image = ({
   disableToggle = false,
   displayHeight,
   displayWidth,
+  fileSize,
   initialExpanded = false,
   isOutOfFeed,
   onMediaLoadFailureChange,
@@ -327,6 +330,7 @@ const Image = ({
     setFailedUrl((currentFailedUrl) => (currentFailedUrl === url ? undefined : currentFailedUrl));
     onMediaLoadFailureChange?.(undefined);
     hashLoadedImage(url);
+    requestMediaFileSize(url);
   };
 
   if (spoiler && !isImageExpanded) {
@@ -370,11 +374,13 @@ const Image = ({
           <a href={url} target='_blank' rel='noopener noreferrer'>
             {url && url.length > 30 ? url.slice(0, 30) + '...' : url}
           </a>{' '}
-          ({getDisplayMediaInfoType(type, t)}
+          ({fileSize !== undefined ? formatFileSize(fileSize) : getDisplayMediaInfoType(type, t)}
           {mediaDimensions && `, ${mediaDimensions}`})
         </div>
       )}
-      {type && !isImageExpanded && <div className={styles.fileInfo}>{`${spoiler ? `${t('spoiler')} - ` : ''} ${getDisplayMediaInfoType(type, t)}`}</div>}
+      {type && !isImageExpanded && (
+        <div className={styles.fileInfo}>{getMobileFileSizeLabel(url, fileSize) ?? `${spoiler ? `${t('spoiler')} - ` : ''} ${getDisplayMediaInfoType(type, t)}`}</div>
+      )}
     </span>
   ) : (
     <span
@@ -419,6 +425,7 @@ const CommentMedia = ({
   const { t } = useTranslation();
   const isMobile = useIsMobile();
   const { thumbnailHeight, thumbnailWidth, url } = commentMediaInfo || {};
+  const fileSize = useMediaFileSize(url);
   // Inline embeds cannot collapse to a thumbnail; audio's player still lives in Thumbnail.
   const needsThumbnail = !disableToggle || showThumbnail !== false || commentMediaInfo?.type === 'audio';
   const gifFrameState = useFetchGifFirstFrame(needsThumbnail && commentMediaInfo?.type === 'gif' ? url : undefined);
@@ -466,6 +473,7 @@ const CommentMedia = ({
           disableToggle={disableToggle}
           displayHeight={displayHeight}
           displayWidth={displayWidth}
+          fileSize={fileSize}
           initialExpanded={showThumbnail === false}
           isOutOfFeed={isOutOfFeed}
           onMediaLoadFailureChange={onMediaLoadFailureChange}
@@ -491,10 +499,16 @@ const CommentMedia = ({
                   setShowThumbnail={setShowThumbnail}
                 />
               )}
-              {isMobile && type && <div className={styles.fileInfo}>{`${spoiler ? `${t('spoiler')} - ` : ''} ${getDisplayMediaInfoType(type, t)}`}</div>}
+              {isMobile && type && (
+                <div className={styles.fileInfo}>
+                  {getMobileFileSizeLabel(url, fileSize) ?? `${spoiler ? `${t('spoiler')} - ` : ''} ${getDisplayMediaInfoType(type, t)}`}
+                </div>
+              )}
             </span>
           )}
-          {!showThumbnail && <Media commentMediaInfo={commentMediaInfo} disableToggle={disableToggle} isReply={!!parentCid} setShowThumbnail={setShowThumbnail} />}
+          {!showThumbnail && (
+            <Media commentMediaInfo={commentMediaInfo} disableToggle={disableToggle} fileSize={fileSize} isReply={!!parentCid} setShowThumbnail={setShowThumbnail} />
+          )}
         </>
       )}
     </span>
