@@ -586,5 +586,11 @@
   "use_pure_p2p_stats": "In plaats daarvan puur P2P gebruiken (traag)",
   "pure_p2p_stats_tip": "Pure P2P-statistieken zijn altijd de terugvaloptie als statistiekproviders uitvallen.",
   "stats_reported_by": "Gemeld door {{provider}}",
-  "media_hosting_providers": "Mediahostingproviders"
+  "media_hosting_providers": "Mediahostingproviders",
+  "undo": "ongedaan maken",
+  "filter_image_md5": "Afbeeldings-MD5 filteren",
+  "md5_filtered": "MD5 gefilterd.",
+  "x_md5s_filtered": "{{count}} MD5's gefilterd.",
+  "md5_filter": "MD5-filter",
+  "md5_filter_help": "Verberg berichten met deze bestanden, één per regel: een SHA-256- of MD5-hash (MD5-regels uit 4chan X werken ook) of een link. Een Forge-bestand wordt herkend aan de SHA-256-hash in zijn link. Van andere afbeeldingen wordt na het laden de hash berekend als hun host dat toestaat, zodat een opgegeven hash dezelfde afbeelding verbergt waar die ook wordt gepost. Elk ander bestand wordt alleen herkend aan zijn exacte link. Regels die met # beginnen, worden genegeerd."
 }

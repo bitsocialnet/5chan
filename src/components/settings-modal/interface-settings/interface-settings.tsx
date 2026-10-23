@@ -9,6 +9,7 @@ import usePersistentBoardsBarStore from '../../../stores/use-persistent-boards-b
 import Version from '../../version';
 import StyleSelector from '../../style-selector';
 import LazySection, { createSectionLoader } from '../lazy-section';
+import Md5FilterSetting from './md5-filter-setting';
 import { INTERFACE_LANGUAGE_STORAGE_KEY, SUPPORTED_INTERFACE_LANGUAGES } from '../../../lib/constants';
 
 const shouldRenderAppUpdateSetting = import.meta.env.VITE_APP_DISTRIBUTION !== 'fdroid';
@@ -148,6 +149,7 @@ const InterfaceSettings = () => {
           </label>
         </div>
       </div>
+      <Md5FilterSetting />
     </div>
   );
 };

@@ -10,6 +10,8 @@ import { getCatalogRenderFeed } from '../catalog-render-feed';
 import { clearStableLastVisitTimeFilterName, LAST_VISIT_STORAGE_KEY } from '../../../lib/utils/time-filter-utils';
 import useHiddenCatalogThreadsStore from '../../../stores/use-hidden-catalog-threads-store';
 import usePinnedCatalogThreadsStore from '../../../stores/use-pinned-catalog-threads-store';
+import useImageFiltersStore from '../../../stores/use-image-filters-store';
+import { FORGE_IMAGES_MEDIA_ORIGIN } from '../../../lib/forge-images-config';
 import { getCatalogRowHeightEstimates } from '../../../lib/utils/pretext-height-estimates';
 import type { CatalogSortType } from '../../../lib/utils/catalog-sort';
 
@@ -30,6 +32,7 @@ type TestComment = {
   pinned?: boolean;
   communityAddress?: string;
   deleted?: boolean;
+  link?: string;
   parentCid?: string;
   postCid?: string;
   removed?: boolean;
@@ -806,6 +809,33 @@ describe('Catalog', () => {
         return { errors };
       });
     });
+  });
+
+  it('brings back a thread the image filter left out of a sorted multiboard catalog when the list changes', async () => {
+    const spamSha256 = '2aa4fa20701cdd6d8d56046069001186b5267e3ee7d0ef618ad2f4a683723e11';
+    testState.sortType = 'replyCount';
+    testState.directories = [
+      { address: 'music-posting.eth', directoryCode: 'mu', title: '/mu/ - Music' },
+      { address: 'sports-posting.bso', directoryCode: 'sp', title: '/sp/ - Sports' },
+    ];
+    testState.filteredDirectoryAddresses = ['music-posting.eth', 'sports-posting.bso'];
+    testState.feed = [
+      { cid: 'quiet', title: 'quiet', communityAddress: 'music-posting.eth', replyCount: 1 },
+      { cid: 'spam', title: 'spam', communityAddress: 'sports-posting.bso', replyCount: 9, link: `${FORGE_IMAGES_MEDIA_ORIGIN}/${spamSha256}.png` },
+    ];
+    useImageFiltersStore.getState().setImageFilters(spamSha256);
+    try {
+      await renderCatalog({ catalogProps: { viewType: 'all' }, initialEntry: '/all/catalog', routePath: '/all/*' });
+      const rows = () => Array.from(container.querySelectorAll('[data-testid="catalog-row"]')).map((element) => element.textContent);
+      expect(rows()).toEqual(['row:quiet']);
+
+      await act(async () => {
+        useImageFiltersStore.getState().setImageFilters('');
+      });
+      expect(rows()).toEqual(['row:spam,quiet']);
+    } finally {
+      useImageFiltersStore.getState().setImageFilters('');
+    }
   });
 
   it('uses the multiboard board scope for hidden catalog mode', async () => {

@@ -6,6 +6,7 @@ import { useAccount, usePublishCommentEdit } from '@bitsocial/bitsocial-react-ho
 import { autoUpdate, flip, FloatingFocusManager, offset, shift, useClick, useDismiss, useFloating, useId, useInteractions, useRole } from '@floating-ui/react';
 import styles from './post-menu-mobile.module.css';
 import { getCommentMediaInfo } from '../../../lib/utils/media-utils';
+import { isImageFilterableMediaType } from '../../../lib/utils/image-filter-utils';
 import { copyShareLinkToClipboard, isValidURL, type ShareLinkType } from '../../../lib/utils/url-utils';
 import { copyToClipboard } from '../../../lib/utils/clipboard-utils';
 import { getBoardPath } from '../../../lib/utils/route-utils';
@@ -20,6 +21,7 @@ import { PostMenuProps } from '../../../lib/utils/post-menu-props';
 import { getCommentCommunityAddress, withResolvedCommentCommunityAddress } from '../../../lib/utils/comment-utils';
 import { alertChallengeVerificationFailed, type ChallengePublication } from '../../../lib/utils/challenge-utils';
 import useChallengesStore from '../../../stores/use-challenges-store';
+import useImageFiltersStore from '../../../stores/use-image-filters-store';
 
 async function copyShareLinkSafe(boardIdentifier: string, linkType: ShareLinkType, cid?: string): Promise<void> {
   try {
@@ -128,6 +130,31 @@ const CopyUserIdButton = ({ address, onClose }: { address: string; onClose: () =
       }}
     >
       <div className={styles.postMenuItem}>{t('copy_user_id')}</div>
+    </button>
+  );
+};
+
+const FilterImageButton = ({ cid, link, mediaType, onClose }: { cid: string; link: string; mediaType: string | undefined; onClose: () => void }) => {
+  const { t } = useTranslation();
+  const quickFilter = useImageFiltersStore((state) => state.quickFilter);
+  const { pathname } = useLocation();
+  const filterImage = () => {
+    quickFilter(link, cid, pathname, mediaType);
+    onClose();
+  };
+  return (
+    <button
+      type='button'
+      tabIndex={0}
+      onClick={filterImage}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          filterImage();
+        }
+      }}
+    >
+      <div className={styles.postMenuItem}>{t('filter_image_md5')}</div>
     </button>
   );
 };
@@ -331,6 +358,9 @@ const PostMenuMobile = ({ postMenu, editMenuPost }: PostMenuMobileProps) => {
               <FloatingFocusManager context={context} modal={false}>
                 <div className={styles.postMenu} ref={refs.setFloating} style={floatingStyles} aria-labelledby={headingId} {...getFloatingProps()}>
                   {cid && communityAddress && <HidePostButton cid={cid} comment={postMenu.comment} isReply={!!parentCid} postCid={postCid} onClose={handleClose} />}
+                  {cid && link && isValidURL(link) && isImageFilterableMediaType(type) && (
+                    <FilterImageButton cid={cid} link={link} mediaType={type} onClose={handleClose} />
+                  )}
                   {(isAccountCommentAuthor || canAttemptAuthorDelete) && cid && editMenuPost && <DeletePostButton post={editMenuPost} onClose={handleClose} />}
                   {cid && communityAddress && <CopyLinkButton cid={cid} communityAddress={communityAddress} linkType='thread' onClose={handleClose} />}
                   {cid && <CopyContentIdButton cid={cid} onClose={handleClose} />}

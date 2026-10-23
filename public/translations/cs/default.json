@@ -586,5 +586,11 @@
   "use_pure_p2p_stats": "Použít místo toho čisté P2P (pomalé)",
   "pure_p2p_stats_tip": "Statistiky z čistého P2P jsou vždy záložní možností pro případ, že poskytovatelé statistik přestanou fungovat.",
   "stats_reported_by": "Uvádí {{provider}}",
-  "media_hosting_providers": "Poskytovatelé hostování médií"
+  "media_hosting_providers": "Poskytovatelé hostování médií",
+  "undo": "zpět",
+  "filter_image_md5": "Filtrovat MD5 obrázku",
+  "md5_filtered": "MD5 filtrováno.",
+  "x_md5s_filtered": "Filtrováno MD5: {{count}}.",
+  "md5_filter": "Filtr MD5",
+  "md5_filter_help": "Skryje příspěvky s těmito soubory, jeden na řádek: hash SHA-256 nebo MD5 (fungují i řádky MD5 z 4chan X) nebo odkaz. Soubor z Forge se porovnává podle hashe SHA-256 v jeho odkazu. U ostatních obrázků se hash spočítá po načtení, pokud to jejich hosting dovolí, takže uvedený hash skryje stejný obrázek, ať je zveřejněn kdekoli. Jakýkoli jiný soubor se porovnává jen podle přesného odkazu. Řádky začínající # se ignorují."
 }

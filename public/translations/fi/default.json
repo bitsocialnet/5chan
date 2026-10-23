@@ -586,5 +586,11 @@
   "use_pure_p2p_stats": "Käytä sen sijaan puhdasta P2P:tä (hidas)",
   "pure_p2p_stats_tip": "Puhtaan P2P:n tilastot ovat aina varavaihtoehto, jos tilastojen palveluntarjoajat lakkaavat toimimasta.",
   "stats_reported_by": "Ilmoittaja: {{provider}}",
-  "media_hosting_providers": "Mediahostingin palveluntarjoajat"
+  "media_hosting_providers": "Mediahostingin palveluntarjoajat",
+  "undo": "kumoa",
+  "filter_image_md5": "Suodata kuvan MD5",
+  "md5_filtered": "MD5 suodatettu.",
+  "x_md5s_filtered": "{{count}} MD5:tä suodatettu.",
+  "md5_filter": "MD5-suodatin",
+  "md5_filter_help": "Piilota viestit, joissa on nämä tiedostot, yksi riville: SHA-256- tai MD5-tiiviste (myös 4chan X:n MD5-rivit toimivat) tai linkki. Forge-tiedosto tunnistetaan sen linkissä olevasta SHA-256-tiivisteestä. Muille kuville lasketaan tiiviste, kun ne ovat latautuneet, jos isäntäpalvelin sallii sen, joten listattu tiiviste piilottaa saman kuvan, missä tahansa se julkaistaan. Muut tiedostot tunnistetaan vain niiden tarkasta linkistä. #-merkillä alkavat rivit ohitetaan."
 }

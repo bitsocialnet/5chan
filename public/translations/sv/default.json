@@ -586,5 +586,11 @@
   "use_pure_p2p_stats": "Använd rent P2P i stället (långsamt)",
   "pure_p2p_stats_tip": "Ren P2P-statistik är alltid reservlösningen om statistikleverantörerna slutar fungera.",
   "stats_reported_by": "Rapporterat av {{provider}}",
-  "media_hosting_providers": "Mediahostingleverantörer"
+  "media_hosting_providers": "Mediahostingleverantörer",
+  "undo": "ångra",
+  "filter_image_md5": "Filtrera bild-MD5",
+  "md5_filtered": "MD5 filtrerad.",
+  "x_md5s_filtered": "{{count}} MD5:or filtrerade.",
+  "md5_filter": "MD5-filter",
+  "md5_filter_help": "Döljer inlägg med de här filerna, en per rad: en SHA-256- eller MD5-hash (MD5-rader från 4chan X fungerar också) eller en länk. En Forge-fil känns igen på SHA-256-hashen i sin länk. Andra bilder hashas när de har lästs in, om deras värd tillåter det, så en angiven hash döljer samma bild var den än publiceras. Alla andra filer känns bara igen på sin exakta länk. Rader som börjar med # ignoreras."
 }
