@@ -70,6 +70,39 @@
   width: 8px;
 }
 
+.md5Filter {
+  margin-right: 10px;
+}
+
+/* The settings modal gives every label the pointer cursor of its checkboxes; this one only names the list. */
+.md5Filter .md5FilterLabel {
+  cursor: auto;
+}
+
+.md5FilterTip {
+  font-size: 0.85em;
+  margin: 2px 0 5px 0;
+}
+
+.md5FilterList {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0;
+  padding: 2px 4px 3px;
+  outline: none;
+  font-family: monospace;
+  font-size: 13px;
+  resize: vertical;
+}
+
+/* iOS zooms into fields with text under 16px. */
+@media (max-width: 640px) {
+  .md5FilterList {
+    font-size: 16px;
+  }
+}
+
 /* The boards bar is already fixed on mobile, so the option only matters on desktop. */
 @media (max-width: 640px) {
   .desktopOnlySetting {

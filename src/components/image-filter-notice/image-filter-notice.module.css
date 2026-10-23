@@ -1,0 +1,47 @@
+.notice {
+  position: fixed;
+  left: 50%;
+  top: 18px;
+  transform: translateX(-50%);
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  max-width: calc(100vw - 10px);
+  padding: 2px 5px;
+  border: var(--quote-preview-border);
+  background-color: var(--quote-preview-background);
+  font-size: 10pt;
+  white-space: nowrap;
+}
+
+.action {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: var(--button-desktop-text-color);
+  font: inherit;
+  margin: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+.action:hover {
+  color: var(--button-desktop-text-color-hover);
+}
+
+.closeButton {
+  appearance: none;
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin: 0 0 0 5px;
+  padding: 0;
+  border: 0;
+  background-color: transparent;
+  background-image: var(--close-button-background-image);
+  background-position: center;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+  cursor: pointer;
+}

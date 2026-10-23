@@ -3,6 +3,7 @@ import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import CommentMedia from '../comment-media';
+import useImageFiltersStore from '../../../stores/use-image-filters-store';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
@@ -181,6 +182,26 @@ describe('CommentMedia', () => {
     });
 
     expect(container.querySelector('[data-expanded-media="true"]')).toBeTruthy();
+  });
+
+  it('offers each loaded image to the MD5 filter for hashing', async () => {
+    const hashLoadedImage = vi.fn();
+    const originalHashLoadedImage = useImageFiltersStore.getState().hashLoadedImage;
+    useImageFiltersStore.setState({ hashLoadedImage });
+    try {
+      await renderMedia({
+        commentMediaInfo: { type: 'image', url: 'https://files.catbox.moe/a.jpg' },
+        setShowThumbnail: setShowThumbnailMock,
+        showThumbnail: true,
+      });
+      await act(async () => {
+        container.querySelector('img[src="https://files.catbox.moe/a.jpg"]')?.dispatchEvent(new Event('load', { bubbles: true }));
+      });
+
+      expect(hashLoadedImage).toHaveBeenCalledWith('https://files.catbox.moe/a.jpg');
+    } finally {
+      useImageFiltersStore.setState({ hashLoadedImage: originalHashLoadedImage });
+    }
   });
 
   it('shows a media-load warning when an image fails to load', async () => {

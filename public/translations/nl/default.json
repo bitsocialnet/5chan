@@ -588,5 +588,11 @@
   "stats_reported_by": "Gemeld door {{provider}}",
   "media_hosting_providers": "Mediahostingproviders",
   "stats_scope_directory_boards_p2p": "Alleen directory-boards (snel)",
-  "stats_scope_all_listed_boards_p2p": "Alle vermelde boards (traag)"
+  "stats_scope_all_listed_boards_p2p": "Alle vermelde boards (traag)",
+  "undo": "ongedaan maken",
+  "filter_image_md5": "Afbeeldings-MD5 filteren",
+  "md5_filtered": "MD5 gefilterd.",
+  "x_md5s_filtered": "{{count}} MD5's gefilterd.",
+  "md5_filter": "MD5-filter",
+  "md5_filter_help": "Verberg berichten met deze bestanden, één per regel: een SHA-256- of MD5-hash (MD5-regels uit 4chan X werken ook) of een link. Een Forge-bestand wordt herkend aan de SHA-256-hash in zijn link. Van andere afbeeldingen wordt na het laden de hash berekend als hun host dat toestaat, zodat een opgegeven hash dezelfde afbeelding verbergt waar die ook wordt gepost. Elk ander bestand wordt alleen herkend aan zijn exacte link. Regels die met # beginnen, worden genegeerd."
 }

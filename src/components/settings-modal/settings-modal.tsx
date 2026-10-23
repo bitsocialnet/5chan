@@ -8,6 +8,7 @@ import { P2P_STATS_SECTION_ID, shouldShowP2PSettingsSection } from '../../lib/p2
 import { getReviewableSettingsUpgrades, getSettingsUpgradeKey, type SettingsUpgradeAccount } from '../../lib/settings-upgrades';
 import useSettingsUpgradeReviewStore from '../../stores/use-settings-upgrade-review-store';
 import { getSettingsSectionPath } from '../../lib/utils/route-utils';
+import { MD5_FILTER_SECTION_ID } from '../../lib/utils/image-filter-utils';
 
 const loadAccountSettings = createSectionLoader(() => import('./account-settings/account-settings'));
 const loadCryptoAddressSetting = createSectionLoader(() => import('./crypto-address-setting/crypto-address-setting'));
@@ -44,6 +45,7 @@ const allSectionIds = [
 
 const hashToSection = (hash: string, sectionIds = allSectionIds): string | null => {
   if (hash === 'crypto-address-settings' || hash === 'crypto-wallet-settings') return 'account-settings';
+  if (hash === MD5_FILTER_SECTION_ID) return 'interface-settings';
   if (sectionIds.includes(hash)) return hash;
   return null;
 };

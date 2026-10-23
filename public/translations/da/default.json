@@ -588,5 +588,11 @@
   "stats_reported_by": "Rapporteret af {{provider}}",
   "media_hosting_providers": "Mediahostingudbydere",
   "stats_scope_directory_boards_p2p": "Kun boards i kataloget (hurtigt)",
-  "stats_scope_all_listed_boards_p2p": "Alle viste boards (langsomt)"
+  "stats_scope_all_listed_boards_p2p": "Alle viste boards (langsomt)",
+  "undo": "fortryd",
+  "filter_image_md5": "Filtrér billed-MD5",
+  "md5_filtered": "MD5 filtreret.",
+  "x_md5s_filtered": "{{count}} MD5'er filtreret.",
+  "md5_filter": "MD5-filter",
+  "md5_filter_help": "Skjul indlæg med disse filer, én pr. linje: en SHA-256- eller MD5-hash (MD5-linjer fra 4chan X virker også) eller et link. En Forge-fil genkendes på SHA-256-hashen i sit link. Andre billeder hashes, når de er indlæst, hvis deres vært tillader det, så en angivet hash skjuler det samme billede, uanset hvor det bliver postet. Alle andre filer genkendes kun på deres nøjagtige link. Linjer, der starter med #, ignoreres."
 }

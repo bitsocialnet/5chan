@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { CommentMediaInfo, getDisplayMediaInfoType, getHasThumbnail, getMediaDimensions } from '../../lib/utils/media-utils';
 import { getHostname, parseHttpUrl } from '../../lib/utils/url-utils';
 import useExpandedMediaStore from '../../stores/use-expanded-media-store';
+import useImageFiltersStore from '../../stores/use-image-filters-store';
 import useFetchGifFirstFrame from '../../hooks/use-fetch-gif-first-frame';
 import useIsMobile from '../../hooks/use-is-mobile';
 import { useYouTubeThumbnailFallback } from '../../hooks/use-youtube-thumbnail-fallback';
@@ -306,6 +307,7 @@ const Image = ({
   const isMobile = useIsMobile();
   const [isImageExpanded, setIsImageExpanded] = useState(initialExpanded);
   const fitExpandedImagesToScreen = useExpandedMediaStore((s) => s.fitExpandedImagesToScreen);
+  const hashLoadedImage = useImageFiltersStore((s) => s.hashLoadedImage);
   const mediaDimensions = getMediaDimensions(commentMediaInfo);
   const mediaClass = `${isMobile ? styles.mediaMobile : isReply ? styles.mediaDesktopReply : styles.mediaDesktopOp} ${
     fitExpandedImagesToScreen ? styles.fitToScreen : ''
@@ -324,6 +326,7 @@ const Image = ({
   const handleLoad = () => {
     setFailedUrl((currentFailedUrl) => (currentFailedUrl === url ? undefined : currentFailedUrl));
     onMediaLoadFailureChange?.(undefined);
+    hashLoadedImage(url);
   };
 
   if (spoiler && !isImageExpanded) {

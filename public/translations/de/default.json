@@ -588,5 +588,11 @@
   "stats_reported_by": "Gemeldet von {{provider}}",
   "media_hosting_providers": "Medienhosting-Anbieter",
   "stats_scope_directory_boards_p2p": "Nur Verzeichnis-Boards (schnell)",
-  "stats_scope_all_listed_boards_p2p": "Alle aufgelisteten Boards (langsam)"
+  "stats_scope_all_listed_boards_p2p": "Alle aufgelisteten Boards (langsam)",
+  "undo": "rückgängig",
+  "filter_image_md5": "Bild-MD5 filtern",
+  "md5_filtered": "MD5 gefiltert.",
+  "x_md5s_filtered": "{{count}} MD5s gefiltert.",
+  "md5_filter": "MD5-Filter",
+  "md5_filter_help": "Blendet Beiträge mit diesen Dateien aus, eine pro Zeile: ein SHA-256- oder MD5-Hash (MD5-Zeilen aus 4chan X funktionieren auch) oder ein Link. Eine Forge-Datei wird anhand des SHA-256-Hashs in ihrem Link erkannt. Andere Bilder werden nach dem Laden gehasht, sofern ihr Host das zulässt, sodass ein eingetragener Hash dasselbe Bild überall ausblendet, wo es gepostet wird. Jede andere Datei wird nur anhand ihres genauen Links erkannt. Zeilen, die mit # beginnen, werden ignoriert."
 }

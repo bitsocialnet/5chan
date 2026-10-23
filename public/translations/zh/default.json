@@ -588,5 +588,11 @@
   "stats_reported_by": "由 {{provider}} 报告",
   "media_hosting_providers": "媒体托管提供商",
   "stats_scope_directory_boards_p2p": "仅目录板块（快速）",
-  "stats_scope_all_listed_boards_p2p": "所有已列出的版块（较慢）"
+  "stats_scope_all_listed_boards_p2p": "所有已列出的版块（较慢）",
+  "undo": "撤销",
+  "filter_image_md5": "过滤图片 MD5",
+  "md5_filtered": "已过滤 MD5。",
+  "x_md5s_filtered": "已过滤 {{count}} 个 MD5。",
+  "md5_filter": "MD5 过滤",
+  "md5_filter_help": "隐藏包含这些文件的帖子，每行一个：SHA-256 或 MD5 哈希值（也支持 4chan X 的 MD5 行），或链接。Forge 文件按其链接中的 SHA-256 哈希值匹配。其他图片加载完成后，如果其托管网站允许，会计算其哈希值，因此列表中的哈希值会隐藏同一图片，无论它发布在何处。其余文件只按完全相同的链接匹配。以 # 开头的行会被忽略。"
 }

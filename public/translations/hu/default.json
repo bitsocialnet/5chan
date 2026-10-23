@@ -588,5 +588,11 @@
   "stats_reported_by": "Jelentette: {{provider}}",
   "media_hosting_providers": "Médiahosting-szolgáltatók",
   "stats_scope_directory_boards_p2p": "Csak a könyvtár boardjai (gyors)",
-  "stats_scope_all_listed_boards_p2p": "Az összes listázott board (lassú)"
+  "stats_scope_all_listed_boards_p2p": "Az összes listázott board (lassú)",
+  "undo": "visszavonás",
+  "filter_image_md5": "Kép MD5 szűrése",
+  "md5_filtered": "MD5 szűrve.",
+  "x_md5s_filtered": "{{count}} MD5 szűrve.",
+  "md5_filter": "MD5-szűrő",
+  "md5_filter_help": "Elrejti az ezeket a fájlokat tartalmazó bejegyzéseket, soronként egyet: SHA-256 vagy MD5 hash-t (a 4chan X MD5-sorai is működnek) vagy linket. A Forge-fájlokat a linkjükben lévő SHA-256 hash alapján ismeri fel. A többi kép hash-ét betöltődés után számítja ki, ha a tárhelyük engedi, így egy listázott hash ugyanazt a képet rejti el, bárhol is teszik közzé. Minden más fájlt csak a pontos linkje alapján ismer fel. A # jellel kezdődő sorokat figyelmen kívül hagyja."
 }

@@ -588,5 +588,11 @@
   "stats_reported_by": "Uvádí {{provider}}",
   "media_hosting_providers": "Poskytovatelé hostování médií",
   "stats_scope_directory_boards_p2p": "Pouze nástěnky v adresáři (rychlé)",
-  "stats_scope_all_listed_boards_p2p": "Všechny uvedené nástěnky (pomalé)"
+  "stats_scope_all_listed_boards_p2p": "Všechny uvedené nástěnky (pomalé)",
+  "undo": "zpět",
+  "filter_image_md5": "Filtrovat MD5 obrázku",
+  "md5_filtered": "MD5 filtrováno.",
+  "x_md5s_filtered": "Filtrováno MD5: {{count}}.",
+  "md5_filter": "Filtr MD5",
+  "md5_filter_help": "Skryje příspěvky s těmito soubory, jeden na řádek: hash SHA-256 nebo MD5 (fungují i řádky MD5 z 4chan X) nebo odkaz. Soubor z Forge se porovnává podle hashe SHA-256 v jeho odkazu. U ostatních obrázků se hash spočítá po načtení, pokud to jejich hosting dovolí, takže uvedený hash skryje stejný obrázek, ať je zveřejněn kdekoli. Jakýkoli jiný soubor se porovnává jen podle přesného odkazu. Řádky začínající # se ignorují."
 }

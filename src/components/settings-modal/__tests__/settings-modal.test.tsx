@@ -140,6 +140,12 @@ describe('SettingsModal', () => {
     expect(container.querySelector('[data-testid="crypto-wallets-setting"]')).not.toBeNull();
   });
 
+  it('opens the interface section for the image hash filter link', async () => {
+    await render('/b/settings?section=md5-filter');
+
+    expect(container.querySelector('[data-testid="interface-settings-panel"]')).not.toBeNull();
+  });
+
   it('updates the section query when sections open and close', async () => {
     await render('/all/settings?section=account-settings');
 

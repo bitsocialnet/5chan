@@ -588,5 +588,11 @@
   "stats_reported_by": "Dilaporkan oleh {{provider}}",
   "media_hosting_providers": "Penyedia Hosting Media",
   "stats_scope_directory_boards_p2p": "Hanya board direktori (cepat)",
-  "stats_scope_all_listed_boards_p2p": "Semua board yang terdaftar (lambat)"
+  "stats_scope_all_listed_boards_p2p": "Semua board yang terdaftar (lambat)",
+  "undo": "urungkan",
+  "filter_image_md5": "Saring MD5 gambar",
+  "md5_filtered": "MD5 disaring.",
+  "x_md5s_filtered": "{{count}} MD5 disaring.",
+  "md5_filter": "Filter MD5",
+  "md5_filter_help": "Sembunyikan pos dengan file-file ini, satu per baris: hash SHA-256 atau MD5 (baris MD5 dari 4chan X juga bisa) atau tautan. File Forge dicocokkan berdasarkan hash SHA-256 di tautannya. Gambar lain di-hash setelah dimuat jika host-nya mengizinkan, sehingga hash yang tercantum menyembunyikan gambar yang sama di mana pun gambar itu diposting. File lainnya hanya dicocokkan berdasarkan tautan persisnya. Baris yang diawali # diabaikan."
 }
