@@ -492,6 +492,106 @@ export const getMediaDimensions = memoize(
   { max: 1000 },
 );
 
+// Same rounding as 4chan's file rows (extension.js): MB to two decimals, KB to whole numbers, bytes up to 1024.
+export const formatFileSize = (bytes: number): string => {
+  if (bytes >= 1048576) return `${Math.round((bytes / 1048576) * 100) / 100} MB`;
+  if (bytes > 1024) return `${Math.round(bytes / 1024)} KB`;
+  return `${bytes} B`;
+};
+
+// 4chan's mobile thumbnail caption, e.g. "42 KB JPG".
+export const getMobileFileSizeLabel = (url: string | undefined, fileSize: number | undefined): string | undefined => {
+  if (!url || fileSize === undefined) return undefined;
+  const parsedUrl = parseHttpUrl(url);
+  const extension = parsedUrl ? getDirectMediaExtension(parsedUrl) : '';
+  return extension ? `${formatFileSize(fileSize)} ${extension.toUpperCase()}` : undefined;
+};
+
+const MEDIA_FILE_SIZE_TIMEOUT_MS = 10_000;
+// Which read worked on an origin's first answered probe. HEAD transfers no body, but some hosts answer it
+// without CORS headers or a length; a GET then works, and Chrome can answer it from the <img> load's cache.
+const mediaFileSizeOriginModes = new Map<string, 'head' | 'cache' | 'blocked'>();
+const pendingOriginProbes = new Map<string, Promise<number | null | undefined>>();
+// One failed file says little about its origin: a missing file's error response can lack CORS headers.
+// An origin is blocked only after this many of its files failed and none answered, as image-digests.ts does.
+const FAILED_FILES_BEFORE_BLOCKING_ORIGIN = 3;
+const failedOriginFileUrls = new Map<string, Set<string>>();
+
+// The file's size, null when the host answered without one, or undefined for an error response.
+const readContentLength = async (url: string, init: RequestInit): Promise<number | null | undefined> => {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), MEDIA_FILE_SIZE_TIMEOUT_MS);
+  try {
+    const response = await fetch(url, { ...init, signal: controller.signal });
+    if (response.status !== 200) return undefined;
+    const contentLength = Number(response.headers.get('content-length'));
+    return Number.isSafeInteger(contentLength) && contentLength > 0 ? contentLength : null;
+  } finally {
+    clearTimeout(timeout);
+    // Only the headers are needed, so drop any body.
+    controller.abort();
+  }
+};
+
+// Parallel reads of a new origin can settle it while this read is in flight, so this checks the map as it is
+// now. A read that returned a size proves the origin answers, so it also lifts a block another read set.
+const recordOriginMode = (origin: string, mode: 'head' | 'cache') => {
+  const currentMode = mediaFileSizeOriginModes.get(origin);
+  if (!currentMode || currentMode === 'blocked') mediaFileSizeOriginModes.set(origin, mode);
+};
+
+const readMediaFileSize = async (url: string, origin: string): Promise<number | null | undefined> => {
+  const originMode = mediaFileSizeOriginModes.get(origin);
+  if (originMode === 'blocked') return null;
+  if (originMode !== 'cache') {
+    try {
+      const fileSize = await readContentLength(url, { method: 'HEAD', cache: 'no-store' });
+      if (typeof fileSize === 'number') {
+        if (!originMode) recordOriginMode(origin, 'head');
+        return fileSize;
+      }
+    } catch {}
+  }
+  try {
+    const fileSize = await readContentLength(url, { cache: 'force-cache' });
+    // A missing file or a response without a length says nothing about which read works, so the next file probes again.
+    if (typeof fileSize === 'number' && !originMode) recordOriginMode(origin, 'cache');
+    return fileSize;
+  } catch (error) {
+    // A failed fetch can't tell a CORS block from a dropped connection, so only an origin that has never answered
+    // is blocked, and not after a timeout, which a slow connection or a long request queue can cause.
+    const timedOut = error instanceof DOMException && error.name === 'AbortError';
+    if (!timedOut && !mediaFileSizeOriginModes.has(origin)) {
+      const failedUrls = failedOriginFileUrls.get(origin) ?? new Set<string>();
+      failedOriginFileUrls.set(origin, failedUrls.add(url));
+      if (failedUrls.size >= FAILED_FILES_BEFORE_BLOCKING_ORIGIN) mediaFileSizeOriginModes.set(origin, 'blocked');
+    }
+    return mediaFileSizeOriginModes.get(origin) === 'blocked' ? null : undefined;
+  }
+};
+
+// Posts carry no file size, so read the host's Content-Length, which is CORS-safelisted and readable
+// whenever the host sends Access-Control-Allow-Origin. Resolves to null when the host answered without a size
+// or blocks reads, and to undefined when the read failed in a way a later read may not.
+export const fetchMediaFileSize = async (url: string): Promise<number | null | undefined> => {
+  // Keyed by origin: an http:// link on an https page is blocked as mixed content, which says nothing about
+  // the same host's https:// files.
+  const origin = parseHttpUrl(url)?.origin;
+  if (!origin) return null;
+  // Until a read settles which read works, an origin's reads run one at a time, so a host without CORS
+  // fails a few files instead of every file on the page.
+  while (!mediaFileSizeOriginModes.has(origin)) {
+    const pendingProbe = pendingOriginProbes.get(origin);
+    if (!pendingProbe) {
+      const probe = readMediaFileSize(url, origin).finally(() => pendingOriginProbes.delete(origin));
+      pendingOriginProbes.set(origin, probe);
+      return probe;
+    }
+    await pendingProbe;
+  }
+  return readMediaFileSize(url, origin);
+};
+
 const thumbnailUrlsDb = localForageLru.createInstance({ name: '5chanThumbnailUrls', size: 500 });
 
 const getCachedThumbnail = async (url: string): Promise<string | null> => {
