@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styles from './comment-media.module.css';
 
@@ -39,14 +39,16 @@ const loadRuffle = async () => {
 
 interface RufflePlayerProps {
   url: string;
+  onLoad?: () => void;
 }
 
 type RufflePlayerStatus = 'loading' | 'ready' | 'failed';
 
-const RufflePlayer = ({ url }: RufflePlayerProps) => {
+const RufflePlayer = ({ url, onLoad }: RufflePlayerProps) => {
   const { t } = useTranslation();
   const containerRef = useRef<HTMLSpanElement>(null);
   const [status, setStatus] = useState<RufflePlayerStatus>('loading');
+  const handleLoad = useEffectEvent(() => onLoad?.());
 
   useEffect(() => {
     let cancelled = false;
@@ -87,6 +89,7 @@ const RufflePlayer = ({ url }: RufflePlayerProps) => {
         });
         if (!cancelled) {
           setStatus('ready');
+          handleLoad();
         }
       } catch (error) {
         console.error('Error loading SWF with Ruffle:', error);

@@ -5,13 +5,21 @@ import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
 import { Comment, resolveReplySortType, useAccountComment, useEditedComment, useReplies } from '@bitsocial/bitsocial-react-hooks';
 import getShortAddress from '../../lib/get-short-address';
 import styles from '../post-styles';
-import { CommentMediaInfo, getHasThumbnail, getMediaDimensions, getPostMediaTypeLabel, getYouTubeEmbedPostMediaFileLink } from '../../lib/utils/media-utils';
+import {
+  CommentMediaInfo,
+  formatFileSize,
+  getHasThumbnail,
+  getMediaDimensions,
+  getPostMediaTypeLabel,
+  getYouTubeEmbedPostMediaFileLink,
+} from '../../lib/utils/media-utils';
 import { hashStringToColor, getTextColorForBackground } from '../../lib/utils/post-utils';
 import { getFormattedDate, getFormattedTimeAgo } from '../../lib/utils/time-utils';
 import { isPendingApprovalAwaiting } from '../../lib/utils/pending-approval-moderation';
 import { isValidURL, parseHttpUrl } from '../../lib/utils/url-utils';
 import { isAllView, isModQueueView, isModView, isPendingPostView, isPostPageView, isSearchView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import { formatUserIDForDisplay, truncateWithEllipsisInMiddle } from '../../lib/utils/string-utils';
+import { useMediaFileSize } from '../../stores/use-media-file-size-store';
 import useModQueueStore from '../../stores/use-mod-queue-store';
 import { findDirectoryByAddress, useDirectories } from '../../hooks/use-directories';
 import { useDirectoryEntry } from '../../hooks/use-directory-entry';
@@ -596,6 +604,7 @@ const PostMedia = ({
   let type = commentMediaInfo?.type;
   const { status: gifFrameStatus } = useFetchGifFirstFrame(type === 'gif' ? url : undefined);
   const directories = useDirectories();
+  const fileSize = useMediaFileSize(url);
 
   if (type === 'gif' && gifFrameStatus === 'ready') {
     type = 'animated gif';
@@ -646,7 +655,7 @@ const PostMedia = ({
             return truncateWithEllipsisInMiddle(fileLinkUrl ?? '');
           })()}
         </a>{' '}
-        ({mediaTypeLabel}
+        ({fileSize !== undefined ? formatFileSize(fileSize) : mediaTypeLabel}
         {mediaDimensions && `, ${mediaDimensions}`})
         {!showThumbnail && (type === 'iframe' || type === 'video' || type === 'audio') && (
           <span>

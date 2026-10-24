@@ -41,12 +41,15 @@ vi.mock('@capacitor/core', () => ({
 
 import {
   getBestAvailableYouTubeThumbnailUrlFromLink,
+  fetchMediaFileSize,
   fetchWebpageThumbnailIfNeeded,
+  formatFileSize,
   getCommentMediaInfo,
   getDisplayMediaInfoType,
   getHasThumbnail,
   getLinkMediaInfo,
   getMediaDimensions,
+  getMobileFileSizeLabel,
   getPostMediaTypeLabel,
   getTwimgMediaFilePublishUrl,
   getVimeoThumbnailFileUrlFromLink,
@@ -101,6 +104,8 @@ const createNativeHeadResponse = (status: number, contentLength = '12345') => ({
   },
   status,
 });
+
+const getFileSizeReads = () => testState.fetchMock.mock.calls.map(([, options]) => `${(options as RequestInit).method ?? 'GET'} ${(options as RequestInit).cache}`);
 
 describe('media-utils', () => {
   let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
@@ -349,6 +354,151 @@ describe('media-utils', () => {
     expect(getMediaDimensions({ linkHeight: 720, linkWidth: 1280, type: 'video', url: 'https://example.com/file.mp4' })).toBe('1280x720');
     expect(getMediaDimensions({ linkHeight: 480, linkWidth: 640, type: 'swf', url: 'https://example.com/file.swf' })).toBe('640x480');
     expect(getMediaDimensions({ type: 'webpage', url: 'https://example.com' })).toBe('');
+  });
+
+  it('formats file sizes with the same rounding as 4chan file rows', () => {
+    expect(formatFileSize(512)).toBe('512 B');
+    expect(formatFileSize(1024)).toBe('1024 B');
+    expect(formatFileSize(1025)).toBe('1 KB');
+    expect(formatFileSize(1536)).toBe('2 KB');
+    expect(formatFileSize(19125)).toBe('19 KB');
+    expect(formatFileSize(1048575)).toBe('1024 KB');
+    expect(formatFileSize(1048576)).toBe('1 MB');
+    expect(formatFileSize(1572864)).toBe('1.5 MB');
+    expect(formatFileSize(1234567)).toBe('1.18 MB');
+  });
+
+  it('builds the 4chan mobile caption only when the file size and extension are known', () => {
+    expect(getMobileFileSizeLabel('https://files.catbox.moe/v0zbnp.jpeg', 19125)).toBe('19 KB JPEG');
+    expect(getMobileFileSizeLabel('https://cdn.example.com/media?format=webm', 2097152)).toBe('2 MB WEBM');
+    expect(getMobileFileSizeLabel('https://cdn.example.com/media', 19125)).toBeUndefined();
+    expect(getMobileFileSizeLabel('https://files.catbox.moe/v0zbnp.jpeg', undefined)).toBeUndefined();
+  });
+
+  it('reads the size with HEAD where the host supports it', async () => {
+    testState.fetchMock
+      .mockResolvedValueOnce(new Response(null, { status: 200, headers: { 'content-length': '111067' } }))
+      .mockResolvedValueOnce(new Response(null, { status: 200, headers: { 'content-length': '2048' } }));
+
+    await expect(fetchMediaFileSize('https://head.example.com/thinking.jpg')).resolves.toBe(111067);
+    await expect(fetchMediaFileSize('https://head.example.com/brock.webp')).resolves.toBe(2048);
+
+    expect(getFileSizeReads()).toEqual(['HEAD no-store', 'HEAD no-store']);
+  });
+
+  it('falls back to a cacheable GET when HEAD is blocked, then skips HEAD for that host', async () => {
+    testState.fetchMock
+      .mockRejectedValueOnce(new TypeError('Failed to fetch'))
+      .mockResolvedValueOnce(new Response(null, { status: 200, headers: { 'content-length': '19125' } }))
+      .mockResolvedValueOnce(new Response(null, { status: 200, headers: { 'content-length': '4096' } }));
+
+    await expect(fetchMediaFileSize('https://files.catbox.moe/v0zbnp.jpeg')).resolves.toBe(19125);
+    await expect(fetchMediaFileSize('https://files.catbox.moe/second.jpeg')).resolves.toBe(4096);
+
+    expect(getFileSizeReads()).toEqual(['HEAD no-store', 'GET force-cache', 'GET force-cache']);
+    // Only the headers are needed, so the GET body is dropped.
+    expect((testState.fetchMock.mock.calls[1][1] as RequestInit).signal?.aborted).toBe(true);
+  });
+
+  it('keeps asking a host that answered before when a later read fails', async () => {
+    testState.fetchMock
+      .mockResolvedValueOnce(new Response(null, { status: 200, headers: { 'content-length': '4096' } }))
+      .mockRejectedValueOnce(new TypeError('Load failed'))
+      .mockRejectedValueOnce(new TypeError('Load failed'))
+      .mockResolvedValueOnce(new Response(null, { status: 200, headers: { 'content-length': '8192' } }));
+
+    await expect(fetchMediaFileSize('https://flaky.example.com/first.jpg')).resolves.toBe(4096);
+    await expect(fetchMediaFileSize('https://flaky.example.com/second.jpg')).resolves.toBeUndefined();
+    await expect(fetchMediaFileSize('https://flaky.example.com/third.jpg')).resolves.toBe(8192);
+  });
+
+  it('blocks an origin only after three different files fail', async () => {
+    testState.fetchMock.mockRejectedValue(new TypeError('Failed to fetch'));
+
+    await expect(fetchMediaFileSize('https://no-cors.example.com/first.jpg')).resolves.toBeUndefined();
+    await expect(fetchMediaFileSize('https://no-cors.example.com/first.jpg')).resolves.toBeUndefined();
+    await expect(fetchMediaFileSize('https://no-cors.example.com/second.jpg')).resolves.toBeUndefined();
+    await expect(fetchMediaFileSize('https://no-cors.example.com/third.jpg')).resolves.toBeNull();
+    await expect(fetchMediaFileSize('https://no-cors.example.com/later.jpg')).resolves.toBeNull();
+
+    expect(testState.fetchMock).toHaveBeenCalledTimes(8);
+  });
+
+  it("reads a new origin's files one at a time until it learns how to read them", async () => {
+    let activeReads = 0;
+    let maxActiveReads = 0;
+    testState.fetchMock.mockImplementation(async () => {
+      activeReads += 1;
+      maxActiveReads = Math.max(maxActiveReads, activeReads);
+      await Promise.resolve();
+      activeReads -= 1;
+      throw new TypeError('Failed to fetch');
+    });
+
+    const fileSizes = await Promise.all(['a', 'b', 'c', 'd'].map((name) => fetchMediaFileSize(`https://queued.example.com/${name}.jpg`)));
+
+    expect(fileSizes).toEqual([undefined, undefined, null, null]);
+    expect(maxActiveReads).toBe(1);
+    expect(testState.fetchMock).toHaveBeenCalledTimes(6);
+  });
+
+  it('probes a host again after a missing file or a timeout instead of settling how to read it', async () => {
+    testState.fetchMock
+      .mockResolvedValueOnce(new Response(null, { status: 404 }))
+      .mockResolvedValueOnce(new Response(null, { status: 404 }))
+      .mockResolvedValueOnce(new Response(null, { status: 200, headers: { 'content-length': '2048' } }));
+    await expect(fetchMediaFileSize('https://deleted.example.com/gone.jpg')).resolves.toBeUndefined();
+    await expect(fetchMediaFileSize('https://deleted.example.com/kept.jpg')).resolves.toBe(2048);
+    expect(getFileSizeReads()).toEqual(['HEAD no-store', 'GET force-cache', 'HEAD no-store']);
+
+    testState.fetchMock.mockClear();
+    testState.fetchMock
+      .mockRejectedValueOnce(new DOMException('This operation was aborted', 'AbortError'))
+      .mockRejectedValueOnce(new DOMException('This operation was aborted', 'AbortError'))
+      .mockResolvedValueOnce(new Response(null, { status: 200, headers: { 'content-length': '4096' } }));
+    await expect(fetchMediaFileSize('https://slow.example.com/first.jpg')).resolves.toBeUndefined();
+    await expect(fetchMediaFileSize('https://slow.example.com/second.jpg')).resolves.toBe(4096);
+    expect(getFileSizeReads()).toEqual(['HEAD no-store', 'GET force-cache', 'HEAD no-store']);
+  });
+
+  it('keeps a failed read from blocking an origin another read found readable', async () => {
+    testState.fetchMock
+      .mockResolvedValueOnce(new Response(null, { status: 404 }))
+      .mockResolvedValueOnce(new Response(null, { status: 404 }))
+      .mockResolvedValueOnce(new Response(null, { status: 200, headers: { 'content-length': '1024' } }))
+      .mockRejectedValueOnce(new TypeError('Failed to fetch'))
+      .mockRejectedValueOnce(new TypeError('Failed to fetch'))
+      .mockResolvedValueOnce(new Response(null, { status: 200, headers: { 'content-length': '2048' } }));
+
+    // The deleted first file settles nothing; the next read settles the origin, so the failure after it blocks nothing.
+    const fileSizes = await Promise.all(['gone', 'kept', 'flaky'].map((name) => fetchMediaFileSize(`https://busy.example.com/${name}.jpg`)));
+    expect(fileSizes).toEqual([undefined, 1024, undefined]);
+    await expect(fetchMediaFileSize('https://busy.example.com/later.jpg')).resolves.toBe(2048);
+  });
+
+  it('keeps http links that fail from blocking the same host over https', async () => {
+    testState.fetchMock.mockRejectedValueOnce(new TypeError('Failed to fetch')).mockRejectedValueOnce(new TypeError('Failed to fetch'));
+    testState.fetchMock.mockRejectedValueOnce(new TypeError('Failed to fetch')).mockRejectedValueOnce(new TypeError('Failed to fetch'));
+    testState.fetchMock.mockRejectedValueOnce(new TypeError('Failed to fetch')).mockRejectedValueOnce(new TypeError('Failed to fetch'));
+    testState.fetchMock.mockResolvedValueOnce(new Response(null, { status: 200, headers: { 'content-length': '4096' } }));
+
+    for (const name of ['one', 'two']) await expect(fetchMediaFileSize(`http://mixed.example.com/${name}.jpg`)).resolves.toBeUndefined();
+    await expect(fetchMediaFileSize('http://mixed.example.com/three.jpg')).resolves.toBeNull();
+    await expect(fetchMediaFileSize('https://mixed.example.com/new.jpg')).resolves.toBe(4096);
+    expect(testState.fetchMock).toHaveBeenCalledTimes(7);
+  });
+
+  it('reports a missing size as final and a partial response as a failed read', async () => {
+    testState.fetchMock.mockResolvedValueOnce(new Response(null, { status: 200 })).mockResolvedValueOnce(new Response(null, { status: 200 }));
+    await expect(fetchMediaFileSize('https://chunked.example.com/file.jpg')).resolves.toBeNull();
+
+    testState.fetchMock
+      .mockResolvedValueOnce(new Response(null, { status: 206, headers: { 'content-length': '1' } }))
+      .mockResolvedValueOnce(new Response(null, { status: 206, headers: { 'content-length': '1' } }));
+    await expect(fetchMediaFileSize('https://partial.example.com/file.mp4')).resolves.toBeUndefined();
+
+    await expect(fetchMediaFileSize('blob:https://5chan.app/local-preview')).resolves.toBeNull();
+    expect(testState.fetchMock).toHaveBeenCalledTimes(4);
   });
 
   it('uses cached webpage thumbnails before fetching the network', async () => {
