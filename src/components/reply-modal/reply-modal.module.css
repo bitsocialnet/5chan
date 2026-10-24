@@ -86,6 +86,12 @@
   border: var(--reply-modal-field-input-border-focus, revert);
 }
 
+/* The comment box (or BBCode preview) sets the modal width; when it is resized, these fields follow it. */
+.container .name input, .container .options input, .container .link input {
+  box-sizing: border-box;
+  width: 100%;
+}
+
 .content {
   position: relative;
   display: inline-block;
@@ -97,6 +103,11 @@
 
 .content textarea {
   vertical-align: top;
+}
+
+/* Rows under the comment fill the modal width; inline-size containment keeps their text (a long file name or message) from widening the modal. */
+.footer, .oekakiWarning, .offlineBoard, .error, .status {
+  contain: inline-size;
 }
 
 .footer {
@@ -142,17 +153,18 @@
 }
 
 .uploadFileName {
-  display: inline-block;
-  width: calc(100% - 75px);
+  min-width: 0;
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
 }
 
+/* Shows the whole file name when the footer has room and shrinks it to an ellipsis when it does not. */
 .uploadContainer {
   display: inline-flex;
   align-items: center;
-  width: 130px;
+  min-width: 0;
+  margin-right: 5px;
 }
 
 /* The fieldset only locks the form while an upload runs; it adds no box of its own. */
@@ -187,14 +199,12 @@
 }
 
 .oekakiWarning {
-  width: 294px;
   margin-bottom: 1px;
   font-size: 11px;
   line-height: 1.2;
 }
 
 .offlineBoard {
-  width: 292px;
   font-family: monospace;
   background-color: #E62020;
   font-size: 12px;
@@ -218,7 +228,6 @@
 }
 
 .error {
-  width: 294px;
   font-family: monospace;
   background-color: #E62020;
   font-size: 12px;
@@ -235,7 +244,6 @@
 }
 
 .status {
-  width: 294px;
   font-family: monospace;
   background-color: rgba(0, 0, 0, 0.08);
   font-size: 12px;
