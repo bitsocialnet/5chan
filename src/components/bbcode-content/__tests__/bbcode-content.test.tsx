@@ -61,6 +61,21 @@ describe('BbcodeContent', () => {
     expect(container.textContent).not.toContain('[code]');
   });
 
+  it('renders a whole greentext line and multi-word spoilers instead of single words', async () => {
+    await renderBbcodeContent({
+      communityAddress: 'music-posting.eth',
+      content: '>only thing that matters\nnot green [b]bold[/b] [spoiler]hidden words[/spoiler]',
+      route: '/mu/thread/post-1',
+    });
+
+    const greentext = container.querySelectorAll('.greentext');
+    expect(greentext).toHaveLength(1);
+    expect(greentext[0].textContent).toBe('>only thing that matters');
+    expect(container.querySelector('strong')?.textContent).toBe('bold');
+    expect(container.textContent).not.toContain('[spoiler]');
+    expect(container.textContent).toContain('hidden words');
+  });
+
   it('keeps [code] literal off non-code-enabled boards', async () => {
     await renderBbcodeContent({
       communityAddress: 'music-posting.eth',

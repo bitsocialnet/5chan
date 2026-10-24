@@ -46,9 +46,21 @@ const getFirstAttributeValue = (attrs: Record<string, unknown> | undefined): str
   return typeof value === 'string' ? value : key;
 };
 
+// @bbob/parser emits a separate text node for every word, space and newline. Adjacent text is
+// joined so Markdown sees whole lines (greentext, spoilers, links) instead of single words.
 const normalizeContent = (content: BbcodeNode | BbcodeNode[] | undefined): BbcodeNode[] => {
-  if (Array.isArray(content)) return content;
-  return typeof content === 'undefined' ? [] : [content];
+  const nodes = Array.isArray(content) ? content : typeof content === 'undefined' ? [] : [content];
+
+  return nodes.reduce<BbcodeNode[]>((merged, node) => {
+    const previous = merged[merged.length - 1];
+    const isText = typeof node === 'string' || typeof node === 'number';
+    if (isText && typeof previous === 'string') {
+      merged[merged.length - 1] = previous + String(node);
+    } else {
+      merged.push(isText ? String(node) : node);
+    }
+    return merged;
+  }, []);
 };
 
 const getPlainTextContent = (content: BbcodeNode | BbcodeNode[] | undefined): string =>
@@ -132,10 +144,12 @@ const renderNode = (node: BbcodeNode, key: string, context: BbcodeRenderContext)
 };
 
 const renderBbcodeSegment = (content: string, key: string, context: BbcodeRenderContext): ReactNode[] => {
-  const nodes = parse(content, {
-    caseFreeTags: true,
-    onlyAllowTags: ALLOWED_BBCODE_TAGS,
-  }) as BbcodeNode[];
+  const nodes = normalizeContent(
+    parse(content, {
+      caseFreeTags: true,
+      onlyAllowTags: ALLOWED_BBCODE_TAGS,
+    }) as BbcodeNode[],
+  );
 
   return nodes.map((node, index) => renderNode(node, `${key}-${index}`, context));
 };
