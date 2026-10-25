@@ -22,11 +22,13 @@ const testState = vi.hoisted(() => ({
       updatedAt?: number;
       features?: Record<string, unknown>;
       challenges?: Array<Record<string, unknown>>;
+      rules?: string[];
     }
   >,
   communityIdentifierRequests: [] as Array<string | undefined>,
   directoryListLoading: false,
   directoryFeatures: undefined as Record<string, unknown> | undefined,
+  directoryRules: undefined as string[] | undefined,
   isMobile: false,
   directoryBoards: [
     {
@@ -131,6 +133,7 @@ vi.mock('../../../hooks/use-directory-list', async () => {
         directoryCode: testState.boardIdentifier,
         title: '/a/ - Anime & Manga',
         features: testState.directoryFeatures,
+        rules: testState.directoryRules,
         boards: testState.directoryBoards,
       },
       loading: testState.directoryListLoading,
@@ -238,6 +241,7 @@ describe('Directory', () => {
     testState.communityIdentifierRequests = [];
     testState.directoryListLoading = false;
     testState.directoryFeatures = undefined;
+    testState.directoryRules = undefined;
     testState.isMobile = false;
     testState.directoryBoards = [createDirectoryBoard('anime-and-manga.bso')];
     testState.directories = [
@@ -386,6 +390,18 @@ describe('Directory', () => {
     const statusCell = getDirectoryRow()?.querySelectorAll('td')[3];
     expect(statusCell?.textContent).toContain('directory_status_ineligible');
     expect(statusCell?.querySelector('button')?.getAttribute('aria-label')).toBe('directory_status_ineligible_reason');
+  });
+
+  it('marks an online listed board as ineligible unless it lists the directory rules first', async () => {
+    testState.directoryRules = ['Stay on topic.', 'No bots or AI posters.'];
+    testState.communities['anime-and-manga.bso'] = { ...createCommunity('anime-and-manga.bso'), rules: ['Stay on topic.', 'No bots or AI posters.', 'Board rule.'] };
+    testState.communities['reordered.bso'] = { ...createCommunity('reordered.bso'), rules: ['No bots or AI posters.', 'Stay on topic.'] };
+    testState.directoryBoards = [createDirectoryBoard('anime-and-manga.bso'), createDirectoryBoard('reordered.bso', 11)];
+
+    await renderDirectory();
+
+    expect(getDirectoryRow('anime-and-manga.bso')?.querySelectorAll('td')[3]?.textContent).toContain('online');
+    expect(getDirectoryRow('reordered.bso')?.querySelectorAll('td')[3]?.textContent).toContain('directory_status_ineligible');
   });
 
   it('toggles a listed board vote by public key and shows the unvote action for the current vote', async () => {

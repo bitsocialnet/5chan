@@ -594,5 +594,6 @@
   "md5_filtered": "MD5 szűrve.",
   "x_md5s_filtered": "{{count}} MD5 szűrve.",
   "md5_filter": "MD5-szűrő",
-  "md5_filter_help": "Elrejti az ezeket a fájlokat tartalmazó bejegyzéseket, soronként egyet: SHA-256 vagy MD5 hash-t (a 4chan X MD5-sorai is működnek) vagy linket. A Forge-fájlokat a linkjükben lévő SHA-256 hash alapján ismeri fel. A többi kép hash-ét betöltődés után számítja ki, ha a tárhelyük engedi, így egy listázott hash ugyanazt a képet rejti el, bárhol is teszik közzé. Minden más fájlt csak a pontos linkje alapján ismer fel. A # jellel kezdődő sorokat figyelmen kívül hagyja."
+  "md5_filter_help": "Elrejti az ezeket a fájlokat tartalmazó bejegyzéseket, soronként egyet: SHA-256 vagy MD5 hash-t (a 4chan X MD5-sorai is működnek) vagy linket. A Forge-fájlokat a linkjükben lévő SHA-256 hash alapján ismeri fel. A többi kép hash-ét betöltődés után számítja ki, ha a tárhelyük engedi, így egy listázott hash ugyanazt a képet rejti el, bárhol is teszik közzé. Minden más fájlt csak a pontos linkje alapján ismer fel. A # jellel kezdődő sorokat figyelmen kívül hagyja.",
+  "directory_requirement_rules": "A könyvtár szabályai elsőként, szó szerint felsorolva"
 }

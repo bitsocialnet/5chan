@@ -64,6 +64,8 @@ const getRequirementLabel = (t: TFunction, requirement: DirectoryBoardRequiremen
       return t('directory_requirement_media_threads');
     case 'pendingApproval':
       return t('directory_requirement_mod_queue');
+    case 'rules':
+      return t('directory_requirement_rules');
   }
 };
 
@@ -278,7 +280,7 @@ const DirectoryRow = ({ rankedBoard, requirements, nowSeconds, rank, isMobile, i
   // An online board whose loaded record misses a requirement can't host the directory.
   const unmetRequirements =
     onlineStatus === 'online' && community?.updatedAt !== undefined
-      ? getUnmetDirectoryBoardRequirements(requirements, { features: community.features, challenges: community.challenges })
+      ? getUnmetDirectoryBoardRequirements(requirements, { features: community.features, challenges: community.challenges, rules: community.rules })
       : [];
   const status = unmetRequirements.length > 0 ? 'ineligible' : onlineStatus;
   const ineligibleReason =
