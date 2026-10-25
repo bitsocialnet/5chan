@@ -140,6 +140,14 @@ const DirectoryRequirements = ({ boardIdentifier, requirements }: { boardIdentif
           return (
             <li key={setting}>
               {getRequirementLabel(t, requirement)} (<code className={styles.requirementSetting}>{setting}</code>)
+              {/* The raw text the check compares against: /rules renders it as markdown, so text copied from there can differ. */}
+              {requirement.type === 'rules' && (
+                <ol>
+                  {requirement.rules.map((rule, index) => (
+                    <li key={index}>{rule}</li>
+                  ))}
+                </ol>
+              )}
             </li>
           );
         })}

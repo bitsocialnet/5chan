@@ -297,7 +297,8 @@
   font-weight: 700;
 }
 
-.requirements ul {
+.requirements ul,
+.requirements ol {
   margin: 2px 0;
   padding-left: 20px;
 }

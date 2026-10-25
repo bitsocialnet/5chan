@@ -28,7 +28,6 @@ const testState = vi.hoisted(() => ({
   communityIdentifierRequests: [] as Array<string | undefined>,
   directoryListLoading: false,
   directoryFeatures: undefined as Record<string, unknown> | undefined,
-  directoryRules: undefined as string[] | undefined,
   isMobile: false,
   directoryBoards: [
     {
@@ -117,7 +116,7 @@ vi.mock('../../../components/tooltip/tooltip', () => ({
     createElement('span', { title: typeof content === 'string' ? content : undefined }, children),
 }));
 
-const directoryDefaults = { directories: {} };
+const directoryDefaults: { directories: Record<string, { rules?: string[] }> } = { directories: {} };
 
 vi.mock('../../../hooks/use-directories', () => ({
   useDirectories: () => testState.directories,
@@ -133,7 +132,6 @@ vi.mock('../../../hooks/use-directory-list', async () => {
         directoryCode: testState.boardIdentifier,
         title: '/a/ - Anime & Manga',
         features: testState.directoryFeatures,
-        rules: testState.directoryRules,
         boards: testState.directoryBoards,
       },
       loading: testState.directoryListLoading,
@@ -241,7 +239,7 @@ describe('Directory', () => {
     testState.communityIdentifierRequests = [];
     testState.directoryListLoading = false;
     testState.directoryFeatures = undefined;
-    testState.directoryRules = undefined;
+    directoryDefaults.directories = {};
     testState.isMobile = false;
     testState.directoryBoards = [createDirectoryBoard('anime-and-manga.bso')];
     testState.directories = [
@@ -364,6 +362,16 @@ describe('Directory', () => {
     expect(container.textContent).toContain('directory_requirements_footnote');
   });
 
+  it('lists the raw directory rules a hosting board must copy, markdown included', async () => {
+    directoryDefaults.directories = { a: { rules: ['Read [this](/faq#spoiler).', '*Keep it civil!*'] } };
+    await renderDirectory();
+    await act(async () => getSubmitBoardButtons()[0].click());
+
+    const rulesItem = Array.from(container.querySelectorAll('li')).find((item) => item.textContent?.startsWith('directory_requirement_rules'));
+    expect(rulesItem?.querySelector('code')?.textContent).toBe('rules[0..1]');
+    expect(Array.from(rulesItem?.querySelectorAll('ol li') ?? []).map((item) => item.textContent)).toEqual(['Read [this](/faq#spoiler).', '*Keep it civil!*']);
+  });
+
   it('keeps a submitted board that misses requirements in the form and names what is missing', async () => {
     testState.directoryVote.submitBoard = vi.fn(() =>
       Promise.resolve({ status: 'board-ineligible', unmet: [{ type: 'requirePostLinkIsMedia' }, { type: 'pendingApproval' }] }),
@@ -393,7 +401,7 @@ describe('Directory', () => {
   });
 
   it('marks an online listed board as ineligible unless it lists the directory rules first', async () => {
-    testState.directoryRules = ['Stay on topic.', 'No bots or AI posters.'];
+    directoryDefaults.directories = { a: { rules: ['Stay on topic.', 'No bots or AI posters.'] } };
     testState.communities['anime-and-manga.bso'] = { ...createCommunity('anime-and-manga.bso'), rules: ['Stay on topic.', 'No bots or AI posters.', 'Board rule.'] };
     testState.communities['reordered.bso'] = { ...createCommunity('reordered.bso'), rules: ['No bots or AI posters.', 'Stay on topic.'] };
     testState.directoryBoards = [createDirectoryBoard('anime-and-manga.bso'), createDirectoryBoard('reordered.bso', 11)];
