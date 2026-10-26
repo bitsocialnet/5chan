@@ -3,7 +3,6 @@ import { Navigate, Outlet, Route, Routes, useLocation, useParams } from 'react-r
 import { useShallow } from 'zustand/react/shallow';
 import { useAccount, useCommunity } from '@bitsocial/bitsocial-react-hooks';
 import { lazyImport } from './lib/import-failures';
-import { scheduleDelegatedRoutingCacheMaintenance } from './lib/delegated-routing-cache';
 import { preloadThemeAssets, preloadUiIcons, scheduleIdlePreload } from './lib/utils/preload-utils';
 import { hasModQueueAccessRole } from './lib/utils/mod-access';
 import type { PostProps } from './lib/utils/post-props';
@@ -368,10 +367,6 @@ const App = () => {
   useEffect(() => {
     scheduleIdlePreload(preloadLazyChunks);
   }, []);
-  // Keeps the P2P routing cache small: see delegated-routing-cache.ts for the Safari cold-start cost
-  // of a large one. Starts after the first commit, before the hooks' pkc-js import finishes and the
-  // node opens the cache.
-  useEffect(() => scheduleDelegatedRoutingCacheMaintenance(), []);
 
   return (
     <div className={styles.app}>
