@@ -283,8 +283,8 @@ const Rules = () => {
           </div>
           <div className={styles.boxContent}>
             5chan does <i>not</i> have global rules or moderators. It is a serverless, adminless, static tool for browsing and posting to decentralized imageboards.{' '}
-            <strong>Each directory sets its own rules</strong>, listed below and expected of the boards that host it; individual board owners and admins may add their
-            own.
+            <strong>Each directory sets its own rules</strong>, listed below. A board must list them first, word for word, to host that directory; its owner and admins
+            may add their own after them.
             <br />
             <br />
             Please read and respect the rules of whatever board you decide to post to.

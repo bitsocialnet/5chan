@@ -594,5 +594,6 @@
   "md5_filtered": "Na-filter ang MD5.",
   "x_md5s_filtered": "Na-filter ang {{count}} MD5.",
   "md5_filter": "MD5 filter",
-  "md5_filter_help": "Itago ang mga post na may ganitong mga file, isa bawat linya: isang SHA-256 o MD5 hash (gumagana rin ang mga linyang MD5 ng 4chan X), o isang link. Ang file sa Forge ay tinutugma ayon sa SHA-256 hash sa link nito. Ang ibang mga larawan ay hina-hash kapag na-load na, kung pinapayagan ito ng kanilang host, kaya itinatago ng nakalistang hash ang parehong larawan saanman ito i-post. Ang anumang ibang file ay tinutugma lamang ayon sa eksaktong link nito. Binabalewala ang mga linyang nagsisimula sa #."
+  "md5_filter_help": "Itago ang mga post na may ganitong mga file, isa bawat linya: isang SHA-256 o MD5 hash (gumagana rin ang mga linyang MD5 ng 4chan X), o isang link. Ang file sa Forge ay tinutugma ayon sa SHA-256 hash sa link nito. Ang ibang mga larawan ay hina-hash kapag na-load na, kung pinapayagan ito ng kanilang host, kaya itinatago ng nakalistang hash ang parehong larawan saanman ito i-post. Ang anumang ibang file ay tinutugma lamang ayon sa eksaktong link nito. Binabalewala ang mga linyang nagsisimula sa #.",
+  "directory_requirement_rules": "Nakalista muna ang mga patakaran ng directory, salita por salita"
 }

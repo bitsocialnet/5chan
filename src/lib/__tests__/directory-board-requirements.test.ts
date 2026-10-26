@@ -22,6 +22,32 @@ describe('getDirectoryBoardRequirements', () => {
     expect(getDirectoryBoardRequirements(undefined)).toEqual([{ type: 'pendingApproval' }]);
     expect(getDirectoryBoardRequirements({ requirePostLinkIsMedia: false })).toEqual([{ type: 'pendingApproval' }]);
   });
+
+  it('requires the directory rules only when the directory has some', () => {
+    expect(getDirectoryBoardRequirements(undefined, ['Stay on topic.'])).toEqual([{ type: 'pendingApproval' }, { type: 'rules', rules: ['Stay on topic.'] }]);
+    expect(getDirectoryBoardRequirements(undefined, [])).toEqual([{ type: 'pendingApproval' }]);
+  });
+});
+
+describe('directory rules requirement', () => {
+  const directoryRules = ['Stay on topic.', 'No bots or AI posters.'];
+  const requirements = getDirectoryBoardRequirements(undefined, directoryRules);
+  const unmetRules = [{ type: 'rules', rules: directoryRules }];
+
+  it('accepts a board that lists the directory rules first, word for word, with its own rules after', () => {
+    expect(getUnmetDirectoryBoardRequirements(requirements, { challenges: modQueue, rules: directoryRules })).toEqual([]);
+    expect(getUnmetDirectoryBoardRequirements(requirements, { challenges: modQueue, rules: [...directoryRules, 'No reaction images.'] })).toEqual([]);
+    expect(getUnmetDirectoryBoardRequirements(requirements, { challenges: modQueue, rules: ['Stay on topic. ', '\nNo bots or AI posters.'] })).toEqual([]);
+  });
+
+  it('rejects a board whose rules miss, reword, reorder or come after its own', () => {
+    expect(getUnmetDirectoryBoardRequirements(requirements, { challenges: modQueue })).toEqual(unmetRules);
+    expect(getUnmetDirectoryBoardRequirements(requirements, { challenges: modQueue, rules: ['Stay on topic.'] })).toEqual(unmetRules);
+    expect(getUnmetDirectoryBoardRequirements(requirements, { challenges: modQueue, rules: ['Stay on topic.', 'No bots.'] })).toEqual(unmetRules);
+    expect(getUnmetDirectoryBoardRequirements(requirements, { challenges: modQueue, rules: [...directoryRules].reverse() })).toEqual(unmetRules);
+    expect(getUnmetDirectoryBoardRequirements(requirements, { challenges: modQueue, rules: ['No reaction images.', ...directoryRules] })).toEqual(unmetRules);
+    expect(getUnmetDirectoryBoardRequirements(requirements, { challenges: modQueue, rules: 'Stay on topic.' })).toEqual(unmetRules);
+  });
 });
 
 describe('getUnmetDirectoryBoardRequirements', () => {
@@ -68,5 +94,7 @@ describe('getDirectoryBoardRequirementSetting', () => {
   it('names the record setting an owner changes', () => {
     expect(getDirectoryBoardRequirementSetting({ type: 'pseudonymityMode', mode: 'per-post' })).toBe('features.pseudonymityMode: per-post');
     expect(getDirectoryBoardRequirementSetting({ type: 'pendingApproval' })).toBe('challenges[].pendingApproval: true');
+    expect(getDirectoryBoardRequirementSetting({ type: 'rules', rules: ['a'] })).toBe('rules[0]');
+    expect(getDirectoryBoardRequirementSetting({ type: 'rules', rules: ['a', 'b', 'c'] })).toBe('rules[0..2]');
   });
 });

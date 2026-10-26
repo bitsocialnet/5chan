@@ -594,5 +594,6 @@
   "md5_filtered": "MD5 u filtrua.",
   "x_md5s_filtered": "U filtruan {{count}} MD5.",
   "md5_filter": "Filtri MD5",
-  "md5_filter_help": "Fsheh postimet me këto skedarë, një për rresht: një hash SHA-256 ose MD5 (funksionojnë edhe rreshtat MD5 të 4chan X) ose një lidhje. Një skedar Forge njihet nga hash-i SHA-256 në lidhjen e tij. Për imazhet e tjera hash-i llogaritet pasi të ngarkohen, nëse hosti i tyre e lejon, kështu që një hash i listuar fsheh të njëjtin imazh kudo që të postohet. Çdo skedar tjetër njihet vetëm nga lidhja e tij e saktë. Rreshtat që fillojnë me # shpërfillen."
+  "md5_filter_help": "Fsheh postimet me këto skedarë, një për rresht: një hash SHA-256 ose MD5 (funksionojnë edhe rreshtat MD5 të 4chan X) ose një lidhje. Një skedar Forge njihet nga hash-i SHA-256 në lidhjen e tij. Për imazhet e tjera hash-i llogaritet pasi të ngarkohen, nëse hosti i tyre e lejon, kështu që një hash i listuar fsheh të njëjtin imazh kudo që të postohet. Çdo skedar tjetër njihet vetëm nga lidhja e tij e saktë. Rreshtat që fillojnë me # shpërfillen.",
+  "directory_requirement_rules": "Rregullat e drejtorisë të renditura të parat, fjalë për fjalë"
 }
