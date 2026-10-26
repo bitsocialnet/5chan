@@ -50,17 +50,94 @@ describe('uploadToForge', () => {
     await expect(uploadToForge(new File(['x'], 'photo.png', { type: 'image/png' }), { getToken })).resolves.toEqual({ url });
   });
 
-  it('returns a pending SWF at once, flagged as awaiting review, without probing it', async () => {
-    const url = `${FORGE_IMAGES_MEDIA_ORIGIN}/abc/game.swf`;
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse(200, { url, status: 'pending', mime: 'application/x-shockwave-flash' })));
+  it('returns another pending file at once, flagged as awaiting review, without probing it', async () => {
+    const url = `${FORGE_IMAGES_MEDIA_ORIGIN}/abc/track.mp3`;
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse(200, { url, status: 'pending', mime: 'audio/mpeg' }));
+    vi.stubGlobal('fetch', fetchMock);
     const image = vi.fn();
     vi.stubGlobal('Image', image);
 
-    await expect(uploadToForge(new File(['x'], 'game.swf', { type: 'application/x-shockwave-flash' }), { getToken })).resolves.toEqual({
-      url,
-      awaitingReview: true,
-    });
+    await expect(uploadToForge(new File(['x'], 'track.mp3', { type: 'audio/mpeg' }), { getToken })).resolves.toEqual({ url, awaitingReview: true });
+    expect(fetchMock).toHaveBeenCalledOnce();
     expect(image).not.toHaveBeenCalled();
+  });
+
+  describe('pending SWFs', () => {
+    const url = `${FORGE_IMAGES_MEDIA_ORIGIN}/abc/game.swf`;
+    /** Per HEAD request: answer with this status, or fail (network or CORS error). */
+    let headResults: Array<number | 'reject'>;
+    let headRequests: Array<{ input: string; init: RequestInit }>;
+    let createElementSpy: ReturnType<typeof vi.spyOn>;
+
+    const upload = (options: { pendingSwfServeWaitMs?: number } = {}) => {
+      let result: UploadedMedia | undefined;
+      void uploadToForge(new File(['x'], 'game.swf', { type: 'application/x-shockwave-flash' }), { getToken, ...options }).then((value) => {
+        result = value;
+      });
+      return () => result;
+    };
+
+    beforeEach(() => {
+      vi.useFakeTimers();
+      headResults = [];
+      headRequests = [];
+      vi.stubGlobal(
+        'fetch',
+        vi.fn((input: string, init?: RequestInit) => {
+          if (init?.method !== 'HEAD') return Promise.resolve(jsonResponse(200, { url, status: 'pending', mime: 'application/x-shockwave-flash' }));
+          headRequests.push({ input, init });
+          const result = headResults.shift() ?? 404;
+          return result === 'reject' ? Promise.reject(new TypeError('Failed to fetch')) : Promise.resolve(jsonResponse(result, null));
+        }),
+      );
+      createElementSpy = vi.spyOn(document, 'createElement');
+    });
+
+    afterEach(() => {
+      createElementSpy.mockRestore();
+    });
+
+    it('polls with HEAD requests while the scan runs, then returns the URL once it serves', async () => {
+      headResults = [404, 404, 200];
+      const result = upload();
+
+      await vi.advanceTimersByTimeAsync(1_000);
+      expect(headRequests).toHaveLength(1);
+      await vi.advanceTimersByTimeAsync(2_000);
+      expect(headRequests).toHaveLength(2);
+      expect(result()).toBeUndefined();
+      await vi.advanceTimersByTimeAsync(4_000);
+
+      expect(result()).toEqual({ url });
+      expect(headRequests).toHaveLength(3);
+      expect(headRequests[0].input).toBe(url);
+      expect(headRequests[0].init).toMatchObject({ method: 'HEAD', cache: 'no-store', mode: 'cors', credentials: 'omit', referrerPolicy: 'no-referrer' });
+    });
+
+    it('counts a failed HEAD request as not served, without an element fallback', async () => {
+      headResults = ['reject', 'reject', 200];
+      const result = upload();
+
+      await vi.advanceTimersByTimeAsync(1_000 + 2_000);
+      expect(result()).toBeUndefined();
+      await vi.advanceTimersByTimeAsync(4_000);
+
+      expect(result()).toEqual({ url });
+      expect(createElementSpy).not.toHaveBeenCalled();
+    });
+
+    it('returns the URL flagged as awaiting review only after the bounded wait', async () => {
+      const result = upload();
+
+      await vi.advanceTimersByTimeAsync(119_999);
+      expect(result()).toBeUndefined();
+      await vi.advanceTimersByTimeAsync(1);
+
+      expect(result()).toEqual({ url, awaitingReview: true });
+      // Backoff caps the interval at 8 s: 1, 2, 4, then every 8 s.
+      expect(headRequests.length).toBeGreaterThan(10);
+      expect(headRequests.length).toBeLessThan(20);
+    });
   });
 
   describe('pending images', () => {

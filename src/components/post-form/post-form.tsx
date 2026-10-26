@@ -642,16 +642,7 @@ const PostFormFields = ({
             />
           </li>
           {showCodeTagsPrompt ? <li>{t('post_form_code_tags_prompt')}</li> : null}
-          {showFlashUploadPrompt && (
-            <li>
-              <Trans
-                i18nKey='post_form_flash_upload_prompt'
-                components={{
-                  catbox: <a href='https://catbox.moe/' target='_blank' rel='noopener noreferrer' aria-label='Catbox' />,
-                }}
-              />
-            </li>
-          )}
+          {showFlashUploadPrompt && <li>{t('post_form_flash_upload_prompt')}</li>}
           {showMathTagsPrompt && (
             <>
               <li>
