@@ -19,7 +19,6 @@ const testState = vi.hoisted(() => ({
   hostname: 'example.com',
   isMobile: false,
   unmuteExpandedVideoSound: false,
-  ruffleLoadMock: vi.fn(),
 }));
 
 vi.mock('react-i18next', () => ({
@@ -97,8 +96,6 @@ vi.mock('../../../lib/utils/embed-utils', () => ({
   canEmbed: () => testState.canEmbed,
 }));
 
-vi.mock('@ruffle-rs/ruffle', () => ({}));
-
 let container: HTMLDivElement;
 let root: Root;
 let setShowThumbnailMock: ReturnType<typeof vi.fn>;
@@ -107,6 +104,26 @@ const renderMedia = async (props: Record<string, unknown>) => {
   await act(async () => {
     root.render(createElement(CommentMedia, props as any));
   });
+};
+
+/** The frame mounts once Ruffle's scripts are fetched. */
+const flushRuffleScripts = () =>
+  act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  });
+
+/** Plays the sandboxed Ruffle frame's side: ready, then loaded (ruffle-player.test.tsx covers the protocol). */
+const loadRuffleFrame = async () => {
+  await flushRuffleScripts();
+  const frameWindow = container.querySelector<HTMLIFrameElement>('iframe[data-testid="ruffle-player"]')?.contentWindow;
+  expect(frameWindow).toBeTruthy();
+  vi.spyOn(frameWindow!, 'postMessage').mockImplementation(() => undefined);
+  for (const type of ['ruffle-frame-ready', 'ruffle-loaded']) {
+    await act(async () => {
+      window.dispatchEvent(new MessageEvent('message', { data: { type }, source: frameWindow }));
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+  }
 };
 
 describe('CommentMedia', () => {
@@ -121,16 +138,15 @@ describe('CommentMedia', () => {
     testState.hostname = 'example.com';
     testState.isMobile = false;
     testState.unmuteExpandedVideoSound = false;
-    testState.ruffleLoadMock = vi.fn();
-    const player = document.createElement('ruffle-player') as HTMLElement & {
-      ruffle: () => { load: (source: string | Record<string, unknown>) => void };
-    };
-    player.ruffle = () => ({ load: testState.ruffleLoadMock });
-    window.RufflePlayer = {
-      newest: () => ({
-        createPlayer: () => player,
+    // Ruffle's frame script and runtime come from ruffle/; anything else is the SWF.
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string) => {
+        if (url.endsWith('/ruffle/ruffle.js')) return new Response('a.u=e=>"core.ruffle."+{482:"f00d"}[e]+".js"');
+        if (url.includes('/ruffle/')) return new Response('');
+        return new Response(new Uint8Array([70, 87, 83]));
       }),
-    };
+    );
     setShowThumbnailMock = vi.fn();
 
     container = document.createElement('div');
@@ -141,7 +157,7 @@ describe('CommentMedia', () => {
   afterEach(() => {
     act(() => root.unmount());
     container.remove();
-    delete window.RufflePlayer;
+    vi.unstubAllGlobals();
   });
 
   it('toggles image expansion on mobile and renders the media metadata', async () => {
@@ -283,6 +299,8 @@ describe('CommentMedia', () => {
       setShowThumbnail: setShowThumbnailMock,
       showThumbnail: false,
     });
+    expect(testState.fetchMediaFileSize).not.toHaveBeenCalledWith('https://files.example.com/game.swf');
+    await loadRuffleFrame();
     await vi.waitFor(() => expect(testState.fetchMediaFileSize).toHaveBeenCalledWith('https://files.example.com/game.swf'));
   });
 
@@ -739,20 +757,10 @@ describe('CommentMedia', () => {
       showThumbnail: false,
     });
 
-    await act(async () => {
-      await Promise.resolve();
-    });
-
-    expect(container.querySelector('[data-testid="ruffle-player"]')).toBeTruthy();
-    expect(testState.ruffleLoadMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        allowNetworking: 'internal',
-        allowScriptAccess: false,
-        autoplay: 'off',
-        openUrlMode: 'confirm',
-        url: 'https://cdn.example.com/movie.swf',
-      }),
-    );
+    await flushRuffleScripts();
+    const frame = container.querySelector<HTMLIFrameElement>('iframe[data-testid="ruffle-player"]');
+    expect(frame?.getAttribute('sandbox')).toBe('allow-scripts');
+    expect(fetch).toHaveBeenCalledWith('https://cdn.example.com/movie.swf', expect.objectContaining({ credentials: 'omit' }));
     expect(container.querySelector('object')).toBeNull();
     expect(container.querySelector('embed')).toBeNull();
   });

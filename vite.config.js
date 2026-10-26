@@ -321,6 +321,21 @@ function getInlineScriptHashes(indexHtml) {
   return [...new Set(hashes)];
 }
 
+// The sandboxed SWF frame (src/components/comment-media/ruffle-player-frame.ts) runs these inline,
+// and as a srcdoc document it inherits the page's CSP.
+function getRuffleFrameScriptHashes() {
+  const ruffleDirectory = new URL(`./${buildOutDir}/ruffle/`, import.meta.url);
+
+  return readdirSync(ruffleDirectory)
+    .filter((fileName) => /^(?:sandbox-frame|ruffle|core\.ruffle\.[\da-f]+)\.js$/.test(fileName))
+    .map(
+      (fileName) =>
+        `sha256-${createHash('sha256')
+          .update(readFileSync(new URL(fileName, ruffleDirectory)))
+          .digest('base64')}`,
+    );
+}
+
 function verifyVercelCspHashesPlugin() {
   return {
     name: 'fivechan-verify-vercel-csp-hashes',
@@ -329,7 +344,9 @@ function verifyVercelCspHashesPlugin() {
     closeBundle() {
       const indexHtml = readFileSync(new URL(`./${buildOutDir}/index.html`, import.meta.url), 'utf8');
       const contentSecurityPolicy = getVercelContentSecurityPolicy();
-      const missingHashes = getInlineScriptHashes(indexHtml).filter((hash) => !contentSecurityPolicy.includes(`'${hash}'`) && !contentSecurityPolicy.includes(hash));
+      const missingHashes = [...getInlineScriptHashes(indexHtml), ...getRuffleFrameScriptHashes()].filter(
+        (hash) => !contentSecurityPolicy.includes(`'${hash}'`) && !contentSecurityPolicy.includes(hash),
+      );
 
       if (missingHashes.length > 0) {
         const plural = missingHashes.length === 1 ? '' : 'es';

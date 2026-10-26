@@ -1,7 +1,10 @@
 const BLANK_IFRAME_SRC = 'about:blank';
 const EXPANDED_MEDIA_ATTRIBUTE = 'data-expanded-media';
 const EXPANDED_MEDIA_SELECTOR = `[${EXPANDED_MEDIA_ATTRIBUTE}="true"]`;
-const PLAYABLE_MEDIA_SELECTOR = 'video, audio, iframe';
+/** Marks a frame that must not be blanked: the sandboxed SWF frame would restart from scratch. */
+export const SKIP_MEDIA_SUSPENSION_ATTRIBUTE = 'data-skip-media-suspension';
+const SUSPENDABLE_IFRAME_SELECTOR = `iframe:not([${SKIP_MEDIA_SUSPENSION_ATTRIBUTE}])`;
+const PLAYABLE_MEDIA_SELECTOR = `video, audio, ${SUSPENDABLE_IFRAME_SELECTOR}`;
 const OFFSCREEN_MEDIA_SUSPEND_DELAY_MS = 1000;
 
 interface SuspendedIframeState {
@@ -56,7 +59,7 @@ export const suspendMediaPlayback = (container: ParentNode | null): SuspendedMed
     media.pause();
   }
 
-  for (const iframe of container.querySelectorAll<HTMLIFrameElement>('iframe')) {
+  for (const iframe of container.querySelectorAll<HTMLIFrameElement>(SUSPENDABLE_IFRAME_SELECTOR)) {
     stats.iframeCount += 1;
     const src = iframe.getAttribute('src');
     const srcdoc = iframe.getAttribute('srcdoc');
