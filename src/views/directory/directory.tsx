@@ -64,6 +64,8 @@ const getRequirementLabel = (t: TFunction, requirement: DirectoryBoardRequiremen
       return t('directory_requirement_media_threads');
     case 'pendingApproval':
       return t('directory_requirement_mod_queue');
+    case 'rules':
+      return t('directory_requirement_rules');
   }
 };
 
@@ -138,6 +140,14 @@ const DirectoryRequirements = ({ boardIdentifier, requirements }: { boardIdentif
           return (
             <li key={setting}>
               {getRequirementLabel(t, requirement)} (<code className={styles.requirementSetting}>{setting}</code>)
+              {/* The raw text the check compares against: /rules renders it as markdown, so text copied from there can differ. */}
+              {requirement.type === 'rules' && (
+                <ol>
+                  {requirement.rules.map((rule, index) => (
+                    <li key={index}>{rule}</li>
+                  ))}
+                </ol>
+              )}
             </li>
           );
         })}
@@ -278,7 +288,7 @@ const DirectoryRow = ({ rankedBoard, requirements, nowSeconds, rank, isMobile, i
   // An online board whose loaded record misses a requirement can't host the directory.
   const unmetRequirements =
     onlineStatus === 'online' && community?.updatedAt !== undefined
-      ? getUnmetDirectoryBoardRequirements(requirements, { features: community.features, challenges: community.challenges })
+      ? getUnmetDirectoryBoardRequirements(requirements, { features: community.features, challenges: community.challenges, rules: community.rules })
       : [];
   const status = unmetRequirements.length > 0 ? 'ineligible' : onlineStatus;
   const ineligibleReason =

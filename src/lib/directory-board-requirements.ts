@@ -3,26 +3,30 @@ import { isRecord, type DirectoryFeatures } from './utils/directory-list-utils';
 /**
  * A setting a board must publish in its signed community record to host a 5chan directory. The
  * per-directory values come from the directory defaults in bitsocialnet/lists; every board also
- * needs a pending-approval challenge so new posters go through the mod queue. Rules, uptime and
- * auto-archiving are not in the record, so they cannot be checked here.
+ * needs a pending-approval challenge so new posters go through the mod queue, and must list the
+ * directory's rules before its own. Whether rules are enforced, uptime and auto-archiving are not
+ * in the record, so they cannot be checked here.
  */
 export type DirectoryBoardRequirement =
   | { type: 'pseudonymityMode'; mode: string }
   | { type: 'safeForWork'; safeForWork: boolean }
   | { type: 'requirePostLinkIsMedia' }
-  | { type: 'pendingApproval' };
+  | { type: 'pendingApproval' }
+  | { type: 'rules'; rules: string[] };
 
 /** The public parts of a community record the requirements are checked against. */
 export interface DirectoryBoardRecord {
   features?: unknown;
   challenges?: unknown;
+  rules?: unknown;
 }
 
-export const getDirectoryBoardRequirements = (features: DirectoryFeatures | undefined): DirectoryBoardRequirement[] => [
+export const getDirectoryBoardRequirements = (features: DirectoryFeatures | undefined, rules?: string[]): DirectoryBoardRequirement[] => [
   ...(typeof features?.pseudonymityMode === 'string' ? [{ type: 'pseudonymityMode' as const, mode: features.pseudonymityMode }] : []),
   ...(typeof features?.safeForWork === 'boolean' ? [{ type: 'safeForWork' as const, safeForWork: features.safeForWork }] : []),
   ...(features?.requirePostLinkIsMedia === true ? [{ type: 'requirePostLinkIsMedia' as const }] : []),
   { type: 'pendingApproval' },
+  ...(rules && rules.length > 0 ? [{ type: 'rules' as const, rules }] : []),
 ];
 
 const meetsRequirement = (requirement: DirectoryBoardRequirement, record: DirectoryBoardRecord): boolean => {
@@ -37,6 +41,13 @@ const meetsRequirement = (requirement: DirectoryBoardRequirement, record: Direct
       return features.requirePostLinkIsMedia === true;
     case 'pendingApproval':
       return Array.isArray(record.challenges) && record.challenges.some((challenge) => isRecord(challenge) && challenge.pendingApproval === true);
+    case 'rules': {
+      // Moderators, the AI moderation challenge included, enforce the board's own rules, so the
+      // directory's rules must be among them. Listing them first and in order keeps "rule N" the same
+      // rule on every board and on /rules#<code>.
+      const boardRules = record.rules;
+      return Array.isArray(boardRules) && requirement.rules.every((rule, index) => typeof boardRules[index] === 'string' && boardRules[index].trim() === rule.trim());
+    }
   }
 };
 
@@ -62,5 +73,7 @@ export const getDirectoryBoardRequirementSetting = (requirement: DirectoryBoardR
       return 'features.requirePostLinkIsMedia: true';
     case 'pendingApproval':
       return 'challenges[].pendingApproval: true';
+    case 'rules':
+      return requirement.rules.length === 1 ? 'rules[0]' : `rules[0..${requirement.rules.length - 1}]`;
   }
 };
