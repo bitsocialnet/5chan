@@ -354,11 +354,11 @@ const CreateBoardForm = ({
         <BoardManagerNotice />
       </p>
       <div className={styles.submitRow}>
+        {isCreating && <LoadingEllipsis string={t('create_board_creating')} />}
+        {status.type === 'error' && <span className={styles.error}>{status.message}</span>}
         <button type='submit' disabled={isCreating}>
           {t('create_board')}
         </button>
-        {isCreating && <LoadingEllipsis string={t('create_board_creating')} />}
-        {status.type === 'error' && <span className={styles.error}>{status.message}</span>}
       </div>
     </form>
   );

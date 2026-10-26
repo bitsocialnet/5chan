@@ -165,9 +165,9 @@
   vertical-align: middle;
 }
 
+/* Selects keep the browser's native styling, like the other selects in the app. */
 .formTable input[type="text"],
-.formTable textarea,
-.formTable select {
+.formTable textarea {
   box-sizing: border-box;
   width: 100%;
   border: var(--post-form-field-input-border, revert);
@@ -185,8 +185,7 @@
 }
 
 .formTable input[type="text"]:focus,
-.formTable textarea:focus,
-.formTable select:focus {
+.formTable textarea:focus {
   border: var(--post-form-field-input-focus-border, revert);
 }
 
@@ -194,7 +193,7 @@
   display: block;
   font-size: 9pt;
   opacity: 0.8;
-  margin: 2px 0;
+  margin: 2px;
   overflow-wrap: anywhere;
 }
 
@@ -212,6 +211,7 @@
 .submitRow {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   flex-wrap: wrap;
   gap: 8px;
 }
@@ -252,10 +252,6 @@
   flex: 1;
   width: auto;
   min-width: 0;
-}
-
-.formTable .listRow select {
-  width: auto;
 }
 
 .removeRowButton {
