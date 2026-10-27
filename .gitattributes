@@ -1,5 +1,6 @@
 # Inline script CSP hashes depend on exact line endings.
 index.html text eol=lf
+public/ruffle/sandbox-frame.js text eol=lf
 
 # Shared AI sources and generated compatibility files must agree across platforms.
 /.agents/** text=auto eol=lf
