@@ -1,5 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { observeExclusiveVideoPlayback, observeOffscreenMediaPlayback, restoreSuspendedMediaPlayback } from '../media-playback-utils';
+import {
+  observeExclusiveVideoPlayback,
+  observeOffscreenMediaPlayback,
+  restoreSuspendedMediaPlayback,
+  SKIP_MEDIA_SUSPENSION_ATTRIBUTE,
+  suspendMediaPlayback,
+} from '../media-playback-utils';
 
 class MockIntersectionObserver {
   static instances: MockIntersectionObserver[] = [];
@@ -163,6 +169,27 @@ describe('media-playback-utils', () => {
 
     expect(iframe.getAttribute('src')).toBe('https://player.example.com/embed');
     expect(srcdocIframe.getAttribute('srcdoc')).toBe('<p>embedded player</p>');
+
+    cleanup();
+    root.remove();
+  });
+
+  it('leaves frames marked to skip suspension alone, and does not observe a container with only such a frame', () => {
+    const root = document.createElement('div');
+    const container = document.createElement('div');
+    container.setAttribute('data-expanded-media', 'true');
+    const frame = document.createElement('iframe');
+    frame.setAttribute(SKIP_MEDIA_SUSPENSION_ATTRIBUTE, '');
+    frame.setAttribute('srcdoc', '<p>swf</p>');
+    container.append(frame);
+    root.append(container);
+    document.body.append(root);
+
+    const cleanup = observeOffscreenMediaPlayback(root);
+
+    expect(MockIntersectionObserver.instances[0].observedElements.has(container)).toBe(false);
+    expect(suspendMediaPlayback(root)).toMatchObject({ iframeCount: 0, iframeSrcdocClearedCount: 0 });
+    expect(frame.getAttribute('srcdoc')).toBe('<p>swf</p>');
 
     cleanup();
     root.remove();

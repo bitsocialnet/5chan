@@ -9,8 +9,14 @@ const FORGE_UPLOAD_TIMEOUT_MS = 300_000;
 const PENDING_SERVE_WAIT_MS = 60_000;
 /** Videos are moderated frame by frame, which is slower; past this wait the link returns flagged as awaiting review. */
 const PENDING_VIDEO_SERVE_WAIT_MS = 120_000;
+/**
+ * Forge scans a new SWF by rendering its frames offline and checking them, which takes about
+ * 15-35 s; past this wait the link returns flagged as awaiting review (a human review, or a slow scan).
+ */
+const PENDING_SWF_SERVE_WAIT_MS = 120_000;
 const PENDING_POLL_MAX_INTERVAL_MS = 8_000;
 const SERVE_PROBE_TIMEOUT_MS = 10_000;
+const SWF_MIME_TYPE = 'application/x-shockwave-flash';
 
 /** Upload failure carrying the attempt stage that the upload orchestrator records. */
 export class ForgeUploadError extends Error {
@@ -29,6 +35,7 @@ interface ForgeUploadOptions {
   timeoutMs?: number;
   pendingServeWaitMs?: number;
   pendingVideoServeWaitMs?: number;
+  pendingSwfServeWaitMs?: number;
   /**
    * Called once the file has been sent. From then on the wait is Forge's automated
    * checks (metadata strip, blocklist, moderation), not the transfer.
@@ -110,31 +117,45 @@ function canLoadVideo(url: string, timeoutMs: number): Promise<boolean> {
 }
 
 /**
- * Asks the media origin whether the video serves instead of decoding it, so a
- * codec this browser cannot play (HEVC in Firefox) still counts as served once
- * it is live. The HEAD request needs CORS on the media origin; when it fails
- * outright (network or CORS error), this attempt falls back to a metadata load.
+ * Asks the media origin whether the file serves, with a HEAD request that needs CORS
+ * on the media origin. A timed-out request resolves false; one that fails outright
+ * (network or CORS error) rejects.
  */
-async function isVideoServing(url: string, timeoutMs: number): Promise<boolean> {
-  const startedAt = Date.now();
+async function isServingByHead(url: string, timeoutMs: number): Promise<boolean> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-  let response: Response;
   try {
-    response = await fetch(url, { method: 'HEAD', cache: 'no-store', mode: 'cors', credentials: 'omit', referrerPolicy: 'no-referrer', signal: controller.signal });
-  } catch {
+    const response = await fetch(url, { method: 'HEAD', cache: 'no-store', mode: 'cors', credentials: 'omit', referrerPolicy: 'no-referrer', signal: controller.signal });
+    return response.ok;
+  } catch (error) {
     // A timed-out request used this attempt's budget; the next attempt retries.
     if (controller.signal.aborted) return false;
-    return canLoadVideo(url, timeoutMs - (Date.now() - startedAt));
+    throw error;
   } finally {
     clearTimeout(timeoutId);
   }
-  return response.ok;
 }
 
 /**
+ * Checks the video with a HEAD request instead of decoding it, so a codec this
+ * browser cannot play (HEVC in Firefox) still counts as served once it is live.
+ * When the request fails outright, this attempt falls back to a metadata load.
+ */
+async function isVideoServing(url: string, timeoutMs: number): Promise<boolean> {
+  const startedAt = Date.now();
+  try {
+    return await isServingByHead(url, timeoutMs);
+  } catch {
+    return canLoadVideo(url, timeoutMs - (Date.now() - startedAt));
+  }
+}
+
+/** Nothing loads an SWF without CORS, so a HEAD request that fails outright counts as not served yet. */
+const isSwfServing = (url: string, timeoutMs: number) => isServingByHead(url, timeoutMs).catch(() => false);
+
+/**
  * A new upload 404s until its moderation verdict lands (seconds for images,
- * longer for videos; forge-images ARCHITECTURE.md §2), so poll with backoff,
+ * longer for videos and SWFs; forge-images ARCHITECTURE.md §2), so poll with backoff,
  * bounded, until the media serves.
  */
 async function waitUntilServes(url: string, maxWaitMs: number, canLoad: (url: string, timeoutMs: number) => Promise<boolean>): Promise<boolean> {
@@ -166,9 +187,10 @@ function getForgeTurnstileToken(): Promise<string> {
  * so its URL would stay marked broken even after it goes live, while a later
  * retry dedups to `live` at once. A pending video gets up to two minutes to
  * start serving; the post form does not load-check video links, so one still in
- * review returns flagged `awaitingReview` rather than failing. Other pending
- * files (new SWFs) wait for human review that can take hours, so their URL
- * returns at once flagged `awaitingReview`; it serves once approved.
+ * review returns flagged `awaitingReview` rather than failing. A pending SWF
+ * (Forge's offline scan, or human review where Forge still holds every new SWF)
+ * gets the same two minutes and the same flag. Any other pending file returns at
+ * once flagged `awaitingReview`; its link serves once approved.
  * @throws ForgeUploadError with stage 'blocked' (Turnstile failed, or 403),
  * 'provider_error' (other API errors), 'timeout', or 'unknown' (network failure)
  */
@@ -178,6 +200,7 @@ export async function uploadToForge(file: File, options: ForgeUploadOptions = {}
     timeoutMs = FORGE_UPLOAD_TIMEOUT_MS,
     pendingServeWaitMs = PENDING_SERVE_WAIT_MS,
     pendingVideoServeWaitMs = PENDING_VIDEO_SERVE_WAIT_MS,
+    pendingSwfServeWaitMs = PENDING_SWF_SERVE_WAIT_MS,
     onChecking,
   } = options;
 
@@ -228,6 +251,9 @@ export async function uploadToForge(file: File, options: ForgeUploadOptions = {}
     return { url };
   }
   if (mime.startsWith('video/') && pendingVideoServeWaitMs > 0 && (await waitUntilServes(url, pendingVideoServeWaitMs, isVideoServing))) {
+    return { url };
+  }
+  if (mime === SWF_MIME_TYPE && pendingSwfServeWaitMs > 0 && (await waitUntilServes(url, pendingSwfServeWaitMs, isSwfServing))) {
     return { url };
   }
   return { url, awaitingReview: true };

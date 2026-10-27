@@ -90,16 +90,6 @@ vi.mock('react-i18next', async () => {
           ' before posting.',
         );
       }
-      if (i18nKey === 'post_form_flash_upload_prompt') {
-        return React.createElement(
-          React.Fragment,
-          {},
-          'Recommended SWF host: ',
-          components?.catbox ? React.cloneElement(components.catbox, {}, 'Catbox') : 'Catbox',
-          '. Upload a .swf, then paste the direct https://files.catbox.moe/...swf link in Link.',
-        );
-      }
-
       return i18nKey;
     },
     useTranslation: () => ({
@@ -1408,7 +1398,6 @@ describe('PostForm', () => {
     const flashTagSelect = table?.querySelector<HTMLSelectElement>('select[name="flashTag"]');
     const linkInput = Array.from(table?.querySelectorAll<HTMLInputElement>('input[type="text"]') || []).find((input) => input.getAttribute('aria-label') === 'link');
     const textarea = table?.querySelector<HTMLTextAreaElement>('textarea');
-    const catboxLink = table?.querySelector<HTMLAnchorElement>('a[href="https://catbox.moe/"]');
 
     expect(flashTagSelect).toBeTruthy();
     expect(flashTagSelect?.value).toBe('');
@@ -1422,8 +1411,7 @@ describe('PostForm', () => {
       'Loop',
       'Other',
     ]);
-    expect(catboxLink?.textContent).toBe('Catbox');
-    expect(container.textContent).toContain('Recommended SWF host: Catbox');
+    expect(container.textContent).toContain('post_form_flash_upload_prompt');
 
     await dispatchChange(flashTagSelect as HTMLSelectElement, 'loop');
     await dispatchInput(linkInput as HTMLInputElement, 'https://files.catbox.moe/movie.swf');
