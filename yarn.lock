@@ -29,6 +29,7 @@ __metadata:
     "@electron-forge/plugin-auto-unpack-natives": "npm:8.0.1"
     "@electron/rebuild": "npm:4.2.1"
     "@floating-ui/react": "npm:0.27.20"
+    "@noble/ed25519": "npm:1.7.5"
     "@noble/hashes": "npm:2.0.1"
     "@pkcprotocol/pkc-js": "npm:0.0.124"
     "@playwright/cli": "npm:0.1.22"
@@ -52,6 +53,7 @@ __metadata:
     babel-plugin-react-compiler: "npm:1.0.0"
     bippy: "npm:0.7.3"
     buffer: "npm:6.0.3"
+    cborg: "npm:4.5.8"
     concurrently: "npm:10.0.6"
     conventional-changelog-cli: "npm:5.0.0"
     cordova-res: "npm:0.15.4"
@@ -5630,7 +5632,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@noble/ed25519@npm:^1.5.1":
+"@noble/ed25519@npm:1.7.5, @noble/ed25519@npm:^1.5.1":
   version: 1.7.5
   resolution: "@noble/ed25519@npm:1.7.5"
   checksum: 10c0/9ebcdf47e1cc986f270a82725ed4fdad1922fd63cca77f6bc0ba9575685db9cd73d45e66325fb62cc1d8a398010e953331b904961c1e9f18d170eebae783d5cb

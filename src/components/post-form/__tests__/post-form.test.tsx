@@ -7,6 +7,7 @@ import PostForm, { LinkTypePreviewer } from '../post-form';
 import { OEKAKI_WEB_WARNING_TEXT } from '../../../lib/oekaki/oekaki-copy';
 import { POST_OPTIONS_VALIDATION_DELAY_MS } from '../../../lib/utils/post-options-utils';
 import usePendingPostNavigationStore from '../../../stores/use-pending-post-navigation-store';
+import usePendingUploadPostStore from '../../../stores/use-pending-upload-post-store';
 import usePostFormDraftsStore from '../../../stores/use-post-form-drafts-store';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -38,6 +39,7 @@ const testState = vi.hoisted(() => ({
   gifFrameStatus: 'idle' as 'idle' | 'ready',
   chooseFileMock: vi.fn(),
   uploadAttachmentMock: vi.fn(),
+  precheckMock: vi.fn(),
   isOffline: false,
   isOnlineStatusLoading: false,
   uploadPhase: null as 'uploading' | 'checking' | null,
@@ -332,6 +334,10 @@ vi.mock('../../../hooks/use-publish-reply', async () => {
     },
   };
 });
+
+vi.mock('../../../hooks/use-spam-blocker-precheck', () => ({
+  default: () => testState.precheckMock,
+}));
 
 vi.mock('../../../hooks/use-file-upload', () => ({
   useFileUpload: () => ({
@@ -634,6 +640,9 @@ describe('PostForm', () => {
     testState.chooseFileMock.mockReset();
     testState.chooseFileMock.mockResolvedValue(null);
     testState.uploadAttachmentMock.mockReset();
+    testState.precheckMock.mockReset();
+    testState.precheckMock.mockResolvedValue({ status: 'skipped' });
+    usePendingUploadPostStore.setState({ pendingUploadPost: null });
     testState.navigateMock.mockReset();
     testState.publishPostMock.mockReset();
     testState.publishReplyMock.mockReset();
@@ -1746,17 +1755,15 @@ describe('PostForm', () => {
     expect(container.textContent).toContain('warning: posting as 5chan dev');
   });
 
-  it('only uploads a chosen file once the post is submitted, then publishes its link', async () => {
+  it('shows a thread with a chosen file as pending at once, leaving the spam check and the upload to the publisher', async () => {
     const file = new File(['png'], 'chosen.png', { type: 'image/png' });
     const attachment = { kind: 'file', file, name: 'chosen.png', mimeType: 'image/png' };
+    const challenges = [{ type: 'url/iframe', challenge: 'https://spamblocker.example/api/v1/precheck' }];
     testState.uploadMode = 'random';
     testState.directories[0] = { address: 'music-posting.eth', features: { requirePostLinkIsMedia: true }, title: '/mu/ - Music' };
     testState.resolvedCommunityAddress = 'music-posting.eth';
+    testState.communities['music-posting.eth'] = { address: 'music-posting.eth', challenges };
     testState.chooseFileMock.mockResolvedValue(attachment);
-    testState.uploadAttachmentMock.mockImplementation(async () => {
-      expect(testState.publishPostMock).not.toHaveBeenCalled();
-      return { url: 'https://forgeimg.net/abc/uploaded.png', fileName: 'chosen.png' };
-    });
 
     await renderPostForm('/mu');
     await clickByText(container, 'start_new_thread');
@@ -1772,17 +1779,32 @@ describe('PostForm', () => {
     await dispatchInput(table.querySelector('textarea') as HTMLTextAreaElement, 'uploaded body');
     await clickByText(table, 'post');
 
-    expect(testState.uploadAttachmentMock).toHaveBeenCalledWith(attachment);
-    expect(testState.publishPostMock).toHaveBeenCalledTimes(1);
-    expect(testState.publishedPostOptions?.link).toBe('https://forgeimg.net/abc/uploaded.png');
-    expect(linkInput.value).toBe('https://forgeimg.net/abc/uploaded.png');
+    expect(testState.precheckMock).not.toHaveBeenCalled();
+    expect(testState.uploadAttachmentMock).not.toHaveBeenCalled();
+    expect(testState.publishPostMock).not.toHaveBeenCalled();
+    const pendingUploadPost = usePendingUploadPostStore.getState().pendingUploadPost;
+    expect(pendingUploadPost).toMatchObject({
+      attachment,
+      boardChallenges: challenges,
+      boardPath: 'mu',
+      nonokoRedirectPath: null,
+      phase: 'spam_check',
+      post: { communityAddress: 'music-posting.eth', content: 'uploaded body' },
+      publishOptions: { communityAddress: 'music-posting.eth', content: 'uploaded body' },
+    });
+    expect(pendingUploadPost?.publishOptions.link).toBeUndefined();
+    expect(testState.navigateMock).toHaveBeenCalledWith('/pending/upload', {
+      flushSync: true,
+      state: { boardPath: 'mu', pendingPost: pendingUploadPost?.post },
+    });
+    // The draft keeps the file, so a stopped check or a failed upload returns to the form with it.
+    expect(usePostFormDraftsStore.getState().forms[pendingUploadPost?.draftKey ?? '']?.draft.attachment).toEqual(attachment);
   });
 
-  it('attaches a file dropped on the form, then uploads it once the post is submitted', async () => {
+  it('attaches a file dropped on the form, then hands it to the pending post once the post is submitted', async () => {
     const file = new File(['png'], 'dropped.png', { type: 'image/png' });
     testState.uploadMode = 'random';
     testState.resolvedCommunityAddress = 'music-posting.eth';
-    testState.uploadAttachmentMock.mockResolvedValue({ url: 'https://forgeimg.net/abc/dropped.png', fileName: 'dropped.png' });
 
     await renderPostForm('/mu');
     await clickByText(container, 'start_new_thread');
@@ -1802,8 +1824,8 @@ describe('PostForm', () => {
     await dispatchInput(textarea, 'dropped body');
     await clickByText(table, 'post');
 
-    expect(testState.uploadAttachmentMock).toHaveBeenCalledWith({ kind: 'file', file, name: 'dropped.png', mimeType: 'image/png' });
-    expect(testState.publishedPostOptions?.link).toBe('https://forgeimg.net/abc/dropped.png');
+    expect(usePendingUploadPostStore.getState().pendingUploadPost?.attachment).toEqual({ kind: 'file', file, name: 'dropped.png', mimeType: 'image/png' });
+    expect(testState.uploadAttachmentMock).not.toHaveBeenCalled();
   });
 
   it('reports a dropped file of an unsupported type until a supported one is attached', async () => {
@@ -1865,7 +1887,6 @@ describe('PostForm', () => {
     const second = { kind: 'file', file: new File(['gif'], 'second.gif', { type: 'image/gif' }), name: 'second.gif', mimeType: 'image/gif' };
     testState.uploadMode = 'random';
     testState.chooseFileMock.mockResolvedValueOnce(first).mockResolvedValueOnce(second);
-    testState.uploadAttachmentMock.mockResolvedValue({ url: 'https://forgeimg.net/abc/second.gif', fileName: 'second.gif' });
     testState.resolvedCommunityAddress = 'music-posting.eth';
 
     await renderPostForm('/mu');
@@ -1879,33 +1900,34 @@ describe('PostForm', () => {
     expect(table.querySelector('button[aria-label="remove"]')).toBeNull();
 
     await clickByText(table, 'post');
-    expect(testState.uploadAttachmentMock).toHaveBeenCalledTimes(1);
-    expect(testState.uploadAttachmentMock).toHaveBeenCalledWith(second);
+    expect(usePendingUploadPostStore.getState().pendingUploadPost?.attachment).toBe(second);
   });
 
-  it('keeps the attachment and does not publish when its upload fails', async () => {
+  it('keeps the attachment and does not publish a reply when its upload fails', async () => {
     const file = new File(['png'], 'chosen.png', { type: 'image/png' });
     const attachment = { kind: 'file', file, name: 'chosen.png', mimeType: 'image/png' };
     testState.uploadMode = 'random';
+    testState.comments = { 'thread-cid': { postCid: 'thread-cid' } };
     testState.resolvedCommunityAddress = 'music-posting.eth';
     testState.chooseFileMock.mockResolvedValue(attachment);
     testState.uploadAttachmentMock.mockResolvedValue(null);
 
-    await renderPostForm('/mu');
-    await clickByText(container, 'start_new_thread');
+    await renderPostForm('/mu/thread/thread-cid');
+    await clickByText(container, 'post_a_reply');
     const table = container.querySelector('table') as HTMLTableElement;
     await clickByText(table, 'choose_file');
     await clickByText(table, 'post');
 
     expect(testState.uploadAttachmentMock).toHaveBeenCalledTimes(1);
-    expect(testState.publishPostMock).not.toHaveBeenCalled();
+    expect(testState.publishReplyMock).not.toHaveBeenCalled();
     expect(table.textContent).toContain('chosen.png');
   });
 
-  it('does not publish an upload that finishes after the form closed', async () => {
+  it('does not publish a reply whose upload finishes after the form closed', async () => {
     const file = new File(['png'], 'chosen.png', { type: 'image/png' });
     let finishUpload: (value: { url: string; fileName: string }) => void = () => undefined;
     testState.uploadMode = 'random';
+    testState.comments = { 'thread-cid': { postCid: 'thread-cid' } };
     testState.resolvedCommunityAddress = 'music-posting.eth';
     testState.chooseFileMock.mockResolvedValue({ kind: 'file', file, name: 'chosen.png', mimeType: 'image/png' });
     testState.uploadAttachmentMock.mockImplementation(
@@ -1915,22 +1937,76 @@ describe('PostForm', () => {
         }),
     );
 
-    await renderPostForm('/mu');
-    await clickByText(container, 'start_new_thread');
+    await renderPostForm('/mu/thread/thread-cid');
+    await clickByText(container, 'post_a_reply');
     const table = container.querySelector('table') as HTMLTableElement;
     await clickByText(table, 'choose_file');
     await clickByText(table, 'post');
+    expect(testState.uploadAttachmentMock).toHaveBeenCalledTimes(1);
     // Navigating away unmounts the form while the upload is still running.
     act(() => root.unmount());
     root = createRoot(container);
 
-    testState.setPublishPostOptionsMock.mockClear();
+    testState.setPublishReplyOptionsMock.mockClear();
     await act(async () => {
       finishUpload({ url: 'https://forgeimg.net/abc/late.png', fileName: 'chosen.png' });
     });
 
-    expect(testState.publishPostMock).not.toHaveBeenCalled();
-    expect(testState.setPublishPostOptionsMock).not.toHaveBeenCalled();
+    expect(testState.publishReplyMock).not.toHaveBeenCalled();
+    expect(testState.setPublishReplyOptionsMock).not.toHaveBeenCalled();
+  });
+
+  it('runs the spam blocker check before uploading a reply file, then publishes the reply with the pass', async () => {
+    const file = new File(['png'], 'reply.png', { type: 'image/png' });
+    const attachment = { kind: 'file', file, name: 'reply.png', mimeType: 'image/png' };
+    const challenges = [{ type: 'url/iframe', challenge: 'https://spamblocker.example/api/v1/precheck' }];
+    testState.uploadMode = 'random';
+    testState.comments = { 'thread-cid': { postCid: 'thread-cid' } };
+    testState.resolvedCommunityAddress = 'music-posting.eth';
+    testState.communities['music-posting.eth'] = { address: 'music-posting.eth', challenges };
+    testState.chooseFileMock.mockResolvedValue(attachment);
+    testState.precheckMock.mockImplementation(async () => {
+      expect(testState.uploadAttachmentMock).not.toHaveBeenCalled();
+      return { status: 'passed', challengeAnswers: ['precheck-pass'] };
+    });
+    testState.uploadAttachmentMock.mockResolvedValue({ url: 'https://forgeimg.net/abc/reply.png', fileName: 'reply.png' });
+
+    await renderPostForm('/mu/thread/thread-cid');
+    await clickByText(container, 'post_a_reply');
+    const table = container.querySelector('table') as HTMLTableElement;
+    await clickByText(table, 'choose_file');
+    await dispatchInput(table.querySelector('textarea') as HTMLTextAreaElement, 'checked reply');
+    await clickByText(table, 'post');
+
+    expect(testState.precheckMock).toHaveBeenCalledWith({
+      challenges,
+      communityAddress: 'music-posting.eth',
+      publication: expect.objectContaining({ content: 'checked reply', parentCid: 'thread-cid' }),
+    });
+    expect(testState.uploadAttachmentMock).toHaveBeenCalledWith(attachment);
+    expect(testState.publishReplyMock).toHaveBeenCalledWith(
+      expect.objectContaining({ link: 'https://forgeimg.net/abc/reply.png', challengeRequest: { challengeAnswers: ['precheck-pass'] } }),
+    );
+  });
+
+  it('neither uploads nor publishes a reply the spam blocker check stops', async () => {
+    const file = new File(['png'], 'reply.png', { type: 'image/png' });
+    testState.uploadMode = 'random';
+    testState.comments = { 'thread-cid': { postCid: 'thread-cid' } };
+    testState.resolvedCommunityAddress = 'music-posting.eth';
+    testState.chooseFileMock.mockResolvedValue({ kind: 'file', file, name: 'reply.png', mimeType: 'image/png' });
+    testState.precheckMock.mockResolvedValue({ status: 'stopped', message: 'You are blocked from posting' });
+
+    await renderPostForm('/mu/thread/thread-cid');
+    await clickByText(container, 'post_a_reply');
+    const table = container.querySelector('table') as HTMLTableElement;
+    await clickByText(table, 'choose_file');
+    await clickByText(table, 'post');
+
+    expect(testState.uploadAttachmentMock).not.toHaveBeenCalled();
+    expect(testState.publishReplyMock).not.toHaveBeenCalled();
+    expect(container.textContent).toContain('error: You are blocked from posting');
+    expect(table.textContent).toContain('reply.png');
   });
 
   it('locks the form fields while the attachment uploads', async () => {

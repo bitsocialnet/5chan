@@ -29,6 +29,7 @@ import CommentContent from '../comment-content';
 import CommentMedia, { MediaLoadFailureInfo } from '../comment-media';
 import FailedPublishNotice from '../failed-publish-notice';
 import LoadingEllipsis from '../loading-ellipsis';
+import PendingUploadFile from '../pending-upload-file';
 import PostAuthorFlags from '../post-author-flags';
 import PostFlashTag from '../post-flash-tag';
 import PostTransferredTag from '../post-transferred-tag';
@@ -399,6 +400,7 @@ const PostInfoAndMedia = ({
       {(hasThumbnail || link) && !(deleted || removed || purged) && (
         <PostMediaContent key={cid} onMediaLoadFailureChange={onMediaLoadFailureChange} post={resolvedPost} link={link} />
       )}
+      {typeof resolvedPost?.pendingUploadId === 'number' && <PendingUploadFile pendingUploadId={resolvedPost.pendingUploadId} spoiler={resolvedPost.spoiler} />}
     </>
   );
 };

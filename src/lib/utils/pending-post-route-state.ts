@@ -1,5 +1,11 @@
 import type { Comment } from '@bitsocial/bitsocial-react-hooks';
 
+/** The pending page of a new thread whose file is still being checked and uploaded, so it has no account comment index yet. */
+export const PENDING_UPLOAD_POST_INDEX = 'upload';
+export const PENDING_UPLOAD_POST_PATH = `/pending/${PENDING_UPLOAD_POST_INDEX}`;
+
+export const isPendingUploadPostPath = (pathname: string) => pathname.replace(/\/settings$/, '') === PENDING_UPLOAD_POST_PATH;
+
 export const getPendingPostRouteBoardPath = (state: unknown): string | undefined => {
   if (!state || typeof state !== 'object') {
     return undefined;

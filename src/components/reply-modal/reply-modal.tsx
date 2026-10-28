@@ -40,6 +40,7 @@ import { useDirectoryEntry } from '../../hooks/use-directory-entry';
 import usePublishReply from '../../hooks/use-publish-reply';
 import useIsMobile from '../../hooks/use-is-mobile';
 import { useFileUpload } from '../../hooks/use-file-upload';
+import useSpamBlockerPrecheck from '../../hooks/use-spam-blocker-precheck';
 import { useShowLinkField } from '../../hooks/use-show-link-field';
 import { getFileAttachment, getFileDropHandlers } from '../../lib/media-hosting/attached-media';
 import type { AttachedMedia } from '../../lib/media-hosting/types';
@@ -138,6 +139,7 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
   const showOekakiControls = postOptionsDirectoryCode === 'i' || directoryEntry?.directoryCode === 'i';
   const showTexButton = isMathDirectoryCode(postOptionsDirectoryCode) || isMathDirectoryCode(directoryEntry?.directoryCode);
   const communityFeatures = useCommunityField(communityAddress, (community) => community?.features);
+  const communityChallenges = useCommunityField(communityAddress, (community) => community?.challenges);
   const isSageSupported = useCommunityField(communityAddress, isSageSupportedByBoard) ?? false;
   const replyLinkFeatures = getEffectiveReplyLinkFeatures(communityFeatures, directoryEntry?.features);
   const requireReplyLink = getRequireReplyLink(replyLinkFeatures);
@@ -288,7 +290,24 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
       const flagPublishOptions = getCommentFlagPublishOptionsForDirectory(directoryEntry, flagRef.current?.value);
 
       setError(null);
-      // Upload only after every check passed, so a rejected reply never leaves a file on the host.
+      // Upload only after every check passed, and after the board's spam blocker checked the reply, so a
+      // rejected reply never leaves a file on the host.
+      let challengeRequest: { challengeAnswers: string[] } | undefined;
+      if (attachment) {
+        const precheck = await runSpamBlockerPrecheck({
+          authorRole: accountRole,
+          challenges: communityChallenges,
+          communityAddress,
+          otherAnswers: flagPublishOptions.challengeRequest?.challengeAnswers,
+          publication: { content: publishContent, displayName: currentDisplayName, parentCid, postCid },
+        });
+        if (!isReplyFormActiveRef.current) return;
+        if (precheck.status === 'stopped') {
+          if (precheck.message) setError(`${t('error')}: ${precheck.message}`);
+          return;
+        }
+        if (precheck.status === 'passed') challengeRequest = { challengeAnswers: precheck.challengeAnswers };
+      }
       const uploadedLink = attachment ? await uploadAttachedMedia(attachment) : undefined;
       if (uploadedLink === null) {
         return;
@@ -301,6 +320,7 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
         content: appendSageMarker(publishContent, currentOptions),
         ...(uploadedLink ? { link: uploadedLink } : getPublishLinkOptions(currentUrl, appliedThumbnailConversion)),
         ...flagPublishOptions,
+        ...(challengeRequest ? { challengeRequest } : {}),
       });
     });
 
@@ -619,6 +639,7 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
   }, [showReplyModal, quoteInsertRequestId, quoteInsertNumber, quoteInsertSelectedText, postOptionsDirectoryCode, setPublishReplyOptions, t, updateDraft]);
 
   const { isUploading, uploadPhase, chooseFile, uploadAttachment } = useFileUpload();
+  const runSpamBlockerPrecheck = useSpamBlockerPrecheck();
   const isReplyFormActiveRef = useRef(false);
   useEffect(() => {
     isReplyFormActiveRef.current = showReplyModal;

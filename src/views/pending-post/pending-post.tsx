@@ -1,14 +1,15 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useAccountComment, useAccountComments } from '@bitsocial/bitsocial-react-hooks';
 import { useDirectories } from '../../hooks/use-directories';
 import { normalizeAccountCommentIndex } from '../../lib/utils/account-comment-index-utils';
 import { getCommentCommunityAddress } from '../../lib/utils/comment-utils';
-import { getPendingPostRouteBoardPath, getPendingPostRoutePost } from '../../lib/utils/pending-post-route-state';
+import { getPendingPostRouteBoardPath, getPendingPostRoutePost, PENDING_UPLOAD_POST_INDEX } from '../../lib/utils/pending-post-route-state';
 import { getBoardPath } from '../../lib/utils/route-utils';
 import useChallengesStore from '../../stores/use-challenges-store';
 import useFailedPostRetryStore from '../../stores/use-failed-post-retry-store';
 import usePendingPostNavigationStore from '../../stores/use-pending-post-navigation-store';
+import usePendingUploadPostStore from '../../stores/use-pending-upload-post-store';
 import { Post } from '../../components/post';
 
 type PendingAccountComment = {
@@ -35,7 +36,7 @@ const hasPendingAccountCommentIndex = (accountComments: PendingAccountComment[] 
   return hasExplicitIndices ? false : accountCommentIndex < accountComments.length;
 };
 
-const PendingPost = () => {
+const PendingAccountPost = () => {
   const { accountComments, state: accountCommentsState } = useAccountComments();
   const { accountCommentIndex } = useParams<{ accountCommentIndex?: string }>();
   const location = useLocation();
@@ -156,6 +157,33 @@ const PendingPost = () => {
   }, [abandonedBoardPath, hasAddressablePost, isRetryingThisPendingPost, isValidAccountCommentIndex, navigate, normalizedAccountCommentIndex]);
 
   return abandonedBoardPath ? null : <Post key={normalizedAccountCommentIndex} post={post} />;
+};
+
+/** A new thread whose file is still being checked and uploaded; it has no account comment until it is published. */
+const PendingUploadPost = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const pendingUploadPost = usePendingUploadPostStore((state) => state.pendingUploadPost);
+  const routeBoardPath = getPendingPostRouteBoardPath(location.state);
+  const id = pendingUploadPost?.id;
+  const previewPost = pendingUploadPost?.post;
+  const post = useMemo(() => (previewPost ? { ...previewPost, pendingUploadId: id } : undefined), [id, previewPost]);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  // Reached with nothing uploading, e.g. after a reload: the post was never published, so go back to its board.
+  useEffect(() => {
+    if (!post) navigate(routeBoardPath ? `/${routeBoardPath}` : '/', { replace: true });
+  }, [navigate, post, routeBoardPath]);
+
+  return post ? <Post key={id} post={post} /> : null;
+};
+
+const PendingPost = () => {
+  const { accountCommentIndex } = useParams<{ accountCommentIndex?: string }>();
+  return accountCommentIndex === PENDING_UPLOAD_POST_INDEX ? <PendingUploadPost /> : <PendingAccountPost />;
 };
 
 export default PendingPost;

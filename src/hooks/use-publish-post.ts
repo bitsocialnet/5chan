@@ -120,13 +120,16 @@ const usePublishPost = ({ communityAddress, onAbandonPost, onDuplicateMediaRejec
 
   const startPublishPost = useCallback(async () => {
     if (blockedReason) {
-      setPublishPostError(getPublishAuthorDomainErrorMessage(blockedReason));
+      const message = getPublishAuthorDomainErrorMessage(blockedReason);
+      setPublishPostError(message);
+      // A caller that is not showing this hook's error (the pending upload publisher) still hears it.
+      onPublishError?.(new Error(message));
       return;
     }
 
     setPublishPostError(null);
     await publishComment();
-  }, [blockedReason, publishComment]);
+  }, [blockedReason, onPublishError, publishComment]);
 
   useEffect(() => {
     if (pendingPublishRequestId === 0 || pendingPublishRequestId === startedPublishRequestIdRef.current) {

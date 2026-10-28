@@ -3,6 +3,7 @@ import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import usePendingPostNavigationStore from '../../../stores/use-pending-post-navigation-store';
+import usePendingUploadPostStore from '../../../stores/use-pending-upload-post-store';
 import PendingPost from '../pending-post';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -11,7 +12,9 @@ const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise
 type TestComment = {
   cid?: string;
   communityAddress?: string;
+  content?: string;
   index?: number;
+  pendingUploadId?: number;
 };
 
 const testState = vi.hoisted(() => ({
@@ -76,7 +79,12 @@ vi.mock('../../../components/post', async () => {
 
   return {
     Post: memo(
-      ({ post }: { post?: TestComment }) => createElement('div', { 'data-post-index': post?.index, 'data-testid': 'post-view' }, post?.cid ?? 'no-post'),
+      ({ post }: { post?: TestComment }) =>
+        createElement(
+          'div',
+          { 'data-pending-upload-id': post?.pendingUploadId, 'data-post-index': post?.index, 'data-testid': 'post-view' },
+          post?.cid ?? post?.content ?? 'no-post',
+        ),
       (previousProps, nextProps) => previousProps.post?.cid === nextProps.post?.cid,
     ),
   };
@@ -117,6 +125,7 @@ describe('PendingPost', () => {
     testState.post = undefined;
     testState.retryingAccountCommentIndex = null;
     usePendingPostNavigationStore.getState().clearPendingPostNavigation();
+    usePendingUploadPostStore.setState({ pendingUploadPost: null });
 
     window.scrollTo = scrollToMock;
 
@@ -130,6 +139,37 @@ describe('PendingPost', () => {
     container.remove();
     usePendingPostNavigationStore.getState().clearPendingPostNavigation();
     window.scrollTo = originalScrollTo;
+  });
+
+  it('shows a new thread whose file is still being checked and uploaded as its pending post', async () => {
+    testState.accountCommentIndex = 'upload';
+    testState.locationState = { boardPath: 'mu' };
+    const { id } = usePendingUploadPostStore.getState().startPendingUploadPost({
+      attachment: { kind: 'file', file: new File(['png'], 'chosen.png', { type: 'image/png' }), name: 'chosen.png', mimeType: 'image/png' },
+      boardChallenges: undefined,
+      boardPath: 'mu',
+      draftKey: '/mu',
+      nonokoRedirectPath: null,
+      post: { communityAddress: 'music-posting.eth', content: 'uploading body' },
+      publishOptions: { communityAddress: 'music-posting.eth', content: 'uploading body' },
+    });
+
+    await renderPendingPost();
+
+    const postView = container.querySelector('[data-testid="post-view"]');
+    expect(postView?.textContent).toBe('uploading body');
+    expect(postView?.getAttribute('data-pending-upload-id')).toBe(String(id));
+    expect(testState.navigateMock).not.toHaveBeenCalled();
+  });
+
+  it('returns to the board from the upload page when no post is uploading', async () => {
+    testState.accountCommentIndex = 'upload';
+    testState.locationState = { boardPath: 'mu' };
+
+    await renderPendingPost();
+
+    expect(container.querySelector('[data-testid="post-view"]')).toBeNull();
+    expect(testState.navigateMock).toHaveBeenCalledWith('/mu', { replace: true });
   });
 
   it('renders the pending post and scrolls to the top for valid indices', async () => {

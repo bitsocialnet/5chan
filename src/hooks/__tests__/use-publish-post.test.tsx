@@ -214,6 +214,7 @@ describe('usePublishPost', () => {
     });
 
     expect(latestValue.publishPostError).toBe('blocked:unresolved');
+    expect(testState.publishErrorNavigationMock).toHaveBeenCalledWith(new Error('blocked:unresolved'));
     expect(testState.publishCommentMock).not.toHaveBeenCalled();
   });
 

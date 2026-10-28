@@ -32,6 +32,7 @@ const testState = vi.hoisted(() => ({
   >,
   chooseFileMock: vi.fn(),
   uploadAttachmentMock: vi.fn(),
+  precheckMock: vi.fn(),
   isMobile: false,
   mediaHostingRuntime: 'web' as 'web' | 'android' | 'electron',
   isResolvingExternalQuotes: false,
@@ -264,6 +265,10 @@ vi.mock('../../../hooks/use-is-mobile', () => ({
   default: () => testState.isMobile,
 }));
 
+vi.mock('../../../hooks/use-spam-blocker-precheck', () => ({
+  default: () => testState.precheckMock,
+}));
+
 vi.mock('../../../hooks/use-file-upload', () => ({
   useFileUpload: () => ({
     chooseFile: testState.chooseFileMock,
@@ -463,6 +468,8 @@ describe('ReplyModal', () => {
     testState.chooseFileMock.mockReset();
     testState.chooseFileMock.mockResolvedValue(null);
     testState.uploadAttachmentMock.mockReset();
+    testState.precheckMock.mockReset();
+    testState.precheckMock.mockResolvedValue({ status: 'skipped' });
     testState.isMobile = false;
     testState.isResolvingExternalQuotes = false;
     testState.uploadPhase = null;
@@ -1689,6 +1696,60 @@ describe('ReplyModal', () => {
       expect(testState.uploadAttachmentMock).toHaveBeenCalledWith(pngAttachment);
       expect(testState.publishReplyMock).toHaveBeenCalledWith(expect.objectContaining({ link: 'https://forgeimg.net/abc/uploaded.png' }));
       expect(testState.updateDraftMock).toHaveBeenCalledWith(expect.any(String), { attachment: undefined });
+    });
+
+    it('runs the spam blocker check before uploading, then publishes the reply with the pass', async () => {
+      testState.chooseFileMock.mockResolvedValue(pngAttachment);
+      testState.precheckMock.mockImplementation(async () => {
+        expect(testState.uploadAttachmentMock).not.toHaveBeenCalled();
+        return { status: 'passed', challengeAnswers: ['precheck-pass'] };
+      });
+      testState.uploadAttachmentMock.mockResolvedValue({ url: 'https://forgeimg.net/abc/uploaded.png', fileName: 'chosen.png' });
+      await renderReplyModal('/all/thread/post-1');
+      await chooseFile();
+
+      await dispatchInput(container.querySelector('textarea') as HTMLTextAreaElement, 'checked reply');
+      await clickButtonByText('post');
+
+      expect(testState.precheckMock).toHaveBeenCalledWith(expect.objectContaining({ publication: expect.objectContaining({ content: 'checked reply' }) }));
+      expect(testState.uploadAttachmentMock).toHaveBeenCalledWith(pngAttachment);
+      expect(testState.publishReplyMock).toHaveBeenCalledWith(
+        expect.objectContaining({ link: 'https://forgeimg.net/abc/uploaded.png', challengeRequest: { challengeAnswers: ['precheck-pass'] } }),
+      );
+    });
+
+    it('passes the flag answer to the spam blocker check and publishes the answers it returns on flag boards', async () => {
+      const flagAnswer = 'bitsocial-flags:5chan:flag:country:auto';
+      testState.chooseFileMock.mockResolvedValue(pngAttachment);
+      testState.precheckMock.mockResolvedValue({ status: 'passed', challengeAnswers: [flagAnswer, 'precheck-pass'] });
+      testState.uploadAttachmentMock.mockResolvedValue({ url: 'https://forgeimg.net/abc/uploaded.png', fileName: 'chosen.png' });
+      await renderReplyModal('/pol/thread/post-1', 'politically-incorrect.bso');
+      await clickButtonByText('choose_file');
+      await renderReplyModal('/pol/thread/post-1', 'politically-incorrect.bso');
+
+      await clickButtonByText('post');
+
+      expect(testState.precheckMock).toHaveBeenCalledWith(expect.objectContaining({ otherAnswers: [flagAnswer] }));
+      expect(testState.publishReplyMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          challengeRequest: { challengeAnswers: [flagAnswer, 'precheck-pass'] },
+          flairs: [{ type: 'country', code: 'auto', text: 'flag:country:auto' }],
+        }),
+      );
+    });
+
+    it('neither uploads nor publishes a reply the spam blocker check stops', async () => {
+      testState.chooseFileMock.mockResolvedValue(pngAttachment);
+      testState.precheckMock.mockResolvedValue({ status: 'stopped', message: 'You are blocked from posting' });
+      await renderReplyModal('/all/thread/post-1');
+      await chooseFile();
+
+      await dispatchInput(container.querySelector('textarea') as HTMLTextAreaElement, 'blocked reply');
+      await clickButtonByText('post');
+
+      expect(testState.uploadAttachmentMock).not.toHaveBeenCalled();
+      expect(testState.publishReplyMock).not.toHaveBeenCalled();
+      expect(container.textContent).toContain('error: You are blocked from posting');
     });
 
     it('clears a visible link field when a file is attached, and a typed link replaces the file', async () => {
