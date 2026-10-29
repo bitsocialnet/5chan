@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import type { Comment } from '@bitsocial/bitsocial-react-hooks';
 
 interface SettledFeedSnapshot {
@@ -13,18 +13,9 @@ export const useSettledModQueueFeed = (feed: Comment[], feedState: string, scope
   const [settledSnapshot, setSettledSnapshot] = useState<SettledFeedSnapshot>({ comments: [], scopeKey });
   const isSettled = feedState === 'succeeded';
 
-  useEffect(() => {
-    if (!isSettled) {
-      return;
-    }
-
-    setSettledSnapshot((currentSnapshot) => {
-      if (currentSnapshot.scopeKey === scopeKey && currentSnapshot.comments === feed) {
-        return currentSnapshot;
-      }
-      return { comments: feed, scopeKey };
-    });
-  }, [feed, isSettled, scopeKey]);
+  if (isSettled && (settledSnapshot.scopeKey !== scopeKey || settledSnapshot.comments !== feed)) {
+    setSettledSnapshot({ comments: feed, scopeKey });
+  }
 
   if (isSettled || settledSnapshot.scopeKey !== scopeKey || settledSnapshot.comments.length === 0) {
     return feed;
