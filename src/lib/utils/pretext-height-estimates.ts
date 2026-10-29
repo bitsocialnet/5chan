@@ -36,6 +36,8 @@ const DESKTOP_FEED_CARD_BOARD_LABEL_HEIGHT = 18;
 const DESKTOP_FEED_CARD_SUMMARY_HEIGHT = 25;
 const DESKTOP_FEED_CARD_BASE_CALIBRATION = -59;
 const DESKTOP_POST_MESSAGE_VERTICAL_PADDING = 26;
+const DESKTOP_FEED_CARD_OP_TEXT_COLUMN_OFFSET = 41;
+const DESKTOP_OP_SPACER_HEIGHT = 10;
 const DESKTOP_PREVIEW_REPLY_TEXT_CALIBRATION = 6;
 const DESKTOP_PREVIEW_REPLY_MEDIA_CALIBRATION = -17;
 const MOBILE_REPLY_BASE_HEIGHT = 64;
@@ -723,15 +725,16 @@ export const getFeedPostHeightEstimate = ({
     measureParagraphHeight(opBacklinks.join(' '), `${backlinkFontSizePx}px ${metrics.bodyFontFamily}`, contentWidth, backlinkLineHeight) - backlinkLineHeight,
   );
   const boardLabelHeight = showBoardLabel && !post.link && !post.parentCid && post.communityAddress ? DESKTOP_FEED_CARD_BOARD_LABEL_HEIGHT : 0;
+  // Like 4chan, the omitted-replies summary and preview replies flow beside the floated OP thumbnail, so they
+  // extend the OP's text column instead of starting below the thumbnail. That column starts lower than the
+  // thumbnail because it also holds the post-info row, and an OP without text still renders a spacer and an
+  // empty message box in it.
+  const opTextColumnHeight = mediaMetrics
+    ? DESKTOP_FEED_CARD_OP_TEXT_COLUMN_OFFSET + (postText.trim().length > 0 ? textHeight : DESKTOP_OP_SPACER_HEIGHT + DESKTOP_POST_MESSAGE_VERTICAL_PADDING)
+    : textHeight;
+  const textColumnHeight = opTextColumnHeight + backlinksHeight + (showSummary ? DESKTOP_FEED_CARD_SUMMARY_HEIGHT : 0) + previewRepliesHeight;
 
-  const rawEstimate =
-    DESKTOP_FEED_CARD_HR_HEIGHT +
-    DESKTOP_FEED_CARD_BASE_HEIGHT +
-    Math.max(textHeight, mediaHeight) +
-    backlinksHeight +
-    boardLabelHeight +
-    (showSummary ? DESKTOP_FEED_CARD_SUMMARY_HEIGHT : 0) +
-    previewRepliesHeight;
+  const rawEstimate = DESKTOP_FEED_CARD_HR_HEIGHT + DESKTOP_FEED_CARD_BASE_HEIGHT + Math.max(textColumnHeight, mediaHeight) + boardLabelHeight;
 
   const desktopResult = clampEstimateHeight(rawEstimate + DESKTOP_FEED_CARD_BASE_CALIBRATION);
   if (cacheKey) {

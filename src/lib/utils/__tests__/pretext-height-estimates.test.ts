@@ -217,6 +217,51 @@ describe('pretext-height-estimates', () => {
     expect(withPreview - withoutPreview).toBe(previewEstimate);
   });
 
+  it('stacks desktop preview replies beside the OP thumbnail before adding height below it', () => {
+    const metrics = {
+      abbrFontSizePx: 13,
+      bodyFontFamily: 'Arial, Helvetica, sans-serif',
+      bodyFontSizePx: 13,
+      mobileContentFontSizePx: 15,
+    };
+    const post = {
+      cid: 'post-thumbnail-parent',
+      communityAddress: 'music-posting.eth',
+      content: 'Short OP',
+      link: 'https://example.com/op.jpg',
+      linkHeight: 1000,
+      linkWidth: 1000,
+      postCid: 'post-thumbnail-parent',
+      state: 'succeeded',
+      thumbnailUrl: 'https://example.com/op-thumb.jpg',
+    };
+    const previewReplies = Array.from({ length: 8 }, (_, index) => ({
+      cid: `post-thumbnail-reply-${index}`,
+      communityAddress: 'music-posting.eth',
+      content: 'A preview reply',
+      parentCid: 'post-thumbnail-parent',
+      postCid: 'post-thumbnail-parent',
+      state: 'succeeded',
+    }));
+    const previewEstimates = getReplyHeightEstimates({ isMobile: false, metrics, replies: previewReplies, windowWidth: 1280 });
+    const estimate = (count: number) =>
+      getFeedPostHeightEstimate({
+        isMobile: false,
+        metrics,
+        post,
+        previewReplies: previewReplies.slice(0, count),
+        previewReplyEstimates: previewEstimates.slice(0, count),
+        windowWidth: 1280,
+      });
+
+    const withoutPreview = estimate(0);
+    const allPreviewHeight = previewEstimates.reduce((sum, height) => sum + height, 0);
+
+    expect(estimate(1)).toBe(withoutPreview);
+    expect(estimate(8)).toBeGreaterThan(withoutPreview);
+    expect(estimate(8)).toBeLessThan(withoutPreview + allPreviewHeight);
+  });
+
   it('keeps most mobile preview-reply height on board cards', () => {
     const metrics = {
       abbrFontSizePx: 13,

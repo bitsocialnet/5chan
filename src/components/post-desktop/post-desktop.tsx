@@ -766,37 +766,39 @@ const Reply = ({
   ) : undefined;
 
   return (
-    <div className={`${styles.replyDesktop} ${disableDeferredLayout ? styles.pretextVirtualizedReply : ''}`}>
+    <div className={styles.replyDesktop}>
       <div className={styles.sideArrows}>{'>>'}</div>
       <div className={`${styles.reply} ${isRouteLinkToReply && styles.highlight}`} data-cid={cid} data-author-address={userID} data-post-cid={postCid}>
-        <PostInfo
-          post={post}
-          postReplyCount={postReplyCount}
-          postsByAuthorInThread={postsByAuthorInThread}
-          roles={roles}
-          isHidden={hidden}
-          threadNumber={threadNumber}
-          quotedByMap={quotedByMap}
-          directRepliesByParentCid={directRepliesByParentCid}
-        />
-        {link && !hidden && !(deleted || removed || purged) && isValidURL(link) && (
-          <PostMedia
-            commentMediaInfo={commentMediaInfo}
-            hasThumbnail={hasThumbnail}
-            spoiler={spoiler}
-            deleted={deleted}
-            purged={!!purged}
-            removed={removed}
-            linkHeight={linkHeight}
-            linkWidth={linkWidth}
-            parentCid={parentCid}
-            communityAddress={communityAddress}
-            showBoardLabel={false}
+        <div className={`${styles.replyBody} ${disableDeferredLayout ? styles.pretextVirtualizedReply : ''}`}>
+          <PostInfo
+            post={post}
+            postReplyCount={postReplyCount}
+            postsByAuthorInThread={postsByAuthorInThread}
+            roles={roles}
+            isHidden={hidden}
+            threadNumber={threadNumber}
+            quotedByMap={quotedByMap}
+            directRepliesByParentCid={directRepliesByParentCid}
           />
-        )}
-        {post && !hidden && (!(removed || deleted || purged) || ((removed || deleted) && reason) || purged) && (
-          <CommentContent comment={post} prependContent={failedPublishNotice} roles={roles} />
-        )}
+          {link && !hidden && !(deleted || removed || purged) && isValidURL(link) && (
+            <PostMedia
+              commentMediaInfo={commentMediaInfo}
+              hasThumbnail={hasThumbnail}
+              spoiler={spoiler}
+              deleted={deleted}
+              purged={!!purged}
+              removed={removed}
+              linkHeight={linkHeight}
+              linkWidth={linkWidth}
+              parentCid={parentCid}
+              communityAddress={communityAddress}
+              showBoardLabel={false}
+            />
+          )}
+          {post && !hidden && (!(removed || deleted || purged) || ((removed || deleted) && reason) || purged) && (
+            <CommentContent comment={post} prependContent={failedPublishNotice} roles={roles} />
+          )}
+        </div>
       </div>
     </div>
   );
@@ -1155,7 +1157,7 @@ const PostDesktop = ({
             data-cid={cid}
             data-author-address={userID}
             data-post-cid={postCid}
-            className={`${styles.opContainer} ${shouldShowSnow() && hasThumbnail ? styles.xmasHatWrapper : ''}`}
+            className={shouldShowSnow() && hasThumbnail ? styles.xmasHatWrapper : undefined}
           >
             {shouldShowSnow() && hasThumbnail && <img src='assets/xmashat.gif' className={styles.xmasHat} alt='' />}
             {!hasRenderedMedia && communityAddress && showBoardLabel && boardPath && (
