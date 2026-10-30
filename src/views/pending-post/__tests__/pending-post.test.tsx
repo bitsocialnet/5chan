@@ -25,7 +25,7 @@ const testState = vi.hoisted(() => ({
   challengeCount: 0,
   directories: [] as Array<{ address: string; title?: string }>,
   getBoardPathMock: vi.fn<(address: string) => string>(),
-  locationState: null as { boardPath?: string; pendingPost?: TestComment } | null,
+  locationState: null as { boardPath?: string; pendingPost?: TestComment; pendingUploadId?: number } | null,
   navigateMock: vi.fn(),
   post: undefined as TestComment | undefined,
   retryingAccountCommentIndex: null as number | null,
@@ -125,7 +125,7 @@ describe('PendingPost', () => {
     testState.post = undefined;
     testState.retryingAccountCommentIndex = null;
     usePendingPostNavigationStore.getState().clearPendingPostNavigation();
-    usePendingUploadPostStore.setState({ pendingUploadPost: null });
+    usePendingUploadPostStore.setState({ pendingUploadPosts: [] });
 
     window.scrollTo = scrollToMock;
 
@@ -160,6 +160,27 @@ describe('PendingPost', () => {
     expect(postView?.textContent).toBe('uploading body');
     expect(postView?.getAttribute('data-pending-upload-id')).toBe(String(id));
     expect(testState.navigateMock).not.toHaveBeenCalled();
+  });
+
+  it('shows the uploading thread its navigation named when another one is uploading too', async () => {
+    testState.accountCommentIndex = 'upload';
+    const startUpload = (content: string) =>
+      usePendingUploadPostStore.getState().startPendingUploadPost({
+        attachment: { kind: 'file', file: new File(['png'], 'chosen.png', { type: 'image/png' }), name: 'chosen.png', mimeType: 'image/png' },
+        boardChallenges: undefined,
+        boardPath: 'mu',
+        draftKey: '/mu',
+        nonokoRedirectPath: null,
+        post: { communityAddress: 'music-posting.eth', content },
+        publishOptions: { communityAddress: 'music-posting.eth', content },
+      });
+    const first = startUpload('first body');
+    startUpload('second body');
+    testState.locationState = { boardPath: 'mu', pendingUploadId: first.id };
+
+    await renderPendingPost();
+
+    expect(container.querySelector('[data-testid="post-view"]')?.textContent).toBe('first body');
   });
 
   it('returns to the board from the upload page when no post is uploading', async () => {

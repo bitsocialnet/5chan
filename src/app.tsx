@@ -154,7 +154,7 @@ const GlobalLayout = () => {
   // The notice only exists after a quick filter, so its code loads then instead of with the app.
   const hasImageFilterNotice = useImageFiltersStore((state) => state.quickFilterNotice !== null);
   // Loaded only for a new thread whose file is being checked and uploaded; it publishes the thread after the upload.
-  const hasPendingUploadPost = usePendingUploadPostStore((state) => state.pendingUploadPost !== null);
+  const hasPendingUploadPost = usePendingUploadPostStore((state) => state.pendingUploadPosts.length > 0);
 
   return (
     <>

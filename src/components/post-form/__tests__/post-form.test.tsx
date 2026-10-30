@@ -646,7 +646,7 @@ describe('PostForm', () => {
     testState.uploadAttachmentMock.mockReset();
     testState.precheckMock.mockReset();
     testState.precheckMock.mockResolvedValue({ status: 'skipped' });
-    usePendingUploadPostStore.setState({ pendingUploadPost: null });
+    usePendingUploadPostStore.setState({ pendingUploadPosts: [] });
     testState.navigateMock.mockReset();
     testState.publishPostMock.mockReset();
     testState.publishReplyMock.mockReset();
@@ -1786,7 +1786,7 @@ describe('PostForm', () => {
     expect(testState.precheckMock).not.toHaveBeenCalled();
     expect(testState.uploadAttachmentMock).not.toHaveBeenCalled();
     expect(testState.publishPostMock).not.toHaveBeenCalled();
-    const pendingUploadPost = usePendingUploadPostStore.getState().pendingUploadPost;
+    const pendingUploadPost = usePendingUploadPostStore.getState().pendingUploadPosts[0];
     expect(pendingUploadPost).toMatchObject({
       attachment,
       boardChallenges: challenges,
@@ -1799,7 +1799,7 @@ describe('PostForm', () => {
     expect(pendingUploadPost?.publishOptions.link).toBeUndefined();
     expect(testState.navigateMock).toHaveBeenCalledWith('/pending/upload', {
       flushSync: true,
-      state: { boardPath: 'mu', pendingPost: pendingUploadPost?.post },
+      state: { boardPath: 'mu', pendingPost: pendingUploadPost?.post, pendingUploadId: pendingUploadPost?.id },
     });
     // The draft keeps the file, so a stopped check or a failed upload returns to the form with it.
     expect(usePostFormDraftsStore.getState().forms[pendingUploadPost?.draftKey ?? '']?.draft.attachment).toEqual(attachment);
@@ -1828,7 +1828,7 @@ describe('PostForm', () => {
     await dispatchInput(textarea, 'dropped body');
     await clickByText(table, 'post');
 
-    expect(usePendingUploadPostStore.getState().pendingUploadPost?.attachment).toEqual({ kind: 'file', file, name: 'dropped.png', mimeType: 'image/png' });
+    expect(usePendingUploadPostStore.getState().pendingUploadPosts[0]?.attachment).toEqual({ kind: 'file', file, name: 'dropped.png', mimeType: 'image/png' });
     expect(testState.uploadAttachmentMock).not.toHaveBeenCalled();
   });
 
@@ -1904,7 +1904,7 @@ describe('PostForm', () => {
     expect(table.querySelector('button[aria-label="remove"]')).toBeNull();
 
     await clickByText(table, 'post');
-    expect(usePendingUploadPostStore.getState().pendingUploadPost?.attachment).toBe(second);
+    expect(usePendingUploadPostStore.getState().pendingUploadPosts[0]?.attachment).toBe(second);
   });
 
   it('keeps the attachment and does not publish a reply when its upload fails', async () => {

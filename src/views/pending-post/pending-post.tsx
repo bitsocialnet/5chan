@@ -4,7 +4,7 @@ import { useAccountComment, useAccountComments } from '@bitsocial/bitsocial-reac
 import { useDirectories } from '../../hooks/use-directories';
 import { normalizeAccountCommentIndex } from '../../lib/utils/account-comment-index-utils';
 import { getCommentCommunityAddress } from '../../lib/utils/comment-utils';
-import { getPendingPostRouteBoardPath, getPendingPostRoutePost, PENDING_UPLOAD_POST_INDEX } from '../../lib/utils/pending-post-route-state';
+import { getPendingPostRouteBoardPath, getPendingPostRoutePost, getShownPendingUploadId, PENDING_UPLOAD_POST_INDEX } from '../../lib/utils/pending-post-route-state';
 import { getBoardPath } from '../../lib/utils/route-utils';
 import useChallengesStore from '../../stores/use-challenges-store';
 import useFailedPostRetryStore from '../../stores/use-failed-post-retry-store';
@@ -163,7 +163,13 @@ const PendingAccountPost = () => {
 const PendingUploadPost = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const pendingUploadPost = usePendingUploadPostStore((state) => state.pendingUploadPost);
+  const pendingUploadPost = usePendingUploadPostStore((state) => {
+    const shownId = getShownPendingUploadId(
+      state.pendingUploadPosts.map((upload) => upload.id),
+      location.state,
+    );
+    return state.pendingUploadPosts.find((upload) => upload.id === shownId);
+  });
   const routeBoardPath = getPendingPostRouteBoardPath(location.state);
   const id = pendingUploadPost?.id;
   const previewPost = pendingUploadPost?.post;

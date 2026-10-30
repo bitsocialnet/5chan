@@ -1010,7 +1010,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
           author: { address: account?.author?.address, displayName: currentDisplayName },
           timestamp: Math.floor(Date.now() / 1000),
         };
-        usePendingUploadPostStore.getState().startPendingUploadPost({
+        const { id: pendingUploadId } = usePendingUploadPostStore.getState().startPendingUploadPost({
           attachment,
           authorRole: accountRole,
           boardChallenges: communityChallenges,
@@ -1023,7 +1023,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
         flushSync(() =>
           navigate(PENDING_UPLOAD_POST_PATH, {
             flushSync: true,
-            state: { ...(pendingPostBoardPath ? { boardPath: pendingPostBoardPath } : {}), pendingPost: previewPost },
+            state: { ...(pendingPostBoardPath ? { boardPath: pendingPostBoardPath } : {}), pendingPost: previewPost, pendingUploadId },
           }),
         );
         hideForm();

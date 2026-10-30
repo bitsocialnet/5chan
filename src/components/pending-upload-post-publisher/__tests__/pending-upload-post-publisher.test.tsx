@@ -12,6 +12,7 @@ import PendingUploadPostPublisher from '../pending-upload-post-publisher';
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
 
 type PublishPostOptions = {
+  communityAddress?: string;
   onPendingPost?: (accountCommentIndex: number, pendingPost: Record<string, unknown>) => void;
   onPublishAccepted?: () => void;
   onPublishError?: (error: Error) => void;
@@ -20,10 +21,12 @@ type PublishPostOptions = {
 const testState = vi.hoisted(() => ({
   navigateMock: vi.fn(),
   pathname: '/pending/upload',
+  locationState: undefined as unknown,
   precheckMock: vi.fn(),
   precheckHookOptions: undefined as { communityAddress?: string } | undefined,
   publishPostMock: vi.fn(),
   publishPostOptions: undefined as PublishPostOptions | undefined,
+  publishPostOptionsByBoard: {} as Record<string, PublishPostOptions>,
   uploadAttachmentMock: vi.fn<(media: unknown, onPhaseChange?: (phase: UploadPhase) => void) => Promise<{ url: string; fileName: string } | null>>(),
 }));
 
@@ -32,7 +35,7 @@ vi.mock('react-i18next', () => ({
 }));
 
 vi.mock('react-router-dom', () => ({
-  useLocation: () => ({ pathname: testState.pathname }),
+  useLocation: () => ({ pathname: testState.pathname, state: testState.locationState }),
   useNavigate: () => testState.navigateMock,
 }));
 
@@ -50,6 +53,7 @@ vi.mock('../../../hooks/use-spam-blocker-precheck', () => ({
 vi.mock('../../../hooks/use-publish-post', () => ({
   default: (options: PublishPostOptions) => {
     testState.publishPostOptions = options;
+    if (options.communityAddress) testState.publishPostOptionsByBoard[options.communityAddress] = options;
     return { publishPost: testState.publishPostMock };
   },
 }));
@@ -93,6 +97,8 @@ describe('PendingUploadPostPublisher', () => {
   beforeEach(() => {
     testState.navigateMock.mockReset();
     testState.pathname = '/pending/upload';
+    testState.locationState = undefined;
+    testState.publishPostOptionsByBoard = {};
     testState.precheckMock.mockReset();
     testState.precheckMock.mockResolvedValue({ status: 'passed', challengeAnswers: ['precheck-pass'] });
     testState.publishPostMock.mockReset();
@@ -100,7 +106,7 @@ describe('PendingUploadPostPublisher', () => {
     testState.publishPostMock.mockImplementation(async () => testState.publishPostOptions?.onPendingPost?.(7, publishedPost));
     testState.publishPostOptions = undefined;
     testState.uploadAttachmentMock.mockReset();
-    usePendingUploadPostStore.setState({ pendingUploadPost: null });
+    usePendingUploadPostStore.setState({ pendingUploadPosts: [] });
     usePostFormDraftsStore.setState({ forms: {} });
     container = document.createElement('div');
     document.body.appendChild(container);
@@ -115,7 +121,7 @@ describe('PendingUploadPostPublisher', () => {
 
   it('checks the post with the spam blocker, then uploads its file, then publishes it with the link and the pass', async () => {
     const phases: string[] = [];
-    const unsubscribe = usePendingUploadPostStore.subscribe((state) => state.pendingUploadPost && phases.push(state.pendingUploadPost.phase));
+    const unsubscribe = usePendingUploadPostStore.subscribe((state) => state.pendingUploadPosts[0] && phases.push(state.pendingUploadPosts[0].phase));
     testState.precheckMock.mockImplementation(async () => {
       expect(testState.uploadAttachmentMock).not.toHaveBeenCalled();
       return { status: 'passed', challengeAnswers: ['precheck-pass', 'precheck-pass'] };
@@ -161,7 +167,7 @@ describe('PendingUploadPostPublisher', () => {
     expect(testState.navigateMock).toHaveBeenCalledTimes(1);
     expect(testState.navigateMock).toHaveBeenCalledWith('/pending/7', { replace: true, state: { boardPath: 'mu', pendingPost: publishedPost } });
     expect(usePendingPostNavigationStore.getState().pendingPostNavigationIndex).toBe(7);
-    expect(usePendingUploadPostStore.getState().pendingUploadPost).toBeNull();
+    expect(usePendingUploadPostStore.getState().pendingUploadPosts).toEqual([]);
 
     act(() => testState.publishPostOptions?.onPublishAccepted?.());
     expect(usePostFormDraftsStore.getState().forms['/mu']).toBeUndefined();
@@ -181,7 +187,48 @@ describe('PendingUploadPostPublisher', () => {
 
     expect(testState.publishPostMock).toHaveBeenCalledTimes(1);
     expect(testState.navigateMock).not.toHaveBeenCalled();
-    expect(usePendingUploadPostStore.getState().pendingUploadPost).toBeNull();
+    expect(usePendingUploadPostStore.getState().pendingUploadPosts).toEqual([]);
+  });
+
+  it('publishes a thread still uploading when another one is posted, without leaving the page that shows the other', async () => {
+    const finishUploads: Array<(value: { url: string; fileName: string }) => void> = [];
+    testState.uploadAttachmentMock.mockImplementation(() => new Promise((resolve) => finishUploads.push(resolve)));
+    testState.publishPostMock.mockImplementation(async (options: { communityAddress: string }) =>
+      testState.publishPostOptionsByBoard[options.communityAddress]?.onPendingPost?.(options.communityAddress === 'music-posting.eth' ? 7 : 8, publishedPost),
+    );
+    const first = await submitPost();
+    // The author posts another thread with a file on /biz/ and watches that one upload.
+    const second = usePendingUploadPostStore.getState().startPendingUploadPost({
+      attachment,
+      boardChallenges: challenges,
+      boardPath: 'biz',
+      draftKey: '/biz',
+      nonokoRedirectPath: null,
+      post: { communityAddress: 'business.eth', content: 'second thread' },
+      publishOptions: { ...publishOptions, communityAddress: 'business.eth', content: 'second thread' },
+    });
+    testState.locationState = { boardPath: 'biz', pendingUploadId: second.id };
+    await act(async () => {
+      root.render(createElement(PendingUploadPostPublisher));
+    });
+    await flush();
+    expect(usePendingUploadPostStore.getState().pendingUploadPosts.map((post) => post.id)).toEqual([first.id, second.id]);
+
+    await act(async () => finishUploads[0]({ url: 'https://forgeimg.net/abc/first.png', fileName: 'first.png' }));
+    await flush();
+
+    expect(testState.publishPostMock).toHaveBeenCalledWith(
+      expect.objectContaining({ communityAddress: 'music-posting.eth', link: 'https://forgeimg.net/abc/first.png' }),
+    );
+    expect(testState.navigateMock).not.toHaveBeenCalled();
+    expect(usePendingUploadPostStore.getState().pendingUploadPosts.map((post) => post.id)).toEqual([second.id]);
+
+    await act(async () => finishUploads[1]({ url: 'https://forgeimg.net/abc/second.png', fileName: 'second.png' }));
+    await flush();
+
+    expect(testState.navigateMock).toHaveBeenCalledTimes(1);
+    expect(testState.navigateMock).toHaveBeenCalledWith('/pending/8', { replace: true, state: { boardPath: 'biz', pendingPost: publishedPost } });
+    expect(usePendingUploadPostStore.getState().pendingUploadPosts).toEqual([]);
   });
 
   it('returns to the form with the file still attached when the spam blocker stops the post, without uploading', async () => {
@@ -197,7 +244,7 @@ describe('PendingUploadPostPublisher', () => {
       draft: { attachment },
     });
     expect(testState.navigateMock).toHaveBeenCalledWith('/mu', { replace: true });
-    expect(usePendingUploadPostStore.getState().pendingUploadPost).toBeNull();
+    expect(usePendingUploadPostStore.getState().pendingUploadPosts).toEqual([]);
   });
 
   it("keeps the post's country flag answer in the answers that carry the pass", async () => {
@@ -225,7 +272,7 @@ describe('PendingUploadPostPublisher', () => {
       draft: { attachment: undefined, link: 'https://forgeimg.net/abc/chosen.png' },
     });
     expect(testState.navigateMock).toHaveBeenCalledWith('/mu', { replace: true });
-    expect(usePendingUploadPostStore.getState().pendingUploadPost).toBeNull();
+    expect(usePendingUploadPostStore.getState().pendingUploadPosts).toEqual([]);
   });
 
   it('returns to the form when the publish ends without creating the pending post', async () => {
@@ -236,7 +283,7 @@ describe('PendingUploadPostPublisher', () => {
 
     expect(usePostFormDraftsStore.getState().forms['/mu']?.isOpen).toBe(true);
     expect(testState.navigateMock).toHaveBeenCalledWith('/mu', { replace: true });
-    expect(usePendingUploadPostStore.getState().pendingUploadPost).toBeNull();
+    expect(usePendingUploadPostStore.getState().pendingUploadPosts).toEqual([]);
   });
 
   it('returns to the form when a step throws', async () => {
@@ -246,7 +293,7 @@ describe('PendingUploadPostPublisher', () => {
 
     expect(testState.uploadAttachmentMock).not.toHaveBeenCalled();
     expect(usePostFormDraftsStore.getState().forms['/mu']?.submissionError).toBe('error: randomUUID is not available');
-    expect(usePendingUploadPostStore.getState().pendingUploadPost).toBeNull();
+    expect(usePendingUploadPostStore.getState().pendingUploadPosts).toEqual([]);
   });
 
   it('returns to the form without publishing when the upload fails', async () => {
@@ -257,6 +304,6 @@ describe('PendingUploadPostPublisher', () => {
     expect(testState.publishPostMock).not.toHaveBeenCalled();
     expect(usePostFormDraftsStore.getState().forms['/mu']).toMatchObject({ isOpen: true, draft: { attachment } });
     expect(testState.navigateMock).toHaveBeenCalledWith('/mu', { replace: true });
-    expect(usePendingUploadPostStore.getState().pendingUploadPost).toBeNull();
+    expect(usePendingUploadPostStore.getState().pendingUploadPosts).toEqual([]);
   });
 });

@@ -29,8 +29,8 @@ export interface PendingUploadPost {
 }
 
 interface PendingUploadPostState {
-  pendingUploadPost: PendingUploadPost | null;
-  /** Replaces any post still uploading; that one stops before its next step. */
+  /** Oldest first. Each runs its steps on its own, so posting another thread never stops one still uploading. */
+  pendingUploadPosts: PendingUploadPost[];
   startPendingUploadPost: (post: Omit<PendingUploadPost, 'id' | 'phase'>) => PendingUploadPost;
   setPendingUploadPhase: (id: number, phase: PendingUploadPhase) => void;
   clearPendingUploadPost: (id: number) => void;
@@ -39,16 +39,17 @@ interface PendingUploadPostState {
 let nextPendingUploadPostId = 1;
 
 const usePendingUploadPostStore = create<PendingUploadPostState>((set) => ({
-  pendingUploadPost: null,
+  pendingUploadPosts: [],
   startPendingUploadPost: (post) => {
     const pendingUploadPost: PendingUploadPost = { ...post, id: nextPendingUploadPostId++, phase: 'spam_check' };
-    set({ pendingUploadPost });
+    set((state) => ({ pendingUploadPosts: [...state.pendingUploadPosts, pendingUploadPost] }));
     return pendingUploadPost;
   },
-  setPendingUploadPhase: (id, phase) => set((state) => (state.pendingUploadPost?.id === id ? { pendingUploadPost: { ...state.pendingUploadPost, phase } } : state)),
-  clearPendingUploadPost: (id) => set((state) => (state.pendingUploadPost?.id === id ? { pendingUploadPost: null } : state)),
+  setPendingUploadPhase: (id, phase) => set((state) => ({ pendingUploadPosts: state.pendingUploadPosts.map((post) => (post.id === id ? { ...post, phase } : post)) })),
+  clearPendingUploadPost: (id) => set((state) => ({ pendingUploadPosts: state.pendingUploadPosts.filter((post) => post.id !== id) })),
 }));
 
-export const isCurrentPendingUploadPost = (id: number) => usePendingUploadPostStore.getState().pendingUploadPost?.id === id;
+/** Whether the post is still being checked or uploaded; once it is cleared, its steps stop. */
+export const isPendingUploadPost = (id: number) => usePendingUploadPostStore.getState().pendingUploadPosts.some((post) => post.id === id);
 
 export default usePendingUploadPostStore;

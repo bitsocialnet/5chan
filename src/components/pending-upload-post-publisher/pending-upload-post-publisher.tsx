@@ -5,10 +5,10 @@ import type { Comment } from '@bitsocial/bitsocial-react-hooks';
 import { useFileUpload } from '../../hooks/use-file-upload';
 import usePublishPost from '../../hooks/use-publish-post';
 import useSpamBlockerPrecheck from '../../hooks/use-spam-blocker-precheck';
-import { isPendingUploadPostPath } from '../../lib/utils/pending-post-route-state';
+import { getShownPendingUploadId, isPendingUploadPostPath } from '../../lib/utils/pending-post-route-state';
 import { getNonokoPendingRouteState } from '../../lib/utils/post-options-utils';
 import usePendingPostNavigationStore from '../../stores/use-pending-post-navigation-store';
-import usePendingUploadPostStore, { isCurrentPendingUploadPost, type PendingUploadPost } from '../../stores/use-pending-upload-post-store';
+import usePendingUploadPostStore, { isPendingUploadPost, type PendingUploadPost } from '../../stores/use-pending-upload-post-store';
 import usePostFormDraftsStore from '../../stores/use-post-form-drafts-store';
 import { createPublishPostStore } from '../../stores/use-publish-post-store';
 
@@ -19,7 +19,7 @@ import { createPublishPostStore } from '../../stores/use-publish-post-store';
 const Publisher = ({ pendingUploadPost }: { pendingUploadPost: PendingUploadPost }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { pathname } = useLocation();
+  const { pathname, state: locationState } = useLocation();
   const { id, attachment, authorRole, boardChallenges, boardPath, draftKey, nonokoRedirectPath, publishOptions } = pendingUploadPost;
   const { uploadAttachment } = useFileUpload();
   const runSpamBlockerPrecheck = useSpamBlockerPrecheck({ communityAddress: publishOptions.communityAddress });
@@ -28,22 +28,29 @@ const Publisher = ({ pendingUploadPost }: { pendingUploadPost: PendingUploadPost
   const [publishPostStore] = useState(createPublishPostStore);
   const startedRef = useRef(false);
   const pendingIndexRef = useRef<number | null>(null);
-  // Read by the steps after their awaits, so they never pull someone who left the pending page back to it.
-  const pathnameRef = useRef(pathname);
+  // Whether the upload page shows this post. Read by the steps after their awaits, so they never pull someone
+  // who left it, or who is watching another post upload, back to this one.
+  const shownPendingUploadId = usePendingUploadPostStore((state) =>
+    getShownPendingUploadId(
+      state.pendingUploadPosts.map((post) => post.id),
+      locationState,
+    ),
+  );
+  const isShownRef = useRef(false);
   useEffect(() => {
-    pathnameRef.current = pathname;
-  }, [pathname]);
+    isShownRef.current = isPendingUploadPostPath(pathname) && shownPendingUploadId === id;
+  }, [id, pathname, shownPendingUploadId]);
 
   const returnToForm = useCallback(
     (message?: string) => {
-      if (!isCurrentPendingUploadPost(id)) return;
+      if (!isPendingUploadPost(id)) return;
       const { openForm, showSubmissionError } = usePostFormDraftsStore.getState();
       if (message) {
         showSubmissionError(draftKey, `${t('error')}: ${message}`);
       } else {
         openForm(draftKey);
       }
-      if (isPendingUploadPostPath(pathnameRef.current)) {
+      if (isShownRef.current) {
         navigate(draftKey, { replace: true });
       }
       usePendingUploadPostStore.getState().clearPendingUploadPost(id);
@@ -54,7 +61,7 @@ const Publisher = ({ pendingUploadPost }: { pendingUploadPost: PendingUploadPost
   const onPendingPost = useCallback(
     (accountCommentIndex: number, pendingPost: Comment) => {
       pendingIndexRef.current = accountCommentIndex;
-      if (isPendingUploadPostPath(pathnameRef.current)) {
+      if (isShownRef.current) {
         if (nonokoRedirectPath) {
           navigate(nonokoRedirectPath, { replace: true, state: getNonokoPendingRouteState(accountCommentIndex) });
         } else {
@@ -130,7 +137,7 @@ const Publisher = ({ pendingUploadPost }: { pendingUploadPost: PendingUploadPost
         returnToForm(precheck.message);
         return;
       }
-      if (!isCurrentPendingUploadPost(id)) return;
+      if (!isPendingUploadPost(id)) return;
 
       const { setPendingUploadPhase } = usePendingUploadPostStore.getState();
       const uploaded = await uploadAttachment(attachment, (phase) => setPendingUploadPhase(id, phase));
@@ -138,7 +145,7 @@ const Publisher = ({ pendingUploadPost }: { pendingUploadPost: PendingUploadPost
         returnToForm();
         return;
       }
-      if (!isCurrentPendingUploadPost(id)) return;
+      if (!isPendingUploadPost(id)) return;
       // A post the board rejects returns to the form with this link, so posting again does not upload again.
       usePostFormDraftsStore.getState().updateDraft(draftKey, { attachment: undefined, link: uploaded.url });
 
@@ -159,8 +166,8 @@ const Publisher = ({ pendingUploadPost }: { pendingUploadPost: PendingUploadPost
 };
 
 const PendingUploadPostPublisher = () => {
-  const pendingUploadPost = usePendingUploadPostStore((state) => state.pendingUploadPost);
-  return pendingUploadPost ? <Publisher key={pendingUploadPost.id} pendingUploadPost={pendingUploadPost} /> : null;
+  const pendingUploadPosts = usePendingUploadPostStore((state) => state.pendingUploadPosts);
+  return pendingUploadPosts.map((pendingUploadPost) => <Publisher key={pendingUploadPost.id} pendingUploadPost={pendingUploadPost} />);
 };
 
 export default PendingUploadPostPublisher;

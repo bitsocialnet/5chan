@@ -25,6 +25,7 @@ const useLocalPreviewUrl = (attachment: AttachedMedia | undefined) => {
   useEffect(() => {
     if (!file) return;
     const url = URL.createObjectURL(file);
+    // oxlint-disable-next-line react/set-state-in-effect -- the object URL exists only between this effect and its cleanup, which revokes it
     setObjectUrl({ file, url });
     return () => URL.revokeObjectURL(url);
   }, [file]);
@@ -78,7 +79,7 @@ const UPLOAD_PHASE_LABEL_KEYS: Partial<Record<PendingUploadPhase, string>> = { u
  */
 const PendingUploadFile = ({ pendingUploadId, spoiler }: { pendingUploadId: number; spoiler?: boolean }) => {
   const { t } = useTranslation();
-  const pendingUploadPost = usePendingUploadPostStore((state) => (state.pendingUploadPost?.id === pendingUploadId ? state.pendingUploadPost : undefined));
+  const pendingUploadPost = usePendingUploadPostStore((state) => state.pendingUploadPosts.find((post) => post.id === pendingUploadId));
   const attachment = pendingUploadPost?.attachment;
   const mediaType = attachment ? getPreviewMediaType(attachment.mimeType) : undefined;
   const previewUrl = useLocalPreviewUrl(attachment);

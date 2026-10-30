@@ -41,7 +41,7 @@ const render = async (pendingUploadId: number, spoiler?: boolean) => {
 
 describe('PendingUploadFile', () => {
   beforeEach(() => {
-    usePendingUploadPostStore.setState({ pendingUploadPost: null });
+    usePendingUploadPostStore.setState({ pendingUploadPosts: [] });
     vi.stubGlobal('URL', Object.assign(URL, { createObjectURL: vi.fn(() => 'blob:local-preview'), revokeObjectURL: vi.fn() }));
     container = document.createElement('div');
     document.body.appendChild(container);
