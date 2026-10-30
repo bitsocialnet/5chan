@@ -339,6 +339,23 @@ describe('usePublishReply', () => {
     expect(testState.publishCommentMock).not.toHaveBeenCalled();
   });
 
+  it('clears the publish error as soon as the reply content changes', async () => {
+    testState.publishAuthorBlockedReason = 'unresolved';
+    renderHook();
+
+    await act(async () => {
+      latestValue.publishReply();
+      await Promise.resolve();
+    });
+    expect(latestValue.publishReplyError).toBe('blocked:unresolved');
+
+    act(() => {
+      usePublishReplyStore.setState({ content: { 'parent-cid': 'edited reply' } });
+    });
+
+    expect(latestValue.publishReplyError).toBeNull();
+  });
+
   it('queues reply challenges and clears the scoped reply store on reset', async () => {
     await act(async () => {
       latestValue.setPublishReplyOptions({

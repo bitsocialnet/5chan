@@ -13,6 +13,9 @@
     // current compiler limitations (e.g. try/finally and throw-in-try/catch the compiler cannot
     // lower yet) rather than real bugs; rewriting working code to satisfy them would degrade it.
     // `react-compiler-no-manual-memoization` is likewise advisory given the compiler.
+    // `set-state-in-effect` is the exception: oxlint enforces it (see .oxlintrc.json), where a
+    // justified inline disable can mark a genuine external sync. React Doctor cannot see those
+    // disables, so it stays ignored here to avoid reporting the same sites twice.
     "rules": [
       "react-hooks-js/refs",
       "react-hooks-js/todo",

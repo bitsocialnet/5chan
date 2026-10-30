@@ -153,12 +153,16 @@ const usePublishReply = ({ cid, communityAddress, postCid }: UsePublishReplyOpti
   const { index, publishComment, abandonPublish } = usePublishComment(publishOptionsWithAbandon);
   abandonPublishRef.current = abandonPublish;
 
-  useEffect(() => {
+  // Resolved quotes, errors, and status messages describe the inputs they came from; clear them as soon as any of them changes.
+  const publishReplyInputs = [blockedReason, content, communityAddress, flairs];
+  const [publishReplyInputsSnapshot, setPublishReplyInputsSnapshot] = useState(publishReplyInputs);
+  if (publishReplyInputs.some((value, index) => !Object.is(value, publishReplyInputsSnapshot[index]))) {
+    setPublishReplyInputsSnapshot(publishReplyInputs);
     setResolvedExternalQuotedCids(undefined);
     setPublishReplyError(null);
     setPublishReplyStateMessage(null);
     setIsResolvingExternalQuotes(false);
-  }, [blockedReason, content, communityAddress, flairs]);
+  }
 
   useEffect(() => {
     if (pendingPublishRequestId === 0 || pendingPublishRequestId === startedPublishRequestIdRef.current) {

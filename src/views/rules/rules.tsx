@@ -240,8 +240,14 @@ const Rules = () => {
   const { hash } = useLocation();
   const directories = useDirectories();
   const directoryDefaults = useDirectoryDefaults();
-  const [loadedAddress, setLoadedAddress] = useState('');
   const hashCode = getRulesHashCode(hash);
+  // A loaded board's rules belong to the hash they were loaded under; navigating to another hash clears them.
+  const [loadedBoard, setLoadedBoard] = useState({ address: '', hashCode });
+  if (loadedBoard.hashCode !== hashCode) {
+    setLoadedBoard({ address: '', hashCode });
+  }
+  const loadedAddress = loadedBoard.hashCode === hashCode ? loadedBoard.address : '';
+  const setLoadedAddress = (address: string) => setLoadedBoard({ address, hashCode });
 
   // Order directories alphabetically by directory code (e.g. /3/, /a/, /aco/...), like 4chan, not by title.
   const directoriesWithCode = directories.filter((community) => getDirectoryCode(community)).toSorted((a, b) => getDirectoryCode(a).localeCompare(getDirectoryCode(b)));
@@ -256,7 +262,6 @@ const Rules = () => {
   }, []);
 
   useEffect(() => {
-    setLoadedAddress('');
     if (!hashCode) {
       window.scrollTo(0, 0);
     }

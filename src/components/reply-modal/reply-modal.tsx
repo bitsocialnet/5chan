@@ -202,6 +202,16 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
   const [isBbcodePreviewing, setIsBbcodePreviewing] = useState(false);
   const [bbcodePreviewContent, setBbcodePreviewContent] = useState('');
   const [showTexPreview, setShowTexPreview] = useState(false);
+  // Hiding the modal discards any open BBCode or TeX preview.
+  const [wasReplyModalShown, setWasReplyModalShown] = useState(showReplyModal);
+  if (wasReplyModalShown !== showReplyModal) {
+    setWasReplyModalShown(showReplyModal);
+    if (!showReplyModal) {
+      setIsBbcodePreviewing(false);
+      setBbcodePreviewContent('');
+      setShowTexPreview(false);
+    }
+  }
   const { isPublishSubmissionInFlight, runPublishSubmission } = usePublishSubmissionGuard();
   const texButtonRef = useRef<HTMLButtonElement>(null);
   // Blur in the close handler so the TeX button doesn't keep a lingering focus state
@@ -468,9 +478,6 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
     if (!showReplyModal) {
       checkContentLengthRef.current.cancel();
       checkPostOptionsRef.current.cancel();
-      setIsBbcodePreviewing(false);
-      setBbcodePreviewContent('');
-      setShowTexPreview(false);
     }
   }, [showReplyModal]);
 

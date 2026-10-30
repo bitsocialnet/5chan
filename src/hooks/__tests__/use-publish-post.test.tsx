@@ -217,6 +217,22 @@ describe('usePublishPost', () => {
     expect(testState.publishCommentMock).not.toHaveBeenCalled();
   });
 
+  it('clears the publish error as soon as the post content changes', async () => {
+    testState.publishAuthorBlockedReason = 'unresolved';
+    renderHook();
+
+    await act(async () => {
+      latestValue.publishPost();
+    });
+    expect(latestValue.publishPostError).toBe('blocked:unresolved');
+
+    act(() => {
+      usePublishPostStore.setState({ content: 'edited content' });
+    });
+
+    expect(latestValue.publishPostError).toBeNull();
+  });
+
   it('publishes after synchronizing one-shot publish options', async () => {
     await act(async () => {
       latestValue.setPublishPostOptions({
