@@ -104,12 +104,11 @@ const Publisher = ({ pendingUploadPost }: { pendingUploadPost: PendingUploadPost
   const onAbandonPost = useCallback(() => {
     const pendingIndex = pendingIndexRef.current;
     const pendingNavigation = usePendingPostNavigationStore.getState();
-    // Only an author looking at this post goes back to its form: its upload page, or the pending page this
-    // publisher opened. One who moved on while it uploaded stays where they are; the post is abandoned either way.
-    const showsThisPost = pendingIndex === null ? isShownRef.current : pendingNavigation.pendingPostNavigationIndex === pendingIndex;
-    if (!showsThisPost) return;
+    // Only an author looking at this post goes back to its form: its upload page, or its pending page while that
+    // is still on screen. One who moved on stays where they are; the post is abandoned either way.
+    const showsThisPost = pendingIndex === null ? isShownRef.current : pendingNavigation.visiblePendingPostIndex === pendingIndex;
     if (pendingIndex !== null) pendingNavigation.clearPendingPostNavigation(pendingIndex);
-    navigate(draftKey, { replace: true });
+    if (showsThisPost) navigate(draftKey, { replace: true });
   }, [draftKey, navigate]);
 
   const onDuplicateMediaRejected = useCallback(

@@ -229,6 +229,19 @@ describe('PendingPost', () => {
     expect(testState.navigateMock).not.toHaveBeenCalledWith('/not-found', { replace: true });
   });
 
+  it('marks its pending post as on screen until the page closes', async () => {
+    testState.accountCommentIndex = '0';
+    testState.accountComments = [{}];
+    testState.post = { communityAddress: 'music-posting.eth' };
+
+    await renderPendingPost();
+    expect(usePendingPostNavigationStore.getState().visiblePendingPostIndex).toBe(0);
+
+    act(() => root.unmount());
+    expect(usePendingPostNavigationStore.getState().visiblePendingPostIndex).toBeNull();
+    root = createRoot(container);
+  });
+
   it('does not register the scroll helper return value as an effect cleanup', async () => {
     scrollToMock.mockReturnValueOnce({});
     testState.accountCommentIndex = '0';

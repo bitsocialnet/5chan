@@ -118,6 +118,7 @@ describe('PendingUploadPostPublisher', () => {
     act(() => root.unmount());
     container.remove();
     usePendingPostNavigationStore.getState().clearPendingPostNavigation();
+    usePendingPostNavigationStore.setState({ visiblePendingPostIndex: null });
   });
 
   it('checks the post with the spam blocker, then uploads its file, then publishes it with the link and the pass', async () => {
@@ -286,10 +287,25 @@ describe('PendingUploadPostPublisher', () => {
     testState.uploadAttachmentMock.mockResolvedValue({ url: 'https://forgeimg.net/abc/chosen.png', fileName: 'chosen.png' });
     await submitPost();
     testState.navigateMock.mockClear();
+    usePendingPostNavigationStore.getState().showPendingPost(7);
 
     act(() => testState.publishPostOptions?.onAbandonPost?.());
 
     expect(testState.navigateMock).toHaveBeenCalledWith('/mu', { replace: true });
+    expect(usePendingPostNavigationStore.getState().pendingPostNavigationIndex).toBeNull();
+  });
+
+  it('leaves an author who left the pending post where they are when they close the board challenge', async () => {
+    testState.uploadAttachmentMock.mockResolvedValue({ url: 'https://forgeimg.net/abc/chosen.png', fileName: 'chosen.png' });
+    await submitPost();
+    testState.navigateMock.mockClear();
+    // The pending page opened and was left while the challenge was still up.
+    usePendingPostNavigationStore.getState().showPendingPost(7);
+    usePendingPostNavigationStore.getState().hidePendingPost(7);
+
+    act(() => testState.publishPostOptions?.onAbandonPost?.());
+
+    expect(testState.navigateMock).not.toHaveBeenCalled();
     expect(usePendingPostNavigationStore.getState().pendingPostNavigationIndex).toBeNull();
   });
 

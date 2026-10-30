@@ -74,6 +74,13 @@ const PendingAccountPost = () => {
   }, []);
 
   useEffect(() => {
+    if (typeof normalizedAccountCommentIndex !== 'number') return;
+    const index = normalizedAccountCommentIndex;
+    usePendingPostNavigationStore.getState().showPendingPost(index);
+    return () => usePendingPostNavigationStore.getState().hidePendingPost(index);
+  }, [normalizedAccountCommentIndex]);
+
+  useEffect(() => {
     if (hasAddressableStoredPost && typeof normalizedAccountCommentIndex === 'number') {
       observedAddressableStoredPostIndexRef.current = normalizedAccountCommentIndex;
       usePendingPostNavigationStore.getState().clearPendingPostHandoff(normalizedAccountCommentIndex);
