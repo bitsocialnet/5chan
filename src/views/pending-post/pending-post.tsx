@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useAccountComment, useAccountComments } from '@bitsocial/bitsocial-react-hooks';
 import { useDirectories } from '../../hooks/use-directories';
@@ -179,10 +179,13 @@ const PendingUploadPost = () => {
     window.scrollTo(0, 0);
   }, []);
 
-  // Reached with nothing uploading, e.g. after a reload: the post was never published, so go back to its board.
+  // Opened with nothing uploading, e.g. after a reload: the post was never published, so go back to its board. Once
+  // the page has shown a post, whatever clears it (its publish, or a return to its form) navigates on its own, and
+  // that navigation can commit after the clear, so the page must not send the author to the board meanwhile.
+  const [openedWithoutPost] = useState(() => !pendingUploadPost);
   useEffect(() => {
-    if (!post) navigate(routeBoardPath ? `/${routeBoardPath}` : '/', { replace: true });
-  }, [navigate, post, routeBoardPath]);
+    if (openedWithoutPost) navigate(routeBoardPath ? `/${routeBoardPath}` : '/', { replace: true });
+  }, [navigate, openedWithoutPost, routeBoardPath]);
 
   return post ? <Post key={id} post={post} /> : null;
 };

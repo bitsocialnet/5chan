@@ -183,6 +183,28 @@ describe('PendingPost', () => {
     expect(container.querySelector('[data-testid="post-view"]')?.textContent).toBe('first body');
   });
 
+  it('leaves the navigation to whatever clears the post it shows, instead of sending the author to the board', async () => {
+    testState.accountCommentIndex = 'upload';
+    testState.locationState = { boardPath: 'mu' };
+    const { id } = usePendingUploadPostStore.getState().startPendingUploadPost({
+      attachment: { kind: 'file', file: new File(['png'], 'chosen.png', { type: 'image/png' }), name: 'chosen.png', mimeType: 'image/png' },
+      boardChallenges: undefined,
+      boardPath: 'mu',
+      draftKey: '/mu/catalog',
+      nonokoRedirectPath: null,
+      post: { communityAddress: 'music-posting.eth', content: 'uploading body' },
+      publishOptions: { communityAddress: 'music-posting.eth', content: 'uploading body' },
+    });
+    await renderPendingPost();
+
+    // The publisher returns to the catalog form and clears the upload; its navigation may commit after the clear.
+    await act(async () => {
+      usePendingUploadPostStore.getState().clearPendingUploadPost(id);
+    });
+
+    expect(testState.navigateMock).not.toHaveBeenCalled();
+  });
+
   it('returns to the board from the upload page when no post is uploading', async () => {
     testState.accountCommentIndex = 'upload';
     testState.locationState = { boardPath: 'mu' };
