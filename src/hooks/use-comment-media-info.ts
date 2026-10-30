@@ -16,15 +16,15 @@ export const useCommentMediaInfo = (link: string, thumbnailUrl: string, linkWidt
   const isInPostPageView = isPostPageView(location.pathname, params);
   const isInPendingPostView = isPendingPostView(location.pathname, params);
 
-  const [thumbnailDimensions, setThumbnailDimensions] = useState<{ width: number; height: number } | null>(null);
+  // Measured dimensions belong to the media inputs they were loaded for, so changed inputs never show stale ones.
+  const thumbnailKey = JSON.stringify([link, thumbnailUrl, linkWidth, linkHeight]);
+  const [measuredThumbnail, setMeasuredThumbnail] = useState<{ key: string; width: number; height: number } | null>(null);
+  const thumbnailDimensions = measuredThumbnail?.key === thumbnailKey ? measuredThumbnail : null;
 
   // Fetch and cache thumbnail dimensions for webpage media
   useEffect(() => {
     // The live route can be a thread while this media still belongs to a hidden feed.
     if (isCachedFeed || !(isInPostPageView || isInPendingPostView)) return;
-
-    // Reset dimensions when inputs change to avoid stale state
-    setThumbnailDimensions(null);
 
     let isMounted = true;
     let img: HTMLImageElement | null = null;
@@ -41,7 +41,7 @@ export const useCommentMediaInfo = (link: string, thumbnailUrl: string, linkWidt
           const handleLoad = () => {
             // Only update state if component is still mounted and this is the latest request
             if (isMounted && img) {
-              setThumbnailDimensions({ width: img.width, height: img.height });
+              setMeasuredThumbnail({ key: thumbnailKey, width: img.width, height: img.height });
             }
           };
 
@@ -67,7 +67,7 @@ export const useCommentMediaInfo = (link: string, thumbnailUrl: string, linkWidt
         img.onerror = null;
       }
     };
-  }, [link, thumbnailUrl, linkWidth, linkHeight, isCachedFeed, isInPostPageView, isInPendingPostView]);
+  }, [link, thumbnailUrl, linkWidth, linkHeight, thumbnailKey, isCachedFeed, isInPostPageView, isInPendingPostView]);
 
   const mediaInfo = useMemo(() => {
     const mediaInfo = getCommentMediaInfo(link, thumbnailUrl, linkWidth, linkHeight);

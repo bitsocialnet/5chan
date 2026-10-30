@@ -1279,10 +1279,13 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
     }
   };
 
+  // Like the postIndex effect above, this reacts to usePublishComment storing the pending reply,
+  // which it reports only through its index state.
   useEffect(() => {
     if (typeof replyIndex === 'number') {
       const nonokoRedirectPath = nonokoRedirectPathRef.current;
       nonokoRedirectPathRef.current = null;
+      // oxlint-disable-next-line react/set-state-in-effect -- the published index is the only signal that the reply was stored
       resetFields();
       closeForm();
       if (nonokoRedirectPath) {

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, useNavigate } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import Rules from '../rules';
 
@@ -228,6 +228,37 @@ describe('Rules', () => {
 
     expect(container.textContent).not.toContain('Rules for: custom-board.eth');
     expect(scrollIntoViewMock).toHaveBeenCalled();
+  });
+
+  it('keeps a cleared P2P rules box cleared when navigating back to the hash it was loaded under', async () => {
+    testState.communities = {
+      'custom-board.eth': {
+        rules: ['No spamming.'],
+        shortAddress: 'custom-board.eth',
+        state: 'succeeded',
+      },
+    };
+    let navigate: ReturnType<typeof useNavigate> | undefined;
+    const NavigateCapture = () => {
+      navigate = useNavigate();
+      return null;
+    };
+
+    await act(async () => {
+      root.render(createElement(MemoryRouter, { initialEntries: ['/rules'] }, createElement(NavigateCapture), createElement(Rules)));
+    });
+    await submitBoardAddress('custom-board.eth');
+    expect(container.textContent).toContain('Rules for: custom-board.eth');
+
+    const link = container.querySelector('a[href="/rules#a"]') as HTMLAnchorElement;
+    await act(async () => {
+      link.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    });
+    await act(async () => {
+      navigate?.(-1);
+    });
+
+    expect(container.textContent).not.toContain('Rules for: custom-board.eth');
   });
 
   it('shows a friendly loading state string while a board is downloading from peers', async () => {

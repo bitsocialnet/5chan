@@ -1,16 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import { useAccount } from '@bitsocial/bitsocial-react-hooks';
-import { PubsubVoter, type NameResolver, type PubsubVoterOptions } from '@bitsocial/pubsub-voting';
+import { PubsubVoter } from '@bitsocial/pubsub-voting';
 import { getBrowserHeliaNode, getBrowserNameResolvers } from '../lib/browser-libp2p-account';
 import { getOrCreateBrowserPubsubVoter } from '../lib/pubsub-voter';
 
 export { getBrowserHeliaNode, getBrowserNameResolvers };
 
-type HeliaNode = PubsubVoterOptions['helia'];
-
 interface VoterConstruction {
-  helia: HeliaNode;
-  nameResolvers?: NameResolver[];
   voter?: PubsubVoter;
   error?: Error;
 }
@@ -25,23 +21,20 @@ export const usePubsubVoter = (): PubsubVoterState => {
   const account = useAccount();
   const helia = getBrowserHeliaNode(account);
   const nameResolvers = getBrowserNameResolvers(account);
-  const [construction, setConstruction] = useState<VoterConstruction>();
-
-  useEffect(() => {
-    if (!helia) return;
+  // getOrCreateBrowserPubsubVoter caches one voter per node and resolver set, so repeated renders reuse it.
+  const construction = useMemo<VoterConstruction | undefined>(() => {
+    if (!helia) return undefined;
 
     try {
-      const voter = getOrCreateBrowserPubsubVoter({ helia, nameResolvers });
-      setConstruction({ helia, nameResolvers, voter });
+      return { voter: getOrCreateBrowserPubsubVoter({ helia, nameResolvers }) };
     } catch (error) {
       const constructionError = error instanceof Error ? error : new Error(String(error));
       console.error('Failed to construct pubsub voter', constructionError);
-      setConstruction({ helia, nameResolvers, error: constructionError });
+      return { error: constructionError };
     }
   }, [helia, nameResolvers]);
 
-  if (!helia) return { state: 'unavailable' };
-  if (construction?.helia !== helia || construction.nameResolvers !== nameResolvers) return { state: 'constructing' };
+  if (!helia || !construction) return { state: 'unavailable' };
   if (construction.error) return { state: 'failed', error: construction.error };
   if (construction.voter) return { state: 'ready', voter: construction.voter };
   return { state: 'constructing' };

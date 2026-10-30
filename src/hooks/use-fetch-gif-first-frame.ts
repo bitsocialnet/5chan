@@ -135,9 +135,12 @@ const useFetchGifFirstFrame = (url: GifSource | undefined) => {
 
   // Activity preserves refs while disconnecting effects. Recreate the URL from
   // retained bytes before a revealed feed paints, without repeating async loading.
+  // The resets below run with the object URL lifecycle: the previous cleanup revoked
+  // that URL, so a ready state for an earlier source must not survive to the next paint.
   useLayoutEffect(() => {
     if (!url) {
       retainedFrame.current = undefined;
+      // oxlint-disable-next-line react/set-state-in-effect -- drops a ready state whose object URL was just revoked
       setResult((prev) => (prev.source === undefined ? prev : { source: undefined, state: IDLE_STATE }));
       return;
     }

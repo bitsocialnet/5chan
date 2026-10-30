@@ -148,6 +148,17 @@ const fetchDirectoryListDeduped = (code: string): Promise<DirectoryList | null> 
   return promise;
 };
 
+const getInitialDirectoryListState = (directoryCode: string | undefined, fallback: DirectoryList | null): DirectoryListState => {
+  if (!directoryCode) {
+    return { list: null, loading: false, error: null };
+  }
+  const cached = moduleCaches.get(directoryCode);
+  if (cached) {
+    return { list: cached, loading: false, error: null };
+  }
+  return { list: fallback, loading: true, error: null };
+};
+
 /**
  * Fetch the candidate boards for a single directory code (e.g. 'biz').
  *
@@ -159,24 +170,21 @@ export const useDirectoryList = (directoryCode: string | undefined): DirectoryLi
   const directories = useDirectories();
   const fallback = useMemo(() => (directoryCode ? getFallbackDirectoryList(directoryCode, directories) : null), [directoryCode, directories]);
 
-  const [state, setState] = useState<DirectoryListState>(() => {
-    if (!directoryCode) {
-      return { list: null, loading: false, error: null };
-    }
-    const cached = moduleCaches.get(directoryCode);
-    if (cached) {
-      return { list: cached, loading: false, error: null };
-    }
-    return { list: fallback, loading: true, error: null };
-  });
+  // Loaded state belongs to the code it was loaded for; another code starts from its cached or fallback list.
+  const [loaded, setLoaded] = useState(() => ({ directoryCode, state: getInitialDirectoryListState(directoryCode, fallback) }));
+  const state = loaded.directoryCode === directoryCode ? loaded.state : getInitialDirectoryListState(directoryCode, fallback);
 
   useEffect(() => {
     if (!directoryCode) {
-      setState({ list: null, loading: false, error: null });
       return;
     }
 
     let isMounted = true;
+    const setState = (next: DirectoryListState | ((prev: DirectoryListState) => DirectoryListState)) =>
+      setLoaded((prev) => {
+        const prevState = prev.directoryCode === directoryCode ? prev.state : getInitialDirectoryListState(directoryCode, fallback);
+        return { directoryCode, state: typeof next === 'function' ? next(prevState) : next };
+      });
 
     const hydrate = (list: DirectoryList) => {
       const mergedList = mergeDirectoryListDefaults(list, fallback);
@@ -245,25 +253,10 @@ export const useDirectoryLists = (directoryCodes: string[] | undefined): Directo
     >;
   }, [directories, directoryCodesKey]);
 
-  const [state, setState] = useState<DirectoryListsState>({
-    listsByCode: {},
-    loadingByCode: {},
-    errorsByCode: {},
-  });
-
-  useEffect(() => {
+  // Start each request from cached, stored, or fallback lists; fetched results only apply to the request they belong to.
+  const initialState = useMemo(() => {
     const normalizedDirectoryCodes = directoryCodesKey ? directoryCodesKey.split('\0') : [];
-    if (normalizedDirectoryCodes.length === 0) {
-      setState({
-        listsByCode: {},
-        loadingByCode: {},
-        errorsByCode: {},
-      });
-      return;
-    }
-
-    let isMounted = true;
-    const initialState = normalizedDirectoryCodes.reduce<DirectoryListsState>(
+    return normalizedDirectoryCodes.reduce<DirectoryListsState>(
       (acc, directoryCode) => {
         const cached = moduleCaches.get(directoryCode);
         const local = cached ? null : getFromLocalStorage(directoryCode);
@@ -284,8 +277,20 @@ export const useDirectoryLists = (directoryCodes: string[] | undefined): Directo
         errorsByCode: {},
       },
     );
+  }, [directoryCodesKey, fallbackByCode]);
 
-    setState(initialState);
+  const [loaded, setLoaded] = useState<{ initialState: DirectoryListsState; state: DirectoryListsState } | null>(null);
+  const state = loaded?.initialState === initialState ? loaded.state : initialState;
+
+  useEffect(() => {
+    const normalizedDirectoryCodes = directoryCodesKey ? directoryCodesKey.split('\0') : [];
+    if (normalizedDirectoryCodes.length === 0) {
+      return;
+    }
+
+    let isMounted = true;
+    const setState = (update: (prev: DirectoryListsState) => DirectoryListsState) =>
+      setLoaded((prev) => ({ initialState, state: update(prev?.initialState === initialState ? prev.state : initialState) }));
 
     normalizedDirectoryCodes.forEach((directoryCode) => {
       fetchDirectoryListDeduped(directoryCode)
@@ -313,7 +318,7 @@ export const useDirectoryLists = (directoryCodes: string[] | undefined): Directo
     return () => {
       isMounted = false;
     };
-  }, [directoryCodesKey, fallbackByCode]);
+  }, [directoryCodesKey, fallbackByCode, initialState]);
 
   return state;
 };

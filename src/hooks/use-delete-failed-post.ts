@@ -117,6 +117,7 @@ const useDeleteFailedPost = (post?: FailedPost, deleteRedirectPath?: string) => 
       return;
     }
 
+    // oxlint-disable-next-line react/set-state-in-effect -- usePublishComment reports the stored retry only through its index state
     setIsRetryRedirectPending(false);
     // Navigate to the new pending row before clearing the retry flag so PendingPost never observes a
     // committed "old index + no retry flag + no addressable post" state that would bounce to the board.

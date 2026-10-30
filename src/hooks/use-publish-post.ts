@@ -124,9 +124,13 @@ const usePublishPost = ({
   const { index, publishComment, abandonPublish } = usePublishComment(publishOptionsWithAbandon);
   abandonPublishRef.current = abandonPublish;
 
-  useEffect(() => {
+  // A publish error describes the inputs it was raised for; clear it as soon as any of them changes.
+  const publishPostErrorInputs = [author?.displayName, blockedReason, communityAddress, content, flairs, link, spoiler, title];
+  const [publishPostErrorInputsSnapshot, setPublishPostErrorInputsSnapshot] = useState(publishPostErrorInputs);
+  if (publishPostErrorInputs.some((value, index) => !Object.is(value, publishPostErrorInputsSnapshot[index]))) {
+    setPublishPostErrorInputsSnapshot(publishPostErrorInputs);
     setPublishPostError(null);
-  }, [author?.displayName, blockedReason, communityAddress, content, flairs, link, spoiler, title]);
+  }
 
   const startPublishPost = useCallback(async () => {
     if (blockedReason) {

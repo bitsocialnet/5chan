@@ -180,10 +180,10 @@ export const useVideoThumbnailLinkConversion = ({ enabled, onContentChange, onLi
     [cancelPendingConversion, enabled, scheduleConversionCountdown],
   );
 
+  // A conversion can only be queued while enabled, so disabling tears down its countdown and notice.
   useEffect(() => {
-    if (!enabled) {
-      cancelPendingConversion();
-    }
+    if (!enabled) return;
+    return cancelPendingConversion;
   }, [cancelPendingConversion, enabled]);
 
   useEffect(
