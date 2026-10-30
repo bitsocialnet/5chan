@@ -297,7 +297,6 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
         const precheck = await runSpamBlockerPrecheck({
           authorRole: accountRole,
           challenges: communityChallenges,
-          communityAddress,
           otherAnswers: flagPublishOptions.challengeRequest?.challengeAnswers,
           publication: { content: publishContent, displayName: currentDisplayName, parentCid, postCid },
         });
@@ -639,7 +638,7 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
   }, [showReplyModal, quoteInsertRequestId, quoteInsertNumber, quoteInsertSelectedText, postOptionsDirectoryCode, setPublishReplyOptions, t, updateDraft]);
 
   const { isUploading, uploadPhase, chooseFile, uploadAttachment } = useFileUpload();
-  const runSpamBlockerPrecheck = useSpamBlockerPrecheck();
+  const runSpamBlockerPrecheck = useSpamBlockerPrecheck({ communityAddress });
   const isReplyFormActiveRef = useRef(false);
   useEffect(() => {
     isReplyFormActiveRef.current = showReplyModal;

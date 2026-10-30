@@ -1,7 +1,15 @@
-import * as ed from '@noble/ed25519';
+import { ed25519 } from '@noble/curves/ed25519.js';
 import * as cborg from 'cborg';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createPrecheckSessionId, createSignedPrecheckPayload, fetchPrecheckStatus, getPrecheckIframeUrl, getSpamBlockerPrecheckPlan } from '../spam-blocker-precheck';
+import {
+  createPrecheckSessionId,
+  fetchPrecheckStatus,
+  getLocalAuthorHistory,
+  getPrecheckIframeUrl,
+  getSpamBlockerPrecheckPlan,
+  type LocalAuthorHistory,
+} from '../spam-blocker-precheck';
+import { createSignedPrecheckPayload } from '../spam-blocker-precheck-signature';
 
 const spamBlocker = (serverUrl = 'https://spamblocker.bitsocial.net/api/v1') => ({ type: 'url/iframe', challenge: `${serverUrl}/precheck` });
 
@@ -16,8 +24,24 @@ describe('getSpamBlockerPrecheckPlan', () => {
   const defaultBoard = [
     { type: 'text/plain', exclude: [modRoles, { rateLimit: 5, rateLimitChallengeSuccess: false }] },
     { type: 'text/plain', exclude: [modRoles, { publicationType: { post: true, reply: true, vote: true } }] },
-    { ...spamBlocker(), exclude: [{ publicationType: { reply: true } }, modRoles, { postCount: 10, firstCommentTimestamp: 604800 }] },
-    { ...spamBlocker(), exclude: [{ publicationType: { post: true } }, modRoles, { replyCount: 20, firstCommentTimestamp: 604800 }] },
+    {
+      ...spamBlocker(),
+      exclude: [
+        { publicationType: { reply: true } },
+        modRoles,
+        { postCount: 10, firstCommentTimestamp: 604800, rateLimit: 3, rateLimitChallengeSuccess: true },
+        { replyCount: 20, firstCommentTimestamp: 604800, rateLimit: 3, rateLimitChallengeSuccess: true },
+      ],
+    },
+    {
+      ...spamBlocker(),
+      exclude: [
+        { publicationType: { post: true } },
+        modRoles,
+        { postCount: 10, firstCommentTimestamp: 604800, rateLimit: 6, rateLimitChallengeSuccess: true },
+        { replyCount: 20, firstCommentTimestamp: 604800, rateLimit: 6, rateLimitChallengeSuccess: true },
+      ],
+    },
   ];
 
   it('puts the pass at the spam blocker that checks the post, past challenges that ignore answers', () => {
@@ -37,8 +61,32 @@ describe('getSpamBlockerPrecheckPlan', () => {
     expect(getSpamBlockerPrecheckPlan([defaultBoard[2]], reply)).toBeUndefined();
   });
 
-  it('pre-checks when an exclude depends on something only the board knows, such as karma', () => {
-    expect(getSpamBlockerPrecheckPlan([{ ...spamBlocker(), exclude: [{ postCount: 10 }] }], post)?.getChallengeAnswers('pass')).toEqual(['pass']);
+  describe('authors with the karma a board exempts', () => {
+    const nowSeconds = 1_800_000_000;
+    const weekAgo = nowSeconds - 604800;
+    const established: LocalAuthorHistory = { postCount: 10, replyCount: 0, firstCommentTimestamp: weekAgo, lastHourCount: 0 };
+
+    it("skips the pre-check when the account's own comments on the board meet an exclude", () => {
+      expect(getSpamBlockerPrecheckPlan(defaultBoard, { ...post, authorHistory: established, nowSeconds })).toBeUndefined();
+      // Twenty replies exempt an author's posts too.
+      const replier = { ...established, postCount: 0, replyCount: 20 };
+      expect(getSpamBlockerPrecheckPlan(defaultBoard, { ...post, authorHistory: replier, nowSeconds })).toBeUndefined();
+      expect(getSpamBlockerPrecheckPlan(defaultBoard, { ...reply, authorHistory: replier, nowSeconds })).toBeUndefined();
+    });
+
+    it('pre-checks an author short of any condition, or over the rate limit', () => {
+      const plan = (authorHistory: LocalAuthorHistory) => getSpamBlockerPrecheckPlan(defaultBoard, { ...post, authorHistory, nowSeconds })?.getChallengeAnswers('pass');
+      expect(plan({ ...established, postCount: 9 })).toEqual(['', '', 'pass']);
+      expect(plan({ ...established, firstCommentTimestamp: weekAgo + 1 })).toEqual(['', '', 'pass']);
+      expect(plan({ ...established, firstCommentTimestamp: undefined })).toEqual(['', '', 'pass']);
+      expect(plan({ ...established, lastHourCount: 3 })).toEqual(['', '', 'pass']);
+    });
+
+    it('pre-checks when an exclude depends on something only the board knows', () => {
+      const scoreExcluded = [{ ...spamBlocker(), exclude: [{ postScore: 10 }] }];
+      expect(getSpamBlockerPrecheckPlan(scoreExcluded, { ...post, authorHistory: established, nowSeconds })?.getChallengeAnswers('pass')).toEqual(['pass']);
+      expect(getSpamBlockerPrecheckPlan([{ ...spamBlocker(), exclude: [{ postCount: 10 }] }], post)?.getChallengeAnswers('pass')).toEqual(['pass']);
+    });
   });
 
   it('is not used when a challenge that reads its own answer would get the pass or another answer', () => {
@@ -73,9 +121,9 @@ describe('getSpamBlockerPrecheckPlan', () => {
 
 describe('createSignedPrecheckPayload', () => {
   it('signs the request with the author key the way the spam blocker verifies it', async () => {
-    const privateKey = ed.utils.randomPrivateKey();
+    const privateKey = ed25519.utils.randomSecretKey();
     const sessionId = createPrecheckSessionId();
-    const payload = await createSignedPrecheckPayload({
+    const payload = createSignedPrecheckPayload({
       communityAddress: 'music-posting.eth',
       privateKey: toBase64(privateKey),
       publication: { author: { address: 'author.bso', displayName: undefined }, content: 'hello', title: undefined, timestamp: 1_700_000_000 },
@@ -90,12 +138,45 @@ describe('createSignedPrecheckPayload', () => {
     expect(decoded.publication).toEqual({ author: { address: 'author.bso' }, content: 'hello', timestamp: 1_700_000_000 });
     expect(decoded.signature.type).toBe('ed25519');
     expect(decoded.signature.signedPropertyNames).toEqual(['sessionId', 'communityAddress', 'publication', 'timestamp']);
-    expect(decoded.signature.publicKey).toEqual(await ed.getPublicKey(privateKey));
+    expect(decoded.signature.publicKey).toEqual(ed25519.getPublicKey(privateKey));
 
     // The server re-encodes the named properties of the decoded body and verifies them.
     const signed = Object.fromEntries(decoded.signature.signedPropertyNames.map((name) => [name, decoded[name]]));
     const bytes = (value: Uint8Array) => Uint8Array.from(value);
-    expect(await ed.verify(bytes(decoded.signature.signature), bytes(cborg.encode(signed)), bytes(decoded.signature.publicKey))).toBe(true);
+    expect(ed25519.verify(bytes(decoded.signature.signature), bytes(cborg.encode(signed)), bytes(decoded.signature.publicKey))).toBe(true);
+  });
+});
+
+describe('getLocalAuthorHistory', () => {
+  it("counts the comments the board accepted, the earliest one, and the last hour's of the post's type", () => {
+    const nowSeconds = 1_800_000_000;
+    const accountComments = [
+      { cid: 'post-1', timestamp: nowSeconds - 900_000 },
+      { cid: 'reply-1', parentCid: 'post-1', timestamp: nowSeconds - 600 },
+      { cid: 'post-2', timestamp: nowSeconds - 1200 },
+      { cid: 'post-3', timestamp: nowSeconds - 7200 },
+      // Never accepted by the board.
+      { timestamp: nowSeconds - 1_000_000 },
+    ];
+    expect(getLocalAuthorHistory({ accountComments, isReply: false, nowSeconds })).toEqual({
+      postCount: 3,
+      replyCount: 1,
+      firstCommentTimestamp: nowSeconds - 900_000,
+      lastHourCount: 1,
+    });
+    expect(getLocalAuthorHistory({ accountComments, isReply: true, nowSeconds }).lastHourCount).toBe(1);
+    expect(getLocalAuthorHistory({ accountComments: [], isReply: false, nowSeconds })).toEqual({ postCount: 0, replyCount: 0, lastHourCount: 0 });
+  });
+});
+
+describe('createPrecheckSessionId', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('creates a v4 UUID session id on browsers without crypto.randomUUID', () => {
+    vi.stubGlobal('crypto', { getRandomValues: (bytes: Uint8Array) => bytes.fill(0xff) });
+    expect(createPrecheckSessionId()).toBe('precheck-ffffffff-ffff-4fff-bfff-ffffffffffff');
   });
 });
 

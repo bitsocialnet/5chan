@@ -595,5 +595,6 @@
   "x_md5s_filtered": "{{count}} MD5-er filtrert.",
   "md5_filter": "MD5-filter",
   "md5_filter_help": "Skjul innlegg med disse filene, én per linje: en SHA-256- eller MD5-hash (MD5-linjer fra 4chan X fungerer også) eller en lenke. En Forge-fil gjenkjennes på SHA-256-hashen i lenken sin. Andre bilder hashes når de er lastet inn, hvis verten tillater det, så en oppført hash skjuler det samme bildet uansett hvor det blir postet. Alle andre filer gjenkjennes bare på den nøyaktige lenken. Linjer som starter med #, ignoreres.",
-  "directory_requirement_rules": "Katalogens regler står først, ord for ord"
+  "directory_requirement_rules": "Katalogens regler står først, ord for ord",
+  "spam_check_not_finished": "Spamkontrollen ble ikke fullført. Publiser på nytt for å prøve igjen."
 }

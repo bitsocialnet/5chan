@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import type { Comment } from '@bitsocial/bitsocial-react-hooks';
@@ -10,6 +10,7 @@ import { getNonokoPendingRouteState } from '../../lib/utils/post-options-utils';
 import usePendingPostNavigationStore from '../../stores/use-pending-post-navigation-store';
 import usePendingUploadPostStore, { isCurrentPendingUploadPost, type PendingUploadPost } from '../../stores/use-pending-upload-post-store';
 import usePostFormDraftsStore from '../../stores/use-post-form-drafts-store';
+import { createPublishPostStore } from '../../stores/use-publish-post-store';
 
 /**
  * Runs a submitted new thread's steps: the board's spam blocker check, then the upload, then the publish.
@@ -21,7 +22,10 @@ const Publisher = ({ pendingUploadPost }: { pendingUploadPost: PendingUploadPost
   const { pathname } = useLocation();
   const { id, attachment, authorRole, boardChallenges, boardPath, draftKey, nonokoRedirectPath, publishOptions } = pendingUploadPost;
   const { uploadAttachment } = useFileUpload();
-  const runSpamBlockerPrecheck = useSpamBlockerPrecheck();
+  const runSpamBlockerPrecheck = useSpamBlockerPrecheck({ communityAddress: publishOptions.communityAddress });
+  // Its own publish options store: the post form's shared one would hand this post's title, link and pass
+  // to the form's next post, and a form open meanwhile would overwrite them.
+  const [publishPostStore] = useState(createPublishPostStore);
   const startedRef = useRef(false);
   const pendingIndexRef = useRef<number | null>(null);
   // Read by the steps after their awaits, so they never pull someone who left the pending page back to it.
@@ -101,6 +105,7 @@ const Publisher = ({ pendingUploadPost }: { pendingUploadPost: PendingUploadPost
     onPendingPost,
     onPublishAccepted,
     onPublishError,
+    publishPostStore,
   });
 
   useEffect(() => {
@@ -112,7 +117,6 @@ const Publisher = ({ pendingUploadPost }: { pendingUploadPost: PendingUploadPost
       const precheck = await runSpamBlockerPrecheck({
         authorRole,
         challenges: boardChallenges,
-        communityAddress: publishOptions.communityAddress,
         otherAnswers: publishOptions.challengeRequest?.challengeAnswers,
         publication: {
           content: publishOptions.content,

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import * as ed from '@noble/ed25519';
+import { ed25519 } from '@noble/curves/ed25519.js';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import useChallengesStore from '../../stores/use-challenges-store';
 import useSpamBlockerPrecheck, { type SpamBlockerPrecheckResult } from '../use-spam-blocker-precheck';
@@ -11,10 +11,20 @@ const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise
 
 const testState = vi.hoisted(() => ({
   account: undefined as { author?: { address?: string }; signer?: { privateKey?: string } } | undefined,
+  accountComments: [] as Array<{ cid?: string; parentCid?: string; timestamp?: number }>,
+  accountCommentsLookups: [] as unknown[],
 }));
 
 vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
   useAccount: () => testState.account,
+  useAccountComments: (lookup: unknown) => {
+    testState.accountCommentsLookups.push(lookup);
+    return { accountComments: testState.accountComments };
+  },
+}));
+
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({ t: (key: string) => key }),
 }));
 
 const SERVER_URL = 'https://spamblocker.example/api/v1';
@@ -28,12 +38,11 @@ let root: Root;
 let runPrecheck: ReturnType<typeof useSpamBlockerPrecheck>;
 
 const Harness = () => {
-  runPrecheck = useSpamBlockerPrecheck();
+  runPrecheck = useSpamBlockerPrecheck({ communityAddress: 'music-posting.eth' });
   return null;
 };
 
-const start = (challenges: unknown = CHALLENGES) =>
-  runPrecheck({ challenges, communityAddress: 'music-posting.eth', publication: { content: 'checked post', displayName: 'anon' } });
+const start = (challenges: unknown = CHALLENGES) => runPrecheck({ challenges, publication: { content: 'checked post', displayName: 'anon' } });
 
 const flush = async () => {
   for (let i = 0; i < 5; i += 1) {
@@ -42,6 +51,9 @@ const flush = async () => {
     });
   }
 };
+
+/** Signing loads its module first, which takes longer than a few microtasks on a slow runner. */
+const waitForModal = () => vi.waitFor(() => expect(useChallengesStore.getState().challenges).toHaveLength(1), { timeout: 4000 });
 
 /** The challenge entry the pre-check put in the modal store: [challenge message, publication]. */
 const getModalEntry = () => {
@@ -53,8 +65,10 @@ const getModalEntry = () => {
 
 describe('useSpamBlockerPrecheck', () => {
   beforeEach(async () => {
-    const privateKey = ed.utils.randomPrivateKey();
+    const privateKey = ed25519.utils.randomSecretKey();
     testState.account = { author: { address: 'author.bso' }, signer: { privateKey: btoa(String.fromCharCode(...privateKey)) } };
+    testState.accountComments = [];
+    testState.accountCommentsLookups = [];
     useChallengesStore.setState({ challenges: [] });
     container = document.createElement('div');
     document.body.appendChild(container);
@@ -81,7 +95,7 @@ describe('useSpamBlockerPrecheck', () => {
 
     let result: SpamBlockerPrecheckResult | undefined;
     void start().then((value) => (result = value));
-    await flush();
+    await waitForModal();
 
     const entry = getModalEntry();
     const iframeChallenge = entry?.[0].challenges[0];
@@ -108,7 +122,7 @@ describe('useSpamBlockerPrecheck', () => {
     );
 
     const resultPromise = start();
-    await flush();
+    await waitForModal();
     await act(async () => {
       getModalEntry()?.[1].publishChallengeAnswers({ challengeAnswers: [''] });
     });
@@ -123,7 +137,7 @@ describe('useSpamBlockerPrecheck', () => {
     );
 
     const resultPromise = start();
-    await flush();
+    await waitForModal();
     await act(async () => {
       getModalEntry()?.[1].publishChallengeAnswers({ challengeAnswers: [''] });
     });
@@ -139,11 +153,10 @@ describe('useSpamBlockerPrecheck', () => {
 
     const resultPromise = runPrecheck({
       challenges: [CHALLENGES[0]],
-      communityAddress: 'music-posting.eth',
       otherAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
       publication: { content: 'flagged post' },
     });
-    await flush();
+    await waitForModal();
     await act(async () => {
       getModalEntry()?.[1].publishChallengeAnswers({ challengeAnswers: [''] });
     });
@@ -155,7 +168,35 @@ describe('useSpamBlockerPrecheck', () => {
 
   it('skips a moderator whom the board excludes from its spam blocker', async () => {
     const challenges = [{ ...CHALLENGES[0], exclude: [{ roles: ['moderator', 'admin', 'owner'] }] }];
-    await expect(runPrecheck({ authorRole: 'moderator', challenges, communityAddress: 'music-posting.eth', publication: {} })).resolves.toEqual({ status: 'skipped' });
+    await expect(runPrecheck({ authorRole: 'moderator', challenges, publication: {} })).resolves.toEqual({ status: 'skipped' });
+    expect(useChallengesStore.getState().challenges).toHaveLength(0);
+  });
+
+  it('says the check did not finish when the author confirmed it early', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response(JSON.stringify({ status: 'pending' }))),
+    );
+
+    const resultPromise = start();
+    await waitForModal();
+    await act(async () => {
+      getModalEntry()?.[1].publishChallengeAnswers({ challengeAnswers: [''] });
+    });
+
+    await expect(resultPromise).resolves.toEqual({ status: 'stopped', message: 'spam_check_not_finished' });
+  });
+
+  it('skips an author whose comments on the board earn the karma its spam blocker exempts', async () => {
+    const nowSeconds = Math.floor(Date.now() / 1000);
+    testState.accountComments = Array.from({ length: 10 }, (_, index) => ({ cid: `post-${index}`, timestamp: nowSeconds - 700_000 - index }));
+    const challenges = [{ ...CHALLENGES[0], exclude: [{ postCount: 10, firstCommentTimestamp: 604800, rateLimit: 3, rateLimitChallengeSuccess: true }] }];
+    await act(async () => {
+      root.render(createElement(Harness));
+    });
+
+    await expect(runPrecheck({ challenges, publication: { content: 'trusted post' } })).resolves.toEqual({ status: 'skipped' });
+    expect(testState.accountCommentsLookups.at(-1)).toEqual({ communityAddress: 'music-posting.eth' });
     expect(useChallengesStore.getState().challenges).toHaveLength(0);
   });
 
@@ -164,7 +205,7 @@ describe('useSpamBlockerPrecheck', () => {
     vi.stubGlobal('fetch', fetchMock);
 
     const resultPromise = start();
-    await flush();
+    await waitForModal();
     await act(async () => {
       await useChallengesStore.getState().abandonCurrentChallenge();
     });

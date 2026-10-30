@@ -40,6 +40,7 @@ const testState = vi.hoisted(() => ({
   chooseFileMock: vi.fn(),
   uploadAttachmentMock: vi.fn(),
   precheckMock: vi.fn(),
+  precheckHookOptions: undefined as { communityAddress?: string } | undefined,
   isOffline: false,
   isOnlineStatusLoading: false,
   uploadPhase: null as 'uploading' | 'checking' | null,
@@ -336,7 +337,10 @@ vi.mock('../../../hooks/use-publish-reply', async () => {
 });
 
 vi.mock('../../../hooks/use-spam-blocker-precheck', () => ({
-  default: () => testState.precheckMock,
+  default: (options: { communityAddress?: string }) => {
+    testState.precheckHookOptions = options;
+    return testState.precheckMock;
+  },
 }));
 
 vi.mock('../../../hooks/use-file-upload', () => ({
@@ -1978,9 +1982,9 @@ describe('PostForm', () => {
     await dispatchInput(table.querySelector('textarea') as HTMLTextAreaElement, 'checked reply');
     await clickByText(table, 'post');
 
+    expect(testState.precheckHookOptions).toEqual({ communityAddress: 'music-posting.eth' });
     expect(testState.precheckMock).toHaveBeenCalledWith({
       challenges,
-      communityAddress: 'music-posting.eth',
       publication: expect.objectContaining({ content: 'checked reply', parentCid: 'thread-cid' }),
     });
     expect(testState.uploadAttachmentMock).toHaveBeenCalledWith(attachment);

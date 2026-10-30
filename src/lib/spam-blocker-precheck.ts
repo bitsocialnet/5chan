@@ -1,5 +1,4 @@
-import * as ed from '@noble/ed25519';
-import * as cborg from 'cborg';
+import type { Comment } from '@bitsocial/bitsocial-react-hooks';
 
 /**
  * A board running a Bitsocial Spam Blocker that accepts pre-check passes publishes `<serverUrl>/precheck`
@@ -16,12 +15,29 @@ export interface SpamBlockerPrecheckPlan {
   getChallengeAnswers: (pass: string) => string[];
 }
 
+/**
+ * What the account's own comments on the board show about its author there. The board counts comments
+ * published from other devices too, so these are lower bounds: they can prove an author has the karma a
+ * board exempts from its spam blocker, never that the author lacks it.
+ */
+export interface LocalAuthorHistory {
+  postCount: number;
+  replyCount: number;
+  /** When the earliest of them was published; the author's first comment on the board is no newer. */
+  firstCommentTimestamp?: number;
+  /** Those of this post's type published in the last hour, which a board's rate limit counts. */
+  lastHourCount: number;
+}
+
 export interface PrecheckPublicationContext {
   isReply: boolean;
   /** The author's role on the board; boards often exclude moderators from their challenges. */
   authorRole?: string;
+  authorHistory?: LocalAuthorHistory;
   /** Answers the post carries anyway, such as a country flag the flags challenge finds in any slot. */
   otherAnswers?: string[];
+  /** Seconds since the epoch, for an exclude that needs the author's first comment to be old enough. */
+  nowSeconds?: number;
 }
 
 export interface PrecheckPublication {
@@ -55,22 +71,73 @@ const getPrecheckServerUrl = (challenge: unknown): string | undefined => {
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null;
 
+const RATE_LIMIT_WINDOW_SECONDS = 60 * 60;
+
+/** Builds the author's history on a board from the account's comments there that the board accepted. */
+export const getLocalAuthorHistory = ({
+  accountComments,
+  isReply,
+  nowSeconds,
+}: {
+  accountComments: Comment[];
+  isReply: boolean;
+  nowSeconds: number;
+}): LocalAuthorHistory => {
+  const history: LocalAuthorHistory = { postCount: 0, replyCount: 0, lastHourCount: 0 };
+  for (const { cid, parentCid, timestamp } of accountComments) {
+    if (!cid) continue;
+    if (parentCid) history.replyCount++;
+    else history.postCount++;
+    if (typeof timestamp !== 'number') continue;
+    if (history.firstCommentTimestamp === undefined || timestamp < history.firstCommentTimestamp) history.firstCommentTimestamp = timestamp;
+    if (Boolean(parentCid) === isReply && timestamp > nowSeconds - RATE_LIMIT_WINDOW_SECONDS) history.lastHourCount++;
+  }
+  return history;
+};
+
+/** Whether one condition of an exclude item certainly holds for the post, following pkc-js's exclude rules. */
+const meetsExcludeCondition = (key: string, value: unknown, { authorHistory, authorRole, isReply, nowSeconds }: PrecheckPublicationContext) => {
+  switch (key) {
+    case 'publicationType':
+      return isRecord(value) && value[isReply ? 'reply' : 'post'] === true;
+    case 'roles':
+      return Array.isArray(value) && authorRole !== undefined && value.includes(authorRole);
+    case 'postCount':
+      return typeof value === 'number' && authorHistory !== undefined && authorHistory.postCount >= value;
+    case 'replyCount':
+      return typeof value === 'number' && authorHistory !== undefined && authorHistory.replyCount >= value;
+    case 'firstCommentTimestamp':
+      return (
+        typeof value === 'number' &&
+        typeof nowSeconds === 'number' &&
+        authorHistory?.firstCommentTimestamp !== undefined &&
+        authorHistory.firstCommentTimestamp <= nowSeconds - value
+      );
+    // The board counts the author's accepted posts of this type in the last hour. Ones from other devices
+    // are missing here, so this can let an author over the limit through; the board then still runs its
+    // spam blocker after the upload, as it did before pre-checks.
+    case 'rateLimit':
+      return typeof value === 'number' && authorHistory !== undefined && authorHistory.lastHourCount < value;
+    // Only accepted posts are counted here, which is what `rateLimitChallengeSuccess: true` (the default) counts.
+    case 'rateLimitChallengeSuccess':
+      return value === true;
+    default:
+      return false;
+  }
+};
+
 /**
  * Whether the board certainly skips this challenge for the post. Like pkc-js, an exclude item applies when
- * all its conditions match; only the publication type and the author's role can be checked here, so an
- * item with any other condition (karma, rate limits, other challenges) is never counted as applying.
+ * all its conditions match. Conditions this client cannot check, such as karma scores or other challenges'
+ * results, never count as matching, so the post is pre-checked whenever the board might check it.
  */
-const isExcludedForPost = (challenge: unknown, { isReply, authorRole }: PrecheckPublicationContext) => {
+const isExcludedForPost = (challenge: unknown, context: PrecheckPublicationContext) => {
   const excludes = isRecord(challenge) && Array.isArray(challenge.exclude) ? challenge.exclude : [];
   return excludes.some((exclude) => {
     if (!isRecord(exclude)) return false;
     const conditions = Object.entries(exclude).filter(([, value]) => value !== undefined && !(Array.isArray(value) && value.length === 0));
     if (conditions.length === 0) return false;
-    return conditions.every(([key, value]) => {
-      if (key === 'publicationType') return isRecord(value) && value[isReply ? 'reply' : 'post'] === true;
-      if (key === 'roles') return Array.isArray(value) && authorRole !== undefined && value.includes(authorRole);
-      return false;
-    });
+    return conditions.every(([key, value]) => meetsExcludeCondition(key, value, context));
   });
 };
 
@@ -119,49 +186,16 @@ export const getSpamBlockerPrecheckPlan = (challenges: unknown, context: Prechec
   };
 };
 
-export const createPrecheckSessionId = () => `precheck-${crypto.randomUUID()}`;
-
-const base64ToBytes = (base64: string) => Uint8Array.from(atob(base64), (character) => character.charCodeAt(0));
-
-const bytesToBase64Url = (bytes: Uint8Array) => {
-  let binary = '';
-  for (const byte of bytes) binary += String.fromCharCode(byte);
-  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+/** A random v4 UUID; `crypto.randomUUID` is missing from Safari before 15.4. */
+const createUuid = () => {
+  const bytes = crypto.getRandomValues(new Uint8Array(16));
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+  const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
 };
 
-/** CBOR encodes undefined as a value of its own, which the server would then sign over too. */
-const withoutUndefined = <T extends object>(value: T): T => Object.fromEntries(Object.entries(value).filter(([, entry]) => entry !== undefined)) as T;
-
-/**
- * The pre-check request, signed by the author's key so the spam blocker scores the author who will publish.
- * Returned as the base64url CBOR payload the pre-check iframe reads from its URL fragment.
- */
-export const createSignedPrecheckPayload = async ({
-  communityAddress,
-  privateKey,
-  publication,
-  sessionId,
-  timestamp,
-}: {
-  communityAddress: string;
-  privateKey: string;
-  publication: PrecheckPublication;
-  sessionId: string;
-  timestamp: number;
-}) => {
-  const privateKeyBytes = base64ToBytes(privateKey);
-  const propsToSign = {
-    sessionId,
-    communityAddress,
-    publication: withoutUndefined({ ...publication, author: withoutUndefined(publication.author) }),
-    timestamp,
-  };
-  // noble checks `instanceof Uint8Array`, which cborg's output can fail when it is a Buffer from another realm.
-  const signedBytes = Uint8Array.from(cborg.encode(propsToSign));
-  const [signature, publicKey] = await Promise.all([ed.sign(signedBytes, privateKeyBytes), ed.getPublicKey(privateKeyBytes)]);
-  const payload = { ...propsToSign, signature: { signature, publicKey, type: 'ed25519', signedPropertyNames: Object.keys(propsToSign) } };
-  return bytesToBase64Url(cborg.encode(payload));
-};
+export const createPrecheckSessionId = () => `precheck-${createUuid()}`;
 
 export const getPrecheckIframeUrl = ({ payload, serverUrl, sessionId }: { payload: string; serverUrl: string; sessionId: string }) =>
   `${serverUrl}/iframe/${encodeURIComponent(sessionId)}/precheck#payload=${payload}`;

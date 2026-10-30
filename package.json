@@ -130,7 +130,7 @@
     "@electron-forge/plugin-auto-unpack-natives": "8.0.1",
     "@electron/rebuild": "4.2.1",
     "@floating-ui/react": "0.27.20",
-    "@noble/ed25519": "1.7.5",
+    "@noble/curves": "2.0.1",
     "@noble/hashes": "2.0.1",
     "@playwright/cli": "0.1.22",
     "@react-spring/web": "10.1.2",

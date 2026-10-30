@@ -1199,7 +1199,6 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
         const precheck = await runSpamBlockerPrecheck({
           authorRole: accountRole,
           challenges: communityChallenges,
-          communityAddress: effectiveBoardAddress,
           otherAnswers: flagPublishOptions.challengeRequest?.challengeAnswers,
           publication: { content: publishContent, displayName: currentDisplayName, parentCid: cid || undefined, postCid },
         });
@@ -1293,7 +1292,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
   }, [replyIndex, closeForm, navigate, resetFields]);
 
   const { isUploading, uploadPhase, chooseFile, uploadAttachment } = useFileUpload();
-  const runSpamBlockerPrecheck = useSpamBlockerPrecheck();
+  const runSpamBlockerPrecheck = useSpamBlockerPrecheck({ communityAddress: effectiveBoardAddress });
   const clearLink = () => {
     cancelPendingConversion();
     setLinkValue('');

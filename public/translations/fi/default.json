@@ -595,5 +595,6 @@
   "x_md5s_filtered": "{{count}} MD5:tä suodatettu.",
   "md5_filter": "MD5-suodatin",
   "md5_filter_help": "Piilota viestit, joissa on nämä tiedostot, yksi riville: SHA-256- tai MD5-tiiviste (myös 4chan X:n MD5-rivit toimivat) tai linkki. Forge-tiedosto tunnistetaan sen linkissä olevasta SHA-256-tiivisteestä. Muille kuville lasketaan tiiviste, kun ne ovat latautuneet, jos isäntäpalvelin sallii sen, joten listattu tiiviste piilottaa saman kuvan, missä tahansa se julkaistaan. Muut tiedostot tunnistetaan vain niiden tarkasta linkistä. #-merkillä alkavat rivit ohitetaan.",
-  "directory_requirement_rules": "Hakemiston säännöt listattuna ensin, sanasta sanaan"
+  "directory_requirement_rules": "Hakemiston säännöt listattuna ensin, sanasta sanaan",
+  "spam_check_not_finished": "Roskapostitarkistus ei valmistunut. Yritä uudelleen lähettämällä viesti uudelleen."
 }

@@ -21,6 +21,7 @@ const testState = vi.hoisted(() => ({
   navigateMock: vi.fn(),
   pathname: '/pending/upload',
   precheckMock: vi.fn(),
+  precheckHookOptions: undefined as { communityAddress?: string } | undefined,
   publishPostMock: vi.fn(),
   publishPostOptions: undefined as PublishPostOptions | undefined,
   uploadAttachmentMock: vi.fn<(media: unknown, onPhaseChange?: (phase: UploadPhase) => void) => Promise<{ url: string; fileName: string } | null>>(),
@@ -40,7 +41,10 @@ vi.mock('../../../hooks/use-file-upload', () => ({
 }));
 
 vi.mock('../../../hooks/use-spam-blocker-precheck', () => ({
-  default: () => testState.precheckMock,
+  default: (options: { communityAddress?: string }) => {
+    testState.precheckHookOptions = options;
+    return testState.precheckMock;
+  },
 }));
 
 vi.mock('../../../hooks/use-publish-post', () => ({
@@ -125,9 +129,9 @@ describe('PendingUploadPostPublisher', () => {
     await submitPost();
     unsubscribe();
 
+    expect(testState.precheckHookOptions).toEqual({ communityAddress: 'music-posting.eth' });
     expect(testState.precheckMock).toHaveBeenCalledWith({
       challenges,
-      communityAddress: 'music-posting.eth',
       publication: { content: 'thread body', displayName: 'anon', flairs: undefined, spoiler: undefined, title: 'subject' },
     });
     expect(testState.uploadAttachmentMock).toHaveBeenCalledWith(attachment, expect.any(Function));
