@@ -1805,6 +1805,31 @@ describe('PostForm', () => {
     expect(usePostFormDraftsStore.getState().forms[pendingUploadPost?.draftKey ?? '']?.draft.attachment).toEqual(attachment);
   });
 
+  it('opens the upload page of a new thread still uploading when its form posts it again', async () => {
+    const file = new File(['png'], 'chosen.png', { type: 'image/png' });
+    const attachment = { kind: 'file', file, name: 'chosen.png', mimeType: 'image/png' };
+    testState.uploadMode = 'random';
+    testState.resolvedCommunityAddress = 'music-posting.eth';
+    testState.chooseFileMock.mockResolvedValue(attachment);
+    await renderPostForm('/mu');
+    await clickByText(container, 'start_new_thread');
+    const table = container.querySelector('table') as HTMLTableElement;
+    await clickByText(table, 'choose_file');
+    await dispatchInput(table.querySelector('textarea') as HTMLTextAreaElement, 'uploaded body');
+    await clickByText(table, 'post');
+    const [pendingUploadPost] = usePendingUploadPostStore.getState().pendingUploadPosts;
+
+    // The author goes back to the board while it uploads and posts the same draft again.
+    await clickByText(container, 'start_new_thread');
+    await clickByText(container.querySelector('table') as HTMLTableElement, 'post');
+
+    expect(usePendingUploadPostStore.getState().pendingUploadPosts).toEqual([pendingUploadPost]);
+    expect(testState.navigateMock).toHaveBeenLastCalledWith('/pending/upload', {
+      flushSync: true,
+      state: { boardPath: 'mu', pendingPost: pendingUploadPost?.post, pendingUploadId: pendingUploadPost?.id },
+    });
+  });
+
   it('attaches a file dropped on the form, then hands it to the pending post once the post is submitted', async () => {
     const file = new File(['png'], 'dropped.png', { type: 'image/png' });
     testState.uploadMode = 'random';

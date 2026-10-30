@@ -33,7 +33,8 @@ const AccountDataEditor = lazyImport(() => import('./views/account-data-editor')
 const BoardSettings = lazyImport(() => import('./views/board-settings'));
 const ChallengeModal = lazyImport(() => import('./components/challenge-modal'));
 const ImageFilterNotice = lazyImport(() => import('./components/image-filter-notice'));
-const PendingUploadPostPublisher = lazyImport(() => import('./components/pending-upload-post-publisher'));
+const loadPendingUploadPostPublisher = () => import('./components/pending-upload-post-publisher');
+const PendingUploadPostPublisher = lazyImport(loadPendingUploadPostPublisher);
 const DirectoryModal = lazyImport(() => import('./components/directory-modal'));
 const DisclaimerModal = lazyImport(() => import('./components/disclaimer-modal'));
 const loadReplyModal = () => import('./components/reply-modal');
@@ -117,9 +118,11 @@ const renderQuotePreviewPost = (props: PostProps) => (
 preloadThemeAssets();
 // Warm the board routes, reply modal, settings modal, and secondary view chunks, and the icons they
 // use, so the first "No." click or navigation does not wait for a lazy import (routes render without
-// transitions).
+// transitions). The pending upload publisher too: a thread with a file needs it as soon as it is posted,
+// even in a tab opened before a deploy replaced its chunk.
 const preloadLazyChunks = () => {
   void loadBoardRoutes();
+  void loadPendingUploadPostPublisher();
   void loadReplyModal();
   void loadSettingsModal();
   Object.values(secondaryViewLoaders).forEach((load) => void load());

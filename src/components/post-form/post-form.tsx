@@ -991,6 +991,22 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
 
       const nonokoRedirectPath = hasNonokoOption(currentOptions) ? getBoardIndexPath() : null;
 
+      // The form keeps a submitted post's draft until the board accepts it. Posted again while its check or upload
+      // is still running, it opens that post's upload page instead of sending it a second time.
+      const inFlightUpload = attachment
+        ? usePendingUploadPostStore.getState().pendingUploadPosts.find((upload) => upload.draftKey === draftKey && upload.attachment === attachment)
+        : undefined;
+      if (inFlightUpload) {
+        flushSync(() =>
+          navigate(PENDING_UPLOAD_POST_PATH, {
+            flushSync: true,
+            state: { ...(inFlightUpload.boardPath ? { boardPath: inFlightUpload.boardPath } : {}), pendingPost: inFlightUpload.post, pendingUploadId: inFlightUpload.id },
+          }),
+        );
+        hideForm();
+        return;
+      }
+
       if (attachment) {
         // The post shows as pending at once while the board's spam blocker checks it and then its file
         // uploads, so a rejected post never leaves a file on the host. This form unmounts on the pending
