@@ -243,6 +243,9 @@ const Rules = () => {
   const hashCode = getRulesHashCode(hash);
   // A loaded board's rules belong to the hash they were loaded under; navigating to another hash clears them.
   const [loadedBoard, setLoadedBoard] = useState({ address: '', hashCode });
+  if (loadedBoard.hashCode !== hashCode) {
+    setLoadedBoard({ address: '', hashCode });
+  }
   const loadedAddress = loadedBoard.hashCode === hashCode ? loadedBoard.address : '';
   const setLoadedAddress = (address: string) => setLoadedBoard({ address, hashCode });
 
