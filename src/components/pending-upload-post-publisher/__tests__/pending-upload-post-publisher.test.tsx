@@ -13,6 +13,7 @@ const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise
 
 type PublishPostOptions = {
   communityAddress?: string;
+  onAbandonPost?: () => void;
   onPendingPost?: (accountCommentIndex: number, pendingPost: Record<string, unknown>) => void;
   onPublishAccepted?: () => void;
   onPublishError?: (error: Error) => void;
@@ -165,7 +166,7 @@ describe('PendingUploadPostPublisher', () => {
     await submitPost();
 
     expect(testState.navigateMock).toHaveBeenCalledTimes(1);
-    expect(testState.navigateMock).toHaveBeenCalledWith('/pending/7', { replace: true, state: { boardPath: 'mu', pendingPost: publishedPost } });
+    expect(testState.navigateMock).toHaveBeenCalledWith('/pending/7', { flushSync: true, replace: true, state: { boardPath: 'mu', pendingPost: publishedPost } });
     expect(usePendingPostNavigationStore.getState().pendingPostNavigationIndex).toBe(7);
     expect(usePendingUploadPostStore.getState().pendingUploadPosts).toEqual([]);
 
@@ -261,8 +262,35 @@ describe('PendingUploadPostPublisher', () => {
     await flush();
 
     expect(testState.navigateMock).toHaveBeenCalledTimes(1);
-    expect(testState.navigateMock).toHaveBeenCalledWith('/pending/8', { replace: true, state: { boardPath: 'biz', pendingPost: publishedPost } });
+    expect(testState.navigateMock).toHaveBeenCalledWith('/pending/8', { flushSync: true, replace: true, state: { boardPath: 'biz', pendingPost: publishedPost } });
     expect(usePendingUploadPostStore.getState().pendingUploadPosts).toEqual([]);
+  });
+
+  it('does not pull an author who moved on back to the form when they close the board challenge', async () => {
+    let finishUpload: (value: { url: string; fileName: string }) => void = () => undefined;
+    testState.uploadAttachmentMock.mockImplementation(() => new Promise((resolve) => (finishUpload = resolve)));
+    await submitPost();
+    testState.pathname = '/biz';
+    await act(async () => {
+      root.render(createElement(PendingUploadPostPublisher));
+    });
+    await act(async () => finishUpload({ url: 'https://forgeimg.net/abc/chosen.png', fileName: 'chosen.png' }));
+    await flush();
+
+    act(() => testState.publishPostOptions?.onAbandonPost?.());
+
+    expect(testState.navigateMock).not.toHaveBeenCalled();
+  });
+
+  it('takes an author watching the pending post back to the form when they close the board challenge', async () => {
+    testState.uploadAttachmentMock.mockResolvedValue({ url: 'https://forgeimg.net/abc/chosen.png', fileName: 'chosen.png' });
+    await submitPost();
+    testState.navigateMock.mockClear();
+
+    act(() => testState.publishPostOptions?.onAbandonPost?.());
+
+    expect(testState.navigateMock).toHaveBeenCalledWith('/mu', { replace: true });
+    expect(usePendingPostNavigationStore.getState().pendingPostNavigationIndex).toBeNull();
   });
 
   it('returns to the form with the file still attached when the spam blocker stops the post, without uploading', async () => {

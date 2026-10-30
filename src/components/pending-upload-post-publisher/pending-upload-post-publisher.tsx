@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import type { Comment } from '@bitsocial/bitsocial-react-hooks';
@@ -78,12 +79,20 @@ const Publisher = ({ pendingUploadPost }: { pendingUploadPost: PendingUploadPost
   const onPendingPost = useCallback(
     (accountCommentIndex: number, pendingPost: Comment) => {
       pendingIndexRef.current = accountCommentIndex;
+      // Committed before the upload is cleared: the upload page would otherwise render without its post first and
+      // send the author to the board. The form's own hand-off does the same.
       if (isShownRef.current) {
         if (nonokoRedirectPath) {
-          navigate(nonokoRedirectPath, { replace: true, state: getNonokoPendingRouteState(accountCommentIndex) });
+          flushSync(() => navigate(nonokoRedirectPath, { flushSync: true, replace: true, state: getNonokoPendingRouteState(accountCommentIndex) }));
         } else {
           usePendingPostNavigationStore.getState().beginPendingPostNavigation(accountCommentIndex);
-          navigate(`/pending/${accountCommentIndex}`, { replace: true, state: { ...(boardPath ? { boardPath } : {}), pendingPost } });
+          flushSync(() =>
+            navigate(`/pending/${accountCommentIndex}`, {
+              flushSync: true,
+              replace: true,
+              state: { ...(boardPath ? { boardPath } : {}), pendingPost },
+            }),
+          );
         }
       }
       usePendingUploadPostStore.getState().clearPendingUploadPost(id);
@@ -94,11 +103,12 @@ const Publisher = ({ pendingUploadPost }: { pendingUploadPost: PendingUploadPost
   // The publish keeps calling these after the publisher unmounts, as the form's own publish did.
   const onAbandonPost = useCallback(() => {
     const pendingIndex = pendingIndexRef.current;
-    const activePendingIndex = usePendingPostNavigationStore.getState().pendingPostNavigationIndex;
-    if (activePendingIndex !== null && activePendingIndex !== pendingIndex) return;
-    if (pendingIndex !== null) {
-      usePendingPostNavigationStore.getState().clearPendingPostNavigation(pendingIndex);
-    }
+    const pendingNavigation = usePendingPostNavigationStore.getState();
+    // Only an author looking at this post goes back to its form: its upload page, or the pending page this
+    // publisher opened. One who moved on while it uploaded stays where they are; the post is abandoned either way.
+    const showsThisPost = pendingIndex === null ? isShownRef.current : pendingNavigation.pendingPostNavigationIndex === pendingIndex;
+    if (!showsThisPost) return;
+    if (pendingIndex !== null) pendingNavigation.clearPendingPostNavigation(pendingIndex);
     navigate(draftKey, { replace: true });
   }, [draftKey, navigate]);
 
