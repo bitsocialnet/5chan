@@ -190,6 +190,40 @@ describe('PendingUploadPostPublisher', () => {
     expect(usePendingUploadPostStore.getState().pendingUploadPosts).toEqual([]);
   });
 
+  it('leaves a post the author starts on the same board during the upload alone', async () => {
+    let finishUpload: (value: { url: string; fileName: string }) => void = () => undefined;
+    testState.uploadAttachmentMock.mockImplementation(() => new Promise((resolve) => (finishUpload = resolve)));
+    await submitPost();
+    const otherFile: AttachedMedia = { kind: 'file', file: new File(['gif'], 'other.gif', { type: 'image/gif' }), name: 'other.gif', mimeType: 'image/gif' };
+    usePostFormDraftsStore.getState().openForm('/mu');
+    usePostFormDraftsStore.getState().updateDraft('/mu', { attachment: otherFile, content: 'next thread' });
+
+    await act(async () => finishUpload({ url: 'https://forgeimg.net/abc/chosen.png', fileName: 'chosen.png' }));
+    await flush();
+    act(() => testState.publishPostOptions?.onPublishAccepted?.());
+
+    expect(testState.publishPostMock).toHaveBeenCalledWith(expect.objectContaining({ link: 'https://forgeimg.net/abc/chosen.png' }));
+    expect(usePostFormDraftsStore.getState().forms['/mu']).toMatchObject({ isOpen: true, draft: { attachment: otherFile, content: 'next thread', link: '' } });
+  });
+
+  it('keeps text the author typed into the submitted draft after the post is accepted', async () => {
+    let finishUpload: (value: { url: string; fileName: string }) => void = () => undefined;
+    testState.uploadAttachmentMock.mockImplementation(() => new Promise((resolve) => (finishUpload = resolve)));
+    await submitPost();
+    usePostFormDraftsStore.getState().updateDraft('/mu', { content: 'thread body, edited' });
+
+    await act(async () => finishUpload({ url: 'https://forgeimg.net/abc/chosen.png', fileName: 'chosen.png' }));
+    await flush();
+    act(() => testState.publishPostOptions?.onPublishAccepted?.());
+
+    // The file is still this post's, so it becomes its uploaded link; the edited text stays.
+    expect(usePostFormDraftsStore.getState().forms['/mu']?.draft).toMatchObject({
+      attachment: undefined,
+      content: 'thread body, edited',
+      link: 'https://forgeimg.net/abc/chosen.png',
+    });
+  });
+
   it('publishes a thread still uploading when another one is posted, without leaving the page that shows the other', async () => {
     const finishUploads: Array<(value: { url: string; fileName: string }) => void> = [];
     testState.uploadAttachmentMock.mockImplementation(() => new Promise((resolve) => finishUploads.push(resolve)));

@@ -5,12 +5,24 @@ import type { Comment } from '@bitsocial/bitsocial-react-hooks';
 import { useFileUpload } from '../../hooks/use-file-upload';
 import usePublishPost from '../../hooks/use-publish-post';
 import useSpamBlockerPrecheck from '../../hooks/use-spam-blocker-precheck';
+import type { AttachedMedia } from '../../lib/media-hosting/types';
 import { getShownPendingUploadId, isPendingUploadPostPath } from '../../lib/utils/pending-post-route-state';
 import { getNonokoPendingRouteState } from '../../lib/utils/post-options-utils';
 import usePendingPostNavigationStore from '../../stores/use-pending-post-navigation-store';
 import usePendingUploadPostStore, { isPendingUploadPost, type PendingUploadPost } from '../../stores/use-pending-upload-post-store';
 import usePostFormDraftsStore from '../../stores/use-post-form-drafts-store';
 import { createPublishPostStore } from '../../stores/use-publish-post-store';
+
+/**
+ * The board's form draft while it still holds this post: its file, or the link the upload put in its place.
+ * The author can reopen the form during the upload and start another post, which the steps must not touch.
+ */
+const getDraftHoldingPost = ({ attachment, draftKey, link }: { attachment: AttachedMedia; draftKey: string; link: string | undefined }) => {
+  const draft = usePostFormDraftsStore.getState().forms[draftKey]?.draft;
+  if (!draft) return undefined;
+  const holdsPost = draft.attachment ? draft.attachment === attachment : link !== undefined && draft.link === link;
+  return holdsPost ? draft : undefined;
+};
 
 /**
  * Runs a submitted new thread's steps: the board's spam blocker check, then the upload, then the publish.
@@ -28,6 +40,9 @@ const Publisher = ({ pendingUploadPost }: { pendingUploadPost: PendingUploadPost
   const [publishPostStore] = useState(createPublishPostStore);
   const startedRef = useRef(false);
   const pendingIndexRef = useRef<number | null>(null);
+  const uploadedLinkRef = useRef<string | undefined>(undefined);
+  // The draft as submitted; once accepted, the form is cleared only if the author has not edited it since.
+  const [submittedDraft] = useState(() => usePostFormDraftsStore.getState().forms[draftKey]?.draft);
   // Whether the upload page shows this post. Read by the steps after their awaits, so they never pull someone
   // who left it, or who is watching another post upload, back to this one.
   const shownPendingUploadId = usePendingUploadPostStore((state) =>
@@ -44,18 +59,20 @@ const Publisher = ({ pendingUploadPost }: { pendingUploadPost: PendingUploadPost
   const returnToForm = useCallback(
     (message?: string) => {
       if (!isPendingUploadPost(id)) return;
-      const { openForm, showSubmissionError } = usePostFormDraftsStore.getState();
-      if (message) {
-        showSubmissionError(draftKey, `${t('error')}: ${message}`);
-      } else {
-        openForm(draftKey);
+      if (getDraftHoldingPost({ attachment, draftKey, link: uploadedLinkRef.current })) {
+        const { openForm, showSubmissionError } = usePostFormDraftsStore.getState();
+        if (message) {
+          showSubmissionError(draftKey, `${t('error')}: ${message}`);
+        } else {
+          openForm(draftKey);
+        }
       }
       if (isShownRef.current) {
         navigate(draftKey, { replace: true });
       }
       usePendingUploadPostStore.getState().clearPendingUploadPost(id);
     },
-    [draftKey, id, navigate, t],
+    [attachment, draftKey, id, navigate, t],
   );
 
   const onPendingPost = useCallback(
@@ -86,11 +103,19 @@ const Publisher = ({ pendingUploadPost }: { pendingUploadPost: PendingUploadPost
   }, [draftKey, navigate]);
 
   const onDuplicateMediaRejected = useCallback(
-    (error: string) => usePostFormDraftsStore.getState().showSubmissionError(draftKey, `${t('error')}: ${error}`),
-    [draftKey, t],
+    (error: string) => {
+      if (!getDraftHoldingPost({ attachment, draftKey, link: uploadedLinkRef.current })) return;
+      usePostFormDraftsStore.getState().showSubmissionError(draftKey, `${t('error')}: ${error}`);
+    },
+    [attachment, draftKey, t],
   );
 
-  const onPublishAccepted = useCallback(() => usePostFormDraftsStore.getState().clearForm(draftKey), [draftKey]);
+  const onPublishAccepted = useCallback(() => {
+    const draft = getDraftHoldingPost({ attachment, draftKey, link: uploadedLinkRef.current });
+    if (draft && draft.content === submittedDraft?.content && draft.title === submittedDraft?.title) {
+      usePostFormDraftsStore.getState().clearForm(draftKey);
+    }
+  }, [attachment, draftKey, submittedDraft]);
 
   const onPublishError = useCallback(
     (error: Error) => {
@@ -147,7 +172,10 @@ const Publisher = ({ pendingUploadPost }: { pendingUploadPost: PendingUploadPost
       }
       if (!isPendingUploadPost(id)) return;
       // A post the board rejects returns to the form with this link, so posting again does not upload again.
-      usePostFormDraftsStore.getState().updateDraft(draftKey, { attachment: undefined, link: uploaded.url });
+      uploadedLinkRef.current = uploaded.url;
+      if (usePostFormDraftsStore.getState().forms[draftKey]?.draft.attachment === attachment) {
+        usePostFormDraftsStore.getState().updateDraft(draftKey, { attachment: undefined, link: uploaded.url });
+      }
 
       await publishPost({
         ...publishOptions,
