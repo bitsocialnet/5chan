@@ -64,9 +64,9 @@ export const useHasCommunityLoadFailed = (communityIdentifier?: CommunityIdentif
 
 /**
  * Everything known about a board that failed to load, for its Failed label to copy. Read at click
- * time, so the page never re-renders for it. A retriable error is dropped by
- * bitsocial-react-hooks, so `errors` only holds the others; the whole sync status is copied so any
- * error it records is included.
+ * time, so the page never re-renders for it. bitsocial-react-hooks keeps retriable errors out of
+ * `errors` and records the latest on the sync status as `lastRetriableError`, so the whole sync
+ * status is copied.
  */
 export const getCommunityLoadFailureDetails = (communityIdentifier?: CommunityIdentifier) => {
   const communityKey = getCommunityKey(communityIdentifier);
