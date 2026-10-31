@@ -82,7 +82,6 @@ describe('update-favicon', () => {
     expect(
       isSfwBoard({
         pathname: '/',
-        isSpecialTheme: false,
         isInAllView: false,
         isInSubscriptionsView: false,
         isInModView: false,
@@ -94,7 +93,6 @@ describe('update-favicon', () => {
     expect(
       isSfwBoard({
         pathname: '/music.eth',
-        isSpecialTheme: false,
         isInAllView: false,
         isInSubscriptionsView: false,
         isInModView: false,
@@ -109,7 +107,6 @@ describe('update-favicon', () => {
     expect(
       isSfwBoard({
         pathname: '/flash.eth',
-        isSpecialTheme: false,
         isInAllView: false,
         isInSubscriptionsView: false,
         isInModView: false,
@@ -121,7 +118,6 @@ describe('update-favicon', () => {
     expect(
       isSfwBoard({
         pathname: '/trash',
-        isSpecialTheme: false,
         isInAllView: false,
         isInSubscriptionsView: false,
         isInModView: false,
@@ -136,7 +132,6 @@ describe('update-favicon', () => {
 
     const base = {
       pathname: '/flash.eth',
-      isSpecialTheme: false,
       isInAllView: false,
       isInSubscriptionsView: false,
       isInModView: false,

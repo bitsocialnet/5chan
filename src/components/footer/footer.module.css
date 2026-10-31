@@ -246,3 +246,23 @@
 .threadMobileFooterContent .mobileFooterStats {
   padding-top: 15px;
 }
+
+/* 4chan's Halloween stylesheet hides the brackets in the thread's bottom navigation and colors the rest
+   of the row like its links; its catalog keeps the brackets dark. */
+@media (min-width: 640px) {
+  :global(body.spooky) .threadRow {
+    color: var(--button-desktop-text-color);
+  }
+
+  :global(body.spooky) .bracketed {
+    color: transparent;
+  }
+
+  :global(body.spooky) .bracketed > label {
+    color: var(--button-desktop-text-color);
+  }
+
+  :global(body.spooky) .footerLeft .bracketed {
+    color: #321f28;
+  }
+}

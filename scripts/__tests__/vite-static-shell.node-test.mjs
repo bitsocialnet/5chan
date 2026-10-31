@@ -113,20 +113,25 @@ const buildHtml = () => {
   });
 };
 
-const load = ({ hash = '', storage = {}, globals = {}, width = 1280, date, historyState } = {}) => {
+// A day without a seasonal theme by default: on its days the theme script and the frames behave differently.
+const NON_SEASONAL_DATE = '2026-06-15T12:00:00';
+
+const pinDate = (window, date) => {
+  const RealDate = window.Date;
+  window.Date = class extends RealDate {
+    constructor(...args) {
+      super(...(args.length ? args : [date]));
+    }
+  };
+};
+
+const load = ({ hash = '', storage = {}, globals = {}, width = 1280, date = NON_SEASONAL_DATE, historyState } = {}) => {
   const dom = new JSDOM(buildHtml(), { url: `https://5chan.test/${hash}`, runScripts: 'outside-only' });
   for (const [key, value] of Object.entries(storage)) dom.window.localStorage.setItem(key, value);
   Object.assign(dom.window, globals);
   Object.defineProperty(dom.window, 'innerWidth', { configurable: true, value: width });
   if (historyState) dom.window.history.replaceState(historyState, '');
-  if (date) {
-    const RealDate = dom.window.Date;
-    dom.window.Date = class extends RealDate {
-      constructor(...args) {
-        super(...(args.length ? args : [date]));
-      }
-    };
-  }
+  pinDate(dom.window, date);
   // Run the inline scripts in document order, as the parser would, now that storage is seeded.
   for (const script of dom.window.document.querySelectorAll('script:not([type])')) dom.window.eval(script.textContent);
   const root = dom.window.document.getElementById('root');
@@ -164,11 +169,24 @@ test('applies the theme React applies on its first commit', () => {
   assert.equal(load({ hash: '#/all', storage: { '5chan-themes': themes } }).bodyClass, 'tomorrow');
   assert.equal(load({ hash: '#/biz', storage: { '5chan-themes': themes } }).bodyClass, 'burichan');
   assert.equal(load({ hash: '#/biz', storage: { '5chan-themes': 'not json' } }).bodyClass, 'yotsuba-b');
-  // An enabled seasonal theme wins everywhere but the home page and rules, and only on its date.
-  const halloween = { date: '2026-10-31T12:00:00', storage: { 'Special-theme-storage': '{"state":{"isEnabled":true},"version":0}' } };
-  assert.equal(load({ ...halloween, hash: '#/biz' }).bodyClass, 'spooky');
+  // An enabled seasonal theme wins everywhere but the home page and rules, and only on its date. The
+  // Halloween theme marks worksafe boards.
+  const halloween = { date: '2026-10-31T12:00:00', storage: { 'Special-theme-storage': '{"state":{"isEnabled":true,"event":"halloween-2026"},"version":0}' } };
+  assert.equal(load({ ...halloween, hash: '#/biz' }).bodyClass, 'spooky ws');
+  assert.equal(load({ ...halloween, hash: '#/b' }).bodyClass, 'spooky');
+  assert.equal(load({ ...halloween, hash: '#/all' }).bodyClass, 'spooky');
   assert.equal(load({ ...halloween, hash: '#/' }).bodyClass, 'yotsuba');
   assert.equal(load({ ...halloween, hash: '#/biz', date: '2026-11-01T12:00:00' }).bodyClass, 'yotsuba-b');
+  const christmas = { date: '2026-12-24T12:00:00', storage: { 'Special-theme-storage': '{"state":{"isEnabled":true,"event":"christmas-2026"},"version":0}' } };
+  assert.equal(load({ ...christmas, hash: '#/biz' }).bodyClass, 'tomorrow');
+  // Unset, or set in an earlier event, the seasonal theme paints on a board; a multiboard view waits until
+  // a board turned it on. Turned off during this event, it stays off.
+  for (const storage of [{}, { 'Special-theme-storage': '{"state":{"isEnabled":false,"event":"halloween-2025"},"version":0}' }]) {
+    assert.equal(load({ date: '2026-10-31T12:00:00', storage, hash: '#/biz' }).bodyClass, 'spooky ws');
+    assert.equal(load({ date: '2026-10-31T12:00:00', storage, hash: '#/all' }).bodyClass, 'yotsuba');
+  }
+  const optedOut = { date: '2026-10-31T12:00:00', storage: { 'Special-theme-storage': '{"state":{"isEnabled":false,"event":"halloween-2026"},"version":0}' } };
+  assert.equal(load({ ...optedOut, hash: '#/biz' }).bodyClass, 'yotsuba-b');
 });
 
 test('shows the home frame on a first visit and on a return visit with only preferences the app saved itself', () => {
@@ -210,6 +228,7 @@ test('skips the frame when the first frame would differ', () => {
 test('applies the theme and frame as the parser inserts <body> and #root, before they exist', async () => {
   const dom = new JSDOM(buildHtml(), { url: 'https://5chan.test/#/biz', runScripts: 'outside-only' });
   const { document } = dom.window;
+  pinDate(dom.window, NON_SEASONAL_DATE);
   // The scripts run in <head>, before the parser has created <body>.
   document.body.remove();
   for (const script of document.querySelectorAll('script:not([type])')) dom.window.eval(script.textContent);

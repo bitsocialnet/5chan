@@ -95,3 +95,10 @@
   border-style: solid;
   padding-top: 50px;
  }
+
+/* 4chan's Halloween stylesheet dims the banner. */
+@media (min-width: 640px) {
+  :global(body.spooky) .bannerCnt {
+    filter: contrast(90%) brightness(90%);
+  }
+}

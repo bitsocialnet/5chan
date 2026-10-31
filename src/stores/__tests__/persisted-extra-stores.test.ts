@@ -154,4 +154,18 @@ describe('persisted extra stores', () => {
     useHalloweenSpecialThemeStore.getState().setIsEnabled(true);
     expect(useHalloweenSpecialThemeStore.getState().isEnabled).toBe(true);
   });
+
+  it('keeps a special theme choice for its own event, so each year turns the theme on again', async () => {
+    const useHalloweenStore = await loadSpecialThemeStore('2026-10-31T09:00:00');
+    useHalloweenStore.getState().setIsEnabled(false);
+    expect(JSON.parse(localStorage.getItem('Special-theme-storage') ?? '{}').state).toEqual({ isEnabled: false, event: 'halloween-2026' });
+
+    // Reloaded during the same Halloween, the opt-out stays.
+    expect((await loadSpecialThemeStore('2026-10-31T21:00:00')).getState().isEnabled).toBe(false);
+
+    // The next seasonal event, or next year's Halloween, starts unset even without a visit in between.
+    expect((await loadSpecialThemeStore('2026-12-24T12:00:00')).getState().isEnabled).toBeNull();
+    localStorage.setItem('Special-theme-storage', JSON.stringify({ state: { isEnabled: false, event: 'halloween-2026' }, version: 0 }));
+    expect((await loadSpecialThemeStore('2027-10-31T12:00:00')).getState().isEnabled).toBeNull();
+  });
 });

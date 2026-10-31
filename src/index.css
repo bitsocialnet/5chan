@@ -147,3 +147,55 @@ hr {
     border-top: var(--reply-double-highlight-border-top, revert) !important;
   }
 }
+
+/* 4chan's Halloween stylesheet (spooky.css); its colors are theme variables in themes.css. These rules
+   apply at every width, like the ones outside its media queries. */
+body.spooky a:hover,
+body.spooky .button:hover {
+  text-shadow: 0 0 12px #d98518;
+}
+
+body.spooky .highlight,
+body.spooky .scroll-highlight {
+  box-shadow: 0 0 4px 1px #e79e4f;
+}
+
+body.spooky input[type='text'],
+body.spooky input[type='password'],
+body.spooky input:not([type]),
+body.spooky textarea {
+  border-color: #140814 !important;
+}
+
+body.spooky input[type='checkbox'] {
+  opacity: 0.75;
+}
+
+@media (min-width: 640px) {
+  body.spooky input[type='text'],
+  body.spooky input[type='password'],
+  body.spooky input:not([type]),
+  body.spooky textarea {
+    background-color: #261e37;
+    color: #f0f8ffd1;
+  }
+
+  body.spooky input[type='text']:focus,
+  body.spooky input[type='password']:focus,
+  body.spooky input:not([type]):focus,
+  body.spooky textarea:focus {
+    border: 1px solid #dfbaba !important;
+  }
+
+  body.spooky input::placeholder,
+  body.spooky textarea::placeholder {
+    color: #8f95b3 !important;
+    opacity: 0.6 !important;
+  }
+
+  body.spooky select {
+    border: 1px solid #ff7518cf;
+    background-color: #261e37;
+    color: #ff7518cf;
+  }
+}

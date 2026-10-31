@@ -189,3 +189,26 @@
     display: none;
   }
 }
+
+/* 4chan's Halloween stylesheet hides the brackets around the navigation links and colors the rest of
+   the row like them. Its catalog keeps the brackets dark and the controls on the right in the text color. */
+@media (min-width: 640px) {
+  :global(body.spooky) .desktopBoardButtons,
+  :global(body.spooky) .desktopBoardButtons .rightSideButtons {
+    color: transparent;
+  }
+
+  :global(body.spooky) .desktopBoardButtons > :not([class~='button'], .rightSideButtons),
+  :global(body.spooky) .desktopBoardButtons .rightSideButtons > :not([class~='button']) {
+    color: var(--button-desktop-text-color);
+  }
+
+  :global(body.spooky) .catalogBoardButtons,
+  :global(body.spooky) .catalogBoardButtons .rightSideButtons {
+    color: #321f28;
+  }
+
+  :global(body.spooky) .catalogBoardButtons .rightSideButtons > :not([class~='button']) {
+    color: var(--body-font-color);
+  }
+}

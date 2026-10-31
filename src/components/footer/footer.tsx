@@ -101,18 +101,18 @@ export const CatalogFooterFirstRow = ({ communityAddress, isInAllView = false, i
   return (
     <div className={styles.footerRow}>
       <div className={styles.footerLeft}>
-        <span>
+        <span className={styles.bracketed}>
           [<ReturnButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />]
         </span>
         {showCatalogButton && (
-          <span>
+          <span className={styles.bracketed}>
             [<CatalogButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />]
           </span>
         )}
-        <span>
+        <span className={styles.bracketed}>
           [<TopButton />]
         </span>
-        <span>
+        <span className={styles.bracketed}>
           [<RefreshButton />]
         </span>
         <CatalogSearchResultsLabel />
@@ -185,23 +185,23 @@ export const ThreadFooterFirstRow = ({ postCid, threadNumber, communityAddress, 
   return (
     <div className={styles.threadRow}>
       <div className={styles.threadLeft}>
-        <span>
+        <span className={styles.bracketed}>
           [<ReturnButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />]
         </span>
         {showCatalogButton && (
-          <span>
+          <span className={styles.bracketed}>
             [<CatalogButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />]
           </span>
         )}
-        <span>
+        <span className={styles.bracketed}>
           [<TopButton />]
         </span>
         {!isThreadDead && (
           <>
-            <span>
+            <span className={styles.bracketed}>
               [<UpdateButton />]
             </span>
-            <span>
+            <span className={styles.bracketed}>
               [<AutoButton />]
             </span>
           </>
@@ -209,7 +209,7 @@ export const ThreadFooterFirstRow = ({ postCid, threadNumber, communityAddress, 
         <ThreadUpdateStatus />
       </div>
       <div className={styles.threadCenter}>
-        <span>
+        <span className={styles.bracketed}>
           [
           <button type='button' className={styles.button} onClick={handlePostReplyClick} disabled={isThreadClosed} aria-label={t('post_a_reply')}>
             {t('post_a_reply')}

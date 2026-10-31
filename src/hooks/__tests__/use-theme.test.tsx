@@ -10,6 +10,7 @@ import { TRASH_BOARD_ADDRESS, TRASH_BOARD_CODE } from '../../lib/special-boards'
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
 
 const testState = vi.hoisted(() => ({
+  activeSpecialTheme: undefined as 'christmas' | 'halloween' | undefined,
   boardIdentifier: 'trash' as string | undefined,
   directories: [] as Array<{ address: string; nsfw?: boolean }>,
   isSpecialThemeEnabled: false as boolean | null,
@@ -19,6 +20,7 @@ const testState = vi.hoisted(() => ({
   resolvedAddress: 'off-topic.bso' as string | undefined,
   setIsEnabledMock: vi.fn(),
   setThemeMock: vi.fn().mockResolvedValue(undefined),
+  sfw: false,
   updateFaviconMock: vi.fn(),
   themes: {
     nsfw: 'tomorrow',
@@ -67,13 +69,13 @@ vi.mock('../../stores/use-theme-store', () => ({
 }));
 
 vi.mock('../../lib/update-favicon', () => ({
-  isSfwBoard: () => false,
+  isSfwBoard: () => testState.sfw,
   updateFavicon: testState.updateFaviconMock,
 }));
 
 vi.mock('../../lib/utils/time-utils', () => ({
-  getActiveSpecialTheme: () => undefined,
-  getSpecialThemeClass: () => 'spooky',
+  getActiveSpecialTheme: () => testState.activeSpecialTheme,
+  getSpecialThemeClass: (specialTheme: string) => (specialTheme === 'halloween' ? 'spooky' : 'tomorrow'),
 }));
 
 let latestValue: [string, (theme: string) => void | Promise<void>] | undefined;
@@ -95,6 +97,8 @@ describe('useTheme', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     latestValue = undefined;
+    testState.activeSpecialTheme = undefined;
+    testState.sfw = false;
     testState.boardIdentifier = TRASH_BOARD_CODE;
     testState.directories = [];
     testState.isSpecialThemeEnabled = false;
@@ -261,5 +265,53 @@ describe('useTheme', () => {
     await renderHook();
 
     expect(latestValue?.[0]).toBe('yotsuba-b');
+  });
+
+  it('marks a worksafe board under the Halloween theme, like 4chan', async () => {
+    testState.activeSpecialTheme = 'halloween';
+    testState.isSpecialThemeEnabled = true;
+    testState.sfw = true;
+
+    await renderHook();
+
+    expect(document.body.className).toBe('spooky ws');
+
+    testState.sfw = false;
+    await renderHook();
+
+    expect(document.body.className).toBe('spooky');
+  });
+
+  it('paints an unset Halloween theme on a board from the first commit, like 4chan, then saves it', async () => {
+    testState.activeSpecialTheme = 'halloween';
+    testState.isSpecialThemeEnabled = null;
+
+    await renderHook();
+
+    expect(latestValue?.[0]).toBe('spooky');
+    expect(testState.setIsEnabledMock).toHaveBeenCalledWith(true);
+  });
+
+  it('leaves an unset Halloween theme off in multiboard views until a board turns it on', async () => {
+    testState.activeSpecialTheme = 'halloween';
+    testState.isSpecialThemeEnabled = null;
+    testState.boardIdentifier = undefined;
+    testState.locationPathname = '/all';
+    testState.resolvedAddress = undefined;
+
+    await renderHook();
+
+    expect(latestValue?.[0]).toBe('tomorrow');
+    expect(testState.setIsEnabledMock).not.toHaveBeenCalled();
+  });
+
+  it('marks worksafe boards only under the Halloween theme', async () => {
+    testState.activeSpecialTheme = 'christmas';
+    testState.isSpecialThemeEnabled = true;
+    testState.sfw = true;
+
+    await renderHook();
+
+    expect(document.body.className).toBe('tomorrow');
   });
 });

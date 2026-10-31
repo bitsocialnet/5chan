@@ -79,6 +79,7 @@ const THEME_SCRIPT = `(function () {
     var legacy = /^([^?]*?)%23(.*)$/i.exec(route);
     var path = (legacy && ((/\\/settings$/.test(legacy[1]) && /^[a-z0-9-]+-settings$/i.test(legacy[2])) || (/\\/catalog(\\/settings)?$/.test(legacy[1]) && /(^|&)s(=|&|$)/.test(legacy[2]))) ? legacy[1] : route.split('?')[0]) || '/';
     var theme = 'yotsuba';
+    var worksafe = false;
     if (path !== '/' && path.indexOf('/rules') !== 0) {
       var saved = read('5chan-themes') || {};
       var themeFor = function (category) {
@@ -86,14 +87,15 @@ const THEME_SCRIPT = `(function () {
       };
       var today = new Date();
       var special = today.getMonth() === 11 && (today.getDate() === 24 || today.getDate() === 25) ? 'tomorrow' : today.getMonth() === 9 && today.getDate() === 31 ? 'spooky' : null;
+      // The saved choice counts only in the event it was made in (use-special-theme-store.ts).
+      var specialEvent = special && (special === 'tomorrow' ? 'christmas-' : 'halloween-') + today.getFullYear();
       var specialState = special && read('Special-theme-storage');
       var searchPath = path.replace(/\\/+$/, '').replace(/\\/settings$/, '');
       var segments = path.split('/');
       var segment = segments[1];
       var community = null;
-      if (specialState && specialState.state && specialState.state.isEnabled) theme = special;
-      else if (path.indexOf('/all') === 0 || /^\\/subs(\\/catalog)?(\\/settings)?$/.test(path) || path === '/mod' || path.indexOf('/mod/') === 0 || /^\\/search(\\/catalog|\\/directory)?$/.test(searchPath)) theme = themeFor('nsfw');
-      else {
+      var multiboard = path.indexOf('/all') === 0 || /^\\/subs(\\/catalog)?(\\/settings)?$/.test(path) || path === '/mod' || path.indexOf('/mod/') === 0 || /^\\/search(\\/catalog|\\/directory)?$/.test(searchPath);
+      if (!multiboard) {
         // Only these exact paths are static pages; React Router matches any other path, like
         // /faq/2, as /:boardIdentifier/:pageNumber. Other /subs/ and /search/ paths redirect.
         var staticPage = ['/faq', '/pass', '/blotter', '/settings/account-data', '/directory', '/directory/settings', '/not-allowed', '/not-found'].indexOf(path.replace(/\\/+$/, '')) !== -1;
@@ -103,14 +105,22 @@ const THEME_SCRIPT = `(function () {
         } else if (!staticPage && segment !== 'subs' && segment !== 'search') {
           community = segment && decodeURIComponent(segment);
         }
-        if (typeof community === 'string' && community) theme = themeFor(data.nsfw.indexOf(community) === -1 ? 'sfw' : 'nsfw');
       }
+      var sfw = typeof community === 'string' && !!community && data.nsfw.indexOf(community) === -1;
+      // A choice made before this event counts as unset, and an unset seasonal theme paints on a board.
+      var specialEnabled = specialState && specialState.state && specialState.state.event === specialEvent ? specialState.state.isEnabled : null;
+      if (special && (specialEnabled === true || (specialEnabled === null && typeof community === 'string' && community))) theme = special;
+      else if (multiboard) theme = themeFor('nsfw');
+      else if (typeof community === 'string' && community) theme = themeFor(sfw ? 'sfw' : 'nsfw');
+      // useTheme marks a worksafe board under the Halloween theme, whose colors differ there.
+      worksafe = theme === 'spooky' && sfw;
     }
     // This runs in the document head: the class goes on the body element as the parser inserts it,
     // in the same task, so no frame renders without it.
     var apply = function () {
       if (!document.body) return false;
       document.body.classList.add(theme);
+      if (worksafe) document.body.classList.add('ws');
       return true;
     };
     if (!apply()) {

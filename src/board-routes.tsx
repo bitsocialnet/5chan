@@ -6,6 +6,7 @@ import { Navigate, Outlet, useLocation, useParams } from 'react-router-dom';
 import { useAccountComment } from '@bitsocial/bitsocial-react-hooks';
 import { lazyImport } from './lib/import-failures';
 import { initSnow, removeSnow } from './lib/snow';
+import { getActiveSpecialTheme } from './lib/utils/time-utils';
 import { isAllView, isCatalogView, isModView, isSubscriptionsView } from './lib/utils/view-utils';
 import useCreateBoardModalStore from './stores/use-create-board-modal-store';
 import usePendingPostNavigationStore from './stores/use-pending-post-navigation-store';
@@ -44,6 +45,7 @@ import PostForm from './components/post-form';
 import BoardBlotter from './components/board-blotter';
 import BoardsBar from './components/boards-bar';
 import ImportErrorBoundary from './components/import-error-boundary';
+import SpookySkeleton from './components/spooky-skeleton';
 
 export { Post } from './components/post';
 export { default as PendingPostView } from './views/pending-post';
@@ -96,6 +98,8 @@ export const BoardLayout = () => {
       removeSnow();
     };
   }, [isSpecialEnabled, isMobile]);
+  // 4chan's board pages all show its Halloween skeleton on desktop, except the catalog.
+  const showSpookySkeleton = isSpecialEnabled === true && getActiveSpecialTheme() === 'halloween' && !isMobile && !isInCatalogView;
 
   // Close create board modal when navigating to a different page
   useEffect(() => {
@@ -142,6 +146,8 @@ export const BoardLayout = () => {
 
   return (
     <div className={styles.boardLayout}>
+      {/* Keyed by page, so each page picks its own skeleton as each 4chan page load does; settings opens over the page. */}
+      {showSpookySkeleton && <SpookySkeleton key={getPostFormRouteKeyPath(pathname)} />}
       <DirectoryCandidateRecords boardIdentifier={boardIdentifier} />
       <BoardsBar persistable />
       <ImportErrorBoundary floating>
