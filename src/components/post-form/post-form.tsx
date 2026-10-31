@@ -46,7 +46,7 @@ import { getModerationPostingRoleLabel } from '../../lib/utils/author-display-ut
 import { hasModQueueAccessRole } from '../../lib/utils/mod-access';
 import { getPageDraftKey } from '../../lib/utils/location-draft-utils';
 import { getCommentCommunityAddress } from '../../lib/utils/comment-utils';
-import { getPendingPostRoutePost } from '../../lib/utils/pending-post-route-state';
+import { getPendingPostRoutePost, PENDING_UPLOAD_POST_PATH } from '../../lib/utils/pending-post-route-state';
 import { getBoardPath, isDirectoryRoute } from '../../lib/utils/route-utils';
 import { isAllView, isCatalogView, isModQueueView, isModView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import { getCommentFlagOptionsForDirectory, getCommentFlagPublishOptionsForDirectory, type CommentFlagSelectOption } from '../../lib/comment-flag-selection';
@@ -66,6 +66,7 @@ import usePublishSubmissionGuard from '../../hooks/use-publish-submission-guard'
 import usePublishPost from '../../hooks/use-publish-post';
 import usePublishReply from '../../hooks/use-publish-reply';
 import { useFileUpload } from '../../hooks/use-file-upload';
+import useSpamBlockerPrecheck from '../../hooks/use-spam-blocker-precheck';
 import { useShowLinkField } from '../../hooks/use-show-link-field';
 import { getFileAttachment, getFileDropHandlers } from '../../lib/media-hosting/attached-media';
 import type { AttachedMedia, UploadPhase } from '../../lib/media-hosting/types';
@@ -74,6 +75,7 @@ import { OEKAKI_WEB_WARNING_TEXT } from '../../lib/oekaki/oekaki-copy';
 import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
 import useMediaHostingStore from '../../stores/use-media-hosting-store';
 import usePendingPostNavigationStore from '../../stores/use-pending-post-navigation-store';
+import usePendingUploadPostStore from '../../stores/use-pending-upload-post-store';
 import usePostFormDraftsStore, { EMPTY_POST_FORM_STATE, type PostFormDraft } from '../../stores/use-post-form-drafts-store';
 import BoardOfflineAlert from '../board-offline-alert';
 import BoardReachabilityAlert from '../board-reachability-alert';
@@ -793,6 +795,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
   const postOptionsDirectoryCode = getPostOptionsDirectoryCode(directoryEntry, location.pathname);
   const showOekakiControls = postOptionsDirectoryCode === 'i' || directoryEntry?.directoryCode === 'i';
   const communityFeatures = useCommunityField(effectiveBoardAddress, (community) => community?.features);
+  const communityChallenges = useCommunityField(effectiveBoardAddress, (community) => community?.challenges);
   const isSageSupported = useCommunityField(effectiveBoardAddress, isSageSupportedByBoard) ?? false;
   const postLinkFeatures = getEffectivePostLinkFeatures(communityFeatures, directoryEntry?.features);
   const replyLinkFeatures = getEffectiveReplyLinkFeatures(communityFeatures, directoryEntry?.features);
@@ -986,20 +989,69 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
         ...(flairs ? { flairs } : {}),
       };
 
-      // Upload only after every check passed, so a rejected post never leaves a file on the host.
-      const uploadedLink = attachment ? await uploadAttachedMedia(attachment) : undefined;
-      if (uploadedLink === null) {
+      const nonokoRedirectPath = hasNonokoOption(currentOptions) ? getBoardIndexPath() : null;
+
+      // The form keeps a submitted post's draft until the board accepts it. Posted again while its check or upload
+      // is still running, it opens that post's upload page instead of sending it a second time.
+      const inFlightUpload = attachment
+        ? usePendingUploadPostStore.getState().pendingUploadPosts.find((upload) => upload.draftKey === draftKey && upload.attachment === attachment)
+        : undefined;
+      if (inFlightUpload) {
+        flushSync(() =>
+          navigate(PENDING_UPLOAD_POST_PATH, {
+            flushSync: true,
+            state: { ...(inFlightUpload.boardPath ? { boardPath: inFlightUpload.boardPath } : {}), pendingPost: inFlightUpload.post, pendingUploadId: inFlightUpload.id },
+          }),
+        );
+        hideForm();
         return;
       }
 
-      nonokoRedirectPathRef.current = hasNonokoOption(currentOptions) ? getBoardIndexPath() : null;
+      if (attachment) {
+        // The post shows as pending at once while the board's spam blocker checks it and then its file
+        // uploads, so a rejected post never leaves a file on the host. This form unmounts on the pending
+        // page, so the publisher at the app root runs those steps and publishes with every option here.
+        // Every option is explicit: the publish-post store this form fills as the user types is shared.
+        const pendingPublishOptions: Comment = {
+          communityAddress: effectiveBoardAddress,
+          content: publishContent,
+          displayName: currentDisplayName,
+          title: currentTitle || undefined,
+          spoiler: Boolean(publishPostOptions.spoiler || (hasRestoredDraftRef.current && draft.spoiler)),
+          ...publishOptions,
+        };
+        const { displayName: _displayName, ...previewOptions } = pendingPublishOptions;
+        const previewPost: Comment = {
+          ...previewOptions,
+          author: { address: account?.author?.address, displayName: currentDisplayName },
+          timestamp: Math.floor(Date.now() / 1000),
+        };
+        const { id: pendingUploadId } = usePendingUploadPostStore.getState().startPendingUploadPost({
+          attachment,
+          authorRole: accountRole,
+          boardChallenges: communityChallenges,
+          boardPath: pendingPostBoardPath,
+          draftKey,
+          nonokoRedirectPath,
+          post: previewPost,
+          publishOptions: pendingPublishOptions,
+        });
+        flushSync(() =>
+          navigate(PENDING_UPLOAD_POST_PATH, {
+            flushSync: true,
+            state: { ...(pendingPostBoardPath ? { boardPath: pendingPostBoardPath } : {}), pendingPost: previewPost, pendingUploadId },
+          }),
+        );
+        hideForm();
+        return;
+      }
+
+      nonokoRedirectPathRef.current = nonokoRedirectPath;
       pendingPostBoardPathRef.current = pendingPostBoardPath;
       await publishPost({
         displayName: currentDisplayName,
         content: publishContent,
-        ...(uploadedLink
-          ? { link: uploadedLink }
-          : getPublishLinkOptions(currentUrl, appliedThumbnailConversion || (hasRestoredDraftRef.current && Boolean(currentUrl)))),
+        ...getPublishLinkOptions(currentUrl, appliedThumbnailConversion || (hasRestoredDraftRef.current && Boolean(currentUrl))),
         ...publishOptions,
         ...(hasRestoredDraftRef.current && draft.communityAddress ? { communityAddress: draft.communityAddress } : {}),
         ...(hasRestoredDraftRef.current && draft.spoiler ? { spoiler: true } : {}),
@@ -1157,6 +1209,23 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
 
       const flagPublishOptions = getCommentFlagPublishOptionsForDirectory(directoryEntry, flagRef.current?.value);
 
+      // The board's spam blocker checks the reply before its file is uploaded, so a rejected author never uploads.
+      let challengeRequest: { challengeAnswers: string[] } | undefined;
+      if (attachment) {
+        const precheck = await runSpamBlockerPrecheck({
+          authorRole: accountRole,
+          challenges: communityChallenges,
+          otherAnswers: flagPublishOptions.challengeRequest?.challengeAnswers,
+          publication: { content: publishContent, displayName: currentDisplayName, parentCid: cid || undefined, postCid },
+        });
+        if (!isFormMountedRef.current) return;
+        if (precheck.status === 'stopped') {
+          if (precheck.message) setFormError(`${t('error')}: ${precheck.message}`);
+          return;
+        }
+        if (precheck.status === 'passed') challengeRequest = { challengeAnswers: precheck.challengeAnswers };
+      }
+
       const uploadedLink = attachment ? await uploadAttachedMedia(attachment) : undefined;
       if (uploadedLink === null) {
         return;
@@ -1172,6 +1241,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
           : getPublishLinkOptions(currentUrl, appliedThumbnailConversion || (hasRestoredDraftRef.current && Boolean(currentUrl)))),
         ...flagPublishOptions,
         ...(hasRestoredDraftRef.current && draft.spoiler ? { spoiler: true } : {}),
+        ...(challengeRequest ? { challengeRequest } : {}),
       });
     });
 
@@ -1241,6 +1311,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
   }, [replyIndex, closeForm, navigate, resetFields]);
 
   const { isUploading, uploadPhase, chooseFile, uploadAttachment } = useFileUpload();
+  const runSpamBlockerPrecheck = useSpamBlockerPrecheck({ communityAddress: effectiveBoardAddress });
   const clearLink = () => {
     cancelPendingConversion();
     setLinkValue('');

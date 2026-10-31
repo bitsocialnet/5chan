@@ -40,6 +40,7 @@ import EditMenu from '../edit-menu';
 import FailedPublishNotice from '../failed-publish-notice';
 import { canEmbed } from '../../lib/utils/embed-utils';
 import LoadingEllipsis from '../loading-ellipsis';
+import PendingUploadFile from '../pending-upload-file';
 import PostAuthorFlags from '../post-author-flags';
 import PostFlashTag from '../post-flash-tag';
 import PostTransferredTag from '../post-transferred-tag';
@@ -1182,6 +1183,7 @@ const PostDesktop = ({
                 showBoardLabel={showBoardLabel}
               />
             )}
+            {typeof resolvedPost?.pendingUploadId === 'number' && <PendingUploadFile pendingUploadId={resolvedPost.pendingUploadId} spoiler={spoiler} />}
             <PostInfo
               isHidden={hidden}
               post={resolvedPost}

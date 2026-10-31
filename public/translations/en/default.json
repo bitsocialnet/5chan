@@ -615,5 +615,6 @@
   "x_md5s_filtered": "{{count}} MD5s filtered.",
   "md5_filter": "MD5 filter",
   "md5_filter_help": "Hide posts with these files, one per line: a SHA-256 or MD5 hash (4chan X's MD5 lines work too), or a link. A Forge file is matched by the SHA-256 hash in its link. Other images are hashed once they load if their host allows it, so a listed hash hides the same image wherever it is posted. Any other file is matched only by its exact link. Lines starting with # are ignored.",
-  "directory_requirement_rules": "Directory rules listed first, word for word"
+  "directory_requirement_rules": "Directory rules listed first, word for word",
+  "spam_check_not_finished": "The spam check did not finish. Post again to retry."
 }

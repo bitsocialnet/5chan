@@ -595,5 +595,6 @@
   "x_md5s_filtered": "{{count}} MD5's gefilterd.",
   "md5_filter": "MD5-filter",
   "md5_filter_help": "Verberg berichten met deze bestanden, één per regel: een SHA-256- of MD5-hash (MD5-regels uit 4chan X werken ook) of een link. Een Forge-bestand wordt herkend aan de SHA-256-hash in zijn link. Van andere afbeeldingen wordt na het laden de hash berekend als hun host dat toestaat, zodat een opgegeven hash dezelfde afbeelding verbergt waar die ook wordt gepost. Elk ander bestand wordt alleen herkend aan zijn exacte link. Regels die met # beginnen, worden genegeerd.",
-  "directory_requirement_rules": "Directoryregels als eerste vermeld, woord voor woord"
+  "directory_requirement_rules": "Directoryregels als eerste vermeld, woord voor woord",
+  "spam_check_not_finished": "De spamcontrole is niet voltooid. Plaats opnieuw om het nog eens te proberen."
 }

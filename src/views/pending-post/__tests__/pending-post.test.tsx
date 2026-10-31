@@ -3,6 +3,7 @@ import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import usePendingPostNavigationStore from '../../../stores/use-pending-post-navigation-store';
+import usePendingUploadPostStore from '../../../stores/use-pending-upload-post-store';
 import PendingPost from '../pending-post';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -11,7 +12,9 @@ const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise
 type TestComment = {
   cid?: string;
   communityAddress?: string;
+  content?: string;
   index?: number;
+  pendingUploadId?: number;
 };
 
 const testState = vi.hoisted(() => ({
@@ -22,7 +25,7 @@ const testState = vi.hoisted(() => ({
   challengeCount: 0,
   directories: [] as Array<{ address: string; title?: string }>,
   getBoardPathMock: vi.fn<(address: string) => string>(),
-  locationState: null as { boardPath?: string; pendingPost?: TestComment } | null,
+  locationState: null as { boardPath?: string; pendingPost?: TestComment; pendingUploadId?: number } | null,
   navigateMock: vi.fn(),
   post: undefined as TestComment | undefined,
   retryingAccountCommentIndex: null as number | null,
@@ -76,7 +79,12 @@ vi.mock('../../../components/post', async () => {
 
   return {
     Post: memo(
-      ({ post }: { post?: TestComment }) => createElement('div', { 'data-post-index': post?.index, 'data-testid': 'post-view' }, post?.cid ?? 'no-post'),
+      ({ post }: { post?: TestComment }) =>
+        createElement(
+          'div',
+          { 'data-pending-upload-id': post?.pendingUploadId, 'data-post-index': post?.index, 'data-testid': 'post-view' },
+          post?.cid ?? post?.content ?? 'no-post',
+        ),
       (previousProps, nextProps) => previousProps.post?.cid === nextProps.post?.cid,
     ),
   };
@@ -117,6 +125,7 @@ describe('PendingPost', () => {
     testState.post = undefined;
     testState.retryingAccountCommentIndex = null;
     usePendingPostNavigationStore.getState().clearPendingPostNavigation();
+    usePendingUploadPostStore.setState({ pendingUploadPosts: [] });
 
     window.scrollTo = scrollToMock;
 
@@ -132,6 +141,80 @@ describe('PendingPost', () => {
     window.scrollTo = originalScrollTo;
   });
 
+  it('shows a new thread whose file is still being checked and uploaded as its pending post', async () => {
+    testState.accountCommentIndex = 'upload';
+    testState.locationState = { boardPath: 'mu' };
+    const { id } = usePendingUploadPostStore.getState().startPendingUploadPost({
+      attachment: { kind: 'file', file: new File(['png'], 'chosen.png', { type: 'image/png' }), name: 'chosen.png', mimeType: 'image/png' },
+      boardChallenges: undefined,
+      boardPath: 'mu',
+      draftKey: '/mu',
+      nonokoRedirectPath: null,
+      post: { communityAddress: 'music-posting.eth', content: 'uploading body' },
+      publishOptions: { communityAddress: 'music-posting.eth', content: 'uploading body' },
+    });
+
+    await renderPendingPost();
+
+    const postView = container.querySelector('[data-testid="post-view"]');
+    expect(postView?.textContent).toBe('uploading body');
+    expect(postView?.getAttribute('data-pending-upload-id')).toBe(String(id));
+    expect(testState.navigateMock).not.toHaveBeenCalled();
+  });
+
+  it('shows the uploading thread its navigation named when another one is uploading too', async () => {
+    testState.accountCommentIndex = 'upload';
+    const startUpload = (content: string) =>
+      usePendingUploadPostStore.getState().startPendingUploadPost({
+        attachment: { kind: 'file', file: new File(['png'], 'chosen.png', { type: 'image/png' }), name: 'chosen.png', mimeType: 'image/png' },
+        boardChallenges: undefined,
+        boardPath: 'mu',
+        draftKey: '/mu',
+        nonokoRedirectPath: null,
+        post: { communityAddress: 'music-posting.eth', content },
+        publishOptions: { communityAddress: 'music-posting.eth', content },
+      });
+    const first = startUpload('first body');
+    startUpload('second body');
+    testState.locationState = { boardPath: 'mu', pendingUploadId: first.id };
+
+    await renderPendingPost();
+
+    expect(container.querySelector('[data-testid="post-view"]')?.textContent).toBe('first body');
+  });
+
+  it('leaves the navigation to whatever clears the post it shows, instead of sending the author to the board', async () => {
+    testState.accountCommentIndex = 'upload';
+    testState.locationState = { boardPath: 'mu' };
+    const { id } = usePendingUploadPostStore.getState().startPendingUploadPost({
+      attachment: { kind: 'file', file: new File(['png'], 'chosen.png', { type: 'image/png' }), name: 'chosen.png', mimeType: 'image/png' },
+      boardChallenges: undefined,
+      boardPath: 'mu',
+      draftKey: '/mu/catalog',
+      nonokoRedirectPath: null,
+      post: { communityAddress: 'music-posting.eth', content: 'uploading body' },
+      publishOptions: { communityAddress: 'music-posting.eth', content: 'uploading body' },
+    });
+    await renderPendingPost();
+
+    // The publisher returns to the catalog form and clears the upload; its navigation may commit after the clear.
+    await act(async () => {
+      usePendingUploadPostStore.getState().clearPendingUploadPost(id);
+    });
+
+    expect(testState.navigateMock).not.toHaveBeenCalled();
+  });
+
+  it('returns to the board from the upload page when no post is uploading', async () => {
+    testState.accountCommentIndex = 'upload';
+    testState.locationState = { boardPath: 'mu' };
+
+    await renderPendingPost();
+
+    expect(container.querySelector('[data-testid="post-view"]')).toBeNull();
+    expect(testState.navigateMock).toHaveBeenCalledWith('/mu', { replace: true });
+  });
+
   it('renders the pending post and scrolls to the top for valid indices', async () => {
     testState.accountCommentIndex = '0';
     testState.accountComments = [{}];
@@ -144,6 +227,19 @@ describe('PendingPost', () => {
     expect(scrollToMock).toHaveBeenCalledWith(0, 0);
     expect(container.querySelector('[data-testid="post-view"]')?.textContent).toBe('no-post');
     expect(testState.navigateMock).not.toHaveBeenCalledWith('/not-found', { replace: true });
+  });
+
+  it('marks its pending post as on screen until the page closes', async () => {
+    testState.accountCommentIndex = '0';
+    testState.accountComments = [{}];
+    testState.post = { communityAddress: 'music-posting.eth' };
+
+    await renderPendingPost();
+    expect(usePendingPostNavigationStore.getState().visiblePendingPostIndex).toBe(0);
+
+    act(() => root.unmount());
+    expect(usePendingPostNavigationStore.getState().visiblePendingPostIndex).toBeNull();
+    root = createRoot(container);
   });
 
   it('does not register the scroll helper return value as an effect cleanup', async () => {

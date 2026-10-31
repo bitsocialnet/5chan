@@ -595,5 +595,6 @@
   "x_md5s_filtered": "{{count}} MD5 filtrelendi.",
   "md5_filter": "MD5 filtresi",
   "md5_filter_help": "Bu dosyaları içeren gönderileri gizler, her satıra bir tane: SHA-256 veya MD5 hash değeri (4chan X'in MD5 satırları da çalışır) ya da bir bağlantı. Forge dosyası, bağlantısındaki SHA-256 hash değeriyle eşleştirilir. Diğer görsellerin hash değeri, sunucuları izin veriyorsa yüklendikten sonra hesaplanır; böylece listedeki bir hash aynı görseli nerede paylaşılırsa paylaşılsın gizler. Bunların dışındaki her dosya yalnızca tam bağlantısıyla eşleştirilir. # ile başlayan satırlar yok sayılır.",
-  "directory_requirement_rules": "Dizin kuralları en başta, kelimesi kelimesine listelenmiş"
+  "directory_requirement_rules": "Dizin kuralları en başta, kelimesi kelimesine listelenmiş",
+  "spam_check_not_finished": "Spam kontrolü tamamlanmadı. Yeniden denemek için tekrar gönderin."
 }

@@ -595,5 +595,6 @@
   "x_md5s_filtered": "Odfiltrowane MD5: {{count}}.",
   "md5_filter": "Filtr MD5",
   "md5_filter_help": "Ukrywa posty z tymi plikami, jeden w wierszu: hash SHA-256 lub MD5 (działają też wiersze MD5 z 4chan X) albo link. Plik z Forge jest rozpoznawany po hashu SHA-256 w jego linku. Dla pozostałych obrazów hash jest obliczany po ich załadowaniu, jeśli pozwala na to ich hosting, więc hash z listy ukrywa ten sam obraz, gdziekolwiek zostanie opublikowany. Każdy inny plik jest rozpoznawany tylko po dokładnym linku. Wiersze zaczynające się od # są pomijane.",
-  "directory_requirement_rules": "Zasady katalogu wymienione na początku, słowo w słowo"
+  "directory_requirement_rules": "Zasady katalogu wymienione na początku, słowo w słowo",
+  "spam_check_not_finished": "Sprawdzanie spamu nie zostało ukończone. Opublikuj ponownie, aby spróbować jeszcze raz."
 }

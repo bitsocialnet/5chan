@@ -4,7 +4,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import usePublishPost from '../use-publish-post';
 import useChallengesStore from '../../stores/use-challenges-store';
-import usePublishPostStore from '../../stores/use-publish-post-store';
+import usePublishPostStore, { createPublishPostStore } from '../../stores/use-publish-post-store';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
@@ -81,6 +81,26 @@ describe('usePublishPost', () => {
   afterEach(() => {
     act(() => root.unmount());
     container.remove();
+  });
+
+  it("keeps a publish given its own store out of the post form's shared store", async () => {
+    const ownStore = createPublishPostStore();
+    let ownValue: ReturnType<typeof usePublishPost> | undefined;
+    const OwnStoreHarness = () => {
+      ownValue = usePublishPost({ communityAddress: 'music.eth', publishPostStore: ownStore });
+      return null;
+    };
+    act(() => {
+      root.render(createElement(OwnStoreHarness));
+    });
+
+    await act(async () => {
+      ownValue?.publishPost({ content: 'background thread', link: 'https://forgeimg.net/abc/file.png', spoiler: true, title: 'subject' } as never);
+    });
+
+    expect(testState.publishCommentMock).toHaveBeenCalledTimes(1);
+    expect(ownStore.getState()).toMatchObject({ content: 'background thread', link: 'https://forgeimg.net/abc/file.png', spoiler: true, title: 'subject' });
+    expect(usePublishPostStore.getState()).toMatchObject({ content: undefined, link: undefined, spoiler: undefined, title: undefined });
   });
 
   it('sanitizes publish options into portable store state and exposes the publish action', async () => {
@@ -214,6 +234,7 @@ describe('usePublishPost', () => {
     });
 
     expect(latestValue.publishPostError).toBe('blocked:unresolved');
+    expect(testState.publishErrorNavigationMock).toHaveBeenCalledWith(new Error('blocked:unresolved'));
     expect(testState.publishCommentMock).not.toHaveBeenCalled();
   });
 

@@ -7,6 +7,7 @@ import { preloadThemeAssets, preloadUiIcons, scheduleIdlePreload } from './lib/u
 import { hasModQueueAccessRole } from './lib/utils/mod-access';
 import type { PostProps } from './lib/utils/post-props';
 import useImageFiltersStore from './stores/use-image-filters-store';
+import usePendingUploadPostStore from './stores/use-pending-upload-post-store';
 import useReplyModalStore from './stores/use-reply-modal-store';
 import { useAccountCommunityAddresses } from './hooks/use-account-community-addresses';
 import useTheme from './hooks/use-theme';
@@ -32,6 +33,8 @@ const AccountDataEditor = lazyImport(() => import('./views/account-data-editor')
 const BoardSettings = lazyImport(() => import('./views/board-settings'));
 const ChallengeModal = lazyImport(() => import('./components/challenge-modal'));
 const ImageFilterNotice = lazyImport(() => import('./components/image-filter-notice'));
+const loadPendingUploadPostPublisher = () => import('./components/pending-upload-post-publisher');
+const PendingUploadPostPublisher = lazyImport(loadPendingUploadPostPublisher);
 const DirectoryModal = lazyImport(() => import('./components/directory-modal'));
 const DisclaimerModal = lazyImport(() => import('./components/disclaimer-modal'));
 const loadReplyModal = () => import('./components/reply-modal');
@@ -115,9 +118,11 @@ const renderQuotePreviewPost = (props: PostProps) => (
 preloadThemeAssets();
 // Warm the board routes, reply modal, settings modal, and secondary view chunks, and the icons they
 // use, so the first "No." click or navigation does not wait for a lazy import (routes render without
-// transitions).
+// transitions). The pending upload publisher too: a thread with a file needs it as soon as it is posted,
+// even in a tab opened before a deploy replaced its chunk.
 const preloadLazyChunks = () => {
   void loadBoardRoutes();
+  void loadPendingUploadPostPublisher();
   void loadReplyModal();
   void loadSettingsModal();
   Object.values(secondaryViewLoaders).forEach((load) => void load());
@@ -151,6 +156,8 @@ const GlobalLayout = () => {
   const isInSettingsView = pathname.endsWith('/settings');
   // The notice only exists after a quick filter, so its code loads then instead of with the app.
   const hasImageFilterNotice = useImageFiltersStore((state) => state.quickFilterNotice !== null);
+  // Loaded only for a new thread whose file is being checked and uploaded; it publishes the thread after the upload.
+  const hasPendingUploadPost = usePendingUploadPostStore((state) => state.pendingUploadPosts.length > 0);
 
   return (
     <>
@@ -178,6 +185,13 @@ const GlobalLayout = () => {
           <ChallengeModal />
         </Suspense>
       </ImportErrorBoundary>
+      {hasPendingUploadPost && (
+        <ImportErrorBoundary floating>
+          <Suspense fallback={null}>
+            <PendingUploadPostPublisher />
+          </Suspense>
+        </ImportErrorBoundary>
+      )}
       <ImportErrorBoundary floating>
         <Suspense fallback={null}>
           <SettingsUpgradeModal />

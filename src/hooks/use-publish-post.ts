@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ChallengeVerification, Comment, usePublishComment } from '@bitsocial/bitsocial-react-hooks';
 import { useShallow } from 'zustand/react/shallow';
-import usePublishPostStore from '../stores/use-publish-post-store';
+import usePublishPostStore, { type PublishPostStore } from '../stores/use-publish-post-store';
 import useChallengesStore from '../stores/use-challenges-store';
 import usePublishAuthorDomainGuard, { getPublishAuthorDomainErrorMessage } from './use-publish-author-domain-guard';
 import usePendingPublishRequest from './use-pending-publish-request';
@@ -14,10 +14,20 @@ type UsePublishPostOptions = {
   onPublishAccepted?: () => void;
   onPublishError?: (error: Error) => void;
   onPendingPost?: (accountCommentIndex: number, pendingPost: Comment) => void;
+  /** The post form's shared store unless given; a publish apart from the form must not leave options in it. */
+  publishPostStore?: PublishPostStore;
 };
 
-const usePublishPost = ({ communityAddress, onAbandonPost, onDuplicateMediaRejected, onPublishAccepted, onPublishError, onPendingPost }: UsePublishPostOptions) => {
-  const { author, title, content, link, flairs, spoiler, publishCommentOptions } = usePublishPostStore(
+const usePublishPost = ({
+  communityAddress,
+  onAbandonPost,
+  onDuplicateMediaRejected,
+  onPublishAccepted,
+  onPublishError,
+  onPendingPost,
+  publishPostStore: useStore = usePublishPostStore,
+}: UsePublishPostOptions) => {
+  const { author, title, content, link, flairs, spoiler, publishCommentOptions } = useStore(
     useShallow((state) => ({
       author: state.author,
       title: state.title || undefined,
@@ -29,8 +39,8 @@ const usePublishPost = ({ communityAddress, onAbandonPost, onDuplicateMediaRejec
     })),
   );
 
-  const setPublishPostStore = usePublishPostStore((state) => state.setPublishPostStore);
-  const resetPublishPostStore = usePublishPostStore((state) => state.resetPublishPostStore);
+  const setPublishPostStore = useStore((state) => state.setPublishPostStore);
+  const resetPublishPostStore = useStore((state) => state.resetPublishPostStore);
   const addChallenge = useChallengesStore((state) => state.addChallenge);
   const abandonPublishRef = useRef<(() => Promise<void>) | undefined>(undefined);
   const [publishPostError, setPublishPostError] = useState<string | null>(null);
@@ -124,13 +134,16 @@ const usePublishPost = ({ communityAddress, onAbandonPost, onDuplicateMediaRejec
 
   const startPublishPost = useCallback(async () => {
     if (blockedReason) {
-      setPublishPostError(getPublishAuthorDomainErrorMessage(blockedReason));
+      const message = getPublishAuthorDomainErrorMessage(blockedReason);
+      setPublishPostError(message);
+      // A caller that is not showing this hook's error (the pending upload publisher) still hears it.
+      onPublishError?.(new Error(message));
       return;
     }
 
     setPublishPostError(null);
     await publishComment();
-  }, [blockedReason, publishComment]);
+  }, [blockedReason, onPublishError, publishComment]);
 
   useEffect(() => {
     if (pendingPublishRequestId === 0 || pendingPublishRequestId === startedPublishRequestIdRef.current) {

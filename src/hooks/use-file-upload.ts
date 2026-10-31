@@ -256,18 +256,25 @@ export function useFileUpload() {
     }
   }, [t, uploadMode]);
 
-  /** Uploads attached media through the enabled providers; alerts and returns null when the upload fails. */
+  /**
+   * Uploads attached media through the enabled providers; alerts and returns null when the upload fails.
+   * `onPhaseChange` also hears each phase, for a caller that shows the upload somewhere else.
+   */
   const uploadAttachment = useCallback(
-    async (media: AttachedMedia): Promise<UploadedFileResult | null> => {
+    async (media: AttachedMedia, onPhaseChange?: (phase: UploadPhase) => void): Promise<UploadedFileResult | null> => {
+      const setPhase = (phase: UploadPhase) => {
+        setUploadPhase(phase);
+        onPhaseChange?.(phase);
+      };
       try {
-        setUploadPhase('uploading');
+        setPhase('uploading');
         const { runtime, order } = await getAvailableProviderOrder();
         let uploaded: UploadedAttachment;
 
         if (media.kind === 'picked' || runtime === 'android') {
-          uploaded = await uploadOnAndroid(media, order, setUploadPhase);
+          uploaded = await uploadOnAndroid(media, order, setPhase);
         } else {
-          const result = await orchestrateUpload(media.file, order, setUploadPhase);
+          const result = await orchestrateUpload(media.file, order, setPhase);
           uploaded = { url: result.url, fileName: media.name, awaitingReview: result.awaitingReview === true };
         }
 

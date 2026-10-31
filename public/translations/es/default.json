@@ -595,5 +595,6 @@
   "x_md5s_filtered": "{{count}} MD5 filtrados.",
   "md5_filter": "Filtro MD5",
   "md5_filter_help": "Oculta las publicaciones con estos archivos, uno por línea: un hash SHA-256 o MD5 (las líneas MD5 de 4chan X también sirven) o un enlace. Un archivo de Forge se identifica por el hash SHA-256 de su enlace. El hash de las demás imágenes se calcula cuando terminan de cargarse, si su servidor lo permite, así que un hash de la lista oculta la misma imagen dondequiera que se publique. Cualquier otro archivo solo se identifica por su enlace exacto. Las líneas que empiezan con # se ignoran.",
-  "directory_requirement_rules": "Reglas del directorio listadas primero, palabra por palabra"
+  "directory_requirement_rules": "Reglas del directorio listadas primero, palabra por palabra",
+  "spam_check_not_finished": "La comprobación de spam no terminó. Publica de nuevo para volver a intentarlo."
 }

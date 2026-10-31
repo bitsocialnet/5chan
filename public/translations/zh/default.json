@@ -595,5 +595,6 @@
   "x_md5s_filtered": "已过滤 {{count}} 个 MD5。",
   "md5_filter": "MD5 过滤",
   "md5_filter_help": "隐藏包含这些文件的帖子，每行一个：SHA-256 或 MD5 哈希值（也支持 4chan X 的 MD5 行），或链接。Forge 文件按其链接中的 SHA-256 哈希值匹配。其他图片加载完成后，如果其托管网站允许，会计算其哈希值，因此列表中的哈希值会隐藏同一图片，无论它发布在何处。其余文件只按完全相同的链接匹配。以 # 开头的行会被忽略。",
-  "directory_requirement_rules": "目录规则逐字列在最前面"
+  "directory_requirement_rules": "目录规则逐字列在最前面",
+  "spam_check_not_finished": "垃圾信息检查未完成。请重新发布以重试。"
 }
