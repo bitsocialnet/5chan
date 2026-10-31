@@ -92,7 +92,8 @@ export const BoardLayout = () => {
   const { isEnabled: isSpecialEnabled } = useSpecialThemeStore();
   useEffect(() => {
     if (isSpecialEnabled && shouldShowSnow() && !isMobile) {
-      initSnow({ flakeCount: 150 });
+      // 4chan's count: 50 to 99 flakes, picked on each page load.
+      initSnow({ flakeCount: Math.floor(Math.random() * 50) + 50 });
     }
     return () => {
       removeSnow();

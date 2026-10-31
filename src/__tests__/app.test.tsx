@@ -736,7 +736,10 @@ describe('App', () => {
 
     await renderApp('/mu');
 
-    expect(testState.initSnowMock).toHaveBeenCalledWith({ flakeCount: 150 });
+    // 4chan's count: 50 to 99 flakes per page load.
+    const [{ flakeCount }] = testState.initSnowMock.mock.calls[0] as [{ flakeCount: number }];
+    expect(flakeCount).toBeGreaterThanOrEqual(50);
+    expect(flakeCount).toBeLessThanOrEqual(99);
     expect(testState.closeCreateBoardModalMock).toHaveBeenCalledTimes(1);
 
     act(() => root.unmount());

@@ -891,3 +891,14 @@
 :global(body.spooky) .quoteLink:hover {
   text-shadow: 0 0 12px #d98518;
 }
+
+/* 4chan's Christmas garland over the thread. */
+.garland {
+  border-image-slice: 50 0 50 0;
+  border-image-width: 40px 0px 0px 0px;
+  border-image-outset: 0px 0px 0px 0px;
+  border-image-repeat: repeat repeat;
+  border-image-source: url('/assets/garland.png');
+  border-style: solid;
+  padding-top: 50px;
+}
