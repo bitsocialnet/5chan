@@ -1,3 +1,29 @@
+## [0.10.3](https://github.com/bitsocialnet/5chan/compare/v0.10.2...v0.10.3) (2026-10-31)
+
+
+### Bug Fixes
+
+* **bbcode:** render whole greentext lines in BBCode posts and preview ([92b7f53](https://github.com/bitsocialnet/5chan/commit/92b7f53c658dff77f9a61369e23a5f1994a24c0b))
+* **christmas theme:** match 4chan's snow count and garlands ([2f139c4](https://github.com/bitsocialnet/5chan/commit/2f139c4109e565e4dc2210595cb810cf5bebe474))
+* **create board:** use native selects, pad field tips, and right-align the submit button ([5c9a618](https://github.com/bitsocialnet/5chan/commit/5c9a61868f3289178e8d518a76d50cba4d27603e))
+* **home:** show stats scope load speed only in pure P2P mode ([1a6cb4c](https://github.com/bitsocialnet/5chan/commit/1a6cb4c71de60497420c5e2584438659e3915677))
+* **load perf:** run cold loads on an ordinary day during seasonal themes ([b1f2679](https://github.com/bitsocialnet/5chan/commit/b1f2679558f6aa6db1803dd6048024ad7d6ac8f7))
+* **replies:** let replies sit beside the OP thumbnail like 4chan ([4211c22](https://github.com/bitsocialnet/5chan/commit/4211c2253cc6fe745ac32ff4306b75ee80752b18))
+* **reply modal:** stretch fields and messages with a resized comment box ([bed88ca](https://github.com/bitsocialnet/5chan/commit/bed88cadafb209dc0fdcaf93d1062b5624841eee))
+* **search:** include NSFW boards in archive search results ([cd7335b](https://github.com/bitsocialnet/5chan/commit/cd7335b351df33767b97cafcaba032a7bd3f7b8a))
+* **swf playback:** keep the SWF frame script's LF line endings so Windows builds match its CSP hash ([7ac0900](https://github.com/bitsocialnet/5chan/commit/7ac0900bf1c7e8c417dae2e0f7d4e35144061b1f))
+* **swf playback:** run Ruffle in a sandboxed frame that cannot reach the network ([106bd71](https://github.com/bitsocialnet/5chan/commit/106bd71912e22df15f2331dfeaba74be8e5080a4))
+* **uploads:** run the spam blocker before uploading to Forge Images ([#1273](https://github.com/bitsocialnet/5chan/issues/1273)) ([cc23502](https://github.com/bitsocialnet/5chan/commit/cc2350210c5fe9faa702e3f59aef2aa65a567c18))
+
+
+### Features
+
+* **directory:** require hosting boards to list the directory rules first ([#1270](https://github.com/bitsocialnet/5chan/issues/1270)) ([ce06117](https://github.com/bitsocialnet/5chan/commit/ce061176293c75b50085ae8c95a3ea55441de5cb))
+* **filter:** add a 4chan X MD5 filter that hashes images on readable hosts ([#1268](https://github.com/bitsocialnet/5chan/issues/1268)) ([cff0204](https://github.com/bitsocialnet/5chan/commit/cff0204adf5f70d4267543ba5eaccd05b06c6dfb))
+* **media:** show file sizes in file rows like 4chan ([#1269](https://github.com/bitsocialnet/5chan/issues/1269)) ([4a83597](https://github.com/bitsocialnet/5chan/commit/4a8359713c00697a71882ec3c417e97693e8baaa))
+* **swf uploads:** wait for Forge's SWF scan and update the upload copy ([2bf7047](https://github.com/bitsocialnet/5chan/commit/2bf70477275d5bb122dfa460192398e3415b9858))
+* **theme:** match 4chan's current Halloween theme and skeletons ([0ae53b5](https://github.com/bitsocialnet/5chan/commit/0ae53b5be3ab89455c4e58165f664ca49009a708))
+
 ## [0.10.2](https://github.com/bitsocialnet/5chan/compare/v0.10.1...v0.10.2) (2026-10-22)
 
 

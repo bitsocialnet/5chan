@@ -1,6 +1,13 @@
 {
   "entries": [
     {
+      "id": "release-0.10.3",
+      "kind": "release",
+      "timestamp": 1793448000,
+      "message": "v0.10.3: Updated Halloween and Christmas themes, MD5 image filter, file sizes on posts",
+      "version": "0.10.3"
+    },
+    {
       "id": "release-0.10.2",
       "kind": "release",
       "timestamp": 1792670400,

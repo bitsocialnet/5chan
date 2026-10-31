@@ -103,7 +103,7 @@ const downloads = [macSection, winSection, linuxSection, androidSection, htmlSec
 
 // One-liner summary of what changed in this release. Update before each release.
 const oneLinerDescription =
-  "This version loads the home page's popular threads and stats from a stats provider in one request instead of from every board, with a pure P2P option in the new Stats Providers settings, speeds up startup in Safari, and shows popular threads from the most active boards instead of the same few.";
+  "This version updates the Halloween and Christmas themes to match 4chan's current ones, adds a 4chan X MD5 image filter and file sizes in file rows, plays Flash files in a sandbox that cannot reach the network after Forge Images scans them, runs the spam blocker before uploads, includes NSFW boards in archive search results, and lets replies sit beside the OP thumbnail like 4chan.";
 
 const releaseBody = `${oneLinerDescription}
 
