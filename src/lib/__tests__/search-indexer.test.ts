@@ -46,7 +46,7 @@ describe('search indexer client', () => {
     expect(first).toBe(second);
     await expect(first).resolves.toEqual({ ...response, providerId: provider.id, threadPosts: {} });
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(fetchMock.mock.calls[0][0]).toBe(`https://api.5archive.org/api/search?q=${encodeURIComponent(query)}&page=2&limit=25&status=active`);
+    expect(fetchMock.mock.calls[0][0]).toBe(`https://api.5archive.org/api/search?q=${encodeURIComponent(query)}&page=2&limit=25&status=active&nsfw=true`);
   });
 
   it('caches and refreshes each post status independently', async () => {

@@ -121,6 +121,8 @@ const getSearchUrl = (provider: SearchProvider, query: string, page: number, pos
   url.searchParams.set('page', String(page));
   url.searchParams.set('limit', '25');
   url.searchParams.set('status', postStatus);
+  // 5archive silently drops NSFW boards from results unless asked to include them.
+  url.searchParams.set('nsfw', 'true');
   return url.toString();
 };
 
