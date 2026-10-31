@@ -187,10 +187,12 @@
 }
 
 /* 4chan's Halloween catalog dims thumbnails; its thread teasers are not links, so they never glow. */
-:global(body.spooky) .mediaWrapper {
-  filter: contrast(90%) brightness(90%);
-}
+@media (min-width: 640px) {
+  :global(body.spooky) .mediaWrapper {
+    filter: contrast(90%) brightness(90%);
+  }
 
-:global(body.spooky) .post a:hover {
-  text-shadow: none;
+  :global(body.spooky) .post a:hover {
+    text-shadow: none;
+  }
 }

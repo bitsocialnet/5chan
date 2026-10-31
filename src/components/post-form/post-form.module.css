@@ -290,10 +290,12 @@
 }
 
 /* 4chan's Halloween stylesheet hides the brackets around the post form toggle; its catalog keeps them dark. */
-:global(body.spooky) .formToggle {
-  color: transparent;
-}
+@media (min-width: 640px) {
+  :global(body.spooky) .formToggle {
+    color: transparent;
+  }
 
-:global(body.spooky) .catalogFormToggle {
-  color: #321f28;
+  :global(body.spooky) .catalogFormToggle {
+    color: #321f28;
+  }
 }

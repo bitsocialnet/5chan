@@ -880,16 +880,16 @@
   :global(body.spooky) .replyDesktop .postNumLink button:hover {
     color: var(--post-link-text-color-hover);
   }
-}
 
-:global(body.spooky) .replyToPost:hover,
-:global(body.spooky) .userAddress:hover,
-:global(body.spooky) .closeMedia:hover,
-:global(body.spooky) .abbr button:hover,
-:global(body.spooky) .backlink:hover,
-:global(body.spooky) .backlinkHash:hover,
-:global(body.spooky) .quoteLink:hover {
-  text-shadow: 0 0 12px #d98518;
+  :global(body.spooky) .replyToPost:hover,
+  :global(body.spooky) .userAddress:hover,
+  :global(body.spooky) .closeMedia:hover,
+  :global(body.spooky) .abbr button:hover,
+  :global(body.spooky) .backlink:hover,
+  :global(body.spooky) .backlinkHash:hover,
+  :global(body.spooky) .quoteLink:hover {
+    text-shadow: 0 0 12px #d98518;
+  }
 }
 
 /* 4chan's Christmas garland over the thread. */
