@@ -735,8 +735,8 @@ If uncertain, ask the developer before adding an entry.
 - **Context:** Preparing the `v0.9.20` release with the `release` skill, which instructs running `corepack yarn changelog`.
 - **What was surprising:** The script is `conventional-changelog -p angular -i CHANGELOG.md -s -r 0`. The `-r 0` flag regenerates *every* release section from raw commit messages, not just the new one. Commit `cdfeb13` had hand-edited 90 lines of `CHANGELOG.md` to scrub pre-rebrand terminology (`subplebbit` -> `community`, `plebbit-js` -> `bitsocial-js`, `Plebbit.` -> `Bitsocial.`), and those edits exist only in the file: the underlying commit subjects still carry the old words.
 - **Impact:** Running the documented command reintroduces 45 `plebbit`/`subplebbit` references into historical entries, silently undoing the rebrand inside the release commit itself. Confirmed by diffing a dry run against the committed file.
-- **Mitigation:** Do not run `corepack yarn changelog` as-is. Generate only the new section with `corepack yarn exec conventional-changelog -p angular` (no `-i`, `-s` or `-r`), prepend it to `CHANGELOG.md`, then verify the untouched remainder is byte-identical to the previous file before committing. The generated section already ends with the three blank lines the file uses between releases, so plain concatenation preserves the format. The durable fix is to drop `-r 0` from the `changelog` script in `package.json` so it only ever prepends.
-- **Status:** confirmed
+- **Mitigation:** `corepack yarn changelog` now runs `scripts/changelog.mjs`, which generates only the release since the last tag and prepends it with one blank line; rerunning for the same version replaces that top section. Dropping `-r 0` alone was not enough: the CLI's `--infile` mode joins the new section to the old file with no blank line between releases.
+- **Status:** resolved
 
 ### AI hook payloads and concurrent locale writes need behavioral checks
 
