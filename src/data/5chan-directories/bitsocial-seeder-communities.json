@@ -2,7 +2,7 @@
   "title": "Bitsocial Seeder Compatibility Communities",
   "description": "Public Bitsocial communities that default bitsocial-seeder operators should seed even when they are not part of a 5chan directory list. This file lives in 5chan-directories for compatibility with existing bitsocial-seeder releases, which poll every JSON file in this folder except defaults files. Some entries temporarily mirror communities from seedit-directories so older seeders discover them; they can be removed after those seeders have migrated to releases that consume all official directory lists. It is not a 5chan directory file.\n\nhttps://github.com/bitsocialnet/lists/blob/master/5chan-directories/bitsocial-seeder-communities.json",
   "createdAt": 1783209600,
-  "updatedAt": 1783641600,
+  "updatedAt": 1793199415,
   "communities": [
     {
       "address": "blog.bitsocial.bso",
@@ -69,6 +69,11 @@
       "addedAt": 1783123200,
       "publicKey": "12D3KooWQt3UJ6A3AeZxJSFJnspVmYQK1Epj8VeSzrFG1tHiZC9o",
       "owner": "bitsocialist.bso"
+    },
+    {
+      "address": "12D3KooWSbU6p2epQ1AQrfMztyCJAMJKtfDC4NEKonFULnkqEBvU",
+      "addedAt": 1793199415,
+      "publicKey": "12D3KooWSbU6p2epQ1AQrfMztyCJAMJKtfDC4NEKonFULnkqEBvU"
     }
   ]
 }
