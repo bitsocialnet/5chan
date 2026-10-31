@@ -21,6 +21,7 @@ import useReplyModalStore from '../../stores/use-reply-modal-store';
 import usePersistentBoardsBarStore from '../../stores/use-persistent-boards-bar-store';
 import { getPageDraftKey } from '../../lib/utils/location-draft-utils';
 import useThreadLiveUpdatesStore from '../../stores/use-thread-live-updates-store';
+import { shouldShowSnow } from '../../stores/use-special-theme-store';
 import useCountLinksInReplies from '../../hooks/use-count-links-in-replies';
 import useOptimisticReplyCount from '../../hooks/use-optimistic-reply-count';
 import { usePostPageNumber } from '../../hooks/use-post-page-number';
@@ -183,7 +184,7 @@ export const ThreadFooterFirstRow = ({ postCid, threadNumber, communityAddress, 
   };
 
   return (
-    <div className={styles.threadRow}>
+    <div className={`${styles.threadRow} ${shouldShowSnow() ? styles.garland : ''}`}>
       <div className={styles.threadLeft}>
         <span className={styles.bracketed}>
           [<ReturnButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />]

@@ -21,6 +21,7 @@ import { preservePublishedUserID } from '../../lib/utils/comment-user-id-utils';
 import useThreadUpdater from '../../hooks/use-thread-updater';
 import useMarkPinnedThreadRead from '../../hooks/use-mark-pinned-thread-read';
 import useThreadLiveUpdatesStore, { type RefreshThread } from '../../stores/use-thread-live-updates-store';
+import { shouldShowSnow } from '../../stores/use-special-theme-store';
 import type { QueuedCommentRouteState } from '../../lib/utils/mod-queue-utils';
 import styles from '../../components/post-styles';
 
@@ -326,7 +327,8 @@ const PostPage = () => {
   useMarkPinnedThreadRead(post?.cid ? post : undefined);
 
   return (
-    <div className={styles.content}>
+    // 4chan's Christmas garland hangs over the thread (#delform), as over the board index.
+    <div className={`${styles.content} ${shouldShowSnow() ? styles.garland : ''}`}>
       {shouldShowPostError && (
         <div className={styles.error}>
           <ErrorDisplay error={error} />

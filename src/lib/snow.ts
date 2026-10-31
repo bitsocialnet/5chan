@@ -55,7 +55,6 @@ export const initSnow = ({ flakeCount }: SnowOptions): void => {
   container.style.position = 'fixed';
   container.style.top = '0';
   container.style.pointerEvents = 'none';
-  container.style.zIndex = '9999';
 
   for (let i = 1; i < flakeCount; i++) {
     const flake = document.createElement('div');
