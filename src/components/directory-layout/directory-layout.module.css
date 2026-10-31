@@ -461,8 +461,9 @@
   background: rgba(255, 255, 255, 0.1);
 }
 
+/* 4chan's Halloween stylesheet clears the odd-row shading and draws the header cells as plain bordered cells. */
 :global(body.spooky) .rowOdd td {
-  background: #1b1024;
+  background: transparent;
 }
 
 :global(body.tomorrow) .flashListing thead th,
@@ -474,9 +475,9 @@
 
 :global(body.spooky) .flashListing thead th,
 :global(body.spooky) .flashListing thead td {
-  background: var(--post-form-field-title-background-color);
-  color: var(--post-form-field-title-color);
-  border: none;
+  background: transparent;
+  color: inherit;
+  border: 1px solid #140814;
 }
 
 :global(body.photon) .rowOdd td {

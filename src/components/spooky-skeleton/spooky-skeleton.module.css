@@ -1,0 +1,30 @@
+/* 4chan's #skellington: no z-index, so positioned page content still covers it, and a 3 second fade in. */
+.skeleton {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  animation: fade-in 3s linear;
+}
+
+.top {
+  transform: rotate(180deg);
+  top: 0;
+  bottom: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}

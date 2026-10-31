@@ -48,6 +48,8 @@ interface ThreadLiveUpdatesState {
   unreadMarkerCid: string | undefined;
   faviconAlert: ThreadFaviconAlert | undefined;
   updatesStarted: number;
+  /** Counts finished updates that brought new posts, when 4chan dispatches 4chanThreadUpdated. */
+  updatesWithNewPosts: number;
   openThread: (threadCid: string | undefined) => void;
   setRefreshThread: (refreshThread: RefreshThread | undefined) => void;
   setThreadPost: (post: Comment | undefined) => void;
@@ -72,6 +74,7 @@ const defaultState = {
   unreadMarkerCid: undefined,
   faviconAlert: undefined,
   updatesStarted: 0,
+  updatesWithNewPosts: 0,
 };
 
 const getAutoSessionKey = (threadCid: string) => `${AUTO_SESSION_STORAGE_KEY_PREFIX}${threadCid}`;
@@ -201,8 +204,9 @@ const useThreadLiveUpdatesStore = create<ThreadLiveUpdatesState>((set, get) => {
         if (token !== updateToken) return;
         if (newPostsInUpdate === 0) {
           set({ status: { type: 'no-new-posts' } });
-        } else if (get().status.type === 'updating') {
-          set({ status: { type: 'idle' } });
+        } else {
+          const { status, updatesWithNewPosts } = get();
+          set({ updatesWithNewPosts: updatesWithNewPosts + 1, status: status.type === 'updating' ? { type: 'idle' } : status });
         }
         finishUpdate(newPostsInUpdate);
       }, THREAD_REPLIES_SETTLE_MS);

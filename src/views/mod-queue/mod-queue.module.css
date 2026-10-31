@@ -211,7 +211,7 @@
 :global(body.spooky) .rowOdd .type,
 :global(body.spooky) .rowOdd .image,
 :global(body.spooky) .rowOdd .actions {
-  background-color: #1b1024;
+  background-color: transparent;
 }
 
 :global(body.photon) .rowOdd .number,

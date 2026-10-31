@@ -22,10 +22,15 @@ type UseThemeOptions = {
   applyDocumentEffects?: boolean;
 };
 
-const updateThemeClass = (newTheme: string) => {
-  document.body.classList.remove(...themeClasses);
+const updateThemeClass = (newTheme: string, sfw: boolean) => {
+  document.body.classList.remove(...themeClasses, 'ws');
   if (newTheme) {
     document.body.classList.add(newTheme);
+  }
+  // 4chan's Halloween stylesheet colors worksafe boards differently, by the body's ws class. It goes
+  // after the theme, in the order the static shell's theme script paints them.
+  if (newTheme === 'spooky' && sfw) {
+    document.body.classList.add('ws');
   }
 };
 
@@ -59,13 +64,18 @@ const useTheme = ({ applyDocumentEffects = false }: UseThemeOptions = {}): [stri
   const directoryEntry = communityAddress ? directories.find((entry) => entry.address === communityAddress) : undefined;
   const communityNsfw = deriveCommunityNsfw({ features: { safeForWork: liveSafeForWork } }, directoryEntry);
 
+  // Like 4chan, a seasonal theme nobody turned off during this event paints from a board's first frame;
+  // the effect below saves that, so the multiboard views keep it too. vite-static-shell.mjs mirrors this.
+  const isSpecialThemeUnsetOnBoard = isEnabled === null && !!communityAddress && !isInAllView && !isInSubscriptionsView && !isInModView;
+  const isSpecialThemeShown = !!activeSpecialTheme && (isEnabled === true || isSpecialThemeUnsetOnBoard);
+
   useEffect(() => {
-    if (activeSpecialTheme && isEnabled === null && communityAddress && !isInAllView && !isInSubscriptionsView && !isInModView) {
+    if (activeSpecialTheme && isSpecialThemeUnsetOnBoard) {
       setIsEnabled(true);
     } else if (!activeSpecialTheme && isEnabled) {
       setIsEnabled(false);
     }
-  }, [activeSpecialTheme, isEnabled, setIsEnabled, communityAddress, isInAllView, isInSubscriptionsView, isInModView]);
+  }, [activeSpecialTheme, isEnabled, isSpecialThemeUnsetOnBoard, setIsEnabled]);
 
   const currentTheme = useMemo(() => {
     if (location.pathname === '/') {
@@ -76,7 +86,7 @@ const useTheme = ({ applyDocumentEffects = false }: UseThemeOptions = {}): [stri
       return 'yotsuba';
     }
 
-    if (isEnabled && activeSpecialTheme) {
+    if (isSpecialThemeShown && activeSpecialTheme) {
       return getSpecialThemeClass(activeSpecialTheme);
     }
 
@@ -93,11 +103,10 @@ const useTheme = ({ applyDocumentEffects = false }: UseThemeOptions = {}): [stri
     }
 
     return storedTheme || 'yotsuba';
-  }, [location.pathname, isEnabled, activeSpecialTheme, isMultiboardView, communityAddress, communityNsfw, themes]);
+  }, [location.pathname, isSpecialThemeShown, activeSpecialTheme, isMultiboardView, communityAddress, communityNsfw, themes]);
 
   const sfw = isSfwBoard({
     pathname: location.pathname,
-    isSpecialTheme: !!isEnabled,
     isInAllView,
     isInSubscriptionsView,
     isInModView,
@@ -109,8 +118,8 @@ const useTheme = ({ applyDocumentEffects = false }: UseThemeOptions = {}): [stri
   // Theme variables must be available for the first painted app frame, including cached starts.
   useLayoutEffect(() => {
     if (!applyDocumentEffects) return;
-    updateThemeClass(currentTheme);
-  }, [applyDocumentEffects, currentTheme]);
+    updateThemeClass(currentTheme, sfw);
+  }, [applyDocumentEffects, currentTheme, sfw]);
 
   const threadFaviconAlert = useThreadLiveUpdatesStore((state) => state.faviconAlert);
   useEffect(() => {

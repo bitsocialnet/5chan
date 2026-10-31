@@ -1455,7 +1455,7 @@ const PostForm = () => {
           {t('may_not_reply')}
         </div>
       ) : !showForm ? (
-        <div>
+        <div className={`${styles.formToggle} ${isInCatalogView ? styles.catalogFormToggle : ''}`}>
           [
           <button type='button' className='button' onClick={() => openForm(draftKey)}>
             {isInPostView ? t('post_a_reply') : t('start_new_thread')}

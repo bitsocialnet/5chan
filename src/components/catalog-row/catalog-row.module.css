@@ -185,3 +185,12 @@
 .pinned:hover {
   border-color: red;
 }
+
+/* 4chan's Halloween catalog dims thumbnails; its thread teasers are not links, so they never glow. */
+:global(body.spooky) .mediaWrapper {
+  filter: contrast(90%) brightness(90%);
+}
+
+:global(body.spooky) .post a:hover {
+  text-shadow: none;
+}

@@ -61,3 +61,12 @@
     display: none;
   }
 }
+
+/* 4chan's Halloween stylesheet draws the brackets around the blotter controls in its darkest purple. */
+:global(body.spooky) .blotter tfoot {
+  color: #140814;
+}
+
+:global(body.spooky) .hideButton:hover {
+  text-shadow: 0 0 12px #d98518;
+}

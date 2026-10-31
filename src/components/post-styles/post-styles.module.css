@@ -859,3 +859,35 @@
   50% { opacity: 0.5; }
   100% { opacity: 1; }
 }
+
+/* 4chan's Halloween stylesheet: transparent brackets around [Reply], post numbers in the link color,
+   and the glow its links get on hover, which index.css gives anchors. */
+@media (min-width: 640px) {
+  :global(body.spooky) .postDesktop .replyButton {
+    color: transparent;
+  }
+
+  :global(body.spooky) .postDesktop .postNumLink a,
+  :global(body.spooky) .postDesktop .postNumLink button,
+  :global(body.spooky) .replyDesktop .postNumLink a,
+  :global(body.spooky) .replyDesktop .postNumLink button {
+    color: var(--post-link-text-color);
+  }
+
+  :global(body.spooky) .postDesktop .postNumLink a:hover,
+  :global(body.spooky) .postDesktop .postNumLink button:hover,
+  :global(body.spooky) .replyDesktop .postNumLink a:hover,
+  :global(body.spooky) .replyDesktop .postNumLink button:hover {
+    color: var(--post-link-text-color-hover);
+  }
+}
+
+:global(body.spooky) .replyToPost:hover,
+:global(body.spooky) .userAddress:hover,
+:global(body.spooky) .closeMedia:hover,
+:global(body.spooky) .abbr button:hover,
+:global(body.spooky) .backlink:hover,
+:global(body.spooky) .backlinkHash:hover,
+:global(body.spooky) .quoteLink:hover {
+  text-shadow: 0 0 12px #d98518;
+}

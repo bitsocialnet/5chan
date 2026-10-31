@@ -64,13 +64,13 @@ export const updateFavicon = (variant: FaviconVariant, alert?: FaviconAlert): vo
  *
  * `communityNsfw` is the already-derived verdict from `deriveCommunityNsfw` when the caller has
  * one; it takes precedence over the directory lookup because it already folds that lookup in.
- * Callers without a live community can omit it and keep the directory-only behaviour.
+ * Callers without a live community can omit it and keep the directory-only behaviour. A seasonal
+ * theme does not change it: 4chan keeps a worksafe board's favicon and colors under its event styles.
  *
  * Pure function — no hooks, no side-effects, fully testable.
  */
 export const isSfwBoard = ({
   pathname,
-  isSpecialTheme,
   isInAllView,
   isInSubscriptionsView,
   isInModView,
@@ -79,7 +79,6 @@ export const isSfwBoard = ({
   directories,
 }: {
   pathname: string;
-  isSpecialTheme: boolean;
   isInAllView: boolean;
   isInSubscriptionsView: boolean;
   isInModView: boolean;
@@ -88,7 +87,6 @@ export const isSfwBoard = ({
   directories: { address: string; nsfw?: boolean }[];
 }): boolean => {
   if (pathname === '/' || pathname.startsWith('/rules')) return false;
-  if (isSpecialTheme) return false;
   if (isInAllView || isInSubscriptionsView || isInModView) return false;
 
   if (!communityAddress) return false;

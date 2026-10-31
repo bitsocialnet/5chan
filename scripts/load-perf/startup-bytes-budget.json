@@ -1,7 +1,7 @@
 {
-  "maxRawBytes": 2037223,
+  "maxRawBytes": 2043321,
   "allowanceBytes": 32768,
   "allowanceReason": "yarn build syncs board directory data from bitsocialnet/lists, and that data is in the startup bundle",
-  "ceilingReason": "index.html carries the static board frames: a desktop and a mobile template shared by every directory board plus each board's title and winner line (about 59 KB raw, 6 KB gzip); the English interface strings ship with the app (about 37 KB raw), as every language falls back to them and the first render waits for them; the MD5 filter's matching (its store, list parsing, hide checks and post menu action, with its English strings) has to run on the first render so filtered posts never show, about 11 KB raw (4 KB gzip), while its notice and its hashing worker load later; every directory's rules end with the same no-bots/no-AI rule, which the startup bundle carries in the directory defaults once per directory, about 9.5 KB raw (0.3 KB gzip)",
-  "maxHomeRawBytes": 1364507
+  "ceilingReason": "index.html carries the static board frames: a desktop and a mobile template shared by every directory board plus each board's title and winner line (about 59 KB raw, 6 KB gzip); the English interface strings ship with the app (about 37 KB raw), as every language falls back to them and the first render waits for them; the MD5 filter's matching (its store, list parsing, hide checks and post menu action, with its English strings) has to run on the first render so filtered posts never show, about 11 KB raw (4 KB gzip), while its notice and its hashing worker load later; every directory's rules end with the same no-bots/no-AI rule, which the startup bundle carries in the directory defaults once per directory, about 9.5 KB raw (0.3 KB gzip); the Halloween theme (a port of 4chan's spooky.css) has to paint with the first frame on October 31, so its theme variables and its global and per-component rules ship in the startup CSS, with the small skeleton overlay component, about 6 KB raw (1.7 KB gzip)",
+  "maxHomeRawBytes": 1368917
 }

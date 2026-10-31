@@ -362,3 +362,8 @@
   max-width: 100%;
   max-height: 100vh;
 }
+
+/* 4chan's Halloween stylesheet dims thumbnails and the images they expand to. */
+:global(body.spooky) .thumbnail {
+  filter: contrast(90%) brightness(90%);
+}

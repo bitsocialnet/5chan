@@ -113,6 +113,12 @@ export const getActiveSpecialTheme = (): ActiveSpecialTheme | null => {
   return null;
 };
 
+/** Names this year's run of the active seasonal theme, like `halloween-2026`. */
+export const getActiveSpecialThemeEvent = (): string | null => {
+  const specialTheme = getActiveSpecialTheme();
+  return specialTheme && `${specialTheme}-${new Date().getFullYear()}`;
+};
+
 export const getSpecialThemeClass = (specialTheme: ActiveSpecialTheme): SpecialThemeClass => {
   if (specialTheme === 'halloween') {
     return 'spooky';

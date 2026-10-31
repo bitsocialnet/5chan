@@ -172,3 +172,8 @@
     display: block;
   }
 }
+
+/* The Halloween theme hides the separators these share their color with; 4chan has no placeholders. */
+:global(body.spooky) .boardNavDesktop .placeholder {
+  color: var(--body-font-color);
+}

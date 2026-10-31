@@ -131,3 +131,16 @@
   composes: footerPageLink;
   font-weight: bold;
 }
+
+/* 4chan's Halloween stylesheet draws the page list's text, brackets and current page in gray-green. */
+@media (min-width: 640px) {
+  :global(body.spooky) .pagelist,
+  :global(body.spooky) .footerPageBracket,
+  :global(body.spooky) .footerPageCurrent {
+    color: #96b4aa;
+  }
+
+  :global(body.spooky) .footerPageLink:not(.footerPageCurrent):hover {
+    text-shadow: 0 0 12px #d98518;
+  }
+}

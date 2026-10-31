@@ -138,3 +138,18 @@
     padding-right: 18px;
   }
 }
+
+/* 4chan's Halloween stylesheet colors the menu items like links, with their hover glow. */
+:global(body.spooky) .postMenu {
+  color: var(--post-link-text-color);
+}
+
+:global(body.spooky) .postMenuItem:hover {
+  color: var(--post-link-text-color-hover);
+}
+
+:global(body.spooky) .postMenuItem:hover,
+:global(body.spooky) .postMenuBtn:hover,
+:global(body.spooky) .postMenuBtnCatalog:hover {
+  text-shadow: 0 0 12px #d98518;
+}

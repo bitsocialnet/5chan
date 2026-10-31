@@ -402,7 +402,7 @@ const SortOptions = ({ address }: { address?: string }) => {
   };
   return (
     <>
-      <span>{t('sort_by')}</span>:&nbsp;
+      <span>{t('sort_by')}:</span>&nbsp;
       <select className='capitalize' value={sortType} onChange={handleSortChange}>
         <option value='active'>{boardSortType === BUMP_ORDER_SORT_TYPE ? t('bump_order') : boardSortType}</option>
         <option value='lastReply'>{t('last_reply')}</option>
@@ -557,7 +557,7 @@ const TimeFilter = ({ isInAllView, isInCatalogView, isInSubscriptionsView, isInM
     <>
       {!isTopbar && (
         <>
-          <span>{t('filter')}</span>:&nbsp;
+          <span>{t('filter')}:</span>&nbsp;
         </>
       )}
       <select onChange={changeTimeFilter} className={[styles.feedName, styles.menuItem, 'capitalize'].join(' ')} value={timeFilterValue}>
@@ -577,7 +577,7 @@ const AllFeedFilter = () => {
 
   return (
     <>
-      <span>{t('show')}</span>:&nbsp;
+      <span>{t('show')}:</span>&nbsp;
       <select className='capitalize' value={filter} onChange={(e) => setFilter(e.target.value as 'all' | 'nsfw' | 'sfw')}>
         <option value='all'>{t('all_boards')}</option>
         <option value='nsfw'>{t('nsfw_boards_only')}</option>
@@ -829,7 +829,7 @@ export const DesktopBoardButtons = () => {
   return (
     <>
       <hr />
-      <div className={styles.desktopBoardButtons}>
+      <div className={`${styles.desktopBoardButtons} ${isInCatalogView ? styles.catalogBoardButtons : ''}`}>
         {isInPostView || isInPendingPostPage ? (
           <>
             [<ReturnButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />]

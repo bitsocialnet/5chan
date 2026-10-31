@@ -111,6 +111,22 @@ describe('useThreadLiveUpdatesStore', () => {
     expect(getState().status).toEqual({ type: 'countdown', seconds: 10 });
   });
 
+  it('counts each finished update that brought new posts once, when 4chan dispatches 4chanThreadUpdated', async () => {
+    openThreadWithRefresh();
+    getState().setEnabled(true);
+
+    await runCountdownToUpdate(10);
+    await settleUpdate();
+    expect(getState().updatesWithNewPosts).toBe(0);
+
+    await runCountdownToUpdate(15);
+    getState().recordNewReplies({ count: 1, lastReadReplyCid: 'reply-1', quotesOwnPost: false });
+    getState().recordNewReplies({ count: 2, lastReadReplyCid: 'reply-2', quotesOwnPost: false });
+    expect(getState().updatesWithNewPosts).toBe(0);
+    await settleUpdate();
+    expect(getState().updatesWithNewPosts).toBe(1);
+  });
+
   it('stops escalating at five minutes', async () => {
     openThreadWithRefresh();
     getState().setEnabled(true);
