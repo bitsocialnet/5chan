@@ -4,12 +4,12 @@ import { createRoot, type Root } from 'react-dom/client';
 import type { CommunityIdentifier, CommunitySyncState } from '@bitsocial/bitsocial-react-hooks';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { communitiesStore } from '../../lib/bitsocial-internals/stores';
-import useCommunityLoadFailuresStore, { useHasCommunityLoadFailed } from '../use-community-load-failures-store';
+import useCommunityLoadFailuresStore, { getCommunityLoadFailureDetails, useHasCommunityLoadFailed } from '../use-community-load-failures-store';
 
 // A plain store keeps the real hooks accounts store from initializing after the test environment is torn down
 vi.mock('../../lib/bitsocial-internals/stores', async () => {
   const { create } = await import('zustand');
-  return { communitiesStore: create(() => ({ communities: {}, syncStatuses: {} })) };
+  return { communitiesStore: create(() => ({ communities: {}, errors: {}, syncStatuses: {} })) };
 });
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -31,7 +31,7 @@ const Harness = ({ communityIdentifier }: { communityIdentifier?: CommunityIdent
 
 describe('useCommunityLoadFailuresStore', () => {
   beforeEach(() => {
-    communitiesStore.setState({ communities: {}, syncStatuses: {} });
+    communitiesStore.setState({ communities: {}, errors: {}, syncStatuses: {} });
     useCommunityLoadFailuresStore.setState({ failedCommunityKeys: {} });
     latestValue = undefined;
     container = document.createElement('div');
@@ -107,5 +107,27 @@ describe('useCommunityLoadFailuresStore', () => {
     // the pkc-js RPC client applies 'succeeded' without emitting updatingstatechange
     act(() => communitiesStore.setState({ communities: { 'rpc-board': { address: 'rpc-board', updatedAt: 1781773422 } } }));
     expect(latestValue).toBe(false);
+  });
+
+  it('collects what is known about a failed board for its Failed label to copy', () => {
+    const storedError = new Error('Community record signature is invalid');
+    communitiesStore.setState({
+      communities: { '12D3KooWPublicKey': { updatingState: 'waiting-retry', clients: { kuboRpcClients: { 'http://localhost:5001': { state: 'stopped' } } } } },
+      errors: { '12D3KooWPublicKey': [storedError] },
+      syncStatuses: { '12D3KooWPublicKey': { syncState: 'retrying', lastFetchAttemptAt: 1793481000 } },
+    });
+
+    const communityIdentifier = { name: 'board.bso', publicKey: '12D3KooWPublicKey' };
+    expect(getCommunityLoadFailureDetails(communityIdentifier)).toMatchObject({
+      message: 'Failed to load board',
+      community: communityIdentifier,
+      copiedAt: expect.any(String),
+      updatingState: 'waiting-retry',
+      syncStatus: { syncState: 'retrying', lastFetchAttemptAt: 1793481000 },
+      errors: [storedError],
+      clients: { kuboRpcClients: { 'http://localhost:5001': { state: 'stopped' } } },
+    });
+    // Unknown fields are left out rather than copied as "[undefined]"
+    expect(Object.keys(getCommunityLoadFailureDetails(undefined))).toEqual(['message', 'copiedAt']);
   });
 });

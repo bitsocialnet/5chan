@@ -1,7 +1,7 @@
 import { useDeferredValue, useEffect, useMemo, useRef, useCallback, useLayoutEffect, useState } from 'react';
 import { Link, useLocation, useNavigate, useNavigationType, useParams } from 'react-router-dom';
 import { Trans, useTranslation } from 'react-i18next';
-import { Comment, useAccount, useCommunity, useFeed, useAccountComments } from '@bitsocial/bitsocial-react-hooks';
+import { Comment, type CommunityIdentifier, useAccount, useCommunity, useFeed, useAccountComments } from '@bitsocial/bitsocial-react-hooks';
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
 import { useDirectories, useDirectoryByAddress } from '../../hooks/use-directories';
 import { useCommunityIdentifier, useCommunityIdentifiers } from '../../hooks/use-community-identifiers';
@@ -33,6 +33,7 @@ import CatalogRow from '../../components/catalog-row';
 import { CatalogFooterFirstRow, CatalogFooterStyleRow, PageFooterDesktop, PageFooterMobile, footerStyles } from '../../components/footer';
 import { ReturnButton, ArchiveButton, TopButton, RefreshButton } from '../../components/board-buttons';
 import LoadingEllipsis from '../../components/loading-ellipsis';
+import CommunityLoadFailed from '../../components/community-load-failed';
 import ErrorDisplay from '../../components/error-display';
 import { ModEmptyState } from '../../components/mod-empty-state';
 import { BoardsMissingSortNotice } from '../../components/boards-missing-sort-notice';
@@ -170,6 +171,7 @@ interface CatalogLoadingProps {
   communityAddresses: string[];
   hasMore: boolean;
   combinedFeedLength: number;
+  communityIdentifier: CommunityIdentifier | undefined;
   state: string | undefined;
   hasCommunityLoadFailed: boolean;
   subscriptionsLength: number;
@@ -183,6 +185,7 @@ const CatalogLoading = ({
   communityAddresses,
   hasMore,
   combinedFeedLength,
+  communityIdentifier,
   state,
   hasCommunityLoadFailed,
   subscriptionsLength,
@@ -198,7 +201,7 @@ const CatalogLoading = ({
   return (
     <div className={styles.stateString}>
       {state === 'failed' ? (
-        <span className='red'>{state}</span>
+        <CommunityLoadFailed communityIdentifier={communityIdentifier} />
       ) : subscriptionsLength === 0 ? (
         <span className='red'>{t('not_subscribed_to_any_board')}</span>
       ) : !hasMore && combinedFeedLength === 0 ? (
@@ -207,7 +210,7 @@ const CatalogLoading = ({
         )
       ) : (
         <>
-          {hasCommunityLoadFailed && <div className='red'>{t('failed')}</div>}
+          {hasCommunityLoadFailed && <CommunityLoadFailed communityIdentifier={communityIdentifier} showOfflineHint />}
           {hasMore && <LoadingEllipsis string={loadingStateString} />}
         </>
       )}
@@ -1064,6 +1067,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
                 communityAddresses={communityAddresses}
                 hasMore={footerHasMore}
                 combinedFeedLength={footerCombinedFeedLength}
+                communityIdentifier={communityIdentifier}
                 state={state}
                 hasCommunityLoadFailed={hasCommunityLoadFailed}
                 subscriptionsLength={isInSubscriptionsView ? subscriptions?.length || 0 : 1}

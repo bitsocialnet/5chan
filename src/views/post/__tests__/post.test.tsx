@@ -1429,7 +1429,7 @@ describe('Post', () => {
     });
     await flushEffects();
 
-    expect(useThreadLiveUpdatesStore.getState().status).toEqual({ type: 'error', reason: 'connection' });
+    expect(useThreadLiveUpdatesStore.getState().status).toEqual({ type: 'error', reason: 'connection', error: expect.objectContaining({ message: 'offline' }) });
     expect(consoleErrorSpy).toHaveBeenCalledWith('Failed to refresh thread comments:', expect.any(Error));
     consoleErrorSpy.mockRestore();
   });

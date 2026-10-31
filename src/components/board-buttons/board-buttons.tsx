@@ -34,6 +34,7 @@ import useIsMobile from '../../hooks/use-is-mobile';
 import useTimeFilter from '../../hooks/use-time-filter';
 import CatalogFilters from '../catalog-filters';
 import CatalogSearch from '../catalog-search';
+import CopyErrorLabel from '../copy-error-label';
 import Tooltip from '../tooltip';
 import { ModQueueButton } from '../mod-queue-button';
 import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
@@ -350,7 +351,13 @@ export const ThreadUpdateStatus = ({ isMobile = false }: { isMobile?: boolean })
   // Mobile reserves the line so the controls do not jump while the status changes; a dead thread has no controls.
   if (!text && (!isMobile || isThreadDead)) return null;
 
-  const content = status.type === 'error' ? <span className={styles.threadUpdateError}>{text}</span> : text;
+  let content: React.ReactNode = text;
+  if (status.type === 'error' && status.reason === 'connection') {
+    const { error } = status;
+    content = <CopyErrorLabel label={text} getError={() => error} />;
+  } else if (status.type === 'error') {
+    content = <span className={styles.threadUpdateError}>{text}</span>;
+  }
   if (isMobile)
     return (
       <div className={`${styles.threadUpdateStatus} ${styles.mobileThreadUpdateStatus}`} data-testid='thread-update-status'>

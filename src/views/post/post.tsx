@@ -318,7 +318,8 @@ const PostPage = () => {
         return true;
       } catch (error) {
         console.error('Failed to refresh thread comments:', error);
-        return false;
+        // The thread updater keeps the error for its Connection Error label to copy.
+        throw error;
       }
     };
   }, [postCidForRefresh, postRefresh]);

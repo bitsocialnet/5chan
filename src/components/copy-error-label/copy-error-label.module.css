@@ -1,0 +1,14 @@
+/* Plain red text that keeps the browser's focus ring. */
+.copyErrorLabel {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-transform: inherit;
+  color: red;
+  cursor: pointer;
+}
+
+.copied {
+  color: inherit;
+}

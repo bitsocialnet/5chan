@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { Link, useLocation, useNavigate, useNavigationType, useParams } from 'react-router-dom';
-import { Comment, useAccount, useAccountComments, useCommunity, useFeed } from '@bitsocial/bitsocial-react-hooks';
+import { Comment, type CommunityIdentifier, useAccount, useAccountComments, useCommunity, useFeed } from '@bitsocial/bitsocial-react-hooks';
 import { useCommunityField } from '../../hooks/use-stable-community';
 import { useBoardHasArchive } from '../../hooks/use-board-has-archive';
 import { useBoardSortType } from '../../hooks/use-board-sort-type';
@@ -35,6 +35,7 @@ import { getRawBoardThreadState } from '../../lib/utils/raw-board-thread-state';
 import { getSearchWithTimeFilter, getSelectedTimeFilterValue, getTimeFilterSuggestion, type TimeFilterSuggestion } from '../../lib/utils/time-filter-utils';
 import { getPretextItemSizeFromElement, resolveFeedVirtualizationMode } from '../../lib/utils/pretext-height-estimates';
 import { isFlashDirectory, isFlashDirectoryCode } from '../../lib/flash-tags';
+import CommunityLoadFailed from '../../components/community-load-failed';
 import ErrorDisplay from '../../components/error-display';
 import FlashBoardTable from '../../components/flash-board-table';
 import LoadingEllipsis from '../../components/loading-ellipsis';
@@ -95,6 +96,7 @@ interface BoardFooterProps {
   moreThreadsSuggestionPathname: string | null;
   moreThreadsSuggestionSearch: string;
   onExpandTimeWindow?: (suggestion: TimeFilterSuggestion) => void | Promise<void>;
+  communityIdentifier: CommunityIdentifier | undefined;
   communityState: string | undefined;
   hasCommunityLoadFailed: boolean;
   subscriptionsLength: number;
@@ -122,6 +124,7 @@ const BoardFooter = ({
   moreThreadsSuggestionPathname,
   moreThreadsSuggestionSearch,
   onExpandTimeWindow,
+  communityIdentifier,
   communityState,
   hasCommunityLoadFailed,
   subscriptionsLength,
@@ -180,14 +183,14 @@ const BoardFooter = ({
       {!isSingleCommunityBoard && <BoardsMissingSortNotice communityAddresses={communityAddresses} />}
       <div>
         {communityState === 'failed' ? (
-          <span className='red'>{communityState}</span>
+          <CommunityLoadFailed communityIdentifier={communityIdentifier} />
         ) : isInSubscriptionsView && subscriptionsLength === 0 ? (
           <output className={styles.searchNothingFound}>{t('not_subscribed_to_any_board')}</output>
         ) : isInModView && accountCommunityAddressesLength === 0 ? (
           <ModEmptyState />
         ) : (
           <>
-            {hasCommunityLoadFailed && <div className='red'>{t('failed')}</div>}
+            {hasCommunityLoadFailed && <CommunityLoadFailed communityIdentifier={communityIdentifier} showOfflineHint />}
             {showFooterLoading && <LoadingEllipsis string={loadingStateString} />}
           </>
         )}
@@ -625,6 +628,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
               moreThreadsSuggestionPathname={moreThreadsSuggestionPathname}
               moreThreadsSuggestionSearch={routerLocation.search}
               onExpandTimeWindow={expandSuggestionTimeWindow}
+              communityIdentifier={communityIdentifier}
               communityState={communityState}
               hasCommunityLoadFailed={hasCommunityLoadFailed}
               subscriptionsLength={subscriptions?.length || 0}
@@ -711,6 +715,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
       moreThreadsSuggestion,
       moreThreadsSuggestionPathname,
       expandSuggestionTimeWindow,
+      communityIdentifier,
       communityState,
       hasCommunityLoadFailed,
       feedState,
@@ -819,7 +824,13 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
         {shouldShowUnverifiedAddressWarning && <output className={styles.addressWarning}>{t('board_address_unverified_warning')}</output>}
         {shouldUseFlashTable ? (
           <>
-            <FlashBoardTable boardBasePath={paginationBasePath} isLoading={shouldShowFlashTableLoading} hasLoadFailed={hasCommunityLoadFailed} posts={displayFeed} />
+            <FlashBoardTable
+              boardBasePath={paginationBasePath}
+              isLoading={shouldShowFlashTableLoading}
+              hasLoadFailed={hasCommunityLoadFailed}
+              communityIdentifier={communityIdentifier}
+              posts={displayFeed}
+            />
             <footerComponents.Footer />
           </>
         ) : effectiveInfiniteScroll ? (
