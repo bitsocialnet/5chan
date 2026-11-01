@@ -20,12 +20,16 @@ export type ThreadUpdaterStatus =
   | { type: 'updating' }
   | { type: 'no-new-posts' }
   | { type: 'new-posts'; count: number }
-  | { type: 'error'; reason: 'connection' | ThreadDeadReason };
+  /** `error` is why the update failed, kept so the label can copy it. */
+  | { type: 'error'; reason: 'connection'; error: unknown }
+  | { type: 'error'; reason: ThreadDeadReason };
 
 export type ThreadFaviconAlert = FaviconAlert;
 
-/** Resolves whether the thread refreshed. `force` is set for a manual Update. */
+/** Resolves whether the thread refreshed, or rejects with why it could not. `force` is set for a manual Update. */
 export type RefreshThread = (options: { force: boolean }) => Promise<boolean>;
+
+type UpdateOutcome = { refreshed: true } | { refreshed: false; error: unknown };
 
 export interface NewThreadReplies {
   count: number;
@@ -98,6 +102,21 @@ const writeAutoSession = (threadCid: string | undefined, enabled: boolean) => {
   } catch {
     // Auto still works for this page view when session storage is unavailable.
   }
+};
+
+// A refresh that never settles has no error of its own, so record what the thread was doing instead.
+const createUpdateTimeoutError = (threadPost: Comment | undefined) => {
+  const details = {
+    threadCid: threadPost?.cid,
+    communityAddress: threadPost?.communityAddress,
+    state: threadPost?.state,
+    updatingState: threadPost?.updatingState,
+    error: threadPost?.error,
+  };
+  // The clipboard serializer spells out undefined, so leave out what is not known.
+  return Object.assign(new Error(`Thread update timed out after ${THREAD_UPDATE_TIMEOUT_MS / 1000} seconds`), {
+    details: Object.fromEntries(Object.entries(details).filter(([, value]) => value !== undefined)),
+  });
 };
 
 const isDocumentHidden = () => typeof document !== 'undefined' && document.hidden;
@@ -186,16 +205,20 @@ const useThreadLiveUpdatesStore = create<ThreadLiveUpdatesState>((set, get) => {
     set({ isUpdating: true, status: { type: 'updating' }, updatesStarted: updatesStarted + 1 });
 
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
-    const timeout = new Promise<boolean>((resolve) => {
-      timeoutId = setTimeout(() => resolve(false), THREAD_UPDATE_TIMEOUT_MS);
+    const timeout = new Promise<UpdateOutcome>((resolve) => {
+      timeoutId = setTimeout(() => resolve({ refreshed: false, error: createUpdateTimeoutError(get().threadPost) }), THREAD_UPDATE_TIMEOUT_MS);
     });
+    const refreshOutcome = refresh({ force }).then(
+      (refreshed): UpdateOutcome => (refreshed ? { refreshed } : { refreshed, error: new Error('Thread refresh failed') }),
+      (error: unknown): UpdateOutcome => ({ refreshed: false, error }),
+    );
 
-    void Promise.race([refresh({ force }).catch(() => false), timeout]).then((refreshed) => {
+    void Promise.race([refreshOutcome, timeout]).then((outcome) => {
       clearTimeout(timeoutId);
       if (token !== updateToken) return;
 
-      if (!refreshed) {
-        set({ status: { type: 'error', reason: 'connection' } });
+      if (!outcome.refreshed) {
+        set({ status: { type: 'error', reason: 'connection', error: outcome.error } });
         finishUpdate(0);
         return;
       }

@@ -216,18 +216,39 @@ describe('useThreadLiveUpdatesStore', () => {
     expect(getState().status).toEqual({ type: 'countdown', seconds: 10 });
   });
 
-  it('shows a connection error when the refresh fails or never settles', async () => {
+  it('shows a connection error that keeps why the refresh failed or never settled', async () => {
     openThreadWithRefresh(vi.fn(async () => false));
     getState().forceUpdate();
     await flushPromises();
-    expect(getState()).toMatchObject({ isUpdating: false, status: { type: 'error', reason: 'connection' } });
+    expect(getState()).toMatchObject({
+      isUpdating: false,
+      status: { type: 'error', reason: 'connection', error: expect.objectContaining({ message: 'Thread refresh failed' }) },
+    });
 
+    const refreshError = new Error('All gateways failed');
+    getState().setRefreshThread(vi.fn(async () => Promise.reject(refreshError)));
+    getState().forceUpdate();
+    await flushPromises();
+    expect(getState().status).toEqual({ type: 'error', reason: 'connection', error: refreshError });
+
+    getState().setThreadPost({ cid: 'thread-1', communityAddress: 'board.bso', updatingState: 'fetching-ipfs' });
     getState().setRefreshThread(vi.fn(() => new Promise<boolean>(() => undefined)));
     getState().forceUpdate();
     await vi.advanceTimersByTimeAsync(THREAD_UPDATE_TIMEOUT_MS - 1);
     expect(getState().status).toEqual({ type: 'updating' });
     await vi.advanceTimersByTimeAsync(1);
-    expect(getState()).toMatchObject({ isUpdating: false, status: { type: 'error', reason: 'connection' } });
+    expect(getState()).toMatchObject({
+      isUpdating: false,
+      status: {
+        type: 'error',
+        reason: 'connection',
+        error: expect.objectContaining({
+          message: 'Thread update timed out after 60 seconds',
+          // Unknown fields such as the post's state are left out rather than copied as "[undefined]"
+          details: { threadCid: 'thread-1', communityAddress: 'board.bso', updatingState: 'fetching-ipfs' },
+        }),
+      },
+    });
   });
 
   it('checks a hidden tab 10 seconds after it hides, then backs off from the one-minute step like 4chan', async () => {

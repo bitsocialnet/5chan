@@ -1,12 +1,13 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import type { Comment } from '@bitsocial/bitsocial-react-hooks';
+import type { Comment, CommunityIdentifier } from '@bitsocial/bitsocial-react-hooks';
 import capitalize from 'lodash/capitalize';
 import { getFlashTagOptionFromComment } from '../../lib/flash-tags';
 import { removeMarkdown } from '../../lib/utils/post-utils';
 import { getFormattedDate } from '../../lib/utils/time-utils';
 import { getPublishURLFilename } from '../../lib/utils/url-utils';
 import { truncateWithEllipsisInMiddle } from '../../lib/utils/string-utils';
+import CommunityLoadFailed from '../community-load-failed';
 import LoadingEllipsis from '../loading-ellipsis';
 import styles from './flash-board-table.module.css';
 
@@ -18,6 +19,7 @@ interface FlashBoardTableProps {
   boardBasePath: string;
   isLoading?: boolean;
   hasLoadFailed?: boolean;
+  communityIdentifier?: CommunityIdentifier;
   posts: FlashBoardComment[];
 }
 
@@ -50,7 +52,7 @@ const getSubjectLabel = (comment: FlashBoardComment) => {
 
 const getReplyCount = (comment: FlashBoardComment) => (typeof comment.replyCount === 'number' ? comment.replyCount : 0);
 
-const FlashBoardTable = ({ boardBasePath, isLoading = false, hasLoadFailed = false, posts }: FlashBoardTableProps) => {
+const FlashBoardTable = ({ boardBasePath, isLoading = false, hasLoadFailed = false, communityIdentifier, posts }: FlashBoardTableProps) => {
   const { t } = useTranslation();
   const anonymousLabel = capitalize(t('anonymous'));
 
@@ -90,7 +92,7 @@ const FlashBoardTable = ({ boardBasePath, isLoading = false, hasLoadFailed = fal
           {posts.length === 0 && isLoading ? (
             <tr className={styles.row}>
               <td colSpan={CELL_COUNT} className={styles.emptyCell}>
-                {hasLoadFailed && <div className='red'>{t('failed')}</div>}
+                {hasLoadFailed && <CommunityLoadFailed communityIdentifier={communityIdentifier} showOfflineHint />}
                 <LoadingEllipsis string={t('downloading_board')} />
               </td>
             </tr>
