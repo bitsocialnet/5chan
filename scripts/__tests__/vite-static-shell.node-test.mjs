@@ -176,9 +176,12 @@ test('applies the theme React applies on its first commit', () => {
   assert.equal(load({ ...halloween, hash: '#/b' }).bodyClass, 'spooky');
   assert.equal(load({ ...halloween, hash: '#/all' }).bodyClass, 'spooky');
   assert.equal(load({ ...halloween, hash: '#/' }).bodyClass, 'yotsuba');
-  assert.equal(load({ ...halloween, hash: '#/biz', date: '2026-11-01T12:00:00' }).bodyClass, 'yotsuba-b');
+  assert.equal(load({ ...halloween, hash: '#/biz', date: '2026-11-01T12:00:00' }).bodyClass, 'spooky ws');
+  assert.equal(load({ ...halloween, hash: '#/biz', date: '2026-11-02T12:00:00' }).bodyClass, 'yotsuba-b');
   const christmas = { date: '2026-12-24T12:00:00', storage: { 'Special-theme-storage': '{"state":{"isEnabled":true,"event":"christmas-2026"},"version":0}' } };
   assert.equal(load({ ...christmas, hash: '#/biz' }).bodyClass, 'tomorrow');
+  assert.equal(load({ ...christmas, hash: '#/biz', date: '2026-12-26T12:00:00' }).bodyClass, 'tomorrow');
+  assert.equal(load({ ...christmas, hash: '#/biz', date: '2026-12-27T12:00:00' }).bodyClass, 'yotsuba-b');
   // Unset, or set in an earlier event, the seasonal theme paints on a board; a multiboard view waits until
   // a board turned it on. Turned off during this event, it stays off.
   for (const storage of [{}, { 'Special-theme-storage': '{"state":{"isEnabled":false,"event":"halloween-2025"},"version":0}' }]) {
@@ -223,6 +226,7 @@ test('skips the frame when the first frame would differ', () => {
   assert.equal(load({ hash: '#/biz', storage: { '5chan-boardsbar-directories-visible': '["biz"]' } }).shown, false);
   assert.equal(load({ hash: '#/biz', storage: { '5chan-interface-language': 'de' } }).shown, false);
   assert.equal(load({ hash: '#/biz', date: '2026-12-24T12:00:00' }).shown, false);
+  assert.equal(load({ hash: '#/biz', date: '2026-11-01T12:00:00' }).shown, false);
 });
 
 test('applies the theme and frame as the parser inserts <body> and #root, before they exist', async () => {

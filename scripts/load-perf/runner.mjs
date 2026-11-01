@@ -62,13 +62,13 @@ const routes = pickShard(matchingRoutes, parseShard(options.shard));
 if (!routes.length) throw new Error(`Shard ${options.shard} selects no routes`);
 if (options.shard) process.stderr.write(`[load] shard ${options.shard} runs: ${routes.map((route) => route.name).join(', ')}\n`);
 
-// On the seasonal theme days (vite-static-shell.mjs: Oct 31, Dec 24 and 25) the static shell paints the
-// seasonal theme and skips its board frames, so a run on one of them moves the pages' clocks two days ahead
+// On the seasonal theme days (vite-static-shell.mjs: Oct 31-Nov 1, Dec 24-26) the static shell paints the
+// seasonal theme and skips its board frames, so a run on one of them moves the pages' clocks three days ahead
 // to an ordinary day and measures the usual first frames. Ahead, not back: live peer content is never newer than the clock.
-const SEASONAL_DAYS = ['9-31', '11-24', '11-25'];
+const SEASONAL_DAYS = ['9-31', '10-1', '11-24', '11-25', '11-26'];
 const runDate = new Date();
-const pageClockOffsetMs = SEASONAL_DAYS.includes(`${runDate.getMonth()}-${runDate.getDate()}`) ? 2 * 24 * 60 * 60 * 1000 : 0;
-if (pageClockOffsetMs) process.stderr.write('[load] seasonal theme day: page clocks run two days ahead\n');
+const pageClockOffsetMs = SEASONAL_DAYS.includes(`${runDate.getMonth()}-${runDate.getDate()}`) ? 3 * 24 * 60 * 60 * 1000 : 0;
+if (pageClockOffsetMs) process.stderr.write('[load] seasonal theme day: page clocks run three days ahead\n');
 
 const buildDir = path.resolve(packageRoot, options.build);
 const output = path.resolve(packageRoot, options.output || `.react-perf/load-${new Date().toISOString().replaceAll(':', '-')}`);

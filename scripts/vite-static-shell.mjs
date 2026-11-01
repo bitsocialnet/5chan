@@ -86,7 +86,8 @@ const THEME_SCRIPT = `(function () {
         return typeof saved[category] === 'string' && saved[category] ? saved[category] : data.defaults[category];
       };
       var today = new Date();
-      var special = today.getMonth() === 11 && (today.getDate() === 24 || today.getDate() === 25) ? 'tomorrow' : today.getMonth() === 9 && today.getDate() === 31 ? 'spooky' : null;
+      // The seasonal windows of time-utils.ts: Dec 24-26 and Oct 31-Nov 1.
+      var special = today.getMonth() === 11 && today.getDate() >= 24 && today.getDate() <= 26 ? 'tomorrow' : (today.getMonth() === 9 && today.getDate() === 31) || (today.getMonth() === 10 && today.getDate() === 1) ? 'spooky' : null;
       // The saved choice counts only in the event it was made in (use-special-theme-store.ts).
       var specialEvent = special && (special === 'tomorrow' ? 'christmas-' : 'halloween-') + today.getFullYear();
       var specialState = special && read('Special-theme-storage');
@@ -163,7 +164,7 @@ const SHELL_SCRIPT = `(function () {
           var code = match && match[1];
           var values = code && Object.prototype.hasOwnProperty.call(boards.codes, code) && boards.codes[code];
           var today = new Date();
-          var seasonal = (today.getMonth() === 11 && (today.getDate() === 24 || today.getDate() === 25)) || (today.getMonth() === 9 && today.getDate() === 31);
+          var seasonal = (today.getMonth() === 11 && today.getDate() >= 24 && today.getDate() <= 26) || (today.getMonth() === 9 && today.getDate() === 31) || (today.getMonth() === 10 && today.getDate() === 1);
           // The theme script, which runs first, set the theme React's first commit applies.
           var theme = document.body.className;
           if (!values || seasonal || !theme || !unchanged(boards.preferences)) return;
