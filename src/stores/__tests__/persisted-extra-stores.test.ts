@@ -160,8 +160,9 @@ describe('persisted extra stores', () => {
     useHalloweenStore.getState().setIsEnabled(false);
     expect(JSON.parse(localStorage.getItem('Special-theme-storage') ?? '{}').state).toEqual({ isEnabled: false, event: 'halloween-2026' });
 
-    // Reloaded during the same Halloween, the opt-out stays.
+    // Reloaded during the same Halloween, the opt-out stays, through Nov 1.
     expect((await loadSpecialThemeStore('2026-10-31T21:00:00')).getState().isEnabled).toBe(false);
+    expect((await loadSpecialThemeStore('2026-11-01T09:00:00')).getState().isEnabled).toBe(false);
 
     // The next seasonal event, or next year's Halloween, starts unset even without a visit in between.
     expect((await loadSpecialThemeStore('2026-12-24T12:00:00')).getState().isEnabled).toBeNull();

@@ -86,18 +86,21 @@ export const getFormattedTimeAgo = (unixTimestamp: number): string => {
   return t('time_x_years_ago', { count: Math.floor(timeDifference / 31104000) });
 };
 
+// 4chan switches its seasonal themes on and off by hand. Its Halloween theme has run from Oct 30-31 until
+// the morning of Nov 1 (US Eastern), and its Christmas theme from Dec 24 until Dec 26-27, so these windows
+// cover those days. vite-static-shell.mjs, static-shell/render.mjs and load-perf/runner.mjs mirror them.
 export const isChristmas = (): boolean => {
   const today = new Date();
   const month = today.getMonth();
   const day = today.getDate();
-  return month === 11 && (day === 24 || day === 25);
+  return month === 11 && day >= 24 && day <= 26;
 };
 
 export const isHalloween = (): boolean => {
   const today = new Date();
   const month = today.getMonth();
   const day = today.getDate();
-  return month === 9 && day === 31;
+  return (month === 9 && day === 31) || (month === 10 && day === 1);
 };
 
 export type ActiveSpecialTheme = 'christmas' | 'halloween';

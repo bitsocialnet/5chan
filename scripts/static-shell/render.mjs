@@ -24,9 +24,12 @@ for (const key of Object.getOwnPropertyNames(dom.window)) {
 for (const key of ['window', 'self', 'document', 'navigator', 'location', 'localStorage', 'sessionStorage']) {
   Object.defineProperty(globalThis, key, { value: key === 'window' || key === 'self' ? dom.window : dom.window[key], configurable: true, writable: true });
 }
-// Seasonal themes (Oct 31, Dec 24-25) change first frames, and the inline script skips the frames on
+// Seasonal themes (Oct 31-Nov 1, Dec 24-26) change first frames, and the inline script skips the frames on
 // those dates, so the frames must show every other day: on those dates the build renders 3 days earlier.
-const isSeasonal = (date) => (date.getMonth() === 9 && date.getDate() === 31) || (date.getMonth() === 11 && (date.getDate() === 24 || date.getDate() === 25));
+const isSeasonal = (date) =>
+  (date.getMonth() === 9 && date.getDate() === 31) ||
+  (date.getMonth() === 10 && date.getDate() === 1) ||
+  (date.getMonth() === 11 && date.getDate() >= 24 && date.getDate() <= 26);
 if (isSeasonal(new Date())) {
   const RealDate = Date;
   const offset = 3 * 24 * 60 * 60 * 1000;
