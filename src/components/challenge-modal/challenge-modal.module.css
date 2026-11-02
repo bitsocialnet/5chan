@@ -5,7 +5,9 @@
   font-size: 10pt;
   border-left: none;
   border-top: none;
-  z-index: 999;
+  /* Above the reply modal (999), which stays open under a reply's spam blocker check and would
+     otherwise cover the challenge, since it renders later in the page. */
+  z-index: 1000;
   background-color: var(--challenge-modal-background-color);
   border: var(--challenge-modal-border);
   will-change: transform;
