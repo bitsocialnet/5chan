@@ -122,11 +122,13 @@ const CopyUserIdButton = ({ address, onClose }: { address: string; onClose: () =
 const FilterImageButton = ({ cid, link, mediaType, onClose }: { cid: string; link: string; mediaType: string | undefined; onClose: () => void }) => {
   const { t } = useTranslation();
   const quickFilter = useImageFiltersStore((state) => state.quickFilter);
+  const showQuickFilterMenuItem = useImageFiltersStore((state) => state.showQuickFilterMenuItem);
   const { pathname } = useLocation();
   const filterImage = () => {
     quickFilter(link, cid, pathname, mediaType);
     onClose();
   };
+  if (!showQuickFilterMenuItem) return null;
   return (
     <button
       type='button'

@@ -597,5 +597,6 @@
   "md5_filter_help": "Skryje příspěvky s těmito soubory, jeden na řádek: hash SHA-256 nebo MD5 (fungují i řádky MD5 z 4chan X) nebo odkaz. Soubor z Forge se porovnává podle hashe SHA-256 v jeho odkazu. U ostatních obrázků se hash spočítá po načtení, pokud to jejich hosting dovolí, takže uvedený hash skryje stejný obrázek, ať je zveřejněn kdekoli. Jakýkoli jiný soubor se porovnává jen podle přesného odkazu. Řádky začínající # se ignorují.",
   "directory_requirement_rules": "Pravidla adresáře uvedená jako první, doslovně",
   "spam_check_not_finished": "Kontrola spamu nebyla dokončena. Zkuste to znovu odesláním příspěvku.",
-  "board_may_be_offline": "Fórum může být offline nebo nedostupné."
+  "board_may_be_offline": "Fórum může být offline nebo nedostupné.",
+  "show_filter_image_md5_in_post_menu": "Zobrazit „Filtrovat MD5 obrázku“ v nabídkách příspěvků"
 }

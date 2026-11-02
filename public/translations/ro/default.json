@@ -597,5 +597,6 @@
   "md5_filter_help": "Ascunde postările cu aceste fișiere, câte unul pe linie: un hash SHA-256 sau MD5 (merg și liniile MD5 din 4chan X) ori un link. Un fișier Forge este recunoscut după hash-ul SHA-256 din linkul său. Pentru celelalte imagini se calculează hash-ul după ce se încarcă, dacă hostul lor permite, așa că un hash din listă ascunde aceeași imagine oriunde ar fi postată. Orice alt fișier este recunoscut doar după linkul exact. Liniile care încep cu # sunt ignorate.",
   "directory_requirement_rules": "Regulile directorului listate primele, cuvânt cu cuvânt",
   "spam_check_not_finished": "Verificarea antispam nu s-a încheiat. Postează din nou pentru a reîncerca.",
-  "board_may_be_offline": "Este posibil ca forumul să fie offline sau inaccesibil."
+  "board_may_be_offline": "Este posibil ca forumul să fie offline sau inaccesibil.",
+  "show_filter_image_md5_in_post_menu": "Afișează „Filtrează MD5-ul imaginii” în meniurile postărilor"
 }

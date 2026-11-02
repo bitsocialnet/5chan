@@ -30,7 +30,7 @@ const getList = () => container.querySelector<HTMLTextAreaElement>('#md5-filter-
 describe('Md5FilterSetting', () => {
   beforeEach(() => {
     localStorage.clear();
-    useImageFiltersStore.setState({ imageFilters: '', filterKeys: new Set(), shownCids: {}, quickFilterNotice: null });
+    useImageFiltersStore.setState({ imageFilters: '', filterKeys: new Set(), shownCids: {}, quickFilterNotice: null, showQuickFilterMenuItem: false });
     scrollIntoView.mockReset();
     // jsdom has no layout, so it has no scrollIntoView.
     Element.prototype.scrollIntoView = scrollIntoView;
@@ -56,6 +56,21 @@ describe('Md5FilterSetting', () => {
     expect(useImageFiltersStore.getState().imageFilters).toBe(`# spam\n${SHA256}`);
     expect([...useImageFiltersStore.getState().filterKeys]).toEqual([SHA256]);
     expect(scrollIntoView).not.toHaveBeenCalled();
+  });
+
+  it('offers the post menu quick filter as an opt-in checkbox', async () => {
+    render('/b/settings?section=interface-settings');
+    const checkbox = container.querySelector<HTMLInputElement>('input[type="checkbox"]')!;
+
+    expect(checkbox.closest('label')?.textContent).toBe('show_filter_image_md5_in_post_menu');
+    expect(checkbox.checked).toBe(false);
+
+    await act(async () => {
+      checkbox.click();
+    });
+
+    expect(checkbox.checked).toBe(true);
+    expect(useImageFiltersStore.getState().showQuickFilterMenuItem).toBe(true);
   });
 
   it('scrolls to the list when settings opens from the quick filter notice', () => {
