@@ -118,9 +118,9 @@ describe('getFileDropHandlers', () => {
 });
 
 describe('getFilePasteHandler', () => {
-  const pasteEvent = (files: File[], text = '') => {
+  const pasteEvent = (files: File[], text = '', html = '') => {
     const preventDefault = vi.fn();
-    const clipboardData = { files, getData: (type: string) => (type === 'text/plain' ? text : '') };
+    const clipboardData = { files, getData: (type: string) => ({ 'text/plain': text, 'text/html': html })[type] ?? '' };
     return { event: { preventDefault, clipboardData } as unknown as FilePasteEvent, preventDefault };
   };
 
@@ -159,13 +159,29 @@ describe('getFilePasteHandler', () => {
     expect(onPasteFile).toHaveBeenCalledWith({ kind: 'file', file, name: 'cat.jpg', mimeType: 'image/jpeg' });
   });
 
-  it('keeps a text paste that comes with a rendered image, as office apps copy it', () => {
+  it('attaches an image copied in Firefox or Safari, which also copy its address as text', () => {
     const onPasteFile = vi.fn();
-    const { event, preventDefault } = pasteEvent([new File(['x'], 'image.png', { type: 'image/png' })], 'quarterly totals');
+    const file = new File(['x'], 'image.png', { type: 'image/png' });
+    const { event, preventDefault } = pasteEvent([file], 'https://example.com/cat-800w.png', '<img src="https://example.com/cat.png" alt="cat">');
 
     getFilePasteHandler(onPasteFile, true)(event);
 
-    expect(preventDefault).not.toHaveBeenCalled();
+    expect(preventDefault).toHaveBeenCalled();
+    expect(onPasteFile).toHaveBeenCalledWith({ kind: 'file', file, name: 'image.png', mimeType: 'image/png' });
+  });
+
+  it('keeps a text paste that comes with a rendered image, as office apps copy it', () => {
+    const onPasteFile = vi.fn();
+    const image = new File(['x'], 'image.png', { type: 'image/png' });
+    const pastes = [
+      pasteEvent([image], 'quarterly totals'),
+      pasteEvent([image], 'https://example.com/report', '<table><tr><td>https://example.com/report</td></tr></table>'),
+      pasteEvent([image], '\t\t\r\n'),
+    ];
+
+    for (const { event } of pastes) getFilePasteHandler(onPasteFile, true)(event);
+
+    for (const { preventDefault } of pastes) expect(preventDefault).not.toHaveBeenCalled();
     expect(onPasteFile).not.toHaveBeenCalled();
   });
 
