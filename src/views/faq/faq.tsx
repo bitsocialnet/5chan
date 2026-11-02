@@ -489,6 +489,17 @@ const FAQ_SECTIONS: FAQSection[] = [
         ),
       },
       {
+        id: 'analytics',
+        question: 'Does 5chan collect analytics?',
+        answer: (
+          <>
+            Only <code>5chan.app</code> does, using cookieless Vercel Web Analytics. It counts page views by board or page type, with thread IDs and unlisted board
+            addresses removed, and counts failed post attempts per board. It never records successful posts or what you write. The desktop and Android apps and the other
+            mirrors send no analytics.
+          </>
+        ),
+      },
+      {
         id: 'extension',
         question: 'Does 5chan have an official browser extension?',
         answer: (

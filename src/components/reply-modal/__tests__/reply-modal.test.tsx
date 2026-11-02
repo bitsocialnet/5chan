@@ -13,6 +13,7 @@ const REPLY_MODAL_POSITION_SESSION_STORAGE_KEY = '5chan:reply-modal-position';
 
 const testState = vi.hoisted(() => ({
   account: { author: { address: 'alice.eth', displayName: 'Alice' } } as { author?: { address?: string; displayName?: string } },
+  analyticsMock: vi.fn(),
   closeModalMock: vi.fn(),
   directoryByAddress: {
     'music-posting.eth': {
@@ -138,6 +139,8 @@ vi.mock('../../../stores/use-selected-text-store', () => ({
   }),
 }));
 
+vi.mock('../../../lib/analytics', () => ({ trackPostingEvent: (...args: unknown[]) => testState.analyticsMock(...args) }));
+
 vi.mock('../../../stores/use-reply-modal-store', () => ({
   default: <T,>(
     selector?: (state: {
@@ -243,11 +246,11 @@ vi.mock('../../../hooks/use-publish-reply', async () => {
 
       return {
         isResolvingExternalQuotes: testState.isResolvingExternalQuotes,
-        publishReply: (options?: Record<string, unknown>) => {
+        publishReply: (options?: Record<string, unknown>, attempt?: unknown) => {
           if (options) {
             testState.setPublishReplyOptionsMock(options);
           }
-          const result = testState.publishReplyMock(options);
+          const result = testState.publishReplyMock(options, attempt);
           forceUpdate();
           return result;
         },
@@ -356,7 +359,7 @@ const flushEffects = async (count = 4) => {
   }
 };
 
-const renderReplyModal = async (initialEntry = '/mu/thread/post-1', communityAddress = 'music-posting.eth') => {
+const renderReplyModal = async (initialEntry = '/mu/thread/post-1', communityAddress = 'music-posting.eth', showReplyModal = true) => {
   testState.locationDraftKey = initialEntry;
   await act(async () => {
     root.render(
@@ -370,7 +373,7 @@ const renderReplyModal = async (initialEntry = '/mu/thread/post-1', communityAdd
           parentNumber: 42,
           postCid: 'post-cid',
           scrollY: 120,
-          showReplyModal: true,
+          showReplyModal,
           communityAddress,
           threadNumber: 42,
         }),
@@ -542,6 +545,30 @@ describe('ReplyModal', () => {
     vi.unstubAllGlobals();
   });
 
+  it('sends nothing for opening, composing, or submitting and passes the attempt separately', async () => {
+    await renderReplyModal('/mu/thread/post-1', 'music-posting.eth', false);
+    await renderReplyModal();
+    await dispatchInput(container.querySelector('textarea') as HTMLTextAreaElement, 'private draft');
+    await act(async () => {
+      root.render(null);
+    });
+    await renderReplyModal();
+    await dispatchInput(container.querySelector('textarea') as HTMLTextAreaElement, 'private edited draft');
+    await clickButtonByText('post');
+    expect(testState.analyticsMock).not.toHaveBeenCalled();
+    const [options, attempt] = testState.publishReplyMock.mock.calls[0];
+    expect(options).not.toHaveProperty('analyticsAttempt');
+    expect(attempt).toEqual(expect.objectContaining({ finish: expect.any(Function) }));
+  });
+
+  it('records validation failure without draft contents', async () => {
+    await renderReplyModal();
+    await dispatchInput(container.querySelector('textarea') as HTMLTextAreaElement, '');
+    await clickButtonByText('post');
+    expect(testState.analyticsMock.mock.calls.map(([event]) => event)).toEqual(['post_validation_failed']);
+    expect(testState.publishReplyMock).not.toHaveBeenCalled();
+  });
+
   it('initializes quoted content, display name, upload controls, and shared offline warning on board routes', async () => {
     testState.offlineTitle = 'posts_last_synced_info:{"time":"ago:1000"}';
     testState.offlineWarningVisible = true;
@@ -581,7 +608,10 @@ describe('ReplyModal', () => {
     await dispatchInput(textarea, 'Account switch regression');
     await clickButtonByText('post');
 
-    expect(testState.publishReplyMock).toHaveBeenCalledWith(expect.objectContaining({ displayName: undefined }));
+    expect(testState.publishReplyMock).toHaveBeenCalledWith(
+      expect.objectContaining({ displayName: undefined }),
+      expect.objectContaining({ finish: expect.any(Function) }),
+    );
   });
 
   it('shows Oekaki draw controls on /i/ replies', async () => {
@@ -676,14 +706,17 @@ describe('ReplyModal', () => {
 
     await clickButtonByText('post');
 
-    expect(testState.publishReplyMock).toHaveBeenCalledWith({
-      content: '>>42\nselected text',
-      displayName: 'Alice',
-      challengeRequest: {
-        challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
+    expect(testState.publishReplyMock).toHaveBeenCalledWith(
+      {
+        content: '>>42\nselected text',
+        displayName: 'Alice',
+        challengeRequest: {
+          challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
+        },
+        flairs: [{ type: 'country', code: 'auto', text: 'flag:country:auto' }],
       },
-      flairs: [{ type: 'country', code: 'auto', text: 'flag:country:auto' }],
-    });
+      expect.objectContaining({ finish: expect.any(Function) }),
+    );
   });
 
   it('shows the /pol/ flag selector for replies on a non-primary directory candidate board', async () => {
@@ -703,14 +736,17 @@ describe('ReplyModal', () => {
 
     await clickButtonByText('post');
 
-    expect(testState.publishReplyMock).toHaveBeenCalledWith({
-      content: '>>42\nselected text',
-      displayName: 'Alice',
-      challengeRequest: {
-        challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
+    expect(testState.publishReplyMock).toHaveBeenCalledWith(
+      {
+        content: '>>42\nselected text',
+        displayName: 'Alice',
+        challengeRequest: {
+          challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
+        },
+        flairs: [{ type: 'country', code: 'auto', text: 'flag:country:auto' }],
       },
-      flairs: [{ type: 'country', code: 'auto', text: 'flag:country:auto' }],
-    });
+      expect.objectContaining({ finish: expect.any(Function) }),
+    );
   });
 
   it.each([
@@ -724,14 +760,17 @@ describe('ReplyModal', () => {
 
     await clickButtonByText('post');
 
-    expect(testState.publishReplyMock).toHaveBeenCalledWith({
-      content: '>>42\nselected text',
-      displayName: 'Alice',
-      challengeRequest: {
-        challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
+    expect(testState.publishReplyMock).toHaveBeenCalledWith(
+      {
+        content: '>>42\nselected text',
+        displayName: 'Alice',
+        challengeRequest: {
+          challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
+        },
+        flairs: [{ type: 'country', code: 'auto', text: 'flag:country:auto' }],
       },
-      flairs: [{ type: 'country', code: 'auto', text: 'flag:country:auto' }],
-    });
+      expect.objectContaining({ finish: expect.any(Function) }),
+    );
   });
 
   it('publishes selected political flags from the reply modal', async () => {
@@ -747,12 +786,15 @@ describe('ReplyModal', () => {
     });
     await clickButtonByText('post');
 
-    expect(testState.publishReplyMock).toHaveBeenCalledWith({
-      challengeRequest: undefined,
-      content: 'reply body',
-      displayName: 'Alice',
-      flairs: [{ type: 'pol', code: 'AC', text: 'flag:pol:AC' }],
-    });
+    expect(testState.publishReplyMock).toHaveBeenCalledWith(
+      {
+        challengeRequest: undefined,
+        content: 'reply body',
+        displayName: 'Alice',
+        flairs: [{ type: 'pol', code: 'AC', text: 'flag:pol:AC' }],
+      },
+      expect.objectContaining({ finish: expect.any(Function) }),
+    );
   });
 
   it('uses the shared loading ellipsis while a reply upload is running', async () => {
@@ -1043,7 +1085,10 @@ describe('ReplyModal', () => {
     await clickButtonByText('post');
 
     expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
-    expect(testState.publishReplyMock).toHaveBeenCalledWith(expect.objectContaining({ link: 'https://pbs.twimg.com/media/HKUAehoXUAAXkMb.jpg' }));
+    expect(testState.publishReplyMock).toHaveBeenCalledWith(
+      expect.objectContaining({ link: 'https://pbs.twimg.com/media/HKUAehoXUAAXkMb.jpg' }),
+      expect.objectContaining({ finish: expect.any(Function) }),
+    );
   });
 
   it('rewrites twimg query-format reply links to their path-extension form on blur', async () => {
@@ -1099,13 +1144,16 @@ describe('ReplyModal', () => {
 
     expect(linkInput.value).toBe(thumbnailLink);
     expect(textarea.value).toBe(`reply ${youtubeLink} body`);
-    expect(testState.publishReplyMock).toHaveBeenCalledWith({
-      challengeRequest: undefined,
-      content: `reply ${youtubeLink} body`,
-      displayName: 'Alice',
-      flairs: undefined,
-      link: thumbnailLink,
-    });
+    expect(testState.publishReplyMock).toHaveBeenCalledWith(
+      {
+        challengeRequest: undefined,
+        content: `reply ${youtubeLink} body`,
+        displayName: 'Alice',
+        flairs: undefined,
+        link: thumbnailLink,
+      },
+      expect.objectContaining({ finish: expect.any(Function) }),
+    );
   });
 
   it('moves Vimeo links into reply content and publishes the oEmbed thumbnail as a jpg file link', async () => {
@@ -1142,7 +1190,10 @@ describe('ReplyModal', () => {
     );
     expect(linkInput.value).toBe(thumbnailLink);
     expect(textarea.value).toBe(`reply ${vimeoLink} body`);
-    expect(testState.publishReplyMock).toHaveBeenCalledWith(expect.objectContaining({ content: `reply ${vimeoLink} body`, link: thumbnailLink }));
+    expect(testState.publishReplyMock).toHaveBeenCalledWith(
+      expect.objectContaining({ content: `reply ${vimeoLink} body`, link: thumbnailLink }),
+      expect.objectContaining({ finish: expect.any(Function) }),
+    );
   });
 
   it('automatically moves YouTube links into reply content when reply media links are optional', async () => {
@@ -1268,13 +1319,16 @@ describe('ReplyModal', () => {
     });
 
     expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
-    expect(testState.publishReplyMock).toHaveBeenCalledWith({
-      challengeRequest: undefined,
-      content: `reply body ${youtubeLink}`,
-      displayName: 'Alice',
-      flairs: undefined,
-      link: thumbnailLink,
-    });
+    expect(testState.publishReplyMock).toHaveBeenCalledWith(
+      {
+        challengeRequest: undefined,
+        content: `reply body ${youtubeLink}`,
+        displayName: 'Alice',
+        flairs: undefined,
+        link: thumbnailLink,
+      },
+      expect.objectContaining({ finish: expect.any(Function) }),
+    );
   });
 
   it('validates unsupported options and keeps fortune output out of preview state until reply publish', async () => {
@@ -1310,12 +1364,15 @@ describe('ReplyModal', () => {
     await clickButtonByText('post');
 
     expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
-    expect(testState.publishReplyMock).toHaveBeenCalledWith({
-      challengeRequest: undefined,
-      content: 'reply body[fortune color=#fd4d32]Excellent Luck[/fortune]',
-      displayName: 'Alice',
-      flairs: undefined,
-    });
+    expect(testState.publishReplyMock).toHaveBeenCalledWith(
+      {
+        challengeRequest: undefined,
+        content: 'reply body[fortune color=#fd4d32]Excellent Luck[/fortune]',
+        displayName: 'Alice',
+        flairs: undefined,
+      },
+      expect.objectContaining({ finish: expect.any(Function) }),
+    );
     randomSpy.mockRestore();
   });
 
@@ -1377,7 +1434,10 @@ describe('ReplyModal', () => {
     await clickButtonByText('post');
 
     expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
-    expect(testState.publishReplyMock).toHaveBeenCalledWith(expect.objectContaining({ content: 'quiet reply\nsage' }));
+    expect(testState.publishReplyMock).toHaveBeenCalledWith(
+      expect.objectContaining({ content: 'quiet reply\nsage' }),
+      expect.objectContaining({ finish: expect.any(Function) }),
+    );
   });
 
   it('supports fortune on the /s5s/ route when directory metadata is not loaded', async () => {
@@ -1400,12 +1460,15 @@ describe('ReplyModal', () => {
     await clickButtonByText('post');
 
     expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
-    expect(testState.publishReplyMock).toHaveBeenCalledWith({
-      challengeRequest: undefined,
-      content: 'silly reply[fortune color=#fd4d32]Excellent Luck[/fortune]',
-      displayName: 'Alice',
-      flairs: undefined,
-    });
+    expect(testState.publishReplyMock).toHaveBeenCalledWith(
+      {
+        challengeRequest: undefined,
+        content: 'silly reply[fortune color=#fd4d32]Excellent Luck[/fortune]',
+        displayName: 'Alice',
+        flairs: undefined,
+      },
+      expect.objectContaining({ finish: expect.any(Function) }),
+    );
     expect(testState.setPublishReplyOptionsMock).toHaveBeenCalledWith({ content: 'silly reply' });
     randomSpy.mockRestore();
   });
@@ -1694,7 +1757,10 @@ describe('ReplyModal', () => {
       await clickButtonByText('post');
 
       expect(testState.uploadAttachmentMock).toHaveBeenCalledWith(pngAttachment);
-      expect(testState.publishReplyMock).toHaveBeenCalledWith(expect.objectContaining({ link: 'https://forgeimg.net/abc/uploaded.png' }));
+      expect(testState.publishReplyMock).toHaveBeenCalledWith(
+        expect.objectContaining({ link: 'https://forgeimg.net/abc/uploaded.png' }),
+        expect.objectContaining({ finish: expect.any(Function) }),
+      );
       expect(testState.updateDraftMock).toHaveBeenCalledWith(expect.any(String), { attachment: undefined });
     });
 
@@ -1715,6 +1781,7 @@ describe('ReplyModal', () => {
       expect(testState.uploadAttachmentMock).toHaveBeenCalledWith(pngAttachment);
       expect(testState.publishReplyMock).toHaveBeenCalledWith(
         expect.objectContaining({ link: 'https://forgeimg.net/abc/uploaded.png', challengeRequest: { challengeAnswers: ['precheck-pass'] } }),
+        expect.objectContaining({ finish: expect.any(Function) }),
       );
     });
 
@@ -1735,6 +1802,7 @@ describe('ReplyModal', () => {
           challengeRequest: { challengeAnswers: [flagAnswer, 'precheck-pass'] },
           flairs: [{ type: 'country', code: 'auto', text: 'flag:country:auto' }],
         }),
+        expect.objectContaining({ finish: expect.any(Function) }),
       );
     });
 
@@ -1817,7 +1885,10 @@ describe('ReplyModal', () => {
       await clickButtonByText('post');
 
       expect(testState.uploadAttachmentMock).toHaveBeenCalledWith(pngAttachment);
-      expect(testState.publishReplyMock).toHaveBeenCalledWith(expect.objectContaining({ link: 'https://forgeimg.net/abc/dropped.png' }));
+      expect(testState.publishReplyMock).toHaveBeenCalledWith(
+        expect.objectContaining({ link: 'https://forgeimg.net/abc/dropped.png' }),
+        expect.objectContaining({ finish: expect.any(Function) }),
+      );
     });
 
     it('reports a dropped file of an unsupported type until a supported one is attached', async () => {

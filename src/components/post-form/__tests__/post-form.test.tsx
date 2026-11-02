@@ -37,6 +37,7 @@ const testState = vi.hoisted(() => ({
   >,
   editedComment: undefined as { commentModeration?: { archived?: boolean }; deleted?: boolean; locked?: boolean; postCid?: string; removed?: boolean } | undefined,
   gifFrameStatus: 'idle' as 'idle' | 'ready',
+  analyticsMock: vi.fn(),
   chooseFileMock: vi.fn(),
   uploadAttachmentMock: vi.fn(),
   precheckMock: vi.fn(),
@@ -76,6 +77,8 @@ const testState = vi.hoisted(() => ({
   } as Record<string, unknown>,
   uploadMode: 'always',
 }));
+
+vi.mock('../../../lib/analytics', () => ({ trackPostingEvent: (...args: unknown[]) => testState.analyticsMock(...args) }));
 
 vi.mock('react-i18next', async () => {
   const React = await vi.importActual<typeof import('react')>('react');
@@ -244,7 +247,7 @@ vi.mock('../../../hooks/use-publish-post', async () => {
         [communityAddress],
       );
       const publishPost = React.useCallback(
-        (options?: Record<string, unknown>) => {
+        (options?: Record<string, unknown>, attempt?: unknown) => {
           const sanitizedOptions = Object.entries(options || {}).reduce(
             (acc, [key, value]) => {
               acc[key] = value === '' ? undefined : value;
@@ -257,7 +260,7 @@ vi.mock('../../../hooks/use-publish-post', async () => {
             ...sanitizedOptions,
           };
           testState.publishedPostOptions = testState.publishPostOptions;
-          const result = testState.publishPostMock(options);
+          const result = testState.publishPostMock(options, attempt);
           forceUpdate();
           return result;
         },
@@ -309,12 +312,12 @@ vi.mock('../../../hooks/use-publish-reply', async () => {
         postCid: postCid ?? cid,
         communityAddress,
       });
-      const publishReply = React.useCallback((options?: Record<string, unknown>) => {
+      const publishReply = React.useCallback((options?: Record<string, unknown>, attempt?: unknown) => {
         if (options) {
           testState.setPublishReplyOptionsMock(options);
           setPublishReplyOptionsState((previous) => ({ ...previous, ...options }));
         }
-        return testState.publishReplyMock(options);
+        return testState.publishReplyMock(options, attempt);
       }, []);
       const resetPublishReplyOptions = React.useCallback(() => testState.resetPublishReplyOptionsMock(), []);
       const setPublishReplyOptions = React.useCallback((options: Record<string, unknown>) => {
@@ -672,6 +675,20 @@ describe('PostForm', () => {
     usePendingPostNavigationStore.getState().clearPendingPostNavigation();
   });
 
+  it('records validation failure without draft contents and sends nothing for composing', async () => {
+    testState.resolvedCommunityAddress = 'music-posting.eth';
+    await renderPostForm('/mu');
+    await clickByText(container, 'start_new_thread');
+    await clickByText(container.querySelector('table') as HTMLTableElement, 'post');
+    await dispatchInput(container.querySelector('textarea') as HTMLTextAreaElement, 'private draft');
+    await act(async () => {
+      root.render(null);
+    });
+    await renderPostForm('/mu');
+    await dispatchInput(container.querySelector('textarea') as HTMLTextAreaElement, 'private draft edited');
+    expect(testState.analyticsMock.mock.calls).toEqual([['post_validation_failed', { kind: 'thread', communityAddress: 'music-posting.eth' }]]);
+  });
+
   it('shows the closed-thread notice when the current post can no longer receive replies', async () => {
     testState.comments = {
       'thread-cid': {
@@ -802,7 +819,10 @@ describe('PostForm', () => {
     await dispatchInput(textarea, 'Account switch regression');
     await clickByText(table, 'post');
 
-    expect(testState.publishPostMock).toHaveBeenCalledWith(expect.objectContaining({ displayName: undefined }));
+    expect(testState.publishPostMock).toHaveBeenCalledWith(
+      expect.objectContaining({ displayName: undefined }),
+      expect.objectContaining({ finish: expect.any(Function) }),
+    );
   });
 
   it('converts YouTube links to thumbnail file links on media-only post forms', async () => {
@@ -1115,13 +1135,16 @@ describe('PostForm', () => {
 
     expect(linkInput.value).toBe(twimgLink);
     expect(testState.publishPostMock).toHaveBeenCalledTimes(1);
-    expect(testState.publishPostMock).toHaveBeenCalledWith({
-      challengeRequest: undefined,
-      content: 'Twimg thread',
-      displayName: 'Alice',
-      flairs: undefined,
-      link: publishLink,
-    });
+    expect(testState.publishPostMock).toHaveBeenCalledWith(
+      {
+        challengeRequest: undefined,
+        content: 'Twimg thread',
+        displayName: 'Alice',
+        flairs: undefined,
+        link: publishLink,
+      },
+      expect.objectContaining({ finish: expect.any(Function) }),
+    );
     expect(testState.publishedPostOptions?.link).toBe(publishLink);
   });
 
@@ -1263,15 +1286,18 @@ describe('PostForm', () => {
     expect(table?.querySelector<HTMLInputElement>('input[type="checkbox"]')?.checked).toBe(true);
 
     await clickByText(table as HTMLTableElement, 'post');
-    expect(testState.publishPostMock).toHaveBeenCalledWith({
-      challengeRequest: undefined,
-      content: 'saved board draft',
-      displayName: 'Alice',
-      flairs: undefined,
-      link: 'https://example.com/saved.png',
-      spoiler: true,
-      title: 'Saved subject',
-    });
+    expect(testState.publishPostMock).toHaveBeenCalledWith(
+      {
+        challengeRequest: undefined,
+        content: 'saved board draft',
+        displayName: 'Alice',
+        flairs: undefined,
+        link: 'https://example.com/saved.png',
+        spoiler: true,
+        title: 'Saved subject',
+      },
+      expect.objectContaining({ finish: expect.any(Function) }),
+    );
   });
 
   it('restores the correct post draft when only the location search changes', async () => {
@@ -1312,14 +1338,17 @@ describe('PostForm', () => {
     await dispatchInput(textarea as HTMLTextAreaElement, 'flagged post');
     await clickByText(table as HTMLTableElement, 'post');
 
-    expect(testState.publishPostMock).toHaveBeenCalledWith({
-      content: 'flagged post',
-      displayName: 'Alice',
-      challengeRequest: {
-        challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
+    expect(testState.publishPostMock).toHaveBeenCalledWith(
+      {
+        content: 'flagged post',
+        displayName: 'Alice',
+        challengeRequest: {
+          challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
+        },
+        flairs: [{ type: 'country', code: 'auto', text: 'flag:country:auto' }],
       },
-      flairs: [{ type: 'country', code: 'auto', text: 'flag:country:auto' }],
-    });
+      expect.objectContaining({ finish: expect.any(Function) }),
+    );
   });
 
   it('shows the /pol/ flag field when a non-primary directory candidate is hosting /pol/', async () => {
@@ -1344,14 +1373,17 @@ describe('PostForm', () => {
     await dispatchInput(textarea as HTMLTextAreaElement, 'candidate board flag post');
     await clickByText(table as HTMLTableElement, 'post');
 
-    expect(testState.publishPostMock).toHaveBeenCalledWith({
-      content: 'candidate board flag post',
-      displayName: 'Alice',
-      challengeRequest: {
-        challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
+    expect(testState.publishPostMock).toHaveBeenCalledWith(
+      {
+        content: 'candidate board flag post',
+        displayName: 'Alice',
+        challengeRequest: {
+          challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
+        },
+        flairs: [{ type: 'country', code: 'auto', text: 'flag:country:auto' }],
       },
-      flairs: [{ type: 'country', code: 'auto', text: 'flag:country:auto' }],
-    });
+      expect.objectContaining({ finish: expect.any(Function) }),
+    );
   });
 
   it('publishes geographic location on /sp/ without showing a flag field', async () => {
@@ -1369,14 +1401,17 @@ describe('PostForm', () => {
     await dispatchInput(textarea as HTMLTextAreaElement, 'sports post');
     await clickByText(table as HTMLTableElement, 'post');
 
-    expect(testState.publishPostMock).toHaveBeenCalledWith({
-      content: 'sports post',
-      displayName: 'Alice',
-      challengeRequest: {
-        challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
+    expect(testState.publishPostMock).toHaveBeenCalledWith(
+      {
+        content: 'sports post',
+        displayName: 'Alice',
+        challengeRequest: {
+          challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
+        },
+        flairs: [{ type: 'country', code: 'auto', text: 'flag:country:auto' }],
       },
-      flairs: [{ type: 'country', code: 'auto', text: 'flag:country:auto' }],
-    });
+      expect.objectContaining({ finish: expect.any(Function) }),
+    );
   });
 
   it('publishes selected political flags from the post form', async () => {
@@ -1393,12 +1428,15 @@ describe('PostForm', () => {
     await dispatchInput(textarea as HTMLTextAreaElement, 'memeflag post');
     await clickByText(table as HTMLTableElement, 'post');
 
-    expect(testState.publishPostMock).toHaveBeenCalledWith({
-      challengeRequest: undefined,
-      content: 'memeflag post',
-      displayName: 'Alice',
-      flairs: [{ type: 'pol', code: 'AC', text: 'flag:pol:AC' }],
-    });
+    expect(testState.publishPostMock).toHaveBeenCalledWith(
+      {
+        challengeRequest: undefined,
+        content: 'memeflag post',
+        displayName: 'Alice',
+        flairs: [{ type: 'pol', code: 'AC', text: 'flag:pol:AC' }],
+      },
+      expect.objectContaining({ finish: expect.any(Function) }),
+    );
   });
 
   it('shows /f/ upload guidance and publishes the selected flash tag as a post flair', async () => {
@@ -1431,12 +1469,15 @@ describe('PostForm', () => {
     await dispatchInput(textarea as HTMLTextAreaElement, 'flash thread');
     await clickByText(table as HTMLTableElement, 'post');
 
-    expect(testState.publishPostMock).toHaveBeenCalledWith({
-      challengeRequest: undefined,
-      content: 'flash thread',
-      displayName: 'Alice',
-      flairs: [{ text: 'flash:loop' }],
-    });
+    expect(testState.publishPostMock).toHaveBeenCalledWith(
+      {
+        challengeRequest: undefined,
+        content: 'flash thread',
+        displayName: 'Alice',
+        flairs: [{ text: 'flash:loop' }],
+      },
+      expect.objectContaining({ finish: expect.any(Function) }),
+    );
   });
 
   it('does not publish a flash flair until a tag is selected', async () => {
@@ -1453,12 +1494,15 @@ describe('PostForm', () => {
     await dispatchInput(textarea as HTMLTextAreaElement, 'flash thread');
     await clickByText(table as HTMLTableElement, 'post');
 
-    expect(testState.publishPostMock).toHaveBeenCalledWith({
-      challengeRequest: undefined,
-      content: 'flash thread',
-      displayName: 'Alice',
-      flairs: undefined,
-    });
+    expect(testState.publishPostMock).toHaveBeenCalledWith(
+      {
+        challengeRequest: undefined,
+        content: 'flash thread',
+        displayName: 'Alice',
+        flairs: undefined,
+      },
+      expect.objectContaining({ finish: expect.any(Function) }),
+    );
   });
 
   it('validates unsupported options and keeps fortune output out of preview state until post publish', async () => {
@@ -1498,12 +1542,15 @@ describe('PostForm', () => {
     await clickByText(table as HTMLTableElement, 'post');
 
     expect(testState.publishPostMock).toHaveBeenCalledTimes(1);
-    expect(testState.publishPostMock).toHaveBeenCalledWith({
-      challengeRequest: undefined,
-      content: 'fortune body[fortune color=#fd4d32]Excellent Luck[/fortune]',
-      displayName: 'Alice',
-      flairs: undefined,
-    });
+    expect(testState.publishPostMock).toHaveBeenCalledWith(
+      {
+        challengeRequest: undefined,
+        content: 'fortune body[fortune color=#fd4d32]Excellent Luck[/fortune]',
+        displayName: 'Alice',
+        flairs: undefined,
+      },
+      expect.objectContaining({ finish: expect.any(Function) }),
+    );
     randomSpy.mockRestore();
   });
 
@@ -1824,6 +1871,7 @@ describe('PostForm', () => {
     await clickByText(container.querySelector('table') as HTMLTableElement, 'post');
 
     expect(usePendingUploadPostStore.getState().pendingUploadPosts).toEqual([pendingUploadPost]);
+    expect(testState.analyticsMock).not.toHaveBeenCalled();
     expect(testState.navigateMock).toHaveBeenLastCalledWith('/pending/upload', {
       flushSync: true,
       state: { boardPath: 'mu', pendingPost: pendingUploadPost?.post, pendingUploadId: pendingUploadPost?.id },
@@ -2034,6 +2082,7 @@ describe('PostForm', () => {
     expect(testState.uploadAttachmentMock).toHaveBeenCalledWith(attachment);
     expect(testState.publishReplyMock).toHaveBeenCalledWith(
       expect.objectContaining({ link: 'https://forgeimg.net/abc/reply.png', challengeRequest: { challengeAnswers: ['precheck-pass'] } }),
+      expect.objectContaining({ finish: expect.any(Function) }),
     );
   });
 
@@ -2631,7 +2680,10 @@ describe('PostForm', () => {
     await clickByText(table, 'post');
 
     expect(testState.uploadAttachmentMock).toHaveBeenCalledWith(attachment);
-    expect(testState.publishReplyMock).toHaveBeenCalledWith(expect.objectContaining({ link: 'https://forgeimg.net/abc/reply.png' }));
+    expect(testState.publishReplyMock).toHaveBeenCalledWith(
+      expect.objectContaining({ link: 'https://forgeimg.net/abc/reply.png' }),
+      expect.objectContaining({ finish: expect.any(Function) }),
+    );
   });
 
   it('does not require an inline reply link when only post links are required', async () => {
@@ -2689,7 +2741,10 @@ describe('PostForm', () => {
 
     expect(testState.setPublishReplyOptionsMock).toHaveBeenCalledWith({ link: 'https://example.com/reply' });
     expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
-    expect(testState.publishReplyMock).toHaveBeenCalledWith(expect.objectContaining({ content: 'Reply body' }));
+    expect(testState.publishReplyMock).toHaveBeenCalledWith(
+      expect.objectContaining({ content: 'Reply body' }),
+      expect.objectContaining({ finish: expect.any(Function) }),
+    );
   });
 
   it('rejects inline reply links when reply links are disabled', async () => {
@@ -2773,13 +2828,16 @@ describe('PostForm', () => {
 
     expect(linkInput.value).toBe(twimgLink);
     expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
-    expect(testState.publishReplyMock).toHaveBeenCalledWith({
-      challengeRequest: undefined,
-      content: 'Twimg reply',
-      displayName: 'Alice',
-      flairs: undefined,
-      link: publishLink,
-    });
+    expect(testState.publishReplyMock).toHaveBeenCalledWith(
+      {
+        challengeRequest: undefined,
+        content: 'Twimg reply',
+        displayName: 'Alice',
+        flairs: undefined,
+        link: publishLink,
+      },
+      expect.objectContaining({ finish: expect.any(Function) }),
+    );
   });
 });
 

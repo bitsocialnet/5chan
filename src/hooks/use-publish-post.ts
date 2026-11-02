@@ -6,6 +6,7 @@ import useChallengesStore from '../stores/use-challenges-store';
 import usePublishAuthorDomainGuard, { getPublishAuthorDomainErrorMessage } from './use-publish-author-domain-guard';
 import usePendingPublishRequest from './use-pending-publish-request';
 import { getDuplicateMediaChallengeError } from '../lib/utils/challenge-utils';
+import type { PostingAnalyticsAttempt } from '../lib/posting-analytics';
 
 type UsePublishPostOptions = {
   communityAddress?: string;
@@ -45,13 +46,15 @@ const usePublishPost = ({
   const abandonPublishRef = useRef<(() => Promise<void>) | undefined>(undefined);
   const [publishPostError, setPublishPostError] = useState<string | null>(null);
   const [pendingPublishRequestId, setPendingPublishRequestId] = useState(0);
+  const [analyticsAttempt, setAnalyticsAttempt] = useState<PostingAnalyticsAttempt>();
   const startedPublishRequestIdRef = useRef(0);
   const { blockedReason } = usePublishAuthorDomainGuard();
   const { finishPendingPublishRequest, startPendingPublishRequest } = usePendingPublishRequest();
   const abandonCurrentPublish = useCallback(async () => {
+    analyticsAttempt?.finish('post_cancelled');
     onAbandonPost?.();
     await abandonPublishRef.current?.();
-  }, [onAbandonPost]);
+  }, [analyticsAttempt, onAbandonPost]);
 
   const createBaseOptions = useCallback(() => {
     const baseOptions: Comment = {
@@ -99,10 +102,12 @@ const usePublishPost = ({
       ...publishCommentOptions,
       onPendingComment: onPendingPost,
       onError: (error: Error) => {
+        analyticsAttempt?.finish('post_publish_failed');
         onPublishError?.(error);
         publishCommentOptions.onError?.(error);
       },
       onChallengeVerification: async (challengeVerification: ChallengeVerification, comment: Comment) => {
+        analyticsAttempt?.verify(challengeVerification);
         const duplicateMediaError = getDuplicateMediaChallengeError(challengeVerification);
         if (duplicateMediaError) {
           onDuplicateMediaRejected?.(duplicateMediaError);
@@ -115,10 +120,11 @@ const usePublishPost = ({
         publishCommentOptions.onChallengeVerification?.(challengeVerification, comment);
       },
       onChallenge: async (...args: any[]) => {
+        analyticsAttempt?.challenge();
         addChallenge(args, abandonCurrentPublish);
       },
     }),
-    [abandonCurrentPublish, addChallenge, onDuplicateMediaRejected, onPendingPost, onPublishAccepted, onPublishError, publishCommentOptions],
+    [abandonCurrentPublish, addChallenge, analyticsAttempt, onDuplicateMediaRejected, onPendingPost, onPublishAccepted, onPublishError, publishCommentOptions],
   );
 
   const { index, publishComment, abandonPublish } = usePublishComment(publishOptionsWithAbandon);
@@ -134,6 +140,7 @@ const usePublishPost = ({
 
   const startPublishPost = useCallback(async () => {
     if (blockedReason) {
+      analyticsAttempt?.finish('post_validation_failed');
       const message = getPublishAuthorDomainErrorMessage(blockedReason);
       setPublishPostError(message);
       // A caller that is not showing this hook's error (the pending upload publisher) still hears it.
@@ -142,8 +149,13 @@ const usePublishPost = ({
     }
 
     setPublishPostError(null);
-    await publishComment();
-  }, [blockedReason, onPublishError, publishComment]);
+    try {
+      await publishComment();
+    } catch (error) {
+      analyticsAttempt?.finish('post_publish_failed');
+      throw error;
+    }
+  }, [analyticsAttempt, blockedReason, onPublishError, publishComment]);
 
   useEffect(() => {
     if (pendingPublishRequestId === 0 || pendingPublishRequestId === startedPublishRequestIdRef.current) {
@@ -158,14 +170,15 @@ const usePublishPost = ({
   }, [finishPendingPublishRequest, pendingPublishRequestId, startPublishPost]);
 
   const publishPost = useCallback(
-    (options?: Partial<Comment>) => {
+    (options?: Partial<Comment>, attempt?: PostingAnalyticsAttempt) => {
       const pendingRequest = startPendingPublishRequest();
       if (!pendingRequest.started) {
         return pendingRequest.request.promise;
       }
 
-      if (options) {
-        setPublishPostOptions(options);
+      if (options || attempt || analyticsAttempt) {
+        setAnalyticsAttempt(attempt);
+        if (options) setPublishPostOptions(options);
         setPendingPublishRequestId(pendingRequest.request.id);
         return pendingRequest.request.promise;
       }
@@ -175,7 +188,7 @@ const usePublishPost = ({
         .finally(() => finishPendingPublishRequest(pendingRequest.request.id));
       return pendingRequest.request.promise;
     },
-    [finishPendingPublishRequest, setPublishPostOptions, startPendingPublishRequest, startPublishPost],
+    [analyticsAttempt, finishPendingPublishRequest, setPublishPostOptions, startPendingPublishRequest, startPublishPost],
   );
 
   return {

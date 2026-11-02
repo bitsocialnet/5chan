@@ -2,6 +2,7 @@ import * as React from 'react';
 import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { startPostingAnalytics, type PostingAnalyticsAttempt } from '../../../lib/posting-analytics';
 import type { AttachedMedia, UploadPhase } from '../../../lib/media-hosting/types';
 import usePendingPostNavigationStore from '../../../stores/use-pending-post-navigation-store';
 import usePendingUploadPostStore from '../../../stores/use-pending-upload-post-store';
@@ -20,6 +21,7 @@ type PublishPostOptions = {
 };
 
 const testState = vi.hoisted(() => ({
+  analyticsMock: vi.fn(),
   navigateMock: vi.fn(),
   pathname: '/pending/upload',
   locationState: undefined as unknown,
@@ -30,6 +32,8 @@ const testState = vi.hoisted(() => ({
   publishPostOptionsByBoard: {} as Record<string, PublishPostOptions>,
   uploadAttachmentMock: vi.fn<(media: unknown, onPhaseChange?: (phase: UploadPhase) => void) => Promise<{ url: string; fileName: string } | null>>(),
 }));
+
+vi.mock('../../../lib/analytics', () => ({ trackPostingEvent: (...args: unknown[]) => testState.analyticsMock(...args) }));
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string) => key }),
@@ -75,11 +79,14 @@ const flush = async () => {
   }
 };
 
-const submitPost = async (overrides: { nonokoRedirectPath?: string | null; publishOptions?: Record<string, unknown> } = {}) => {
+const submitPost = async (
+  overrides: { nonokoRedirectPath?: string | null; publishOptions?: Record<string, unknown>; analyticsAttempt?: PostingAnalyticsAttempt } = {},
+) => {
   usePostFormDraftsStore.getState().updateDraft('/mu', { attachment, content: 'thread body' });
   usePostFormDraftsStore.getState().closeForm('/mu');
   const pendingUploadPost = usePendingUploadPostStore.getState().startPendingUploadPost({
     attachment,
+    analyticsAttempt: overrides.analyticsAttempt,
     boardChallenges: challenges,
     boardPath: 'mu',
     draftKey: '/mu',
@@ -96,6 +103,7 @@ const submitPost = async (overrides: { nonokoRedirectPath?: string | null; publi
 
 describe('PendingUploadPostPublisher', () => {
   beforeEach(() => {
+    testState.analyticsMock.mockReset();
     testState.navigateMock.mockReset();
     testState.pathname = '/pending/upload';
     testState.locationState = undefined;
@@ -119,6 +127,30 @@ describe('PendingUploadPostPublisher', () => {
     container.remove();
     usePendingPostNavigationStore.getState().clearPendingPostNavigation();
     usePendingPostNavigationStore.setState({ visiblePendingPostIndex: null });
+  });
+
+  it.each([
+    [{ status: 'stopped', message: 'private rejected content' }, 'post_precheck_failed'],
+    [{ status: 'stopped' }, 'post_cancelled'],
+  ])('records a precheck outcome before any upload: %s', async (result, event) => {
+    testState.precheckMock.mockResolvedValue(result);
+    const analyticsAttempt = startPostingAnalytics({ kind: 'thread', communityAddress: 'music-posting.eth' });
+    await submitPost({ analyticsAttempt });
+    expect(testState.uploadAttachmentMock).not.toHaveBeenCalled();
+    expect(testState.analyticsMock.mock.calls).toEqual([[event, { kind: 'thread', communityAddress: 'music-posting.eth' }]]);
+  });
+
+  it('records a failed upload and carries a successful upload attempt into the publisher', async () => {
+    const failedAttempt = startPostingAnalytics({ kind: 'thread' });
+    testState.uploadAttachmentMock.mockResolvedValue(null);
+    await submitPost({ analyticsAttempt: failedAttempt });
+    expect(testState.analyticsMock.mock.calls.map(([event]) => event)).toEqual(['post_upload_failed']);
+
+    const retry = startPostingAnalytics({ kind: 'thread' });
+    testState.uploadAttachmentMock.mockResolvedValue({ url: 'https://forgeimg.net/abc/chosen.png', fileName: 'chosen.png' });
+    await submitPost({ analyticsAttempt: retry });
+    expect(testState.publishPostMock).toHaveBeenCalledWith(expect.objectContaining({ link: 'https://forgeimg.net/abc/chosen.png' }), retry);
+    expect(testState.analyticsMock.mock.calls.map(([event]) => event)).toEqual(['post_upload_failed']);
   });
 
   it('checks the post with the spam blocker, then uploads its file, then publishes it with the link and the pass', async () => {

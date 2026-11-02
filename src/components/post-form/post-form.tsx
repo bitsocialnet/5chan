@@ -63,6 +63,7 @@ import { normalizeAccountCommentIndex } from '../../lib/utils/account-comment-in
 import useFetchGifFirstFrame from '../../hooks/use-fetch-gif-first-frame';
 import { useVideoThumbnailLinkConversion } from '../../hooks/use-video-thumbnail-link-conversion';
 import usePublishSubmissionGuard from '../../hooks/use-publish-submission-guard';
+import { startPostingAnalytics, type PostingAnalyticsAttempt } from '../../lib/posting-analytics';
 import usePublishPost from '../../hooks/use-publish-post';
 import usePublishReply from '../../hooks/use-publish-reply';
 import { useFileUpload } from '../../hooks/use-file-upload';
@@ -922,144 +923,160 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
 
   const onPublishPost = () =>
     runPublishSubmission(async () => {
-      const appliedThumbnailConversion = await applyPendingConversion();
-
-      const currentTitle = subjectRef.current?.value.trim() || '';
-      const currentDisplayName = nameRef.current?.value.trim() || undefined;
-      const currentContent = textRef.current?.value || '';
-      const currentUrl = urlRef.current?.value.trim() || '';
-      const currentOptions = optionsRef.current?.value || '';
-      // Sage only changes how replies bump a thread, so a new thread accepts it without a marker.
-      const currentOptionsError = getPostOptionsValidationError(currentOptions, postOptionsDirectoryCode, isSageSupported);
-      const publishContent = getContentWithOptions(currentContent, currentOptions, fortuneEntryRef, diceRollRef, postOptionsDirectoryCode);
-
-      checkContentLength.cancel();
-      checkPostOptions.cancel();
-      setLengthError(null);
-      setFormError(null);
-      clearSubmissionError(draftKey);
-      nonokoRedirectPathRef.current = null;
-      handledPendingPostIndexRef.current = null;
-      pendingPostNavigationIndexRef.current = null;
-
-      if (currentOptionsError) {
-        setFormError(currentOptionsError);
-        return;
-      }
-
-      if (!currentTitle && !publishContent.trim() && !currentUrl && !attachment) {
-        setFormError(`${t('error')}: ${t('empty_comment_alert')}`);
-        return;
-      }
-      const linkValidationError = getPublishLinkValidationError({
-        link: currentUrl,
-        attachment,
-        requireLink: requirePostLink,
-        requireMedia: requirePostLinkIsMedia,
-        requiredLinkAlertKey: 'post_link_required_alert',
-        requiredMediaLinkAlertKey: 'post_media_link_required_alert',
-        t,
-      });
-      if (linkValidationError) {
-        setFormError(linkValidationError);
-        return;
-      }
-      const mediaLoadError = await getMediaLoadError(currentUrl);
-      if (mediaLoadError) {
-        return;
-      }
-      const expiringMediaLinkAlert = currentUrl ? getExpiringMediaLinkAlert(currentUrl, t) : null;
-      if (expiringMediaLinkAlert) {
-        setFormError(expiringMediaLinkAlert);
-        return;
-      }
-
-      if (publishContent.trim().length > 2000) {
-        setFormError(`${t('error')}: ${t('field_too_long')}`);
-        return;
-      }
-
-      if ((isInAllView || isInSubscriptionsView || isInModView) && !draft.communityAddress) {
-        setFormError(`${t('error')}: ${t('no_board_selected_warning')}`);
-        return;
-      }
-
-      const flagPublishOptions = getCommentFlagPublishOptionsForDirectory(directoryEntry, flagRef.current?.value);
-      const flashTagPublishOptions = getFlashTagPublishOptionsForDirectoryCode(postOptionsDirectoryCode, flashTagRef.current?.value);
-      const flairs = mergeFlairs(flagPublishOptions.flairs, flashTagPublishOptions.flairs);
-      const publishOptions = {
-        ...flagPublishOptions,
-        ...(flairs ? { flairs } : {}),
-      };
-
-      const nonokoRedirectPath = hasNonokoOption(currentOptions) ? getBoardIndexPath() : null;
-
-      // The form keeps a submitted post's draft until the board accepts it. Posted again while its check or upload
-      // is still running, it opens that post's upload page instead of sending it a second time.
       const inFlightUpload = attachment
         ? usePendingUploadPostStore.getState().pendingUploadPosts.find((upload) => upload.draftKey === draftKey && upload.attachment === attachment)
         : undefined;
-      if (inFlightUpload) {
-        flushSync(() =>
-          navigate(PENDING_UPLOAD_POST_PATH, {
-            flushSync: true,
-            state: { ...(inFlightUpload.boardPath ? { boardPath: inFlightUpload.boardPath } : {}), pendingPost: inFlightUpload.post, pendingUploadId: inFlightUpload.id },
-          }),
-        );
-        hideForm();
-        return;
-      }
+      const attempt = inFlightUpload ? undefined : startPostingAnalytics({ kind: 'thread', communityAddress: effectiveBoardAddress });
+      let handedOff = false;
+      try {
+        const appliedThumbnailConversion = await applyPendingConversion();
 
-      if (attachment) {
-        // The post shows as pending at once while the board's spam blocker checks it and then its file
-        // uploads, so a rejected post never leaves a file on the host. This form unmounts on the pending
-        // page, so the publisher at the app root runs those steps and publishes with every option here.
-        // Every option is explicit: the publish-post store this form fills as the user types is shared.
-        const pendingPublishOptions: Comment = {
-          communityAddress: effectiveBoardAddress,
-          content: publishContent,
-          displayName: currentDisplayName,
-          title: currentTitle || undefined,
-          spoiler: Boolean(publishPostOptions.spoiler || (hasRestoredDraftRef.current && draft.spoiler)),
-          ...publishOptions,
-        };
-        const { displayName: _displayName, ...previewOptions } = pendingPublishOptions;
-        const previewPost: Comment = {
-          ...previewOptions,
-          author: { address: account?.author?.address, displayName: currentDisplayName },
-          timestamp: Math.floor(Date.now() / 1000),
-        };
-        const { id: pendingUploadId } = usePendingUploadPostStore.getState().startPendingUploadPost({
+        const currentTitle = subjectRef.current?.value.trim() || '';
+        const currentDisplayName = nameRef.current?.value.trim() || undefined;
+        const currentContent = textRef.current?.value || '';
+        const currentUrl = urlRef.current?.value.trim() || '';
+        const currentOptions = optionsRef.current?.value || '';
+        // Sage only changes how replies bump a thread, so a new thread accepts it without a marker.
+        const currentOptionsError = getPostOptionsValidationError(currentOptions, postOptionsDirectoryCode, isSageSupported);
+        const publishContent = getContentWithOptions(currentContent, currentOptions, fortuneEntryRef, diceRollRef, postOptionsDirectoryCode);
+
+        checkContentLength.cancel();
+        checkPostOptions.cancel();
+        setLengthError(null);
+        setFormError(null);
+        clearSubmissionError(draftKey);
+        nonokoRedirectPathRef.current = null;
+        handledPendingPostIndexRef.current = null;
+        pendingPostNavigationIndexRef.current = null;
+
+        if (currentOptionsError) {
+          setFormError(currentOptionsError);
+          return;
+        }
+
+        if (!currentTitle && !publishContent.trim() && !currentUrl && !attachment) {
+          setFormError(`${t('error')}: ${t('empty_comment_alert')}`);
+          return;
+        }
+        const linkValidationError = getPublishLinkValidationError({
+          link: currentUrl,
           attachment,
-          authorRole: accountRole,
-          boardChallenges: communityChallenges,
-          boardPath: pendingPostBoardPath,
-          draftKey,
-          nonokoRedirectPath,
-          post: previewPost,
-          publishOptions: pendingPublishOptions,
+          requireLink: requirePostLink,
+          requireMedia: requirePostLinkIsMedia,
+          requiredLinkAlertKey: 'post_link_required_alert',
+          requiredMediaLinkAlertKey: 'post_media_link_required_alert',
+          t,
         });
-        flushSync(() =>
-          navigate(PENDING_UPLOAD_POST_PATH, {
-            flushSync: true,
-            state: { ...(pendingPostBoardPath ? { boardPath: pendingPostBoardPath } : {}), pendingPost: previewPost, pendingUploadId },
-          }),
-        );
-        hideForm();
-        return;
-      }
+        if (linkValidationError) {
+          setFormError(linkValidationError);
+          return;
+        }
+        const mediaLoadError = await getMediaLoadError(currentUrl);
+        if (mediaLoadError) {
+          return;
+        }
+        const expiringMediaLinkAlert = currentUrl ? getExpiringMediaLinkAlert(currentUrl, t) : null;
+        if (expiringMediaLinkAlert) {
+          setFormError(expiringMediaLinkAlert);
+          return;
+        }
 
-      nonokoRedirectPathRef.current = nonokoRedirectPath;
-      pendingPostBoardPathRef.current = pendingPostBoardPath;
-      await publishPost({
-        displayName: currentDisplayName,
-        content: publishContent,
-        ...getPublishLinkOptions(currentUrl, appliedThumbnailConversion || (hasRestoredDraftRef.current && Boolean(currentUrl))),
-        ...publishOptions,
-        ...(hasRestoredDraftRef.current && draft.communityAddress ? { communityAddress: draft.communityAddress } : {}),
-        ...(hasRestoredDraftRef.current && draft.spoiler ? { spoiler: true } : {}),
-        ...(hasRestoredDraftRef.current && currentTitle ? { title: currentTitle } : {}),
-      });
+        if (publishContent.trim().length > 2000) {
+          setFormError(`${t('error')}: ${t('field_too_long')}`);
+          return;
+        }
+
+        if ((isInAllView || isInSubscriptionsView || isInModView) && !draft.communityAddress) {
+          setFormError(`${t('error')}: ${t('no_board_selected_warning')}`);
+          return;
+        }
+
+        const flagPublishOptions = getCommentFlagPublishOptionsForDirectory(directoryEntry, flagRef.current?.value);
+        const flashTagPublishOptions = getFlashTagPublishOptionsForDirectoryCode(postOptionsDirectoryCode, flashTagRef.current?.value);
+        const flairs = mergeFlairs(flagPublishOptions.flairs, flashTagPublishOptions.flairs);
+        const publishOptions = {
+          ...flagPublishOptions,
+          ...(flairs ? { flairs } : {}),
+        };
+
+        const nonokoRedirectPath = hasNonokoOption(currentOptions) ? getBoardIndexPath() : null;
+
+        // The form keeps a submitted post's draft until the board accepts it. Posted again while its check or upload
+        // is still running, it opens that post's upload page instead of sending it a second time.
+        if (inFlightUpload) {
+          flushSync(() =>
+            navigate(PENDING_UPLOAD_POST_PATH, {
+              flushSync: true,
+              state: {
+                ...(inFlightUpload.boardPath ? { boardPath: inFlightUpload.boardPath } : {}),
+                pendingPost: inFlightUpload.post,
+                pendingUploadId: inFlightUpload.id,
+              },
+            }),
+          );
+          hideForm();
+          return;
+        }
+
+        if (attachment) {
+          // The post shows as pending at once while the board's spam blocker checks it and then its file
+          // uploads, so a rejected post never leaves a file on the host. This form unmounts on the pending
+          // page, so the publisher at the app root runs those steps and publishes with every option here.
+          // Every option is explicit: the publish-post store this form fills as the user types is shared.
+          const pendingPublishOptions: Comment = {
+            communityAddress: effectiveBoardAddress,
+            content: publishContent,
+            displayName: currentDisplayName,
+            title: currentTitle || undefined,
+            spoiler: Boolean(publishPostOptions.spoiler || (hasRestoredDraftRef.current && draft.spoiler)),
+            ...publishOptions,
+          };
+          const { displayName: _displayName, ...previewOptions } = pendingPublishOptions;
+          const previewPost: Comment = {
+            ...previewOptions,
+            author: { address: account?.author?.address, displayName: currentDisplayName },
+            timestamp: Math.floor(Date.now() / 1000),
+          };
+          const { id: pendingUploadId } = usePendingUploadPostStore.getState().startPendingUploadPost({
+            attachment,
+            analyticsAttempt: attempt,
+            authorRole: accountRole,
+            boardChallenges: communityChallenges,
+            boardPath: pendingPostBoardPath,
+            draftKey,
+            nonokoRedirectPath,
+            post: previewPost,
+            publishOptions: pendingPublishOptions,
+          });
+          handedOff = true;
+          flushSync(() =>
+            navigate(PENDING_UPLOAD_POST_PATH, {
+              flushSync: true,
+              state: { ...(pendingPostBoardPath ? { boardPath: pendingPostBoardPath } : {}), pendingPost: previewPost, pendingUploadId },
+            }),
+          );
+          hideForm();
+          return;
+        }
+
+        nonokoRedirectPathRef.current = nonokoRedirectPath;
+        pendingPostBoardPathRef.current = pendingPostBoardPath;
+        handedOff = true;
+        await publishPost(
+          {
+            displayName: currentDisplayName,
+            content: publishContent,
+            ...getPublishLinkOptions(currentUrl, appliedThumbnailConversion || (hasRestoredDraftRef.current && Boolean(currentUrl))),
+            ...publishOptions,
+            ...(hasRestoredDraftRef.current && draft.communityAddress ? { communityAddress: draft.communityAddress } : {}),
+            ...(hasRestoredDraftRef.current && draft.spoiler ? { spoiler: true } : {}),
+            ...(hasRestoredDraftRef.current && currentTitle ? { title: currentTitle } : {}),
+          },
+          attempt,
+        );
+      } finally {
+        if (!handedOff) attempt?.finish('post_validation_failed');
+      }
     });
 
   // redirect to pending page when pending comment is created
@@ -1156,96 +1173,115 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
 
   const onPublishReply = () =>
     runPublishSubmission(async () => {
-      const appliedThumbnailConversion = await applyPendingConversion();
+      const attempt = startPostingAnalytics({ kind: 'reply', communityAddress: effectiveBoardAddress });
+      let handedOff = false;
+      let outcome: Parameters<PostingAnalyticsAttempt['finish']>[0] = 'post_validation_failed';
+      try {
+        const appliedThumbnailConversion = await applyPendingConversion();
 
-      const currentUrl = urlRef.current?.value.trim() || '';
-      const currentDisplayName = nameRef.current?.value.trim() || undefined;
-      const currentOptions = optionsRef.current?.value || '';
-      const currentOptionsError = getPostOptionsValidationError(currentOptions, postOptionsDirectoryCode, isSageSupported);
-      const publishContent = getContentWithOptions(textRef.current?.value || '', currentOptions, fortuneEntryRef, diceRollRef, postOptionsDirectoryCode);
+        const currentUrl = urlRef.current?.value.trim() || '';
+        const currentDisplayName = nameRef.current?.value.trim() || undefined;
+        const currentOptions = optionsRef.current?.value || '';
+        const currentOptionsError = getPostOptionsValidationError(currentOptions, postOptionsDirectoryCode, isSageSupported);
+        const publishContent = getContentWithOptions(textRef.current?.value || '', currentOptions, fortuneEntryRef, diceRollRef, postOptionsDirectoryCode);
 
-      checkContentLength.cancel();
-      checkPostOptions.cancel();
-      setLengthError(null);
-      setFormError(null);
-      nonokoRedirectPathRef.current = null;
+        checkContentLength.cancel();
+        checkPostOptions.cancel();
+        setLengthError(null);
+        setFormError(null);
+        nonokoRedirectPathRef.current = null;
 
-      if (currentOptionsError) {
-        setFormError(currentOptionsError);
-        return;
-      }
-
-      if (!publishContent.trim() && !currentUrl && !attachment) {
-        setFormError(`${t('error')}: ${t('empty_comment_alert')}`);
-        return;
-      }
-
-      const linkValidationError = getPublishLinkValidationError({
-        link: currentUrl,
-        attachment,
-        noLinks: noReplyLinks,
-        requireLink: requireReplyLink,
-        requireMedia: requireReplyLinkIsMedia,
-        requiredLinkAlertKey: 'reply_link_required_alert',
-        requiredMediaLinkAlertKey: 'reply_media_link_required_alert',
-        noLinksAlertKey: 'reply_links_not_allowed_alert',
-        t,
-      });
-      if (linkValidationError) {
-        setFormError(linkValidationError);
-        return;
-      }
-      const mediaLoadError = await getMediaLoadError(currentUrl);
-      if (mediaLoadError) {
-        return;
-      }
-      const expiringMediaLinkAlert = currentUrl ? getExpiringMediaLinkAlert(currentUrl, t) : null;
-      if (expiringMediaLinkAlert) {
-        setFormError(expiringMediaLinkAlert);
-        return;
-      }
-
-      if (publishContent.trim().length > 2000) {
-        setFormError(`${t('error')}: ${t('field_too_long')}`);
-        return;
-      }
-
-      const flagPublishOptions = getCommentFlagPublishOptionsForDirectory(directoryEntry, flagRef.current?.value);
-
-      // The board's spam blocker checks the reply before its file is uploaded, so a rejected author never uploads.
-      let challengeRequest: { challengeAnswers: string[] } | undefined;
-      if (attachment) {
-        const precheck = await runSpamBlockerPrecheck({
-          authorRole: accountRole,
-          challenges: communityChallenges,
-          otherAnswers: flagPublishOptions.challengeRequest?.challengeAnswers,
-          publication: { content: publishContent, displayName: currentDisplayName, parentCid: cid || undefined, postCid },
-        });
-        if (!isFormMountedRef.current) return;
-        if (precheck.status === 'stopped') {
-          if (precheck.message) setFormError(`${t('error')}: ${precheck.message}`);
+        if (currentOptionsError) {
+          setFormError(currentOptionsError);
           return;
         }
-        if (precheck.status === 'passed') challengeRequest = { challengeAnswers: precheck.challengeAnswers };
-      }
 
-      const uploadedLink = attachment ? await uploadAttachedMedia(attachment) : undefined;
-      if (uploadedLink === null) {
-        return;
-      }
+        if (!publishContent.trim() && !currentUrl && !attachment) {
+          setFormError(`${t('error')}: ${t('empty_comment_alert')}`);
+          return;
+        }
 
-      nonokoRedirectPathRef.current = hasNonokoOption(currentOptions) ? getBoardIndexPath() : null;
-      await publishReply({
-        displayName: currentDisplayName,
-        // The empty and length checks above ignore the sage marker, like 4chan ignores the options field.
-        content: appendSageMarker(publishContent, currentOptions),
-        ...(uploadedLink
-          ? { link: uploadedLink }
-          : getPublishLinkOptions(currentUrl, appliedThumbnailConversion || (hasRestoredDraftRef.current && Boolean(currentUrl)))),
-        ...flagPublishOptions,
-        ...(hasRestoredDraftRef.current && draft.spoiler ? { spoiler: true } : {}),
-        ...(challengeRequest ? { challengeRequest } : {}),
-      });
+        const linkValidationError = getPublishLinkValidationError({
+          link: currentUrl,
+          attachment,
+          noLinks: noReplyLinks,
+          requireLink: requireReplyLink,
+          requireMedia: requireReplyLinkIsMedia,
+          requiredLinkAlertKey: 'reply_link_required_alert',
+          requiredMediaLinkAlertKey: 'reply_media_link_required_alert',
+          noLinksAlertKey: 'reply_links_not_allowed_alert',
+          t,
+        });
+        if (linkValidationError) {
+          setFormError(linkValidationError);
+          return;
+        }
+        const mediaLoadError = await getMediaLoadError(currentUrl);
+        if (mediaLoadError) {
+          return;
+        }
+        const expiringMediaLinkAlert = currentUrl ? getExpiringMediaLinkAlert(currentUrl, t) : null;
+        if (expiringMediaLinkAlert) {
+          setFormError(expiringMediaLinkAlert);
+          return;
+        }
+
+        if (publishContent.trim().length > 2000) {
+          setFormError(`${t('error')}: ${t('field_too_long')}`);
+          return;
+        }
+
+        const flagPublishOptions = getCommentFlagPublishOptionsForDirectory(directoryEntry, flagRef.current?.value);
+
+        // The board's spam blocker checks the reply before its file is uploaded, so a rejected author never uploads.
+        let challengeRequest: { challengeAnswers: string[] } | undefined;
+        if (attachment) {
+          outcome = 'post_precheck_failed';
+          const precheck = await runSpamBlockerPrecheck({
+            authorRole: accountRole,
+            challenges: communityChallenges,
+            otherAnswers: flagPublishOptions.challengeRequest?.challengeAnswers,
+            publication: { content: publishContent, displayName: currentDisplayName, parentCid: cid || undefined, postCid },
+          });
+          if (!isFormMountedRef.current) {
+            // Leaving a page is not an explicit cancellation signal.
+            handedOff = true;
+            return;
+          }
+          if (precheck.status === 'stopped') {
+            outcome = precheck.message ? 'post_precheck_failed' : 'post_cancelled';
+            if (precheck.message) setFormError(`${t('error')}: ${precheck.message}`);
+            return;
+          }
+          if (precheck.status === 'passed') challengeRequest = { challengeAnswers: precheck.challengeAnswers };
+        }
+
+        outcome = 'post_upload_failed';
+        const uploadedLink = attachment ? await uploadAttachedMedia(attachment) : undefined;
+        if (uploadedLink === null) {
+          if (!isFormMountedRef.current) handedOff = true;
+          return;
+        }
+
+        nonokoRedirectPathRef.current = hasNonokoOption(currentOptions) ? getBoardIndexPath() : null;
+        handedOff = true;
+        await publishReply(
+          {
+            displayName: currentDisplayName,
+            // The empty and length checks above ignore the sage marker, like 4chan ignores the options field.
+            content: appendSageMarker(publishContent, currentOptions),
+            ...(uploadedLink
+              ? { link: uploadedLink }
+              : getPublishLinkOptions(currentUrl, appliedThumbnailConversion || (hasRestoredDraftRef.current && Boolean(currentUrl)))),
+            ...flagPublishOptions,
+            ...(hasRestoredDraftRef.current && draft.spoiler ? { spoiler: true } : {}),
+            ...(challengeRequest ? { challengeRequest } : {}),
+          },
+          attempt,
+        );
+      } finally {
+        if (!handedOff) attempt.finish(outcome);
+      }
     });
 
   const setLinkValue = (nextUrl: string) => {

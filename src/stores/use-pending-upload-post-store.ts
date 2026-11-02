@@ -1,6 +1,7 @@
 import type { Comment } from '@bitsocial/bitsocial-react-hooks';
 import { create } from 'zustand';
 import type { AttachedMedia, UploadPhase } from '../lib/media-hosting/types';
+import type { PostingAnalyticsAttempt } from '../lib/posting-analytics';
 
 /** `spam_check` while the board's spam blocker checks the post, before anything is uploaded. */
 export type PendingUploadPhase = 'spam_check' | UploadPhase;
@@ -26,6 +27,7 @@ export interface PendingUploadPost {
   post: Comment;
   /** What publishPost receives, except the uploaded link. */
   publishOptions: Comment;
+  analyticsAttempt?: PostingAnalyticsAttempt;
 }
 
 interface PendingUploadPostState {
