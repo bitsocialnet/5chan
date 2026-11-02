@@ -68,7 +68,7 @@ import usePublishReply from '../../hooks/use-publish-reply';
 import { useFileUpload } from '../../hooks/use-file-upload';
 import useSpamBlockerPrecheck from '../../hooks/use-spam-blocker-precheck';
 import { useShowLinkField } from '../../hooks/use-show-link-field';
-import { getFileAttachment, getFileDropHandlers } from '../../lib/media-hosting/attached-media';
+import { getFileAttachment, getFileDropHandlers, getFilePasteHandler, type FilePasteEvent } from '../../lib/media-hosting/attached-media';
 import type { AttachedMedia, UploadPhase } from '../../lib/media-hosting/types';
 import { getShowUploadControls, isWebRuntime } from '../../lib/media-hosting/show-upload-controls';
 import { OEKAKI_WEB_WARNING_TEXT } from '../../lib/oekaki/oekaki-copy';
@@ -242,6 +242,7 @@ interface PostFormFieldsProps {
   urlRef: React.Ref<HTMLInputElement>;
   url: string;
   handleContentChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  handleContentPaste: (e: FilePasteEvent) => void;
   handleContentValueChange: (content: string, options?: string) => void;
   handleLinkChange: (link: string) => void;
   handleLinkBlur: () => void;
@@ -304,6 +305,7 @@ const PostFormFields = ({
   urlRef,
   url,
   handleContentChange,
+  handleContentPaste,
   handleContentValueChange,
   handleLinkChange,
   handleLinkBlur,
@@ -455,6 +457,7 @@ const PostFormFields = ({
           hidden={showBbcodeToolbar && isBbcodePreviewing}
           defaultValue={draft.content}
           onChange={handleContentChange}
+          onPaste={handleContentPaste}
         />
       </td>
     </tr>
@@ -1368,6 +1371,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
               urlRef={urlRef}
               url={url}
               handleContentChange={handleContentChange}
+              handleContentPaste={getFilePasteHandler(attachMedia, canAttachFile, () => setFormError(unsupportedFileError))}
               handleContentValueChange={handleContentValueChange}
               handleLinkChange={handleLinkChange}
               handleLinkBlur={handleLinkBlur}

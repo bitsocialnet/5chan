@@ -42,7 +42,7 @@ import useIsMobile from '../../hooks/use-is-mobile';
 import { useFileUpload } from '../../hooks/use-file-upload';
 import useSpamBlockerPrecheck from '../../hooks/use-spam-blocker-precheck';
 import { useShowLinkField } from '../../hooks/use-show-link-field';
-import { getFileAttachment, getFileDropHandlers } from '../../lib/media-hosting/attached-media';
+import { getFileAttachment, getFileDropHandlers, getFilePasteHandler } from '../../lib/media-hosting/attached-media';
 import type { AttachedMedia } from '../../lib/media-hosting/types';
 import { useVideoThumbnailLinkConversion } from '../../hooks/use-video-thumbnail-link-conversion';
 import usePublishSubmissionGuard from '../../hooks/use-publish-submission-guard';
@@ -794,6 +794,7 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
             hidden={showBbcodeToolbar && isBbcodePreviewing}
             onInput={handleContentInput}
             onChange={handleContentChange}
+            onPaste={getFilePasteHandler(attachMedia, canAttachFile, () => setError(unsupportedFileError))}
             onSelect={(e) => {
               lastSelectionStartRef.current = e.currentTarget.selectionStart ?? e.currentTarget.value.length;
               lastSelectionEndRef.current = e.currentTarget.selectionEnd ?? lastSelectionStartRef.current;

@@ -54,3 +54,43 @@ export function getFileDropHandlers(onDropFile: (media: AttachedMedia) => void, 
     },
   };
 }
+
+// Structural, so React's synthetic clipboard events fit without lib depending on React.
+export type FilePasteEvent = { clipboardData: DataTransfer | null; preventDefault: () => void };
+
+// Finder leaves a hidden extension out of the copied file's name.
+const isFileNamed = (file: File, name: string) => name === file.name || name === file.name.replace(/\.[^.]*$/, '');
+
+/**
+ * The file a paste carries, when the text it would insert is nothing (a copied image or screenshot) or only
+ * the names of the copied files (a file copied in Finder or Explorer, which can come with an image of its icon,
+ * so the named file is taken). Office apps copy rich text with a rendered image of it, so a paste with any
+ * other text stays a text paste.
+ */
+const getPastedFile = (clipboardData: DataTransfer): File | undefined => {
+  const files = Array.from(clipboardData.files);
+  const textLines = clipboardData
+    .getData('text/plain')
+    .split(/[\r\n]+/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  if (textLines.length === 0) return files[0];
+  if (!textLines.every((line) => files.some((file) => isFileNamed(file, line)))) return undefined;
+  return files.find((file) => isFileNamed(file, textLines[0]));
+};
+
+/**
+ * A paste handler for the comment field, so a copied image or file is attached like one chosen with the picker
+ * instead of its name being pasted as text. Pastes are left to the browser while attaching is disabled, and a
+ * pasted file of an unsupported type is reported through `onUnsupportedFile`.
+ */
+export function getFilePasteHandler(onPasteFile: (media: AttachedMedia) => void, enabled: boolean, onUnsupportedFile?: () => void) {
+  return (event: FilePasteEvent) => {
+    if (!enabled || !event.clipboardData) return;
+    const file = getPastedFile(event.clipboardData);
+    if (!file) return;
+    event.preventDefault();
+    if (isAcceptedUploadFile(file)) onPasteFile(getFileAttachment(file));
+    else onUnsupportedFile?.();
+  };
+}

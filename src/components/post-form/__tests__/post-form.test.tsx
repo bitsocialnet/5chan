@@ -1881,6 +1881,25 @@ describe('PostForm', () => {
     expect(table.textContent).toContain('dropped.png');
   });
 
+  it('attaches a file pasted into the comment field instead of pasting its name', async () => {
+    const file = new File(['png'], 'pasted.png', { type: 'image/png' });
+    testState.uploadMode = 'random';
+    await renderPostForm('/mu');
+    await clickByText(container, 'start_new_thread');
+
+    const table = container.querySelector('table') as HTMLTableElement;
+    const textarea = table.querySelector('textarea') as HTMLTextAreaElement;
+    const paste = new Event('paste', { bubbles: true, cancelable: true });
+    Object.defineProperty(paste, 'clipboardData', { value: { files: [file], getData: () => 'pasted.png' } });
+    await act(async () => {
+      textarea.dispatchEvent(paste);
+    });
+
+    expect(paste.defaultPrevented).toBe(true);
+    expect(table.textContent).toContain('pasted.png');
+    expect(testState.chooseFileMock).not.toHaveBeenCalled();
+  });
+
   it('clears a visible link field when a file is attached, and a typed link replaces the file', async () => {
     const file = new File(['png'], 'chosen.png', { type: 'image/png' });
     testState.uploadMode = 'random';
