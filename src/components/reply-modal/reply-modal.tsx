@@ -917,7 +917,7 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
                 <span className={styles.uploadContainer}>
                   <span className={styles.uploadButton}>
                     <button type='button' onClick={handleChooseFile}>
-                      {t('choose_file')}
+                      {t(maxGalleryItems > 0 ? 'choose_files' : 'choose_file')}
                     </button>
                   </span>
                   <span className={styles.uploadFileName} title={chosenFileNames.length > 1 ? chosenFileNames.join('\n') : displayedFileName || t('no_file_chosen')}>

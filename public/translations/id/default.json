@@ -600,5 +600,7 @@
   "board_may_be_offline": "Forum mungkin sedang offline atau tidak dapat dijangkau.",
   "files_chosen": "{{count}} file",
   "too_many_files_alert": "Terlalu banyak file. Papan ini mengizinkan hingga {{count}} per postingan.",
-  "gallery_file_not_image_or_video_alert": "Hanya gambar dan video yang dapat diposting bersama."
+  "gallery_file_not_image_or_video_alert": "Hanya gambar dan video yang dapat diposting bersama.",
+  "files": "Berkas",
+  "choose_files": "Pilih Berkas"
 }

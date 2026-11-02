@@ -600,5 +600,7 @@
   "board_may_be_offline": "论坛可能已离线或无法访问。",
   "files_chosen": "{{count}} 个文件",
   "too_many_files_alert": "文件过多。此板块每个帖子最多允许 {{count}} 个文件。",
-  "gallery_file_not_image_or_video_alert": "只有图片和视频可以一起发布。"
+  "gallery_file_not_image_or_video_alert": "只有图片和视频可以一起发布。",
+  "files": "文件",
+  "choose_files": "选择文件"
 }

@@ -183,6 +183,7 @@ export const LinkTypePreviewer = ({
 };
 
 const PostFormActions = ({
+  allowsSeveralFiles = false,
   disableReplyPublish = false,
   variant,
   t,
@@ -194,6 +195,8 @@ const PostFormActions = ({
   isUploading,
   showUploadControls,
 }: {
+  /** The board takes gallery files, so the picker takes several. */
+  allowsSeveralFiles?: boolean;
   disableReplyPublish?: boolean;
   variant: 'reply' | 'post' | 'upload';
   t: TFunction;
@@ -222,7 +225,7 @@ const PostFormActions = ({
   if (variant === 'upload' && showUploadControls) {
     return (
       <button type='button' onClick={handleChooseFile} disabled={isUploading}>
-        {t('choose_file')}
+        {t(allowsSeveralFiles ? 'choose_files' : 'choose_file')}
       </button>
     );
   }
@@ -261,6 +264,8 @@ interface PostFormFieldsProps {
   attachedFileName: string | undefined;
   /** Every file the post sends, when it sends several. */
   chosenFileNames: string[];
+  /** The board takes gallery files, so the file row offers several. */
+  allowsSeveralFiles: boolean;
   showLinkField: boolean;
   showUploadControls: boolean;
   showOekakiControls: boolean;
@@ -325,6 +330,7 @@ const PostFormFields = ({
   uploadPhase,
   attachedFileName,
   chosenFileNames,
+  allowsSeveralFiles,
   showLinkField,
   showUploadControls,
   showOekakiControls,
@@ -524,9 +530,10 @@ const PostFormFields = ({
     </tr>
     {showUploadControls && (
       <tr className={styles.uploadButton}>
-        <td>{t('file')}</td>
+        <td>{t(allowsSeveralFiles ? 'files' : 'file')}</td>
         <td>
           <PostFormActions
+            allowsSeveralFiles={allowsSeveralFiles}
             variant='upload'
             t={t}
             isInPostView={isInPostView}
@@ -1455,6 +1462,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
               uploadPhase={uploadPhase}
               attachedFileName={attachment?.name}
               chosenFileNames={chosenFileNames}
+              allowsSeveralFiles={maxGalleryItems > 0}
               showLinkField={showLinkField}
               showUploadControls={canAttachFile}
               showOekakiControls={showOekakiControls && !(isInPostView && noReplyLinks)}

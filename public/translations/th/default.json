@@ -600,5 +600,7 @@
   "board_may_be_offline": "กระดานอาจออฟไลน์อยู่หรือเข้าถึงไม่ได้",
   "files_chosen": "{{count}} ไฟล์",
   "too_many_files_alert": "ไฟล์มากเกินไป บอร์ดนี้อนุญาตสูงสุด {{count}} ไฟล์ต่อโพสต์",
-  "gallery_file_not_image_or_video_alert": "โพสต์รวมกันได้เฉพาะรูปภาพและวิดีโอเท่านั้น"
+  "gallery_file_not_image_or_video_alert": "โพสต์รวมกันได้เฉพาะรูปภาพและวิดีโอเท่านั้น",
+  "files": "ไฟล์",
+  "choose_files": "เลือกไฟล์"
 }

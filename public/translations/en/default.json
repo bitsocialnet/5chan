@@ -620,5 +620,7 @@
   "board_may_be_offline": "The board may be offline or unreachable.",
   "files_chosen": "{{count}} files",
   "too_many_files_alert": "Too many files. This board allows up to {{count}} per post.",
-  "gallery_file_not_image_or_video_alert": "Only images and videos can be posted together."
+  "gallery_file_not_image_or_video_alert": "Only images and videos can be posted together.",
+  "files": "Files",
+  "choose_files": "Choose Files"
 }

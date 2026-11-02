@@ -600,5 +600,7 @@
   "board_may_be_offline": "Diễn đàn có thể đang ngoại tuyến hoặc không thể truy cập.",
   "files_chosen": "{{count}} tệp",
   "too_many_files_alert": "Quá nhiều tệp. Bảng này cho phép tối đa {{count}} tệp mỗi bài đăng.",
-  "gallery_file_not_image_or_video_alert": "Chỉ có thể đăng hình ảnh và video cùng nhau."
+  "gallery_file_not_image_or_video_alert": "Chỉ có thể đăng hình ảnh và video cùng nhau.",
+  "files": "Tệp",
+  "choose_files": "Chọn tệp"
 }

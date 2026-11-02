@@ -600,5 +600,7 @@
   "board_may_be_offline": "Можливо, форум не в мережі або недоступний.",
   "files_chosen": "Файлів: {{count}}",
   "too_many_files_alert": "Забагато файлів. Максимум на допис на цій дошці: {{count}}.",
-  "gallery_file_not_image_or_video_alert": "Разом можна публікувати лише зображення та відео."
+  "gallery_file_not_image_or_video_alert": "Разом можна публікувати лише зображення та відео.",
+  "files": "Файли",
+  "choose_files": "Виберіть файли"
 }

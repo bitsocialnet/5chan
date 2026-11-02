@@ -600,5 +600,7 @@
   "board_may_be_offline": "Forumi mund të jetë jashtë linje ose i paarritshëm.",
   "files_chosen": "{{count}} skedarë",
   "too_many_files_alert": "Shumë skedarë. Ky bord lejon deri në {{count}} për postim.",
-  "gallery_file_not_image_or_video_alert": "Vetëm imazhet dhe videot mund të postohen së bashku."
+  "gallery_file_not_image_or_video_alert": "Vetëm imazhet dhe videot mund të postohen së bashku.",
+  "files": "Skedarë",
+  "choose_files": "Zgjidhni skedarët"
 }

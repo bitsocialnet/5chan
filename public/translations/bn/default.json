@@ -600,5 +600,7 @@
   "board_may_be_offline": "বোর্ডটি হয়তো অফলাইন বা নাগালের বাইরে।",
   "files_chosen": "{{count}}টি ফাইল",
   "too_many_files_alert": "অনেক বেশি ফাইল। এই বোর্ডে প্রতি পোস্টে সর্বোচ্চ {{count}}টি ফাইল দেওয়া যায়।",
-  "gallery_file_not_image_or_video_alert": "একসাথে শুধু ছবি ও ভিডিও পোস্ট করা যায়।"
+  "gallery_file_not_image_or_video_alert": "একসাথে শুধু ছবি ও ভিডিও পোস্ট করা যায়।",
+  "files": "ফাইলসমূহ",
+  "choose_files": "ফাইলগুলো নির্বাচন করুন"
 }

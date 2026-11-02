@@ -600,5 +600,7 @@
   "board_may_be_offline": "Forum może być offline lub nieosiągalne.",
   "files_chosen": "Plików: {{count}}",
   "too_many_files_alert": "Za dużo plików. Maksimum na post na tej tablicy: {{count}}.",
-  "gallery_file_not_image_or_video_alert": "Razem można publikować tylko obrazy i filmy."
+  "gallery_file_not_image_or_video_alert": "Razem można publikować tylko obrazy i filmy.",
+  "files": "Pliki",
+  "choose_files": "Wybierz pliki"
 }
