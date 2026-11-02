@@ -600,7 +600,5 @@
   "board_may_be_offline": "ممکن است تالار آفلاین یا در دسترس نباشد.",
   "files_chosen": "{{count}} فایل",
   "too_many_files_alert": "تعداد فایل‌ها زیاد است. این تابلو حداکثر {{count}} فایل در هر پست را می‌پذیرد.",
-  "gallery_file_not_image_or_video_alert": "فقط تصاویر و ویدیوها را می‌توان با هم ارسال کرد.",
-  "files": "فایل‌ها",
-  "choose_files": "فایل‌ها را انتخاب کنید"
+  "gallery_file_not_image_or_video_alert": "فقط تصاویر و ویدیوها را می‌توان با هم ارسال کرد."
 }

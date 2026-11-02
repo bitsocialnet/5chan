@@ -600,7 +600,5 @@
   "board_may_be_offline": "Este posibil ca forumul să fie offline sau inaccesibil.",
   "files_chosen": "Fișiere: {{count}}",
   "too_many_files_alert": "Prea multe fișiere. Maximul pe postare pe acest tablou: {{count}}.",
-  "gallery_file_not_image_or_video_alert": "Doar imaginile și videoclipurile pot fi postate împreună.",
-  "files": "Fișiere",
-  "choose_files": "Alegeți fișierele"
+  "gallery_file_not_image_or_video_alert": "Doar imaginile și videoclipurile pot fi postate împreună."
 }

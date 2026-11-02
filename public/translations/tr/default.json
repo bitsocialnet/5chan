@@ -600,7 +600,5 @@
   "board_may_be_offline": "Forum çevrimdışı veya erişilemez olabilir.",
   "files_chosen": "{{count}} dosya",
   "too_many_files_alert": "Çok fazla dosya. Bu pano gönderi başına en fazla {{count}} dosyaya izin veriyor.",
-  "gallery_file_not_image_or_video_alert": "Yalnızca görseller ve videolar birlikte gönderilebilir.",
-  "files": "Dosyalar",
-  "choose_files": "Dosyaları Seç"
+  "gallery_file_not_image_or_video_alert": "Yalnızca görseller ve videolar birlikte gönderilebilir."
 }

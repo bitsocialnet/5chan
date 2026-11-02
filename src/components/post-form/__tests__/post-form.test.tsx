@@ -1826,10 +1826,8 @@ describe('PostForm', () => {
     await renderPostForm('/mu');
     await clickByText(container, 'start_new_thread');
     const table = container.querySelector('table') as HTMLTableElement;
-    await clickByText(table, 'choose_files');
+    await clickByText(table, 'choose_file');
 
-    // The board takes several files, so the file row says so.
-    expect(Array.from(table.querySelectorAll('td')).some((cell) => cell.textContent === 'files')).toBe(true);
     expect(testState.chooseFileMock).not.toHaveBeenCalled();
     const fileLabel = Array.from(table.querySelectorAll('span')).find((span) => span.textContent === 'files_chosen:3');
     expect(fileLabel?.title).toBe('first.png\nsecond.png\nthird.webm');
@@ -1852,8 +1850,8 @@ describe('PostForm', () => {
     await renderPostForm('/mu');
     await clickByText(container, 'start_new_thread');
     const table = container.querySelector('table') as HTMLTableElement;
-    await clickByText(table, 'choose_files');
-    await clickByText(table, 'choose_files');
+    await clickByText(table, 'choose_file');
+    await clickByText(table, 'choose_file');
 
     expect(container.textContent).toContain('error: too_many_files_alert:2');
     expect(table.textContent).toContain('kept.png');
@@ -1882,7 +1880,7 @@ describe('PostForm', () => {
     await renderPostForm('/mu/thread/thread-cid');
     await clickByText(container, 'post_a_reply');
     const table = container.querySelector('table') as HTMLTableElement;
-    await clickByText(table, 'choose_files');
+    await clickByText(table, 'choose_file');
     await clickByText(table, 'post');
 
     expect(testState.publishReplyMock).toHaveBeenCalledWith(
@@ -1916,7 +1914,7 @@ describe('PostForm', () => {
       await renderPostForm('/mu/thread/thread-cid');
       await clickByText(container, 'post_a_reply');
       const table = container.querySelector('table') as HTMLTableElement;
-      await clickByText(table, 'choose_files');
+      await clickByText(table, 'choose_file');
       await dispatchInput(table.querySelector('textarea') as HTMLTextAreaElement, 'reply body');
       return table;
     };

@@ -600,7 +600,5 @@
   "board_may_be_offline": "قد يكون المنتدى غير متصل أو يتعذر الوصول إليه.",
   "files_chosen": "عدد الملفات: {{count}}",
   "too_many_files_alert": "عدد الملفات كبير جدًا. الحد الأقصى في هذه اللوحة لكل منشور: {{count}}.",
-  "gallery_file_not_image_or_video_alert": "يمكن نشر الصور ومقاطع الفيديو فقط معًا.",
-  "files": "ملفات",
-  "choose_files": "اختر ملفات"
+  "gallery_file_not_image_or_video_alert": "يمكن نشر الصور ومقاطع الفيديو فقط معًا."
 }

@@ -600,7 +600,5 @@
   "board_may_be_offline": "Foorumi saattaa olla offline-tilassa tai tavoittamattomissa.",
   "files_chosen": "{{count}} tiedostoa",
   "too_many_files_alert": "Liian monta tiedostoa. Tällä taululla viestiin saa liittää enintään {{count}}.",
-  "gallery_file_not_image_or_video_alert": "Yhdessä voi lähettää vain kuvia ja videoita.",
-  "files": "Tiedostot",
-  "choose_files": "Valitse tiedostot"
+  "gallery_file_not_image_or_video_alert": "Yhdessä voi lähettää vain kuvia ja videoita."
 }

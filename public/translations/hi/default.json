@@ -600,7 +600,5 @@
   "board_may_be_offline": "फोरम शायद ऑफ़लाइन है या उस तक पहुँचा नहीं जा सकता।",
   "files_chosen": "{{count}} फ़ाइलें",
   "too_many_files_alert": "बहुत अधिक फ़ाइलें. यह बोर्ड हर पोस्ट में अधिकतम {{count}} फ़ाइलें अनुमति देता है.",
-  "gallery_file_not_image_or_video_alert": "केवल छवियाँ और वीडियो ही एक साथ पोस्ट किए जा सकते हैं.",
-  "files": "फ़ाइलें",
-  "choose_files": "फ़ाइलें चुनें"
+  "gallery_file_not_image_or_video_alert": "केवल छवियाँ और वीडियो ही एक साथ पोस्ट किए जा सकते हैं."
 }

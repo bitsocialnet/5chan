@@ -1699,8 +1699,7 @@ describe('ReplyModal', () => {
       testState.uploadAttachmentMock.mockImplementation(async (media: { name: string }) => ({ url: `https://forgeimg.net/abc/${media.name}`, fileName: media.name }));
       await renderReplyModal('/all/thread/post-1');
 
-      await clickButtonByText('choose_files');
-      await rerenderReplyModal('/all/thread/post-1');
+      await chooseFile();
       expect(testState.chooseFileMock).not.toHaveBeenCalled();
       expect(container.textContent).toContain('files_chosen:{"count":2}');
 

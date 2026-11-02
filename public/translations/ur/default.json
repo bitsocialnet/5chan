@@ -600,7 +600,5 @@
   "board_may_be_offline": "ممکن ہے فورم آف لائن ہو یا اس تک رسائی ممکن نہ ہو۔",
   "files_chosen": "{{count}} فائلیں",
   "too_many_files_alert": "بہت زیادہ فائلیں۔ یہ بورڈ ہر پوسٹ میں زیادہ سے زیادہ {{count}} فائلوں کی اجازت دیتا ہے۔",
-  "gallery_file_not_image_or_video_alert": "صرف تصاویر اور ویڈیوز ایک ساتھ پوسٹ کی جا سکتی ہیں۔",
-  "files": "فائلیں",
-  "choose_files": "فائلیں منتخب کریں"
+  "gallery_file_not_image_or_video_alert": "صرف تصاویر اور ویڈیوز ایک ساتھ پوسٹ کی جا سکتی ہیں۔"
 }

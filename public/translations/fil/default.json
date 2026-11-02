@@ -600,7 +600,5 @@
   "board_may_be_offline": "Maaaring offline o hindi maabot ang board.",
   "files_chosen": "{{count}} na file",
   "too_many_files_alert": "Masyadong maraming file. Hanggang {{count}} lang bawat post ang pinapayagan ng board na ito.",
-  "gallery_file_not_image_or_video_alert": "Mga larawan at video lang ang maaaring i-post nang magkakasama.",
-  "files": "Mga Talaksan",
-  "choose_files": "Pumili ng mga File"
+  "gallery_file_not_image_or_video_alert": "Mga larawan at video lang ang maaaring i-post nang magkakasama."
 }

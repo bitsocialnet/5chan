@@ -600,7 +600,5 @@
   "board_may_be_offline": "Fórum může být offline nebo nedostupné.",
   "files_chosen": "Souborů: {{count}}",
   "too_many_files_alert": "Příliš mnoho souborů. Maximum na příspěvek na této desce: {{count}}.",
-  "gallery_file_not_image_or_video_alert": "Společně lze odeslat pouze obrázky a videa.",
-  "files": "Soubory",
-  "choose_files": "Vyberte soubory"
+  "gallery_file_not_image_or_video_alert": "Společně lze odeslat pouze obrázky a videa."
 }

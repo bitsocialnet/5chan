@@ -600,7 +600,5 @@
   "board_may_be_offline": "Le forum est peut-être hors ligne ou injoignable.",
   "files_chosen": "{{count}} fichiers",
   "too_many_files_alert": "Trop de fichiers. Ce tableau en autorise jusqu'à {{count}} par message.",
-  "gallery_file_not_image_or_video_alert": "Seules les images et les vidéos peuvent être publiées ensemble.",
-  "files": "Fichiers",
-  "choose_files": "Choisissez des fichiers"
+  "gallery_file_not_image_or_video_alert": "Seules les images et les vidéos peuvent être publiées ensemble."
 }

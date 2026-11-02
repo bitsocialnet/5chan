@@ -600,7 +600,5 @@
   "board_may_be_offline": "Das Forum ist möglicherweise offline oder nicht erreichbar.",
   "files_chosen": "{{count}} Dateien",
   "too_many_files_alert": "Zu viele Dateien. Dieses Board erlaubt höchstens {{count}} pro Beitrag.",
-  "gallery_file_not_image_or_video_alert": "Nur Bilder und Videos können zusammen gepostet werden.",
-  "files": "Dateien",
-  "choose_files": "Dateien auswählen"
+  "gallery_file_not_image_or_video_alert": "Nur Bilder und Videos können zusammen gepostet werden."
 }

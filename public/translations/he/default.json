@@ -600,7 +600,5 @@
   "board_may_be_offline": "ייתכן שהפורום אינו מקוון או שאינו נגיש.",
   "files_chosen": "{{count}} קבצים",
   "too_many_files_alert": "יותר מדי קבצים. הלוח הזה מאפשר עד {{count}} בכל פוסט.",
-  "gallery_file_not_image_or_video_alert": "ניתן לפרסם יחד רק תמונות וסרטונים.",
-  "files": "קבצים",
-  "choose_files": "בחר קבצים"
+  "gallery_file_not_image_or_video_alert": "ניתן לפרסם יחד רק תמונות וסרטונים."
 }
