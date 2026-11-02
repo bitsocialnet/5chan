@@ -25,7 +25,7 @@ vi.mock('../../stores/use-communities-loading-start-timestamps-store', () => ({
 }));
 
 vi.mock('../../lib/utils/media-utils', () => ({
-  getCommentMediaInfo: (link: string) => ({ link }),
+  getCommentCoverMediaInfo: (comment?: { link?: string }) => (comment?.link ? { url: comment.link } : undefined),
   getHasThumbnail: (_commentMediaInfo: unknown, link?: string) => Boolean(link),
 }));
 

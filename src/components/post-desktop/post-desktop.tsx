@@ -8,6 +8,8 @@ import styles from '../post-styles';
 import {
   CommentMediaInfo,
   formatFileSize,
+  getCommentFileCount,
+  getCommentGalleryMediaInfos,
   getHasThumbnail,
   getMediaDimensions,
   getPostMediaTypeLabel,
@@ -585,6 +587,8 @@ interface PostMediaProps {
   parentCid?: string;
   communityAddress?: string;
   showBoardLabel: boolean;
+  /** A comment.gallery file, which is always media, so its line names the file as on media boards. */
+  isGalleryFile?: boolean;
 }
 
 const PostMedia = ({
@@ -599,6 +603,7 @@ const PostMedia = ({
   parentCid,
   communityAddress,
   showBoardLabel,
+  isGalleryFile = false,
 }: PostMediaProps) => {
   const { t } = useTranslation();
   const { url } = commentMediaInfo || {};
@@ -620,8 +625,8 @@ const PostMedia = ({
 
   const mediaDimensions = getMediaDimensions(commentMediaInfo);
   const directoryEntry = findDirectoryByAddress(directories, communityAddress);
-  const requirePostLinkIsMedia = directoryEntry?.features?.requirePostLinkIsMedia === true;
-  const fileLabel = youtubeFileLink || requirePostLinkIsMedia ? t('file') : t('link');
+  const showFileName = isGalleryFile || directoryEntry?.features?.requirePostLinkIsMedia === true;
+  const fileLabel = youtubeFileLink || showFileName ? t('file') : t('link');
   const mediaTypeLabel = type ? getPostMediaTypeLabel(commentMediaInfo, type, t).toLowerCase() : '';
   const boardPath = communityAddress ? getBoardPath(communityAddress, directories) : undefined;
   const displayBoardPath =
@@ -646,7 +651,7 @@ const PostMedia = ({
           {(() => {
             if (spoiler) return capitalize(t('spoiler'));
             if (youtubeFileLink) return truncateWithEllipsisInMiddle(youtubeFileLink);
-            if (requirePostLinkIsMedia && url) {
+            if (showFileName && url) {
               try {
                 const pathParts = new URL(url).pathname.split('/');
                 const filename = pathParts[pathParts.length - 1];
@@ -719,6 +724,43 @@ const PostMedia = ({
   );
 };
 
+interface PostFilesProps {
+  /** The link's file, rendered first. */
+  children?: React.ReactNode;
+  cid?: string;
+  communityAddress?: string;
+  galleryMediaInfos: CommentMediaInfo[];
+  parentCid?: string;
+  showBoardLabel: boolean;
+  spoiler?: boolean;
+}
+
+/** The link's file, then the comment.gallery files. Several files sit in a row above the post text, as on vichan. */
+const PostFiles = ({ children, cid, communityAddress, galleryMediaInfos, parentCid, showBoardLabel, spoiler }: PostFilesProps) =>
+  galleryMediaInfos.length === 0 ? (
+    children
+  ) : (
+    <div className={styles.files}>
+      {children}
+      {galleryMediaInfos.map((mediaInfo, index) => (
+        <PostMedia
+          // Keyed by post, so an opened file doesn't stay open for another post. A gallery can't be edited, so its order never changes.
+          key={`${cid}:${index}`}
+          commentMediaInfo={mediaInfo}
+          communityAddress={communityAddress}
+          hasThumbnail={true}
+          isGalleryFile={true}
+          linkHeight={mediaInfo.linkHeight}
+          linkWidth={mediaInfo.linkWidth}
+          parentCid={parentCid}
+          purged={false}
+          showBoardLabel={showBoardLabel && !children && index === 0}
+          spoiler={spoiler}
+        />
+      ))}
+    </div>
+  );
+
 const Reply = ({
   postReplyCount,
   reply,
@@ -756,6 +798,9 @@ const Reply = ({
 
   const commentMediaInfo = useCommentMediaInfo(link, thumbnailUrl, linkWidth, linkHeight);
   const hasThumbnail = getHasThumbnail(commentMediaInfo, link);
+  const galleryMediaInfos = getCommentGalleryMediaInfos(post?.gallery);
+  const canRenderMedia = !hidden && !(deleted || removed || purged);
+  const hasLinkFile = canRenderMedia && !!link && isValidURL(link);
   const { canDeleteFailedPost, canRetryFailedPost, isDeletingFailedPost, isRetryingFailedPost, onDeleteFailedPost, onRetryFailedPost } = useDeleteFailedPost(post);
   const failedPublishNotice = canDeleteFailedPost ? (
     <FailedPublishNotice
@@ -781,20 +826,24 @@ const Reply = ({
             quotedByMap={quotedByMap}
             directRepliesByParentCid={directRepliesByParentCid}
           />
-          {link && !hidden && !(deleted || removed || purged) && isValidURL(link) && (
-            <PostMedia
-              commentMediaInfo={commentMediaInfo}
-              hasThumbnail={hasThumbnail}
-              spoiler={spoiler}
-              deleted={deleted}
-              purged={!!purged}
-              removed={removed}
-              linkHeight={linkHeight}
-              linkWidth={linkWidth}
-              parentCid={parentCid}
-              communityAddress={communityAddress}
-              showBoardLabel={false}
-            />
+          {canRenderMedia && (hasLinkFile || galleryMediaInfos.length > 0) && (
+            <PostFiles cid={cid} communityAddress={communityAddress} galleryMediaInfos={galleryMediaInfos} parentCid={parentCid} showBoardLabel={false} spoiler={spoiler}>
+              {hasLinkFile && (
+                <PostMedia
+                  commentMediaInfo={commentMediaInfo}
+                  hasThumbnail={hasThumbnail}
+                  spoiler={spoiler}
+                  deleted={deleted}
+                  purged={!!purged}
+                  removed={removed}
+                  linkHeight={linkHeight}
+                  linkWidth={linkWidth}
+                  parentCid={parentCid}
+                  communityAddress={communityAddress}
+                  showBoardLabel={false}
+                />
+              )}
+            </PostFiles>
           )}
           {post && !hidden && (!(removed || deleted || purged) || ((removed || deleted) && reason) || purged) && (
             <CommentContent comment={post} prependContent={failedPublishNotice} roles={roles} />
@@ -854,8 +903,11 @@ const PostDesktop = ({
 
   const { hidden, unhide, hide } = useHide({ cid, comment: resolvedPost });
   const isHidden = hidden && !isInPostPageView;
-  // The board label lives in the file line when media is rendered, and in a line of its own otherwise.
-  const hasRenderedMedia = !!link && !isHidden && !(deleted || removed || purged) && isValidURL(link);
+  const galleryMediaInfos = getCommentGalleryMediaInfos(resolvedPost?.gallery);
+  const canRenderMedia = !isHidden && !(deleted || removed || purged);
+  const hasLinkFile = canRenderMedia && !!link && isValidURL(link);
+  // The board label lives in the first file line when media is rendered, and in a line of its own otherwise.
+  const hasRenderedMedia = hasLinkFile || (canRenderMedia && galleryMediaInfos.length > 0);
 
   const { showOmittedReplies, setShowOmittedReplies } = useShowOmittedReplies();
 
@@ -965,6 +1017,7 @@ const PostDesktop = ({
 
   const commentMediaInfo = useCommentMediaInfo(link, thumbnailUrl, linkWidth, linkHeight);
   const hasThumbnail = getHasThumbnail(commentMediaInfo, link);
+  const hasFileThumbnail = hasThumbnail || galleryMediaInfos.length > 0;
 
   // Author-deleted replies and no-reason moderator removals are hidden from thread replies.
   // Moderator removals with a reason still render their placeholder and reason.
@@ -1038,7 +1091,7 @@ const PostDesktop = ({
       return {
         'data-pretext-reply-estimate': previewReplyHeightEstimates[index],
         'data-pretext-reply-content-length': reply?.content?.length || 0,
-        'data-pretext-reply-has-media': reply?.link ? '1' : '0',
+        'data-pretext-reply-has-media': getCommentFileCount(reply) > 0 ? '1' : '0',
         'data-pretext-reply-number': reply?.number,
         'data-pretext-reply-title-length': reply?.title?.trim().length || 0,
       };
@@ -1137,7 +1190,7 @@ const PostDesktop = ({
         )}
         <div className={isHidden ? styles.postDesktopHidden : ''}>
           {!isInPostPageView && showReplies && (
-            <span className={`${styles.hideButtonWrapper} ${!hasThumbnail ? styles.hideButtonWrapperNoImage : ''}`}>
+            <span className={`${styles.hideButtonWrapper} ${!hasFileThumbnail ? styles.hideButtonWrapperNoImage : ''}`}>
               <button
                 type='button'
                 aria-label={hidden ? t('unhide') : t('hide')}
@@ -1158,9 +1211,9 @@ const PostDesktop = ({
             data-cid={cid}
             data-author-address={userID}
             data-post-cid={postCid}
-            className={shouldShowSnow() && hasThumbnail ? styles.xmasHatWrapper : undefined}
+            className={shouldShowSnow() && hasFileThumbnail ? styles.xmasHatWrapper : undefined}
           >
-            {shouldShowSnow() && hasThumbnail && <img src='assets/xmashat.gif' className={styles.xmasHat} alt='' />}
+            {shouldShowSnow() && hasFileThumbnail && <img src='assets/xmashat.gif' className={styles.xmasHat} alt='' />}
             {!hasRenderedMedia && communityAddress && showBoardLabel && boardPath && (
               <div className={styles.file}>
                 <div className={styles.fileText}>
@@ -1169,19 +1222,30 @@ const PostDesktop = ({
               </div>
             )}
             {hasRenderedMedia && (
-              <PostMedia
-                commentMediaInfo={commentMediaInfo}
-                hasThumbnail={hasThumbnail}
-                spoiler={spoiler}
-                deleted={deleted}
-                purged={!!purged}
-                removed={removed}
-                linkHeight={linkHeight}
-                linkWidth={linkWidth}
-                parentCid={parentCid}
+              <PostFiles
+                cid={cid}
                 communityAddress={communityAddress}
+                galleryMediaInfos={galleryMediaInfos}
+                parentCid={parentCid}
                 showBoardLabel={showBoardLabel}
-              />
+                spoiler={spoiler}
+              >
+                {hasLinkFile && (
+                  <PostMedia
+                    commentMediaInfo={commentMediaInfo}
+                    hasThumbnail={hasThumbnail}
+                    spoiler={spoiler}
+                    deleted={deleted}
+                    purged={!!purged}
+                    removed={removed}
+                    linkHeight={linkHeight}
+                    linkWidth={linkWidth}
+                    parentCid={parentCid}
+                    communityAddress={communityAddress}
+                    showBoardLabel={showBoardLabel}
+                  />
+                )}
+              </PostFiles>
             )}
             {typeof resolvedPost?.pendingUploadId === 'number' && <PendingUploadFile pendingUploadId={resolvedPost.pendingUploadId} spoiler={spoiler} />}
             <PostInfo

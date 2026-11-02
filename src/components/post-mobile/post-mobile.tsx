@@ -6,7 +6,7 @@ import { Comment, resolveReplySortType, useAccountComment, useEditedComment, use
 import getShortAddress from '../../lib/get-short-address';
 import styles from '../post-styles';
 import { shouldShowSnow } from '../../stores/use-special-theme-store';
-import { getHasThumbnail } from '../../lib/utils/media-utils';
+import { CommentMediaInfo, getCommentFileCount, getCommentGalleryMediaInfos, getHasThumbnail } from '../../lib/utils/media-utils';
 import { getTextColorForBackground, hashStringToColor } from '../../lib/utils/post-utils';
 import { getFormattedDate, getFormattedTimeAgo } from '../../lib/utils/time-utils';
 import { isPendingApprovalAwaiting } from '../../lib/utils/pending-approval-moderation';
@@ -150,6 +150,8 @@ const PostInfoAndMedia = ({
 
   const commentMediaInfo = useCommentMediaInfo(link, thumbnailUrl, linkWidth, linkHeight);
   const hasThumbnail = getHasThumbnail(commentMediaInfo, link);
+  const galleryMediaInfos = getCommentGalleryMediaInfos(resolvedPost?.gallery);
+  const hasLinkFile = Boolean(hasThumbnail || link);
 
   // Check if post is awaiting approval and over threshold (for mod queue view)
   const isAwaitingApproval = isInModQueueView && isPendingApprovalAwaiting(resolvedPost);
@@ -397,8 +399,10 @@ const PostInfoAndMedia = ({
           </span>
         </span>
       </div>
-      {(hasThumbnail || link) && !(deleted || removed || purged) && (
-        <PostMediaContent key={cid} onMediaLoadFailureChange={onMediaLoadFailureChange} post={resolvedPost} link={link} />
+      {(hasLinkFile || galleryMediaInfos.length > 0) && !(deleted || removed || purged) && (
+        <PostFiles galleryMediaInfos={galleryMediaInfos} post={resolvedPost}>
+          {hasLinkFile && <PostMediaContent key={cid} onMediaLoadFailureChange={onMediaLoadFailureChange} post={resolvedPost} link={link} />}
+        </PostFiles>
       )}
       {typeof resolvedPost?.pendingUploadId === 'number' && <PendingUploadFile pendingUploadId={resolvedPost.pendingUploadId} spoiler={resolvedPost.spoiler} />}
     </>
@@ -437,6 +441,37 @@ const PostMediaContent = ({
     )
   );
 };
+
+/** A comment.gallery file, opened and closed on its own like the link's file. */
+const GalleryFile = ({ commentMediaInfo, post }: { commentMediaInfo: CommentMediaInfo; post: Comment | undefined }) => {
+  const [showThumbnail, setShowThumbnail] = useState(true);
+
+  return (
+    <CommentMedia
+      commentMediaInfo={commentMediaInfo}
+      linkHeight={commentMediaInfo.linkHeight}
+      linkWidth={commentMediaInfo.linkWidth}
+      showThumbnail={showThumbnail}
+      setShowThumbnail={setShowThumbnail}
+      parentCid={post?.parentCid}
+      spoiler={post?.spoiler}
+    />
+  );
+};
+
+/** The link's file, then the comment.gallery files. Several files sit in a row above the post text, as on vichan. */
+const PostFiles = ({ children, galleryMediaInfos, post }: { children?: React.ReactNode; galleryMediaInfos: CommentMediaInfo[]; post: Comment | undefined }) =>
+  galleryMediaInfos.length === 0 ? (
+    children
+  ) : (
+    <div className={styles.files}>
+      {children}
+      {galleryMediaInfos.map((mediaInfo, index) => (
+        // Keyed by post like the link's file, so an opened file doesn't stay open for another post.
+        <GalleryFile key={`${post?.cid}:${index}`} commentMediaInfo={mediaInfo} post={post} />
+      ))}
+    </div>
+  );
 
 interface ReplyBacklinksProps extends PostProps {
   directRepliesByParentCid?: Map<string, Comment[]>;
@@ -934,7 +969,7 @@ const PostMobile = ({
                       data-pretext-height={replyHeightEstimates?.[index]}
                       data-pretext-reply-backlink-count={backlinkCount}
                       data-pretext-reply-content-length={import.meta.env.DEV ? reply.content?.length || 0 : undefined}
-                      data-pretext-reply-has-media={import.meta.env.DEV ? (reply.link ? '1' : '0') : undefined}
+                      data-pretext-reply-has-media={import.meta.env.DEV ? (getCommentFileCount(reply) > 0 ? '1' : '0') : undefined}
                       data-pretext-reply-number={import.meta.env.DEV ? reply.number : undefined}
                       data-pretext-reply-title-length={import.meta.env.DEV ? reply.title?.trim().length || 0 : undefined}
                       ref={(element) => reportReplyHeightAuditSample(element, replyHeightEstimates?.[index], reply.cid)}

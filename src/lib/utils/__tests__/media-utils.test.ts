@@ -44,6 +44,9 @@ import {
   fetchMediaFileSize,
   fetchWebpageThumbnailIfNeeded,
   formatFileSize,
+  getCommentCoverMediaInfo,
+  getCommentFileCount,
+  getCommentGalleryMediaInfos,
   getCommentMediaInfo,
   getDisplayMediaInfoType,
   getHasThumbnail,
@@ -341,6 +344,63 @@ describe('media-utils', () => {
       type: 'iframe',
       url: 'https://www.youtube.com/watch?v=abc123',
     });
+  });
+
+  it('shows gallery items as media of their htmlTagName and skips items it cannot show', () => {
+    testState.canEmbedHosts = new Set(['www.youtube.com']);
+    const gallery = [
+      { alt: 'a cat', height: 600, htmlTagName: 'img', url: 'https://example.com/cat.jpg', width: 800 },
+      { htmlTagName: 'img', url: 'https://example.com/loop.gif', width: 0 },
+      { htmlTagName: 'video', url: 'https://example.com/clip.webm' },
+      { htmlTagName: 'audio', url: 'https://example.com/song.mp3', alt: ' ' },
+      // An embed URL stays a plain image: a gallery holds media only.
+      { htmlTagName: 'img', url: 'https://www.youtube.com/watch?v=abc123' },
+      { htmlTagName: 'iframe', url: 'https://example.com/page.html' },
+      { htmlTagName: 'img', url: 'javascript:alert(1)' },
+      { htmlTagName: 'img' },
+      null,
+      'https://example.com/string.jpg',
+    ];
+
+    const mediaInfos = getCommentGalleryMediaInfos(gallery);
+    expect(mediaInfos).toEqual([
+      { alt: 'a cat', linkHeight: 600, linkWidth: 800, type: 'image', url: 'https://example.com/cat.jpg' },
+      { linkHeight: undefined, linkWidth: undefined, type: 'gif', url: 'https://example.com/loop.gif' },
+      { linkHeight: undefined, linkWidth: undefined, type: 'video', url: 'https://example.com/clip.webm' },
+      { linkHeight: undefined, linkWidth: undefined, type: 'audio', url: 'https://example.com/song.mp3' },
+      { linkHeight: undefined, linkWidth: undefined, type: 'image', url: 'https://www.youtube.com/watch?v=abc123' },
+    ]);
+    // The same files keep the same result, even in the copy the hooks make on every comment update.
+    expect(getCommentGalleryMediaInfos(structuredClone(gallery))).toBe(mediaInfos);
+    expect(getCommentGalleryMediaInfos(undefined)).toEqual([]);
+    expect(getCommentGalleryMediaInfos({ url: 'https://example.com/cat.jpg' })).toEqual([]);
+  });
+
+  it('shows at most 20 gallery files', () => {
+    const gallery = Array.from({ length: 2000 }, (_, index) => ({ htmlTagName: 'img', url: `https://example.com/${index}.jpg` }));
+
+    const mediaInfos = getCommentGalleryMediaInfos(gallery);
+    expect(mediaInfos).toHaveLength(20);
+    expect(mediaInfos.at(-1)?.url).toBe('https://example.com/19.jpg');
+    expect(getCommentFileCount({ gallery, link: 'https://example.com/link.png' })).toBe(21);
+  });
+
+  it('picks the link as the cover file and counts link and gallery files', () => {
+    const gallery = [
+      { htmlTagName: 'img', url: 'https://example.com/first.png', width: 10, height: 20 },
+      { htmlTagName: 'img', url: 'https://example.com/second.png' },
+    ];
+
+    expect(getCommentCoverMediaInfo({ gallery, link: 'https://example.com/link.png', linkWidth: 1, linkHeight: 2 })?.url).toBe('https://example.com/link.png');
+    expect(getCommentCoverMediaInfo({ gallery })).toEqual({ linkHeight: 20, linkWidth: 10, type: 'image', url: 'https://example.com/first.png' });
+    // A link to a page without a preview leaves the cover to the gallery.
+    expect(getCommentCoverMediaInfo({ gallery, link: 'https://example.com/article' })?.url).toBe('https://example.com/first.png');
+    expect(getCommentCoverMediaInfo({ link: 'https://example.com/article' })?.type).toBe('webpage');
+    expect(getCommentCoverMediaInfo({ content: 'text' })).toBeUndefined();
+    expect(getCommentFileCount({ gallery, link: 'https://example.com/link.png' })).toBe(3);
+    expect(getCommentFileCount({ gallery })).toBe(2);
+    expect(getCommentFileCount({ link: 'https://example.com/post' })).toBe(1);
+    expect(getCommentFileCount(undefined)).toBe(0);
   });
 
   it('returns expected media dimensions for embeds, audio, and sized media', () => {

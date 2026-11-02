@@ -1,3 +1,4 @@
+import type { Comment } from '@bitsocial/bitsocial-react-hooks';
 import { localForageLru } from '../bitsocial-internals/utils';
 import { canEmbed, getVimeoVideo, getYouTubeVideoId, youtubeHosts } from './embed-utils';
 import { memoize } from './memoize';
@@ -13,6 +14,8 @@ export interface CommentMediaInfo {
   patternThumbnailUrl?: string;
   linkWidth?: number;
   linkHeight?: number;
+  /** The author's description of a gallery file, as in `<img alt>`. */
+  alt?: string;
 }
 
 type Translate = (key: string) => string;
@@ -450,6 +453,65 @@ export const getCommentMediaInfo = (link: string, thumbnailUrl: string, linkWidt
   }
   return;
 };
+
+const GALLERY_MEDIA_TYPES = new Map([
+  ['img', 'image'],
+  ['video', 'video'],
+  ['audio', 'audio'],
+]);
+const NO_GALLERY_MEDIA: CommentMediaInfo[] = [];
+// The protocol sets no maximum, communities check theirs only on publish and older ones not at all, so a post shows
+// at most this many gallery files and one comment can't make every viewer load hundreds of them. Reddit and Instagram
+// galleries stop at 20 too.
+const MAX_GALLERY_FILES = 20;
+
+const getGalleryDimension = (value: unknown): number | undefined => (typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : undefined);
+
+const getGalleryMediaInfos = memoize(
+  (galleryJson: string): CommentMediaInfo[] => {
+    const mediaInfos: CommentMediaInfo[] = [];
+    for (const item of JSON.parse(galleryJson) as unknown[]) {
+      if (!item || typeof item !== 'object') continue;
+      const { alt, height, htmlTagName, url, width } = item as Record<string, unknown>;
+      const parsedUrl = typeof url === 'string' ? parseHttpUrl(url) : null;
+      const type = typeof htmlTagName === 'string' ? GALLERY_MEDIA_TYPES.get(htmlTagName) : undefined;
+      if (!parsedUrl || !type) continue;
+      mediaInfos.push({
+        url: url as string,
+        // A GIF keeps its own type, so it shows a still first frame until opened, like a linked GIF.
+        type: type === 'image' && getDirectMediaExtension(parsedUrl) === 'gif' ? 'gif' : type,
+        linkWidth: getGalleryDimension(width),
+        linkHeight: getGalleryDimension(height),
+        ...(typeof alt === 'string' && alt.trim() ? { alt } : {}),
+      });
+    }
+    return mediaInfos.length > 0 ? mediaInfos : NO_GALLERY_MEDIA;
+  },
+  { max: 1000 },
+);
+
+/**
+ * The comment.gallery files 5chan shows after the link's file. Each type comes from the item's htmlTagName, never from
+ * its URL, so an item can't turn into an embed or a webpage preview. Communities check items on publish, but older ones
+ * keep the field unchecked, so an item that isn't an http(s) image, video or audio file is skipped.
+ */
+export const getCommentGalleryMediaInfos = (gallery: unknown): CommentMediaInfo[] =>
+  // Cached by content, not by array: the hooks clone a comment on every update, but its signed gallery never changes,
+  // so the same files keep the same media infos and memoized media components skip rerendering.
+  Array.isArray(gallery) && gallery.length > 0 ? getGalleryMediaInfos(JSON.stringify(gallery.slice(0, MAX_GALLERY_FILES))) : NO_GALLERY_MEDIA;
+
+/**
+ * The file a surface with one thumbnail per post shows (catalog, popular threads, mod queue): the link's when it has a
+ * thumbnail, else the first gallery file, so a gallery isn't hidden behind a link to a page without a preview.
+ */
+export const getCoverMediaInfo = (linkMediaInfo: CommentMediaInfo | undefined, gallery: unknown): CommentMediaInfo | undefined =>
+  linkMediaInfo && getHasThumbnail(linkMediaInfo, linkMediaInfo.url) ? linkMediaInfo : (getCommentGalleryMediaInfos(gallery)[0] ?? linkMediaInfo);
+
+export const getCommentCoverMediaInfo = (comment: Comment | undefined): CommentMediaInfo | undefined =>
+  getCoverMediaInfo(comment?.link ? getCommentMediaInfo(comment.link, comment.thumbnailUrl, comment.linkWidth, comment.linkHeight) : undefined, comment?.gallery);
+
+/** How many files a comment shows: its link, plus its gallery files. */
+export const getCommentFileCount = (comment: Comment | undefined): number => (comment?.link ? 1 : 0) + getCommentGalleryMediaInfos(comment?.gallery).length;
 
 const EMBED_DIMENSIONS = {
   'youtube.com': '800x450',

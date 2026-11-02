@@ -1,6 +1,6 @@
 import type { Comment } from '@bitsocial/bitsocial-react-hooks';
 import { layout, layoutNextLineRange, prepare, prepareWithSegments } from '@chenglou/pretext';
-import { getCommentMediaInfo, getHasThumbnail } from './media-utils';
+import { type CommentMediaInfo, getCommentCoverMediaInfo, getCommentFileCount, getCommentGalleryMediaInfos, getCommentMediaInfo, getHasThumbnail } from './media-utils';
 import { EXPANDED_MEDIA_DATA_ATTRIBUTE } from './measurement-attributes';
 import { CATALOG_PREVIEW_MARKDOWN_OPTIONS, removeMarkdown, type RemoveMarkdownOptions } from './post-utils';
 import { getRenderableMobileBacklinks } from './reply-backlink-utils';
@@ -87,6 +87,8 @@ interface MediaMetrics {
   blockHeight: number;
   floatHeight: number;
   floatWidth: number;
+  /** Gallery files sit in a row above the text instead of floating beside it. */
+  stacked: boolean;
 }
 
 interface ReplyBacklinkMaps {
@@ -328,20 +330,11 @@ const resolveSearchParams = (searchParams: URLSearchParams | string | null | und
   return new URLSearchParams(window.location.hash.slice(hashQueryIndex));
 };
 
-const getMediaBoxDimensions = (comment: Comment | undefined, maxThumbnailSize: number): { height: number; width: number } | null => {
-  if (!comment?.link) {
-    return null;
-  }
-
-  const mediaInfo = getCommentMediaInfo(comment.link, comment.thumbnailUrl, comment.linkWidth, comment.linkHeight);
-  if (!mediaInfo) {
-    return null;
-  }
-
+const getMediaInfoBox = (mediaInfo: CommentMediaInfo, spoiler: boolean | undefined, maxThumbnailSize: number): { height: number; width: number } => {
   let mediaWidth = maxThumbnailSize;
   let mediaHeight = maxThumbnailSize;
 
-  if (comment.spoiler) {
+  if (spoiler) {
     mediaWidth = 100;
     mediaHeight = 100;
   } else if (mediaInfo.type === 'audio') {
@@ -355,44 +348,72 @@ const getMediaBoxDimensions = (comment: Comment | undefined, maxThumbnailSize: n
   return { height: mediaHeight, width: mediaWidth };
 };
 
-const getReplyMediaMetrics = (reply: Comment | undefined): MediaMetrics | null => {
-  const mediaBox = getMediaBoxDimensions(reply, 125);
-  if (!mediaBox) {
-    return null;
+interface MediaBox {
+  height: number;
+  rows: number;
+  stacked: boolean;
+  width: number;
+}
+
+// Gallery files share rows that wrap. A desktop file is at least as wide as its file line, such as
+// "File: name.png (59 KB, 600x200)"; a mobile file is its thumbnail and margins.
+const FILES_GAP_WIDTH = 10;
+const DESKTOP_FILE_MIN_WIDTH = 210;
+const MOBILE_FILE_MARGIN_WIDTH = 15;
+
+const getMediaBoxDimensions = (comment: Comment | undefined, maxThumbnailSize: number, availableWidth: number, isMobile: boolean): MediaBox | null => {
+  const linkMediaInfo = comment?.link ? getCommentMediaInfo(comment.link, comment.thumbnailUrl, comment.linkWidth, comment.linkHeight) : undefined;
+  const galleryMediaInfos = getCommentGalleryMediaInfos(comment?.gallery);
+  if (galleryMediaInfos.length === 0) {
+    return linkMediaInfo ? { ...getMediaInfoBox(linkMediaInfo, comment?.spoiler, maxThumbnailSize), rows: 1, stacked: false } : null;
   }
 
-  return {
-    blockHeight: mediaBox.height + MOBILE_REPLY_MEDIA_EXTRA_HEIGHT,
-    floatHeight: mediaBox.height + DESKTOP_REPLY_FLOAT_MARGIN_HEIGHT,
-    floatWidth: mediaBox.width + DESKTOP_REPLY_FLOAT_MARGIN_WIDTH,
-  };
-};
-
-const getFeedPostMediaMetrics = (post: Comment | undefined, isMobile: boolean): MediaMetrics | null => {
-  const mediaBox = getMediaBoxDimensions(post, isMobile ? 125 : 250);
-  if (!mediaBox) {
-    return null;
+  // Each row is as tall as its tallest file.
+  const boxes = [...(linkMediaInfo ? [linkMediaInfo] : []), ...galleryMediaInfos].map((mediaInfo) => getMediaInfoBox(mediaInfo, comment?.spoiler, maxThumbnailSize));
+  let height = 0;
+  let rows = 1;
+  let rowWidth = 0;
+  let rowHeight = 0;
+  for (const box of boxes) {
+    const fileWidth = isMobile ? box.width + MOBILE_FILE_MARGIN_WIDTH : Math.max(DESKTOP_FILE_MIN_WIDTH, box.width + DESKTOP_REPLY_FLOAT_MARGIN_WIDTH);
+    if (rowWidth > 0 && rowWidth + FILES_GAP_WIDTH + fileWidth > availableWidth) {
+      height += rowHeight;
+      rows += 1;
+      rowWidth = 0;
+      rowHeight = 0;
+    }
+    rowWidth += (rowWidth > 0 ? FILES_GAP_WIDTH : 0) + fileWidth;
+    rowHeight = Math.max(rowHeight, box.height);
   }
-
-  return {
-    blockHeight: mediaBox.height + MOBILE_REPLY_MEDIA_EXTRA_HEIGHT,
-    floatHeight: mediaBox.height + DESKTOP_REPLY_FLOAT_MARGIN_HEIGHT,
-    floatWidth: mediaBox.width + DESKTOP_REPLY_FLOAT_MARGIN_WIDTH,
-  };
+  return { height: height + rowHeight, rows, stacked: true, width: Math.max(...boxes.map((box) => box.width)) };
 };
 
+// Every row of files has its own captions on mobile, and its own file lines and margins on desktop.
+const getMediaMetrics = ({ height, rows, stacked, width }: MediaBox): MediaMetrics => ({
+  blockHeight: height + rows * MOBILE_REPLY_MEDIA_EXTRA_HEIGHT,
+  floatHeight: height + rows * DESKTOP_REPLY_FLOAT_MARGIN_HEIGHT + (rows - 1) * DESKTOP_REPLY_FILE_TEXT_HEIGHT,
+  floatWidth: width + DESKTOP_REPLY_FLOAT_MARGIN_WIDTH,
+  stacked,
+});
+
+const getReplyMediaMetrics = (reply: Comment | undefined, contentWidth: number, isMobile: boolean): MediaMetrics | null => {
+  const mediaBox = getMediaBoxDimensions(reply, 125, contentWidth, isMobile);
+  return mediaBox ? getMediaMetrics(mediaBox) : null;
+};
+
+const getFeedPostMediaMetrics = (post: Comment | undefined, isMobile: boolean, contentWidth: number): MediaMetrics | null => {
+  const mediaBox = getMediaBoxDimensions(post, isMobile ? 125 : 250, contentWidth, isMobile);
+  return mediaBox ? getMediaMetrics(mediaBox) : null;
+};
+
+// The catalog shows one file per thread: its link's, else its first gallery file.
 const getCatalogPostMediaHeight = (post: Comment | undefined, imageSize: CatalogImageSize): number => {
-  if (!post?.link) {
+  const mediaInfo = getCommentCoverMediaInfo(post);
+  if (!mediaInfo || !getHasThumbnail(mediaInfo, mediaInfo.url)) {
     return 0;
   }
 
-  const mediaInfo = getCommentMediaInfo(post.link, post.thumbnailUrl, post.linkWidth, post.linkHeight);
-  if (!getHasThumbnail(mediaInfo, post.link)) {
-    return 0;
-  }
-
-  const mediaBox = getMediaBoxDimensions(post, getCatalogMediaMaxSize(imageSize));
-  return mediaBox ? mediaBox.height + CATALOG_CARD_MEDIA_GAP_HEIGHT : 0;
+  return getMediaInfoBox(mediaInfo, post?.spoiler, getCatalogMediaMaxSize(imageSize)).height + CATALOG_CARD_MEDIA_GAP_HEIGHT;
 };
 
 const normalizeRenderedCommentText = (rawContent: string, markdownOptions?: RemoveMarkdownOptions): string =>
@@ -540,17 +561,17 @@ const estimateDesktopReplyHeight = (
   const font = `${fontSizePx}px ${metrics.bodyFontFamily}`;
   const lineHeight = getLineHeight(fontSizePx);
   const replyText = getVisibleReplyText(reply, maxContentChars);
-  const mediaMetrics = getReplyMediaMetrics(reply);
   const contentWidth = Math.max(MIN_TEXT_WIDTH, windowWidth - DESKTOP_REPLY_SIDE_ARROWS_WIDTH - DESKTOP_REPLY_CONTENT_PADDING_X);
-  const textHeight = mediaMetrics
-    ? measureParagraphWithFloatHeight(replyText, font, contentWidth, mediaMetrics.floatWidth, mediaMetrics.floatHeight, lineHeight)
-    : measureParagraphHeight(replyText, font, contentWidth, lineHeight);
+  const mediaMetrics = getReplyMediaMetrics(reply, contentWidth, false);
+  const textHeight =
+    mediaMetrics && !mediaMetrics.stacked
+      ? measureParagraphWithFloatHeight(replyText, font, contentWidth, mediaMetrics.floatWidth, mediaMetrics.floatHeight, lineHeight)
+      : measureParagraphHeight(replyText, font, contentWidth, lineHeight);
   const mediaHeight = mediaMetrics ? mediaMetrics.floatHeight + DESKTOP_REPLY_FILE_TEXT_HEIGHT : 0;
+  const bodyHeight = mediaMetrics?.stacked ? mediaHeight + textHeight : Math.max(textHeight, mediaHeight);
   const previewCalibration = mediaMetrics ? DESKTOP_PREVIEW_REPLY_MEDIA_CALIBRATION : DESKTOP_PREVIEW_REPLY_TEXT_CALIBRATION;
 
-  return clampEstimateHeight(
-    DESKTOP_REPLY_BASE_HEIGHT + Math.max(textHeight, mediaHeight) + (context === 'thread' ? DESKTOP_THREAD_REPLY_CALIBRATION : previewCalibration),
-  );
+  return clampEstimateHeight(DESKTOP_REPLY_BASE_HEIGHT + bodyHeight + (context === 'thread' ? DESKTOP_THREAD_REPLY_CALIBRATION : previewCalibration));
 };
 
 const estimateMobileReplyHeight = (
@@ -565,8 +586,8 @@ const estimateMobileReplyHeight = (
   const font = `${fontSizePx}px ${metrics.bodyFontFamily}`;
   const lineHeight = getLineHeight(fontSizePx);
   const replyText = getVisibleReplyText(reply, maxContentChars);
-  const mediaMetrics = getReplyMediaMetrics(reply);
   const contentWidth = Math.max(MIN_TEXT_WIDTH, windowWidth - MOBILE_REPLY_CONTENT_PADDING_X);
+  const mediaMetrics = getReplyMediaMetrics(reply, contentWidth, true);
   const textHeight = measureParagraphHeight(replyText, font, contentWidth, lineHeight);
   const totalBacklinkCount = getMobileBacklinkCount(reply, backlinkMaps);
   const backlinksHeight = getMobileBacklinksHeight(totalBacklinkCount, metrics);
@@ -680,8 +701,8 @@ export const getFeedPostHeightEstimate = ({
     const font = `${fontSizePx}px ${metrics.bodyFontFamily}`;
     const lineHeight = getLineHeight(fontSizePx);
     const postText = getVisibleCommentText(post, 1000);
-    const mediaMetrics = getFeedPostMediaMetrics(post, true);
     const contentWidth = Math.max(MIN_TEXT_WIDTH, windowWidth - MOBILE_REPLY_CONTENT_PADDING_X);
+    const mediaMetrics = getFeedPostMediaMetrics(post, true, contentWidth);
     const textHeight = measureParagraphHeight(postText, font, contentWidth, lineHeight);
     const backlinksHeight = getMobileBacklinksHeight(getMobileBacklinkCount(post, { directRepliesByParentCid, quotedByMap }), metrics);
     const rawEstimate =
@@ -710,10 +731,11 @@ export const getFeedPostHeightEstimate = ({
   const font = `${fontSizePx}px ${metrics.bodyFontFamily}`;
   const lineHeight = getLineHeight(fontSizePx);
   const postText = getVisibleCommentBodyText(post, 1000);
-  const mediaMetrics = getFeedPostMediaMetrics(post, false);
   const contentWidth = Math.max(MIN_TEXT_WIDTH, windowWidth - DESKTOP_REPLY_CONTENT_PADDING_X);
+  const mediaMetrics = getFeedPostMediaMetrics(post, false, contentWidth);
+  const floatsMedia = Boolean(mediaMetrics && !mediaMetrics.stacked);
   const textHeight =
-    (mediaMetrics
+    (mediaMetrics && floatsMedia
       ? measureParagraphWithFloatHeight(postText, font, contentWidth, mediaMetrics.floatWidth, mediaMetrics.floatHeight, lineHeight)
       : measureParagraphHeight(postText, font, contentWidth, lineHeight)) + (postText.trim().length > 0 ? DESKTOP_POST_MESSAGE_VERTICAL_PADDING : 0);
   const mediaHeight = mediaMetrics ? mediaMetrics.floatHeight + DESKTOP_REPLY_FILE_TEXT_HEIGHT : 0;
@@ -724,17 +746,19 @@ export const getFeedPostHeightEstimate = ({
     0,
     measureParagraphHeight(opBacklinks.join(' '), `${backlinkFontSizePx}px ${metrics.bodyFontFamily}`, contentWidth, backlinkLineHeight) - backlinkLineHeight,
   );
-  const boardLabelHeight = showBoardLabel && !post.link && !post.parentCid && post.communityAddress ? DESKTOP_FEED_CARD_BOARD_LABEL_HEIGHT : 0;
+  const boardLabelHeight = showBoardLabel && getCommentFileCount(post) === 0 && !post.parentCid && post.communityAddress ? DESKTOP_FEED_CARD_BOARD_LABEL_HEIGHT : 0;
   // Like 4chan, the omitted-replies summary and preview replies flow beside the floated OP thumbnail, so they
   // extend the OP's text column instead of starting below the thumbnail. That column starts lower than the
   // thumbnail because it also holds the post-info row, and an OP without text still renders a spacer and an
   // empty message box in it.
-  const opTextColumnHeight = mediaMetrics
+  const opTextColumnHeight = floatsMedia
     ? DESKTOP_FEED_CARD_OP_TEXT_COLUMN_OFFSET + (postText.trim().length > 0 ? textHeight : DESKTOP_OP_SPACER_HEIGHT + DESKTOP_POST_MESSAGE_VERTICAL_PADDING)
     : textHeight;
   const textColumnHeight = opTextColumnHeight + backlinksHeight + (showSummary ? DESKTOP_FEED_CARD_SUMMARY_HEIGHT : 0) + previewRepliesHeight;
 
-  const rawEstimate = DESKTOP_FEED_CARD_HR_HEIGHT + DESKTOP_FEED_CARD_BASE_HEIGHT + Math.max(textColumnHeight, mediaHeight) + boardLabelHeight;
+  // A gallery's files row sits above the post, so nothing flows beside it.
+  const bodyHeight = mediaMetrics?.stacked ? mediaHeight + textColumnHeight : Math.max(textColumnHeight, mediaHeight);
+  const rawEstimate = DESKTOP_FEED_CARD_HR_HEIGHT + DESKTOP_FEED_CARD_BASE_HEIGHT + bodyHeight + boardLabelHeight;
 
   const desktopResult = clampEstimateHeight(rawEstimate + DESKTOP_FEED_CARD_BASE_CALIBRATION);
   if (cacheKey) {
@@ -762,8 +786,8 @@ const getCatalogPostHeightEstimate = ({ imageSize, metrics, post, showOPComment 
   const fontSizePx = metrics.bodyFontSizePx;
   const font = `${fontSizePx}px ${metrics.bodyFontFamily}`;
   const lineHeight = getLineHeight(fontSizePx);
-  const mediaInfo = post.link ? getCommentMediaInfo(post.link, post.thumbnailUrl, post.linkWidth, post.linkHeight) : undefined;
-  const hasThumbnail = getHasThumbnail(mediaInfo, post.link);
+  const mediaInfo = getCommentCoverMediaInfo(post);
+  const hasThumbnail = getHasThumbnail(mediaInfo, mediaInfo?.url);
   const visibleCatalogText = getVisibleCatalogText(post, showOPComment, hasThumbnail);
   const textHeight =
     visibleCatalogText.trim().length > 0

@@ -102,6 +102,20 @@
   text-decoration: var(--post-link-text-decoration-hover);
 }
 
+/* A post with gallery files shows all its files side by side above its text, as on vichan, wrapping to new
+   rows. Each file holds its own floated thumbnail, and an opened file stays within the post's width. */
+.files {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  column-gap: 10px;
+}
+
+.files > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
 .postDesktop .postInfo {
   width: 100%;
 }
