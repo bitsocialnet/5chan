@@ -1832,6 +1832,22 @@ describe('ReplyModal', () => {
       expect(container.textContent).toContain('chosen.png');
     });
 
+    it('attaches a file pasted into the comment field instead of pasting its name', async () => {
+      await renderReplyModal('/all/thread/post-1');
+
+      const paste = new Event('paste', { bubbles: true, cancelable: true });
+      Object.defineProperty(paste, 'clipboardData', { value: { files: [pngFile], getData: () => pngFile.name } });
+      await act(async () => {
+        (container.querySelector('textarea') as HTMLTextAreaElement).dispatchEvent(paste);
+      });
+      await rerenderReplyModal('/all/thread/post-1');
+
+      expect(paste.defaultPrevented).toBe(true);
+      expect(testState.replyDraft?.attachment).toEqual(pngAttachment);
+      expect(container.textContent).toContain('chosen.png');
+      expect(testState.chooseFileMock).not.toHaveBeenCalled();
+    });
+
     it('validates the reply before uploading the attached file', async () => {
       testState.chooseFileMock.mockResolvedValue({
         kind: 'file',
