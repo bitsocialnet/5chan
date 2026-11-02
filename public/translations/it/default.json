@@ -597,5 +597,6 @@
   "md5_filter_help": "Nasconde i post con questi file, uno per riga: un hash SHA-256 o MD5 (funzionano anche le righe MD5 di 4chan X) o un link. Un file di Forge viene riconosciuto dall'hash SHA-256 nel suo link. Per le altre immagini viene calcolato l'hash una volta caricate, se il loro host lo consente, quindi un hash in elenco nasconde la stessa immagine ovunque venga pubblicata. Qualsiasi altro file viene riconosciuto solo dal suo link esatto. Le righe che iniziano con # vengono ignorate.",
   "directory_requirement_rules": "Regole della directory elencate per prime, parola per parola",
   "spam_check_not_finished": "Il controllo antispam non è stato completato. Pubblica di nuovo per riprovare.",
-  "board_may_be_offline": "La board potrebbe essere offline o irraggiungibile."
+  "board_may_be_offline": "La board potrebbe essere offline o irraggiungibile.",
+  "show_filter_image_md5_in_post_menu": "Mostra «Filtra MD5 immagine» nei menu dei post"
 }

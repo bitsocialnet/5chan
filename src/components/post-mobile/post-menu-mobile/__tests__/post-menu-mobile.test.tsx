@@ -4,6 +4,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import PostMenuMobile from '../post-menu-mobile';
+import useImageFiltersStore from '../../../../stores/use-image-filters-store';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
@@ -165,6 +166,7 @@ describe('PostMenuMobile', () => {
       isAccountMod: false,
     };
     testState.validUrl = true;
+    useImageFiltersStore.setState({ showQuickFilterMenuItem: false });
     container = document.createElement('div');
     document.body.appendChild(container);
     root = createRoot(container);
@@ -260,5 +262,19 @@ describe('PostMenuMobile', () => {
         'https://saucenao.com/search.php?url=https%3A%2F%2Fcdn.example%2Fimage.png',
       ]),
     );
+  });
+
+  it('lists the MD5 quick filter for an image post only once it is turned on in settings', async () => {
+    testState.mediaInfo = { type: 'image', url: 'https://cdn.example/image.png' };
+    const findFilterItem = () => Array.from(document.body.querySelectorAll('button')).find((node) => node.textContent === 'filter_image_md5');
+
+    await renderMenu('/mu', { ...basePostMenu, link: 'https://cdn.example/image.png' });
+    await openMenu();
+    expect(findFilterItem()).toBeUndefined();
+
+    await act(async () => {
+      useImageFiltersStore.setState({ showQuickFilterMenuItem: true });
+    });
+    expect(findFilterItem()).toBeTruthy();
   });
 });
