@@ -313,4 +313,21 @@ describe('misc utils', () => {
     expect(isHalloween()).toBe(false);
     expect(getActiveSpecialTheme()).toBeNull();
   });
+
+  it('keeps the seasonal themes up for as long as 4chan usually does', () => {
+    vi.useFakeTimers();
+    const themeOn = (month: number, day: number) => {
+      vi.setSystemTime(new Date(2026, month, day, 12));
+      return getActiveSpecialTheme();
+    };
+
+    expect(themeOn(9, 30)).toBeNull();
+    expect(themeOn(9, 31)).toBe('halloween');
+    expect(themeOn(10, 1)).toBe('halloween');
+    expect(themeOn(10, 2)).toBeNull();
+    expect(themeOn(11, 23)).toBeNull();
+    expect(themeOn(11, 24)).toBe('christmas');
+    expect(themeOn(11, 26)).toBe('christmas');
+    expect(themeOn(11, 27)).toBeNull();
+  });
 });

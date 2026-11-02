@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { getFileDropHandlers, isPublishFileAttachment, type FileDragEvent } from '../attached-media';
+import { getFileDropHandlers, getFilePasteHandler, isPublishFileAttachment, type FileDragEvent, type FilePasteEvent } from '../attached-media';
 
 const picked = (name: string, mimeType: string) => ({ kind: 'picked' as const, id: name, name, mimeType, webPath: '' });
 
@@ -113,6 +113,109 @@ describe('getFileDropHandlers', () => {
     expect(drop.preventDefault).toHaveBeenCalled();
     expect(unsupportedDrop.preventDefault).toHaveBeenCalled();
     expect(onDropFile).not.toHaveBeenCalled();
+    expect(onUnsupportedFile).not.toHaveBeenCalled();
+  });
+});
+
+describe('getFilePasteHandler', () => {
+  const pasteEvent = (files: File[], text = '', html = '') => {
+    const preventDefault = vi.fn();
+    const clipboardData = { files, getData: (type: string) => ({ 'text/plain': text, 'text/html': html })[type] ?? '' };
+    return { event: { preventDefault, clipboardData } as unknown as FilePasteEvent, preventDefault };
+  };
+
+  it('attaches a pasted image that comes with no text, such as a screenshot', () => {
+    const onPasteFile = vi.fn();
+    const file = new File(['x'], 'image.png', { type: 'image/png' });
+    const { event, preventDefault } = pasteEvent([file]);
+
+    getFilePasteHandler(onPasteFile, true)(event);
+
+    expect(preventDefault).toHaveBeenCalled();
+    expect(onPasteFile).toHaveBeenCalledWith({ kind: 'file', file, name: 'image.png', mimeType: 'image/png' });
+  });
+
+  it('attaches a file copied in the file manager instead of pasting its name', () => {
+    const onPasteFile = vi.fn();
+    const file = new File(['x'], 'cat.jpg', { type: 'image/jpeg' });
+    const named = pasteEvent([file], 'cat.jpg');
+    const hiddenExtension = pasteEvent([file], 'cat\n');
+
+    getFilePasteHandler(onPasteFile, true)(named.event);
+    getFilePasteHandler(onPasteFile, true)(hiddenExtension.event);
+
+    expect(named.preventDefault).toHaveBeenCalled();
+    expect(hiddenExtension.preventDefault).toHaveBeenCalled();
+    expect(onPasteFile).toHaveBeenCalledTimes(2);
+  });
+
+  it('attaches the copied file rather than an image of its icon that comes with it', () => {
+    const onPasteFile = vi.fn();
+    const icon = new File(['x'], 'image.png', { type: 'image/png' });
+    const file = new File(['x'], 'cat.jpg', { type: 'image/jpeg' });
+
+    getFilePasteHandler(onPasteFile, true)(pasteEvent([icon, file], 'cat.jpg').event);
+
+    expect(onPasteFile).toHaveBeenCalledWith({ kind: 'file', file, name: 'cat.jpg', mimeType: 'image/jpeg' });
+  });
+
+  it('attaches an image copied in Firefox or Safari, which also copy its address as text', () => {
+    const onPasteFile = vi.fn();
+    const file = new File(['x'], 'image.png', { type: 'image/png' });
+    const { event, preventDefault } = pasteEvent([file], 'https://example.com/cat-800w.png', '<img src="https://example.com/cat.png" alt="cat">');
+
+    getFilePasteHandler(onPasteFile, true)(event);
+
+    expect(preventDefault).toHaveBeenCalled();
+    expect(onPasteFile).toHaveBeenCalledWith({ kind: 'file', file, name: 'image.png', mimeType: 'image/png' });
+  });
+
+  it('keeps a text paste that comes with a rendered image, as office apps copy it', () => {
+    const onPasteFile = vi.fn();
+    const image = new File(['x'], 'image.png', { type: 'image/png' });
+    const pastes = [
+      pasteEvent([image], 'quarterly totals'),
+      pasteEvent([image], 'https://example.com/report', '<table><tr><td>https://example.com/report</td></tr></table>'),
+      pasteEvent([image], '\t\t\r\n'),
+    ];
+
+    for (const { event } of pastes) getFilePasteHandler(onPasteFile, true)(event);
+
+    for (const { preventDefault } of pastes) expect(preventDefault).not.toHaveBeenCalled();
+    expect(onPasteFile).not.toHaveBeenCalled();
+  });
+
+  it('leaves text pastes to the browser', () => {
+    const onPasteFile = vi.fn();
+    const { event, preventDefault } = pasteEvent([], 'hello');
+
+    getFilePasteHandler(onPasteFile, true)(event);
+
+    expect(preventDefault).not.toHaveBeenCalled();
+    expect(onPasteFile).not.toHaveBeenCalled();
+  });
+
+  it('reports a pasted file of an unsupported type instead of pasting its name', () => {
+    const onPasteFile = vi.fn();
+    const onUnsupportedFile = vi.fn();
+    const { event, preventDefault } = pasteEvent([new File(['x'], 'notes.pdf', { type: 'application/pdf' })], 'notes.pdf');
+
+    getFilePasteHandler(onPasteFile, true, onUnsupportedFile)(event);
+
+    expect(preventDefault).toHaveBeenCalled();
+    expect(onPasteFile).not.toHaveBeenCalled();
+    expect(onUnsupportedFile).toHaveBeenCalled();
+  });
+
+  it('leaves file pastes to the browser while attaching is disabled', () => {
+    const onPasteFile = vi.fn();
+    const onUnsupportedFile = vi.fn();
+    const { event, preventDefault } = pasteEvent([new File(['x'], 'cat.png', { type: 'image/png' })], 'cat.png');
+
+    getFilePasteHandler(onPasteFile, false, onUnsupportedFile)(event);
+
+    expect(preventDefault).not.toHaveBeenCalled();
+    expect(onPasteFile).not.toHaveBeenCalled();
     expect(onUnsupportedFile).not.toHaveBeenCalled();
   });
 });

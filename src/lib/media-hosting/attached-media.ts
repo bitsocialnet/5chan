@@ -19,7 +19,7 @@ export const getFileAttachment = (file: File): AttachedMedia => ({ kind: 'file',
 /** The `accept` list for the upload file picker. */
 export const UPLOAD_FILE_ACCEPT = 'image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,.swf,application/x-shockwave-flash,application/vnd.adobe.flash.movie';
 
-// A dropped file skips the picker's `accept` filter, so check it the same way, with the file-name
+// A dropped or pasted file skips the picker's `accept` filter, so check it the same way, with the file-name
 // fallback for files the OS reports with an empty or generic MIME type.
 const isAcceptedUploadFile = (file: File) => {
   const media = getFileAttachment(file);
@@ -52,5 +52,56 @@ export function getFileDropHandlers(onDropFile: (media: AttachedMedia) => void, 
       if (isAcceptedUploadFile(file)) onDropFile(getFileAttachment(file));
       else onUnsupportedFile?.();
     },
+  };
+}
+
+// Structural, so React's synthetic clipboard events fit without lib depending on React.
+export type FilePasteEvent = { clipboardData: DataTransfer | null; preventDefault: () => void };
+
+// Finder leaves a hidden extension out of the copied file's name.
+const isFileNamed = (file: File, name: string) => name === file.name || name === file.name.replace(/\.[^.]*$/, '');
+
+// Firefox and Safari put a copied image's address in the text, next to an <img> of it in the HTML. The text
+// can be a srcset candidate rather than the src, so any image in the HTML counts.
+const isCopiedImageAddress = (clipboardData: DataTransfer, text: string) => {
+  if (!/^https?:\/\/\S+$/i.test(text)) return false;
+  const html = clipboardData.getData('text/html');
+  return html !== '' && new DOMParser().parseFromString(html, 'text/html').images.length > 0;
+};
+
+/**
+ * The file a paste carries, when the text it would insert is nothing (a copied image or screenshot), a copied
+ * image's address, or only the names of the copied files (a file copied in Finder or Explorer, which can come
+ * with an image of its icon, so the named file is taken). Office apps copy rich text with a rendered image of
+ * it, so a paste with any other text, whitespace included, stays a text paste.
+ */
+const getPastedFile = (clipboardData: DataTransfer): File | undefined => {
+  const files = Array.from(clipboardData.files);
+  const text = clipboardData.getData('text/plain');
+  if (text === '') return files[0];
+  const textLines = text
+    .split(/[\r\n]+/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  if (textLines.length > 0 && textLines.every((line) => files.some((file) => isFileNamed(file, line)))) {
+    return files.find((file) => isFileNamed(file, textLines[0]));
+  }
+  if (files.length === 1 && textLines.length === 1 && isCopiedImageAddress(clipboardData, textLines[0])) return files[0];
+  return undefined;
+};
+
+/**
+ * A paste handler for the comment field, so a copied image or file is attached like one chosen with the picker
+ * instead of its name being pasted as text. Pastes are left to the browser while attaching is disabled, and a
+ * pasted file of an unsupported type is reported through `onUnsupportedFile`.
+ */
+export function getFilePasteHandler(onPasteFile: (media: AttachedMedia) => void, enabled: boolean, onUnsupportedFile?: () => void) {
+  return (event: FilePasteEvent) => {
+    if (!enabled || !event.clipboardData) return;
+    const file = getPastedFile(event.clipboardData);
+    if (!file) return;
+    event.preventDefault();
+    if (isAcceptedUploadFile(file)) onPasteFile(getFileAttachment(file));
+    else onUnsupportedFile?.();
   };
 }
