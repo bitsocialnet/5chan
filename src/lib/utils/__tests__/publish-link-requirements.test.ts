@@ -142,6 +142,12 @@ describe('getMaxGalleryItems', () => {
     }
     expect(getMaxGalleryItems({ maxPostGalleryItems: 50 }, false)).toBe(20);
   });
+
+  it('offers no gallery on a directory route, whatever the board hosting it allows', () => {
+    const features = { maxPostGalleryItems: 4, maxReplyGalleryItems: 2 };
+    expect(getMaxGalleryItems(features, false, true)).toBe(0);
+    expect(getMaxGalleryItems(features, true, true)).toBe(0);
+  });
 });
 
 describe('getPostFilesValidationError', () => {

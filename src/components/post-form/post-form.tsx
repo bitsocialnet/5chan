@@ -828,7 +828,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
   // its first file became, so a cleared link, or one the open form never showed, never sends it on its own.
   const draftGallery = draft.gallery?.length ? draft.gallery : undefined;
   const getDraftGallery = (link: string) => (draftGallery && link && link === draft.link.trim() ? draftGallery : undefined);
-  const maxGalleryItems = getMaxGalleryItems(communityFeatures, isInPostView);
+  const maxGalleryItems = getMaxGalleryItems(communityFeatures, isInPostView, !!params?.boardIdentifier && isDirectoryRoute(params.boardIdentifier, directories));
   const uploadedGallery = getDraftGallery(url.trim());
   const chosenFileNames = attachment
     ? [attachment, ...galleryAttachments].map((media) => media.name)

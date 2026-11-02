@@ -79,9 +79,12 @@ interface GalleryFeatures {
 
 /**
  * How many gallery files a post or reply may carry after its link's file. Boards allow none unless the owner sets a
- * maximum, and 5chan shows at most MAX_GALLERY_FILES, so it never offers to post more than it shows.
+ * maximum, and 5chan shows at most MAX_GALLERY_FILES, so it never offers to post more than it shows. A directory route
+ * such as /v/ offers none: directories keep 4chan's one file per post, even when no candidate qualifies and the board
+ * hosting it takes galleries.
  */
-export const getMaxGalleryItems = (communityFeatures: GalleryFeatures | undefined, isReply: boolean): number => {
+export const getMaxGalleryItems = (communityFeatures: GalleryFeatures | undefined, isReply: boolean, isInDirectoryRoute = false): number => {
+  if (isInDirectoryRoute) return 0;
   const maxItems = communityFeatures?.[isReply ? 'maxReplyGalleryItems' : 'maxPostGalleryItems'];
   return typeof maxItems === 'number' && Number.isInteger(maxItems) && maxItems > 0 ? Math.min(maxItems, MAX_GALLERY_FILES) : 0;
 };

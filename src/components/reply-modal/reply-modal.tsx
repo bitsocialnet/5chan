@@ -59,6 +59,7 @@ import TexLogo from '../tex-logo';
 import TexPreviewModal from '../tex-preview-modal';
 import Tooltip from '../tooltip';
 import { preloadMathJax } from '../../lib/mathjax/mathjax-typeset';
+import { isDirectoryRoute } from '../../lib/utils/route-utils';
 import styles from './reply-modal.module.css';
 import capitalize from 'lodash/capitalize';
 import debounce from 'lodash/debounce';
@@ -203,7 +204,7 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
   // its first file became, so a cleared link never sends it on its own.
   const draftGallery = draft?.gallery?.length ? draft.gallery : undefined;
   const getDraftGallery = (link: string) => (draftGallery && link && link === draft?.link.trim() ? draftGallery : undefined);
-  const maxGalleryItems = getMaxGalleryItems(communityFeatures, true);
+  const maxGalleryItems = getMaxGalleryItems(communityFeatures, true, !!params?.boardIdentifier && isDirectoryRoute(params.boardIdentifier, directories));
   const initialDraftRef = useRef(draft);
   const lastProcessedQuoteInsertRequestIdRef = useRef(quoteInsertRequestId);
 

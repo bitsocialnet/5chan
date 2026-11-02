@@ -1823,7 +1823,7 @@ describe('PostForm', () => {
     testState.communities['music-posting.eth'] = { address: 'music-posting.eth', features: { maxPostGalleryItems: 2 } };
     testState.chooseFilesMock.mockResolvedValue(files);
 
-    await renderPostForm('/mu');
+    await renderPostForm('/music-posting.eth');
     await clickByText(container, 'start_new_thread');
     const table = container.querySelector('table') as HTMLTableElement;
     await clickByText(table, 'choose_file');
@@ -1847,7 +1847,7 @@ describe('PostForm', () => {
     testState.communities['music-posting.eth'] = { address: 'music-posting.eth', features: { maxPostGalleryItems: 1 } };
     testState.chooseFilesMock.mockResolvedValueOnce([file('kept.png')]).mockResolvedValueOnce([file('a.png'), file('b.png'), file('c.png')]);
 
-    await renderPostForm('/mu');
+    await renderPostForm('/music-posting.eth');
     await clickByText(container, 'start_new_thread');
     const table = container.querySelector('table') as HTMLTableElement;
     await clickByText(table, 'choose_file');
@@ -1855,7 +1855,22 @@ describe('PostForm', () => {
 
     expect(container.textContent).toContain('error: too_many_files_alert:2');
     expect(table.textContent).toContain('kept.png');
-    expect(usePostFormDraftsStore.getState().forms['/mu']?.draft).toMatchObject({ attachment: { name: 'kept.png' }, galleryAttachments: undefined });
+    expect(usePostFormDraftsStore.getState().forms['/music-posting.eth']?.draft).toMatchObject({ attachment: { name: 'kept.png' }, galleryAttachments: undefined });
+  });
+
+  it('offers one file on a directory route even when the board hosting it takes a gallery', async () => {
+    const attachment = { kind: 'file', file: new File(['x'], 'only.png', { type: 'image/png' }), name: 'only.png', mimeType: 'image/png' };
+    testState.uploadMode = 'random';
+    testState.resolvedCommunityAddress = 'music-posting.eth';
+    testState.communities['music-posting.eth'] = { address: 'music-posting.eth', features: { maxPostGalleryItems: 2 } };
+    testState.chooseFileMock.mockResolvedValue(attachment);
+
+    await renderPostForm('/mu');
+    await clickByText(container, 'start_new_thread');
+    await clickByText(container.querySelector('table') as HTMLTableElement, 'choose_file');
+
+    expect(testState.chooseFileMock).toHaveBeenCalledTimes(1);
+    expect(testState.chooseFilesMock).not.toHaveBeenCalled();
   });
 
   it('uploads every file of an inline reply and publishes the rest as its gallery', async () => {
@@ -1877,7 +1892,7 @@ describe('PostForm', () => {
     testState.chooseFilesMock.mockResolvedValue(files);
     testState.uploadAttachmentMock.mockImplementation(async (media: { name: string }) => ({ url: `https://forgeimg.net/abc/${media.name}`, fileName: media.name }));
 
-    await renderPostForm('/mu/thread/thread-cid');
+    await renderPostForm('/music-posting.eth/thread/thread-cid');
     await clickByText(container, 'post_a_reply');
     const table = container.querySelector('table') as HTMLTableElement;
     await clickByText(table, 'choose_file');
@@ -1911,7 +1926,7 @@ describe('PostForm', () => {
       testState.resolvedCommunityAddress = 'music-posting.eth';
       testState.communities['music-posting.eth'] = { address: 'music-posting.eth', features: { maxReplyGalleryItems: 1 } };
       testState.chooseFilesMock.mockResolvedValue(files);
-      await renderPostForm('/mu/thread/thread-cid');
+      await renderPostForm('/music-posting.eth/thread/thread-cid');
       await clickByText(container, 'post_a_reply');
       const table = container.querySelector('table') as HTMLTableElement;
       await clickByText(table, 'choose_file');
@@ -1955,7 +1970,7 @@ describe('PostForm', () => {
 
       await dispatchInput(table.querySelector<HTMLInputElement>('input[aria-label="link"]') as HTMLInputElement, 'https://example.com/page');
 
-      expect(usePostFormDraftsStore.getState().forms['/mu/thread/thread-cid']?.draft).toMatchObject({
+      expect(usePostFormDraftsStore.getState().forms['/music-posting.eth/thread/thread-cid']?.draft).toMatchObject({
         attachment: undefined,
         galleryAttachments: undefined,
         gallery: undefined,

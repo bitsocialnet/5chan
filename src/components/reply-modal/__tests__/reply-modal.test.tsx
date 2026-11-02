@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import ReplyModal from '../reply-modal';
 import { OEKAKI_WEB_WARNING_TEXT } from '../../../lib/oekaki/oekaki-copy';
@@ -1680,6 +1680,45 @@ describe('ReplyModal', () => {
       await clickButtonByText('choose_file');
       await rerenderReplyModal('/all/thread/post-1');
     };
+
+    it('offers one file on a directory route even when the board hosting it takes a gallery', async () => {
+      testState.communities['music-posting.eth'] = { ...testState.communities['music-posting.eth'], features: { maxReplyGalleryItems: 3 } };
+      testState.chooseFileMock.mockResolvedValue(pngAttachment);
+      testState.locationDraftKey = '/mu/thread/post-1';
+      // The app renders the modal in its layout route, which reads the board route's params.
+      await act(async () => {
+        root.render(
+          createElement(
+            MemoryRouter,
+            { initialEntries: ['/mu/thread/post-1'] },
+            createElement(
+              Routes,
+              null,
+              createElement(Route, {
+                path: '/:boardIdentifier/thread/:commentCid',
+                element: createElement(ReplyModal, {
+                  closeModal: testState.closeModalMock,
+                  locationDraftKey: '/mu/thread/post-1',
+                  parentCid: 'parent-cid',
+                  parentNumber: 42,
+                  postCid: 'post-cid',
+                  scrollY: 120,
+                  showReplyModal: true,
+                  communityAddress: 'music-posting.eth',
+                  threadNumber: 42,
+                }),
+              }),
+            ),
+          ),
+        );
+      });
+      await flushEffects();
+
+      await clickButtonByText('choose_file');
+
+      expect(testState.chooseFileMock).toHaveBeenCalledTimes(1);
+      expect(testState.chooseFilesMock).not.toHaveBeenCalled();
+    });
 
     it('uploads every chosen file on a board that takes a gallery and publishes the rest as the gallery', async () => {
       // jsdom never loads images, so this one reports its size as soon as it gets a source.
