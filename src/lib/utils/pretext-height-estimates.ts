@@ -388,10 +388,11 @@ const getMediaBoxDimensions = (comment: Comment | undefined, maxThumbnailSize: n
   return { height: height + rowHeight, rows, stacked: true, width: Math.max(...boxes.map((box) => box.width)) };
 };
 
-// Every row of files has its own captions on mobile, and its own file lines and margins on desktop.
+// Every row of files has its own captions on mobile, and its own file lines and margins on desktop. A gallery file's
+// line wraps under its thumbnail, so it usually takes two lines.
 const getMediaMetrics = ({ height, rows, stacked, width }: MediaBox): MediaMetrics => ({
   blockHeight: height + rows * MOBILE_REPLY_MEDIA_EXTRA_HEIGHT,
-  floatHeight: height + rows * DESKTOP_REPLY_FLOAT_MARGIN_HEIGHT + (rows - 1) * DESKTOP_REPLY_FILE_TEXT_HEIGHT,
+  floatHeight: height + rows * DESKTOP_REPLY_FLOAT_MARGIN_HEIGHT + (stacked ? rows : 0) * DESKTOP_REPLY_FILE_TEXT_HEIGHT + (rows - 1) * DESKTOP_REPLY_FILE_TEXT_HEIGHT,
   floatWidth: width + DESKTOP_REPLY_FLOAT_MARGIN_WIDTH,
   stacked,
 });

@@ -10,6 +10,7 @@ import {
   formatFileSize,
   getCommentFileCount,
   getCommentGalleryMediaInfos,
+  getGalleryFileLineWidth,
   getHasThumbnail,
   getMediaDimensions,
   getPostMediaTypeLabel,
@@ -20,7 +21,7 @@ import { getFormattedDate, getFormattedTimeAgo } from '../../lib/utils/time-util
 import { isPendingApprovalAwaiting } from '../../lib/utils/pending-approval-moderation';
 import { isValidURL, parseHttpUrl } from '../../lib/utils/url-utils';
 import { isAllView, isModQueueView, isModView, isPendingPostView, isPostPageView, isSearchView, isSubscriptionsView } from '../../lib/utils/view-utils';
-import { formatUserIDForDisplay, truncateWithEllipsisInMiddle } from '../../lib/utils/string-utils';
+import { formatUserIDForDisplay, truncateFileName, truncateWithEllipsisInMiddle } from '../../lib/utils/string-utils';
 import { useMediaFileSize } from '../../stores/use-media-file-size-store';
 import useModQueueStore from '../../stores/use-mod-queue-store';
 import { findDirectoryByAddress, useDirectories } from '../../hooks/use-directories';
@@ -587,9 +588,21 @@ interface PostMediaProps {
   parentCid?: string;
   communityAddress?: string;
   showBoardLabel: boolean;
-  /** A comment.gallery file, which is always media, so its line names the file as on media boards. */
-  isGalleryFile?: boolean;
+  /** One of several files in a row, whose line names a media file as a file and wraps under its thumbnail. */
+  inGallery?: boolean;
 }
+
+// The media types a file line names as a file rather than a link.
+const FILE_MEDIA_TYPES = new Set(['image', 'gif', 'video', 'audio', 'swf']);
+
+const getUrlFileName = (url: string): string | undefined => {
+  try {
+    const name = new URL(url).pathname.split('/').pop();
+    return name && /\.\w+$/.test(name) ? name : undefined;
+  } catch {
+    return undefined;
+  }
+};
 
 const PostMedia = ({
   commentMediaInfo,
@@ -603,7 +616,7 @@ const PostMedia = ({
   parentCid,
   communityAddress,
   showBoardLabel,
-  isGalleryFile = false,
+  inGallery = false,
 }: PostMediaProps) => {
   const { t } = useTranslation();
   const { url } = commentMediaInfo || {};
@@ -625,8 +638,19 @@ const PostMedia = ({
 
   const mediaDimensions = getMediaDimensions(commentMediaInfo);
   const directoryEntry = findDirectoryByAddress(directories, communityAddress);
-  const showFileName = isGalleryFile || directoryEntry?.features?.requirePostLinkIsMedia === true;
+  // In a row of files, every media file reads as a file, as gallery files always are, whatever the board takes as a link.
+  const showFileName = (inGallery && FILE_MEDIA_TYPES.has(commentMediaInfo?.type ?? '')) || directoryEntry?.features?.requirePostLinkIsMedia === true;
   const fileLabel = youtubeFileLink || showFileName ? t('file') : t('link');
+  const fileName = showFileName && url ? getUrlFileName(url) : undefined;
+  const fileLineWidth = inGallery
+    ? getGalleryFileLineWidth({
+        height: linkHeight ?? commentMediaInfo?.thumbnailHeight,
+        maxThumbnailSize: parentCid ? 125 : 250,
+        spoiler,
+        type: commentMediaInfo?.type,
+        width: linkWidth ?? commentMediaInfo?.thumbnailWidth,
+      })
+    : undefined;
   const mediaTypeLabel = type ? getPostMediaTypeLabel(commentMediaInfo, type, t).toLowerCase() : '';
   const boardPath = communityAddress ? getBoardPath(communityAddress, directories) : undefined;
   const displayBoardPath =
@@ -640,29 +664,31 @@ const PostMedia = ({
 
   return (
     <div className={styles.file}>
-      <div className={styles.fileText}>
+      <div
+        className={inGallery ? `${styles.fileText} ${styles.galleryFileText}` : styles.fileText}
+        style={fileLineWidth ? ({ '--file-line-width': `${fileLineWidth}px` } as React.CSSProperties) : undefined}
+      >
         {communityAddress && showBoardLabel && boardPath && (
           <>
             {t('board')}: <Link to={`/${boardPath}`}>{displayBoardPath}</Link>{' '}
           </>
         )}
         {fileLabel}:{' '}
-        <a href={fileLinkUrl} target='_blank' rel='noopener noreferrer'>
-          {(() => {
-            if (spoiler) return capitalize(t('spoiler'));
-            if (youtubeFileLink) return truncateWithEllipsisInMiddle(youtubeFileLink);
-            if (showFileName && url) {
-              try {
-                const pathParts = new URL(url).pathname.split('/');
-                const filename = pathParts[pathParts.length - 1];
-                if (filename && /\.\w+$/.test(filename)) return truncateWithEllipsisInMiddle(filename);
-              } catch {}
-            }
-            return truncateWithEllipsisInMiddle(fileLinkUrl ?? '');
-          })()}
+        <a href={fileLinkUrl} target='_blank' rel='noopener noreferrer' title={inGallery && fileName && !spoiler ? fileName : undefined}>
+          {spoiler
+            ? capitalize(t('spoiler'))
+            : youtubeFileLink
+              ? truncateWithEllipsisInMiddle(youtubeFileLink)
+              : fileName
+                ? inGallery
+                  ? truncateFileName(fileName)
+                  : truncateWithEllipsisInMiddle(fileName)
+                : truncateWithEllipsisInMiddle(fileLinkUrl ?? '')}
         </a>{' '}
-        ({fileSize !== undefined ? formatFileSize(fileSize) : mediaTypeLabel}
-        {mediaDimensions && `, ${mediaDimensions}`})
+        <span className={styles.fileDetails}>
+          ({fileSize !== undefined ? formatFileSize(fileSize) : mediaTypeLabel}
+          {mediaDimensions && `, ${mediaDimensions}`})
+        </span>
         {!showThumbnail && (type === 'iframe' || type === 'video' || type === 'audio') && (
           <span>
             -[
@@ -749,7 +775,7 @@ const PostFiles = ({ children, cid, communityAddress, galleryMediaInfos, parentC
           commentMediaInfo={mediaInfo}
           communityAddress={communityAddress}
           hasThumbnail={true}
-          isGalleryFile={true}
+          inGallery={true}
           linkHeight={mediaInfo.linkHeight}
           linkWidth={mediaInfo.linkWidth}
           parentCid={parentCid}
@@ -841,6 +867,7 @@ const Reply = ({
                   parentCid={parentCid}
                   communityAddress={communityAddress}
                   showBoardLabel={false}
+                  inGallery={galleryMediaInfos.length > 0}
                 />
               )}
             </PostFiles>
@@ -1243,6 +1270,7 @@ const PostDesktop = ({
                     parentCid={parentCid}
                     communityAddress={communityAddress}
                     showBoardLabel={showBoardLabel}
+                    inGallery={galleryMediaInfos.length > 0}
                   />
                 )}
               </PostFiles>

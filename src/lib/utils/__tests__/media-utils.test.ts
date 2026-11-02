@@ -49,6 +49,7 @@ import {
   getCommentGalleryMediaInfos,
   getCommentMediaInfo,
   getDisplayMediaInfoType,
+  getGalleryFileLineWidth,
   getHasThumbnail,
   getLinkMediaInfo,
   getMediaDimensions,
@@ -383,6 +384,15 @@ describe('media-utils', () => {
     expect(mediaInfos).toHaveLength(20);
     expect(mediaInfos.at(-1)?.url).toBe('https://example.com/19.jpg');
     expect(getCommentFileCount({ gallery, link: 'https://example.com/link.png' })).toBe(21);
+  });
+
+  it("sizes a gallery file's line to its thumbnail and margins, never narrower than a file name needs", () => {
+    expect(getGalleryFileLineWidth({ width: 474, height: 264, maxThumbnailSize: 250, spoiler: false, type: 'image' })).toBe(290);
+    expect(getGalleryFileLineWidth({ width: 311, height: 362, maxThumbnailSize: 250, spoiler: false, type: 'image' })).toBe(255);
+    expect(getGalleryFileLineWidth({ width: 311, height: 362, maxThumbnailSize: 125, spoiler: false, type: 'image' })).toBe(180);
+    expect(getGalleryFileLineWidth({ width: undefined, height: undefined, maxThumbnailSize: 250, spoiler: false, type: 'video' })).toBe(290);
+    expect(getGalleryFileLineWidth({ width: 474, height: 264, maxThumbnailSize: 250, spoiler: true, type: 'image' })).toBe(180);
+    expect(getGalleryFileLineWidth({ width: undefined, height: undefined, maxThumbnailSize: 250, spoiler: false, type: 'audio' })).toBeUndefined();
   });
 
   it('picks the link as the cover file and counts link and gallery files', () => {

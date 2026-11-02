@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next';
 import capitalize from 'lodash/capitalize';
 import { readMediaDimensions } from '../../lib/media-hosting/attached-media';
 import type { AttachedMedia } from '../../lib/media-hosting/types';
-import { type CommentMediaInfo, formatFileSize } from '../../lib/utils/media-utils';
-import { truncateWithEllipsisInMiddle } from '../../lib/utils/string-utils';
+import { type CommentMediaInfo, formatFileSize, getGalleryFileLineWidth } from '../../lib/utils/media-utils';
+import { truncateFileName, truncateWithEllipsisInMiddle } from '../../lib/utils/string-utils';
 import usePendingUploadPostStore, { type PendingUploadPhase } from '../../stores/use-pending-upload-post-store';
 import CommentMedia from '../comment-media';
 import LoadingEllipsis from '../loading-ellipsis';
@@ -58,25 +58,53 @@ const useLocalMediaDimensions = (url: string | undefined, mediaType: PreviewMedi
 const getFileDetails = (attachment: AttachedMedia, dimensions: { width: number; height: number } | undefined) => {
   const details = [attachment.kind === 'file' ? formatFileSize(attachment.file.size) : undefined, dimensions ? `${dimensions.width}x${dimensions.height}` : undefined];
   const text = details.filter(Boolean).join(', ');
-  return text ? ` (${text})` : '';
+  return text ? `(${text})` : '';
 };
 
 const UPLOAD_PHASE_LABEL_KEYS: Partial<Record<PendingUploadPhase, string>> = { uploading: 'uploading', checking: 'running_automated_checks' };
 
-/** One local file's row: the file as its thumbnail, and the upload's progress after its size when given. */
-const PendingUploadFileRow = ({ attachment, phaseLabelKey, spoiler }: { attachment: AttachedMedia; phaseLabelKey?: string; spoiler?: boolean }) => {
+/**
+ * One local file's row: the file as its thumbnail, and the upload's progress after its size when given. In a row of
+ * several files its line wraps under its thumbnail, as a published gallery's does.
+ */
+const PendingUploadFileRow = ({
+  attachment,
+  inGallery = false,
+  phaseLabelKey,
+  spoiler,
+}: {
+  attachment: AttachedMedia;
+  inGallery?: boolean;
+  phaseLabelKey?: string;
+  spoiler?: boolean;
+}) => {
   const { t } = useTranslation();
   const mediaType = getPreviewMediaType(attachment.mimeType);
   const previewUrl = useLocalPreviewUrl(attachment);
   const dimensions = useLocalMediaDimensions(previewUrl, mediaType);
   const [showThumbnail, setShowThumbnail] = useState(true);
   const commentMediaInfo: CommentMediaInfo | undefined = previewUrl && mediaType ? { url: previewUrl, type: mediaType } : undefined;
+  const fileLineWidth = inGallery
+    ? getGalleryFileLineWidth({ height: dimensions?.height, maxThumbnailSize: 250, spoiler, type: mediaType, width: dimensions?.width })
+    : undefined;
+  const fileDetails = getFileDetails(attachment, dimensions);
 
   return (
     <div className={styles.file}>
-      <div className={styles.fileText}>
-        {t('file')}: {spoiler ? capitalize(t('spoiler')) : truncateWithEllipsisInMiddle(attachment.name)}
-        {getFileDetails(attachment, dimensions)}
+      <div
+        className={inGallery ? `${styles.fileText} ${styles.galleryFileText}` : styles.fileText}
+        style={fileLineWidth ? ({ '--file-line-width': `${fileLineWidth}px` } as React.CSSProperties) : undefined}
+      >
+        {t('file')}:{' '}
+        <span title={inGallery && !spoiler ? attachment.name : undefined}>
+          {spoiler ? capitalize(t('spoiler')) : inGallery ? truncateFileName(attachment.name) : truncateWithEllipsisInMiddle(attachment.name)}
+        </span>
+        {fileDetails && (
+          <>
+            {' '}
+            <span className={styles.fileDetails}>{fileDetails}</span>
+          </>
+        )}
         {phaseLabelKey && (
           <>
             {' '}
@@ -116,7 +144,13 @@ const PendingUploadFile = ({ pendingUploadId, spoiler }: { pendingUploadId: numb
     <div className={styles.files}>
       {[attachment, ...galleryAttachments].map((media, index) => (
         // A pending post's files never change, so their positions identify them.
-        <PendingUploadFileRow key={`${pendingUploadId}:${index}`} attachment={media} phaseLabelKey={index === 0 ? phaseLabelKey : undefined} spoiler={spoiler} />
+        <PendingUploadFileRow
+          key={`${pendingUploadId}:${index}`}
+          attachment={media}
+          inGallery={true}
+          phaseLabelKey={index === 0 ? phaseLabelKey : undefined}
+          spoiler={spoiler}
+        />
       ))}
     </div>
   );

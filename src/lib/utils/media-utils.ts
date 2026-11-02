@@ -510,6 +510,38 @@ export const getCoverMediaInfo = (linkMediaInfo: CommentMediaInfo | undefined, g
 export const getCommentCoverMediaInfo = (comment: Comment | undefined): CommentMediaInfo | undefined =>
   getCoverMediaInfo(comment?.link ? getCommentMediaInfo(comment.link, comment.thumbnailUrl, comment.linkWidth, comment.linkHeight) : undefined, comment?.gallery);
 
+// The side margins of a desktop thumbnail (comment-media's thumbnailBig).
+const THUMBNAIL_MARGIN_WIDTH = 40;
+// Wide enough for "File:" and a shortened file name on one line, under the small thumbnails of replies too.
+const MIN_GALLERY_FILE_LINE_WIDTH = 180;
+const SPOILER_THUMBNAIL_WIDTH = 100;
+
+/**
+ * How wide the line of a file in a gallery row may grow: its thumbnail and the thumbnail's side margins, as on vichan's
+ * multi-file posts, so the line wraps under its own thumbnail. Audio shows a player instead, so it takes no limit.
+ */
+export const getGalleryFileLineWidth = ({
+  height,
+  maxThumbnailSize,
+  spoiler,
+  type,
+  width,
+}: {
+  height: number | undefined;
+  maxThumbnailSize: number;
+  spoiler: boolean | undefined;
+  type: string | undefined;
+  width: number | undefined;
+}): number | undefined => {
+  if (type === 'audio') return undefined;
+  const thumbnailWidth = spoiler
+    ? SPOILER_THUMBNAIL_WIDTH
+    : width && height
+      ? Math.round(width * Math.min(1, maxThumbnailSize / Math.max(width, height)))
+      : maxThumbnailSize;
+  return Math.max(thumbnailWidth + THUMBNAIL_MARGIN_WIDTH, MIN_GALLERY_FILE_LINE_WIDTH);
+};
+
 /** How many files a comment shows: its link, plus its gallery files. */
 export const getCommentFileCount = (comment: Comment | undefined): number => (comment?.link ? 1 : 0) + getCommentGalleryMediaInfos(comment?.gallery).length;
 

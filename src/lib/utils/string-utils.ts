@@ -25,6 +25,16 @@ export function formatUserIDForDisplay(userID: string | undefined, maxDomainLeng
  * Truncate a string with "..." in the middle when it exceeds maxLength.
  * Preserves the start and end of the string for readability (e.g. URLs, filenames).
  */
+/**
+ * Shortens a long file name the way vichan's multi-file posts do: its first characters, "⋯", then its extension,
+ * so the type stays readable in a narrow file line.
+ */
+export function truncateFileName(name: string, maxBaseLength: number = 15): string {
+  const extensionStart = name.lastIndexOf('.');
+  const base = extensionStart > 0 ? name.slice(0, extensionStart) : name;
+  return base.length > maxBaseLength ? `${base.slice(0, maxBaseLength)}⋯${name.slice(base.length)}` : name;
+}
+
 export function truncateWithEllipsisInMiddle(str: string, maxLength: number = 50): string {
   if (!str || str.length <= maxLength) return str;
   const ellipsis = '...';

@@ -116,6 +116,17 @@
   max-width: 100%;
 }
 
+/* A gallery file's line wraps under its own thumbnail, as on vichan, breaking a word only when it has to, and keeps
+   the file's size and dimensions together. */
+.galleryFileText {
+  max-width: var(--file-line-width);
+  overflow-wrap: anywhere;
+}
+
+.galleryFileText .fileDetails {
+  white-space: nowrap;
+}
+
 .postDesktop .postInfo {
   width: 100%;
 }
