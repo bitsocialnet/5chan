@@ -597,5 +597,8 @@
   "md5_filter_help": "Fsheh postimet me këto skedarë, një për rresht: një hash SHA-256 ose MD5 (funksionojnë edhe rreshtat MD5 të 4chan X) ose një lidhje. Një skedar Forge njihet nga hash-i SHA-256 në lidhjen e tij. Për imazhet e tjera hash-i llogaritet pasi të ngarkohen, nëse hosti i tyre e lejon, kështu që një hash i listuar fsheh të njëjtin imazh kudo që të postohet. Çdo skedar tjetër njihet vetëm nga lidhja e tij e saktë. Rreshtat që fillojnë me # shpërfillen.",
   "directory_requirement_rules": "Rregullat e drejtorisë të renditura të parat, fjalë për fjalë",
   "spam_check_not_finished": "Kontrolli për spam nuk përfundoi. Posto përsëri për të provuar sërish.",
-  "board_may_be_offline": "Forumi mund të jetë jashtë linje ose i paarritshëm."
+  "board_may_be_offline": "Forumi mund të jetë jashtë linje ose i paarritshëm.",
+  "files_chosen": "{{count}} skedarë",
+  "too_many_files_alert": "Shumë skedarë. Ky bord lejon deri në {{count}} për postim.",
+  "gallery_file_not_image_or_video_alert": "Vetëm imazhet dhe videot mund të postohen së bashku."
 }

@@ -1,5 +1,15 @@
-import { describe, expect, it, vi } from 'vitest';
-import { getFileDropHandlers, getFilePasteHandler, isPublishFileAttachment, type FileDragEvent, type FilePasteEvent } from '../attached-media';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import {
+  getFileDropHandlers,
+  getFilePasteHandler,
+  getUploadedGalleryItem,
+  isPublishFileAttachment,
+  readMediaDimensions,
+  uploadGalleryAttachments,
+  type FileDragEvent,
+  type FilePasteEvent,
+} from '../attached-media';
+import type { AttachedMedia } from '../types';
 
 const picked = (name: string, mimeType: string) => ({ kind: 'picked' as const, id: name, name, mimeType, webPath: '' });
 
@@ -49,7 +59,7 @@ describe('getFileDropHandlers', () => {
     getFileDropHandlers(onDropFile, true).onDrop(event);
 
     expect(preventDefault).toHaveBeenCalled();
-    expect(onDropFile).toHaveBeenCalledWith({ kind: 'file', file, name: 'cat.png', mimeType: 'image/png' });
+    expect(onDropFile).toHaveBeenCalledWith([{ kind: 'file', file, name: 'cat.png', mimeType: 'image/png' }]);
   });
 
   it('accepts a dropped .swf by extension', () => {
@@ -93,7 +103,7 @@ describe('getFileDropHandlers', () => {
 
     getFileDropHandlers(onDropFile, true).onDrop(dragEvent(['Files'], [file]).event);
 
-    expect(onDropFile).toHaveBeenCalledWith({ kind: 'file', file, name: 'photo.WEBP', mimeType: '' });
+    expect(onDropFile).toHaveBeenCalledWith([{ kind: 'file', file, name: 'photo.WEBP', mimeType: '' }]);
   });
 
   it('still cancels file drops while attaching is disabled, without attaching', () => {
@@ -132,7 +142,7 @@ describe('getFilePasteHandler', () => {
     getFilePasteHandler(onPasteFile, true)(event);
 
     expect(preventDefault).toHaveBeenCalled();
-    expect(onPasteFile).toHaveBeenCalledWith({ kind: 'file', file, name: 'image.png', mimeType: 'image/png' });
+    expect(onPasteFile).toHaveBeenCalledWith([{ kind: 'file', file, name: 'image.png', mimeType: 'image/png' }]);
   });
 
   it('attaches a file copied in the file manager instead of pasting its name', () => {
@@ -156,7 +166,7 @@ describe('getFilePasteHandler', () => {
 
     getFilePasteHandler(onPasteFile, true)(pasteEvent([icon, file], 'cat.jpg').event);
 
-    expect(onPasteFile).toHaveBeenCalledWith({ kind: 'file', file, name: 'cat.jpg', mimeType: 'image/jpeg' });
+    expect(onPasteFile).toHaveBeenCalledWith([{ kind: 'file', file, name: 'cat.jpg', mimeType: 'image/jpeg' }]);
   });
 
   it('attaches an image copied in Firefox or Safari, which also copy its address as text', () => {
@@ -167,7 +177,18 @@ describe('getFilePasteHandler', () => {
     getFilePasteHandler(onPasteFile, true)(event);
 
     expect(preventDefault).toHaveBeenCalled();
-    expect(onPasteFile).toHaveBeenCalledWith({ kind: 'file', file, name: 'image.png', mimeType: 'image/png' });
+    expect(onPasteFile).toHaveBeenCalledWith([{ kind: 'file', file, name: 'image.png', mimeType: 'image/png' }]);
+  });
+
+  it('attaches every file copied in the file manager when the form takes several, in the order named', () => {
+    const onPasteFiles = vi.fn();
+    const first = new File(['x'], 'first.png', { type: 'image/png' });
+    const second = new File(['x'], 'second.webm', { type: 'video/webm' });
+
+    getFilePasteHandler(onPasteFiles, true, undefined, true)(pasteEvent([second, first], 'first.png\nsecond.webm').event);
+    getFilePasteHandler(onPasteFiles, true)(pasteEvent([second, first], 'first.png\nsecond.webm').event);
+
+    expect(onPasteFiles.mock.calls.map(([media]) => (media as AttachedMedia[]).map(({ name }) => name))).toEqual([['first.png', 'second.webm'], ['first.png']]);
   });
 
   it('keeps a text paste that comes with a rendered image, as office apps copy it', () => {
@@ -217,5 +238,134 @@ describe('getFilePasteHandler', () => {
     expect(preventDefault).not.toHaveBeenCalled();
     expect(onPasteFile).not.toHaveBeenCalled();
     expect(onUnsupportedFile).not.toHaveBeenCalled();
+  });
+});
+
+describe('dropping several files', () => {
+  const drop = (files: File[]) => ({ preventDefault: vi.fn(), dataTransfer: { types: ['Files'], files, dropEffect: 'none' } }) as unknown as FileDragEvent;
+  const cat = new File(['x'], 'cat.png', { type: 'image/png' });
+  const clip = new File(['x'], 'clip.webm', { type: 'video/webm' });
+
+  it('attaches all of them when the form takes several, and only the first otherwise', () => {
+    const onDropFiles = vi.fn();
+
+    getFileDropHandlers(onDropFiles, true, undefined, true).onDrop(drop([cat, clip]));
+    getFileDropHandlers(onDropFiles, true).onDrop(drop([cat, clip]));
+
+    expect(onDropFiles.mock.calls.map(([media]) => (media as AttachedMedia[]).map(({ name }) => name))).toEqual([['cat.png', 'clip.webm'], ['cat.png']]);
+  });
+
+  it('attaches none of them when one has an unsupported type', () => {
+    const onDropFiles = vi.fn();
+    const onUnsupportedFile = vi.fn();
+
+    getFileDropHandlers(onDropFiles, true, onUnsupportedFile, true).onDrop(drop([cat, new File(['x'], 'notes.pdf', { type: 'application/pdf' })]));
+
+    expect(onDropFiles).not.toHaveBeenCalled();
+    expect(onUnsupportedFile).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('gallery uploads', () => {
+  // jsdom never loads media, so this reports a size as soon as it gets a source.
+  class SizedImage {
+    naturalWidth = 640;
+    naturalHeight = 480;
+    onload: (() => void) | null = null;
+    onerror: (() => void) | null = null;
+    set src(_url: string) {
+      queueMicrotask(() => this.onload?.());
+    }
+  }
+  const media = (name: string, mimeType: string): AttachedMedia => ({ kind: 'file', file: new File(['x'], name, { type: mimeType }), name, mimeType });
+  const uploadToHost = vi.fn(async (file: AttachedMedia): Promise<{ url: string } | null> => ({ url: `https://host.example/${file.name}` }));
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+    vi.useRealTimers();
+    uploadToHost.mockClear();
+  });
+
+  it("tags an uploaded file by its link's extension, else by the file's own type, and gives audio no size", () => {
+    const size = { width: 640, height: 480 };
+    expect(getUploadedGalleryItem(media('cat.png', 'image/png'), 'https://host.example/cat.png', size)).toEqual({
+      url: 'https://host.example/cat.png',
+      htmlTagName: 'img',
+      ...size,
+    });
+    expect(getUploadedGalleryItem(media('loop.gif', 'image/gif'), 'https://host.example/loop.gif', undefined)).toEqual({
+      url: 'https://host.example/loop.gif',
+      htmlTagName: 'img',
+    });
+    expect(getUploadedGalleryItem(media('clip.mp4', 'video/mp4'), 'https://host.example/download?id=1', size)).toEqual({
+      url: 'https://host.example/download?id=1',
+      htmlTagName: 'video',
+      ...size,
+    });
+    expect(getUploadedGalleryItem(media('song.mp3', 'audio/mpeg'), 'https://host.example/song.mp3', size)).toEqual({
+      url: 'https://host.example/song.mp3',
+      htmlTagName: 'audio',
+    });
+  });
+
+  it("uploads the files in order with each image's pixel size", async () => {
+    vi.stubGlobal('Image', SizedImage);
+
+    await expect(uploadGalleryAttachments([media('a.png', 'image/png'), media('b.png', 'image/png')], uploadToHost, () => true)).resolves.toEqual([
+      { url: 'https://host.example/a.png', htmlTagName: 'img', width: 640, height: 480 },
+      { url: 'https://host.example/b.png', htmlTagName: 'img', width: 640, height: 480 },
+    ]);
+    expect(uploadToHost.mock.calls.map(([file]) => file.name)).toEqual(['a.png', 'b.png']);
+  });
+
+  it("reads a video's size from its metadata", async () => {
+    const createElement = document.createElement.bind(document);
+    vi.spyOn(document, 'createElement').mockImplementation((tagName: string) => {
+      const element = createElement(tagName);
+      if (tagName === 'video') {
+        Object.defineProperties(element, { videoWidth: { value: 1280 }, videoHeight: { value: 720 } });
+        Object.defineProperty(element, 'src', {
+          set: () => {
+            queueMicrotask(() => (element as HTMLVideoElement).onloadedmetadata?.(new Event('loadedmetadata')));
+          },
+        });
+      }
+      return element;
+    });
+
+    await expect(uploadGalleryAttachments([media('clip.webm', 'video/webm')], uploadToHost, () => true)).resolves.toEqual([
+      { url: 'https://host.example/clip.webm', htmlTagName: 'video', width: 1280, height: 720 },
+    ]);
+  });
+
+  it('gives up on a size after the timeout', async () => {
+    vi.useFakeTimers();
+    const dimensions = readMediaDimensions('blob:never-loads', 'image', 1000);
+    await vi.advanceTimersByTimeAsync(1000);
+
+    await expect(dimensions).resolves.toBeUndefined();
+  });
+
+  it('stops at the first failed upload', async () => {
+    vi.stubGlobal('Image', SizedImage);
+    uploadToHost.mockImplementation(async (file: AttachedMedia) => (file.name === 'b.png' ? null : { url: `https://host.example/${file.name}` }));
+
+    await expect(
+      uploadGalleryAttachments([media('a.png', 'image/png'), media('b.png', 'image/png'), media('c.png', 'image/png')], uploadToHost, () => true),
+    ).resolves.toBeNull();
+    expect(uploadToHost.mock.calls.map(([file]) => file.name)).toEqual(['a.png', 'b.png']);
+  });
+
+  it('uploads nothing more once the post is abandoned', async () => {
+    vi.stubGlobal('Image', SizedImage);
+    let abandoned = false;
+    uploadToHost.mockImplementation(async (file: AttachedMedia) => {
+      abandoned = true;
+      return { url: `https://host.example/${file.name}` };
+    });
+
+    await expect(uploadGalleryAttachments([media('a.png', 'image/png'), media('b.png', 'image/png')], uploadToHost, () => !abandoned)).resolves.toBeNull();
+    expect(uploadToHost).toHaveBeenCalledTimes(1);
   });
 });

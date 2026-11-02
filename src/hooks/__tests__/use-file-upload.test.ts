@@ -184,6 +184,33 @@ describe('useFileUpload', () => {
       expect(hook().isUploading).toBe(false);
     });
 
+    it('lets the browser picker take several files when asked to, and one otherwise', async () => {
+      const hook = mountHook();
+      const files = [new File(['a'], 'a.png', { type: 'image/png' }), new File(['b'], 'b.webm', { type: 'video/webm' })];
+
+      let choosePromise: Promise<AttachedMedia[]> | undefined;
+      await act(async () => {
+        choosePromise = hook().chooseFiles();
+      });
+      const picker = document.querySelector('input[type="file"]') as HTMLInputElement;
+      expect(picker.multiple).toBe(true);
+      Object.defineProperty(picker, 'files', { configurable: true, value: files });
+      await act(async () => {
+        picker.dispatchEvent(new Event('change'));
+      });
+      let chosen: AttachedMedia[] = [];
+      await act(async () => {
+        chosen = (await choosePromise) ?? [];
+      });
+      expect(chosen.map(({ name }) => name)).toEqual(['a.png', 'b.webm']);
+
+      await act(async () => {
+        void hook().chooseFile();
+      });
+      expect((document.querySelector('input[type="file"]') as HTMLInputElement).multiple).toBe(false);
+      await selectFileFromHiddenInput(null);
+    });
+
     it('picks through the Electron picker without uploading', async () => {
       window.electronApi = { isElectron: true } as any;
       const hook = mountHook();

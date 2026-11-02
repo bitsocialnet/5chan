@@ -597,5 +597,8 @@
   "md5_filter_help": "Itago ang mga post na may ganitong mga file, isa bawat linya: isang SHA-256 o MD5 hash (gumagana rin ang mga linyang MD5 ng 4chan X), o isang link. Ang file sa Forge ay tinutugma ayon sa SHA-256 hash sa link nito. Ang ibang mga larawan ay hina-hash kapag na-load na, kung pinapayagan ito ng kanilang host, kaya itinatago ng nakalistang hash ang parehong larawan saanman ito i-post. Ang anumang ibang file ay tinutugma lamang ayon sa eksaktong link nito. Binabalewala ang mga linyang nagsisimula sa #.",
   "directory_requirement_rules": "Nakalista muna ang mga patakaran ng directory, salita por salita",
   "spam_check_not_finished": "Hindi natapos ang spam check. Mag-post ulit para subukang muli.",
-  "board_may_be_offline": "Maaaring offline o hindi maabot ang board."
+  "board_may_be_offline": "Maaaring offline o hindi maabot ang board.",
+  "files_chosen": "{{count}} na file",
+  "too_many_files_alert": "Masyadong maraming file. Hanggang {{count}} lang bawat post ang pinapayagan ng board na ito.",
+  "gallery_file_not_image_or_video_alert": "Mga larawan at video lang ang maaaring i-post nang magkakasama."
 }

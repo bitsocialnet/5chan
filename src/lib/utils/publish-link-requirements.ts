@@ -2,6 +2,7 @@ import type { TFunction } from 'i18next';
 import { isPublishFileAttachment } from '../media-hosting/attached-media';
 import type { AttachedMedia } from '../media-hosting/types';
 import { isPublishFileMediaLink } from './media-link-validation-utils';
+import { MAX_GALLERY_FILES } from './media-utils';
 import { isValidPublishURL } from './url-utils';
 
 interface PublishLinkFeatures {
@@ -70,6 +71,30 @@ export const getRequireReplyLinkIsMedia = (features: EffectiveReplyLinkFeatures 
   Boolean(features?.requireReplyLinkIsMedia) || (features?.requireReplyLinkIsMedia === undefined && useMediaDefault);
 
 export const getNoReplyLinks = (features: EffectiveReplyLinkFeatures | undefined): boolean => Boolean(features?.noReplyLinks);
+
+interface GalleryFeatures {
+  maxPostGalleryItems?: unknown;
+  maxReplyGalleryItems?: unknown;
+}
+
+/**
+ * How many gallery files a post or reply may carry after its link's file. Boards allow none unless the owner sets a
+ * maximum, and 5chan shows at most MAX_GALLERY_FILES, so it never offers to post more than it shows.
+ */
+export const getMaxGalleryItems = (communityFeatures: GalleryFeatures | undefined, isReply: boolean): number => {
+  const maxItems = communityFeatures?.[isReply ? 'maxReplyGalleryItems' : 'maxPostGalleryItems'];
+  return typeof maxItems === 'number' && Number.isInteger(maxItems) && maxItems > 0 ? Math.min(maxItems, MAX_GALLERY_FILES) : 0;
+};
+
+/**
+ * Checks the files a post sends: the first becomes its link and the rest its gallery, which the board caps and,
+ * like every gallery, keeps to media, so several files must all be images or videos.
+ */
+export const getPostFilesValidationError = (files: AttachedMedia[], maxGalleryItems: number, t: TFunction): string | null => {
+  if (files.length > 1 + maxGalleryItems) return `${t('error')}: ${t('too_many_files_alert', { count: 1 + maxGalleryItems })}`;
+  if (files.length > 1 && !files.every(isPublishFileAttachment)) return `${t('error')}: ${t('gallery_file_not_image_or_video_alert')}`;
+  return null;
+};
 
 export const getPublishLinkValidationError = ({
   link,

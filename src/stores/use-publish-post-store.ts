@@ -1,4 +1,4 @@
-import { ChallengeVerification, Comment, PublishCommentOptions } from '@bitsocial/bitsocial-react-hooks';
+import { ChallengeVerification, Comment, CommentGalleryItem, PublishCommentOptions } from '@bitsocial/bitsocial-react-hooks';
 import { create } from 'zustand';
 import { alertChallengeVerificationFailed } from '../lib/utils/challenge-utils';
 import { getCommentCommunityAddress } from '../lib/utils/comment-utils';
@@ -11,6 +11,7 @@ type SubmitState = {
   title: string | undefined;
   content: string | undefined;
   link: string | undefined;
+  gallery: CommentGalleryItem[] | undefined;
   flairs: Comment['flairs'] | undefined;
   spoiler: boolean | undefined;
   challengeRequest: Record<string, unknown> | undefined;
@@ -28,6 +29,7 @@ export const createPublishPostStore = () =>
     title: undefined,
     content: undefined,
     link: undefined,
+    gallery: undefined,
     flairs: undefined,
     spoiler: undefined,
     challengeRequest: undefined,
@@ -36,6 +38,8 @@ export const createPublishPostStore = () =>
       set(() => {
         const { author, challengeRequest, content, flairs, spoiler, title } = comment;
         const link = comment.link ? normalizePublishURL(comment.link) : undefined;
+        // A comment has no gallery rather than an empty one.
+        const gallery = comment.gallery?.length ? comment.gallery : undefined;
         const communityAddress = getCommentCommunityAddress(comment);
 
         const displayName = 'displayName' in comment ? comment.displayName || undefined : author?.displayName;
@@ -50,6 +54,7 @@ export const createPublishPostStore = () =>
           title,
           content,
           link,
+          ...(gallery ? { gallery } : {}),
           flairs,
           spoiler,
           ...(challengeRequest ? { challengeRequest } : {}),
@@ -73,6 +78,7 @@ export const createPublishPostStore = () =>
           title,
           content,
           link,
+          gallery,
           flairs,
           spoiler,
           challengeRequest,
@@ -87,6 +93,7 @@ export const createPublishPostStore = () =>
         title: undefined,
         content: undefined,
         link: undefined,
+        gallery: undefined,
         flairs: undefined,
         spoiler: undefined,
         challengeRequest: undefined,

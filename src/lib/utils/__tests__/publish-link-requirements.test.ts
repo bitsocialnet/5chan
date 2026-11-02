@@ -3,7 +3,9 @@ import type { TFunction } from 'i18next';
 import {
   getEffectivePostLinkFeatures,
   getEffectiveReplyLinkFeatures,
+  getMaxGalleryItems,
   getNoReplyLinks,
+  getPostFilesValidationError,
   getPublishLinkValidationError,
   getRequirePostLink,
   getRequirePostLinkIsMedia,
@@ -122,5 +124,41 @@ describe('publish link feature helpers', () => {
     expect(getRequireReplyLink(features)).toBe(false);
     expect(getRequireReplyLinkIsMedia(features, false)).toBe(false);
     expect(getNoReplyLinks(features)).toBe(false);
+  });
+});
+
+describe('getMaxGalleryItems', () => {
+  it("reads the board's post or reply maximum, and allows no gallery without one", () => {
+    const features = { maxPostGalleryItems: 4, maxReplyGalleryItems: 2 };
+    expect(getMaxGalleryItems(features, false)).toBe(4);
+    expect(getMaxGalleryItems(features, true)).toBe(2);
+    expect(getMaxGalleryItems({}, false)).toBe(0);
+    expect(getMaxGalleryItems(undefined, true)).toBe(0);
+  });
+
+  it('ignores invalid maximums and offers no more files than 5chan shows', () => {
+    for (const maxPostGalleryItems of [0, -1, 1.5, '3', Number.NaN]) {
+      expect(getMaxGalleryItems({ maxPostGalleryItems }, false)).toBe(0);
+    }
+    expect(getMaxGalleryItems({ maxPostGalleryItems: 50 }, false)).toBe(20);
+  });
+});
+
+describe('getPostFilesValidationError', () => {
+  const png = attachmentOf('a.png', 'image/png');
+  const webm = attachmentOf('b.webm', 'video/webm');
+  const swf = attachmentOf('game.swf', 'application/x-shockwave-flash');
+
+  it('allows the link file plus as many gallery files as the board takes', () => {
+    expect(getPostFilesValidationError([png], 0, t)).toBeNull();
+    expect(getPostFilesValidationError([png, webm, png], 2, t)).toBeNull();
+    expect(getPostFilesValidationError([png, webm], 0, t)).toBe('error: too_many_files_alert');
+    expect(getPostFilesValidationError([png, webm, png, png], 2, t)).toBe('error: too_many_files_alert');
+  });
+
+  it('keeps several files to images and videos, but lets a lone file be any supported type', () => {
+    expect(getPostFilesValidationError([swf], 2, t)).toBeNull();
+    expect(getPostFilesValidationError([png, swf], 2, t)).toBe('error: gallery_file_not_image_or_video_alert');
+    expect(getPostFilesValidationError([swf, png], 2, t)).toBe('error: gallery_file_not_image_or_video_alert');
   });
 });

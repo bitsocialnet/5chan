@@ -463,7 +463,7 @@ const NO_GALLERY_MEDIA: CommentMediaInfo[] = [];
 // The protocol sets no maximum, communities check theirs only on publish and older ones not at all, so a post shows
 // at most this many gallery files and one comment can't make every viewer load hundreds of them. Reddit and Instagram
 // galleries stop at 20 too.
-const MAX_GALLERY_FILES = 20;
+export const MAX_GALLERY_FILES = 20;
 
 const getGalleryDimension = (value: unknown): number | undefined => (typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : undefined);
 

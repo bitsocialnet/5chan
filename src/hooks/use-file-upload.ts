@@ -9,7 +9,7 @@ import { getFileAttachment, UPLOAD_FILE_ACCEPT } from '../lib/media-hosting/atta
 import { orchestrateUpload } from '../lib/media-hosting/upload-orchestrator';
 import { stripMediaMetadata } from '../lib/media-metadata/strip-media-metadata';
 import { ensureProviderAvailability } from '../lib/media-hosting/provider-availability';
-import { selectFileViaInput } from '../lib/utils/file-picker-utils';
+import { selectFilesViaInput } from '../lib/utils/file-picker-utils';
 import useMediaHostingStore from '../stores/use-media-hosting-store';
 import type { AttachedMedia, ProviderId, UploadAttemptStage, UploadPhase } from '../lib/media-hosting/types';
 
@@ -232,29 +232,38 @@ export function useFileUpload() {
     [setShowLinkField, t, uploadMode],
   );
 
-  /** Opens the file picker and returns the chosen media without uploading it, or null when cancelled. */
-  const chooseFile = useCallback(async (): Promise<AttachedMedia | null> => {
-    if (uploadMode === 'none') return null;
+  /**
+   * Opens the file picker and returns the chosen media without uploading it, none when cancelled. With `multiple`
+   * the browser picker takes several files; the Android picker still takes one.
+   */
+  const chooseFiles = useCallback(
+    async (multiple = true): Promise<AttachedMedia[]> => {
+      if (uploadMode === 'none') return [];
 
-    const runtime = getMediaHostingRuntime();
-    try {
-      if (runtime === 'android') {
-        // The native picker keeps the file native-side, so videos never cross the bridge as base64.
-        const picked = await FileUploader.pickMedia();
-        return { kind: 'picked', id: picked.id, name: picked.fileName, mimeType: picked.mimeType, webPath: picked.webPath };
+      const runtime = getMediaHostingRuntime();
+      try {
+        if (runtime === 'android') {
+          // The native picker keeps the file native-side, so videos never cross the bridge as base64.
+          const picked = await FileUploader.pickMedia();
+          return [{ kind: 'picked', id: picked.id, name: picked.fileName, mimeType: picked.mimeType, webPath: picked.webPath }];
+        }
+        // Electron keeps the focus fallback; browsers emit `cancel`, and Safari can deliver
+        // `change` after the fallback window, which would drop the selection.
+        const files = await selectFilesViaInput(UPLOAD_FILE_ACCEPT, { multiple, resolveOnWindowFocus: runtime === 'electron' });
+        return files.map(getFileAttachment);
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        if (errorMessage !== FILE_SELECTION_CANCELLED_ERROR) {
+          window.alert(`${t('error')}: ${errorMessage}`);
+        }
+        return [];
       }
-      // Electron keeps the focus fallback; browsers emit `cancel`, and Safari can deliver
-      // `change` after the fallback window, which would drop the selection.
-      const file = await selectFileViaInput(UPLOAD_FILE_ACCEPT, { resolveOnWindowFocus: runtime === 'electron' });
-      return file ? getFileAttachment(file) : null;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      if (errorMessage !== FILE_SELECTION_CANCELLED_ERROR) {
-        window.alert(`${t('error')}: ${errorMessage}`);
-      }
-      return null;
-    }
-  }, [t, uploadMode]);
+    },
+    [t, uploadMode],
+  );
+
+  /** Opens the file picker and returns the chosen media without uploading it, or null when cancelled. */
+  const chooseFile = useCallback(async (): Promise<AttachedMedia | null> => (await chooseFiles(false))[0] ?? null, [chooseFiles]);
 
   /**
    * Uploads attached media through the enabled providers; alerts and returns null when the upload fails.
@@ -298,6 +307,7 @@ export function useFileUpload() {
     isUploading: uploadPhase !== null,
     uploadPhase,
     chooseFile,
+    chooseFiles,
     uploadAttachment,
   };
 }

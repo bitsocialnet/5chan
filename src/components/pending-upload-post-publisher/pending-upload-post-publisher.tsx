@@ -6,6 +6,7 @@ import type { Comment } from '@bitsocial/bitsocial-react-hooks';
 import { useFileUpload } from '../../hooks/use-file-upload';
 import usePublishPost from '../../hooks/use-publish-post';
 import useSpamBlockerPrecheck from '../../hooks/use-spam-blocker-precheck';
+import { uploadGalleryAttachments } from '../../lib/media-hosting/attached-media';
 import type { AttachedMedia } from '../../lib/media-hosting/types';
 import { getShownPendingUploadId, isPendingUploadPostPath } from '../../lib/utils/pending-post-route-state';
 import { getNonokoPendingRouteState } from '../../lib/utils/post-options-utils';
@@ -33,7 +34,7 @@ const Publisher = ({ pendingUploadPost }: { pendingUploadPost: PendingUploadPost
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { pathname, state: locationState } = useLocation();
-  const { id, attachment, authorRole, boardChallenges, boardPath, draftKey, nonokoRedirectPath, publishOptions } = pendingUploadPost;
+  const { id, attachment, authorRole, boardChallenges, boardPath, draftKey, galleryAttachments, nonokoRedirectPath, publishOptions } = pendingUploadPost;
   const { uploadAttachment } = useFileUpload();
   const runSpamBlockerPrecheck = useSpamBlockerPrecheck({ communityAddress: publishOptions.communityAddress });
   // Its own publish options store: the post form's shared one would hand this post's title, link and pass
@@ -174,21 +175,30 @@ const Publisher = ({ pendingUploadPost }: { pendingUploadPost: PendingUploadPost
       if (!isPendingUploadPost(id)) return;
 
       const { setPendingUploadPhase } = usePendingUploadPostStore.getState();
-      const uploaded = await uploadAttachment(attachment, (phase) => setPendingUploadPhase(id, phase));
+      const upload = (media: AttachedMedia) => uploadAttachment(media, (phase) => setPendingUploadPhase(id, phase));
+      const uploaded = await upload(attachment);
       if (!uploaded) {
         returnToForm();
         return;
       }
       if (!isPendingUploadPost(id)) return;
-      // A post the board rejects returns to the form with this link, so posting again does not upload again.
+      const uploadedGallery = await uploadGalleryAttachments(galleryAttachments ?? [], upload, () => isPendingUploadPost(id));
+      if (!uploadedGallery) {
+        returnToForm();
+        return;
+      }
+      if (!isPendingUploadPost(id)) return;
+      const gallery = uploadedGallery.length > 0 ? uploadedGallery : undefined;
+      // A post the board rejects returns to the form with these files, so posting again does not upload again.
       uploadedLinkRef.current = uploaded.url;
       if (usePostFormDraftsStore.getState().forms[draftKey]?.draft.attachment === attachment) {
-        usePostFormDraftsStore.getState().updateDraft(draftKey, { attachment: undefined, link: uploaded.url });
+        usePostFormDraftsStore.getState().updateDraft(draftKey, { attachment: undefined, galleryAttachments: undefined, link: uploaded.url, gallery });
       }
 
       await publishPost({
         ...publishOptions,
         link: uploaded.url,
+        gallery,
         // The pre-check's answers keep the post's other answers, such as its country flag.
         ...(precheck.status === 'passed' ? { challengeRequest: { challengeAnswers: precheck.challengeAnswers } } : {}),
       });

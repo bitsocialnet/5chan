@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import capitalize from 'lodash/capitalize';
+import { readMediaDimensions } from '../../lib/media-hosting/attached-media';
 import type { AttachedMedia } from '../../lib/media-hosting/types';
 import { type CommentMediaInfo, formatFileSize } from '../../lib/utils/media-utils';
 import { truncateWithEllipsisInMiddle } from '../../lib/utils/string-utils';
@@ -42,20 +43,9 @@ const useLocalMediaDimensions = (url: string | undefined, mediaType: PreviewMedi
   useEffect(() => {
     if (!url || !mediaType) return;
     let cancelled = false;
-    const settle = (width: number, height: number) => {
-      if (!cancelled && width > 0 && height > 0) setDimensions({ url, width, height });
-    };
-    if (mediaType === 'image') {
-      const image = new Image();
-      image.onload = () => settle(image.naturalWidth, image.naturalHeight);
-      image.src = url;
-    } else {
-      const video = document.createElement('video');
-      video.preload = 'metadata';
-      video.muted = true;
-      video.onloadedmetadata = () => settle(video.videoWidth, video.videoHeight);
-      video.src = url;
-    }
+    void readMediaDimensions(url, mediaType).then((read) => {
+      if (!cancelled && read) setDimensions({ url, ...read });
+    });
     return () => {
       cancelled = true;
     };
@@ -73,22 +63,13 @@ const getFileDetails = (attachment: AttachedMedia, dimensions: { width: number; 
 
 const UPLOAD_PHASE_LABEL_KEYS: Partial<Record<PendingUploadPhase, string>> = { uploading: 'uploading', checking: 'running_automated_checks' };
 
-/**
- * The file row of a new thread whose file is not uploaded yet: the local file as its thumbnail, and the
- * upload's progress after its size.
- */
-const PendingUploadFile = ({ pendingUploadId, spoiler }: { pendingUploadId: number; spoiler?: boolean }) => {
+/** One local file's row: the file as its thumbnail, and the upload's progress after its size when given. */
+const PendingUploadFileRow = ({ attachment, phaseLabelKey, spoiler }: { attachment: AttachedMedia; phaseLabelKey?: string; spoiler?: boolean }) => {
   const { t } = useTranslation();
-  const pendingUploadPost = usePendingUploadPostStore((state) => state.pendingUploadPosts.find((post) => post.id === pendingUploadId));
-  const attachment = pendingUploadPost?.attachment;
-  const mediaType = attachment ? getPreviewMediaType(attachment.mimeType) : undefined;
+  const mediaType = getPreviewMediaType(attachment.mimeType);
   const previewUrl = useLocalPreviewUrl(attachment);
   const dimensions = useLocalMediaDimensions(previewUrl, mediaType);
   const [showThumbnail, setShowThumbnail] = useState(true);
-
-  if (!attachment) return null;
-
-  const phaseLabelKey = pendingUploadPost.phase ? UPLOAD_PHASE_LABEL_KEYS[pendingUploadPost.phase] : undefined;
   const commentMediaInfo: CommentMediaInfo | undefined = previewUrl && mediaType ? { url: previewUrl, type: mediaType } : undefined;
 
   return (
@@ -115,6 +96,28 @@ const PendingUploadFile = ({ pendingUploadId, spoiler }: { pendingUploadId: numb
           />
         </div>
       )}
+    </div>
+  );
+};
+
+/**
+ * The file rows of a new thread whose files are not uploaded yet, with the upload's progress on the first. Several
+ * files sit in a row, as a published post's gallery does.
+ */
+const PendingUploadFile = ({ pendingUploadId, spoiler }: { pendingUploadId: number; spoiler?: boolean }) => {
+  const pendingUploadPost = usePendingUploadPostStore((state) => state.pendingUploadPosts.find((post) => post.id === pendingUploadId));
+  if (!pendingUploadPost?.attachment) return null;
+
+  const phaseLabelKey = pendingUploadPost.phase ? UPLOAD_PHASE_LABEL_KEYS[pendingUploadPost.phase] : undefined;
+  const { attachment, galleryAttachments = [] } = pendingUploadPost;
+  if (galleryAttachments.length === 0) return <PendingUploadFileRow attachment={attachment} phaseLabelKey={phaseLabelKey} spoiler={spoiler} />;
+
+  return (
+    <div className={styles.files}>
+      {[attachment, ...galleryAttachments].map((media, index) => (
+        // A pending post's files never change, so their positions identify them.
+        <PendingUploadFileRow key={`${pendingUploadId}:${index}`} attachment={media} phaseLabelKey={index === 0 ? phaseLabelKey : undefined} spoiler={spoiler} />
+      ))}
     </div>
   );
 };
