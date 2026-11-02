@@ -14,7 +14,7 @@ export const trackPageView = (pathname: string): void => {
     .catch(() => {});
 };
 
-export const trackPostingEvent = (event: PostingAnalyticsEvent, context: { kind: 'thread' | 'reply'; communityAddress?: string }): void => {
+export const trackPostingEvent = (event: PostingAnalyticsEvent, context: { kind: 'thread' | 'reply' }): void => {
   if (!isAnalyticsEnabled()) return;
   void getClient()
     .then((client) => client.trackPostingEvent(event, context))

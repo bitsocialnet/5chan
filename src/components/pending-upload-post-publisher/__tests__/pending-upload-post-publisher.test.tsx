@@ -134,10 +134,10 @@ describe('PendingUploadPostPublisher', () => {
     [{ status: 'stopped' }, 'post_cancelled'],
   ])('records a precheck outcome before any upload: %s', async (result, event) => {
     testState.precheckMock.mockResolvedValue(result);
-    const analyticsAttempt = startPostingAnalytics({ kind: 'thread', communityAddress: 'music-posting.eth' });
+    const analyticsAttempt = startPostingAnalytics({ kind: 'thread' });
     await submitPost({ analyticsAttempt });
     expect(testState.uploadAttachmentMock).not.toHaveBeenCalled();
-    expect(testState.analyticsMock.mock.calls).toEqual([[event, { kind: 'thread', communityAddress: 'music-posting.eth' }]]);
+    expect(testState.analyticsMock.mock.calls).toEqual([[event, { kind: 'thread' }]]);
   });
 
   it('records a failed upload and carries a successful upload attempt into the publisher', async () => {

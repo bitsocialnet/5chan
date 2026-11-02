@@ -29,7 +29,7 @@ describe('analytics privacy', () => {
     expect(getAnalyticsPath('/g/thread/private-cid')).toBe('/g/thread');
     expect(() => trackPageView('/g')).not.toThrow();
     await settle();
-    expect(sdk.pageview).toHaveBeenCalledExactlyOnceWith({ path: '/g', route: '/g' });
+    expect(sdk.pageview).toHaveBeenCalledExactlyOnceWith({ path: '/g', route: '/[board]' });
   });
   it.each([
     ['/', '/'],
@@ -72,19 +72,34 @@ describe('analytics privacy', () => {
     });
     expect(sanitizeAnalyticsEvent({ type: 'event', url: 'https://5chan.app/?token=private#/secret' })).toEqual({
       type: 'event',
-      url: 'https://5chan.app/other/thread',
+      url: 'https://5chan.app/',
     });
     expect(sanitizeAnalyticsEvent({ type: 'pageview', url: 'invalid url' })).toBeNull();
   });
 
-  it('sends exactly two safe properties per posting event', async () => {
+  it.each([
+    ['/', '/'],
+    ['/g', '/[board]'],
+    ['/g/thread', '/[board]/thread'],
+    ['/other/catalog', '/[board]/catalog'],
+    ['/trash/page', '/[board]/page'],
+    ['/all/catalog', '/all/catalog'],
+    ['/mod/queue', '/mod/queue'],
+    ['/search/catalog', '/search/catalog'],
+    ['/faq', '/faq'],
+  ])('routes %s as %s so custom events, which carry the route, never name a board', async (path, route) => {
+    const { getAnalyticsRoute } = await import('../analytics/client');
+    expect(getAnalyticsRoute(path)).toBe(route);
+  });
+
+  it('sends only the thread or reply kind with a posting event', async () => {
     const { trackPostingEvent } = await import('../analytics');
-    trackPostingEvent('post_challenge_failed', { kind: 'thread', communityAddress: 'technology-posting.bso' });
-    trackPostingEvent('post_upload_failed', { kind: 'reply', communityAddress: 'private-board.bso' });
+    trackPostingEvent('post_challenge_failed', { kind: 'thread' });
+    trackPostingEvent('post_upload_failed', { kind: 'reply' });
     await settle();
     expect(sdk.track.mock.calls).toEqual([
-      ['post_challenge_failed', { board: 'g', kind: 'thread' }],
-      ['post_upload_failed', { board: 'other', kind: 'reply' }],
+      ['post_challenge_failed', { kind: 'thread' }],
+      ['post_upload_failed', { kind: 'reply' }],
     ]);
   });
 });
@@ -97,7 +112,7 @@ describe('analytics initialization', () => {
     trackPageView('/g/thread/second-cid');
     await settle();
     expect(sdk.inject).toHaveBeenCalledExactlyOnceWith({ disableAutoTrack: true, beforeSend: sanitizeAnalyticsEvent, mode: 'production' });
-    expect(sdk.pageview.mock.calls).toEqual([[{ path: '/g/thread', route: '/g/thread' }], [{ path: '/g/thread', route: '/g/thread' }]]);
+    expect(sdk.pageview.mock.calls).toEqual([[{ path: '/g/thread', route: '/[board]/thread' }], [{ path: '/g/thread', route: '/[board]/thread' }]]);
   });
 
   it.each([
@@ -131,7 +146,7 @@ describe('analytics initialization', () => {
     const { trackPageView } = await import('../analytics');
     trackPageView('/g');
     await settle();
-    expect(sdk.pageview).toHaveBeenCalledExactlyOnceWith({ path: '/g', route: '/g' });
+    expect(sdk.pageview).toHaveBeenCalledExactlyOnceWith({ path: '/g', route: '/[board]' });
   });
 
   it('does not throw or reject into the app if analytics initialization or tracking fails', async () => {

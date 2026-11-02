@@ -20,7 +20,8 @@ for (const board of SPECIAL_BOARDS) {
   }
 }
 
-export const getAnalyticsBoard = (address?: string): string => (address ? (publicBoards.get(normalizeBoardAddress(address)) ?? 'other') : 'other');
+const getAnalyticsBoard = (address: string): string => publicBoards.get(normalizeBoardAddress(address)) ?? 'other';
+const boardCodes = new Set([...publicBoards.values(), 'other']);
 
 const publicPages = new Set(['faq', 'pass', 'rules', 'blotter', 'not-found', 'not-allowed']);
 const aggregateBoards = new Set(['all', 'subs', 'mod']);
@@ -54,11 +55,19 @@ export const getAnalyticsPath = (pathname: string): string => {
   return '/not-found';
 };
 
+// The SDK attaches the last pageview's route to every custom event, outside beforeSend's reach,
+// so the route names the page type without its board. The pageview URL keeps the board.
+export const getAnalyticsRoute = (path: string): string => {
+  const [first, ...rest] = path.split('/').slice(1);
+  return boardCodes.has(first) ? ['', '[board]', ...rest].join('/') : path;
+};
+
 export const sanitizeAnalyticsEvent = (event: BeforeSendEvent): BeforeSendEvent | null => {
   if (!isAnalyticsEnabled()) return null;
   try {
-    const pathname = event.type === 'event' ? window.location.hash.slice(1) : new URL(event.url).pathname;
-    return { ...event, url: new URL(getAnalyticsPath(pathname), window.location.origin).href };
+    // Custom events are failed post attempts; their page would name the board the visitor posted to.
+    const path = event.type === 'event' ? '/' : getAnalyticsPath(new URL(event.url).pathname);
+    return { ...event, url: new URL(path, window.location.origin).href };
   } catch {
     return null;
   }
@@ -75,12 +84,11 @@ export const trackPageView = (pathname: string): void => {
   if (!isAnalyticsEnabled()) return;
   initialize();
   const path = getAnalyticsPath(pathname);
-  pageview({ path, route: path });
+  pageview({ path, route: getAnalyticsRoute(path) });
 };
 
-export const trackPostingEvent = (event: PostingAnalyticsEvent, context: { kind: 'thread' | 'reply'; communityAddress?: string }): void => {
+export const trackPostingEvent = (event: PostingAnalyticsEvent, context: { kind: 'thread' | 'reply' }): void => {
   if (!isAnalyticsEnabled()) return;
   initialize();
-  const properties = { board: getAnalyticsBoard(context.communityAddress), kind: context.kind };
-  track(event, properties);
+  track(event, { kind: context.kind });
 };

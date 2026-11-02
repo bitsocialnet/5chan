@@ -686,7 +686,7 @@ describe('PostForm', () => {
     });
     await renderPostForm('/mu');
     await dispatchInput(container.querySelector('textarea') as HTMLTextAreaElement, 'private draft edited');
-    expect(testState.analyticsMock.mock.calls).toEqual([['post_validation_failed', { kind: 'thread', communityAddress: 'music-posting.eth' }]]);
+    expect(testState.analyticsMock.mock.calls).toEqual([['post_validation_failed', { kind: 'thread' }]]);
   });
 
   it('shows the closed-thread notice when the current post can no longer receive replies', async () => {

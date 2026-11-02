@@ -1,6 +1,6 @@
 import { trackPostingEvent, type PostingAnalyticsEvent } from './analytics';
 
-export type PostingAnalyticsContext = { kind: 'thread' | 'reply'; communityAddress?: string };
+export type PostingAnalyticsContext = { kind: 'thread' | 'reply' };
 type Verification = { challengeSuccess?: boolean; challengeErrors?: unknown; reason?: unknown };
 
 const trackPostingSafely = (event: PostingAnalyticsEvent, context: PostingAnalyticsContext) => {

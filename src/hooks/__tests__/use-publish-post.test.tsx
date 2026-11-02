@@ -88,7 +88,7 @@ describe('usePublishPost', () => {
   });
 
   it('keeps analytics attached to the submitted attempt after the form unmounts', async () => {
-    const attempt = startPostingAnalytics({ kind: 'thread', communityAddress: 'music.eth' });
+    const attempt = startPostingAnalytics({ kind: 'thread' });
     await act(async () => {
       latestValue.publishPost({ content: 'private draft' }, attempt);
     });
@@ -99,11 +99,11 @@ describe('usePublishPost', () => {
     });
     await callbacks?.onChallengeVerification?.({ challengeSuccess: false, reason: 'rejected' }, { communityAddress: 'music.eth' });
     await callbacks?.onChallengeVerification?.({ challengeSuccess: false, reason: 'rejected' }, { communityAddress: 'music.eth' });
-    expect(testState.analyticsMock.mock.calls).toEqual([['post_challenge_failed', { kind: 'thread', communityAddress: 'music.eth' }]]);
+    expect(testState.analyticsMock.mock.calls).toEqual([['post_challenge_failed', { kind: 'thread' }]]);
   });
 
   it('sends nothing when the board accepts the post', async () => {
-    const attempt = startPostingAnalytics({ kind: 'thread', communityAddress: 'music.eth' });
+    const attempt = startPostingAnalytics({ kind: 'thread' });
     await act(async () => {
       latestValue.publishPost({ content: 'private draft' }, attempt);
     });

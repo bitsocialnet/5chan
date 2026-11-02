@@ -10,7 +10,7 @@ describe('posting analytics attempts', () => {
   });
 
   it('sends nothing for an accepted post, even when callbacks repeat after unmount', () => {
-    const attempt = startPostingAnalytics({ kind: 'thread', communityAddress: 'board.eth' });
+    const attempt = startPostingAnalytics({ kind: 'thread' });
     attempt.verify({ challengeSuccess: true });
     attempt.verify({ challengeSuccess: true });
     attempt.finish('post_cancelled');

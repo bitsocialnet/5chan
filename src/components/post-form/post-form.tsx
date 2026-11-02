@@ -926,7 +926,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
       const inFlightUpload = attachment
         ? usePendingUploadPostStore.getState().pendingUploadPosts.find((upload) => upload.draftKey === draftKey && upload.attachment === attachment)
         : undefined;
-      const attempt = inFlightUpload ? undefined : startPostingAnalytics({ kind: 'thread', communityAddress: effectiveBoardAddress });
+      const attempt = inFlightUpload ? undefined : startPostingAnalytics({ kind: 'thread' });
       let handedOff = false;
       try {
         const appliedThumbnailConversion = await applyPendingConversion();
@@ -1173,7 +1173,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
 
   const onPublishReply = () =>
     runPublishSubmission(async () => {
-      const attempt = startPostingAnalytics({ kind: 'reply', communityAddress: effectiveBoardAddress });
+      const attempt = startPostingAnalytics({ kind: 'reply' });
       let handedOff = false;
       let outcome: Parameters<PostingAnalyticsAttempt['finish']>[0] = 'post_validation_failed';
       try {

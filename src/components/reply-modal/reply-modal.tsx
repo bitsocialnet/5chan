@@ -248,7 +248,7 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
 
   const onPublishReply = () =>
     runPublishSubmission(async () => {
-      const attempt = startPostingAnalytics({ kind: 'reply', communityAddress });
+      const attempt = startPostingAnalytics({ kind: 'reply' });
       let handedOff = false;
       let outcome: Parameters<PostingAnalyticsAttempt['finish']>[0] = 'post_validation_failed';
       try {
