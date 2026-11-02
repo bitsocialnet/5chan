@@ -6,6 +6,7 @@ import {
   getMaxGalleryItems,
   getNoReplyLinks,
   getPostFilesValidationError,
+  getUploadedGalleryValidationError,
   getPublishLinkValidationError,
   getRequirePostLink,
   getRequirePostLinkIsMedia,
@@ -147,6 +148,20 @@ describe('getMaxGalleryItems', () => {
     const features = { maxPostGalleryItems: 4, maxReplyGalleryItems: 2 };
     expect(getMaxGalleryItems(features, false, true)).toBe(0);
     expect(getMaxGalleryItems(features, true, true)).toBe(0);
+  });
+});
+
+describe('getUploadedGalleryValidationError', () => {
+  const gallery = [
+    { url: 'https://forgeimg.net/abc/b.png', htmlTagName: 'img' as const },
+    { url: 'https://forgeimg.net/abc/c.webm', htmlTagName: 'video' as const },
+  ];
+
+  it('refuses a kept gallery larger than the board now takes', () => {
+    expect(getUploadedGalleryValidationError(undefined, 0, t)).toBeNull();
+    expect(getUploadedGalleryValidationError(gallery, 2, t)).toBeNull();
+    expect(getUploadedGalleryValidationError(gallery, 1, t)).toBe('error: too_many_files_alert');
+    expect(getUploadedGalleryValidationError(gallery, 0, t)).toBe('error: too_many_files_alert');
   });
 });
 

@@ -1873,6 +1873,41 @@ describe('PostForm', () => {
     expect(testState.chooseFilesMock).not.toHaveBeenCalled();
   });
 
+  it('refuses a kept gallery on a board that takes fewer files, and posts it on one that takes them', async () => {
+    // jsdom never loads images, so the kept link's image loads as soon as it gets a source.
+    class LoadingImage {
+      onload: (() => void) | null = null;
+      onerror: (() => void) | null = null;
+      set src(_url: string) {
+        queueMicrotask(() => this.onload?.());
+      }
+    }
+    vi.stubGlobal('Image', LoadingImage);
+    const link = 'https://forgeimg.net/abc/first.png';
+    const gallery = [
+      { url: 'https://forgeimg.net/abc/second.png', htmlTagName: 'img' as const },
+      { url: 'https://forgeimg.net/abc/third.png', htmlTagName: 'img' as const },
+    ];
+    testState.communities['music-posting.eth'] = { address: 'music-posting.eth', features: {} };
+    testState.communities['mod.eth'] = { address: 'mod.eth', features: { maxPostGalleryItems: 2 } };
+    // The form keeps the uploaded files after the board it posted to did not take the thread.
+    usePostFormDraftsStore.getState().updateDraft('/all', { communityAddress: 'mod.eth', link, gallery });
+
+    await renderPostForm('/all');
+    await clickByText(container, 'start_new_thread');
+    const table = container.querySelector('table') as HTMLTableElement;
+    await dispatchChange(table.querySelector('select') as HTMLSelectElement, 'music-posting.eth');
+    await clickByText(table, 'post');
+
+    expect(container.textContent).toContain('error: too_many_files_alert:1');
+    expect(testState.publishPostMock).not.toHaveBeenCalled();
+
+    await dispatchChange(table.querySelector('select') as HTMLSelectElement, 'mod.eth');
+    await clickByText(table, 'post');
+
+    expect(testState.publishPostMock).toHaveBeenCalledWith(expect.objectContaining({ link, gallery }));
+  });
+
   it('uploads every file of an inline reply and publishes the rest as its gallery', async () => {
     // jsdom never loads images, so this one reports its size as soon as it gets a source.
     class SizedImage {

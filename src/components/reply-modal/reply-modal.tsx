@@ -10,6 +10,7 @@ import {
   getMaxGalleryItems,
   getNoReplyLinks,
   getPostFilesValidationError,
+  getUploadedGalleryValidationError,
   getPublishLinkValidationError,
   getRequireReplyLink,
   getRequireReplyLinkIsMedia,
@@ -292,7 +293,10 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
           requiredMediaLinkAlertKey: 'reply_media_link_required_alert',
           noLinksAlertKey: 'reply_links_not_allowed_alert',
           t,
-        }) ?? (attachment ? getPostFilesValidationError([attachment, ...galleryAttachments], maxGalleryItems, t) : null);
+        }) ??
+        (attachment
+          ? getPostFilesValidationError([attachment, ...galleryAttachments], maxGalleryItems, t)
+          : getUploadedGalleryValidationError(getDraftGallery(currentUrl), maxGalleryItems, t));
       if (linkValidationError) {
         setError(linkValidationError);
         return;

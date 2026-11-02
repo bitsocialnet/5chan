@@ -1,3 +1,4 @@
+import type { CommentGalleryItem } from '@bitsocial/bitsocial-react-hooks';
 import type { TFunction } from 'i18next';
 import { isPublishFileAttachment } from '../media-hosting/attached-media';
 import type { AttachedMedia } from '../media-hosting/types';
@@ -89,15 +90,24 @@ export const getMaxGalleryItems = (communityFeatures: GalleryFeatures | undefine
   return typeof maxItems === 'number' && Number.isInteger(maxItems) && maxItems > 0 ? Math.min(maxItems, MAX_GALLERY_FILES) : 0;
 };
 
+const getTooManyFilesError = (maxGalleryItems: number, t: TFunction) => `${t('error')}: ${t('too_many_files_alert', { count: 1 + maxGalleryItems })}`;
+
 /**
  * Checks the files a post sends: the first becomes its link and the rest its gallery, which the board caps and,
  * like every gallery, keeps to media, so several files must all be images or videos.
  */
 export const getPostFilesValidationError = (files: AttachedMedia[], maxGalleryItems: number, t: TFunction): string | null => {
-  if (files.length > 1 + maxGalleryItems) return `${t('error')}: ${t('too_many_files_alert', { count: 1 + maxGalleryItems })}`;
+  if (files.length > 1 + maxGalleryItems) return getTooManyFilesError(maxGalleryItems, t);
   if (files.length > 1 && !files.every(isPublishFileAttachment)) return `${t('error')}: ${t('gallery_file_not_image_or_video_alert')}`;
   return null;
 };
+
+/**
+ * Checks the gallery a form kept from an attempt the board did not take against the board it now posts to, which can
+ * be another board, chosen on /all, or a board that lowered its limit since.
+ */
+export const getUploadedGalleryValidationError = (gallery: CommentGalleryItem[] | undefined, maxGalleryItems: number, t: TFunction): string | null =>
+  gallery && gallery.length > maxGalleryItems ? getTooManyFilesError(maxGalleryItems, t) : null;
 
 export const getPublishLinkValidationError = ({
   link,

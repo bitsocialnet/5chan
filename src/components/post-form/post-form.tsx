@@ -21,6 +21,7 @@ import {
   getMaxGalleryItems,
   getNoReplyLinks,
   getPostFilesValidationError,
+  getUploadedGalleryValidationError,
   getPublishLinkValidationError,
   getRequirePostLink,
   getRequirePostLinkIsMedia,
@@ -995,7 +996,10 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
           requiredLinkAlertKey: 'post_link_required_alert',
           requiredMediaLinkAlertKey: 'post_media_link_required_alert',
           t,
-        }) ?? (attachment ? getPostFilesValidationError([attachment, ...galleryAttachments], maxGalleryItems, t) : null);
+        }) ??
+        (attachment
+          ? getPostFilesValidationError([attachment, ...galleryAttachments], maxGalleryItems, t)
+          : getUploadedGalleryValidationError(getDraftGallery(currentUrl), maxGalleryItems, t));
       if (linkValidationError) {
         setFormError(linkValidationError);
         return;
@@ -1230,7 +1234,10 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
           requiredMediaLinkAlertKey: 'reply_media_link_required_alert',
           noLinksAlertKey: 'reply_links_not_allowed_alert',
           t,
-        }) ?? (attachment ? getPostFilesValidationError([attachment, ...galleryAttachments], maxGalleryItems, t) : null);
+        }) ??
+        (attachment
+          ? getPostFilesValidationError([attachment, ...galleryAttachments], maxGalleryItems, t)
+          : getUploadedGalleryValidationError(getDraftGallery(currentUrl), maxGalleryItems, t));
       if (linkValidationError) {
         setFormError(linkValidationError);
         return;
