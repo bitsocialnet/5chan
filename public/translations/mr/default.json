@@ -600,5 +600,6 @@
   "board_may_be_offline": "फोरम कदाचित ऑफलाइन आहे किंवा त्यापर्यंत पोहोचता येत नाही.",
   "files_chosen": "{{count}} फाइल्स",
   "too_many_files_alert": "खूप जास्त फाइल्स. हा बोर्ड प्रत्येक पोस्टमध्ये जास्तीत जास्त {{count}} फाइल्स स्वीकारतो.",
-  "gallery_file_not_image_or_video_alert": "फक्त प्रतिमा आणि व्हिडिओ एकत्र पोस्ट करता येतात."
+  "gallery_file_not_image_or_video_alert": "फक्त प्रतिमा आणि व्हिडिओ एकत्र पोस्ट करता येतात.",
+  "directory_requirement_no_galleries": "प्रत्येक पोस्टला एक फाइल, गॅलरी नाहीत"
 }

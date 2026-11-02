@@ -339,6 +339,7 @@ describe('Directory', () => {
       { type: 'pseudonymityMode', mode: 'per-reply' },
       { type: 'safeForWork', safeForWork: true },
       { type: 'requirePostLinkIsMedia' },
+      { type: 'noGallery' },
       { type: 'pendingApproval' },
     ]);
     expect(testState.directoryVote.voteForAddress).not.toHaveBeenCalled();
@@ -357,6 +358,7 @@ describe('Directory', () => {
     expect(items).toEqual([
       'directory_requirement_ids_per_thread (features.pseudonymityMode: per-post)',
       'directory_requirement_nsfw (features.safeForWork: false)',
+      'directory_requirement_no_galleries (features.maxPostGalleryItems, features.maxReplyGalleryItems: 0)',
       'directory_requirement_mod_queue (challenges[].pendingApproval: true)',
     ]);
     expect(container.textContent).toContain('directory_requirements_footnote');
