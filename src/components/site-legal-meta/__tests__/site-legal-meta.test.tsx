@@ -9,7 +9,7 @@ vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string) =>
       ({
-        site_legal_meta_license_text: '5chan is FOSS under GPL-3.0-or-later.',
+        site_legal_meta_license_text: '5chan is what comes after 4chan.',
         site_legal_meta_powered_by: 'Powered by',
         site_legal_meta_contributors_link: 'Contributors',
       })[key] ?? key,
@@ -43,7 +43,7 @@ describe('SiteLegalMeta', () => {
       root.render(createElement(MemoryRouter, null, createElement(SiteLegalMeta, { order: 'license-first' })));
     });
 
-    expect(container.textContent).toContain('5chan is FOSS under GPL-3.0-or-later. Powered by Bitsocial');
+    expect(container.textContent).toContain('5chan is what comes after 4chan. Powered by Bitsocial');
 
     const bitsocialLink = container.querySelector<HTMLAnchorElement>('a[href="https://bitsocial.net"]');
     expect(bitsocialLink?.textContent).toBe('');
