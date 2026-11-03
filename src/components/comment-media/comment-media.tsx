@@ -48,6 +48,9 @@ const getMediaLoadFailureLabels = (url: string | undefined, t: ReturnType<typeof
   return { inline, openSourceLabel, statusLabel };
 };
 
+// A toggle button's label replaces its image's alt, so the author's description goes into the label.
+const getToggleLabel = (action: string, alt: string | undefined) => (alt ? `${action}: ${alt}` : action);
+
 const MediaLoadFailure = ({ compact = false, url }: { compact?: boolean; url?: string }) => {
   const { t } = useTranslation();
   const { inline, openSourceLabel, statusLabel } = getMediaLoadFailureLabels(url, t);
@@ -108,7 +111,7 @@ const Thumbnail = ({
   setShowThumbnail,
 }: MediaProps & { gifFrameState: GifFrameState }) => {
   const isMobile = useIsMobile();
-  const { patternThumbnailUrl, thumbnail, type, url } = commentMediaInfo || {};
+  const { alt, patternThumbnailUrl, thumbnail, type, url } = commentMediaInfo || {};
 
   let thumbnailComponent: React.ReactNode = null;
   const thumbnailDimensions = { '--width': displayWidth, '--height': displayHeight } as React.CSSProperties;
@@ -128,9 +131,9 @@ const Thumbnail = ({
       gifFrameStatus === 'loading' ? (
         <button type='button' className={`${styles.gifPlaceholder} ${styles.mediaToggleButton}`} aria-label='Loading GIF thumbnail' onClick={handleOpenMedia} />
       ) : (
-        <button type='button' className={styles.mediaToggleButton} aria-label='Open GIF' onClick={handleOpenMedia}>
+        <button type='button' className={styles.mediaToggleButton} aria-label={getToggleLabel('Open GIF', alt)} onClick={handleOpenMedia}>
           {gifFrameUrl ? (
-            <img src={gifFrameUrl} alt='' onLoad={() => requestMediaFileSize(url)} />
+            <img src={gifFrameUrl} alt={alt ?? ''} onLoad={() => requestMediaFileSize(url)} />
           ) : (
             url && <GifFirstFrameCanvas src={url} onLoad={() => requestMediaFileSize(url)} />
           )}
@@ -218,7 +221,7 @@ const Thumbnail = ({
 
 const Media = ({ commentMediaInfo, disableToggle, fileSize, isReply, setShowThumbnail }: MediaProps & { fileSize?: number }) => {
   const { t } = useTranslation();
-  const { thumbnail, type, url } = commentMediaInfo || {};
+  const { alt, thumbnail, type, url } = commentMediaInfo || {};
   const isMobile = useIsMobile();
   const fitExpandedImagesToScreen = useExpandedMediaStore((s) => s.fitExpandedImagesToScreen);
   const unmuteExpandedVideoSound = useExpandedMediaStore((s) => s.unmuteExpandedVideoSound);
@@ -235,10 +238,10 @@ const Media = ({ commentMediaInfo, disableToggle, fileSize, isReply, setShowThum
         <Embed url={url} />
       ) : type === 'gif' ? (
         disableToggle ? (
-          <img src={url} alt='' onLoad={handleMediaLoad} />
+          <img src={url} alt={alt ?? ''} onLoad={handleMediaLoad} />
         ) : (
-          <button type='button' className={styles.mediaToggleButton} aria-label='Collapse GIF' onClick={() => setShowThumbnail(true)}>
-            <img src={url} alt='' onLoad={handleMediaLoad} />
+          <button type='button' className={styles.mediaToggleButton} aria-label={getToggleLabel('Collapse GIF', alt)} onClick={() => setShowThumbnail(true)}>
+            <img src={url} alt={alt ?? ''} onLoad={handleMediaLoad} />
           </button>
         )
       ) : type === 'video' ? (
@@ -311,7 +314,7 @@ const Image = ({
   spoiler,
 }: ImageProps) => {
   const { t } = useTranslation();
-  const { type, url } = commentMediaInfo || {};
+  const { alt, type, url } = commentMediaInfo || {};
   const isReply = parentCid;
   const isMobile = useIsMobile();
   const [isImageExpanded, setIsImageExpanded] = useState(initialExpanded);
@@ -363,15 +366,15 @@ const Image = ({
         {hasError ? (
           <MediaLoadFailure compact url={url} />
         ) : disableToggle ? (
-          <img src={url} onError={handleError} onLoad={handleLoad} alt='' />
+          <img src={url} onError={handleError} onLoad={handleLoad} alt={alt ?? ''} />
         ) : (
           <button
             type='button'
             className={styles.mediaToggleButton}
-            aria-label={isImageExpanded ? 'Collapse image' : 'Expand image'}
+            aria-label={getToggleLabel(isImageExpanded ? 'Collapse image' : 'Expand image', alt)}
             onClick={() => setIsImageExpanded(!isImageExpanded)}
           >
-            <img src={url} onError={handleError} onLoad={handleLoad} alt='' />
+            <img src={url} onError={handleError} onLoad={handleLoad} alt={alt ?? ''} />
           </button>
         )}
       </span>
@@ -399,15 +402,15 @@ const Image = ({
       {hasError ? (
         <MediaLoadFailure url={url} />
       ) : disableToggle ? (
-        <img src={url} onError={handleError} onLoad={handleLoad} alt='' />
+        <img src={url} onError={handleError} onLoad={handleLoad} alt={alt ?? ''} />
       ) : (
         <button
           type='button'
           className={styles.mediaToggleButton}
-          aria-label={isImageExpanded ? 'Collapse image' : 'Expand image'}
+          aria-label={getToggleLabel(isImageExpanded ? 'Collapse image' : 'Expand image', alt)}
           onClick={() => setIsImageExpanded(!isImageExpanded)}
         >
-          <img src={url} onError={handleError} onLoad={handleLoad} alt='' />
+          <img src={url} onError={handleError} onLoad={handleLoad} alt={alt ?? ''} />
         </button>
       )}
     </span>

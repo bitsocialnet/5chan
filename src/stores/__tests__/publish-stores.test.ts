@@ -87,6 +87,24 @@ describe('publish stores', () => {
     expect(state.publishCommentOptions.link).toBe('https://i.imgur.com/YpB7qfa.jpg');
   });
 
+  it('passes a gallery to the publish options, but never an empty one, and clears it on reset', () => {
+    const gallery = [{ url: 'https://forgeimg.net/abc/second.png', htmlTagName: 'img' as const }];
+    usePublishPostStore.getState().setPublishPostStore({ communityAddress: 'board.bso', link: 'https://forgeimg.net/abc/first.png', gallery });
+    expect(usePublishPostStore.getState().publishCommentOptions.gallery).toBe(gallery);
+
+    usePublishPostStore.getState().setPublishPostStore({ communityAddress: 'board.bso', gallery: [] });
+    expect(usePublishPostStore.getState().publishCommentOptions).not.toHaveProperty('gallery');
+
+    usePublishReplyStore.getState().setPublishReplyStore({ communityAddress: 'board.bso', parentCid: 'thread', gallery });
+    expect(usePublishReplyStore.getState().publishCommentOptions.thread?.gallery).toBe(gallery);
+    usePublishReplyStore.getState().resetPublishReplyStore('thread');
+    expect(usePublishReplyStore.getState().gallery.thread).toBeUndefined();
+
+    usePublishPostStore.getState().setPublishPostStore({ communityAddress: 'board.bso', gallery });
+    usePublishPostStore.getState().resetPublishPostStore();
+    expect(usePublishPostStore.getState().gallery).toBeUndefined();
+  });
+
   it('usePublishReplyStore stores reply data per parentCid and resets a single thread', () => {
     const comment: PublishReplyInput = {
       author: { address: '0x123', displayName: 'Author Name', role: 'mod' },

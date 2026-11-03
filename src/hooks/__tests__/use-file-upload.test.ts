@@ -127,13 +127,14 @@ const upload = async (hook: () => HookSnapshot, media: AttachedMedia) => {
 };
 
 const fileMedia = (file: File): AttachedMedia => ({ kind: 'file', file, name: file.name, mimeType: file.type });
-const pickedMedia: AttachedMedia = {
+// A new object each time: the hook reuses the link of a file object it already uploaded.
+const getPickedMedia = (): AttachedMedia => ({
   kind: 'picked',
   id: 'picked-1',
   name: 'android.jpg',
   mimeType: 'image/jpeg',
   webPath: 'https://localhost/_capacitor_content_/media/picked-1',
-};
+});
 
 describe('useFileUpload', () => {
   beforeEach(() => {
@@ -184,6 +185,33 @@ describe('useFileUpload', () => {
       expect(hook().isUploading).toBe(false);
     });
 
+    it('lets the browser picker take several files when asked to, and one otherwise', async () => {
+      const hook = mountHook();
+      const files = [new File(['a'], 'a.png', { type: 'image/png' }), new File(['b'], 'b.webm', { type: 'video/webm' })];
+
+      let choosePromise: Promise<AttachedMedia[]> | undefined;
+      await act(async () => {
+        choosePromise = hook().chooseFiles();
+      });
+      const picker = document.querySelector('input[type="file"]') as HTMLInputElement;
+      expect(picker.multiple).toBe(true);
+      Object.defineProperty(picker, 'files', { configurable: true, value: files });
+      await act(async () => {
+        picker.dispatchEvent(new Event('change'));
+      });
+      let chosen: AttachedMedia[] = [];
+      await act(async () => {
+        chosen = (await choosePromise) ?? [];
+      });
+      expect(chosen.map(({ name }) => name)).toEqual(['a.png', 'b.webm']);
+
+      await act(async () => {
+        void hook().chooseFile();
+      });
+      expect((document.querySelector('input[type="file"]') as HTMLInputElement).multiple).toBe(false);
+      await selectFileFromHiddenInput(null);
+    });
+
     it('picks through the Electron picker without uploading', async () => {
       window.electronApi = { isElectron: true } as any;
       const hook = mountHook();
@@ -208,7 +236,7 @@ describe('useFileUpload', () => {
         chosen = await hook().chooseFile();
       });
 
-      expect(chosen).toEqual(pickedMedia);
+      expect(chosen).toEqual(getPickedMedia());
       expect(FileUploader.uploadPickedMedia).not.toHaveBeenCalled();
       expect(ensureProviderAvailability).not.toHaveBeenCalled();
     });
@@ -219,7 +247,7 @@ describe('useFileUpload', () => {
 
       vi.mocked(Capacitor.getPlatform).mockReturnValue('android');
       vi.mocked(FileUploader.pickMedia).mockRejectedValue(new Error('File selection cancelled'));
-      let chosen: AttachedMedia | null = pickedMedia;
+      let chosen: AttachedMedia | null = getPickedMedia();
       await act(async () => {
         chosen = await hook().chooseFile();
       });
@@ -266,6 +294,23 @@ describe('useFileUpload', () => {
       expect(orchestrateUpload).toHaveBeenCalledWith(file, ['forge'], expect.any(Function));
       expect(window.alert).not.toHaveBeenCalled();
       expect(hook().isUploading).toBe(false);
+    });
+
+    it('reuses the link of a file it already uploaded, so a retry after a later file fails uploads only that file', async () => {
+      const first = fileMedia(new File(['a'], 'first.png', { type: 'image/png' }));
+      const second = fileMedia(new File(['b'], 'second.png', { type: 'image/png' }));
+      vi.mocked(orchestrateUpload)
+        .mockResolvedValueOnce({ url: 'https://forgeimg.net/a/first.png' })
+        .mockRejectedValueOnce(new Error('rate limited'))
+        .mockResolvedValueOnce({ url: 'https://forgeimg.net/b/second.png' });
+      const hook = mountHook();
+
+      expect(await upload(hook, first)).toEqual({ url: 'https://forgeimg.net/a/first.png', fileName: 'first.png' });
+      expect(await upload(hook, second)).toBeNull();
+
+      expect(await upload(hook, first)).toEqual({ url: 'https://forgeimg.net/a/first.png', fileName: 'first.png' });
+      expect(await upload(hook, second)).toEqual({ url: 'https://forgeimg.net/b/second.png', fileName: 'second.png' });
+      expect(vi.mocked(orchestrateUpload).mock.calls.map(([file]) => (file as File).name)).toEqual(['first.png', 'second.png', 'second.png']);
     });
 
     it('returns the link and tells the uploader when the host holds the file for review', async () => {
@@ -338,7 +383,7 @@ describe('useFileUpload', () => {
       vi.mocked(FileUploader.uploadPickedMedia).mockResolvedValue({ url: 'https://files.catbox.moe/android.jpg', fileName: 'android.jpg', provider: 'catbox' });
       const hook = mountHook();
 
-      expect(await upload(hook, pickedMedia)).toEqual({ url: 'https://files.catbox.moe/android.jpg', fileName: 'android.jpg' });
+      expect(await upload(hook, getPickedMedia())).toEqual({ url: 'https://files.catbox.moe/android.jpg', fileName: 'android.jpg' });
       expect(FileUploader.uploadPickedMedia).toHaveBeenCalledWith({ id: 'picked-1', providerOrder: ['catbox'] });
       expect(FileUploader.uploadGeneratedMedia).not.toHaveBeenCalled();
     });
@@ -348,7 +393,7 @@ describe('useFileUpload', () => {
       vi.mocked(FileUploader.uploadPickedMedia).mockResolvedValue({ url: 'https://files.catbox.moe/random.jpg', fileName: 'random.jpg', provider: 'catbox' });
       const hook = mountHook();
 
-      await upload(hook, pickedMedia);
+      await upload(hook, getPickedMedia());
 
       const call = vi.mocked(FileUploader.uploadPickedMedia).mock.calls[0][0];
       expect([...call.providerOrder].sort()).toEqual(['catbox', 'imgbb', 'imgur']);
@@ -364,7 +409,7 @@ describe('useFileUpload', () => {
       vi.mocked(FileUploader.uploadPickedMedia).mockResolvedValue({ url, fileName: 'android.png', provider });
       const hook = mountHook();
 
-      expect((await upload(hook, pickedMedia))?.url).toBe(url);
+      expect((await upload(hook, getPickedMedia()))?.url).toBe(url);
       expect(FileUploader.uploadPickedMedia).toHaveBeenCalledWith({ id: 'picked-1', providerOrder: [provider] });
     });
 
@@ -394,7 +439,7 @@ describe('useFileUpload', () => {
       vi.mocked(FileUploader.uploadPickedMedia).mockRejectedValue(new Error('boom'));
       const hook = mountHook();
 
-      expect(await upload(hook, pickedMedia)).toBeNull();
+      expect(await upload(hook, getPickedMedia())).toBeNull();
       expect(window.alert).toHaveBeenCalledWith('upload_failed: boom. upload_failed_preferred_guidance');
       expect(setShowLinkFieldMock).toHaveBeenCalledWith(true);
       expect(hook().isUploading).toBe(false);
@@ -408,7 +453,7 @@ describe('useFileUpload', () => {
       vi.mocked(FileUploader.uploadPickedMedia).mockRejectedValue(rejection);
       const hook = mountHook();
 
-      await upload(hook, pickedMedia);
+      await upload(hook, getPickedMedia());
 
       expect(window.alert).toHaveBeenCalledWith('upload_failed. upload_failed_all_providers: catbox: timeout (stage=timeout, 5000ms)');
     });
@@ -427,7 +472,7 @@ describe('useFileUpload', () => {
       vi.mocked(FileUploader.uploadPickedMedia).mockRejectedValue(rejection);
       const hook = mountHook();
 
-      await upload(hook, pickedMedia);
+      await upload(hook, getPickedMedia());
 
       expect(window.alert).toHaveBeenCalledWith(
         'upload_failed. upload_failed_all_providers: catbox: timeout; imgbb: rate limit; imgur: Provider error: CREATE_ALBUM_FAIL (stage=provider_error, 2200ms, tried=[#file-input])',
@@ -442,7 +487,7 @@ describe('useFileUpload', () => {
       vi.mocked(orchestrateUpload).mockResolvedValue({ url: 'https://forgeimg.net/abc.jpg' });
       const hook = mountHook();
 
-      expect(await upload(hook, pickedMedia)).toEqual({ url: 'https://forgeimg.net/abc.jpg', fileName: 'android.jpg' });
+      expect(await upload(hook, getPickedMedia())).toEqual({ url: 'https://forgeimg.net/abc.jpg', fileName: 'android.jpg' });
       expect(fetchMock).toHaveBeenCalledWith('https://localhost/_capacitor_content_/media/picked-1');
       const [file, order] = vi.mocked(orchestrateUpload).mock.calls[0];
       expect(order).toEqual(['forge']);
@@ -478,7 +523,7 @@ describe('useFileUpload', () => {
       );
       const hook = mountHook();
 
-      expect(await upload(hook, pickedMedia)).toEqual({ url: 'https://i.ibb.co/example/android.jpg', fileName: 'android.jpg' });
+      expect(await upload(hook, getPickedMedia())).toEqual({ url: 'https://i.ibb.co/example/android.jpg', fileName: 'android.jpg' });
       expect(vi.mocked(FileUploader.uploadPickedMedia).mock.calls.map(([options]) => options.providerOrder)).toEqual([['catbox'], ['imgbb', 'imgur']]);
       expect(window.alert).not.toHaveBeenCalled();
     });
@@ -492,7 +537,7 @@ describe('useFileUpload', () => {
       vi.mocked(FileUploader.uploadPickedMedia).mockRejectedValue(rejection);
       const hook = mountHook();
 
-      expect(await upload(hook, pickedMedia)).toBeNull();
+      expect(await upload(hook, getPickedMedia())).toBeNull();
       expect(orchestrateUpload).not.toHaveBeenCalled();
       expect(window.alert).toHaveBeenCalledWith(
         'upload_failed. upload_failed_all_providers: forge: Picked file is no longer available. Choose it again.; catbox: timeout (stage=timeout)',
@@ -506,7 +551,7 @@ describe('useFileUpload', () => {
       vi.mocked(FileUploader.uploadPickedMedia).mockRejectedValue(rejection);
       const hook = mountHook();
 
-      await upload(hook, pickedMedia);
+      await upload(hook, getPickedMedia());
 
       expect(window.alert).toHaveBeenCalledWith('upload_failed. upload_failed_all_providers: forge: blocked (stage=blocked)');
     });
@@ -548,7 +593,7 @@ describe('useFileUpload', () => {
       vi.mocked(Capacitor.getPlatform).mockReturnValue('android');
       const hook = mountHook();
 
-      expect(await upload(hook, pickedMedia)).toBeNull();
+      expect(await upload(hook, getPickedMedia())).toBeNull();
       expect(FileUploader.uploadPickedMedia).not.toHaveBeenCalled();
       expect(window.alert).toHaveBeenCalledWith(message);
     });
@@ -558,7 +603,7 @@ describe('useFileUpload', () => {
       vi.mocked(Capacitor.getPlatform).mockReturnValue('android');
       const hook = mountHook();
 
-      expect(await upload(hook, pickedMedia)).toBeNull();
+      expect(await upload(hook, getPickedMedia())).toBeNull();
       expect(FileUploader.uploadPickedMedia).not.toHaveBeenCalled();
       expect(window.alert).toHaveBeenCalledWith('upload_failed: Uploads are turned off in the media hosting settings');
     });

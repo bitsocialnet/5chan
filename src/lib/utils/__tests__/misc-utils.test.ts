@@ -11,7 +11,7 @@ import {
   sortRepliesForDisplay,
 } from '../replies-preview-utils';
 import { filterSameThreadQuotedCids, getQuotedCidsFromContent, mergeQuotedCids } from '../reply-quote-utils';
-import { formatUserIDForDisplay, truncateWithEllipsisInMiddle } from '../string-utils';
+import { formatUserIDForDisplay, truncateFileName, truncateWithEllipsisInMiddle } from '../string-utils';
 import { getActiveSpecialTheme, getFormattedDate, getFormattedTimeAgo, getSpecialThemeClass, isChristmas, isHalloween } from '../time-utils';
 
 const testState = vi.hoisted(() => ({
@@ -279,6 +279,10 @@ describe('misc utils', () => {
     expect(formatUserIDForDisplay('0123456789abcdef')).toBe('01234567');
     expect(truncateWithEllipsisInMiddle('abcdefghijklmnopqrstuvwxyz', 10)).toBe('abc...xyz');
     expect(truncateWithEllipsisInMiddle('abc', 10)).toBe('abc');
+    expect(truncateFileName('458c5224f50e66cb0525c47b0e8b0726.jpg')).toBe('458c5224f50e66c⋯.jpg');
+    expect(truncateFileName('UI4ZhkV.jpg')).toBe('UI4ZhkV.jpg');
+    expect(truncateFileName('a-very-long-name-without-extension')).toBe('a-very-long-nam⋯');
+    expect(truncateFileName('.hidden-file-name-that-is-long')).toBe('.hidden-file-na⋯');
 
     expect(getFormattedDate(1_704_153_600)).toBe('01/02/24(Tue)03:04:05');
     testState.language = 'ar';

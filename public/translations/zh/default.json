@@ -598,5 +598,9 @@
   "directory_requirement_rules": "目录规则逐字列在最前面",
   "spam_check_not_finished": "垃圾信息检查未完成。请重新发布以重试。",
   "board_may_be_offline": "论坛可能已离线或无法访问。",
+  "files_chosen": "{{count}} 个文件",
+  "too_many_files_alert": "文件过多。此板块每个帖子最多允许 {{count}} 个文件。",
+  "gallery_file_not_image_or_video_alert": "只有图片和视频可以一起发布。",
+  "directory_requirement_no_galleries": "每帖一个文件，不支持图集",
   "show_filter_image_md5_in_post_menu": "在帖子菜单中显示“过滤图片 MD5”"
 }

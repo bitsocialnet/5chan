@@ -598,5 +598,9 @@
   "directory_requirement_rules": "Katalogens regler listade först, ord för ord",
   "spam_check_not_finished": "Skräppostkontrollen slutfördes inte. Publicera igen för att försöka på nytt.",
   "board_may_be_offline": "Forumet kan vara offline eller onåbart.",
+  "files_chosen": "{{count}} filer",
+  "too_many_files_alert": "För många filer. Den här tavlan tillåter högst {{count}} per inlägg.",
+  "gallery_file_not_image_or_video_alert": "Endast bilder och videor kan läggas upp tillsammans.",
+  "directory_requirement_no_galleries": "En fil per inlägg, inga gallerier",
   "show_filter_image_md5_in_post_menu": "Visa ”Filtrera bild-MD5” i inläggsmenyer"
 }

@@ -598,5 +598,9 @@
   "directory_requirement_rules": "Οι κανόνες του καταλόγου αναγράφονται πρώτοι, αυτολεξεί",
   "spam_check_not_finished": "Ο έλεγχος για spam δεν ολοκληρώθηκε. Δημοσίευσε ξανά για να δοκιμάσεις πάλι.",
   "board_may_be_offline": "Το φόρουμ ίσως είναι εκτός σύνδεσης ή μη προσβάσιμο.",
+  "files_chosen": "{{count}} αρχεία",
+  "too_many_files_alert": "Πάρα πολλά αρχεία. Αυτή η κατηγορία επιτρέπει έως {{count}} ανά ανάρτηση.",
+  "gallery_file_not_image_or_video_alert": "Μόνο εικόνες και βίντεο μπορούν να δημοσιευτούν μαζί.",
+  "directory_requirement_no_galleries": "Ένα αρχείο ανά ανάρτηση, χωρίς συλλογές",
   "show_filter_image_md5_in_post_menu": "Εμφάνιση του «Φιλτράρισμα MD5 εικόνας» στα μενού αναρτήσεων"
 }

@@ -1,9 +1,14 @@
+import type { CommentGalleryItem } from '@bitsocial/bitsocial-react-hooks';
 import { create } from 'zustand';
 import type { AttachedMedia } from '../lib/media-hosting/types';
 
 export type PostFormDraft = {
   /** File chosen with Choose File or drawn in Oekaki; uploaded only when the post is submitted. */
   attachment?: AttachedMedia;
+  /** The other files chosen with it, for the comment's gallery; uploaded with it. */
+  galleryAttachments?: AttachedMedia[];
+  /** The gallery its files became once all were uploaded, kept so posting again after a failure uploads nothing. */
+  gallery?: CommentGalleryItem[];
   communityAddress?: string;
   content: string;
   flag?: string;

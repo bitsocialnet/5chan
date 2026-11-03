@@ -1,4 +1,4 @@
-import { ChallengeVerification, Comment, PublishCommentOptions } from '@bitsocial/bitsocial-react-hooks';
+import { ChallengeVerification, Comment, CommentGalleryItem, PublishCommentOptions } from '@bitsocial/bitsocial-react-hooks';
 import { create } from 'zustand';
 import { alertChallengeVerificationFailed } from '../lib/utils/challenge-utils';
 import { getCommentCommunityAddress } from '../lib/utils/comment-utils';
@@ -9,6 +9,7 @@ type ReplyState = {
   displayName: { [parentCid: string]: string | undefined };
   content: { [parentCid: string]: string | undefined };
   link: { [parentCid: string]: string | undefined };
+  gallery: { [parentCid: string]: CommentGalleryItem[] | undefined };
   flairs: { [parentCid: string]: Comment['flairs'] | undefined };
   spoiler: { [parentCid: string]: boolean | undefined };
   challengeRequest: { [parentCid: string]: Record<string, unknown> | undefined };
@@ -22,6 +23,7 @@ const usePublishReplyStore = create<ReplyState>((set) => ({
   displayName: {},
   content: {},
   link: {},
+  gallery: {},
   flairs: {},
   spoiler: {},
   challengeRequest: {},
@@ -31,6 +33,8 @@ const usePublishReplyStore = create<ReplyState>((set) => ({
     set((state) => {
       const { parentCid, author, challengeRequest, content, flairs, spoiler } = comment;
       const link = comment.link ? normalizePublishURL(comment.link) : undefined;
+      // A comment has no gallery rather than an empty one.
+      const gallery = comment.gallery?.length ? comment.gallery : undefined;
       const communityAddress = getCommentCommunityAddress(comment);
 
       const displayName = 'displayName' in comment ? comment.displayName || undefined : author?.displayName;
@@ -46,6 +50,7 @@ const usePublishReplyStore = create<ReplyState>((set) => ({
         postCid: comment?.postCid || parentCid,
         content,
         link,
+        ...(gallery ? { gallery } : {}),
         flairs,
         spoiler,
         ...(challengeRequest ? { challengeRequest } : {}),
@@ -67,6 +72,7 @@ const usePublishReplyStore = create<ReplyState>((set) => ({
         displayName: { ...state.displayName, [parentCid]: displayName },
         content: { ...state.content, [parentCid]: content },
         link: { ...state.link, [parentCid]: link },
+        gallery: { ...state.gallery, [parentCid]: gallery },
         flairs: { ...state.flairs, [parentCid]: flairs },
         spoiler: { ...state.spoiler, [parentCid]: spoiler },
         challengeRequest: { ...state.challengeRequest, [parentCid]: challengeRequest },
@@ -80,6 +86,7 @@ const usePublishReplyStore = create<ReplyState>((set) => ({
       displayName: { ...state.displayName, [parentCid]: undefined },
       content: { ...state.content, [parentCid]: undefined },
       link: { ...state.link, [parentCid]: undefined },
+      gallery: { ...state.gallery, [parentCid]: undefined },
       flairs: { ...state.flairs, [parentCid]: undefined },
       spoiler: { ...state.spoiler, [parentCid]: undefined },
       challengeRequest: { ...state.challengeRequest, [parentCid]: undefined },

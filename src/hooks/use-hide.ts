@@ -2,6 +2,7 @@ import { useCallback, useMemo } from 'react';
 import type { Comment } from '@bitsocial/bitsocial-react-hooks';
 import { accountsStore } from '../lib/bitsocial-internals/stores';
 import { getImageFilterKey } from '../lib/utils/image-filter-utils';
+import { getCommentGalleryMediaInfos } from '../lib/utils/media-utils';
 import useHiddenCatalogThreadsStore from '../stores/use-hidden-catalog-threads-store';
 import useImageFiltersStore from '../stores/use-image-filters-store';
 import { useActiveAccountField } from './use-active-account-field';
@@ -38,6 +39,11 @@ const isLinkImageFiltered = (link: string | undefined, filterKeys: Set<string>, 
   return Boolean((key && filterKeys.has(key)) || (matchedHash && filterKeys.has(matchedHash)));
 };
 
+// A post is filtered when any of its files is: its link, or one of its gallery files.
+const isCommentImageFiltered = (comment: Comment | undefined, filterKeys: Set<string>, matchedLinks: Record<string, string>): boolean =>
+  isLinkImageFiltered(comment?.link, filterKeys, matchedLinks) ||
+  getCommentGalleryMediaInfos(comment?.gallery).some(({ url }) => isLinkImageFiltered(url, filterKeys, matchedLinks));
+
 const useIsAccountCommentCid = (cid: string | undefined): boolean => accountsStore((state) => Boolean(cid && state.commentCidsToAccountsComments?.[cid]));
 
 const useAccountCommentCids = () => accountsStore((state) => state.commentCidsToAccountsComments);
@@ -53,7 +59,7 @@ export const useIsImageFiltered = () => {
     (comment: Comment) => {
       if (filterKeys.size === 0 || (comment?.cid && shownCids[comment.cid])) return false;
       if (isOwnComment(comment, accountAddress, Boolean(comment?.cid && accountCommentCids?.[comment.cid]))) return false;
-      return isLinkImageFiltered(comment?.link, filterKeys, matchedLinks);
+      return isCommentImageFiltered(comment, filterKeys, matchedLinks);
     },
     [accountAddress, accountCommentCids, filterKeys, matchedLinks, shownCids],
   );
@@ -78,8 +84,8 @@ const useHide = ({ cid, comment }: { cid: string; comment?: Comment }) => {
   const blocked = useActiveAccountField((account) => isCidHidden(account?.blockedCids, cid));
   const accountAddress = useActiveAccountField((account) => account?.author?.address);
   const isAccountCommentCid = useIsAccountCommentCid(cid);
-  const imageLink = isOwnComment(comment, accountAddress, isAccountCommentCid) ? undefined : comment?.link;
-  const matchesImageFilter = useImageFiltersStore((state) => isLinkImageFiltered(imageLink, state.filterKeys, state.matchedLinks));
+  const filterableComment = isOwnComment(comment, accountAddress, isAccountCommentCid) ? undefined : comment;
+  const matchesImageFilter = useImageFiltersStore((state) => isCommentImageFiltered(filterableComment, state.filterKeys, state.matchedLinks));
   const shownAnyway = useImageFiltersStore((state) => Boolean(cid && state.shownCids[cid]));
   const setPostShown = useImageFiltersStore((state) => state.setPostShown);
   const hidden = blocked || (matchesImageFilter && !shownAnyway);
