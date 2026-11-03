@@ -3,6 +3,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { HashRouter, useNavigate, type NavigateFunction } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import WebAnalytics from '../web-analytics';
+import { getNonokoPendingRouteState, NONOKO_REPLY_ROUTE_STATE } from '../../../lib/utils/pending-post-route-state';
 import { trackPageView } from '../../../lib/analytics';
 
 vi.mock('../../../lib/analytics', () => ({ trackPageView: vi.fn() }));
@@ -108,5 +109,25 @@ describe('hash route pageviews', () => {
       await navigate('/g');
     });
     expect(vi.mocked(trackPageView).mock.calls.map(([path]) => path)).toEqual(['/', '/g', '/g']);
+  });
+
+  it('sends no view of the board index a nonoko reply or thread returns to', async () => {
+    await render();
+    await act(async () => {
+      await navigate('/g/thread/cid');
+    });
+    await act(async () => {
+      await navigate('/g', { state: NONOKO_REPLY_ROUTE_STATE });
+    });
+    await act(async () => {
+      await navigate('/g/catalog');
+    });
+    await act(async () => {
+      await navigate('/g', { state: getNonokoPendingRouteState(7) });
+    });
+    await act(async () => {
+      await navigate('/g/catalog');
+    });
+    expect(vi.mocked(trackPageView).mock.calls.map(([path]) => path)).toEqual(['/', '/g/thread/cid', '/g/catalog', '/g/catalog']);
   });
 });

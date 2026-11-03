@@ -30,6 +30,7 @@ import {
   isPostOptionsValidationError,
   isSageSupportedByBoard,
 } from '../../lib/utils/post-options-utils';
+import { NONOKO_REPLY_ROUTE_STATE } from '../../lib/utils/pending-post-route-state';
 import { isMathDirectoryCode } from '../../lib/math-tags';
 import { hasModQueueAccessRole } from '../../lib/utils/mod-access';
 import { getModerationPostingRoleLabel } from '../../lib/utils/author-display-utils';
@@ -377,7 +378,7 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
       resetPublishReplyOptions();
       closeModal();
       if (nonokoRedirectPath) {
-        navigate(nonokoRedirectPath);
+        navigate(nonokoRedirectPath, { state: NONOKO_REPLY_ROUTE_STATE });
       }
     }
   }, [replyIndex, resetPublishReplyOptions, closeModal, navigate]);

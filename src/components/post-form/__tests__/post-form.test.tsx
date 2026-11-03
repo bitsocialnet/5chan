@@ -2834,7 +2834,7 @@ describe('PostForm', () => {
 
     expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
     expect(testState.resetPublishReplyOptionsMock).toHaveBeenCalledTimes(1);
-    expect(testState.navigateMock).toHaveBeenCalledWith('/mu');
+    expect(testState.navigateMock).toHaveBeenCalledWith('/mu', { state: { nonokoReply: true } });
     expect(container.querySelector('table')).toBeNull();
   });
 

@@ -35,7 +35,6 @@ import {
   POST_OPTIONS_VALIDATION_DELAY_MS,
   appendSageMarker,
   getContentWithPostOptionState as getContentWithOptions,
-  getNonokoPendingRouteState,
   getPostOptionsDirectoryCode,
   getPostOptionsPublishContentLength,
   getPostOptionsValidationError,
@@ -49,7 +48,7 @@ import { getModerationPostingRoleLabel } from '../../lib/utils/author-display-ut
 import { hasModQueueAccessRole } from '../../lib/utils/mod-access';
 import { getPageDraftKey } from '../../lib/utils/location-draft-utils';
 import { getCommentCommunityAddress } from '../../lib/utils/comment-utils';
-import { getPendingPostRoutePost, PENDING_UPLOAD_POST_PATH } from '../../lib/utils/pending-post-route-state';
+import { getNonokoPendingRouteState, getPendingPostRoutePost, NONOKO_REPLY_ROUTE_STATE, PENDING_UPLOAD_POST_PATH } from '../../lib/utils/pending-post-route-state';
 import { getBoardPath, isDirectoryRoute } from '../../lib/utils/route-utils';
 import { isAllView, isCatalogView, isModQueueView, isModView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import { getCommentFlagOptionsForDirectory, getCommentFlagPublishOptionsForDirectory, type CommentFlagSelectOption } from '../../lib/comment-flag-selection';
@@ -1394,7 +1393,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
       resetFields();
       closeForm();
       if (nonokoRedirectPath) {
-        navigate(nonokoRedirectPath);
+        navigate(nonokoRedirectPath, { state: NONOKO_REPLY_ROUTE_STATE });
       }
     }
   }, [replyIndex, closeForm, navigate, resetFields]);

@@ -1663,7 +1663,7 @@ describe('ReplyModal', () => {
     expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
     expect(testState.resetPublishReplyOptionsMock).toHaveBeenCalledTimes(1);
     expect(testState.closeModalMock).toHaveBeenCalledTimes(1);
-    expect(testState.navigateMock).toHaveBeenCalledWith('/mu');
+    expect(testState.navigateMock).toHaveBeenCalledWith('/mu', { state: { nonokoReply: true } });
   });
 
   it('inserts quote requests only once and keeps the textarea content stable across rerenders', async () => {
