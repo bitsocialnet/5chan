@@ -23,6 +23,7 @@ type TestComment = {
   content?: string;
   deleted?: boolean;
   flairs?: Array<{ code?: string; text?: string; type?: string }>;
+  gallery?: Array<{ alt?: string; height?: number; htmlTagName: string; url: string; width?: number }>;
   index?: number;
   link?: string;
   linkHeight?: number;
@@ -186,6 +187,10 @@ vi.mock('../post-styles/post-styles.module.css', () => ({
 }));
 
 vi.mock('../../lib/utils/media-utils', () => ({
+  getCommentFileCount: (comment?: TestComment) => (comment?.link ? 1 : 0) + (comment?.gallery?.length ?? 0),
+  getCommentGalleryMediaInfos: (gallery?: TestComment['gallery']) =>
+    (gallery ?? []).map((item) => ({ linkHeight: item.height, linkWidth: item.width, type: item.htmlTagName === 'img' ? 'image' : item.htmlTagName, url: item.url })),
+  getGalleryFileLineWidth: () => 200,
   getDisplayMediaInfoType: (type?: string) => type ?? 'unknown',
   getHasThumbnail: () => true,
   getMediaDimensions: () => '100x100',
@@ -560,6 +565,87 @@ describe('post community address compatibility', () => {
     expect(document.body.querySelector('a[href="/mu"]')?.textContent).toContain('Board: mu');
     expect(container.querySelector('[data-testid="comment-media"]')).toBeTruthy();
     expect(container.textContent).toContain('reply-1');
+  });
+
+  it('renders gallery files after the link file on desktop, each with its own file line', async () => {
+    const post = {
+      ...makeLegacyThreadWithoutReplies(),
+      gallery: [
+        { height: 50, htmlTagName: 'img', url: 'https://example.com/gallery/458c5224f50e66cb0525c47b0e8b0726.jpg', width: 80 },
+        { htmlTagName: 'video', url: 'https://example.com/gallery/second.webm' },
+      ],
+    };
+
+    await renderWithRoute(createElement(PostDesktop, { post }), '/mu/thread/post-1');
+
+    const files = container.querySelector('.files');
+    expect(files?.querySelectorAll('[data-testid="comment-media"]')).toHaveLength(3);
+    const fileLines = [...(files?.querySelectorAll<HTMLElement>('.fileText') ?? [])];
+    expect(fileLines.map((line) => line.querySelector('a')?.getAttribute('href'))).toEqual([
+      'https://example.com/file.png',
+      'https://example.com/gallery/458c5224f50e66cb0525c47b0e8b0726.jpg',
+      'https://example.com/gallery/second.webm',
+    ]);
+    // In a row of files, the link's image reads as a file too, long names are shortened like vichan's, and each
+    // line wraps under its thumbnail.
+    expect(fileLines.map((line) => line.textContent?.split(' (')[0])).toEqual(['file: file.png', 'file: 458c5224f50e66c⋯.jpg', 'file: second.webm']);
+    expect(fileLines[1].querySelector('a')?.title).toBe('458c5224f50e66cb0525c47b0e8b0726.jpg');
+    expect(fileLines.every((line) => line.style.getPropertyValue('--file-line-width') === '200px')).toBe(true);
+  });
+
+  it('keeps the link label and full line of a desktop post with only a link', async () => {
+    await renderWithRoute(createElement(PostDesktop, { post: makeLegacyThreadWithoutReplies() }), '/mu/thread/post-1');
+
+    const fileLine = container.querySelector<HTMLElement>('.fileText');
+    expect(fileLine?.textContent).toContain('link: https://example.com/file.png');
+    expect(fileLine?.style.getPropertyValue('--file-line-width')).toBe('');
+  });
+
+  it('renders desktop reply gallery files and keeps link-only posts out of a files row', async () => {
+    const post = makeLegacyThread();
+    const reply = post.replies?.pages?.new?.comments?.[0];
+    if (!reply) {
+      throw new Error('missing fixture reply');
+    }
+    reply.gallery = [{ htmlTagName: 'img', url: 'https://example.com/gallery/reply.jpg' }];
+
+    await renderWithRoute(createElement(PostDesktop, { post }), '/mu/thread/post-1');
+
+    const files = container.querySelectorAll('.files');
+    expect(files).toHaveLength(1);
+    expect(files[0].closest('[data-cid="reply-1"]')).toBeTruthy();
+    expect(files[0].textContent).toContain('reply.jpg');
+    expect(container.querySelectorAll('[data-testid="comment-media"]')).toHaveLength(2);
+  });
+
+  it('puts the board label on the first gallery file line of a desktop multiboard post without a link', async () => {
+    const post = {
+      ...makeLegacyThreadWithoutReplies(),
+      gallery: [{ htmlTagName: 'img', url: 'https://example.com/gallery/first.jpg' }],
+      link: undefined,
+    };
+
+    await renderWithRoute(createElement(PostDesktop, { post }));
+
+    const boardLink = document.body.querySelector('a[href="/mu"]');
+    expect(boardLink?.closest('.fileText')?.textContent).toContain('first.jpg');
+    expect(container.querySelectorAll('[data-testid="comment-media"]')).toHaveLength(1);
+  });
+
+  it('renders gallery files on mobile and leaves them out of deleted posts', async () => {
+    const post = {
+      ...makeLegacyThreadWithoutReplies(),
+      gallery: [
+        { htmlTagName: 'img', url: 'https://example.com/gallery/first.jpg' },
+        { htmlTagName: 'img', url: 'https://example.com/gallery/second.jpg' },
+      ],
+    };
+
+    await renderWithRoute(createElement(PostMobile, { post }), '/mu/thread/post-1');
+    expect(container.querySelector('.files')?.querySelectorAll('[data-testid="comment-media"]')).toHaveLength(3);
+
+    await renderWithRoute(createElement(PostMobile, { post: { ...post, deleted: true } }), '/mu/thread/post-1');
+    expect(container.querySelector('[data-testid="comment-media"]')).toBeNull();
   });
 
   it('renders desktop and mobile replies when the preferred sorts are not published', async () => {

@@ -6,7 +6,7 @@ import { useFloating, offset, size, Placement } from '@floating-ui/react';
 import { Comment, useReplies } from '@bitsocial/bitsocial-react-hooks';
 import getShortAddress from '../../lib/get-short-address';
 import { shouldShowSnow } from '../../stores/use-special-theme-store';
-import { CommentMediaInfo, getHasThumbnail } from '../../lib/utils/media-utils';
+import { CommentMediaInfo, getCommentGalleryMediaInfos, getCoverMediaInfo, getHasThumbnail } from '../../lib/utils/media-utils';
 import { getFormattedTimeAgo } from '../../lib/utils/time-utils';
 import { isAllView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import { findDirectoryByAddress, useDirectories } from '../../hooks/use-directories';
@@ -240,8 +240,10 @@ const CatalogPost = memo(
     const archived = isCommentArchived(resolvedPost);
     const linkCount = useCountLinksInReplies(resolvedPost);
 
-    const commentMediaInfo = useCommentMediaInfo(link, thumbnailUrl, linkWidth, linkHeight);
-    const hasThumbnail = getHasThumbnail(commentMediaInfo, link);
+    const linkMediaInfo = useCommentMediaInfo(link, thumbnailUrl, linkWidth, linkHeight);
+    const commentMediaInfo = getCoverMediaInfo(linkMediaInfo, resolvedPost?.gallery);
+    const isLinkCover = commentMediaInfo === linkMediaInfo;
+    const hasThumbnail = getHasThumbnail(commentMediaInfo, commentMediaInfo?.url);
 
     const { hidden } = useHide({ cid, comment: resolvedPost });
     const shouldMaskPost = hidden && !showHiddenPost;
@@ -396,8 +398,8 @@ const CatalogPost = memo(
                       <CatalogPostMedia
                         cid={cid}
                         commentMediaInfo={commentMediaInfo}
-                        linkWidth={linkWidth}
-                        linkHeight={linkHeight}
+                        linkWidth={isLinkCover ? linkWidth : commentMediaInfo?.linkWidth}
+                        linkHeight={isLinkCover ? linkHeight : commentMediaInfo?.linkHeight}
                         matchedFilterColor={matchedFilterColor}
                         pinned={isPinned}
                       />
@@ -457,6 +459,7 @@ const CatalogPost = memo(
       prev?.author?.displayName === next?.author?.displayName &&
       prev?.author?.address === next?.author?.address &&
       prev?.link === next?.link &&
+      getCommentGalleryMediaInfos(prev?.gallery) === getCommentGalleryMediaInfos(next?.gallery) &&
       prev?.thumbnailUrl === next?.thumbnailUrl &&
       prev?.linkWidth === next?.linkWidth &&
       prev?.linkHeight === next?.linkHeight &&

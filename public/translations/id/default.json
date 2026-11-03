@@ -598,5 +598,9 @@
   "directory_requirement_rules": "Aturan direktori dicantumkan pertama, kata demi kata",
   "spam_check_not_finished": "Pemeriksaan spam tidak selesai. Kirim lagi untuk mencoba ulang.",
   "board_may_be_offline": "Forum mungkin sedang offline atau tidak dapat dijangkau.",
+  "files_chosen": "{{count}} file",
+  "too_many_files_alert": "Terlalu banyak file. Papan ini mengizinkan hingga {{count}} per postingan.",
+  "gallery_file_not_image_or_video_alert": "Hanya gambar dan video yang dapat diposting bersama.",
+  "directory_requirement_no_galleries": "Satu file per postingan, tanpa galeri",
   "show_filter_image_md5_in_post_menu": "Tampilkan \"Saring MD5 gambar\" di menu postingan"
 }

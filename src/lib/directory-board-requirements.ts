@@ -3,14 +3,15 @@ import { isRecord, type DirectoryFeatures } from './utils/directory-list-utils';
 /**
  * A setting a board must publish in its signed community record to host a 5chan directory. The
  * per-directory values come from the directory defaults in bitsocialnet/lists; every board also
- * needs a pending-approval challenge so new posters go through the mod queue, and must list the
- * directory's rules before its own. Whether rules are enforced, uptime and auto-archiving are not
+ * needs a pending-approval challenge so new posters go through the mod queue, must keep galleries
+ * off, and must list the directory's rules before its own. Whether rules are enforced, uptime and auto-archiving are not
  * in the record, so they cannot be checked here.
  */
 export type DirectoryBoardRequirement =
   | { type: 'pseudonymityMode'; mode: string }
   | { type: 'safeForWork'; safeForWork: boolean }
   | { type: 'requirePostLinkIsMedia' }
+  | { type: 'noGallery' }
   | { type: 'pendingApproval' }
   | { type: 'rules'; rules: string[] };
 
@@ -25,9 +26,13 @@ export const getDirectoryBoardRequirements = (features: DirectoryFeatures | unde
   ...(typeof features?.pseudonymityMode === 'string' ? [{ type: 'pseudonymityMode' as const, mode: features.pseudonymityMode }] : []),
   ...(typeof features?.safeForWork === 'boolean' ? [{ type: 'safeForWork' as const, safeForWork: features.safeForWork }] : []),
   ...(features?.requirePostLinkIsMedia === true ? [{ type: 'requirePostLinkIsMedia' as const }] : []),
+  { type: 'noGallery' },
   { type: 'pendingApproval' },
   ...(rules && rules.length > 0 ? [{ type: 'rules' as const, rules }] : []),
 ];
+
+// A board takes galleries when either limit is above 0; leaving it unset or 0 keeps them off.
+const isGalleryLimit = (value: unknown) => typeof value === 'number' && value > 0;
 
 const meetsRequirement = (requirement: DirectoryBoardRequirement, record: DirectoryBoardRecord): boolean => {
   const features = isRecord(record.features) ? record.features : {};
@@ -39,6 +44,10 @@ const meetsRequirement = (requirement: DirectoryBoardRequirement, record: Direct
       return requirement.safeForWork ? features.safeForWork === true : features.safeForWork !== true;
     case 'requirePostLinkIsMedia':
       return features.requirePostLinkIsMedia === true;
+    case 'noGallery':
+      // Directory boards keep 4chan's one file per post, so each image has its own post number to reply to and
+      // a directory reads the same whichever board hosts it. Boards outside directories can take galleries.
+      return !isGalleryLimit(features.maxPostGalleryItems) && !isGalleryLimit(features.maxReplyGalleryItems);
     case 'pendingApproval':
       return Array.isArray(record.challenges) && record.challenges.some((challenge) => isRecord(challenge) && challenge.pendingApproval === true);
     case 'rules': {
@@ -71,6 +80,8 @@ export const getDirectoryBoardRequirementSetting = (requirement: DirectoryBoardR
       return requirement.safeForWork ? 'features.safeForWork: true' : 'features.safeForWork: false';
     case 'requirePostLinkIsMedia':
       return 'features.requirePostLinkIsMedia: true';
+    case 'noGallery':
+      return 'features.maxPostGalleryItems, features.maxReplyGalleryItems: 0';
     case 'pendingApproval':
       return 'challenges[].pendingApproval: true';
     case 'rules':

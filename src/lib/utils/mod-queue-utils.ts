@@ -20,6 +20,7 @@ type ModQueueCommentLike = {
   communityAddress?: string;
   content?: Comment['content'];
   deleted?: Comment['deleted'];
+  gallery?: Comment['gallery'];
   link?: Comment['link'];
   linkHeight?: Comment['linkHeight'];
   linkWidth?: Comment['linkWidth'];
@@ -51,6 +52,7 @@ export type QueuedCommentSnapshot = {
   communityAddress?: string;
   content?: Comment['content'];
   deleted?: Comment['deleted'];
+  gallery?: Comment['gallery'];
   link?: Comment['link'];
   linkHeight?: Comment['linkHeight'];
   linkWidth?: Comment['linkWidth'];
@@ -204,6 +206,7 @@ export const getQueuedCommentSnapshot = (comment: ModQueueCommentLike | undefine
     communityAddress: getCommentCommunityAddress(comment),
     content: comment.content,
     deleted: comment.deleted,
+    gallery: comment.gallery,
     link: comment.link,
     linkHeight: comment.linkHeight,
     linkWidth: comment.linkWidth,

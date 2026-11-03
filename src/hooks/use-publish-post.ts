@@ -27,12 +27,13 @@ const usePublishPost = ({
   onPendingPost,
   publishPostStore: useStore = usePublishPostStore,
 }: UsePublishPostOptions) => {
-  const { author, title, content, link, flairs, spoiler, publishCommentOptions } = useStore(
+  const { author, title, content, link, gallery, flairs, spoiler, publishCommentOptions } = useStore(
     useShallow((state) => ({
       author: state.author,
       title: state.title || undefined,
       content: state.content || undefined,
       link: state.link || undefined,
+      gallery: state.gallery,
       flairs: state.flairs,
       spoiler: state.spoiler || false,
       publishCommentOptions: state.publishCommentOptions,
@@ -59,6 +60,7 @@ const usePublishPost = ({
       title,
       content,
       link,
+      gallery,
       flairs,
       spoiler,
       ...(publishCommentOptions.challengeRequest ? { challengeRequest: publishCommentOptions.challengeRequest } : {}),
@@ -70,7 +72,7 @@ const usePublishPost = ({
     }
 
     return baseOptions;
-  }, [author, content, flairs, link, spoiler, communityAddress, title, publishCommentOptions.challengeRequest]);
+  }, [author, content, flairs, gallery, link, spoiler, communityAddress, title, publishCommentOptions.challengeRequest]);
 
   const setPublishPostOptions = useCallback(
     (options: Partial<Comment>) => {
@@ -125,7 +127,7 @@ const usePublishPost = ({
   abandonPublishRef.current = abandonPublish;
 
   // A publish error describes the inputs it was raised for; clear it as soon as any of them changes.
-  const publishPostErrorInputs = [author?.displayName, blockedReason, communityAddress, content, flairs, link, spoiler, title];
+  const publishPostErrorInputs = [author?.displayName, blockedReason, communityAddress, content, flairs, gallery, link, spoiler, title];
   const [publishPostErrorInputsSnapshot, setPublishPostErrorInputsSnapshot] = useState(publishPostErrorInputs);
   if (publishPostErrorInputs.some((value, index) => !Object.is(value, publishPostErrorInputsSnapshot[index]))) {
     setPublishPostErrorInputsSnapshot(publishPostErrorInputs);

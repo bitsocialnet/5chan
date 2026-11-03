@@ -62,6 +62,8 @@ const getRequirementLabel = (t: TFunction, requirement: DirectoryBoardRequiremen
       return t(requirement.safeForWork ? 'directory_requirement_sfw' : 'directory_requirement_nsfw');
     case 'requirePostLinkIsMedia':
       return t('directory_requirement_media_threads');
+    case 'noGallery':
+      return t('directory_requirement_no_galleries');
     case 'pendingApproval':
       return t('directory_requirement_mod_queue');
     case 'rules':

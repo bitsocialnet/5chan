@@ -81,6 +81,24 @@ describe('PendingUploadFile', () => {
     root = createRoot(container);
   });
 
+  it('shows every file of a gallery thread in a row, with the upload progress on the first', async () => {
+    const { id } = usePendingUploadPostStore.getState().startPendingUploadPost({
+      attachment: { kind: 'file', file: new File([new Uint8Array(2048)], 'first.png', { type: 'image/png' }), name: 'first.png', mimeType: 'image/png' },
+      galleryAttachments: [{ kind: 'file', file: new File([new Uint8Array(1024 * 3)], 'second.png', { type: 'image/png' }), name: 'second.png', mimeType: 'image/png' }],
+      boardChallenges: undefined,
+      draftKey: '/mu',
+      nonokoRedirectPath: null,
+      post: {},
+      publishOptions: {},
+    });
+    usePendingUploadPostStore.getState().setPendingUploadPhase(id, 'uploading');
+    await render(id);
+
+    const filesRow = container.firstElementChild as HTMLElement;
+    expect(filesRow.className).toContain('files');
+    expect(Array.from(filesRow.children).map((row) => row.textContent)).toEqual(['file: first.png (2 KB) uploading...', 'file: second.png (3 KB)']);
+  });
+
   it('renders nothing for an upload that is no longer pending', async () => {
     await render(42);
     expect(container.textContent).toBe('');

@@ -3,7 +3,7 @@ import { flushSync } from 'react-dom';
 import { Trans, useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { Comment, setAccount, useAccount, useAccountComment, useEditedComment } from '@bitsocial/bitsocial-react-hooks';
+import { Comment, CommentGalleryItem, setAccount, useAccount, useAccountComment, useEditedComment } from '@bitsocial/bitsocial-react-hooks';
 import getShortAddress from '../../lib/get-short-address';
 import { communitiesPagesStore as useCommunitiesPagesStore } from '../../lib/bitsocial-internals/stores';
 import { getDisplayMediaInfoType, getLinkMediaInfo, getTwimgMediaFilePublishUrl } from '../../lib/utils/media-utils';
@@ -18,7 +18,10 @@ import {
 import {
   getEffectivePostLinkFeatures,
   getEffectiveReplyLinkFeatures,
+  getMaxGalleryItems,
   getNoReplyLinks,
+  getPostFilesValidationError,
+  getUploadedGalleryValidationError,
   getPublishLinkValidationError,
   getRequirePostLink,
   getRequirePostLinkIsMedia,
@@ -68,7 +71,7 @@ import usePublishReply from '../../hooks/use-publish-reply';
 import { useFileUpload } from '../../hooks/use-file-upload';
 import useSpamBlockerPrecheck from '../../hooks/use-spam-blocker-precheck';
 import { useShowLinkField } from '../../hooks/use-show-link-field';
-import { getFileAttachment, getFileDropHandlers, getFilePasteHandler, type FilePasteEvent } from '../../lib/media-hosting/attached-media';
+import { getFileAttachment, getFileDropHandlers, getFilePasteHandler, uploadGalleryAttachments, type FilePasteEvent } from '../../lib/media-hosting/attached-media';
 import type { AttachedMedia, UploadPhase } from '../../lib/media-hosting/types';
 import { getShowUploadControls, isWebRuntime } from '../../lib/media-hosting/show-upload-controls';
 import { OEKAKI_WEB_WARNING_TEXT } from '../../lib/oekaki/oekaki-copy';
@@ -90,6 +93,8 @@ import debounce from 'lodash/debounce';
 
 const FILE_LINK_PLACEHOLDER = 'https://website.com/image.jpg';
 const POST_FORM_FILE_DISPLAY_MAX_LENGTH = 28;
+const NO_FILES: AttachedMedia[] = [];
+const NO_FILE_NAMES: string[] = [];
 
 type LinkMediaLoadStatus = 'loading' | 'ready' | 'error';
 type SettledLinkMediaLoadStatus = Exclude<LinkMediaLoadStatus, 'loading'>;
@@ -255,6 +260,8 @@ interface PostFormFieldsProps {
   isUploading: boolean;
   uploadPhase: UploadPhase | null;
   attachedFileName: string | undefined;
+  /** Every file the post sends, when it sends several. */
+  chosenFileNames: string[];
   showLinkField: boolean;
   showUploadControls: boolean;
   showOekakiControls: boolean;
@@ -318,6 +325,7 @@ const PostFormFields = ({
   isUploading,
   uploadPhase,
   attachedFileName,
+  chosenFileNames,
   showLinkField,
   showUploadControls,
   showOekakiControls,
@@ -531,9 +539,13 @@ const PostFormFields = ({
             isUploading={isUploading}
             showUploadControls={showUploadControls}
           />
-          <span title={getPublishFileDisplayName(url, attachedFileName, requireCurrentLinkIsMedia) || undefined}>
+          <span
+            title={chosenFileNames.length > 1 ? chosenFileNames.join('\n') : getPublishFileDisplayName(url, attachedFileName, requireCurrentLinkIsMedia) || undefined}
+          >
             {isUploading ? (
               <LoadingEllipsis string={t(uploadPhase === 'checking' ? 'running_automated_checks' : 'uploading')} />
+            ) : chosenFileNames.length > 1 ? (
+              t('files_chosen', { count: chosenFileNames.length })
             ) : (
               getPostFormFileDisplayLabel(url, attachedFileName, t('no_file_chosen'), requireCurrentLinkIsMedia)
             )}
@@ -812,6 +824,18 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
   // An attachment can only be swapped by choosing another file, so one the form can no longer upload
   // (uploads turned off, or replies here cannot carry links) is ignored instead of left stuck in it.
   const attachment = canAttachFile ? draft.attachment : undefined;
+  const galleryAttachments = (attachment && draft.galleryAttachments) || NO_FILES;
+  // The gallery a submitted post's files became, when the board did not accept that post. It goes only with the link
+  // its first file became, so a cleared link, or one the open form never showed, never sends it on its own.
+  const draftGallery = draft.gallery?.length ? draft.gallery : undefined;
+  const getDraftGallery = (link: string) => (draftGallery && link && link === draft.link.trim() ? draftGallery : undefined);
+  const maxGalleryItems = getMaxGalleryItems(communityFeatures, isInPostView, !!params?.boardIdentifier && isDirectoryRoute(params.boardIdentifier, directories));
+  const uploadedGallery = getDraftGallery(url.trim());
+  const chosenFileNames = attachment
+    ? [attachment, ...galleryAttachments].map((media) => media.name)
+    : uploadedGallery
+      ? [url, ...uploadedGallery.map((item) => item.url)]
+      : NO_FILE_NAMES;
   const requireCurrentLinkIsMedia = isInPostView ? requireReplyLinkIsMedia : requirePostLinkIsMedia;
   const currentMediaLoadError = getLinkMediaLoadStatus(url, mediaLoadResult) === 'error' ? getLinkMediaLoadError(url, t) : null;
   const flagOptions = getCommentFlagOptionsForDirectory(directoryEntry);
@@ -906,18 +930,30 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
     return didLoad ? null : errorMessage;
   };
 
-  // Uploads the attachment once the post is submitted and keeps its link in the form, so a retry
-  // after a failed publish does not upload the file again.
-  const uploadAttachedMedia = async (attachment: AttachedMedia): Promise<string | null> => {
-    const uploaded = await uploadAttachment(attachment);
-    // A form closed during the upload must not publish, nor leave its options in the shared publish store.
-    if (!uploaded || !isFormMountedRef.current) return null;
-    updateDraft({ attachment: undefined });
-    setLinkValue(uploaded.url);
-    if (urlRef.current) {
-      urlRef.current.value = uploaded.url;
+  // Uploads the attached files once the post is submitted, the first as its link and the rest as its gallery, and
+  // keeps them in the form, so a retry after a failed publish does not upload the files again.
+  const uploadAttachedFiles = async (
+    attachment: AttachedMedia,
+    galleryAttachments: AttachedMedia[],
+  ): Promise<{ link: string; gallery: CommentGalleryItem[] | undefined } | null> => {
+    // The form stays locked from the first file to the last, so nothing chosen between two uploads is lost.
+    setIsUploadingFiles(true);
+    try {
+      const uploaded = await uploadAttachment(attachment);
+      // A form closed during the upload must not publish, nor leave its options in the shared publish store.
+      if (!uploaded || !isFormMountedRef.current) return null;
+      const galleryItems = await uploadGalleryAttachments(galleryAttachments, uploadAttachment, () => isFormMountedRef.current);
+      if (!galleryItems || !isFormMountedRef.current) return null;
+      const gallery = galleryItems.length > 0 ? galleryItems : undefined;
+      updateDraft({ attachment: undefined, galleryAttachments: undefined, gallery });
+      setLinkValue(uploaded.url);
+      if (urlRef.current) {
+        urlRef.current.value = uploaded.url;
+      }
+      return { link: uploaded.url, gallery };
+    } finally {
+      setIsUploadingFiles(false);
     }
-    return uploaded.url;
   };
 
   const onPublishPost = () =>
@@ -951,15 +987,19 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
         setFormError(`${t('error')}: ${t('empty_comment_alert')}`);
         return;
       }
-      const linkValidationError = getPublishLinkValidationError({
-        link: currentUrl,
-        attachment,
-        requireLink: requirePostLink,
-        requireMedia: requirePostLinkIsMedia,
-        requiredLinkAlertKey: 'post_link_required_alert',
-        requiredMediaLinkAlertKey: 'post_media_link_required_alert',
-        t,
-      });
+      const linkValidationError =
+        getPublishLinkValidationError({
+          link: currentUrl,
+          attachment,
+          requireLink: requirePostLink,
+          requireMedia: requirePostLinkIsMedia,
+          requiredLinkAlertKey: 'post_link_required_alert',
+          requiredMediaLinkAlertKey: 'post_media_link_required_alert',
+          t,
+        }) ??
+        (attachment
+          ? getPostFilesValidationError([attachment, ...galleryAttachments], maxGalleryItems, t)
+          : getUploadedGalleryValidationError(getDraftGallery(currentUrl), maxGalleryItems, t));
       if (linkValidationError) {
         setFormError(linkValidationError);
         return;
@@ -1031,6 +1071,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
         };
         const { id: pendingUploadId } = usePendingUploadPostStore.getState().startPendingUploadPost({
           attachment,
+          ...(galleryAttachments.length > 0 ? { galleryAttachments } : {}),
           authorRole: accountRole,
           boardChallenges: communityChallenges,
           boardPath: pendingPostBoardPath,
@@ -1055,6 +1096,8 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
         displayName: currentDisplayName,
         content: publishContent,
         ...getPublishLinkOptions(currentUrl, appliedThumbnailConversion || (hasRestoredDraftRef.current && Boolean(currentUrl))),
+        // Explicit even when absent: the publish store this form shares may still hold an earlier post's gallery.
+        gallery: getDraftGallery(currentUrl),
         ...publishOptions,
         ...(hasRestoredDraftRef.current && draft.communityAddress ? { communityAddress: draft.communityAddress } : {}),
         ...(hasRestoredDraftRef.current && draft.spoiler ? { spoiler: true } : {}),
@@ -1180,17 +1223,21 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
         return;
       }
 
-      const linkValidationError = getPublishLinkValidationError({
-        link: currentUrl,
-        attachment,
-        noLinks: noReplyLinks,
-        requireLink: requireReplyLink,
-        requireMedia: requireReplyLinkIsMedia,
-        requiredLinkAlertKey: 'reply_link_required_alert',
-        requiredMediaLinkAlertKey: 'reply_media_link_required_alert',
-        noLinksAlertKey: 'reply_links_not_allowed_alert',
-        t,
-      });
+      const linkValidationError =
+        getPublishLinkValidationError({
+          link: currentUrl,
+          attachment,
+          noLinks: noReplyLinks,
+          requireLink: requireReplyLink,
+          requireMedia: requireReplyLinkIsMedia,
+          requiredLinkAlertKey: 'reply_link_required_alert',
+          requiredMediaLinkAlertKey: 'reply_media_link_required_alert',
+          noLinksAlertKey: 'reply_links_not_allowed_alert',
+          t,
+        }) ??
+        (attachment
+          ? getPostFilesValidationError([attachment, ...galleryAttachments], maxGalleryItems, t)
+          : getUploadedGalleryValidationError(getDraftGallery(currentUrl), maxGalleryItems, t));
       if (linkValidationError) {
         setFormError(linkValidationError);
         return;
@@ -1229,8 +1276,8 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
         if (precheck.status === 'passed') challengeRequest = { challengeAnswers: precheck.challengeAnswers };
       }
 
-      const uploadedLink = attachment ? await uploadAttachedMedia(attachment) : undefined;
-      if (uploadedLink === null) {
+      const uploadedFiles = attachment ? await uploadAttachedFiles(attachment, galleryAttachments) : undefined;
+      if (uploadedFiles === null) {
         return;
       }
 
@@ -1239,9 +1286,11 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
         displayName: currentDisplayName,
         // The empty and length checks above ignore the sage marker, like 4chan ignores the options field.
         content: appendSageMarker(publishContent, currentOptions),
-        ...(uploadedLink
-          ? { link: uploadedLink }
+        ...(uploadedFiles
+          ? { link: uploadedFiles.link }
           : getPublishLinkOptions(currentUrl, appliedThumbnailConversion || (hasRestoredDraftRef.current && Boolean(currentUrl)))),
+        // Explicit even when absent: the publish store may still hold an earlier reply's gallery.
+        gallery: uploadedFiles ? uploadedFiles.gallery : getDraftGallery(currentUrl),
         ...flagPublishOptions,
         ...(hasRestoredDraftRef.current && draft.spoiler ? { spoiler: true } : {}),
         ...(challengeRequest ? { challengeRequest } : {}),
@@ -1273,8 +1322,9 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
 
   const handleLinkChange = (nextUrl: string) => {
     setLinkValue(nextUrl);
-    // A comment carries one link, so a typed link replaces the attached file, as a chosen file replaces the link.
-    if (attachment && nextUrl.trim()) updateDraft({ attachment: undefined });
+    // A comment carries one link, so a typed link replaces the attached files, as chosen files replace the link,
+    // and any edit to the link drops the gallery uploaded with it.
+    if ((attachment && nextUrl.trim()) || draftGallery) updateDraft({ attachment: undefined, galleryAttachments: undefined, gallery: undefined });
     if (queueLinkConversion(nextUrl)) {
       setFormError(null);
     }
@@ -1313,7 +1363,9 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
     }
   }, [replyIndex, closeForm, navigate, resetFields]);
 
-  const { isUploading, uploadPhase, chooseFile, uploadAttachment } = useFileUpload();
+  const { isUploading: isUploadingFile, uploadPhase, chooseFile, chooseFiles, uploadAttachment } = useFileUpload();
+  const [isUploadingFiles, setIsUploadingFiles] = useState(false);
+  const isUploading = isUploadingFile || isUploadingFiles;
   const runSpamBlockerPrecheck = useSpamBlockerPrecheck({ communityAddress: effectiveBoardAddress });
   const clearLink = () => {
     cancelPendingConversion();
@@ -1322,17 +1374,32 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
       urlRef.current.value = '';
     }
   };
-  const unsupportedFileError = `${t('error')}: ${t('unsupported_file_type_alert')}`;
-  // A Bitsocial comment carries one link, so an attachment replaces the link field's value.
-  const attachMedia = (nextAttachment: AttachedMedia) => {
-    if (!canAttachFile) return;
+  // The last error about chosen files, which choosing files that the post can send clears.
+  const fileErrorRef = useRef<string | null>(null);
+  const showFileError = (error: string) => {
+    fileErrorRef.current = error;
+    setFormError(error);
+  };
+  // A Bitsocial comment carries one link, so attached files replace the link field's value: the first file
+  // becomes the link and the others, on a board that takes them, the comment's gallery.
+  const attachMediaFiles = (files: AttachedMedia[]) => {
+    if (!canAttachFile || files.length === 0) return;
+    const filesError = getPostFilesValidationError(files, maxGalleryItems, t);
+    if (filesError) {
+      showFileError(filesError);
+      return;
+    }
     clearLink();
-    updateDraft({ attachment: nextAttachment });
-    setFormError((currentError) => (currentError === unsupportedFileError ? null : currentError));
+    updateDraft({ attachment: files[0], galleryAttachments: files.length > 1 ? files.slice(1) : undefined, gallery: undefined });
+    setFormError((currentError) => (currentError === fileErrorRef.current ? null : currentError));
   };
   const handleChooseFile = async () => {
+    if (maxGalleryItems > 0) {
+      attachMediaFiles(await chooseFiles());
+      return;
+    }
     const chosen = await chooseFile();
-    if (chosen) attachMedia(chosen);
+    if (chosen) attachMediaFiles([chosen]);
   };
   const handleDetachDrawing = (file: File) => {
     if (draft.attachment?.kind === 'file' && draft.attachment.file === file) {
@@ -1350,7 +1417,12 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
       <fieldset
         className={styles.uploadLock}
         disabled={isUploading}
-        {...getFileDropHandlers(attachMedia, canAttachFile && !isUploading, () => setFormError(unsupportedFileError))}
+        {...getFileDropHandlers(
+          attachMediaFiles,
+          canAttachFile && !isUploading,
+          () => showFileError(`${t('error')}: ${t('unsupported_file_type_alert')}`),
+          maxGalleryItems > 0,
+        )}
       >
         <table className={styles.postFormTable}>
           <tbody>
@@ -1371,7 +1443,12 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
               urlRef={urlRef}
               url={url}
               handleContentChange={handleContentChange}
-              handleContentPaste={getFilePasteHandler(attachMedia, canAttachFile, () => setFormError(unsupportedFileError))}
+              handleContentPaste={getFilePasteHandler(
+                attachMediaFiles,
+                canAttachFile,
+                () => showFileError(`${t('error')}: ${t('unsupported_file_type_alert')}`),
+                maxGalleryItems > 0,
+              )}
               handleContentValueChange={handleContentValueChange}
               handleLinkChange={handleLinkChange}
               handleLinkBlur={handleLinkBlur}
@@ -1384,6 +1461,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
               isUploading={isUploading}
               uploadPhase={uploadPhase}
               attachedFileName={attachment?.name}
+              chosenFileNames={chosenFileNames}
               showLinkField={showLinkField}
               showUploadControls={canAttachFile}
               showOekakiControls={showOekakiControls && !(isInPostView && noReplyLinks)}
@@ -1409,7 +1487,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
               onPublishReply={onPublishReply}
               onPublishPost={onPublishPost}
               handleChooseFile={handleChooseFile}
-              onAttachDrawing={(file) => attachMedia(getFileAttachment(file))}
+              onAttachDrawing={(file) => attachMediaFiles([getFileAttachment(file)])}
               onDetachDrawing={handleDetachDrawing}
               isPublishSubmissionInFlight={isPublishSubmissionInFlight}
               disableReplyPublish={isResolvingExternalQuotes}

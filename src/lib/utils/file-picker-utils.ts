@@ -5,13 +5,22 @@ interface SelectFileViaInputOptions {
 }
 
 // Opens the browser file picker and resolves with the chosen file, or null when the picker is dismissed.
+export async function selectFileViaInput(accept: string, options: SelectFileViaInputOptions = {}): Promise<File | null> {
+  return (await selectFilesViaInput(accept, options))[0] ?? null;
+}
+
+// Opens the browser file picker and resolves with the chosen files, none when the picker is dismissed.
 // The input stays attached to the document until the picker settles: WebKit can garbage-collect a detached
 // input while its picker is open, which silently drops the selection.
-export function selectFileViaInput(accept: string, { resolveOnWindowFocus = false }: SelectFileViaInputOptions = {}): Promise<File | null> {
+export function selectFilesViaInput(
+  accept: string,
+  { multiple = false, resolveOnWindowFocus = false }: SelectFileViaInputOptions & { multiple?: boolean } = {},
+): Promise<File[]> {
   return new Promise((resolve) => {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = accept;
+    input.multiple = multiple;
     input.style.display = 'none';
     let resolved = false;
     let focusTimeoutId: number | null = null;
@@ -27,19 +36,16 @@ export function selectFileViaInput(accept: string, { resolveOnWindowFocus = fals
       input.removeEventListener('cancel', onCancel);
     };
 
-    const finalize = (file: File | null) => {
+    const finalize = (files: File[]) => {
       if (resolved) return;
       resolved = true;
       cleanup();
-      resolve(file);
+      resolve(files);
     };
 
-    const onChange = () => {
-      const file = input.files && input.files.length > 0 ? input.files[0] : null;
-      finalize(file);
-    };
+    const onChange = () => finalize(Array.from(input.files ?? []));
 
-    const onCancel = () => finalize(null);
+    const onCancel = () => finalize([]);
 
     const onFocusFallback = () => {
       if (resolved) return;
@@ -48,8 +54,7 @@ export function selectFileViaInput(accept: string, { resolveOnWindowFocus = fals
       }
       focusTimeoutId = window.setTimeout(() => {
         if (resolved) return;
-        const file = input.files && input.files.length > 0 ? input.files[0] : null;
-        finalize(file);
+        finalize(Array.from(input.files ?? []));
       }, 800);
     };
 

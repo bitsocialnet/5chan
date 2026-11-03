@@ -75,11 +75,12 @@ const flush = async () => {
   }
 };
 
-const submitPost = async (overrides: { nonokoRedirectPath?: string | null; publishOptions?: Record<string, unknown> } = {}) => {
-  usePostFormDraftsStore.getState().updateDraft('/mu', { attachment, content: 'thread body' });
+const submitPost = async (overrides: { galleryAttachments?: AttachedMedia[]; nonokoRedirectPath?: string | null; publishOptions?: Record<string, unknown> } = {}) => {
+  usePostFormDraftsStore.getState().updateDraft('/mu', { attachment, galleryAttachments: overrides.galleryAttachments, content: 'thread body' });
   usePostFormDraftsStore.getState().closeForm('/mu');
   const pendingUploadPost = usePendingUploadPostStore.getState().startPendingUploadPost({
     attachment,
+    ...(overrides.galleryAttachments ? { galleryAttachments: overrides.galleryAttachments } : {}),
     boardChallenges: challenges,
     boardPath: 'mu',
     draftKey: '/mu',
@@ -117,6 +118,7 @@ describe('PendingUploadPostPublisher', () => {
   afterEach(() => {
     act(() => root.unmount());
     container.remove();
+    vi.unstubAllGlobals();
     usePendingPostNavigationStore.getState().clearPendingPostNavigation();
     usePendingPostNavigationStore.setState({ visiblePendingPostIndex: null });
   });
@@ -151,6 +153,61 @@ describe('PendingUploadPostPublisher', () => {
     });
     // Posting again from the form publishes the uploaded link instead of uploading the file again.
     expect(usePostFormDraftsStore.getState().forms['/mu']?.draft).toMatchObject({ attachment: undefined, link: 'https://forgeimg.net/abc/chosen.png' });
+  });
+
+  it('uploads the other files after the first and publishes them as the gallery after its link', async () => {
+    // jsdom never loads images, so this one reports its size as soon as it gets a source.
+    class SizedImage {
+      naturalWidth = 640;
+      naturalHeight = 480;
+      onload: (() => void) | null = null;
+      onerror: (() => void) | null = null;
+      set src(_url: string) {
+        queueMicrotask(() => this.onload?.());
+      }
+    }
+    vi.stubGlobal('Image', SizedImage);
+    const galleryAttachments: AttachedMedia[] = [
+      { kind: 'file', file: new File(['png'], 'second.png', { type: 'image/png' }), name: 'second.png', mimeType: 'image/png' },
+      { kind: 'file', file: new File(['gif'], 'third.gif', { type: 'image/gif' }), name: 'third.gif', mimeType: 'image/gif' },
+    ];
+    testState.precheckMock.mockResolvedValue({ status: 'skipped' });
+    testState.uploadAttachmentMock.mockImplementation(async (media) => ({
+      url: `https://forgeimg.net/abc/${(media as AttachedMedia).name}`,
+      fileName: (media as AttachedMedia).name,
+    }));
+
+    await submitPost({ galleryAttachments });
+    // Each gallery file also reads its pixel size, which takes a few more turns than the flush gives.
+    await flush();
+
+    expect(testState.uploadAttachmentMock.mock.calls.map(([media]) => (media as AttachedMedia).name)).toEqual(['chosen.png', 'second.png', 'third.gif']);
+    const gallery = [
+      { url: 'https://forgeimg.net/abc/second.png', htmlTagName: 'img', width: 640, height: 480 },
+      { url: 'https://forgeimg.net/abc/third.gif', htmlTagName: 'img', width: 640, height: 480 },
+    ];
+    expect(testState.publishPostMock).toHaveBeenCalledWith({ ...publishOptions, link: 'https://forgeimg.net/abc/chosen.png', gallery });
+    // Posting again from the form publishes the uploaded files instead of uploading them again.
+    expect(usePostFormDraftsStore.getState().forms['/mu']?.draft).toMatchObject({
+      attachment: undefined,
+      galleryAttachments: undefined,
+      gallery,
+      link: 'https://forgeimg.net/abc/chosen.png',
+    });
+  });
+
+  it('returns to the form with every file still attached when a gallery file fails to upload', async () => {
+    const galleryAttachments: AttachedMedia[] = [
+      { kind: 'file', file: new File(['png'], 'second.png', { type: 'image/png' }), name: 'second.png', mimeType: 'image/png' },
+    ];
+    testState.uploadAttachmentMock.mockResolvedValueOnce({ url: 'https://forgeimg.net/abc/chosen.png', fileName: 'chosen.png' }).mockResolvedValueOnce(null);
+
+    await submitPost({ galleryAttachments });
+
+    expect(testState.uploadAttachmentMock).toHaveBeenCalledTimes(2);
+    expect(testState.publishPostMock).not.toHaveBeenCalled();
+    expect(usePendingUploadPostStore.getState().pendingUploadPosts).toEqual([]);
+    expect(usePostFormDraftsStore.getState().forms['/mu']).toMatchObject({ isOpen: true, draft: { attachment, galleryAttachments } });
   });
 
   it('publishes without a pass on a board whose spam blocker takes none', async () => {
