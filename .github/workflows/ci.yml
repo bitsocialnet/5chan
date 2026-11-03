@@ -194,9 +194,6 @@ jobs:
         run: node scripts/smoke-web-app.js --start-preview
 
   load:
-    # These repeatable cold-load measurements block external page requests.
-    env:
-      REACT_PERF_BROWSER_CHANNEL: chromium
     name: Cold Load (${{ matrix.shard }}/${{ strategy.job-total }})
     runs-on: ubuntu-22.04
     timeout-minutes: 20
