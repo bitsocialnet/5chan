@@ -127,9 +127,16 @@
   vertical-align: text-top;
 }
 
+/* The spoiler toggle and Post keep their full width on one line; only the file name gives way in a narrow footer. */
+.spoilerButton, .publishButton {
+  flex-shrink: 0;
+}
+
 .spoilerButton {
   display: inline-block;
+  margin-right: 5px;
   padding-top: 2px;
+  white-space: nowrap;
 }
 
 .spoilerButton label, .spoilerButton input[type="checkbox"] {

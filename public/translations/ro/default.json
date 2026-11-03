@@ -601,5 +601,6 @@
   "files_chosen": "Fișiere: {{count}}",
   "too_many_files_alert": "Prea multe fișiere. Maximul pe postare pe acest tablou: {{count}}.",
   "gallery_file_not_image_or_video_alert": "Doar imaginile și videoclipurile pot fi postate împreună.",
-  "directory_requirement_no_galleries": "Un fișier per postare, fără galerii"
+  "directory_requirement_no_galleries": "Un fișier per postare, fără galerii",
+  "show_filter_image_md5_in_post_menu": "Afișează „Filtrează MD5-ul imaginii” în meniurile postărilor"
 }

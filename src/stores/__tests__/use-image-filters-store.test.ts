@@ -42,7 +42,7 @@ describe('useImageFiltersStore', () => {
       digestsState.cache.set(url, digests);
       return digests;
     });
-    useImageFiltersStore.setState({ imageFilters: '', filterKeys: new Set(), matchedLinks: {}, shownCids: {}, quickFilterNotice: null });
+    useImageFiltersStore.setState({ imageFilters: '', filterKeys: new Set(), matchedLinks: {}, shownCids: {}, quickFilterNotice: null, showQuickFilterMenuItem: false });
   });
 
   it('quick filters a Forge file by hash and an unreadable image by exact link, counting them on one notice', async () => {
@@ -54,7 +54,11 @@ describe('useImageFiltersStore', () => {
     expect(getState().imageFilters).toBe(`# my list\n${SHA256}\n${OTHER_LINK}`);
     expect([...getState().filterKeys]).toEqual([SHA256, OTHER_LINK]);
     expect(getState().quickFilterNotice).toEqual({ pathname: '/b', keys: [SHA256, OTHER_LINK] });
-    expect(JSON.parse(localStorage.getItem('image-filters-store') ?? '{}').state).toEqual({ imageFilters: getState().imageFilters, matchedLinks: {} });
+    expect(JSON.parse(localStorage.getItem('image-filters-store') ?? '{}').state).toEqual({
+      imageFilters: getState().imageFilters,
+      matchedLinks: {},
+      showQuickFilterMenuItem: false,
+    });
     expect(digestsState.hashImage.mock.calls).toEqual([[OTHER_LINK]]);
   });
 
@@ -251,5 +255,21 @@ describe('useImageFiltersStore', () => {
     expect([...getState().filterKeys]).toEqual([SHA256, OTHER_DIGESTS.md5]);
     expect(getState().matchedLinks).toEqual({ [OTHER_LINK]: OTHER_DIGESTS.md5 });
     expect(JSON.parse(localStorage.getItem('image-filters-store') ?? '{}').state.shownCids).toBeUndefined();
+    // A list saved before the post menu option existed leaves the option off.
+    expect(getState().showQuickFilterMenuItem).toBe(false);
+  });
+
+  it('keeps the post menu quick filter off until the viewer turns it on, across reloads', async () => {
+    expect(getState().showQuickFilterMenuItem).toBe(false);
+
+    getState().setShowQuickFilterMenuItem(true);
+    const stored = localStorage.getItem('image-filters-store') ?? '{}';
+    expect(JSON.parse(stored).state.showQuickFilterMenuItem).toBe(true);
+
+    // Simulates a reload: clear the in-memory value (which persist also writes), then load what the toggle saved.
+    useImageFiltersStore.setState({ showQuickFilterMenuItem: false });
+    localStorage.setItem('image-filters-store', stored);
+    await useImageFiltersStore.persist.rehydrate();
+    expect(getState().showQuickFilterMenuItem).toBe(true);
   });
 });

@@ -40,7 +40,10 @@ interface ImageFiltersState {
    * the keys it added, which its undo removes.
    */
   quickFilterNotice: { pathname: string; keys: string[] } | null;
+  /** Whether post menus offer the quick filter. Off by default, so the menus stay short until the viewer opts in. */
+  showQuickFilterMenuItem: boolean;
   setImageFilters: (imageFilters: string) => void;
+  setShowQuickFilterMenuItem: (show: boolean) => void;
   /** Adds a post's file to the list and opens the page's notice, or extends it. */
   quickFilter: (link: string, cid: string | undefined, pathname: string, mediaType: string | undefined) => void;
   /** Hashes an image that finished loading, when its hash could match the list. */
@@ -142,10 +145,14 @@ const useImageFiltersStore = create<ImageFiltersState>()(
         listRevision: 0,
         shownCids: {},
         quickFilterNotice: null,
+        showQuickFilterMenuItem: false,
         setImageFilters: (imageFilters) => {
           const state = get();
           set(withList(state, imageFilters));
           hashLoadedImagesForNewNeeds(state.filterKeys);
+        },
+        setShowQuickFilterMenuItem: (showQuickFilterMenuItem) => {
+          if (get().showQuickFilterMenuItem !== showQuickFilterMenuItem) set({ showQuickFilterMenuItem });
         },
         quickFilter: (link, cid, pathname, mediaType) => {
           const lineKey = getImageFilterKey(link);
@@ -192,15 +199,20 @@ const useImageFiltersStore = create<ImageFiltersState>()(
     },
     {
       name: 'image-filters-store',
-      partialize: (state) => ({ imageFilters: state.imageFilters, matchedLinks: state.matchedLinks }),
+      partialize: (state) => ({ imageFilters: state.imageFilters, matchedLinks: state.matchedLinks, showQuickFilterMenuItem: state.showQuickFilterMenuItem }),
       merge: (persisted, current) => {
-        const { imageFilters, matchedLinks } = (persisted ?? {}) as { imageFilters?: unknown; matchedLinks?: unknown };
-        if (typeof imageFilters !== 'string') return current;
+        const { imageFilters, matchedLinks, showQuickFilterMenuItem } = (persisted ?? {}) as {
+          imageFilters?: unknown;
+          matchedLinks?: unknown;
+          showQuickFilterMenuItem?: unknown;
+        };
+        const merged = { ...current, showQuickFilterMenuItem: showQuickFilterMenuItem === true };
+        if (typeof imageFilters !== 'string') return merged;
         const storedMatches =
           matchedLinks && typeof matchedLinks === 'object' && !Array.isArray(matchedLinks)
             ? Object.fromEntries(Object.entries(matchedLinks).filter((entry): entry is [string, string] => typeof entry[1] === 'string'))
             : {};
-        return { ...current, ...withList({ ...current, matchedLinks: storedMatches }, imageFilters) };
+        return { ...merged, ...withList({ ...current, matchedLinks: storedMatches }, imageFilters) };
       },
     },
   ),

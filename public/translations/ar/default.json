@@ -601,5 +601,6 @@
   "files_chosen": "عدد الملفات: {{count}}",
   "too_many_files_alert": "عدد الملفات كبير جدًا. الحد الأقصى في هذه اللوحة لكل منشور: {{count}}.",
   "gallery_file_not_image_or_video_alert": "يمكن نشر الصور ومقاطع الفيديو فقط معًا.",
-  "directory_requirement_no_galleries": "ملف واحد لكل منشور، بدون معارض"
+  "directory_requirement_no_galleries": "ملف واحد لكل منشور، بدون معارض",
+  "show_filter_image_md5_in_post_menu": "إظهار \"تصفية MD5 الصورة\" في قوائم المنشورات"
 }
