@@ -187,8 +187,8 @@ jobs:
       - name: Verify forge config
         run: node -e "import('./forge.config.js').then(c => console.log('Config loaded, makers:', c.default.makers?.length || 0)).catch(e => { console.error(e); process.exit(1); })"
 
-      - name: Install Chromium for smoke tests
-        run: npx playwright install --with-deps chromium
+      - name: Install stable Chrome for smoke tests
+        run: corepack yarn exec playwright install --force --with-deps chrome
 
       - name: Smoke test built web app
         run: node scripts/smoke-web-app.js --start-preview
@@ -240,7 +240,7 @@ jobs:
           CI: ''
 
       - name: Install performance browser
-        run: yarn perf:install --with-deps
+        run: yarn perf:install --force --with-deps
 
       - name: Check cold-load layout stability and static shell handoff
         run: yarn perf:load --check --profile cpu4 --samples 2 --shard ${{ matrix.shard }}/${{ strategy.job-total }} --output .react-perf/ci-load
@@ -295,7 +295,7 @@ jobs:
           done
 
       - name: Install performance browser
-        run: yarn perf:install --with-deps
+        run: yarn perf:install --force --with-deps
 
       - name: Check React runtime scenarios
         run: yarn perf:check --shard ${{ matrix.shard }}/${{ strategy.job-total }} --output .react-perf/ci

@@ -52,7 +52,7 @@ async function run() {
 
   let browser;
   try {
-    browser = await chromium.launch({ headless: true });
+    browser = await chromium.launch({ channel: 'chrome', chromiumSandbox: true, headless: true });
     await mkdir(SNAPSHOTS_DIR, { recursive: true });
 
     for (const provider of PROVIDERS) {
