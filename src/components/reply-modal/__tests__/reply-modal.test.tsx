@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import ReplyModal from '../reply-modal';
 import { OEKAKI_WEB_WARNING_TEXT } from '../../../lib/oekaki/oekaki-copy';
@@ -32,6 +32,7 @@ const testState = vi.hoisted(() => ({
     }
   >,
   chooseFileMock: vi.fn(),
+  chooseFilesMock: vi.fn(),
   uploadAttachmentMock: vi.fn(),
   precheckMock: vi.fn(),
   isMobile: false,
@@ -275,6 +276,7 @@ vi.mock('../../../hooks/use-spam-blocker-precheck', () => ({
 vi.mock('../../../hooks/use-file-upload', () => ({
   useFileUpload: () => ({
     chooseFile: testState.chooseFileMock,
+    chooseFiles: testState.chooseFilesMock,
     uploadAttachment: testState.uploadAttachmentMock,
     isUploading: testState.uploadPhase !== null,
     uploadPhase: testState.uploadPhase,
@@ -470,6 +472,8 @@ describe('ReplyModal', () => {
     testState.directoryListsByCode = {};
     testState.chooseFileMock.mockReset();
     testState.chooseFileMock.mockResolvedValue(null);
+    testState.chooseFilesMock.mockReset();
+    testState.chooseFilesMock.mockResolvedValue([]);
     testState.uploadAttachmentMock.mockReset();
     testState.precheckMock.mockReset();
     testState.precheckMock.mockResolvedValue({ status: 'skipped' });
@@ -1739,6 +1743,79 @@ describe('ReplyModal', () => {
       await clickButtonByText('choose_file');
       await rerenderReplyModal('/all/thread/post-1');
     };
+
+    it('offers one file on a directory route even when the board hosting it takes a gallery', async () => {
+      testState.communities['music-posting.eth'] = { ...testState.communities['music-posting.eth'], features: { maxReplyGalleryItems: 3 } };
+      testState.chooseFileMock.mockResolvedValue(pngAttachment);
+      testState.locationDraftKey = '/mu/thread/post-1';
+      // The app renders the modal in its layout route, which reads the board route's params.
+      await act(async () => {
+        root.render(
+          createElement(
+            MemoryRouter,
+            { initialEntries: ['/mu/thread/post-1'] },
+            createElement(
+              Routes,
+              null,
+              createElement(Route, {
+                path: '/:boardIdentifier/thread/:commentCid',
+                element: createElement(ReplyModal, {
+                  closeModal: testState.closeModalMock,
+                  locationDraftKey: '/mu/thread/post-1',
+                  parentCid: 'parent-cid',
+                  parentNumber: 42,
+                  postCid: 'post-cid',
+                  scrollY: 120,
+                  showReplyModal: true,
+                  communityAddress: 'music-posting.eth',
+                  threadNumber: 42,
+                }),
+              }),
+            ),
+          ),
+        );
+      });
+      await flushEffects();
+
+      await clickButtonByText('choose_file');
+
+      expect(testState.chooseFileMock).toHaveBeenCalledTimes(1);
+      expect(testState.chooseFilesMock).not.toHaveBeenCalled();
+    });
+
+    it('uploads every chosen file on a board that takes a gallery and publishes the rest as the gallery', async () => {
+      // jsdom never loads images, so this one reports its size as soon as it gets a source.
+      class SizedImage {
+        naturalWidth = 320;
+        naturalHeight = 240;
+        onload: (() => void) | null = null;
+        onerror: (() => void) | null = null;
+        set src(_url: string) {
+          queueMicrotask(() => this.onload?.());
+        }
+      }
+      vi.stubGlobal('Image', SizedImage);
+      const gifAttachment = { kind: 'file', file: new File(['gif'], 'second.gif', { type: 'image/gif' }), name: 'second.gif', mimeType: 'image/gif' };
+      testState.communities['music-posting.eth'] = { ...testState.communities['music-posting.eth'], features: { maxReplyGalleryItems: 3 } };
+      testState.chooseFilesMock.mockResolvedValue([pngAttachment, gifAttachment]);
+      testState.uploadAttachmentMock.mockImplementation(async (media: { name: string }) => ({ url: `https://forgeimg.net/abc/${media.name}`, fileName: media.name }));
+      await renderReplyModal('/all/thread/post-1');
+
+      await chooseFile();
+      expect(testState.chooseFileMock).not.toHaveBeenCalled();
+      expect(container.textContent).toContain('files_chosen:{"count":2}');
+
+      await clickButtonByText('post');
+
+      expect(testState.uploadAttachmentMock.mock.calls.map(([media]) => (media as { name: string }).name)).toEqual(['chosen.png', 'second.gif']);
+      expect(testState.publishReplyMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          link: 'https://forgeimg.net/abc/chosen.png',
+          gallery: [{ url: 'https://forgeimg.net/abc/second.gif', htmlTagName: 'img', width: 320, height: 240 }],
+        }),
+        expect.objectContaining({ finish: expect.any(Function) }),
+      );
+    });
 
     it('hides the link field, uploads only on submit, then publishes the uploaded link', async () => {
       testState.chooseFileMock.mockResolvedValue(pngAttachment);

@@ -96,6 +96,11 @@
   resize: vertical;
 }
 
+.md5FilterMenuOption {
+  display: block;
+  margin-top: 5px;
+}
+
 /* iOS zooms into fields with text under 16px. */
 @media (max-width: 640px) {
   .md5FilterList {

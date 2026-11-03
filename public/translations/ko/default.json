@@ -597,5 +597,10 @@
   "md5_filter_help": "이 파일이 있는 게시물을 숨깁니다. 한 줄에 하나씩 SHA-256 또는 MD5 해시(4chan X의 MD5 줄도 사용 가능)나 링크를 입력하세요. Forge 파일은 링크에 포함된 SHA-256 해시로 비교합니다. 다른 이미지는 호스트가 허용하면 불러온 후 해시를 계산하므로, 목록에 있는 해시로 같은 이미지가 어디에 게시되든 숨길 수 있습니다. 그 밖의 파일은 정확한 링크로만 비교합니다. #으로 시작하는 줄은 무시됩니다.",
   "directory_requirement_rules": "디렉터리 규칙을 맨 앞에 글자 그대로 기재",
   "spam_check_not_finished": "스팸 검사가 완료되지 않았습니다. 다시 시도하려면 다시 게시하세요.",
-  "board_may_be_offline": "게시판이 오프라인이거나 연결할 수 없는 상태일 수 있습니다."
+  "board_may_be_offline": "게시판이 오프라인이거나 연결할 수 없는 상태일 수 있습니다.",
+  "files_chosen": "파일 {{count}}개",
+  "too_many_files_alert": "파일이 너무 많습니다. 이 보드는 게시물당 최대 {{count}}개까지 허용합니다.",
+  "gallery_file_not_image_or_video_alert": "이미지와 동영상만 함께 게시할 수 있습니다.",
+  "directory_requirement_no_galleries": "게시물당 파일 하나, 갤러리 없음",
+  "show_filter_image_md5_in_post_menu": "게시물 메뉴에 '이미지 MD5 필터링' 표시"
 }

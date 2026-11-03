@@ -14,6 +14,8 @@ export type PendingUploadPhase = 'spam_check' | UploadPhase;
 export interface PendingUploadPost {
   id: number;
   attachment: AttachedMedia;
+  /** The other files chosen with it, which become the comment's gallery. */
+  galleryAttachments?: AttachedMedia[];
   /** The author's role on the board, which the board's challenges may exclude. */
   authorRole?: string;
   /** The board's public challenges when the post was submitted, which say whether it takes a pre-check. */

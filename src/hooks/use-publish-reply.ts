@@ -25,11 +25,12 @@ const usePublishReply = ({ cid, communityAddress, postCid }: UsePublishReplyOpti
   const account = useAccount();
   const directories = useDirectories();
 
-  const { author, content, link, flairs, spoiler, publishCommentOptions } = usePublishReplyStore(
+  const { author, content, link, gallery, flairs, spoiler, publishCommentOptions } = usePublishReplyStore(
     useShallow((state) => ({
       author: state.author[parentCid],
       content: state.content[parentCid] || undefined,
       link: state.link[parentCid] || undefined,
+      gallery: state.gallery[parentCid],
       flairs: state.flairs[parentCid],
       spoiler: state.spoiler[parentCid] || false,
       publishCommentOptions: state.publishCommentOptions[parentCid],
@@ -63,6 +64,7 @@ const usePublishReply = ({ cid, communityAddress, postCid }: UsePublishReplyOpti
       postCid: postCid ?? parentCid,
       content,
       link,
+      gallery,
       flairs,
       spoiler,
       ...(publishCommentOptions?.challengeRequest ? { challengeRequest: publishCommentOptions.challengeRequest } : {}),
@@ -74,7 +76,7 @@ const usePublishReply = ({ cid, communityAddress, postCid }: UsePublishReplyOpti
     }
 
     return baseOptions;
-  }, [author, content, flairs, link, parentCid, postCid, spoiler, communityAddress, publishCommentOptions?.challengeRequest]);
+  }, [author, content, flairs, gallery, link, parentCid, postCid, spoiler, communityAddress, publishCommentOptions?.challengeRequest]);
 
   const setPublishReplyOptions = useCallback(
     (options: Partial<Comment>) => {

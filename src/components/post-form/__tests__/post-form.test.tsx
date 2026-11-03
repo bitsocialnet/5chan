@@ -39,6 +39,7 @@ const testState = vi.hoisted(() => ({
   gifFrameStatus: 'idle' as 'idle' | 'ready',
   analyticsMock: vi.fn(),
   chooseFileMock: vi.fn(),
+  chooseFilesMock: vi.fn(),
   uploadAttachmentMock: vi.fn(),
   precheckMock: vi.fn(),
   precheckHookOptions: undefined as { communityAddress?: string } | undefined,
@@ -349,6 +350,7 @@ vi.mock('../../../hooks/use-spam-blocker-precheck', () => ({
 vi.mock('../../../hooks/use-file-upload', () => ({
   useFileUpload: () => ({
     chooseFile: testState.chooseFileMock,
+    chooseFiles: testState.chooseFilesMock,
     uploadAttachment: testState.uploadAttachmentMock,
     isUploading: testState.uploadPhase !== null,
     uploadPhase: testState.uploadPhase,
@@ -375,6 +377,7 @@ vi.mock('../../../lib/utils/media-utils', () => {
   };
 
   return {
+    MAX_GALLERY_FILES: 20,
     getDisplayMediaInfoType: (type: string, t: (key: string) => string) => t(type),
     getLinkMediaInfo: (link: string) => {
       const path = (() => {
@@ -646,6 +649,8 @@ describe('PostForm', () => {
     };
     testState.chooseFileMock.mockReset();
     testState.chooseFileMock.mockResolvedValue(null);
+    testState.chooseFilesMock.mockReset();
+    testState.chooseFilesMock.mockResolvedValue([]);
     testState.uploadAttachmentMock.mockReset();
     testState.precheckMock.mockReset();
     testState.precheckMock.mockResolvedValue({ status: 'skipped' });
@@ -673,6 +678,7 @@ describe('PostForm', () => {
     act(() => root.unmount());
     container.remove();
     usePendingPostNavigationStore.getState().clearPendingPostNavigation();
+    vi.unstubAllGlobals();
   });
 
   it('records validation failure without draft contents and sends nothing for composing', async () => {
@@ -1850,6 +1856,213 @@ describe('PostForm', () => {
     });
     // The draft keeps the file, so a stopped check or a failed upload returns to the form with it.
     expect(usePostFormDraftsStore.getState().forms[pendingUploadPost?.draftKey ?? '']?.draft.attachment).toEqual(attachment);
+  });
+
+  it('posts several chosen files as a new thread on a board that takes a gallery, the first as its link', async () => {
+    const files = ['first.png', 'second.png', 'third.webm'].map((name) => ({
+      kind: 'file',
+      file: new File(['x'], name, { type: name.endsWith('.png') ? 'image/png' : 'video/webm' }),
+      name,
+      mimeType: name.endsWith('.png') ? 'image/png' : 'video/webm',
+    }));
+    testState.uploadMode = 'random';
+    testState.resolvedCommunityAddress = 'music-posting.eth';
+    testState.communities['music-posting.eth'] = { address: 'music-posting.eth', features: { maxPostGalleryItems: 2 } };
+    testState.chooseFilesMock.mockResolvedValue(files);
+
+    await renderPostForm('/music-posting.eth');
+    await clickByText(container, 'start_new_thread');
+    const table = container.querySelector('table') as HTMLTableElement;
+    await clickByText(table, 'choose_file');
+
+    expect(testState.chooseFileMock).not.toHaveBeenCalled();
+    const fileLabel = Array.from(table.querySelectorAll('span')).find((span) => span.textContent === 'files_chosen:3');
+    expect(fileLabel?.title).toBe('first.png\nsecond.png\nthird.webm');
+
+    await dispatchInput(table.querySelector('textarea') as HTMLTextAreaElement, 'gallery thread');
+    await clickByText(table, 'post');
+
+    const [pendingUploadPost] = usePendingUploadPostStore.getState().pendingUploadPosts;
+    expect(pendingUploadPost).toMatchObject({ attachment: files[0], galleryAttachments: files.slice(1) });
+    expect(testState.uploadAttachmentMock).not.toHaveBeenCalled();
+  });
+
+  it('keeps the files chosen before when more are chosen than the board takes', async () => {
+    const file = (name: string) => ({ kind: 'file', file: new File(['x'], name, { type: 'image/png' }), name, mimeType: 'image/png' });
+    testState.uploadMode = 'random';
+    testState.resolvedCommunityAddress = 'music-posting.eth';
+    testState.communities['music-posting.eth'] = { address: 'music-posting.eth', features: { maxPostGalleryItems: 1 } };
+    testState.chooseFilesMock.mockResolvedValueOnce([file('kept.png')]).mockResolvedValueOnce([file('a.png'), file('b.png'), file('c.png')]);
+
+    await renderPostForm('/music-posting.eth');
+    await clickByText(container, 'start_new_thread');
+    const table = container.querySelector('table') as HTMLTableElement;
+    await clickByText(table, 'choose_file');
+    await clickByText(table, 'choose_file');
+
+    expect(container.textContent).toContain('error: too_many_files_alert:2');
+    expect(table.textContent).toContain('kept.png');
+    expect(usePostFormDraftsStore.getState().forms['/music-posting.eth']?.draft).toMatchObject({ attachment: { name: 'kept.png' }, galleryAttachments: undefined });
+  });
+
+  it('offers one file on a directory route even when the board hosting it takes a gallery', async () => {
+    const attachment = { kind: 'file', file: new File(['x'], 'only.png', { type: 'image/png' }), name: 'only.png', mimeType: 'image/png' };
+    testState.uploadMode = 'random';
+    testState.resolvedCommunityAddress = 'music-posting.eth';
+    testState.communities['music-posting.eth'] = { address: 'music-posting.eth', features: { maxPostGalleryItems: 2 } };
+    testState.chooseFileMock.mockResolvedValue(attachment);
+
+    await renderPostForm('/mu');
+    await clickByText(container, 'start_new_thread');
+    await clickByText(container.querySelector('table') as HTMLTableElement, 'choose_file');
+
+    expect(testState.chooseFileMock).toHaveBeenCalledTimes(1);
+    expect(testState.chooseFilesMock).not.toHaveBeenCalled();
+  });
+
+  it('refuses a kept gallery on a board that takes fewer files, and posts it on one that takes them', async () => {
+    // jsdom never loads images, so the kept link's image loads as soon as it gets a source.
+    class LoadingImage {
+      onload: (() => void) | null = null;
+      onerror: (() => void) | null = null;
+      set src(_url: string) {
+        queueMicrotask(() => this.onload?.());
+      }
+    }
+    vi.stubGlobal('Image', LoadingImage);
+    const link = 'https://forgeimg.net/abc/first.png';
+    const gallery = [
+      { url: 'https://forgeimg.net/abc/second.png', htmlTagName: 'img' as const },
+      { url: 'https://forgeimg.net/abc/third.png', htmlTagName: 'img' as const },
+    ];
+    testState.communities['music-posting.eth'] = { address: 'music-posting.eth', features: {} };
+    testState.communities['mod.eth'] = { address: 'mod.eth', features: { maxPostGalleryItems: 2 } };
+    // The form keeps the uploaded files after the board it posted to did not take the thread.
+    usePostFormDraftsStore.getState().updateDraft('/all', { communityAddress: 'mod.eth', link, gallery });
+
+    await renderPostForm('/all');
+    await clickByText(container, 'start_new_thread');
+    const table = container.querySelector('table') as HTMLTableElement;
+    await dispatchChange(table.querySelector('select') as HTMLSelectElement, 'music-posting.eth');
+    await clickByText(table, 'post');
+
+    expect(container.textContent).toContain('error: too_many_files_alert:1');
+    expect(testState.publishPostMock).not.toHaveBeenCalled();
+
+    await dispatchChange(table.querySelector('select') as HTMLSelectElement, 'mod.eth');
+    await clickByText(table, 'post');
+
+    expect(testState.publishPostMock).toHaveBeenCalledWith(expect.objectContaining({ link, gallery }), expect.objectContaining({ finish: expect.any(Function) }));
+  });
+
+  it('uploads every file of an inline reply and publishes the rest as its gallery', async () => {
+    // jsdom never loads images, so this one reports its size as soon as it gets a source.
+    class SizedImage {
+      naturalWidth = 800;
+      naturalHeight = 600;
+      onload: (() => void) | null = null;
+      onerror: (() => void) | null = null;
+      set src(_url: string) {
+        queueMicrotask(() => this.onload?.());
+      }
+    }
+    vi.stubGlobal('Image', SizedImage);
+    const files = ['reply.png', 'extra.png'].map((name) => ({ kind: 'file', file: new File(['x'], name, { type: 'image/png' }), name, mimeType: 'image/png' }));
+    testState.comments = { 'thread-cid': { postCid: 'thread-cid' } };
+    testState.resolvedCommunityAddress = 'music-posting.eth';
+    testState.communities['music-posting.eth'] = { address: 'music-posting.eth', features: { maxReplyGalleryItems: 1 } };
+    testState.chooseFilesMock.mockResolvedValue(files);
+    testState.uploadAttachmentMock.mockImplementation(async (media: { name: string }) => ({ url: `https://forgeimg.net/abc/${media.name}`, fileName: media.name }));
+
+    await renderPostForm('/music-posting.eth/thread/thread-cid');
+    await clickByText(container, 'post_a_reply');
+    const table = container.querySelector('table') as HTMLTableElement;
+    await clickByText(table, 'choose_file');
+    await clickByText(table, 'post');
+
+    expect(testState.publishReplyMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        link: 'https://forgeimg.net/abc/reply.png',
+        gallery: [{ url: 'https://forgeimg.net/abc/extra.png', htmlTagName: 'img', width: 800, height: 600 }],
+      }),
+      expect.objectContaining({ finish: expect.any(Function) }),
+    );
+  });
+
+  describe('reply gallery files', () => {
+    // jsdom never loads images, so this one reports its size as soon as it gets a source.
+    class SizedImage {
+      naturalWidth = 800;
+      naturalHeight = 600;
+      onload: (() => void) | null = null;
+      onerror: (() => void) | null = null;
+      set src(_url: string) {
+        queueMicrotask(() => this.onload?.());
+      }
+    }
+    const files = ['reply.png', 'extra.png'].map((name) => ({ kind: 'file', file: new File(['x'], name, { type: 'image/png' }), name, mimeType: 'image/png' }));
+    const gallery = [{ url: 'https://forgeimg.net/abc/extra.png', htmlTagName: 'img', width: 800, height: 600 }];
+
+    const openReplyWithFiles = async () => {
+      vi.stubGlobal('Image', SizedImage);
+      testState.comments = { 'thread-cid': { postCid: 'thread-cid' } };
+      testState.resolvedCommunityAddress = 'music-posting.eth';
+      testState.communities['music-posting.eth'] = { address: 'music-posting.eth', features: { maxReplyGalleryItems: 1 } };
+      testState.chooseFilesMock.mockResolvedValue(files);
+      await renderPostForm('/music-posting.eth/thread/thread-cid');
+      await clickByText(container, 'post_a_reply');
+      const table = container.querySelector('table') as HTMLTableElement;
+      await clickByText(table, 'choose_file');
+      await dispatchInput(table.querySelector('textarea') as HTMLTextAreaElement, 'reply body');
+      return table;
+    };
+
+    it('posts the uploaded files again without uploading them after the board did not take the reply, and not once the link is cleared', async () => {
+      testState.uploadAttachmentMock.mockImplementation(async (media: { name: string }) => ({ url: `https://forgeimg.net/abc/${media.name}`, fileName: media.name }));
+      const table = await openReplyWithFiles();
+
+      await clickByText(table, 'post');
+      await clickByText(table, 'post');
+
+      expect(testState.uploadAttachmentMock).toHaveBeenCalledTimes(2);
+      expect(testState.publishReplyMock).toHaveBeenCalledTimes(2);
+      expect(testState.publishReplyMock).toHaveBeenLastCalledWith(expect.objectContaining({ gallery }), expect.objectContaining({ finish: expect.any(Function) }));
+      expect(table.textContent).toContain('files_chosen:2');
+
+      // The gallery goes only with the link its first file became.
+      await dispatchInput(table.querySelector<HTMLInputElement>('input[aria-label="link"]') as HTMLInputElement, '');
+      await clickByText(table, 'post');
+      expect(testState.publishReplyMock).toHaveBeenLastCalledWith(
+        expect.objectContaining({ gallery: undefined }),
+        expect.objectContaining({ finish: expect.any(Function) }),
+      );
+      expect(table.textContent).not.toContain('files_chosen');
+    });
+
+    it('keeps the form locked between the uploads of its files', async () => {
+      testState.uploadAttachmentMock
+        .mockResolvedValueOnce({ url: 'https://forgeimg.net/abc/reply.png', fileName: 'reply.png' })
+        .mockReturnValueOnce(new Promise(() => {}));
+      const table = await openReplyWithFiles();
+
+      await clickByText(table, 'post');
+
+      expect(testState.uploadAttachmentMock).toHaveBeenCalledTimes(2);
+      expect((container.querySelector('fieldset') as HTMLFieldSetElement).disabled).toBe(true);
+    });
+
+    it('drops the chosen files when a link is typed', async () => {
+      const table = await openReplyWithFiles();
+
+      await dispatchInput(table.querySelector<HTMLInputElement>('input[aria-label="link"]') as HTMLInputElement, 'https://example.com/page');
+
+      expect(usePostFormDraftsStore.getState().forms['/music-posting.eth/thread/thread-cid']?.draft).toMatchObject({
+        attachment: undefined,
+        galleryAttachments: undefined,
+        gallery: undefined,
+      });
+      expect(table.textContent).not.toContain('files_chosen');
+    });
   });
 
   it('opens the upload page of a new thread still uploading when its form posts it again', async () => {

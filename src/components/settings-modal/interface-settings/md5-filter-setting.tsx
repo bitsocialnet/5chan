@@ -10,6 +10,8 @@ const Md5FilterSetting = () => {
   const { t } = useTranslation();
   const imageFilters = useImageFiltersStore((state) => state.imageFilters);
   const setImageFilters = useImageFiltersStore((state) => state.setImageFilters);
+  const showQuickFilterMenuItem = useImageFiltersStore((state) => state.showQuickFilterMenuItem);
+  const setShowQuickFilterMenuItem = useImageFiltersStore((state) => state.setShowQuickFilterMenuItem);
   const { hash, search } = useLocation();
   // The settings modal opens a section from ?section= or from a legacy #hash, so both scroll here.
   const isLinkedSection = new URLSearchParams(search).get('section') === MD5_FILTER_SECTION_ID || hash.slice(1) === MD5_FILTER_SECTION_ID;
@@ -40,6 +42,10 @@ const Md5FilterSetting = () => {
         autoComplete='off'
         autoCorrect='off'
       />
+      <label className={styles.md5FilterMenuOption}>
+        <input type='checkbox' checked={showQuickFilterMenuItem} onChange={(e) => setShowQuickFilterMenuItem(e.target.checked)} />
+        {t('show_filter_image_md5_in_post_menu')}
+      </label>
     </div>
   );
 };

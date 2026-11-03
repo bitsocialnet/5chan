@@ -54,7 +54,14 @@ const HideButton = ({
   comment,
 }: {
   cid: string;
-  comment?: { cid: string; communityAddress?: string; postCid?: string; link?: string; author?: { address: string } };
+  comment?: {
+    cid: string;
+    communityAddress?: string;
+    postCid?: string;
+    link?: string;
+    gallery?: Array<{ htmlTagName: string; url: string }>;
+    author?: { address: string };
+  };
 }) => {
   const { hide, hidden, state, error, errors, unhide } = useHide({ cid, comment });
   return (
@@ -277,6 +284,29 @@ describe('useHide', () => {
 
     await act(async () => useImageFiltersStore.getState().setImageFilters(''));
     expect(hideButton()?.dataset.hidden).toBe('false');
+  });
+
+  it('hides a post when one of its gallery files is on the image filter list', async () => {
+    useImageFiltersStore.getState().setImageFilters(FILTERED_SHA256);
+    const gallery = [
+      { htmlTagName: 'img', url: 'https://example.com/fine.png' },
+      { htmlTagName: 'img', url: FILTERED_LINK },
+    ];
+    await act(async () =>
+      root.render(
+        <HideButton cid='gallery-reply' comment={{ cid: 'gallery-reply', link: 'https://example.com/link.png', gallery, author: { address: 'someone.bso' } }} />,
+      ),
+    );
+    expect(container.querySelector<HTMLButtonElement>('[data-testid="hide"]')?.dataset.hidden).toBe('true');
+
+    let isImageFiltered: ((comment: Comment) => boolean) | undefined;
+    const Predicate = () => {
+      isImageFiltered = useIsImageFiltered();
+      return null;
+    };
+    await act(async () => root.render(<Predicate />));
+    expect(isImageFiltered?.({ cid: 'gallery-thread', gallery, author: { address: 'someone.bso' } } as Comment)).toBe(true);
+    expect(isImageFiltered?.({ cid: 'clean-thread', gallery: gallery.slice(0, 1), author: { address: 'someone.bso' } } as Comment)).toBe(false);
   });
 
   it("never filters the viewer's own posts", async () => {

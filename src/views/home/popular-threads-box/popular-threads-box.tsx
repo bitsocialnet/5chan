@@ -9,7 +9,7 @@ import usePopularThreadsOptionsStore from '../../../stores/use-popular-threads-o
 import useStatsProvidersStore from '../../../stores/use-stats-providers-store';
 import { getProviderPopularPosts, getStatsProviderSnapshot } from '../../../lib/stats-provider-snapshot';
 import { verifyProviderThread } from '../../../lib/stats-provider-verification';
-import { getCommentMediaInfo } from '../../../lib/utils/media-utils';
+import { getCommentCoverMediaInfo } from '../../../lib/utils/media-utils';
 import { CatalogPostMedia } from '../../../components/catalog-row';
 import LoadingEllipsis from '../../../components/loading-ellipsis';
 import BoxModal from '../box-modal';
@@ -43,8 +43,8 @@ const ContentPreview = ({ content, maxLength = 99 }: { content: string; maxLengt
 
 const PopularThreadCard = memo(
   ({ post, boardTitle, boardPath }: PopularThreadProps) => {
-    const { cid, content, link, linkHeight, linkWidth, thumbnailUrl, title } = post || {};
-    const commentMediaInfo = getCommentMediaInfo(link, thumbnailUrl, linkWidth, linkHeight);
+    const { cid, content, title } = post || {};
+    const commentMediaInfo = getCommentCoverMediaInfo(post);
     const prefetchThread = usePrefetchIntent({ commentCid: cid, communityAddress: getCommentCommunityAddress(post) });
 
     return (
@@ -52,7 +52,13 @@ const PopularThreadCard = memo(
         <div className={styles.title}>{boardTitle}</div>
         <div className={styles.mediaContainer}>
           <Link to={`/${boardPath}/thread/${cid}`} {...prefetchThread}>
-            <CatalogPostMedia commentMediaInfo={commentMediaInfo} isOutOfFeed={true} cid={cid} linkWidth={linkWidth} linkHeight={linkHeight} />
+            <CatalogPostMedia
+              commentMediaInfo={commentMediaInfo}
+              isOutOfFeed={true}
+              cid={cid}
+              linkWidth={commentMediaInfo?.linkWidth}
+              linkHeight={commentMediaInfo?.linkHeight}
+            />
           </Link>
         </div>
         <div className={styles.threadContent}>

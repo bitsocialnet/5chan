@@ -14,7 +14,7 @@ import { getCommunityAddress, getBoardPath, areSameBoardAddress } from '../../li
 import { useDirectories, DirectoryCommunity } from '../../hooks/use-directories';
 import getShortAddress from '../../lib/get-short-address';
 import { BOARD_CODE_GROUPS } from '../../constants/board-codes';
-import { getHasThumbnail, getCommentMediaInfo } from '../../lib/utils/media-utils';
+import { getHasThumbnail, getCommentCoverMediaInfo } from '../../lib/utils/media-utils';
 import { isPendingApprovalAwaiting, isPendingApprovalRejected } from '../../lib/utils/pending-approval-moderation';
 import { getFormattedDate, getFormattedTimeAgo } from '../../lib/utils/time-utils';
 import useFeedResetStore from '../../stores/use-feed-reset-store';
@@ -503,7 +503,7 @@ const ModQueueRow = memo(({ comment, isOdd = false, showBoard = false, transferC
   const { editedComment } = useEditedComment({ comment });
   const displayComment = editedComment || comment;
 
-  const { content, title, timestamp, cid, link, thumbnailUrl, linkWidth, linkHeight, number, parentCid } = displayComment;
+  const { content, title, timestamp, cid, link, number, parentCid } = displayComment;
 
   const timeWaiting = currentTime - timestamp;
   const alertThresholdSeconds = getAlertThresholdSeconds();
@@ -517,8 +517,8 @@ const ModQueueRow = memo(({ comment, isOdd = false, showBoard = false, transferC
   const hasContent = content && content.trim().length > 0;
   const hasLink = link && link.length > 0;
   const isReply = !!parentCid;
-  const commentMediaInfo = getCommentMediaInfo(link, thumbnailUrl, linkWidth, linkHeight);
-  const hasThumbnail = getHasThumbnail(commentMediaInfo, link);
+  const commentMediaInfo = getCommentCoverMediaInfo(displayComment);
+  const hasThumbnail = getHasThumbnail(commentMediaInfo, commentMediaInfo?.url);
   const rawExcerpt = (
     (hasTitle && hasContent ? `${title}: ${content}` : null) ||
     (hasTitle ? title : null) ||
@@ -612,7 +612,7 @@ const ModQueueCard = memo(({ comment, showBoard = false, transferControls, board
   const { editedComment } = useEditedComment({ comment });
   const displayComment = editedComment || comment;
 
-  const { content, title, timestamp, cid, link, thumbnailUrl, linkWidth, linkHeight, number, parentCid } = displayComment;
+  const { content, title, timestamp, cid, link, number, parentCid } = displayComment;
 
   const timeWaiting = currentTime - timestamp;
   const alertThresholdSeconds = getAlertThresholdSeconds();
@@ -624,8 +624,8 @@ const ModQueueCard = memo(({ comment, showBoard = false, transferControls, board
   const hasContent = content && content.trim().length > 0;
   const hasLink = link && link.length > 0;
   const isReply = !!parentCid;
-  const commentMediaInfo = getCommentMediaInfo(link, thumbnailUrl, linkWidth, linkHeight);
-  const hasThumbnail = getHasThumbnail(commentMediaInfo, link);
+  const commentMediaInfo = getCommentCoverMediaInfo(displayComment);
+  const hasThumbnail = getHasThumbnail(commentMediaInfo, commentMediaInfo?.url);
   const rawExcerpt = (
     (hasTitle && hasContent ? `${title}: ${content}` : null) ||
     (hasTitle ? title : null) ||

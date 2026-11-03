@@ -1,5 +1,5 @@
 import type { Comment } from '@bitsocial/bitsocial-react-hooks';
-import { getCommentMediaInfo, getHasThumbnail } from './utils/media-utils';
+import { getCommentCoverMediaInfo, getHasThumbnail } from './utils/media-utils';
 
 export const MAX_POPULAR_THREADS = 8;
 // Each page load samples the box from the most popular boards, so a refresh
@@ -33,13 +33,14 @@ export function popularityScore(post: Comment, nowSeconds: number): number {
 }
 
 function isEligiblePost(post: Comment): boolean {
-  const { deleted, link, linkHeight, linkWidth, locked, pinned, removed, thumbnailUrl } = post;
+  const { deleted, locked, pinned, removed } = post;
   if (deleted || removed || locked || pinned) {
     return false;
   }
 
   try {
-    return getHasThumbnail(getCommentMediaInfo(link, thumbnailUrl, linkWidth, linkHeight), link);
+    const coverMediaInfo = getCommentCoverMediaInfo(post);
+    return getHasThumbnail(coverMediaInfo, coverMediaInfo?.url);
   } catch {
     // skip posts with malformed media URLs
     return false;
@@ -71,13 +72,14 @@ export function getBoardTopThreads(boards: BoardThreads[], scoreTimestamp: numbe
   });
   rankedBoardThreads.sort((a, b) => byScoreDescending(a[0], b[0]));
 
-  const selectedLinks = new Set<string>();
+  // Threads showing the same file are one pick.
+  const selectedLinks = new Set<string | undefined>();
   const topThreads: PopularThreadCandidate[] = [];
   for (const threads of rankedBoardThreads) {
-    const topThread = threads.find(({ post }) => !selectedLinks.has(post.link));
+    const topThread = threads.find(({ post }) => !selectedLinks.has(getCommentCoverMediaInfo(post)?.url));
     if (topThread) {
       topThreads.push(topThread);
-      selectedLinks.add(topThread.post.link);
+      selectedLinks.add(getCommentCoverMediaInfo(topThread.post)?.url);
     }
   }
 

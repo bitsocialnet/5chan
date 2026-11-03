@@ -597,5 +597,10 @@
   "md5_filter_help": "Bu dosyaları içeren gönderileri gizler, her satıra bir tane: SHA-256 veya MD5 hash değeri (4chan X'in MD5 satırları da çalışır) ya da bir bağlantı. Forge dosyası, bağlantısındaki SHA-256 hash değeriyle eşleştirilir. Diğer görsellerin hash değeri, sunucuları izin veriyorsa yüklendikten sonra hesaplanır; böylece listedeki bir hash aynı görseli nerede paylaşılırsa paylaşılsın gizler. Bunların dışındaki her dosya yalnızca tam bağlantısıyla eşleştirilir. # ile başlayan satırlar yok sayılır.",
   "directory_requirement_rules": "Dizin kuralları en başta, kelimesi kelimesine listelenmiş",
   "spam_check_not_finished": "Spam kontrolü tamamlanmadı. Yeniden denemek için tekrar gönderin.",
-  "board_may_be_offline": "Forum çevrimdışı veya erişilemez olabilir."
+  "board_may_be_offline": "Forum çevrimdışı veya erişilemez olabilir.",
+  "files_chosen": "{{count}} dosya",
+  "too_many_files_alert": "Çok fazla dosya. Bu pano gönderi başına en fazla {{count}} dosyaya izin veriyor.",
+  "gallery_file_not_image_or_video_alert": "Yalnızca görseller ve videolar birlikte gönderilebilir.",
+  "directory_requirement_no_galleries": "Gönderi başına bir dosya, galeri yok",
+  "show_filter_image_md5_in_post_menu": "Gönderi menülerinde \"Görüntü MD5'ini filtrele\" seçeneğini göster"
 }

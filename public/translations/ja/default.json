@@ -597,5 +597,10 @@
   "md5_filter_help": "これらのファイルを含む投稿を非表示にします（1行に1つ）。各行にはSHA-256またはMD5ハッシュ（4chan XのMD5行も使えます）、またはリンクを入力します。Forgeのファイルはリンクに含まれるSHA-256ハッシュで照合されます。その他の画像は、ホストが許可していれば読み込み後にハッシュが計算されるため、登録したハッシュで同じ画像をどこに投稿されても非表示にできます。それ以外のファイルは完全一致するリンクでのみ照合されます。#で始まる行は無視されます。",
   "directory_requirement_rules": "ディレクトリのルールを先頭に一字一句そのまま記載",
   "spam_check_not_finished": "スパムチェックが完了しませんでした。もう一度投稿して再試行してください。",
-  "board_may_be_offline": "掲示板がオフラインか、接続できない可能性があります。"
+  "board_may_be_offline": "掲示板がオフラインか、接続できない可能性があります。",
+  "files_chosen": "{{count}} 個のファイル",
+  "too_many_files_alert": "ファイルが多すぎます。このボードでは1投稿あたり最大 {{count}} 個までです。",
+  "gallery_file_not_image_or_video_alert": "まとめて投稿できるのは画像と動画のみです。",
+  "directory_requirement_no_galleries": "1投稿につき1ファイル、ギャラリーなし",
+  "show_filter_image_md5_in_post_menu": "投稿メニューに「画像のMD5をフィルター」を表示"
 }

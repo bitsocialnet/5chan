@@ -262,6 +262,59 @@ describe('pretext-height-estimates', () => {
     expect(estimate(8)).toBeLessThan(withoutPreview + allPreviewHeight);
   });
 
+  it('stacks desktop reply gallery files above the text instead of floating them beside it', () => {
+    const metrics = {
+      abbrFontSizePx: 13,
+      bodyFontFamily: 'Arial, Helvetica, sans-serif',
+      bodyFontSizePx: 13,
+      mobileContentFontSizePx: 15,
+    };
+    const reply = {
+      cid: 'gallery-reply',
+      communityAddress: 'music-posting.eth',
+      content: 'A desktop reply long enough to wrap beside a floated thumbnail. '.repeat(12),
+      parentCid: 'gallery-parent',
+      postCid: 'gallery-parent',
+      state: 'succeeded',
+    };
+    const media = { url: 'https://example.com/file.jpg', width: 1000, height: 1000 };
+    const [textOnly, linkReply, galleryReply] = getReplyHeightEstimates({
+      isMobile: false,
+      metrics,
+      replies: [reply, { ...reply, link: media.url, linkHeight: media.height, linkWidth: media.width }, { ...reply, gallery: [{ htmlTagName: 'img', ...media }] }],
+      windowWidth: 1280,
+    });
+
+    expect(linkReply).toBeGreaterThan(textOnly);
+    // The 125px thumbnail row comes on top of the text's full height.
+    expect(galleryReply - textOnly).toBeGreaterThan(125);
+    expect(galleryReply).toBeGreaterThan(linkReply);
+  });
+
+  it('adds a row of height when mobile gallery files wrap', () => {
+    const metrics = {
+      abbrFontSizePx: 13,
+      bodyFontFamily: 'Arial, Helvetica, sans-serif',
+      bodyFontSizePx: 13,
+      mobileContentFontSizePx: 15,
+    };
+    const file = (index: number) => ({ height: 1000, htmlTagName: 'img', url: `https://example.com/${index}.jpg`, width: 1000 });
+    const reply = (fileCount: number) => ({
+      cid: `gallery-reply-${fileCount}`,
+      communityAddress: 'music-posting.eth',
+      content: 'A mobile reply',
+      gallery: Array.from({ length: fileCount }, (_, index) => file(index)),
+      parentCid: 'gallery-parent',
+      postCid: 'gallery-parent',
+      state: 'succeeded',
+    });
+    // Two 125px thumbnails fit beside each other on a 390px phone; a third starts a second row.
+    const [oneRow, stillOneRow, twoRows] = getReplyHeightEstimates({ isMobile: true, metrics, replies: [reply(1), reply(2), reply(3)], windowWidth: 390 });
+
+    expect(stillOneRow).toBe(oneRow);
+    expect(twoRows - stillOneRow).toBeGreaterThan(125);
+  });
+
   it('keeps most mobile preview-reply height on board cards', () => {
     const metrics = {
       abbrFontSizePx: 13,

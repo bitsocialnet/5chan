@@ -1,5 +1,19 @@
 import { describe, expect, it, vi } from 'vitest';
-import { withResolvedCommentCommunityAddress } from '../comment-utils';
+import { hasAuthoritativeCommentPayload, mergeCommentFallback, withResolvedCommentCommunityAddress } from '../comment-utils';
+
+describe('gallery-only comments', () => {
+  const gallery = [{ htmlTagName: 'img', url: 'https://example.com/cat.jpg' }];
+
+  it('count a gallery as payload', () => {
+    expect(hasAuthoritativeCommentPayload({ gallery })).toBe(true);
+    expect(hasAuthoritativeCommentPayload({ cid: 'cid' })).toBe(false);
+  });
+
+  it('keep a loaded gallery-only comment instead of its fallback', () => {
+    const comment = { cid: 'cid', gallery };
+    expect(mergeCommentFallback(comment, { cid: 'cid', content: 'fallback' })).toBe(comment);
+  });
+});
 
 describe('withResolvedCommentCommunityAddress', () => {
   it('preserves canonical comments without traversing their preloaded reply trees', () => {

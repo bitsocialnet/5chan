@@ -23,12 +23,15 @@ export const hasAuthoritativeCommentPayload = (comment?: unknown): boolean => {
     content?: unknown;
     title?: unknown;
     link?: unknown;
+    gallery?: unknown;
     thumbnailUrl?: unknown;
     deleted?: unknown;
     removed?: unknown;
   };
 
-  return Boolean(record.timestamp !== undefined || record.content || record.title || record.link || record.thumbnailUrl || record.deleted || record.removed);
+  return Boolean(
+    record.timestamp !== undefined || record.content || record.title || record.link || record.gallery || record.thumbnailUrl || record.deleted || record.removed,
+  );
 };
 
 // Protocol comments already carry canonical communityAddress fields, including replies.
@@ -58,6 +61,7 @@ export const mergeCommentFallback = (comment: CommentWithRefresh | undefined, fa
     !!comment.content ||
     !!comment.title ||
     !!comment.link ||
+    !!comment.gallery ||
     !!comment.thumbnailUrl ||
     !!comment.error ||
     !!comment.deleted ||

@@ -1,3 +1,4 @@
+import type { CommentGalleryItem } from '@bitsocial/bitsocial-react-hooks';
 import { create } from 'zustand';
 import type { AttachedMedia } from '../lib/media-hosting/types';
 import useSelectedTextStore from './use-selected-text-store';
@@ -5,6 +6,10 @@ import useSelectedTextStore from './use-selected-text-store';
 export type ReplyModalDraft = {
   /** File chosen with Choose File or drawn in Oekaki; uploaded only when the post is submitted. */
   attachment?: AttachedMedia;
+  /** The other files chosen with it, for the comment's gallery; uploaded with it. */
+  galleryAttachments?: AttachedMedia[];
+  /** The gallery its files became once all were uploaded, kept so posting again after a failure uploads nothing. */
+  gallery?: CommentGalleryItem[];
   content: string;
   flag?: string;
   link: string;
