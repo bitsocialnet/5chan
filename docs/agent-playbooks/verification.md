@@ -50,7 +50,7 @@ After `yarn build`, `yarn perf:startup-bytes` compares what a first visit downlo
 
 ## Automated React performance evidence
 
-Run `yarn perf:install` once for the pinned browser, then `yarn perf:check` (three samples at 4x CPU by default). Scope a rerun with `--scenario <name>` when the change affects one covered flow. CI runs the compatibility self-test and scenarios; local `agent:verify` runs scenarios and Doctor automatically. After React/Bippy/collector upgrades, run `yarn perf:test` before relying on the counts. Keep these heavy checks out of per-edit hooks.
+Run `yarn perf:check` with sandboxed stable Chrome (use `yarn perf:install` if Chrome is missing) (three samples at 4x CPU by default). Scope a rerun with `--scenario <name>` when the change affects one covered flow. CI runs the compatibility self-test and scenarios; local `agent:verify` runs scenarios and Doctor automatically. After React/Bippy/collector upgrades, run `yarn perf:test` before relying on the counts. Keep these heavy checks out of per-edit hooks.
 
 `yarn perf:record` keeps JSON and native trace evidence under `.react-perf/`; use `--url <origin>` to reuse a compatible instrumented server. The runner owns its processes and browser lock; run it separately from manual browser sessions. Scenario configuration lives in `scripts/react-perf/config.mjs`. Exact update limits follow the tested interaction; timing caps are deliberately generous smoke limits and must not be relaxed merely to silence a failure. Diagnose a failed phase from its component-instance/commit evidence and visible completion.
 

@@ -187,13 +187,16 @@ jobs:
       - name: Verify forge config
         run: node -e "import('./forge.config.js').then(c => console.log('Config loaded, makers:', c.default.makers?.length || 0)).catch(e => { console.error(e); process.exit(1); })"
 
-      - name: Install Chromium for smoke tests
-        run: npx playwright install --with-deps chromium
+      - name: Install stable Chrome for smoke tests
+        run: corepack yarn exec playwright install --with-deps chrome
 
       - name: Smoke test built web app
         run: node scripts/smoke-web-app.js --start-preview
 
   load:
+    # These repeatable cold-load measurements block external page requests.
+    env:
+      REACT_PERF_BROWSER_CHANNEL: chromium
     name: Cold Load (${{ matrix.shard }}/${{ strategy.job-total }})
     runs-on: ubuntu-22.04
     timeout-minutes: 20
