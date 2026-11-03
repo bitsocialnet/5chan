@@ -1,7 +1,9 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
+  type ConnectedPeersStatRow,
   formatBytes,
   getConnectedPeersRowFromRecords,
+  getP2PStats,
   getTransferStatsFromMetricSnapshot,
   getTransportLabel,
   isLikelyPublicIp,
@@ -62,6 +64,44 @@ describe('p2p-stats engine', () => {
       expect(row.entries[1]).toMatchObject({ peerId: 'peerB', address: '/ip4/5.6.7.8/udp/4001/quic', transport: 'QUIC' });
       expect(row.peerCount).toBe(2);
       expect(row.connectionCount).toBe(2);
+    });
+  });
+
+  describe('getP2PStats browser-libp2p', () => {
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
+    it('locates a peer connected through a DNS name by the public IP in its peer store record', async () => {
+      vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline')));
+      const multiaddr = (value: string) => ({ toString: () => value });
+      const storedAddresses: Record<string, string[]> = {
+        peerA: ['/dns4/node.example/tcp/443/tls/ws', '/ip4/9.9.9.9/tcp/4001/p2p/relay/p2p-circuit', '/ip4/8.8.4.4/tcp/4001'],
+      };
+      const libp2p = {
+        getConnections: () => [
+          { id: 'a', remoteAddr: multiaddr('/dns4/node.example/tcp/443/tls/ws/p2p/peerA'), remotePeer: 'peerA' },
+          { id: 'b', remoteAddr: multiaddr('/dns4/unknown.example/tcp/443/tls/ws/p2p/peerB'), remotePeer: 'peerB' },
+        ],
+        getPeers: () => ['peerA', 'peerB'],
+        peerStore: {
+          get: async (peerId: string) => {
+            if (!storedAddresses[peerId]) throw new Error('Not Found');
+            return { addresses: storedAddresses[peerId].map((address) => ({ multiaddr: multiaddr(address) })) };
+          },
+        },
+      };
+
+      const rows = await getP2PStats('browser-libp2p', { pkc: { clients: { libp2pJsClients: { default: { _helia: { libp2p } } } } } });
+      const row = rows.find((statRow) => 'type' in statRow && statRow.type === 'connectedPeers') as ConnectedPeersStatRow;
+
+      // The relay circuit address carries the relay's IP, so the peer's own TCP address is used.
+      expect(row.entries[0]).toMatchObject({ address: '/dns4/node.example/tcp/443/tls/ws/p2p/peerA', locationAddress: '/ip4/8.8.4.4/tcp/0' });
+      expect(row.entries[0].location).toBeDefined();
+      expect(row.entries[0].countryCode).toBeDefined();
+      expect(row.entries[1].locationAddress).toBeUndefined();
+      expect(row.entries[1].location).toBeUndefined();
+      expect(row.mapEntries?.find((entry) => entry.peerId === 'peerA')?.location).toBeDefined();
     });
   });
 
