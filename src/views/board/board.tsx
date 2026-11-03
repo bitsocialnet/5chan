@@ -30,7 +30,7 @@ import { getPageFromFeedPath, isDirectoryBoard, normalizeMultiboardFeedPath, str
 import { getSpecialBoardByAddress } from '../../lib/special-boards';
 import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
 import { getCommentCommunityAddress } from '../../lib/utils/comment-utils';
-import { getNonokoPendingAccountCommentIndex } from '../../lib/utils/post-options-utils';
+import { getNonokoPendingAccountCommentIndex } from '../../lib/utils/pending-post-route-state';
 import { getRawBoardThreadState } from '../../lib/utils/raw-board-thread-state';
 import { getSearchWithTimeFilter, getSelectedTimeFilterValue, getTimeFilterSuggestion, type TimeFilterSuggestion } from '../../lib/utils/time-filter-utils';
 import { getPretextItemSizeFromElement, resolveFeedVirtualizationMode } from '../../lib/utils/pretext-height-estimates';

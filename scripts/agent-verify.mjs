@@ -11,7 +11,8 @@ import { fileURLToPath } from 'node:url';
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 // Every checkout uses the same slot; this is deliberately outside the repo.
 export const verificationLockPath = path.join(tmpdir(), '5chan-agent-verify.lock');
-const defaultCommands = ['build', 'lint', 'type-check', 'doctor:check', 'perf:check'].map((name) => ['corepack', 'yarn', name]);
+// perf:startup-bytes reads build/, so it runs right after build, as in CI's Build + Smoke job.
+const defaultCommands = ['build', 'perf:startup-bytes', 'lint', 'type-check', 'doctor:check', 'perf:check'].map((name) => ['corepack', 'yarn', name]);
 const signalExitCode = (signal) => 128 + (constants.signals[signal] || 1);
 
 function acquireLock(lockPath, cwd) {
@@ -110,7 +111,7 @@ export async function runVerification({ cwd = repoRoot, lockPath = verificationL
 
   if (interrupted) return signalExitCode(interrupted);
   if (failures.length) error(`[agent verify] ${failures.length} check(s) failed; returning exit ${exitCode}.`);
-  else if (exitCode === 0) log('[agent verify] Build, lint, type-check, Doctor diagnostics, and runtime performance checks passed.');
+  else if (exitCode === 0) log('[agent verify] Build, startup asset ceiling, lint, type-check, Doctor diagnostics, and runtime performance checks passed.');
   return exitCode;
 }
 

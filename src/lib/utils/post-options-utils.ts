@@ -199,33 +199,6 @@ export const stripSageMarker = (content: string): string => content.replace(SAGE
 
 export const isFortuneDirectoryCode = (directoryCode: string | undefined): boolean => !!directoryCode && FORTUNE_DIRECTORY_CODES.has(directoryCode);
 
-const NONOKO_PENDING_ACCOUNT_COMMENT_INDEX_STATE_KEY = 'nonokoPendingAccountCommentIndex';
-
-type NonokoPendingRouteState = {
-  [NONOKO_PENDING_ACCOUNT_COMMENT_INDEX_STATE_KEY]?: unknown;
-  usr?: unknown;
-};
-
-const getNonokoPendingAccountCommentIndexFromRecord = (state: NonokoPendingRouteState): number | undefined => {
-  const value = state[NONOKO_PENDING_ACCOUNT_COMMENT_INDEX_STATE_KEY];
-  return Number.isInteger(value) && (value as number) >= 0 ? (value as number) : undefined;
-};
-
-export const getNonokoPendingRouteState = (commentIndex: number) => ({
-  [NONOKO_PENDING_ACCOUNT_COMMENT_INDEX_STATE_KEY]: commentIndex,
-});
-
-export const getNonokoPendingAccountCommentIndex = (state: unknown): number | undefined => {
-  if (!state || typeof state !== 'object') return undefined;
-
-  const directIndex = getNonokoPendingAccountCommentIndexFromRecord(state as NonokoPendingRouteState);
-  if (directIndex !== undefined) return directIndex;
-
-  const wrappedState = (state as NonokoPendingRouteState).usr;
-  if (!wrappedState || typeof wrappedState !== 'object') return undefined;
-  return getNonokoPendingAccountCommentIndexFromRecord(wrappedState as NonokoPendingRouteState);
-};
-
 const hasFortuneOption = (value: string, directoryCode: string | undefined): boolean =>
   isFortuneDirectoryCode(directoryCode) && parsePostOptions(value).includes('fortune');
 

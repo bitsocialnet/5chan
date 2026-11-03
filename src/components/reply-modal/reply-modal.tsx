@@ -30,6 +30,7 @@ import {
   isPostOptionsValidationError,
   isSageSupportedByBoard,
 } from '../../lib/utils/post-options-utils';
+import { NONOKO_REPLY_ROUTE_STATE } from '../../lib/utils/pending-post-route-state';
 import { isMathDirectoryCode } from '../../lib/math-tags';
 import { hasModQueueAccessRole } from '../../lib/utils/mod-access';
 import { getModerationPostingRoleLabel } from '../../lib/utils/author-display-utils';
@@ -49,6 +50,7 @@ import { getFileAttachment, getFileDropHandlers, getFilePasteHandler, uploadGall
 import type { AttachedMedia } from '../../lib/media-hosting/types';
 import { useVideoThumbnailLinkConversion } from '../../hooks/use-video-thumbnail-link-conversion';
 import usePublishSubmissionGuard from '../../hooks/use-publish-submission-guard';
+import { startPostingAnalytics, type PostingAnalyticsAttempt } from '../../lib/posting-analytics';
 import { useCommunityField } from '../../hooks/use-stable-community';
 import { OEKAKI_WEB_WARNING_TEXT } from '../../lib/oekaki/oekaki-copy';
 import BbcodeEditorToolbar, { BbcodePreview } from '../bbcode-editor-toolbar';
@@ -258,96 +260,115 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
 
   const onPublishReply = () =>
     runPublishSubmission(async () => {
-      const appliedThumbnailConversion = await applyPendingConversion();
+      const attempt = startPostingAnalytics({ kind: 'reply' });
+      let handedOff = false;
+      let outcome: Parameters<PostingAnalyticsAttempt['finish']>[0] = 'post_validation_failed';
+      try {
+        const appliedThumbnailConversion = await applyPendingConversion();
 
-      const currentContent = textRef.current?.value || '';
-      const currentDisplayName = nameRef.current?.value.trim() || undefined;
-      const currentUrl = urlRef.current?.value.trim() || '';
-      const currentOptions = optionsRef.current?.value || '';
-      const currentOptionsError = getPostOptionsValidationError(currentOptions, postOptionsDirectoryCode, isSageSupported);
-      const publishContent = getContentWithOptions(currentContent, currentOptions, fortuneEntryRef, diceRollRef, postOptionsDirectoryCode);
+        const currentContent = textRef.current?.value || '';
+        const currentDisplayName = nameRef.current?.value.trim() || undefined;
+        const currentUrl = urlRef.current?.value.trim() || '';
+        const currentOptions = optionsRef.current?.value || '';
+        const currentOptionsError = getPostOptionsValidationError(currentOptions, postOptionsDirectoryCode, isSageSupported);
+        const publishContent = getContentWithOptions(currentContent, currentOptions, fortuneEntryRef, diceRollRef, postOptionsDirectoryCode);
 
-      checkContentLengthRef.current.cancel();
-      checkPostOptionsRef.current.cancel();
-      setLengthError(null);
-      nonokoRedirectPathRef.current = null;
+        checkContentLengthRef.current.cancel();
+        checkPostOptionsRef.current.cancel();
+        setLengthError(null);
+        nonokoRedirectPathRef.current = null;
 
-      if (currentOptionsError) {
-        setError(currentOptionsError);
-        return;
-      }
-
-      if (!publishContent.trim() && !currentUrl && !attachment) {
-        setError(t('error') + ': ' + t('empty_comment_alert'));
-        return;
-      }
-
-      const linkValidationError =
-        getPublishLinkValidationError({
-          link: currentUrl,
-          attachment,
-          noLinks: noReplyLinks,
-          requireLink: requireReplyLink,
-          requireMedia: requireReplyLinkIsMedia,
-          requiredLinkAlertKey: 'reply_link_required_alert',
-          requiredMediaLinkAlertKey: 'reply_media_link_required_alert',
-          noLinksAlertKey: 'reply_links_not_allowed_alert',
-          t,
-        }) ??
-        (attachment
-          ? getPostFilesValidationError([attachment, ...galleryAttachments], maxGalleryItems, t)
-          : getUploadedGalleryValidationError(getDraftGallery(currentUrl), maxGalleryItems, t));
-      if (linkValidationError) {
-        setError(linkValidationError);
-        return;
-      }
-      const expiringMediaLinkAlert = currentUrl ? getExpiringMediaLinkAlert(currentUrl, t) : null;
-      if (expiringMediaLinkAlert) {
-        setError(expiringMediaLinkAlert);
-        return;
-      }
-
-      if (publishContent.trim().length > 2000) {
-        setError(t('error') + ': ' + t('field_too_long'));
-        return;
-      }
-
-      const flagPublishOptions = getCommentFlagPublishOptionsForDirectory(directoryEntry, flagRef.current?.value);
-
-      setError(null);
-      // Upload only after every check passed, and after the board's spam blocker checked the reply, so a
-      // rejected reply never leaves a file on the host.
-      let challengeRequest: { challengeAnswers: string[] } | undefined;
-      if (attachment) {
-        const precheck = await runSpamBlockerPrecheck({
-          authorRole: accountRole,
-          challenges: communityChallenges,
-          otherAnswers: flagPublishOptions.challengeRequest?.challengeAnswers,
-          publication: { content: publishContent, displayName: currentDisplayName, parentCid, postCid },
-        });
-        if (!isReplyFormActiveRef.current) return;
-        if (precheck.status === 'stopped') {
-          if (precheck.message) setError(`${t('error')}: ${precheck.message}`);
+        if (currentOptionsError) {
+          setError(currentOptionsError);
           return;
         }
-        if (precheck.status === 'passed') challengeRequest = { challengeAnswers: precheck.challengeAnswers };
-      }
-      const uploadedFiles = attachment ? await uploadAttachedFiles(attachment, galleryAttachments) : undefined;
-      if (uploadedFiles === null) {
-        return;
-      }
 
-      nonokoRedirectPathRef.current = hasNonokoOption(currentOptions) ? `/${postOptionsDirectoryCode || params.boardIdentifier || communityAddress}` : null;
-      await publishReply({
-        displayName: currentDisplayName,
-        // The empty and length checks above ignore the sage marker, like 4chan ignores the options field.
-        content: appendSageMarker(publishContent, currentOptions),
-        ...(uploadedFiles ? { link: uploadedFiles.link } : getPublishLinkOptions(currentUrl, appliedThumbnailConversion)),
-        // Explicit even when absent: the publish store may still hold an earlier reply's gallery.
-        gallery: uploadedFiles ? uploadedFiles.gallery : getDraftGallery(currentUrl),
-        ...flagPublishOptions,
-        ...(challengeRequest ? { challengeRequest } : {}),
-      });
+        if (!publishContent.trim() && !currentUrl && !attachment) {
+          setError(t('error') + ': ' + t('empty_comment_alert'));
+          return;
+        }
+
+        const linkValidationError =
+          getPublishLinkValidationError({
+            link: currentUrl,
+            attachment,
+            noLinks: noReplyLinks,
+            requireLink: requireReplyLink,
+            requireMedia: requireReplyLinkIsMedia,
+            requiredLinkAlertKey: 'reply_link_required_alert',
+            requiredMediaLinkAlertKey: 'reply_media_link_required_alert',
+            noLinksAlertKey: 'reply_links_not_allowed_alert',
+            t,
+          }) ??
+          (attachment
+            ? getPostFilesValidationError([attachment, ...galleryAttachments], maxGalleryItems, t)
+            : getUploadedGalleryValidationError(getDraftGallery(currentUrl), maxGalleryItems, t));
+        if (linkValidationError) {
+          setError(linkValidationError);
+          return;
+        }
+        const expiringMediaLinkAlert = currentUrl ? getExpiringMediaLinkAlert(currentUrl, t) : null;
+        if (expiringMediaLinkAlert) {
+          setError(expiringMediaLinkAlert);
+          return;
+        }
+
+        if (publishContent.trim().length > 2000) {
+          setError(t('error') + ': ' + t('field_too_long'));
+          return;
+        }
+
+        const flagPublishOptions = getCommentFlagPublishOptionsForDirectory(directoryEntry, flagRef.current?.value);
+
+        setError(null);
+        // Upload only after every check passed, and after the board's spam blocker checked the reply, so a
+        // rejected reply never leaves a file on the host.
+        let challengeRequest: { challengeAnswers: string[] } | undefined;
+        if (attachment) {
+          outcome = 'post_precheck_failed';
+          const precheck = await runSpamBlockerPrecheck({
+            authorRole: accountRole,
+            challenges: communityChallenges,
+            otherAnswers: flagPublishOptions.challengeRequest?.challengeAnswers,
+            publication: { content: publishContent, displayName: currentDisplayName, parentCid, postCid },
+          });
+          if (!isReplyFormActiveRef.current) {
+            // Hiding or unmounting alone is not an explicit cancellation signal.
+            handedOff = true;
+            return;
+          }
+          if (precheck.status === 'stopped') {
+            outcome = precheck.message ? 'post_precheck_failed' : 'post_cancelled';
+            if (precheck.message) setError(`${t('error')}: ${precheck.message}`);
+            return;
+          }
+          if (precheck.status === 'passed') challengeRequest = { challengeAnswers: precheck.challengeAnswers };
+        }
+        outcome = 'post_upload_failed';
+        const uploadedFiles = attachment ? await uploadAttachedFiles(attachment, galleryAttachments) : undefined;
+        if (uploadedFiles === null) {
+          if (!isReplyFormActiveRef.current) handedOff = true;
+          return;
+        }
+
+        nonokoRedirectPathRef.current = hasNonokoOption(currentOptions) ? `/${postOptionsDirectoryCode || params.boardIdentifier || communityAddress}` : null;
+        handedOff = true;
+        await publishReply(
+          {
+            displayName: currentDisplayName,
+            // The empty and length checks above ignore the sage marker, like 4chan ignores the options field.
+            content: appendSageMarker(publishContent, currentOptions),
+            ...(uploadedFiles ? { link: uploadedFiles.link } : getPublishLinkOptions(currentUrl, appliedThumbnailConversion)),
+            // Explicit even when absent: the publish store may still hold an earlier reply's gallery.
+            gallery: uploadedFiles ? uploadedFiles.gallery : getDraftGallery(currentUrl),
+            ...flagPublishOptions,
+            ...(challengeRequest ? { challengeRequest } : {}),
+          },
+          attempt,
+        );
+      } finally {
+        if (!handedOff) attempt.finish(outcome);
+      }
     });
 
   useEffect(() => {
@@ -357,7 +378,7 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
       resetPublishReplyOptions();
       closeModal();
       if (nonokoRedirectPath) {
-        navigate(nonokoRedirectPath);
+        navigate(nonokoRedirectPath, { state: NONOKO_REPLY_ROUTE_STATE });
       }
     }
   }, [replyIndex, resetPublishReplyOptions, closeModal, navigate]);

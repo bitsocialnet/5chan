@@ -2,8 +2,6 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   appendSageMarker,
   getContentWithPostOptionState,
-  getNonokoPendingAccountCommentIndex,
-  getNonokoPendingRouteState,
   getPostOptionsPublishContentLength,
   getPostOptionsValidationError,
   getUnsupportedPostOptionsMessage,
@@ -69,14 +67,6 @@ describe('post-options-utils', () => {
         { option: 'dice+1d6', directoryCodes: ['qst', 'tg'] },
       ],
     });
-  });
-
-  it('reads the nonoko pending account comment index from direct and wrapped route state', () => {
-    expect(getNonokoPendingRouteState(7)).toEqual({ nonokoPendingAccountCommentIndex: 7 });
-    expect(getNonokoPendingAccountCommentIndex({ nonokoPendingAccountCommentIndex: 7 })).toBe(7);
-    expect(getNonokoPendingAccountCommentIndex({ usr: { nonokoPendingAccountCommentIndex: 8 } })).toBe(8);
-    expect(getNonokoPendingAccountCommentIndex({ nonokoPendingAccountCommentIndex: -1 })).toBeUndefined();
-    expect(getNonokoPendingAccountCommentIndex({ nonokoPendingAccountCommentIndex: '7' })).toBeUndefined();
   });
 
   it('strips generated fortune markers before appending a new fortune on fortune boards', () => {
