@@ -57,7 +57,7 @@ jobs:
           PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^)
           yarn doctor --diff "$PREVIOUS_TAG" --annotations
       - name: Install stable Chrome for smoke tests
-        run: corepack yarn exec playwright install --with-deps chrome
+        run: corepack yarn exec playwright install --force --with-deps chrome
       - name: Smoke test built web app
         run: node scripts/smoke-web-app.js --start-preview
 
