@@ -8,7 +8,7 @@ Choose checks that establish the requested behavior. Finish the authorized imple
 |---|---|
 | Prose, comments, or formatting | Inspect the diff and relevant links/output; run required generators. No application build for documentation alone |
 | Isolated logic or automation | Affected behavior tests or a focused invocation; lint/type-check when the edited language or interface warrants it |
-| Shared runtime behavior, dependencies, build/package configuration, or substantial integration | Focused behavior tests plus `corepack yarn agent:verify` for build, lint, type-check, Doctor diagnostics, and runtime scenarios |
+| Shared runtime behavior, dependencies, build/package configuration, or substantial integration | Focused behavior tests plus `corepack yarn agent:verify` for build, startup asset ceiling, lint, type-check, Doctor diagnostics, and runtime scenarios |
 | CSS, themes, or layout only | Affected browser/viewport/theme checks below; add a build for CSS processing, assets/import wiring, or integration uncertainty. Styling alone does not require React Doctor |
 | React state/effects/data flow or rendering performance | Inspect the relevant architecture; run `yarn doctor:check` and affected `yarn perf:check` scenarios |
 | Dependencies or import graph | `yarn boundaries` (part of `yarn lint`) must pass when `src/` files move or imports change; advisory `yarn knip`; resolve relevant new findings |
@@ -28,7 +28,7 @@ For loading, navigation, or interaction performance, add a Chromium low-spec pas
 
 ## Full verification and ownership
 
-Before heavy work, inspect existing workloads; never stop an unfamiliar process. One owner runs `corepack yarn agent:verify` when a full pass is needed. It serializes build, lint, type-check, Doctor diagnostics, and runtime scenarios behind a machine-wide lock and reports contention. Installs, tests, browser work, and directly launched builds still require coordination.
+Before heavy work, inspect existing workloads; never stop an unfamiliar process. One owner runs `corepack yarn agent:verify` when a full pass is needed. It serializes build, startup asset ceiling, lint, type-check, Doctor diagnostics, and runtime scenarios behind a machine-wide lock and reports contention. Installs, tests, browser work, and directly launched builds still require coordination.
 
 Builds may refresh generated assets and create `build/`. Inspect status before and after, preserve preexisting artifacts and changes, and remove only output created by this task. The verifier never restores or deletes output for you. No lifecycle hook runs builds, installs, audits, or Git cleanup.
 
@@ -44,7 +44,7 @@ Record commands, outcomes, and limits in the task report. Use the [long-running 
 
 ## Cold-load evidence
 
-After `yarn build`, `yarn perf:startup-bytes` compares what a first visit downloads before the first render (`build/index.html` with its inlined startup CSS and static frames, plus the scripts it loads) with the checked-in ceiling in `scripts/load-perf/startup-bytes-budget.json`. Keep new code out of that set with a lazy import; lower the ceiling with `--update` when it shrinks, and raise it only by editing the file with the reason. Its allowance covers the board directory data `yarn build` syncs from bitsocialnet/lists, which is part of the startup bundle.
+After `yarn build`, `yarn perf:startup-bytes` (run by CI and `agent:verify` right after the build) compares what a first visit downloads before the first render (`build/index.html` with its inlined startup CSS and static frames, plus the scripts it loads) with the checked-in ceiling in `scripts/load-perf/startup-bytes-budget.json`. Keep new code out of that set with a lazy import; lower the ceiling with `--update` when it shrinks, and raise it only by editing the file with the reason. Its allowance covers the board directory data `yarn build` syncs from bitsocialnet/lists, which is part of the startup bundle.
 
 `yarn perf:load` cold-loads configured routes of the production build over HTTP/2 in fresh Chromium contexts (default `mid` throttling, peer requests blocked) and reports first paint, first React commit, blocking time, and layout shifts by page region. `--check` (run in Linux CI at `cpu4`) fails when a region moves between first paint and React's first commit, when the theme class painted first differs from the one React's first commit applies, or when a static first frame from `scripts/vite-static-shell.mjs` (home, or a directory board at desktop or mobile width) differs from React's first commit; shifts after the first commit are reported for follow-up, not gated. `--network live` adds time to the first post over real peers; it is not deterministic.
 
