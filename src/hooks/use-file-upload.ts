@@ -183,6 +183,11 @@ async function uploadOnAndroid(media: AttachedMedia, order: ProviderId[], onPhas
   throw Object.assign(new Error('All providers failed'), { attempts });
 }
 
+// The link each attached file uploaded to. A form keeps its files until all of them upload, so when a later gallery
+// file fails, or the post is abandoned partway, posting again reuses the earlier files' links instead of uploading
+// them again and leaving the first copies orphaned on the host. Files chosen again are new objects and upload anew.
+const uploadedMedia = new WeakMap<AttachedMedia, UploadedFileResult>();
+
 export function useFileUpload() {
   const { t } = useTranslation();
   const uploadMode = useMediaHostingStore((s) => s.uploadMode);
@@ -271,6 +276,8 @@ export function useFileUpload() {
    */
   const uploadAttachment = useCallback(
     async (media: AttachedMedia, onPhaseChange?: (phase: UploadPhase) => void): Promise<UploadedFileResult | null> => {
+      const alreadyUploaded = uploadedMedia.get(media);
+      if (alreadyUploaded) return alreadyUploaded;
       const setPhase = (phase: UploadPhase) => {
         setUploadPhase(phase);
         onPhaseChange?.(phase);
@@ -292,7 +299,9 @@ export function useFileUpload() {
         }
         // The link is used either way: it starts working once the host approves it.
         if (uploaded.awaitingReview) window.alert(t('upload_awaiting_review'));
-        return { url: uploaded.url, fileName: uploaded.fileName };
+        const result = { url: uploaded.url, fileName: uploaded.fileName };
+        uploadedMedia.set(media, result);
+        return result;
       } catch (error) {
         handleUploadError(error);
         return null;
