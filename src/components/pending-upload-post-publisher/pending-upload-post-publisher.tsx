@@ -6,10 +6,10 @@ import type { Comment } from '@bitsocial/bitsocial-react-hooks';
 import { useFileUpload } from '../../hooks/use-file-upload';
 import usePublishPost from '../../hooks/use-publish-post';
 import useSpamBlockerPrecheck from '../../hooks/use-spam-blocker-precheck';
+import type { PostingAnalyticsAttempt } from '../../lib/posting-analytics';
 import { uploadGalleryAttachments } from '../../lib/media-hosting/attached-media';
 import type { AttachedMedia } from '../../lib/media-hosting/types';
-import { getShownPendingUploadId, isPendingUploadPostPath } from '../../lib/utils/pending-post-route-state';
-import { getNonokoPendingRouteState } from '../../lib/utils/post-options-utils';
+import { getNonokoPendingRouteState, getShownPendingUploadId, isPendingUploadPostPath } from '../../lib/utils/pending-post-route-state';
 import usePendingPostNavigationStore from '../../stores/use-pending-post-navigation-store';
 import usePendingUploadPostStore, { isPendingUploadPost, type PendingUploadPost } from '../../stores/use-pending-upload-post-store';
 import usePostFormDraftsStore from '../../stores/use-post-form-drafts-store';
@@ -34,7 +34,8 @@ const Publisher = ({ pendingUploadPost }: { pendingUploadPost: PendingUploadPost
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { pathname, state: locationState } = useLocation();
-  const { id, attachment, authorRole, boardChallenges, boardPath, draftKey, galleryAttachments, nonokoRedirectPath, publishOptions } = pendingUploadPost;
+  const { id, attachment, authorRole, boardChallenges, boardPath, draftKey, galleryAttachments, nonokoRedirectPath, publishOptions, analyticsAttempt } =
+    pendingUploadPost;
   const { uploadAttachment } = useFileUpload();
   const runSpamBlockerPrecheck = useSpamBlockerPrecheck({ communityAddress: publishOptions.communityAddress });
   // Its own publish options store: the post form's shared one would hand this post's title, link and pass
@@ -155,6 +156,7 @@ const Publisher = ({ pendingUploadPost }: { pendingUploadPost: PendingUploadPost
     if (startedRef.current) return;
     startedRef.current = true;
 
+    let failureEvent: Parameters<PostingAnalyticsAttempt['finish']>[0] = 'post_precheck_failed';
     const runSteps = async () => {
       const precheck = await runSpamBlockerPrecheck({
         authorRole,
@@ -169,21 +171,25 @@ const Publisher = ({ pendingUploadPost }: { pendingUploadPost: PendingUploadPost
         },
       });
       if (precheck.status === 'stopped') {
+        analyticsAttempt?.finish(precheck.message ? 'post_precheck_failed' : 'post_cancelled');
         returnToForm(precheck.message);
         return;
       }
       if (!isPendingUploadPost(id)) return;
 
       const { setPendingUploadPhase } = usePendingUploadPostStore.getState();
+      failureEvent = 'post_upload_failed';
       const upload = (media: AttachedMedia) => uploadAttachment(media, (phase) => setPendingUploadPhase(id, phase));
       const uploaded = await upload(attachment);
       if (!uploaded) {
+        analyticsAttempt?.finish('post_upload_failed');
         returnToForm();
         return;
       }
       if (!isPendingUploadPost(id)) return;
       const uploadedGallery = await uploadGalleryAttachments(galleryAttachments ?? [], upload, () => isPendingUploadPost(id));
       if (!uploadedGallery) {
+        analyticsAttempt?.finish('post_upload_failed');
         returnToForm();
         return;
       }
@@ -195,17 +201,23 @@ const Publisher = ({ pendingUploadPost }: { pendingUploadPost: PendingUploadPost
         usePostFormDraftsStore.getState().updateDraft(draftKey, { attachment: undefined, galleryAttachments: undefined, link: uploaded.url, gallery });
       }
 
-      await publishPost({
+      const options = {
         ...publishOptions,
         link: uploaded.url,
         gallery,
         // The pre-check's answers keep the post's other answers, such as its country flag.
         ...(precheck.status === 'passed' ? { challengeRequest: { challengeAnswers: precheck.challengeAnswers } } : {}),
-      });
+      };
+      failureEvent = 'post_publish_failed';
+      if (analyticsAttempt) await publishPost(options, analyticsAttempt);
+      else await publishPost(options);
       // The pending comment exists once the publish starts; a publish that never got there leaves the upload page.
       returnToForm();
     };
-    runSteps().catch((error: unknown) => returnToForm(error instanceof Error ? error.message : String(error)));
+    runSteps().catch((error: unknown) => {
+      analyticsAttempt?.finish(failureEvent);
+      returnToForm(error instanceof Error ? error.message : String(error));
+    });
     // oxlint-disable-next-line react-hooks/exhaustive-deps -- runs once for the post this publisher was mounted for
   }, []);
 

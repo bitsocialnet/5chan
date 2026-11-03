@@ -3,6 +3,7 @@ import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import usePublishPost from '../use-publish-post';
+import { startPostingAnalytics } from '../../lib/posting-analytics';
 import useChallengesStore from '../../stores/use-challenges-store';
 import usePublishPostStore, { createPublishPostStore } from '../../stores/use-publish-post-store';
 
@@ -11,6 +12,7 @@ const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise
 
 const testState = vi.hoisted(() => ({
   abandonNavigationMock: vi.fn(),
+  analyticsMock: vi.fn(),
   abandonPublishMock: vi.fn(async () => undefined),
   index: 12,
   lastPublishOptions: undefined as Record<string, any> | undefined,
@@ -21,6 +23,8 @@ const testState = vi.hoisted(() => ({
   publishErrorNavigationMock: vi.fn(),
   pendingPostNavigationMock: vi.fn(),
 }));
+
+vi.mock('../../lib/analytics', () => ({ trackPostingEvent: (...args: unknown[]) => testState.analyticsMock(...args) }));
 
 vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
   usePublishComment: (options: Record<string, any>) => {
@@ -81,6 +85,42 @@ describe('usePublishPost', () => {
   afterEach(() => {
     act(() => root.unmount());
     container.remove();
+  });
+
+  it('keeps analytics attached to the submitted attempt after the form unmounts', async () => {
+    const attempt = startPostingAnalytics({ kind: 'thread' });
+    await act(async () => {
+      latestValue.publishPost({ content: 'private draft' }, attempt);
+    });
+    const callbacks = testState.lastPublishOptions;
+    expect(callbacks).not.toHaveProperty('analyticsAttempt');
+    await act(async () => {
+      root.render(null);
+    });
+    await callbacks?.onChallengeVerification?.({ challengeSuccess: false, reason: 'rejected' }, { communityAddress: 'music.eth' });
+    await callbacks?.onChallengeVerification?.({ challengeSuccess: false, reason: 'rejected' }, { communityAddress: 'music.eth' });
+    expect(testState.analyticsMock.mock.calls).toEqual([['post_challenge_failed', { kind: 'thread' }]]);
+  });
+
+  it('sends nothing when the board accepts the post', async () => {
+    const attempt = startPostingAnalytics({ kind: 'thread' });
+    await act(async () => {
+      latestValue.publishPost({ content: 'private draft' }, attempt);
+    });
+    await testState.lastPublishOptions?.onChallengeVerification?.({ challengeSuccess: true }, { communityAddress: 'music.eth' });
+    expect(testState.analyticsMock).not.toHaveBeenCalled();
+  });
+
+  it('counts explicit challenge cancellation once', async () => {
+    const attempt = startPostingAnalytics({ kind: 'thread' });
+    await act(async () => {
+      latestValue.publishPost({ content: 'draft' }, attempt);
+    });
+    await act(async () => {
+      await testState.lastPublishOptions?.onChallenge?.('captcha', 'nonce');
+      await useChallengesStore.getState().abandonCurrentChallenge();
+    });
+    expect(testState.analyticsMock.mock.calls.map(([event]) => event)).toEqual(['post_cancelled']);
   });
 
   it("keeps a publish given its own store out of the post form's shared store", async () => {
