@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Comment, useAccount, usePublishComment } from '@bitsocial/bitsocial-react-hooks';
+import { ChallengeVerification, Comment, useAccount, usePublishComment } from '@bitsocial/bitsocial-react-hooks';
 import { useShallow } from 'zustand/react/shallow';
 import { useDirectories } from './use-directories';
 import usePublishReplyStore from '../stores/use-publish-reply-store';
@@ -11,6 +11,7 @@ import { resolveExternalQuoteTarget } from '../lib/utils/external-quote-resolver
 import useChallengesStore from '../stores/use-challenges-store';
 import usePublishAuthorDomainGuard, { getPublishAuthorDomainErrorMessage } from './use-publish-author-domain-guard';
 import usePendingPublishRequest from './use-pending-publish-request';
+import type { PostingAnalyticsAttempt } from '../lib/posting-analytics';
 
 type UsePublishReplyOptions = {
   cid: string;
@@ -44,6 +45,7 @@ const usePublishReply = ({ cid, communityAddress, postCid }: UsePublishReplyOpti
   const startedPublishRequestIdRef = useRef(0);
   const [resolvedExternalQuotedCids, setResolvedExternalQuotedCids] = useState<string[] | undefined>();
   const [pendingPublishRequestId, setPendingPublishRequestId] = useState(0);
+  const [analyticsAttempt, setAnalyticsAttempt] = useState<PostingAnalyticsAttempt>();
   const [pendingSyncedPublishRequestId, setPendingSyncedPublishRequestId] = useState(0);
   const startedSyncedPublishRequestIdRef = useRef(0);
   const [isResolvingExternalQuotes, setIsResolvingExternalQuotes] = useState(false);
@@ -51,8 +53,9 @@ const usePublishReply = ({ cid, communityAddress, postCid }: UsePublishReplyOpti
   const [publishReplyStateMessage, setPublishReplyStateMessage] = useState<string | null>(null);
   const { finishPendingPublishRequest, startPendingPublishRequest } = usePendingPublishRequest();
   const abandonCurrentPublish = useCallback(async () => {
+    analyticsAttempt?.finish('post_cancelled');
     await abandonPublishRef.current?.();
-  }, []);
+  }, [analyticsAttempt]);
 
   const createBaseOptions = useCallback(() => {
     const baseOptions: Comment = {
@@ -145,11 +148,20 @@ const usePublishReply = ({ cid, communityAddress, postCid }: UsePublishReplyOpti
   const publishOptionsWithAbandon = useMemo(
     () => ({
       ...mergedPublishOptions,
+      onError: (error: Error) => {
+        analyticsAttempt?.finish('post_publish_failed');
+        mergedPublishOptions?.onError?.(error);
+      },
+      onChallengeVerification: async (challengeVerification: ChallengeVerification, comment: Comment) => {
+        analyticsAttempt?.verify(challengeVerification);
+        mergedPublishOptions?.onChallengeVerification?.(challengeVerification, comment);
+      },
       onChallenge: async (...args: any[]) => {
+        analyticsAttempt?.challenge();
         addChallenge(args, abandonCurrentPublish);
       },
     }),
-    [abandonCurrentPublish, addChallenge, mergedPublishOptions],
+    [abandonCurrentPublish, addChallenge, analyticsAttempt, mergedPublishOptions],
   );
 
   const { index, publishComment, abandonPublish } = usePublishComment(publishOptionsWithAbandon);
@@ -175,15 +187,16 @@ const usePublishReply = ({ cid, communityAddress, postCid }: UsePublishReplyOpti
     startedPublishRequestIdRef.current = requestId;
     void Promise.resolve()
       .then(() => publishComment())
-      .catch(() => undefined)
+      .catch(() => analyticsAttempt?.finish('post_publish_failed'))
       .finally(() => finishPendingPublishRequest(requestId));
-  }, [finishPendingPublishRequest, pendingPublishRequestId, publishComment]);
+  }, [analyticsAttempt, finishPendingPublishRequest, pendingPublishRequestId, publishComment]);
 
   const preparePublishReply = useCallback(
     async (requestId: number) => {
       setPublishReplyError(null);
 
       if (blockedReason) {
+        analyticsAttempt?.finish('post_validation_failed');
         setPublishReplyStateMessage(null);
         setPublishReplyError(getPublishAuthorDomainErrorMessage(blockedReason));
         finishPendingPublishRequest(requestId);
@@ -198,6 +211,7 @@ const usePublishReply = ({ cid, communityAddress, postCid }: UsePublishReplyOpti
       }
 
       if (!account?.id) {
+        analyticsAttempt?.finish('post_validation_failed');
         setPublishReplyError(t('external_quote_resolution_unavailable'));
         finishPendingPublishRequest(requestId);
         return;
@@ -220,6 +234,7 @@ const usePublishReply = ({ cid, communityAddress, postCid }: UsePublishReplyOpti
           });
 
           if (!resolvedTarget?.cid) {
+            analyticsAttempt?.finish('post_validation_failed');
             setPublishReplyError(
               t('external_quote_publish_missing', {
                 interpolation: { escapeValue: false },
@@ -237,24 +252,26 @@ const usePublishReply = ({ cid, communityAddress, postCid }: UsePublishReplyOpti
         setPublishReplyStateMessage(null);
         setPendingPublishRequestId(requestId);
       } catch {
+        analyticsAttempt?.finish('post_validation_failed');
         setPublishReplyError(t('external_quote_resolution_unavailable'));
         finishPendingPublishRequest(requestId);
       } finally {
         setIsResolvingExternalQuotes(false);
       }
     },
-    [account, blockedReason, directories, finishPendingPublishRequest, publishResolvableQuoteReferences, t],
+    [account, analyticsAttempt, blockedReason, directories, finishPendingPublishRequest, publishResolvableQuoteReferences, t],
   );
 
   const publishReply = useCallback(
-    (options?: Partial<Comment>) => {
+    (options?: Partial<Comment>, attempt?: PostingAnalyticsAttempt) => {
       const pendingRequest = startPendingPublishRequest();
       if (!pendingRequest.started) {
         return pendingRequest.request.promise;
       }
 
-      if (options) {
-        setPublishReplyOptions(options);
+      if (options || attempt || analyticsAttempt) {
+        setAnalyticsAttempt(attempt);
+        if (options) setPublishReplyOptions(options);
         setPendingSyncedPublishRequestId(pendingRequest.request.id);
         return pendingRequest.request.promise;
       }
@@ -262,7 +279,7 @@ const usePublishReply = ({ cid, communityAddress, postCid }: UsePublishReplyOpti
       void preparePublishReply(pendingRequest.request.id).catch(() => finishPendingPublishRequest(pendingRequest.request.id));
       return pendingRequest.request.promise;
     },
-    [finishPendingPublishRequest, preparePublishReply, setPublishReplyOptions, startPendingPublishRequest],
+    [analyticsAttempt, finishPendingPublishRequest, preparePublishReply, setPublishReplyOptions, startPendingPublishRequest],
   );
 
   useEffect(() => {

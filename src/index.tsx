@@ -6,17 +6,13 @@ import './lib/init-translations';
 import './index.css';
 import './themes.css';
 import AppUpdateRegistration from './components/app-update-registration';
+import WebAnalytics from './components/web-analytics';
 import { App as CapacitorApp } from '@capacitor/app';
 import { configureP2PBrowserPkcOptions } from './lib/p2p-browser-config';
 import { canonicalizeNestedHashRoute } from './lib/utils/hash-route-utils';
 import { recordFailedDownloads } from './lib/import-failures';
 import { loadRouteModules } from './route-modules';
 
-// Only enable analytics on 5chan.app (Vercel deployment)
-// Exclude Electron (file:// or localhost), Capacitor/APK (capacitor:// or localhost), and IPFS (ipfs:// or different domain)
-const isVercelDeployment =
-  typeof window !== 'undefined' && (window.location.hostname === '5chan.app' || window.location.hostname === 'www.5chan.app') && !window.isElectron;
-const shouldLoadAnalytics = import.meta.env.VITE_APP_DISTRIBUTION !== 'fdroid' && isVercelDeployment;
 const e2eStartHash = import.meta.env.VITE_E2E_START_HASH?.trim();
 const requestedE2EHarness =
   (import.meta.env.DEV || import.meta.env.MODE === 'profiling') && typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('e2e') : null;
@@ -50,7 +46,6 @@ const renderApp = (tree: React.ReactNode) => {
 
 const renderRoot = async () => {
   let e2eHarness: React.ComponentType | null = null;
-  let Analytics: React.ComponentType | null = null;
 
   if (requestedE2EHarness === 'thread-auto-update') {
     e2eHarness = (await import('./e2e/thread-auto-update-harness')).default;
@@ -73,9 +68,6 @@ const renderRoot = async () => {
   // index.html already started downloading the route's code-split modules; the first render waits for
   // them so it does not suspend. A failed chunk surfaces when the route renders.
   const routeModules = loadRouteModules(parsePath(window.location.hash.slice(1)).pathname || '/').catch((error) => console.error(error));
-  if (shouldLoadAnalytics) {
-    Analytics = (await import('@vercel/analytics/react')).Analytics;
-  }
   await routeModules;
 
   renderApp(
@@ -83,7 +75,7 @@ const renderRoot = async () => {
       <Router useTransitions={false}>
         <AppUpdateRegistration />
         <App />
-        {Analytics && <Analytics />}
+        <WebAnalytics />
       </Router>
     </React.StrictMode>,
   );
