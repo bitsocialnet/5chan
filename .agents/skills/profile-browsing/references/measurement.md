@@ -51,7 +51,7 @@ corepack yarn perf:record --scenario crypto-address-draft --cpu 4 --samples 3
 corepack yarn doctor:check --base HEAD
 ```
 
-The runner owns its browser/server cleanup and coordinates the shared browser resource lock. Do not launch it while a manual browser session is owned elsewhere; defer on contention. `perf:install` installs the pinned browser once. `perf:test` validates collector compatibility and deliberately exercises failure cases; run it after React, Bippy, or collector changes.
+The runner owns its browser/server cleanup and coordinates the shared browser resource lock. Do not launch it while a manual browser session is owned elsewhere; defer on contention. Local and CI profiling use sandboxed stable Chrome. `perf:install` installs the selected channel when missing. `perf:test` validates collector compatibility and deliberately exercises failure cases; run it after React, Bippy, or collector changes.
 
 ### Collector and timing semantics
 

@@ -202,7 +202,7 @@ const main = async () => {
       await waitForServer();
     }
 
-    const browser = await chromium.launch({ headless: true });
+    const browser = await chromium.launch({ channel: 'chrome', chromiumSandbox: true, headless: true });
     try {
       for (const scenario of scenarios) {
         console.log(`Running smoke checks for ${scenario.name}...`);

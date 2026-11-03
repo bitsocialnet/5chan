@@ -99,7 +99,7 @@ For an unexpected repo-specific issue, tell the contributor and continue indepen
 
 ## React diagnostics and runtime performance
 
-`yarn agent:verify` and CI run `yarn doctor:check` for task-diff source diagnostics and `yarn perf:check` for deterministic runtime scenarios. Doctor remains advisory for relevant new findings; a score is not a target. Run affected scenarios after React state/effect/subscription/rendering changes, and `yarn perf:test` after React, Bippy, or collector upgrades. Install the pinned browser once with `yarn perf:install`; ordinary edit hooks still only format files.
+`yarn agent:verify` and CI run `yarn doctor:check` for task-diff source diagnostics and `yarn perf:check` for deterministic runtime scenarios. Doctor remains advisory for relevant new findings; a score is not a target. Run affected scenarios after React state/effect/subscription/rendering changes, and `yarn perf:test` after React, Bippy, or collector upgrades. Local profiling uses sandboxed stable Chrome. Install Chrome if missing with `yarn perf:install`; ordinary edit hooks still only format files.
 
 Development builds initialize the bounded Bippy collector before React and expose `window.__REACT_PERF__.reset()` / `.snapshot()`. It counts committed component updates by instance; it does not identify wasted work or count aborted renders. A root React Profiler supplies measured render duration. Missing instrumentation, dropped events, and exceeded scenario budgets fail the runtime check. Use `yarn perf:record --scenario <name>` for JSON and native Chrome traces; use `profile-browsing` for the evidence contract and broader investigations.
 
