@@ -2,7 +2,7 @@
   "title": "5chan Directory Defaults",
   "description": "Expected 5chan UX defaults by directory code. These defaults apply to the directory, not to individual candidate boards.",
   "createdAt": 1779262179,
-  "updatedAt": 1792935723,
+  "updatedAt": 1793786265,
   "directories": {
     "3": {
       "directoryCode": "3",
@@ -24,7 +24,8 @@
       "rules": [
         "Images and discussion should relate to 3D modeling and imagery.",
         "Remember: This is a worksafe board! No adult content is allowed.",
-        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots."
+        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots.",
+        "This board is to be considered \"work safe\". Note: Spoilered pornography or other \"not safe for work\" content is NOT allowed."
       ]
     },
     "a": {
@@ -51,7 +52,8 @@
         "The discussion of \"live action\" television shows is permitted so long as they are distinctly rooted in, or based off of an anime or manga series.",
         "Japanese visual novels should be posted in /jp/, and Western on /vg/.",
         "Threads should be created with substantial OP text containing a meaningful topic of discussion. Please refrain from posting catch-phrase or template threads.",
-        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots."
+        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots.",
+        "This board is to be considered \"work safe\". Note: Spoilered pornography or other \"not safe for work\" content is NOT allowed."
       ]
     },
     "f": {
@@ -100,7 +102,8 @@
         "This is the destination for all questions regarding specific personal problems.",
         "All threads are expected to be constructive in nature; BAWWWing and venting is discouraged.",
         "No hookup or camwhore threads! Take that to /soc/.",
-        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots."
+        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots.",
+        "This board is to be considered \"work safe\". Note: Spoilered pornography or other \"not safe for work\" content is NOT allowed."
       ]
     },
     "an": {
@@ -123,7 +126,8 @@
       "rules": [
         "All images of animals and nature are welcome.",
         "Posting images depicting animal cruelty is strictly forbidden.",
-        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots."
+        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots.",
+        "This board is to be considered \"work safe\". Note: Spoilered pornography or other \"not safe for work\" content is NOT allowed."
       ]
     },
     "b": {
@@ -193,7 +197,8 @@
         "All political discussion belongs in /pol/. Conspiracy theories belong in /x/.",
         "Absolutely no advertising, soliciting, or promotion of any kind. You may not discuss projects you have an interest in without making that disclosure. We will remove anything that remotely breaks this rule.",
         "Begging/asking (including tipping) for cryptocurrencies or asking for money/capital is also strictly forbidden.",
-        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots."
+        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots.",
+        "This board is to be considered \"work safe\". Note: Spoilered pornography or other \"not safe for work\" content is NOT allowed."
       ]
     },
     "c": {
@@ -217,7 +222,8 @@
         "Images should be cute (\"moe\") in nature.",
         "Ecchi belongs on its respective board. Males belong on the cute/male board.",
         "Heterosexual couples are allowed.",
-        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots."
+        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots.",
+        "This board is to be considered \"work safe\". Note: Spoilered pornography or other \"not safe for work\" content is NOT allowed."
       ]
     },
     "ck": {
@@ -240,7 +246,8 @@
       "rules": [
         "Images and discussion should relate to food and cooking.",
         "Recipes are welcome! Feel free to talk about your favorite dishes and discuss past cooking experiences.",
-        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots."
+        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots.",
+        "This board is to be considered \"work safe\". Note: Spoilered pornography or other \"not safe for work\" content is NOT allowed."
       ]
     },
     "co": {
@@ -263,7 +270,8 @@
       "rules": [
         "Images and discussion should pertain to media of Western origin.",
         "Spoiler tag use is enforced. Don't know how to use spoiler tags? Read [this](/faq#spoiler).",
-        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots."
+        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots.",
+        "This board is to be considered \"work safe\". Note: Spoilered pornography or other \"not safe for work\" content is NOT allowed."
       ]
     },
     "diy": {
@@ -286,7 +294,8 @@
       "rules": [
         "MAKERS GONNA MAKE!",
         "Do not post or request instructions for how to make weapons or any device that might bring harm to a person. Think \"Instructables\" and \"Make Magazine\" not \"Anarchist's Cookbook.\"",
-        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots."
+        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots.",
+        "This board is to be considered \"work safe\". Note: Spoilered pornography or other \"not safe for work\" content is NOT allowed."
       ]
     },
     "fa": {
@@ -308,7 +317,8 @@
       },
       "rules": [
         "Images and discussion should pertain to fashion and apparel.",
-        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots."
+        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots.",
+        "This board is to be considered \"work safe\". Note: Spoilered pornography or other \"not safe for work\" content is NOT allowed."
       ]
     },
     "fit": {
@@ -331,7 +341,8 @@
       "rules": [
         "Images and discussion related to dieting, exercise, healthy living, and workout plans is welcome here.",
         "Relationship, dating advice, and \"mental health\" threads belong on /adv/.",
-        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots."
+        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots.",
+        "This board is to be considered \"work safe\". Note: Spoilered pornography or other \"not safe for work\" content is NOT allowed."
       ]
     },
     "g": {
@@ -356,7 +367,8 @@
         "Tech support threads should be posted on /wsr/.",
         "Trolling is not permitted. Do not instigate or participate in flamewars.",
         "You may use [code] tags to highlight syntax and preserve whitespace. To use them, just wrap your code snippets [code]like this[/code].",
-        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots."
+        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots.",
+        "This board is to be considered \"work safe\". Note: Spoilered pornography or other \"not safe for work\" content is NOT allowed."
       ]
     },
     "gd": {
@@ -379,7 +391,8 @@
       "rules": [
         "This board is for the discussion of graphic design software and computer-aided graphic design techniques (ie. \"Photoshopping\").",
         "Requests for Photoshopping or any other work should go on /wsr/.",
-        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots."
+        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots.",
+        "This board is to be considered \"work safe\". Note: Spoilered pornography or other \"not safe for work\" content is NOT allowed."
       ]
     },
     "gif": {
@@ -426,7 +439,8 @@
         "2. Discussions about books, poetry, and other forms of literature should be posted on /lit/.",
         "3. Discussions about politics and current events should be posted on /pol/.",
         "4. Please do not start threads about events taking place less than 25 years ago.",
-        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots."
+        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots.",
+        "This board is to be considered \"work safe\". Note: Spoilered pornography or other \"not safe for work\" content is NOT allowed."
       ]
     },
     "i": {
@@ -475,7 +489,8 @@
         "Requests for free work of any sort are forbidden.",
         "Don't bring community vendettas onto this board. Singling out individual artists for the purposes of trolling them will not be tolerated.",
         "All discussion of artists should pertain directly to their work, and not their personal lives.",
-        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots."
+        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots.",
+        "This board is to be considered \"work safe\". Note: Spoilered pornography or other \"not safe for work\" content is NOT allowed."
       ]
     },
     "int": {
@@ -499,7 +514,8 @@
         "This board is for the discussion of foreign culture and language. Please be respectful.",
         "Posting in languages other than English is allowed-and encouraged!",
         "All politics and current events belong on /pol/.",
-        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots."
+        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots.",
+        "This board is to be considered \"work safe\". Note: Spoilered pornography or other \"not safe for work\" content is NOT allowed."
       ]
     },
     "jp": {
@@ -522,7 +538,8 @@
       "rules": [
         "All images and discussion should pertain to light and visual novels, figures and other otaku paraphernalia, Touhou Project, Vocaloid, doujin works and music, and diverse niche Japanese interests (kigurumi, idols, mahjong, tea).",
         "This is the appropriate board for the discussion of Japanese visual novels and light novels. Western visual novels should be posted to /vg/, and translated visual novels are fine on either board.",
-        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots."
+        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots.",
+        "This board is to be considered \"work safe\". Note: Spoilered pornography or other \"not safe for work\" content is NOT allowed."
       ]
     },
     "k": {
@@ -544,7 +561,8 @@
       },
       "rules": [
         "All weaponry is welcome. Military vehicles/knives/other weapons are included, this board isn't just for firearms!",
-        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots."
+        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots.",
+        "This board is to be considered \"work safe\". Note: Spoilered pornography or other \"not safe for work\" content is NOT allowed."
       ]
     },
     "lit": {
@@ -566,7 +584,8 @@
       },
       "rules": [
         "All literature discussion is welcome, however fan-fic is not allowed.",
-        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots."
+        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots.",
+        "This board is to be considered \"work safe\". Note: Spoilered pornography or other \"not safe for work\" content is NOT allowed."
       ]
     },
     "m": {
@@ -588,7 +607,8 @@
       },
       "rules": [
         "All mecha and mecha-related (ex: pilots, core fighter, mecha girl, hobby model) images are allowed.",
-        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots."
+        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots.",
+        "This board is to be considered \"work safe\". Note: Spoilered pornography or other \"not safe for work\" content is NOT allowed."
       ]
     },
     "mlp": {
@@ -614,7 +634,8 @@
         "Topics must be show-related. When discussing people, they must be associated with the show and not the fandom.",
         "No roleplay.",
         "Ponies only—no anthro.",
-        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots."
+        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots.",
+        "This board is to be considered \"work safe\". Note: Spoilered pornography or other \"not safe for work\" content is NOT allowed."
       ]
     },
     "mu": {
@@ -639,7 +660,8 @@
         "Trolling, instigating, or participating in a flamewar will result in a ban.",
         "Please try to keep duplicate topics to a minimum by always searching for an old or active thread before posting a new one.",
         "Do not post a continuation of a thread until the bump limit is reached.",
-        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots."
+        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots.",
+        "This board is to be considered \"work safe\". Note: Spoilered pornography or other \"not safe for work\" content is NOT allowed."
       ]
     },
     "n": {
@@ -663,7 +685,8 @@
         "All sorts of transportation pictures and discussion welcome. Trains, planes, ships, bicycles, flying elevators—post 'em all!",
         "Please keep automobiles on the auto board.",
         "Military vehicles should be posted on the weapons board.",
-        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots."
+        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots.",
+        "This board is to be considered \"work safe\". Note: Spoilered pornography or other \"not safe for work\" content is NOT allowed."
       ]
     },
     "news": {
@@ -688,7 +711,8 @@
         "News articles should be current; no articles older than 48 hours should be posted.",
         "Blatant trolling and racism is not permitted.",
         "Note that you can also discuss news articles on /pol/; /news/ is specifically for current news articles.",
-        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots."
+        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots.",
+        "This board is to be considered \"work safe\". Note: Spoilered pornography or other \"not safe for work\" content is NOT allowed."
       ]
     },
     "o": {
@@ -711,7 +735,8 @@
       "rules": [
         "All motor vehicle pictures are allowed.",
         "Photos of models and \"race queens\" are permitted, so long as they are sufficiently clothed.",
-        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots."
+        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots.",
+        "This board is to be considered \"work safe\". Note: Spoilered pornography or other \"not safe for work\" content is NOT allowed."
       ]
     },
     "oc": {
@@ -737,7 +762,8 @@
         "There is no minimum quality requirement, but high-effort OC is highly encouraged. Lazy edits and reposts dressed up as OC may be removed at moderator discretion.",
         "Replies may discuss, critique, or build on the thread's content. Requests for free work belong on /wsr/.",
         "Remember: This is a worksafe board! No adult content.",
-        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots."
+        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots.",
+        "This board is to be considered \"work safe\". Note: Spoilered pornography or other \"not safe for work\" content is NOT allowed."
       ]
     },
     "out": {
@@ -760,7 +786,8 @@
       "rules": [
         "This board is for discussions about hiking, camping, geocaching, orienteering, farming, gardening, etc.",
         "GO OUTSIDE AND TOSS A BALL OR SOMETHING.",
-        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots."
+        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots.",
+        "This board is to be considered \"work safe\". Note: Spoilered pornography or other \"not safe for work\" content is NOT allowed."
       ]
     },
     "p": {
@@ -786,7 +813,8 @@
         "Even though EXIF data is made available when encoded, please post as much relevant technical information as possible, such as: camera, kit, lens, etc.",
         "Include a short description with your photograph, such as when and where it was photographed and under what circumstances.",
         "As with the art critique board, only constructive criticism will be tolerated.",
-        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots."
+        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots.",
+        "This board is to be considered \"work safe\". Note: Spoilered pornography or other \"not safe for work\" content is NOT allowed."
       ]
     },
     "po": {
@@ -809,7 +837,8 @@
       "rules": [
         "Upload your papercraft and origami images here!",
         "Requesting is permitted.",
-        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots."
+        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots.",
+        "This board is to be considered \"work safe\". Note: Spoilered pornography or other \"not safe for work\" content is NOT allowed."
       ]
     },
     "pol": {
@@ -855,7 +884,8 @@
       },
       "rules": [
         "All images and discussion should pertain to professional wrestling.",
-        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots."
+        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots.",
+        "This board is to be considered \"work safe\". Note: Spoilered pornography or other \"not safe for work\" content is NOT allowed."
       ]
     },
     "q": {
@@ -882,7 +912,8 @@
         "Do not post private information, credentials, node secrets, exploit details, or other security-sensitive material.",
         "Ban appeals and moderation disputes belong on the relevant board unless they concern directory-wide policy.",
         "Board proposals should explain the intended audience, rules, and why the board helps 5chan grow.",
-        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots."
+        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots.",
+        "This board is to be considered \"work safe\". Note: Spoilered pornography or other \"not safe for work\" content is NOT allowed."
       ]
     },
     "qst": {
@@ -907,7 +938,8 @@
         "The author controls the story of the quest. They can take suggestions from other posters, or not, at their sole discretion. If things don't go your way don't complain!",
         "All threads on this board should be created by the associated quest author. Please refrain from making meta-threads.",
         "Erotic roleplay is not permitted. Frequent explicit descriptions of sexual encounters by a quest author may result in mod intervention.",
-        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots."
+        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots.",
+        "This board is to be considered \"work safe\". Note: Spoilered pornography or other \"not safe for work\" content is NOT allowed."
       ]
     },
     "r": {
@@ -1005,7 +1037,8 @@
         "All science and math related topics welcome.",
         "Homework threads will be deleted, and the poster banned.",
         "No \"religion vs. science\" threads.",
-        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots."
+        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots.",
+        "This board is to be considered \"work safe\". Note: Spoilered pornography or other \"not safe for work\" content is NOT allowed."
       ]
     },
     "soc": {
@@ -1059,7 +1092,8 @@
         "All sports welcome.",
         "In the interest of keeping this board general, please combine threads related to similar topics (example: specific teams, games, players, etc.).",
         "Discussion of \"eSports\" (i.e., video games) belongs on /v/. General threads about eSports belong on /vg/.",
-        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots."
+        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots.",
+        "This board is to be considered \"work safe\". Note: Spoilered pornography or other \"not safe for work\" content is NOT allowed."
       ]
     },
     "t": {
@@ -1103,7 +1137,8 @@
       },
       "rules": [
         "Board games, paper games, war games, card games, etc. go here!",
-        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots."
+        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots.",
+        "This board is to be considered \"work safe\". Note: Spoilered pornography or other \"not safe for work\" content is NOT allowed."
       ]
     },
     "toy": {
@@ -1127,7 +1162,8 @@
         "Toys, toys, toys!",
         "Absolutely no Japanese figurines. Action figures are permitted.",
         "No \"hot glue\" fetish images.",
-        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots."
+        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots.",
+        "This board is to be considered \"work safe\". Note: Spoilered pornography or other \"not safe for work\" content is NOT allowed."
       ]
     },
     "trv": {
@@ -1152,7 +1188,8 @@
         "Feel free to ask questions about other cultures, and post in native languages.",
         "This board is for all the countries of the world. The more diverse, the better!",
         "Discussions of prostitution or sex tourism are not permitted.",
-        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots."
+        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots.",
+        "This board is to be considered \"work safe\". Note: Spoilered pornography or other \"not safe for work\" content is NOT allowed."
       ]
     },
     "tv": {
@@ -1177,7 +1214,8 @@
         "All actress and actor discussion should pertain directly to their roles and careers. Off-topic discussion will be deleted.",
         "All images of actresses should be accompanied by relevant discussion.",
         "Please make use of the spoiler image checkbox and spoiler tags. Purposeful spoiling of a series or movie is not allowed.",
-        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots."
+        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots.",
+        "This board is to be considered \"work safe\". Note: Spoilered pornography or other \"not safe for work\" content is NOT allowed."
       ]
     },
     "v": {
@@ -1204,7 +1242,8 @@
         "Please refrain from reposting. If possible, try to skim the board for threads pertaining to your topics/info that may have already been posted.",
         "Purposeful spoiling of a game's plot or other details may result in post deletion and temporary ban. Use spoiler tags where appropriate.",
         "\"Generals\"—long-term, recurring threads about a specific game—should be posted in >>>/vg/. This is not to say threads about specific games cannot be created on /v/, just that long-term, recurring threads belong in /vg/.",
-        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots."
+        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots.",
+        "This board is to be considered \"work safe\". Note: Spoilered pornography or other \"not safe for work\" content is NOT allowed."
       ]
     },
     "vg": {
@@ -1228,7 +1267,8 @@
         "This board is for the posting of video game \"general\" threads, which are long-term, recurring threads about a specific topic.",
         "Western visual novels should be posted here, and Japanese visual novels on /jp/. Translated visual novels are allowed on either board.",
         "Purposeful spoiling of a game's plot or other details may result in post deletion and temporary ban. Use spoiler tags where appropriate.",
-        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots."
+        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots.",
+        "This board is to be considered \"work safe\". Note: Spoilered pornography or other \"not safe for work\" content is NOT allowed."
       ]
     },
     "vip": {
@@ -1250,7 +1290,8 @@
       },
       "rules": [
         "Only [5chan pass](/pass) and/or [BSO](https://bso.network) holders shall post in here.",
-        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots."
+        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots.",
+        "This board is to be considered \"work safe\". Note: Spoilered pornography or other \"not safe for work\" content is NOT allowed."
       ]
     },
     "vm": {
@@ -1274,7 +1315,8 @@
         "All topics should pertain to multiplayer games, i.e., games that are played with more than one person, either online or locally, competitive or co-op, on console, handheld, or PC. If a game includes a single player component, discussion should be primarily based around the multiplayer component.",
         "Flagrant fanboy threads are not allowed, nor are threads for the purpose of instigating a flamewar. All mobile platforms are welcome on this board; device wars are not.",
         "Purposeful spoiling of a game's plot or other details may result in post deletion and temporary ban. Use spoiler tags where appropriate.",
-        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots."
+        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots.",
+        "This board is to be considered \"work safe\". Note: Spoilered pornography or other \"not safe for work\" content is NOT allowed."
       ]
     },
     "vmg": {
@@ -1298,7 +1340,8 @@
         "All topics should pertain to mobile games, i.e., games that are played on Android, iOS, or other phones or tablets. All mobile platforms are welcome. Threads about console or PC video games should not be posted here.",
         "Flagrant fanboy threads are not allowed, nor are threads for the purpose of instigating a flamewar. All mobile platforms are welcome on this board; device wars are not.",
         "Purposeful spoiling of a game's plot or other details may result in post deletion and temporary ban. Use spoiler tags where appropriate.",
-        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots."
+        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots.",
+        "This board is to be considered \"work safe\". Note: Spoilered pornography or other \"not safe for work\" content is NOT allowed."
       ]
     },
     "vp": {
@@ -1325,7 +1368,8 @@
         "Do not incite genwars. Keep discussions civil and don't let them devolve into flaming.",
         "GOTTA CATCH 'EM ALL. This will be severely punished and strictly enforced.",
         "Purposeful spoiling of a game's plot or other details may result in post deletion and temporary ban. Use spoiler tags where appropriate.",
-        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots."
+        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots.",
+        "This board is to be considered \"work safe\". Note: Spoilered pornography or other \"not safe for work\" content is NOT allowed."
       ]
     },
     "vr": {
@@ -1348,7 +1392,8 @@
       "rules": [
         "This board is for the discussion of classic, or \"retro\" games, including consoles, computer games, arcade games (including pinball) and any other forms of video games. Retro gaming means platforms launched in 2001 and earlier, and official game titles for those platforms released no later than December 2007 (homebrew console games made after this date will be permitted).",
         "Please do not instigate or participate in flamewars. Personal attacks will not be tolerated.",
-        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots."
+        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots.",
+        "This board is to be considered \"work safe\". Note: Spoilered pornography or other \"not safe for work\" content is NOT allowed."
       ]
     },
     "vrpg": {
@@ -1372,7 +1417,8 @@
         "All topics should pertain to role-playing video games, including both western and JRPG styled RPGs, turn-based and action RPGs, and MMOs. All platforms are welcome. Threads about video games that do not belong to the role-playing genre should not be posted here.",
         "Flagrant fanboy threads are not allowed, nor are threads for the purpose of instigating a flamewar. All platforms and consoles are welcome on this board; console wars are not.",
         "Purposeful spoiling of a game's plot or other details may result in post deletion and temporary ban. Use spoiler tags where appropriate.",
-        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots."
+        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots.",
+        "This board is to be considered \"work safe\". Note: Spoilered pornography or other \"not safe for work\" content is NOT allowed."
       ]
     },
     "vst": {
@@ -1396,7 +1442,8 @@
         "All topics should pertain to strategy video games, including both turn-based and real-time strategy games, turn-based tactics and real-time tactics games, single-player or multiplayer (including MOBAs). All platforms are welcome. Threads about video games that do not belong to the strategy genre should not be posted here.",
         "Flagrant fanboy threads are not allowed, nor are threads for the purpose of instigating a flamewar. All platforms and consoles are welcome on this board; console wars are not.",
         "Purposeful spoiling of a game's plot or other details may result in post deletion and temporary ban. Use spoiler tags where appropriate.",
-        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots."
+        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots.",
+        "This board is to be considered \"work safe\". Note: Spoilered pornography or other \"not safe for work\" content is NOT allowed."
       ]
     },
     "vt": {
@@ -1420,7 +1467,8 @@
         "All images and discussion should pertain to virtual YouTubers (\"VTubers\").",
         "All VTuber discussion should pertain directly to their streams and content. Off-topic and 'IRL' discussion will be deleted.",
         "Singling out individual VTubers for the purposes of trolling them will not be tolerated. Do not stalk or harass any VTubers.",
-        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots."
+        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots.",
+        "This board is to be considered \"work safe\". Note: Spoilered pornography or other \"not safe for work\" content is NOT allowed."
       ]
     },
     "w": {
@@ -1443,7 +1491,8 @@
       "rules": [
         "Wallpapers should be distinctly anime or J-pop related. They can be real world pictures, just make sure they're noticeably tied to Japanese culture.",
         "Image quality is a must. A minimum resolution of 480x600 pixels is enforced on this board.",
-        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots."
+        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots.",
+        "This board is to be considered \"work safe\". Note: Spoilered pornography or other \"not safe for work\" content is NOT allowed."
       ]
     },
     "wg": {
@@ -1489,7 +1538,8 @@
       "rules": [
         "All worksafe GIFs welcome.",
         "All GIFs should be animated-no static images.",
-        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots."
+        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots.",
+        "This board is to be considered \"work safe\". Note: Spoilered pornography or other \"not safe for work\" content is NOT allowed."
       ]
     },
     "wsr": {
@@ -1519,7 +1569,8 @@
         "All threads and images should pertain to work-safe material. For adult content please use /r/ - Requests and for help with personal matters please use /adv/ - Advice.",
         "Do not post or request personal information (\"dox\") or calls to invasion (\"raids\").",
         "Personal army requests of any form are strictly forbidden.",
-        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots."
+        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots.",
+        "This board is to be considered \"work safe\". Note: Spoilered pornography or other \"not safe for work\" content is NOT allowed."
       ]
     },
     "x": {
@@ -1541,7 +1592,8 @@
       },
       "rules": [
         "For all your creepy images and stories.",
-        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots."
+        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots.",
+        "This board is to be considered \"work safe\". Note: Spoilered pornography or other \"not safe for work\" content is NOT allowed."
       ]
     },
     "xs": {
@@ -1564,7 +1616,8 @@
       "rules": [
         "This board is for the discussion of extreme sports and similar physical activities. This includes topics such as skydiving, surfing, skateboarding, climbing, bungee-jumping, parkour, BMX, airsoft, paintball, etc.",
         "Discussions about professional sports teams, leagues, and athletes should be posted to /sp/. Discussions about eSports should be posted to /vg/. Discussions about professional wrestling should be posted to /pw/.",
-        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots."
+        "No bots or AI posters. Every post must be written by a person: no automated posting, no AI-generated posts, and no summoning AI reply bots.",
+        "This board is to be considered \"work safe\". Note: Spoilered pornography or other \"not safe for work\" content is NOT allowed."
       ]
     }
   }
