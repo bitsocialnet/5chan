@@ -44,6 +44,8 @@ const computeBoardStatus = (
     state: communityState?.state ?? offlineState?.state,
     syncState: communityState?.syncState,
     updatedAt: communityState?.updatedAt ?? offlineState?.updatedAt,
+    lastSuccessfulFetchAt: communityState?.lastSuccessfulFetchAt,
+    lastRetriableError: communityState?.lastRetriableError,
   };
 
   if (isOffline || isCommunityKnownOffline(freshnessState, nowSeconds)) return 'offline';

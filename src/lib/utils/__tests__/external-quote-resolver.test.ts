@@ -9,7 +9,9 @@ type FeedState = {
 
 const testState = vi.hoisted(() => ({
   communities: {} as Record<string, unknown>,
+  syncStatuses: {} as Record<string, unknown>,
   addCommunityToStore: vi.fn(),
+  resetFeed: vi.fn(),
   boardFeeds: { feedsOptions: {}, loadedFeeds: {}, feedsHaveMore: {} } as FeedState,
   addFeedToStore: vi.fn(),
   replyFeeds: { feedsOptions: {}, loadedFeeds: {}, feedsHaveMore: {} } as FeedState,
@@ -17,9 +19,13 @@ const testState = vi.hoisted(() => ({
 }));
 
 vi.mock('../../bitsocial-internals/stores', () => ({
-  communitiesStore: { getState: () => ({ communities: testState.communities, addCommunityToStore: testState.addCommunityToStore }) },
+  communitiesStore: {
+    getState: () => ({ communities: testState.communities, syncStatuses: testState.syncStatuses, addCommunityToStore: testState.addCommunityToStore }),
+  },
   communitiesPagesStore: { getState: () => ({ comments: {} }) },
-  feedsStore: { getState: () => ({ ...testState.boardFeeds, addFeedToStore: testState.addFeedToStore, incrementFeedPageNumber: vi.fn() }) },
+  feedsStore: {
+    getState: () => ({ ...testState.boardFeeds, addFeedToStore: testState.addFeedToStore, incrementFeedPageNumber: vi.fn(), resetFeed: testState.resetFeed }),
+  },
   repliesStore: {
     getState: () => ({ ...testState.replyFeeds, addFeedToStoreOrUpdateComment: testState.addRepliesFeedToStore, incrementFeedPageNumber: vi.fn() }),
   },
@@ -58,6 +64,7 @@ const resolveQuote = (number: number) =>
 
 afterEach(() => {
   testState.communities = {};
+  testState.syncStatuses = {};
   testState.boardFeeds = { feedsOptions: {}, loadedFeeds: {}, feedsHaveMore: {} };
   testState.replyFeeds = { feedsOptions: {}, loadedFeeds: {}, feedsHaveMore: {} };
   vi.clearAllMocks();
@@ -105,6 +112,39 @@ describe('resolveExternalQuoteTarget', () => {
 
     expect(testState.addRepliesFeedToStore.mock.calls[0][1]).toMatchObject({ commentCid: 'thread-1', sortType: 'old', flat: true });
     expect(target?.cid).toBe('reply-9');
+  });
+
+  it('refreshes a board whose updates stopped before giving up on a thread newer than its record', async () => {
+    testState.communities[BOARD_ADDRESS] = makeBoard(['active']);
+    testState.syncStatuses[BOARD_ADDRESS] = { syncState: 'stopped', stoppedUntilUsed: true };
+    serveBoardThreads([{ cid: 'thread-1', number: 1, replyCount: 0 }]);
+    // resetFeed fetches a fresh record, then updateFeeds rebuilds the feed asynchronously
+    testState.resetFeed.mockImplementation(async (feedName: string) => {
+      testState.boardFeeds.loadedFeeds = { ...testState.boardFeeds.loadedFeeds, [feedName]: [] };
+      setTimeout(() => {
+        testState.boardFeeds.loadedFeeds = {
+          ...testState.boardFeeds.loadedFeeds,
+          [feedName]: [
+            { cid: 'thread-8', number: 8, replyCount: 0 },
+            { cid: 'thread-1', number: 1, replyCount: 0 },
+          ],
+        };
+        testState.boardFeeds.feedsHaveMore = { ...testState.boardFeeds.feedsHaveMore, [feedName]: false };
+      }, 10);
+    });
+
+    const target = await resolveQuote(8);
+
+    expect(testState.resetFeed).toHaveBeenCalledTimes(1);
+    expect(target?.cid).toBe('thread-8');
+  });
+
+  it('does not refresh a board that is still updating', async () => {
+    testState.communities[BOARD_ADDRESS] = makeBoard(['active']);
+    serveBoardThreads([{ cid: 'thread-1', number: 1, replyCount: 0 }]);
+
+    expect(await resolveQuote(8)).toBeNull();
+    expect(testState.resetFeed).not.toHaveBeenCalled();
   });
 
   it('fails as soon as the board record cannot load', async () => {

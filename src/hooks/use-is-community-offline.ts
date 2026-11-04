@@ -4,17 +4,17 @@ import type { Community, UseCommunityResult } from '@bitsocial/bitsocial-react-h
 import { getFormattedTimeAgo } from '../lib/utils/time-utils';
 import useCommunityOfflineStore from '../stores/use-community-offline-store';
 import useCommunitiesLoadingStartTimestamps from '../stores/use-communities-loading-start-timestamps-store';
-import { isCommunitySyncLoading, isCommunitySyncTerminal, isCommunityUpdateStale } from '../lib/utils/community-freshness-utils';
+import { getCommunityFreshnessNowSeconds, isCommunitySyncLoading, isCommunitySyncTerminal, isCommunityUpdateStale } from '../lib/utils/community-freshness-utils';
 import { useNowSeconds } from './use-now-seconds';
 
-type CommunityWithSyncLifecycle = Community & Partial<Pick<UseCommunityResult, 'syncState' | 'hasCachedData'>>;
+type CommunityWithSyncLifecycle = Community & Partial<Pick<UseCommunityResult, 'syncState' | 'hasCachedData' | 'lastSuccessfulFetchAt' | 'lastRetriableError'>>;
 
 const getCommunityOfflineKey = (community?: CommunityWithSyncLifecycle, communityAddressHint?: string) =>
   communityAddressHint || community?.address || community?.name || community?.publicKey;
 
 const useIsCommunityOffline = (community?: CommunityWithSyncLifecycle | undefined, communityAddressHint?: string) => {
   const { t } = useTranslation();
-  const { state, syncState, hasCachedData, updatedAt } = community || {};
+  const { state, syncState, hasCachedData, updatedAt, lastSuccessfulFetchAt, lastRetriableError } = community || {};
   const communityKey = getCommunityOfflineKey(community, communityAddressHint);
   const nowSeconds = useNowSeconds(!!communityKey);
   // Subscribe to this community's entry only. The directory view renders one of these per board,
@@ -42,7 +42,7 @@ const useIsCommunityOffline = (community?: CommunityWithSyncLifecycle | undefine
 
   const offlineState = storedOfflineState || { initialLoad: true };
   const loadingStartTimestamp = communitiesLoadingStartTimestamps[0] || 0;
-  const isStale = isCommunityUpdateStale(updatedAt, nowSeconds);
+  const isStale = isCommunityUpdateStale(updatedAt, getCommunityFreshnessNowSeconds({ syncState, lastSuccessfulFetchAt, lastRetriableError }, nowSeconds));
   const hasUsableCachedData = (hasCachedData ?? typeof updatedAt === 'number') && updatedAt !== undefined;
   const isOnline = hasUsableCachedData && !isStale;
   const hasFailed = syncState === 'failed' || (!syncState && state === 'failed');

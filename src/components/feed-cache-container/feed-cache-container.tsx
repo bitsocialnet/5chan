@@ -69,16 +69,17 @@ const CachedFeedWrapper = ({ feed, isVisible, boardView: BoardView, catalogView:
 
   return (
     <div ref={containerRef} className={isVisible ? styles.visible : styles.hidden}>
-      {feed.type === 'catalog' ? (
-        <CatalogView
-          feedCacheKey={feed.key}
-          viewType={context.viewType}
-          boardIdentifier={context.boardIdentifier}
-          timeFilterNameFromCache={context.timeFilterName}
-          isVisible={isVisible}
-        />
-      ) : (
-        <Activity mode={isVisible ? 'visible' : 'hidden'}>
+      {/* Hidden views disconnect their effects, so their feeds and boards stop updating while cached. */}
+      <Activity mode={isVisible ? 'visible' : 'hidden'}>
+        {feed.type === 'catalog' ? (
+          <CatalogView
+            feedCacheKey={feed.key}
+            viewType={context.viewType}
+            boardIdentifier={context.boardIdentifier}
+            timeFilterNameFromCache={context.timeFilterName}
+            isVisible={isVisible}
+          />
+        ) : (
           <BoardView
             feedCacheKey={feed.key}
             viewType={context.viewType}
@@ -86,8 +87,8 @@ const CachedFeedWrapper = ({ feed, isVisible, boardView: BoardView, catalogView:
             timeFilterNameFromCache={context.timeFilterName}
             isVisible={isVisible}
           />
-        </Activity>
-      )}
+        )}
+      </Activity>
     </div>
   );
 };

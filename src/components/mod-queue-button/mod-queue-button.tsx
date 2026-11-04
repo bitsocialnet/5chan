@@ -134,7 +134,11 @@ export const ModQueueButton = ({ boardIdentifier, isMobile }: ModQueueButtonProp
     [feedCommunities],
   );
   const { feed } = useFeed(feedOptions);
-  const metadataLoader = <ModQueueCommunityMetadataLoader candidateCommunityAddresses={moderatedCommunityAddressInputs.candidateCommunityAddresses} />;
+  // A board page only needs that board's role, which its own record already shows. Without a
+  // board, the button counts every moderated board, so the candidates' roles are looked up.
+  const metadataLoader = resolvedAddress ? null : (
+    <ModQueueCommunityMetadataLoader candidateCommunityAddresses={moderatedCommunityAddressInputs.candidateCommunityAddresses} />
+  );
 
   if (!shouldFetch || communityAddresses.length === 0) {
     return metadataLoader;
