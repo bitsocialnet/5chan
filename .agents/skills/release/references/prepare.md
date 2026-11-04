@@ -13,8 +13,11 @@ For authorized preparation:
 ```bash
 node scripts/update-blotter.js release --message 'USER-FACING HIGHLIGHTS'
 corepack yarn blotter:check
+node scripts/sync-android-release.mjs
 ```
 
 Use proper shell quoting for the actual message. The script reads the version from `package.json` and release date from `CHANGELOG.md`; preserve that ordering. Manual blotter entries do not satisfy release coverage. Resolve a validation failure from its evidence, and never invent filler highlights merely to satisfy coverage.
+
+`sync-android-release.mjs` writes the literal `versionCode`/`versionName` in `android/app/build.gradle` that F-Droid's update checker reads (Android builds fail while they differ from `package.json`), and the blotter message as F-Droid's `fastlane/metadata/android/en-US/changelogs/<versionCode>.txt`. Commit both with the release.
 
 Inspect the generated diff and follow `docs/agent-playbooks/verification.md` for final checks and required LLM context generation. Do not stage build output. Release signing/build publication is handled by `.github/workflows/release.yml`; never copy signing secrets into local instructions or logs.

@@ -2,15 +2,7 @@ apply plugin: 'com.android.application'
 
 import groovy.json.JsonSlurper
 
-def resolvePackageVersionName() {
-    def packageJsonFile = file("../../package.json")
-    if (!packageJsonFile.exists()) {
-        return "1.0"
-    }
-
-    return new JsonSlurper().parse(packageJsonFile).version.toString()
-}
-
+// Keep in sync with scripts/sync-android-release.mjs.
 def versionNameToCode(String versionName) {
     def stableVersion = versionName.replaceFirst(/^v/, "").split("-")[0]
     def parts = stableVersion.tokenize(".").collect { part -> part.isInteger() ? part.toInteger() : 0 }
@@ -22,9 +14,6 @@ def versionNameToCode(String versionName) {
     return (parts[0] * 10000) + (parts[1] * 100) + parts[2]
 }
 
-def resolvedVersionName = "${project.findProperty("APP_VERSION_NAME") ?: resolvePackageVersionName()}"
-def resolvedVersionCode = Integer.parseInt("${project.findProperty("APP_VERSION_CODE") ?: versionNameToCode(resolvedVersionName)}")
-
 android {
     namespace "fivechan.android"
     compileSdkVersion rootProject.ext.compileSdkVersion
@@ -32,8 +21,10 @@ android {
         applicationId "fivechan.android"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode resolvedVersionCode
-        versionName resolvedVersionName
+        // F-Droid's update checker only reads literal values from tagged sources.
+        // Release prep rewrites both lines from package.json with scripts/sync-android-release.mjs.
+        versionCode 1003
+        versionName "0.10.3"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -56,6 +47,15 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+}
+
+def packageVersionName = new JsonSlurper().parse(file("../../package.json")).version.toString()
+def packageVersionCode = versionNameToCode(packageVersionName)
+if (android.defaultConfig.versionName != packageVersionName || android.defaultConfig.versionCode != packageVersionCode) {
+    throw new GradleException(
+        "android/app/build.gradle declares ${android.defaultConfig.versionName} (${android.defaultConfig.versionCode}) " +
+        "but package.json is ${packageVersionName} (${packageVersionCode}). Run: node scripts/sync-android-release.mjs"
+    )
 }
 
 repositories {

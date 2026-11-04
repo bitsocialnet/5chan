@@ -1,46 +1,48 @@
-# Draft metadata for https://gitlab.com/fdroid/fdroiddata.
-# Replace the commit field with the full v0.8.3 commit hash before opening the F-Droid merge request.
+# Draft metadata for https://gitlab.com/fdroid/fdroiddata (submit as metadata/fivechan.android.yml, without
+# this comment). Before opening the merge request, point the build entry and Current* fields at the release
+# being submitted: versionName, versionCode (see android/app/build.gradle) and the full commit hash of its tag.
+# Releases from v0.10.4 on carry the literal versionCode that F-Droid's update checker needs.
 Categories:
-  - Internet
+  - Forum
+  - Social Network
 License: GPL-3.0-or-later
 AuthorName: Bitsocial Forge
 WebSite: https://5chan.app
 SourceCode: https://github.com/bitsocialnet/5chan
 IssueTracker: https://github.com/bitsocialnet/5chan/issues
-Changelog: https://github.com/bitsocialnet/5chan/releases
+Changelog: https://github.com/bitsocialnet/5chan/blob/HEAD/CHANGELOG.md
 
 AutoName: 5chan
 
 RepoType: git
-Repo: https://github.com/bitsocialnet/5chan
+Repo: https://github.com/bitsocialnet/5chan.git
 
 Builds:
-  - versionName: '0.8.3'
-    versionCode: 803
-    commit: TODO_REPLACE_WITH_V0_8_3_COMMIT_HASH
+  - versionName: 0.10.3
+    versionCode: 1003
+    commit: c051be8c97acd444c766551cdcb061594c864c0c
     subdir: android
     sudo:
-      - curl -Lo node.tar.xz https://nodejs.org/dist/v22.12.0/node-v22.12.0-linux-x64.tar.xz
-      - echo "22982235e1b71fa8850f82edd09cdae7e3f32df1764a9ec298c72d25ef2c164f  node.tar.xz" | sha256sum -c -
+      - curl -Lo node.tar.xz https://nodejs.org/dist/v22.22.3/node-v22.22.3-linux-x64.tar.xz
+      - echo "2e5d13569282d016861fae7c8f935e741693c269101a5bebcf761a5376d1f99f  node.tar.xz"
+        | sha256sum -c -
       - tar xf node.tar.xz --strip-components=1 -C /usr/local/
       - corepack enable
-    rm:
-      - android/bitsocial.keystore
-    build:
-      - cd .. && corepack yarn install --immutable && corepack yarn build:fdroid && corepack yarn cap sync android
-    scandelete:
-      - node_modules/
-      - build/
-      - android/app/build/
-      - android/capacitor-cordova-android-plugins/build/
     gradle:
       - fdroid
-    gradleprops:
-      - APP_VERSION_NAME=0.8.3
-      - APP_VERSION_CODE=803
-    output: app/build/outputs/apk/fdroid/release/app-fdroid-release-unsigned.apk
+    rm:
+      - android/bitsocial.keystore
+    prebuild:
+      - cd ..
+      - ELECTRON_SKIP_BINARY_DOWNLOAD=1 corepack yarn install --immutable
+    scandelete:
+      - node_modules
+    build:
+      - cd ..
+      - corepack yarn build:fdroid
+      - corepack yarn cap sync android
 
 AutoUpdateMode: Version
-UpdateCheckMode: Tags
-CurrentVersion: '0.8.3'
-CurrentVersionCode: 803
+UpdateCheckMode: Tags ^v[0-9.]+$
+CurrentVersion: 0.10.3
+CurrentVersionCode: 1003
