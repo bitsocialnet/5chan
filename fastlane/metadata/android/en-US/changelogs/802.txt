@@ -1,1 +1,0 @@
-Adds an F-Droid build without in-app APK updating and fixes Android version metadata.
