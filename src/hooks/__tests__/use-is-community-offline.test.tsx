@@ -16,6 +16,8 @@ interface TestCommunity {
   syncState?: CommunitySyncState;
   hasCachedData?: boolean;
   updatedAt?: number;
+  lastSuccessfulFetchAt?: number;
+  lastRetriableError?: Error;
 }
 
 const testState = vi.hoisted(() => ({
@@ -146,6 +148,47 @@ describe('useIsCommunityOffline', () => {
       isOnlineStatusLoading: false,
       offlineIconClass: 'redOfflineIcon',
       offlineTitle: `posts_last_synced_info:ago:${staleUpdatedAt}`,
+    });
+  });
+
+  it('keeps a board online while its restarted updates fetch, judged by its age at the last fetch', async () => {
+    const nowSeconds = 1_704_067_210;
+    const updatedAt = nowSeconds - 40 * 60;
+    testState.communityOfflineState = { 'music.eth': { initialLoad: false, updatedAt } };
+
+    await renderHook({
+      address: 'music.eth',
+      state: 'succeeded',
+      syncState: 'loading',
+      hasCachedData: true,
+      updatedAt,
+      lastSuccessfulFetchAt: nowSeconds - 35 * 60,
+    });
+
+    expect(latestValue).toEqual({ isOffline: false, isOnlineStatusLoading: false, offlineIconClass: '', offlineTitle: false });
+  });
+
+  it('judges a restarted board by its age now once its fetch fails', async () => {
+    const nowSeconds = 1_704_067_210;
+    const updatedAt = nowSeconds - 40 * 60;
+    testState.communityOfflineState = { 'music.eth': { initialLoad: false, updatedAt } };
+
+    await renderHook({
+      address: 'music.eth',
+      state: 'succeeded',
+      syncState: 'retrying',
+      hasCachedData: true,
+      updatedAt,
+      lastSuccessfulFetchAt: nowSeconds - 35 * 60,
+      lastRetriableError: new Error('ipns record not found'),
+    });
+
+    // a stale board that is still retrying shows as loading, like before its updates stopped
+    expect(latestValue).toEqual({
+      isOffline: false,
+      isOnlineStatusLoading: true,
+      offlineIconClass: 'yellowOfflineIcon',
+      offlineTitle: 'downloading board...',
     });
   });
 

@@ -165,12 +165,14 @@ describe('FeedCacheContainer', () => {
     expect(testState.subscribeMock).toHaveBeenCalledTimes(subscriptionsBeforeClosingSettings);
   });
 
-  it('preserves the existing hidden catalog subscription lifecycle', async () => {
+  it('disconnects hidden catalog subscriptions like hidden boards while retaining its DOM', async () => {
     await act(async () => {
       root.render(createElement(MemoryRouter, { initialEntries: ['/a/catalog'] }, renderFeedCacheContainer(), createElement(NavigateButtons)));
     });
+    const catalog = container.querySelector('[data-testid="catalog"]');
     await act(async () => container.querySelector<HTMLButtonElement>('[data-testid="navigate-b"]')?.click());
-    expect(testState.activeSubscriptions).toEqual(new Set(['/a/catalog', '/b']));
+    expect(testState.activeSubscriptions).toEqual(new Set(['/b']));
+    expect(container.querySelector('[data-testid="catalog"]')).toBe(catalog);
   });
 
   it('suspends playable media while a cached feed is hidden and restores iframe embeds when visible again', async () => {

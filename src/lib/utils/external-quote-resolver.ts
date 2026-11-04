@@ -137,6 +137,15 @@ const waitForBoardFeedPage = async (feedName: string, previousLength: number, ex
     return false;
   });
 
+// Fetch a fresh board record and rebuild the board feed from it. updateFeeds replaces
+// feedsHaveMore on every pass, so its identity shows the rebuilt feed was calculated.
+const refreshBoardFeed = async (feedName: string) => {
+  await feedsStore.getState().resetFeed(feedName);
+  const feedsHaveMoreBeforeRebuild = feedsStore.getState().feedsHaveMore;
+  await waitFor(() => feedsStore.getState().feedsHaveMore !== feedsHaveMoreBeforeRebuild);
+  await waitForBoardFeedPage(feedName, 0, 1);
+};
+
 const loadBoardThreads = async ({
   account,
   number,
@@ -145,6 +154,7 @@ const loadBoardThreads = async ({
   quoteDisplay,
   communityAddress,
   directories,
+  refreshBoard = false,
 }: {
   account: ResolverAccount;
   directories: DirectoryCommunity[];
@@ -153,6 +163,7 @@ const loadBoardThreads = async ({
   postNumbers: PostNumberRegistry;
   quoteDisplay: string;
   communityAddress: string;
+  refreshBoard?: boolean;
 }) => {
   const accountId = account.id;
   if (!accountId) {
@@ -182,7 +193,11 @@ const loadBoardThreads = async ({
     await feedState.addFeedToStore(feedName, [{ address: communityAddress }], [communityAddress], boardSortType, account, false, BOARD_SEARCH_POSTS_PER_PAGE);
   }
 
-  await waitForBoardFeedPage(feedName, 0, 1);
+  if (refreshBoard) {
+    await refreshBoardFeed(feedName);
+  } else {
+    await waitForBoardFeedPage(feedName, 0, 1);
+  }
 
   while (true) {
     const state = feedsStore.getState();
@@ -359,46 +374,53 @@ export const resolveExternalQuoteTarget = async ({
     });
   }
 
-  const { match: matchingThread, threads } = await loadBoardThreads({
-    account,
-    directories,
-    number: reference.number,
-    onStatus,
-    postNumbers,
-    quoteDisplay,
-    communityAddress: targetCommunityAddress,
-  });
-
-  if (matchingThread?.cid) {
-    registerComments(postNumbers, [matchingThread]);
-    return buildResolvedTarget({
-      cid: matchingThread.cid,
-      comment: matchingThread,
+  // The hooks stop updating a board a couple of minutes after nothing shows it, so its stored
+  // record can predate the quoted thread. Search the stored record first, and refresh it once
+  // before giving up.
+  const isBoardUpdateStopped = Boolean(communitiesStore.getState().syncStatuses?.[targetCommunityAddress]?.stoppedUntilUsed);
+  for (const refreshBoard of isBoardUpdateStopped ? [false, true] : [false]) {
+    const { match: matchingThread, threads } = await loadBoardThreads({
+      account,
       directories,
+      number: reference.number,
+      onStatus,
+      postNumbers,
+      quoteDisplay,
       communityAddress: targetCommunityAddress,
+      refreshBoard,
     });
+
+    if (matchingThread?.cid) {
+      registerComments(postNumbers, [matchingThread]);
+      return buildResolvedTarget({
+        cid: matchingThread.cid,
+        comment: matchingThread,
+        directories,
+        communityAddress: targetCommunityAddress,
+      });
+    }
+
+    const matchingReply = await searchThreadReplies({
+      account,
+      directories,
+      number: reference.number,
+      onStatus,
+      postNumbers,
+      quoteDisplay,
+      communityAddress: targetCommunityAddress,
+      threads,
+    });
+
+    if (matchingReply?.cid) {
+      registerComments(postNumbers, [matchingReply]);
+      return buildResolvedTarget({
+        cid: matchingReply.cid,
+        comment: matchingReply,
+        directories,
+        communityAddress: targetCommunityAddress,
+      });
+    }
   }
 
-  const matchingReply = await searchThreadReplies({
-    account,
-    directories,
-    number: reference.number,
-    onStatus,
-    postNumbers,
-    quoteDisplay,
-    communityAddress: targetCommunityAddress,
-    threads,
-  });
-
-  if (!matchingReply?.cid) {
-    return null;
-  }
-
-  registerComments(postNumbers, [matchingReply]);
-  return buildResolvedTarget({
-    cid: matchingReply.cid,
-    comment: matchingReply,
-    directories,
-    communityAddress: targetCommunityAddress,
-  });
+  return null;
 };

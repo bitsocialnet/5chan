@@ -185,7 +185,7 @@ describe('useCommunitiesStatsStore', () => {
     expect(statsHookState.calls).toBeGreaterThan(0);
   });
 
-  it('loads only communities that have not exposed a stats CID', () => {
+  it('keeps every collected community updating, including those that exposed a stats CID', () => {
     const resolvedAddress = 'business-posting.bso';
     const pendingAddress = 'technology-posting.bso';
     communitiesStore.setState({
@@ -201,12 +201,18 @@ describe('useCommunitiesStatsStore', () => {
       root.render(createElement(CommunityStatsMetadataLoader, { communityAddresses: [resolvedAddress, pendingAddress] }));
     });
 
-    expect(statsHookState.requestedCommunities).toEqual([
+    // a new statsCid only arrives through the community's update loop
+    const allCommunities = [
+      {
+        name: resolvedAddress,
+        publicKey: `${resolvedAddress}-key`,
+      },
       {
         name: pendingAddress,
         publicKey: `${pendingAddress}-key`,
       },
-    ]);
+    ];
+    expect(statsHookState.requestedCommunities).toEqual(allCommunities);
 
     act(() => {
       communitiesStore.setState({
@@ -223,7 +229,7 @@ describe('useCommunitiesStatsStore', () => {
       });
     });
 
-    expect(statsHookState.requestedCommunities).toEqual([]);
+    expect(statsHookState.requestedCommunities).toEqual(allCommunities);
   });
 
   it('unmounts resolved requests and remounts only when statsCid changes', () => {

@@ -1,6 +1,5 @@
 import { createElement, memo, useEffect, useMemo, useRef } from 'react';
 import { create } from 'zustand';
-import { useShallow } from 'zustand/react/shallow';
 import { useCommunities, useCommunityStats, type CommunityIdentifier } from '@bitsocial/bitsocial-react-hooks';
 import { useCommunityIdentifier, useCommunityIdentifiers } from './use-community-identifiers';
 import { communitiesStore as useCommunitiesStore } from '../lib/bitsocial-internals/stores';
@@ -65,13 +64,12 @@ const CommunityStatsRequest = ({
   return null;
 };
 
+// Stats only change when a board publishes a new statsCid, which arrives through the board's
+// update loop, and the hooks stop a board's updates once nothing uses it. Keep every collected
+// board updating while the stats are shown, so the totals keep refreshing.
 export const CommunityStatsMetadataLoader = memo(({ communityAddresses }: { communityAddresses: string[] }) => {
   const communities = useCommunityIdentifiers(communityAddresses);
-  const pendingCommunities = useCommunitiesStore(
-    useShallow((state) => communities.filter((community) => !state.communities[community.publicKey ?? community.name ?? '']?.statsCid)),
-  );
-
-  useCommunities({ communities: pendingCommunities });
+  useCommunities({ communities });
   return null;
 });
 CommunityStatsMetadataLoader.displayName = 'CommunityStatsMetadataLoader';

@@ -943,9 +943,12 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
     if (!isVisible || !shouldVirtualizeCatalog) return;
 
     const currentKey = virtuosoStateKey;
-    // Avoid pulling Virtuoso state on every scroll tick in the catalog hot path.
+    // Keep the handle in case Activity clears the ref before this cleanup; the grid can also
+    // mount after this effect, once the feed has threads. Avoid pulling Virtuoso state on every
+    // scroll tick in the catalog hot path.
+    const virtuosoAtSetup = virtuosoRef.current;
     const saveVirtuosoState = () =>
-      virtuosoRef.current?.getState((snapshot: StateSnapshot) => {
+      (virtuosoRef.current ?? virtuosoAtSetup)?.getState((snapshot: StateSnapshot) => {
         if (snapshot?.ranges?.length) {
           lastVirtuosoStates[currentKey] = snapshot;
         }

@@ -26,11 +26,13 @@ interface StoredCommunity extends DirectoryBoardRecord {
 }
 
 type StoredCommunities = Record<string, StoredCommunity | undefined>;
-type CommunitySyncStatuses = Record<string, { syncState: CommunitySyncState } | undefined>;
+type CommunitySyncStatus = Pick<CommunityFreshnessState, 'lastSuccessfulFetchAt' | 'lastRetriableError' | 'stoppedUntilUsed'> & { syncState: CommunitySyncState };
+type CommunitySyncStatuses = Record<string, CommunitySyncStatus | undefined>;
 
 interface CommunityLifecycleState {
   state?: string;
   syncState?: CommunitySyncState;
+  syncStatus?: CommunitySyncStatus;
   updatedAt?: number;
   /** The freshest loaded record, which the directory requirements are checked against. */
   record?: DirectoryBoardRecord;
@@ -48,8 +50,7 @@ const getCommunityLifecycleState = (
   communityAddress: string,
   communityPublicKey?: string,
 ): CommunityLifecycleState => {
-  const directSyncStatus = (communityPublicKey && syncStatuses?.[communityPublicKey]) || syncStatuses?.[communityAddress];
-  let syncState = directSyncStatus?.syncState;
+  let syncStatus = (communityPublicKey && syncStatuses?.[communityPublicKey]) || syncStatuses?.[communityAddress] || undefined;
   let matchedCommunity: StoredCommunity | undefined;
   let matchedRecord: StoredCommunity | undefined;
   const normalizedAddress = normalizeBoardAddress(communityAddress);
@@ -75,10 +76,10 @@ const getCommunityLifecycleState = (
       matchedRecord = community;
     }
 
-    if (!syncState) {
+    if (!syncStatus?.syncState) {
       for (const identifier of storedIdentifiers) {
         if (identifier && syncStatuses?.[identifier]) {
-          syncState = syncStatuses[identifier]?.syncState;
+          syncStatus = syncStatuses[identifier];
           break;
         }
       }
@@ -87,7 +88,8 @@ const getCommunityLifecycleState = (
 
   return {
     state: matchedCommunity?.state,
-    syncState,
+    syncState: syncStatus?.syncState,
+    syncStatus,
     updatedAt: matchedCommunity?.updatedAt,
     // A community without updatedAt has not loaded its record yet.
     record: matchedRecord,
@@ -128,6 +130,9 @@ const getDirectoryBoardFreshnessState = (
     state: lifecycleState.state === 'failed' || offlineState?.state === 'failed' ? 'failed' : (lifecycleState.state ?? offlineState?.state),
     syncState: lifecycleState.syncState,
     updatedAt: updatedAts.length > 0 ? Math.max(...updatedAts) : undefined,
+    lastSuccessfulFetchAt: lifecycleState.syncStatus?.lastSuccessfulFetchAt,
+    lastRetriableError: lifecycleState.syncStatus?.lastRetriableError,
+    stoppedUntilUsed: lifecycleState.syncStatus?.stoppedUntilUsed,
   };
 };
 
