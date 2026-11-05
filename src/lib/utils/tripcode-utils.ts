@@ -67,7 +67,10 @@ const PROOF_PATTERN = new RegExp(
 );
 const PROOF_ENTRY_PATTERN = new RegExp(`:([ns])([A-Za-z0-9_-]{${BASE64URL_PUBLIC_KEY_LENGTH}})([A-Za-z0-9_-]{${BASE64URL_SIGNATURE_LENGTH}})`, 'g');
 
-/** 4chan's name field parsing: the name ends at the first `#`; `##` starts the secure tripcode. */
+/**
+ * 4chan's name field parsing: the name ends at the first `#`; `##` starts the secure tripcode. The name is
+ * trimmed, and each password is used as typed, spaces included; a password of only spaces makes no tripcode.
+ */
 export const parseTripcodeInput = (value: string | undefined): ParsedTripcodeInput => {
   const input = value ?? '';
   const hashIndex = input.indexOf('#');
@@ -88,8 +91,8 @@ export const parseTripcodeInput = (value: string | undefined): ParsedTripcodeInp
   }
 
   const secret: TripcodeSecret = {};
-  if (normal) secret.normal = normal;
-  if (secure) secret.secure = secure;
+  if (normal?.trim()) secret.normal = normal;
+  if (secure?.trim()) secret.secure = secure;
   return {
     name,
     tripcodeInput: input.slice(hashIndex),
@@ -153,23 +156,25 @@ export interface TripcodeCommentSource {
 }
 
 /**
- * What a proof must have been signed over for a reader to show its trip. The text is the text on screen,
- * which an author edit replaces: a proof covers neither the key that published the comment nor its edits,
- * so anyone who republishes a tripcode post verbatim within the board's five minute timestamp window could
- * otherwise edit their copy and show any text under that trip. An edited post therefore loses its trip.
- * The other fields come from the comment's signed record when it has one; a local pending comment has no
- * record yet and is read from its own fields.
+ * What a proof must have been signed over for a reader to show its trip. The name, text and gallery are
+ * the ones on screen, which can differ from the comment's signed record: an author edit replaces the text,
+ * and the board's CommentUpdate can replace the author's name. A proof covers neither the key that
+ * published the comment nor its edits, so anyone who republishes a tripcode post verbatim within the
+ * board's five minute timestamp window could otherwise edit their copy and show any text under that trip.
+ * An edited or renamed post therefore loses its trip. The thread, timestamp and board come from the
+ * signed record when the comment has one; a local pending comment has no record yet and is read from its
+ * own fields.
  */
 export const getTripcodeCommentSource = (comment: unknown): TripcodeCommentSource | undefined => {
   if (!isRecord(comment)) return undefined;
   const raw = isRecord(comment.raw) && isRecord(comment.raw.comment) ? comment.raw.comment : undefined;
   const source = raw ?? comment;
-  const author = isRecord(source.author) ? source.author : isRecord(comment.author) ? comment.author : undefined;
   const timestamp = typeof source.timestamp === 'number' ? source.timestamp : undefined;
   if (timestamp === undefined) return undefined;
 
+  const author = isRecord(comment.author) ? comment.author : undefined;
   const parentCid = getString(source.parentCid);
-  const gallery = Array.isArray(source.gallery) ? source.gallery : undefined;
+  const gallery = Array.isArray(comment.gallery) ? comment.gallery : undefined;
   return {
     displayName: getString(author?.displayName),
     communityAddress: getString(comment.communityAddress) ?? getString(source.communityAddress),

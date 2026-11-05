@@ -206,6 +206,9 @@ const usePublishReply = ({ cid, communityAddress, postCid }: UsePublishReplyOpti
   const preparePublishReply = useCallback(
     async (requestId: number) => {
       setPublishReplyError(null);
+      // Taken out first, so no return below leaves the password in memory.
+      const tripcodeSecret = tripcodeSecretsRef.current.get(requestId);
+      tripcodeSecretsRef.current.delete(requestId);
 
       if (blockedReason) {
         analyticsAttempt?.finish('post_validation_failed');
@@ -215,8 +218,6 @@ const usePublishReply = ({ cid, communityAddress, postCid }: UsePublishReplyOpti
         return;
       }
 
-      const tripcodeSecret = tripcodeSecretsRef.current.get(requestId);
-      tripcodeSecretsRef.current.delete(requestId);
       // A tripcode's proof signs the reply's final options, so it is added last, just before the publish.
       const publishWhenSigned = async () => {
         if (tripcodeSecret) {

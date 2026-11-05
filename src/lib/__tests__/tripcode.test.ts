@@ -1,6 +1,6 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { applyCommunityWordfilters as applyWordfilters } from '../bitsocial-internals/utils';
-import { createTripcodeDisplayName, createTripcodePublishOptions, getVerifiedTrip, TripcodeSigningError } from '../tripcode-crypto';
+import { createTripcodeDisplayName, createTripcodePublishOptions, forgetTripcodeKeys, getVerifiedTrip, TripcodeSigningError } from '../tripcode-crypto';
 import {
   getTripcodeCommentSource,
   getTripcodeMessage,
@@ -9,6 +9,19 @@ import {
   stripTripcodeProof,
   type TripcodeSignedFields,
 } from '../utils/tripcode-utils';
+
+// Counts key derivations, which the derived key cache saves.
+const scryptCalls = vi.hoisted(() => ({ count: 0 }));
+vi.mock('@noble/hashes/scrypt.js', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@noble/hashes/scrypt.js')>();
+  return {
+    ...actual,
+    scryptAsync: (...args: Parameters<typeof actual.scryptAsync>) => {
+      scryptCalls.count++;
+      return actual.scryptAsync(...args);
+    },
+  };
+});
 
 const BOARD_KEY = '12D3KooWBoardPublicKeyForTripcodeTests';
 const fields: TripcodeSignedFields = {
@@ -35,6 +48,14 @@ describe('parseTripcodeInput', () => {
     expect(parseTripcodeInput('Anon#pass##secure')).toEqual({ name: 'Anon', tripcodeInput: '#pass##secure', secret: { normal: 'pass', secure: 'secure' } });
     expect(parseTripcodeInput('#pass')).toEqual({ name: '', tripcodeInput: '#pass', secret: { normal: 'pass' } });
     expect(parseTripcodeInput('Anon#')).toEqual({ name: 'Anon', tripcodeInput: '#' });
+  });
+
+  it('keeps each password as typed, and makes no tripcode of one with only spaces', () => {
+    expect(parseTripcodeInput('Anon #pass ')).toEqual({ name: 'Anon', tripcodeInput: '#pass ', secret: { normal: 'pass ' } });
+    expect(parseTripcodeInput('Anon# pass##secure ')).toEqual({ name: 'Anon', tripcodeInput: '# pass##secure ', secret: { normal: ' pass', secure: 'secure ' } });
+    expect(parseTripcodeInput('Anon#  ')).toEqual({ name: 'Anon', tripcodeInput: '#  ' });
+    expect(parseTripcodeInput('Anon# ## ')).toEqual({ name: 'Anon', tripcodeInput: '# ## ' });
+    expect(parseTripcodeInput('Anon# ##secure')).toEqual({ name: 'Anon', tripcodeInput: '# ##secure', secret: { secure: 'secure' } });
   });
 });
 
@@ -67,6 +88,17 @@ describe('tripcode proofs', () => {
     expect(verify(displayName, { ...fields, parentCid: 'QmOtherThread' })).toBeUndefined();
     expect(verify(displayName, { ...fields, timestamp: fields.timestamp + 1 })).toBeUndefined();
     expect(verify(`Admin${displayName.slice('Anon'.length)}`)).toBeUndefined();
+  });
+
+  it('shows no trip for a small-order public key, whose forged signature would verify any message', () => {
+    // The identity point as the key, and a signature of the identity point and s = 0.
+    const identityKey = `AQ${'A'.repeat(41)}`;
+    const forgedSignature = `AQ${'A'.repeat(84)}`;
+    const displayName = `Anon#tc1:n${identityKey}${forgedSignature}`;
+
+    expect(parseTripcodeProof(displayName)).toBeDefined();
+    expect(verify(displayName)).toBeUndefined();
+    expect(verify(displayName, { ...fields, content: 'any other text' })).toBeUndefined();
   });
 
   it('signs the name and text as the board wordfilter leaves them', async () => {
@@ -125,6 +157,47 @@ describe('tripcode proofs', () => {
     expect(verify(displayName, { ...unedited!.fields, communityPublicKey: BOARD_KEY })).toBeDefined();
     expect(edited?.fields.content).toBe('edited text');
     expect(verify(displayName, { ...edited!.fields, communityPublicKey: BOARD_KEY })).toBeUndefined();
+  });
+
+  it("verifies the name and gallery on screen, which the board's CommentUpdate can change, not the signed record's", async () => {
+    const gallery = [{ url: 'https://example.com/a.png' }];
+    const displayName = await createTripcodeDisplayName({
+      name: 'Anon',
+      secret: { normal: 'pw' },
+      fields: { ...fields, galleryUrls: gallery.map(({ url }) => url) },
+    });
+    const record = { ...fields, gallery, author: { displayName } };
+    const verifyComment = (comment: Record<string, unknown>) => {
+      const source = getTripcodeCommentSource({ ...record, cid: 'QmReply', raw: { comment: record }, ...comment });
+      const proof = parseTripcodeProof(source?.displayName);
+      return proof && source ? getVerifiedTrip(proof, { ...source.fields, communityPublicKey: BOARD_KEY }) : undefined;
+    };
+
+    expect(verifyComment({})).toBeDefined();
+    // The board renames the author, keeping the proof or dropping it.
+    expect(verifyComment({ author: { displayName: `Admin${displayName.slice('Anon'.length)}` } })).toBeUndefined();
+    expect(verifyComment({ author: { displayName: 'Admin' } })).toBeUndefined();
+    expect(verifyComment({ gallery: [{ url: 'https://example.com/other.png' }] })).toBeUndefined();
+    expect(verifyComment({ gallery: undefined })).toBeUndefined();
+  });
+
+  it("derives each key once, keeps the last few, and forgets a deleted account's keys", async () => {
+    const sign = (password: string) => createTripcodeDisplayName({ name: 'Anon', secret: { normal: password }, fields });
+    const derivations = async (run: () => Promise<unknown>) => {
+      const before = scryptCalls.count;
+      await run();
+      return scryptCalls.count - before;
+    };
+
+    expect(await derivations(() => sign('cached'))).toBe(1);
+    expect(await derivations(() => sign('cached'))).toBe(0);
+
+    forgetTripcodeKeys('#cached');
+    expect(await derivations(() => sign('cached'))).toBe(1);
+
+    // Eight newer passwords push it out.
+    expect(await derivations(() => Promise.all(Array.from({ length: 8 }, (_, index) => sign(`other-${index}`))))).toBe(8);
+    expect(await derivations(() => sign('cached'))).toBe(1);
   });
 
   it('signs posts without a thread, whatever postCid the local comment carries', () => {

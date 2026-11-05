@@ -45,6 +45,7 @@ import PostForm from './components/post-form';
 import BoardBlotter from './components/board-blotter';
 import BoardsBar from './components/boards-bar';
 import ImportErrorBoundary from './components/import-error-boundary';
+import { TripcodeVerifierImportError } from './components/poster-trip';
 import SpookySkeleton from './components/spooky-skeleton';
 
 export { Post } from './components/post';
@@ -161,6 +162,7 @@ export const BoardLayout = () => {
           <BoardsBarEditModal />
         </Suspense>
       </ImportErrorBoundary>
+      <TripcodeVerifierImportError />
       <BoardHeader />
       {isMobile
         ? (communityAddress || isInAllView || isInModView || isInSubscriptionsView || pendingPostCommunityAddress || isOnModQueueRoute) &&

@@ -3,6 +3,7 @@ import { createElement } from 'react';
 import { createRoot, Root } from 'react-dom/client';
 import { MemoryRouter, useLocation } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import useTripcodeStore from '../../../../stores/use-tripcode-store';
 import AccountSettings from '../account-settings';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -18,6 +19,10 @@ const hookMocks = vi.hoisted(() => ({
   useAccount: vi.fn(),
   useAccounts: vi.fn(),
 }));
+
+const tripcodeCryptoMocks = vi.hoisted(() => ({ forgetTripcodeKeys: vi.fn() }));
+
+vi.mock('../../../../lib/tripcode-crypto', () => ({ forgetTripcodeKeys: tripcodeCryptoMocks.forgetTripcodeKeys }));
 
 const fileReaderState = vi.hoisted(() => ({
   result: '',
@@ -248,6 +253,20 @@ describe('AccountSettings', () => {
 
     expect(hookMocks.deleteAccount).toHaveBeenCalledWith('Account 1');
     expect(confirmSpy).toHaveBeenCalledTimes(2);
+  });
+
+  it("removes a deleted account's tripcode and the keys derived from it", async () => {
+    useTripcodeStore.getState().setTripcodeInput('test-id', '#hunter2##swordfish');
+    confirmSpy.mockReturnValueOnce(true).mockReturnValueOnce(true);
+
+    render();
+
+    await act(async () => {
+      getButtonByText('delete_account').click();
+    });
+
+    expect(useTripcodeStore.getState().inputs['test-id']).toBeUndefined();
+    await vi.waitFor(() => expect(tripcodeCryptoMocks.forgetTripcodeKeys).toHaveBeenCalledWith('#hunter2##swordfish'));
   });
 
   it('does not delete the account when the first confirmation is rejected', async () => {

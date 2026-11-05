@@ -1,1 +1,1 @@
-export { default } from './poster-trip';
+export { default, TripcodeVerifierImportError } from './poster-trip';

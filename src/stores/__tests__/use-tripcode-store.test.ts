@@ -16,5 +16,6 @@ describe('useTripcodeStore', () => {
 
     useTripcodeStore.getState().setTripcodeInput('account-1', undefined);
     expect(useTripcodeStore.getState().inputs).toEqual({ 'account-2': '##swordfish' });
+    expect(JSON.parse(localStorage.getItem('tripcode-inputs') ?? '{}').state.inputs).toEqual({ 'account-2': '##swordfish' });
   });
 });

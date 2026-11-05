@@ -8,6 +8,7 @@ import {
   TRIPCODE_MESSAGE_DOMAIN,
   encodeTripcodeDisplayName,
   getTripcodeMessage,
+  parseTripcodeInput,
   type ParsedTripcodeProof,
   type TripcodeKind,
   type TripcodeProofEntry,
@@ -40,6 +41,7 @@ const KEY_DERIVATION: Record<TripcodeKind, { salt: string; N: number; r: number;
 const TRIP_ALPHABET = './0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 const TRIP_LENGTH = 10;
 const MAX_VERIFIED_TRIP_CACHE_SIZE = 2000;
+const MAX_DERIVED_KEY_CACHE_SIZE = 8;
 
 interface TripcodeKey {
   secretKey: Uint8Array;
@@ -76,22 +78,42 @@ export const getTripFromPublicKey = (kind: TripcodeKind, publicKey: Uint8Array):
   return `${kind === 'secure' ? '!!' : '!'}${trip}`;
 };
 
-// Derived keys stay in memory for the session only, so posting again does not pay the derivation again.
+// The last few derived keys stay in memory for the session, so posting again does not pay the derivation
+// again. The least recently used is dropped first.
 const derivedKeys = new Map<string, Promise<TripcodeKey>>();
 
+const getDerivedKeyCacheKey = (kind: TripcodeKind, password: string) => `${kind}\u0000${password}`;
+
 const deriveTripcodeKey = (kind: TripcodeKind, password: string): Promise<TripcodeKey> => {
-  const cacheKey = `${kind}\u0000${password}`;
+  const cacheKey = getDerivedKeyCacheKey(kind, password);
   let key = derivedKeys.get(cacheKey);
-  if (!key) {
+  if (key) {
+    derivedKeys.delete(cacheKey);
+  } else {
     const { salt, N, r, p } = KEY_DERIVATION[kind];
     key = scryptAsync(utf8ToBytes(password.normalize('NFC')), utf8ToBytes(salt), { N, r, p, dkLen: 32 }).then((secretKey) => ({
       secretKey,
       publicKey: ed25519.getPublicKey(secretKey),
     }));
-    key.catch(() => derivedKeys.delete(cacheKey));
-    derivedKeys.set(cacheKey, key);
+    const pending = key;
+    pending.catch(() => {
+      if (derivedKeys.get(cacheKey) === pending) derivedKeys.delete(cacheKey);
+    });
+    if (derivedKeys.size >= MAX_DERIVED_KEY_CACHE_SIZE) {
+      derivedKeys.delete(derivedKeys.keys().next().value as string);
+    }
   }
+  derivedKeys.set(cacheKey, key);
   return key;
+};
+
+/** Drops the derived keys of a name field's tripcode part (`#password##password`), such as a deleted account's. */
+export const forgetTripcodeKeys = (tripcodeInput: string) => {
+  const { secret } = parseTripcodeInput(tripcodeInput);
+  for (const kind of TRIPCODE_KINDS) {
+    const password = secret?.[kind];
+    if (password) derivedKeys.delete(getDerivedKeyCacheKey(kind, password));
+  }
 };
 
 export class TripcodeSigningError extends Error {
@@ -200,7 +222,10 @@ export const getVerifiedTrip = (proof: ParsedTripcodeProof, fields: TripcodeSign
     try {
       const publicKeyBytes = base64UrlToBytes(publicKey);
       const message = utf8ToBytes(getTripcodeMessage(kind, proof.nonce, proof.name, fields));
-      if (!ed25519.verify(base64UrlToBytes(signature), message, publicKeyBytes)) {
+      // RFC 8032's strict rules, which also reject small-order public keys. The default (ZIP 215) accepts
+      // them, and with the identity point as the key, a signature of the identity point and zero
+      // verifies every message, so anyone could post under that key's trip.
+      if (!ed25519.verify(base64UrlToBytes(signature), message, publicKeyBytes, { zip215: false })) {
         trip = null;
         break;
       }

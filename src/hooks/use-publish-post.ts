@@ -176,8 +176,10 @@ const usePublishPost = ({
 
   // A tripcode's proof signs the post's final options, so it is added once they are in the store, from an
   // effect like the publish itself, and the post is then published from the render that sees the proof.
-  const [pendingTripcodeRequest, setPendingTripcodeRequest] = useState<{ id: number; tripcodeSecret: TripcodeSecret }>();
+  const [pendingTripcodeRequestId, setPendingTripcodeRequestId] = useState(0);
   const startedTripcodeRequestIdRef = useRef(0);
+  // Each request's password, kept out of state and dropped once its signing starts.
+  const tripcodeSecretsRef = useRef(new Map<number, TripcodeSecret>());
   // A form closed while its key was derived drops the post, and its reset store must stay reset.
   const isMountedRef = useRef(false);
   useEffect(() => {
@@ -188,12 +190,18 @@ const usePublishPost = ({
   }, []);
 
   useEffect(() => {
-    if (!pendingTripcodeRequest || pendingTripcodeRequest.id === startedTripcodeRequestIdRef.current) {
+    if (pendingTripcodeRequestId === 0 || pendingTripcodeRequestId === startedTripcodeRequestIdRef.current) {
       return;
     }
 
-    const { id: requestId, tripcodeSecret } = pendingTripcodeRequest;
+    const requestId = pendingTripcodeRequestId;
     startedTripcodeRequestIdRef.current = requestId;
+    const tripcodeSecret = tripcodeSecretsRef.current.get(requestId);
+    tripcodeSecretsRef.current.delete(requestId);
+    if (!tripcodeSecret) {
+      finishPendingPublishRequest(requestId);
+      return;
+    }
     signTripcode({
       secret: tripcodeSecret,
       readOptions: () => useStore.getState().publishCommentOptions,
@@ -215,7 +223,7 @@ const usePublishPost = ({
         onPublishError?.(new Error(message));
         finishPendingPublishRequest(requestId);
       });
-  }, [analyticsAttempt, finishPendingPublishRequest, onPublishError, pendingTripcodeRequest, signTripcode, useStore]);
+  }, [analyticsAttempt, finishPendingPublishRequest, onPublishError, pendingTripcodeRequestId, signTripcode, useStore]);
 
   const publishPost = useCallback(
     (options?: Partial<Comment>, attempt?: PostingAnalyticsAttempt, tripcodeSecret?: TripcodeSecret) => {
@@ -227,7 +235,8 @@ const usePublishPost = ({
       if (tripcodeSecret) {
         setAnalyticsAttempt(attempt);
         if (options) setPublishPostOptions(options);
-        setPendingTripcodeRequest({ id: pendingRequest.request.id, tripcodeSecret });
+        tripcodeSecretsRef.current.set(pendingRequest.request.id, tripcodeSecret);
+        setPendingTripcodeRequestId(pendingRequest.request.id);
         return pendingRequest.request.promise;
       }
 

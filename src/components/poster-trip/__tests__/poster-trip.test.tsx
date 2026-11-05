@@ -51,4 +51,21 @@ describe('PosterTrip', () => {
     });
     expect(container.textContent).toBe('');
   });
+
+  it("shows no trip once the name or gallery on screen differs from the comment's signed record", async () => {
+    const gallery = [{ url: 'https://example.com/a.png' }];
+    const displayName = await createTripcodeDisplayName({ name: 'Anon', secret: { normal: 'hunter2' }, fields: { ...fields, galleryUrls: [gallery[0].url] } });
+    const record = { ...fields, gallery, author: { displayName } };
+    const comment = { ...record, cid: 'QmPost', communityAddress: 'board.bso', raw: { comment: record } };
+
+    await renderTrip(comment);
+    expect(container.querySelector('span')?.textContent).toMatch(/^![./0-9A-Za-z]{10}$/);
+
+    for (const changed of [{ author: { displayName: `Admin${displayName.slice('Anon'.length)}` } }, { gallery: [{ url: 'https://example.com/other.png' }] }]) {
+      await act(async () => {
+        root.render(createElement(PosterTrip, { comment: { ...comment, ...changed } }));
+      });
+      expect(container.textContent).toBe('');
+    }
+  });
 });

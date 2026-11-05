@@ -857,6 +857,31 @@ describe('PostForm', () => {
     expect(testState.setAccountMock).toHaveBeenLastCalledWith(expect.objectContaining({ author: expect.objectContaining({ displayName: 'Alice' }) }));
   });
 
+  it.each([
+    ['Alice#hunter2 ', [{ normal: 'hunter2 ' }]],
+    ['Alice#  ', []],
+  ])('signs %j with the password as typed, and with none of only spaces', async (nameField, tripcodeSecretArgs) => {
+    testState.account = {
+      author: { address: 'alice.eth', displayName: 'Alice' },
+      subscriptions: ['music-posting.eth'],
+    };
+    testState.resolvedCommunityAddress = 'music-posting.eth';
+
+    await renderPostForm('/mu');
+    await clickByText(container, 'start_new_thread');
+
+    const table = container.querySelector('table') as HTMLTableElement;
+    await dispatchInput(table.querySelectorAll<HTMLInputElement>('input[type="text"]')[0], nameField);
+    await dispatchInput(table.querySelector('textarea') as HTMLTextAreaElement, 'Tripcode thread');
+    await clickByText(table, 'post');
+
+    expect(testState.publishPostMock).toHaveBeenCalledWith(
+      expect.objectContaining({ displayName: 'Alice' }),
+      expect.objectContaining({ finish: expect.any(Function) }),
+      ...tripcodeSecretArgs,
+    );
+  });
+
   it('converts YouTube links to thumbnail file links on media-only post forms', async () => {
     const youtubeLink = 'https://www.youtube.com/watch?v=abc123';
     const thumbnailLink = 'https://img.youtube.com/vi/abc123/maxresdefault.jpg';
