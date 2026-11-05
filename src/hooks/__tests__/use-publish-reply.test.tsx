@@ -21,7 +21,10 @@ const testState = vi.hoisted(() => ({
   publishAuthorBlockedReason: undefined as 'resolving' | 'unresolved' | 'mismatch' | undefined,
   publishCommentMock: vi.fn(),
   resolveExternalQuoteTargetMock: vi.fn(),
+  signTripcodeMock: vi.fn(),
 }));
+
+vi.mock('../use-sign-tripcode', () => ({ default: () => testState.signTripcodeMock }));
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
@@ -270,6 +273,26 @@ describe('usePublishReply', () => {
 
     expect(testState.lastPublishOptions?.content).toBe('Fresh reply');
     expect(testState.publishCommentMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('publishes a tripcode reply with the proof signed over its final options', async () => {
+    let signedFrom: Record<string, unknown> | undefined;
+    testState.signTripcodeMock.mockImplementation(async ({ readOptions, writeOptions }: { readOptions: () => any; writeOptions: (options: any) => void }) => {
+      signedFrom = readOptions();
+      writeOptions({ ...signedFrom, displayName: 'Anon#tc1:proof', timestamp: 1_800_000_000 });
+      return true;
+    });
+    await act(async () => {
+      latestValue.publishReply({ content: 'Trip reply', displayName: 'Anon' } as never, undefined, { secure: 'hunter2' });
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(testState.signTripcodeMock).toHaveBeenCalledWith(expect.objectContaining({ secret: { secure: 'hunter2' } }));
+    expect(signedFrom).toMatchObject({ author: { displayName: 'Anon' }, content: 'Trip reply', parentCid: 'parent-cid', postCid: 'parent-cid' });
+    expect(testState.publishCommentMock).toHaveBeenCalledTimes(1);
+    expect(testState.lastPublishOptions).toMatchObject({ author: { displayName: 'Anon#tc1:proof' }, timestamp: 1_800_000_000, content: 'Trip reply' });
+    expect(JSON.stringify(testState.lastPublishOptions)).not.toContain('hunter2');
   });
 
   it('keeps a one-shot reply pending and ignores duplicate publish calls until it settles', async () => {

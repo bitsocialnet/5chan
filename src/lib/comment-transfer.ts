@@ -4,6 +4,7 @@ import { getSpecialBoardByAddress, isSpecialBoardCode, TRASH_BOARD_CODE } from '
 import { isCommentArchived } from './utils/comment-moderation-utils';
 import { getCommentCommunityAddress } from './utils/comment-utils';
 import { normalizePublishURL } from './utils/url-utils';
+import { stripTripcodeProof } from './utils/tripcode-utils';
 
 export type PostTransferField = 'displayName' | 'title' | 'content' | 'link' | 'spoiler' | 'flairs';
 export type PostTransferFields = Record<PostTransferField, boolean>;
@@ -30,7 +31,9 @@ const getVerbatimTextField = (value: unknown): string | undefined => (typeof val
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null && !Array.isArray(value);
 
-export const getCommentDisplayName = (comment: Comment): string | undefined => getTextField(comment.displayName) ?? getTextField(comment.author?.displayName);
+// A tripcode proof signs its own board and post, so it would not verify on the post a transfer creates.
+export const getCommentDisplayName = (comment: Comment): string | undefined =>
+  getTextField(stripTripcodeProof(comment.displayName)) ?? getTextField(stripTripcodeProof(comment.author?.displayName));
 
 export const isTransferredCommentFlair = (flair: unknown): boolean => isRecord(flair) && getTextField(flair.text) === TRANSFERRED_COMMENT_FLAIR_TEXT;
 

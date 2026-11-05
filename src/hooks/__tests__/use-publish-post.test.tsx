@@ -22,7 +22,10 @@ const testState = vi.hoisted(() => ({
   publishAcceptedMock: vi.fn(),
   publishErrorNavigationMock: vi.fn(),
   pendingPostNavigationMock: vi.fn(),
+  signTripcodeMock: vi.fn(),
 }));
+
+vi.mock('../use-sign-tripcode', () => ({ default: () => testState.signTripcodeMock }));
 
 vi.mock('../../lib/analytics', () => ({ trackPostingEvent: (...args: unknown[]) => testState.analyticsMock(...args) }));
 
@@ -121,6 +124,60 @@ describe('usePublishPost', () => {
       await useChallengesStore.getState().abandonCurrentChallenge();
     });
     expect(testState.analyticsMock.mock.calls.map(([event]) => event)).toEqual(['post_cancelled']);
+  });
+
+  it('publishes a tripcode post with the proof signed over its final options', async () => {
+    let signedFrom: Record<string, unknown> | undefined;
+    testState.signTripcodeMock.mockImplementation(async ({ readOptions, writeOptions }: { readOptions: () => any; writeOptions: (options: any) => void }) => {
+      signedFrom = readOptions();
+      writeOptions({ ...signedFrom, displayName: 'Anon#tc1:proof', timestamp: 1_800_000_000 });
+      return true;
+    });
+    await act(async () => {
+      latestValue.publishPost({ content: 'trip thread', displayName: 'Anon', title: 'subject' } as never, undefined, { normal: 'hunter2' });
+    });
+
+    expect(testState.signTripcodeMock).toHaveBeenCalledWith(expect.objectContaining({ secret: { normal: 'hunter2' } }));
+    expect(signedFrom).toMatchObject({ author: { displayName: 'Anon' }, communityAddress: 'music.eth', content: 'trip thread', title: 'subject' });
+    expect(testState.publishCommentMock).toHaveBeenCalledTimes(1);
+    expect(testState.lastPublishOptions).toMatchObject({ author: { displayName: 'Anon#tc1:proof' }, timestamp: 1_800_000_000, content: 'trip thread' });
+    expect(JSON.stringify(testState.lastPublishOptions)).not.toContain('hunter2');
+  });
+
+  it('does not publish a tripcode post whose proof cannot be signed', async () => {
+    testState.signTripcodeMock.mockRejectedValue(new Error('error: tripcode_sign_failed'));
+    await act(async () => {
+      latestValue.publishPost({ content: 'trip thread', displayName: 'Anon' } as never, undefined, { normal: 'hunter2' });
+    });
+
+    expect(testState.publishCommentMock).not.toHaveBeenCalled();
+    expect(latestValue.publishPostError).toBe('error: tripcode_sign_failed');
+    expect(testState.publishErrorNavigationMock).toHaveBeenCalledWith(new Error('error: tripcode_sign_failed'));
+  });
+
+  it('drops a tripcode post whose form closes while it is signed, leaving the reset store empty', async () => {
+    let finishSigning: () => void = () => {};
+    testState.signTripcodeMock.mockImplementation(async ({ isActive, readOptions, writeOptions }) => {
+      await new Promise<void>((resolve) => {
+        finishSigning = resolve;
+      });
+      if (!isActive()) return false;
+      writeOptions({ ...readOptions(), displayName: 'Anon#tc1:proof', timestamp: 1 });
+      return true;
+    });
+    await act(async () => {
+      latestValue.publishPost({ content: 'abandoned', displayName: 'Anon', title: 'old subject' } as never, undefined, { normal: 'hunter2' });
+    });
+
+    act(() => root.unmount());
+    usePublishPostStore.getState().resetPublishPostStore();
+    await act(async () => {
+      finishSigning();
+    });
+
+    expect(usePublishPostStore.getState().title).toBeUndefined();
+    expect(testState.publishCommentMock).not.toHaveBeenCalled();
+    root = createRoot(container);
   });
 
   it("keeps a publish given its own store out of the post form's shared store", async () => {

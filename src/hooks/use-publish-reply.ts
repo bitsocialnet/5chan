@@ -11,6 +11,8 @@ import { resolveExternalQuoteTarget } from '../lib/utils/external-quote-resolver
 import useChallengesStore from '../stores/use-challenges-store';
 import usePublishAuthorDomainGuard, { getPublishAuthorDomainErrorMessage } from './use-publish-author-domain-guard';
 import usePendingPublishRequest from './use-pending-publish-request';
+import useSignTripcode from './use-sign-tripcode';
+import type { TripcodeSecret } from '../lib/utils/tripcode-utils';
 import type { PostingAnalyticsAttempt } from '../lib/posting-analytics';
 
 type UsePublishReplyOptions = {
@@ -52,6 +54,16 @@ const usePublishReply = ({ cid, communityAddress, postCid }: UsePublishReplyOpti
   const [publishReplyError, setPublishReplyError] = useState<string | null>(null);
   const [publishReplyStateMessage, setPublishReplyStateMessage] = useState<string | null>(null);
   const { finishPendingPublishRequest, startPendingPublishRequest } = usePendingPublishRequest();
+  const signTripcode = useSignTripcode();
+  const tripcodeSecretsRef = useRef(new Map<number, TripcodeSecret>());
+  // A reply form closed while its key was derived drops the reply.
+  const isMountedRef = useRef(false);
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
   const abandonCurrentPublish = useCallback(async () => {
     analyticsAttempt?.finish('post_cancelled');
     await abandonPublishRef.current?.();
@@ -194,6 +206,9 @@ const usePublishReply = ({ cid, communityAddress, postCid }: UsePublishReplyOpti
   const preparePublishReply = useCallback(
     async (requestId: number) => {
       setPublishReplyError(null);
+      // Taken out first, so no return below leaves the password in memory.
+      const tripcodeSecret = tripcodeSecretsRef.current.get(requestId);
+      tripcodeSecretsRef.current.delete(requestId);
 
       if (blockedReason) {
         analyticsAttempt?.finish('post_validation_failed');
@@ -203,10 +218,36 @@ const usePublishReply = ({ cid, communityAddress, postCid }: UsePublishReplyOpti
         return;
       }
 
+      // A tripcode's proof signs the reply's final options, so it is added last, just before the publish.
+      const publishWhenSigned = async () => {
+        if (tripcodeSecret) {
+          try {
+            const signed = await signTripcode({
+              secret: tripcodeSecret,
+              readOptions: () => usePublishReplyStore.getState().publishCommentOptions[parentCid],
+              writeOptions: (options) => usePublishReplyStore.getState().setPublishReplyStore({ ...options, parentCid }),
+              isActive: () => isMountedRef.current,
+            });
+            if (!signed) {
+              analyticsAttempt?.finish('post_cancelled');
+              finishPendingPublishRequest(requestId);
+              return;
+            }
+          } catch (error) {
+            analyticsAttempt?.finish('post_validation_failed');
+            setPublishReplyStateMessage(null);
+            setPublishReplyError(error instanceof Error ? error.message : String(error));
+            finishPendingPublishRequest(requestId);
+            return;
+          }
+        }
+        setPendingPublishRequestId(requestId);
+      };
+
       if (publishResolvableQuoteReferences.length === 0) {
         setResolvedExternalQuotedCids(undefined);
         setPublishReplyStateMessage(null);
-        setPendingPublishRequestId(requestId);
+        await publishWhenSigned();
         return;
       }
 
@@ -250,7 +291,7 @@ const usePublishReply = ({ cid, communityAddress, postCid }: UsePublishReplyOpti
 
         setResolvedExternalQuotedCids(resolvedCids.size > 0 ? [...resolvedCids] : undefined);
         setPublishReplyStateMessage(null);
-        setPendingPublishRequestId(requestId);
+        await publishWhenSigned();
       } catch {
         analyticsAttempt?.finish('post_validation_failed');
         setPublishReplyError(t('external_quote_resolution_unavailable'));
@@ -259,15 +300,16 @@ const usePublishReply = ({ cid, communityAddress, postCid }: UsePublishReplyOpti
         setIsResolvingExternalQuotes(false);
       }
     },
-    [account, analyticsAttempt, blockedReason, directories, finishPendingPublishRequest, publishResolvableQuoteReferences, t],
+    [account, analyticsAttempt, blockedReason, directories, finishPendingPublishRequest, parentCid, publishResolvableQuoteReferences, signTripcode, t],
   );
 
   const publishReply = useCallback(
-    (options?: Partial<Comment>, attempt?: PostingAnalyticsAttempt) => {
+    (options?: Partial<Comment>, attempt?: PostingAnalyticsAttempt, tripcodeSecret?: TripcodeSecret) => {
       const pendingRequest = startPendingPublishRequest();
       if (!pendingRequest.started) {
         return pendingRequest.request.promise;
       }
+      if (tripcodeSecret) tripcodeSecretsRef.current.set(pendingRequest.request.id, tripcodeSecret);
 
       if (options || attempt || analyticsAttempt) {
         setAnalyticsAttempt(attempt);

@@ -5,7 +5,9 @@ import usePublishPostStore, { type PublishPostStore } from '../stores/use-publis
 import useChallengesStore from '../stores/use-challenges-store';
 import usePublishAuthorDomainGuard, { getPublishAuthorDomainErrorMessage } from './use-publish-author-domain-guard';
 import usePendingPublishRequest from './use-pending-publish-request';
+import useSignTripcode from './use-sign-tripcode';
 import { getDuplicateMediaChallengeError } from '../lib/utils/challenge-utils';
+import type { TripcodeSecret } from '../lib/utils/tripcode-utils';
 import type { PostingAnalyticsAttempt } from '../lib/posting-analytics';
 
 type UsePublishPostOptions = {
@@ -51,6 +53,7 @@ const usePublishPost = ({
   const startedPublishRequestIdRef = useRef(0);
   const { blockedReason } = usePublishAuthorDomainGuard();
   const { finishPendingPublishRequest, startPendingPublishRequest } = usePendingPublishRequest();
+  const signTripcode = useSignTripcode();
   const abandonCurrentPublish = useCallback(async () => {
     analyticsAttempt?.finish('post_cancelled');
     onAbandonPost?.();
@@ -171,10 +174,69 @@ const usePublishPost = ({
       .finally(() => finishPendingPublishRequest(requestId));
   }, [finishPendingPublishRequest, pendingPublishRequestId, startPublishPost]);
 
+  // A tripcode's proof signs the post's final options, so it is added once they are in the store, from an
+  // effect like the publish itself, and the post is then published from the render that sees the proof.
+  const [pendingTripcodeRequestId, setPendingTripcodeRequestId] = useState(0);
+  const startedTripcodeRequestIdRef = useRef(0);
+  // Each request's password, kept out of state and dropped once its signing starts.
+  const tripcodeSecretsRef = useRef(new Map<number, TripcodeSecret>());
+  // A form closed while its key was derived drops the post, and its reset store must stay reset.
+  const isMountedRef = useRef(false);
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (pendingTripcodeRequestId === 0 || pendingTripcodeRequestId === startedTripcodeRequestIdRef.current) {
+      return;
+    }
+
+    const requestId = pendingTripcodeRequestId;
+    startedTripcodeRequestIdRef.current = requestId;
+    const tripcodeSecret = tripcodeSecretsRef.current.get(requestId);
+    tripcodeSecretsRef.current.delete(requestId);
+    if (!tripcodeSecret) {
+      finishPendingPublishRequest(requestId);
+      return;
+    }
+    signTripcode({
+      secret: tripcodeSecret,
+      readOptions: () => useStore.getState().publishCommentOptions,
+      writeOptions: (options) => useStore.getState().setPublishPostStore(options),
+      isActive: () => isMountedRef.current,
+    })
+      .then((signed) => {
+        if (signed) {
+          setPendingPublishRequestId(requestId);
+          return;
+        }
+        analyticsAttempt?.finish('post_cancelled');
+        finishPendingPublishRequest(requestId);
+      })
+      .catch((error: unknown) => {
+        analyticsAttempt?.finish('post_validation_failed');
+        const message = error instanceof Error ? error.message : String(error);
+        setPublishPostError(message);
+        onPublishError?.(new Error(message));
+        finishPendingPublishRequest(requestId);
+      });
+  }, [analyticsAttempt, finishPendingPublishRequest, onPublishError, pendingTripcodeRequestId, signTripcode, useStore]);
+
   const publishPost = useCallback(
-    (options?: Partial<Comment>, attempt?: PostingAnalyticsAttempt) => {
+    (options?: Partial<Comment>, attempt?: PostingAnalyticsAttempt, tripcodeSecret?: TripcodeSecret) => {
       const pendingRequest = startPendingPublishRequest();
       if (!pendingRequest.started) {
+        return pendingRequest.request.promise;
+      }
+
+      if (tripcodeSecret) {
+        setAnalyticsAttempt(attempt);
+        if (options) setPublishPostOptions(options);
+        tripcodeSecretsRef.current.set(pendingRequest.request.id, tripcodeSecret);
+        setPendingTripcodeRequestId(pendingRequest.request.id);
         return pendingRequest.request.promise;
       }
 

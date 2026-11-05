@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import useDeleteFailedPost, { getFailedPostRetryPublishOptions } from '../use-delete-failed-post';
 import useChallengesStore from '../../stores/use-challenges-store';
 import useFailedPostRetryStore from '../../stores/use-failed-post-retry-store';
+import useTripcodeStore from '../../stores/use-tripcode-store';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
@@ -18,7 +19,10 @@ const testState = vi.hoisted(() => ({
   navigateMock: vi.fn(),
   publishCommentMock: vi.fn(async () => undefined),
   publishIndex: undefined as number | undefined,
+  signTripcodeMock: vi.fn(),
 }));
+
+vi.mock('../use-sign-tripcode', () => ({ default: () => testState.signTripcodeMock }));
 
 vi.mock('react-router-dom', () => ({
   useNavigate: () => testState.navigateMock,
@@ -153,6 +157,61 @@ describe('useDeleteFailedPost', () => {
 
     expect(testState.deleteCommentMock).toHaveBeenCalledWith('failed-cid');
     expect(testState.publishCommentMock).toHaveBeenCalledTimes(1);
+  });
+
+  // A proof-shaped name: a normal tripcode's 43-character key and 86-character signature.
+  const getProofName = (publicKey: string, signature: string) => `Alice#tc1:n${publicKey.repeat(43)}${signature.repeat(86)}`;
+  const tripcodePost = { ...failedPost, author: { ...failedPost.author, displayName: getProofName('A', 'B') } };
+
+  const signRetryAs = (displayName: string) => {
+    let signedFrom: Record<string, unknown> | undefined;
+    testState.signTripcodeMock.mockImplementation(async ({ readOptions, writeOptions }) => {
+      signedFrom = readOptions();
+      writeOptions({ ...signedFrom, displayName, timestamp: 1_800_000_000 });
+      return true;
+    });
+    return () => signedFrom;
+  };
+
+  const retryTripcodePost = async (tripcodeInput: string | undefined) => {
+    useTripcodeStore.setState({ inputs: tripcodeInput ? { 'account-1': tripcodeInput } : {} });
+    renderHook(tripcodePost);
+    await act(async () => {
+      await latestValue.onRetryFailedPost();
+    });
+    await flushEffects();
+    useTripcodeStore.setState({ inputs: {} });
+  };
+
+  it('signs a tripcode post again for its retry, which publishes with a new timestamp', async () => {
+    expect(getFailedPostRetryPublishOptions(tripcodePost)?.author).toEqual({ address: '0x123', displayName: 'Alice' });
+    const getSignedFrom = signRetryAs(getProofName('A', 'C'));
+
+    await retryTripcodePost('#hunter2');
+
+    expect(testState.signTripcodeMock).toHaveBeenCalledWith(expect.objectContaining({ secret: { normal: 'hunter2' } }));
+    expect(getSignedFrom()).toMatchObject({ author: { address: '0x123', displayName: 'Alice' } });
+    expect(testState.publishCommentMock).toHaveBeenCalledTimes(1);
+    expect(testState.lastPublishOptions).toMatchObject({ author: { displayName: getProofName('A', 'C') }, timestamp: 1_800_000_000 });
+  });
+
+  it("does not retry a tripcode post once the name field no longer holds the post's tripcode", async () => {
+    // The field was cleared: the post would be republished without the trip it showed.
+    await retryTripcodePost(undefined);
+
+    expect(testState.signTripcodeMock).not.toHaveBeenCalled();
+    expect(testState.publishCommentMock).not.toHaveBeenCalled();
+    expect(testState.alertMock).toHaveBeenCalledTimes(1);
+
+    // The field holds another tripcode: the post would be republished under a different trip.
+    signRetryAs(getProofName('D', 'C'));
+    await retryTripcodePost('#other');
+
+    expect(testState.signTripcodeMock).toHaveBeenCalledTimes(1);
+    expect(testState.deleteCommentMock).not.toHaveBeenCalled();
+    expect(testState.publishCommentMock).not.toHaveBeenCalled();
+    expect(testState.alertMock).toHaveBeenCalledTimes(2);
+    expect(latestValue.isRetryingFailedPost).toBe(false);
   });
 
   it('redirects retry publishes to the new pending row', async () => {

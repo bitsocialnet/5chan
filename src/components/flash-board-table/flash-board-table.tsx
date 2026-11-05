@@ -7,8 +7,10 @@ import { removeMarkdown } from '../../lib/utils/post-utils';
 import { getFormattedDate } from '../../lib/utils/time-utils';
 import { getPublishURLFilename } from '../../lib/utils/url-utils';
 import { truncateWithEllipsisInMiddle } from '../../lib/utils/string-utils';
+import { hasTripcodeProof, stripTripcodeProof } from '../../lib/utils/tripcode-utils';
 import CommunityLoadFailed from '../community-load-failed';
 import LoadingEllipsis from '../loading-ellipsis';
+import PosterTrip from '../poster-trip';
 import styles from './flash-board-table.module.css';
 
 type FlashBoardComment = Comment & {
@@ -34,7 +36,7 @@ const getThreadPath = (boardBasePath: string, comment: FlashBoardComment) => {
 
 const getPostNumber = (comment: FlashBoardComment) => comment.number || comment.postNumber || '?';
 
-const getDisplayName = (comment: FlashBoardComment, anonymousLabel: string) => comment.author?.displayName?.trim() || anonymousLabel;
+const getDisplayName = (comment: FlashBoardComment, anonymousLabel: string) => stripTripcodeProof(comment.author?.displayName)?.trim() || anonymousLabel;
 
 const getFileLabel = (link: string | undefined) => {
   if (!link) {
@@ -121,7 +123,12 @@ const FlashBoardTable = ({ boardBasePath, isLoading = false, hasLoadFailed = fal
                       getPostNumber(post)
                     )}
                   </td>
-                  <td>{getDisplayName(post, anonymousLabel)}</td>
+                  <td>
+                    <span className={styles.name}>
+                      {getDisplayName(post, anonymousLabel)}
+                      {hasTripcodeProof(post.author?.displayName) && <PosterTrip comment={post} />}
+                    </span>
+                  </td>
                   <td className={styles.fileCell} title={post.link || fileLabel}>
                     {post.link ? (
                       <a href={post.link} target='_blank' rel='noopener noreferrer' className={styles.link}>

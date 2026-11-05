@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
-import { type CommentGalleryItem, setAccount, useAccount } from '@bitsocial/bitsocial-react-hooks';
+import { type CommentGalleryItem, useAccount } from '@bitsocial/bitsocial-react-hooks';
 import { getExpiringMediaLinkAlert, getPublishFileDisplayName, getPublishLinkOptions } from '../../lib/utils/media-link-validation-utils';
 import { getTwimgMediaFilePublishUrl } from '../../lib/utils/media-utils';
 import {
@@ -39,6 +39,7 @@ import useMediaHostingStore from '../../stores/use-media-hosting-store';
 import { useDirectories } from '../../hooks/use-directories';
 import { useDirectoryEntry } from '../../hooks/use-directory-entry';
 import usePublishReply from '../../hooks/use-publish-reply';
+import useTripcodeNameField from '../../hooks/use-tripcode-name-field';
 import useIsMobile from '../../hooks/use-is-mobile';
 import { useFileUpload } from '../../hooks/use-file-upload';
 import useSpamBlockerPrecheck from '../../hooks/use-spam-blocker-precheck';
@@ -157,7 +158,7 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
       postCid,
     });
   const account = useAccount();
-  const { displayName } = account?.author || {};
+  const { nameFieldValue, saveNameField, readNameField } = useTripcodeNameField(account);
   const accountAddress = account?.author?.address;
   const roles = useCommunityField(communityAddress, (community) => community?.roles);
   const accountRole = accountAddress ? roles?.[accountAddress]?.role : undefined;
@@ -262,7 +263,7 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
         const appliedThumbnailConversion = await applyPendingConversion();
 
         const currentContent = textRef.current?.value || '';
-        const currentDisplayName = nameRef.current?.value.trim() || undefined;
+        const { displayName: currentDisplayName, tripcodeSecret } = readNameField(nameRef.current?.value);
         const currentUrl = urlRef.current?.value.trim() || '';
         const currentOptions = optionsRef.current?.value || '';
         const currentOptionsError = getPostOptionsValidationError(currentOptions, postOptionsDirectoryCode, isSageSupported);
@@ -360,6 +361,7 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
             ...(challengeRequest ? { challengeRequest } : {}),
           },
           attempt,
+          tripcodeSecret,
         );
       } finally {
         if (!handedOff) attempt.finish(outcome);
@@ -817,11 +819,10 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
             type='text'
             ref={nameRef}
             aria-label={t('name')}
-            defaultValue={displayName}
-            placeholder={displayName ? undefined : capitalize(t('name'))}
+            defaultValue={nameFieldValue}
+            placeholder={nameFieldValue ? undefined : capitalize(t('name'))}
             onChange={(e) => {
-              setAccount({ ...account, author: { ...account?.author, displayName: e.target.value } });
-              setPublishReplyOptions({ displayName: e.target.value });
+              setPublishReplyOptions({ displayName: saveNameField(e.target.value) });
             }}
           />
         </div>

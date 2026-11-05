@@ -6,6 +6,7 @@ import { getSettingsSectionPath } from '../../../lib/utils/route-utils';
 import { Capacitor } from '@capacitor/core';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { isElectronRuntime } from '../../../lib/p2p-browser-config';
+import useTripcodeStore from '../../../stores/use-tripcode-store';
 import {
   getImportedAccountActiveName,
   processImportedAccount,
@@ -56,6 +57,13 @@ const AccountSettingsEditor = ({
     } else if (window.confirm(t('delete_confirm', { value: accountName, interpolation: { escapeValue: false } }))) {
       if (window.confirm(t('double_confirm'))) {
         deleteAccount(accountName);
+        // The account's tripcode password is kept apart from the account, so it goes with it here, with
+        // the keys derived from it this session.
+        const tripcodeInput = account?.id ? useTripcodeStore.getState().inputs[account.id] : undefined;
+        if (account?.id) useTripcodeStore.getState().setTripcodeInput(account.id, undefined);
+        if (tripcodeInput) {
+          void import('../../../lib/tripcode-crypto').then(({ forgetTripcodeKeys }) => forgetTripcodeKeys(tripcodeInput)).catch(() => {});
+        }
       }
     } else {
       return;

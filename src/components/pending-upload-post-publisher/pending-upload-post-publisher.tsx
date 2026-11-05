@@ -34,7 +34,7 @@ const Publisher = ({ pendingUploadPost }: { pendingUploadPost: PendingUploadPost
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { pathname, state: locationState } = useLocation();
-  const { id, attachment, authorRole, boardChallenges, boardPath, draftKey, galleryAttachments, nonokoRedirectPath, publishOptions, analyticsAttempt } =
+  const { id, attachment, authorRole, boardChallenges, boardPath, draftKey, galleryAttachments, nonokoRedirectPath, publishOptions, tripcodeSecret, analyticsAttempt } =
     pendingUploadPost;
   const { uploadAttachment } = useFileUpload();
   const runSpamBlockerPrecheck = useSpamBlockerPrecheck({ communityAddress: publishOptions.communityAddress });
@@ -209,7 +209,8 @@ const Publisher = ({ pendingUploadPost }: { pendingUploadPost: PendingUploadPost
         ...(precheck.status === 'passed' ? { challengeRequest: { challengeAnswers: precheck.challengeAnswers } } : {}),
       };
       failureEvent = 'post_publish_failed';
-      if (analyticsAttempt) await publishPost(options, analyticsAttempt);
+      if (tripcodeSecret) await publishPost(options, analyticsAttempt, tripcodeSecret);
+      else if (analyticsAttempt) await publishPost(options, analyticsAttempt);
       else await publishPost(options);
       // The pending comment exists once the publish starts; a publish that never got there leaves the upload page.
       returnToForm();

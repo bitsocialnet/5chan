@@ -21,6 +21,13 @@
   text-align: center;
 }
 
+/* 4chan's flash listing sets the name in its post name style. The trip keeps normal weight inside it, so a
+   trip typed into a name, which shows bold, cannot pass for a verified one. */
+.name {
+  color: var(--post-name-text-color);
+  font-weight: var(--post-name-font-weight);
+}
+
 .flashListing thead th {
   background: #98e;
   border: 1px solid #000;

@@ -4,6 +4,7 @@ import { Challenge as ChallengeType, useAccount, useComment } from '@bitsocial/b
 import { getPublicationPreview, getPublicationType, getVotePreview, publishPublicationChallengeAnswers } from '../../lib/utils/challenge-utils';
 import { isSageSupportedByBoard, stripSageMarker } from '../../lib/utils/post-options-utils';
 import { stripPostOptionMarkers } from '../../lib/utils/post-option-markers';
+import { stripTripcodeProof } from '../../lib/utils/tripcode-utils';
 import { getDirectoryCodeForIdentifier } from '../../lib/code-tags';
 import { useDirectories } from '../../hooks/use-directories';
 import useIsMobile from '../../hooks/use-is-mobile';
@@ -513,7 +514,7 @@ const Challenge = ({ challenge, closeModal, abandonModal }: ChallengeProps) => {
   const publicationDetails = (
     <>
       <div className={styles.name}>
-        <input type='text' aria-label={capitalize(t('name'))} value={displayName || capitalize(t('anonymous'))} disabled readOnly />
+        <input type='text' aria-label={capitalize(t('name'))} value={stripTripcodeProof(displayName)?.trim() || capitalize(t('anonymous'))} disabled readOnly />
       </div>
       {title && (
         <div className={styles.subject}>
