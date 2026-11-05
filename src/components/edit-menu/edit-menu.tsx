@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { autoUpdate, FloatingFocusManager, FloatingPortal, offset, shift, useDismiss, useFloating, useId, useInteractions, useRole } from '@floating-ui/react';
 import {
@@ -20,7 +20,12 @@ import { useBoardPseudonymityMode } from '../../hooks/use-board-pseudonymity-mod
 import { useBoardHasArchive } from '../../hooks/use-board-has-archive';
 import { getCommentCommunityAddress, withResolvedCommentCommunityAddress } from '../../lib/utils/comment-utils';
 import { canMoveCommentToTrash } from '../../lib/comment-transfer';
-import PostTransferModal from '../post-transfer-modal';
+import { lazyImport } from '../../lib/import-failures';
+import ImportErrorBoundary from '../import-error-boundary';
+
+// Moving a post opens a draggable modal built on react-spring and use-gesture, which nothing on a
+// board's first render uses, so it downloads when a moderator opens it.
+const PostTransferModal = lazyImport(() => import('../post-transfer-modal'));
 
 const daysToTimestampInSeconds = (days: number) => {
   const now = new Date();
@@ -572,7 +577,13 @@ const EditMenu = ({ post }: { post: Comment }) => {
           </FloatingFocusManager>
         </FloatingPortal>
       )}
-      {canTransferPost && isTransferOpen && <PostTransferModal comment={resolvedPost} onClose={() => dispatchUiState({ type: 'close-transfer' })} />}
+      {canTransferPost && isTransferOpen && (
+        <ImportErrorBoundary floating>
+          <Suspense fallback={null}>
+            <PostTransferModal comment={resolvedPost} onClose={() => dispatchUiState({ type: 'close-transfer' })} />
+          </Suspense>
+        </ImportErrorBoundary>
+      )}
     </>
   );
 };

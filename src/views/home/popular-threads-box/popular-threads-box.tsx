@@ -10,7 +10,7 @@ import useStatsProvidersStore from '../../../stores/use-stats-providers-store';
 import { getProviderPopularPosts, getStatsProviderSnapshot } from '../../../lib/stats-provider-snapshot';
 import { verifyProviderThread } from '../../../lib/stats-provider-verification';
 import { getCommentCoverMediaInfo } from '../../../lib/utils/media-utils';
-import { CatalogPostMedia } from '../../../components/catalog-row';
+import { CatalogPostMedia } from '../../../components/catalog-post-media';
 import LoadingEllipsis from '../../../components/loading-ellipsis';
 import BoxModal from '../box-modal';
 import { DirectoryCommunity, findDirectoryByAddress } from '../../../hooks/use-directories';

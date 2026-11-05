@@ -452,6 +452,10 @@ describe('EditMenu', () => {
     await renderMenu(basePost);
     await openMenu();
     await clickButton('trash');
+    // The modal is a lazy import.
+    await act(async () => {
+      await vi.dynamicImportSettled();
+    });
 
     expect(container.querySelector('[data-testid="post-transfer-modal"]')?.getAttribute('data-cid')).toBe('comment-1');
   });

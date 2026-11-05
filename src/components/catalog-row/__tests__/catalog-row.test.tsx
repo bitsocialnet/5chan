@@ -4,7 +4,8 @@ import { createRoot, type Root } from 'react-dom/client';
 import { useReplies } from '@bitsocial/bitsocial-react-hooks';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import CatalogRow, { CatalogPostMedia } from '../catalog-row';
+import CatalogRow from '../catalog-row';
+import { CatalogPostMedia } from '../../catalog-post-media';
 import usePinnedCatalogThreadsStore from '../../../stores/use-pinned-catalog-threads-store';
 import useImageFiltersStore from '../../../stores/use-image-filters-store';
 

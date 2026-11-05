@@ -1,4 +1,4 @@
-import { memo, useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from 'react';
+import { memo, Suspense, useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Trans, useTranslation } from 'react-i18next';
 import styles from './home.module.css';
@@ -8,7 +8,7 @@ import { CommunityStatsCollector, CommunityStatsMetadataLoader, useCommunitiesSt
 import PopularThreadsBox from './popular-threads-box';
 import BoardsList from './boards-list';
 import LoadingEllipsis from '../../components/loading-ellipsis';
-import Tooltip from '../../components/tooltip';
+import ImportErrorBoundary from '../../components/import-error-boundary';
 import HomeFooter from '../../components/home-footer';
 import HomeLogo from '../../components/home-logo';
 import useDirectoryModalStore from '../../stores/use-directory-modal-store';
@@ -22,6 +22,11 @@ import { getSearchSubmitPath } from '../../lib/search-navigation';
 import { isWebRuntime } from '../../lib/media-hosting/show-upload-controls';
 import { useFeedStateString } from '../../hooks/use-state-string';
 import { usePromiseResult } from '../../hooks/use-promise-result';
+import { lazyImport } from '../../lib/import-failures';
+
+// The loading icon's hover tooltip is the home page's only floating-ui user, so floating-ui
+// downloads after the first render instead of before it.
+const Tooltip = lazyImport(() => import('../../components/tooltip'));
 
 // https://github.com/bitsocialnet/lists/tree/master/5chan-directories
 
@@ -209,12 +214,17 @@ const useStatsLoadingString = (addresses: string[]) => {
 
 const StatsLoadingIndicator = memo(({ addresses }: { addresses: string[] }) => {
   const loadingStateString = useStatsLoadingString(addresses);
+  const icon = <span className={`${styles.statsLoadingIcon} yellowOfflineIcon`} />;
+  // Until the tooltip loads, and if it fails to, the icon renders in the span the tooltip wraps it in.
+  const iconWithoutTooltip = <span>{icon}</span>;
 
   return (
     <span className={styles.statsLoadingIconWrapper}>
-      <Tooltip content={loadingStateString}>
-        <span className={`${styles.statsLoadingIcon} yellowOfflineIcon`} />
-      </Tooltip>
+      <ImportErrorBoundary fallback={iconWithoutTooltip}>
+        <Suspense fallback={iconWithoutTooltip}>
+          <Tooltip content={loadingStateString}>{icon}</Tooltip>
+        </Suspense>
+      </ImportErrorBoundary>
     </span>
   );
 });

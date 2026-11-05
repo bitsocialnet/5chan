@@ -91,7 +91,7 @@ vi.mock('../../../../hooks/use-popular-posts', () => ({
   })),
 }));
 
-vi.mock('../../../../components/catalog-row', () => ({
+vi.mock('../../../../components/catalog-post-media', () => ({
   CatalogPostMedia: ({ cid }: { cid: string }) => createElement('div', { 'data-testid': 'popular-thread-media' }, cid),
 }));
 
