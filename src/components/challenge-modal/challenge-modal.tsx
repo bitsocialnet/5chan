@@ -2,7 +2,8 @@ import { useRef, useState, useEffect, useLayoutEffect, useCallback } from 'react
 import { useTranslation } from 'react-i18next';
 import { Challenge as ChallengeType, useAccount, useComment } from '@bitsocial/bitsocial-react-hooks';
 import { getPublicationPreview, getPublicationType, getVotePreview, publishPublicationChallengeAnswers } from '../../lib/utils/challenge-utils';
-import { isSageSupportedByBoard, stripPostOptionMarkers, stripSageMarker } from '../../lib/utils/post-options-utils';
+import { isSageSupportedByBoard, stripSageMarker } from '../../lib/utils/post-options-utils';
+import { stripPostOptionMarkers } from '../../lib/utils/post-option-markers';
 import useIsMobile from '../../hooks/use-is-mobile';
 import { useCommunityField } from '../../hooks/use-stable-community';
 import useChallengesStore from '../../stores/use-challenges-store';

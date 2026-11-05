@@ -115,13 +115,13 @@ const CommentContent = ({
   const hidesSageMarker = useCommunityField(parentCid ? communityAddress : undefined, isSageSupportedByBoard);
   const contentWithoutSage = hidesSageMarker && content ? stripSageMarker(content) : content;
   const directories = useDirectories();
-  // The route covers a board whose directory metadata has not loaded; the post's board covers cross-board previews.
-  const routeDirectoryCode = getDirectoryCodeForIdentifier(getRouteBoardIdentifier(location.pathname), directories);
-  const postDirectoryCode = getDirectoryCodeForIdentifier(communityAddress, directories);
+  // The post's own board decides, so a post reads the same on every route; the route only stands in for a
+  // post without a board address.
+  const postOptionsDirectoryCode = getDirectoryCodeForIdentifier(communityAddress ?? getRouteBoardIdentifier(location.pathname), directories);
   const isEdited = edit?.content !== undefined;
   const postOptionResults = useMemo(
-    () => getPostOptionResults({ content: contentWithoutSage, cid, timestamp, directoryCodes: [routeDirectoryCode, postDirectoryCode], isEdited }),
-    [contentWithoutSage, cid, timestamp, routeDirectoryCode, postDirectoryCode, isEdited],
+    () => getPostOptionResults({ content: contentWithoutSage, cid, timestamp, directoryCode: postOptionsDirectoryCode, isEdited }),
+    [contentWithoutSage, cid, timestamp, postOptionsDirectoryCode, isEdited],
   );
   const visibleContent = postOptionResults.content;
   const { diceText, fortune } = postOptionResults;

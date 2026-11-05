@@ -20,7 +20,7 @@ import { getBoardPath } from '../../../lib/utils/route-utils';
 import usePrefetchIntent from '../../../hooks/use-prefetch-intent';
 import { usePromiseResult } from '../../../hooks/use-promise-result';
 import { CATALOG_PREVIEW_MARKDOWN_OPTIONS, removeMarkdown } from '../../../lib/utils/post-utils';
-import { stripPostOptionMarkers } from '../../../lib/utils/post-options-utils';
+import { stripPostOptionMarkers } from '../../../lib/utils/post-option-markers';
 
 interface PopularThreadProps {
   post: Comment;
@@ -35,8 +35,8 @@ const PopularThreadsLoading = ({ boardAddresses }: { boardAddresses: string[] })
   return <LoadingEllipsis string={loadingStateString} />;
 };
 
-const ContentPreview = ({ content, maxLength = 99 }: { content: string; maxLength?: number }) => {
-  const plainText = removeMarkdown(stripPostOptionMarkers(content), CATALOG_PREVIEW_MARKDOWN_OPTIONS)
+const getContentPreview = (content: string, timestamp: number | undefined, maxLength = 99) => {
+  const plainText = removeMarkdown(stripPostOptionMarkers(content, timestamp), CATALOG_PREVIEW_MARKDOWN_OPTIONS)
     .trim()
     .replaceAll('&nbsp;', '')
     .replace(/\n\n/g, '\n')
@@ -48,7 +48,9 @@ const ContentPreview = ({ content, maxLength = 99 }: { content: string; maxLengt
 
 const PopularThreadCard = memo(
   ({ post, boardTitle, boardPath }: PopularThreadProps) => {
-    const { cid, content, title } = post || {};
+    const { cid, content, timestamp, title } = post || {};
+    // A body that is only a fortune or dice marker has no preview, so the title gets no `: ` after it.
+    const contentPreview = content ? getContentPreview(content, timestamp, 99) : '';
     const commentMediaInfo = getCommentCoverMediaInfo(post);
     const prefetchThread = usePrefetchIntent({ commentCid: cid, communityAddress: getCommentCommunityAddress(post) });
 
@@ -70,10 +72,10 @@ const PopularThreadCard = memo(
           {title && (
             <>
               <b>{title.trim()}</b>
-              {content && ': '}
+              {contentPreview && ': '}
             </>
           )}
-          {content && <ContentPreview content={content} maxLength={99} />}
+          {contentPreview}
         </div>
       </div>
     );

@@ -14,7 +14,7 @@ import { useBoardSortType } from '../../hooks/use-board-sort-type';
 import { getBoardPath } from '../../lib/utils/route-utils';
 import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
 import { removeMarkdown } from '../../lib/utils/post-utils';
-import { stripPostOptionMarkers } from '../../lib/utils/post-options-utils';
+import { stripPostOptionMarkers } from '../../lib/utils/post-option-markers';
 import { useDirectories } from '../../hooks/use-directories';
 import { useCommunityIdentifier, useCommunityIdentifiers } from '../../hooks/use-community-identifiers';
 import styles from './archive.module.css';
@@ -53,9 +53,9 @@ const ARCHIVE_EXCERPT_SEPARATOR = ': ';
 
 const collapseWhitespace = (value: string) => value.replace(/\s+/g, ' ').trim();
 
-const getArchiveExcerpt = ({ content, title, link }: Pick<BoardFeedComment, 'content' | 'title' | 'link'>, t: (key: string) => string) => {
+const getArchiveExcerpt = ({ content, title, link, timestamp }: Pick<BoardFeedComment, 'content' | 'title' | 'link' | 'timestamp'>, t: (key: string) => string) => {
   const cleanTitle = typeof title === 'string' ? collapseWhitespace(removeMarkdown(title)) : '';
-  const cleanContent = typeof content === 'string' ? collapseWhitespace(removeMarkdown(stripPostOptionMarkers(content))) : '';
+  const cleanContent = typeof content === 'string' ? collapseWhitespace(removeMarkdown(stripPostOptionMarkers(content, timestamp))) : '';
   const cleanLink = typeof link === 'string' ? collapseWhitespace(link) : '';
   const cleanBody = cleanTitle || cleanContent ? cleanContent : cleanLink || t('no_content');
   const separator = cleanTitle && cleanBody ? ARCHIVE_EXCERPT_SEPARATOR : '';

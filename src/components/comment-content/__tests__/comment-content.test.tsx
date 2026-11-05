@@ -753,7 +753,7 @@ describe('CommentContent', () => {
     testState.pathname = '/b/thread/post-1';
     const timestamp = 1800000000;
     const content = 'body[fortune color=#d302a7]Godly Luck[/fortune]';
-    const expectedFortune = getPostOptionResults({ content: '[fortune]', cid: 'post-1', timestamp, directoryCodes: ['b'], isEdited: false }).fortune;
+    const expectedFortune = getPostOptionResults({ content: '[fortune]', cid: 'post-1', timestamp, directoryCode: 'b', isEdited: false }).fortune;
 
     await renderContent({ content, postCid: 'post-1', state: 'publishing', timestamp });
 
@@ -774,7 +774,7 @@ describe('CommentContent', () => {
   it('shows the dice roll derived from the post CID before the comment on dice boards', async () => {
     testState.pathname = '/tg/thread/post-1';
     const timestamp = 1800000000;
-    const expectedDice = getPostOptionResults({ content: '[dice=2d6]', cid: 'post-1', timestamp, directoryCodes: ['tg'], isEdited: false }).diceText;
+    const expectedDice = getPostOptionResults({ content: '[dice=2d6]', cid: 'post-1', timestamp, directoryCode: 'tg', isEdited: false }).diceText;
 
     await renderContent({ cid: 'post-1', content: '[dice=2d6]dice body', postCid: 'post-1', timestamp });
 
@@ -782,16 +782,18 @@ describe('CommentContent', () => {
     expect(container.querySelector('blockquote > strong')?.textContent).toBe(expectedDice);
   });
 
-  it('reads a fortune from the post board in a cross-board preview on a dice board', async () => {
+  it('reads only the post board options in a cross-board preview on a dice board', async () => {
     const { directories } = testState;
     testState.pathname = '/tg/thread/post-1';
     testState.directories = [...directories, { address: 'random.bso', directoryCode: 'b', title: '/b/ - Random' }];
-    const expectedFortune = getPostOptionResults({ content: '[fortune]', cid: 'b-post', timestamp: 1800000000, directoryCodes: ['b'], isEdited: false }).fortune;
+    const expectedFortune = getPostOptionResults({ content: '[fortune]', cid: 'b-post', timestamp: 1800000000, directoryCode: 'b', isEdited: false }).fortune;
 
     try {
-      await renderContent({ cid: 'b-post', communityAddress: 'random.bso', content: 'body[fortune]', postCid: 'b-post', timestamp: 1800000000 });
+      // /b/ has no dice, so the dice marker stays text on the /tg/ route too, as it reads on /b/ itself.
+      await renderContent({ cid: 'b-post', communityAddress: 'random.bso', content: '[dice=1d6]body[fortune]', postCid: 'b-post', timestamp: 1800000000 });
 
-      expect(queryMarkdownText()).toEqual(['body']);
+      expect(queryMarkdownText()).toEqual(['[dice=1d6]body']);
+      expect(container.querySelector('blockquote > strong')).toBeNull();
       expect(container.querySelector('.fortune')?.textContent).toBe(`Your fortune: ${expectedFortune?.text}`);
     } finally {
       testState.directories = directories;

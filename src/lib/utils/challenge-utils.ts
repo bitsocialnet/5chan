@@ -2,7 +2,7 @@ import type { ChallengeVerification, Comment } from '@bitsocial/bitsocial-react-
 import { getFallbackDirectoriesData } from './directories';
 import { getCommentCommunityAddress } from './comment-utils';
 import { getBoardPath } from './route-utils';
-import { stripPostOptionMarkers } from './post-options-utils';
+import { stripPostOptionMarkers } from './post-option-markers';
 
 const resolveBoardIdentifier = (communityAddress: unknown): string => {
   if (typeof communityAddress !== 'string' || !communityAddress) {

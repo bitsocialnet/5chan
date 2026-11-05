@@ -8,9 +8,9 @@ import {
   getUnsupportedPostOptionsMessage,
   hasNonokoOption,
   isSageSupportedByBoard,
-  stripPostOptionMarkers,
   stripSageMarker,
 } from '../post-options-utils';
+import { stripPostOptionMarkers } from '../post-option-markers';
 
 const FORTUNES = [
   'Bad Luck',
@@ -113,75 +113,89 @@ describe('post-options-utils', () => {
       supportedDirectoryCodesByOption: [],
     });
     expect(getContentWithPostOptions('x', 'dice+1d6+1000000000000000000000', 'tg')).toBe('x');
+    // Each number fits, but the highest total would not, so the shown total could differ from the shown rolls.
+    expect(getContentWithPostOptions('x', 'dice+25d9007199254740991', 'tg')).toBe('x');
+    expect(getPostOptionResults({ content: '[dice=2d9007199254740991]x', cid: CID, timestamp: AFTER_CUTOFF, directoryCode: 'tg', isEdited: false })).toEqual({
+      content: 'x',
+    });
+    expect(getPostOptionResults({ content: '[dice=1d9007199254740991]x', cid: CID, timestamp: AFTER_CUTOFF, directoryCode: 'tg', isEdited: false }).diceText).toMatch(
+      /^Rolled \d+ \(1d9007199254740991\)$/,
+    );
   });
 
-  it('reads results when either the route or the post board has the option', () => {
-    const content = '[dice=1d6]body[fortune]';
-
-    expect(getPostOptionResults({ content, cid: CID, timestamp: AFTER_CUTOFF, directoryCodes: ['tg', 'b'], isEdited: false })).toEqual({
-      content: 'body',
-      diceText: `Rolled ${expectedRolls(CID, 1, 6)[0]} (1d6)`,
+  it('strips markers that removing another marker assembles', () => {
+    expect(getPostOptionResults({ content: '[fort[fortune]une]hi', cid: CID, timestamp: AFTER_CUTOFF, directoryCode: 'b', isEdited: false })).toEqual({
+      content: 'hi',
       fortune: expect.objectContaining({ text: expectedFortune(CID) }),
     });
-    expect(getPostOptionResults({ content, cid: CID, timestamp: AFTER_CUTOFF, directoryCodes: ['mu', 'b'], isEdited: false }).content).toBe('[dice=1d6]body');
+    expect(stripPostOptionMarkers('[dice=[dice=1d6]20d20]hi')).toBe('hi');
   });
 
   it('derives the fortune from the post CID and ignores any result written in the comment', () => {
     const forged = 'body[fortune color=#d302a7]Godly Luck[/fortune]';
 
-    expect(getPostOptionResults({ content: 'body[fortune]', cid: CID, timestamp: AFTER_CUTOFF, directoryCodes: ['b'], isEdited: false })).toEqual({
+    expect(getPostOptionResults({ content: 'body[fortune]', cid: CID, timestamp: AFTER_CUTOFF, directoryCode: 'b', isEdited: false })).toEqual({
       content: 'body',
       fortune: expect.objectContaining({ text: expectedFortune(CID) }),
     });
-    expect(getPostOptionResults({ content: forged, cid: CID, timestamp: AFTER_CUTOFF, directoryCodes: ['s5s'], isEdited: false }).fortune?.text).toBe(
-      expectedFortune(CID),
-    );
+    expect(getPostOptionResults({ content: forged, cid: CID, timestamp: AFTER_CUTOFF, directoryCode: 's5s', isEdited: false }).fortune?.text).toBe(expectedFortune(CID));
   });
 
   it('derives dice rolls from the post CID and the requested dice', () => {
     const rolls = expectedRolls(CID, 3, 20);
     const total = rolls.reduce((sum, roll) => sum + roll, 0) + 2;
 
-    expect(getPostOptionResults({ content: '[dice=3d20+2]body', cid: CID, timestamp: AFTER_CUTOFF, directoryCodes: ['qst'], isEdited: false })).toEqual({
+    expect(getPostOptionResults({ content: '[dice=3d20+2]body', cid: CID, timestamp: AFTER_CUTOFF, directoryCode: 'qst', isEdited: false })).toEqual({
       content: 'body',
       diceText: `Rolled ${rolls.join(', ')} + 2 = ${total} (3d20 + 2)`,
     });
     // A roll written by an older client still asks for its dice, but no longer decides them.
-    expect(
-      getPostOptionResults({ content: '<b>Rolled 6 (1d6)<br><br></b>body', cid: CID, timestamp: AFTER_CUTOFF, directoryCodes: ['tg'], isEdited: false }).diceText,
-    ).toBe(`Rolled ${expectedRolls(CID, 1, 6)[0]} (1d6)`);
+    expect(getPostOptionResults({ content: '<b>Rolled 6 (1d6)<br><br></b>body', cid: CID, timestamp: AFTER_CUTOFF, directoryCode: 'tg', isEdited: false }).diceText).toBe(
+      `Rolled ${expectedRolls(CID, 1, 6)[0]} (1d6)`,
+    );
   });
 
   it('keeps results stored by posts from before the CID derivation', () => {
     const legacyContent = '<b>Rolled 6 (1d6)<br><br></b>body[fortune color=#d302a7]Godly Luck[/fortune]';
 
-    expect(getPostOptionResults({ content: legacyContent, cid: CID, timestamp: BEFORE_CUTOFF, directoryCodes: ['b'], isEdited: false })).toEqual({
+    expect(getPostOptionResults({ content: legacyContent, cid: CID, timestamp: BEFORE_CUTOFF, directoryCode: 'b', isEdited: false })).toEqual({
       content: '<b>Rolled 6 (1d6)<br><br></b>body',
       fortune: { color: '#d302a7', text: 'Godly Luck' },
     });
-    expect(getPostOptionResults({ content: legacyContent, cid: CID, timestamp: BEFORE_CUTOFF, directoryCodes: ['tg'], isEdited: false })).toEqual({
+    expect(getPostOptionResults({ content: legacyContent, cid: CID, timestamp: BEFORE_CUTOFF, directoryCode: 'tg', isEdited: false })).toEqual({
       content: 'body[fortune color=#d302a7]Godly Luck[/fortune]',
       diceText: 'Rolled 6 (1d6)',
     });
+    expect(stripPostOptionMarkers(legacyContent, BEFORE_CUTOFF)).toBe('body');
+  });
+
+  it('leaves typed markers as text in posts from before the CID derivation', () => {
+    // Older clients never read a typed `[fortune]` or `[dice=…]`, so those posts showed it as written.
+    const typed = 'use [fortune] for luck, then roll [dice=1d20]';
+
+    expect(getPostOptionResults({ content: typed, cid: CID, timestamp: BEFORE_CUTOFF, directoryCode: 'b', isEdited: false })).toEqual({ content: typed });
+    expect(getPostOptionResults({ content: typed, cid: CID, timestamp: BEFORE_CUTOFF, directoryCode: 'tg', isEdited: false })).toEqual({ content: typed });
+    expect(stripPostOptionMarkers(typed, BEFORE_CUTOFF)).toBe(typed);
+    expect(stripPostOptionMarkers(typed, AFTER_CUTOFF)).toBe('use  for luck, then roll ');
   });
 
   it('shows no result while pending or after an author edit, and hides the markers', () => {
-    expect(getPostOptionResults({ content: '[dice=1d6]body[fortune]', timestamp: AFTER_CUTOFF, directoryCodes: ['b'], isEdited: false })).toEqual({
+    expect(getPostOptionResults({ content: '[dice=1d6]body[fortune]', timestamp: AFTER_CUTOFF, directoryCode: 'b', isEdited: false })).toEqual({
       content: '[dice=1d6]body',
     });
-    expect(getPostOptionResults({ content: '[dice=1d6]body', cid: CID, timestamp: AFTER_CUTOFF, directoryCodes: ['tg'], isEdited: true })).toEqual({ content: 'body' });
+    expect(getPostOptionResults({ content: '[dice=1d6]body', cid: CID, timestamp: AFTER_CUTOFF, directoryCode: 'tg', isEdited: true })).toEqual({ content: 'body' });
     expect(
-      getPostOptionResults({ content: 'body[fortune color=#d302a7]Godly Luck[/fortune]', cid: CID, timestamp: BEFORE_CUTOFF, directoryCodes: ['b'], isEdited: true }),
+      getPostOptionResults({ content: 'body[fortune color=#d302a7]Godly Luck[/fortune]', cid: CID, timestamp: BEFORE_CUTOFF, directoryCode: 'b', isEdited: true }),
     ).toEqual({ content: 'body' });
   });
 
   it('leaves markers and fortune-looking text alone where they are not read', () => {
     const userText = 'body[fortune color=#000000]Excellent Luck[/fortune]';
 
-    expect(getPostOptionResults({ content: '[dice=1d6]body[fortune]', cid: CID, timestamp: AFTER_CUTOFF, directoryCodes: ['mu'], isEdited: false })).toEqual({
+    expect(getPostOptionResults({ content: '[dice=1d6]body[fortune]', cid: CID, timestamp: AFTER_CUTOFF, directoryCode: 'mu', isEdited: false })).toEqual({
       content: '[dice=1d6]body[fortune]',
     });
-    expect(getPostOptionResults({ content: userText, cid: CID, timestamp: AFTER_CUTOFF, directoryCodes: ['b'], isEdited: false })).toEqual({ content: userText });
+    expect(getPostOptionResults({ content: userText, cid: CID, timestamp: AFTER_CUTOFF, directoryCode: 'b', isEdited: false })).toEqual({ content: userText });
     expect(stripPostOptionMarkers('[dice=2d6]body[fortune]')).toBe('body');
     expect(stripPostOptionMarkers(userText)).toBe(userText);
   });
