@@ -623,5 +623,6 @@
   "gallery_file_not_image_or_video_alert": "Only images and videos can be posted together.",
   "directory_requirement_no_galleries": "One file per post, no galleries",
   "show_filter_image_md5_in_post_menu": "Show \"Filter image MD5\" in post menus",
-  "tripcode_sign_failed": "Could not sign your tripcode for this board. Wait for the board to load and try again, or post without a tripcode."
+  "tripcode_sign_failed": "Could not sign your tripcode for this board. Wait for the board to load and try again, or post without a tripcode.",
+  "tripcode_retry_mismatch": "To retry this post, type its tripcode in the name field again, or delete the post."
 }

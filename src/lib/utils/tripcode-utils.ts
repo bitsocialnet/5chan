@@ -118,6 +118,13 @@ export const parseTripcodeProof = (displayName: string | undefined): ParsedTripc
   return { name: displayName.slice(0, match.index), nonce: match[1] ? Number(match[1]) : 0, entries };
 };
 
+/** Whether two proofs carry the same tripcodes (kind and key), so a post signed again shows the trips it showed. */
+export const hasSameTripcodeKeys = (proof: ParsedTripcodeProof | undefined, otherProof: ParsedTripcodeProof | undefined): boolean =>
+  !!proof &&
+  !!otherProof &&
+  proof.entries.length === otherProof.entries.length &&
+  proof.entries.every((entry) => otherProof.entries.some((other) => other.kind === entry.kind && other.publicKey === entry.publicKey));
+
 /** The name a reader shows, with any tripcode proof removed whether or not it verifies. */
 export const stripTripcodeProof = (displayName: string | undefined): string | undefined => {
   const proof = parseTripcodeProof(displayName);

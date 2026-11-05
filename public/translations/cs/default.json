@@ -603,5 +603,6 @@
   "gallery_file_not_image_or_video_alert": "Společně lze odeslat pouze obrázky a videa.",
   "directory_requirement_no_galleries": "Jeden soubor na příspěvek, žádné galerie",
   "show_filter_image_md5_in_post_menu": "Zobrazit „Filtrovat MD5 obrázku“ v nabídkách příspěvků",
-  "tripcode_sign_failed": "Tripcode se pro tuto nástěnku nepodařilo podepsat. Počkej, až se nástěnka načte, a zkus to znovu, nebo pošli příspěvek bez tripcode."
+  "tripcode_sign_failed": "Tripcode se pro tuto nástěnku nepodařilo podepsat. Počkej, až se nástěnka načte, a zkus to znovu, nebo pošli příspěvek bez tripcode.",
+  "tripcode_retry_mismatch": "Pro nový pokus o odeslání tohoto příspěvku znovu zadej jeho tripcode do pole jména, nebo příspěvek smaž."
 }

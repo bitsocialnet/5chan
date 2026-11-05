@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ChallengeVerification, Comment, PublishCommentOptions, deleteComment, usePublishComment } from '@bitsocial/bitsocial-react-hooks';
 import { alertChallengeVerificationFailed } from '../lib/utils/challenge-utils';
 import useChallengesStore from '../stores/use-challenges-store';
 import useFailedPostRetryStore from '../stores/use-failed-post-retry-store';
 import { getCommentCommunityAddress } from '../lib/utils/comment-utils';
-import { hasTripcodeProof, parseTripcodeInput, stripTripcodeProof } from '../lib/utils/tripcode-utils';
+import { hasSameTripcodeKeys, parseTripcodeInput, parseTripcodeProof, stripTripcodeProof } from '../lib/utils/tripcode-utils';
 import useTripcodeStore from '../stores/use-tripcode-store';
 import useSignTripcode from './use-sign-tripcode';
 
@@ -80,6 +81,7 @@ export const getFailedPostRetryPublishOptions = (post?: FailedPost): PublishComm
 };
 
 const useDeleteFailedPost = (post?: FailedPost, deleteRedirectPath?: string) => {
+  const { t } = useTranslation();
   const [isDeletingFailedPost, setIsDeletingFailedPost] = useState(false);
   const [isRetryingFailedPost, setIsRetryingFailedPost] = useState(false);
   const [isRetryRedirectPending, setIsRetryRedirectPending] = useState(false);
@@ -98,7 +100,8 @@ const useDeleteFailedPost = (post?: FailedPost, deleteRedirectPath?: string) => 
 
   const canDeleteFailedPost = post?.state === 'failed' && typeof post?.index === 'number';
   const baseRetryPublishOptions = useMemo(() => getFailedPostRetryPublishOptions(post), [post]);
-  // A tripcode post is signed again before its retry, with the tripcode its account's name field holds now.
+  // A tripcode post is signed again before its retry. Its password is never stored with the post, so the
+  // retry uses the tripcode its account's name field holds now, and only if that gives the trips the post showed.
   const tripcodeInput = useTripcodeStore((state) => (post?.accountId ? state.inputs[post.accountId] : undefined));
   const signTripcode = useSignTripcode();
   const [signedRetryTripcode, setSignedRetryTripcode] = useState<{ post: FailedPost; displayName: string; timestamp: number }>();
@@ -220,29 +223,40 @@ const useDeleteFailedPost = (post?: FailedPost, deleteRedirectPath?: string) => 
       return;
     }
 
-    const tripcodeSecret = hasTripcodeProof(post?.author?.displayName) ? parseTripcodeInput(tripcodeInput).secret : undefined;
-    if (!tripcodeSecret || !baseRetryPublishOptions) {
+    const failedProof = parseTripcodeProof(post?.author?.displayName);
+    if (!failedProof || !baseRetryPublishOptions) {
       await retryFailedPost();
+      return;
+    }
+
+    // Retrying without the post's tripcode would drop its trip, or show another one, without a word.
+    const tripcodeSecret = parseTripcodeInput(tripcodeInput).secret;
+    if (!tripcodeSecret) {
+      alert(t('tripcode_retry_mismatch'));
       return;
     }
 
     setIsRetryingFailedPost(true);
     try {
+      let isSameTripcode = false;
       const signed = await signTripcode({
         secret: tripcodeSecret,
         readOptions: () => baseRetryPublishOptions,
         writeOptions: ({ displayName, timestamp }) => {
+          isSameTripcode = hasSameTripcodeKeys(failedProof, parseTripcodeProof(displayName));
+          if (!isSameTripcode) return;
           retryAfterSigningRef.current = true;
           setSignedRetryTripcode({ post: post as FailedPost, displayName, timestamp });
         },
         isActive: () => true,
       });
-      if (!signed) setIsRetryingFailedPost(false);
+      if (!signed || !isSameTripcode) setIsRetryingFailedPost(false);
+      if (signed && !isSameTripcode) alert(t('tripcode_retry_mismatch'));
     } catch (error) {
       setIsRetryingFailedPost(false);
       alert(error instanceof Error ? error.message : String(error));
     }
-  }, [baseRetryPublishOptions, canRetryFailedPost, isDeletingFailedPost, isRetryingFailedPost, post, retryFailedPost, signTripcode, tripcodeInput]);
+  }, [baseRetryPublishOptions, canRetryFailedPost, isDeletingFailedPost, isRetryingFailedPost, post, retryFailedPost, signTripcode, t, tripcodeInput]);
 
   return {
     canDeleteFailedPost,

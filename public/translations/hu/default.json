@@ -603,5 +603,6 @@
   "gallery_file_not_image_or_video_alert": "Csak képek és videók küldhetők együtt.",
   "directory_requirement_no_galleries": "Bejegyzésenként egy fájl, galériák nélkül",
   "show_filter_image_md5_in_post_menu": "„Kép MD5 szűrése” megjelenítése a bejegyzések menüjében",
-  "tripcode_sign_failed": "Nem sikerült aláírni a tripkódodat ehhez a táblához. Várd meg, amíg a tábla betöltődik, és próbáld újra, vagy posztolj tripkód nélkül."
+  "tripcode_sign_failed": "Nem sikerült aláírni a tripkódodat ehhez a táblához. Várd meg, amíg a tábla betöltődik, és próbáld újra, vagy posztolj tripkód nélkül.",
+  "tripcode_retry_mismatch": "A poszt újrapróbálásához írd be újra a tripkódját a név mezőbe, vagy töröld a posztot."
 }

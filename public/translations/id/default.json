@@ -603,5 +603,6 @@
   "gallery_file_not_image_or_video_alert": "Hanya gambar dan video yang dapat diposting bersama.",
   "directory_requirement_no_galleries": "Satu file per postingan, tanpa galeri",
   "show_filter_image_md5_in_post_menu": "Tampilkan \"Saring MD5 gambar\" di menu postingan",
-  "tripcode_sign_failed": "Tidak dapat menandatangani tripcode kamu untuk board ini. Tunggu board selesai dimuat lalu coba lagi, atau posting tanpa tripcode."
+  "tripcode_sign_failed": "Tidak dapat menandatangani tripcode kamu untuk board ini. Tunggu board selesai dimuat lalu coba lagi, atau posting tanpa tripcode.",
+  "tripcode_retry_mismatch": "Untuk mencoba lagi postingan ini, ketik ulang tripcode-nya di kolom nama, atau hapus postingan."
 }

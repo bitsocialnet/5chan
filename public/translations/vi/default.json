@@ -603,5 +603,6 @@
   "gallery_file_not_image_or_video_alert": "Chỉ có thể đăng hình ảnh và video cùng nhau.",
   "directory_requirement_no_galleries": "Một tệp mỗi bài, không có thư viện ảnh",
   "show_filter_image_md5_in_post_menu": "Hiển thị \"Lọc MD5 hình ảnh\" trong menu bài đăng",
-  "tripcode_sign_failed": "Không thể ký tripcode của bạn cho board này. Hãy đợi board tải xong rồi thử lại, hoặc đăng bài không dùng tripcode."
+  "tripcode_sign_failed": "Không thể ký tripcode của bạn cho board này. Hãy đợi board tải xong rồi thử lại, hoặc đăng bài không dùng tripcode.",
+  "tripcode_retry_mismatch": "Để thử lại bài này, hãy nhập lại tripcode của nó vào ô tên, hoặc xóa bài."
 }

@@ -160,29 +160,59 @@ describe('useDeleteFailedPost', () => {
     expect(testState.publishCommentMock).toHaveBeenCalledTimes(1);
   });
 
-  it('signs a tripcode post again for its retry, which publishes with a new timestamp', async () => {
-    const stalePost = { ...failedPost, author: { ...failedPost.author, displayName: `Alice#tc1:n${'A'.repeat(129)}` } };
-    expect(getFailedPostRetryPublishOptions(stalePost)?.author).toEqual({ address: '0x123', displayName: 'Alice' });
+  // A proof-shaped name: a normal tripcode's 43-character key and 86-character signature.
+  const getProofName = (publicKey: string, signature: string) => `Alice#tc1:n${publicKey.repeat(43)}${signature.repeat(86)}`;
+  const tripcodePost = { ...failedPost, author: { ...failedPost.author, displayName: getProofName('A', 'B') } };
 
-    useTripcodeStore.setState({ inputs: { 'account-1': '#hunter2' } });
+  const signRetryAs = (displayName: string) => {
     let signedFrom: Record<string, unknown> | undefined;
     testState.signTripcodeMock.mockImplementation(async ({ readOptions, writeOptions }) => {
       signedFrom = readOptions();
-      writeOptions({ ...signedFrom, displayName: 'Alice#tc1:fresh', timestamp: 1_800_000_000 });
+      writeOptions({ ...signedFrom, displayName, timestamp: 1_800_000_000 });
       return true;
     });
-    renderHook(stalePost);
+    return () => signedFrom;
+  };
 
+  const retryTripcodePost = async (tripcodeInput: string | undefined) => {
+    useTripcodeStore.setState({ inputs: tripcodeInput ? { 'account-1': tripcodeInput } : {} });
+    renderHook(tripcodePost);
     await act(async () => {
       await latestValue.onRetryFailedPost();
     });
     await flushEffects();
+    useTripcodeStore.setState({ inputs: {} });
+  };
+
+  it('signs a tripcode post again for its retry, which publishes with a new timestamp', async () => {
+    expect(getFailedPostRetryPublishOptions(tripcodePost)?.author).toEqual({ address: '0x123', displayName: 'Alice' });
+    const getSignedFrom = signRetryAs(getProofName('A', 'C'));
+
+    await retryTripcodePost('#hunter2');
 
     expect(testState.signTripcodeMock).toHaveBeenCalledWith(expect.objectContaining({ secret: { normal: 'hunter2' } }));
-    expect(signedFrom).toMatchObject({ author: { address: '0x123', displayName: 'Alice' } });
+    expect(getSignedFrom()).toMatchObject({ author: { address: '0x123', displayName: 'Alice' } });
     expect(testState.publishCommentMock).toHaveBeenCalledTimes(1);
-    expect(testState.lastPublishOptions).toMatchObject({ author: { displayName: 'Alice#tc1:fresh' }, timestamp: 1_800_000_000 });
-    useTripcodeStore.setState({ inputs: {} });
+    expect(testState.lastPublishOptions).toMatchObject({ author: { displayName: getProofName('A', 'C') }, timestamp: 1_800_000_000 });
+  });
+
+  it("does not retry a tripcode post once the name field no longer holds the post's tripcode", async () => {
+    // The field was cleared: the post would be republished without the trip it showed.
+    await retryTripcodePost(undefined);
+
+    expect(testState.signTripcodeMock).not.toHaveBeenCalled();
+    expect(testState.publishCommentMock).not.toHaveBeenCalled();
+    expect(testState.alertMock).toHaveBeenCalledTimes(1);
+
+    // The field holds another tripcode: the post would be republished under a different trip.
+    signRetryAs(getProofName('D', 'C'));
+    await retryTripcodePost('#other');
+
+    expect(testState.signTripcodeMock).toHaveBeenCalledTimes(1);
+    expect(testState.deleteCommentMock).not.toHaveBeenCalled();
+    expect(testState.publishCommentMock).not.toHaveBeenCalled();
+    expect(testState.alertMock).toHaveBeenCalledTimes(2);
+    expect(latestValue.isRetryingFailedPost).toBe(false);
   });
 
   it('redirects retry publishes to the new pending row', async () => {
