@@ -17,14 +17,11 @@ import {
 } from '../../lib/utils/publish-link-requirements';
 import { getCommentFlagOptionsForDirectory, getCommentFlagPublishOptionsForDirectory } from '../../lib/comment-flag-selection';
 import {
-  type DiceRoll,
-  type FortuneEntry,
   type PostOptionsValidationError,
   POST_OPTIONS_VALIDATION_DELAY_MS,
   appendSageMarker,
-  getContentWithPostOptionState as getContentWithOptions,
+  getContentWithPostOptions,
   getPostOptionsDirectoryCode,
-  getPostOptionsPublishContentLength,
   getPostOptionsValidationError,
   hasNonokoOption,
   isPostOptionsValidationError,
@@ -182,8 +179,6 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
   const urlRef = useRef<HTMLInputElement>(null);
   const optionsRef = useRef<HTMLInputElement>(null);
   const flagRef = useRef<HTMLSelectElement>(null);
-  const fortuneEntryRef = useRef<FortuneEntry | null>(null);
-  const diceRollRef = useRef<DiceRoll | null>(null);
   const nonokoRedirectPathRef = useRef<string | null>(null);
   const lastSelectionStartRef = useRef(0);
   const lastSelectionEndRef = useRef(0);
@@ -237,8 +232,8 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
   }, []);
 
   const checkContentLengthRef = useRef(
-    debounce((content: string, t: TFunction, options: string, directoryCode: string | undefined) => {
-      const length = getPostOptionsPublishContentLength(content, options, directoryCode);
+    debounce((content: string, t: TFunction) => {
+      const length = content.trim().length;
       if (length > 2000) {
         setError(null);
         setLengthError(`${t('error')}: ${t('comment_field_too_long', { length })}`);
@@ -271,7 +266,7 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
         const currentUrl = urlRef.current?.value.trim() || '';
         const currentOptions = optionsRef.current?.value || '';
         const currentOptionsError = getPostOptionsValidationError(currentOptions, postOptionsDirectoryCode, isSageSupported);
-        const publishContent = getContentWithOptions(currentContent, currentOptions, fortuneEntryRef, diceRollRef, postOptionsDirectoryCode);
+        const publishContent = getContentWithPostOptions(currentContent, currentOptions, postOptionsDirectoryCode);
 
         checkContentLengthRef.current.cancel();
         checkPostOptionsRef.current.cancel();
@@ -510,15 +505,13 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
     const len = textRef.current.value.length;
     lastSelectionStartRef.current = len;
     lastSelectionEndRef.current = len;
-    const publishContent = getContentWithOptions(initialContent, optionsRef.current?.value || '', fortuneEntryRef, diceRollRef, postOptionsDirectoryCode, {
-      includeFortune: false,
-    });
+    const publishContent = getContentWithPostOptions(initialContent, optionsRef.current?.value || '', postOptionsDirectoryCode);
     setPublishReplyOptions({
       content: publishContent,
       ...(initialDraft?.link ? { link: initialDraft.link } : {}),
       ...(initialDraft?.spoiler ? { spoiler: true } : {}),
     });
-    checkContentLengthRef.current(publishContent, t, optionsRef.current?.value || '', postOptionsDirectoryCode);
+    checkContentLengthRef.current(publishContent, t);
 
     const spellcheckTimeout = window.setTimeout(() => {
       if (textRef.current) {
@@ -538,13 +531,6 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
     }
   }, [showReplyModal]);
 
-  useEffect(() => {
-    if (!showReplyModal) {
-      fortuneEntryRef.current = null;
-      diceRollRef.current = null;
-    }
-  }, [showReplyModal]);
-
   const handleContentInput = (e: React.FormEvent<HTMLTextAreaElement>) => {
     lastSelectionStartRef.current = e.currentTarget.selectionStart ?? e.currentTarget.value.length;
     lastSelectionEndRef.current = e.currentTarget.selectionEnd ?? lastSelectionStartRef.current;
@@ -559,9 +545,9 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
       lastSelectionStartRef.current = selectionStart;
       lastSelectionEndRef.current = selectionEnd ?? selectionStart;
     }
-    const publishContent = getContentWithOptions(content, options, fortuneEntryRef, diceRollRef, postOptionsDirectoryCode, { includeFortune: false });
+    const publishContent = getContentWithPostOptions(content, options, postOptionsDirectoryCode);
     setPublishReplyOptions({ content: publishContent });
-    checkContentLengthRef.current(publishContent, t, options, postOptionsDirectoryCode);
+    checkContentLengthRef.current(publishContent, t);
   };
 
   const handleOptionsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -675,12 +661,10 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
     lastSelectionStartRef.current = nextCursor;
     lastSelectionEndRef.current = nextCursor;
 
-    const publishContent = getContentWithOptions(nextValue, optionsRef.current?.value || '', fortuneEntryRef, diceRollRef, postOptionsDirectoryCode, {
-      includeFortune: false,
-    });
+    const publishContent = getContentWithPostOptions(nextValue, optionsRef.current?.value || '', postOptionsDirectoryCode);
     updateDraft({ content: nextValue });
     setPublishReplyOptions({ content: publishContent });
-    checkContentLengthRef.current(publishContent, t, optionsRef.current?.value || '', postOptionsDirectoryCode);
+    checkContentLengthRef.current(publishContent, t);
   }, [showReplyModal, quoteInsertRequestId, quoteInsertNumber, quoteInsertSelectedText, postOptionsDirectoryCode, setPublishReplyOptions, t, updateDraft]);
 
   const { isUploading: isUploadingFile, uploadPhase, chooseFile, chooseFiles, uploadAttachment } = useFileUpload();

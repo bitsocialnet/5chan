@@ -264,12 +264,14 @@ describe('ChallengeModal', () => {
     expect(dialog?.style.transform).toBe('translate3d(-50%, 134px, 0)');
   });
 
-  it('redacts generated fortune BBCode from challenge publication details', async () => {
+  it("hides only the markers the publication's board reads from challenge publication details", async () => {
+    // /b/ reads fortunes but not dice, so the typed dice text is published, and shown, as typed.
     const publication = {
       ...createPublication(),
-      content: 'body[fortune color=#fd4d32]Excellent Luck[/fortune]',
+      communityAddress: 'random-nsfw.bso',
+      content: '[dice=1d6]body[fortune]',
     };
-    testState.publicationPreview = 'body';
+    testState.publicationPreview = '[dice=1d6]body';
     testState.publicationType = 'post';
     testState.challenges = [
       createStoredChallenge(
@@ -283,8 +285,7 @@ describe('ChallengeModal', () => {
 
     await renderModal();
 
-    expect(container.querySelector<HTMLTextAreaElement>('textarea')?.value).toBe('body');
-    expect(container.textContent).not.toContain('Excellent Luck');
+    expect(container.querySelector<HTMLTextAreaElement>('textarea')?.value).toBe('[dice=1d6]body');
     expect(container.textContent).not.toContain('[fortune');
   });
 

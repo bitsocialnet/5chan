@@ -187,6 +187,23 @@ describe('PopularThreadsBox', () => {
     expect(container.querySelector('.spoilertext')).toBeNull();
   });
 
+  it('shows no title separator when the body is only a fortune or dice marker', async () => {
+    const thread = testState.popularPosts[0];
+    testState.popularPosts = [
+      // /b/ reads fortunes and /tg/ reads dice; /mu/ reads neither, so its marker stays text.
+      { ...thread, cid: 'thread-fortune', communityAddress: 'random-nsfw.bso', content: '[fortune]' },
+      { ...thread, cid: 'thread-dice', communityAddress: 'traditional-games.bso', content: '[dice=1d6]rolling', title: 'dice title' },
+      { ...thread, cid: 'thread-typed', content: '[dice=1d6] syntax', title: 'typed title' },
+    ];
+
+    await renderPopularThreadsBox();
+
+    expect(container.textContent).toContain('thread title');
+    expect(container.textContent).not.toContain('thread title:');
+    expect(container.textContent).toContain('dice title: rolling');
+    expect(container.textContent).toContain('typed title: [dice=1d6] syntax');
+  });
+
   it('does not show a stale directory suffix in board titles', async () => {
     testState.popularPosts = [
       {

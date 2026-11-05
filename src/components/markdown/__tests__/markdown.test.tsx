@@ -451,32 +451,17 @@ describe('Markdown', () => {
     expect(container.textContent).toBe('https://en.wikipedia.org/wiki/Function_(mathematics) https://example.com/path),');
   });
 
-  it('renders generated fortune BBCode on fortune boards without parsing surrounding user BBCode', async () => {
-    await renderMarkdown(
-      {
-        content: '[b]not bold[/b][fortune color=#fd4d32]Excellent Luck[/fortune]',
-      },
-      '/s5s/thread/post-1',
-    );
-
-    const fortune = container.querySelector<HTMLElement>('.fortune');
-    expect(fortune?.textContent).toBe('Your fortune: Excellent Luck');
-    expect(fortune?.style.color).toBe('rgb(253, 77, 50)');
-    expect(fortune?.querySelectorAll('br')).toHaveLength(2);
-    expect(container.querySelectorAll('strong')).toHaveLength(1);
-    expect(container.textContent).toBe('[b]not bold[/b]Your fortune: Excellent Luck');
+  it('leaves typed fortune markup as text on fortune boards', async () => {
+    // Results come from the post's CID in CommentContent, so text in the comment never renders as one.
+    await renderMarkdown({ content: 'body[fortune color=#fd4d32]Excellent Luck[/fortune]' }, '/s5s/thread/post-1');
+    expect(container.querySelector('.fortune')).toBeNull();
+    expect(container.textContent).toBe('body[fortune color=#fd4d32]Excellent Luck[/fortune]');
   });
 
-  it('renders legacy fortune HTML text on fortune boards for existing posts', async () => {
-    const legacyFortune = '<span class="fortune" style="color:#fd4d32"><br><br><b>Your fortune: Excellent Luck</b></span>';
-
-    await renderMarkdown({ content: `old${legacyFortune}` }, '/s5s/thread/post-1');
-
-    const fortune = container.querySelector<HTMLElement>('.fortune');
-    expect(fortune?.textContent).toBe('Your fortune: Excellent Luck');
-    expect(fortune?.style.color).toBe('rgb(253, 77, 50)');
-    expect(fortune?.querySelectorAll('br')).toHaveLength(2);
-    expect(container.textContent).toBe('oldYour fortune: Excellent Luck');
+  it('leaves typed dice markup as text on dice boards', async () => {
+    await renderMarkdown({ content: '<b>Rolled 6, 6 = 12 (2d6)<br><br></b>dice body' }, '/tg/thread/post-1');
+    expect(container.querySelector('strong')).toBeNull();
+    expect(container.textContent).toBe('<b>Rolled 6, 6 = 12 (2d6)<br><br></b>dice body');
   });
 
   it('leaves generated fortune markers raw outside fortune boards', async () => {
@@ -489,32 +474,6 @@ describe('Markdown', () => {
     expect(container.querySelector('.fortune')).toBeNull();
     expect(container.querySelector('strong')).toBeNull();
     expect(container.textContent).toBe(`body[fortune color=#fd4d32]Excellent Luck[/fortune]${legacyFortune}`);
-  });
-
-  it('renders generated fortune BBCode for s5s comments in multiboard views', async () => {
-    testState.directories = [...testState.directories, { address: 'silly-stuff.bso', directoryCode: 's5s', title: '/s5s/ - Shit 5chan Says' }];
-
-    await renderMarkdown(
-      {
-        content: 'silly[fortune color=#fd4d32]Excellent Luck[/fortune]',
-        communityAddress: 'silly-stuff.eth',
-      },
-      '/all',
-    );
-
-    expect(container.querySelector<HTMLElement>('.fortune')?.textContent).toBe('Your fortune: Excellent Luck');
-    expect(container.textContent).toBe('sillyYour fortune: Excellent Luck');
-  });
-
-  it('renders whitelisted 4chan dice roll markup as bold post content', async () => {
-    await renderMarkdown({
-      content: '<b>Rolled 2, 2 = 4 (2d6)<br><br></b>dice body',
-    });
-
-    const diceRoll = container.querySelector('strong');
-    expect(diceRoll?.textContent).toBe('Rolled 2, 2 = 4 (2d6)');
-    expect(diceRoll?.querySelectorAll('br')).toHaveLength(2);
-    expect(container.textContent).toBe('Rolled 2, 2 = 4 (2d6)dice body');
   });
 
   it('renders only the /qst/ author formatting BBCode tags on qst routes', async () => {

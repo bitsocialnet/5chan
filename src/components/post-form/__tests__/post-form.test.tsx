@@ -1511,8 +1511,7 @@ describe('PostForm', () => {
     );
   });
 
-  it('validates unsupported options and keeps fortune output out of preview state until post publish', async () => {
-    const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.25);
+  it('validates unsupported options and publishes a fortune marker instead of a result', async () => {
     testState.resolvedCommunityAddress = 'random-nsfw.bso';
 
     await renderPostForm('/b');
@@ -1543,7 +1542,7 @@ describe('PostForm', () => {
     await dispatchInput(optionsInput as HTMLInputElement, 'fortune');
 
     expect(container.textContent).not.toContain('Unsupported options');
-    expect(testState.publishPostOptions.content).toBe('fortune body');
+    expect(testState.publishPostOptions.content).toBe('fortune body[fortune]');
 
     await clickByText(table as HTMLTableElement, 'post');
 
@@ -1551,16 +1550,15 @@ describe('PostForm', () => {
     expect(testState.publishPostMock).toHaveBeenCalledWith(
       {
         challengeRequest: undefined,
-        content: 'fortune body[fortune color=#fd4d32]Excellent Luck[/fortune]',
+        content: 'fortune body[fortune]',
         displayName: 'Alice',
         flairs: undefined,
       },
       expect.objectContaining({ finish: expect.any(Function) }),
     );
-    randomSpy.mockRestore();
   });
 
-  it('counts hidden fortune output in post length validation without revealing it', async () => {
+  it('counts the fortune marker in post length validation', async () => {
     testState.resolvedCommunityAddress = 'random-nsfw.bso';
 
     await renderPostForm('/b');
@@ -1569,21 +1567,19 @@ describe('PostForm', () => {
     const table = container.querySelector('table') as HTMLTableElement;
     const optionsInput = table.querySelector<HTMLInputElement>('input[aria-label="options"]') as HTMLInputElement;
     const textarea = table.querySelector<HTMLTextAreaElement>('textarea') as HTMLTextAreaElement;
-    const longContent = 'x'.repeat(1930);
+    const longContent = 'x'.repeat(1995);
 
     await dispatchInput(optionsInput, 'fortune');
     await dispatchInput(textarea, longContent);
     await waitForContentLengthValidation();
 
-    expect(testState.publishPostOptions.content).toBe(longContent);
+    expect(testState.publishPostOptions.content).toBe(`${longContent}[fortune]`);
     expect(container.textContent).toContain('comment_field_too_long');
     expect(table.querySelector('tfoot')?.textContent).toContain('comment_field_too_long');
-    expect(container.textContent).not.toContain('[fortune color=');
     expect(testState.publishPostMock).not.toHaveBeenCalled();
   });
 
   it('supports fortune on the /s5s/ route when directory metadata is not loaded', async () => {
-    const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.25);
     testState.resolvedCommunityAddress = 'silly-stuff.bso';
     testState.directories = testState.directories.filter((entry) => entry.address !== 'silly-stuff.bso');
 
@@ -1603,13 +1599,11 @@ describe('PostForm', () => {
     await clickByText(table as HTMLTableElement, 'post');
 
     expect(testState.publishPostMock).toHaveBeenCalledTimes(1);
-    expect(testState.publishedPostOptions?.content).toBe('silly fortune[fortune color=#fd4d32]Excellent Luck[/fortune]');
-    expect(testState.setPublishPostOptionsMock).toHaveBeenCalledWith({ content: 'silly fortune' });
-    randomSpy.mockRestore();
+    expect(testState.publishedPostOptions?.content).toBe('silly fortune[fortune]');
+    expect(testState.setPublishPostOptionsMock).toHaveBeenCalledWith({ content: 'silly fortune[fortune]' });
   });
 
-  it('stores dice rolls in post content on dice-enabled boards', async () => {
-    const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.5);
+  it('publishes the dice option as a marker on dice-enabled boards', async () => {
     testState.resolvedCommunityAddress = 'quests.bso';
 
     await renderPostForm('/qst');
@@ -1628,8 +1622,7 @@ describe('PostForm', () => {
     await clickByText(table as HTMLTableElement, 'post');
 
     expect(testState.publishPostMock).toHaveBeenCalledTimes(1);
-    expect(testState.publishedPostOptions?.content).toBe('<b>Rolled 4 + 3 = 7 (1d6 + 3)<br><br></b>dice body');
-    randomSpy.mockRestore();
+    expect(testState.publishedPostOptions?.content).toBe('[dice=1d6+3]dice body');
   });
 
   it('treats fortune as unsupported outside /b/ and /s5s/', async () => {

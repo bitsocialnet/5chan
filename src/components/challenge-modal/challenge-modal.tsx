@@ -2,7 +2,10 @@ import { useRef, useState, useEffect, useLayoutEffect, useCallback } from 'react
 import { useTranslation } from 'react-i18next';
 import { Challenge as ChallengeType, useAccount, useComment } from '@bitsocial/bitsocial-react-hooks';
 import { getPublicationPreview, getPublicationType, getVotePreview, publishPublicationChallengeAnswers } from '../../lib/utils/challenge-utils';
-import { isSageSupportedByBoard, stripGeneratedFortuneMarkup, stripSageMarker } from '../../lib/utils/post-options-utils';
+import { isSageSupportedByBoard, stripSageMarker } from '../../lib/utils/post-options-utils';
+import { stripPostOptionMarkers } from '../../lib/utils/post-option-markers';
+import { getDirectoryCodeForIdentifier } from '../../lib/code-tags';
+import { useDirectories } from '../../hooks/use-directories';
 import useIsMobile from '../../hooks/use-is-mobile';
 import { useCommunityField } from '../../hooks/use-stable-community';
 import useChallengesStore from '../../stores/use-challenges-store';
@@ -332,9 +335,14 @@ const Challenge = ({ challenge, closeModal, abandonModal }: ChallengeProps) => {
   // A sage reply's marker line stays hidden here, as it is on the published reply.
   const hidesSageMarker = useCommunityField(parentCid ? communityAddress : undefined, isSageSupportedByBoard);
   const shownContent = hidesSageMarker && content ? stripSageMarker(content) : content;
+  // Only the markers the publication's board reads are hidden; elsewhere the text is published as typed.
+  const directories = useDirectories();
+  const directoryCode = getDirectoryCodeForIdentifier(communityAddress, directories);
   const publicationContent =
-    publicationType === 'vote' ? getPublicationPreview(publicationTarget) : getPublicationPreview(publication && { ...publication, content: shownContent });
-  const visibleContent = shownContent ? stripGeneratedFortuneMarkup(shownContent) : '';
+    publicationType === 'vote'
+      ? getPublicationPreview(publicationTarget, directoryCode)
+      : getPublicationPreview(publication && { ...publication, content: shownContent }, directoryCode);
+  const visibleContent = shownContent ? stripPostOptionMarkers(shownContent, { directoryCode }) : '';
   const { displayName } = author || {};
   const parentAddress = useParentAddress(parentCid);
   const community = shortCommunityAddress || communityAddress;
