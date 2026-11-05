@@ -26,6 +26,7 @@ describe('init-translations loading', () => {
   afterEach(() => {
     localStorage.clear();
     vi.unstubAllGlobals();
+    delete window.__FIVECHAN_TRANSLATION_PREFETCH__;
   });
 
   it('has the English strings without requesting them', async () => {
@@ -42,5 +43,38 @@ describe('init-translations loading', () => {
     expect(i18next.t('refresh')).toBe('refresh in de');
     // A key the language lacks falls back to the bundled English.
     expect(i18next.t('thread_update_connection_error')).toBe('Connection Error');
+  });
+
+  it("takes over the request index.html started for the chosen language's strings", async () => {
+    window.__FIVECHAN_TRANSLATION_PREFETCH__ = {
+      url: './translations/de/default.json',
+      response: Promise.resolve(new Response(JSON.stringify({ refresh: 'prefetched refresh' }), { headers: { 'content-type': 'application/json' } })),
+    };
+    const { i18next, requested } = await initTranslations('de');
+
+    expect(requested).toEqual([]);
+    expect(i18next.t('refresh')).toBe('prefetched refresh');
+    expect(window.__FIVECHAN_TRANSLATION_PREFETCH__).toBeUndefined();
+  });
+
+  it('fetches the strings itself when the request index.html started failed', async () => {
+    const failed = Promise.reject(new TypeError('Failed to fetch'));
+    failed.catch(() => {});
+    window.__FIVECHAN_TRANSLATION_PREFETCH__ = { url: './translations/de/default.json', response: failed };
+    const { i18next, requested } = await initTranslations('de');
+
+    expect(requested).toEqual(['./translations/de/default.json']);
+    expect(i18next.t('refresh')).toBe('refresh in de');
+  });
+
+  it('fetches the strings itself when index.html prefetched another language', async () => {
+    window.__FIVECHAN_TRANSLATION_PREFETCH__ = {
+      url: './translations/fr/default.json',
+      response: Promise.resolve(new Response('{}')),
+    };
+    const { i18next, requested } = await initTranslations('de');
+
+    expect(requested).toEqual(['./translations/de/default.json']);
+    expect(i18next.t('refresh')).toBe('refresh in de');
   });
 });

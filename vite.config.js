@@ -9,7 +9,15 @@ import { VitePWA } from 'vite-plugin-pwa';
 import { APP_PRELOAD_ATTRIBUTE, dynamicEntryPreloadPlugin } from './scripts/vite-app-preload.mjs';
 import { staticShellPlugin } from './scripts/vite-static-shell.mjs';
 import { statsProviderPrefetchPlugin } from './scripts/vite-stats-provider-prefetch.mjs';
+import { translationPrefetchPlugin } from './scripts/vite-translation-prefetch.mjs';
 import { getStatsProviderUrl, PURE_P2P_STATS_STORAGE_KEY, STATS_PROVIDER_DOWNLOAD_TIMEOUT_MS, STATS_PROVIDERS } from './src/lib/stats-providers.ts';
+import {
+  DEFAULT_INTERFACE_LANGUAGE,
+  INTERFACE_LANGUAGE_STORAGE_KEY,
+  INTERFACE_TRANSLATIONS_LOAD_PATH,
+  INTERFACE_TRANSLATIONS_NAMESPACE,
+  SUPPORTED_INTERFACE_LANGUAGES,
+} from './src/lib/constants.ts';
 
 const { version: packageVersion } = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8'));
 const appVersion = `${process.env.VITE_APP_VERSION || packageVersion}`.trim() || packageVersion;
@@ -370,6 +378,13 @@ export default defineConfig({
       urls: [getStatsProviderUrl(STATS_PROVIDERS[0], 'stats'), getStatsProviderUrl(STATS_PROVIDERS[0], 'boards')],
       timeoutMs: STATS_PROVIDER_DOWNLOAD_TIMEOUT_MS,
       pureP2PStorageKey: PURE_P2P_STATS_STORAGE_KEY,
+    }),
+    translationPrefetchPlugin({
+      storageKey: INTERFACE_LANGUAGE_STORAGE_KEY,
+      defaultLanguage: DEFAULT_INTERFACE_LANGUAGE,
+      languages: SUPPORTED_INTERFACE_LANGUAGES,
+      loadPath: INTERFACE_TRANSLATIONS_LOAD_PATH,
+      namespace: INTERFACE_TRANSLATIONS_NAMESPACE,
     }),
     staticShellPlugin({ preloadAttribute: APP_PRELOAD_ATTRIBUTE }),
     VitePWA({

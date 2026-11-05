@@ -13,6 +13,10 @@ export const DEFAULT_INTERFACE_LANGUAGE = 'en';
 /** Persist only deliberate in-app language selections, never OS/browser auto-detection. */
 export const INTERFACE_LANGUAGE_STORAGE_KEY = '5chan-interface-language';
 
+/** Where a language's strings load from, and their one namespace (i18next and index.html's prefetch). */
+export const INTERFACE_TRANSLATIONS_LOAD_PATH = './translations/{{lng}}/{{ns}}.json';
+export const INTERFACE_TRANSLATIONS_NAMESPACE = 'default';
+
 export const SUPPORTED_INTERFACE_LANGUAGES = [
   'ar',
   'bn',
