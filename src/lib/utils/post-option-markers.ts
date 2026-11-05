@@ -66,8 +66,8 @@ const DICE_MARKER_PATTERN = '\\[dice=(\\d+)d(\\d+)(?:([+-])(\\d+))?\\]';
 // Before the CID derivation, the poster's client rolled the result and stored it in the post. Posts from
 // before this time keep showing that stored result, and only that: a typed `[fortune]` or `[dice=1d6]` was
 // plain text then. Boards reject publications more than 5 minutes off their clock, so a newer post can
-// claim a pre-cutoff timestamp only within 5 minutes of the cutoff. 2026-11-04T00:00:00Z.
-const STORED_POST_OPTION_RESULTS_BEFORE_TIMESTAMP = 1793750400;
+// claim a pre-cutoff timestamp only within 5 minutes of the cutoff. 2026-11-05T17:50:00Z, the release.
+const STORED_POST_OPTION_RESULTS_BEFORE_TIMESTAMP = 1793901000;
 
 export const usesStoredResults = (timestamp: number | undefined): boolean => typeof timestamp === 'number' && timestamp < STORED_POST_OPTION_RESULTS_BEFORE_TIMESTAMP;
 const LEGACY_FORTUNE_BBCODE_PATTERN = '\\[fortune color=(#[0-9a-fA-F]{6})\\]([^\\r\\n]*?)\\[\\/fortune\\]';
