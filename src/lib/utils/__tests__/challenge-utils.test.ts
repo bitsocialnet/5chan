@@ -142,4 +142,9 @@ describe('challenge-utils', () => {
       }),
     ).toBe(`${'a'.repeat(50)}...`);
   });
+
+  it("hides only the markers the publication's board reads in its preview", () => {
+    expect(getPublicationPreview({ title: 'Roll', content: '[dice=1d6]body[fortune]' }, 'tg')).toBe('Roll: body[fortune]');
+    expect(getPublicationPreview({ content: 'the syntax is [dice=1d6]' }, 'g')).toBe('the syntax is [dice=1d6]');
+  });
 });

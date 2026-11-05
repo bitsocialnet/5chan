@@ -15,7 +15,8 @@ import { getBoardPath } from '../../lib/utils/route-utils';
 import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
 import { removeMarkdown } from '../../lib/utils/post-utils';
 import { stripPostOptionMarkers } from '../../lib/utils/post-option-markers';
-import { useDirectories } from '../../hooks/use-directories';
+import { getDirectoryCodeForIdentifier } from '../../lib/code-tags';
+import { type DirectoryCommunity, useDirectories } from '../../hooks/use-directories';
 import { useCommunityIdentifier, useCommunityIdentifiers } from '../../hooks/use-community-identifiers';
 import styles from './archive.module.css';
 
@@ -53,9 +54,17 @@ const ARCHIVE_EXCERPT_SEPARATOR = ': ';
 
 const collapseWhitespace = (value: string) => value.replace(/\s+/g, ' ').trim();
 
-const getArchiveExcerpt = ({ content, title, link, timestamp }: Pick<BoardFeedComment, 'content' | 'title' | 'link' | 'timestamp'>, t: (key: string) => string) => {
+// The board whose fortune and dice markers the excerpts hide; the route stands in until the address resolves.
+const getArchiveDirectoryCode = (communityAddress: string | undefined, boardIdentifier: string | undefined, directories: DirectoryCommunity[]) =>
+  getDirectoryCodeForIdentifier(communityAddress ?? boardIdentifier, directories);
+
+const getArchiveExcerpt = (
+  { content, title, link, timestamp }: Pick<BoardFeedComment, 'content' | 'title' | 'link' | 'timestamp'>,
+  directoryCode: string | undefined,
+  t: (key: string) => string,
+) => {
   const cleanTitle = typeof title === 'string' ? collapseWhitespace(removeMarkdown(title)) : '';
-  const cleanContent = typeof content === 'string' ? collapseWhitespace(removeMarkdown(stripPostOptionMarkers(content, timestamp))) : '';
+  const cleanContent = typeof content === 'string' ? collapseWhitespace(removeMarkdown(stripPostOptionMarkers(content, { directoryCode, timestamp }))) : '';
   const cleanLink = typeof link === 'string' ? collapseWhitespace(link) : '';
   const cleanBody = cleanTitle || cleanContent ? cleanContent : cleanLink || t('no_content');
   const separator = cleanTitle && cleanBody ? ARCHIVE_EXCERPT_SEPARATOR : '';
@@ -175,6 +184,7 @@ const ArchiveListing = ({ boardIdentifier, communityAddress }: { boardIdentifier
     return getBoardPath(communityAddress, directories);
   }, [boardIdentifier, directories, communityAddress]);
 
+  const directoryCode = getArchiveDirectoryCode(communityAddress, boardIdentifier, directories);
   const boardTitle = useCommunityField(communityAddress, (community) => community?.title) || `/${boardIdentifier || communityAddress || t('archive')}/`;
 
   const archiveFilter = useMemo(
@@ -263,7 +273,7 @@ const ArchiveListing = ({ boardIdentifier, communityAddress }: { boardIdentifier
             {feed.map((comment, index) => {
               const threadLink = getThreadLink(boardPath, comment);
               const threadNumber = comment.threadCid || comment.number || comment.cid;
-              const excerpt = getArchiveExcerpt(comment, t);
+              const excerpt = getArchiveExcerpt(comment, directoryCode, t);
 
               return (
                 <tr key={comment.cid || `archive-${index}`} className={`${styles.arcRow} ${index % 2 === 0 ? styles.rowOdd : ''}`}>

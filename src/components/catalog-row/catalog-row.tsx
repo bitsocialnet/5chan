@@ -25,6 +25,7 @@ import usePinnedCatalogThreadsStore, { getPinnedThreadNewReplyCount } from '../.
 import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
 import { CATALOG_PREVIEW_MARKDOWN_OPTIONS, removeMarkdown } from '../../lib/utils/post-utils';
 import { stripPostOptionMarkers } from '../../lib/utils/post-option-markers';
+import { getDirectoryCodeForIdentifier } from '../../lib/code-tags';
 import GifFirstFrameCanvas from '../gif-first-frame-canvas';
 import PostMenuDesktop from '../post-menu-desktop';
 import styles from './catalog-row.module.css';
@@ -239,7 +240,6 @@ const CatalogPost = memo(
     const resolvedPost = useMemo(() => withResolvedCommentCommunityAddress(post), [post]);
     const { cid, content, link, linkHeight, linkWidth, locked, pinned, replyCount, spoiler, communityAddress, timestamp, title, thumbnailUrl } = resolvedPost || {};
     const archived = isCommentArchived(resolvedPost);
-    const teaserContent = content && stripPostOptionMarkers(content, timestamp);
     const linkCount = useCountLinksInReplies(resolvedPost);
 
     const linkMediaInfo = useCommentMediaInfo(link, thumbnailUrl, linkWidth, linkHeight);
@@ -260,6 +260,7 @@ const CatalogPost = memo(
     const isInSubscriptionsView = isSubscriptionsView(location.pathname, params);
     const directories = useDirectories();
     const directoryEntry = findDirectoryByAddress(directories, communityAddress);
+    const teaserContent = content && stripPostOptionMarkers(content, { directoryCode: getDirectoryCodeForIdentifier(communityAddress, directories), timestamp });
     const requirePostLinkIsMedia = directoryEntry?.features?.requirePostLinkIsMedia === true;
     const boardPath = communityAddress ? getBoardPath(communityAddress, directories) : '';
     const postMenuProps = useMemo(() => selectPostMenuProps(resolvedPost), [resolvedPost]);

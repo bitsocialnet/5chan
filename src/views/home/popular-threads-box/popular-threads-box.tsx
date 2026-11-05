@@ -21,11 +21,13 @@ import usePrefetchIntent from '../../../hooks/use-prefetch-intent';
 import { usePromiseResult } from '../../../hooks/use-promise-result';
 import { CATALOG_PREVIEW_MARKDOWN_OPTIONS, removeMarkdown } from '../../../lib/utils/post-utils';
 import { stripPostOptionMarkers } from '../../../lib/utils/post-option-markers';
+import { getDirectoryCodeForIdentifier } from '../../../lib/code-tags';
 
 interface PopularThreadProps {
   post: Comment;
   boardTitle: string;
   boardPath: string;
+  directoryCode: string | undefined;
 }
 
 const PopularThreadsLoading = ({ boardAddresses }: { boardAddresses: string[] }) => {
@@ -35,8 +37,8 @@ const PopularThreadsLoading = ({ boardAddresses }: { boardAddresses: string[] })
   return <LoadingEllipsis string={loadingStateString} />;
 };
 
-const getContentPreview = (content: string, timestamp: number | undefined, maxLength = 99) => {
-  const plainText = removeMarkdown(stripPostOptionMarkers(content, timestamp), CATALOG_PREVIEW_MARKDOWN_OPTIONS)
+const getContentPreview = (content: string, directoryCode: string | undefined, timestamp: number | undefined, maxLength = 99) => {
+  const plainText = removeMarkdown(stripPostOptionMarkers(content, { directoryCode, timestamp }), CATALOG_PREVIEW_MARKDOWN_OPTIONS)
     .trim()
     .replaceAll('&nbsp;', '')
     .replace(/\n\n/g, '\n')
@@ -47,10 +49,10 @@ const getContentPreview = (content: string, timestamp: number | undefined, maxLe
 };
 
 const PopularThreadCard = memo(
-  ({ post, boardTitle, boardPath }: PopularThreadProps) => {
+  ({ post, boardTitle, boardPath, directoryCode }: PopularThreadProps) => {
     const { cid, content, timestamp, title } = post || {};
     // A body that is only a fortune or dice marker has no preview, so the title gets no `: ` after it.
-    const contentPreview = content ? getContentPreview(content, timestamp, 99) : '';
+    const contentPreview = content ? getContentPreview(content, directoryCode, timestamp, 99) : '';
     const commentMediaInfo = getCommentCoverMediaInfo(post);
     const prefetchThread = usePrefetchIntent({ commentCid: cid, communityAddress: getCommentCommunityAddress(post) });
 
@@ -80,7 +82,11 @@ const PopularThreadCard = memo(
       </div>
     );
   },
-  (prevProps, nextProps) => prevProps.post?.cid === nextProps.post?.cid && prevProps.boardTitle === nextProps.boardTitle && prevProps.boardPath === nextProps.boardPath,
+  (prevProps, nextProps) =>
+    prevProps.post?.cid === nextProps.post?.cid &&
+    prevProps.boardTitle === nextProps.boardTitle &&
+    prevProps.boardPath === nextProps.boardPath &&
+    prevProps.directoryCode === nextProps.directoryCode,
 );
 
 const getPopularThreadBoardTitle = (directoryTitle: string | undefined): string => directoryTitle?.replace(/^\/[^/]+\/\s*-\s*/, '').replace(/\s+Directory$/, '') || '';
@@ -101,7 +107,8 @@ const PopularThreadsList = ({ directories, posts }: { directories: DirectoryComm
       const directoryEntry = findDirectoryByAddress(directories, communityAddress);
       const boardTitle = getPopularThreadBoardTitle(directoryEntry?.title);
       const boardPath = communityAddress ? getBoardPath(communityAddress, directories) : '';
-      return <PopularThreadCard key={post.cid} post={post} boardTitle={boardTitle} boardPath={boardPath} />;
+      const directoryCode = getDirectoryCodeForIdentifier(communityAddress, directories);
+      return <PopularThreadCard key={post.cid} post={post} boardTitle={boardTitle} boardPath={boardPath} directoryCode={directoryCode} />;
     })}
   </div>
 );

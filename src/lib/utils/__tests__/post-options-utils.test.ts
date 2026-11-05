@@ -128,7 +128,7 @@ describe('post-options-utils', () => {
       content: 'hi',
       fortune: expect.objectContaining({ text: expectedFortune(CID) }),
     });
-    expect(stripPostOptionMarkers('[dice=[dice=1d6]20d20]hi')).toBe('hi');
+    expect(stripPostOptionMarkers('[dice=[dice=1d6]20d20]hi', { directoryCode: 'tg' })).toBe('hi');
   });
 
   it('derives the fortune from the post CID and ignores any result written in the comment', () => {
@@ -166,7 +166,8 @@ describe('post-options-utils', () => {
       content: 'body[fortune color=#d302a7]Godly Luck[/fortune]',
       diceText: 'Rolled 6 (1d6)',
     });
-    expect(stripPostOptionMarkers(legacyContent, BEFORE_CUTOFF)).toBe('body');
+    expect(stripPostOptionMarkers(legacyContent, { directoryCode: 'b', timestamp: BEFORE_CUTOFF })).toBe('<b>Rolled 6 (1d6)<br><br></b>body');
+    expect(stripPostOptionMarkers(legacyContent, { directoryCode: 'tg', timestamp: BEFORE_CUTOFF })).toBe('body[fortune color=#d302a7]Godly Luck[/fortune]');
   });
 
   it('leaves typed markers as text in posts from before the CID derivation', () => {
@@ -175,8 +176,8 @@ describe('post-options-utils', () => {
 
     expect(getPostOptionResults({ content: typed, cid: CID, timestamp: BEFORE_CUTOFF, directoryCode: 'b', isEdited: false })).toEqual({ content: typed });
     expect(getPostOptionResults({ content: typed, cid: CID, timestamp: BEFORE_CUTOFF, directoryCode: 'tg', isEdited: false })).toEqual({ content: typed });
-    expect(stripPostOptionMarkers(typed, BEFORE_CUTOFF)).toBe(typed);
-    expect(stripPostOptionMarkers(typed, AFTER_CUTOFF)).toBe('use  for luck, then roll ');
+    expect(stripPostOptionMarkers(typed, { directoryCode: 'b', timestamp: BEFORE_CUTOFF })).toBe(typed);
+    expect(stripPostOptionMarkers(typed, { directoryCode: 'b', timestamp: AFTER_CUTOFF })).toBe('use  for luck, then roll [dice=1d20]');
   });
 
   it('shows no result while pending or after an author edit, and hides the markers', () => {
@@ -196,7 +197,11 @@ describe('post-options-utils', () => {
       content: '[dice=1d6]body[fortune]',
     });
     expect(getPostOptionResults({ content: userText, cid: CID, timestamp: AFTER_CUTOFF, directoryCode: 'b', isEdited: false })).toEqual({ content: userText });
-    expect(stripPostOptionMarkers('[dice=2d6]body[fortune]')).toBe('body');
-    expect(stripPostOptionMarkers(userText)).toBe(userText);
+    // Previews hide only the markers the post's board reads, so they match the post and what was published.
+    expect(stripPostOptionMarkers('[dice=2d6]body[fortune]', { directoryCode: 'b' })).toBe('[dice=2d6]body');
+    expect(stripPostOptionMarkers('[dice=2d6]body[fortune]', { directoryCode: 'tg' })).toBe('body[fortune]');
+    expect(stripPostOptionMarkers('the syntax is [dice=2d6]', { directoryCode: 'g' })).toBe('the syntax is [dice=2d6]');
+    expect(stripPostOptionMarkers('[fortune]', { directoryCode: undefined })).toBe('[fortune]');
+    expect(stripPostOptionMarkers(userText, { directoryCode: 'b' })).toBe(userText);
   });
 });

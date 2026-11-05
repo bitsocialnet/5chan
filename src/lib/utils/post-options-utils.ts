@@ -3,10 +3,14 @@ import { sha256 } from '@noble/hashes/sha2.js';
 import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils.js';
 import { getBoardNoBumpKeywords } from './board-sort-utils';
 import {
+  DICE_DIRECTORY_CODES,
+  FORTUNE_DIRECTORY_CODES,
   FORTUNE_ENTRIES,
   FORTUNE_MARKER,
   findMarkers,
   getDiceSpec,
+  isDiceDirectoryCode,
+  isFortuneDirectoryCode,
   stripMarkersUntilStable,
   usesStoredResults,
   type DiceSpec,
@@ -18,8 +22,6 @@ export const SAGE_FAQ_LINK_LABEL = 'learn why';
 export const SAGE_FAQ_PATH = '/faq#sage';
 const SAGE_OPTION = 'sage';
 const NONOKOSAGE_OPTION = 'nonokosage';
-const FORTUNE_DIRECTORY_CODES = new Set(['b', 's5s']);
-const DICE_DIRECTORY_CODES = new Set(['qst', 'tg']);
 const POST_OPTION_ROUTE_DIRECTORY_CODES = new Set([...FORTUNE_DIRECTORY_CODES, ...DICE_DIRECTORY_CODES]);
 
 export interface DiceRoll {
@@ -164,10 +166,6 @@ export const appendSageMarker = (content: string, options: string): string => {
 
 /** 4chan never shows sage, so the marker line is hidden on boards whose bump order reads it. */
 export const stripSageMarker = (content: string): string => content.replace(SAGE_MARKER_PATTERN, '');
-
-export const isFortuneDirectoryCode = (directoryCode: string | undefined): boolean => !!directoryCode && FORTUNE_DIRECTORY_CODES.has(directoryCode);
-
-export const isDiceDirectoryCode = (directoryCode: string | undefined): boolean => !!directoryCode && DICE_DIRECTORY_CODES.has(directoryCode);
 
 const getDiceMarker = ({ count, sides, modifierText }: DiceSpec): string => `[dice=${count}d${sides}${modifierText.replaceAll(' ', '')}]`;
 

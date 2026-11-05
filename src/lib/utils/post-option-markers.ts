@@ -1,7 +1,13 @@
 // Fortune and dice marker parsing, kept apart from the CID hashing in post-options-utils so previews
 // (home's popular threads) can hide markers without loading sha256 at startup.
 
+export const FORTUNE_DIRECTORY_CODES = new Set(['b', 's5s']);
+export const DICE_DIRECTORY_CODES = new Set(['qst', 'tg']);
 const MAX_DICE_COUNT = 25;
+
+export const isFortuneDirectoryCode = (directoryCode: string | undefined): boolean => !!directoryCode && FORTUNE_DIRECTORY_CODES.has(directoryCode);
+
+export const isDiceDirectoryCode = (directoryCode: string | undefined): boolean => !!directoryCode && DICE_DIRECTORY_CODES.has(directoryCode);
 
 export interface FortuneEntry {
   color: string;
@@ -142,6 +148,11 @@ export const stripMarkersUntilStable = (content: string, markerTypes: MarkerType
   return result;
 };
 
-/** Hides fortune and dice markers, for previews of a publication outside its board's post view. */
-export const stripPostOptionMarkers = (content: string, timestamp?: number): string =>
-  stripMarkersUntilStable(content, { dice: true, fortune: true, storedOnly: usesStoredResults(timestamp) });
+/**
+ * Hides the fortune and dice markers the post's board reads, for previews of a post outside its board's
+ * post view. Other boards publish and show the same text as typed, so it stays.
+ */
+export const stripPostOptionMarkers = (content: string, { directoryCode, timestamp }: { directoryCode: string | undefined; timestamp?: number }): string => {
+  const markerTypes = { dice: isDiceDirectoryCode(directoryCode), fortune: isFortuneDirectoryCode(directoryCode), storedOnly: usesStoredResults(timestamp) };
+  return markerTypes.dice || markerTypes.fortune ? stripMarkersUntilStable(content, markerTypes) : content;
+};

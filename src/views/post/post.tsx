@@ -10,6 +10,7 @@ import { useCommunityIdentifier } from '../../hooks/use-community-identifiers';
 import { useCommentCidPayload } from '../../hooks/use-comment-cid-payload';
 import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
 import { stripPostOptionMarkers } from '../../lib/utils/post-option-markers';
+import { getDirectoryCodeForIdentifier } from '../../lib/code-tags';
 import { areSameBoardAddress, getBoardPath, isDirectoryBoard } from '../../lib/utils/route-utils';
 import { type CommentWithRefresh, getCommentCommunityAddress, hasAuthoritativeCommentPayload, mergeCommentFallback } from '../../lib/utils/comment-utils';
 import ErrorDisplay from '../../components/error-display';
@@ -257,7 +258,13 @@ const PostPage = () => {
       boardTitle = title ? title : shortAddress || communityAddress || '';
     }
 
-    const postTitle = displayPost?.title?.slice(0, 30) || (displayPost?.content && stripPostOptionMarkers(displayPost.content, displayPost.timestamp).slice(0, 30));
+    const postTitle =
+      displayPost?.title?.slice(0, 30) ||
+      (displayPost?.content &&
+        stripPostOptionMarkers(displayPost.content, {
+          directoryCode: getDirectoryCodeForIdentifier(communityAddress ?? boardIdentifier, directories),
+          timestamp: displayPost.timestamp,
+        }).slice(0, 30));
     const postTitlePart = postTitle ? ` - ${postTitle.trim()}...` : '';
     const unreadCountPart = unreadCount > 0 ? `(${unreadCount}) ` : '';
     document.title = `${unreadCountPart}${boardTitle}${postTitlePart} - 5chan`;

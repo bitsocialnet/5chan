@@ -123,7 +123,8 @@ export const getVotePreview = (publication: ChallengePublication | undefined) =>
   return votePreview;
 };
 
-export const getPublicationPreview = (publication: ChallengePublication | undefined) => {
+/** directoryCode is the publication's board, whose fortune and dice markers the preview hides. */
+export const getPublicationPreview = (publication: ChallengePublication | undefined, directoryCode?: string) => {
   if (!publication) {
     return '';
   }
@@ -131,7 +132,7 @@ export const getPublicationPreview = (publication: ChallengePublication | undefi
   if (publication.title) {
     publicationPreview += publication.title;
   }
-  const content = publication.content ? stripPostOptionMarkers(publication.content) : '';
+  const content = publication.content ? stripPostOptionMarkers(publication.content, { directoryCode }) : '';
   if (content) {
     if (publicationPreview) {
       publicationPreview += ': ';
