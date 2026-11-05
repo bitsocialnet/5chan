@@ -42,7 +42,6 @@ vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
 
 vi.mock('../../lib/utils/challenge-utils', () => ({
   alertChallengeVerificationFailed: (...args: any[]) => testState.alertChallengeVerificationFailedMock(...args),
-  redactGeneratedFortuneFromChallenge: (challenge: unknown) => challenge,
 }));
 
 let container: HTMLDivElement;

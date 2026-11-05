@@ -1,23 +1,30 @@
 import type { Community } from '@bitsocial/bitsocial-react-hooks';
+import { sha256 } from '@noble/hashes/sha2.js';
+import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils.js';
 import { getBoardNoBumpKeywords } from './board-sort-utils';
+import {
+  DICE_DIRECTORY_CODES,
+  FORTUNE_DIRECTORY_CODES,
+  FORTUNE_ENTRIES,
+  FORTUNE_MARKER,
+  findMarkers,
+  getDiceSpec,
+  isDiceDirectoryCode,
+  isFortuneDirectoryCode,
+  stripMarkersUntilStable,
+  usesStoredResults,
+  type DiceSpec,
+  type FortuneEntry,
+} from './post-option-markers';
 
 export const POST_OPTIONS_VALIDATION_DELAY_MS = 700;
 export const SAGE_FAQ_LINK_LABEL = 'learn why';
 export const SAGE_FAQ_PATH = '/faq#sage';
 const SAGE_OPTION = 'sage';
 const NONOKOSAGE_OPTION = 'nonokosage';
-const FORTUNE_DIRECTORY_CODES = new Set(['b', 's5s']);
-const DICE_DIRECTORY_CODES = new Set(['qst', 'tg']);
 const POST_OPTION_ROUTE_DIRECTORY_CODES = new Set([...FORTUNE_DIRECTORY_CODES, ...DICE_DIRECTORY_CODES]);
-const MAX_DICE_COUNT = 25;
-
-export interface FortuneEntry {
-  color: string;
-  text: string;
-}
 
 export interface DiceRoll {
-  option: string;
   count: number;
   sides: number;
   rolls: number[];
@@ -45,53 +52,16 @@ interface PostOptionsDirectory {
   title?: string;
 }
 
-interface PostOptionsStateRef<T> {
-  current: T;
-}
-
-interface PostOptionsContentOptions {
-  includeFortune?: boolean;
-}
-
 const getRouteDirectoryCode = (pathname: string | undefined): string | undefined => {
   const firstSegment = pathname?.split('/').filter(Boolean)[0];
   return firstSegment && POST_OPTION_ROUTE_DIRECTORY_CODES.has(firstSegment) ? firstSegment : undefined;
 };
 
-const FORTUNE_ENTRIES: readonly FortuneEntry[] = [
-  { text: 'Bad Luck', color: '#7fec11' },
-  { text: 'Average Luck', color: '#bac200' },
-  { text: 'Good Luck', color: '#e7890c' },
-  { text: 'Excellent Luck', color: '#fd4d32' },
-  { text: 'Reply hazy, try again', color: '#f51c6a' },
-  { text: 'Godly Luck', color: '#d302a7' },
-  { text: 'Very Bad Luck', color: '#9d05da' },
-  { text: 'Outlook good', color: '#6023f8' },
-  { text: 'Better not tell you now', color: '#2a56fb' },
-  { text: 'You will meet a dark handsome stranger', color: '#0893e1' },
-  { text: 'ｷﾀ━━━━━━(ﾟ∀ﾟ)━━━━━━ !!!!', color: '#00cbb0' },
-  { text: '（　´_ゝ`）ﾌｰﾝ ', color: '#16f174' },
-  { text: 'Good news will come to you by mail', color: '#43fd3b' },
-];
-
 const parsePostOptions = (value: string): string[] => value.trim().split(/\s+/).filter(Boolean);
 
-const parseDiceOption = (option: string): { count: number; sides: number; modifier: number; modifierText: string; option: string } | null => {
+const parseDiceOption = (option: string): DiceSpec | null => {
   const match = option.match(/^dice\+(\d+)d(\d+)(?:([+-])(\d+))?$/);
-  if (!match) return null;
-
-  const rawCount = Number(match[1]);
-  const sides = Number(match[2]);
-  if (!Number.isInteger(rawCount) || !Number.isInteger(sides) || rawCount < 1 || sides < 1) {
-    return null;
-  }
-
-  const count = Math.min(MAX_DICE_COUNT, rawCount);
-  const modifierValue = match[4] ? Number(match[4]) : 0;
-  const modifier = match[3] === '-' ? -modifierValue : modifierValue;
-  const modifierText = match[3] ? ` ${match[3]} ${modifierValue}` : '';
-
-  return { count, sides, modifier, modifierText, option };
+  return match ? getDiceSpec(match[1], match[2], match[3], match[4]) : null;
 };
 
 export const getPostOptionsDirectoryCode = (directory: PostOptionsDirectory | null | undefined, pathname?: string): string | undefined => {
@@ -120,7 +90,7 @@ const isSupportedPostOption = (option: string, directoryCode: string | undefined
     return isFortuneDirectoryCode(directoryCode);
   }
 
-  return !!parseDiceOption(option) && !!directoryCode && DICE_DIRECTORY_CODES.has(directoryCode);
+  return !!parseDiceOption(option) && isDiceDirectoryCode(directoryCode);
 };
 
 const getSupportedDirectoryCodes = (option: string): string[] => {
@@ -138,7 +108,7 @@ export const getPostOptionsValidationError = (value: string, directoryCode: stri
 
   for (const option of parsePostOptions(value)) {
     const diceOption = parseDiceOption(option);
-    if (diceOption && directoryCode && DICE_DIRECTORY_CODES.has(directoryCode)) {
+    if (diceOption && isDiceDirectoryCode(directoryCode)) {
       const isExtraDiceOption = hasDiceOption;
       hasDiceOption = true;
       if (isExtraDiceOption) {
@@ -197,13 +167,10 @@ export const appendSageMarker = (content: string, options: string): string => {
 /** 4chan never shows sage, so the marker line is hidden on boards whose bump order reads it. */
 export const stripSageMarker = (content: string): string => content.replace(SAGE_MARKER_PATTERN, '');
 
-export const isFortuneDirectoryCode = (directoryCode: string | undefined): boolean => !!directoryCode && FORTUNE_DIRECTORY_CODES.has(directoryCode);
+const getDiceMarker = ({ count, sides, modifierText }: DiceSpec): string => `[dice=${count}d${sides}${modifierText.replaceAll(' ', '')}]`;
 
-const hasFortuneOption = (value: string, directoryCode: string | undefined): boolean =>
-  isFortuneDirectoryCode(directoryCode) && parsePostOptions(value).includes('fortune');
-
-const getDiceOption = (value: string, directoryCode: string | undefined): ReturnType<typeof parseDiceOption> => {
-  if (!directoryCode || !DICE_DIRECTORY_CODES.has(directoryCode)) {
+const getDiceOption = (value: string, directoryCode: string | undefined): DiceSpec | null => {
+  if (!isDiceDirectoryCode(directoryCode)) {
     return null;
   }
 
@@ -217,33 +184,39 @@ const getDiceOption = (value: string, directoryCode: string | undefined): Return
   return null;
 };
 
-const getRandomFortuneEntry = (): FortuneEntry => FORTUNE_ENTRIES[Math.floor(Math.random() * FORTUNE_ENTRIES.length)] || FORTUNE_ENTRIES[0];
+/**
+ * The content to publish for the chosen options. Markers typed into the comment are dropped on boards
+ * that read them, so the options field stays the only way to ask for a fortune or a roll.
+ */
+export const getContentWithPostOptions = (content: string, options: string, directoryCode: string | undefined): string => {
+  const hasFortune = isFortuneDirectoryCode(directoryCode) && parsePostOptions(options).includes('fortune');
+  const diceOption = getDiceOption(options, directoryCode);
+  const baseContent = stripMarkersUntilStable(content, {
+    dice: isDiceDirectoryCode(directoryCode),
+    fortune: isFortuneDirectoryCode(directoryCode),
+    storedOnly: false,
+  });
+  const contentWithDice = diceOption ? `${getDiceMarker(diceOption)}${baseContent}` : baseContent;
+  return hasFortune ? `${contentWithDice}${FORTUNE_MARKER}` : contentWithDice;
+};
 
-const getFortuneBbcode = ({ color, text }: FortuneEntry): string => `[fortune color=${color}]${text}[/fortune]`;
-const MAX_FORTUNE_BBCODE_LENGTH = Math.max(...FORTUNE_ENTRIES.map((entry) => getFortuneBbcode(entry).length));
+/*
+ * A post never stores a fortune or dice result. The composer publishes an opt-in marker, `[fortune]` or
+ * `[dice=2d6+1]`, and every reader derives the result from the post's CID, so no text in a post can forge
+ * one. On pseudonymous boards the CID covers the board's signature, so the poster cannot know the result
+ * before the board stores the post. Without pseudonymity a modified client can compute candidate CIDs and
+ * publish only one with the result it wants. Other clients reproduce the result with:
+ *   fortune = FORTUNE_ENTRIES[sha256("fortune:" + cid) mod 13]
+ *   dice roll i (from 0) = sha256("dice:" + cid + ":" + i) mod sides + 1
+ * reading each digest as a big-endian unsigned integer.
+ */
+const getCidDigestValue = (input: string): bigint => BigInt(`0x${bytesToHex(sha256(utf8ToBytes(input)))}`);
 
-const appendFortuneToContent = (content: string, fortune: FortuneEntry): string => `${content}${getFortuneBbcode(fortune)}`;
+const getFortuneForCid = (cid: string): FortuneEntry => FORTUNE_ENTRIES[Number(getCidDigestValue(`fortune:${cid}`) % BigInt(FORTUNE_ENTRIES.length))];
 
-export const getPostOptionsPublishContentLength = (content: string, options: string, directoryCode: string | undefined): number =>
-  hasFortuneOption(options, directoryCode) ? content.trimStart().length + MAX_FORTUNE_BBCODE_LENGTH : content.trim().length;
-
-const rollDice = (diceOption: NonNullable<ReturnType<typeof parseDiceOption>>, currentDiceRoll: DiceRoll | null): DiceRoll => {
-  if (currentDiceRoll?.option === diceOption.option) {
-    return currentDiceRoll;
-  }
-
-  const rolls = Array.from({ length: diceOption.count }, () => Math.floor(Math.random() * diceOption.sides) + 1);
-  const total = rolls.reduce((sum, roll) => sum + roll, 0) + diceOption.modifier;
-
-  return {
-    option: diceOption.option,
-    count: diceOption.count,
-    sides: diceOption.sides,
-    rolls,
-    modifier: diceOption.modifier,
-    modifierText: diceOption.modifierText,
-    total,
-  };
+const rollDiceForCid = (spec: DiceSpec, cid: string): DiceRoll => {
+  const rolls = Array.from({ length: spec.count }, (_, index) => Number(getCidDigestValue(`dice:${cid}:${index}`) % BigInt(spec.sides)) + 1);
+  return { ...spec, rolls, total: rolls.reduce((sum, roll) => sum + roll, 0) + spec.modifier };
 };
 
 const getDiceRollText = (diceRoll: DiceRoll): string => {
@@ -252,63 +225,45 @@ const getDiceRollText = (diceRoll: DiceRoll): string => {
   return `Rolled ${rolls}${diceRoll.modifierText}${total} (${diceRoll.count}d${diceRoll.sides}${diceRoll.modifierText})`;
 };
 
-const getDiceRollMarkup = (diceRoll: DiceRoll): string => `<b>${getDiceRollText(diceRoll)}<br><br></b>`;
+export interface PostOptionResults {
+  /** The comment with every fortune and dice marker removed. */
+  content: string;
+  diceText?: string;
+  fortune?: FortuneEntry;
+}
 
-const prependDiceRollToContent = (content: string, diceRoll: DiceRoll): string => `${getDiceRollMarkup(diceRoll)}${content}`;
+interface PostOptionResultsInput {
+  content: string;
+  /** Absent while the post is pending, so no result shows until the board has stored it. */
+  cid?: string;
+  timestamp?: number;
+  /** The post's own board, so a post reads the same on every route. */
+  directoryCode: string | undefined;
+  /** An author edit could add a marker after the CID is known, so edited posts show no result. */
+  isEdited: boolean;
+}
 
-const getContentWithPostOptions = (
-  content: string,
-  options: string,
-  currentFortuneEntry: FortuneEntry | null,
-  currentDiceRoll: DiceRoll | null,
-  directoryCode: string | undefined,
-  contentOptions: PostOptionsContentOptions = {},
-): { content: string; fortuneEntry: FortuneEntry | null; diceRoll: DiceRoll | null } => {
-  const diceOption = getDiceOption(options, directoryCode);
-  const diceRoll = diceOption ? rollDice(diceOption, currentDiceRoll) : null;
-  const baseContent = isFortuneDirectoryCode(directoryCode) ? stripGeneratedFortuneMarkup(content) : content;
-  let nextContent = diceRoll ? prependDiceRollToContent(baseContent, diceRoll) : baseContent;
-
-  if (!hasFortuneOption(options, directoryCode)) {
-    return { content: nextContent, fortuneEntry: null, diceRoll };
+/** Reads the fortune and dice the post asked for and removes their markers from the displayed comment. */
+export const getPostOptionResults = ({ content, cid, timestamp, directoryCode, isEdited }: PostOptionResultsInput): PostOptionResults => {
+  const markerTypes = { dice: isDiceDirectoryCode(directoryCode), fortune: isFortuneDirectoryCode(directoryCode), storedOnly: usesStoredResults(timestamp) };
+  if (!content || (!markerTypes.dice && !markerTypes.fortune)) {
+    return { content };
   }
 
-  if (contentOptions.includeFortune === false) {
-    return { content: nextContent, fortuneEntry: currentFortuneEntry, diceRoll };
+  const { diceMarkers, fortuneMarkers } = findMarkers(content, markerTypes);
+  const results: PostOptionResults = { content: stripMarkersUntilStable(content, markerTypes) };
+  if (isEdited) {
+    return results;
   }
 
-  const fortuneEntry = currentFortuneEntry || getRandomFortuneEntry();
-  nextContent = appendFortuneToContent(nextContent, fortuneEntry);
-  return { content: nextContent, fortuneEntry, diceRoll };
+  const diceMarker = diceMarkers[0];
+  if (markerTypes.storedOnly) {
+    if (diceMarker?.storedText) results.diceText = diceMarker.storedText;
+    if (fortuneMarkers[0]?.storedFortune) results.fortune = fortuneMarkers[0].storedFortune;
+    return results;
+  }
+
+  if (cid && diceMarker?.spec) results.diceText = getDiceRollText(rollDiceForCid(diceMarker.spec, cid));
+  if (cid && fortuneMarkers.length > 0) results.fortune = getFortuneForCid(cid);
+  return results;
 };
-
-export const getContentWithPostOptionState = (
-  content: string,
-  options: string,
-  fortuneEntryRef: PostOptionsStateRef<FortuneEntry | null>,
-  diceRollRef: PostOptionsStateRef<DiceRoll | null>,
-  directoryCode: string | undefined,
-  contentOptions?: PostOptionsContentOptions,
-): string => {
-  const result = getContentWithPostOptions(content, options, fortuneEntryRef.current, diceRollRef.current, directoryCode, contentOptions);
-  fortuneEntryRef.current = result.fortuneEntry;
-  diceRollRef.current = result.diceRoll;
-  return result.content;
-};
-
-const FORTUNE_BBCODE_PATTERN = '\\[fortune color=(#[0-9a-fA-F]{6})\\]([^\\r\\n]*?)\\[\\/fortune\\]';
-const LEGACY_FORTUNE_MARKUP_PATTERN = '<span class="fortune" style="color:(#[0-9a-fA-F]{6})"><br><br><b>Your fortune: ([^<]+)<\\/b><\\/span>';
-const DICE_ROLL_MARKUP_PATTERN = '<b>(Rolled \\d+(?:, \\d+)*(?: [+-] \\d+)?(?: = -?\\d+)? \\(\\d+d\\d+(?: [+-] \\d+)?\\))<br><br><\\/b>';
-
-export const createFortuneBbcodeRegex = (): RegExp => new RegExp(FORTUNE_BBCODE_PATTERN, 'g');
-export const createLegacyFortuneMarkupRegex = (): RegExp => new RegExp(LEGACY_FORTUNE_MARKUP_PATTERN, 'g');
-export const createDiceRollMarkupRegex = (): RegExp => new RegExp(DICE_ROLL_MARKUP_PATTERN, 'g');
-
-export const getMatchingFortuneEntry = (color: string, text: string): FortuneEntry | undefined =>
-  FORTUNE_ENTRIES.find((entry) => entry.color.toLowerCase() === color.toLowerCase() && entry.text === text);
-
-const stripGeneratedFortuneMatches = (content: string, createRegex: () => RegExp): string =>
-  content.replace(createRegex(), (match, color: string, text: string) => (getMatchingFortuneEntry(color, text) ? '' : match));
-
-export const stripGeneratedFortuneMarkup = (content: string): string =>
-  stripGeneratedFortuneMatches(stripGeneratedFortuneMatches(content, createFortuneBbcodeRegex), createLegacyFortuneMarkupRegex);

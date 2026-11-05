@@ -29,14 +29,11 @@ import {
   getRequireReplyLinkIsMedia,
 } from '../../lib/utils/publish-link-requirements';
 import {
-  type DiceRoll,
-  type FortuneEntry,
   type PostOptionsValidationError,
   POST_OPTIONS_VALIDATION_DELAY_MS,
   appendSageMarker,
-  getContentWithPostOptionState as getContentWithOptions,
+  getContentWithPostOptions,
   getPostOptionsDirectoryCode,
-  getPostOptionsPublishContentLength,
   getPostOptionsValidationError,
   hasNonokoOption,
   isPostOptionsValidationError,
@@ -793,8 +790,6 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
   const optionsRef = useRef<HTMLInputElement>(null);
   const flagRef = useRef<HTMLSelectElement>(null);
   const flashTagRef = useRef<HTMLSelectElement>(null);
-  const fortuneEntryRef = useRef<FortuneEntry | null>(null);
-  const diceRollRef = useRef<DiceRoll | null>(null);
 
   const isInPostView = isPostPageView(location.pathname, params);
   const isInAllView = isAllView(location.pathname);
@@ -861,8 +856,8 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
   const { isPublishSubmissionInFlight, runPublishSubmission } = usePublishSubmissionGuard();
 
   const checkContentLength = useRef(
-    debounce((content: string, t: TFunction, options: string, directoryCode: string | undefined) => {
-      const length = getPostOptionsPublishContentLength(content, options, directoryCode);
+    debounce((content: string, t: TFunction) => {
+      const length = content.trim().length;
       if (length > 2000) {
         setLengthError(`${t('error')}: ${t('comment_field_too_long', { length })}`);
       } else {
@@ -901,8 +896,6 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
     }
     checkContentLength.cancel();
     checkPostOptions.cancel();
-    fortuneEntryRef.current = null;
-    diceRollRef.current = null;
     setFormError(null);
     setIsBbcodePreviewing(false);
     setBbcodePreviewContent('');
@@ -974,7 +967,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
         const currentOptions = optionsRef.current?.value || '';
         // Sage only changes how replies bump a thread, so a new thread accepts it without a marker.
         const currentOptionsError = getPostOptionsValidationError(currentOptions, postOptionsDirectoryCode, isSageSupported);
-        const publishContent = getContentWithOptions(currentContent, currentOptions, fortuneEntryRef, diceRollRef, postOptionsDirectoryCode);
+        const publishContent = getContentWithPostOptions(currentContent, currentOptions, postOptionsDirectoryCode);
 
         checkContentLength.cancel();
         checkPostOptions.cancel();
@@ -1174,7 +1167,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
 
   const handleContentValueChange = (content: string, options = optionsRef.current?.value || '') => {
     updateDraft({ content });
-    const publishContent = getContentWithOptions(content, options, fortuneEntryRef, diceRollRef, postOptionsDirectoryCode, { includeFortune: false });
+    const publishContent = getContentWithPostOptions(content, options, postOptionsDirectoryCode);
     if (isBbcodePreviewing) {
       setBbcodePreviewContent(content);
     }
@@ -1183,7 +1176,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
     } else {
       setPublishPostOptions({ content: publishContent });
     }
-    checkContentLength(publishContent, t, options, postOptionsDirectoryCode);
+    checkContentLength(publishContent, t);
   };
 
   const handleConvertedContentChange = (content: string, selectionStart: number, selectionEnd: number) => {
@@ -1228,7 +1221,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
         const { displayName: currentDisplayName, tripcodeSecret } = readNameField(nameRef.current?.value);
         const currentOptions = optionsRef.current?.value || '';
         const currentOptionsError = getPostOptionsValidationError(currentOptions, postOptionsDirectoryCode, isSageSupported);
-        const publishContent = getContentWithOptions(textRef.current?.value || '', currentOptions, fortuneEntryRef, diceRollRef, postOptionsDirectoryCode);
+        const publishContent = getContentWithPostOptions(textRef.current?.value || '', currentOptions, postOptionsDirectoryCode);
 
         checkContentLength.cancel();
         checkPostOptions.cancel();
