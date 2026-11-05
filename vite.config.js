@@ -9,7 +9,15 @@ import { VitePWA } from 'vite-plugin-pwa';
 import { APP_PRELOAD_ATTRIBUTE, dynamicEntryPreloadPlugin } from './scripts/vite-app-preload.mjs';
 import { staticShellPlugin } from './scripts/vite-static-shell.mjs';
 import { statsProviderPrefetchPlugin } from './scripts/vite-stats-provider-prefetch.mjs';
+import { translationPrefetchPlugin } from './scripts/vite-translation-prefetch.mjs';
 import { getStatsProviderUrl, PURE_P2P_STATS_STORAGE_KEY, STATS_PROVIDER_DOWNLOAD_TIMEOUT_MS, STATS_PROVIDERS } from './src/lib/stats-providers.ts';
+import {
+  DEFAULT_INTERFACE_LANGUAGE,
+  INTERFACE_LANGUAGE_STORAGE_KEY,
+  INTERFACE_TRANSLATIONS_LOAD_PATH,
+  INTERFACE_TRANSLATIONS_NAMESPACE,
+  SUPPORTED_INTERFACE_LANGUAGES,
+} from './src/lib/constants.ts';
 
 const { version: packageVersion } = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8'));
 const appVersion = `${process.env.VITE_APP_VERSION || packageVersion}`.trim() || packageVersion;
@@ -371,6 +379,13 @@ export default defineConfig({
       timeoutMs: STATS_PROVIDER_DOWNLOAD_TIMEOUT_MS,
       pureP2PStorageKey: PURE_P2P_STATS_STORAGE_KEY,
     }),
+    translationPrefetchPlugin({
+      storageKey: INTERFACE_LANGUAGE_STORAGE_KEY,
+      defaultLanguage: DEFAULT_INTERFACE_LANGUAGE,
+      languages: SUPPORTED_INTERFACE_LANGUAGES,
+      loadPath: INTERFACE_TRANSLATIONS_LOAD_PATH,
+      namespace: INTERFACE_TRANSLATIONS_NAMESPACE,
+    }),
     staticShellPlugin({ preloadAttribute: APP_PRELOAD_ATTRIBUTE }),
     VitePWA({
       disable: isProfilingBuild,
@@ -520,28 +535,22 @@ export default defineConfig({
     target: process.env.ELECTRON ? 'electron-renderer' : 'esnext',
     rollupOptions: {
       output: {
-        manualChunks(id) {
-          if (/[\\/]node_modules[\\/](@bitsocialnet[\\/]bitsocial-react-hooks)[\\/]/.test(id)) {
-            return 'bitsocial-react-hooks';
-          }
-          if (/[\\/]node_modules[\\/](@react-spring|@use-gesture)[\\/]/.test(id)) {
-            return 'spring-gesture';
-          }
-          if (/[\\/]node_modules[\\/](react|react-dom|react-router-dom|react-i18next|i18next|i18next-browser-languagedetector|i18next-http-backend)[\\/]/.test(id)) {
-            return 'vendor';
-          }
-          if (/[\\/]node_modules[\\/](react-markdown|remark-|rehype-|unified|micromark|mdast|hast|unist)[\\/]/.test(id)) {
-            return 'markdown';
-          }
-          if (/[\\/]node_modules[\\/](react-virtuoso)[\\/]/.test(id)) {
-            return 'virtuoso';
-          }
-          if (/[\\/]node_modules[\\/](mathjax-full|mj-context-menu)[\\/]/.test(id)) {
-            return 'mathjax';
-          }
-          if (/[\\/]node_modules[\\/](@floating-ui)[\\/]/.test(id)) {
-            return 'floating-ui';
-          }
+        codeSplitting: {
+          // A group also takes the dependencies of the modules it matches, so React would land in
+          // whichever library group reached it first (floating-ui, which every route then had to
+          // load at startup). The vendor group goes first and keeps React for itself.
+          groups: [
+            {
+              name: 'vendor',
+              test: /[\\/]node_modules[\\/](react|react-dom|react-router-dom|react-i18next|i18next|i18next-browser-languagedetector|i18next-http-backend)[\\/]/,
+              priority: 1,
+            },
+            { name: 'spring-gesture', test: /[\\/]node_modules[\\/](@react-spring|@use-gesture)[\\/]/ },
+            { name: 'markdown', test: /[\\/]node_modules[\\/](react-markdown|remark-|rehype-|unified|micromark|mdast|hast|unist)[\\/]/ },
+            { name: 'virtuoso', test: /[\\/]node_modules[\\/](react-virtuoso)[\\/]/ },
+            { name: 'mathjax', test: /[\\/]node_modules[\\/](mathjax-full|mj-context-menu)[\\/]/ },
+            { name: 'floating-ui', test: /[\\/]node_modules[\\/](@floating-ui)[\\/]/ },
+          ],
         },
       },
     },

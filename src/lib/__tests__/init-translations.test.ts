@@ -51,7 +51,7 @@ describe('init-translations', () => {
         fallbackLng: DEFAULT_INTERFACE_LANGUAGE,
         ns: ['default'],
         defaultNS: 'default',
-        backend: { loadPath: './translations/{{lng}}/{{ns}}.json' },
+        backend: { loadPath: './translations/{{lng}}/{{ns}}.json', alternateFetch: expect.any(Function) },
         detection: {
           order: ['localStorage'],
           caches: ['localStorage'],

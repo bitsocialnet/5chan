@@ -124,6 +124,10 @@ const renderCatalogFilters = () => {
 const openModal = async () => {
   const button = Array.from(container.querySelectorAll('button')).find((candidate) => candidate.textContent === 'filters');
   await click(button ?? null);
+  // The modal is a lazy import.
+  await act(async () => {
+    await vi.dynamicImportSettled();
+  });
 };
 
 const getRows = () => Array.from(container.querySelectorAll('tbody tr'));

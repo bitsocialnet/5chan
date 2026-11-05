@@ -72,24 +72,6 @@
   background-size: 16px 16px;
 }
 
-.mediaWrapper {
-  background-color: var(--media-thumbnail-background-color);
-  width: var(--width);
-  height: var(--height);
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.25);
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
-  overflow: hidden;
-}
-
-/* Thumbnails are sized from the post's peer-supplied linkWidth/linkHeight, which can disagree with the real file; letterbox instead of stretching. */
-.mediaWrapper img,
-.mediaWrapper canvas,
-.mediaWrapper video {
-  object-fit: contain;
-}
-
 .post img, .post canvas, .post video, .post audio {
   max-width: var(--maxWidth);
   max-height: var(--maxHeight);
@@ -120,16 +102,6 @@
 
 .postMenuVisible {
   visibility: visible !important;
-}
-
-.loadingSkeleton {
-  width: 100%;
-  height: 100%;
-  display: inline-block;
-}
-
-.fileDeleted {
-  image-rendering: pixelated;
 }
 
 .postPreview {
@@ -177,7 +149,7 @@
   box-shadow: none !important;
 }
 
-/* The viewer's pinned threads, drawn like 4chan's catalog in every theme. */
+/* The viewer's pinned threads, drawn like 4chan's catalog in every theme (a spoilered thumbnail here, media in catalog-post-media). */
 .pinned {
   border: 3px dashed #34345c;
 }
@@ -186,12 +158,8 @@
   border-color: red;
 }
 
-/* 4chan's Halloween catalog dims thumbnails; its thread teasers are not links, so they never glow. */
+/* 4chan's Halloween catalog thread teasers are not links, so they never glow (catalog-post-media dims the thumbnails). */
 @media (min-width: 640px) {
-  :global(body.spooky) .mediaWrapper {
-    filter: contrast(90%) brightness(90%);
-  }
-
   :global(body.spooky) .post a:hover {
     text-shadow: none;
   }

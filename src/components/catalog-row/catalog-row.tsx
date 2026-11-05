@@ -1,4 +1,4 @@
-import { memo, type SyntheticEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useParams } from 'react-router-dom';
@@ -6,18 +6,15 @@ import { useFloating, offset, size, Placement } from '@floating-ui/react';
 import { Comment, useReplies } from '@bitsocial/bitsocial-react-hooks';
 import getShortAddress from '../../lib/get-short-address';
 import { shouldShowSnow } from '../../stores/use-special-theme-store';
-import { CommentMediaInfo, getCommentGalleryMediaInfos, getCoverMediaInfo, getHasThumbnail } from '../../lib/utils/media-utils';
+import { getCommentGalleryMediaInfos, getCoverMediaInfo, getHasThumbnail } from '../../lib/utils/media-utils';
 import { getFormattedTimeAgo } from '../../lib/utils/time-utils';
 import { isAllView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import { findDirectoryByAddress, useDirectories } from '../../hooks/use-directories';
 import { getBoardPath } from '../../lib/utils/route-utils';
 import useCatalogStyleStore from '../../stores/use-catalog-style-store';
-import useImageFiltersStore from '../../stores/use-image-filters-store';
 import useEditCommentPrivileges from '../../hooks/use-author-privileges';
 import { useCommentMediaInfo } from '../../hooks/use-comment-media-info';
 import useCountLinksInReplies from '../../hooks/use-count-links-in-replies';
-import useFetchGifFirstFrame from '../../hooks/use-fetch-gif-first-frame';
-import { useYouTubeThumbnailFallback } from '../../hooks/use-youtube-thumbnail-fallback';
 import useHide from '../../hooks/use-hide';
 import { usePostPageNumber } from '../../hooks/use-post-page-number';
 import usePrefetchIntent from '../../hooks/use-prefetch-intent';
@@ -26,7 +23,7 @@ import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
 import { CATALOG_PREVIEW_MARKDOWN_OPTIONS, removeMarkdown } from '../../lib/utils/post-utils';
 import { stripPostOptionMarkers } from '../../lib/utils/post-option-markers';
 import { getDirectoryCodeForIdentifier } from '../../lib/code-tags';
-import GifFirstFrameCanvas from '../gif-first-frame-canvas';
+import { CatalogPostMedia } from '../catalog-post-media';
 import PostMenuDesktop from '../post-menu-desktop';
 import PosterTrip from '../poster-trip';
 import styles from './catalog-row.module.css';
@@ -35,126 +32,6 @@ import { selectPostMenuProps } from '../../lib/utils/post-menu-props';
 import { getCommentCommunityAddress, withResolvedCommentCommunityAddress } from '../../lib/utils/comment-utils';
 import { getAuthorBadge } from '../../lib/utils/author-display-utils';
 import { hasTripcodeProof, stripTripcodeProof } from '../../lib/utils/tripcode-utils';
-
-interface CatalogPostMediaProps {
-  cid: string;
-  commentMediaInfo: CommentMediaInfo | undefined;
-  isOutOfFeed?: boolean;
-  linkWidth?: number;
-  linkHeight?: number;
-  matchedFilterColor?: string;
-  pinned?: boolean;
-}
-
-export const CatalogPostMedia = ({ cid, commentMediaInfo, isOutOfFeed = false, linkWidth, linkHeight, matchedFilterColor, pinned = false }: CatalogPostMediaProps) => {
-  void cid;
-  const { patternThumbnailUrl, thumbnail, type, url } = commentMediaInfo || {};
-  const iframeThumbnail = patternThumbnailUrl || thumbnail;
-  const {
-    handleThumbnailError: handleIframeThumbnailError,
-    handleThumbnailLoad: handleIframeThumbnailLoad,
-    isUnavailable: isIframeThumbnailUnavailable,
-    thumbnailUrl: resolvedIframeThumbnail,
-  } = useYouTubeThumbnailFallback(iframeThumbnail);
-  const { frameUrl: gifFrameUrl, status: gifFrameStatus } = useFetchGifFirstFrame(type === 'gif' ? url : undefined);
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [hasError, setHasError] = useState(false);
-  const handleLoad = () => setIsLoaded(true);
-  const handleError = () => setHasError(true);
-  const hashLoadedImage = useImageFiltersStore((state) => state.hashLoadedImage);
-  const handleImageLoad = () => {
-    handleLoad();
-    hashLoadedImage(url);
-  };
-  const handleIframeLoad = (event: SyntheticEvent<HTMLImageElement>) => {
-    if (handleIframeThumbnailLoad(event.currentTarget)) {
-      return;
-    }
-
-    handleLoad();
-  };
-  const handleIframeError = () => {
-    if (handleIframeThumbnailError()) {
-      return;
-    }
-
-    handleError();
-  };
-  const loadingStyle = { opacity: isLoaded ? 1 : 0 };
-
-  const catalogImageSize = useCatalogStyleStore((state) => state.imageSize);
-  // The catalog image size setting only applies to catalog rows; out-of-feed cards (home popular threads) are laid out for 150px thumbnails.
-  const imageSize = isOutOfFeed ? 'Small' : catalogImageSize;
-
-  let displayWidth, displayHeight;
-  const maxThumbnailSize = imageSize === 'Large' ? 250 : 150;
-
-  if (linkWidth && linkHeight) {
-    let scale = Math.min(1, maxThumbnailSize / Math.max(linkWidth, linkHeight));
-    displayWidth = `${linkWidth * scale}px`;
-    displayHeight = `${linkHeight * scale}px`;
-  } else {
-    displayWidth = `${maxThumbnailSize}px`;
-    displayHeight = `${maxThumbnailSize}px`;
-  }
-
-  if (type === 'audio') {
-    displayWidth = `${maxThumbnailSize}px`;
-    displayHeight = '54px';
-  }
-
-  const hasKnownMediaDimensions = Boolean(linkWidth && linkHeight);
-  const numericWidth = hasKnownMediaDimensions ? parseInt(displayWidth) || undefined : undefined;
-  const numericHeight = hasKnownMediaDimensions ? parseInt(displayHeight) || undefined : undefined;
-
-  const maxWidth = imageSize === 'Large' ? '250px' : '150px';
-  const maxHeight = imageSize === 'Large' ? '250px' : '150px';
-
-  const CSSProperties = {
-    '--width': displayWidth,
-    '--height': displayHeight,
-    '--maxWidth': maxWidth,
-    '--maxHeight': maxHeight,
-  } as React.CSSProperties;
-
-  let thumbnailComponent: React.ReactNode = null;
-
-  if (type === 'gif' && gifFrameStatus === 'ready' && gifFrameUrl && !hasError) {
-    thumbnailComponent = <img src={gifFrameUrl} alt='' onLoad={handleLoad} onError={handleError} style={loadingStyle} width={numericWidth} height={numericHeight} />;
-  } else if (type === 'gif' && gifFrameStatus === 'failed' && !hasError) {
-    thumbnailComponent = url && <GifFirstFrameCanvas src={url} onLoad={handleLoad} onError={handleError} style={loadingStyle} />;
-  } else if (type === 'image' && !hasError) {
-    thumbnailComponent = <img src={url} alt='' onLoad={handleImageLoad} onError={handleError} style={loadingStyle} width={numericWidth} height={numericHeight} />;
-  } else if (type === 'video' && !hasError) {
-    thumbnailComponent = thumbnail ? (
-      <img src={thumbnail} alt='' onLoad={handleLoad} onError={handleError} style={loadingStyle} width={numericWidth} height={numericHeight} />
-    ) : (
-      // show first frame of the video, as a workaround for Safari not loading thumbnails
-      <video src={`${url}#t=0.001`} aria-label='Video thumbnail' onError={handleError} />
-    );
-  } else if (type === 'webpage' && !hasError) {
-    thumbnailComponent = <img src={thumbnail} alt='' onLoad={handleLoad} onError={handleError} style={loadingStyle} width={numericWidth} height={numericHeight} />;
-  } else if (type === 'iframe' && resolvedIframeThumbnail && !hasError) {
-    thumbnailComponent = (
-      <img src={resolvedIframeThumbnail} alt='' onLoad={handleIframeLoad} onError={handleIframeError} style={loadingStyle} width={numericWidth} height={numericHeight} />
-    );
-  } else if (type === 'audio') {
-    thumbnailComponent = <audio src={url} aria-label='Audio preview' controls />;
-  }
-
-  return (
-    <div
-      className={`${hasError || isIframeThumbnailUnavailable ? '' : styles.mediaWrapper} ${pinned && !matchedFilterColor ? styles.pinned : ''}`}
-      style={{
-        ...CSSProperties,
-        ...(matchedFilterColor ? { border: `3px solid ${matchedFilterColor}` } : {}),
-      }}
-    >
-      {!isLoaded && !hasError && !isIframeThumbnailUnavailable && type !== 'video' && type !== 'audio' && <span className={styles.loadingSkeleton} />}
-      {hasError || isIframeThumbnailUnavailable ? <img className={styles.fileDeleted} src='assets/filedeleted-res.gif' alt='' /> : thumbnailComponent}
-    </div>
-  );
-};
 
 interface CatalogPostPreviewProps {
   post: Comment;

@@ -1,0 +1,43 @@
+.mediaWrapper {
+  background-color: var(--media-thumbnail-background-color);
+  width: var(--width);
+  height: var(--height);
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.25);
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+/* Thumbnails are sized from the post's peer-supplied linkWidth/linkHeight, which can disagree with the real file; letterbox instead of stretching. */
+.mediaWrapper img,
+.mediaWrapper canvas,
+.mediaWrapper video {
+  object-fit: contain;
+}
+
+.loadingSkeleton {
+  width: 100%;
+  height: 100%;
+  display: inline-block;
+}
+
+.fileDeleted {
+  image-rendering: pixelated;
+}
+
+/* The viewer's pinned threads, drawn like 4chan's catalog in every theme. */
+.pinned {
+  border: 3px dashed #34345c;
+}
+
+.pinned:hover {
+  border-color: red;
+}
+
+/* 4chan's Halloween catalog dims thumbnails. */
+@media (min-width: 640px) {
+  :global(body.spooky) .mediaWrapper {
+    filter: contrast(90%) brightness(90%);
+  }
+}
