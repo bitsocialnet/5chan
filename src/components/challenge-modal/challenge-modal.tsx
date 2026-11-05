@@ -2,7 +2,7 @@ import { useRef, useState, useEffect, useLayoutEffect, useCallback } from 'react
 import { useTranslation } from 'react-i18next';
 import { Challenge as ChallengeType, useAccount, useComment } from '@bitsocial/bitsocial-react-hooks';
 import { getPublicationPreview, getPublicationType, getVotePreview, publishPublicationChallengeAnswers } from '../../lib/utils/challenge-utils';
-import { isSageSupportedByBoard, stripGeneratedFortuneMarkup, stripSageMarker } from '../../lib/utils/post-options-utils';
+import { isSageSupportedByBoard, stripPostOptionMarkers, stripSageMarker } from '../../lib/utils/post-options-utils';
 import useIsMobile from '../../hooks/use-is-mobile';
 import { useCommunityField } from '../../hooks/use-stable-community';
 import useChallengesStore from '../../stores/use-challenges-store';
@@ -334,7 +334,7 @@ const Challenge = ({ challenge, closeModal, abandonModal }: ChallengeProps) => {
   const shownContent = hidesSageMarker && content ? stripSageMarker(content) : content;
   const publicationContent =
     publicationType === 'vote' ? getPublicationPreview(publicationTarget) : getPublicationPreview(publication && { ...publication, content: shownContent });
-  const visibleContent = shownContent ? stripGeneratedFortuneMarkup(shownContent) : '';
+  const visibleContent = shownContent ? stripPostOptionMarkers(shownContent) : '';
   const { displayName } = author || {};
   const parentAddress = useParentAddress(parentCid);
   const community = shortCommunityAddress || communityAddress;

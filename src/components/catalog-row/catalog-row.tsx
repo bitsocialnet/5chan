@@ -24,6 +24,7 @@ import usePrefetchIntent from '../../hooks/use-prefetch-intent';
 import usePinnedCatalogThreadsStore, { getPinnedThreadNewReplyCount } from '../../stores/use-pinned-catalog-threads-store';
 import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
 import { CATALOG_PREVIEW_MARKDOWN_OPTIONS, removeMarkdown } from '../../lib/utils/post-utils';
+import { stripPostOptionMarkers } from '../../lib/utils/post-options-utils';
 import GifFirstFrameCanvas from '../gif-first-frame-canvas';
 import PostMenuDesktop from '../post-menu-desktop';
 import styles from './catalog-row.module.css';
@@ -238,6 +239,7 @@ const CatalogPost = memo(
     const resolvedPost = useMemo(() => withResolvedCommentCommunityAddress(post), [post]);
     const { cid, content, link, linkHeight, linkWidth, locked, pinned, replyCount, spoiler, communityAddress, title, thumbnailUrl } = resolvedPost || {};
     const archived = isCommentArchived(resolvedPost);
+    const teaserContent = content && stripPostOptionMarkers(content);
     const linkCount = useCountLinksInReplies(resolvedPost);
 
     const linkMediaInfo = useCommentMediaInfo(link, thumbnailUrl, linkWidth, linkHeight);
@@ -323,10 +325,10 @@ const CatalogPost = memo(
             {title && (
               <span>
                 <b>{title}</b>
-                {content ? ': ' : ''}
+                {teaserContent ? ': ' : ''}
               </span>
             )}
-            {content && removeMarkdown(content, CATALOG_PREVIEW_MARKDOWN_OPTIONS)}
+            {teaserContent && removeMarkdown(teaserContent, CATALOG_PREVIEW_MARKDOWN_OPTIONS)}
           </>
         )}
       </div>

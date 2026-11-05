@@ -4,6 +4,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { createInstance } from 'i18next';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import CommentContent from '../comment-content';
+import { getPostOptionResults } from '../../../lib/utils/post-options-utils';
 import { CompleteThreadCidsContext } from '../../../hooks/use-complete-thread-cids';
 import englishTranslations from '../../../../public/translations/en/default.json';
 
@@ -27,6 +28,7 @@ type TestComment = {
   content?: string;
   deleted?: boolean;
   edit?: {
+    content?: string;
     timestamp: number;
   };
   error?: unknown;
@@ -44,6 +46,7 @@ type TestComment = {
   removed?: boolean;
   state?: string;
   communityAddress?: string;
+  timestamp?: number;
 };
 
 const testState = vi.hoisted(() => ({
@@ -746,25 +749,70 @@ describe('CommentContent', () => {
     expect(testState.useCommunity).toHaveBeenLastCalledWith(undefined);
   });
 
-  it('hides generated fortune output from unpublished comment content', async () => {
-    const content = 'body[fortune color=#fd4d32]Excellent Luck[/fortune]';
+  it('shows the fortune derived from the post CID instead of a result stored in the comment', async () => {
+    testState.pathname = '/b/thread/post-1';
+    const timestamp = 1800000000;
+    const content = 'body[fortune color=#d302a7]Godly Luck[/fortune]';
+    const expectedFortune = getPostOptionResults({ content: '[fortune]', cid: 'post-1', timestamp, directoryCodes: ['b'], isEdited: false }).fortune;
 
-    await renderContent({
-      content,
-      postCid: 'post-1',
-      state: 'publishing',
-    });
+    await renderContent({ content, postCid: 'post-1', state: 'publishing', timestamp });
 
     expect(queryMarkdownText()).toEqual(['body']);
-    expect(container.textContent).not.toContain('Excellent Luck');
+    expect(container.querySelector('.fortune')).toBeNull();
 
-    await renderContent({
-      cid: 'post-1',
-      content,
-      postCid: 'post-1',
-    });
+    await renderContent({ cid: 'post-1', content, postCid: 'post-1', timestamp });
 
-    expect(queryMarkdownText()).toEqual([content]);
+    expect(queryMarkdownText()).toEqual(['body']);
+    expect(container.querySelector('.fortune')?.textContent).toBe(`Your fortune: ${expectedFortune?.text}`);
+
+    await renderContent({ cid: 'post-1', content, edit: { content, timestamp }, postCid: 'post-1', timestamp });
+
+    expect(queryMarkdownText()).toEqual(['body']);
+    expect(container.querySelector('.fortune')).toBeNull();
+  });
+
+  it('shows the dice roll derived from the post CID before the comment on dice boards', async () => {
+    testState.pathname = '/tg/thread/post-1';
+    const timestamp = 1800000000;
+    const expectedDice = getPostOptionResults({ content: '[dice=2d6]', cid: 'post-1', timestamp, directoryCodes: ['tg'], isEdited: false }).diceText;
+
+    await renderContent({ cid: 'post-1', content: '[dice=2d6]dice body', postCid: 'post-1', timestamp });
+
+    expect(queryMarkdownText()).toEqual(['dice body']);
+    expect(container.querySelector('blockquote > strong')?.textContent).toBe(expectedDice);
+  });
+
+  it('reads a fortune from the post board in a cross-board preview on a dice board', async () => {
+    const { directories } = testState;
+    testState.pathname = '/tg/thread/post-1';
+    testState.directories = [...directories, { address: 'random.bso', directoryCode: 'b', title: '/b/ - Random' }];
+    const expectedFortune = getPostOptionResults({ content: '[fortune]', cid: 'b-post', timestamp: 1800000000, directoryCodes: ['b'], isEdited: false }).fortune;
+
+    try {
+      await renderContent({ cid: 'b-post', communityAddress: 'random.bso', content: 'body[fortune]', postCid: 'b-post', timestamp: 1800000000 });
+
+      expect(queryMarkdownText()).toEqual(['body']);
+      expect(container.querySelector('.fortune')?.textContent).toBe(`Your fortune: ${expectedFortune?.text}`);
+    } finally {
+      testState.directories = directories;
+    }
+  });
+
+  it('keeps the fortune stored by a post from before the CID derivation', async () => {
+    testState.pathname = '/s5s/thread/post-1';
+
+    await renderContent({ cid: 'post-1', content: 'we remain positive[fortune color=#7fec11]Bad Luck[/fortune]', postCid: 'post-1', timestamp: 1793496024 });
+
+    expect(queryMarkdownText()).toEqual(['we remain positive']);
+    expect(container.querySelector<HTMLElement>('.fortune')?.textContent).toBe('Your fortune: Bad Luck');
+    expect(container.querySelector<HTMLElement>('.fortune')?.style.color).toBe('rgb(127, 236, 17)');
+  });
+
+  it('leaves fortune and dice markers as comment text outside their boards', async () => {
+    await renderContent({ cid: 'post-1', content: '[dice=2d6]body[fortune]', postCid: 'post-1', timestamp: 1800000000 });
+
+    expect(queryMarkdownText()).toEqual(['[dice=2d6]body[fortune]']);
+    expect(container.querySelector('.fortune')).toBeNull();
   });
 
   it('renders failed unpublished comment errors through ErrorDisplay', async () => {

@@ -13,6 +13,7 @@ import { useCompleteThreadCids } from '../../hooks/use-complete-thread-cids';
 import useIsMobile from '../../hooks/use-is-mobile';
 import useStateString from '../../hooks/use-state-string';
 import { useCommunityField } from '../../hooks/use-stable-community';
+import { useDirectories } from '../../hooks/use-directories';
 import LoadingEllipsis from '../loading-ellipsis';
 import BbcodeContent from '../bbcode-content';
 import ErrorDisplay from '../error-display';
@@ -24,7 +25,8 @@ import capitalize from 'lodash/capitalize';
 import { getCommentCommunityAddress, withResolvedCommentCommunityAddress } from '../../lib/utils/comment-utils';
 import { formatErrorMessageForDisplay } from '../../lib/utils/error-utils';
 import { hasModQueueAccessRole } from '../../lib/utils/mod-access';
-import { isSageSupportedByBoard, stripGeneratedFortuneMarkup, stripSageMarker } from '../../lib/utils/post-options-utils';
+import { getPostOptionResults, isSageSupportedByBoard, stripSageMarker } from '../../lib/utils/post-options-utils';
+import { getDirectoryCodeForIdentifier, getRouteBoardIdentifier } from '../../lib/code-tags';
 import BoardCheckStatus from './board-check-status';
 
 const QuotedCidLink = ({ cid, isPurged, postCid }: { cid: string; isPurged?: boolean; postCid: string }) => {
@@ -108,11 +110,21 @@ const CommentContent = ({
   const isMobile = useIsMobile();
   const resolvedPost = withResolvedCommentCommunityAddress(post);
 
-  const { cid, content, deleted, parentCid, postCid, pendingApproval, publishingState, quotedCids, reason, removed, state } = resolvedPost || {};
+  const { cid, content, deleted, edit, parentCid, postCid, pendingApproval, publishingState, quotedCids, reason, removed, state, timestamp } = resolvedPost || {};
   const communityAddress = getCommentCommunityAddress(resolvedPost);
   const hidesSageMarker = useCommunityField(parentCid ? communityAddress : undefined, isSageSupportedByBoard);
   const contentWithoutSage = hidesSageMarker && content ? stripSageMarker(content) : content;
-  const visibleContent = !cid && contentWithoutSage ? stripGeneratedFortuneMarkup(contentWithoutSage) : contentWithoutSage;
+  const directories = useDirectories();
+  // The route covers a board whose directory metadata has not loaded; the post's board covers cross-board previews.
+  const routeDirectoryCode = getDirectoryCodeForIdentifier(getRouteBoardIdentifier(location.pathname), directories);
+  const postDirectoryCode = getDirectoryCodeForIdentifier(communityAddress, directories);
+  const isEdited = edit?.content !== undefined;
+  const postOptionResults = useMemo(
+    () => getPostOptionResults({ content: contentWithoutSage, cid, timestamp, directoryCodes: [routeDirectoryCode, postDirectoryCode], isEdited }),
+    [contentWithoutSage, cid, timestamp, routeDirectoryCode, postDirectoryCode, isEdited],
+  );
+  const visibleContent = postOptionResults.content;
+  const { diceText, fortune } = postOptionResults;
   const authorAddress = resolvedPost?.author?.address;
   const authorRole = getRoleByAddress(roles, authorAddress);
   const isPrivilegedAuthor = hasModQueueAccessRole(authorRole);
@@ -267,7 +279,21 @@ const CommentContent = ({
         )
       ) : (
         <>
+          {diceText && (
+            <strong>
+              {diceText}
+              <br />
+              <br />
+            </strong>
+          )}
           {displayContent && renderContent(displayContent)}
+          {fortune && (
+            <span className='fortune' style={{ color: fortune.color }}>
+              <br />
+              <br />
+              <strong>Your fortune: {fortune.text}</strong>
+            </span>
+          )}
           {pendingApproval && (
             <>
               <br />

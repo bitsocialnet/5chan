@@ -264,10 +264,10 @@ describe('ChallengeModal', () => {
     expect(dialog?.style.transform).toBe('translate3d(-50%, 134px, 0)');
   });
 
-  it('redacts generated fortune BBCode from challenge publication details', async () => {
+  it('hides fortune and dice markers from challenge publication details', async () => {
     const publication = {
       ...createPublication(),
-      content: 'body[fortune color=#fd4d32]Excellent Luck[/fortune]',
+      content: '[dice=1d6]body[fortune]',
     };
     testState.publicationPreview = 'body';
     testState.publicationType = 'post';
@@ -284,8 +284,8 @@ describe('ChallengeModal', () => {
     await renderModal();
 
     expect(container.querySelector<HTMLTextAreaElement>('textarea')?.value).toBe('body');
-    expect(container.textContent).not.toContain('Excellent Luck');
     expect(container.textContent).not.toContain('[fortune');
+    expect(container.textContent).not.toContain('[dice');
   });
 
   it('supports multi-step image challenges with next and previous navigation', async () => {

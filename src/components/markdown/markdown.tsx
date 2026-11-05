@@ -20,15 +20,8 @@ import { communitiesPagesStore as useCommunitiesPagesStore } from '../../lib/bit
 import { useComment } from '@bitsocial/bitsocial-react-hooks';
 import ReplyQuotePreview from '../reply-quote-preview';
 import ExternalNumberQuoteLink from './external-number-quote-link';
-import { useDirectories, type DirectoryCommunity } from '../../hooks/use-directories';
+import { useDirectories } from '../../hooks/use-directories';
 import { getCatalogSearchRoute } from '../../lib/utils/route-utils';
-import {
-  createDiceRollMarkupRegex,
-  createFortuneBbcodeRegex,
-  createLegacyFortuneMarkupRegex,
-  getMatchingFortuneEntry,
-  isFortuneDirectoryCode,
-} from '../../lib/utils/post-options-utils';
 import { HAS_MATH_TAG_REGEX, isMathDirectoryCode, splitMathSegments } from '../../lib/math-tags';
 import { HAS_CODE_TAG_REGEX, getDirectoryCodeForIdentifier, getRouteBoardIdentifier, isCodeTagsEnabledForContext, splitCodeTagSegments } from '../../lib/code-tags';
 
@@ -180,15 +173,6 @@ const QST_BBCODE_COLOR_STYLES = {
   green: { color: QST_BBCODE_COLORS.green },
   blue: { color: QST_BBCODE_COLORS.blue },
 } satisfies Record<Extract<QstBbcodeTag, 'red' | 'green' | 'blue'>, React.CSSProperties>;
-
-const getActiveDirectoryCode = (pathname: string, communityAddress: string | undefined, directories: DirectoryCommunity[]): string | undefined => {
-  const routeDirectoryCode = getDirectoryCodeForIdentifier(getRouteBoardIdentifier(pathname), directories);
-  if (isFortuneDirectoryCode(routeDirectoryCode)) {
-    return routeDirectoryCode;
-  }
-
-  return getDirectoryCodeForIdentifier(communityAddress, directories);
-};
 
 const COMBINED_REGEX = new RegExp(
   `(${SPOILER_REGEX.source})|(${MARKDOWN_LINK_REGEX.source})|(${CROSSBOARD_NUMBER_QUOTE_TOKEN_REGEX.source})|(${CROSSBOARD_REGEX.source})|(${QUOTE_LINK_REGEX.source})|(${URL_REGEX.source})`,
@@ -411,7 +395,6 @@ interface RenderContext {
   isInCatalogView: boolean;
   postCid?: string;
   communityAddress?: string;
-  enableFortuneMarkup: boolean;
   enableQstBbcode: boolean;
   parseSpoilers: boolean;
   purgedQuoteNumbers?: ReadonlySet<number>;
@@ -661,95 +644,6 @@ const getQstBbcodeTextNodes = (text: string, keyPrefix: string): React.ReactNode
 
 const QstBbcodeText = ({ text, tokenKey }: { text: string; tokenKey: string }) => <>{getQstBbcodeTextNodes(text, `${tokenKey}/`)}</>;
 
-const Fortune = ({ color, text }: { color: string; text: string }) => (
-  <span className='fortune' style={{ color }}>
-    <br />
-    <br />
-    <strong>Your fortune: {text}</strong>
-  </span>
-);
-
-const DiceRoll = ({ text }: { text: string }) => (
-  <strong>
-    {text}
-    <br />
-    <br />
-  </strong>
-);
-
-const renderLineContent = (line: string, context: RenderContext): React.ReactNode[] => {
-  const elements: React.ReactNode[] = [];
-  let lastIndex = 0;
-  const fortuneBbcodeRegex = context.enableFortuneMarkup ? createFortuneBbcodeRegex() : null;
-  const legacyFortuneMarkupRegex = context.enableFortuneMarkup ? createLegacyFortuneMarkupRegex() : null;
-  const diceRollMarkupRegex = createDiceRollMarkupRegex();
-
-  while (lastIndex < line.length) {
-    if (fortuneBbcodeRegex) {
-      fortuneBbcodeRegex.lastIndex = lastIndex;
-    }
-    if (legacyFortuneMarkupRegex) {
-      legacyFortuneMarkupRegex.lastIndex = lastIndex;
-    }
-    diceRollMarkupRegex.lastIndex = lastIndex;
-
-    const fortuneBbcodeMatch = fortuneBbcodeRegex?.exec(line) ?? null;
-    const legacyFortuneMatch = legacyFortuneMarkupRegex?.exec(line) ?? null;
-    const diceMatch = diceRollMarkupRegex.exec(line);
-    let nextMatch: { type: 'dice'; match: RegExpExecArray } | { type: 'fortune'; match: RegExpExecArray } | null = null;
-
-    for (const candidate of [
-      fortuneBbcodeMatch ? { type: 'fortune' as const, match: fortuneBbcodeMatch } : null,
-      legacyFortuneMatch ? { type: 'fortune' as const, match: legacyFortuneMatch } : null,
-      diceMatch ? { type: 'dice' as const, match: diceMatch } : null,
-    ]) {
-      if (candidate && (!nextMatch || candidate.match.index < nextMatch.match.index)) {
-        nextMatch = candidate;
-      }
-    }
-
-    if (!nextMatch) {
-      break;
-    }
-
-    const [fullMatch] = nextMatch.match;
-    const matchStart = nextMatch.match.index;
-    const matchEnd = matchStart + fullMatch.length;
-
-    if (matchStart > lastIndex) {
-      elements.push(
-        <TokenList
-          key={`text-${lastIndex}-${matchStart}`}
-          tokens={tokenize(line.slice(lastIndex, matchStart), `${lastIndex}:`, context.parseSpoilers)}
-          context={context}
-        />,
-      );
-    }
-
-    if (nextMatch.type === 'dice') {
-      elements.push(<DiceRoll key={`dice-${matchStart}`} text={nextMatch.match[1]} />);
-    } else {
-      const [, color, text] = nextMatch.match;
-      const fortune = getMatchingFortuneEntry(color, text);
-      if (fortune) {
-        elements.push(<Fortune key={`fortune-${matchStart}`} color={fortune.color} text={fortune.text} />);
-      } else {
-        elements.push(<TokenList key={`text-${matchStart}-${matchEnd}`} tokens={tokenize(fullMatch, `${matchStart}:`, context.parseSpoilers)} context={context} />);
-      }
-    }
-
-    lastIndex = matchEnd;
-  }
-
-  if (lastIndex < line.length) {
-    elements.push(
-      <TokenList key={`text-${lastIndex}-${line.length}`} tokens={tokenize(line.slice(lastIndex), `${lastIndex}:`, context.parseSpoilers)} context={context} />,
-    );
-  }
-
-  return elements;
-};
-
 // [code]...[/code] blocks: rendered literally, never parsed for
 // greentext/quotelinks/spoilers, and syntax-highlighted via <CodeBlock>.
 const renderTextLines = (normalized: string, context: RenderContext, keyPrefix: string): React.ReactNode[] => {
@@ -769,7 +663,7 @@ const renderTextLines = (normalized: string, context: RenderContext, keyPrefix: 
 
     const isGreentext = isGreentextLine(line);
 
-    const lineElements = renderLineContent(line, context);
+    const lineElements = <TokenList tokens={tokenize(line, '0:', context.parseSpoilers)} context={context} />;
 
     if (isGreentext) {
       elements.push(
@@ -791,8 +685,6 @@ const Markdown = ({ content, title, postCid, communityAddress, parseSpoilers = t
   const directories = useDirectories();
   const isInCatalogView = isCatalogView(location.pathname, params);
   const enableQstBbcode = location.pathname.split('/').filter(Boolean)[0] === 'qst';
-  const activeDirectoryCode = getActiveDirectoryCode(location.pathname, communityAddress, directories);
-  const enableFortuneMarkup = isFortuneDirectoryCode(activeDirectoryCode);
   // [code] tags are board-scoped: enabled when the post's board or the current route resolves to
   // a code-tag board, and rendered as literal text everywhere else.
   const enableCodeTags = isCodeTagsEnabledForContext(location.pathname, communityAddress, directories);
@@ -804,7 +696,7 @@ const Markdown = ({ content, title, postCid, communityAddress, parseSpoilers = t
       isMathDirectoryCode(getDirectoryCodeForIdentifier(communityAddress, directories)));
 
   const rendered = useMemo(() => {
-    const context = { isInCatalogView, postCid, communityAddress, enableFortuneMarkup, enableQstBbcode, parseSpoilers, purgedQuoteNumbers };
+    const context = { isInCatalogView, postCid, communityAddress, enableQstBbcode, parseSpoilers, purgedQuoteNumbers };
     const raw = content || '';
 
     if (enableMathTags && HAS_MATH_TAG_REGEX.test(raw)) {
@@ -837,7 +729,7 @@ const Markdown = ({ content, title, postCid, communityAddress, parseSpoilers = t
     });
 
     return elements;
-  }, [content, isInCatalogView, postCid, communityAddress, enableFortuneMarkup, enableQstBbcode, parseSpoilers, purgedQuoteNumbers, enableCodeTags, enableMathTags]);
+  }, [content, isInCatalogView, postCid, communityAddress, enableQstBbcode, parseSpoilers, purgedQuoteNumbers, enableCodeTags, enableMathTags]);
 
   return (
     <span className={styles.markdown}>

@@ -1335,8 +1335,7 @@ describe('ReplyModal', () => {
     );
   });
 
-  it('validates unsupported options and keeps fortune output out of preview state until reply publish', async () => {
-    const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.25);
+  it('validates unsupported options and publishes a fortune marker instead of a result', async () => {
     testState.openEmpty = true;
     testState.selectedText = '';
 
@@ -1362,7 +1361,7 @@ describe('ReplyModal', () => {
 
     expect(container.textContent).not.toContain('Unsupported options');
     expect(testState.setPublishReplyOptionsMock).toHaveBeenCalledWith({
-      content: 'reply body',
+      content: 'reply body[fortune]',
     });
 
     await clickButtonByText('post');
@@ -1371,16 +1370,15 @@ describe('ReplyModal', () => {
     expect(testState.publishReplyMock).toHaveBeenCalledWith(
       {
         challengeRequest: undefined,
-        content: 'reply body[fortune color=#fd4d32]Excellent Luck[/fortune]',
+        content: 'reply body[fortune]',
         displayName: 'Alice',
         flairs: undefined,
       },
       expect.objectContaining({ finish: expect.any(Function) }),
     );
-    randomSpy.mockRestore();
   });
 
-  it('counts hidden fortune output in reply length validation without revealing it', async () => {
+  it('counts the fortune marker in reply length validation', async () => {
     testState.openEmpty = true;
     testState.selectedText = '';
 
@@ -1388,15 +1386,14 @@ describe('ReplyModal', () => {
 
     const optionsInput = container.querySelectorAll<HTMLInputElement>('input[type="text"]')[1];
     const textarea = container.querySelector<HTMLTextAreaElement>('textarea') as HTMLTextAreaElement;
-    const longContent = 'x'.repeat(1930);
+    const longContent = 'x'.repeat(1992);
 
     await dispatchInput(optionsInput, 'fortune');
     await dispatchInput(textarea, longContent);
     await waitForContentLengthValidation();
 
-    expect(testState.setPublishReplyOptionsMock).toHaveBeenCalledWith({ content: longContent });
+    expect(testState.setPublishReplyOptionsMock).toHaveBeenCalledWith({ content: `${longContent}[fortune]` });
     expect(container.textContent).toContain('comment_field_too_long:2001');
-    expect(container.textContent).not.toContain('[fortune color=');
     expect(testState.publishReplyMock).not.toHaveBeenCalled();
   });
 
@@ -1445,7 +1442,6 @@ describe('ReplyModal', () => {
   });
 
   it('supports fortune on the /s5s/ route when directory metadata is not loaded', async () => {
-    const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.25);
     testState.openEmpty = true;
     testState.selectedText = '';
     delete testState.directoryByAddress['silly-stuff.bso'];
@@ -1467,18 +1463,16 @@ describe('ReplyModal', () => {
     expect(testState.publishReplyMock).toHaveBeenCalledWith(
       {
         challengeRequest: undefined,
-        content: 'silly reply[fortune color=#fd4d32]Excellent Luck[/fortune]',
+        content: 'silly reply[fortune]',
         displayName: 'Alice',
         flairs: undefined,
       },
       expect.objectContaining({ finish: expect.any(Function) }),
     );
-    expect(testState.setPublishReplyOptionsMock).toHaveBeenCalledWith({ content: 'silly reply' });
-    randomSpy.mockRestore();
+    expect(testState.setPublishReplyOptionsMock).toHaveBeenCalledWith({ content: 'silly reply[fortune]' });
   });
 
-  it('stores dice rolls in reply content on dice-enabled boards', async () => {
-    const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.25);
+  it('publishes the dice option as a marker on dice-enabled boards', async () => {
     testState.openEmpty = true;
     testState.selectedText = '';
 
@@ -1497,9 +1491,8 @@ describe('ReplyModal', () => {
 
     expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
     expect(testState.setPublishReplyOptionsMock).toHaveBeenCalledWith({
-      content: '<b>Rolled 2, 2 = 4 (2d6)<br><br></b>dice reply',
+      content: '[dice=2d6]dice reply',
     });
-    randomSpy.mockRestore();
   });
 
   it('treats dice rolls as unsupported outside /tg/ and /qst/ in reply modal', async () => {
