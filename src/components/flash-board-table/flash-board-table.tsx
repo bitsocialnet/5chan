@@ -124,8 +124,10 @@ const FlashBoardTable = ({ boardBasePath, isLoading = false, hasLoadFailed = fal
                     )}
                   </td>
                   <td>
-                    {getDisplayName(post, anonymousLabel)}
-                    {hasTripcodeProof(post.author?.displayName) && <PosterTrip comment={post} />}
+                    <span className={styles.name}>
+                      {getDisplayName(post, anonymousLabel)}
+                      {hasTripcodeProof(post.author?.displayName) && <PosterTrip comment={post} />}
+                    </span>
                   </td>
                   <td className={styles.fileCell} title={post.link || fileLabel}>
                     {post.link ? (
