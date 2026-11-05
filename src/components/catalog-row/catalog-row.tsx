@@ -26,11 +26,13 @@ import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
 import { CATALOG_PREVIEW_MARKDOWN_OPTIONS, removeMarkdown } from '../../lib/utils/post-utils';
 import GifFirstFrameCanvas from '../gif-first-frame-canvas';
 import PostMenuDesktop from '../post-menu-desktop';
+import PosterTrip from '../poster-trip';
 import styles from './catalog-row.module.css';
 import capitalize from 'lodash/capitalize';
 import { selectPostMenuProps } from '../../lib/utils/post-menu-props';
 import { getCommentCommunityAddress, withResolvedCommentCommunityAddress } from '../../lib/utils/comment-utils';
 import { getAuthorBadge } from '../../lib/utils/author-display-utils';
+import { hasTripcodeProof, stripTripcodeProof } from '../../lib/utils/tripcode-utils';
 
 interface CatalogPostMediaProps {
   cid: string;
@@ -189,7 +191,8 @@ const CatalogPostPreview = ({ post, visible, showCommunityAddress, floatingRef, 
         t('posted_by')
       )}{' '}
       <span className={`${styles.postAuthor} ${catalogPostAuthorBadge ? styles.capcode : ''}`}>
-        {author?.displayName || capitalize(t('anonymous'))}
+        {stripTripcodeProof(author?.displayName)?.trim() || capitalize(t('anonymous'))}
+        {hasTripcodeProof(author?.displayName) && <PosterTrip comment={post} />}
         {catalogPostAuthorBadge && <span className={catalogPostAuthorBadge.capitalizeLabel ? 'capitalize' : undefined}>{` ## ${catalogPostAuthorBadge.label}`}</span>}
       </span>
       {showCommunityAddress && communityAddress && ` to p/${getShortAddress(communityAddress)}`}
@@ -198,7 +201,8 @@ const CatalogPostPreview = ({ post, visible, showCommunityAddress, floatingRef, 
         <div className={styles.postLast}>
           {t('last_reply_by')}{' '}
           <span className={`${styles.postAuthor} ${lastReplyAuthorBadge ? styles.capcode : ''}`}>
-            {lastReply?.author?.displayName || capitalize(t('anonymous'))}
+            {stripTripcodeProof(lastReply?.author?.displayName)?.trim() || capitalize(t('anonymous'))}
+            {hasTripcodeProof(lastReply?.author?.displayName) && <PosterTrip comment={lastReply} />}
             {lastReplyAuthorBadge && <span className={lastReplyAuthorBadge.capitalizeLabel ? 'capitalize' : undefined}>{` ## ${lastReplyAuthorBadge.label}`}</span>}
           </span>
           <span className={styles.postAgo}> {getFormattedTimeAgo(lastReply?.timestamp)}</span>

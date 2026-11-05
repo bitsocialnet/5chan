@@ -248,7 +248,7 @@ vi.mock('../../../hooks/use-publish-post', async () => {
         [communityAddress],
       );
       const publishPost = React.useCallback(
-        (options?: Record<string, unknown>, attempt?: unknown) => {
+        (options?: Record<string, unknown>, attempt?: unknown, tripcodeSecret?: unknown) => {
           const sanitizedOptions = Object.entries(options || {}).reduce(
             (acc, [key, value]) => {
               acc[key] = value === '' ? undefined : value;
@@ -261,7 +261,7 @@ vi.mock('../../../hooks/use-publish-post', async () => {
             ...sanitizedOptions,
           };
           testState.publishedPostOptions = testState.publishPostOptions;
-          const result = testState.publishPostMock(options, attempt);
+          const result = tripcodeSecret ? testState.publishPostMock(options, attempt, tripcodeSecret) : testState.publishPostMock(options, attempt);
           forceUpdate();
           return result;
         },
@@ -829,6 +829,32 @@ describe('PostForm', () => {
       expect.objectContaining({ displayName: undefined }),
       expect.objectContaining({ finish: expect.any(Function) }),
     );
+  });
+
+  it('publishes a tripcode name without its password and keeps the password out of the account', async () => {
+    testState.account = {
+      author: { address: 'alice.eth', displayName: 'Alice' },
+      subscriptions: ['music-posting.eth'],
+    };
+    testState.resolvedCommunityAddress = 'music-posting.eth';
+
+    await renderPostForm('/mu');
+    await clickByText(container, 'start_new_thread');
+
+    const table = container.querySelector('table') as HTMLTableElement;
+    const nameInput = table.querySelectorAll<HTMLInputElement>('input[type="text"]')[0];
+    await dispatchInput(nameInput, 'Alice#hunter2##swordfish');
+    await dispatchInput(table.querySelector('textarea') as HTMLTextAreaElement, 'Tripcode thread');
+    await clickByText(table, 'post');
+
+    expect(testState.publishPostMock).toHaveBeenCalledWith(expect.objectContaining({ displayName: 'Alice' }), expect.objectContaining({ finish: expect.any(Function) }), {
+      normal: 'hunter2',
+      secure: 'swordfish',
+    });
+    const published = JSON.stringify([testState.publishPostOptions, testState.setPublishPostOptionsMock.mock.calls, testState.setAccountMock.mock.calls]);
+    expect(published).not.toContain('hunter2');
+    expect(published).not.toContain('swordfish');
+    expect(testState.setAccountMock).toHaveBeenLastCalledWith(expect.objectContaining({ author: expect.objectContaining({ displayName: 'Alice' }) }));
   });
 
   it('converts YouTube links to thumbnail file links on media-only post forms', async () => {

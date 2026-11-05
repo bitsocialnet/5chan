@@ -1,0 +1,4 @@
+/* 4chan sets the trip in the name color without the name's bold. */
+.postertrip {
+  font-weight: normal;
+}

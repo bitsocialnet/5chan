@@ -1,6 +1,7 @@
 import type { Comment } from '@bitsocial/bitsocial-react-hooks';
 import { communitiesStore } from '../bitsocial-internals/stores';
 import { getCommentCommunityAddress } from './comment-utils';
+import { stripTripcodeProof } from './tripcode-utils';
 
 type CommunityLike = {
   roles?: Record<string, { role?: string }>;
@@ -149,14 +150,17 @@ export const userIdMatchesPattern = (comment: Comment, pattern: string): boolean
 export const displayNameMatchesPattern = (comment: Comment, pattern: string): boolean => {
   if (!pattern) return false;
 
+  // A tripcode proof is not part of the name, and its random characters must not match a filter.
+  const displayName = stripTripcodeProof(comment?.author?.displayName) || undefined;
+
   // Special case for "Anonymous" to match undefined display names
   if (pattern.toLowerCase() === 'anonymous') {
-    return comment?.author?.displayName === undefined;
+    return displayName === undefined;
   }
 
-  if (!comment?.author?.displayName) return false;
+  if (!displayName) return false;
 
-  return comment.author.displayName.toLowerCase().includes(pattern.toLowerCase());
+  return displayName.toLowerCase().includes(pattern.toLowerCase());
 };
 
 /**

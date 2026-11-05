@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Challenge as ChallengeType, useAccount, useComment } from '@bitsocial/bitsocial-react-hooks';
 import { getPublicationPreview, getPublicationType, getVotePreview, publishPublicationChallengeAnswers } from '../../lib/utils/challenge-utils';
 import { isSageSupportedByBoard, stripGeneratedFortuneMarkup, stripSageMarker } from '../../lib/utils/post-options-utils';
+import { stripTripcodeProof } from '../../lib/utils/tripcode-utils';
 import useIsMobile from '../../hooks/use-is-mobile';
 import { useCommunityField } from '../../hooks/use-stable-community';
 import useChallengesStore from '../../stores/use-challenges-store';
@@ -505,7 +506,7 @@ const Challenge = ({ challenge, closeModal, abandonModal }: ChallengeProps) => {
   const publicationDetails = (
     <>
       <div className={styles.name}>
-        <input type='text' aria-label={capitalize(t('name'))} value={displayName || capitalize(t('anonymous'))} disabled readOnly />
+        <input type='text' aria-label={capitalize(t('name'))} value={stripTripcodeProof(displayName)?.trim() || capitalize(t('anonymous'))} disabled readOnly />
       </div>
       {title && (
         <div className={styles.subject}>

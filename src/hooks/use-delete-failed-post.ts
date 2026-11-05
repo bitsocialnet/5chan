@@ -5,6 +5,9 @@ import { alertChallengeVerificationFailed } from '../lib/utils/challenge-utils';
 import useChallengesStore from '../stores/use-challenges-store';
 import useFailedPostRetryStore from '../stores/use-failed-post-retry-store';
 import { getCommentCommunityAddress } from '../lib/utils/comment-utils';
+import { hasTripcodeProof, parseTripcodeInput, stripTripcodeProof } from '../lib/utils/tripcode-utils';
+import useTripcodeStore from '../stores/use-tripcode-store';
+import useSignTripcode from './use-sign-tripcode';
 
 const retryExcludedFields = new Set([
   'accountId',
@@ -21,6 +24,7 @@ const retryExcludedFields = new Set([
 ]);
 
 type FailedPost = Partial<Comment> & {
+  accountId?: string;
   cid?: string;
   index?: number;
   state?: string;
@@ -57,6 +61,12 @@ export const getFailedPostRetryPublishOptions = (post?: FailedPost): PublishComm
   if (retryOptions.author && typeof retryOptions.author === 'object' && !Array.isArray(retryOptions.author)) {
     const author = { ...retryOptions.author };
     delete author.shortAddress;
+    // A tripcode proof signs the failed post's timestamp, and the retry publishes with a new one.
+    if (typeof author.displayName === 'string') {
+      const name = stripTripcodeProof(author.displayName);
+      if (name) author.displayName = name;
+      else delete author.displayName;
+    }
     retryOptions.author = author;
   }
 
@@ -87,7 +97,23 @@ const useDeleteFailedPost = (post?: FailedPost, deleteRedirectPath?: string) => 
   }, [endRetry]);
 
   const canDeleteFailedPost = post?.state === 'failed' && typeof post?.index === 'number';
-  const retryPublishOptions = useMemo(() => getFailedPostRetryPublishOptions(post), [post]);
+  const baseRetryPublishOptions = useMemo(() => getFailedPostRetryPublishOptions(post), [post]);
+  // A tripcode post is signed again before its retry, with the tripcode its account's name field holds now.
+  const tripcodeInput = useTripcodeStore((state) => (post?.accountId ? state.inputs[post.accountId] : undefined));
+  const signTripcode = useSignTripcode();
+  const [signedRetryTripcode, setSignedRetryTripcode] = useState<{ post: FailedPost; displayName: string; timestamp: number }>();
+  const retryAfterSigningRef = useRef(false);
+  const retryPublishOptions = useMemo(
+    () =>
+      baseRetryPublishOptions && signedRetryTripcode && signedRetryTripcode.post === post
+        ? {
+            ...baseRetryPublishOptions,
+            author: { ...baseRetryPublishOptions.author, displayName: signedRetryTripcode.displayName },
+            timestamp: signedRetryTripcode.timestamp,
+          }
+        : baseRetryPublishOptions,
+    [baseRetryPublishOptions, post, signedRetryTripcode],
+  );
   const publishOptionsWithCallbacks = useMemo<PublishCommentOptions | undefined>(
     () =>
       retryPublishOptions
@@ -152,13 +178,10 @@ const useDeleteFailedPost = (post?: FailedPost, deleteRedirectPath?: string) => 
 
   const canRetryFailedPost = canDeleteFailedPost && Boolean(retryPublishOptions);
 
-  const onRetryFailedPost = useCallback(async () => {
-    if (isDeletingFailedPost || isRetryingFailedPost || !canRetryFailedPost) {
-      return;
-    }
-
+  const retryFailedPost = useCallback(async () => {
     const targetComment = getDeleteTarget(post);
     if (typeof targetComment === 'undefined') {
+      setIsRetryingFailedPost(false);
       return;
     }
 
@@ -183,7 +206,43 @@ const useDeleteFailedPost = (post?: FailedPost, deleteRedirectPath?: string) => 
     } finally {
       setIsRetryingFailedPost(false);
     }
-  }, [canRetryFailedPost, endRetry, isDeletingFailedPost, isRetryingFailedPost, post, publishComment, startRetry]);
+  }, [endRetry, post, publishComment, startRetry]);
+
+  // The retry publishes the options of the render that holds the new proof.
+  useEffect(() => {
+    if (!retryAfterSigningRef.current || signedRetryTripcode?.post !== post) return;
+    retryAfterSigningRef.current = false;
+    void retryFailedPost();
+  }, [post, retryFailedPost, signedRetryTripcode]);
+
+  const onRetryFailedPost = useCallback(async () => {
+    if (isDeletingFailedPost || isRetryingFailedPost || !canRetryFailedPost || typeof getDeleteTarget(post) === 'undefined') {
+      return;
+    }
+
+    const tripcodeSecret = hasTripcodeProof(post?.author?.displayName) ? parseTripcodeInput(tripcodeInput).secret : undefined;
+    if (!tripcodeSecret || !baseRetryPublishOptions) {
+      await retryFailedPost();
+      return;
+    }
+
+    setIsRetryingFailedPost(true);
+    try {
+      const signed = await signTripcode({
+        secret: tripcodeSecret,
+        readOptions: () => baseRetryPublishOptions,
+        writeOptions: ({ displayName, timestamp }) => {
+          retryAfterSigningRef.current = true;
+          setSignedRetryTripcode({ post: post as FailedPost, displayName, timestamp });
+        },
+        isActive: () => true,
+      });
+      if (!signed) setIsRetryingFailedPost(false);
+    } catch (error) {
+      setIsRetryingFailedPost(false);
+      alert(error instanceof Error ? error.message : String(error));
+    }
+  }, [baseRetryPublishOptions, canRetryFailedPost, isDeletingFailedPost, isRetryingFailedPost, post, retryFailedPost, signTripcode, tripcodeInput]);
 
   return {
     canDeleteFailedPost,

@@ -3,7 +3,7 @@ import { flushSync } from 'react-dom';
 import { Trans, useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { Comment, CommentGalleryItem, setAccount, useAccount, useAccountComment, useEditedComment } from '@bitsocial/bitsocial-react-hooks';
+import { Comment, CommentGalleryItem, useAccount, useAccountComment, useEditedComment } from '@bitsocial/bitsocial-react-hooks';
 import getShortAddress from '../../lib/get-short-address';
 import { communitiesPagesStore as useCommunitiesPagesStore } from '../../lib/bitsocial-internals/stores';
 import { getDisplayMediaInfoType, getLinkMediaInfo, getTwimgMediaFilePublishUrl } from '../../lib/utils/media-utils';
@@ -68,6 +68,7 @@ import usePublishSubmissionGuard from '../../hooks/use-publish-submission-guard'
 import { startPostingAnalytics, type PostingAnalyticsAttempt } from '../../lib/posting-analytics';
 import usePublishPost from '../../hooks/use-publish-post';
 import usePublishReply from '../../hooks/use-publish-reply';
+import useTripcodeNameField from '../../hooks/use-tripcode-name-field';
 import { useFileUpload } from '../../hooks/use-file-upload';
 import useSpamBlockerPrecheck from '../../hooks/use-spam-blocker-precheck';
 import { useShowLinkField } from '../../hooks/use-show-link-field';
@@ -234,6 +235,7 @@ interface PostFormFieldsProps {
   t: TFunction;
   account: ReturnType<typeof useAccount>;
   displayName: string | undefined;
+  saveNameField: (value: string) => string | undefined;
   nameRef: Ref<HTMLInputElement>;
   bbcodePreviewContent: string;
   isInPostView: boolean;
@@ -299,6 +301,7 @@ const PostFormFields = ({
   t,
   account,
   displayName,
+  saveNameField,
   nameRef,
   bbcodePreviewContent,
   isInPostView,
@@ -370,8 +373,7 @@ const PostFormFields = ({
           placeholder={!displayName ? capitalize(t('anonymous')) : undefined}
           defaultValue={displayName || undefined}
           onChange={(e) => {
-            const newDisplayName = e.target.value.trim() || undefined;
-            setAccount({ ...account, author: { ...account?.author, displayName: newDisplayName } });
+            const newDisplayName = saveNameField(e.target.value);
             if (isInPostView) {
               setPublishReplyOptions({ displayName: newDisplayName });
             } else {
@@ -704,8 +706,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
   const hasRestoredDraftRef = useRef(Boolean(draft.communityAddress || draft.content || draft.link || draft.options || draft.spoiler || draft.title));
   const [url, setUrl] = useState(draft.link);
   const [mediaLoadResult, setMediaLoadResult] = useState<LinkMediaLoadResult | null>(null);
-  const author = account?.author || {};
-  const { displayName } = author || {};
+  const { nameFieldValue, saveNameField, readNameField } = useTripcodeNameField(account);
   const accountComment = useAccountComment({ commentIndex: normalizeAccountCommentIndex(params?.accountCommentIndex) });
   const resolvedAddress = useResolvedCommunityAddress();
   const communityAddress = resolvedAddress || getCommentCommunityAddress(accountComment) || getCommentCommunityAddress(getPendingPostRoutePost(location.state));
@@ -967,7 +968,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
         const appliedThumbnailConversion = await applyPendingConversion();
 
         const currentTitle = subjectRef.current?.value.trim() || '';
-        const currentDisplayName = nameRef.current?.value.trim() || undefined;
+        const { displayName: currentDisplayName, tripcodeSecret } = readNameField(nameRef.current?.value);
         const currentContent = textRef.current?.value || '';
         const currentUrl = urlRef.current?.value.trim() || '';
         const currentOptions = optionsRef.current?.value || '';
@@ -1087,6 +1088,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
             nonokoRedirectPath,
             post: previewPost,
             publishOptions: pendingPublishOptions,
+            tripcodeSecret,
           });
           handedOff = true;
           flushSync(() =>
@@ -1115,6 +1117,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
             ...(hasRestoredDraftRef.current && currentTitle ? { title: currentTitle } : {}),
           },
           attempt,
+          tripcodeSecret,
         );
       } finally {
         if (!handedOff) attempt?.finish('post_validation_failed');
@@ -1222,7 +1225,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
         const appliedThumbnailConversion = await applyPendingConversion();
 
         const currentUrl = urlRef.current?.value.trim() || '';
-        const currentDisplayName = nameRef.current?.value.trim() || undefined;
+        const { displayName: currentDisplayName, tripcodeSecret } = readNameField(nameRef.current?.value);
         const currentOptions = optionsRef.current?.value || '';
         const currentOptionsError = getPostOptionsValidationError(currentOptions, postOptionsDirectoryCode, isSageSupported);
         const publishContent = getContentWithOptions(textRef.current?.value || '', currentOptions, fortuneEntryRef, diceRollRef, postOptionsDirectoryCode);
@@ -1326,6 +1329,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
             ...(challengeRequest ? { challengeRequest } : {}),
           },
           attempt,
+          tripcodeSecret,
         );
       } finally {
         if (!handedOff) attempt.finish(outcome);
@@ -1464,7 +1468,8 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
             <PostFormFields
               t={t}
               account={account}
-              displayName={displayName}
+              displayName={nameFieldValue}
+              saveNameField={saveNameField}
               nameRef={nameRef}
               bbcodePreviewContent={bbcodePreviewContent}
               isInPostView={isInPostView}

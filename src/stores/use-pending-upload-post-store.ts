@@ -2,6 +2,7 @@ import type { Comment } from '@bitsocial/bitsocial-react-hooks';
 import { create } from 'zustand';
 import type { AttachedMedia, UploadPhase } from '../lib/media-hosting/types';
 import type { PostingAnalyticsAttempt } from '../lib/posting-analytics';
+import type { TripcodeSecret } from '../lib/utils/tripcode-utils';
 
 /** `spam_check` while the board's spam blocker checks the post, before anything is uploaded. */
 export type PendingUploadPhase = 'spam_check' | UploadPhase;
@@ -29,6 +30,8 @@ export interface PendingUploadPost {
   post: Comment;
   /** What publishPost receives, except the uploaded link. */
   publishOptions: Comment;
+  /** The author's tripcode password, kept apart from the publish options it must never reach. */
+  tripcodeSecret?: TripcodeSecret;
   analyticsAttempt?: PostingAnalyticsAttempt;
 }
 

@@ -131,8 +131,12 @@ const FAQ_SECTIONS: FAQSection[] = [
         question: 'Does 5chan use tripcodes?',
         answer: (
           <>
-            Not currently. 5chan uses key-controlled accounts and optional readable crypto addresses instead of 4chan-style tripcodes. If you need a persistent identity,
-            back up your account and use a resolvable address instead of relying on a display name.
+            Yes. Type <code>Name#password</code> in the name field for a tripcode, <code>Name##password</code> for a secure tripcode, or{' '}
+            <code>Name#password##password</code> for both, and your posts show <code>!tripcode</code> or <code>!!tripcode</code> after your name. The password stays on
+            your device: 5chan derives a signing key from it and adds a proof to your name that signs your post's text, board and thread, which 5chan checks before
+            showing the tripcode, so nobody can post new text under your tripcode without the password, not even the board owner. Editing a post removes its tripcode. The
+            same password gives a different tripcode here than on 4chan, and with no server secret a secure tripcode is only slower to compute, so use a long password: a
+            short one can be guessed offline. Bitsocial clients without tripcode support show the proof as part of your name.
           </>
         ),
       },

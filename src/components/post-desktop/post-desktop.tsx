@@ -22,6 +22,7 @@ import { isPendingApprovalAwaiting } from '../../lib/utils/pending-approval-mode
 import { isValidURL, parseHttpUrl } from '../../lib/utils/url-utils';
 import { isAllView, isModQueueView, isModView, isPendingPostView, isPostPageView, isSearchView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import { formatUserIDForDisplay, truncateFileName, truncateWithEllipsisInMiddle } from '../../lib/utils/string-utils';
+import { hasTripcodeProof, stripTripcodeProof } from '../../lib/utils/tripcode-utils';
 import { useMediaFileSize } from '../../stores/use-media-file-size-store';
 import useModQueueStore from '../../stores/use-mod-queue-store';
 import { findDirectoryByAddress, useDirectories } from '../../hooks/use-directories';
@@ -46,6 +47,7 @@ import LoadingEllipsis from '../loading-ellipsis';
 import PendingUploadFile from '../pending-upload-file';
 import PostAuthorFlags from '../post-author-flags';
 import PostFlashTag from '../post-flash-tag';
+import PosterTrip from '../poster-trip';
 import PostTransferredTag from '../post-transferred-tag';
 import PostMenuDesktop from '../post-menu-desktop';
 import ReplyQuotePreview from '../reply-quote-preview';
@@ -202,7 +204,8 @@ const PostInfo = ({
   const purged = post?.commentModeration?.purged;
   const title = post?.title?.trim();
   const { address } = author || {};
-  const displayName = author?.displayName?.trim();
+  const displayName = stripTripcodeProof(author?.displayName)?.trim();
+  const showTripcode = !(deleted || removed || purged) && hasTripcodeProof(author?.displayName);
   const authorBadge = getAuthorBadge({ address, role: roles?.[address]?.role });
   const hasFailedState = state === 'failed';
   const isReply = parentCid;
@@ -336,6 +339,7 @@ const PostInfo = ({
             ) : (
               capitalize(t('anonymous'))
             )}
+            {showTripcode && <PosterTrip comment={post} />}
             {!(deleted || removed || purged) && authorBadge && (
               <span className={authorBadge.capitalizeLabel ? 'capitalize' : undefined}>
                 {' '}

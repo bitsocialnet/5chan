@@ -31,7 +31,7 @@ const usePublishReplyStore = create<ReplyState>((set) => ({
 
   setPublishReplyStore: (comment: Comment) =>
     set((state) => {
-      const { parentCid, author, challengeRequest, content, flairs, spoiler } = comment;
+      const { parentCid, author, challengeRequest, content, flairs, spoiler, timestamp } = comment;
       const link = comment.link ? normalizePublishURL(comment.link) : undefined;
       // A comment has no gallery rather than an empty one.
       const gallery = comment.gallery?.length ? comment.gallery : undefined;
@@ -54,6 +54,8 @@ const usePublishReplyStore = create<ReplyState>((set) => ({
         flairs,
         spoiler,
         ...(challengeRequest ? { challengeRequest } : {}),
+        // Only a tripcode's proof sets the timestamp, which it signs; otherwise the account sets it when publishing.
+        ...(typeof timestamp === 'number' ? { timestamp } : {}),
         onChallengeVerification: (challengeVerification: ChallengeVerification, comment: Comment) => {
           alertChallengeVerificationFailed(challengeVerification, comment);
         },

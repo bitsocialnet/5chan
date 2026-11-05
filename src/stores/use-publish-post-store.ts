@@ -16,7 +16,7 @@ type SubmitState = {
   spoiler: boolean | undefined;
   challengeRequest: Record<string, unknown> | undefined;
   publishCommentOptions: PublishCommentOptions;
-  setPublishPostStore: (data: Partial<SubmitState>) => void;
+  setPublishPostStore: (comment: Comment) => void;
   resetPublishPostStore: () => void;
 };
 
@@ -36,7 +36,7 @@ export const createPublishPostStore = () =>
     publishCommentOptions: {},
     setPublishPostStore: (comment: Comment) =>
       set(() => {
-        const { author, challengeRequest, content, flairs, spoiler, title } = comment;
+        const { author, challengeRequest, content, flairs, spoiler, title, timestamp } = comment;
         const link = comment.link ? normalizePublishURL(comment.link) : undefined;
         // A comment has no gallery rather than an empty one.
         const gallery = comment.gallery?.length ? comment.gallery : undefined;
@@ -58,6 +58,8 @@ export const createPublishPostStore = () =>
           flairs,
           spoiler,
           ...(challengeRequest ? { challengeRequest } : {}),
+          // Only a tripcode's proof sets the timestamp, which it signs; otherwise the account sets it when publishing.
+          ...(typeof timestamp === 'number' ? { timestamp } : {}),
           onChallengeVerification: (challengeVerification: ChallengeVerification, comment: Comment) => {
             alertChallengeVerificationFailed(challengeVerification, comment);
           },
