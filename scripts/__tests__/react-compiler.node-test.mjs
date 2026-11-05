@@ -48,7 +48,7 @@ test('the app Vite configuration preserves React Compiler behavior', { timeout: 
   for (const [path, expectedCalls] of [
     ['/src/hooks/use-prune-hidden-catalog-threads.ts', 2],
     ['/src/hooks/use-state-string.ts', 1],
-    ['/src/hooks/use-communities-stats.ts', 2],
+    ['/src/hooks/use-communities-stats.ts', 1],
     ['/src/views/board/board.tsx', 1],
   ]) {
     await t.test(`store subscriptions stay unconditional in ${path}`, async () => {
