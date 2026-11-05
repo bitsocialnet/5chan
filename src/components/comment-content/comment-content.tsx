@@ -118,7 +118,10 @@ const CommentContent = ({
   // The post's own board decides, so a post reads the same on every route; the route only stands in for a
   // post without a board address.
   const postOptionsDirectoryCode = getDirectoryCodeForIdentifier(communityAddress ?? getRouteBoardIdentifier(location.pathname), directories);
-  const isEdited = edit?.content !== undefined;
+  // Only an edit that changed the text hides the results, since only that could add a marker once the CID is
+  // known. A mod's edit of their own post resends the same text with a delete or undelete. Without the
+  // signed record to compare against, any edited text counts.
+  const isEdited = edit?.content !== undefined && edit.content !== resolvedPost?.raw?.comment?.content;
   const postOptionResults = useMemo(
     () => getPostOptionResults({ content: contentWithoutSage, cid, timestamp, directoryCode: postOptionsDirectoryCode, isEdited }),
     [contentWithoutSage, cid, timestamp, postOptionsDirectoryCode, isEdited],

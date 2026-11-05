@@ -42,6 +42,11 @@ type TestComment = {
   publishingState?: string;
   postCid?: string;
   quotedCids?: string[];
+  raw?: {
+    comment?: {
+      content?: string;
+    };
+  };
   reason?: string;
   removed?: boolean;
   state?: string;
@@ -768,6 +773,18 @@ describe('CommentContent', () => {
     await renderContent({ cid: 'post-1', content, edit: { content, timestamp }, postCid: 'post-1', timestamp });
 
     expect(queryMarkdownText()).toEqual(['body']);
+    expect(container.querySelector('.fortune')).toBeNull();
+
+    // A mod's edit of their own post resends the same text with a delete or undelete; it keeps the result.
+    const raw = { comment: { content } };
+    await renderContent({ cid: 'post-1', content, edit: { content, timestamp }, postCid: 'post-1', raw, timestamp });
+
+    expect(container.querySelector('.fortune')?.textContent).toBe(`Your fortune: ${expectedFortune?.text}`);
+
+    const editedContent = 'edited body[fortune]';
+    await renderContent({ cid: 'post-1', content: editedContent, edit: { content: editedContent, timestamp }, postCid: 'post-1', raw, timestamp });
+
+    expect(queryMarkdownText()).toEqual(['edited body']);
     expect(container.querySelector('.fortune')).toBeNull();
   });
 
