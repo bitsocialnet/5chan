@@ -2,16 +2,14 @@ import { readdirSync, writeFileSync, mkdirSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { execSync } from 'child_process';
+import { inspectCollection } from './banners.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const publicDir = join(__dirname, '..', 'public');
 
 // Scan for banners
-const bannersDir = join(publicDir, 'assets', 'banners');
-const banners = readdirSync(bannersDir)
-  .filter((file) => /^banner-.*\.(jpg|jpeg|gif|png)$/i.test(file))
-  .map((file) => `assets/banners/${file}`);
+const { paths: banners } = await inspectCollection();
 
 // Scan for not-found images
 const notFoundDir = join(publicDir, 'assets', 'not-found');

@@ -10,6 +10,7 @@ import { APP_PRELOAD_ATTRIBUTE, dynamicEntryPreloadPlugin } from './scripts/vite
 import { staticShellPlugin } from './scripts/vite-static-shell.mjs';
 import { statsProviderPrefetchPlugin } from './scripts/vite-stats-provider-prefetch.mjs';
 import { translationPrefetchPlugin } from './scripts/vite-translation-prefetch.mjs';
+import { checkBanners } from './scripts/banners.mjs';
 import { getStatsProviderUrl, PURE_P2P_STATS_STORAGE_KEY, STATS_PROVIDER_DOWNLOAD_TIMEOUT_MS, STATS_PROVIDERS } from './src/lib/stats-providers.ts';
 import {
   DEFAULT_INTERFACE_LANGUAGE,
@@ -367,6 +368,7 @@ function verifyVercelCspHashesPlugin() {
 
 export default defineConfig({
   plugins: [
+    { name: 'check-banners', apply: 'build', buildStart: checkBanners },
     appVersionMetadataPlugin(),
     ruffleRuntimeAssetsPlugin(),
     mathjaxFontAssetsPlugin(),

@@ -19,6 +19,10 @@ These are maintainer decisions, not open questions. Issues and pull requests tha
 
 Fixes for real accessibility or usability problems are welcome. Keep them as small as possible and in the existing style; see [PRODUCT.md](PRODUCT.md#accessibility--inclusion).
 
+## Banners
+
+Still and animated banner artwork is welcome. Follow the [banner contribution guide](docs/banners.md) for the import command, image and animation budgets, descriptive filenames, attribution, and preview requirements. Use `corepack yarn banners:add /path/to/source.png descriptive-slug` instead of copying source images into `public/`, and run `corepack yarn banners:check` before submitting.
+
 ## If you want a different look
 
 5chan is free software under the [GPL-3.0](LICENSE). If you disagree with these choices, fork it and style it however you like, or restyle your own copy with a userscript or browser extension, the way 4chan X does for 4chan. Production CSS class names are generated from each stylesheet's contents, so a userscript or extension may need updating when 5chan updates.

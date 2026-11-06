@@ -29,7 +29,7 @@ import { BANNERS } from '../../generated/asset-manifest';
 const ImageBanner = () => {
   const [banner] = useState(() => takeStaticShellBanner() ?? BANNERS[Math.floor(Math.random() * BANNERS.length)]);
 
-  return <img src={banner} alt='' />;
+  return <img src={banner} alt='' width={300} height={100} loading='eager' decoding='async' />;
 };
 
 // Separate component for offline indicator to isolate rerenders from sync lifecycle changes.

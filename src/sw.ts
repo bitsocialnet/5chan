@@ -5,7 +5,7 @@ import { clientsClaim } from 'workbox-core';
 import { ExpirationPlugin } from 'workbox-expiration';
 import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
 import { registerRoute } from 'workbox-routing';
-import { NetworkFirst, StaleWhileRevalidate } from 'workbox-strategies';
+import { CacheFirst, NetworkFirst, StaleWhileRevalidate } from 'workbox-strategies';
 
 declare const self: ServiceWorkerGlobalScope;
 
@@ -37,6 +37,16 @@ registerRoute(
 // code changes silently appear not to take effect. Production assets are content-hashed,
 // so caching them stays safe.
 if (import.meta.env.PROD) {
+  // Content hashes make visited banners immutable. Keep their cache separate and
+  // bounded so browsing boards neither revalidates images nor displaces app code.
+  registerRoute(
+    ({ url }) => url.origin === self.location.origin && url.pathname.startsWith(scopePath('assets/banners/')) && /\.[a-f0-9]{12}\.(jpg|png|gif)$/.test(url.pathname),
+    new CacheFirst({
+      cacheName: 'banners-v1',
+      plugins: [new ExpirationPlugin({ maxEntries: 40, maxAgeSeconds: 60 * 60 * 24 * 30, purgeOnQuotaError: true })],
+    }),
+  );
+
   registerRoute(
     ({ request, url }) =>
       url.origin === self.location.origin &&

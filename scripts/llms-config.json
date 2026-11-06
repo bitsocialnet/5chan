@@ -39,5 +39,5 @@
     "docs/agent-playbooks/verification.md",
     "docs/agent-playbooks/hooks-setup.md"
   ],
-  "optionalDocs": ["docs/upload-automation-retest-checklist.md"]
+  "optionalDocs": ["docs/upload-automation-retest-checklist.md", "docs/banners.md"]
 }
