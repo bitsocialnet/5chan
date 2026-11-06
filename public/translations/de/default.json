@@ -552,7 +552,7 @@
   "return_to_board": "Zurück zum Board",
   "create_board_start_failed": "Das Board wurde erstellt, konnte aber nicht gestartet werden: {{error}}",
   "board_settings_remote_removal": "\"{{field}}\": Das Entfernen von Einträgen funktioniert nur auf dem Knoten, der dieses Board hostet. Ändere stattdessen den Wert, setze zum Beispiel ein Feature auf false.",
-  "rpc_mixed_content_warning": "Diese Seite wird über https geladen, daher blockiert der Browser ws://-Verbindungen zu anderen Computern und Ihre RPC-Adresse kann keine Verbindung herstellen. Verwenden Sie eine wss://-Adresse, einen Knoten auf diesem Computer (ws://localhost), die 5chan-Seite, die Ihr Knoten über http bereitstellt, oder die 5chan-Desktop-App.",
+  "rpc_mixed_content_warning": "Diese Seite wird über https geladen, daher blockiert der Browser ws://-Verbindungen zu anderen Computern und Ihre RPC-Adresse kann keine Verbindung herstellen. Verwenden Sie eine wss://-Adresse, einen Knoten auf diesem Computer (ws://localhost:<port>/<secretAuthKey>), die 5chan-Seite, die Ihr Knoten über http bereitstellt, oder die 5chan-Desktop-App.",
   "create_board_add_moderator": "Moderator hinzufügen",
   "create_board_add_rule": "Regel hinzufügen",
   "create_board_connecting_node": "Verbindung zu Ihrem Knoten wird hergestellt",

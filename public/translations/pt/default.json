@@ -552,7 +552,7 @@
   "return_to_board": "Voltar ao Quadro",
   "create_board_start_failed": "O quadro foi criado, mas não foi possível iniciá-lo: {{error}}",
   "board_settings_remote_removal": "\"{{field}}\": remover entradas só funciona a partir do nó que hospeda este quadro. Em vez disso, altere o valor, por exemplo, defina um recurso como false.",
-  "rpc_mixed_content_warning": "Esta página foi carregada via https, então o navegador bloqueia conexões ws:// com outros computadores e seu endereço RPC não consegue se conectar. Use um endereço wss://, um nó neste computador (ws://localhost), a página do 5chan que seu nó fornece via http ou o aplicativo de desktop do 5chan.",
+  "rpc_mixed_content_warning": "Esta página foi carregada via https, então o navegador bloqueia conexões ws:// com outros computadores e seu endereço RPC não consegue se conectar. Use um endereço wss://, um nó neste computador (ws://localhost:<port>/<secretAuthKey>), a página do 5chan que seu nó fornece via http ou o aplicativo de desktop do 5chan.",
   "create_board_add_moderator": "Adicionar moderador",
   "create_board_add_rule": "Adicionar regra",
   "create_board_connecting_node": "Conectando ao seu nó",

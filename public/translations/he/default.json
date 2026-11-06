@@ -552,7 +552,7 @@
   "return_to_board": "חזרה ללוח",
   "create_board_start_failed": "הלוח נוצר, אך לא ניתן היה להפעיל אותו: {{error}}",
   "board_settings_remote_removal": "\"{{field}}\": הסרת רשומות פועלת רק מהצומת שמארח את הלוח הזה. במקום זאת, שנה את הערך, לדוגמה הגדר תכונה ל-false.",
-  "rpc_mixed_content_warning": "הדף הזה נטען דרך https, ולכן הדפדפן חוסם חיבורי ws:// למחשבים אחרים וכתובת ה-RPC שלכם לא יכולה להתחבר. השתמשו בכתובת wss://, בצומת במחשב הזה (ws://localhost), בדף 5chan שהצומת שלכם מגיש דרך http, או באפליקציית הדסקטופ של 5chan.",
+  "rpc_mixed_content_warning": "הדף הזה נטען דרך https, ולכן הדפדפן חוסם חיבורי ws:// למחשבים אחרים וכתובת ה-RPC שלכם לא יכולה להתחבר. השתמשו בכתובת wss://, בצומת במחשב הזה (ws://localhost:<port>/<secretAuthKey>), בדף 5chan שהצומת שלכם מגיש דרך http, או באפליקציית הדסקטופ של 5chan.",
   "create_board_add_moderator": "הוסף מנהל",
   "create_board_add_rule": "הוסף כלל",
   "create_board_connecting_node": "מתחברים לצומת שלך",

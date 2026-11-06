@@ -572,7 +572,7 @@
   "return_to_board": "Return to Board",
   "create_board_start_failed": "The board was created but could not be started: {{error}}",
   "board_settings_remote_removal": "\"{{field}}\": removing entries only works from the node that hosts this board. Change the value instead, for example set a feature to false.",
-  "rpc_mixed_content_warning": "This page is loaded over https, so the browser blocks ws:// connections to other computers and your RPC address can't connect. Use a wss:// address, a node on this computer (ws://localhost), the 5chan page your node serves over http, or the 5chan desktop app.",
+  "rpc_mixed_content_warning": "This page is loaded over https, so the browser blocks ws:// connections to other computers and your RPC address can't connect. Use a wss:// address, a node on this computer (ws://localhost:<port>/<secretAuthKey>), the 5chan page your node serves over http, or the 5chan desktop app.",
   "create_board_add_moderator": "Add moderator",
   "create_board_add_rule": "Add rule",
   "create_board_connecting_node": "Connecting to your node",
