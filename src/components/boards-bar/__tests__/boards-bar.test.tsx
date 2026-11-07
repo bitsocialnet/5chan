@@ -15,7 +15,7 @@ const testState = vi.hoisted(() => ({
   directories: [
     { address: 'music-posting.eth', title: '/mu/ - Music' },
     { address: 'tech-posting.eth', title: '/g/ - Technology' },
-  ] as Array<{ address: string; title?: string }>,
+  ] as Array<{ address: string; title?: string; directoryCode?: string }>,
   initializeVisibilityMock: vi.fn(),
   navigateMock: vi.fn(),
   openBoardsBarEditModalMock: vi.fn(),
@@ -394,6 +394,32 @@ describe('BoardsBar', () => {
     await renderBoardsBar('/q');
 
     expect(container.textContent).toContain('[r9k / s5s / vip / q]');
+  });
+
+  it('lists directories published after this build in a trailing group unless the saved selection is narrower', async () => {
+    const { getAllBoardCodes } = await import('../../../constants/board-codes');
+    testState.accountCommunityAddresses = [];
+    testState.directories = [
+      { address: 'music-posting.eth', title: '/mu/ - Music' },
+      { address: 'zines-posting.bso', title: '/zines/ - Zines' },
+      // published with a directory code but no title
+      { address: 'diyaudio.bso', directoryCode: 'diyaudio' },
+    ];
+    testState.showSubscriptionsInBoardsBar = false;
+    testState.visibleDirectories = new Set(getAllBoardCodes());
+
+    await renderBoardsBar('/mu');
+
+    expect(container.textContent).toContain('[diyaudio / zines]');
+    expect(getLinkHref('zines')).toBe('/zines');
+    expect(getLinkHref('diyaudio')).toBe('/diyaudio');
+
+    testState.visibleDirectories = new Set(['mu']);
+    await renderBoardsBar('/g');
+
+    // The mobile board select still offers it; only the desktop bracket list follows the saved selection.
+    expect(container.textContent).not.toContain('[zines]');
+    expect(getLinkHref('zines')).toBeUndefined();
   });
 
   it('links the search button straight to the archive search', async () => {
