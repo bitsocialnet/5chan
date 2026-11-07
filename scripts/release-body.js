@@ -109,7 +109,7 @@ const releaseBody = `${oneLinerDescription}
 
 - Web app: https://5chan.app
 - Decentralized web app via IPFS/IPNS gateways (works on any browser): [5chan.eth.limo](https://5chan.eth.limo), [5chan.eth.link](https://5chan.eth.link), [5chan-eth.ipns.dweb.link](https://5chan-eth.ipns.dweb.link)
-- Decentralized web app via IPFS node you run: https://5chan.eth (works on [Brave Browser](https://brave.com/) or use [IPFS Companion](https://docs.ipfs.tech/install/ipfs-companion/#prerequisites))
+- Decentralized web app via IPFS node you run: https://5chan.eth (works on [Freedom Browser](https://freedom.baby/) or [Brave Browser](https://brave.com/), or use [IPFS Companion](https://docs.ipfs.tech/install/ipfs-companion/#prerequisites))
 
 ## Downloads
 

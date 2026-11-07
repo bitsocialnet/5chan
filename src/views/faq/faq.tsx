@@ -508,8 +508,11 @@ const FAQ_SECTIONS: FAQSection[] = [
         question: 'Does 5chan have an official browser extension?',
         answer: (
           <>
-            No official 5chan browser extension is required. For IPFS and ENS-style static mirrors, tools such as IPFS Companion can help advanced users, but the ordinary
-            web app does not require an extension.
+            No official 5chan browser extension is required. To open <code>5chan.eth</code> directly without a gateway, use{' '}
+            <a href='https://freedom.baby/' {...externalLinkProps}>
+              Freedom Browser
+            </a>
+            , which runs its own IPFS node, or IPFS Companion with your own IPFS node. The ordinary web app does not require an extension.
           </>
         ),
       },
