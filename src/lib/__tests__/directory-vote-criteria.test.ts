@@ -4,12 +4,12 @@ import {
   __resetDirectoryVoteCriteriaForTests,
   DIRECTORY_VOTE_CRITERIA_URL,
   getCachedDirectoryVoteCriteria,
-  getDirectoryCodeFromContestId,
   getVendoredDirectoryVoteCriteria,
   loadDirectoryVoteCriteria,
   parseDirectoryVoteCriteria,
   subscribeDirectoryVoteCriteria,
 } from '../directory-vote-criteria';
+import { getDirectoryCodeFromContestId } from '../directory-vote-contest-id';
 
 const withUpdatedRandomContest = (suffix: number) =>
   vendoredManifestSource.replace('"contestId": "5chan-dir-b-vote-test-1"', `"contestId": "5chan-dir-b-vote-test-${suffix}"`);

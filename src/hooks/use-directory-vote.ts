@@ -4,7 +4,10 @@ import { topicFor, type Criteria, type NameResolver, type PubsubVoterOptions } f
 import { loadDirectoryVoteCriteria } from '../lib/directory-vote-criteria';
 import { getAccountVoteSigner, type AccountVoteSigner } from '../lib/directory-vote-signer';
 import { getUnmetDirectoryBoardRequirements, type DirectoryBoardRecord, type DirectoryBoardRequirement } from '../lib/directory-board-requirements';
+import { isDirectoryVoteEngaged } from '../lib/directory-vote-engagement';
+import { getDirectoryVoteVisits } from '../lib/directory-vote-visits';
 import {
+  isDirectoryVoteExpired,
   isDirectoryVoteRefreshDue,
   isSameDirectoryVoteBucket,
   publishDirectoryVote,
@@ -194,8 +197,9 @@ interface RefreshOptions {
 }
 
 /**
- * Re-sign this wallet's standing directory votes once they pass half their expiry window.
- * Nothing is joined or constructed unless the wallet has a stored vote.
+ * Re-sign this wallet's standing directory votes once they pass half their expiry window, if the
+ * user cast them or visited their directory since the last refresh. Any other vote is left to lapse
+ * and forgotten once it has. Nothing is joined or constructed unless the wallet has a stored vote.
  */
 export const refreshDueDirectoryVotes = async ({ voteSigner, helia, nameResolvers }: RefreshOptions): Promise<void> => {
   const address = voteSigner.address.toLowerCase();
@@ -220,9 +224,20 @@ export const refreshDueDirectoryVotes = async ({ voteSigner, helia, nameResolver
         headBlock = chain.getBlockNumber();
         headBlocks.set(criteria.bucketChainId, headBlock);
       }
-      if (!isDirectoryVoteRefreshDue(criteria, storedVote.blockNumber, Number(await headBlock), storedVote.resignNextBucket)) continue;
+      const head = Number(await headBlock);
+      if (!isDirectoryVoteRefreshDue(criteria, storedVote.blockNumber, head, storedVote.resignNextBucket)) continue;
 
       const key = getDirectoryVoteKey(storedVote.address, storedVote.contestId);
+      // A same-bucket change is the user's own choice still settling, so it is re-signed regardless.
+      if (!storedVote.resignNextBucket && !isDirectoryVoteEngaged(storedVote, getDirectoryVoteVisits())) {
+        if (isDirectoryVoteExpired(criteria, storedVote.blockNumber, head)) {
+          await withDirectoryVoteLock(key, async () => {
+            if (useDirectoryVotesStore.getState().votes[key] === storedVote) useDirectoryVotesStore.getState().removeVote(storedVote.address, storedVote.contestId);
+          });
+        }
+        continue;
+      }
+
       await withDirectoryVoteLock(key, async () => {
         // The user may have changed or withdrawn this vote while the checks above awaited.
         if (useDirectoryVotesStore.getState().votes[key] !== storedVote) return;
@@ -232,7 +247,10 @@ export const refreshDueDirectoryVotes = async ({ voteSigner, helia, nameResolver
         // An ineligible wallet (expired Pass) keeps its intent, so the vote resumes after a renewal.
         if (result.status !== 'published') return;
         const { address, contestId, community } = storedVote;
-        if (community) useDirectoryVotesStore.getState().setVote({ address, contestId, topic: result.topic, community, blockNumber: result.blockNumber });
+        // Settling a same-bucket change is not a refresh: the user's cast still counts as their visit.
+        const refreshedAt = storedVote.resignNextBucket ? storedVote.refreshedAt : Date.now();
+        const refreshed = { address, contestId, topic: result.topic, community, blockNumber: result.blockNumber };
+        if (community) useDirectoryVotesStore.getState().setVote(refreshedAt === undefined ? refreshed : { ...refreshed, refreshedAt });
         else useDirectoryVotesStore.getState().removeVote(address, contestId);
       });
     } catch (error) {

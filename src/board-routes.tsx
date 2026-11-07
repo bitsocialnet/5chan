@@ -15,6 +15,7 @@ import useIsMobile from './hooks/use-is-mobile';
 import { useDirectories } from './hooks/use-directories';
 import { useResolvedCommunityAddress, useResolvedDirectoryBoardPath } from './hooks/use-resolved-community-address';
 import { useDirectoryCandidateRecords } from './hooks/use-directory-candidate-records';
+import { useDirectoryVoteVisits } from './hooks/use-directory-vote-visits';
 import { normalizeAccountCommentIndex } from './lib/utils/account-comment-index-utils';
 import { getCommentCommunityAddress } from './lib/utils/comment-utils';
 import { getPendingPostRoutePost } from './lib/utils/pending-post-route-state';
@@ -62,6 +63,12 @@ const getPageOneCanonicalPath = (boardIdentifier: string, pathname: string) => `
 // A leaf of its own, so candidate record updates do not rerender the board layout.
 const DirectoryCandidateRecords = ({ boardIdentifier }: { boardIdentifier: string | undefined }) => {
   useDirectoryCandidateRecords(boardIdentifier);
+  return null;
+};
+
+// Also a leaf, so stored vote changes do not rerender the board layout.
+const DirectoryVoteVisits = ({ boardIdentifier }: { boardIdentifier: string | undefined }) => {
+  useDirectoryVoteVisits(boardIdentifier);
   return null;
 };
 
@@ -151,6 +158,7 @@ export const BoardLayout = () => {
       {/* Keyed by page, so each page picks its own skeleton as each 4chan page load does; settings opens over the page. */}
       {showSpookySkeleton && <SpookySkeleton key={getPostFormRouteKeyPath(pathname)} />}
       <DirectoryCandidateRecords boardIdentifier={boardIdentifier} />
+      <DirectoryVoteVisits boardIdentifier={boardIdentifier} />
       <BoardsBar persistable />
       <ImportErrorBoundary floating>
         <Suspense fallback={null}>

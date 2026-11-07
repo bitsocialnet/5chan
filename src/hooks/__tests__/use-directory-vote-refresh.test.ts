@@ -4,6 +4,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Criteria, PubsubVoterOptions } from '@bitsocial/pubsub-voting';
 import type { AccountVoteSigner } from '../../lib/directory-vote-signer';
+import { __resetDirectoryVoteVisitsForTests, recordDirectoryVoteVisits } from '../../lib/directory-vote-visits';
 import useDirectoryVotesStore from '../../stores/use-directory-votes-store';
 import { refreshDueDirectoryVotes } from '../use-directory-vote';
 import { useDirectoryVoteRefresh } from '../use-directory-vote-refresh';
@@ -61,6 +62,7 @@ describe('refreshDueDirectoryVotes', () => {
     mocks.publishDirectoryVote.mockReset();
     mocks.publishDirectoryVote.mockResolvedValue({ status: 'published', topic: 'topic-a', blockNumber: 999_000 });
     useDirectoryVotesStore.setState({ votes: {} });
+    __resetDirectoryVoteVisitsForTests();
   });
 
   it('does nothing for a wallet without stored votes', async () => {
@@ -69,14 +71,55 @@ describe('refreshDueDirectoryVotes', () => {
     expect(mocks.loadDirectoryVoteCriteria).not.toHaveBeenCalled();
   });
 
-  it('re-signs a due vote and records the new block', async () => {
+  it('re-signs a due vote the user cast, recording the new block and when it was refreshed', async () => {
     useDirectoryVotesStore.getState().setVote(storedVote);
     mocks.headBlock = BigInt(361 * 1800);
+    const before = Date.now();
 
     await refreshDueDirectoryVotes({ voteSigner, helia, nameResolvers: undefined });
 
     expect(mocks.publishDirectoryVote).toHaveBeenCalledWith(expect.objectContaining({ criteria, address: '0xAbC', community: storedVote.community }));
-    expect(Object.values(useDirectoryVotesStore.getState().votes)).toEqual([{ ...storedVote, blockNumber: 999_000 }]);
+    const [refreshed] = Object.values(useDirectoryVotesStore.getState().votes);
+    expect(refreshed).toEqual({ ...storedVote, blockNumber: 999_000, refreshedAt: expect.any(Number) });
+    expect(refreshed.refreshedAt).toBeGreaterThanOrEqual(before);
+  });
+
+  it('re-signs a refreshed vote again only after a visit to its directory', async () => {
+    useDirectoryVotesStore.getState().setVote({ ...storedVote, refreshedAt: 1_000 });
+    recordDirectoryVoteVisits(['a'], 1_000);
+    mocks.headBlock = BigInt(361 * 1800);
+    await refreshDueDirectoryVotes({ voteSigner, helia, nameResolvers: undefined });
+    expect(mocks.publishDirectoryVote).not.toHaveBeenCalled();
+
+    recordDirectoryVoteVisits(['a'], 1_001);
+    await refreshDueDirectoryVotes({ voteSigner, helia, nameResolvers: undefined });
+
+    expect(mocks.publishDirectoryVote).toHaveBeenCalledTimes(1);
+  });
+
+  it('ignores visits to other directories', async () => {
+    useDirectoryVotesStore.getState().setVote({ ...storedVote, refreshedAt: 1_000 });
+    recordDirectoryVoteVisits(['b'], 2_000);
+    mocks.headBlock = BigInt(361 * 1800);
+
+    await refreshDueDirectoryVotes({ voteSigner, helia, nameResolvers: undefined });
+
+    expect(mocks.publishDirectoryVote).not.toHaveBeenCalled();
+  });
+
+  it('keeps an unvisited vote while it still counts, then forgets it once it has expired', async () => {
+    const lapsing = { ...storedVote, refreshedAt: 1_000 };
+    useDirectoryVotesStore.getState().setVote(lapsing);
+    // Signed in bucket 1, so it counts through bucket 721.
+    mocks.headBlock = BigInt(721 * 1800 + 1799);
+    await refreshDueDirectoryVotes({ voteSigner, helia, nameResolvers: undefined });
+    expect(Object.values(useDirectoryVotesStore.getState().votes)).toEqual([lapsing]);
+
+    mocks.headBlock = BigInt(722 * 1800);
+    await refreshDueDirectoryVotes({ voteSigner, helia, nameResolvers: undefined });
+
+    expect(mocks.publishDirectoryVote).not.toHaveBeenCalled();
+    expect(useDirectoryVotesStore.getState().votes).toEqual({});
   });
 
   it('leaves a vote alone until half its expiry window has passed', async () => {
@@ -153,6 +196,7 @@ describe('refreshAccountDirectoryVotes', () => {
     mocks.publishDirectoryVote.mockReset();
     mocks.publishDirectoryVote.mockResolvedValue({ status: 'published', topic: 'topic-a', blockNumber: 999_000 });
     useDirectoryVotesStore.setState({ votes: {} });
+    __resetDirectoryVoteVisitsForTests();
   });
 
   // The hook tests below replace this export, so load the module's own implementation.
