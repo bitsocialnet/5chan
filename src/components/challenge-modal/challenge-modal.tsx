@@ -8,6 +8,7 @@ import { stripTripcodeProof } from '../../lib/utils/tripcode-utils';
 import { getDirectoryCodeForIdentifier } from '../../lib/code-tags';
 import { useDirectories } from '../../hooks/use-directories';
 import useIsMobile from '../../hooks/use-is-mobile';
+import useModalStackZIndex from '../../hooks/use-modal-stack-z-index';
 import { useCommunityField } from '../../hooks/use-stable-community';
 import useChallengesStore from '../../stores/use-challenges-store';
 import useTrustedBoardUrlPermissionsStore from '../../stores/use-trusted-board-url-permissions-store';
@@ -355,6 +356,7 @@ const Challenge = ({ challenge, closeModal, abandonModal }: ChallengeProps) => {
 
   const nodeRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
+  const zIndex = useModalStackZIndex();
 
   // Initial centered position, computed once. It is rendered as a stable transform so React never
   // re-applies it after mount (React skips unchanged style props), which lets the imperative drag
@@ -545,6 +547,7 @@ const Challenge = ({ challenge, closeModal, abandonModal }: ChallengeProps) => {
         top: 0,
         left: isMobile && !isIframeVisible ? '50%' : 0,
         transform: isMobile ? mobileTransform : `translate3d(${Math.round(initialPosition.x)}px, ${Math.round(initialPosition.y)}px, 0)`,
+        zIndex,
         touchAction: 'none',
       }}
     >

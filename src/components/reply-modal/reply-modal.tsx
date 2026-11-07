@@ -41,6 +41,7 @@ import { useDirectoryEntry } from '../../hooks/use-directory-entry';
 import usePublishReply from '../../hooks/use-publish-reply';
 import useTripcodeNameField from '../../hooks/use-tripcode-name-field';
 import useIsMobile from '../../hooks/use-is-mobile';
+import useModalStackZIndex from '../../hooks/use-modal-stack-z-index';
 import { useFileUpload } from '../../hooks/use-file-upload';
 import useSpamBlockerPrecheck from '../../hooks/use-spam-blocker-precheck';
 import { useShowLinkField } from '../../hooks/use-show-link-field';
@@ -382,6 +383,7 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
 
   const nodeRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
+  const zIndex = useModalStackZIndex(showReplyModal);
   const [initialModalPosition] = useState(getInitialReplyModalPosition);
 
   const [{ left, top }, api] = useSpring(
@@ -769,6 +771,7 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
       style={{
         left,
         top,
+        zIndex,
         touchAction: 'none',
       }}
     >
