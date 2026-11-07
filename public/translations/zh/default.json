@@ -604,5 +604,6 @@
   "directory_requirement_no_galleries": "每帖一个文件，不支持图集",
   "show_filter_image_md5_in_post_menu": "在帖子菜单中显示“过滤图片 MD5”",
   "tripcode_sign_failed": "无法为此版块签署你的 tripcode。请等待版块加载完成后重试，或不使用 tripcode 发帖。",
-  "tripcode_retry_mismatch": "要重试此帖子，请在名称栏中重新输入它的 tripcode，或删除该帖子。"
+  "tripcode_retry_mismatch": "要重试此帖子，请在名称栏中重新输入它的 tripcode，或删除该帖子。",
+  "directory_vote_lapse_notice": "只要你继续访问此目录或你投票支持的板块，你的投票就会一直有效；在你最后一次访问约一个月后失效。"
 }

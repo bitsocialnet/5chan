@@ -604,5 +604,6 @@
   "directory_requirement_no_galleries": "Gönderi başına bir dosya, galeri yok",
   "show_filter_image_md5_in_post_menu": "Gönderi menülerinde \"Görüntü MD5'ini filtrele\" seçeneğini göster",
   "tripcode_sign_failed": "Tripcode'un bu pano için imzalanamadı. Panonun yüklenmesini bekleyip tekrar dene ya da tripcode olmadan gönder.",
-  "tripcode_retry_mismatch": "Bu gönderiyi yeniden denemek için tripcode'unu ad alanına tekrar yaz ya da gönderiyi sil."
+  "tripcode_retry_mismatch": "Bu gönderiyi yeniden denemek için tripcode'unu ad alanına tekrar yaz ya da gönderiyi sil.",
+  "directory_vote_lapse_notice": "Bu directory'yi veya oy verdiğiniz panoyu ziyaret etmeye devam ettiğiniz sürece oyunuz sayılır ve son ziyaretinizden yaklaşık bir ay sonra sona erer."
 }
