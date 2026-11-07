@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useTranslation, Trans } from 'react-i18next';
+import useModalStackZIndex from '../../hooks/use-modal-stack-z-index';
 import { clearMathElement, typesetMathElement } from '../../lib/mathjax/mathjax-typeset';
 import TexLogo from '../tex-logo';
 import styles from './tex-preview-modal.module.css';
@@ -12,6 +13,7 @@ const TexPreviewModal = ({ closeModal }: { closeModal: () => void }) => {
   const { t } = useTranslation();
   const outputRef = useRef<HTMLDivElement>(null);
   const typesetTimeoutRef = useRef<number>(undefined);
+  const zIndex = useModalStackZIndex();
 
   const handleInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     const { value } = event.target;
@@ -49,7 +51,7 @@ const TexPreviewModal = ({ closeModal }: { closeModal: () => void }) => {
   }, []);
 
   return (
-    <div className={styles.overlay}>
+    <div className={styles.overlay} style={{ zIndex }}>
       <button type='button' className={styles.overlayButton} aria-label={t('close')} onClick={closeModal} />
       <dialog open className={styles.panel} aria-modal='true' aria-labelledby='tex-preview-title'>
         <div id='tex-preview-title' className={styles.header}>
