@@ -38,6 +38,20 @@ export const getDirectoryVoteKey = (address: string, contestId: string) => `${ad
 
 const STORAGE_NAME = 'directory-votes';
 
+// Keeps this tab's object for each vote whose stored copy is unchanged, so a refresh that captured
+// the vote still recognizes it after another tab saves an unrelated change (see refreshDueDirectoryVotes).
+const mergeStoredVotes = (persisted: unknown, current: DirectoryVotesState): DirectoryVotesState => {
+  const stored = (persisted as Partial<DirectoryVotesState> | undefined)?.votes;
+  if (!stored) return current;
+  const votes = Object.fromEntries(
+    Object.entries(stored).map(([key, vote]) => {
+      const kept = current.votes[key];
+      return [key, kept && JSON.stringify(kept) === JSON.stringify(vote) ? kept : vote];
+    }),
+  );
+  return { ...current, votes };
+};
+
 const useDirectoryVotesStore = create<DirectoryVotesState>()(
   persist(
     (set) => ({
@@ -51,7 +65,7 @@ const useDirectoryVotesStore = create<DirectoryVotesState>()(
           return { votes };
         }),
     }),
-    { name: STORAGE_NAME, partialize: (state) => ({ votes: state.votes }) },
+    { name: STORAGE_NAME, partialize: (state) => ({ votes: state.votes }), merge: mergeStoredVotes },
   ),
 );
 

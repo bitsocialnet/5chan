@@ -119,6 +119,33 @@ describe('refreshDueDirectoryVotes', () => {
     expect(mocks.publishDirectoryVote).toHaveBeenCalledTimes(2);
   });
 
+  it('keeps a vote another tab changed while the refresh was publishing', async () => {
+    const changed = { ...storedVote, community: { publicKey: '12D3KooWOther' }, blockNumber: 361 * 1800 };
+    useDirectoryVotesStore.getState().setVote(storedVote);
+    mocks.headBlock = BigInt(361 * 1800);
+    mocks.publishDirectoryVote.mockImplementationOnce(async () => {
+      useDirectoryVotesStore.getState().setVote(changed);
+      return { status: 'published', topic: 'topic-a', blockNumber: 999_000 };
+    });
+
+    await refreshDueDirectoryVotes({ voteSigner, helia, nameResolvers: undefined });
+
+    expect(Object.values(useDirectoryVotesStore.getState().votes)).toEqual([changed]);
+  });
+
+  it('does not restore a vote another tab withdrew while the refresh was publishing', async () => {
+    useDirectoryVotesStore.getState().setVote(storedVote);
+    mocks.headBlock = BigInt(361 * 1800);
+    mocks.publishDirectoryVote.mockImplementationOnce(async () => {
+      useDirectoryVotesStore.getState().removeVote(storedVote.address, storedVote.contestId);
+      return { status: 'published', topic: 'topic-a', blockNumber: 999_000 };
+    });
+
+    await refreshDueDirectoryVotes({ voteSigner, helia, nameResolvers: undefined });
+
+    expect(useDirectoryVotesStore.getState().votes).toEqual({});
+  });
+
   it('ignores visits to other directories', async () => {
     useDirectoryVotesStore.getState().setVote({ ...storedVote, refreshedAt: 1_000 });
     recordDirectoryVoteVisits(['b'], 2_000);

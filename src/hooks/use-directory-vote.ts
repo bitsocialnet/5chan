@@ -248,6 +248,8 @@ export const refreshDueDirectoryVotes = async ({ voteSigner, helia, nameResolver
         const result = await publishDirectoryVote({ voter, criteria, signer: voteSigner.signer, address: voteSigner.address, community: storedVote.community });
         // An ineligible wallet (expired Pass) keeps its intent, so the vote resumes after a renewal.
         if (result.status !== 'published') return;
+        // Another tab may have changed or withdrawn this vote while it published; keep that newer record.
+        if (useDirectoryVotesStore.getState().votes[key] !== storedVote) return;
         const { address, contestId, community } = storedVote;
         // Settling a same-bucket change is not a refresh: the user's cast still counts as their visit.
         const refreshedAt = storedVote.resignNextBucket ? storedVote.refreshedAt : checkedAt;

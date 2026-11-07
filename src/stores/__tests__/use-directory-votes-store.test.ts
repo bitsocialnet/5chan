@@ -25,6 +25,19 @@ describe('useDirectoryVotesStore', () => {
     expect(storedKeys()).toEqual(['0xabc:b']);
   });
 
+  it('keeps the same object for a vote another tab saved unchanged', async () => {
+    useDirectoryVotesStore.getState().setVote(vote('a'));
+    useDirectoryVotesStore.getState().setVote(vote('b'));
+    const keptVote = useDirectoryVotesStore.getState().votes['0xabc:a'];
+    const otherTab = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}');
+    otherTab.state.votes['0xabc:b'] = { ...vote('b'), blockNumber: 3600 };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(otherTab));
+    window.dispatchEvent(new StorageEvent('storage', { key: STORAGE_KEY }));
+    await vi.waitFor(() => expect(useDirectoryVotesStore.getState().votes['0xabc:b'].blockNumber).toBe(3600));
+
+    expect(useDirectoryVotesStore.getState().votes['0xabc:a']).toBe(keptVote);
+  });
+
   it('ignores saves to other storage keys', () => {
     useDirectoryVotesStore.getState().setVote(vote('a'));
     const before = useDirectoryVotesStore.getState().votes;
