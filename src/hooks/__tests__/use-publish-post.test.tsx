@@ -177,6 +177,37 @@ describe('usePublishPost', () => {
     root = createRoot(container);
   });
 
+  it("drops a tripcode post's password when its publish fails or is abandoned", async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.stubGlobal('alert', vi.fn());
+    const proofName = `Anon#tc1:n${'A'.repeat(43)}${'B'.repeat(86)}`;
+    testState.signTripcodeMock.mockImplementation(async ({ readOptions, writeOptions }: { readOptions: () => any; writeOptions: (options: any) => void }) => {
+      writeOptions({ ...readOptions(), displayName: proofName, timestamp: 1_800_000_001 });
+      return true;
+    });
+    const published = { communityAddress: 'music.eth', content: 'trip thread', author: { displayName: proofName }, timestamp: 1_800_000_060 };
+    const publishTripcodePost = async () => {
+      await act(async () => {
+        latestValue.publishPost({ content: 'trip thread', displayName: 'Anon' } as never, undefined, { normal: 'hunter2' });
+      });
+      return testState.lastPublishOptions as Record<string, any>;
+    };
+
+    const failed = await publishTripcodePost();
+    failed.onError(new Error('publish failed'));
+    await expect(failed.onBeforeRepublish(published)).resolves.toBe(published);
+
+    const abandoned = await publishTripcodePost();
+    await act(async () => {
+      await abandoned.onChallenge('captcha', 'nonce');
+      await useChallengesStore.getState().abandonCurrentChallenge();
+    });
+    await expect(abandoned.onBeforeRepublish(published)).resolves.toBe(published);
+    expect(testState.signTripcodeMock).toHaveBeenCalledTimes(2);
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
   it('leaves the republish of a post without a tripcode to the hooks', async () => {
     await act(async () => {
       latestValue.publishPost({ content: 'plain thread', displayName: 'Anon' } as never);
