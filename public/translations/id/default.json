@@ -604,5 +604,6 @@
   "directory_requirement_no_galleries": "Satu file per postingan, tanpa galeri",
   "show_filter_image_md5_in_post_menu": "Tampilkan \"Saring MD5 gambar\" di menu postingan",
   "tripcode_sign_failed": "Tidak dapat menandatangani tripcode kamu untuk board ini. Tunggu board selesai dimuat lalu coba lagi, atau posting tanpa tripcode.",
-  "tripcode_retry_mismatch": "Untuk mencoba lagi postingan ini, ketik ulang tripcode-nya di kolom nama, atau hapus postingan."
+  "tripcode_retry_mismatch": "Untuk mencoba lagi postingan ini, ketik ulang tripcode-nya di kolom nama, atau hapus postingan.",
+  "directory_vote_lapse_notice": "Suara Anda tetap dihitung selama Anda terus mengunjungi direktori ini atau papan yang Anda pilih, dan kedaluwarsa sekitar sebulan setelah kunjungan terakhir Anda."
 }

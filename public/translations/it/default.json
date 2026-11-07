@@ -604,5 +604,6 @@
   "directory_requirement_no_galleries": "Un file per post, niente gallerie",
   "show_filter_image_md5_in_post_menu": "Mostra «Filtra MD5 immagine» nei menu dei post",
   "tripcode_sign_failed": "Impossibile firmare il tuo tripcode per questa board. Attendi che la board si carichi e riprova, oppure pubblica senza tripcode.",
-  "tripcode_retry_mismatch": "Per riprovare questo post, scrivi di nuovo il suo tripcode nel campo del nome, oppure elimina il post."
+  "tripcode_retry_mismatch": "Per riprovare questo post, scrivi di nuovo il suo tripcode nel campo del nome, oppure elimina il post.",
+  "directory_vote_lapse_notice": "Il tuo voto resta valido finché continui a visitare questa directory o la board che hai votato, e scade circa un mese dopo la tua ultima visita."
 }

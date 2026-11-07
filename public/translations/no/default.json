@@ -604,5 +604,6 @@
   "directory_requirement_no_galleries": "Én fil per innlegg, ingen gallerier",
   "show_filter_image_md5_in_post_menu": "Vis «Filtrer bilde-MD5» i innleggsmenyer",
   "tripcode_sign_failed": "Kunne ikke signere tripkoden din for dette boardet. Vent til boardet er lastet inn og prøv igjen, eller post uten tripkode.",
-  "tripcode_retry_mismatch": "For å prøve dette innlegget på nytt, skriv tripkoden igjen i navnefeltet, eller slett innlegget."
+  "tripcode_retry_mismatch": "For å prøve dette innlegget på nytt, skriv tripkoden igjen i navnefeltet, eller slett innlegget.",
+  "directory_vote_lapse_notice": "Stemmen din teller så lenge du fortsetter å besøke denne katalogen eller brettet du stemte på, og utløper omtrent en måned etter ditt siste besøk."
 }

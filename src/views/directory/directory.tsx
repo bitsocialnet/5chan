@@ -462,7 +462,7 @@ const Directory = () => {
   return (
     <div id='top' className={`${styles.page} ${shouldShowSnow() ? styles.garland : ''}`} data-pubsub-vote-tally-state={voteTally.state}>
       <div className={styles.directoryNotice}>
-        <Trans i18nKey='directory_footnote' components={{ passLink: <Link to={PASS_LINK} /> }} />
+        <Trans i18nKey='directory_footnote' components={{ passLink: <Link to={PASS_LINK} /> }} /> {t('directory_vote_lapse_notice')}
         {isTestnetVote && <> {t('directory_votes_testnet')}</>}
       </div>
       <DirectoryMobileTopControls communityAddress={communityAddress} />

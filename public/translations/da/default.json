@@ -604,5 +604,6 @@
   "directory_requirement_no_galleries": "Én fil pr. opslag, ingen gallerier",
   "show_filter_image_md5_in_post_menu": "Vis \"Filtrér billed-MD5\" i opslagsmenuer",
   "tripcode_sign_failed": "Kunne ikke signere din tripcode til dette board. Vent på, at boardet indlæses, og prøv igen, eller post uden en tripcode.",
-  "tripcode_retry_mismatch": "For at prøve dette opslag igen skal du skrive dets tripcode i navnefeltet igen, eller slette opslaget."
+  "tripcode_retry_mismatch": "For at prøve dette opslag igen skal du skrive dets tripcode i navnefeltet igen, eller slette opslaget.",
+  "directory_vote_lapse_notice": "Din stemme tæller, så længe du bliver ved med at besøge dette katalog eller det board, du stemte på, og udløber cirka en måned efter dit sidste besøg."
 }

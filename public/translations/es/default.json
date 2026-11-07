@@ -604,5 +604,6 @@
   "directory_requirement_no_galleries": "Un archivo por publicación, sin galerías",
   "show_filter_image_md5_in_post_menu": "Mostrar «Filtrar MD5 de imagen» en los menús de las publicaciones",
   "tripcode_sign_failed": "No se pudo firmar tu tripcode para este tablón. Espera a que cargue el tablón y vuelve a intentarlo, o publica sin tripcode.",
-  "tripcode_retry_mismatch": "Para reintentar esta publicación, vuelve a escribir su tripcode en el campo de nombre o elimina la publicación."
+  "tripcode_retry_mismatch": "Para reintentar esta publicación, vuelve a escribir su tripcode en el campo de nombre o elimina la publicación.",
+  "directory_vote_lapse_notice": "Tu voto sigue contando mientras sigas visitando este directorio o el tablón al que votaste, y caduca aproximadamente un mes después de tu última visita."
 }
