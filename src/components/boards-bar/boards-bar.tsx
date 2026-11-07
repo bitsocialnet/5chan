@@ -11,7 +11,7 @@ import { useBoardPath, useResolvedCommunityAddress } from '../../hooks/use-resol
 import useIsMobile from '../../hooks/use-is-mobile';
 import { normalizeAccountCommentIndex } from '../../lib/utils/account-comment-index-utils';
 import { getPendingPostRoutePost } from '../../lib/utils/pending-post-route-state';
-import { getBoardPath, extractDirectoryFromTitle } from '../../lib/utils/route-utils';
+import { getBoardPath, extractDirectoryFromTitle, getDirectoryCode } from '../../lib/utils/route-utils';
 import { SEARCH_PATH } from '../../lib/search-navigation';
 import { getCommentCommunityAddress } from '../../lib/utils/comment-utils';
 import useCreateBoardModalStore from '../../stores/use-create-board-modal-store';
@@ -19,20 +19,14 @@ import useBoardsBarEditModalStore from '../../stores/use-boards-bar-edit-modal-s
 import useBoardsBarVisibilityStore from '../../stores/use-boards-bar-visibility-store';
 import useDirectoryModalStore from '../../stores/use-directory-modal-store';
 import usePersistentBoardsBarStore from '../../stores/use-persistent-boards-bar-store';
-import { BOARD_CODE_GROUPS, getAllBoardCodes } from '../../constants/board-codes';
+import { createBoardCodeVisibility, getBoardCodeGroups } from '../../lib/utils/board-code-groups';
 import styles from './boards-bar.module.css';
 import capitalize from 'lodash/capitalize';
 import debounce from 'lodash/debounce';
 
 // Helper function to find board address by directory code
-const findBoardAddressByCode = (code: string, directories: DirectoryCommunity[]): string | null => {
-  const entry = directories.find((community) => {
-    if (!community.title) return false;
-    const directory = extractDirectoryFromTitle(community.title);
-    return directory === code;
-  });
-  return entry?.address || null;
-};
+const findBoardAddressByCode = (code: string, directories: DirectoryCommunity[]): string | null =>
+  directories.find((community) => getDirectoryCode(community) === code)?.address || null;
 
 // The persistent bar is position: fixed, so a spacer has to keep its height in the page flow.
 // That height changes when the bar wraps to more lines or the subscriptions list changes.
@@ -162,8 +156,7 @@ const BoardsBarDesktop = memo(({ persistent, autoHide }: { persistent: boolean; 
   const { visibleDirectories, showSubscriptionsInBoardsBar } = useBoardsBarVisibilityStore();
   const directories = useDirectories();
 
-  // Memoize allBoardCodes since it's derived from a constant
-  const allBoardCodes = useMemo(() => getAllBoardCodes(), []);
+  const boardCodeGroups = useMemo(() => getBoardCodeGroups(directories), [directories]);
 
   const subscriptions = useAccountsStore(
     (state) => {
@@ -181,18 +174,13 @@ const BoardsBarDesktop = memo(({ persistent, autoHide }: { persistent: boolean; 
   // Show all subscriptions when enabled; no separate per-address tracking (avoids drift when subscribing from board-buttons)
   const visibleSubscriptionAddresses = showSubscriptionsInBoardsBar ? subscriptions : [];
 
-  // Check if any directories are hidden
-  const hasHiddenDirectories = useMemo(() => {
-    return allBoardCodes.some((code) => !visibleDirectories.has(code));
-  }, [allBoardCodes, visibleDirectories]);
+  const isBoardCodeVisible = useMemo(
+    () => createBoardCodeVisibility(visibleDirectories, boardCodeGroups.publishedCodes),
+    [visibleDirectories, boardCodeGroups.publishedCodes],
+  );
 
-  // Determine which directories to show (all if temporarily showing all, otherwise only visible ones)
-  const directoriesToShow = useMemo(() => {
-    if (showAllTemporarily) {
-      return new Set(allBoardCodes);
-    }
-    return visibleDirectories;
-  }, [showAllTemporarily, visibleDirectories, allBoardCodes]);
+  // Check if any directories are hidden
+  const hasHiddenDirectories = useMemo(() => boardCodeGroups.codes.some((code) => !isBoardCodeVisible(code)), [boardCodeGroups.codes, isBoardCodeVisible]);
 
   // Initialize visibility store on mount
   useEffect(() => {
@@ -270,8 +258,8 @@ const BoardsBarDesktop = memo(({ persistent, autoHide }: { persistent: boolean; 
           </>
         )}
         ]{' '}
-        {BOARD_CODE_GROUPS.map((group) => {
-          const visibleCodes = group.filter((code) => directoriesToShow.has(code));
+        {boardCodeGroups.groups.map((group) => {
+          const visibleCodes = showAllTemporarily ? group : group.filter(isBoardCodeVisible);
           if (visibleCodes.length === 0) return null;
 
           return <span key={group.join('|')}>[{visibleCodes.map((code, codeIndex) => renderBoardCode(code, codeIndex === visibleCodes.length - 1))}] </span>;

@@ -92,6 +92,15 @@ describe('preference stores', () => {
     expect(localStorage.getItem('5chan-boardsbar-subscriptions-visible')).toBe('false');
   });
 
+  it('useBoardsBarVisibilityStore records a saved list that keeps every board as all boards', async () => {
+    localStorage.setItem('5chan-boardsbar-directories-visible', JSON.stringify(getAllBoardCodes()));
+
+    const store = (await import('../use-boards-bar-visibility-store')).default;
+
+    expect(store.getState().visibleDirectories.has('*')).toBe(true);
+    expect(JSON.parse(localStorage.getItem('5chan-boardsbar-directories-visible') ?? '[]')).toContain('*');
+  });
+
   it('useBoardsBarVisibilityStore reinitializes from current storage keys', async () => {
     const boardCodes = getAllBoardCodes();
     const store = (await import('../use-boards-bar-visibility-store')).default;

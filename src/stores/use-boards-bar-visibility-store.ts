@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { getAllBoardCodes } from '../constants/board-codes';
+import { ALL_BOARDS_VISIBLE, getAllBoardCodes } from '../constants/board-codes';
 
 const LOCALSTORAGE_KEY_DIRECTORIES = '5chan-boardsbar-directories-visible';
 const LOCALSTORAGE_KEY_SUBSCRIPTIONS = '5chan-boardsbar-subscriptions-visible';
@@ -77,10 +77,20 @@ const saveShowSubscriptionsToStorage = (show: boolean) => {
 const useBoardsBarVisibilityStore = create<BoardsBarVisibilityState>((set, _get) => {
   // Initialize with all directories visible by default
   const allBoardCodes = getAllBoardCodes();
-  const defaultVisibleDirectories = new Set(allBoardCodes);
+  const defaultVisibleDirectories = new Set([...allBoardCodes, ALL_BOARDS_VISIBLE]);
+
+  const loadVisibleDirectories = (): Set<string> => {
+    const stored = loadFromLocalStorage(LOCALSTORAGE_KEY_DIRECTORIES, LOCALSTORAGE_KEY_DIRECTORIES_OLD, defaultVisibleDirectories);
+    if (stored === defaultVisibleDirectories || stored.has(ALL_BOARDS_VISIBLE) || !allBoardCodes.every((code) => stored.has(code))) return stored;
+    // A list saved before the marker existed that keeps every bundled board means "all boards". Record that while this
+    // build's bundled boards still match it, so a later release that bundles more boards keeps that meaning.
+    const migrated = new Set([...stored, ALL_BOARDS_VISIBLE]);
+    saveToLocalStorage(LOCALSTORAGE_KEY_DIRECTORIES, migrated);
+    return migrated;
+  };
 
   return {
-    visibleDirectories: loadFromLocalStorage(LOCALSTORAGE_KEY_DIRECTORIES, LOCALSTORAGE_KEY_DIRECTORIES_OLD, defaultVisibleDirectories),
+    visibleDirectories: loadVisibleDirectories(),
     showSubscriptionsInBoardsBar: loadShowSubscriptionsFromStorage(),
 
     toggleDirectory: (code: string) => {
@@ -115,7 +125,7 @@ const useBoardsBarVisibilityStore = create<BoardsBarVisibilityState>((set, _get)
     },
 
     initialize: () => {
-      const directories = loadFromLocalStorage(LOCALSTORAGE_KEY_DIRECTORIES, LOCALSTORAGE_KEY_DIRECTORIES_OLD, defaultVisibleDirectories);
+      const directories = loadVisibleDirectories();
       const showSubscriptions = loadShowSubscriptionsFromStorage();
       set({
         visibleDirectories: directories,
