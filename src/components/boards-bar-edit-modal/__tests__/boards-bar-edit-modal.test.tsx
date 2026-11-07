@@ -71,23 +71,33 @@ describe('BoardsBarEditModal', () => {
     expect(useBoardsBarEditModalStore.getState().showModal).toBe(true);
   });
 
-  it('saves a directory published after this build when it is typed into the list', async () => {
-    await renderModal();
+  it('saves typed directories published after this build, including ones not loaded yet', async () => {
+    const saveInput = async (value: string) => {
+      useBoardsBarEditModalStore.setState({ showModal: true });
+      await renderModal();
+      const input = container.querySelector<HTMLInputElement>('input[aria-label="Directory codes"]');
+      await act(async () => {
+        Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set?.call(input, value);
+        input?.dispatchEvent(new Event('input', { bubbles: true }));
+      });
+      const saveButton = Array.from(container.querySelectorAll('button')).find((button) => button.textContent === 'Save');
+      await act(async () => {
+        saveButton?.click();
+      });
+      return useBoardsBarVisibilityStore.getState().visibleDirectories;
+    };
 
-    const input = container.querySelector<HTMLInputElement>('input[aria-label="Directory codes"]');
-    await act(async () => {
-      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set?.call(input, 'tv zines');
-      input?.dispatchEvent(new Event('input', { bubbles: true }));
-    });
-    const saveButton = Array.from(container.querySelectorAll('button')).find((button) => button.textContent === 'Save');
-    await act(async () => {
-      saveButton?.click();
-    });
-
-    const { visibleDirectories } = useBoardsBarVisibilityStore.getState();
+    // diyaudio is not in the loaded directories yet
+    let visibleDirectories = await saveInput('tv zines diyaudio');
     expect(visibleDirectories.has('tv')).toBe(true);
     expect(visibleDirectories.has('zines')).toBe(true);
+    expect(visibleDirectories.has('diyaudio')).toBe(true);
     expect(visibleDirectories.has('g')).toBe(false);
+
+    visibleDirectories = await saveInput('tv');
+    expect(visibleDirectories.has('tv')).toBe(true);
+    expect(visibleDirectories.has('zines')).toBe(false);
+    expect(visibleDirectories.has('diyaudio')).toBe(false);
   });
 
   it('still closes when the backdrop itself handles keyboard activation', async () => {

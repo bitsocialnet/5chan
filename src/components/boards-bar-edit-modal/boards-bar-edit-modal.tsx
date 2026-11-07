@@ -53,7 +53,8 @@ const BoardsBarEditModalForm = ({
       allBoardCodes.forEach((code) => setDirectoryVisibility(code, true));
     } else {
       const inputDirectories = stringToDirectories(localDirectoryInput);
-      allBoardCodes.forEach((code) => setDirectoryVisibility(code, inputDirectories.has(code)));
+      // Keep typed codes whose directories have not loaded yet, and clear earlier ones no longer typed.
+      new Set([...allBoardCodes, ...visibleDirectories, ...inputDirectories]).forEach((code) => setDirectoryVisibility(code, inputDirectories.has(code)));
     }
     setShowSubscriptionsInBoardsBar(showSubscriptions);
     closeBoardsBarEditModal();
