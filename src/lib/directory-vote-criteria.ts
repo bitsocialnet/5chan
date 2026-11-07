@@ -1,6 +1,7 @@
 import { deriveDirectoryCriteria, type Criteria } from '@bitsocial/pubsub-voting';
 import stripJsonComments from 'strip-json-comments';
 import vendoredManifestSource from '../data/5chan-directory-criteria.jsonc?raw';
+import { getDirectoryCodeFromContestId } from './directory-vote-contest-id';
 
 export const DIRECTORY_VOTE_CRITERIA_URL = 'https://raw.githubusercontent.com/bitsocialnet/lists/master/5chan-directory-criteria.jsonc';
 
@@ -9,8 +10,6 @@ const LOCALSTORAGE_TIMESTAMP_KEY = '5chan-directory-vote-criteria-cache-timestam
 const CACHE_MAX_AGE_MS = 60 * 60 * 1000;
 const FETCH_RETRY_DELAY_MS = 60 * 1000;
 const FETCH_TIMEOUT_MS = 10 * 1000;
-// Testnet manifests use `5chan-dir-<code>-vote-test-<n>`; the mainnet manifest may drop `test-`.
-const DIRECTORY_CONTEST_ID_PATTERN = /^5chan-dir-(.+)-vote-(?:test-)?\d+$/;
 
 export interface DirectoryVoteCriteria {
   criteria: Criteria[];
@@ -24,8 +23,6 @@ let inFlightFetch: Promise<DirectoryVoteCriteria> | undefined;
 let lastFetchAttemptAt: number | undefined;
 let lastFetchSuccessAt: number | undefined;
 const criteriaListeners = new Set<() => void>();
-
-export const getDirectoryCodeFromContestId = (contestId: string): string | undefined => DIRECTORY_CONTEST_ID_PATTERN.exec(contestId)?.[1];
 
 export const parseDirectoryVoteCriteria = (source: string): DirectoryVoteCriteria => {
   const manifest = JSON.parse(stripJsonComments(source));

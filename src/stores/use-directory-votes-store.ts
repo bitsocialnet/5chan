@@ -21,6 +21,11 @@ export interface StoredDirectoryVote {
    * lowest CID, not publish order, so the choice is re-signed once the next bucket starts.
    */
   resignNextBucket?: boolean;
+  /**
+   * When a background refresh last re-signed this vote (ms). The next refresh needs a visit to the
+   * directory after it (lib/directory-vote-visits); a vote the user just cast or changed has none.
+   */
+  refreshedAt?: number;
 }
 
 interface DirectoryVotesState {

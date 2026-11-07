@@ -63,6 +63,10 @@ export const isDirectoryVoteRefreshDue = (criteria: Criteria, blockNumber: numbe
   return resignNextBucket ? headBucket > signedBucket : headBucket >= signedBucket + republishIntervalBuckets(criteria);
 };
 
+/** A vote stops counting once the head's bucket is more than `voteExpiryBuckets` past the one it was signed in. */
+export const isDirectoryVoteExpired = (criteria: Criteria, blockNumber: number, headBlock: number): boolean =>
+  Math.floor(headBlock / criteria.blocksPerBucket) > Math.floor(blockNumber / criteria.blocksPerBucket) + criteria.voteExpiryBuckets;
+
 export type DirectoryBoardResolution = { status: 'resolved'; target: DirectoryVoteTarget } | { status: 'invalid' | 'not-found' };
 
 /** Turn a typed board address (`name.bso`, `/name.bso/`, or a raw public key) into a vote target. */
