@@ -12,7 +12,8 @@ import useChallengesStore from '../stores/use-challenges-store';
 import usePublishAuthorDomainGuard, { getPublishAuthorDomainErrorMessage } from './use-publish-author-domain-guard';
 import usePendingPublishRequest from './use-pending-publish-request';
 import useSignTripcode from './use-sign-tripcode';
-import type { TripcodeSecret } from '../lib/utils/tripcode-utils';
+import useTripcodeRepublish from './use-tripcode-republish';
+import { hasTripcodeProof, type TripcodeSecret } from '../lib/utils/tripcode-utils';
 import type { PostingAnalyticsAttempt } from '../lib/posting-analytics';
 
 type UsePublishReplyOptions = {
@@ -55,6 +56,7 @@ const usePublishReply = ({ cid, communityAddress, postCid }: UsePublishReplyOpti
   const [publishReplyStateMessage, setPublishReplyStateMessage] = useState<string | null>(null);
   const { finishPendingPublishRequest, startPendingPublishRequest } = usePendingPublishRequest();
   const signTripcode = useSignTripcode();
+  const { keepTripcode, forgetTripcode, onBeforeRepublish } = useTripcodeRepublish();
   const tripcodeSecretsRef = useRef(new Map<number, TripcodeSecret>());
   // A reply form closed while its key was derived drops the reply.
   const isMountedRef = useRef(false);
@@ -160,12 +162,15 @@ const usePublishReply = ({ cid, communityAddress, postCid }: UsePublishReplyOpti
   const publishOptionsWithAbandon = useMemo(
     () => ({
       ...mergedPublishOptions,
+      // Only a reply with a proof is rebuilt before its republish; any other keeps the hooks' own republish.
+      ...(hasTripcodeProof(mergedPublishOptions?.author?.displayName) ? { onBeforeRepublish } : {}),
       onError: (error: Error) => {
         analyticsAttempt?.finish('post_publish_failed');
         mergedPublishOptions?.onError?.(error);
       },
       onChallengeVerification: async (challengeVerification: ChallengeVerification, comment: Comment) => {
         analyticsAttempt?.verify(challengeVerification);
+        if (challengeVerification.challengeSuccess === true) forgetTripcode(comment?.author?.displayName);
         mergedPublishOptions?.onChallengeVerification?.(challengeVerification, comment);
       },
       onChallenge: async (...args: any[]) => {
@@ -173,7 +178,7 @@ const usePublishReply = ({ cid, communityAddress, postCid }: UsePublishReplyOpti
         addChallenge(args, abandonCurrentPublish);
       },
     }),
-    [abandonCurrentPublish, addChallenge, analyticsAttempt, mergedPublishOptions],
+    [abandonCurrentPublish, addChallenge, analyticsAttempt, forgetTripcode, mergedPublishOptions, onBeforeRepublish],
   );
 
   const { index, publishComment, abandonPublish } = usePublishComment(publishOptionsWithAbandon);
@@ -206,7 +211,8 @@ const usePublishReply = ({ cid, communityAddress, postCid }: UsePublishReplyOpti
   const preparePublishReply = useCallback(
     async (requestId: number) => {
       setPublishReplyError(null);
-      // Taken out first, so no return below leaves the password in memory.
+      // Taken out first, so no return below leaves the password in the map; a signed reply's password is
+      // then kept by useTripcodeRepublish until the board accepts the reply.
       const tripcodeSecret = tripcodeSecretsRef.current.get(requestId);
       tripcodeSecretsRef.current.delete(requestId);
 
@@ -225,7 +231,10 @@ const usePublishReply = ({ cid, communityAddress, postCid }: UsePublishReplyOpti
             const signed = await signTripcode({
               secret: tripcodeSecret,
               readOptions: () => usePublishReplyStore.getState().publishCommentOptions[parentCid],
-              writeOptions: (options) => usePublishReplyStore.getState().setPublishReplyStore({ ...options, parentCid }),
+              writeOptions: (options) => {
+                keepTripcode(options.displayName, { secret: tripcodeSecret, name: options.author?.displayName });
+                usePublishReplyStore.getState().setPublishReplyStore({ ...options, parentCid });
+              },
               isActive: () => isMountedRef.current,
             });
             if (!signed) {
@@ -300,7 +309,7 @@ const usePublishReply = ({ cid, communityAddress, postCid }: UsePublishReplyOpti
         setIsResolvingExternalQuotes(false);
       }
     },
-    [account, analyticsAttempt, blockedReason, directories, finishPendingPublishRequest, parentCid, publishResolvableQuoteReferences, signTripcode, t],
+    [account, analyticsAttempt, blockedReason, directories, finishPendingPublishRequest, keepTripcode, parentCid, publishResolvableQuoteReferences, signTripcode, t],
   );
 
   const publishReply = useCallback(

@@ -144,6 +144,49 @@ describe('usePublishPost', () => {
     expect(JSON.stringify(testState.lastPublishOptions)).not.toContain('hunter2');
   });
 
+  it('signs a tripcode post again before each republish after a wrong challenge answer, until the board accepts it', async () => {
+    // A proof-shaped name: a normal tripcode's 43-character key and 86-character signature.
+    const getProofName = (signature: string) => `Anon#tc1:n${'A'.repeat(43)}${signature.repeat(86)}`;
+    const signedFrom: Array<Record<string, any>> = [];
+    testState.signTripcodeMock.mockImplementation(async ({ readOptions, writeOptions }: { readOptions: () => any; writeOptions: (options: any) => void }) => {
+      const options = readOptions();
+      signedFrom.push(options);
+      writeOptions({ ...options, displayName: getProofName(String(signedFrom.length)), timestamp: 1_800_000_000 + signedFrom.length });
+      return true;
+    });
+    await act(async () => {
+      latestValue.publishPost({ content: 'trip thread', displayName: 'Anon' } as never, undefined, { normal: 'hunter2' });
+    });
+    const callbacks = testState.lastPublishOptions as Record<string, any>;
+    expect(callbacks.author.displayName).toBe(getProofName('1'));
+
+    // The form closes once the post is pending, before any answer to its challenge.
+    act(() => root.unmount());
+    const published = { communityAddress: 'music.eth', content: 'trip thread', author: { displayName: getProofName('1') }, timestamp: 1_800_000_060 };
+    const republished = await callbacks.onBeforeRepublish(published);
+
+    expect(testState.signTripcodeMock).toHaveBeenCalledTimes(2);
+    expect(testState.signTripcodeMock).toHaveBeenLastCalledWith(expect.objectContaining({ secret: { normal: 'hunter2' } }));
+    expect(signedFrom[1]).toEqual({ ...published, author: { displayName: 'Anon' } });
+    expect(republished).toEqual({ ...published, author: { displayName: getProofName('2') }, timestamp: 1_800_000_002 });
+
+    // Accepted: a later republish of the same proof keeps it, and the password is no longer kept.
+    await callbacks.onChallengeVerification({ challengeSuccess: true }, { author: { displayName: getProofName('2') } });
+    await expect(callbacks.onBeforeRepublish(republished)).resolves.toBe(republished);
+    expect(testState.signTripcodeMock).toHaveBeenCalledTimes(2);
+    root = createRoot(container);
+  });
+
+  it('leaves the republish of a post without a tripcode to the hooks', async () => {
+    await act(async () => {
+      latestValue.publishPost({ content: 'plain thread', displayName: 'Anon' } as never);
+    });
+
+    expect(testState.publishCommentMock).toHaveBeenCalledTimes(1);
+    expect(testState.lastPublishOptions).toMatchObject({ author: { displayName: 'Anon' } });
+    expect(testState.lastPublishOptions).not.toHaveProperty('onBeforeRepublish');
+  });
+
   it('does not publish a tripcode post whose proof cannot be signed', async () => {
     testState.signTripcodeMock.mockRejectedValue(new Error('error: tripcode_sign_failed'));
     await act(async () => {

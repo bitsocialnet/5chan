@@ -6,8 +6,9 @@ import useChallengesStore from '../stores/use-challenges-store';
 import usePublishAuthorDomainGuard, { getPublishAuthorDomainErrorMessage } from './use-publish-author-domain-guard';
 import usePendingPublishRequest from './use-pending-publish-request';
 import useSignTripcode from './use-sign-tripcode';
+import useTripcodeRepublish from './use-tripcode-republish';
 import { getDuplicateMediaChallengeError } from '../lib/utils/challenge-utils';
-import type { TripcodeSecret } from '../lib/utils/tripcode-utils';
+import { hasTripcodeProof, type TripcodeSecret } from '../lib/utils/tripcode-utils';
 import type { PostingAnalyticsAttempt } from '../lib/posting-analytics';
 
 type UsePublishPostOptions = {
@@ -54,6 +55,7 @@ const usePublishPost = ({
   const { blockedReason } = usePublishAuthorDomainGuard();
   const { finishPendingPublishRequest, startPendingPublishRequest } = usePendingPublishRequest();
   const signTripcode = useSignTripcode();
+  const { keepTripcode, forgetTripcode, onBeforeRepublish } = useTripcodeRepublish();
   const abandonCurrentPublish = useCallback(async () => {
     analyticsAttempt?.finish('post_cancelled');
     onAbandonPost?.();
@@ -105,6 +107,8 @@ const usePublishPost = ({
   const publishOptionsWithAbandon = useMemo(
     () => ({
       ...publishCommentOptions,
+      // Only a post with a proof is rebuilt before its republish; any other keeps the hooks' own republish.
+      ...(hasTripcodeProof(publishCommentOptions.author?.displayName) ? { onBeforeRepublish } : {}),
       onPendingComment: onPendingPost,
       onError: (error: Error) => {
         analyticsAttempt?.finish('post_publish_failed');
@@ -120,6 +124,7 @@ const usePublishPost = ({
           return;
         }
         if (challengeVerification.challengeSuccess === true) {
+          forgetTripcode(comment?.author?.displayName);
           onPublishAccepted?.();
         }
         publishCommentOptions.onChallengeVerification?.(challengeVerification, comment);
@@ -129,7 +134,18 @@ const usePublishPost = ({
         addChallenge(args, abandonCurrentPublish);
       },
     }),
-    [abandonCurrentPublish, addChallenge, analyticsAttempt, onDuplicateMediaRejected, onPendingPost, onPublishAccepted, onPublishError, publishCommentOptions],
+    [
+      abandonCurrentPublish,
+      addChallenge,
+      analyticsAttempt,
+      forgetTripcode,
+      onBeforeRepublish,
+      onDuplicateMediaRejected,
+      onPendingPost,
+      onPublishAccepted,
+      onPublishError,
+      publishCommentOptions,
+    ],
   );
 
   const { index, publishComment, abandonPublish } = usePublishComment(publishOptionsWithAbandon);
@@ -178,7 +194,8 @@ const usePublishPost = ({
   // effect like the publish itself, and the post is then published from the render that sees the proof.
   const [pendingTripcodeRequestId, setPendingTripcodeRequestId] = useState(0);
   const startedTripcodeRequestIdRef = useRef(0);
-  // Each request's password, kept out of state and dropped once its signing starts.
+  // Each request's password, kept out of state and taken out once its signing starts; a signed post's
+  // password is then kept by useTripcodeRepublish until the board accepts the post.
   const tripcodeSecretsRef = useRef(new Map<number, TripcodeSecret>());
   // A form closed while its key was derived drops the post, and its reset store must stay reset.
   const isMountedRef = useRef(false);
@@ -205,7 +222,10 @@ const usePublishPost = ({
     signTripcode({
       secret: tripcodeSecret,
       readOptions: () => useStore.getState().publishCommentOptions,
-      writeOptions: (options) => useStore.getState().setPublishPostStore(options),
+      writeOptions: (options) => {
+        keepTripcode(options.displayName, { secret: tripcodeSecret, name: options.author?.displayName });
+        useStore.getState().setPublishPostStore(options);
+      },
       isActive: () => isMountedRef.current,
     })
       .then((signed) => {
@@ -223,7 +243,7 @@ const usePublishPost = ({
         onPublishError?.(new Error(message));
         finishPendingPublishRequest(requestId);
       });
-  }, [analyticsAttempt, finishPendingPublishRequest, onPublishError, pendingTripcodeRequestId, signTripcode, useStore]);
+  }, [analyticsAttempt, finishPendingPublishRequest, keepTripcode, onPublishError, pendingTripcodeRequestId, signTripcode, useStore]);
 
   const publishPost = useCallback(
     (options?: Partial<Comment>, attempt?: PostingAnalyticsAttempt, tripcodeSecret?: TripcodeSecret) => {

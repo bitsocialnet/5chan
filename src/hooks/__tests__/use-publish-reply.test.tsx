@@ -295,6 +295,53 @@ describe('usePublishReply', () => {
     expect(JSON.stringify(testState.lastPublishOptions)).not.toContain('hunter2');
   });
 
+  it('signs a tripcode reply again before its republish after a wrong challenge answer', async () => {
+    // A proof-shaped name: a secure tripcode's 43-character key and 86-character signature.
+    const getProofName = (signature: string) => `Anon#tc1:s${'A'.repeat(43)}${signature.repeat(86)}`;
+    const signedFrom: Array<Record<string, any>> = [];
+    testState.signTripcodeMock.mockImplementation(async ({ readOptions, writeOptions }: { readOptions: () => any; writeOptions: (options: any) => void }) => {
+      const options = readOptions();
+      signedFrom.push(options);
+      writeOptions({ ...options, displayName: getProofName(String(signedFrom.length)), timestamp: 1_800_000_000 + signedFrom.length });
+      return true;
+    });
+    await act(async () => {
+      latestValue.publishReply({ content: 'Trip reply', displayName: 'Anon' } as never, undefined, { secure: 'hunter2' });
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    const callbacks = testState.lastPublishOptions as Record<string, any>;
+    expect(callbacks.author.displayName).toBe(getProofName('1'));
+
+    const published = {
+      communityAddress: 'music.eth',
+      parentCid: 'parent-cid',
+      postCid: 'parent-cid',
+      content: 'Trip reply',
+      author: { displayName: getProofName('1') },
+      timestamp: 1_800_000_060,
+    };
+    const republished = await callbacks.onBeforeRepublish(published);
+
+    expect(testState.signTripcodeMock).toHaveBeenLastCalledWith(expect.objectContaining({ secret: { secure: 'hunter2' } }));
+    expect(signedFrom[1]).toEqual({ ...published, author: { displayName: 'Anon' } });
+    expect(republished).toEqual({ ...published, author: { displayName: getProofName('2') }, timestamp: 1_800_000_002 });
+
+    await callbacks.onChallengeVerification({ challengeSuccess: true }, { author: { displayName: getProofName('2') } });
+    await expect(callbacks.onBeforeRepublish(republished)).resolves.toBe(republished);
+    expect(testState.signTripcodeMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('leaves the republish of a reply without a tripcode to the hooks', async () => {
+    await act(async () => {
+      latestValue.publishReply({ content: 'Plain reply', displayName: 'Anon' } as never);
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(testState.publishCommentMock).toHaveBeenCalledTimes(1);
+    expect(testState.lastPublishOptions).not.toHaveProperty('onBeforeRepublish');
+  });
+
   it('keeps a one-shot reply pending and ignores duplicate publish calls until it settles', async () => {
     let resolvePublish: () => void = () => {};
     const publishPromise = new Promise<void>((resolve) => {

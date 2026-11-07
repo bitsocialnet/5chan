@@ -195,6 +195,21 @@ describe('useDeleteFailedPost', () => {
     expect(testState.lastPublishOptions).toMatchObject({ author: { displayName: getProofName('A', 'C') }, timestamp: 1_800_000_000 });
   });
 
+  it('signs a retried tripcode post again before its republish after a wrong challenge answer', async () => {
+    signRetryAs(getProofName('A', 'C'));
+    await retryTripcodePost('#hunter2');
+    const callbacks = testState.lastPublishOptions as Record<string, any>;
+
+    const getSignedFrom = signRetryAs(getProofName('A', 'D'));
+    const published = { communityAddress: 'music.eth', content: 'retry me', author: { address: '0x123', displayName: getProofName('A', 'C') }, timestamp: 1_800_000_060 };
+    const republished = await callbacks.onBeforeRepublish(published);
+
+    expect(testState.signTripcodeMock).toHaveBeenCalledTimes(2);
+    expect(testState.signTripcodeMock).toHaveBeenLastCalledWith(expect.objectContaining({ secret: { normal: 'hunter2' } }));
+    expect(getSignedFrom()).toEqual({ ...published, author: { address: '0x123', displayName: 'Alice' } });
+    expect(republished).toEqual({ ...published, author: { address: '0x123', displayName: getProofName('A', 'D') }, timestamp: 1_800_000_000 });
+  });
+
   it("does not retry a tripcode post once the name field no longer holds the post's tripcode", async () => {
     // The field was cleared: the post would be republished without the trip it showed.
     await retryTripcodePost(undefined);
