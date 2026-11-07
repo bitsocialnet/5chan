@@ -605,5 +605,5 @@
   "show_filter_image_md5_in_post_menu": "Shfaq \"Filtro MD5-në e imazhit\" në menytë e postimeve",
   "tripcode_sign_failed": "Tripcode-i yt nuk mund të nënshkruhej për këtë bord. Prit që bordi të ngarkohet dhe provo përsëri, ose posto pa tripcode.",
   "tripcode_retry_mismatch": "Për ta provuar sërish këtë postim, shkruaj përsëri tripcode-in e tij në fushën e emrit, ose fshije postimin.",
-  "directory_vote_lapse_notice": "Vota jote vazhdon të numërohet për sa kohë vazhdon të vizitosh këtë directory ose bordin për të cilin votove, dhe skadon rreth një muaj pas vizitës sate të fundit."
+  "directory_vote_lapse_notice": "Vota jote vazhdon të numërohet për sa kohë vazhdon të vizitosh këtë directory ose bordin për të cilin votove, dhe mund të skadojë qysh dy javë pas vizitës sate të fundit."
 }

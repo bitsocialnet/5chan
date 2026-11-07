@@ -625,5 +625,5 @@
   "show_filter_image_md5_in_post_menu": "Show \"Filter image MD5\" in post menus",
   "tripcode_sign_failed": "Could not sign your tripcode for this board. Wait for the board to load and try again, or post without a tripcode.",
   "tripcode_retry_mismatch": "To retry this post, type its tripcode in the name field again, or delete the post.",
-  "directory_vote_lapse_notice": "Your vote stays counted while you keep visiting this directory or the board you voted for, and expires about a month after your last visit."
+  "directory_vote_lapse_notice": "Your vote stays counted while you keep visiting this directory or the board you voted for, and can expire as soon as two weeks after your last visit."
 }
