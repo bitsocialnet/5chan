@@ -97,6 +97,28 @@ describe('refreshDueDirectoryVotes', () => {
     expect(mocks.publishDirectoryVote).toHaveBeenCalledTimes(1);
   });
 
+  it('counts a visit made while the refresh was publishing toward the next refresh', async () => {
+    useDirectoryVotesStore.getState().setVote(storedVote);
+    mocks.headBlock = BigInt(361 * 1800);
+    const now = vi.spyOn(Date, 'now').mockReturnValue(5_000);
+    mocks.publishDirectoryVote.mockImplementationOnce(async () => {
+      now.mockReturnValue(9_000);
+      recordDirectoryVoteVisits(['a'], 6_000);
+      return { status: 'published', topic: 'topic-a', blockNumber: 1800 };
+    });
+    try {
+      await refreshDueDirectoryVotes({ voteSigner, helia, nameResolvers: undefined });
+      expect(Object.values(useDirectoryVotesStore.getState().votes)[0].refreshedAt).toBe(5_000);
+
+      // The re-signed vote is still in bucket 1, so it is due again at the same head.
+      await refreshDueDirectoryVotes({ voteSigner, helia, nameResolvers: undefined });
+    } finally {
+      now.mockRestore();
+    }
+
+    expect(mocks.publishDirectoryVote).toHaveBeenCalledTimes(2);
+  });
+
   it('ignores visits to other directories', async () => {
     useDirectoryVotesStore.getState().setVote({ ...storedVote, refreshedAt: 1_000 });
     recordDirectoryVoteVisits(['b'], 2_000);

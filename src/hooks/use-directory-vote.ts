@@ -228,6 +228,8 @@ export const refreshDueDirectoryVotes = async ({ voteSigner, helia, nameResolver
       if (!isDirectoryVoteRefreshDue(criteria, storedVote.blockNumber, head, storedVote.resignNextBucket)) continue;
 
       const key = getDirectoryVoteKey(storedVote.address, storedVote.contestId);
+      // Stamped before the visits are read, so a visit made while the vote publishes counts for the next refresh.
+      const checkedAt = Date.now();
       // A same-bucket change is the user's own choice still settling, so it is re-signed regardless.
       if (!storedVote.resignNextBucket && !isDirectoryVoteEngaged(storedVote, getDirectoryVoteVisits())) {
         if (isDirectoryVoteExpired(criteria, storedVote.blockNumber, head)) {
@@ -248,7 +250,7 @@ export const refreshDueDirectoryVotes = async ({ voteSigner, helia, nameResolver
         if (result.status !== 'published') return;
         const { address, contestId, community } = storedVote;
         // Settling a same-bucket change is not a refresh: the user's cast still counts as their visit.
-        const refreshedAt = storedVote.resignNextBucket ? storedVote.refreshedAt : Date.now();
+        const refreshedAt = storedVote.resignNextBucket ? storedVote.refreshedAt : checkedAt;
         const refreshed = { address, contestId, topic: result.topic, community, blockNumber: result.blockNumber };
         if (community) useDirectoryVotesStore.getState().setVote(refreshedAt === undefined ? refreshed : { ...refreshed, refreshedAt });
         else useDirectoryVotesStore.getState().removeVote(address, contestId);
