@@ -605,5 +605,5 @@
   "show_filter_image_md5_in_post_menu": "„Kép MD5 szűrése” megjelenítése a bejegyzések menüjében",
   "tripcode_sign_failed": "Nem sikerült aláírni a tripkódodat ehhez a táblához. Várd meg, amíg a tábla betöltődik, és próbáld újra, vagy posztolj tripkód nélkül.",
   "tripcode_retry_mismatch": "A poszt újrapróbálásához írd be újra a tripkódját a név mezőbe, vagy töröld a posztot.",
-  "directory_vote_lapse_notice": "A szavazatod addig számít, amíg továbbra is felkeresed ezt a könyvtárat vagy a táblát, amelyre szavaztál, és akár már két héttel az utolsó látogatásod után lejárhat."
+  "directory_vote_lapse_notice": "A szavazatod csak addig számít, amíg továbbra is felkeresed ezt a könyvtárat vagy a táblát, amelyre szavaztál."
 }

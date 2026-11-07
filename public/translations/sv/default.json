@@ -605,5 +605,5 @@
   "show_filter_image_md5_in_post_menu": "Visa ”Filtrera bild-MD5” i inläggsmenyer",
   "tripcode_sign_failed": "Det gick inte att signera din tripkod för det här boardet. Vänta tills boardet har laddats och försök igen, eller posta utan tripkod.",
   "tripcode_retry_mismatch": "För att försöka skicka inlägget igen, skriv dess tripkod i namnfältet igen, eller radera inlägget.",
-  "directory_vote_lapse_notice": "Din röst räknas så länge du fortsätter att besöka den här katalogen eller det board du röstade på, och kan gå ut redan två veckor efter ditt senaste besök."
+  "directory_vote_lapse_notice": "Din röst räknas bara så länge du fortsätter att besöka den här katalogen eller det board du röstade på."
 }

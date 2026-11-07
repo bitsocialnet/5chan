@@ -605,5 +605,5 @@
   "show_filter_image_md5_in_post_menu": "Mostrar \"Filtrar MD5 da imagem\" nos menus das publicações",
   "tripcode_sign_failed": "Não foi possível assinar seu tripcode para este board. Espere o board carregar e tente novamente, ou poste sem tripcode.",
   "tripcode_retry_mismatch": "Para tentar este post de novo, digite o tripcode dele novamente no campo de nome, ou exclua o post.",
-  "directory_vote_lapse_notice": "Seu voto continua contando enquanto você visitar este diretório ou o board em que votou, e pode expirar já duas semanas após sua última visita."
+  "directory_vote_lapse_notice": "Seu voto só continua contando enquanto você visitar este diretório ou o board em que votou."
 }

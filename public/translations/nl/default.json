@@ -605,5 +605,5 @@
   "show_filter_image_md5_in_post_menu": "\"Afbeeldings-MD5 filteren\" tonen in berichtmenu's",
   "tripcode_sign_failed": "Je tripcode kon niet worden ondertekend voor dit board. Wacht tot het board is geladen en probeer het opnieuw, of post zonder tripcode.",
   "tripcode_retry_mismatch": "Typ de tripcode van deze post opnieuw in het naamveld om het opnieuw te proberen, of verwijder de post.",
-  "directory_vote_lapse_notice": "Je stem blijft meetellen zolang je deze directory of het board waarop je stemde blijft bezoeken, en kan al twee weken na je laatste bezoek verlopen."
+  "directory_vote_lapse_notice": "Je stem telt alleen mee zolang je deze directory of het board waarop je stemde blijft bezoeken."
 }

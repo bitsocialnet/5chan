@@ -605,5 +605,5 @@
   "show_filter_image_md5_in_post_menu": "Zobrazit „Filtrovat MD5 obrázku“ v nabídkách příspěvků",
   "tripcode_sign_failed": "Tripcode se pro tuto nástěnku nepodařilo podepsat. Počkej, až se nástěnka načte, a zkus to znovu, nebo pošli příspěvek bez tripcode.",
   "tripcode_retry_mismatch": "Pro nový pokus o odeslání tohoto příspěvku znovu zadej jeho tripcode do pole jména, nebo příspěvek smaž.",
-  "directory_vote_lapse_notice": "Váš hlas se počítá, dokud budete navštěvovat tento adresář nebo desku, pro kterou jste hlasovali, a může vypršet už dva týdny po vaší poslední návštěvě."
+  "directory_vote_lapse_notice": "Váš hlas se počítá jen tak dlouho, dokud budete navštěvovat tento adresář nebo desku, pro kterou jste hlasovali."
 }
