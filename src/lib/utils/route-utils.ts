@@ -27,7 +27,8 @@ let cachedDirectoryToAddressMap: Map<string, string> | null = null;
 let cachedCommunitiesForAddress: DirectoryCommunity[] | null = null;
 let cachedAddressToDirectoryMap: Map<string, string> | null = null;
 
-const getDirectoryCode = (community: DirectoryCommunity): string | null => community.directoryCode ?? extractDirectoryFromTitle(community.title ?? '');
+/** A directory's board code: its published `directoryCode`, else the `/code/` in its title. */
+export const getDirectoryCode = (community: DirectoryCommunity): string | null => community.directoryCode ?? extractDirectoryFromTitle(community.title ?? '');
 
 const getCommunityLookupAddresses = (community: DirectoryCommunity): string[] => [
   ...new Set([community.address, community.name, community.publicKey].filter((value): value is string => typeof value === 'string' && value.length > 0)),

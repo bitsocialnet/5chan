@@ -15,7 +15,7 @@ const testState = vi.hoisted(() => ({
   directories: [
     { address: 'music-posting.eth', title: '/mu/ - Music' },
     { address: 'tech-posting.eth', title: '/g/ - Technology' },
-  ] as Array<{ address: string; title?: string }>,
+  ] as Array<{ address: string; title?: string; directoryCode?: string }>,
   initializeVisibilityMock: vi.fn(),
   navigateMock: vi.fn(),
   openBoardsBarEditModalMock: vi.fn(),
@@ -402,14 +402,17 @@ describe('BoardsBar', () => {
     testState.directories = [
       { address: 'music-posting.eth', title: '/mu/ - Music' },
       { address: 'zines-posting.bso', title: '/zines/ - Zines' },
+      // published with a directory code but no title
+      { address: 'diyaudio.bso', directoryCode: 'diyaudio' },
     ];
     testState.showSubscriptionsInBoardsBar = false;
     testState.visibleDirectories = new Set(getAllBoardCodes());
 
     await renderBoardsBar('/mu');
 
-    expect(container.textContent).toContain('[zines]');
+    expect(container.textContent).toContain('[diyaudio / zines]');
     expect(getLinkHref('zines')).toBe('/zines');
+    expect(getLinkHref('diyaudio')).toBe('/diyaudio');
 
     testState.visibleDirectories = new Set(['mu']);
     await renderBoardsBar('/g');

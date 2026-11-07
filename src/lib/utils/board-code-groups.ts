@@ -1,6 +1,6 @@
 import { BOARD_CODE_GROUPS, getAllBoardCodes } from '../../constants/board-codes';
 import type { DirectoryCommunity } from './directory-list-utils';
-import { extractDirectoryFromTitle } from './route-utils';
+import { getDirectoryCode } from './route-utils';
 
 const BUNDLED_BOARD_CODES: ReadonlySet<string> = new Set(getAllBoardCodes());
 
@@ -21,7 +21,7 @@ export interface BoardCodeGroups {
 export const getBoardCodeGroups = (directories: readonly DirectoryCommunity[]): BoardCodeGroups => {
   const publishedCodes = new Set<string>();
   for (const directory of directories) {
-    const code = directory.directoryCode ?? extractDirectoryFromTitle(directory.title ?? '');
+    const code = getDirectoryCode(directory);
     if (code && !BUNDLED_BOARD_CODES.has(code)) publishedCodes.add(code);
   }
 

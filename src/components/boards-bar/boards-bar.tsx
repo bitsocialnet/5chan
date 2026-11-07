@@ -11,7 +11,7 @@ import { useBoardPath, useResolvedCommunityAddress } from '../../hooks/use-resol
 import useIsMobile from '../../hooks/use-is-mobile';
 import { normalizeAccountCommentIndex } from '../../lib/utils/account-comment-index-utils';
 import { getPendingPostRoutePost } from '../../lib/utils/pending-post-route-state';
-import { getBoardPath, extractDirectoryFromTitle } from '../../lib/utils/route-utils';
+import { getBoardPath, extractDirectoryFromTitle, getDirectoryCode } from '../../lib/utils/route-utils';
 import { SEARCH_PATH } from '../../lib/search-navigation';
 import { getCommentCommunityAddress } from '../../lib/utils/comment-utils';
 import useCreateBoardModalStore from '../../stores/use-create-board-modal-store';
@@ -25,14 +25,8 @@ import capitalize from 'lodash/capitalize';
 import debounce from 'lodash/debounce';
 
 // Helper function to find board address by directory code
-const findBoardAddressByCode = (code: string, directories: DirectoryCommunity[]): string | null => {
-  const entry = directories.find((community) => {
-    if (!community.title) return false;
-    const directory = extractDirectoryFromTitle(community.title);
-    return directory === code;
-  });
-  return entry?.address || null;
-};
+const findBoardAddressByCode = (code: string, directories: DirectoryCommunity[]): string | null =>
+  directories.find((community) => getDirectoryCode(community) === code)?.address || null;
 
 // The persistent bar is position: fixed, so a spacer has to keep its height in the page flow.
 // That height changes when the bar wraps to more lines or the subscriptions list changes.
