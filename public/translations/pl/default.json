@@ -605,5 +605,5 @@
   "show_filter_image_md5_in_post_menu": "Pokaż „Filtruj MD5 obrazu” w menu postów",
   "tripcode_sign_failed": "Nie udało się podpisać twojego tripkodu dla tej tablicy. Poczekaj, aż tablica się załaduje, i spróbuj ponownie albo opublikuj post bez tripkodu.",
   "tripcode_retry_mismatch": "Aby ponowić ten post, wpisz ponownie jego tripkod w polu nazwy albo usuń post.",
-  "directory_vote_lapse_notice": "Twój głos jest liczony, dopóki odwiedzasz ten katalog lub tablicę, na którą go oddano, i wygasa mniej więcej miesiąc po Twojej ostatniej wizycie."
+  "directory_vote_lapse_notice": "Twój głos jest liczony, dopóki odwiedzasz ten katalog lub tablicę, na którą go oddano, i może wygasnąć już dwa tygodnie po Twojej ostatniej wizycie."
 }

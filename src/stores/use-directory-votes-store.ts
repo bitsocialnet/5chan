@@ -36,6 +36,8 @@ interface DirectoryVotesState {
 
 export const getDirectoryVoteKey = (address: string, contestId: string) => `${address.toLowerCase()}:${contestId}`;
 
+const STORAGE_NAME = 'directory-votes';
+
 const useDirectoryVotesStore = create<DirectoryVotesState>()(
   persist(
     (set) => ({
@@ -49,8 +51,16 @@ const useDirectoryVotesStore = create<DirectoryVotesState>()(
           return { votes };
         }),
     }),
-    { name: 'directory-votes', partialize: (state) => ({ votes: state.votes }) },
+    { name: STORAGE_NAME, partialize: (state) => ({ votes: state.votes }) },
   ),
 );
+
+// Every write persists the whole map, so a tab that missed another tab's vote, or a background
+// refresh in it, would erase that vote from storage. Reload the map whenever another tab saves it.
+if (typeof window !== 'undefined') {
+  window.addEventListener('storage', (event) => {
+    if (event.key === STORAGE_NAME) void useDirectoryVotesStore.persist.rehydrate();
+  });
+}
 
 export default useDirectoryVotesStore;
