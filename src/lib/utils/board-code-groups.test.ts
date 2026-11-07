@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BOARD_CODE_GROUPS, getAllBoardCodes } from '../../constants/board-codes';
+import { ALL_BOARDS_VISIBLE, BOARD_CODE_GROUPS, getAllBoardCodes } from '../../constants/board-codes';
 import { createBoardCodeVisibility, getBoardCodeGroups } from './board-code-groups';
 import { getFallbackDirectoriesData } from './directories';
 
@@ -33,6 +33,13 @@ describe('createBoardCodeVisibility', () => {
 
     expect(isShown('zines')).toBe(true);
     expect(isShown('biz')).toBe(true);
+  });
+
+  it('shows every board for a selection saved as all boards, even when it lacks boards bundled later', () => {
+    const isShown = createBoardCodeVisibility(new Set(['jp', ALL_BOARDS_VISIBLE]), ['zines']);
+
+    expect(isShown('biz')).toBe(true);
+    expect(isShown('zines')).toBe(true);
   });
 
   it('shows only the listed boards for a narrower selection', () => {

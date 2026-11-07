@@ -1,4 +1,4 @@
-import { BOARD_CODE_GROUPS, getAllBoardCodes } from '../../constants/board-codes';
+import { ALL_BOARDS_VISIBLE, BOARD_CODE_GROUPS, getAllBoardCodes } from '../../constants/board-codes';
 import type { DirectoryCommunity } from './directory-list-utils';
 import { getDirectoryCode } from './route-utils';
 
@@ -31,10 +31,11 @@ export const getBoardCodeGroups = (directories: readonly DirectoryCommunity[]): 
 };
 
 /**
- * Which codes the boards bar shows. A selection that keeps every bundled board means "show all", so it also
+ * Which codes the boards bar shows. A selection saved as "all boards" (or one that keeps every bundled board) also
  * shows boards published after it was saved; any narrower selection shows exactly what it lists.
  */
 export const createBoardCodeVisibility = (visibleDirectories: ReadonlySet<string>, publishedCodes: readonly string[]): ((code: string) => boolean) => {
+  if (visibleDirectories.has(ALL_BOARDS_VISIBLE)) return () => true;
   const showsEveryBundledBoard = [...BUNDLED_BOARD_CODES].every((code) => visibleDirectories.has(code));
   const published = new Set(publishedCodes);
   return (code) => visibleDirectories.has(code) || (showsEveryBundledBoard && published.has(code));

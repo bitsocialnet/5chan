@@ -62,3 +62,9 @@ export const BOARD_CODE_GROUPS: string[][] = [
 export const getAllBoardCodes = (): string[] => {
   return BOARD_CODE_GROUPS.flat();
 };
+
+/**
+ * Saved in the boards bar's visible list when the user keeps every board, so boards published later, or bundled by
+ * a later release, still count as visible. It is never a board code.
+ */
+export const ALL_BOARDS_VISIBLE = '*';

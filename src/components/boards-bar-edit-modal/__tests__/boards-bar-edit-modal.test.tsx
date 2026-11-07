@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import BoardsBarEditModal from '../boards-bar-edit-modal';
 import useBoardsBarEditModalStore from '../../../stores/use-boards-bar-edit-modal-store';
 import useBoardsBarVisibilityStore from '../../../stores/use-boards-bar-visibility-store';
+import { ALL_BOARDS_VISIBLE } from '../../../constants/board-codes';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
@@ -98,6 +99,26 @@ describe('BoardsBarEditModal', () => {
     expect(visibleDirectories.has('tv')).toBe(true);
     expect(visibleDirectories.has('zines')).toBe(false);
     expect(visibleDirectories.has('diyaudio')).toBe(false);
+  });
+
+  it('saves an empty list as all boards, and a narrower list clears that', async () => {
+    const saveInput = async (value: string) => {
+      useBoardsBarEditModalStore.setState({ showModal: true });
+      await renderModal();
+      const input = container.querySelector<HTMLInputElement>('input[aria-label="Directory codes"]');
+      await act(async () => {
+        Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set?.call(input, value);
+        input?.dispatchEvent(new Event('input', { bubbles: true }));
+      });
+      const saveButton = Array.from(container.querySelectorAll('button')).find((button) => button.textContent === 'Save');
+      await act(async () => {
+        saveButton?.click();
+      });
+      return useBoardsBarVisibilityStore.getState().visibleDirectories;
+    };
+
+    expect((await saveInput('')).has(ALL_BOARDS_VISIBLE)).toBe(true);
+    expect((await saveInput('tv')).has(ALL_BOARDS_VISIBLE)).toBe(false);
   });
 
   it('still closes when the backdrop itself handles keyboard activation', async () => {

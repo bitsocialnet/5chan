@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAccount } from '@bitsocial/bitsocial-react-hooks';
 import useBoardsBarEditModalStore from '../../stores/use-boards-bar-edit-modal-store';
 import useBoardsBarVisibilityStore from '../../stores/use-boards-bar-visibility-store';
+import { ALL_BOARDS_VISIBLE } from '../../constants/board-codes';
 import { useDirectories } from '../../hooks/use-directories';
 import { createBoardCodeVisibility, getBoardCodeGroups } from '../../lib/utils/board-code-groups';
 import styles from './boards-bar-edit-modal.module.css';
@@ -51,6 +52,7 @@ const BoardsBarEditModalForm = ({
   const handleSave = () => {
     if (localDirectoryInput.trim() === '') {
       allBoardCodes.forEach((code) => setDirectoryVisibility(code, true));
+      setDirectoryVisibility(ALL_BOARDS_VISIBLE, true);
     } else {
       const inputDirectories = stringToDirectories(localDirectoryInput);
       // Keep typed codes whose directories have not loaded yet, and clear earlier ones no longer typed.
