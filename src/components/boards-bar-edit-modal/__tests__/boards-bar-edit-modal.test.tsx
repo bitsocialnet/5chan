@@ -10,6 +10,17 @@ import useBoardsBarVisibilityStore from '../../../stores/use-boards-bar-visibili
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
 
+const testState = vi.hoisted(() => ({
+  directories: [
+    { address: 'tv-posting.bso', title: '/tv/ - Television & Film' },
+    { address: 'zines-posting.bso', title: '/zines/ - Zines' },
+  ],
+}));
+
+vi.mock('../../../hooks/use-directories', () => ({
+  useDirectories: () => testState.directories,
+}));
+
 vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
   useAccount: () => ({
     subscriptions: ['custom.eth'],
@@ -58,6 +69,25 @@ describe('BoardsBarEditModal', () => {
 
     expect(container.querySelector('dialog')).toBeTruthy();
     expect(useBoardsBarEditModalStore.getState().showModal).toBe(true);
+  });
+
+  it('saves a directory published after this build when it is typed into the list', async () => {
+    await renderModal();
+
+    const input = container.querySelector<HTMLInputElement>('input[aria-label="Directory codes"]');
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set?.call(input, 'tv zines');
+      input?.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    const saveButton = Array.from(container.querySelectorAll('button')).find((button) => button.textContent === 'Save');
+    await act(async () => {
+      saveButton?.click();
+    });
+
+    const { visibleDirectories } = useBoardsBarVisibilityStore.getState();
+    expect(visibleDirectories.has('tv')).toBe(true);
+    expect(visibleDirectories.has('zines')).toBe(true);
+    expect(visibleDirectories.has('g')).toBe(false);
   });
 
   it('still closes when the backdrop itself handles keyboard activation', async () => {

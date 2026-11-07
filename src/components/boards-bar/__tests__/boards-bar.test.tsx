@@ -396,6 +396,29 @@ describe('BoardsBar', () => {
     expect(container.textContent).toContain('[r9k / s5s / vip / q]');
   });
 
+  it('lists directories published after this build in a trailing group unless the saved selection is narrower', async () => {
+    const { getAllBoardCodes } = await import('../../../constants/board-codes');
+    testState.accountCommunityAddresses = [];
+    testState.directories = [
+      { address: 'music-posting.eth', title: '/mu/ - Music' },
+      { address: 'zines-posting.bso', title: '/zines/ - Zines' },
+    ];
+    testState.showSubscriptionsInBoardsBar = false;
+    testState.visibleDirectories = new Set(getAllBoardCodes());
+
+    await renderBoardsBar('/mu');
+
+    expect(container.textContent).toContain('[zines]');
+    expect(getLinkHref('zines')).toBe('/zines');
+
+    testState.visibleDirectories = new Set(['mu']);
+    await renderBoardsBar('/g');
+
+    // The mobile board select still offers it; only the desktop bracket list follows the saved selection.
+    expect(container.textContent).not.toContain('[zines]');
+    expect(getLinkHref('zines')).toBeUndefined();
+  });
+
   it('links the search button straight to the archive search', async () => {
     await renderBoardsBar('/mu');
 

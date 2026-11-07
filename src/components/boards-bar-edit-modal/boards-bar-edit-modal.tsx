@@ -3,7 +3,8 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAccount } from '@bitsocial/bitsocial-react-hooks';
 import useBoardsBarEditModalStore from '../../stores/use-boards-bar-edit-modal-store';
 import useBoardsBarVisibilityStore from '../../stores/use-boards-bar-visibility-store';
-import { getAllBoardCodes } from '../../constants/board-codes';
+import { useDirectories } from '../../hooks/use-directories';
+import { createBoardCodeVisibility, getBoardCodeGroups } from '../../lib/utils/board-code-groups';
 import styles from './boards-bar-edit-modal.module.css';
 
 const directoriesToString = (dirs: Set<string>): string => Array.from(dirs).sort().join(' ');
@@ -39,8 +40,10 @@ const BoardsBarEditModalForm = ({
   subscriptions: string[];
   location: { pathname: string };
 }) => {
-  const allBoardCodes = useMemo(() => getAllBoardCodes(), []);
-  const allVisible = allBoardCodes.every((code) => visibleDirectories.has(code));
+  const directories = useDirectories();
+  const { codes: allBoardCodes, publishedCodes } = useMemo(() => getBoardCodeGroups(directories), [directories]);
+  const isBoardCodeVisible = createBoardCodeVisibility(visibleDirectories, publishedCodes);
+  const allVisible = allBoardCodes.every(isBoardCodeVisible);
 
   const [localDirectoryInput, setLocalDirectoryInput] = useState(() => (allVisible ? '' : directoriesToString(visibleDirectories)));
   const [showSubscriptions, setShowSubscriptions] = useState(() => showSubscriptionsInBoardsBar);

@@ -19,7 +19,7 @@ import useBoardsBarEditModalStore from '../../stores/use-boards-bar-edit-modal-s
 import useBoardsBarVisibilityStore from '../../stores/use-boards-bar-visibility-store';
 import useDirectoryModalStore from '../../stores/use-directory-modal-store';
 import usePersistentBoardsBarStore from '../../stores/use-persistent-boards-bar-store';
-import { BOARD_CODE_GROUPS, getAllBoardCodes } from '../../constants/board-codes';
+import { createBoardCodeVisibility, getBoardCodeGroups } from '../../lib/utils/board-code-groups';
 import styles from './boards-bar.module.css';
 import capitalize from 'lodash/capitalize';
 import debounce from 'lodash/debounce';
@@ -162,8 +162,7 @@ const BoardsBarDesktop = memo(({ persistent, autoHide }: { persistent: boolean; 
   const { visibleDirectories, showSubscriptionsInBoardsBar } = useBoardsBarVisibilityStore();
   const directories = useDirectories();
 
-  // Memoize allBoardCodes since it's derived from a constant
-  const allBoardCodes = useMemo(() => getAllBoardCodes(), []);
+  const boardCodeGroups = useMemo(() => getBoardCodeGroups(directories), [directories]);
 
   const subscriptions = useAccountsStore(
     (state) => {
@@ -181,18 +180,13 @@ const BoardsBarDesktop = memo(({ persistent, autoHide }: { persistent: boolean; 
   // Show all subscriptions when enabled; no separate per-address tracking (avoids drift when subscribing from board-buttons)
   const visibleSubscriptionAddresses = showSubscriptionsInBoardsBar ? subscriptions : [];
 
-  // Check if any directories are hidden
-  const hasHiddenDirectories = useMemo(() => {
-    return allBoardCodes.some((code) => !visibleDirectories.has(code));
-  }, [allBoardCodes, visibleDirectories]);
+  const isBoardCodeVisible = useMemo(
+    () => createBoardCodeVisibility(visibleDirectories, boardCodeGroups.publishedCodes),
+    [visibleDirectories, boardCodeGroups.publishedCodes],
+  );
 
-  // Determine which directories to show (all if temporarily showing all, otherwise only visible ones)
-  const directoriesToShow = useMemo(() => {
-    if (showAllTemporarily) {
-      return new Set(allBoardCodes);
-    }
-    return visibleDirectories;
-  }, [showAllTemporarily, visibleDirectories, allBoardCodes]);
+  // Check if any directories are hidden
+  const hasHiddenDirectories = useMemo(() => boardCodeGroups.codes.some((code) => !isBoardCodeVisible(code)), [boardCodeGroups.codes, isBoardCodeVisible]);
 
   // Initialize visibility store on mount
   useEffect(() => {
@@ -270,8 +264,8 @@ const BoardsBarDesktop = memo(({ persistent, autoHide }: { persistent: boolean; 
           </>
         )}
         ]{' '}
-        {BOARD_CODE_GROUPS.map((group) => {
-          const visibleCodes = group.filter((code) => directoriesToShow.has(code));
+        {boardCodeGroups.groups.map((group) => {
+          const visibleCodes = showAllTemporarily ? group : group.filter(isBoardCodeVisible);
           if (visibleCodes.length === 0) return null;
 
           return <span key={group.join('|')}>[{visibleCodes.map((code, codeIndex) => renderBoardCode(code, codeIndex === visibleCodes.length - 1))}] </span>;
