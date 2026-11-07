@@ -74,7 +74,7 @@ describe('useTripcodeRepublish', () => {
     const published = await signFirstPublish();
     const trip = verify(published);
     expect(trip).toBeDefined();
-    tripcodeRepublish.keepTripcode(published.author.displayName, { secret, name: 'Anon' });
+    tripcodeRepublish.keepTripcode({ displayName: published.author.displayName, secret, name: 'Anon' });
 
     // The hooks republish a minute later, which the first proof does not sign.
     vi.setSystemTime(1_800_000_060_000);
@@ -91,14 +91,28 @@ describe('useTripcodeRepublish', () => {
     expect(verify(republishedAgain)).toBe(trip);
   });
 
-  it('leaves a post alone once the board accepted it, or when it has no kept tripcode', async () => {
+  it('leaves a post alone once its publish ended, or when it has no kept tripcode', async () => {
     const published = await signFirstPublish();
     const unknown = { ...published, timestamp: 1_800_000_060 };
     await expect(tripcodeRepublish.onBeforeRepublish(unknown)).resolves.toBe(unknown);
 
-    tripcodeRepublish.keepTripcode(published.author.displayName, { secret, name: 'Anon' });
-    tripcodeRepublish.forgetTripcode(published.author.displayName);
+    tripcodeRepublish.keepTripcode({ displayName: published.author.displayName, secret, name: 'Anon' });
+    tripcodeRepublish.forgetTripcode();
     await expect(tripcodeRepublish.onBeforeRepublish(unknown)).resolves.toBe(unknown);
+  });
+
+  it("keeps only the latest post's password, and never signs an earlier post with it", async () => {
+    const earlier = await signFirstPublish();
+    vi.setSystemTime(1_800_000_010_000);
+    const latest = await signFirstPublish();
+    tripcodeRepublish.keepTripcode({ displayName: earlier.author.displayName, secret, name: 'Anon' });
+    tripcodeRepublish.keepTripcode({ displayName: latest.author.displayName, secret: { normal: 'other' }, name: 'Anon' });
+
+    vi.setSystemTime(1_800_000_060_000);
+    const earlierRepublish = { ...earlier, timestamp: 1_800_000_060 };
+    await expect(tripcodeRepublish.onBeforeRepublish(earlierRepublish)).resolves.toBe(earlierRepublish);
+    const latestRepublished = await tripcodeRepublish.onBeforeRepublish({ ...latest, timestamp: 1_800_000_060 });
+    expect(latestRepublished.author.displayName).not.toBe(latest.author.displayName);
   });
 
   it('rejects, rather than republishing the old proof, when the proof cannot be signed again', async () => {
@@ -106,7 +120,7 @@ describe('useTripcodeRepublish', () => {
     const published = await signFirstPublish();
     // A board the client no longer has loaded cannot be signed for.
     const options = { ...published, communityAddress: 'gone.bso', timestamp: 1_800_000_060 };
-    tripcodeRepublish.keepTripcode(published.author.displayName, { secret, name: 'Anon' });
+    tripcodeRepublish.keepTripcode({ displayName: published.author.displayName, secret, name: 'Anon' });
 
     await expect(tripcodeRepublish.onBeforeRepublish(options)).rejects.toThrow('error: tripcode_sign_failed');
     // The failed publish ends there, and its password is not kept.

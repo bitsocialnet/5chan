@@ -58,9 +58,10 @@ const usePublishPost = ({
   const { keepTripcode, forgetTripcode, onBeforeRepublish } = useTripcodeRepublish();
   const abandonCurrentPublish = useCallback(async () => {
     analyticsAttempt?.finish('post_cancelled');
+    forgetTripcode();
     onAbandonPost?.();
     await abandonPublishRef.current?.();
-  }, [analyticsAttempt, onAbandonPost]);
+  }, [analyticsAttempt, forgetTripcode, onAbandonPost]);
 
   const createBaseOptions = useCallback(() => {
     const baseOptions: Comment = {
@@ -112,6 +113,7 @@ const usePublishPost = ({
       onPendingComment: onPendingPost,
       onError: (error: Error) => {
         analyticsAttempt?.finish('post_publish_failed');
+        forgetTripcode();
         onPublishError?.(error);
         publishCommentOptions.onError?.(error);
       },
@@ -124,7 +126,7 @@ const usePublishPost = ({
           return;
         }
         if (challengeVerification.challengeSuccess === true) {
-          forgetTripcode(comment?.author?.displayName);
+          forgetTripcode();
           onPublishAccepted?.();
         }
         publishCommentOptions.onChallengeVerification?.(challengeVerification, comment);
@@ -162,6 +164,7 @@ const usePublishPost = ({
   const startPublishPost = useCallback(async () => {
     if (blockedReason) {
       analyticsAttempt?.finish('post_validation_failed');
+      forgetTripcode();
       const message = getPublishAuthorDomainErrorMessage(blockedReason);
       setPublishPostError(message);
       // A caller that is not showing this hook's error (the pending upload publisher) still hears it.
@@ -174,9 +177,10 @@ const usePublishPost = ({
       await publishComment();
     } catch (error) {
       analyticsAttempt?.finish('post_publish_failed');
+      forgetTripcode();
       throw error;
     }
-  }, [analyticsAttempt, blockedReason, onPublishError, publishComment]);
+  }, [analyticsAttempt, blockedReason, forgetTripcode, onPublishError, publishComment]);
 
   useEffect(() => {
     if (pendingPublishRequestId === 0 || pendingPublishRequestId === startedPublishRequestIdRef.current) {
@@ -223,7 +227,7 @@ const usePublishPost = ({
       secret: tripcodeSecret,
       readOptions: () => useStore.getState().publishCommentOptions,
       writeOptions: (options) => {
-        keepTripcode(options.displayName, { secret: tripcodeSecret, name: options.author?.displayName });
+        keepTripcode({ displayName: options.displayName, secret: tripcodeSecret, name: options.author?.displayName });
         useStore.getState().setPublishPostStore(options);
       },
       isActive: () => isMountedRef.current,

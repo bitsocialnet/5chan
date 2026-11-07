@@ -68,8 +68,9 @@ const usePublishReply = ({ cid, communityAddress, postCid }: UsePublishReplyOpti
   }, []);
   const abandonCurrentPublish = useCallback(async () => {
     analyticsAttempt?.finish('post_cancelled');
+    forgetTripcode();
     await abandonPublishRef.current?.();
-  }, [analyticsAttempt]);
+  }, [analyticsAttempt, forgetTripcode]);
 
   const createBaseOptions = useCallback(() => {
     const baseOptions: Comment = {
@@ -166,11 +167,12 @@ const usePublishReply = ({ cid, communityAddress, postCid }: UsePublishReplyOpti
       ...(hasTripcodeProof(mergedPublishOptions?.author?.displayName) ? { onBeforeRepublish } : {}),
       onError: (error: Error) => {
         analyticsAttempt?.finish('post_publish_failed');
+        forgetTripcode();
         mergedPublishOptions?.onError?.(error);
       },
       onChallengeVerification: async (challengeVerification: ChallengeVerification, comment: Comment) => {
         analyticsAttempt?.verify(challengeVerification);
-        if (challengeVerification.challengeSuccess === true) forgetTripcode(comment?.author?.displayName);
+        if (challengeVerification.challengeSuccess === true) forgetTripcode();
         mergedPublishOptions?.onChallengeVerification?.(challengeVerification, comment);
       },
       onChallenge: async (...args: any[]) => {
@@ -204,9 +206,12 @@ const usePublishReply = ({ cid, communityAddress, postCid }: UsePublishReplyOpti
     startedPublishRequestIdRef.current = requestId;
     void Promise.resolve()
       .then(() => publishComment())
-      .catch(() => analyticsAttempt?.finish('post_publish_failed'))
+      .catch(() => {
+        analyticsAttempt?.finish('post_publish_failed');
+        forgetTripcode();
+      })
       .finally(() => finishPendingPublishRequest(requestId));
-  }, [analyticsAttempt, finishPendingPublishRequest, pendingPublishRequestId, publishComment]);
+  }, [analyticsAttempt, finishPendingPublishRequest, forgetTripcode, pendingPublishRequestId, publishComment]);
 
   const preparePublishReply = useCallback(
     async (requestId: number) => {
@@ -232,7 +237,7 @@ const usePublishReply = ({ cid, communityAddress, postCid }: UsePublishReplyOpti
               secret: tripcodeSecret,
               readOptions: () => usePublishReplyStore.getState().publishCommentOptions[parentCid],
               writeOptions: (options) => {
-                keepTripcode(options.displayName, { secret: tripcodeSecret, name: options.author?.displayName });
+                keepTripcode({ displayName: options.displayName, secret: tripcodeSecret, name: options.author?.displayName });
                 usePublishReplyStore.getState().setPublishReplyStore({ ...options, parentCid });
               },
               isActive: () => isMountedRef.current,

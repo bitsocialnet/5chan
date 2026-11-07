@@ -91,13 +91,15 @@ const useDeleteFailedPost = (post?: FailedPost, deleteRedirectPath?: string) => 
   const endRetry = useFailedPostRetryStore((state) => state.endRetry);
   const navigate = useNavigate();
   const abandonPublishRef = useRef<(() => Promise<void>) | undefined>(undefined);
+  const { keepTripcode, forgetTripcode, onBeforeRepublish } = useTripcodeRepublish();
   const abandonCurrentPublish = useCallback(async () => {
     // Abandoning the republish challenge ends the retry. Clear the flag first so PendingPost resumes its
     // normal abandoned-challenge handling (back to the board) instead of staying stuck on an empty row.
     setIsRetryRedirectPending(false);
     endRetry();
+    forgetTripcode();
     await abandonPublishRef.current?.();
-  }, [endRetry]);
+  }, [endRetry, forgetTripcode]);
 
   const canDeleteFailedPost = post?.state === 'failed' && typeof post?.index === 'number';
   const baseRetryPublishOptions = useMemo(() => getFailedPostRetryPublishOptions(post), [post]);
@@ -105,7 +107,6 @@ const useDeleteFailedPost = (post?: FailedPost, deleteRedirectPath?: string) => 
   // retry uses the tripcode its account's name field holds now, and only if that gives the trips the post showed.
   const tripcodeInput = useTripcodeStore((state) => (post?.accountId ? state.inputs[post.accountId] : undefined));
   const signTripcode = useSignTripcode();
-  const { keepTripcode, forgetTripcode, onBeforeRepublish } = useTripcodeRepublish();
   const [signedRetryTripcode, setSignedRetryTripcode] = useState<{ post: FailedPost; displayName: string; timestamp: number }>();
   const retryAfterSigningRef = useRef(false);
   const retryPublishOptions = useMemo(
@@ -129,11 +130,12 @@ const useDeleteFailedPost = (post?: FailedPost, deleteRedirectPath?: string) => 
               addChallenge(args, abandonCurrentPublish);
             },
             onChallengeVerification: async (challengeVerification: ChallengeVerification, comment: Comment) => {
-              if (challengeVerification.challengeSuccess === true) forgetTripcode(comment?.author?.displayName);
+              if (challengeVerification.challengeSuccess === true) forgetTripcode();
               alertChallengeVerificationFailed(challengeVerification, comment);
             },
             onError: (error: Error) => {
               console.error('Failed to retry failed post:', error);
+              forgetTripcode();
               setIsRetryRedirectPending(false);
               endRetry();
               alert(`Failed to retry post: ${error.message}`);
@@ -207,13 +209,14 @@ const useDeleteFailedPost = (post?: FailedPost, deleteRedirectPath?: string) => 
       await publishComment();
     } catch (error) {
       console.error('Failed to retry failed post:', error);
+      forgetTripcode();
       setIsRetryRedirectPending(false);
       endRetry();
       alert(`Failed to retry post: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsRetryingFailedPost(false);
     }
-  }, [endRetry, post, publishComment, startRetry]);
+  }, [endRetry, forgetTripcode, post, publishComment, startRetry]);
 
   // The retry publishes the options of the render that holds the new proof.
   useEffect(() => {
@@ -249,7 +252,7 @@ const useDeleteFailedPost = (post?: FailedPost, deleteRedirectPath?: string) => 
         writeOptions: ({ displayName, timestamp }) => {
           isSameTripcode = hasSameTripcodeKeys(failedProof, parseTripcodeProof(displayName));
           if (!isSameTripcode) return;
-          keepTripcode(displayName, { secret: tripcodeSecret, name: baseRetryPublishOptions.author?.displayName });
+          keepTripcode({ displayName, secret: tripcodeSecret, name: baseRetryPublishOptions.author?.displayName });
           retryAfterSigningRef.current = true;
           setSignedRetryTripcode({ post: post as FailedPost, displayName, timestamp });
         },

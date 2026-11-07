@@ -210,6 +210,26 @@ describe('useDeleteFailedPost', () => {
     expect(republished).toEqual({ ...published, author: { address: '0x123', displayName: getProofName('A', 'D') }, timestamp: 1_800_000_000 });
   });
 
+  it("drops a retried tripcode post's password when its retry fails or is abandoned", async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    signRetryAs(getProofName('A', 'C'));
+    const published = { communityAddress: 'music.eth', content: 'retry me', author: { address: '0x123', displayName: getProofName('A', 'C') }, timestamp: 1_800_000_060 };
+
+    await retryTripcodePost('#hunter2');
+    const failed = testState.lastPublishOptions as Record<string, any>;
+    failed.onError(new Error('publish failed'));
+    await expect(failed.onBeforeRepublish(published)).resolves.toBe(published);
+
+    await retryTripcodePost('#hunter2');
+    const abandoned = testState.lastPublishOptions as Record<string, any>;
+    await act(async () => {
+      await abandoned.onChallenge('captcha', 'nonce');
+      await useChallengesStore.getState().abandonCurrentChallenge();
+    });
+    await expect(abandoned.onBeforeRepublish(published)).resolves.toBe(published);
+    vi.restoreAllMocks();
+  });
+
   it("does not retry a tripcode post once the name field no longer holds the post's tripcode", async () => {
     // The field was cleared: the post would be republished without the trip it showed.
     await retryTripcodePost(undefined);

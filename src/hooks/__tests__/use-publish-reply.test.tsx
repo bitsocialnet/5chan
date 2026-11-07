@@ -332,6 +332,42 @@ describe('usePublishReply', () => {
     expect(testState.signTripcodeMock).toHaveBeenCalledTimes(2);
   });
 
+  it("drops a tripcode reply's password when its publish fails or is abandoned", async () => {
+    const proofName = `Anon#tc1:s${'A'.repeat(43)}${'B'.repeat(86)}`;
+    testState.signTripcodeMock.mockImplementation(async ({ readOptions, writeOptions }: { readOptions: () => any; writeOptions: (options: any) => void }) => {
+      writeOptions({ ...readOptions(), displayName: proofName, timestamp: 1_800_000_001 });
+      return true;
+    });
+    const published = {
+      communityAddress: 'music.eth',
+      parentCid: 'parent-cid',
+      postCid: 'parent-cid',
+      content: 'Trip reply',
+      author: { displayName: proofName },
+      timestamp: 1_800_000_060,
+    };
+    const publishTripcodeReply = async () => {
+      await act(async () => {
+        latestValue.publishReply({ content: 'Trip reply', displayName: 'Anon' } as never, undefined, { secure: 'hunter2' });
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      });
+      return testState.lastPublishOptions as Record<string, any>;
+    };
+
+    const failed = await publishTripcodeReply();
+    failed.onError(new Error('publish failed'));
+    await expect(failed.onBeforeRepublish(published)).resolves.toBe(published);
+
+    const abandoned = await publishTripcodeReply();
+    await act(async () => {
+      await abandoned.onChallenge('captcha', 'nonce');
+      await useChallengesStore.getState().abandonCurrentChallenge();
+    });
+    await expect(abandoned.onBeforeRepublish(published)).resolves.toBe(published);
+    expect(testState.signTripcodeMock).toHaveBeenCalledTimes(2);
+  });
+
   it('leaves the republish of a reply without a tripcode to the hooks', async () => {
     await act(async () => {
       latestValue.publishReply({ content: 'Plain reply', displayName: 'Anon' } as never);
