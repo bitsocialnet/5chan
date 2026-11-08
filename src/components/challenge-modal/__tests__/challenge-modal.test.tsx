@@ -568,14 +568,16 @@ describe('ChallengeModal', () => {
     try {
       const openButton = Array.from(container.querySelectorAll('button')).find((candidate) => candidate.textContent === 'Open challenge');
       openButton?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      // Finish Challenge renders in the same commit as the iframe and stays if the message is lost.
+      // The message's update renders in a later task, which a busy runner can push past any fixed delay.
+      await vi.waitFor(() => {
+        expect(container.querySelector('iframe')).not.toBeNull();
+        expect(Array.from(container.querySelectorAll('button')).some((candidate) => candidate.textContent === 'Finish Challenge')).toBe(false);
+      });
     } finally {
       announceOnInsert.disconnect();
       actEnvironment.IS_REACT_ACT_ENVIRONMENT = true;
     }
-
-    expect(container.querySelector('iframe')).not.toBeNull();
-    expect(Array.from(container.querySelectorAll('button')).some((candidate) => candidate.textContent === 'Finish Challenge')).toBe(false);
   });
 
   it('advances through multiple iframe challenges before publishing answers', async () => {
