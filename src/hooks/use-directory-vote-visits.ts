@@ -5,6 +5,7 @@ import { getDirectoryCodeForBoardAddress } from '../lib/utils/directory-list-loo
 import { isDirectoryRoute } from '../lib/utils/route-utils';
 import useDirectoryVotesStore from '../stores/use-directory-votes-store';
 import { useDirectories } from './use-directories';
+import { useCommunityField } from './use-stable-community';
 
 /**
  * Records a visit to each directory the user votes in that this board route belongs to, on arrival
@@ -14,12 +15,15 @@ import { useDirectories } from './use-directories';
 export const useDirectoryVoteVisits = (boardIdentifier: string | undefined): void => {
   const directories = useDirectories();
   const votes = useDirectoryVotesStore((state) => state.votes);
+  // The key of the record the board view loads, read from the store without fetching, so a vote
+  // cast by key alone still counts visits to the board's name route.
+  const boardPublicKey = useCommunityField(boardIdentifier, (community) => (typeof community.publicKey === 'string' ? community.publicKey : undefined));
   // Joined into a string so a vote refresh, which leaves the codes unchanged, does not record again.
   const visitedCodes = useMemo(() => {
     if (!boardIdentifier) return '';
     const routeDirectoryCode = isDirectoryRoute(boardIdentifier, directories) ? boardIdentifier : getDirectoryCodeForBoardAddress(boardIdentifier);
-    return getVisitedDirectoryCodes(boardIdentifier, routeDirectoryCode, Object.values(votes)).join(' ');
-  }, [boardIdentifier, directories, votes]);
+    return getVisitedDirectoryCodes(boardIdentifier, routeDirectoryCode, Object.values(votes), boardPublicKey).join(' ');
+  }, [boardIdentifier, boardPublicKey, directories, votes]);
 
   useEffect(() => {
     if (!visitedCodes) return;
