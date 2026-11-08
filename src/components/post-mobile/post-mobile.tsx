@@ -4,6 +4,7 @@ import { Link, useLocation, useNavigationType, useParams } from 'react-router-do
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
 import { Comment, resolveReplySortType, useAccountComment, useEditedComment, useReplies } from '@bitsocial/bitsocial-react-hooks';
 import getShortAddress from '../../lib/get-short-address';
+import { getSpoilerThumbnail } from '../../lib/spoiler-thumbnails';
 import styles from '../post-styles';
 import { shouldShowSnow } from '../../stores/use-special-theme-store';
 import { CommentMediaInfo, getCommentFileCount, getCommentGalleryMediaInfos, getHasThumbnail } from '../../lib/utils/media-utils';
@@ -154,6 +155,7 @@ const PostInfoAndMedia = ({
   const commentMediaInfo = useCommentMediaInfo(link, thumbnailUrl, linkWidth, linkHeight);
   const hasThumbnail = getHasThumbnail(commentMediaInfo, link);
   const galleryMediaInfos = getCommentGalleryMediaInfos(resolvedPost?.gallery);
+  const spoilerThumbnail = resolvedPost?.spoiler ? getSpoilerThumbnail(communityAddress, directories) : undefined;
   const hasLinkFile = Boolean(hasThumbnail || link);
 
   // Check if post is awaiting approval and over threshold (for mod queue view)
@@ -404,11 +406,15 @@ const PostInfoAndMedia = ({
         </span>
       </div>
       {(hasLinkFile || galleryMediaInfos.length > 0) && !(deleted || removed || purged) && (
-        <PostFiles galleryMediaInfos={galleryMediaInfos} post={resolvedPost}>
-          {hasLinkFile && <PostMediaContent key={cid} onMediaLoadFailureChange={onMediaLoadFailureChange} post={resolvedPost} link={link} />}
+        <PostFiles galleryMediaInfos={galleryMediaInfos} post={resolvedPost} spoilerThumbnail={spoilerThumbnail}>
+          {hasLinkFile && (
+            <PostMediaContent key={cid} onMediaLoadFailureChange={onMediaLoadFailureChange} post={resolvedPost} link={link} spoilerThumbnail={spoilerThumbnail} />
+          )}
         </PostFiles>
       )}
-      {typeof resolvedPost?.pendingUploadId === 'number' && <PendingUploadFile pendingUploadId={resolvedPost.pendingUploadId} spoiler={resolvedPost.spoiler} />}
+      {typeof resolvedPost?.pendingUploadId === 'number' && (
+        <PendingUploadFile pendingUploadId={resolvedPost.pendingUploadId} spoiler={resolvedPost.spoiler} spoilerThumbnail={spoilerThumbnail} />
+      )}
     </>
   );
 };
@@ -417,10 +423,12 @@ const PostMediaContent = ({
   onMediaLoadFailureChange,
   post,
   link,
+  spoilerThumbnail,
 }: {
   onMediaLoadFailureChange?: (url: string | undefined) => void;
   post: Comment | undefined;
   link: string;
+  spoilerThumbnail?: string;
 }) => {
   const [showThumbnail, setShowThumbnail] = useState(true);
   const { thumbnailUrl, linkWidth, linkHeight, spoiler, deleted, removed, parentCid } = post || {};
@@ -440,6 +448,7 @@ const PostMediaContent = ({
         setShowThumbnail={setShowThumbnail}
         parentCid={parentCid}
         spoiler={spoiler}
+        spoilerThumbnail={spoilerThumbnail}
         onMediaLoadFailureChange={onMediaLoadFailureChange}
       />
     )
@@ -447,7 +456,7 @@ const PostMediaContent = ({
 };
 
 /** A comment.gallery file, opened and closed on its own like the link's file. */
-const GalleryFile = ({ commentMediaInfo, post }: { commentMediaInfo: CommentMediaInfo; post: Comment | undefined }) => {
+const GalleryFile = ({ commentMediaInfo, post, spoilerThumbnail }: { commentMediaInfo: CommentMediaInfo; post: Comment | undefined; spoilerThumbnail?: string }) => {
   const [showThumbnail, setShowThumbnail] = useState(true);
 
   return (
@@ -459,12 +468,23 @@ const GalleryFile = ({ commentMediaInfo, post }: { commentMediaInfo: CommentMedi
       setShowThumbnail={setShowThumbnail}
       parentCid={post?.parentCid}
       spoiler={post?.spoiler}
+      spoilerThumbnail={spoilerThumbnail}
     />
   );
 };
 
 /** The link's file, then the comment.gallery files. Several files sit in a row above the post text, as on vichan. */
-const PostFiles = ({ children, galleryMediaInfos, post }: { children?: React.ReactNode; galleryMediaInfos: CommentMediaInfo[]; post: Comment | undefined }) =>
+const PostFiles = ({
+  children,
+  galleryMediaInfos,
+  post,
+  spoilerThumbnail,
+}: {
+  children?: React.ReactNode;
+  galleryMediaInfos: CommentMediaInfo[];
+  post: Comment | undefined;
+  spoilerThumbnail?: string;
+}) =>
   galleryMediaInfos.length === 0 ? (
     children
   ) : (
@@ -472,7 +492,7 @@ const PostFiles = ({ children, galleryMediaInfos, post }: { children?: React.Rea
       {children}
       {galleryMediaInfos.map((mediaInfo, index) => (
         // Keyed by post like the link's file, so an opened file doesn't stay open for another post.
-        <GalleryFile key={`${post?.cid}:${index}`} commentMediaInfo={mediaInfo} post={post} />
+        <GalleryFile key={`${post?.cid}:${index}`} commentMediaInfo={mediaInfo} post={post} spoilerThumbnail={spoilerThumbnail} />
       ))}
     </div>
   );

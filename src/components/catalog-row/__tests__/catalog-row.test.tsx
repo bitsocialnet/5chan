@@ -376,6 +376,30 @@ describe('CatalogRow', () => {
     expect(container.querySelector('[title="archived"]')).toBeTruthy();
   });
 
+  it('chooses each catalog spoiler from its post board in a mixed-board feed', async () => {
+    testState.directories = [
+      { address: 'anime.example.bso', title: '/a/ - Anime' },
+      { address: 'games.example.bso', title: '/v/ - Video Games' },
+    ];
+    const link = 'https://example.com/hidden.png';
+    testState.mediaInfoByLink[link] = { type: 'image', url: link };
+    const row = ['anime.example.bso', 'games.example.bso', 'independent.example'].map((communityAddress, index) => ({
+      cid: `spoiler-${index}`,
+      communityAddress,
+      link,
+      spoiler: true,
+    }));
+
+    await renderWithRouter(createElement(CatalogRow, { row }), '/all/catalog');
+
+    expect(Array.from(container.querySelectorAll('img'), (image) => image.getAttribute('src'))).toEqual([
+      'assets/spoilers/a.png',
+      'assets/spoilers/v.png',
+      'assets/spoiler.png',
+    ]);
+    expect(container.querySelector('img[src="https://example.com/hidden.png"]')).toBeNull();
+  });
+
   it('renders audio players and video first-frame fallbacks for media without thumbnails', async () => {
     await act(async () => {
       root.render(

@@ -72,11 +72,13 @@ const PendingUploadFileRow = ({
   inGallery = false,
   phaseLabelKey,
   spoiler,
+  spoilerThumbnail,
 }: {
   attachment: AttachedMedia;
   inGallery?: boolean;
   phaseLabelKey?: string;
   spoiler?: boolean;
+  spoilerThumbnail?: string;
 }) => {
   const { t } = useTranslation();
   const mediaType = getPreviewMediaType(attachment.mimeType);
@@ -121,6 +123,7 @@ const PendingUploadFileRow = ({
             showThumbnail={showThumbnail}
             setShowThumbnail={setShowThumbnail}
             spoiler={spoiler}
+            spoilerThumbnail={spoilerThumbnail}
           />
         </div>
       )}
@@ -132,13 +135,14 @@ const PendingUploadFileRow = ({
  * The file rows of a new thread whose files are not uploaded yet, with the upload's progress on the first. Several
  * files sit in a row, as a published post's gallery does.
  */
-const PendingUploadFile = ({ pendingUploadId, spoiler }: { pendingUploadId: number; spoiler?: boolean }) => {
+const PendingUploadFile = ({ pendingUploadId, spoiler, spoilerThumbnail }: { pendingUploadId: number; spoiler?: boolean; spoilerThumbnail?: string }) => {
   const pendingUploadPost = usePendingUploadPostStore((state) => state.pendingUploadPosts.find((post) => post.id === pendingUploadId));
   if (!pendingUploadPost?.attachment) return null;
 
   const phaseLabelKey = pendingUploadPost.phase ? UPLOAD_PHASE_LABEL_KEYS[pendingUploadPost.phase] : undefined;
   const { attachment, galleryAttachments = [] } = pendingUploadPost;
-  if (galleryAttachments.length === 0) return <PendingUploadFileRow attachment={attachment} phaseLabelKey={phaseLabelKey} spoiler={spoiler} />;
+  if (galleryAttachments.length === 0)
+    return <PendingUploadFileRow attachment={attachment} phaseLabelKey={phaseLabelKey} spoiler={spoiler} spoilerThumbnail={spoilerThumbnail} />;
 
   return (
     <div className={styles.files}>
@@ -150,6 +154,7 @@ const PendingUploadFile = ({ pendingUploadId, spoiler }: { pendingUploadId: numb
           inGallery={true}
           phaseLabelKey={index === 0 ? phaseLabelKey : undefined}
           spoiler={spoiler}
+          spoilerThumbnail={spoilerThumbnail}
         />
       ))}
     </div>

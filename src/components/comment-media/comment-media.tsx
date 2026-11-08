@@ -2,6 +2,7 @@ import React, { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CommentMediaInfo, formatFileSize, getDisplayMediaInfoType, getHasThumbnail, getMediaDimensions, getMobileFileSizeLabel } from '../../lib/utils/media-utils';
 import { getHostname, parseHttpUrl } from '../../lib/utils/url-utils';
+import { DEFAULT_SPOILER_THUMBNAIL } from '../../lib/spoiler-thumbnails';
 import useExpandedMediaStore from '../../stores/use-expanded-media-store';
 import useImageFiltersStore from '../../stores/use-image-filters-store';
 import { requestMediaFileSize, useMediaFileSize } from '../../stores/use-media-file-size-store';
@@ -29,6 +30,7 @@ interface MediaProps {
   purged?: boolean;
   removed?: boolean;
   spoiler?: boolean;
+  spoilerThumbnail?: string;
   showThumbnail?: boolean;
   setShowThumbnail: (showThumbnail: boolean) => void;
   onMediaLoadFailureChange?: (url: string | undefined) => void;
@@ -108,6 +110,7 @@ const Thumbnail = ({
   purged,
   removed,
   spoiler,
+  spoilerThumbnail = DEFAULT_SPOILER_THUMBNAIL,
   setShowThumbnail,
 }: MediaProps & { gifFrameState: GifFrameState }) => {
   const isMobile = useIsMobile();
@@ -202,7 +205,7 @@ const Thumbnail = ({
     <img className={styles.fileDeleted} src='assets/filedeleted-res.gif' alt='File deleted' />
   ) : spoiler ? (
     <button type='button' className={styles.mediaToggleButton} aria-label='Open spoiler media' onClick={handleOpenMedia}>
-      <img className={styles.spoiler} src='assets/spoiler.png' alt='' />
+      <img className={styles.spoiler} src={spoilerThumbnail} alt='' />
     </button>
   ) : isOutOfFeed ? (
     <span className={`${isFloatingEmbed ? styles.floatingEmbed : styles.communityAvatar}`}>{thumbnailComponent}</span>
@@ -299,6 +302,7 @@ interface ImageProps {
   onMediaLoadFailureChange?: (url: string | undefined) => void;
   parentCid?: string;
   spoiler?: boolean;
+  spoilerThumbnail?: string;
 }
 
 const Image = ({
@@ -312,6 +316,7 @@ const Image = ({
   onMediaLoadFailureChange,
   parentCid,
   spoiler,
+  spoilerThumbnail = DEFAULT_SPOILER_THUMBNAIL,
 }: ImageProps) => {
   const { t } = useTranslation();
   const { alt, type, url } = commentMediaInfo || {};
@@ -350,7 +355,7 @@ const Image = ({
         style={spoilerDimensions}
       >
         <button type='button' className={styles.mediaToggleButton} aria-label='Open spoiler media' onClick={() => setIsImageExpanded(true)}>
-          <img className={styles.spoiler} src='assets/spoiler.png' alt='' />
+          <img className={styles.spoiler} src={spoilerThumbnail} alt='' />
         </button>
       </span>
     );
@@ -430,6 +435,7 @@ const CommentMedia = ({
   showThumbnail,
   setShowThumbnail,
   spoiler,
+  spoilerThumbnail,
   onMediaLoadFailureChange,
 }: MediaProps) => {
   const isReply = parentCid;
@@ -490,6 +496,7 @@ const CommentMedia = ({
           onMediaLoadFailureChange={onMediaLoadFailureChange}
           parentCid={parentCid}
           spoiler={spoiler}
+          spoilerThumbnail={spoilerThumbnail}
         />
       ) : (
         <>
@@ -507,6 +514,7 @@ const CommentMedia = ({
                   purged={purged}
                   removed={removed}
                   spoiler={spoiler}
+                  spoilerThumbnail={spoilerThumbnail}
                   setShowThumbnail={setShowThumbnail}
                 />
               )}
@@ -542,6 +550,7 @@ export default memo(CommentMedia, (prev, next) => {
     prev.removed === next.removed &&
     prev.showThumbnail === next.showThumbnail &&
     prev.setShowThumbnail === next.setShowThumbnail &&
-    prev.spoiler === next.spoiler
+    prev.spoiler === next.spoiler &&
+    prev.spoilerThumbnail === next.spoilerThumbnail
   );
 });
