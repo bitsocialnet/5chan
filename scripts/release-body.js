@@ -6,12 +6,13 @@ import fetch from 'node-fetch';
 
 const dirname = path.join(path.dirname(fileURLToPath(import.meta.url)));
 const conventionalChangelog = path.join(dirname, '..', 'node_modules', '.bin', 'conventional-changelog');
+const changelogConfig = path.join(dirname, 'conventional-changelog.config.mjs');
 const version = JSON.parse(readFileSync(path.join(dirname, '..', 'package.json'), 'utf8')).version;
 
 // changelog (use last non-empty)
 let releaseChangelog =
-  execSync(`${conventionalChangelog} --preset angular --release-count 1`).toString() ||
-  execSync(`${conventionalChangelog} --preset angular --release-count 2`).toString();
+  execSync(`${conventionalChangelog} --preset angular --config ${changelogConfig} --release-count 1`).toString() ||
+  execSync(`${conventionalChangelog} --preset angular --config ${changelogConfig} --release-count 2`).toString();
 releaseChangelog = releaseChangelog.trim().replace(/\n\n+/g, '\n\n');
 
 // discover artifacts
