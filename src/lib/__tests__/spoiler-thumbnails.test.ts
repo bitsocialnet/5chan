@@ -22,6 +22,14 @@ describe('getSpoilerThumbnail', () => {
     expect(getSpoilerThumbnail(candidate!.address, [])).toBe('assets/spoilers/a.png');
   });
 
+  it('uses the custom spoiler for the actual s5s directory', () => {
+    const directory = getVendoredDirectoryLists().find((entry) => entry.directoryCode === 's5s');
+    const board = directory?.boards[0];
+    expect(board).toBeDefined();
+    expect(getSpoilerThumbnail(board!.address, [])).toBe('assets/spoilers/s4s.png');
+    expect(getSpoilerThumbnail(board!.address, [{ ...board!, directoryCode: directory!.directoryCode }])).toBe('assets/spoilers/s4s.png');
+  });
+
   it('keeps the generic thumbnail for unsupported, independent, and missing boards', () => {
     for (const address of ['music.example.bso', 'independent.example', 'a', undefined]) {
       expect(getSpoilerThumbnail(address, directories)).toBe(DEFAULT_SPOILER_THUMBNAIL);
