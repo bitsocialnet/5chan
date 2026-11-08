@@ -23,8 +23,8 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         // F-Droid's update checker only reads literal values from tagged sources.
         // Release prep rewrites both lines from package.json with scripts/sync-android-release.mjs.
-        versionCode 1003
-        versionName "0.10.3"
+        versionCode 1004
+        versionName "0.10.4"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.

@@ -1,3 +1,44 @@
+## [0.10.4](https://github.com/bitsocialnet/5chan/compare/v0.10.3...v0.10.4) (2026-11-08)
+
+
+### Bug Fixes
+
+* **automation:** use sandboxed stable Chrome for all CI profiles ([8c584fb](https://github.com/bitsocialnet/5chan/commit/8c584fbfbd38f7cc3f4279c75a49eed63f521384))
+* **challenge modal:** show the spam check above the reply modal ([85173c3](https://github.com/bitsocialnet/5chan/commit/85173c3e5fd627c9ff4a09b11bf10f4e01e0a49b))
+* **directory-votes:** land the refresh and lapse-notice fixes missed by [#1288](https://github.com/bitsocialnet/5chan/issues/1288) and [#1289](https://github.com/bitsocialnet/5chan/issues/1289) ([#1291](https://github.com/bitsocialnet/5chan/issues/1291)) ([5b6dcba](https://github.com/bitsocialnet/5chan/commit/5b6dcba9a4280570d58051cebc1200c5a3f4aa9f))
+* **errors:** copy the full error from Connection Error and Failed ([10a22a0](https://github.com/bitsocialnet/5chan/commit/10a22a04779e8d2ec19b79e5e7f6b5ae98565944))
+* **halloween theme:** restore the dark theme and rules on phones ([070bdda](https://github.com/bitsocialnet/5chan/commit/070bdda2a5c57594fe78cb6abd2d5163d9524a27))
+* **modals:** put the modal that opened last on top ([#1287](https://github.com/bitsocialnet/5chan/issues/1287)) ([980147b](https://github.com/bitsocialnet/5chan/commit/980147b44443765d0e25e6acc281cfced35d40fe))
+* **p2p-stats:** place peers reached through a domain on the map ([c59e406](https://github.com/bitsocialnet/5chan/commit/c59e4066a595c818e84f1321b5ec3671988408dd))
+* **post menu:** hide the MD5 quick filter unless enabled in interface settings ([3b98e81](https://github.com/bitsocialnet/5chan/commit/3b98e81871cd725fe25e1fe39d0843616b3b3e26))
+* **post-options:** derive fortune and dice results from the post CID ([#1280](https://github.com/bitsocialnet/5chan/issues/1280)) ([7f64351](https://github.com/bitsocialnet/5chan/commit/7f643512845681fdb4098b9ab307dc6d393d44f2))
+* **reply modal:** keep the spoiler toggle on one line beside the file name ([e09e31c](https://github.com/bitsocialnet/5chan/commit/e09e31c4e7c932b429ad35b51e4c140ef7623a7f))
+* **seasonal themes:** keep Halloween through Nov 1 and Christmas through Dec 26 ([#1274](https://github.com/bitsocialnet/5chan/issues/1274)) ([8462acd](https://github.com/bitsocialnet/5chan/commit/8462acd2f0dcb1fb57073778502bfb6181e73f9e))
+* **security:** patch desktop Electron and sandbox browser automation ([9f3b171](https://github.com/bitsocialnet/5chan/commit/9f3b1710b49e9698620c4199ad2f237b6084ee5f))
+* **security:** update Electron and sandbox browser automation ([#1279](https://github.com/bitsocialnet/5chan/issues/1279)) ([d272005](https://github.com/bitsocialnet/5chan/commit/d27200526a4d44eb4a532f5089cbc6f8394b8e8b))
+* **settings:** show the auth key in the local node RPC hint ([b493dab](https://github.com/bitsocialnet/5chan/commit/b493daba197a4c962f358a0848aed01f6af8cc5e))
+* **tripcodes:** drop a kept tripcode password when its publish fails or is abandoned ([#1286](https://github.com/bitsocialnet/5chan/issues/1286)) ([d0eb79e](https://github.com/bitsocialnet/5chan/commit/d0eb79e4b50d6c50a12501c290d831f9849c3519))
+* **tripcodes:** sign a post's tripcode again before its republish after a wrong captcha ([#1285](https://github.com/bitsocialnet/5chan/issues/1285)) ([5c9a580](https://github.com/bitsocialnet/5chan/commit/5c9a580b6e00a43a246d46bafebe442fa2973a2d))
+
+
+### Features
+
+* **analytics:** strip private route data from 5chan.app page views and count failed posts ([#1277](https://github.com/bitsocialnet/5chan/issues/1277)) ([03e20aa](https://github.com/bitsocialnet/5chan/commit/03e20aa00d35dc45b7e3bbb3fb921e307e12bba6))
+* **banners:** add 24 imageboard banners ([f3648d3](https://github.com/bitsocialnet/5chan/commit/f3648d3bb0fc3dbe5f9a20a361abf0dd52f28b32))
+* **boards-bar:** list boards published after the release ([#1284](https://github.com/bitsocialnet/5chan/issues/1284)) ([2dd81ad](https://github.com/bitsocialnet/5chan/commit/2dd81ad99f10510ed27d344a616e2de05f8b9090))
+* **directory-votes:** refresh a vote only while its voter keeps visiting the directory ([#1288](https://github.com/bitsocialnet/5chan/issues/1288)) ([1f7fa00](https://github.com/bitsocialnet/5chan/commit/1f7fa00ed708b7934855d7b81794c7a781a225ba))
+* **directory-votes:** tell voters a vote lapses once they stop visiting ([#1289](https://github.com/bitsocialnet/5chan/issues/1289)) ([e92f7a2](https://github.com/bitsocialnet/5chan/commit/e92f7a2cb84e76e2d6eb93b7d6f4db96dd4b8f56))
+* **posts:** add tripcodes ([#1281](https://github.com/bitsocialnet/5chan/issues/1281)) ([7d55f00](https://github.com/bitsocialnet/5chan/commit/7d55f00ae6fbf03bcdc88df56a47e4109329065a))
+* **posts:** show and post comment.gallery files ([#1276](https://github.com/bitsocialnet/5chan/issues/1276)) ([44a3811](https://github.com/bitsocialnet/5chan/commit/44a381135a8feae1e0a59242324b04dd9936e578))
+* **upload:** attach images and files pasted into the comment field ([#1275](https://github.com/bitsocialnet/5chan/issues/1275)) ([697956c](https://github.com/bitsocialnet/5chan/commit/697956cd041541e31bc7c09cd71667045a9a0296))
+
+
+### Performance Improvements
+
+* **banners:** enforce deterministic asset budgets and caching ([4478036](https://github.com/bitsocialnet/5chan/commit/4478036c2ea4ff9cbbc39735bdab7be0318de44f))
+* **boards:** stop updating boards nothing on screen shows ([4bc8309](https://github.com/bitsocialnet/5chan/commit/4bc83095503d129ca0d2adf7813f687da8dd3b07))
+* **startup:** load floating-ui, two modals and the fetch polyfill after the first render ([#1283](https://github.com/bitsocialnet/5chan/issues/1283)) ([bfe3b36](https://github.com/bitsocialnet/5chan/commit/bfe3b36feaaabc3b083d9ac91186b9fe42795820))
+
 ## [0.10.3](https://github.com/bitsocialnet/5chan/compare/v0.10.2...v0.10.3) (2026-10-31)
 
 

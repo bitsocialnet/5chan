@@ -104,7 +104,7 @@ const downloads = [macSection, winSection, linuxSection, androidSection, htmlSec
 
 // One-liner summary of what changed in this release. Update before each release.
 const oneLinerDescription =
-  "This version updates the Halloween and Christmas themes to match 4chan's current ones, adds a 4chan X MD5 image filter and file sizes in file rows, plays Flash files in a sandbox that cannot reach the network after Forge Images scans them, runs the spam blocker before uploads, includes NSFW boards in archive search results, and lets replies sit beside the OP thumbnail like 4chan.";
+  "This version adds tripcodes, multi-file posts on boards that allow galleries, attaching pasted images and files, and 24 new banners, makes fortune and dice results impossible to fake, shows newly created boards in the boards bar, lets directory votes lapse once their voter stops visiting, loads faster and stops updating boards that are off screen, keeps private page addresses out of 5chan.app analytics, and patches the desktop app's browser engine.";
 
 const releaseBody = `${oneLinerDescription}
 
