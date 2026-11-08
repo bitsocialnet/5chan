@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_SPOILER_THUMBNAIL, getSpoilerThumbnail } from '../spoiler-thumbnails';
 import { getVendoredDirectoryLists } from '../utils/directory-list-lookup-utils';
+import { normalizeDirectoriesData } from '../utils/directories';
 
 const directories = [
   { address: 'anime.example.bso', directoryCode: 'a', publicKey: 'anime-public-key' },
@@ -28,6 +29,14 @@ describe('getSpoilerThumbnail', () => {
     expect(board).toBeDefined();
     expect(getSpoilerThumbnail(board!.address, [])).toBe('assets/spoilers/s4s.png');
     expect(getSpoilerThumbnail(board!.address, [{ ...board!, directoryCode: directory!.directoryCode }])).toBe('assets/spoilers/s4s.png');
+  });
+
+  it.each(['/s5s/ - Shit 5chan Says', undefined])('falls back when a cached directory code is empty (title: %s)', (title) => {
+    const board = getVendoredDirectoryLists().find((entry) => entry.directoryCode === 's5s')?.boards[0];
+    expect(board).toBeDefined();
+    const cached = normalizeDirectoriesData({ communities: [{ ...board!, directoryCode: '', title }] });
+    expect(cached?.communities).toHaveLength(1);
+    expect(getSpoilerThumbnail(board!.address, cached!.communities)).toBe('assets/spoilers/s4s.png');
   });
 
   it('keeps the generic thumbnail for unsupported, independent, and missing boards', () => {
