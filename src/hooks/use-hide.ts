@@ -6,6 +6,7 @@ import { getCommentGalleryMediaInfos } from '../lib/utils/media-utils';
 import useHiddenCatalogThreadsStore from '../stores/use-hidden-catalog-threads-store';
 import useImageFiltersStore from '../stores/use-image-filters-store';
 import { useActiveAccountField } from './use-active-account-field';
+import { isOwnComment, useIsOwnComment } from './use-is-own-comment';
 
 export type HiddenCidLookup = { [cid: string]: boolean | undefined };
 
@@ -26,11 +27,6 @@ const EMPTY_ERRORS: never[] = [];
 
 export const useHiddenCids = (): HiddenCidLookup => useActiveAccountField((account) => account?.blockedCids || EMPTY_HIDDEN_CIDS);
 
-// Like 4chan X, the image filter never hides the viewer's own posts. On per-post pseudonymous boards a
-// post's author address is a one-off alias, so the account's own comment list is what identifies them.
-const isOwnComment = (comment: Comment | undefined, accountAddress: string | undefined, isAccountCommentCid: boolean): boolean =>
-  isAccountCommentCid || typeof comment?.index === 'number' || Boolean(accountAddress && comment?.author?.address === accountAddress);
-
 // A post's file matches by its link's key, or by the listed hash its image hashed to after loading.
 const isLinkImageFiltered = (link: string | undefined, filterKeys: Set<string>, matchedLinks: Record<string, string>): boolean => {
   if (!link) return false;
@@ -46,22 +42,20 @@ const isCommentImageFiltered = (comment: Comment | undefined, filterKeys: Set<st
 
 const useIsAccountCommentCid = (cid: string | undefined): boolean => accountsStore((state) => Boolean(cid && state.commentCidsToAccountsComments?.[cid]));
 
-const useAccountCommentCids = () => accountsStore((state) => state.commentCidsToAccountsComments);
-
+// Like 4chan X, the image filter never hides the viewer's own posts.
 /** Tells whether the image filter hides a comment, for lists that leave hidden posts out instead of rendering them. */
 export const useIsImageFiltered = () => {
   const filterKeys = useImageFiltersStore((state) => state.filterKeys);
   const matchedLinks = useImageFiltersStore((state) => state.matchedLinks);
   const shownCids = useImageFiltersStore((state) => state.shownCids);
-  const accountAddress = useActiveAccountField((account) => account?.author?.address);
-  const accountCommentCids = useAccountCommentCids();
+  const isViewerComment = useIsOwnComment();
   return useCallback(
     (comment: Comment) => {
       if (filterKeys.size === 0 || (comment?.cid && shownCids[comment.cid])) return false;
-      if (isOwnComment(comment, accountAddress, Boolean(comment?.cid && accountCommentCids?.[comment.cid]))) return false;
+      if (isViewerComment(comment)) return false;
       return isCommentImageFiltered(comment, filterKeys, matchedLinks);
     },
-    [accountAddress, accountCommentCids, filterKeys, matchedLinks, shownCids],
+    [filterKeys, isViewerComment, matchedLinks, shownCids],
   );
 };
 

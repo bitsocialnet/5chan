@@ -177,17 +177,25 @@ describe('misc utils', () => {
     }
   });
 
-  it('builds reply previews, omitted counts, and fallback reply totals', () => {
-    expect(
-      filterRepliesForDisplay([
-        { cid: 'visible' },
-        { cid: 'deleted', deleted: true },
-        { cid: 'removed', removed: true },
-        { cid: 'blank-reason', reason: '   ', removed: true },
-        { cid: 'removed-with-reason', reason: 'off-topic', removed: true },
-      ]),
-    ).toEqual([{ cid: 'visible' }, { cid: 'removed-with-reason', reason: 'off-topic', removed: true }]);
+  it('hides removed replies from everyone but their author, whatever the removal reason', () => {
+    const replies = [
+      { cid: 'visible' },
+      { cid: 'deleted', deleted: true },
+      { cid: 'own-deleted', deleted: true },
+      { cid: 'removed', removed: true },
+      { cid: 'removed-with-reason', reason: 'off-topic', removed: true },
+      { cid: 'own-removed-with-reason', reason: 'off-topic', removed: true },
+    ];
+    const isOwnReply = (reply: { cid?: string | null }) => reply.cid?.startsWith('own-') ?? false;
 
+    expect(filterRepliesForDisplay(replies)).toEqual([{ cid: 'visible' }]);
+    expect(filterRepliesForDisplay(replies, isOwnReply)).toEqual([{ cid: 'visible' }, { cid: 'own-removed-with-reason', reason: 'off-topic', removed: true }]);
+
+    const unchangedReplies = [{ cid: 'visible' }, { cid: 'own-removed', removed: true }];
+    expect(filterRepliesForDisplay(unchangedReplies, isOwnReply)).toBe(unchangedReplies);
+  });
+
+  it('builds reply previews, omitted counts, and fallback reply totals', () => {
     expect(
       getPreviewDisplayReplies(
         [
