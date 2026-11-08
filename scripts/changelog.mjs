@@ -33,8 +33,10 @@ export function mergeChangelogSection(section, existing) {
 }
 
 function main() {
-  const changelogPath = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'CHANGELOG.md');
-  const result = spawnSync('conventional-changelog', ['-p', 'angular'], {
+  const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+  const changelogPath = path.join(root, 'CHANGELOG.md');
+  const result = spawnSync('conventional-changelog', ['-p', 'angular', '-n', 'scripts/conventional-changelog.config.mjs'], {
+    cwd: root,
     encoding: 'utf8',
     shell: process.platform === 'win32',
   });
