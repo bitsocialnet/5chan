@@ -45,6 +45,7 @@ type TestComment = {
     >;
   };
   state?: string;
+  spoiler?: boolean;
   thumbnailUrl?: string;
   timestamp?: number;
   updatedAt?: number;
@@ -245,7 +246,11 @@ vi.mock('../../stores/use-mod-queue-store', () => ({
 
 vi.mock('../../hooks/use-directories', () => ({
   findDirectoryByAddress: (_directories: unknown[], address?: string) => (address ? { address, features: {} } : undefined),
-  useDirectories: () => [{ address: 'music-posting.eth', title: '/mu/ - Music' }],
+  useDirectories: () => [
+    { address: 'music-posting.eth', title: '/mu/ - Music' },
+    { address: 'anime.example.bso', title: '/a/ - Anime' },
+    { address: 'games.example.bso', title: '/v/ - Video Games' },
+  ],
 }));
 
 vi.mock('../../hooks/use-directory-entry', () => ({
@@ -310,7 +315,8 @@ vi.mock('../comment-content/comment-content', () => ({
 }));
 
 vi.mock('../comment-media/comment-media', () => ({
-  default: () => createElement('div', { 'data-testid': 'comment-media' }, 'media'),
+  default: ({ spoilerThumbnail }: { spoilerThumbnail?: string }) =>
+    createElement('div', { 'data-testid': 'comment-media', 'data-spoiler-thumbnail': spoilerThumbnail }, 'media'),
 }));
 
 vi.mock('../edit-menu/edit-menu', () => ({
@@ -565,6 +571,30 @@ describe('post community address compatibility', () => {
     expect(document.body.querySelector('a[href="/mu"]')?.textContent).toContain('Board: mu');
     expect(container.querySelector('[data-testid="comment-media"]')).toBeTruthy();
     expect(container.textContent).toContain('reply-1');
+  });
+
+  it.each([
+    ['desktop', PostDesktop],
+    ['mobile', PostMobile],
+  ] as const)('passes each post board spoiler to link and gallery files on %s', async (_label, PostComponent) => {
+    const posts = ['anime.example.bso', 'games.example.bso', 'independent.example'].map((communityAddress, index) => ({
+      ...makeLegacyThreadWithoutReplies(),
+      cid: `spoiler-${index}`,
+      communityAddress,
+      gallery: [{ htmlTagName: 'img', url: `https://example.com/gallery-${index}.png` }],
+      spoiler: true,
+    }));
+
+    await renderWithRoute(createElement(React.Fragment, {}, ...posts.map((post) => createElement(PostComponent, { key: post.cid, post }))), '/all');
+
+    expect(Array.from(container.querySelectorAll('[data-testid="comment-media"]'), (media) => media.getAttribute('data-spoiler-thumbnail'))).toEqual([
+      'assets/spoilers/a.png',
+      'assets/spoilers/a.png',
+      'assets/spoilers/v.png',
+      'assets/spoilers/v.png',
+      'assets/spoiler.png',
+      'assets/spoiler.png',
+    ]);
   });
 
   it('renders gallery files after the link file on desktop, each with its own file line', async () => {

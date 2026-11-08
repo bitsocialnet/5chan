@@ -5,6 +5,7 @@ import { Link, useLocation, useParams } from 'react-router-dom';
 import { useFloating, offset, size, Placement } from '@floating-ui/react';
 import { Comment, useReplies } from '@bitsocial/bitsocial-react-hooks';
 import getShortAddress from '../../lib/get-short-address';
+import { getSpoilerThumbnail } from '../../lib/spoiler-thumbnails';
 import { shouldShowSnow } from '../../stores/use-special-theme-store';
 import { getCommentGalleryMediaInfos, getCoverMediaInfo, getHasThumbnail } from '../../lib/utils/media-utils';
 import { getFormattedTimeAgo } from '../../lib/utils/time-utils';
@@ -277,7 +278,7 @@ const CatalogPost = memo(
                   <div className={`${styles.mediaPaddingWrapper} ${shouldMaskPost && styles.hidden}`} ref={refs.setReference}>
                     {threadIcons}
                     {spoiler ? (
-                      <img src='assets/spoiler.png' alt='' className={isPinned ? styles.pinned : undefined} />
+                      <img src={getSpoilerThumbnail(communityAddress, directories)} alt='' className={isPinned ? styles.pinned : undefined} />
                     ) : (
                       <CatalogPostMedia
                         cid={cid}

@@ -712,6 +712,42 @@ describe('CommentMedia', () => {
     expect(video?.muted).toBe(false);
   });
 
+  it('updates a board spoiler when only its thumbnail prop changes and still reveals the image', async () => {
+    const props = {
+      commentMediaInfo: { type: 'image', url: 'https://cdn.example.com/hidden.png' },
+      setShowThumbnail: setShowThumbnailMock,
+      showThumbnail: true,
+      spoiler: true,
+    };
+    await renderMedia({ ...props, spoilerThumbnail: 'assets/spoilers/a.png' });
+    expect(container.querySelector('img')?.getAttribute('src')).toBe('assets/spoilers/a.png');
+    expect(container.querySelector('img[src="https://cdn.example.com/hidden.png"]')).toBeNull();
+
+    await renderMedia({ ...props, spoilerThumbnail: 'assets/spoilers/v.png' });
+    expect(container.querySelector('img')?.getAttribute('src')).toBe('assets/spoilers/v.png');
+    await act(async () => {
+      container.querySelector('button[aria-label="Open spoiler media"]')?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+    expect(container.querySelector('img[src="https://cdn.example.com/hidden.png"]')).toBeTruthy();
+    expect(container.querySelector('img[src="assets/spoilers/v.png"]')).toBeNull();
+  });
+
+  it('uses the selected board spoiler for non-image media and preserves click-to-reveal', async () => {
+    await renderMedia({
+      commentMediaInfo: { type: 'video', url: 'https://cdn.example.com/hidden.webm' },
+      setShowThumbnail: setShowThumbnailMock,
+      showThumbnail: true,
+      spoiler: true,
+      spoilerThumbnail: 'assets/spoilers/a.png',
+    });
+    expect(container.querySelector('img')?.getAttribute('src')).toBe('assets/spoilers/a.png');
+    expect(container.querySelector('video')).toBeNull();
+    await act(async () => {
+      container.querySelector('button[aria-label="Open spoiler media"]')?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+    expect(setShowThumbnailMock).toHaveBeenCalledWith(false);
+  });
+
   it('keeps expanded videos muted when the preference is disabled', async () => {
     await renderMedia({
       commentMediaInfo: {

@@ -4,6 +4,7 @@ import { Link, useLocation, useNavigationType, useParams } from 'react-router-do
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
 import { Comment, resolveReplySortType, useAccountComment, useEditedComment, useReplies } from '@bitsocial/bitsocial-react-hooks';
 import getShortAddress from '../../lib/get-short-address';
+import { getSpoilerThumbnail } from '../../lib/spoiler-thumbnails';
 import styles from '../post-styles';
 import {
   CommentMediaInfo,
@@ -747,6 +748,7 @@ const PostMedia = ({
             setShowThumbnail={setShowThumbnail}
             parentCid={parentCid}
             spoiler={spoiler}
+            spoilerThumbnail={spoiler ? getSpoilerThumbnail(communityAddress, directories) : undefined}
           />
         </div>
       )}
@@ -1279,7 +1281,13 @@ const PostDesktop = ({
                 )}
               </PostFiles>
             )}
-            {typeof resolvedPost?.pendingUploadId === 'number' && <PendingUploadFile pendingUploadId={resolvedPost.pendingUploadId} spoiler={spoiler} />}
+            {typeof resolvedPost?.pendingUploadId === 'number' && (
+              <PendingUploadFile
+                pendingUploadId={resolvedPost.pendingUploadId}
+                spoiler={spoiler}
+                spoilerThumbnail={spoiler ? getSpoilerThumbnail(communityAddress, directories) : undefined}
+              />
+            )}
             <PostInfo
               isHidden={hidden}
               post={resolvedPost}
