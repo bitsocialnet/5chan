@@ -4,8 +4,9 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     setupFiles: ['./vitest.setup.ts'],
-    // These fixtures use node:test and run in the dedicated Jev helper workflow.
-    exclude: [...configDefaults.exclude, 'scripts/jev/tests/**', 'scripts/visual-qa/tests/**'],
+    // The scripts fixtures use node:test and run in the dedicated Jev helper workflow. Task worktrees
+    // under .claude/worktrees are other checkouts of this repository, with their own tests.
+    exclude: [...configDefaults.exclude, 'scripts/jev/tests/**', 'scripts/visual-qa/tests/**', '.claude/worktrees/**'],
     coverage: {
       include: ['src/**/*.{ts,tsx}', 'electron/**/*.{js,mjs}'],
       exclude: [
