@@ -153,7 +153,7 @@
   "title_too_long": "заголовок відображається занадто довгий",
   "1_post_by_this_id": "1 пост з цим ідентифікатором",
   "x_posts_by_this_id": "{{number}} пост з цього ідентифікатора",
-  "ban_expires_at": "Заборонений з {{address}} до {{timestamp}}",
+  "ban_expires_at": "Заблоковано на {{address}} до {{timestamp}}",
   "replies": "відповіді",
   "links": "посилання",
   "animated_gif": "Анімований GIF",

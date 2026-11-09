@@ -153,7 +153,7 @@
   "title_too_long": "শিরোনাম অত্যন্ত দীর্ঘ",
   "1_post_by_this_id": "এই আইডি দ্বারা 1 পোস্ট",
   "x_posts_by_this_id": "এই আইডি থেকে {{number}} পোস্ট",
-  "ban_expires_at": "{{address}} থেকে {{timestamp}} পর্যন্ত নিষিদ্ধ",
+  "ban_expires_at": "{{timestamp}} পর্যন্ত {{address}} থেকে নিষিদ্ধ",
   "replies": "উত্তর",
   "links": "লিঙ্কগুলি",
   "animated_gif": "অ্যানিমেটেড GIF",

@@ -153,7 +153,7 @@
   "title_too_long": "başlık çok uzun",
   "1_post_by_this_id": "Bu ID ile 1 gönderi",
   "x_posts_by_this_id": "Bu ID ile {{number}} gönderi",
-  "ban_expires_at": "{{address}} adresinden {{timestamp}} tarihine kadar yasaklandı",
+  "ban_expires_at": "{{timestamp}} tarihine kadar {{address}} panosundan yasaklandı",
   "replies": "cevaplar",
   "links": "bağlantılar",
   "animated_gif": "Animasyonlu GIF",

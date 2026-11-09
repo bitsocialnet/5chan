@@ -153,7 +153,7 @@
   "title_too_long": "عنوان بہت لمبا ہے",
   "1_post_by_this_id": "اس آئی ڈی پر 1 پوسٹ",
   "x_posts_by_this_id": "اس آئی ڈی سے {{number}} پوسٹ",
-  "ban_expires_at": "{{address}} سے {{timestamp}} تک ممنوع",
+  "ban_expires_at": "{{timestamp}} تک {{address}} سے ممنوع",
   "replies": "جوابات",
   "links": "لنکس",
   "animated_gif": "اینیمیٹڈ GIF",

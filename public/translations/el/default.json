@@ -153,7 +153,7 @@
   "title_too_long": "Το τίτλος είναι πολύ μεγάλος",
   "1_post_by_this_id": "1 ανάρτηση με αυτό το ID",
   "x_posts_by_this_id": "{{number}} αναρτήσεις από αυτό το ID",
-  "ban_expires_at": "Αποκλείστηκε από {{address}} έως {{timestamp}}",
+  "ban_expires_at": "Αποκλεισμένος στο {{address}} έως {{timestamp}}",
   "replies": "Απαντήσεις",
   "links": "Σύνδεσμοι",
   "animated_gif": "Κινούμενο GIF",

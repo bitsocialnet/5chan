@@ -153,7 +153,7 @@
   "title_too_long": "ang pamagat ay masyadong mahaba",
   "1_post_by_this_id": "1 post sa pamamagitan ng ID na ito",
   "x_posts_by_this_id": "{{number}} post mula sa ID na ito",
-  "ban_expires_at": "Bawal sa {{address}} hanggang {{timestamp}}",
+  "ban_expires_at": "Naka-ban sa {{address}} hanggang {{timestamp}}",
   "replies": "mga tugon",
   "links": "mga link",
   "animated_gif": "Animated GIF",
