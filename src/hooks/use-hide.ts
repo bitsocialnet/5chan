@@ -6,7 +6,7 @@ import { getCommentGalleryMediaInfos } from '../lib/utils/media-utils';
 import useHiddenCatalogThreadsStore from '../stores/use-hidden-catalog-threads-store';
 import useImageFiltersStore from '../stores/use-image-filters-store';
 import { useActiveAccountField } from './use-active-account-field';
-import { isOwnComment, useIsOwnComment } from './use-is-own-comment';
+import { isActiveAccountCommentCid, isOwnComment, useIsOwnComment } from './use-is-own-comment';
 
 export type HiddenCidLookup = { [cid: string]: boolean | undefined };
 
@@ -40,7 +40,8 @@ const isCommentImageFiltered = (comment: Comment | undefined, filterKeys: Set<st
   isLinkImageFiltered(comment?.link, filterKeys, matchedLinks) ||
   getCommentGalleryMediaInfos(comment?.gallery).some(({ url }) => isLinkImageFiltered(url, filterKeys, matchedLinks));
 
-const useIsAccountCommentCid = (cid: string | undefined): boolean => accountsStore((state) => Boolean(cid && state.commentCidsToAccountsComments?.[cid]));
+const useIsAccountCommentCid = (cid: string | undefined): boolean =>
+  accountsStore((state) => isActiveAccountCommentCid(state.commentCidsToAccountsComments, state.activeAccountId, cid));
 
 // Like 4chan X, the image filter never hides the viewer's own posts.
 /** Tells whether the image filter hides a comment, for lists that leave hidden posts out instead of rendering them. */
