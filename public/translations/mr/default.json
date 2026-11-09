@@ -153,7 +153,7 @@
   "title_too_long": "शीर्षक खूप लांब आहे",
   "1_post_by_this_id": "या ID वर 1 पोस्ट",
   "x_posts_by_this_id": "या ID पासून {{number}} पोस्ट",
-  "ban_expires_at": "p/{{address}} ते {{timestamp}} पर्यंत प्रतिबंधित",
+  "ban_expires_at": "{{address}} ते {{timestamp}} पर्यंत प्रतिबंधित",
   "replies": "उत्तर",
   "links": "लिंक",
   "animated_gif": "एनिमेटेड GIF",

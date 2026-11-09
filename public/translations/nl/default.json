@@ -153,7 +153,7 @@
   "title_too_long": "titel te lang",
   "1_post_by_this_id": "1 bericht met dit ID",
   "x_posts_by_this_id": "{{number}} berichten met dit ID",
-  "ban_expires_at": "Verbannen van p/{{address}} tot {{timestamp}}",
+  "ban_expires_at": "Verbannen van {{address}} tot {{timestamp}}",
   "replies": "reacties",
   "links": "links",
   "animated_gif": "Geanimeerde GIF",

@@ -153,7 +153,7 @@
   "title_too_long": "العنوان طويل جداً",
   "1_post_by_this_id": "مشاركة واحدة بهذا المعرف",
   "x_posts_by_this_id": "{{number}} منشور من هذا المعرف",
-  "ban_expires_at": "محظور من p/{{address}} حتى {{timestamp}}",
+  "ban_expires_at": "محظور من {{address}} حتى {{timestamp}}",
   "replies": "الردود",
   "links": "الروابط",
   "animated_gif": "GIF متحرك",

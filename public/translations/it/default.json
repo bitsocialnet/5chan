@@ -153,7 +153,7 @@
   "title_too_long": "titolo troppo lungo",
   "1_post_by_this_id": "1 post con questo ID",
   "x_posts_by_this_id": "{{number}} post da questo ID",
-  "ban_expires_at": "Bannato da p/{{address}} fino al {{timestamp}}",
+  "ban_expires_at": "Bannato da {{address}} fino al {{timestamp}}",
   "replies": "commenti",
   "links": "link",
   "animated_gif": "GIF Animata",

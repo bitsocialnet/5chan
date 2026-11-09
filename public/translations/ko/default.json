@@ -153,7 +153,7 @@
   "title_too_long": "제목이 너무 깁니다",
   "1_post_by_this_id": "이 ID로 게시된 1개의 글",
   "x_posts_by_this_id": "이 ID로부터의 {{number}}개의 글",
-  "ban_expires_at": "p/{{address}}에서 {{timestamp}}까지 금지됨",
+  "ban_expires_at": "{{address}}에서 {{timestamp}}까지 금지됨",
   "replies": "답글",
   "links": "링크",
   "animated_gif": "애니메이션 GIF",

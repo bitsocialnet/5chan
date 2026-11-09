@@ -153,7 +153,7 @@
   "title_too_long": "ชื่อเรื่องยาวเกินไป",
   "1_post_by_this_id": "1 โพสต์โดย ID นี้",
   "x_posts_by_this_id": "{{number}} โพสต์จาก ID นี้",
-  "ban_expires_at": "ถูกห้ามใช้งานจาก p/{{address}} จนถึง {{timestamp}}",
+  "ban_expires_at": "ถูกห้ามใช้งานจาก {{address}} จนถึง {{timestamp}}",
   "replies": "คำตอบ",
   "links": "ลิงก์",
   "animated_gif": "GIF ที่เคลื่อนไหว",

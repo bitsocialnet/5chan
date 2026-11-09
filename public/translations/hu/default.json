@@ -153,7 +153,7 @@
   "title_too_long": "a cím túl hosszú",
   "1_post_by_this_id": "1 bejegyzés ezzel az azonosítóval",
   "x_posts_by_this_id": "{{number}} bejegyzés erről az azonosítóról",
-  "ban_expires_at": "Tiltva p/{{address}}-tól {{timestamp}}-ig",
+  "ban_expires_at": "Tiltva {{address}}-tól {{timestamp}}-ig",
   "replies": "válaszok",
   "links": "linkek",
   "animated_gif": "Animált GIF",

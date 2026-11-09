@@ -496,7 +496,7 @@ const Challenge = ({ challenge, closeModal, abandonModal }: ChallengeProps) => {
   }
 
   const extraTitleParts: string[] = [];
-  if (community) extraTitleParts.push(`p/${community}`);
+  if (community) extraTitleParts.push(community);
   if (publicationType === 'vote' && votePreview) extraTitleParts.push(votePreview.trim());
   if (publication?.parentCid) extraTitleParts.push(parentAddress ? `reply ${parentAddress}` : 'reply');
   if (publicationContent && publicationType !== 'vote') extraTitleParts.push(publicationContent);

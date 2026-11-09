@@ -75,7 +75,7 @@ const CatalogPostPreview = ({ post, visible, showCommunityAddress, floatingRef, 
         {hasTripcodeProof(author?.displayName) && <PosterTrip comment={post} />}
         {catalogPostAuthorBadge && <span className={catalogPostAuthorBadge.capitalizeLabel ? 'capitalize' : undefined}>{` ## ${catalogPostAuthorBadge.label}`}</span>}
       </span>
-      {showCommunityAddress && communityAddress && ` to p/${getShortAddress(communityAddress)}`}
+      {showCommunityAddress && communityAddress && ` to ${getShortAddress(communityAddress)}`}
       <span className={styles.postAgo}> {getFormattedTimeAgo(timestamp)}</span>
       {replyCount > 0 && lastReply && (
         <div className={styles.postLast}>

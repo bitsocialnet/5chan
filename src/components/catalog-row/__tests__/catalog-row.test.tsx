@@ -524,7 +524,7 @@ describe('CatalogRow', () => {
     });
 
     expect(document.body.textContent).toContain('Thread title by Alice ## Board Owner');
-    expect(document.body.textContent).toContain('to p/mu');
+    expect(document.body.textContent).toContain('to mu');
     expect(document.body.textContent).toContain('last_reply_by Bob ## Board Janitor');
     expect(document.body.textContent).toContain('ago:100');
     expect(document.body.textContent).toContain('ago:200');
@@ -606,7 +606,7 @@ describe('CatalogRow', () => {
       vi.advanceTimersByTime(1);
     });
     expect(document.activeElement).toBe(postLink);
-    expect(document.body.textContent).toContain('posted_by Alice ## Board Owner to p/mu');
+    expect(document.body.textContent).toContain('posted_by Alice ## Board Owner to mu');
     expect(document.body.textContent).toContain('ago:100');
     expect(document.body.textContent).not.toContain('last_reply_by');
     expect(useReplies).toHaveBeenCalledWith({ comment: post, flat: true });

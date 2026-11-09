@@ -153,7 +153,7 @@
   "title_too_long": "عنوان خیلی طولانی است",
   "1_post_by_this_id": "1 پست با این شناسه",
   "x_posts_by_this_id": "{{number}} پست از این شناسه",
-  "ban_expires_at": "مسدود از p/{{address}} تا {{timestamp}}",
+  "ban_expires_at": "مسدود از {{address}} تا {{timestamp}}",
   "replies": "پاسخ‌ها",
   "links": "لینک‌ها",
   "animated_gif": "GIF متحرک",
