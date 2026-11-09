@@ -350,5 +350,9 @@ describe('useHide', () => {
     await act(async () => accountsStore.setState({ commentCidsToAccountsComments: { 'alias-thread': { accountId: 'account-1', accountCommentIndex: 1 } } }));
     expect(isImageFiltered?.(thread('alias-thread', FILTERED_LINK, 'one-off-alias'))).toBe(false);
     expect(isImageFiltered?.({ index: 2, link: FILTERED_LINK, author: { address: 'one-off-alias' } } as Comment)).toBe(false);
+    // Another local account's post, or a published post that merely carries an index, is not the viewer's.
+    await act(async () => accountsStore.setState({ commentCidsToAccountsComments: { 'other-account-thread': { accountId: 'account-2', accountCommentIndex: 0 } } }));
+    expect(isImageFiltered?.(thread('other-account-thread', FILTERED_LINK, 'one-off-alias'))).toBe(true);
+    expect(isImageFiltered?.({ cid: 'spoofed-index-thread', index: 0, link: FILTERED_LINK, author: { address: 'one-off-alias' } } as Comment)).toBe(true);
   });
 });

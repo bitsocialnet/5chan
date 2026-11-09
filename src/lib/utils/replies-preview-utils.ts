@@ -6,7 +6,6 @@ interface CommentLike {
   index?: number;
   number?: number;
   pendingApproval?: boolean;
-  reason?: string | null;
   removed?: boolean;
   state?: string;
   timestamp?: number;
@@ -45,8 +44,13 @@ export function sortRepliesForDisplay<T extends CommentLike>(replies: T[]): T[] 
   return sortedReplies.every((reply, index) => reply === replies[index]) ? replies : sortedReplies;
 }
 
-export function filterRepliesForDisplay<T extends CommentLike>(replies: T[]): T[] {
-  return replies.filter((reply) => !reply.deleted && (!reply.removed || Boolean(reply.reason?.trim())));
+/**
+ * Leaves out author-deleted replies, and moderator-removed replies unless the viewer wrote them,
+ * so only the author still sees the removal notice and its reason.
+ */
+export function filterRepliesForDisplay<T extends CommentLike>(replies: T[], isOwnReply?: (reply: T) => boolean): T[] {
+  const filteredReplies = replies.filter((reply) => !reply.deleted && (!reply.removed || Boolean(isOwnReply?.(reply))));
+  return filteredReplies.length === replies.length ? replies : filteredReplies;
 }
 
 /**

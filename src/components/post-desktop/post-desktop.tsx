@@ -34,6 +34,7 @@ import { useCommentMediaInfo } from '../../hooks/use-comment-media-info';
 import useCountLinksInReplies from '../../hooks/use-count-links-in-replies';
 import useFetchGifFirstFrame from '../../hooks/use-fetch-gif-first-frame';
 import useHide from '../../hooks/use-hide';
+import { useIsOwnComment } from '../../hooks/use-is-own-comment';
 import { useActiveAccountField } from '../../hooks/use-active-account-field';
 import useStateString from '../../hooks/use-state-string';
 import useScrollToReply from '../../hooks/use-scroll-to-reply';
@@ -952,6 +953,7 @@ const PostDesktop = ({
   const shouldFetchFull = showReplies && !isModQueue && !hasReplyPaginationOverride && (showAllReplies || showOmittedReplies[cid]);
   const previewReplySortType = resolveReplySortType(resolvedPost, 'new');
   const fullReplySortType = resolveReplySortType(resolvedPost, 'old');
+  const isOwnReply = useIsOwnComment();
 
   const cachedPreviewRepliesResult = useReplies({
     comment: shouldUsePreview ? resolvedPost : undefined,
@@ -964,7 +966,7 @@ const PostDesktop = ({
   const cachedPreviewReplies = cachedPreviewRepliesResult.updatedReplies?.length ? cachedPreviewRepliesResult.updatedReplies : cachedPreviewRepliesResult.replies || [];
   const hasEnoughCachedPreview = hasEnoughPreviewReplies({
     replyCount: resolvedPost?.replyCount,
-    loadedCount: cachedPreviewReplies.length,
+    loadedCount: filterRepliesForDisplay(cachedPreviewReplies, isOwnReply).length,
     visibleCount: BOARD_REPLIES_PREVIEW_VISIBLE_COUNT,
   });
   const previewRepliesResult = useReplies({
@@ -996,7 +998,11 @@ const PostDesktop = ({
 
   const fullIsFetching = shouldFetchFull && !hasReplyPaginationOverride && fullReplies.length === 0 && fullRepliesResult.hasMore;
 
-  const collapsedPreviewReplies = useMemo(() => getPreviewDisplayReplies(previewReplies, BOARD_REPLIES_PREVIEW_VISIBLE_COUNT), [previewReplies]);
+  // Filter before picking the latest replies so a hidden reply does not take a preview slot.
+  const collapsedPreviewReplies = useMemo(
+    () => getPreviewDisplayReplies(filterRepliesForDisplay(previewReplies, isOwnReply), BOARD_REPLIES_PREVIEW_VISIBLE_COUNT),
+    [isOwnReply, previewReplies],
+  );
   const repliesForRender = showAllReplies ? fullReplies : showOmittedReplies[cid] ? (fullReplies.length ? fullReplies : previewReplies) : collapsedPreviewReplies;
   const freshRepliesForRender = useFreshReplies(repliesForRender, { post: resolvedPost });
   useRegisterFreshReplies(resolvedPost, freshRepliesForRender);
@@ -1052,9 +1058,8 @@ const PostDesktop = ({
   const hasThumbnail = getHasThumbnail(commentMediaInfo, link);
   const hasFileThumbnail = hasThumbnail || galleryMediaInfos.length > 0;
 
-  // Author-deleted replies and no-reason moderator removals are hidden from thread replies.
-  // Moderator removals with a reason still render their placeholder and reason.
-  const filteredReplies = useMemo(() => filterRepliesForDisplay(freshRepliesForRender), [freshRepliesForRender]);
+  // Author-deleted replies are hidden from thread replies, and moderator removals from everyone but their author.
+  const filteredReplies = useMemo(() => filterRepliesForDisplay(freshRepliesForRender, isOwnReply), [freshRepliesForRender, isOwnReply]);
   const postsByAuthorInThread = useMemo(() => getThreadPostCountsByAuthor(resolvedPost, filteredReplies), [resolvedPost, filteredReplies]);
   const directRepliesByParentCid = useMemo(() => {
     const map = new Map<string, Comment[]>();
