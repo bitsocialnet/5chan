@@ -153,7 +153,7 @@
   "title_too_long": "tiêu đề quá dài",
   "1_post_by_this_id": "1 bài đăng bởi ID này",
   "x_posts_by_this_id": "{{number}} bài đăng từ ID này",
-  "ban_expires_at": "Bị cấm từ p/{{address}} cho đến {{timestamp}}",
+  "ban_expires_at": "Bị cấm khỏi {{address}} cho đến {{timestamp}}",
   "replies": "trả lời",
   "links": "liên kết",
   "animated_gif": "GIF Hoạt Hình",

@@ -153,7 +153,7 @@
   "title_too_long": "Název je příliš dlouhý",
   "1_post_by_this_id": "1 příspěvek s tímto ID",
   "x_posts_by_this_id": "{{number}} příspěvků z tohoto ID",
-  "ban_expires_at": "Zakázán z p/{{address}} do {{timestamp}}",
+  "ban_expires_at": "Zablokován na {{address}} do {{timestamp}}",
   "replies": "Odpovědi",
   "links": "Odkazy",
   "animated_gif": "Animovaný GIF",

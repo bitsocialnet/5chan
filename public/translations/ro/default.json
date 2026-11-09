@@ -153,7 +153,7 @@
   "title_too_long": "titlul este prea lung",
   "1_post_by_this_id": "1 post cu acest ID",
   "x_posts_by_this_id": "{{number}} postări cu acest ID",
-  "ban_expires_at": "Interzis de la p/{{address}} până la {{timestamp}}",
+  "ban_expires_at": "Blocat pe {{address}} până la {{timestamp}}",
   "replies": "răspunsuri",
   "links": "linkuri",
   "animated_gif": "GIF Animat",

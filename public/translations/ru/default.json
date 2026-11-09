@@ -153,7 +153,7 @@
   "title_too_long": "заголовок слишком длинный",
   "1_post_by_this_id": "1 сообщение с этим идентификатором",
   "x_posts_by_this_id": "{{number}} сообщений с этого идентификатора",
-  "ban_expires_at": "Забанен на p/{{address}} до {{timestamp}}",
+  "ban_expires_at": "Забанен на {{address}} до {{timestamp}}",
   "replies": "ответы",
   "links": "ссылки",
   "animated_gif": "Анимированный GIF",

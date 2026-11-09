@@ -170,7 +170,7 @@
   "title_too_long": "title too long",
   "1_post_by_this_id": "1 post by this ID",
   "x_posts_by_this_id": "{{number}} posts from this ID",
-  "ban_expires_at": "Banned from p/{{address}} until {{timestamp}}",
+  "ban_expires_at": "Banned from {{address}} until {{timestamp}}",
   "replies": "replies",
   "links": "links",
   "images": "images",

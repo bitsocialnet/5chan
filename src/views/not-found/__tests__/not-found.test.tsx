@@ -86,7 +86,7 @@ describe('NotFound', () => {
     expect(container.querySelector('[data-testid="home-logo"]')).toBeTruthy();
     expect(container.querySelector('[data-testid="not-found-image"]')).toBeTruthy();
     expect(container.textContent).toContain('Not Found');
-    expect(container.textContent).toContain('Back to p/mu');
+    expect(container.textContent).toContain('Back to mu');
     expect(container.querySelector('a')?.getAttribute('href')).toBe('/mu');
   });
 
@@ -100,7 +100,7 @@ describe('NotFound', () => {
 
     await renderNotFound();
 
-    expect(container.textContent).not.toContain('Back to p/');
+    expect(container.textContent).not.toContain('Back to');
     expect(container.querySelector('a')).toBeNull();
   });
 });

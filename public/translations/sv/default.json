@@ -153,7 +153,7 @@
   "title_too_long": "titel för långt",
   "1_post_by_this_id": "1 inlägg med detta ID",
   "x_posts_by_this_id": "{{number}} inlägg från detta ID",
-  "ban_expires_at": "Bannad från p/{{address}} till {{timestamp}}",
+  "ban_expires_at": "Bannad på {{address}} till {{timestamp}}",
   "replies": "svar",
   "links": "länkar",
   "animated_gif": "Animerad GIF",

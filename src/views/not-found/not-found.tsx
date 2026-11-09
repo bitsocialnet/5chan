@@ -32,7 +32,7 @@ const NotFound = () => {
                 <>
                   <br />
                   <div className={styles.backToBoard}>
-                    [<Link to={`/${boardIdentifier || communityAddress}`}>Back to p/{shortAddress || communityAddress}</Link>]
+                    [<Link to={`/${boardIdentifier || communityAddress}`}>Back to {shortAddress || communityAddress}</Link>]
                   </div>
                 </>
               )}

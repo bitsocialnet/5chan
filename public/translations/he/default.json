@@ -153,7 +153,7 @@
   "title_too_long": "הכותרת ארוכה מדי",
   "1_post_by_this_id": "פוסט אחד עם המזהה הזה",
   "x_posts_by_this_id": "{{number}} פוסטים מהמזהה הזה",
-  "ban_expires_at": "נחסם מ-p/{{address}} עד {{timestamp}}",
+  "ban_expires_at": "חסום ב-{{address}} עד {{timestamp}}",
   "replies": "תגובות",
   "links": "קישורים",
   "animated_gif": "GIF מונפש",

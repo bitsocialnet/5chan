@@ -153,7 +153,7 @@
   "title_too_long": "శీర్షిక చాలా పొడవుగా ఉంది",
   "1_post_by_this_id": "ఈ ID ద్వారా 1 పోస్టు",
   "x_posts_by_this_id": "ఈ ID నుండి {{number}} పోస్టు",
-  "ban_expires_at": "p/{{address}} నుండి {{timestamp}} వరకు నిషేధించబడింది",
+  "ban_expires_at": "{{timestamp}} వరకు {{address}} నుండి నిషేధించబడింది",
   "replies": "సమాధానాలు",
   "links": "లింక్లు",
   "animated_gif": "అనిమేటెడ్ GIF",
