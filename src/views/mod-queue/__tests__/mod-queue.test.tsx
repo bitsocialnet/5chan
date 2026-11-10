@@ -51,6 +51,9 @@ const testState = vi.hoisted(() => ({
   hasMore: false,
   isMobile: false,
   loadMoreMock: vi.fn(),
+  moderationOptions: {} as Record<'approve' | 'reject', Record<string, any> | undefined>,
+  moderationPublishState: 'initializing',
+  moderationPublishStateListeners: new Set<() => void>(),
   publishCommentMock: vi.fn(),
   publishCommentModerationActionMock: vi.fn(),
   publishCommentModerationMock: vi.fn(),
@@ -119,10 +122,15 @@ vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
     reset: testState.resetMock,
     state: testState.hasMore ? 'fetching-ipns' : 'succeeded',
   }),
-  usePublishCommentModeration: () => ({
-    publishCommentModeration: testState.publishCommentModerationMock,
-    state: 'initializing',
-  }),
+  usePublishCommentModeration: (options?: Record<string, any>) => {
+    testState.moderationOptions[options?.commentModeration?.approved === true ? 'approve' : 'reject'] = options;
+    // Like the real hook, a publishing state change re-renders the component that uses it.
+    const state = React.useSyncExternalStore(subscribeToModerationPublishState, () => testState.moderationPublishState);
+    return {
+      publishCommentModeration: testState.publishCommentModerationMock,
+      state,
+    };
+  },
 }));
 
 vi.mock('@bitsocial/bitsocial-react-hooks/dist/stores/accounts/index.js', () => ({
@@ -318,6 +326,20 @@ vi.mock('../../../components/post', () => ({
     ),
 }));
 
+const subscribeToModerationPublishState = (listener: () => void) => {
+  testState.moderationPublishStateListeners.add(listener);
+  return () => {
+    testState.moderationPublishStateListeners.delete(listener);
+  };
+};
+
+const setModerationPublishState = async (state: string) => {
+  await act(async () => {
+    testState.moderationPublishState = state;
+    testState.moderationPublishStateListeners.forEach((listener) => listener());
+  });
+};
+
 let container: HTMLDivElement;
 let root: Root;
 
@@ -395,6 +417,8 @@ describe('ModQueueView', () => {
       },
     ]);
     testState.viewMode = 'compact';
+    testState.moderationOptions = { approve: undefined, reject: undefined };
+    testState.moderationPublishState = 'initializing';
 
     container = document.createElement('div');
     document.body.appendChild(container);
@@ -1359,5 +1383,85 @@ describe('ModQueueView', () => {
     // 350-char cap + a single ellipsis character (shorter than the feed's 1000).
     expect(previewContent.length).toBe(351);
     expect(previewContent.endsWith('…')).toBe(true);
+  });
+
+  it('shows approve and reject again next to the error after a rejected approval', async () => {
+    testState.feed = [
+      {
+        cid: 'pending-post',
+        communityAddress: 'music-posting.eth',
+        content: 'waiting for a mod',
+        number: 5,
+        pendingApproval: true,
+        timestamp: 90_000,
+      },
+    ];
+    const confirmSpy = vi.spyOn(window, 'confirm').mockImplementation(() => true);
+    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
+    const getButtons = (label: string) => Array.from(container.querySelectorAll<HTMLButtonElement>('button')).filter((button) => button.textContent === label);
+
+    await renderModQueue();
+    await act(async () => {
+      getButtons('approve')[0]?.click();
+      await Promise.resolve();
+    });
+    expect(testState.publishCommentModerationMock).toHaveBeenCalledTimes(1);
+
+    // A wrong challenge answer is terminal: hooks stops at 'failed' and does not retry on its own.
+    testState.moderationPublishState = 'failed';
+    await act(async () => {
+      await testState.moderationOptions.approve?.onChallengeVerification({ challengeSuccess: false, challengeErrors: { 0: 'wrong answer' } }, {});
+    });
+    await renderModQueue();
+
+    expect(getButtons('approve')).toHaveLength(1);
+    expect(getButtons('reject')).toHaveLength(1);
+    expect(container.querySelector('[data-testid="error-display"]')?.textContent).toContain('wrong answer');
+
+    await act(async () => {
+      getButtons('approve')[0]?.click();
+      await Promise.resolve();
+    });
+
+    expect(testState.publishCommentModerationMock).toHaveBeenCalledTimes(2);
+    expect(container.querySelector('[data-testid="loading-ellipsis"]')?.textContent).toBe('publishing');
+    expect(container.querySelector('[data-testid="error-display"]')).toBeNull();
+    confirmSpy.mockRestore();
+    alertSpy.mockRestore();
+  });
+
+  it('shows approve and reject again when the approval challenge answer fails to publish', async () => {
+    testState.feed = [
+      {
+        cid: 'pending-post',
+        communityAddress: 'music-posting.eth',
+        content: 'waiting for a mod',
+        number: 5,
+        pendingApproval: true,
+        timestamp: 90_000,
+      },
+    ];
+    const confirmSpy = vi.spyOn(window, 'confirm').mockImplementation(() => true);
+    const getButtons = (label: string) => Array.from(container.querySelectorAll<HTMLButtonElement>('button')).filter((button) => button.textContent === label);
+
+    await renderModQueue();
+    await act(async () => {
+      getButtons('approve')[0]?.click();
+      await Promise.resolve();
+    });
+    await setModerationPublishState('waiting-challenge-answers');
+    await act(async () => {
+      await testState.moderationOptions.approve?.onChallenge({ challenges: [] }, {});
+    });
+    expect(container.querySelector('[data-testid="loading-ellipsis"]')?.textContent).toBe('publishing');
+
+    // A challenge answer that fails to publish only moves the publishing state to 'failed'; no error or verification follows.
+    await setModerationPublishState('failed');
+
+    expect(container.querySelector('[data-testid="loading-ellipsis"]')).toBeNull();
+    expect(getButtons('approve')).toHaveLength(1);
+    expect(getButtons('reject')).toHaveLength(1);
+    expect(container.textContent).toContain('failed');
+    confirmSpy.mockRestore();
   });
 });

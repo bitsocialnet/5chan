@@ -1,8 +1,8 @@
 import { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Comment, usePublishCommentModeration } from '@bitsocial/bitsocial-react-hooks';
+import { type ChallengeVerification, Comment, usePublishCommentModeration } from '@bitsocial/bitsocial-react-hooks';
 import { approvePendingCommentModeration, rejectPendingCommentModeration } from '../lib/utils/pending-approval-moderation';
-import { alertChallengeVerificationFailed } from '../lib/utils/challenge-utils';
+import { alertChallengeVerificationFailed, getChallengeVerificationErrorMessages } from '../lib/utils/challenge-utils';
 import { formatErrorForDisplay } from '../lib/utils/error-utils';
 import useChallengesStore from '../stores/use-challenges-store';
 
@@ -17,8 +17,8 @@ export interface UsePendingCommentModerationActionsOptions {
   // When false, the underlying publishers are disabled by withholding the
   // community address (mirrors the mobile post page gating its actions).
   enabled?: boolean;
-  // Run after a successful approve/reject publish, inside the same try block as
-  // the publish call so a throw here is logged exactly like the publish path.
+  // Run once the community accepts the approve/reject (successful challenge
+  // verification), not when the publish is merely queued. A throw is logged.
   onApproveSuccess?: () => void | Promise<void>;
   onRejectSuccess?: () => void | Promise<void>;
 }
@@ -35,6 +35,23 @@ export interface PendingCommentModerationActions {
   errorMessage: string | undefined;
 }
 
+// The publish action resolves once the moderation is queued, before the community
+// accepts it, so success is only reported from a successful challenge verification.
+const runSuccessCallback = async (callback: (() => void | Promise<void>) | undefined) => {
+  try {
+    await callback?.();
+  } catch (e) {
+    console.error(e);
+  }
+};
+
+type ModerationAction = 'approve' | 'reject';
+
+// One approve/reject attempt, settled by its own publish callbacks. The hooks publishing
+// state is shared by every attempt and keeps the previous attempt's 'failed' until a retry
+// reaches the community, so it only counts once this attempt's own challenge has arrived.
+type ModerationAttempt = { action: ModerationAction; outcome: 'publishing' | 'succeeded' | 'failed'; error?: unknown; hasChallenge?: boolean };
+
 // Shared approve/reject state machine for pending-approval comment moderation.
 // Extracted from the duplicated copies in desktop posts, mobile posts, and the
 // mod queue so the riskiest moderation flow lives behind one tested boundary.
@@ -48,47 +65,50 @@ export const usePendingCommentModerationActions = ({
 }: UsePendingCommentModerationActionsOptions): PendingCommentModerationActions => {
   const { t } = useTranslation();
   const effectiveCommunityAddress = enabled ? communityAddress : undefined;
+  const [attempt, setAttempt] = useState<ModerationAttempt | null>(null);
+  const pendingActionRef = useRef<ModerationAction | null>(null);
 
-  const {
-    publishCommentModeration: approve,
-    state: approveState,
-    error: approveError,
-  } = usePublishCommentModeration({
+  // Callbacks only change the attempt of their own action, so a late callback cannot overwrite the other action.
+  const updateAttempt = (action: ModerationAction, nextAttempt: ModerationAttempt | null) => {
+    setAttempt((currentAttempt) => (currentAttempt?.action === action ? nextAttempt : currentAttempt));
+  };
+
+  const getModerationCallbacks = (action: ModerationAction, onSuccess: (() => void | Promise<void>) | undefined, errorLabel: string) => ({
+    onChallenge: async (...args: any) => {
+      // A challenge also arrives when hooks republishes a failed verification on its own.
+      updateAttempt(action, { action, outcome: 'publishing', hasChallenge: true });
+      // Closing the challenge ends this attempt, so the approve/reject buttons come back.
+      useChallengesStore.getState().addChallenge([...args, comment], () => updateAttempt(action, null));
+    },
+    onChallengeVerification: async (challengeVerification: ChallengeVerification, challengedComment: Comment) => {
+      alertChallengeVerificationFailed(challengeVerification, challengedComment);
+      if (challengeVerification?.challengeSuccess === true) {
+        updateAttempt(action, { action, outcome: 'succeeded' });
+        await runSuccessCallback(onSuccess);
+        return;
+      }
+      const errorMessages = getChallengeVerificationErrorMessages(challengeVerification);
+      updateAttempt(action, { action, outcome: 'failed', error: errorMessages.length > 0 ? new Error(errorMessages.join(', ')) : undefined });
+    },
+    onError: (error: Error & { details?: unknown }) => {
+      console.error(errorLabel, error, error.details);
+      updateAttempt(action, { action, outcome: 'failed', error });
+    },
+  });
+
+  const { publishCommentModeration: approve, state: approveState } = usePublishCommentModeration({
     commentCid,
     communityAddress: effectiveCommunityAddress,
     commentModeration: approvePendingCommentModeration,
-    onChallenge: async (...args: any) => {
-      useChallengesStore.getState().addChallenge([...args, comment]);
-    },
-    onChallengeVerification: async (challengeVerification, challengedComment) => {
-      alertChallengeVerificationFailed(challengeVerification, challengedComment);
-    },
-    onError: (error: Error & { details?: unknown }) => {
-      console.error('Approve failed:', error, error.details);
-    },
+    ...getModerationCallbacks('approve', onApproveSuccess, 'Approve failed:'),
   });
 
-  const {
-    publishCommentModeration: reject,
-    state: rejectState,
-    error: rejectError,
-  } = usePublishCommentModeration({
+  const { publishCommentModeration: reject, state: rejectState } = usePublishCommentModeration({
     commentCid,
     communityAddress: effectiveCommunityAddress,
     commentModeration: rejectPendingCommentModeration,
-    onChallenge: async (...args: any) => {
-      useChallengesStore.getState().addChallenge([...args, comment]);
-    },
-    onChallengeVerification: async (challengeVerification, challengedComment) => {
-      alertChallengeVerificationFailed(challengeVerification, challengedComment);
-    },
-    onError: (error: Error & { details?: unknown }) => {
-      console.error('Reject failed:', error, error.details);
-    },
+    ...getModerationCallbacks('reject', onRejectSuccess, 'Reject failed:'),
   });
-
-  const [initiatedAction, setInitiatedAction] = useState<'approve' | 'reject' | null>(null);
-  const pendingActionRef = useRef<'approve' | 'reject' | null>(null);
 
   const handleApprove = useCallback(async () => {
     if (pendingActionRef.current) return;
@@ -96,16 +116,15 @@ export const usePendingCommentModerationActions = ({
       return;
     }
     pendingActionRef.current = 'approve';
-    setInitiatedAction('approve');
+    setAttempt({ action: 'approve', outcome: 'publishing' });
     try {
       await approve();
-      await onApproveSuccess?.();
     } catch (e) {
       console.error(e);
     } finally {
       pendingActionRef.current = null;
     }
-  }, [approve, onApproveSuccess, t]);
+  }, [approve, t]);
 
   const handleReject = useCallback(async () => {
     if (pendingActionRef.current) return;
@@ -113,28 +132,22 @@ export const usePendingCommentModerationActions = ({
       return;
     }
     pendingActionRef.current = 'reject';
-    setInitiatedAction('reject');
+    setAttempt({ action: 'reject', outcome: 'publishing' });
     try {
       await reject();
-      await onRejectSuccess?.();
     } catch (e) {
       console.error(e);
     } finally {
       pendingActionRef.current = null;
     }
-  }, [reject, onRejectSuccess, t]);
+  }, [reject, t]);
 
-  const isApproving = initiatedAction === 'approve' && approveState !== 'succeeded' && approveState !== 'failed';
-  const isRejecting = initiatedAction === 'reject' && rejectState !== 'succeeded' && rejectState !== 'failed';
-  const isPublishing = isApproving || isRejecting;
-
-  const approveSucceeded = initiatedAction === 'approve' && approveState === 'succeeded';
-  const rejectSucceeded = initiatedAction === 'reject' && rejectState === 'succeeded';
-  const approveFailed = initiatedAction === 'approve' && approveState === 'failed';
-  const rejectFailed = initiatedAction === 'reject' && rejectState === 'failed';
-
-  const status: PendingModerationStatus = approveSucceeded ? 'approved' : rejectSucceeded ? 'rejected' : approveFailed || rejectFailed ? 'failed' : null;
-  const error = approveFailed ? approveError : rejectFailed ? rejectError : undefined;
+  // A challenge answer that fails to publish reaches no callback: pkc-js only moves the publishing state to 'failed'.
+  const attemptPublishingState = attempt?.action === 'approve' ? approveState : rejectState;
+  const outcome = attempt?.outcome === 'publishing' && attempt.hasChallenge && attemptPublishingState === 'failed' ? 'failed' : attempt?.outcome;
+  const isPublishing = outcome === 'publishing';
+  const status: PendingModerationStatus = outcome === 'succeeded' ? (attempt?.action === 'approve' ? 'approved' : 'rejected') : outcome === 'failed' ? 'failed' : null;
+  const error = attempt?.outcome === 'failed' ? attempt.error : undefined;
   const errorMessage = formatErrorForDisplay(error);
 
   return { handleApprove, handleReject, isPublishing, status, error, errorMessage };

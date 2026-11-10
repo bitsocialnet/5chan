@@ -388,22 +388,25 @@ const ModQueueActions = ({ status, error, errorMessage, isPublishing, handleAppr
       </span>
     );
   }
-  if (status === 'failed') {
-    const content = displayError ? (
-      <ErrorDisplay error={displayError} displayMessage={t('failed')} inline={true} showImmediately={true} />
-    ) : (
-      <span className={`${styles.button} ${styles.reject}`}>{t('failed')}</span>
-    );
-    return variant === 'card' ? <div className={styles.cardActions}>{content}</div> : content;
-  }
   if (isPublishing) {
     const content = <LoadingEllipsis string={t('publishing')} />;
     return variant === 'card' ? <div className={styles.cardActions}>{content}</div> : content;
   }
 
+  // A failed approve or reject keeps the buttons next to its error so the moderator can try again.
+  const failedNotice =
+    status === 'failed' ? (
+      displayError ? (
+        <ErrorDisplay error={displayError} displayMessage={t('failed')} inline={true} showImmediately={true} />
+      ) : (
+        <span className={`${styles.button} ${styles.reject}`}>{t('failed')}</span>
+      )
+    ) : null;
+
   const buttons =
     variant === 'row' ? (
       <div className={styles.actionButtons}>
+        {failedNotice && <>{failedNotice} </>}
         <span className={styles.buttonWrapper}>
           [
           <button type='button' className={styles.button} onClick={handleApprove} disabled={isPublishing}>
@@ -430,6 +433,7 @@ const ModQueueActions = ({ status, error, errorMessage, isPublishing, handleAppr
       </div>
     ) : (
       <div className={styles.cardActions}>
+        {failedNotice}
         <button type='button' className={`button ${styles.cardApproveButton}`} onClick={handleApprove} disabled={isPublishing}>
           {t('approve')}
         </button>

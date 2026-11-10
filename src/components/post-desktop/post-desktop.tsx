@@ -153,15 +153,16 @@ const PendingModerationActions = ({ cid, communityAddress, post }: { cid: string
         <span className={styles.modQueueStatusApproved}>{t('approved')}</span>
       ) : pendingStatus === 'rejected' ? (
         <span className={styles.modQueueStatusRejected}>{t('rejected')}</span>
-      ) : pendingStatus === 'failed' ? (
-        <span className={styles.modQueueStatusRejected} title={pendingErrorMessage}>
-          {t('failed')}
-          {pendingErrorMessage ? `: ${pendingErrorMessage}` : ''}
-        </span>
       ) : isPublishingPending ? (
         <LoadingEllipsis string={t('publishing')} />
       ) : (
         <>
+          {pendingStatus === 'failed' && (
+            <span className={styles.modQueueStatusRejected} title={pendingErrorMessage}>
+              {t('failed')}
+              {pendingErrorMessage ? `: ${pendingErrorMessage}` : ''}
+            </span>
+          )}
           <span className={styles.modQueueButtonWrapper}>
             [
             <button type='button' className={styles.modQueueActionButton} onClick={handlePendingApprove} disabled={isPublishingPending}>
@@ -477,15 +478,16 @@ const PostInfo = ({
                   <span className={styles.modQueueStatusRejected}>{t('rejected')}</span>
                   {modQueueRemoveButton}
                 </>
-              ) : modQueueStatus === 'failed' ? (
-                <span className={styles.modQueueStatusRejected} title={modQueueErrorMessage}>
-                  {t('failed')}
-                  {modQueueErrorMessage ? `: ${modQueueErrorMessage}` : ''}
-                </span>
               ) : isPublishing ? (
                 <LoadingEllipsis string={t('publishing')} />
               ) : (
                 <>
+                  {modQueueStatus === 'failed' && (
+                    <span className={styles.modQueueStatusRejected} title={modQueueErrorMessage}>
+                      {t('failed')}
+                      {modQueueErrorMessage ? `: ${modQueueErrorMessage}` : ''}
+                    </span>
+                  )}
                   {isReply && modQueueThreadRoute && (
                     <span className={styles.modQueueButtonWrapper}>
                       [

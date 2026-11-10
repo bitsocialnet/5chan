@@ -384,15 +384,16 @@ const PostInfoAndMedia = ({
                   <span className={styles.modQueueStatusApproved}>{t('approved')}</span>
                 ) : pendingStatus === 'rejected' ? (
                   <span className={styles.modQueueStatusRejected}>{t('rejected')}</span>
-                ) : pendingStatus === 'failed' ? (
-                  <span className={styles.modQueueStatusRejected} title={pendingErrorMessage}>
-                    {t('failed')}
-                    {pendingErrorMessage ? `: ${pendingErrorMessage}` : ''}
-                  </span>
                 ) : isPublishingPending ? (
                   <LoadingEllipsis string={t('publishing')} />
                 ) : (
                   <>
+                    {pendingStatus === 'failed' && (
+                      <span className={styles.modQueueStatusRejected} title={pendingErrorMessage}>
+                        {t('failed')}
+                        {pendingErrorMessage ? `: ${pendingErrorMessage}` : ''}
+                      </span>
+                    )}
                     <button type='button' className={`button ${styles.approveButton}`} onClick={handlePendingApprove} disabled={isPublishingPending}>
                       {t('approve')}
                     </button>
@@ -930,15 +931,16 @@ const PostMobile = ({
                           <span className={styles.modQueueStatusRejected}>{t('rejected')}</span>
                           {modQueueRemoveButton}
                         </>
-                      ) : modQueueStatus === 'failed' ? (
-                        <span className={styles.modQueueStatusRejected} title={modQueueErrorMessage}>
-                          {t('failed')}
-                          {modQueueErrorMessage ? `: ${modQueueErrorMessage}` : ''}
-                        </span>
                       ) : isPublishing ? (
                         <LoadingEllipsis string={t('publishing')} />
                       ) : (
                         <>
+                          {modQueueStatus === 'failed' && (
+                            <span className={styles.modQueueStatusRejected} title={modQueueErrorMessage}>
+                              {t('failed')}
+                              {modQueueErrorMessage ? `: ${modQueueErrorMessage}` : ''}
+                            </span>
+                          )}
                           {isReply && modQueueThreadRoute && (
                             <Link to={modQueueThreadRoute} state={modQueueThreadRouteState} className={`button ${styles.approveButton}`}>
                               {t('view_thread')}
