@@ -15,6 +15,7 @@ import {
   type DirectoriesData,
   type DirectoryDefaultsData,
 } from '../use-directories';
+import { getFallbackDirectoriesData } from '../../lib/utils/directories';
 import { TRASH_BOARD_ADDRESS, TRASH_BOARD_CODE, TRASH_BOARD_PUBLIC_KEY, TRASH_BOARD_TITLE } from '../../lib/special-boards';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -65,6 +66,26 @@ const HookHarness = ({ address = 'music-posting.eth' }: { address?: string }) =>
       metadata,
     };
   }, [addresses, directory, directories, directoryDefaults, metadata, state]);
+
+  return null;
+};
+
+type AppSnapshot = {
+  state: ReturnType<typeof useDirectoriesState>;
+  directory: ReturnType<typeof useDirectoryByAddress>;
+};
+
+let latestAppSnapshot: AppSnapshot | null = null;
+
+// No app component mounts useDirectoriesMetadata, which runs a GitHub refresh of its own, so the
+// refresh-scheduling tests leave it out to see only what the shared store does.
+const AppHookHarness = ({ address }: { address: string }) => {
+  const state = useDirectoriesState();
+  const directory = useDirectoryByAddress(address);
+
+  React.useLayoutEffect(() => {
+    latestAppSnapshot = { state, directory };
+  }, [directory, state]);
 
   return null;
 };
@@ -150,6 +171,19 @@ const renderHarness = (address?: string) => {
   });
 };
 
+const renderAppHarness = (address: string) => {
+  act(() => {
+    root.render(createElement(AppHookHarness, { address }));
+  });
+};
+
+const remountAppHarness = (address: string) => {
+  act(() => {
+    root.render(null);
+  });
+  renderAppHarness(address);
+};
+
 const expectLatestSnapshot = (): Snapshot => {
   expect(latestSnapshot).not.toBeNull();
   return latestSnapshot as Snapshot;
@@ -159,6 +193,7 @@ describe('use-directories', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     latestSnapshot = null;
+    latestAppSnapshot = null;
     __resetDirectoriesModuleStateForTests();
     localStorage.clear();
     fetchMock = vi.fn();
@@ -445,6 +480,95 @@ describe('use-directories', () => {
     expect(latestSnapshot?.directoryDefaults.description).toBe('remote defaults');
     expect(latestSnapshot?.directoryDefaults.directories.mu.title).toBe('/mu/ - Cached Remote Music');
     expect(warnSpy.mock.calls.some((call: ConsoleWarnCall) => String(call[0]).includes('Failed to fetch directories'))).toBe(true);
+  });
+
+  it('reports a failed GitHub refresh and retries it on a later mount once the retry delay has passed', async () => {
+    const now = vi.spyOn(Date, 'now').mockReturnValue(1_000_000);
+    fetchMock.mockRejectedValue(new Error('network down'));
+
+    renderAppHarness('music-posting.bso');
+    await flushEffects(8);
+
+    const failedFetchCount = fetchMock.mock.calls.length;
+    expect(failedFetchCount).toBeGreaterThan(0);
+    expect(latestAppSnapshot?.state.loading).toBe(false);
+    expect(latestAppSnapshot?.state.error?.message).toBe('network down');
+
+    mockDirectoryListFetches({ mu: { address: 'music-posting.bso', publicKey: 'music-public-key', title: '/mu/ - Music' } });
+    remountAppHarness('music-posting.bso');
+    await flushEffects(8);
+    // Still inside the retry delay, so remounting does not hammer GitHub.
+    expect(fetchMock).toHaveBeenCalledTimes(failedFetchCount);
+
+    now.mockReturnValue(1_000_000 + 61_000);
+    remountAppHarness('music-posting.bso');
+    await flushEffects(12);
+
+    expect(fetchMock.mock.calls.length).toBeGreaterThan(failedFetchCount);
+    expect(latestAppSnapshot?.state.error).toBeNull();
+    expect(latestAppSnapshot?.state.communities.find((community) => community.address === 'music-posting.bso')?.publicKey).toBe('music-public-key');
+    now.mockRestore();
+  });
+
+  it('refreshes directories again on a later mount once the last successful fetch is older than the cache max age', async () => {
+    const now = vi.spyOn(Date, 'now').mockReturnValue(1_000_000);
+    mockDirectoryListFetches({ mu: { address: 'music-posting.bso', publicKey: 'first-key', title: '/mu/ - Music' } });
+
+    renderAppHarness('music-posting.bso');
+    await flushEffects(12);
+    const firstFetchCount = fetchMock.mock.calls.length;
+    expect(latestAppSnapshot?.state.communities.find((community) => community.address === 'music-posting.bso')?.publicKey).toBe('first-key');
+
+    mockDirectoryListFetches({ mu: { address: 'music-posting.bso', publicKey: 'second-key', title: '/mu/ - Music' } });
+    now.mockReturnValue(1_000_000 + 60 * 60 * 1000);
+    remountAppHarness('music-posting.bso');
+    await flushEffects(12);
+
+    expect(fetchMock.mock.calls.length).toBeGreaterThan(firstFetchCount);
+    expect(latestAppSnapshot?.state.communities.find((community) => community.address === 'music-posting.bso')?.publicKey).toBe('second-key');
+    now.mockRestore();
+  });
+
+  it('falls back to an expired localStorage copy instead of the vendored lists when GitHub refresh fails', async () => {
+    const vendored = getFallbackDirectoriesData();
+    const expiredData: DirectoriesData = {
+      title: 'Expired directories',
+      description: 'expired description',
+      createdAt: 1,
+      updatedAt: vendored.updatedAt + 1,
+      communities: [{ address: 'music-expired.bso', title: '/mu/ - Expired Music', directoryCode: 'mu', nsfw: false }],
+    };
+    localStorage.setItem(LOCALSTORAGE_KEY, JSON.stringify(expiredData));
+    localStorage.setItem(LOCALSTORAGE_TIMESTAMP_KEY, String(Date.now() - 2 * 60 * 60 * 1000));
+    fetchMock.mockRejectedValue(new Error('network down'));
+
+    renderAppHarness('music-expired.bso');
+    await flushEffects(8);
+
+    expect(latestAppSnapshot?.state.loading).toBe(false);
+    expect(latestAppSnapshot?.state.communities.map((community) => community.address)).toEqual(['music-expired.bso']);
+    expect(latestAppSnapshot?.directory?.address).toBe('music-expired.bso');
+  });
+
+  it('keeps the vendored lists when the expired localStorage copy is older than them and GitHub refresh fails', async () => {
+    const vendored = getFallbackDirectoriesData();
+    const expiredData: DirectoriesData = {
+      title: 'Expired directories',
+      description: 'expired description',
+      createdAt: 1,
+      updatedAt: vendored.updatedAt - 1,
+      communities: [{ address: 'music-expired.bso', title: '/mu/ - Expired Music', directoryCode: 'mu', nsfw: false }],
+    };
+    localStorage.setItem(LOCALSTORAGE_KEY, JSON.stringify(expiredData));
+    localStorage.setItem(LOCALSTORAGE_TIMESTAMP_KEY, String(Date.now() - 2 * 60 * 60 * 1000));
+    fetchMock.mockRejectedValue(new Error('network down'));
+
+    renderAppHarness('music-expired.bso');
+    await flushEffects(8);
+
+    expect(latestAppSnapshot?.state.loading).toBe(false);
+    expect(latestAppSnapshot?.state.communities).toEqual(vendored.communities);
+    expect(latestAppSnapshot?.directory).toBeUndefined();
   });
 
   it('clears invalid recent cache entries and falls back to vendored data when GitHub refresh fails', async () => {

@@ -88,16 +88,20 @@ const getDirectoryDefaultsFromLocalStorage = (): DirectoryDefaultsData | null =>
   return null;
 };
 
-const getFromLocalStorage = (): DirectoriesData | null => {
+const getFromLocalStorage = ({ acceptExpired = false } = {}): DirectoriesData | null => {
   try {
     const cached = localStorage.getItem(LOCALSTORAGE_KEY);
     const timestamp = localStorage.getItem(LOCALSTORAGE_TIMESTAMP_KEY);
     if (cached && timestamp) {
-      const age = Date.now() - parseInt(timestamp, 10);
-      if (age < CACHE_MAX_AGE_MS) {
+      const isExpired = Date.now() - parseInt(timestamp, 10) >= CACHE_MAX_AGE_MS;
+      if (!isExpired || acceptExpired) {
         const parsed = JSON.parse(cached);
         const normalized = normalizeDirectoriesData(parsed);
         if (normalized) {
+          // An expired copy only beats the build-time lists when an app update did not ship newer ones.
+          if (isExpired && normalized.updatedAt < getFallbackDirectoriesData().updatedAt) {
+            return null;
+          }
           cacheDefaults ??= getDirectoryDefaultsFromLocalStorage();
           return normalized;
         }
@@ -274,47 +278,51 @@ const setDirectoriesCommunities = (data: DirectoriesData) => {
   useDirectoriesStore.setState({ communities: data.communities, loading: false, error: null });
 };
 
-const hydrateDirectoriesOnce = () => {
+const refreshDirectoriesFromGitHub = async () => {
+  try {
+    // Refresh from GitHub when the session cache is stale, without refetching for every hook mount.
+    const directories = await fetchDirectoriesFromGitHubDeduped();
+    if (directories) {
+      setDirectoriesCommunities(directories);
+    } else if (!cacheCommunities) {
+      setDirectoriesCommunities(getFallbackDirectoriesData());
+    }
+  } catch (e) {
+    console.warn('Failed to fetch directories from GitHub:', e);
+    cacheCommunities ??= (getFromLocalStorage({ acceptExpired: true }) ?? getFallbackDirectoriesData()).communities;
+    useDirectoriesStore.setState({ communities: cacheCommunities, loading: false, error: e instanceof Error ? e : new Error(String(e)) });
+  }
+};
+
+const hydrateDirectories = () => {
   if (directoriesHydrationStarted) {
+    // Later mounts retry a failed refresh after FETCH_RETRY_DELAY_MS and renew data older than
+    // CACHE_MAX_AGE_MS; otherwise this is only a timestamp check.
+    if (!inFlightGitHubFetch && shouldRefreshFromGitHub()) {
+      void refreshDirectoriesFromGitHub();
+    }
     return;
   }
   directoriesHydrationStarted = true;
 
-  void (async () => {
-    if (cacheCommunities) {
-      useDirectoriesStore.setState({ communities: cacheCommunities, loading: false, error: null });
-    } else {
-      // Check localStorage first
-      const cachedData = getFromLocalStorage();
-      if (cachedData) {
-        setDirectoriesCommunities(cachedData);
-      }
+  if (cacheCommunities) {
+    useDirectoriesStore.setState({ communities: cacheCommunities, loading: false, error: null });
+  } else {
+    // Check localStorage first
+    const cachedData = getFromLocalStorage();
+    if (cachedData) {
+      setDirectoriesCommunities(cachedData);
     }
+  }
 
-    try {
-      // Refresh from GitHub when the session cache is stale, without refetching for every hook mount.
-      const directories = await fetchDirectoriesFromGitHubDeduped();
-      if (directories) {
-        setDirectoriesCommunities(directories);
-      } else if (!cacheCommunities) {
-        setDirectoriesCommunities(getFallbackDirectoriesData());
-      }
-    } catch (e) {
-      console.warn('Failed to fetch directories from GitHub:', e);
-      if (cacheCommunities) {
-        useDirectoriesStore.setState({ communities: cacheCommunities, loading: false, error: null });
-      } else {
-        setDirectoriesCommunities(getFallbackDirectoriesData());
-      }
-    }
-  })();
+  void refreshDirectoriesFromGitHub();
 };
 
 export const useDirectories = () => {
   const communities = useDirectoriesStore((state) => state.communities);
 
   // oxlint-disable-next-line react-hooks/exhaustive-deps -- the analyzer walks into the module-level function and reports its locals
-  useEffect(hydrateDirectoriesOnce, []);
+  useEffect(hydrateDirectories, []);
 
   // Prefer the module-level cache so consuming hooks keep a stable reference for memoization.
   return cacheCommunities || communities || getFallbackDirectoriesData().communities;
@@ -334,7 +342,7 @@ export const useDirectoriesState = (): DirectoriesState => {
   const error = useDirectoriesStore((state) => state.error);
 
   // oxlint-disable-next-line react-hooks/exhaustive-deps -- the analyzer walks into the module-level function and reports its locals
-  useEffect(hydrateDirectoriesOnce, []);
+  useEffect(hydrateDirectories, []);
 
   return useMemo(() => ({ communities, loading, error }), [communities, loading, error]);
 };
