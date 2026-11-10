@@ -39,6 +39,8 @@ describe('downloadAndInstallUpdate', () => {
   const originalPlatform = Object.getOwnPropertyDescriptor(process, 'platform');
   const originalExecPath = process.execPath;
   const originalAppImage = process.env.APPIMAGE;
+  // Root can write anywhere, so a read-only folder cannot be simulated.
+  const canSimulateReadOnlyFolder = process.getuid?.() !== 0;
   let workDir;
   let installDir;
 
@@ -143,6 +145,40 @@ describe('downloadAndInstallUpdate', () => {
     expect(fs.readFileSync(scriptPath, 'utf8')).toContain('STAGED_TARGET="${TARGET_APP}.new"');
   });
 
+  it.skipIf(!canSimulateReadOnlyFolder)('refuses a macOS update when the app folder is not writable, without quitting', async () => {
+    useMacApp();
+    fs.chmodSync(installDir, 0o555);
+
+    await expect(downloadAndInstallUpdate(serveUpdate('5chan-darwin-arm64-v9.9.9.zip', 'zip'))).rejects.toThrow(/not writable/);
+
+    expect(h.spawn).not.toHaveBeenCalled();
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    expect(app.quit).not.toHaveBeenCalled();
+  });
+
+  it.skipIf(!canSimulateReadOnlyFolder)('refuses an AppImage update when the AppImage folder is not writable, without quitting', async () => {
+    useAppImage();
+    fs.chmodSync(installDir, 0o555);
+
+    await expect(downloadAndInstallUpdate(serveUpdate('5chan-9.9.9.AppImage', fakeAppImage('new')))).rejects.toThrow(/not writable/);
+
+    expect(h.spawn).not.toHaveBeenCalled();
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    expect(app.quit).not.toHaveBeenCalled();
+  });
+
+  it('reopens the current macOS app when copying the update next to it fails', async () => {
+    const appBundlePath = useMacApp();
+    await installUpdate(serveUpdate('5chan-darwin-arm64-v9.9.9.zip', 'zip'));
+
+    const { status, opened } = runMacHelper({ dittoSucceeds: false });
+
+    expect(status).not.toBe(0);
+    expect(opened).toEqual([`-n ${appBundlePath}`]);
+    expect(fs.readFileSync(path.join(appBundlePath, 'Contents', 'version'), 'utf8')).toBe('old');
+    expect(fs.existsSync(`${appBundlePath}.new`)).toBe(false);
+  });
+
   it('opens the new macOS app once after replacing the current one', async () => {
     const appBundlePath = useMacApp();
     await installUpdate(serveUpdate('5chan-darwin-arm64-v9.9.9.zip', 'zip'));
@@ -153,6 +189,18 @@ describe('downloadAndInstallUpdate', () => {
     expect(opened).toEqual([`-n ${appBundlePath}`]);
     expect(fs.readFileSync(path.join(appBundlePath, 'Contents', 'version'), 'utf8')).toBe('new');
     expect(fs.existsSync(`${appBundlePath}.old`)).toBe(false);
+  });
+
+  it('starts the current AppImage again when replacing it fails', async () => {
+    useAppImage();
+    await installUpdate(serveUpdate('5chan-9.9.9.AppImage', fakeAppImage('new')));
+    // Make the swap fail: the downloaded AppImage is gone by the time the helper runs.
+    fs.rmSync(helperCall()[1][2]);
+
+    const { status } = runLinuxHelper();
+
+    expect(status).not.toBe(0);
+    expect(await waitForLaunches()).toEqual(['old']);
   });
 
   it('starts the new AppImage once after replacing the current one', async () => {
