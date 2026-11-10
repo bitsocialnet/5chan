@@ -5,7 +5,7 @@ import { isAllView, isModView, isNotFoundView, isSearchView, isSubscriptionsView
 import useThemeStore from '../stores/use-theme-store';
 import { useDirectories } from './use-directories';
 import { useResolvedCommunityAddress } from './use-resolved-community-address';
-import useSpecialThemeStore from '../stores/use-special-theme-store';
+import useSpecialThemeStore, { selectIsSpecialThemeEnabled } from '../stores/use-special-theme-store';
 import useThreadLiveUpdatesStore from '../stores/use-thread-live-updates-store';
 import { getActiveSpecialTheme, getSpecialThemeClass } from '../lib/utils/time-utils';
 import { getSpecialBoardByAddress } from '../lib/special-boards';
@@ -41,7 +41,8 @@ const useTheme = ({ applyDocumentEffects = false }: UseThemeOptions = {}): [stri
   const pendingPostCommunityAddress = getCommentCommunityAddress(pendingPost);
   const routePendingPostCommunityAddress = getCommentCommunityAddress(getPendingPostRoutePost(location.state));
 
-  const { isEnabled, setIsEnabled } = useSpecialThemeStore();
+  const isEnabled = useSpecialThemeStore(selectIsSpecialThemeEnabled);
+  const setIsEnabled = useSpecialThemeStore((state) => state.setIsEnabled);
 
   const setThemeStore = useThemeStore((state) => state.setTheme);
   const themes = useThemeStore((state) => state.themes);
@@ -72,10 +73,8 @@ const useTheme = ({ applyDocumentEffects = false }: UseThemeOptions = {}): [stri
   useEffect(() => {
     if (activeSpecialTheme && isSpecialThemeUnsetOnBoard) {
       setIsEnabled(true);
-    } else if (!activeSpecialTheme && isEnabled) {
-      setIsEnabled(false);
     }
-  }, [activeSpecialTheme, isEnabled, isSpecialThemeUnsetOnBoard, setIsEnabled]);
+  }, [activeSpecialTheme, isSpecialThemeUnsetOnBoard, setIsEnabled]);
 
   const currentTheme = useMemo(() => {
     if (location.pathname === '/') {

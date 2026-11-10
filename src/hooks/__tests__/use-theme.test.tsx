@@ -14,6 +14,7 @@ const testState = vi.hoisted(() => ({
   boardIdentifier: 'trash' as string | undefined,
   directories: [] as Array<{ address: string; nsfw?: boolean }>,
   isSpecialThemeEnabled: false as boolean | null,
+  specialThemeEvent: null as string | null,
   locationPathname: '/trash',
   locationState: null as { pendingPost?: { communityAddress?: string } } | null,
   liveCommunity: undefined as { features?: { safeForWork?: unknown } } | undefined,
@@ -53,11 +54,12 @@ vi.mock('../use-resolved-community-address', () => ({
   useResolvedCommunityAddress: () => testState.resolvedAddress,
 }));
 
-vi.mock('../../stores/use-special-theme-store', () => ({
-  default: () => ({
-    isEnabled: testState.isSpecialThemeEnabled,
-    setIsEnabled: testState.setIsEnabledMock,
-  }),
+vi.mock('../../stores/use-special-theme-store', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../stores/use-special-theme-store')>()),
+  default: <T,>(selector?: (state: { isEnabled: boolean | null; event: string | null; setIsEnabled: (value: boolean) => void }) => T) => {
+    const state = { isEnabled: testState.isSpecialThemeEnabled, event: testState.specialThemeEvent, setIsEnabled: testState.setIsEnabledMock };
+    return selector ? selector(state) : state;
+  },
 }));
 
 vi.mock('../../stores/use-theme-store', () => ({
@@ -75,6 +77,7 @@ vi.mock('../../lib/update-favicon', () => ({
 
 vi.mock('../../lib/utils/time-utils', () => ({
   getActiveSpecialTheme: () => testState.activeSpecialTheme,
+  getActiveSpecialThemeEvent: () => (testState.activeSpecialTheme ? `${testState.activeSpecialTheme}-2026` : null),
   getSpecialThemeClass: (specialTheme: string) => (specialTheme === 'halloween' ? 'spooky' : 'tomorrow'),
 }));
 
@@ -102,6 +105,7 @@ describe('useTheme', () => {
     testState.boardIdentifier = TRASH_BOARD_CODE;
     testState.directories = [];
     testState.isSpecialThemeEnabled = false;
+    testState.specialThemeEvent = null;
     testState.locationPathname = `/${TRASH_BOARD_CODE}`;
     testState.locationState = null;
     testState.liveCommunity = undefined;
@@ -270,6 +274,7 @@ describe('useTheme', () => {
   it('marks a worksafe board under the Halloween theme, like 4chan', async () => {
     testState.activeSpecialTheme = 'halloween';
     testState.isSpecialThemeEnabled = true;
+    testState.specialThemeEvent = 'halloween-2026';
     testState.sfw = true;
 
     await renderHook();
@@ -292,6 +297,29 @@ describe('useTheme', () => {
     expect(testState.setIsEnabledMock).toHaveBeenCalledWith(true);
   });
 
+  it('paints Halloween on a board in a session left open since a theme was picked before it', async () => {
+    // StyleSelector saved the pick as turning the seasonal theme off, outside any event.
+    testState.activeSpecialTheme = 'halloween';
+    testState.isSpecialThemeEnabled = false;
+    testState.specialThemeEvent = null;
+
+    await renderHook();
+
+    expect(latestValue?.[0]).toBe('spooky');
+    expect(testState.setIsEnabledMock).toHaveBeenCalledWith(true);
+  });
+
+  it('keeps a Halloween opt-out off for the rest of that Halloween', async () => {
+    testState.activeSpecialTheme = 'halloween';
+    testState.isSpecialThemeEnabled = false;
+    testState.specialThemeEvent = 'halloween-2026';
+
+    await renderHook();
+
+    expect(latestValue?.[0]).toBe('tomorrow');
+    expect(testState.setIsEnabledMock).not.toHaveBeenCalled();
+  });
+
   it('leaves an unset Halloween theme off in multiboard views until a board turns it on', async () => {
     testState.activeSpecialTheme = 'halloween';
     testState.isSpecialThemeEnabled = null;
@@ -308,6 +336,7 @@ describe('useTheme', () => {
   it('marks worksafe boards only under the Halloween theme', async () => {
     testState.activeSpecialTheme = 'christmas';
     testState.isSpecialThemeEnabled = true;
+    testState.specialThemeEvent = 'christmas-2026';
     testState.sfw = true;
 
     await renderHook();

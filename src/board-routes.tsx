@@ -10,7 +10,7 @@ import { getActiveSpecialTheme } from './lib/utils/time-utils';
 import { isAllView, isCatalogView, isModView, isSubscriptionsView } from './lib/utils/view-utils';
 import useCreateBoardModalStore from './stores/use-create-board-modal-store';
 import usePendingPostNavigationStore from './stores/use-pending-post-navigation-store';
-import useSpecialThemeStore, { shouldShowSnow } from './stores/use-special-theme-store';
+import useSpecialThemeStore, { selectIsSpecialThemeEnabled, shouldShowSnow } from './stores/use-special-theme-store';
 import useIsMobile from './hooks/use-is-mobile';
 import { useDirectories } from './hooks/use-directories';
 import { useResolvedCommunityAddress, useResolvedDirectoryBoardPath } from './hooks/use-resolved-community-address';
@@ -97,7 +97,7 @@ export const BoardLayout = () => {
   const shouldRenderBoardBlotter = !isOnArchiveRoute && !isOnDirectoryRoute && !isOnSearchRoute && !isOnModQueueRoute;
   const isInCatalogView = isCatalogView(pathname, params);
   // Christmas snow
-  const { isEnabled: isSpecialEnabled } = useSpecialThemeStore();
+  const isSpecialEnabled = useSpecialThemeStore(selectIsSpecialThemeEnabled);
   useEffect(() => {
     if (isSpecialEnabled && shouldShowSnow() && !isMobile) {
       // 4chan's count: 50 to 99 flakes, picked on each page load.

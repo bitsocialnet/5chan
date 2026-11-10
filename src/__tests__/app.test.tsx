@@ -123,9 +123,8 @@ vi.mock('../stores/use-reply-modal-store', () => ({
 }));
 
 vi.mock('../stores/use-special-theme-store', () => ({
-  default: () => ({
-    isEnabled: testState.isSpecialEnabled,
-  }),
+  default: <T,>(selector: (state: { isEnabled: boolean | null }) => T) => selector({ isEnabled: testState.isSpecialEnabled }),
+  selectIsSpecialThemeEnabled: (state: { isEnabled: boolean | null }) => state.isEnabled,
   shouldShowSnow: () => testState.shouldShowSnow,
 }));
 
