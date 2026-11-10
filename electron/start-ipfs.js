@@ -95,7 +95,11 @@ const spawnAsync = (...args) =>
       // Drain to avoid backpressure without logging
       spawnedProcess.stdout.on('data', () => {});
     }
-    spawnedProcess.on('error', (data) => console.error(data.toString?.() || String(data)));
+    // A binary that cannot be spawned (EACCES, ENOENT) emits 'error' and never 'exit'
+    spawnedProcess.on('error', (error) => {
+      console.error(error.toString?.() || String(error));
+      reject(error);
+    });
   });
 
 const startIpfs = async () => {
@@ -151,7 +155,10 @@ const startIpfs = async () => {
           resolve();
         }
       });
-      ipfsProcess.on('error', (err) => console.error(err?.toString?.() || String(err)));
+      ipfsProcess.on('error', (err) => {
+        console.error(err?.toString?.() || String(err));
+        reject(err);
+      });
       ipfsProcess.on('exit', () => {
         console.error(`ipfs process with pid ${ipfsProcess.pid} exited`);
         reject(Error(lastError));
