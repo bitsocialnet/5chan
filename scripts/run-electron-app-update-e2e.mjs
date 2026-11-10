@@ -31,6 +31,26 @@ const buildPackagedApp = async ({ version, fixturePort }) => {
   return packagedAppPath;
 };
 
+// The updater relaunches the app with `open -n`, so the new process belongs to launchd rather than
+// Playwright and outlives this script. Stop every process running from the installed bundle (the
+// pattern matches the app and its helpers, not the install script) before its workspace is deleted.
+const stopInstalledApp = async (installedAppPath) => {
+  const pattern = `${installedAppPath}/Contents/`;
+  const isRunning = () =>
+    runCommand('/usr/bin/pgrep', ['-f', pattern], { captureOutput: true }).then(
+      () => true,
+      () => false,
+    );
+  if (!(await isRunning())) {
+    return;
+  }
+
+  await runCommand('/usr/bin/pkill', ['-f', pattern]).catch(() => undefined);
+  await waitFor(async () => !(await isRunning()), { timeoutMs: 10000, intervalMs: 500, description: 'the installed app to quit' }).catch(() =>
+    runCommand('/usr/bin/pkill', ['-KILL', '-f', pattern]).catch(() => undefined),
+  );
+};
+
 const zipMacApp = async (appPath, zipPath) => {
   await fs.promises.rm(zipPath, { force: true });
   await runCommand('/usr/bin/ditto', ['-c', '-k', '--sequesterRsrc', '--keepParent', appPath, zipPath]);
@@ -43,6 +63,7 @@ const main = async () => {
 
   const workspace = await createTempWorkspace('electron-update-e2e');
   const fixtureServer = await startFixtureServer();
+  const installedAppPath = path.join(workspace, 'installed', '5chan.app');
 
   try {
     const packagedOldAppPath = await buildPackagedApp({
@@ -50,7 +71,6 @@ const main = async () => {
       fixturePort: fixtureServer.port,
     });
 
-    const installedAppPath = path.join(workspace, 'installed', '5chan.app');
     await copyPath(packagedOldAppPath, installedAppPath);
 
     const packagedNewAppPath = await buildPackagedApp({
@@ -139,6 +159,7 @@ const main = async () => {
     logStep(`electron update e2e passed: ${installedAppPath} now contains version ${NEW_VERSION}`);
   } finally {
     await sleep(2000);
+    await stopInstalledApp(installedAppPath);
     await fixtureServer.close();
     await fs.promises.rm(workspace, { recursive: true, force: true }).catch(() => undefined);
   }
