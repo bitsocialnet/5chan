@@ -18,6 +18,7 @@ const testState = vi.hoisted(() => ({
   },
   navigateMock: vi.fn(),
   setSearchFilterMock: vi.fn(),
+  useRealDebounce: false,
 }));
 
 vi.mock('react-i18next', () => ({
@@ -46,13 +47,19 @@ vi.mock('../../../stores/use-catalog-filters-store', () => ({
   }),
 }));
 
-vi.mock('lodash/debounce', () => ({
-  default: <T extends (...args: any[]) => void>(fn: T) => {
-    const wrapped = ((...args: Parameters<T>) => fn(...args)) as T & { cancel: () => void };
-    wrapped.cancel = () => testState.debounceCancelMock();
-    return wrapped;
-  },
-}));
+vi.mock('lodash/debounce', async () => {
+  const { default: actualDebounce } = await vi.importActual<{ default: typeof import('lodash/debounce') }>('lodash/debounce');
+  return {
+    default: <T extends (...args: any[]) => void>(fn: T, wait?: number) => {
+      if (testState.useRealDebounce) {
+        return actualDebounce(fn, wait);
+      }
+      const wrapped = ((...args: Parameters<T>) => fn(...args)) as T & { cancel: () => void };
+      wrapped.cancel = () => testState.debounceCancelMock();
+      return wrapped;
+    },
+  };
+});
 
 let container: HTMLDivElement;
 let root: Root;
@@ -99,6 +106,7 @@ describe('CatalogSearch', () => {
     };
     testState.navigateMock.mockReset();
     testState.setSearchFilterMock.mockReset();
+    testState.useRealDebounce = false;
 
     container = document.createElement('div');
     document.body.appendChild(container);
@@ -108,6 +116,7 @@ describe('CatalogSearch', () => {
   afterEach(() => {
     act(() => root.unmount());
     container.remove();
+    vi.useRealTimers();
   });
 
   it('opens from a legacy search hash, seeds the filter, and canonicalizes the URL', async () => {
@@ -230,5 +239,57 @@ describe('CatalogSearch', () => {
     expect(testState.clearSearchFilterMock).toHaveBeenCalled();
     expect(testState.navigateMock).toHaveBeenLastCalledWith('/mu/catalog', { replace: true });
     expect(queryInput()).toBeNull();
+  });
+
+  it('does not apply a search typed just before the search was closed', async () => {
+    testState.useRealDebounce = true;
+    vi.useFakeTimers();
+
+    await renderSearch();
+    await clickElement(querySearchButton());
+
+    const input = queryInput();
+    if (!input) {
+      throw new Error('Expected catalog search input');
+    }
+
+    await dispatchInput(input, 'foo');
+    expect(testState.setSearchFilterMock).not.toHaveBeenCalled();
+
+    await act(async () => {
+      input.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'Escape' }));
+    });
+    expect(queryInput()).toBeNull();
+
+    await act(async () => {
+      vi.advanceTimersByTime(500);
+    });
+
+    expect(testState.setSearchFilterMock).not.toHaveBeenCalled();
+    expect(testState.navigateMock).not.toHaveBeenCalledWith('/mu/catalog?s=foo', { replace: true });
+  });
+
+  it('does not apply a search typed just before the toggle button closed the search', async () => {
+    testState.useRealDebounce = true;
+    vi.useFakeTimers();
+
+    await renderSearch();
+    await clickElement(querySearchButton());
+
+    const input = queryInput();
+    if (!input) {
+      throw new Error('Expected catalog search input');
+    }
+
+    await dispatchInput(input, 'foo');
+    await clickElement(querySearchButton());
+    expect(queryInput()).toBeNull();
+
+    await act(async () => {
+      vi.advanceTimersByTime(500);
+    });
+
+    expect(testState.setSearchFilterMock).not.toHaveBeenCalled();
+    expect(testState.navigateMock).not.toHaveBeenCalledWith('/mu/catalog?s=foo', { replace: true });
   });
 });

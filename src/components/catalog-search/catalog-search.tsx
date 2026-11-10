@@ -59,21 +59,24 @@ const CatalogSearch = () => {
     return () => debouncedSetSearchFilter.cancel();
   }, [debouncedSetSearchFilter]);
 
+  // Closing must drop a pending debounced search, or it reopens the search with that text.
   const handleToggleSearch = useCallback(() => {
     if (openSearch) {
+      debouncedSetSearchFilter.cancel();
       clearSearchFilter();
       updateURL('');
       setSearchState({ open: false, value: '' });
     } else {
       setSearchState((prev) => ({ open: true, value: prev.value }));
     }
-  }, [openSearch, clearSearchFilter, updateURL]);
+  }, [openSearch, clearSearchFilter, debouncedSetSearchFilter, updateURL]);
 
   const handleCloseSearch = useCallback(() => {
+    debouncedSetSearchFilter.cancel();
     setSearchState({ open: false, value: '' });
     clearSearchFilter();
     updateURL('');
-  }, [clearSearchFilter, updateURL]);
+  }, [clearSearchFilter, debouncedSetSearchFilter, updateURL]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const next = e.target.value;
