@@ -44,17 +44,38 @@ describe('persisted extra stores', () => {
     setItemSpy.mockRestore();
   });
 
-  it('loads popular thread options from localStorage defaults and persists changes', async () => {
+  it('loads the popular threads filter from localStorage defaults and persists changes', async () => {
     const usePopularThreadsOptionsStore = await loadPopularThreadsOptionsStore();
 
-    expect(usePopularThreadsOptionsStore.getState().showWorksafeContentOnly).toBe(true);
-    expect(usePopularThreadsOptionsStore.getState().showNsfwContentOnly).toBe(false);
+    expect(usePopularThreadsOptionsStore.getState().contentFilter).toBe('worksafe');
 
-    usePopularThreadsOptionsStore.getState().setShowWorksafeContentOnly(false);
-    usePopularThreadsOptionsStore.getState().setShowNsfwContentOnly(true);
+    usePopularThreadsOptionsStore.getState().setContentFilter('nsfw');
 
-    expect(localStorage.getItem('showWorksafeContentOnly')).toBe('false');
-    expect(localStorage.getItem('showNsfwContentOnly')).toBe('true');
+    expect(usePopularThreadsOptionsStore.getState().contentFilter).toBe('nsfw');
+    expect(localStorage.getItem('5chan-popular-threads-filter')).toBe('nsfw');
+  });
+
+  it.each([
+    { worksafe: 'true', nsfw: 'false', expected: 'worksafe' },
+    { worksafe: 'false', nsfw: 'true', expected: 'nsfw' },
+    { worksafe: 'false', nsfw: 'false', expected: 'all' },
+    { worksafe: 'true', nsfw: 'true', expected: 'worksafe' },
+  ])('carries over the old popular threads flags (worksafe $worksafe, nsfw $nsfw) as $expected', async ({ worksafe, nsfw, expected }) => {
+    localStorage.setItem('showWorksafeContentOnly', worksafe);
+    localStorage.setItem('showNsfwContentOnly', nsfw);
+
+    const usePopularThreadsOptionsStore = await loadPopularThreadsOptionsStore();
+
+    expect(usePopularThreadsOptionsStore.getState().contentFilter).toBe(expected);
+  });
+
+  it('prefers the saved popular threads filter over the old flags', async () => {
+    localStorage.setItem('showWorksafeContentOnly', 'true');
+    localStorage.setItem('5chan-popular-threads-filter', 'all');
+
+    const usePopularThreadsOptionsStore = await loadPopularThreadsOptionsStore();
+
+    expect(usePopularThreadsOptionsStore.getState().contentFilter).toBe('all');
   });
 
   it('loads homepage stats scope from localStorage defaults and persists changes', async () => {

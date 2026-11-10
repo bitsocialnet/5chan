@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import useHomeFiltersStore from '../../../stores/use-popular-threads-options-store';
+import useHomeFiltersStore, { type PopularThreadsContentFilter } from '../../../stores/use-popular-threads-options-store';
 import styles from '../home.module.css';
 
 const BoxModal = () => {
@@ -9,7 +9,7 @@ const BoxModal = () => {
   const modalRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
-  const { showWorksafeContentOnly, setShowWorksafeContentOnly, showNsfwContentOnly, setShowNsfwContentOnly } = useHomeFiltersStore();
+  const { contentFilter, setContentFilter } = useHomeFiltersStore();
 
   useEffect(() => {
     if (!showFilterModal) return;
@@ -22,21 +22,13 @@ const BoxModal = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showFilterModal]);
 
-  const selectFilter = (filter: 'worksafe' | 'nsfw' | 'all') => {
-    if (filter === 'worksafe') {
-      if (showNsfwContentOnly) setShowNsfwContentOnly(false);
-      setShowWorksafeContentOnly(!showWorksafeContentOnly);
-    } else if (filter === 'nsfw') {
-      if (showWorksafeContentOnly) setShowWorksafeContentOnly(false);
-      setShowNsfwContentOnly(!showNsfwContentOnly);
-    } else {
-      setShowWorksafeContentOnly(false);
-      setShowNsfwContentOnly(false);
-    }
+  const selectFilter = (filter: PopularThreadsContentFilter) => {
+    // Choosing the selected worksafe or nsfw filter again goes back to all content.
+    setContentFilter(filter === contentFilter ? 'all' : filter);
     setShowFilterModal(false);
   };
 
-  const handleKey = (e: React.KeyboardEvent, filter: 'worksafe' | 'nsfw' | 'all') => {
+  const handleKey = (e: React.KeyboardEvent, filter: PopularThreadsContentFilter) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       selectFilter(filter);
@@ -63,7 +55,7 @@ const BoxModal = () => {
         <div ref={modalRef} className={styles.filterModal}>
           <button
             type='button'
-            className={`${styles.option} ${showWorksafeContentOnly ? styles.selected : ''}`}
+            className={`${styles.option} ${contentFilter === 'worksafe' ? styles.selected : ''}`}
             tabIndex={0}
             onKeyDown={(e) => handleKey(e, 'worksafe')}
             onClick={() => selectFilter('worksafe')}
@@ -72,7 +64,7 @@ const BoxModal = () => {
           </button>
           <button
             type='button'
-            className={`${styles.option} ${showNsfwContentOnly ? styles.selected : ''}`}
+            className={`${styles.option} ${contentFilter === 'nsfw' ? styles.selected : ''}`}
             tabIndex={0}
             onKeyDown={(e) => handleKey(e, 'nsfw')}
             onClick={() => selectFilter('nsfw')}
@@ -81,7 +73,7 @@ const BoxModal = () => {
           </button>
           <button
             type='button'
-            className={`${styles.option} ${!showWorksafeContentOnly && !showNsfwContentOnly ? styles.selected : ''}`}
+            className={`${styles.option} ${contentFilter === 'all' ? styles.selected : ''}`}
             tabIndex={0}
             onKeyDown={(e) => handleKey(e, 'all')}
             onClick={() => selectFilter('all')}

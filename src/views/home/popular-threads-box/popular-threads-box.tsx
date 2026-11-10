@@ -161,23 +161,22 @@ const ProviderPopularThreads = ({ boardAddresses, directories }: PopularThreadsS
 
 const PopularThreadsBox = ({ directories, directoryAddresses }: { directories: DirectoryCommunity[]; directoryAddresses: string[] }) => {
   const { t } = useTranslation();
-  const showWorksafeContentOnly = usePopularThreadsOptionsStore((state) => state.showWorksafeContentOnly);
-  const showNsfwContentOnly = usePopularThreadsOptionsStore((state) => state.showNsfwContentOnly);
+  const contentFilter = usePopularThreadsOptionsStore((state) => state.contentFilter);
   const usePureP2PStats = useStatsProvidersStore((state) => state.usePureP2PStats);
 
   const filteredBoardAddresses = useMemo(() => {
     return directoryAddresses.flatMap((address) => {
       const directoryEntry = findDirectoryByAddress(directories, address);
-      if (showWorksafeContentOnly && directoryEntry?.nsfw) {
+      if (contentFilter === 'worksafe' && directoryEntry?.nsfw) {
         return [];
       }
-      if (showNsfwContentOnly && !directoryEntry?.nsfw) {
+      if (contentFilter === 'nsfw' && !directoryEntry?.nsfw) {
         return [];
       }
 
       return [address];
     });
-  }, [directories, directoryAddresses, showNsfwContentOnly, showWorksafeContentOnly]);
+  }, [contentFilter, directories, directoryAddresses]);
 
   return (
     <div className={styles.box}>
