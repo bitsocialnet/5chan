@@ -403,7 +403,12 @@ describe('ModQueueView', () => {
     testState.createAccountMock.mockResolvedValue(undefined);
     testState.deleteAccountMock.mockResolvedValue(undefined);
     testState.publishCommentMock.mockResolvedValue({ index: 12 });
-    testState.publishCommentModerationActionMock.mockResolvedValue(undefined);
+    // Transfer moderations only count once verified, so the default mock accepts each one.
+    testState.publishCommentModerationActionMock.mockImplementation(
+      async (options: { onChallengeVerification?: (verification: unknown, moderation: unknown) => Promise<void> }) => {
+        await options.onChallengeVerification?.({ challengeSuccess: true }, {});
+      },
+    );
     testState.queuedCommentHistory = [];
     testState.springStartMock.mockReset();
     testState.useSpringMock.mockReset();

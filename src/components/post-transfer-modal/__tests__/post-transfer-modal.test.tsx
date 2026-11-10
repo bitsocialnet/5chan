@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
+import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import PostTransferModal from '../post-transfer-modal';
 import { TRASH_BOARD_ADDRESS, TRASH_BOARD_PUBLIC_KEY, TRASH_BOARD_TITLE } from '../../../lib/special-boards';
@@ -10,6 +11,7 @@ const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise
 const TRANSFER_MODAL_POSITION_SESSION_STORAGE_KEY = '5chan:transfer-modal-position';
 
 const testState = vi.hoisted(() => ({
+  addChallengeMock: vi.fn(),
   createAccountMock: vi.fn().mockResolvedValue(undefined),
   deleteAccountMock: vi.fn().mockResolvedValue(undefined),
   deleteCommentMock: vi.fn().mockResolvedValue(undefined),
@@ -39,7 +41,7 @@ vi.mock('../../../hooks/use-directories', () => ({
 vi.mock('../../../stores/use-challenges-store', () => ({
   default: {
     getState: () => ({
-      addChallenge: vi.fn(),
+      addChallenge: testState.addChallengeMock,
     }),
   },
 }));
@@ -108,9 +110,45 @@ const baseComment = {
   title: 'Subject',
 } as any;
 
-const renderTransferModal = async (comment = baseComment) => {
+const renderTransferModal = async (comment = baseComment, props: Partial<React.ComponentProps<typeof PostTransferModal>> = {}) => {
   await act(async () => {
-    root.render(createElement(PostTransferModal, { comment, onClose: testState.onCloseMock }));
+    // The success message links to the new /trash/ thread, which needs a router.
+    root.render(createElement(MemoryRouter, {}, createElement(PostTransferModal, { comment, onClose: testState.onCloseMock, ...props })));
+  });
+};
+
+type ModerationOptions = {
+  commentCid?: string;
+  onChallenge: (...args: unknown[]) => Promise<void>;
+  onChallengeVerification: (verification: unknown, moderation: unknown) => Promise<void>;
+  onError: (error: Error) => void;
+  onPublishingStateChange?: (publishingState: string) => void;
+};
+
+// Submits the transfer and accepts the /trash/ copy, leaving the follow-up moderations for the test to settle.
+const submitAndAcceptTrashCopy = async () => {
+  const form = document.body.querySelector<HTMLFormElement>('form');
+  await act(async () => {
+    form!.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    await Promise.resolve();
+  });
+  const [publishOptions] = testState.publishCommentMock.mock.calls[0] as [Record<string, unknown>, string];
+  await act(async () => {
+    void (publishOptions.onChallengeVerification as (verification: unknown, comment: unknown) => Promise<void>)(
+      { challengeSuccess: true, commentUpdate: { cid: 'trash-copy', number: 7 } },
+      { cid: 'trash-copy' },
+    );
+    await Promise.resolve();
+  });
+};
+
+const getModerationOptions = (callIndex: number) => (testState.publishCommentModerationMock.mock.calls[callIndex] as [ModerationOptions])[0];
+
+const settleModeration = async (callIndex: number, settle: (options: ModerationOptions) => Promise<void> | void) => {
+  await act(async () => {
+    await settle(getModerationOptions(callIndex));
+    await Promise.resolve();
+    await Promise.resolve();
   });
 };
 
@@ -210,6 +248,121 @@ describe('PostTransferModal', () => {
     const submitButton = Array.from(document.body.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.type === 'submit');
     expect(closeButton?.disabled).toBe(false);
     expect(submitButton?.disabled).toBe(false);
+    alertSpy.mockRestore();
+  });
+
+  it('reports success only after the source removal is verified', async () => {
+    const onTransferSuccess = vi.fn();
+    const onTransferStateChange = vi.fn();
+    await renderTransferModal(baseComment, { onTransferStateChange, onTransferSuccess });
+
+    await submitAndAcceptTrashCopy();
+
+    // Both moderation publish actions resolve as soon as they are queued; neither is accepted yet.
+    expect(getModerationOptions(0).commentCid).toBe('trash-copy');
+    expect(getModerationOptions(1).commentCid).toBe('comment-1');
+    expect(onTransferSuccess).not.toHaveBeenCalled();
+    expect(onTransferStateChange).not.toHaveBeenCalledWith('succeeded');
+    expect(document.body.textContent).not.toContain('modQueue.transferSuccess');
+    // The temporary account is deleted before the wait, so a reload while waiting cannot leave it behind.
+    expect(testState.deleteAccountMock).toHaveBeenCalledWith(expect.stringMatching(/^5chan-transfer-comment-/));
+
+    await settleModeration(1, (options) => options.onChallengeVerification({ challengeSuccess: true }, { cid: 'comment-1' }));
+
+    expect(testState.deleteAccountMock).toHaveBeenCalledTimes(1);
+    expect(onTransferSuccess).toHaveBeenCalledTimes(1);
+    expect(onTransferStateChange).toHaveBeenLastCalledWith('succeeded');
+    expect(document.body.textContent).toContain('modQueue.transferSuccess');
+  });
+
+  it('reports a finalization failure when the source removal is rejected', async () => {
+    const onTransferSuccess = vi.fn();
+    const onTransferStateChange = vi.fn();
+    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
+    await renderTransferModal(baseComment, { onTransferStateChange, onTransferSuccess });
+
+    await submitAndAcceptTrashCopy();
+    await settleModeration(1, (options) => options.onChallengeVerification({ challengeSuccess: false, reason: 'not a moderator' }, { cid: 'comment-1' }));
+
+    expect(onTransferSuccess).not.toHaveBeenCalled();
+    expect(onTransferStateChange).toHaveBeenLastCalledWith('finalizationFailed');
+    expect(document.body.textContent).toContain('not a moderator');
+    expect(document.body.textContent).not.toContain('modQueue.transferSuccess');
+    expect(testState.deleteAccountMock).toHaveBeenCalledWith(expect.stringMatching(/^5chan-transfer-comment-/));
+    alertSpy.mockRestore();
+  });
+
+  it('reports a finalization failure when the source removal challenge is closed', async () => {
+    const onTransferSuccess = vi.fn();
+    const onTransferStateChange = vi.fn();
+    await renderTransferModal(baseComment, { onTransferStateChange, onTransferSuccess });
+
+    await submitAndAcceptTrashCopy();
+    await settleModeration(1, (options) => options.onChallenge({ challenges: [] }, { cid: 'comment-1' }));
+    const abandonModerationChallenge = testState.addChallengeMock.mock.calls.at(-1)?.[1] as () => Promise<void>;
+    await act(async () => {
+      await abandonModerationChallenge();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(onTransferSuccess).not.toHaveBeenCalled();
+    expect(onTransferStateChange).toHaveBeenLastCalledWith('finalizationFailed');
+  });
+
+  it('reports a finalization failure when the source removal challenge answer fails to publish', async () => {
+    const onTransferSuccess = vi.fn();
+    const onTransferStateChange = vi.fn();
+    await renderTransferModal(baseComment, { onTransferStateChange, onTransferSuccess });
+
+    await submitAndAcceptTrashCopy();
+    await settleModeration(1, (options) => options.onChallenge({ challenges: [] }, { cid: 'comment-1' }));
+    // A challenge answer that fails to publish only moves the publishing state to 'failed'; no error or verification follows.
+    await settleModeration(1, (options) => options.onPublishingStateChange?.('failed'));
+
+    expect(onTransferSuccess).not.toHaveBeenCalled();
+    expect(onTransferStateChange).toHaveBeenLastCalledWith('finalizationFailed');
+    const closeButton = Array.from(document.body.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.textContent === 'close');
+    expect(closeButton?.disabled).toBe(false);
+  });
+
+  it('keeps the source removal error that follows a failed publishing state before any challenge', async () => {
+    const onTransferStateChange = vi.fn();
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    await renderTransferModal(baseComment, { onTransferStateChange });
+
+    await submitAndAcceptTrashCopy();
+    // Before a challenge, pkc-js moves the publishing state to 'failed' first and the error reaches onError afterwards.
+    await settleModeration(1, (options) => options.onPublishingStateChange?.('failed'));
+    expect(onTransferStateChange).not.toHaveBeenCalledWith('finalizationFailed');
+
+    await settleModeration(1, (options) => options.onError(new Error('source board unreachable')));
+
+    expect(onTransferStateChange).toHaveBeenLastCalledWith('finalizationFailed');
+    expect(document.body.textContent).toContain('source board unreachable');
+    consoleErrorSpy.mockRestore();
+  });
+
+  it('removes the source post even when the /trash/ target marker is rejected', async () => {
+    // Any moderator of the source board can move a post, but only /trash/ moderators can publish the marker.
+    const onTransferSuccess = vi.fn();
+    const onTransferStateChange = vi.fn();
+    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
+    await renderTransferModal(baseComment, { onTransferStateChange, onTransferSuccess });
+
+    await submitAndAcceptTrashCopy();
+    await settleModeration(0, (options) => options.onChallengeVerification({ challengeSuccess: false, reason: 'not a moderator' }, { cid: 'trash-copy' }));
+
+    expect(alertSpy).toHaveBeenCalledTimes(1);
+    expect(testState.publishCommentModerationMock).toHaveBeenCalledTimes(2);
+    expect(getModerationOptions(1).commentCid).toBe('comment-1');
+    expect(onTransferStateChange).not.toHaveBeenCalledWith('finalizationFailed');
+
+    await settleModeration(1, (options) => options.onChallengeVerification({ challengeSuccess: true }, { cid: 'comment-1' }));
+
+    expect(onTransferSuccess).toHaveBeenCalledTimes(1);
+    expect(onTransferStateChange).toHaveBeenLastCalledWith('succeeded');
+    expect(document.body.textContent).toContain('modQueue.transferSuccess');
     alertSpy.mockRestore();
   });
 
