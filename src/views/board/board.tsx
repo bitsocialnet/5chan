@@ -276,7 +276,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
     [communities, boardSortType, effectiveInfiniteScroll, infiniteFeedPostsPerPage, paginationFeedPostsPerPage, excludeArchivedFilter, multiboardTimeFilterSeconds],
   );
 
-  const { feed, hasMore, loadMore, reset, expandTimeWindow, state: feedState } = useFeed(feedOptions);
+  const { feed, hasMore, loadMore, reset, expandTimeWindow, communityKeysWithMore, state: feedState } = useFeed(feedOptions);
   const { currentTimeFilterName, currentTimeFilterSeconds, expandSuggestionTimeWindow } = useExpandedTimeFilter({
     timeFilterName,
     timeFilterSeconds: multiboardTimeFilterSeconds,
@@ -439,6 +439,9 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
   const canReleaseRefreshHoldToEmptyBoard =
     refreshHold?.startedFeedLength === 0 && isSingleCommunityBoard && isLoadedCommunityState && isRawBoardThreadStateEmpty && isFeedSucceeded;
   const refreshHoldHasSeenEmptyFeed = Boolean(refreshHold?.hasSeenEmptyFeed || (refreshHold && feed.length === 0));
+  // A reset lists every board as still loading until the feed is calculated again (hasMore keeps its
+  // pre-reset value), so no board left to load after the reset means the refreshed feed is really empty.
+  const isResetFeedExhausted = Boolean(refreshHold?.hasSettledResetCall && isFeedSucceeded && !hasMore && communityKeysWithMore.length === 0);
   const canReleaseRefreshHold = Boolean(
     refreshHold &&
     !refreshHold.isReleased &&
@@ -446,6 +449,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
       communityState === 'failed' ||
       feedState === 'failed' ||
       canReleaseRefreshHoldToEmptyBoard ||
+      isResetFeedExhausted ||
       (!refreshHoldHasSeenEmptyFeed && refreshHold.hasSettledResetCall)) &&
     (refreshHoldHasSeenEmptyFeed || refreshHold.hasSettledResetCall),
   );
