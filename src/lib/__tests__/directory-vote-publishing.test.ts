@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Criteria, NameResolver, PubsubVoter, VoteSigner } from '@bitsocial/pubsub-voting';
 import { isDirectoryVoteRefreshDue, publishDirectoryVote, resolveDirectoryBoard, withDirectoryVoteLock } from '../directory-vote-publishing';
 
@@ -78,6 +78,21 @@ describe('withDirectoryVoteLock', () => {
     await expect(first).rejects.toThrow('first failed');
     await expect(second).resolves.toBe(2);
     expect(events).toEqual(['first:start', 'other', 'first:end', 'second']);
+  });
+});
+
+describe('withDirectoryVoteLock across tabs', () => {
+  afterEach(() => {
+    Reflect.deleteProperty(navigator, 'locks');
+  });
+
+  it('holds a Web Lock named for the wallet and contest, so other tabs wait for the operation too', async () => {
+    const request = vi.fn((_name: string, callback: () => Promise<unknown>) => callback());
+    Object.defineProperty(navigator, 'locks', { value: { request }, configurable: true });
+
+    await expect(withDirectoryVoteLock('0xabc:contest', async () => 'done')).resolves.toBe('done');
+
+    expect(request).toHaveBeenCalledWith('5chan-directory-vote:0xabc:contest', expect.any(Function));
   });
 });
 

@@ -62,6 +62,16 @@ const getAccountPkc = (account: unknown) => (account && typeof account === 'obje
 
 const asError = (error: unknown): Error => (error instanceof Error ? error : new Error(String(error)));
 
+/** The vote as last saved by any tab; this tab's storage event for another tab's save can still be on its way. */
+const readStoredDirectoryVote = async (key: string): Promise<StoredDirectoryVote | undefined> => {
+  await useDirectoryVotesStore.persist.rehydrate();
+  return useDirectoryVotesStore.getState().votes[key];
+};
+
+/** Compared by value: rehydrating from storage replaces every record object. */
+const isSameDirectoryVote = (stored: StoredDirectoryVote | undefined, expected: StoredDirectoryVote): boolean =>
+  !!stored && stored.topic === expected.topic && stored.blockNumber === expected.blockNumber && stored.community?.publicKey === expected.community?.publicKey;
+
 /**
  * The record to keep after a ballot is published; undefined removes it. A ballot that replaces
  * another in the same bucket may lose the lowest-CID tie-break, so it stays flagged (a withdrawal
@@ -109,11 +119,12 @@ export const useDirectoryVote = (voteTally: VoteTallyState): DirectoryVoteState 
       const voter = getOrCreateBrowserPubsubVoter({ helia, nameResolvers });
       const lockKey = getDirectoryVoteKey(voteSigner.address, criteria.contestId);
       return await withDirectoryVoteLock(lockKey, async (): Promise<DirectoryVoteOutcome> => {
-        const previous = useDirectoryVotesStore.getState().votes[lockKey];
         const result = await publishDirectoryVote({ voter, criteria, signer: voteSigner.signer, address: voteSigner.address, community: target });
         if (result.status === 'ineligible') {
           return { status: 'ineligible', address: voteSigner.address, error: result.error, testnet: isTestnetVotingChain(criteria.bucketChainId) };
         }
+        // Read after publishing: without Web Locks, another tab may have re-signed this vote meanwhile.
+        const previous = await readStoredDirectoryVote(lockKey);
         const published = { address: voteSigner.address, contestId: criteria.contestId, topic: result.topic, community: target, blockNumber: result.blockNumber };
         const next = nextDirectoryVoteRecord(previous, published, criteria);
         if (next) setVote(next);
@@ -234,20 +245,23 @@ export const refreshDueDirectoryVotes = async ({ voteSigner, helia, nameResolver
       if (!storedVote.resignNextBucket && !isDirectoryVoteEngaged(storedVote, getDirectoryVoteVisits())) {
         if (isDirectoryVoteExpired(criteria, storedVote.blockNumber, head)) {
           await withDirectoryVoteLock(key, async () => {
-            if (useDirectoryVotesStore.getState().votes[key] === storedVote) useDirectoryVotesStore.getState().removeVote(storedVote.address, storedVote.contestId);
+            if (isSameDirectoryVote(await readStoredDirectoryVote(key), storedVote))
+              useDirectoryVotesStore.getState().removeVote(storedVote.address, storedVote.contestId);
           });
         }
         continue;
       }
 
       await withDirectoryVoteLock(key, async () => {
-        // The user may have changed or withdrawn this vote while the checks above awaited.
-        if (useDirectoryVotesStore.getState().votes[key] !== storedVote) return;
+        // The user may have changed or withdrawn this vote, in this tab or another, while the checks above awaited.
+        if (!isSameDirectoryVote(await readStoredDirectoryVote(key), storedVote)) return;
         const voter = getOrCreateBrowserPubsubVoter({ helia, nameResolvers });
         // A record without a community is a withdrawal that still had to win against a same-bucket vote.
         const result = await publishDirectoryVote({ voter, criteria, signer: voteSigner.signer, address: voteSigner.address, community: storedVote.community });
         // An ineligible wallet (expired Pass) keeps its intent, so the vote resumes after a renewal.
         if (result.status !== 'published') return;
+        // Without Web Locks another tab can still change the vote during the publish; its choice wins.
+        if (!isSameDirectoryVote(await readStoredDirectoryVote(key), storedVote)) return;
         const { address, contestId, community } = storedVote;
         // Settling a same-bucket change is not a refresh: the user's cast still counts as their visit.
         const refreshedAt = storedVote.resignNextBucket ? storedVote.refreshedAt : checkedAt;

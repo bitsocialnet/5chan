@@ -36,9 +36,13 @@ const directoryVoteLocks = new Map<string, Promise<unknown>>();
 
 /**
  * Run one ballot operation at a time per voting wallet and contest, so a background refresh can
- * never sign a stale choice after (or between) the user's own vote changes.
+ * never sign a stale choice after (or between) the user's own vote changes. Every tab shares the
+ * stored votes, so the lock is a Web Lock where the API exists; the in-tab queue covers older WebViews.
  */
 export const withDirectoryVoteLock = <T>(key: string, operation: () => Promise<T>): Promise<T> => {
+  if (typeof navigator !== 'undefined' && navigator.locks) {
+    return navigator.locks.request(`5chan-directory-vote:${key}`, operation);
+  }
   const previous = directoryVoteLocks.get(key) ?? Promise.resolve();
   const result = previous.catch(() => undefined).then(operation);
   const settled = result.catch(() => undefined);

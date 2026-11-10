@@ -52,6 +52,13 @@ const voteSigner = { address: '0xAbC', signer: { address: () => '0xAbC', signBal
 const helia = {} as PubsubVoterOptions['helia'];
 const criteria = { contestId: '5chan-dir-a-vote-test-1', bucketChainId: 84532, blocksPerBucket: 1800, voteExpiryBuckets: 720 } as Criteria;
 const storedVote = { address: '0xabc', contestId: criteria.contestId, topic: 'topic-a', community: { name: 'board.bso', publicKey: '12D3KooWBoard' }, blockNumber: 1800 };
+const storedVoteKey = `0xabc:${criteria.contestId}`;
+
+/** What another tab does when it changes a vote: save the whole map, then this tab gets a storage event. */
+const saveVotesFromOtherTab = (votes: Record<string, unknown>) => {
+  localStorage.setItem('directory-votes', JSON.stringify({ state: { votes }, version: 0 }));
+  window.dispatchEvent(new StorageEvent('storage', { key: 'directory-votes' }));
+};
 
 describe('refreshDueDirectoryVotes', () => {
   beforeEach(() => {
@@ -169,6 +176,42 @@ describe('refreshDueDirectoryVotes', () => {
 
     expect(mocks.publishDirectoryVote).not.toHaveBeenCalled();
     expect(Object.values(useDirectoryVotesStore.getState().votes)).toEqual([changedVote]);
+  });
+
+  it('keeps a vote another tab changed while the refresh was publishing', async () => {
+    useDirectoryVotesStore.getState().setVote(storedVote);
+    mocks.headBlock = BigInt(361 * 1800);
+    const otherTabVote = { ...storedVote, community: { name: 'other.bso', publicKey: '12D3KooWOther' }, blockNumber: 361 * 1800 + 5 };
+    mocks.publishDirectoryVote.mockImplementationOnce(async () => {
+      saveVotesFromOtherTab({ [storedVoteKey]: otherTabVote });
+      await Promise.resolve();
+      return { status: 'published', topic: 'topic-a', blockNumber: 361 * 1800 + 7 };
+    });
+
+    await refreshDueDirectoryVotes({ voteSigner, helia, nameResolvers: undefined });
+
+    expect(mocks.publishDirectoryVote).toHaveBeenCalledTimes(1);
+    expect(useDirectoryVotesStore.getState().votes).toEqual({ [storedVoteKey]: otherTabVote });
+    expect(JSON.parse(localStorage.getItem('directory-votes') ?? '{}').state.votes).toEqual({ [storedVoteKey]: otherTabVote });
+  });
+
+  it('still re-signs a due vote after another tab saved a vote in a different directory', async () => {
+    useDirectoryVotesStore.getState().setVote(storedVote);
+    mocks.headBlock = BigInt(361 * 1800);
+    const otherDirectoryVote = { ...storedVote, contestId: '5chan-dir-b-vote-test-1', topic: 'topic-b' };
+    mocks.topics = {};
+    Object.defineProperty(mocks.topics, criteria.contestId, {
+      get: () => {
+        saveVotesFromOtherTab({ [storedVoteKey]: storedVote, [`0xabc:${otherDirectoryVote.contestId}`]: otherDirectoryVote });
+        return 'topic-a';
+      },
+    });
+
+    await refreshDueDirectoryVotes({ voteSigner, helia, nameResolvers: undefined });
+
+    expect(mocks.publishDirectoryVote).toHaveBeenCalledTimes(1);
+    expect(useDirectoryVotesStore.getState().votes[storedVoteKey]).toEqual({ ...storedVote, blockNumber: 999_000, refreshedAt: expect.any(Number) });
+    expect(useDirectoryVotesStore.getState().votes[`0xabc:${otherDirectoryVote.contestId}`]).toEqual(otherDirectoryVote);
   });
 
   it('re-signs a same-bucket change as soon as the next bucket starts', async () => {
