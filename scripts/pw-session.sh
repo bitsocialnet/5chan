@@ -18,8 +18,10 @@ umask 077
 # Liveness comes from `playwright-cli list --all`, which reports `status: open`
 # for a running browser. A lock whose recorded session is no longer open is
 # stale, and is reclaimed automatically rather than blocking every later
-# workflow. When playwright-cli cannot be queried the lock is left alone, so a
-# broken CLI never silently disables the budget.
+# workflow. A lock younger than the launch grace period is never stale: its
+# owner may still be writing it, and playwright-cli lists a new browser only
+# once it is running. When playwright-cli cannot be queried the lock is left
+# alone, so a broken CLI never silently disables the budget.
 #
 # PW_SESSION_POLL_SECONDS overrides how often `--wait` re-checks the slot.
 
@@ -34,8 +36,9 @@ Usage:
 One browser slot is shared by every worktree and repository on this machine.
 
   open     Acquire the slot, then start the browser. Exits 75 when the slot is
-           held by a live session; --wait polls until it frees (default 300s).
-           A slot whose browser is gone is reclaimed automatically.
+           held by a live or starting session; --wait polls until it frees
+           (default 300s). A slot whose browser is gone is reclaimed
+           automatically once it is a minute old.
   close    Stop the named browser, then release the slot. Always attempts the
            browser close, even when the lock was already lost, and never
            releases a slot held by a different session.
@@ -64,6 +67,13 @@ started_file="$lock_dir/started-at"
 workspace_file="$lock_dir/workspace"
 default_wait_seconds=300
 poll_seconds="${PW_SESSION_POLL_SECONDS:-5}"
+# Matches the 60s that scripts/react-perf/browser.mjs allows `open` to take.
+launch_grace_seconds=60
+reclaim_mutex="${lock_dir}.reclaim"
+# A reclaim holds its mutex for milliseconds; one left by a killed reclaimer is broken after this.
+reclaim_mutex_timeout_seconds=10
+# Waits for the mutex poll every 0.1s, so this outlasts the timeout above before giving up.
+reclaim_mutex_max_polls=120
 
 # Recorded for diagnostics only: the lock is machine-wide, so a checkout outside
 # a Git worktree is unusual but not an error.
@@ -114,6 +124,36 @@ session_state() {
   echo dead
 }
 
+dir_mtime() {
+  stat -c %Y "$1" 2>/dev/null || stat -f %m "$1" 2>/dev/null
+}
+
+# Succeeds while the slot is younger than the launch grace period. The lock
+# directory's modification time is when its metadata was written. A time more
+# than the grace period ahead, such as after the clock was set back, does not
+# count as young, so a dead lock is not kept until that date.
+lock_is_young() {
+  local modified age
+
+  modified="$(dir_mtime "$lock_dir")" || return 1
+  age=$(($(date +%s) - modified))
+  [ "$age" -gt "-$launch_grace_seconds" ] && [ "$age" -lt "$launch_grace_seconds" ]
+}
+
+# Echoes `live`, `starting`, `dead`, or `unknown` for the held slot. `starting`
+# is a young slot without a running browser, which is not stale yet.
+slot_state() {
+  local owner="$1" state=dead
+
+  if [ -n "$owner" ]; then
+    state="$(session_state "$owner")"
+  fi
+  if [ "$state" = dead ] && lock_is_young; then
+    state=starting
+  fi
+  echo "$state"
+}
+
 write_lock_metadata() {
   printf '%s\n' "$1" >"$owner_file"
   date -u '+%Y-%m-%dT%H:%M:%SZ' >"$started_file"
@@ -131,10 +171,11 @@ print_status() {
   owner="$(current_owner)"
   started="$(sed -n '1p' "$started_file" 2>/dev/null || true)"
   held_workspace="$(sed -n '1p' "$workspace_file" 2>/dev/null || true)"
-  state="$([ -n "$owner" ] && session_state "$owner" || echo unknown)"
+  state="$(slot_state "$owner")"
 
   case "$state" in
     live) echo "pw-session: browser slot is held" ;;
+    starting) echo "pw-session: browser slot is held (browser starting)" ;;
     dead) echo "pw-session: browser slot is held by a stale lock" ;;
     *) echo "pw-session: browser slot is held (browser state unverifiable)" ;;
   esac
@@ -146,6 +187,9 @@ print_status() {
 
   case "$state" in
     live) echo "Browser: running" ;;
+    starting)
+      echo "Browser: not running yet — the slot counts as stale only once it is ${launch_grace_seconds}s old"
+      ;;
     dead)
       echo "Browser: not running — the next 'open' reclaims this slot automatically"
       ;;
@@ -155,14 +199,51 @@ print_status() {
   esac
 }
 
-# Atomically drop a lock we have confirmed is stale. Renaming first means only
-# one racing reclaimer can win, so a concurrent fresh lock is never deleted.
-reclaim_stale_lock() {
-  local owner="$1" staged="${lock_dir}.stale.$$"
+# Bounded so a stuck mutex fails loudly instead of spinning or waiting forever. Fails when the
+# mutex can be neither created nor broken, such as in an unwritable directory or when it is not an
+# empty directory, or is still held once the polls run out, such as one dated in the future.
+take_reclaim_mutex() {
+  local misses=0 polls=0 modified
 
-  if mv "$lock_dir" "$staged" 2>/dev/null; then
+  until mkdir "$reclaim_mutex" 2>/dev/null; do
+    if ! modified="$(dir_mtime "$reclaim_mutex")"; then
+      misses=$((misses + 1))
+    elif [ "$(($(date +%s) - modified))" -ge "$reclaim_mutex_timeout_seconds" ]; then
+      rmdir "$reclaim_mutex" 2>/dev/null || misses=$((misses + 1))
+    else
+      misses=0
+      polls=$((polls + 1))
+      [ "$polls" -le "$reclaim_mutex_max_polls" ] || return 1
+      sleep 0.1
+    fi
+    [ "$misses" -lt 3 ] || return 1
+  done
+}
+
+# Drop a lock judged stale. The verdict can be out of date by the time it is acted
+# on: another opener may have reclaimed that lock and taken the slot since. So
+# reclaimers take turns through a mutex, and each one moves the lock only if it is
+# still the one it judged: same owner, and past the launch grace period. A lock
+# taken after an earlier reclaim is young, so it is left alone. Fails only when the
+# mutex cannot be taken.
+reclaim_stale_lock() {
+  local owner="$1" staged="${lock_dir}.stale.$$" moved=0
+
+  if ! take_reclaim_mutex; then
+    if [ -e "$reclaim_mutex" ]; then
+      echo "pw-session: could not take or break the reclaim mutex at $reclaim_mutex; remove it by hand if no 'open' is running" >&2
+    fi
+    return 1
+  fi
+  if [ -d "$lock_dir" ] && [ "$(current_owner)" = "$owner" ] && ! lock_is_young &&
+    mv "$lock_dir" "$staged" 2>/dev/null; then
+    moved=1
+  fi
+  rmdir "$reclaim_mutex" 2>/dev/null || true
+
+  if [ "$moved" = 1 ]; then
     rm -rf "$staged"
-    echo "pw-session: reclaimed stale slot from '$owner' (its browser is no longer running)" >&2
+    echo "pw-session: reclaimed stale slot from '${owner:-unknown}' (its browser is no longer running)" >&2
   fi
 }
 
@@ -181,12 +262,13 @@ acquire() {
     fi
 
     owner="$(current_owner)"
-    state="$([ -n "$owner" ] && session_state "$owner" || echo dead)"
+    state="$(slot_state "$owner")"
 
     # Bounded so an unremovable lock directory fails loudly instead of spinning.
     if [ "$state" = dead ] && [ "$reclaims" -lt 3 ]; then
       reclaims=$((reclaims + 1))
-      reclaim_stale_lock "${owner:-unknown}"
+      # Without the reclaim mutex, another attempt would fail the same way.
+      reclaim_stale_lock "$owner" || reclaims=3
       continue
     fi
 
@@ -197,7 +279,7 @@ acquire() {
     fi
 
     if [ "$wait_seconds" -gt 0 ] && [ "$SECONDS" -lt "$wait_seconds" ]; then
-      echo "pw-session: slot held by '$owner'; retrying in ${poll_seconds}s (waited ${SECONDS}s of ${wait_seconds}s)" >&2
+      echo "pw-session: slot held by '${owner:-unknown}'; retrying in ${poll_seconds}s (waited ${SECONDS}s of ${wait_seconds}s)" >&2
       sleep "$poll_seconds"
       continue
     fi
@@ -224,7 +306,7 @@ release() {
   owner="$(current_owner)"
   if [ "$owner" != "$session" ]; then
     echo "pw-session: '$session' cannot release the slot held by '${owner:-unknown}'" >&2
-    if [ -n "$owner" ] && [ "$(session_state "$owner")" = dead ]; then
+    if [ -n "$owner" ] && [ "$(slot_state "$owner")" = dead ]; then
       echo "pw-session: that lock is stale; the next 'open' reclaims it automatically" >&2
     fi
     return 1
