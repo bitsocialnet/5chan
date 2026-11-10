@@ -43,8 +43,11 @@ const scenarios = [
   },
 ];
 
+// `killed` only records that a signal was sent, so liveness comes from the exit fields.
+const isPreviewRunning = () => previewProcess !== null && previewProcess.exitCode === null && previewProcess.signalCode === null;
+
 const cleanupPreview = async () => {
-  if (!previewProcess || previewProcess.exitCode !== null || previewProcess.killed) {
+  if (!isPreviewRunning()) {
     return;
   }
 
@@ -58,7 +61,7 @@ const cleanupPreview = async () => {
     delay(5_000).then(() => false),
   ]);
 
-  if (!exited && previewProcess && previewProcess.exitCode === null && !previewProcess.killed) {
+  if (!exited && isPreviewRunning()) {
     previewProcess.kill('SIGKILL');
   }
 };
@@ -153,9 +156,25 @@ const runScenario = async (browser, scenario) => {
   }
 };
 
+const serverResponds = async () => {
+  try {
+    const response = await fetch(smokeServerUrl, { redirect: 'manual', signal: AbortSignal.timeout(2_000) });
+    await response.body?.cancel();
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 const startPreview = async () => {
   await access(join(process.cwd(), 'build', 'index.html'), constants.R_OK);
   await access(previewBin, constants.X_OK);
+
+  // With --strictPort a taken port makes the preview exit, and the server already there
+  // (another checkout's preview, say) would pass the readiness check and be smoke tested.
+  if (await serverResponds()) {
+    throw new Error(`${smokeServerUrl} already responds; stop that server so the smoke test runs against this build`);
+  }
 
   previewProcess = spawn(previewBin, ['preview', '--host', PREVIEW_HOST, '--port', PREVIEW_PORT, '--strictPort'], {
     cwd: process.cwd(),
@@ -178,6 +197,10 @@ const waitForServer = async () => {
   const startedAt = Date.now();
 
   while (Date.now() - startedAt < PREVIEW_TIMEOUT_MS) {
+    if (!isPreviewRunning()) {
+      throw new Error(`Vite preview stopped (${previewProcess.signalCode || `exit code ${previewProcess.exitCode}`}) before ${smokeServerUrl} was ready`);
+    }
+
     try {
       const response = await fetch(smokeServerUrl, { redirect: 'manual' });
       if (response.ok || response.status === 304) {
