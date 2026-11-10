@@ -26,7 +26,7 @@ interface CatalogFiltersStore {
   initializeFilter: () => void;
   filteredCount: number;
   filteredCids: Set<string>;
-  incrementFilterCount: (filterIndex: number, cid: string, communityAddress: string) => void;
+  incrementFilterCount: (filter: Pick<FilterItem, 'text' | 'hide' | 'top'>, cid: string, communityAddress: string) => void;
   recalcFilteredCount: () => void;
   currentCommunityAddress: string | null;
   setCurrentCommunityAddress: (address: string | null) => void;
@@ -218,8 +218,13 @@ const useCatalogFiltersStore = create(
       filter: createCatalogFilter(get),
       updateFilter: () => undefined,
       initializeFilter: () => undefined,
-      incrementFilterCount: (filterIndex: number, cid: string, communityAddress: string) => {
+      incrementFilterCount: (filter: Pick<FilterItem, 'text' | 'hide' | 'top'>, cid: string, communityAddress: string) => {
         set((state) => {
+          // A feed can keep the filter built for an older filter list, so a match names its filter by text, hide and top
+          // (the identity in the feed's filter key), not by index.
+          const filterIndex = state.filterItems.findIndex(
+            (item) => item.enabled && item.text === filter.text && Boolean(item.hide) === Boolean(filter.hide) && Boolean(item.top) === Boolean(filter.top),
+          );
           const newFilterItems = [...state.filterItems];
           if (newFilterItems[filterIndex]) {
             const item = newFilterItems[filterIndex];

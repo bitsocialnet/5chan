@@ -222,12 +222,11 @@ const CatalogLoading = ({
 const createContentFilter = (
   filterItems: { text: string; enabled: boolean; count: number; filteredCids: Set<string>; hide: boolean; top: boolean; color?: string }[],
   communityAddress: string,
-  onFilterMatch?: (filterIndex: number, cid: string, communityAddress: string) => void,
+  onFilterMatch?: (filter: { text: string; hide: boolean; top: boolean }, cid: string, communityAddress: string) => void,
   trackMatches = true,
 ) => {
   // Create a unique key based on the enabled filter items
   const enabledFilters = filterItems.filter((item) => item.enabled && item.text.trim() !== '');
-  const filterIndexByItem = new Map(filterItems.map((item, index) => [item, index]));
   const filterKey =
     enabledFilters.length > 0
       ? `content-filter-${enabledFilters.map((item) => `${item.text}-${item.hide ? 'hide' : ''}-${item.top ? 'top' : ''}`).join('-')}`
@@ -245,14 +244,13 @@ const createContentFilter = (
         const pattern = item.text;
 
         if (commentMatchesPattern(comment, pattern)) {
-          // Find the original filter index to increment count
-          const filterIndex = filterIndexByItem.get(item) ?? -1;
-          if (trackMatches && filterIndex !== -1) {
+          // Count by text, hide and top: the feeds store keeps this filter while its key is unchanged, even after the filter list is reordered
+          if (trackMatches) {
             if (onFilterMatch) {
-              onFilterMatch(filterIndex, comment.cid, communityAddress);
+              onFilterMatch(item, comment.cid, communityAddress);
             } else {
               // Fallback to the store method if no callback provided
-              useCatalogFiltersStore.getState().incrementFilterCount(filterIndex, comment.cid, communityAddress);
+              useCatalogFiltersStore.getState().incrementFilterCount(item, comment.cid, communityAddress);
             }
           }
 
@@ -276,7 +274,7 @@ const createCombinedFilter = (
   filterItems: { text: string; enabled: boolean; count: number; filteredCids: Set<string>; hide: boolean; top: boolean; color?: string }[],
   searchText: string,
   communityAddress: string,
-  onFilterMatch?: (filterIndex: number, cid: string, communityAddress: string) => void,
+  onFilterMatch?: (filter: { text: string; hide: boolean; top: boolean }, cid: string, communityAddress: string) => void,
   trackMatches = true,
   excludeArchived = true,
 ) => {
@@ -397,24 +395,31 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   const hadVisibleHiddenThreadsRef = useRef(false);
 
   // Create a stable callback for filter matching
-  const handleFilterMatch = useCallback((filterIndex: number, cid: string, communityAddress: string) => {
-    useCatalogFiltersStore.getState().incrementFilterCount(filterIndex, cid, communityAddress);
+  const handleFilterMatch = useCallback((filter: { text: string; hide: boolean; top: boolean }, cid: string, communityAddress: string) => {
+    useCatalogFiltersStore.getState().incrementFilterCount(filter, cid, communityAddress);
   }, []);
+
+  // Filter matches are counted per catalog: the board, or a multiboard's boards and time window. The feeds store
+  // recalculates every feed it holds, so one shared multiboard key would add other catalogs' matches to this count.
+  const filterCountScope = useMemo(
+    () => communityAddress || JSON.stringify([[...communityAddresses].sort(), multiboardTimeFilterSeconds ?? null]),
+    [communityAddress, communityAddresses, multiboardTimeFilterSeconds],
+  );
 
   // Set the current community address
   useEffect(() => {
-    useCatalogFiltersStore.getState().setCurrentCommunityAddress(communityAddress || null);
+    useCatalogFiltersStore.getState().setCurrentCommunityAddress(filterCountScope);
     return () => {
       useCatalogFiltersStore.getState().setCurrentCommunityAddress(null);
     };
-  }, [communityAddress]);
+  }, [filterCountScope]);
 
   const feedOptions = useMemo(() => {
     return {
       communities,
       sortType: feedSortType,
       postsPerPage: isMultiboardLocalSort ? ALL_THREADS_POSTS_PER_PAGE : isMultiboard ? multiboardCatalogPostsPerPage : paginationFeedPostsPerPage,
-      filter: hasActiveCatalogFiltering ? createCombinedFilter(filterItems, searchText, communityAddress || 'all', handleFilterMatch) : excludeArchivedFilter,
+      filter: hasActiveCatalogFiltering ? createCombinedFilter(filterItems, searchText, filterCountScope, handleFilterMatch) : excludeArchivedFilter,
       newerThan: multiboardTimeFilterSeconds,
     };
   }, [
@@ -427,7 +432,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
     multiboardCatalogPostsPerPage,
     filterItems,
     searchText,
-    communityAddress,
+    filterCountScope,
     handleFilterMatch,
     multiboardTimeFilterSeconds,
     excludeArchivedFilter,
