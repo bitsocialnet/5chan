@@ -85,17 +85,17 @@ const useDeleteFailedPost = (post?: FailedPost, deleteRedirectPath?: string) => 
   const { t } = useTranslation();
   const [isDeletingFailedPost, setIsDeletingFailedPost] = useState(false);
   const [isRetryingFailedPost, setIsRetryingFailedPost] = useState(false);
-  const [isRetryRedirectPending, setIsRetryRedirectPending] = useState(false);
   const addChallenge = useChallengesStore((state) => state.addChallenge);
   const startRetry = useFailedPostRetryStore((state) => state.startRetry);
   const endRetry = useFailedPostRetryStore((state) => state.endRetry);
   const navigate = useNavigate();
   const abandonPublishRef = useRef<(() => Promise<void>) | undefined>(undefined);
+  // The account-comment index the republished post got, reported by the publish itself.
+  const retryPendingIndexRef = useRef<number | undefined>(undefined);
   const { keepTripcode, forgetTripcode, onBeforeRepublish } = useTripcodeRepublish();
   const abandonCurrentPublish = useCallback(async () => {
     // Abandoning the republish challenge ends the retry. Clear the flag first so PendingPost resumes its
     // normal abandoned-challenge handling (back to the board) instead of staying stuck on an empty row.
-    setIsRetryRedirectPending(false);
     endRetry();
     forgetTripcode();
     await abandonPublishRef.current?.();
@@ -126,6 +126,9 @@ const useDeleteFailedPost = (post?: FailedPost, deleteRedirectPath?: string) => 
         ? {
             ...retryPublishOptions,
             ...(hasTripcodeProof(retryPublishOptions.author?.displayName) ? { onBeforeRepublish } : {}),
+            onPendingComment: (pendingIndex: number) => {
+              retryPendingIndexRef.current = pendingIndex;
+            },
             onChallenge: async (...args: any[]) => {
               addChallenge(args, abandonCurrentPublish);
             },
@@ -136,7 +139,6 @@ const useDeleteFailedPost = (post?: FailedPost, deleteRedirectPath?: string) => 
             onError: (error: Error) => {
               console.error('Failed to retry failed post:', error);
               forgetTripcode();
-              setIsRetryRedirectPending(false);
               endRetry();
               alert(`Failed to retry post: ${error.message}`);
             },
@@ -144,21 +146,8 @@ const useDeleteFailedPost = (post?: FailedPost, deleteRedirectPath?: string) => 
         : undefined,
     [abandonCurrentPublish, addChallenge, endRetry, forgetTripcode, onBeforeRepublish, retryPublishOptions],
   );
-  const { abandonPublish, index: retryPostIndex, publishComment } = usePublishComment(publishOptionsWithCallbacks);
+  const { abandonPublish, publishComment } = usePublishComment(publishOptionsWithCallbacks);
   abandonPublishRef.current = abandonPublish;
-
-  useEffect(() => {
-    if (!isRetryRedirectPending || typeof retryPostIndex !== 'number') {
-      return;
-    }
-
-    // oxlint-disable-next-line react/set-state-in-effect -- usePublishComment reports the stored retry only through its index state
-    setIsRetryRedirectPending(false);
-    // Navigate to the new pending row before clearing the retry flag so PendingPost never observes a
-    // committed "old index + no retry flag + no addressable post" state that would bounce to the board.
-    navigate(`/pending/${retryPostIndex}`, { replace: true });
-    endRetry();
-  }, [endRetry, isRetryRedirectPending, navigate, retryPostIndex]);
 
   const onDeleteFailedPost = useCallback(() => {
     if (isDeletingFailedPost || isRetryingFailedPost || !canDeleteFailedPost) {
@@ -197,7 +186,7 @@ const useDeleteFailedPost = (post?: FailedPost, deleteRedirectPath?: string) => 
     const accountCommentIndex = post?.index;
 
     setIsRetryingFailedPost(true);
-    setIsRetryRedirectPending(true);
+    retryPendingIndexRef.current = undefined;
     // Mark this pending row as mid-retry so the pending view does not treat the brief
     // post-delete gap (no addressable comment, no active challenge yet) as an abandoned challenge.
     if (typeof accountCommentIndex === 'number') {
@@ -207,16 +196,23 @@ const useDeleteFailedPost = (post?: FailedPost, deleteRedirectPath?: string) => 
     try {
       await deleteComment(targetComment);
       await publishComment();
+      // Finished here rather than from a later render: deleting the row often unmounts the post that started the
+      // retry. The republished comment is stored once publishComment resolves; navigating before clearing the flag
+      // keeps PendingPost from seeing the old index with no flag and no post, which it would leave for the board.
+      const retryPendingIndex = retryPendingIndexRef.current;
+      if (typeof retryPendingIndex === 'number') {
+        navigate(`/pending/${retryPendingIndex}`, { replace: true });
+      }
+      endRetry();
     } catch (error) {
       console.error('Failed to retry failed post:', error);
       forgetTripcode();
-      setIsRetryRedirectPending(false);
       endRetry();
       alert(`Failed to retry post: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsRetryingFailedPost(false);
     }
-  }, [endRetry, forgetTripcode, post, publishComment, startRetry]);
+  }, [endRetry, forgetTripcode, navigate, post, publishComment, startRetry]);
 
   // The retry publishes the options of the render that holds the new proof.
   useEffect(() => {

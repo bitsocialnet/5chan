@@ -18,7 +18,6 @@ const testState = vi.hoisted(() => ({
   lastPublishOptions: undefined as Record<string, any> | undefined,
   navigateMock: vi.fn(),
   publishCommentMock: vi.fn(async () => undefined),
-  publishIndex: undefined as number | undefined,
   signTripcodeMock: vi.fn(),
 }));
 
@@ -34,7 +33,6 @@ vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
     testState.lastPublishOptions = options;
     return {
       abandonPublish: testState.abandonPublishMock,
-      index: testState.publishIndex,
       publishComment: testState.publishCommentMock,
     };
   },
@@ -98,7 +96,6 @@ describe('useDeleteFailedPost', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     testState.lastPublishOptions = undefined;
-    testState.publishIndex = undefined;
     vi.stubGlobal('alert', testState.alertMock);
     useChallengesStore.setState({ challenges: [] });
     useFailedPostRetryStore.setState({ retryingAccountCommentIndex: null });
@@ -251,14 +248,12 @@ describe('useDeleteFailedPost', () => {
 
   it('redirects retry publishes to the new pending row', async () => {
     testState.publishCommentMock.mockImplementationOnce(async () => {
-      testState.publishIndex = 12;
+      testState.lastPublishOptions?.onPendingComment?.(12, { index: 12 });
     });
 
     await act(async () => {
       await latestValue.onRetryFailedPost();
     });
-    renderHook();
-    await flushEffects();
 
     expect(testState.navigateMock).toHaveBeenCalledWith('/pending/12', { replace: true });
   });
@@ -267,7 +262,7 @@ describe('useDeleteFailedPost', () => {
     let flaggedIndexDuringPublish: number | null = null;
     testState.publishCommentMock.mockImplementationOnce(async () => {
       flaggedIndexDuringPublish = useFailedPostRetryStore.getState().retryingAccountCommentIndex;
-      testState.publishIndex = 12;
+      testState.lastPublishOptions?.onPendingComment?.(12, { index: 12 });
     });
 
     await act(async () => {
@@ -276,10 +271,6 @@ describe('useDeleteFailedPost', () => {
 
     // The pending view reads this flag to avoid redirecting away during the delete/republish gap.
     expect(flaggedIndexDuringPublish).toBe(failedPost.index);
-
-    renderHook();
-    await flushEffects();
-
     expect(testState.navigateMock).toHaveBeenCalledWith('/pending/12', { replace: true });
     expect(useFailedPostRetryStore.getState().retryingAccountCommentIndex).toBeNull();
   });
@@ -293,6 +284,32 @@ describe('useDeleteFailedPost', () => {
       await latestValue.onRetryFailedPost();
     });
 
+    expect(useFailedPostRetryStore.getState().retryingAccountCommentIndex).toBeNull();
+  });
+
+  it('redirects to the republished row and ends the retry after the post that started it unmounted', async () => {
+    let finishDelete: () => void = () => {};
+    testState.deleteCommentMock.mockImplementationOnce(() => new Promise<undefined>((resolve) => (finishDelete = () => resolve(undefined))));
+    // Like the hooks' publish, the pending comment is reported, and stored, before publishComment resolves.
+    testState.publishCommentMock.mockImplementationOnce(async () => {
+      testState.lastPublishOptions?.onPendingComment?.(12, { index: 12 });
+    });
+
+    let retry: Promise<void> | undefined;
+    await act(async () => {
+      retry = latestValue.onRetryFailedPost();
+    });
+    // Deleting the row leaves the pending page without its post, so the post and this hook unmount.
+    await act(async () => {
+      root.render(null);
+    });
+    await act(async () => {
+      finishDelete();
+      await retry;
+    });
+    await flushEffects();
+
+    expect(testState.navigateMock).toHaveBeenCalledWith('/pending/12', { replace: true });
     expect(useFailedPostRetryStore.getState().retryingAccountCommentIndex).toBeNull();
   });
 
