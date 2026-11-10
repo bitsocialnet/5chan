@@ -14,6 +14,8 @@ export type PendingUploadPhase = 'spam_check' | UploadPhase;
  */
 export interface PendingUploadPost {
   id: number;
+  /** The account that submitted the post, which its pre-check pass, name and tripcode were made for. */
+  accountId?: string;
   attachment: AttachedMedia;
   /** The other files chosen with it, which become the comment's gallery. */
   galleryAttachments?: AttachedMedia[];

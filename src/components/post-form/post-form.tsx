@@ -1071,6 +1071,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
             timestamp: Math.floor(Date.now() / 1000),
           };
           const { id: pendingUploadId } = usePendingUploadPostStore.getState().startPendingUploadPost({
+            accountId: account?.id,
             attachment,
             analyticsAttempt: attempt,
             ...(galleryAttachments.length > 0 ? { galleryAttachments } : {}),

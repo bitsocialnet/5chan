@@ -605,5 +605,6 @@
   "show_filter_image_md5_in_post_menu": "Näytä ”Suodata kuvan MD5” viestien valikoissa",
   "tripcode_sign_failed": "Tripcodeasi ei voitu allekirjoittaa tälle laudalle. Odota, että lauta latautuu, ja yritä uudelleen, tai lähetä viesti ilman tripcodea.",
   "tripcode_retry_mismatch": "Yrittääksesi tätä viestiä uudelleen kirjoita sen tripcode uudelleen nimikenttään tai poista viesti.",
-  "directory_vote_lapse_notice": "Äänesi lasketaan niin kauan kuin vierailet tässä hakemistossa tai laudalla, jota äänestit, ja se voi vanhentua jo kaksi viikkoa viimeisen vierailusi jälkeen."
+  "directory_vote_lapse_notice": "Äänesi lasketaan niin kauan kuin vierailet tässä hakemistossa tai laudalla, jota äänestit, ja se voi vanhentua jo kaksi viikkoa viimeisen vierailusi jälkeen.",
+  "account_switched_before_publish": "Vaihdoit tiliä ennen kuin tämä viesti julkaistiin, joten sitä ei lähetetty. Lähetä se uudelleen tililtä, jota haluat käyttää."
 }

@@ -17,7 +17,7 @@ const testState = vi.hoisted(() => ({
   account: {
     author: { address: 'alice.eth', displayName: 'Alice' },
     subscriptions: ['music-posting.eth'],
-  } as { author?: { address?: string; displayName?: string }; subscriptions?: string[] },
+  } as { author?: { address?: string; displayName?: string }; id?: string; subscriptions?: string[] },
   accountComment: undefined as { communityAddress?: string } | undefined,
   bestAvailableYouTubeThumbnailMock: undefined as undefined | ((link: string) => Promise<string | undefined>),
   accountCommunityAddresses: ['mod.eth'] as string[],
@@ -1865,6 +1865,7 @@ describe('PostForm', () => {
     testState.resolvedCommunityAddress = 'music-posting.eth';
     testState.communities['music-posting.eth'] = { address: 'music-posting.eth', challenges };
     testState.chooseFileMock.mockResolvedValue(attachment);
+    testState.account = { ...testState.account, id: 'account-1' };
 
     await renderPostForm('/mu');
     await clickByText(container, 'start_new_thread');
@@ -1885,6 +1886,8 @@ describe('PostForm', () => {
     expect(testState.publishPostMock).not.toHaveBeenCalled();
     const pendingUploadPost = usePendingUploadPostStore.getState().pendingUploadPosts[0];
     expect(pendingUploadPost).toMatchObject({
+      // The publisher sends the post back to its form if another account is active by the time it publishes.
+      accountId: 'account-1',
       attachment,
       boardChallenges: challenges,
       boardPath: 'mu',

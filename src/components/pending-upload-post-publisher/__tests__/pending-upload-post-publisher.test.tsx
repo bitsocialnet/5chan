@@ -21,6 +21,7 @@ type PublishPostOptions = {
 };
 
 const testState = vi.hoisted(() => ({
+  activeAccountId: 'account-1' as string | undefined,
   analyticsMock: vi.fn(),
   navigateMock: vi.fn(),
   pathname: '/pending/upload',
@@ -42,6 +43,10 @@ vi.mock('react-i18next', () => ({
 vi.mock('react-router-dom', () => ({
   useLocation: () => ({ pathname: testState.pathname, state: testState.locationState }),
   useNavigate: () => testState.navigateMock,
+}));
+
+vi.mock('../../../lib/bitsocial-internals/stores', () => ({
+  accountsStore: { getState: () => ({ activeAccountId: testState.activeAccountId }) },
 }));
 
 vi.mock('../../../hooks/use-file-upload', () => ({
@@ -81,6 +86,7 @@ const flush = async () => {
 
 const submitPost = async (
   overrides: {
+    accountId?: string;
     analyticsAttempt?: PostingAnalyticsAttempt;
     galleryAttachments?: AttachedMedia[];
     nonokoRedirectPath?: string | null;
@@ -90,6 +96,7 @@ const submitPost = async (
   usePostFormDraftsStore.getState().updateDraft('/mu', { attachment, galleryAttachments: overrides.galleryAttachments, content: 'thread body' });
   usePostFormDraftsStore.getState().closeForm('/mu');
   const pendingUploadPost = usePendingUploadPostStore.getState().startPendingUploadPost({
+    accountId: overrides.accountId ?? 'account-1',
     attachment,
     analyticsAttempt: overrides.analyticsAttempt,
     ...(overrides.galleryAttachments ? { galleryAttachments: overrides.galleryAttachments } : {}),
@@ -109,6 +116,7 @@ const submitPost = async (
 
 describe('PendingUploadPostPublisher', () => {
   beforeEach(() => {
+    testState.activeAccountId = 'account-1';
     testState.analyticsMock.mockReset();
     testState.navigateMock.mockReset();
     testState.pathname = '/pending/upload';
@@ -465,6 +473,42 @@ describe('PendingUploadPostPublisher', () => {
 
     expect(testState.uploadAttachmentMock).not.toHaveBeenCalled();
     expect(usePostFormDraftsStore.getState().forms['/mu']?.submissionError).toBe('error: randomUUID is not available');
+    expect(usePendingUploadPostStore.getState().pendingUploadPosts).toEqual([]);
+  });
+
+  it('returns to the form without uploading when the author switches accounts during the spam blocker check', async () => {
+    testState.precheckMock.mockImplementation(async () => {
+      testState.activeAccountId = 'account-2';
+      return { status: 'passed', challengeAnswers: ['precheck-pass'] };
+    });
+
+    await submitPost();
+
+    expect(testState.uploadAttachmentMock).not.toHaveBeenCalled();
+    expect(testState.publishPostMock).not.toHaveBeenCalled();
+    expect(usePostFormDraftsStore.getState().forms['/mu']).toMatchObject({
+      isOpen: true,
+      submissionError: 'error: account_switched_before_publish',
+      draft: { attachment },
+    });
+    expect(usePendingUploadPostStore.getState().pendingUploadPosts).toEqual([]);
+  });
+
+  it('returns to the form without publishing when the author switches accounts during the upload', async () => {
+    testState.uploadAttachmentMock.mockImplementation(async () => {
+      testState.activeAccountId = 'account-2';
+      return { url: 'https://forgeimg.net/abc/chosen.png', fileName: 'chosen.png' };
+    });
+
+    await submitPost();
+
+    expect(testState.publishPostMock).not.toHaveBeenCalled();
+    // Posting again from the form publishes the uploaded link instead of uploading the file again.
+    expect(usePostFormDraftsStore.getState().forms['/mu']).toMatchObject({
+      isOpen: true,
+      submissionError: 'error: account_switched_before_publish',
+      draft: { attachment: undefined, link: 'https://forgeimg.net/abc/chosen.png' },
+    });
     expect(usePendingUploadPostStore.getState().pendingUploadPosts).toEqual([]);
   });
 
