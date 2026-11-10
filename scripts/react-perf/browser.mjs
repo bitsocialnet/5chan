@@ -81,18 +81,45 @@ export async function withBrowser(packageRoot, headed, run) {
   let busy = false;
   let primaryError;
   let browser;
+  let interrupted;
+  // The pw-session browser outlives this process, and Node's default exit on a signal
+  // would skip the finally below and leave it holding the machine-wide slot. Disconnecting
+  // fails the running callback instead, so the finally still closes the exact session.
+  // Repeating the same signal falls back to the default exit. After a hangup the terminal
+  // is gone: writes to it fail, and opening it for a first write can block. So stderr is
+  // resolved now and its write errors are ignored from the first signal on.
+  const stderr = process.stderr;
+  const ignoreWriteError = () => {};
+  const stopOnSignal = (signal) => {
+    interrupted ??= signal;
+    stderr.on('error', ignoreWriteError);
+    stderr.write(`[perf] ${signal}: closing browser session ${session}\n`);
+    if (browser) void browser.close().catch(() => {});
+  };
+  const throwIfInterrupted = () => {
+    if (interrupted) throw new Error(`Interrupted by ${interrupted}`);
+  };
+  // SIGHUP comes from a closed terminal, or from agent:verify forwarding one to its command.
+  const stopSignals = ['SIGINT', 'SIGTERM', 'SIGHUP'];
+  for (const signal of stopSignals) process.once(signal, stopOnSignal);
   try {
     attempted = true;
     const result = await exec('bash', [wrapper, 'open', session, 'about:blank', `--config=${config}`], { cwd: repoRoot, env, timeout: 60000 });
     process.stderr.write(result.stdout);
+    throwIfInterrupted();
     browser = await driver.chromium.connectOverCDP(`http://127.0.0.1:${port}`);
-    return await run(browser);
+    throwIfInterrupted();
+    const value = await run(browser);
+    // A signal after the callback stopped using the browser does not fail it, but still ends the run.
+    throwIfInterrupted();
+    return value;
   } catch (error) {
     primaryError = error;
     busy = error.code === 75;
     if (busy) error.message = `Browser slot busy; retry after the owning task closes its browser. ${error.stderr || ''}`;
     throw error;
   } finally {
+    for (const signal of stopSignals) process.off(signal, stopOnSignal);
     // close() on a CDP connection disconnects the client; the wrapper closes
     // the actual owned browser and releases its exact session's global lock.
     const failures = [];
