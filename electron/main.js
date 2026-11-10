@@ -113,8 +113,12 @@ contextMenu({
   showSearchWithGoogle: false,
 });
 
+// Module-level so the application menu, set up once, acts on the window that is open now.
+// On macOS the window can be closed and re-created from the dock while the app keeps running.
+let mainWindow = null;
+
 const createMainWindow = () => {
-  let mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 1000,
     height: 600,
     show: false,
@@ -315,7 +319,10 @@ const createMainWindow = () => {
       });
     }
   }
+};
 
+// Runs once per app launch: on macOS every window re-creation would otherwise insert another set of items.
+const setupApplicationMenu = () => {
   const appMenuBack = new MenuItem({
     label: '←',
     enabled: mainWindow?.webContents?.canGoBack(),
@@ -378,6 +385,7 @@ app.whenReady().then(() => {
   }
 
   createMainWindow();
+  setupApplicationMenu();
 
   app.on('activate', () => {
     if (!BrowserWindow.getAllWindows().length) {
