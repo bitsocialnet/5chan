@@ -12,6 +12,7 @@ const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise
 const testState = vi.hoisted(() => ({
   resolveExternalQuoteTargetMock: vi.fn(),
   setErrorStatusMock: vi.fn(),
+  useCommentMock: vi.fn(),
 }));
 
 vi.mock('react-i18next', () => ({
@@ -28,6 +29,7 @@ vi.mock('react-i18next', () => ({
 
 vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
   useAccount: () => ({ id: 'account-1' }),
+  useComment: (options: unknown) => testState.useCommentMock(options),
 }));
 
 vi.mock('@floating-ui/react', () => ({
@@ -139,9 +141,30 @@ const settle = async (callback: () => void) => {
   });
 };
 
+const renderLink = async (number: number) => {
+  await act(async () => {
+    root.render(createElement(MemoryRouter, {}, createElement(ExternalNumberQuoteLink, { reference: createReference(number) })));
+  });
+};
+
+const hoverLink = async () => {
+  await settle(() => {
+    container.querySelector('a')?.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+  });
+};
+
+const leaveLink = async () => {
+  await settle(() => {
+    container.querySelector('a')?.dispatchEvent(new MouseEvent('mouseout', { bubbles: true }));
+  });
+};
+
+const getPreviewText = () => document.body.querySelector(`.${postStyles.replyQuotePreview}`)?.textContent;
+
 describe('ExternalNumberQuoteLink', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    testState.useCommentMock.mockReturnValue(undefined);
     window.history.replaceState(null, '', '#/biz/thread/current');
     navigateInApp = undefined;
     container = document.createElement('div');
@@ -307,5 +330,75 @@ describe('ExternalNumberQuoteLink', () => {
     await settle(() => resolutions.get(78)?.resolve(createTarget(78)));
 
     expect(getRenderedPathname()).toBe('/fit/thread/cid-78');
+  });
+
+  it('loads the quoted post for the preview when only its cid is known', async () => {
+    const { comment: _comment, ...cidOnlyTarget } = createTarget(77);
+    testState.resolveExternalQuoteTargetMock.mockResolvedValue(cidOnlyTarget);
+    testState.useCommentMock.mockImplementation(({ commentCid, onlyIfCached }: { commentCid?: string; onlyIfCached?: boolean }) =>
+      commentCid === 'cid-77' && !onlyIfCached ? { cid: 'cid-77', number: 77, parentCid: 'cid-1', timestamp: 1, updatedAt: 2 } : undefined,
+    );
+
+    await renderLink(77);
+    await hoverLink();
+
+    expect(document.body.querySelector('[data-testid="post-preview"]')?.textContent).toBe('cid-77');
+  });
+
+  it('keeps a cid-only quote loading until its moderation state arrives', async () => {
+    const { comment: _comment, ...cidOnlyTarget } = createTarget(77);
+    testState.resolveExternalQuoteTargetMock.mockResolvedValue(cidOnlyTarget);
+    // The post itself loads before its CommentUpdate, which is where deleted, removed and purged live.
+    let loadedComment: Record<string, unknown> = { cid: 'cid-77', parentCid: 'cid-1', timestamp: 1 };
+    testState.useCommentMock.mockImplementation(({ commentCid }: { commentCid?: string }) => (commentCid === 'cid-77' ? loadedComment : undefined));
+
+    await renderLink(77);
+    await hoverLink();
+
+    expect(getPreviewText()).toBe('loading_post');
+    expect(document.body.querySelector('[data-testid="post-preview"]')).toBeNull();
+
+    loadedComment = { ...loadedComment, number: 77, removed: true, updatedAt: 2 };
+    await renderLink(77);
+
+    expect(getPreviewText()).toBe('external_quote_unavailable');
+  });
+
+  it('shows the post as loading, not unavailable, until a cid-only quote loads', async () => {
+    const { comment: _comment, ...cidOnlyTarget } = createTarget(77);
+    testState.resolveExternalQuoteTargetMock.mockResolvedValue(cidOnlyTarget);
+
+    await renderLink(77);
+    await hoverLink();
+
+    expect(getPreviewText()).toBe('loading_post');
+  });
+
+  it('reports a loaded cid-only quote that was removed as unavailable', async () => {
+    const { comment: _comment, ...cidOnlyTarget } = createTarget(77);
+    testState.resolveExternalQuoteTargetMock.mockResolvedValue(cidOnlyTarget);
+    testState.useCommentMock.mockImplementation(({ commentCid }: { commentCid?: string }) =>
+      commentCid === 'cid-77' ? { cid: 'cid-77', number: 77, removed: true, timestamp: 1, updatedAt: 2 } : undefined,
+    );
+
+    await renderLink(77);
+    await hoverLink();
+
+    expect(getPreviewText()).toBe('external_quote_unavailable');
+  });
+
+  it('searches again for a quote that was not found before', async () => {
+    testState.resolveExternalQuoteTargetMock.mockResolvedValueOnce(null).mockResolvedValueOnce(createTarget(77));
+
+    await renderLink(77);
+    await hoverLink();
+
+    expect(getPreviewText()).toBe('external_quote_cannot_resolve:>>>/fit/77:fit');
+
+    await leaveLink();
+    await hoverLink();
+
+    expect(testState.resolveExternalQuoteTargetMock).toHaveBeenCalledTimes(2);
+    expect(document.body.querySelector('[data-testid="post-preview"]')?.textContent).toBe('cid-77');
   });
 });
