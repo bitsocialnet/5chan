@@ -1082,7 +1082,8 @@ describe('ModQueueView', () => {
     testState.feed = [remainingComment];
     await renderModQueue();
 
-    expect(document.body.querySelectorAll('[role="dialog"][aria-labelledby="post-transfer-title"]')).toHaveLength(0);
+    // The modal is not tied to the hidden row, so it stays open and keeps the lock while it publishes.
+    expect(document.body.querySelectorAll('[role="dialog"][aria-labelledby="post-transfer-title"]')).toHaveLength(1);
     expect(Array.from(container.querySelectorAll<HTMLButtonElement>('button')).filter((button) => button.textContent === 'Trash')).toHaveLength(0);
 
     await act(async () => {
@@ -1090,7 +1091,76 @@ describe('ModQueueView', () => {
       await Promise.resolve();
     });
 
+    expect(dialog?.textContent).toContain('modQueue.transferSuccess');
+    const closeButton = Array.from(dialog?.querySelectorAll<HTMLButtonElement>('button') ?? []).find((button) => button.textContent === 'close');
+    await act(async () => {
+      closeButton?.click();
+    });
+
     expect(Array.from(container.querySelectorAll<HTMLButtonElement>('button')).filter((button) => button.textContent === 'Trash')).toHaveLength(1);
+  });
+
+  it('keeps a publishing transfer when its row unmounts and mounts again', async () => {
+    const activeComment = {
+      cid: 'wrong-board-post',
+      communityAddress: 'music-posting.eth',
+      content: 'belongs on trash',
+      number: 8,
+      pendingApproval: true,
+      timestamp: 90_000,
+    };
+    const remainingComment = {
+      cid: 'other-post',
+      communityAddress: 'music-posting.eth',
+      content: 'stays in the queue',
+      number: 9,
+      pendingApproval: true,
+      timestamp: 91_000,
+    };
+    testState.feed = [activeComment, remainingComment];
+
+    await renderModQueue();
+
+    const transferButton = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.textContent === 'Trash');
+    await act(async () => {
+      transferButton?.click();
+    });
+    const submitButton = Array.from(
+      document.body.querySelector('[role="dialog"][aria-labelledby="post-transfer-title"]')?.querySelectorAll<HTMLButtonElement>('button') ?? [],
+    ).find((button) => button.type === 'submit');
+    await act(async () => {
+      submitButton?.click();
+      await Promise.resolve();
+    });
+    const [payload] = testState.publishCommentMock.mock.calls[0];
+
+    // The row unmounts (scrolled out of a virtualized list, view switch, or a feed refresh) and comes back.
+    testState.feed = [remainingComment];
+    await renderModQueue();
+    testState.feed = [activeComment, remainingComment];
+    await renderModQueue();
+
+    const dialogs = document.body.querySelectorAll<HTMLElement>('[role="dialog"][aria-labelledby="post-transfer-title"]');
+    expect(dialogs).toHaveLength(1);
+    const remountedSubmitButton = Array.from(dialogs[0]?.querySelectorAll<HTMLButtonElement>('button') ?? []).find((button) => button.type === 'submit');
+    await act(async () => {
+      remountedSubmitButton?.click();
+      await Promise.resolve();
+    });
+    expect(testState.createAccountMock).toHaveBeenCalledTimes(1);
+    expect(remountedSubmitButton?.disabled).toBe(true);
+    // The remounted row still shows the transfer publishing; the other row keeps approve/reject but no Trash.
+    expect(container.querySelector('[data-testid="loading-ellipsis"]')?.textContent).toBe('publishing');
+    expect(Array.from(container.querySelectorAll<HTMLButtonElement>('button')).filter((button) => button.textContent === 'approve')).toHaveLength(1);
+    expect(Array.from(container.querySelectorAll<HTMLButtonElement>('button')).some((button) => button.textContent === 'Trash')).toBe(false);
+
+    await act(async () => {
+      await payload.onChallengeVerification({ challengeSuccess: true, commentUpdate: { cid: 'transferred-post', number: 12 } }, { cid: 'transferred-post' });
+      await Promise.resolve();
+    });
+
+    expect(dialogs[0]?.textContent).toContain('modQueue.transferSuccess');
+    expect(container.textContent).toContain('rejected');
   });
 
   it('does not show transfer for queued replies', async () => {
