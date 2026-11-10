@@ -183,8 +183,8 @@ for _ in $(seq 1 120); do
   sleep 1
 done
 
-STAGED_TARGET="${TARGET_APP}.new"
-PREVIOUS_TARGET="${TARGET_APP}.old"
+STAGED_TARGET="\${TARGET_APP}.new"
+PREVIOUS_TARGET="\${TARGET_APP}.old"
 rm -rf "$STAGED_TARGET" "$PREVIOUS_TARGET"
 /usr/bin/ditto "$SOURCE_APP" "$STAGED_TARGET"
 if [ -e "$TARGET_APP" ]; then
