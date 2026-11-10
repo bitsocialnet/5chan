@@ -34,13 +34,20 @@ if (process.platform === 'linux') {
 }
 
 let startIpfsError;
-startIpfs.onError = (error) => {
+let startIpfsErrorShown = false;
+// Before the app is ready the dialog is not a GUI box on Linux (it goes to stderr), so an early error
+// waits for the window's ready-to-show.
+const showStartIpfsError = () => {
   // only show error once or it spams the user
-  const alreadyShownIpfsError = !!startIpfsError;
-  startIpfsError = error;
-  if (!alreadyShownIpfsError && error.message) {
-    dialog.showErrorBox('IPFS warning', error.message);
+  if (startIpfsErrorShown || !startIpfsError?.message || !app.isReady()) {
+    return;
   }
+  startIpfsErrorShown = true;
+  dialog.showErrorBox('IPFS warning', startIpfsError.message);
+};
+startIpfs.onError = (error) => {
+  startIpfsError = error;
+  showStartIpfsError();
 };
 
 // Send the local PKC RPC auth key to the isolated renderer bridge.
@@ -188,9 +195,7 @@ const createMainWindow = () => {
       mainWindow.openDevTools();
     }
 
-    if (startIpfsError) {
-      dialog.showErrorBox('IPFS warning', startIpfsError.message);
-    }
+    showStartIpfsError();
   });
 
   mainWindow.on('closed', () => {

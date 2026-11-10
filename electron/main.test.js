@@ -185,3 +185,32 @@ describe('main window lifecycle', () => {
     expect(menuLabels()).toEqual(['←', '→', '⟳', 'appMenu', 'fileMenu']);
   });
 });
+
+describe('IPFS warning', () => {
+  it.each(['darwin', 'linux'])('shows an error from before the app is ready once, when the window is ready (%s)', async (platform) => {
+    const { becomeReady, currentWindow, showErrorBox } = await loadMain(platform);
+    h.startIpfs.onError(new Error('kubo failed'));
+    expect(showErrorBox).not.toHaveBeenCalled();
+
+    await becomeReady();
+    currentWindow().emit('ready-to-show');
+    expect(showErrorBox).toHaveBeenCalledTimes(1);
+    expect(showErrorBox).toHaveBeenCalledWith('IPFS warning', 'kubo failed');
+
+    // The restart loop reports the same failure again every second.
+    h.startIpfs.onError(new Error('kubo failed'));
+    expect(showErrorBox).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not show the warning again for a window reopened on macOS', async () => {
+    const { becomeReady, currentWindow, reopenWindowOnMac, showErrorBox } = await loadMain('darwin');
+    await becomeReady();
+    currentWindow().emit('ready-to-show');
+    h.startIpfs.onError(new Error('kubo failed'));
+    expect(showErrorBox).toHaveBeenCalledTimes(1);
+
+    reopenWindowOnMac();
+    currentWindow().emit('ready-to-show');
+    expect(showErrorBox).toHaveBeenCalledTimes(1);
+  });
+});
