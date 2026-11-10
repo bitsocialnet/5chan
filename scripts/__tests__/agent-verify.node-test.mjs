@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
+import { once } from 'node:events';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -130,6 +131,47 @@ test('unknown or stale lock metadata is not removed automatically', async (t) =>
   assert.equal(readFileSync(path.join(lockPath, 'owner.json'), 'utf8'), '{unreadable');
 });
 
+function writeOwner(lockPath, owner, command) {
+  mkdirSync(lockPath);
+  writeFileSync(path.join(lockPath, 'owner.json'), JSON.stringify({ cwd: '/killed-run', startedAt: '2026-01-01T00:00:00.000Z', token: 'killed-run', ...owner }));
+  if (command !== undefined) writeFileSync(path.join(lockPath, 'command.pid'), command);
+}
+
+// The PID of a process that has already exited.
+const exitedPid = () => spawnSync(process.execPath, ['-e', '']).pid;
+
+test('a lock whose run and last command have exited is reclaimed', async (t) => {
+  const { lockPath, logPath, command, options, output } = fixture(t);
+  writeOwner(lockPath, { pid: exitedPid() }, String(exitedPid()));
+  assert.equal(await runVerification({ ...options, commands: [command('build')] }), 0);
+  assert.match(output.join('\n'), /Reclaimed an abandoned verification lock \(PID \d+, \/killed-run/);
+  assert.equal(readFileSync(logPath, 'utf8'), 'build:start\nbuild:end\n');
+  assert.equal(existsSync(lockPath), false);
+});
+
+test('a lock is kept while the command of a killed run is still running', async (t) => {
+  const { lockPath, logPath, command, options } = fixture(t);
+  const orphan = spawn(process.execPath, ['-e', 'setInterval(() => {}, 1000)'], { detached: true, stdio: 'ignore' });
+  const orphanExited = new Promise((resolve) => orphan.once('exit', resolve));
+  t.after(() => orphan.kill('SIGKILL'));
+  writeOwner(lockPath, { pid: exitedPid() }, String(orphan.pid));
+  assert.equal(await runVerification({ ...options, commands: [command('must-not-run')] }), 75);
+  assert.equal(existsSync(logPath), false);
+  assert.equal(existsSync(path.join(lockPath, 'owner.json')), true);
+  orphan.kill('SIGKILL');
+  await orphanExited;
+  assert.equal(await runVerification({ ...options, commands: [command('build')] }), 0);
+  assert.equal(readFileSync(logPath, 'utf8'), 'build:start\nbuild:end\n');
+});
+
+test('a lock without command details is never reclaimed automatically', async (t) => {
+  const { lockPath, logPath, command, options } = fixture(t);
+  writeOwner(lockPath, { pid: exitedPid() });
+  assert.equal(await runVerification({ ...options, commands: [command('must-not-run')] }), 75);
+  assert.equal(existsSync(logPath), false);
+  assert.equal(existsSync(path.join(lockPath, 'owner.json')), true);
+});
+
 test('a replaced lock is preserved and reported as a failure', async (t) => {
   const { root, lockPath, logPath, command, options, output } = fixture(t);
   const gate = path.join(root, 'release-command');
@@ -144,15 +186,24 @@ test('a replaced lock is preserved and reported as a failure', async (t) => {
   assert.equal(readFileSync(ownerPath, 'utf8'), replacement);
 });
 
-test('termination forwards to the active command, stops later checks, and releases the lock', async (t) => {
-  const { root, lockPath, logPath, command } = fixture(t);
-  const run = launchVerification({ cwd: root, lockPath, commands: [command('build', 0, path.join(root, 'never-created')), command('must-not-run')] });
-  t.after(() => run.child.kill('SIGTERM'));
-  await waitForFile(logPath);
-  run.child.kill('SIGTERM');
-  const result = await run.completed;
-  assert.equal(result.code, 143);
-  assert.match(result.output, /signal SIGTERM/);
-  assert.equal(readFileSync(logPath, 'utf8'), 'build:start\n');
-  assert.equal(existsSync(lockPath), false);
-});
+for (const [signal, code] of [
+  ['SIGTERM', 143],
+  ['SIGHUP', 129],
+]) {
+  test(`${signal} forwards to the active command, stops later checks, and releases the lock`, async (t) => {
+    const { root, lockPath, logPath, command } = fixture(t);
+    const gate = path.join(root, 'release-command');
+    const run = launchVerification({ cwd: root, lockPath, commands: [command('build', 0, gate), command('must-not-run')] });
+    t.after(() => run.child.kill('SIGKILL'));
+    await waitForFile(logPath);
+    run.child.kill(signal);
+    await once(run.child, 'exit');
+    // Let a command the run failed to stop finish, so the output pipes it inherited close.
+    writeFileSync(gate, 'continue');
+    const result = await run.completed;
+    assert.equal(result.code, code);
+    assert.match(result.output, new RegExp(`signal ${signal}`));
+    assert.equal(readFileSync(logPath, 'utf8'), 'build:start\n');
+    assert.equal(existsSync(lockPath), false);
+  });
+}
