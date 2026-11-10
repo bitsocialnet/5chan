@@ -305,6 +305,38 @@ describe('media-playback-utils', () => {
     root.remove();
   });
 
+  it('restores a suspended embed when its container returns before the embed itself scrolls into view', async () => {
+    const root = document.createElement('div');
+    const { container, iframe, srcdocIframe, video } = createExpandedMedia();
+    vi.spyOn(video, 'pause').mockImplementation(() => {});
+    const abovePlayerRect = createClientRect({ bottom: -20, height: 300, left: 0, right: 400, top: -320, width: 400 });
+    let mediaRect = abovePlayerRect;
+    for (const media of [video, iframe, srcdocIframe]) {
+      vi.spyOn(media, 'getBoundingClientRect').mockImplementation(() => mediaRect);
+    }
+    root.append(container);
+    document.body.append(root);
+
+    const cleanup = observeOffscreenMediaPlayback(root);
+    const observer = MockIntersectionObserver.instances[0];
+
+    observer.trigger(container, false);
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(iframe.getAttribute('src')).toBe('about:blank');
+
+    // Scrolling back up, the rows under the player (file info, Close) enter the viewport first, and
+    // the observer reports no further change once the player follows them in.
+    observer.trigger(container, true);
+    mediaRect = VISIBLE_RECT;
+    await vi.advanceTimersByTimeAsync(1000);
+
+    expect(iframe.getAttribute('src')).toBe('https://player.example.com/embed');
+    expect(srcdocIframe.getAttribute('srcdoc')).toBe('<p>embedded player</p>');
+
+    cleanup();
+    root.remove();
+  });
+
   it('cancels the offscreen suspend when expanded media returns before the delay passes', async () => {
     const root = document.createElement('div');
     const { container, iframe, video } = createExpandedMedia();
