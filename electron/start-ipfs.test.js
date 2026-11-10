@@ -13,6 +13,14 @@ const exitCleanly = (child) => {
   child.emit('exit', 0, null);
   child.emit('close', 0, null);
 };
+const exitWithError = (child) => {
+  child.stderr.emit('data', Buffer.from('Error: serveHTTPGateway: address already in use'));
+  child.emit('exit', 1, null);
+  child.emit('close', 1, null);
+};
+const becomeReady = (child) => {
+  child.stdout.emit('data', Buffer.from('Daemon is ready'));
+};
 
 let exitListenersBefore = [];
 
@@ -103,5 +111,54 @@ describe('start-ipfs auto restart', () => {
 
     await tick();
     expect(check).toHaveBeenCalledTimes(3);
+  });
+
+  it('does not add a kill-on-exit listener per daemon attempt or kill exited daemons', async () => {
+    const { startIpfs, spawn, kill, tick, addedExitListeners } = await loadStartIpfs({
+      behavior: (args) => (daemonArgs(args) ? exitWithError : exitCleanly),
+    });
+
+    for (let attempt = 0; attempt < 5; attempt++) {
+      await tick();
+    }
+    expect(spawn.mock.calls.filter(([, args]) => daemonArgs(args))).toHaveLength(5);
+    expect(startIpfs.onError).toHaveBeenCalledTimes(5);
+    expect(addedExitListeners().length).toBeLessThanOrEqual(1);
+
+    // Every daemon already exited, so quitting must not signal any of their PIDs.
+    for (const listener of addedExitListeners()) listener();
+    expect(kill).not.toHaveBeenCalled();
+  });
+
+  it('kills only the running daemon on exit', async () => {
+    let daemonStarts = 0;
+    const { spawn, kill, tick, addedExitListeners } = await loadStartIpfs({
+      behavior: (args) => {
+        if (!daemonArgs(args)) return exitCleanly;
+        daemonStarts += 1;
+        return daemonStarts === 1 ? exitWithError : becomeReady;
+      },
+    });
+
+    await tick();
+    await tick();
+    const daemonPids = spawn.mock.calls.flatMap(([, args], index) => (daemonArgs(args) ? [spawn.mock.results[index].value.pid] : []));
+    expect(daemonPids).toHaveLength(2);
+
+    for (const listener of addedExitListeners()) listener();
+    expect(kill.mock.calls.map(([pid]) => pid)).toEqual([daemonPids[1], daemonPids[1] + 1]);
+  });
+
+  it('starts the dev proxy once across start attempts', async () => {
+    const { proxyStart, tick } = await loadStartIpfs({
+      isDev: true,
+      behavior: (args) => (daemonArgs(args) ? exitWithError : exitCleanly),
+    });
+
+    await tick();
+    await tick();
+    await tick();
+    expect(proxyStart).toHaveBeenCalledTimes(1);
+    expect(proxyStart).toHaveBeenCalledWith({ proxyPort: 50019, targetPort: 50029 });
   });
 });

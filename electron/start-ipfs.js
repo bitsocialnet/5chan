@@ -102,6 +102,29 @@ const spawnAsync = (...args) =>
     });
   });
 
+// The auto restart below calls startIpfs again after every failed attempt, so per-app state lives here:
+// the daemon that is running now, and whether the dev proxy is already listening.
+let ipfsDaemonProcess;
+let isProxyServerStarted = false;
+
+// On quit, kill only the running daemon, never the PIDs of daemons that already exited.
+process.on('exit', () => {
+  if (!ipfsDaemonProcess) {
+    return;
+  }
+  try {
+    ps.kill(ipfsDaemonProcess.pid);
+  } catch (e) {
+    console.log(e);
+  }
+  try {
+    // sometimes ipfs doesnt exit unless we kill pid +1
+    ps.kill(ipfsDaemonProcess.pid + 1);
+  } catch (e) {
+    console.log(e);
+  }
+});
+
 const startIpfs = async () => {
   const ipfsPath = await getKuboPath();
   const ipfsDataPath = path.join(getPkcDataPath({ isDev, projectRoot }), 'ipfs');
@@ -135,7 +158,10 @@ const startIpfs = async () => {
   let apiAddress = '/ip4/127.0.0.1/tcp/50019';
   if (isDev) {
     apiAddress = apiAddress.replace('50019', '50029');
-    proxyServer.start({ proxyPort: 50019, targetPort: 50029 });
+    if (!isProxyServerStarted) {
+      isProxyServerStarted = true;
+      proxyServer.start({ proxyPort: 50019, targetPort: 50029 });
+    }
   }
   await spawnAsync(ipfsPath, ['config', 'Addresses.API', apiAddress], { env, hideWindows: true });
 
@@ -143,6 +169,7 @@ const startIpfs = async () => {
     new Promise((resolve, reject) => {
       const ipfsProcess = spawn(ipfsPath, ['daemon', '--migrate', '--enable-pubsub-experiment', '--enable-namesys-pubsub'], { env, hideWindows: true });
       console.log(`ipfs daemon process started with pid ${ipfsProcess.pid}`);
+      ipfsDaemonProcess = ipfsProcess;
       let lastError;
       ipfsProcess.stderr.on('data', (data) => {
         lastError = data.toString();
@@ -161,20 +188,10 @@ const startIpfs = async () => {
       });
       ipfsProcess.on('exit', () => {
         console.error(`ipfs process with pid ${ipfsProcess.pid} exited`);
+        if (ipfsDaemonProcess === ipfsProcess) {
+          ipfsDaemonProcess = undefined;
+        }
         reject(Error(lastError));
-      });
-      process.on('exit', () => {
-        try {
-          ps.kill(ipfsProcess.pid);
-        } catch (e) {
-          console.log(e);
-        }
-        try {
-          // sometimes ipfs doesnt exit unless we kill pid +1
-          ps.kill(ipfsProcess.pid + 1);
-        } catch (e) {
-          console.log(e);
-        }
       });
     });
   await startIpfsDaemon();
