@@ -156,7 +156,23 @@ export function openInBrowser(url) {
 }
 
 export function forwardChildExit(child) {
+  // A signal sent to the launcher alone (`kill <pid>`) would otherwise orphan the server and its
+  // Portless route. Ctrl-C reaches both through the process group, so the child may already be exiting.
+  const forwardSignal = (signal) => {
+    if (child.exitCode === null && child.signalCode === null) {
+      child.kill(signal);
+    }
+  };
+  const onSigint = () => forwardSignal('SIGINT');
+  const onSigterm = () => forwardSignal('SIGTERM');
+
+  process.on('SIGINT', onSigint);
+  process.on('SIGTERM', onSigterm);
+
   child.on('exit', (code, signal) => {
+    process.off('SIGINT', onSigint);
+    process.off('SIGTERM', onSigterm);
+
     if (signal) {
       process.kill(process.pid, signal);
       return;
