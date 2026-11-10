@@ -718,6 +718,7 @@ describe('ReplyModal', () => {
           challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
         },
         flairs: [{ type: 'country', code: 'auto', text: 'flag:country:auto' }],
+        spoiler: false,
       },
       expect.objectContaining({ finish: expect.any(Function) }),
     );
@@ -748,6 +749,7 @@ describe('ReplyModal', () => {
           challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
         },
         flairs: [{ type: 'country', code: 'auto', text: 'flag:country:auto' }],
+        spoiler: false,
       },
       expect.objectContaining({ finish: expect.any(Function) }),
     );
@@ -772,6 +774,7 @@ describe('ReplyModal', () => {
           challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
         },
         flairs: [{ type: 'country', code: 'auto', text: 'flag:country:auto' }],
+        spoiler: false,
       },
       expect.objectContaining({ finish: expect.any(Function) }),
     );
@@ -796,6 +799,7 @@ describe('ReplyModal', () => {
         content: 'reply body',
         displayName: 'Alice',
         flairs: [{ type: 'pol', code: 'AC', text: 'flag:pol:AC' }],
+        spoiler: false,
       },
       expect.objectContaining({ finish: expect.any(Function) }),
     );
@@ -1155,6 +1159,7 @@ describe('ReplyModal', () => {
         displayName: 'Alice',
         flairs: undefined,
         link: thumbnailLink,
+        spoiler: false,
       },
       expect.objectContaining({ finish: expect.any(Function) }),
     );
@@ -1330,6 +1335,7 @@ describe('ReplyModal', () => {
         displayName: 'Alice',
         flairs: undefined,
         link: thumbnailLink,
+        spoiler: false,
       },
       expect.objectContaining({ finish: expect.any(Function) }),
     );
@@ -1373,6 +1379,7 @@ describe('ReplyModal', () => {
         content: 'reply body[fortune]',
         displayName: 'Alice',
         flairs: undefined,
+        spoiler: false,
       },
       expect.objectContaining({ finish: expect.any(Function) }),
     );
@@ -1466,6 +1473,7 @@ describe('ReplyModal', () => {
         content: 'silly reply[fortune]',
         displayName: 'Alice',
         flairs: undefined,
+        spoiler: false,
       },
       expect.objectContaining({ finish: expect.any(Function) }),
     );
@@ -1657,6 +1665,29 @@ describe('ReplyModal', () => {
     expect(testState.resetPublishReplyOptionsMock).toHaveBeenCalledTimes(1);
     expect(testState.closeModalMock).toHaveBeenCalledTimes(1);
     expect(testState.navigateMock).toHaveBeenCalledWith('/mu', { state: { nonokoReply: true } });
+  });
+
+  // The thread's inline reply form fills the same publish options entry (both are keyed by the thread's cid),
+  // and usePublishReply lays the options given to publishReply over that entry.
+  it("publishes its own empty link and unticked spoiler, not the ones the thread's inline form stored", async () => {
+    const inlineFormEntry = { link: 'https://example.com/inline-form.png', spoiler: true };
+
+    await renderReplyModal('/mu/thread/post-1');
+    await clickButtonByText('post');
+
+    expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
+    expect({ ...inlineFormEntry, ...testState.publishReplyMock.mock.calls[0][0] }).toMatchObject({ link: undefined, spoiler: false });
+  });
+
+  it('publishes its own link and spoiler after the inline form reset the shared publish options', async () => {
+    testState.openEmpty = true;
+    testState.replyDraft = { content: 'reply with a link', link: 'https://example.com/modal.png', options: '', spoiler: true };
+
+    await renderReplyModal('/mu/thread/post-1');
+    await clickButtonByText('post');
+
+    expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
+    expect(testState.publishReplyMock.mock.calls[0][0]).toMatchObject({ link: 'https://example.com/modal.png', spoiler: true });
   });
 
   it('inserts quote requests only once and keeps the textarea content stable across rerenders', async () => {

@@ -261,7 +261,7 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
       let handedOff = false;
       let outcome: Parameters<PostingAnalyticsAttempt['finish']>[0] = 'post_validation_failed';
       try {
-        const appliedThumbnailConversion = await applyPendingConversion();
+        await applyPendingConversion();
 
         const currentContent = textRef.current?.value || '';
         const { displayName: currentDisplayName, tripcodeSecret } = readNameField(nameRef.current?.value);
@@ -355,10 +355,12 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
             displayName: currentDisplayName,
             // The empty and length checks above ignore the sage marker, like 4chan ignores the options field.
             content: appendSageMarker(publishContent, currentOptions),
-            ...(uploadedFiles ? { link: uploadedFiles.link } : getPublishLinkOptions(currentUrl, appliedThumbnailConversion)),
+            // Link and spoiler are explicit even when absent: the thread's inline reply form fills the same publish store entry.
+            link: uploadedFiles ? uploadedFiles.link : getPublishLinkOptions(currentUrl, true).link,
             // Explicit even when absent: the publish store may still hold an earlier reply's gallery.
             gallery: uploadedFiles ? uploadedFiles.gallery : getDraftGallery(currentUrl),
             ...flagPublishOptions,
+            spoiler: Boolean(draft?.spoiler),
             ...(challengeRequest ? { challengeRequest } : {}),
           },
           attempt,

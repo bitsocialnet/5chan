@@ -2882,6 +2882,33 @@ describe('PostForm', () => {
     expect(container.querySelector('table')).toBeNull();
   });
 
+  // The thread's reply modal fills the same publish options entry (both are keyed by the thread's cid), and
+  // usePublishReply lays the options given to publishReply over that entry.
+  it("publishes the inline reply's own link and spoiler, not the ones the reply modal stored or reset", async () => {
+    testState.comments = { 'thread-cid': { postCid: 'thread-cid' } };
+    testState.resolvedCommunityAddress = 'music-posting.eth';
+    const modalEntry = { link: 'https://example.com/modal.png', spoiler: true };
+
+    await renderPostForm('/mu/thread/thread-cid');
+    await clickByText(container, 'post_a_reply');
+    const table = container.querySelector('table') as HTMLTableElement;
+    await dispatchInput(table.querySelector('textarea') as HTMLTextAreaElement, 'Reply body');
+    await clickByText(table, 'post');
+
+    expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
+    expect({ ...modalEntry, ...testState.publishReplyMock.mock.calls[0][0] }).toMatchObject({ link: undefined, spoiler: false });
+
+    // The modal's publish resets the shared entry, so what this form shows must still be sent.
+    await dispatchInput(table.querySelector<HTMLInputElement>('input[aria-label="link"]') as HTMLInputElement, 'https://example.com/inline.png');
+    await act(async () => {
+      table.querySelector<HTMLInputElement>('input[type="checkbox"]')?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+    await clickByText(table, 'post');
+
+    expect(testState.publishReplyMock).toHaveBeenCalledTimes(2);
+    expect(testState.publishReplyMock.mock.calls[1][0]).toMatchObject({ link: 'https://example.com/inline.png', spoiler: true });
+  });
+
   it('publishes replies from the open reply form', async () => {
     testState.comments = {
       'thread-cid': {
@@ -3092,6 +3119,7 @@ describe('PostForm', () => {
         displayName: 'Alice',
         flairs: undefined,
         link: publishLink,
+        spoiler: false,
       },
       expect.objectContaining({ finish: expect.any(Function) }),
     );
