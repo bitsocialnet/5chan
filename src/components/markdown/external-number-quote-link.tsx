@@ -44,6 +44,9 @@ type PreviewPosition = {
   top: number;
 };
 
+// Counts quote clicks across every link, so a newer click supersedes one still being resolved.
+let latestQuoteClick = 0;
+
 const ExternalNumberQuoteLink = ({ isOP = false, reference }: ExternalNumberQuoteLinkProps) => {
   const { t } = useTranslation();
   const account = useAccount();
@@ -226,8 +229,17 @@ const ExternalNumberQuoteLink = ({ isOP = false, reference }: ExternalNumberQuot
 
     setIsResolving(true);
 
+    // The search can take minutes, so it only navigates or reports an error while this is still the
+    // latest quote click and the user is still on the page they clicked it from. The link itself can
+    // unmount before then (a same-board quote turns into a regular one once its number is found).
+    const click = ++latestQuoteClick;
+    const clickedFromUrl = window.location.href;
+    const isClickCurrent = () => click === latestQuoteClick && window.location.href === clickedFromUrl;
+
     const finishWithError = (message: string) => {
-      setErrorStatus(message);
+      if (isClickCurrent()) {
+        setErrorStatus(message);
+      }
       setIsResolving(false);
     };
 
@@ -237,6 +249,11 @@ const ExternalNumberQuoteLink = ({ isOP = false, reference }: ExternalNumberQuot
       target = await resolveTarget({ updatePreview: false });
     } catch {
       finishWithError(getCannotResolveMessage());
+      return;
+    }
+
+    if (!isClickCurrent()) {
+      setIsResolving(false);
       return;
     }
 
