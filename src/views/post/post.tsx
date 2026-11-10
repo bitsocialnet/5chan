@@ -323,21 +323,36 @@ const PostPage = () => {
   const refreshThread = useMemo<RefreshThread | undefined>(() => {
     if (!postCidForRefresh || typeof postRefresh !== 'function') return undefined;
 
-    return async ({ force }) => {
+    return async ({ force, signal }) => {
       // Evicting reply pages briefly empties the reply feed, so only a manual Update clears
       // stale caches, as it did before Auto refreshed through the same path.
+      let restoreEvictedCaches: (() => Promise<void>) | undefined;
       if (force) {
         try {
-          await evictThreadRefreshCaches(threadRefreshCommentsRef.current);
+          restoreEvictedCaches = await evictThreadRefreshCaches(threadRefreshCommentsRef.current);
         } catch (cacheError) {
           console.error('Failed to clear stale thread cache before refresh:', cacheError);
         }
       }
+      // An Update that fails, times out or is left behind would otherwise leave the thread with no
+      // cached copy to show offline, so it puts back what it evicted.
+      const restoreCaches = async () => {
+        try {
+          await restoreEvictedCaches?.();
+        } catch (cacheError) {
+          console.error('Failed to restore thread cache after a failed refresh:', cacheError);
+        }
+      };
+      if (signal.aborted) void restoreCaches();
+      else signal.addEventListener('abort', restoreCaches, { once: true });
       try {
         await postRefresh();
+        signal.removeEventListener('abort', restoreCaches);
         return true;
       } catch (error) {
         console.error('Failed to refresh thread comments:', error);
+        signal.removeEventListener('abort', restoreCaches);
+        await restoreCaches();
         // The thread updater keeps the error for its Connection Error label to copy.
         throw error;
       }

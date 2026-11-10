@@ -1,27 +1,38 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const testState = vi.hoisted(() => ({
-  commentsRemoveItemMock: vi.fn(),
-  repliesPagesRemoveItemMock: vi.fn(),
-  repliesPagesState: {
-    comments: {} as Record<string, unknown>,
-    repliesPages: {} as Record<string, { comments?: Array<{ cid?: string }>; nextCid?: string }>,
-  },
-  repliesPagesSetStateMock: vi.fn(),
-}));
+const testState = vi.hoisted(() => {
+  const createDatabaseMock = () => {
+    const items = new Map<string, unknown>();
+    return {
+      items,
+      getItem: vi.fn(async (key: string) => items.get(key)),
+      removeItem: vi.fn(async (key: string) => {
+        items.delete(key);
+      }),
+      setItem: vi.fn(async (key: string, value: unknown) => {
+        items.set(key, value);
+      }),
+    };
+  };
+  const commentsDatabase = createDatabaseMock();
+  const repliesPagesDatabase = createDatabaseMock();
+
+  return {
+    commentsDatabase,
+    commentsRemoveItemMock: commentsDatabase.removeItem,
+    repliesPagesDatabase,
+    repliesPagesRemoveItemMock: repliesPagesDatabase.removeItem,
+    repliesPagesState: {
+      comments: {} as Record<string, unknown>,
+      repliesPages: {} as Record<string, { comments?: Array<{ cid?: string }>; nextCid?: string }>,
+    },
+    repliesPagesSetStateMock: vi.fn(),
+  };
+});
 
 vi.mock('../../bitsocial-internals/utils', () => ({
   localForageLru: {
-    createInstance: ({ name }: { name: string }) => {
-      if (name === 'bitsocialReactHooks-comments') {
-        return {
-          removeItem: testState.commentsRemoveItemMock,
-        };
-      }
-      return {
-        removeItem: testState.repliesPagesRemoveItemMock,
-      };
-    },
+    createInstance: ({ name }: { name: string }) => (name === 'bitsocialReactHooks-comments' ? testState.commentsDatabase : testState.repliesPagesDatabase),
   },
 }));
 
@@ -43,8 +54,12 @@ import { evictThreadRefreshCaches } from '../thread-refresh-cache-utils';
 
 describe('thread-refresh-cache-utils', () => {
   beforeEach(() => {
-    testState.commentsRemoveItemMock.mockReset();
-    testState.repliesPagesRemoveItemMock.mockReset();
+    for (const database of [testState.commentsDatabase, testState.repliesPagesDatabase]) {
+      database.items.clear();
+      database.getItem.mockClear();
+      database.removeItem.mockClear();
+      database.setItem.mockClear();
+    }
     testState.repliesPagesSetStateMock.mockClear();
     testState.repliesPagesState = {
       comments: {
@@ -105,5 +120,32 @@ describe('thread-refresh-cache-utils', () => {
     expect(testState.repliesPagesState.comments).toEqual({
       unrelated: { cid: 'unrelated' },
     });
+  });
+
+  it('puts back what it evicted when the refresh fails, without replacing what the refresh already stored', async () => {
+    const thread = { cid: 'thread-cid', replies: { pageCids: { old: 'page-old-1' } } };
+    testState.commentsDatabase.items.set('thread-cid', { cid: 'thread-cid', updatedAt: 1 });
+    testState.repliesPagesDatabase.items.set('page-old-1', { comments: [{ cid: 'reply-a' }], nextCid: 'page-old-2' });
+    testState.repliesPagesDatabase.items.set('page-old-2', { comments: [{ cid: 'reply-b' }] });
+    const initialRepliesPages = testState.repliesPagesState.repliesPages;
+    const initialComments = testState.repliesPagesState.comments;
+
+    const restoreEvictedCaches = await evictThreadRefreshCaches([thread]);
+
+    expect(testState.commentsDatabase.items.has('thread-cid')).toBe(false);
+    expect(testState.repliesPagesDatabase.items.size).toBe(0);
+    expect(testState.repliesPagesState.repliesPages['page-old-1']).toBeUndefined();
+
+    // The refresh stored a newer page 2 before it failed.
+    testState.repliesPagesDatabase.items.set('page-old-2', { comments: [{ cid: 'reply-b' }], refetched: true });
+    testState.repliesPagesState.comments = { ...testState.repliesPagesState.comments, 'reply-b': { cid: 'reply-b', refetched: true } };
+
+    await restoreEvictedCaches();
+
+    expect(testState.commentsDatabase.items.get('thread-cid')).toEqual({ cid: 'thread-cid', updatedAt: 1 });
+    expect(testState.repliesPagesDatabase.items.get('page-old-1')).toEqual({ comments: [{ cid: 'reply-a' }], nextCid: 'page-old-2' });
+    expect(testState.repliesPagesDatabase.items.get('page-old-2')).toEqual({ comments: [{ cid: 'reply-b' }], refetched: true });
+    expect(testState.repliesPagesState.repliesPages).toEqual(initialRepliesPages);
+    expect(testState.repliesPagesState.comments).toEqual({ ...initialComments, 'reply-b': { cid: 'reply-b', refetched: true } });
   });
 });

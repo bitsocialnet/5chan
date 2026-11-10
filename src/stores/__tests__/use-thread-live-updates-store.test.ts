@@ -63,7 +63,7 @@ describe('useThreadLiveUpdatesStore', () => {
     await vi.advanceTimersByTimeAsync(1000);
     expect(getState().status).toEqual({ type: 'updating' });
     expect(refresh).toHaveBeenCalledTimes(1);
-    expect(refresh).toHaveBeenCalledWith({ force: false });
+    expect(refresh).toHaveBeenCalledWith({ force: false, signal: expect.any(AbortSignal) });
   });
 
   it('updates on time after a hidden tab throttles the countdown timers', async () => {
@@ -144,7 +144,7 @@ describe('useThreadLiveUpdatesStore', () => {
 
     getState().forceUpdate();
     expect(getState().status).toEqual({ type: 'updating' });
-    expect(refresh).toHaveBeenCalledWith({ force: true });
+    expect(refresh).toHaveBeenCalledWith({ force: true, signal: expect.any(AbortSignal) });
     await flushPromises();
     getState().recordNewReplies({ count: 1, lastReadReplyCid: 'reply-2', quotesOwnPost: true });
     getState().recordNewReplies({ count: 2, lastReadReplyCid: 'reply-3', quotesOwnPost: false });
@@ -249,6 +249,43 @@ describe('useThreadLiveUpdatesStore', () => {
         }),
       },
     });
+  });
+
+  it('tells a refresh when its update stops waiting for it', async () => {
+    const signals: AbortSignal[] = [];
+    getState().openThread('thread-1');
+    getState().setRefreshThread(({ signal }) => {
+      signals.push(signal);
+      return new Promise<boolean>(() => undefined);
+    });
+
+    getState().forceUpdate();
+    await vi.advanceTimersByTimeAsync(THREAD_UPDATE_TIMEOUT_MS - 1);
+    expect(signals[0].aborted).toBe(false);
+    await vi.advanceTimersByTimeAsync(1);
+    expect(signals[0].aborted).toBe(true);
+
+    getState().forceUpdate();
+    expect(signals[1].aborted).toBe(false);
+    getState().openThread('thread-2');
+    expect(signals[1].aborted).toBe(true);
+  });
+
+  it('leaves the signal of a refresh that settled in time alone', async () => {
+    const signals: AbortSignal[] = [];
+    getState().openThread('thread-1');
+    getState().setRefreshThread(async ({ signal }) => {
+      signals.push(signal);
+      return true;
+    });
+
+    getState().forceUpdate();
+    await flushPromises();
+    await settleUpdate();
+    getState().resetState();
+    await vi.advanceTimersByTimeAsync(THREAD_UPDATE_TIMEOUT_MS);
+
+    expect(signals[0].aborted).toBe(false);
   });
 
   it('checks a hidden tab 10 seconds after it hides, then backs off from the one-minute step like 4chan', async () => {

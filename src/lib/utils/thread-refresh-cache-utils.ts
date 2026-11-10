@@ -38,7 +38,11 @@ const collectReplyPageCids = (comment: Comment, repliesPages: RepliesPages): str
   return [...pageCids];
 };
 
-const removeReplyPagesFromStore = (pageCids: string[]) => {
+type RepliesPagesStoreEntries = { repliesPages: RepliesPages; comments: Record<string, Comment> };
+
+const removeReplyPagesFromStore = (pageCids: string[]): RepliesPagesStoreEntries => {
+  const removed: RepliesPagesStoreEntries = { repliesPages: {}, comments: {} };
+
   repliesPagesStore.setState((state) => {
     const repliesPages = { ...state.repliesPages };
     const comments = { ...state.comments };
@@ -50,11 +54,38 @@ const removeReplyPagesFromStore = (pageCids: string[]) => {
 
       for (const comment of page.comments || []) {
         if (comment?.cid && comments[comment.cid]) {
+          removed.comments[comment.cid] = comments[comment.cid];
           delete comments[comment.cid];
         }
       }
 
+      removed.repliesPages[pageCid] = page;
       delete repliesPages[pageCid];
+      changed = true;
+    }
+
+    return changed ? { repliesPages, comments } : {};
+  });
+
+  return removed;
+};
+
+// Entries the refresh stored again in the meantime are newer, so only missing ones come back.
+const restoreReplyPagesToStore = (removed: RepliesPagesStoreEntries) => {
+  repliesPagesStore.setState((state) => {
+    const repliesPages = { ...state.repliesPages };
+    const comments = { ...state.comments };
+    let changed = false;
+
+    for (const [pageCid, page] of Object.entries(removed.repliesPages)) {
+      if (repliesPages[pageCid]) continue;
+      repliesPages[pageCid] = page;
+      changed = true;
+    }
+
+    for (const [commentCid, comment] of Object.entries(removed.comments)) {
+      if (comments[commentCid]) continue;
+      comments[commentCid] = comment;
       changed = true;
     }
 
@@ -62,18 +93,45 @@ const removeReplyPagesFromStore = (pageCids: string[]) => {
   });
 };
 
-export const evictThreadRefreshCaches = async (comments: Array<Comment | undefined>) => {
+type PersistedEntry = { database: typeof commentsDatabase; key: string; value: unknown };
+
+const isStored = (value: unknown) => value !== null && value !== undefined;
+
+const readPersistedEntries = async (database: typeof commentsDatabase, keys: string[]): Promise<PersistedEntry[]> => {
+  const entries = await Promise.all(keys.map(async (key) => ({ database, key, value: await database.getItem(key) })));
+  return entries.filter((entry) => isStored(entry.value));
+};
+
+const restorePersistedEntry = async ({ database, key, value }: PersistedEntry) => {
+  if (isStored(await database.getItem(key))) return;
+  await database.setItem(key, value);
+};
+
+/**
+ * Drops the thread's cached comment and reply pages so a manual Update reloads them. Resolves to a
+ * function that puts back whatever is still missing, for when that Update fails or is abandoned.
+ */
+export const evictThreadRefreshCaches = async (comments: Array<Comment | undefined>): Promise<() => Promise<void>> => {
   const commentsToRefresh = comments.filter((comment): comment is Comment => Boolean(comment?.cid));
-  if (commentsToRefresh.length === 0) return;
+  if (commentsToRefresh.length === 0) return async () => {};
 
   const commentCids = [...new Set(commentsToRefresh.map((comment) => comment.cid as string))];
   const currentReplyPages = repliesPagesStore.getState().repliesPages;
   const replyPageCids = [...new Set(commentsToRefresh.flatMap((comment) => collectReplyPageCids(comment, currentReplyPages)))];
 
-  removeReplyPagesFromStore(replyPageCids);
+  const persistedEntries = [...(await readPersistedEntries(commentsDatabase, commentCids)), ...(await readPersistedEntries(repliesPagesDatabase, replyPageCids))];
+  const removedStoreEntries = removeReplyPagesFromStore(replyPageCids);
 
   await Promise.all([
     ...commentCids.map((commentCid) => commentsDatabase.removeItem(commentCid)),
     ...replyPageCids.map((pageCid) => repliesPagesDatabase.removeItem(pageCid)),
   ]);
+
+  let restored = false;
+  return async () => {
+    if (restored) return;
+    restored = true;
+    restoreReplyPagesToStore(removedStoreEntries);
+    await Promise.all(persistedEntries.map(restorePersistedEntry));
+  };
 };
