@@ -1,4 +1,5 @@
 import { type ComponentType, lazy } from 'react';
+import { isDownloadFailure } from './download-failures';
 
 // A module whose download failed stays failed. Browsers (WebKit and Chromium) fail every later import
 // of it in the page without fetching it again, and WebKit can serve the failure again after a reload,
@@ -10,21 +11,6 @@ const importFailures = new WeakSet<object>();
 const failedDownloads = new Set<string>();
 
 const REFETCH_WAIT_MS = 3000;
-
-// What a dynamic import rejects with when its module or one of the module's dependencies failed to
-// download, in WebKit, Chromium and Firefox, and what Vite's preload helper throws for a stylesheet.
-// An error the module itself throws while evaluating is not a failed download: a reload would only
-// repeat it, so it reaches the root like any other error.
-const DOWNLOAD_FAILURE_MESSAGES = [
-  /^Importing a module script failed\.?$/,
-  /^Failed to fetch dynamically imported module/,
-  /^error loading dynamically imported module/,
-  /^Unable to preload CSS for /,
-];
-
-// The error may arrive wrapped, with the browser's as its cause (as Vitest's module mocks do).
-const isDownloadFailure = (error: unknown, depth = 0): boolean =>
-  error instanceof Error && (DOWNLOAD_FAILURE_MESSAGES.some((message) => message.test(error.message)) || (depth < 3 && isDownloadFailure(error.cause, depth + 1)));
 
 /** Wraps a dynamic import so that its rejection for a failed download counts as an import failure (see isImportFailure). */
 export const markImportFailures =

@@ -6,11 +6,12 @@ import './lib/init-translations';
 import './index.css';
 import './themes.css';
 import AppUpdateRegistration from './components/app-update-registration';
+import { ImportError } from './components/import-error-boundary';
 import WebAnalytics from './components/web-analytics';
 import { App as CapacitorApp } from '@capacitor/app';
 import { configureP2PBrowserPkcOptions } from './lib/p2p-browser-config';
 import { canonicalizeNestedHashRoute } from './lib/utils/hash-route-utils';
-import { recordFailedDownloads } from './lib/import-failures';
+import { isImportFailure, markImportFailures, recordFailedDownloads } from './lib/import-failures';
 import { loadRouteModules } from './route-modules';
 
 const e2eStartHash = import.meta.env.VITE_E2E_START_HASH?.trim();
@@ -44,6 +45,8 @@ const renderApp = (tree: React.ReactNode) => {
   );
 };
 
+const importApp = markImportFailures(() => import('./app'));
+
 const renderRoot = async () => {
   let e2eHarness: React.ComponentType | null = null;
 
@@ -62,9 +65,7 @@ const renderRoot = async () => {
   // link (ROUTE_PRELOAD_SCRIPT in scripts/vite-app-preload.mjs); see app-with-board-routes.ts. When the
   // board routes fail to download, the app still mounts and reports it on the route instead of leaving
   // the static frame up.
-  const { default: App } = await (document.querySelector('link[data-fivechan-route-preload]')
-    ? import('./app-with-board-routes').catch(() => import('./app'))
-    : import('./app'));
+  const { default: App } = await (document.querySelector('link[data-fivechan-route-preload]') ? import('./app-with-board-routes').catch(() => importApp()) : importApp());
   // index.html already started downloading the route's code-split modules; the first render waits for
   // them so it does not suspend. A failed chunk surfaces when the route renders.
   const routeModules = loadRouteModules(parsePath(window.location.hash.slice(1)).pathname || '/').catch((error) => console.error(error));
@@ -81,7 +82,12 @@ const renderRoot = async () => {
   );
 };
 
-void renderRoot();
+// When the app itself fails to download, nothing would replace the static frame or run it, so a reload
+// takes its place. Other errors reach the console as before.
+void renderRoot().catch((error: unknown) => {
+  if (!isImportFailure(error)) throw error;
+  renderApp(<ImportError />);
+});
 
 // add back button in android app
 CapacitorApp.addListener('backButton', ({ canGoBack }) => {
