@@ -278,6 +278,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
 
   const { feed, hasMore, loadMore, reset, expandTimeWindow, communityKeysWithMore, state: feedState } = useFeed(feedOptions);
   const { currentTimeFilterName, currentTimeFilterSeconds, expandSuggestionTimeWindow } = useExpandedTimeFilter({
+    feedOptions,
     timeFilterName,
     timeFilterSeconds: multiboardTimeFilterSeconds,
     expandTimeWindow,

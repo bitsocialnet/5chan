@@ -8,6 +8,7 @@ import communitiesPagesStore from '@bitsocial/bitsocial-react-hooks/dist/stores/
 import Board, { type BoardProps } from '../board';
 import { TRASH_BOARD_ADDRESS, TRASH_BOARD_TITLE } from '../../../lib/special-boards';
 import { clearStableLastVisitTimeFilterName, LAST_VISIT_STORAGE_KEY } from '../../../lib/utils/time-filter-utils';
+import { clearExpandedTimeFilters } from '../../../hooks/use-expanded-time-filter';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
@@ -514,6 +515,7 @@ describe('Board', () => {
     communitiesPagesStore.setState({ communitiesPages: {}, comments: {} });
     communitiesStore.setState({ communities: {}, syncStatuses: {} });
     clearStableLastVisitTimeFilterName();
+    clearExpandedTimeFilters();
     localStorage.clear();
   });
 

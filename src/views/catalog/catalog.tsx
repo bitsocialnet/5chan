@@ -485,6 +485,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   });
   const visibleFeed = useMemo(() => filterHiddenComments(feed, hiddenCids, isImageFiltered), [feed, hiddenCids, isImageFiltered]);
   const { currentTimeFilterName, currentTimeFilterSeconds, expandSuggestionTimeWindow } = useExpandedTimeFilter({
+    feedOptions,
     timeFilterName,
     timeFilterSeconds: multiboardTimeFilterSeconds,
     expandTimeWindow,

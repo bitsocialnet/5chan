@@ -8,6 +8,7 @@ import Catalog, { type CatalogProps } from '../catalog';
 import { communitiesStore } from '../../../lib/bitsocial-internals/stores';
 import { getCatalogRenderFeed } from '../catalog-render-feed';
 import { clearStableLastVisitTimeFilterName, LAST_VISIT_STORAGE_KEY } from '../../../lib/utils/time-filter-utils';
+import { clearExpandedTimeFilters } from '../../../hooks/use-expanded-time-filter';
 import useHiddenCatalogThreadsStore from '../../../stores/use-hidden-catalog-threads-store';
 import usePinnedCatalogThreadsStore from '../../../stores/use-pinned-catalog-threads-store';
 import useImageFiltersStore from '../../../stores/use-image-filters-store';
@@ -519,6 +520,7 @@ describe('Catalog', () => {
     useHiddenCatalogThreadsStore.setState({ hiddenCommentsByCid: {}, scopeHiddenThreadsCounts: {}, shownScopeKey: null });
     communitiesStore.setState({ syncStatuses: {} });
     clearStableLastVisitTimeFilterName();
+    clearExpandedTimeFilters();
     localStorage.clear();
   });
 
