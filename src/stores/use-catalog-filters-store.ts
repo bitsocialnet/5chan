@@ -180,10 +180,14 @@ const useCatalogFiltersStore = create(
         const nonEmptyItems = items.filter((item) => item.text.trim() !== '').map((item) => normalizeFilterItem(item));
 
         // Compare new filter items with existing ones to detect pattern changes
-        const existingItems = get().filterItems;
+        // Each saved filter keeps the counts of at most one existing filter with the same text, hide and top,
+        // so filters that share text never share count sets.
+        const unmatchedExistingItems = [...get().filterItems];
         const updatedItems = nonEmptyItems.map((newItem) => {
-          // Try to find matching existing item by index or text
-          const existingItem = existingItems.find((item) => item.text === newItem.text);
+          const existingIndex = unmatchedExistingItems.findIndex(
+            (item) => item.text === newItem.text && Boolean(item.hide) === Boolean(newItem.hide) && Boolean(item.top) === Boolean(newItem.top),
+          );
+          const existingItem = existingIndex === -1 ? undefined : unmatchedExistingItems.splice(existingIndex, 1)[0];
 
           // If we found a matching item, keep its counts
           if (existingItem) {
