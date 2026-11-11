@@ -27,7 +27,7 @@ import { useHasCommunityLoadFailed } from '../../stores/use-community-load-failu
 import useFeedResetStore from '../../stores/use-feed-reset-store';
 import useHiddenCatalogThreadsStore from '../../stores/use-hidden-catalog-threads-store';
 import useSortingStore from '../../stores/use-sorting-store';
-import useCatalogFiltersStore from '../../stores/use-catalog-filters-store';
+import useCatalogFiltersStore, { type FilterMatch } from '../../stores/use-catalog-filters-store';
 import { isDirectoryBoard, normalizeMultiboardFeedPath } from '../../lib/utils/route-utils';
 import CatalogRow from '../../components/catalog-row';
 import { CatalogFooterFirstRow, CatalogFooterStyleRow, PageFooterDesktop, PageFooterMobile, footerStyles } from '../../components/footer';
@@ -222,11 +222,18 @@ const CatalogLoading = ({
 const createContentFilter = (
   filterItems: { text: string; enabled: boolean; count: number; filteredCids: Set<string>; hide: boolean; top: boolean; color?: string }[],
   communityAddress: string,
-  onFilterMatch?: (filter: { text: string; hide: boolean; top: boolean }, cid: string, communityAddress: string) => void,
+  onFilterMatch?: (filter: FilterMatch, cid: string, communityAddress: string) => void,
   trackMatches = true,
 ) => {
   // Create a unique key based on the enabled filter items
   const enabledFilters = filterItems.filter((item) => item.enabled && item.text.trim() !== '');
+  // Filters with the same text, hide and top are told apart by their position among each other, so each one keeps its own count
+  const filterMatches: FilterMatch[] = enabledFilters.map(({ text, hide, top }, index) => ({
+    text,
+    hide,
+    top,
+    occurrence: enabledFilters.slice(0, index).filter((other) => other.text === text && other.hide === hide && other.top === top).length,
+  }));
   const filterKey =
     enabledFilters.length > 0
       ? `content-filter-${enabledFilters.map((item) => `${item.text}-${item.hide ? 'hide' : ''}-${item.top ? 'top' : ''}`).join('-')}`
@@ -247,10 +254,10 @@ const createContentFilter = (
           // Count by text, hide and top: the feeds store keeps this filter while its key is unchanged, even after the filter list is reordered
           if (trackMatches) {
             if (onFilterMatch) {
-              onFilterMatch(item, comment.cid, communityAddress);
+              onFilterMatch(filterMatches[i], comment.cid, communityAddress);
             } else {
               // Fallback to the store method if no callback provided
-              useCatalogFiltersStore.getState().incrementFilterCount(item, comment.cid, communityAddress);
+              useCatalogFiltersStore.getState().incrementFilterCount(filterMatches[i], comment.cid, communityAddress);
             }
           }
 
@@ -274,7 +281,7 @@ const createCombinedFilter = (
   filterItems: { text: string; enabled: boolean; count: number; filteredCids: Set<string>; hide: boolean; top: boolean; color?: string }[],
   searchText: string,
   communityAddress: string,
-  onFilterMatch?: (filter: { text: string; hide: boolean; top: boolean }, cid: string, communityAddress: string) => void,
+  onFilterMatch?: (filter: FilterMatch, cid: string, communityAddress: string) => void,
   trackMatches = true,
   excludeArchived = true,
 ) => {
@@ -395,7 +402,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   const hadVisibleHiddenThreadsRef = useRef(false);
 
   // Create a stable callback for filter matching
-  const handleFilterMatch = useCallback((filter: { text: string; hide: boolean; top: boolean }, cid: string, communityAddress: string) => {
+  const handleFilterMatch = useCallback((filter: FilterMatch, cid: string, communityAddress: string) => {
     useCatalogFiltersStore.getState().incrementFilterCount(filter, cid, communityAddress);
   }, []);
 

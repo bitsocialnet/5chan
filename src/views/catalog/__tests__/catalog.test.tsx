@@ -554,6 +554,19 @@ describe('Catalog', () => {
     root = createRoot(container);
   });
 
+  it('reports a match on each of two filters with the same text, hide and top by its position among them', async () => {
+    testState.feed = [{ cid: 'top-post', title: 'cats forever', content: 'hello world', communityAddress: 'music-posting.eth' }];
+    testState.filterItems = [
+      { color: 'red', count: 0, enabled: true, filteredCids: new Set(), hide: false, text: 'cats', top: true },
+      { color: 'blue', count: 0, enabled: true, filteredCids: new Set(), hide: false, text: 'cats', top: true },
+    ];
+
+    await renderCatalog({ initialEntry: '/mu/catalog', routePath: '/:boardIdentifier/catalog' });
+
+    expect(testState.incrementFilterCountMock).toHaveBeenCalledWith({ text: 'cats', hide: false, top: true, occurrence: 0 }, 'top-post', 'music-posting.eth');
+    expect(testState.incrementFilterCountMock).toHaveBeenCalledWith({ text: 'cats', hide: false, top: true, occurrence: 1 }, 'top-post', 'music-posting.eth');
+  });
+
   it('counts filter matches against the edited filter list when the feed keeps its original filter', async () => {
     testState.retainedFeedFilters = new Map();
     testState.feed = [{ cid: 'hidden-post', title: 'cats and spoilers', content: 'spoiler content', communityAddress: 'music-posting.eth' }];

@@ -173,6 +173,21 @@ describe('useCatalogFiltersStore', () => {
     expect(filteredCount).toBe(1);
   });
 
+  it('counts a match on each of two filters with the same text, hide and top', async () => {
+    const useCatalogFiltersStore = await loadStore();
+
+    useCatalogFiltersStore
+      .getState()
+      .setFilterItems([createFilterItem('cats', { hide: false, top: true, color: 'red' }), createFilterItem('cats', { hide: false, top: true, color: 'blue' })] as never);
+    useCatalogFiltersStore.getState().setCurrentCommunityAddress('music.eth');
+    useCatalogFiltersStore.getState().incrementFilterCount({ text: 'cats', hide: false, top: true, occurrence: 0 }, 'cid-1', 'music.eth');
+    useCatalogFiltersStore.getState().incrementFilterCount({ text: 'cats', hide: false, top: true, occurrence: 1 }, 'cid-1', 'music.eth');
+
+    const { filterItems } = useCatalogFiltersStore.getState();
+    expect(filterItems[0].communityCounts.get('music.eth')).toBe(1);
+    expect(filterItems[1].communityCounts.get('music.eth')).toBe(1);
+  });
+
   it('switches current boards, recalculates counts, and resets only the active board counters', async () => {
     const useCatalogFiltersStore = await loadStore();
 
