@@ -2885,12 +2885,12 @@ describe('PostForm', () => {
     expect(container.querySelector('table')).toBeNull();
   });
 
-  // The thread's reply modal fills the same publish options entry (both are keyed by the thread's cid), and
-  // usePublishReply lays the options given to publishReply over that entry.
-  it("publishes the inline reply's own link and spoiler, not the ones the reply modal stored or reset", async () => {
+  // usePublishReply lays the options given to publishReply over the form's publish store entry, which can still
+  // hold an earlier reply's link and spoiler or have been reset.
+  it("publishes the inline reply's own link and spoiler, not the ones its publish store entry holds or lost", async () => {
     testState.comments = { 'thread-cid': { postCid: 'thread-cid' } };
     testState.resolvedCommunityAddress = 'music-posting.eth';
-    const modalEntry = { link: 'https://example.com/modal.png', spoiler: true };
+    const storedEntry = { link: 'https://example.com/earlier-reply.png', spoiler: true };
 
     await renderPostForm('/mu/thread/thread-cid');
     await clickByText(container, 'post_a_reply');
@@ -2899,9 +2899,9 @@ describe('PostForm', () => {
     await clickByText(table, 'post');
 
     expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
-    expect({ ...modalEntry, ...testState.publishReplyMock.mock.calls[0][0] }).toMatchObject({ link: undefined, spoiler: false });
+    expect({ ...storedEntry, ...testState.publishReplyMock.mock.calls[0][0] }).toMatchObject({ link: undefined, spoiler: false });
 
-    // The modal's publish resets the shared entry, so what this form shows must still be sent.
+    // A reset entry holds neither, so what this form shows must still be sent.
     await dispatchInput(table.querySelector<HTMLInputElement>('input[aria-label="link"]') as HTMLInputElement, 'https://example.com/inline.png');
     await act(async () => {
       table.querySelector<HTMLInputElement>('input[type="checkbox"]')?.dispatchEvent(new MouseEvent('click', { bubbles: true }));

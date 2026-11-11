@@ -157,6 +157,8 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
       cid: parentCid,
       communityAddress,
       postCid,
+      // The thread's inline reply form keeps its own entry under the thread's cid, which can be this parentCid.
+      storeKey: `${parentCid}:reply-modal`,
     });
   const account = useAccount();
   const { nameFieldValue, saveNameField, readNameField } = useTripcodeNameField(account);
@@ -355,7 +357,7 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
             displayName: currentDisplayName,
             // The empty and length checks above ignore the sage marker, like 4chan ignores the options field.
             content: appendSageMarker(publishContent, currentOptions),
-            // Link and spoiler are explicit even when absent: the thread's inline reply form fills the same publish store entry.
+            // Explicit even when absent, like the gallery: the publish store may still hold an earlier reply's link or spoiler.
             link: uploadedFiles ? uploadedFiles.link : getPublishLinkOptions(currentUrl, true).link,
             // Explicit even when absent: the publish store may still hold an earlier reply's gallery.
             gallery: uploadedFiles ? uploadedFiles.gallery : getDraftGallery(currentUrl),

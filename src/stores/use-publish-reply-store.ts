@@ -14,8 +14,9 @@ type ReplyState = {
   spoiler: { [parentCid: string]: boolean | undefined };
   challengeRequest: { [parentCid: string]: Record<string, unknown> | undefined };
   publishCommentOptions: { [parentCid: string]: PublishCommentOptions | undefined };
-  setPublishReplyStore: (comment: Comment) => void;
-  resetPublishReplyStore: (parentCid: string) => void;
+  /** Entries are keyed by parentCid unless the form gives its own key, so two forms replying to one post stay apart. */
+  setPublishReplyStore: (comment: Comment, storeKey?: string) => void;
+  resetPublishReplyStore: (storeKey: string) => void;
 };
 
 const usePublishReplyStore = create<ReplyState>((set) => ({
@@ -29,7 +30,7 @@ const usePublishReplyStore = create<ReplyState>((set) => ({
   challengeRequest: {},
   publishCommentOptions: {},
 
-  setPublishReplyStore: (comment: Comment) =>
+  setPublishReplyStore: (comment: Comment, storeKey = comment.parentCid) =>
     set((state) => {
       const { parentCid, author, challengeRequest, content, flairs, spoiler, timestamp } = comment;
       const link = comment.link ? normalizePublishURL(comment.link) : undefined;
@@ -70,29 +71,29 @@ const usePublishReplyStore = create<ReplyState>((set) => ({
       }
 
       return {
-        author: { ...state.author, [parentCid]: updatedAuthor },
-        displayName: { ...state.displayName, [parentCid]: displayName },
-        content: { ...state.content, [parentCid]: content },
-        link: { ...state.link, [parentCid]: link },
-        gallery: { ...state.gallery, [parentCid]: gallery },
-        flairs: { ...state.flairs, [parentCid]: flairs },
-        spoiler: { ...state.spoiler, [parentCid]: spoiler },
-        challengeRequest: { ...state.challengeRequest, [parentCid]: challengeRequest },
-        publishCommentOptions: { ...state.publishCommentOptions, [parentCid]: publishCommentOptions },
+        author: { ...state.author, [storeKey]: updatedAuthor },
+        displayName: { ...state.displayName, [storeKey]: displayName },
+        content: { ...state.content, [storeKey]: content },
+        link: { ...state.link, [storeKey]: link },
+        gallery: { ...state.gallery, [storeKey]: gallery },
+        flairs: { ...state.flairs, [storeKey]: flairs },
+        spoiler: { ...state.spoiler, [storeKey]: spoiler },
+        challengeRequest: { ...state.challengeRequest, [storeKey]: challengeRequest },
+        publishCommentOptions: { ...state.publishCommentOptions, [storeKey]: publishCommentOptions },
       };
     }),
 
-  resetPublishReplyStore: (parentCid) =>
+  resetPublishReplyStore: (storeKey) =>
     set((state) => ({
-      author: { ...state.author, [parentCid]: undefined },
-      displayName: { ...state.displayName, [parentCid]: undefined },
-      content: { ...state.content, [parentCid]: undefined },
-      link: { ...state.link, [parentCid]: undefined },
-      gallery: { ...state.gallery, [parentCid]: undefined },
-      flairs: { ...state.flairs, [parentCid]: undefined },
-      spoiler: { ...state.spoiler, [parentCid]: undefined },
-      challengeRequest: { ...state.challengeRequest, [parentCid]: undefined },
-      publishCommentOptions: { ...state.publishCommentOptions, [parentCid]: undefined },
+      author: { ...state.author, [storeKey]: undefined },
+      displayName: { ...state.displayName, [storeKey]: undefined },
+      content: { ...state.content, [storeKey]: undefined },
+      link: { ...state.link, [storeKey]: undefined },
+      gallery: { ...state.gallery, [storeKey]: undefined },
+      flairs: { ...state.flairs, [storeKey]: undefined },
+      spoiler: { ...state.spoiler, [storeKey]: undefined },
+      challengeRequest: { ...state.challengeRequest, [storeKey]: undefined },
+      publishCommentOptions: { ...state.publishCommentOptions, [storeKey]: undefined },
     })),
 }));
 

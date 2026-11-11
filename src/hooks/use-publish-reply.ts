@@ -20,23 +20,26 @@ type UsePublishReplyOptions = {
   cid: string;
   communityAddress?: string;
   postCid?: string;
+  /** The publish store entry this form fills; two forms that can reply to the same post at once need their own. */
+  storeKey?: string;
 };
 
-const usePublishReply = ({ cid, communityAddress, postCid }: UsePublishReplyOptions) => {
+const usePublishReply = ({ cid, communityAddress, postCid, storeKey: storeKeyOption }: UsePublishReplyOptions) => {
   const { t } = useTranslation();
   const parentCid = cid;
+  const storeKey = storeKeyOption ?? parentCid;
   const account = useAccount();
   const directories = useDirectories();
 
   const { author, content, link, gallery, flairs, spoiler, publishCommentOptions } = usePublishReplyStore(
     useShallow((state) => ({
-      author: state.author[parentCid],
-      content: state.content[parentCid] || undefined,
-      link: state.link[parentCid] || undefined,
-      gallery: state.gallery[parentCid],
-      flairs: state.flairs[parentCid],
-      spoiler: state.spoiler[parentCid] || false,
-      publishCommentOptions: state.publishCommentOptions[parentCid],
+      author: state.author[storeKey],
+      content: state.content[storeKey] || undefined,
+      link: state.link[storeKey] || undefined,
+      gallery: state.gallery[storeKey],
+      flairs: state.flairs[storeKey],
+      spoiler: state.spoiler[storeKey] || false,
+      publishCommentOptions: state.publishCommentOptions[storeKey],
     })),
   );
 
@@ -108,12 +111,12 @@ const usePublishReply = ({ cid, communityAddress, postCid }: UsePublishReplyOpti
         ...restOptions,
         ...(resolvedCommunityAddress ? { communityAddress: resolvedCommunityAddress } : {}),
       };
-      setPublishReplyStore(newOptions);
+      setPublishReplyStore(newOptions, storeKey);
     },
-    [createBaseOptions, setPublishReplyStore],
+    [createBaseOptions, setPublishReplyStore, storeKey],
   );
 
-  const resetPublishReplyOptions = useCallback(() => resetPublishReplyStore(parentCid), [parentCid, resetPublishReplyStore]);
+  const resetPublishReplyOptions = useCallback(() => resetPublishReplyStore(storeKey), [resetPublishReplyStore, storeKey]);
 
   const scopedNumberToCid = usePostNumberStore(useShallow((state) => getScopedNumberToCidMap(state.numberToCid, communityAddress)));
   const cidToPostCid = usePostNumberStore((state) => state.cidToPostCid);
@@ -235,10 +238,10 @@ const usePublishReply = ({ cid, communityAddress, postCid }: UsePublishReplyOpti
           try {
             const signed = await signTripcode({
               secret: tripcodeSecret,
-              readOptions: () => usePublishReplyStore.getState().publishCommentOptions[parentCid],
+              readOptions: () => usePublishReplyStore.getState().publishCommentOptions[storeKey],
               writeOptions: (options) => {
                 keepTripcode({ displayName: options.displayName, secret: tripcodeSecret, name: options.author?.displayName });
-                usePublishReplyStore.getState().setPublishReplyStore({ ...options, parentCid });
+                usePublishReplyStore.getState().setPublishReplyStore({ ...options, parentCid }, storeKey);
               },
               isActive: () => isMountedRef.current,
             });
@@ -314,7 +317,19 @@ const usePublishReply = ({ cid, communityAddress, postCid }: UsePublishReplyOpti
         setIsResolvingExternalQuotes(false);
       }
     },
-    [account, analyticsAttempt, blockedReason, directories, finishPendingPublishRequest, keepTripcode, parentCid, publishResolvableQuoteReferences, signTripcode, t],
+    [
+      account,
+      analyticsAttempt,
+      blockedReason,
+      directories,
+      finishPendingPublishRequest,
+      keepTripcode,
+      parentCid,
+      publishResolvableQuoteReferences,
+      signTripcode,
+      storeKey,
+      t,
+    ],
   );
 
   const publishReply = useCallback(

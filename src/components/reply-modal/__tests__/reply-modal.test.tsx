@@ -49,6 +49,7 @@ const testState = vi.hoisted(() => ({
   replyDraft: undefined as { attachment?: unknown; content: string; flag?: string; link: string; options: string; spoiler: boolean } | undefined,
   updateDraftMock: vi.fn(),
   publishReplyMock: vi.fn(),
+  publishReplyHookOptions: undefined as { cid: string; storeKey?: string } | undefined,
   publishReplyError: null as string | null,
   publishReplyStateMessage: null as string | null,
   quoteInsertNumber: undefined as number | undefined,
@@ -242,7 +243,8 @@ vi.mock('../../../hooks/use-publish-reply', async () => {
   const React = await vi.importActual<typeof import('react')>('react');
 
   return {
-    default: function usePublishReplyMock() {
+    default: function usePublishReplyMock(options: { cid: string; storeKey?: string }) {
+      testState.publishReplyHookOptions = options;
       const [, forceUpdate] = React.useReducer((value: number) => value + 1, 0);
 
       return {
@@ -422,6 +424,7 @@ describe('ReplyModal', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     testState.account = { author: { address: 'alice.eth', displayName: 'Alice' } };
+    testState.publishReplyHookOptions = undefined;
     testState.closeModalMock.mockReset();
     testState.directoryByAddress = {
       'music-posting.eth': {
@@ -1667,19 +1670,27 @@ describe('ReplyModal', () => {
     expect(testState.navigateMock).toHaveBeenCalledWith('/mu', { state: { nonokoReply: true } });
   });
 
-  // The thread's inline reply form fills the same publish options entry (both are keyed by the thread's cid),
-  // and usePublishReply lays the options given to publishReply over that entry.
-  it("publishes its own empty link and unticked spoiler, not the ones the thread's inline form stored", async () => {
-    const inlineFormEntry = { link: 'https://example.com/inline-form.png', spoiler: true };
+  // usePublishReply lays the options given to publishReply over the form's publish store entry, which can still
+  // hold an earlier reply's link and spoiler or have been reset.
+  it('publishes its own empty link and unticked spoiler, not the ones its publish store entry holds', async () => {
+    const storedEntry = { link: 'https://example.com/earlier-reply.png', spoiler: true };
 
     await renderReplyModal('/mu/thread/post-1');
     await clickButtonByText('post');
 
     expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
-    expect({ ...inlineFormEntry, ...testState.publishReplyMock.mock.calls[0][0] }).toMatchObject({ link: undefined, spoiler: false });
+    expect({ ...storedEntry, ...testState.publishReplyMock.mock.calls[0][0] }).toMatchObject({ link: undefined, spoiler: false });
   });
 
-  it('publishes its own link and spoiler after the inline form reset the shared publish options', async () => {
+  it("fills its own publish options entry, apart from the thread's inline form keyed by the thread's cid", async () => {
+    await renderReplyModal('/mu/thread/post-1');
+
+    expect(testState.publishReplyHookOptions?.cid).toBe('parent-cid');
+    expect(testState.publishReplyHookOptions?.storeKey).toEqual(expect.any(String));
+    expect(testState.publishReplyHookOptions?.storeKey).not.toBe('parent-cid');
+  });
+
+  it('publishes its own link and spoiler after its publish store entry was reset', async () => {
     testState.openEmpty = true;
     testState.replyDraft = { content: 'reply with a link', link: 'https://example.com/modal.png', options: '', spoiler: true };
 
