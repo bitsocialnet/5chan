@@ -93,7 +93,8 @@ const getFromLocalStorage = ({ acceptExpired = false } = {}): DirectoriesData | 
     const cached = localStorage.getItem(LOCALSTORAGE_KEY);
     const timestamp = localStorage.getItem(LOCALSTORAGE_TIMESTAMP_KEY);
     if (cached && timestamp) {
-      const isExpired = Date.now() - parseInt(timestamp, 10) >= CACHE_MAX_AGE_MS;
+      const age = Date.now() - parseInt(timestamp, 10);
+      const isExpired = !Number.isFinite(age) || age >= CACHE_MAX_AGE_MS;
       if (!isExpired || acceptExpired) {
         const parsed = JSON.parse(cached);
         const normalized = normalizeDirectoriesData(parsed);

@@ -571,6 +571,27 @@ describe('use-directories', () => {
     expect(latestAppSnapshot?.directory).toBeUndefined();
   });
 
+  it('treats a cached copy with a malformed timestamp as expired, so it does not replace newer vendored lists', async () => {
+    const vendored = getFallbackDirectoriesData();
+    const staleData: DirectoriesData = {
+      title: 'Stale directories',
+      description: 'stale description',
+      createdAt: 1,
+      updatedAt: vendored.updatedAt - 1,
+      communities: [{ address: 'music-stale.bso', title: '/mu/ - Stale Music', directoryCode: 'mu', nsfw: false }],
+    };
+    localStorage.setItem(LOCALSTORAGE_KEY, JSON.stringify(staleData));
+    localStorage.setItem(LOCALSTORAGE_TIMESTAMP_KEY, 'not-a-timestamp');
+    fetchMock.mockRejectedValue(new Error('network down'));
+
+    renderAppHarness('music-stale.bso');
+    await flushEffects(8);
+
+    expect(latestAppSnapshot?.state.loading).toBe(false);
+    expect(latestAppSnapshot?.state.communities).toEqual(vendored.communities);
+    expect(latestAppSnapshot?.directory).toBeUndefined();
+  });
+
   it('clears invalid recent cache entries and falls back to vendored data when GitHub refresh fails', async () => {
     localStorage.setItem(LOCALSTORAGE_KEY, JSON.stringify({ title: 'broken cache' }));
     localStorage.setItem(LOCALSTORAGE_TIMESTAMP_KEY, String(Date.now()));
