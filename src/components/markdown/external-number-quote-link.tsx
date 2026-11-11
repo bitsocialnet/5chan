@@ -2,10 +2,11 @@ import type { MouseEvent } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAccount, useComment } from '@bitsocial/bitsocial-react-hooks';
 import { useDirectories } from '../../hooks/use-directories';
 import useIsMobile from '../../hooks/use-is-mobile';
+import { startExternalQuoteClick } from '../../lib/utils/external-quote-click-utils';
 import { resolveExternalQuoteTarget } from '../../lib/utils/external-quote-resolver';
 import { ExternalQuoteReference, getExternalQuoteBoardLabel, getExternalQuoteStatusMessage } from '../../lib/utils/external-quote-utils';
 import { isUnavailableQuoteTarget } from '../../lib/utils/quote-link-utils';
@@ -45,16 +46,12 @@ type PreviewPosition = {
   top: number;
 };
 
-// Counts quote clicks across every link, so a newer click supersedes one still being resolved.
-let latestQuoteClick = 0;
-
 const ExternalNumberQuoteLink = ({ isOP = false, reference }: ExternalNumberQuoteLinkProps) => {
   const { t } = useTranslation();
   const account = useAccount();
   const directories = useDirectories();
   const isMobile = useIsMobile();
   const navigate = useNavigate();
-  const location = useLocation();
   const renderQuotePreviewPost = useQuotePreviewPost();
   const setErrorStatus = useExternalQuoteStatusStore((state) => state.setErrorStatus);
   const [isResolving, setIsResolving] = useState(false);
@@ -68,17 +65,6 @@ const ExternalNumberQuoteLink = ({ isOP = false, reference }: ExternalNumberQuot
   const resolutionPromiseRef = useRef<Promise<ResolvedExternalQuoteTarget | null> | null>(null);
   const previewOpenRef = useRef(false);
   const latestStatusMessageRef = useRef('');
-  const pendingClickRef = useRef<{ fromUrl: string; leftPage: boolean } | null>(null);
-
-  // Runs after each navigation and on unmount, when the URL already shows where the user went. A link
-  // that unmounts on the same URL (a same-board quote whose number was found) keeps its pending click.
-  useEffect(
-    () => () => {
-      const pendingClick = pendingClickRef.current;
-      if (pendingClick && window.location.href !== pendingClick.fromUrl) pendingClick.leftPage = true;
-    },
-    [location.key],
-  );
 
   // A post number can resolve to a cid whose comment this page has not loaded (numbers registered by
   // a visited thread or by the reply search), so the preview fetches that comment by its cid. It waits
@@ -247,47 +233,35 @@ const ExternalNumberQuoteLink = ({ isOP = false, reference }: ExternalNumberQuot
 
     setIsResolving(true);
 
-    // The search can take minutes, so it only navigates or reports an error while this is still the
-    // latest quote click and the user has not left the page they clicked it from, even to come back.
-    // The link itself can unmount before then (a same-board quote turns into a regular one once its
-    // number is found).
-    const click = ++latestQuoteClick;
-    const pendingClick = { fromUrl: window.location.href, leftPage: false };
-    pendingClickRef.current = pendingClick;
-    const isClickCurrent = () => click === latestQuoteClick && !pendingClick.leftPage && window.location.href === pendingClick.fromUrl;
-
-    const finishWithError = (message: string) => {
-      if (isClickCurrent()) {
-        setErrorStatus(message);
-      }
-      setIsResolving(false);
-    };
-
+    // The search can take minutes, so its result is dropped once a newer quote click or leaving the
+    // page supersedes this click, even after the link itself is gone.
+    const click = startExternalQuoteClick();
     let target: ResolvedExternalQuoteTarget | null;
 
     try {
       target = await resolveTarget({ updatePreview: false });
     } catch {
-      finishWithError(getCannotResolveMessage());
-      return;
+      target = null;
+    } finally {
+      click.end();
     }
 
-    if (!isClickCurrent()) {
-      setIsResolving(false);
+    setIsResolving(false);
+
+    if (!click.isCurrent()) {
       return;
     }
 
     if (!target) {
-      finishWithError(getCannotResolveMessage());
+      setErrorStatus(getCannotResolveMessage());
       return;
     }
 
     if (target.isUnavailable) {
-      finishWithError(getUnavailableMessage());
+      setErrorStatus(getUnavailableMessage());
       return;
     }
 
-    setIsResolving(false);
     navigate(target.route);
   };
 

@@ -17,6 +17,7 @@ import { useCommunityIdentifier } from './hooks/use-community-identifiers';
 import { useResolvedCommunityAddress } from './hooks/use-resolved-community-address';
 import { QuotePreviewPostContext } from './hooks/use-quote-preview-post';
 import useSuspendOffscreenMediaPlayback from './hooks/use-suspend-offscreen-media-playback';
+import useExternalQuoteClickTracking from './hooks/use-external-quote-click-tracking';
 import { getPageDraftKey } from './lib/utils/location-draft-utils';
 import { BOARD_ROUTES_ID, loadBoardRoutes, registerRouteTree } from './route-modules';
 import styles from './app.module.css';
@@ -132,6 +133,7 @@ const preloadLazyChunks = () => {
 const GlobalLayout = () => {
   useTheme({ applyDocumentEffects: true });
   useSuspendOffscreenMediaPlayback();
+  useExternalQuoteClickTracking();
   const directoryVoteRefreshDownloadFailed = useDirectoryVoteRefresh();
 
   const location = useLocation();

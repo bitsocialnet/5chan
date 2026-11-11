@@ -3,6 +3,7 @@ import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { HashRouter, MemoryRouter, Route, Routes, useLocation, useNavigate, type NavigateFunction } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import useExternalQuoteClickTracking from '../../../hooks/use-external-quote-click-tracking';
 import ExternalNumberQuoteLink from '../external-number-quote-link';
 import postStyles from '../../post-styles';
 
@@ -112,6 +113,12 @@ const LocationProbe = () => {
   return createElement('div', { 'data-testid': 'location' }, location.pathname);
 };
 
+// Stands in for the app layout, which tracks navigation for pending quote clicks.
+const QuoteClickTracker = () => {
+  useExternalQuoteClickTracking();
+  return null;
+};
+
 const getRenderedPathname = () => container.querySelector('[data-testid="location"]')?.textContent;
 
 const renderLinksInHashRouter = async (numbers: number[]) => {
@@ -122,6 +129,7 @@ const renderLinksInHashRouter = async (numbers: number[]) => {
         {},
         ...numbers.map((number) => createElement(ExternalNumberQuoteLink, { key: number, reference: createReference(number) })),
         createElement(LocationProbe),
+        createElement(QuoteClickTracker),
       ),
     );
   });
@@ -347,6 +355,7 @@ describe('ExternalNumberQuoteLink', () => {
             createElement(Route, { path: '*', element: null }),
           ),
           createElement(LocationProbe),
+          createElement(QuoteClickTracker),
         ),
       );
     });
@@ -376,6 +385,24 @@ describe('ExternalNumberQuoteLink', () => {
     await settle(() => resolution.resolve(createTarget(77)));
 
     expect(getRenderedPathname()).toBe('/fit/thread/cid-77');
+  });
+
+  it('does not navigate when the user left and came back after the clicked link was replaced on the same page', async () => {
+    const resolution = createDeferred<ReturnType<typeof createTarget>>();
+    testState.resolveExternalQuoteTargetMock.mockReturnValue(resolution.promise);
+
+    await renderLinksInHashRouter([77]);
+    await clickLink(0);
+    await renderLinksInHashRouter([]);
+    await act(async () => {
+      navigateInApp?.('/biz/catalog');
+    });
+    await act(async () => {
+      navigateInApp?.('/biz/thread/current');
+    });
+    await settle(() => resolution.resolve(createTarget(77)));
+
+    expect(getRenderedPathname()).toBe('/biz/thread/current');
   });
 
   it('lets only the latest clicked quote navigate', async () => {
