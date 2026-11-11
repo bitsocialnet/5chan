@@ -69,7 +69,8 @@ const ExternalNumberQuoteLink = ({ isOP = false, reference }: ExternalNumberQuot
   // A post number can resolve to a cid whose comment this page has not loaded (numbers registered by
   // a visited thread or by the reply search), so the preview fetches that comment by its cid. It waits
   // for the CommentUpdate (updatedAt), which carries deleted, removed and purged, before showing it.
-  const previewTargetCid = previewState.kind === 'resolved' && !previewState.target.comment ? previewState.target.cid : undefined;
+  // Only while the preview is open, so a closed preview stops updating it; the comments store keeps it.
+  const previewTargetCid = isPreviewOpen && previewState.kind === 'resolved' && !previewState.target.comment ? previewState.target.cid : undefined;
   const previewTargetComment = useComment({ commentCid: previewTargetCid, onlyIfCached: !previewTargetCid });
   const previewComment =
     previewState.kind === 'resolved'

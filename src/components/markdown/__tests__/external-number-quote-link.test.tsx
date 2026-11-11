@@ -479,6 +479,25 @@ describe('ExternalNumberQuoteLink', () => {
     expect(getPreviewText()).toBe('external_quote_unavailable');
   });
 
+  it('keeps a cid-only quote updating only while its preview is open', async () => {
+    const { comment: _comment, ...cidOnlyTarget } = createTarget(77);
+    testState.resolveExternalQuoteTargetMock.mockResolvedValue(cidOnlyTarget);
+
+    await renderLink(77);
+    await hoverLink();
+
+    expect(testState.useCommentMock).toHaveBeenLastCalledWith({ commentCid: 'cid-77', onlyIfCached: false });
+
+    await leaveLink();
+
+    expect(testState.useCommentMock).toHaveBeenLastCalledWith({ commentCid: undefined, onlyIfCached: true });
+
+    await hoverLink();
+
+    expect(testState.useCommentMock).toHaveBeenLastCalledWith({ commentCid: 'cid-77', onlyIfCached: false });
+    expect(testState.resolveExternalQuoteTargetMock).toHaveBeenCalledTimes(1);
+  });
+
   it('searches again for a quote that was not found before', async () => {
     testState.resolveExternalQuoteTargetMock.mockResolvedValueOnce(null).mockResolvedValueOnce(createTarget(77));
 
