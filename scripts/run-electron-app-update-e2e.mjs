@@ -35,7 +35,8 @@ const buildPackagedApp = async ({ version, fixturePort }) => {
 // Playwright and outlives this script. Stop every process running from the installed bundle (the
 // pattern matches the app and its helpers, not the install script) before its workspace is deleted.
 const stopInstalledApp = async (installedAppPath) => {
-  const pattern = `${installedAppPath}/Contents/`;
+  // pgrep and pkill read the pattern as an extended regular expression, so match the path literally.
+  const pattern = `${installedAppPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/Contents/`;
   const isRunning = () =>
     runCommand('/usr/bin/pgrep', ['-f', pattern], { captureOutput: true }).then(
       () => true,
