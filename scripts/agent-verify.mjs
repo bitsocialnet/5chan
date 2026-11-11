@@ -26,9 +26,9 @@ function processExists(pid) {
 }
 
 // A force-killed run cannot release its lock, and its detached commands outlive it.
-// command.pid holds the process group of the run's latest command ('' before the first);
-// the lock is abandoned only when the run and that group have both exited. Unreadable or
-// missing details keep the lock.
+// command.pid holds the process group of the run's latest command ('' before the first,
+// 'starting' while one is being started); the lock is abandoned only when the run and that
+// group have both exited. Unreadable or missing details keep the lock.
 function isAbandoned(lockPath, details) {
   if (!Number.isInteger(details?.pid) || typeof details.token !== 'string' || processExists(details.pid)) return false;
   let command;
@@ -175,6 +175,8 @@ export async function runVerification({ cwd = repoRoot, lockPath = verificationL
       const label = command.join(' ');
       log(`[agent verify] ${label} (${cwd})`);
       const result = await new Promise((resolve) => {
+        // Until the new group is recorded, a run killed here must not look abandoned.
+        recordCommand('starting');
         child = spawn(command[0], command.slice(1), { cwd, stdio: 'inherit', detached: process.platform !== 'win32' });
         recordCommand(child.pid);
         child.on('error', (failure) => resolve({ code: failure.code === 'ENOENT' ? 127 : 1, detail: failure.message }));

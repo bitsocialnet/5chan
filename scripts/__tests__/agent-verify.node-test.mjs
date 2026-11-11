@@ -173,6 +173,29 @@ test('a lock without command details is never reclaimed automatically', async (t
   assert.equal(existsSync(path.join(lockPath, 'owner.json')), true);
 });
 
+// A run killed after starting a command but before recording its process group must not leave a
+// lock that says no command, or only an exited one, is running: a later run would reclaim it.
+test('command.pid holds no process group while a command is being started', async (t) => {
+  const { lockPath, command, options } = fixture(t);
+  // cross-spawn calls child_process.spawn through the module object.
+  const childProcess = createRequire(import.meta.url)('node:child_process');
+  const originalSpawn = childProcess.spawn;
+  const recorded = [];
+  childProcess.spawn = function (...args) {
+    recorded.push(readFileSync(path.join(lockPath, 'command.pid'), 'utf8'));
+    return originalSpawn.apply(this, args);
+  };
+  t.after(() => {
+    childProcess.spawn = originalSpawn;
+  });
+  assert.equal(await runVerification({ ...options, commands: [command('build'), command('lint')] }), 0);
+  assert.equal(recorded.length, 2);
+  for (const content of recorded) assert.doesNotMatch(content, /^\d*$/);
+  // The lock such a run leaves behind is kept.
+  writeOwner(lockPath, { pid: exitedPid() }, recorded[1]);
+  assert.equal(await runVerification({ ...options, commands: [command('must-not-run')] }), 75);
+});
+
 // Runs `onCall(name, target)` after each listed `node:fs` call, including those agent-verify.mjs
 // imports by name, and restores the real functions after the test.
 function interceptFs(t, names, onCall) {
