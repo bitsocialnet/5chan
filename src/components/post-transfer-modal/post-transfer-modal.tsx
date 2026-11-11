@@ -322,6 +322,9 @@ const PostTransferModal = ({ comment, onClose, onTransferStateChange, onTransfer
       publishCommentModeration({
         ...moderationOptions,
         onChallenge: async (...args: any[]) => {
+          // bitsocial-react-hooks publishes again on its own after a failed verification with no reason or challenge
+          // errors. Answering that challenge would remove the original post after the transfer was reported as failed.
+          if (isSettled) return;
           hasChallenge = true;
           useChallengesStore.getState().addChallenge([...args, comment], () => settle(new Error(`${label} challenge was abandoned.`)));
         },

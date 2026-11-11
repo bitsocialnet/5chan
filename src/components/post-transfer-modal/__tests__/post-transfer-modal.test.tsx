@@ -326,6 +326,27 @@ describe('PostTransferModal', () => {
     expect(closeButton?.disabled).toBe(false);
   });
 
+  it('ignores a source removal challenge that arrives after the transfer was reported as failed', async () => {
+    const onTransferSuccess = vi.fn();
+    const onTransferStateChange = vi.fn();
+    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
+    await renderTransferModal(baseComment, { onTransferStateChange, onTransferSuccess });
+
+    await submitAndAcceptTrashCopy();
+    await settleModeration(1, (options) => options.onChallenge({ challenges: [] }, { cid: 'comment-1' }));
+    expect(testState.addChallengeMock).toHaveBeenCalledTimes(1);
+    // bitsocial-react-hooks publishes again on its own after a failed verification with no reason or challenge errors.
+    await settleModeration(1, (options) => options.onChallengeVerification({ challengeSuccess: false }, { cid: 'comment-1' }));
+    expect(onTransferStateChange).toHaveBeenLastCalledWith('finalizationFailed');
+
+    await settleModeration(1, (options) => options.onChallenge({ challenges: [] }, { cid: 'comment-1' }));
+
+    // Answering that challenge would remove the original post while the modal reports the transfer as failed.
+    expect(testState.addChallengeMock).toHaveBeenCalledTimes(1);
+    expect(onTransferSuccess).not.toHaveBeenCalled();
+    alertSpy.mockRestore();
+  });
+
   it('keeps the source removal error that follows a failed publishing state before any challenge', async () => {
     const onTransferStateChange = vi.fn();
     const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
