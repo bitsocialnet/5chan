@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { HashRouter, MemoryRouter, useLocation, useNavigate, type NavigateFunction } from 'react-router-dom';
+import { HashRouter, MemoryRouter, Route, Routes, useLocation, useNavigate, type NavigateFunction } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import ExternalNumberQuoteLink from '../external-number-quote-link';
 import postStyles from '../../post-styles';
@@ -311,6 +311,71 @@ describe('ExternalNumberQuoteLink', () => {
     await settle(() => resolution.resolve(null));
 
     expect(testState.setErrorStatusMock).not.toHaveBeenCalled();
+  });
+
+  it('does not navigate when the user left and came back before the clicked quote resolved', async () => {
+    const resolution = createDeferred<ReturnType<typeof createTarget>>();
+    testState.resolveExternalQuoteTargetMock.mockReturnValue(resolution.promise);
+
+    await renderLinksInHashRouter([77]);
+    await clickLink(0);
+    await act(async () => {
+      navigateInApp?.('/biz/catalog');
+    });
+    await act(async () => {
+      navigateInApp?.('/biz/thread/current');
+    });
+    await settle(() => resolution.resolve(createTarget(77)));
+
+    expect(getRenderedPathname()).toBe('/biz/thread/current');
+  });
+
+  it('does not navigate when the page that showed the clicked quote was left and opened again', async () => {
+    const resolution = createDeferred<ReturnType<typeof createTarget>>();
+    testState.resolveExternalQuoteTargetMock.mockReturnValue(resolution.promise);
+
+    // Like a thread page, the link exists only while its page is open.
+    await act(async () => {
+      root.render(
+        createElement(
+          HashRouter,
+          {},
+          createElement(
+            Routes,
+            {},
+            createElement(Route, { path: '/biz/thread/current', element: createElement(ExternalNumberQuoteLink, { reference: createReference(77) }) }),
+            createElement(Route, { path: '*', element: null }),
+          ),
+          createElement(LocationProbe),
+        ),
+      );
+    });
+    await clickLink(0);
+    await act(async () => {
+      navigateInApp?.('/biz/catalog');
+    });
+    expect(container.querySelector('a')).toBeNull();
+    await act(async () => {
+      navigateInApp?.(-1);
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    expect(getRenderedPathname()).toBe('/biz/thread/current');
+    await settle(() => resolution.resolve(createTarget(77)));
+
+    expect(getRenderedPathname()).toBe('/biz/thread/current');
+  });
+
+  it('still navigates when the clicked link is replaced on the same page before its quote resolves', async () => {
+    const resolution = createDeferred<ReturnType<typeof createTarget>>();
+    testState.resolveExternalQuoteTargetMock.mockReturnValue(resolution.promise);
+
+    await renderLinksInHashRouter([77]);
+    await clickLink(0);
+    // A same-board quote turns into a regular quote link once the search registers its number.
+    await renderLinksInHashRouter([]);
+    await settle(() => resolution.resolve(createTarget(77)));
+
+    expect(getRenderedPathname()).toBe('/fit/thread/cid-77');
   });
 
   it('lets only the latest clicked quote navigate', async () => {
