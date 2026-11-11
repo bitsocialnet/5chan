@@ -122,16 +122,25 @@ export const evictThreadRefreshCaches = async (comments: Array<Comment | undefin
   const persistedEntries = [...(await readPersistedEntries(commentsDatabase, commentCids)), ...(await readPersistedEntries(repliesPagesDatabase, replyPageCids))];
   const removedStoreEntries = removeReplyPagesFromStore(replyPageCids);
 
-  await Promise.all([
-    ...commentCids.map((commentCid) => commentsDatabase.removeItem(commentCid)),
-    ...replyPageCids.map((pageCid) => repliesPagesDatabase.removeItem(pageCid)),
-  ]);
-
   let restored = false;
-  return async () => {
+  const restore = async () => {
     if (restored) return;
     restored = true;
     restoreReplyPagesToStore(removedStoreEntries);
     await Promise.all(persistedEntries.map(restorePersistedEntry));
   };
+
+  const removals = await Promise.allSettled([
+    ...commentCids.map((commentCid) => commentsDatabase.removeItem(commentCid)),
+    ...replyPageCids.map((pageCid) => repliesPagesDatabase.removeItem(pageCid)),
+  ]);
+  const failedRemoval = removals.find((removal): removal is PromiseRejectedResult => removal.status === 'rejected');
+  if (failedRemoval) {
+    // A failed eviction gives the caller no restore function, so it puts back what it removed itself,
+    // once every removal has finished.
+    await restore().catch(() => {});
+    throw failedRemoval.reason;
+  }
+
+  return restore;
 };

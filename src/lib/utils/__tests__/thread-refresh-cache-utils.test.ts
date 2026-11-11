@@ -148,4 +148,29 @@ describe('thread-refresh-cache-utils', () => {
     expect(testState.repliesPagesState.repliesPages).toEqual(initialRepliesPages);
     expect(testState.repliesPagesState.comments).toEqual({ ...initialComments, 'reply-b': { cid: 'reply-b', refetched: true } });
   });
+
+  it('puts back what it evicted when clearing the persisted copies fails', async () => {
+    const thread = { cid: 'thread-cid', replies: { pageCids: { old: 'page-old-1' } } };
+    testState.commentsDatabase.items.set('thread-cid', { cid: 'thread-cid', updatedAt: 1 });
+    testState.repliesPagesDatabase.items.set('page-old-1', { comments: [{ cid: 'reply-a' }], nextCid: 'page-old-2' });
+    const initialRepliesPages = testState.repliesPagesState.repliesPages;
+    const initialComments = testState.repliesPagesState.comments;
+    const removeError = new Error('removeItem failed');
+    testState.repliesPagesRemoveItemMock.mockImplementationOnce(async () => {
+      throw removeError;
+    });
+    // The thread comment's removal is still running when the page removal fails.
+    testState.commentsRemoveItemMock.mockImplementationOnce(async (key: string) => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      testState.commentsDatabase.items.delete(key);
+    });
+
+    await expect(evictThreadRefreshCaches([thread])).rejects.toBe(removeError);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(testState.commentsDatabase.items.get('thread-cid')).toEqual({ cid: 'thread-cid', updatedAt: 1 });
+    expect(testState.repliesPagesDatabase.items.get('page-old-1')).toEqual({ comments: [{ cid: 'reply-a' }], nextCid: 'page-old-2' });
+    expect(testState.repliesPagesState.repliesPages).toEqual(initialRepliesPages);
+    expect(testState.repliesPagesState.comments).toEqual(initialComments);
+  });
 });
