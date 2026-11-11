@@ -232,6 +232,32 @@ PATH="\${PATH#*:}" exec stat "$@"
     expect(liveSession()).toBe(newOwner);
   });
 
+  it('does not delete a slot whose browser comes up after it was judged stale', () => {
+    run('open', 'slow-start', 'about:blank');
+    setLiveSession(''); // its browser is not listed although the slot is past the grace period
+    backdateLock();
+    // The verdict lists the browsers, then reads the lock's age. From that first `stat` on, the
+    // browser is listed open.
+    const shimDir = path.join(tempDir, 'stat-shim');
+    fs.mkdirSync(shimDir);
+    fs.writeFileSync(
+      path.join(shimDir, 'stat'),
+      `#!/bin/bash
+if [ "\${@: -1}" = ${JSON.stringify(lockDir())} ] && mkdir ${JSON.stringify(path.join(tempDir, 'browser-up'))} 2>/dev/null; then
+  printf slow-start >${JSON.stringify(path.join(tempDir, 'live-session'))}
+fi
+PATH="\${PATH#*:}" exec stat "$@"
+`,
+      { mode: 0o755 },
+    );
+
+    const blocked = runWithPath(`${shimDir}:`, 'open', 'verify-firefox', 'about:blank');
+    expect(blocked.code).toBe(75);
+    expect(blocked.output).not.toContain('reclaimed stale slot');
+    expect(fs.readFileSync(path.join(lockDir(), 'owner'), 'utf8')).toBe('slow-start\n');
+    expect(liveSession()).toBe('slow-start');
+  });
+
   it('breaks a reclaim mutex left behind by a killed reclaimer', () => {
     run('open', 'dead-one', 'about:blank');
     setLiveSession('');

@@ -221,11 +221,11 @@ take_reclaim_mutex() {
 }
 
 # Drop a lock judged stale. The verdict can be out of date by the time it is acted
-# on: another opener may have reclaimed that lock and taken the slot since. So
-# reclaimers take turns through a mutex, and each one moves the lock only if it is
-# still the one it judged: same owner, and past the launch grace period. A lock
-# taken after an earlier reclaim is young, so it is left alone. Fails only when the
-# mutex cannot be taken.
+# on: another opener may have reclaimed that lock and taken the slot since, or its
+# browser may have come up. So reclaimers take turns through a mutex, and each one
+# moves the lock only if it is still the one it judged: same owner, past the launch
+# grace period, and still without a running browser. A lock taken after an earlier
+# reclaim is young, so it is left alone. Fails only when the mutex cannot be taken.
 reclaim_stale_lock() {
   local owner="$1" staged="${lock_dir}.stale.$$" moved=0
 
@@ -235,7 +235,7 @@ reclaim_stale_lock() {
     fi
     return 1
   fi
-  if [ -d "$lock_dir" ] && [ "$(current_owner)" = "$owner" ] && ! lock_is_young &&
+  if [ -d "$lock_dir" ] && [ "$(current_owner)" = "$owner" ] && [ "$(slot_state "$owner")" = dead ] &&
     mv "$lock_dir" "$staged" 2>/dev/null; then
     moved=1
   fi
