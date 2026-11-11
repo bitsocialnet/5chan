@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import { spawn, spawnSync } from 'node:child_process';
 import { once } from 'node:events';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, utimesSync, writeFileSync } from 'node:fs';
+import { createRequire, syncBuiltinESMExports } from 'node:module';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -170,6 +171,90 @@ test('a lock without command details is never reclaimed automatically', async (t
   assert.equal(await runVerification({ ...options, commands: [command('must-not-run')] }), 75);
   assert.equal(existsSync(logPath), false);
   assert.equal(existsSync(path.join(lockPath, 'owner.json')), true);
+});
+
+// Runs `onCall(name, target)` after each listed `node:fs` call, including those agent-verify.mjs
+// imports by name, and restores the real functions after the test.
+function interceptFs(t, names, onCall) {
+  const fs = createRequire(import.meta.url)('node:fs');
+  const original = Object.fromEntries(names.map((name) => [name, fs[name]]));
+  for (const name of names) {
+    fs[name] = function (target, ...rest) {
+      try {
+        return original[name].call(this, target, ...rest);
+      } finally {
+        onCall(name, String(target));
+      }
+    };
+  }
+  syncBuiltinESMExports();
+  t.after(() => {
+    Object.assign(fs, original);
+    syncBuiltinESMExports();
+  });
+}
+
+// Two runs that start after a force-killed run can both judge its lock abandoned. Here the other
+// run reclaims it and takes the slot right after this run's verdict: either it has only created
+// the lock directory so far, or it has written its details and is running.
+for (const [state, takeSlot] of [
+  ['only created', (lockPath) => mkdirSync(lockPath)],
+  ['written', (lockPath) => writeOwner(lockPath, { pid: process.pid, token: 'fresh-run' }, '')],
+]) {
+  test(`a stale verdict never moves or removes a lock another run has just taken (${state})`, async (t) => {
+    const { lockPath, logPath, command, options } = fixture(t);
+    writeOwner(lockPath, { pid: exitedPid() }, String(exitedPid()));
+    const freshLockState = () =>
+      readdirSync(lockPath)
+        .sort()
+        .map((name) => [name, readFileSync(path.join(lockPath, name), 'utf8')]);
+    let taken = false;
+    let swapping = false;
+    let expected;
+    const touched = [];
+    interceptFs(t, ['readFileSync', 'renameSync', 'rmSync', 'rmdirSync', 'unlinkSync'], (name, target) => {
+      if (swapping) return;
+      if (taken && name !== 'readFileSync' && (target === lockPath || target.startsWith(`${lockPath}${path.sep}`))) touched.push(`${name} ${target}`);
+      // The verdict's last read is the killed run's command.pid.
+      if (!taken && name === 'readFileSync' && target === path.join(lockPath, 'command.pid')) {
+        taken = swapping = true;
+        rmSync(lockPath, { recursive: true });
+        takeSlot(lockPath);
+        expected = freshLockState();
+        swapping = false;
+      }
+    });
+
+    assert.equal(await runVerification({ ...options, commands: [command('must-not-run')] }), 75);
+    assert.equal(taken, true);
+    assert.deepEqual(touched, []);
+    assert.deepEqual(freshLockState(), expected);
+    assert.equal(existsSync(logPath), false);
+  });
+}
+
+test('an abandoned lock that another run is reclaiming is left to that run', async (t) => {
+  const { lockPath, logPath, command, options } = fixture(t);
+  writeOwner(lockPath, { pid: exitedPid() }, String(exitedPid()));
+  mkdirSync(`${lockPath}.reclaim`);
+  assert.equal(await runVerification({ ...options, commands: [command('must-not-run')] }), 75);
+  assert.equal(readFileSync(path.join(lockPath, 'owner.json'), 'utf8').includes('killed-run'), true);
+  assert.equal(existsSync(`${lockPath}.reclaim`), true);
+  assert.equal(existsSync(logPath), false);
+});
+
+test('a reclaim mutex left behind by a killed run is broken once it is 10s old', async (t) => {
+  const { lockPath, logPath, command, options, output } = fixture(t);
+  writeOwner(lockPath, { pid: exitedPid() }, String(exitedPid()));
+  const mutex = `${lockPath}.reclaim`;
+  mkdirSync(mutex);
+  const created = new Date(Date.now() - 60_000);
+  utimesSync(mutex, created, created);
+  assert.equal(await runVerification({ ...options, commands: [command('build')] }), 0);
+  assert.match(output.join('\n'), /Reclaimed an abandoned verification lock/);
+  assert.equal(readFileSync(logPath, 'utf8'), 'build:start\nbuild:end\n');
+  assert.equal(existsSync(mutex), false);
+  assert.equal(existsSync(lockPath), false);
 });
 
 test('a replaced lock is preserved and reported as a failure', async (t) => {

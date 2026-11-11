@@ -3,7 +3,7 @@
 import { spawnSync } from 'node:child_process';
 import spawn from 'cross-spawn';
 import { randomUUID } from 'node:crypto';
-import { mkdirSync, readFileSync, renameSync, rmdirSync, rmSync, unlinkSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, rmdirSync, rmSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
 import { constants, tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -14,6 +14,7 @@ export const verificationLockPath = path.join(tmpdir(), '5chan-agent-verify.lock
 // perf:startup-bytes reads build/, so it runs right after build, as in CI's Build + Smoke job.
 const defaultCommands = ['build', 'perf:startup-bytes', 'lint', 'type-check', 'doctor:check', 'perf:check'].map((name) => ['corepack', 'yarn', name]);
 const signalExitCode = (signal) => 128 + (constants.signals[signal] || 1);
+const reclaimMutexTimeoutMs = 10_000;
 
 function processExists(pid) {
   try {
@@ -41,27 +42,52 @@ function isAbandoned(lockPath, details) {
   return Number.isInteger(pid) && pid > 0 && !processExists(process.platform === 'win32' ? pid : -pid);
 }
 
-// Moving the lock aside first means only one racing run can take it; if the moved lock
-// is no longer the abandoned one, another run reclaimed it first and it is put back.
+function readOwner(lockPath) {
+  try {
+    return JSON.parse(readFileSync(path.join(lockPath, 'owner.json'), 'utf8'));
+  } catch {
+    // A concurrent owner may still be writing its metadata. Do not steal it.
+    return undefined;
+  }
+}
+
+function takeReclaimMutex(mutexPath) {
+  try {
+    mkdirSync(mutexPath);
+    return true;
+  } catch (error) {
+    if (error.code !== 'EEXIST') return false;
+  }
+  // A reclaim holds the mutex for milliseconds; one left by a killed run is broken once it is old.
+  try {
+    if (Date.now() - statSync(mutexPath).mtimeMs < reclaimMutexTimeoutMs) return false;
+    rmdirSync(mutexPath);
+    mkdirSync(mutexPath);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// The verdict can be out of date by the time it is acted on: another run may have reclaimed the
+// lock and taken the slot since. Reclaims take turns through a mutex, and each one removes the lock
+// only if it is still the abandoned one, so a lock another run has just taken is never touched.
+// A mutex held by another run means that run is reclaiming, so this one reports busy.
 function reclaimAbandonedLock(lockPath, token) {
-  const staged = `${lockPath}.abandoned-${randomUUID()}`;
+  const mutexPath = `${lockPath}.reclaim`;
+  if (!takeReclaimMutex(mutexPath)) return false;
   try {
-    renameSync(lockPath, staged);
-  } catch {
-    return false;
+    const details = readOwner(lockPath);
+    if (details?.token !== token || !isAbandoned(lockPath, details)) return false;
+    rmSync(lockPath, { recursive: true, force: true });
+    return true;
+  } finally {
+    try {
+      rmdirSync(mutexPath);
+    } catch {
+      // Already broken by another run.
+    }
   }
-  let movedToken;
-  try {
-    movedToken = JSON.parse(readFileSync(path.join(staged, 'owner.json'), 'utf8')).token;
-  } catch {
-    // Compared below.
-  }
-  if (movedToken !== token) {
-    renameSync(staged, lockPath);
-    return false;
-  }
-  rmSync(staged, { recursive: true, force: true });
-  return true;
 }
 
 function acquireLock(lockPath, cwd, log, reclaim = true) {
@@ -69,14 +95,8 @@ function acquireLock(lockPath, cwd, log, reclaim = true) {
     mkdirSync(lockPath, { mode: 0o700 });
   } catch (error) {
     if (error.code !== 'EEXIST') throw error;
-    let owner = 'owner details unavailable';
-    let details;
-    try {
-      details = JSON.parse(readFileSync(path.join(lockPath, 'owner.json'), 'utf8'));
-      owner = `PID ${details.pid}, ${details.cwd}, started ${details.startedAt}`;
-    } catch {
-      // A concurrent owner may still be writing its metadata. Do not steal it.
-    }
+    const details = readOwner(lockPath);
+    const owner = details ? `PID ${details.pid}, ${details.cwd}, started ${details.startedAt}` : 'owner details unavailable';
     if (reclaim && isAbandoned(lockPath, details) && reclaimAbandonedLock(lockPath, details.token)) {
       log(`[agent verify] Reclaimed an abandoned verification lock (${owner}); that run and its last command have exited.`);
       return acquireLock(lockPath, cwd, log, false);
