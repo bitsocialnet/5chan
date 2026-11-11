@@ -98,7 +98,8 @@ describe('downloadAndInstallUpdate', () => {
     const [, [scriptPath, targetPath, stagedPath]] = helperCall();
     const shimDir = path.join(workDir, 'shims');
     write(path.join(shimDir, 'ditto'), dittoSucceeds ? '#!/bin/sh\ncp -R "$1" "$2"\n' : '#!/bin/sh\necho "ditto: Permission denied" >&2\nexit 1\n', 0o755);
-    write(path.join(shimDir, 'open'), `#!/bin/sh\necho "$@" >> "${shimDir}/open.log"\n`, 0o755);
+    // printf, not echo: dash (/bin/sh on Linux) reads open's -n flag as an echo option and drops it.
+    write(path.join(shimDir, 'open'), `#!/bin/sh\nprintf '%s\\n' "$*" >> "${shimDir}/open.log"\n`, 0o755);
     const script = fs.readFileSync(scriptPath, 'utf8').replaceAll('/usr/bin/ditto', path.join(shimDir, 'ditto')).replaceAll('/usr/bin/open', path.join(shimDir, 'open'));
     fs.writeFileSync(scriptPath, script);
     const result = spawnSync('/bin/sh', [scriptPath, targetPath, stagedPath, exitedPid()]);
