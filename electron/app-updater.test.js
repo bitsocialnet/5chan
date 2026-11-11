@@ -94,15 +94,21 @@ describe('downloadAndInstallUpdate', () => {
     return appBundlePath;
   };
   // Runs the macOS helper with ditto and open replaced by shims, since the real ones are macOS-only.
-  const runMacHelper = ({ dittoSucceeds }) => {
+  const runMacHelper = ({ dittoSucceeds, newAppOpens = true, moveIntoPlaceFails = false }) => {
     const [, [scriptPath, targetPath, stagedPath]] = helperCall();
     const shimDir = path.join(workDir, 'shims');
     write(path.join(shimDir, 'ditto'), dittoSucceeds ? '#!/bin/sh\ncp -R "$1" "$2"\n' : '#!/bin/sh\necho "ditto: Permission denied" >&2\nexit 1\n', 0o755);
+    // open -n <app>: a damaged new app fails to open.
+    const refuseNewApp = newAppOpens ? '' : '[ "$(cat "$2/Contents/version")" != new ]\n';
     // printf, not echo: dash (/bin/sh on Linux) reads open's -n flag as an echo option and drops it.
-    write(path.join(shimDir, 'open'), `#!/bin/sh\nprintf '%s\\n' "$*" >> "${shimDir}/open.log"\n`, 0o755);
+    write(path.join(shimDir, 'open'), `#!/bin/sh\nprintf '%s\\n' "$*" >> "${shimDir}/open.log"\n${refuseNewApp}`, 0o755);
+    if (moveIntoPlaceFails) {
+      // mv <app>.new <app>: the staged app cannot be moved into place.
+      write(path.join(shimDir, 'mv'), '#!/bin/sh\ncase "$1" in *.new) exit 1 ;; esac\nexec /bin/mv "$@"\n', 0o755);
+    }
     const script = fs.readFileSync(scriptPath, 'utf8').replaceAll('/usr/bin/ditto', path.join(shimDir, 'ditto')).replaceAll('/usr/bin/open', path.join(shimDir, 'open'));
     fs.writeFileSync(scriptPath, script);
-    const result = spawnSync('/bin/sh', [scriptPath, targetPath, stagedPath, exitedPid()]);
+    const result = spawnSync('/bin/sh', [scriptPath, targetPath, stagedPath, exitedPid()], { env: { ...process.env, PATH: `${shimDir}:${process.env.PATH}` } });
     return { status: result.status, opened: readLines(path.join(shimDir, 'open.log')) };
   };
 
@@ -177,6 +183,32 @@ describe('downloadAndInstallUpdate', () => {
     expect(status).not.toBe(0);
     expect(opened).toEqual([`-n ${appBundlePath}`]);
     expect(fs.readFileSync(path.join(appBundlePath, 'Contents', 'version'), 'utf8')).toBe('old');
+    expect(fs.existsSync(`${appBundlePath}.new`)).toBe(false);
+  });
+
+  it('puts the current macOS app back and reopens it when the new one cannot be moved into place', async () => {
+    const appBundlePath = useMacApp();
+    await installUpdate(serveUpdate('5chan-darwin-arm64-v9.9.9.zip', 'zip'));
+
+    const { status, opened } = runMacHelper({ dittoSucceeds: true, moveIntoPlaceFails: true });
+
+    expect(status).not.toBe(0);
+    expect(opened).toEqual([`-n ${appBundlePath}`]);
+    expect(fs.readFileSync(path.join(appBundlePath, 'Contents', 'version'), 'utf8')).toBe('old');
+    expect(fs.existsSync(`${appBundlePath}.old`)).toBe(false);
+    expect(fs.existsSync(`${appBundlePath}.new`)).toBe(false);
+  });
+
+  it('puts the current macOS app back and reopens it when the new one does not open', async () => {
+    const appBundlePath = useMacApp();
+    await installUpdate(serveUpdate('5chan-darwin-arm64-v9.9.9.zip', 'zip'));
+
+    const { status, opened } = runMacHelper({ dittoSucceeds: true, newAppOpens: false });
+
+    expect(status).not.toBe(0);
+    expect(opened).toEqual([`-n ${appBundlePath}`, `-n ${appBundlePath}`]);
+    expect(fs.readFileSync(path.join(appBundlePath, 'Contents', 'version'), 'utf8')).toBe('old');
+    expect(fs.existsSync(`${appBundlePath}.old`)).toBe(false);
     expect(fs.existsSync(`${appBundlePath}.new`)).toBe(false);
   });
 

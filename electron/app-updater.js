@@ -190,16 +190,24 @@ SOURCE_APP="$2"
 CURRENT_PID="$3"
 STAGED_TARGET="\${TARGET_APP}.new"
 PREVIOUS_TARGET="\${TARGET_APP}.old"
-OPENED=0
+# How far the install got: waiting, moved-aside (the current app is at PREVIOUS_TARGET) or opened.
+STATE=waiting
 
 # The app has quit by now: if any step below fails, put the current app back and reopen it.
 reopen_current_app() {
-  if [ "$OPENED" = 1 ]; then
+  if [ "$STATE" = opened ]; then
     return
   fi
   rm -rf "$STAGED_TARGET" || true
-  if [ ! -e "$TARGET_APP" ] && [ -e "$PREVIOUS_TARGET" ]; then
-    mv "$PREVIOUS_TARGET" "$TARGET_APP" || true
+  if [ "$STATE" = moved-aside ]; then
+    # Move a replacement that did not open out of the way before restoring the current app.
+    if [ -e "$TARGET_APP" ]; then
+      mv "$TARGET_APP" "$STAGED_TARGET" || true
+    fi
+    if [ ! -e "$TARGET_APP" ]; then
+      mv "$PREVIOUS_TARGET" "$TARGET_APP" || true
+    fi
+    rm -rf "$STAGED_TARGET" || true
   fi
   /usr/bin/open -n "$TARGET_APP" || true
 }
@@ -216,15 +224,11 @@ rm -rf "$STAGED_TARGET" "$PREVIOUS_TARGET"
 /usr/bin/ditto "$SOURCE_APP" "$STAGED_TARGET"
 if [ -e "$TARGET_APP" ]; then
   mv "$TARGET_APP" "$PREVIOUS_TARGET"
+  STATE=moved-aside
 fi
-if ! mv "$STAGED_TARGET" "$TARGET_APP"; then
-  if [ -e "$PREVIOUS_TARGET" ]; then
-    mv "$PREVIOUS_TARGET" "$TARGET_APP"
-  fi
-  exit 1
-fi
+mv "$STAGED_TARGET" "$TARGET_APP"
 /usr/bin/open -n "$TARGET_APP"
-OPENED=1
+STATE=opened
 rm -rf "$PREVIOUS_TARGET" "$(dirname "$SOURCE_APP")"
 `;
   await fs.promises.writeFile(installerScriptPath, script, 'utf8');
