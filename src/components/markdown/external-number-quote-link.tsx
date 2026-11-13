@@ -3,11 +3,13 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { useAccount } from '@bitsocial/bitsocial-react-hooks';
+import { useAccount, useComment } from '@bitsocial/bitsocial-react-hooks';
 import { useDirectories } from '../../hooks/use-directories';
 import useIsMobile from '../../hooks/use-is-mobile';
+import { startExternalQuoteClick } from '../../lib/utils/external-quote-click-utils';
 import { resolveExternalQuoteTarget } from '../../lib/utils/external-quote-resolver';
 import { ExternalQuoteReference, getExternalQuoteBoardLabel, getExternalQuoteStatusMessage } from '../../lib/utils/external-quote-utils';
+import { isUnavailableQuoteTarget } from '../../lib/utils/quote-link-utils';
 import useExternalQuoteStatusStore from '../../stores/use-external-quote-status-store';
 import usePostNumberStore from '../../stores/use-post-number-store';
 import LoadingEllipsis from '../loading-ellipsis';
@@ -58,10 +60,23 @@ const ExternalNumberQuoteLink = ({ isOP = false, reference }: ExternalNumberQuot
   const [previewPosition, setPreviewPosition] = useState<PreviewPosition | null>(null);
   const anchorRef = useRef<HTMLAnchorElement | null>(null);
   const previewRef = useRef<HTMLDivElement | null>(null);
-  const resolvedTargetRef = useRef<ResolvedExternalQuoteTarget | null | undefined>(undefined);
+  // Only a found target is kept: a quote not found yet may still propagate, so it is searched again.
+  const resolvedTargetRef = useRef<ResolvedExternalQuoteTarget | undefined>(undefined);
   const resolutionPromiseRef = useRef<Promise<ResolvedExternalQuoteTarget | null> | null>(null);
   const previewOpenRef = useRef(false);
   const latestStatusMessageRef = useRef('');
+
+  // A post number can resolve to a cid whose comment this page has not loaded (numbers registered by
+  // a visited thread or by the reply search), so the preview fetches that comment by its cid. It waits
+  // for the CommentUpdate (updatedAt), which carries deleted, removed and purged, before showing it.
+  // Only while the preview is open, so a closed preview stops updating it; the comments store keeps it.
+  const previewTargetCid = isPreviewOpen && previewState.kind === 'resolved' && !previewState.target.comment ? previewState.target.cid : undefined;
+  const previewTargetComment = useComment({ commentCid: previewTargetCid, onlyIfCached: !previewTargetCid });
+  const previewComment =
+    previewState.kind === 'resolved'
+      ? (previewState.target.comment ?? (typeof previewTargetComment?.updatedAt === 'number' ? previewTargetComment : undefined))
+      : undefined;
+  const hasPreviewComment = Boolean(previewComment);
 
   const boardLabel = getExternalQuoteBoardLabel(reference, directories);
   const linkLabel = isOP ? `${reference.raw} (OP)` : reference.raw;
@@ -100,7 +115,7 @@ const ExternalNumberQuoteLink = ({ isOP = false, reference }: ExternalNumberQuot
       window.removeEventListener('resize', reposition);
       window.removeEventListener('scroll', reposition, true);
     };
-  }, [isMobile, isPreviewOpen, previewState.kind, updatePreviewPosition]);
+  }, [hasPreviewComment, isMobile, isPreviewOpen, previewState.kind, updatePreviewPosition]);
 
   const getInitialSearchMessage = () =>
     getExternalQuoteStatusMessage(t, {
@@ -122,7 +137,7 @@ const ExternalNumberQuoteLink = ({ isOP = false, reference }: ExternalNumberQuot
       throw new Error('Missing active account while resolving external quote');
     }
 
-    if (resolvedTargetRef.current !== undefined) {
+    if (resolvedTargetRef.current) {
       return resolvedTargetRef.current;
     }
 
@@ -141,7 +156,7 @@ const ExternalNumberQuoteLink = ({ isOP = false, reference }: ExternalNumberQuot
         postNumbers: usePostNumberStore,
         reference,
       }).then((target) => {
-        resolvedTargetRef.current = target;
+        resolvedTargetRef.current = target ?? undefined;
         return target;
       });
     }
@@ -166,13 +181,11 @@ const ExternalNumberQuoteLink = ({ isOP = false, reference }: ExternalNumberQuot
     setIsPreviewOpen(true);
     updatePreviewPosition(e.currentTarget);
 
-    if (resolvedTargetRef.current === null) {
-      setPreviewState({ kind: 'error', message: getCannotResolveMessage() });
-      return;
-    }
+    const showTarget = (target: ResolvedExternalQuoteTarget) =>
+      setPreviewState(target.isUnavailable ? { kind: 'error', message: getUnavailableMessage() } : { kind: 'resolved', target });
 
-    if (resolvedTargetRef.current?.comment) {
-      setPreviewState({ kind: 'resolved', target: resolvedTargetRef.current });
+    if (resolvedTargetRef.current) {
+      showTarget(resolvedTargetRef.current);
       return;
     }
 
@@ -198,12 +211,7 @@ const ExternalNumberQuoteLink = ({ isOP = false, reference }: ExternalNumberQuot
       return;
     }
 
-    if (target.isUnavailable || !target.comment) {
-      setPreviewState({ kind: 'error', message: getUnavailableMessage() });
-      return;
-    }
-
-    setPreviewState({ kind: 'resolved', target });
+    showTarget(target);
   };
 
   const handleMouseLeave = () => {
@@ -226,43 +234,49 @@ const ExternalNumberQuoteLink = ({ isOP = false, reference }: ExternalNumberQuot
 
     setIsResolving(true);
 
-    const finishWithError = (message: string) => {
-      setErrorStatus(message);
-      setIsResolving(false);
-    };
-
+    // The search can take minutes, so its result is dropped once a newer quote click or leaving the
+    // page supersedes this click, even after the link itself is gone.
+    const click = startExternalQuoteClick();
     let target: ResolvedExternalQuoteTarget | null;
 
     try {
       target = await resolveTarget({ updatePreview: false });
     } catch {
-      finishWithError(getCannotResolveMessage());
+      target = null;
+    } finally {
+      click.end();
+    }
+
+    setIsResolving(false);
+
+    if (!click.isCurrent()) {
       return;
     }
 
     if (!target) {
-      finishWithError(getCannotResolveMessage());
+      setErrorStatus(getCannotResolveMessage());
       return;
     }
 
     if (target.isUnavailable) {
-      finishWithError(getUnavailableMessage());
+      setErrorStatus(getUnavailableMessage());
       return;
     }
 
-    setIsResolving(false);
     navigate(target.route);
   };
 
   const previewContent =
     previewState.kind === 'idle' ? null : previewState.kind === 'resolved' ? (
-      previewState.target.comment ? (
-        renderQuotePreviewPost ? (
-          renderQuotePreviewPost({ post: previewState.target.comment, showReplies: false })
-        ) : null
-      ) : (
+      !previewComment ? (
+        <div className={styles.externalQuotePreviewState}>
+          <LoadingEllipsis string={t('loading_post')} />
+        </div>
+      ) : isUnavailableQuoteTarget(previewComment) ? (
         <div className={`${styles.externalQuotePreviewState} ${styles.externalQuotePreviewError}`}>{getUnavailableMessage()}</div>
-      )
+      ) : renderQuotePreviewPost ? (
+        renderQuotePreviewPost({ post: previewComment, showReplies: false })
+      ) : null
     ) : previewState.kind === 'loading' ? (
       <div className={styles.externalQuotePreviewState}>
         <LoadingEllipsis string={previewState.message} />
@@ -271,9 +285,7 @@ const ExternalNumberQuoteLink = ({ isOP = false, reference }: ExternalNumberQuot
       <div className={`${styles.externalQuotePreviewState} ${styles.externalQuotePreviewError}`}>{previewState.message}</div>
     );
   const previewClassName =
-    previewState.kind === 'resolved' && previewState.target.comment && !previewState.target.comment.parentCid
-      ? `${postStyles.replyQuotePreview} ${postStyles.replyQuotePreviewOp}`
-      : postStyles.replyQuotePreview;
+    previewComment && !previewComment.parentCid ? `${postStyles.replyQuotePreview} ${postStyles.replyQuotePreviewOp}` : postStyles.replyQuotePreview;
 
   return (
     <>

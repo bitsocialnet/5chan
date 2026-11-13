@@ -26,8 +26,11 @@ export type ThreadUpdaterStatus =
 
 export type ThreadFaviconAlert = FaviconAlert;
 
-/** Resolves whether the thread refreshed, or rejects with why it could not. `force` is set for a manual Update. */
-export type RefreshThread = (options: { force: boolean }) => Promise<boolean>;
+/**
+ * Resolves whether the thread refreshed, or rejects with why it could not. `force` is set for a manual Update.
+ * `signal` aborts when the update stops waiting for this refresh: it timed out, or the thread closed.
+ */
+export type RefreshThread = (options: { force: boolean; signal: AbortSignal }) => Promise<boolean>;
 
 type UpdateOutcome = { refreshed: true } | { refreshed: false; error: unknown };
 
@@ -135,6 +138,13 @@ const useThreadLiveUpdatesStore = create<ThreadLiveUpdatesState>((set, get) => {
   let newPostsInUpdate = 0;
   // Invalidates in-flight updates when the thread changes or the page unmounts.
   let updateToken = 0;
+  // Aborts the refresh of the update in flight once nothing waits for it any more.
+  let updateAbortController: AbortController | undefined;
+
+  const abortUpdateInFlight = () => {
+    updateAbortController?.abort();
+    updateAbortController = undefined;
+  };
 
   const clearPulse = () => {
     if (pulseTimer === undefined) return;
@@ -204,17 +214,23 @@ const useThreadLiveUpdatesStore = create<ThreadLiveUpdatesState>((set, get) => {
     newPostsInUpdate = 0;
     set({ isUpdating: true, status: { type: 'updating' }, updatesStarted: updatesStarted + 1 });
 
+    const abortController = new AbortController();
+    updateAbortController = abortController;
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
     const timeout = new Promise<UpdateOutcome>((resolve) => {
-      timeoutId = setTimeout(() => resolve({ refreshed: false, error: createUpdateTimeoutError(get().threadPost) }), THREAD_UPDATE_TIMEOUT_MS);
+      timeoutId = setTimeout(() => {
+        abortController.abort();
+        resolve({ refreshed: false, error: createUpdateTimeoutError(get().threadPost) });
+      }, THREAD_UPDATE_TIMEOUT_MS);
     });
-    const refreshOutcome = refresh({ force }).then(
+    const refreshOutcome = refresh({ force, signal: abortController.signal }).then(
       (refreshed): UpdateOutcome => (refreshed ? { refreshed } : { refreshed, error: new Error('Thread refresh failed') }),
       (error: unknown): UpdateOutcome => ({ refreshed: false, error }),
     );
 
     void Promise.race([refreshOutcome, timeout]).then((outcome) => {
       clearTimeout(timeoutId);
+      if (updateAbortController === abortController) updateAbortController = undefined;
       if (token !== updateToken) return;
 
       if (!outcome.refreshed) {
@@ -265,6 +281,7 @@ const useThreadLiveUpdatesStore = create<ThreadLiveUpdatesState>((set, get) => {
 
   const resetControllerState = () => {
     clearPulse();
+    abortUpdateInFlight();
     updateToken += 1;
     delayIndex = 0;
     deadline = 0;

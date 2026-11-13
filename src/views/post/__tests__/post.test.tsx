@@ -5,7 +5,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import PostPage from '../post';
 import { Post } from '../../../components/post';
-import useThreadLiveUpdatesStore, { THREAD_REPLIES_SETTLE_MS } from '../../../stores/use-thread-live-updates-store';
+import useThreadLiveUpdatesStore, { THREAD_REPLIES_SETTLE_MS, THREAD_UPDATE_TIMEOUT_MS } from '../../../stores/use-thread-live-updates-store';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
@@ -1338,8 +1338,10 @@ describe('Post', () => {
     const refreshPost = vi.fn(async () => {
       events.push('refresh-post');
     });
+    const restoreEvictedCaches = vi.fn(async () => undefined);
     testState.evictThreadRefreshCachesMock.mockImplementation(async () => {
       events.push('evict-cache');
+      return restoreEvictedCaches;
     });
     testState.commentsByCid = {
       'reply-cid': {
@@ -1381,6 +1383,7 @@ describe('Post', () => {
       isUpdating: false,
       status: { type: 'no-new-posts' },
     });
+    expect(restoreEvictedCaches).not.toHaveBeenCalled();
   });
 
   it('refreshes automatic updates without evicting the thread caches', async () => {
@@ -1432,6 +1435,71 @@ describe('Post', () => {
     expect(useThreadLiveUpdatesStore.getState().status).toEqual({ type: 'error', reason: 'connection', error: expect.objectContaining({ message: 'offline' }) });
     expect(consoleErrorSpy).toHaveBeenCalledWith('Failed to refresh thread comments:', expect.any(Error));
     consoleErrorSpy.mockRestore();
+  });
+
+  it('puts the evicted thread caches back when a manual Update fails', async () => {
+    const restoreEvictedCaches = vi.fn(async () => undefined);
+    testState.evictThreadRefreshCachesMock.mockResolvedValue(restoreEvictedCaches);
+    testState.commentsByCid = {
+      'root-cid': {
+        cid: 'root-cid',
+        communityAddress: 'music-posting.eth',
+        number: 31,
+        updatedAt: 100,
+        postCid: 'root-cid',
+        refresh: vi.fn(async () => {
+          throw new Error('offline');
+        }),
+        replyCount: 0,
+        title: 'Root thread',
+      },
+    };
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+
+    await renderPostPage('/mu/thread/root-cid');
+    await act(async () => {
+      useThreadLiveUpdatesStore.getState().forceUpdate();
+    });
+    await flushEffects();
+
+    expect(restoreEvictedCaches).toHaveBeenCalledTimes(1);
+    consoleErrorSpy.mockRestore();
+  });
+
+  it('puts the evicted thread caches back when a manual Update times out', async () => {
+    const restoreEvictedCaches = vi.fn(async () => undefined);
+    testState.evictThreadRefreshCachesMock.mockResolvedValue(restoreEvictedCaches);
+    testState.commentsByCid = {
+      'root-cid': {
+        cid: 'root-cid',
+        communityAddress: 'music-posting.eth',
+        number: 31,
+        updatedAt: 100,
+        postCid: 'root-cid',
+        refresh: vi.fn(() => new Promise<void>(() => undefined)),
+        replyCount: 0,
+        title: 'Root thread',
+      },
+    };
+
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    try {
+      await renderPostPage('/mu/thread/root-cid');
+      await act(async () => {
+        useThreadLiveUpdatesStore.getState().forceUpdate();
+      });
+      await flushEffects();
+      expect(restoreEvictedCaches).not.toHaveBeenCalled();
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(THREAD_UPDATE_TIMEOUT_MS);
+      });
+
+      expect(useThreadLiveUpdatesStore.getState().status).toMatchObject({ type: 'error', reason: 'connection' });
+      expect(restoreEvictedCaches).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('prefixes the tab title with the unread reply count', async () => {

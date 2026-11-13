@@ -142,7 +142,10 @@ export const observeOffscreenMediaPlayback = (root: ParentNode | null, options: 
       const target = entry.target;
       clearPendingSuspend(target);
 
-      if (hasVisiblePlayableMedia(target)) {
+      // The observer reports a container only when its edge crosses the viewport, so a container
+      // entering ahead of its player (the rows under it on mobile) gets no second callback once the
+      // player follows: restore on entry instead of waiting for the player to be visible.
+      if (entry.isIntersecting || hasVisiblePlayableMedia(target)) {
         restoreSuspendedMediaPlayback(target);
         continue;
       }
