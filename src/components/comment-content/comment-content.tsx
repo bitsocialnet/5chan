@@ -126,7 +126,9 @@ const CommentContent = ({
     () => getPostOptionResults({ content: contentWithoutSage, cid, timestamp, directoryCode: postOptionsDirectoryCode, isEdited }),
     [contentWithoutSage, cid, timestamp, postOptionsDirectoryCode, isEdited],
   );
-  const visibleContent = postOptionResults.content;
+  // Nothing enforces a trim on what peers publish, so blank lines around a comment are dropped here as
+  // 4chan drops them on submit. Trimmed after the markers, which sit at either end of the text.
+  const visibleContent = postOptionResults.content?.trim();
   const { diceText, fortune } = postOptionResults;
   const authorAddress = resolvedPost?.author?.address;
   const authorRole = getRoleByAddress(roles, authorAddress);

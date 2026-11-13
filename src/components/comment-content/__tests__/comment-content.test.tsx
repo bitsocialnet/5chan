@@ -336,6 +336,18 @@ describe('CommentContent', () => {
     expect(queryMarkdownText()).toEqual(['thread\nsage']);
   });
 
+  it('drops blank lines around a comment, including those left by a hidden marker', async () => {
+    await renderContent({ cid: 'post-1', communityAddress: 'music-posting.eth', content: '\n\n  some text\n\nmore\n\n\n\n \n', postCid: 'post-1' });
+    expect(queryMarkdownText()).toEqual(['some text\n\nmore']);
+
+    testState.boardRecord = {
+      pageSorts: { posts: { active: { name: '@pkcprotocol/active-page-sort', publicOptions: { noBumpKeywords: 'sage' } } } },
+      posts: { pages: { active: { comments: [{ cid: 'post-1' }], nextCid: 'next' } }, pageCids: { active: 'first' } },
+    };
+    await renderContent({ cid: 'reply-1', communityAddress: 'music-posting.eth', content: 'quiet reply\n\n\n\nsage', parentCid: 'post-1', postCid: 'post-1' });
+    expect(queryMarkdownText()).toEqual(['quiet reply']);
+  });
+
   it('marks quotes of purged same-thread replies once the thread is completely loaded', async () => {
     testState.numberToCid = { 'music-posting.eth': { 158: 'thread-cid', 162: 'reply-162' } };
     testState.postNumbers = { 'thread-cid': 158, 'reply-162': 162 };

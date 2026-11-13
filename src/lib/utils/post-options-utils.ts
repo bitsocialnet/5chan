@@ -191,11 +191,12 @@ const getDiceOption = (value: string, directoryCode: string | undefined): DiceSp
 export const getContentWithPostOptions = (content: string, options: string, directoryCode: string | undefined): string => {
   const hasFortune = isFortuneDirectoryCode(directoryCode) && parsePostOptions(options).includes('fortune');
   const diceOption = getDiceOption(options, directoryCode);
+  // 4chan trims a comment on submit, so blank lines typed before or after the text are not published.
   const baseContent = stripMarkersUntilStable(content, {
     dice: isDiceDirectoryCode(directoryCode),
     fortune: isFortuneDirectoryCode(directoryCode),
     storedOnly: false,
-  });
+  }).trim();
   const contentWithDice = diceOption ? `${getDiceMarker(diceOption)}${baseContent}` : baseContent;
   return hasFortune ? `${contentWithDice}${FORTUNE_MARKER}` : contentWithDice;
 };

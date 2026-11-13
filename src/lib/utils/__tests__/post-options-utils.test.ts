@@ -107,6 +107,14 @@ describe('post-options-utils', () => {
     expect(getContentWithPostOptions('[dice=[dice=1d6]20d20]hi', '', 'tg')).toBe('hi');
   });
 
+  it('publishes a comment without the blank lines typed around it', () => {
+    expect(getContentWithPostOptions('\n\n some text\n\nmore\n\n\n \n', '', 'g')).toBe('some text\n\nmore');
+    expect(getContentWithPostOptions('body\n\n\n', 'fortune', 'b')).toBe('body[fortune]');
+    expect(getContentWithPostOptions('\n\nbody\n', 'dice+1d6', 'tg')).toBe('[dice=1d6]body');
+    expect(getContentWithPostOptions(' \n\n', '', 'g')).toBe('');
+    expect(appendSageMarker(getContentWithPostOptions('body\n\n\n', 'sage', 'g'), 'sage')).toBe('body\nsage');
+  });
+
   it('rejects dice numbers too large to publish exactly', () => {
     expect(getPostOptionsValidationError('dice+1d1000000000000000000000', 'tg')).toEqual({
       unsupportedOptions: ['dice+1d1000000000000000000000'],
