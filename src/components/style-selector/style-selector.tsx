@@ -1,19 +1,13 @@
-import { useEffect } from 'react';
 import useTheme from '../../hooks/use-theme';
-import useSpecialThemeStore from '../../stores/use-special-theme-store';
+import useSpecialThemeStore, { selectIsSpecialThemeEnabled } from '../../stores/use-special-theme-store';
 import { getActiveSpecialTheme } from '../../lib/utils/time-utils';
 import styles from './style-selector.module.css';
 
 const StyleSelector = () => {
   const [theme, setTheme] = useTheme();
-  const { isEnabled, setIsEnabled } = useSpecialThemeStore();
+  const isEnabled = useSpecialThemeStore(selectIsSpecialThemeEnabled);
+  const setIsEnabled = useSpecialThemeStore((state) => state.setIsEnabled);
   const activeSpecialTheme = getActiveSpecialTheme();
-
-  useEffect(() => {
-    if (!activeSpecialTheme && isEnabled) {
-      setIsEnabled(false);
-    }
-  }, [activeSpecialTheme, isEnabled, setIsEnabled]);
 
   const handleThemeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newTheme = e.target.value;

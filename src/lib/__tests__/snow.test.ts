@@ -32,17 +32,17 @@ describe('snow', () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2024-12-24T00:00:00Z'));
 
-    useSpecialThemeStore.setState({ isEnabled: true });
+    useSpecialThemeStore.setState({ isEnabled: true, event: 'christmas-2024' });
     expect(shouldShowSnow()).toBe(true);
 
-    useSpecialThemeStore.setState({ isEnabled: false });
+    useSpecialThemeStore.setState({ isEnabled: false, event: 'christmas-2024' });
     expect(shouldShowSnow()).toBe(false);
 
     useSpecialThemeStore.setState({ isEnabled: null });
     expect(shouldShowSnow()).toBe(true);
 
     vi.setSystemTime(new Date('2024-10-31T00:00:00Z'));
-    useSpecialThemeStore.setState({ isEnabled: true });
+    useSpecialThemeStore.setState({ isEnabled: true, event: 'halloween-2024' });
     expect(shouldShowSnow()).toBe(false);
 
     useSpecialThemeStore.setState({ isEnabled: null });

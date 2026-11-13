@@ -169,4 +169,21 @@ describe('persisted extra stores', () => {
     localStorage.setItem('Special-theme-storage', JSON.stringify({ state: { isEnabled: false, event: 'halloween-2026' }, version: 0 }));
     expect((await loadSpecialThemeStore('2027-10-31T12:00:00')).getState().isEnabled).toBeNull();
   });
+
+  it('keeps a special theme choice for its own event in a session left open into the next one', async () => {
+    // Picking a theme before Christmas turns the seasonal theme off (StyleSelector).
+    const useSpecialThemeStore = await loadSpecialThemeStore('2026-12-20T12:00:00');
+    const { shouldShowSnow } = await import('../use-special-theme-store');
+    useSpecialThemeStore.getState().setIsEnabled(false);
+
+    // Christmas comes without a reload.
+    vi.setSystemTime(new Date('2026-12-24T12:00:00'));
+    expect(shouldShowSnow()).toBe(true);
+
+    // An opt-out of this Halloween, in a session still open at Christmas.
+    vi.setSystemTime(new Date('2026-10-31T12:00:00'));
+    useSpecialThemeStore.getState().setIsEnabled(false);
+    vi.setSystemTime(new Date('2026-12-24T12:00:00'));
+    expect(shouldShowSnow()).toBe(true);
+  });
 });

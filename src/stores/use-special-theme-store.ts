@@ -38,8 +38,18 @@ const useSpecialThemeStore = create(
   ),
 );
 
+/**
+ * The choice made in the seasonal event running now, or null when none was. Read it in place of
+ * `isEnabled`: rehydrating drops a choice from another event only on load, so a session left open
+ * still holds one when the next event starts.
+ */
+export const selectIsSpecialThemeEnabled = (state: Pick<SpecialThemeStore, 'isEnabled' | 'event'>): boolean | null => {
+  const event = getActiveSpecialThemeEvent();
+  return event && state.event === event ? state.isEnabled : null;
+};
+
 export const shouldShowSnow = (): boolean => {
-  const isEnabled = useSpecialThemeStore.getState().isEnabled;
+  const isEnabled = selectIsSpecialThemeEnabled(useSpecialThemeStore.getState());
   const activeSpecialTheme = getActiveSpecialTheme();
 
   if (isEnabled !== null) {
