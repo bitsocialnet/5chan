@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
-import { spawn } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { spawn, spawnSync } from 'node:child_process';
+import { once } from 'node:events';
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, utimesSync, writeFileSync } from 'node:fs';
+import { createRequire, syncBuiltinESMExports } from 'node:module';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -130,6 +132,154 @@ test('unknown or stale lock metadata is not removed automatically', async (t) =>
   assert.equal(readFileSync(path.join(lockPath, 'owner.json'), 'utf8'), '{unreadable');
 });
 
+function writeOwner(lockPath, owner, command) {
+  mkdirSync(lockPath);
+  writeFileSync(path.join(lockPath, 'owner.json'), JSON.stringify({ cwd: '/killed-run', startedAt: '2026-01-01T00:00:00.000Z', token: 'killed-run', ...owner }));
+  if (command !== undefined) writeFileSync(path.join(lockPath, 'command.pid'), command);
+}
+
+// The PID of a process that has already exited.
+const exitedPid = () => spawnSync(process.execPath, ['-e', '']).pid;
+
+test('a lock whose run and last command have exited is reclaimed', async (t) => {
+  const { lockPath, logPath, command, options, output } = fixture(t);
+  writeOwner(lockPath, { pid: exitedPid() }, String(exitedPid()));
+  assert.equal(await runVerification({ ...options, commands: [command('build')] }), 0);
+  assert.match(output.join('\n'), /Reclaimed an abandoned verification lock \(PID \d+, \/killed-run/);
+  assert.equal(readFileSync(logPath, 'utf8'), 'build:start\nbuild:end\n');
+  assert.equal(existsSync(lockPath), false);
+});
+
+test('a lock is kept while the command of a killed run is still running', async (t) => {
+  const { lockPath, logPath, command, options } = fixture(t);
+  const orphan = spawn(process.execPath, ['-e', 'setInterval(() => {}, 1000)'], { detached: true, stdio: 'ignore' });
+  const orphanExited = new Promise((resolve) => orphan.once('exit', resolve));
+  t.after(() => orphan.kill('SIGKILL'));
+  writeOwner(lockPath, { pid: exitedPid() }, String(orphan.pid));
+  assert.equal(await runVerification({ ...options, commands: [command('must-not-run')] }), 75);
+  assert.equal(existsSync(logPath), false);
+  assert.equal(existsSync(path.join(lockPath, 'owner.json')), true);
+  orphan.kill('SIGKILL');
+  await orphanExited;
+  assert.equal(await runVerification({ ...options, commands: [command('build')] }), 0);
+  assert.equal(readFileSync(logPath, 'utf8'), 'build:start\nbuild:end\n');
+});
+
+test('a lock without command details is never reclaimed automatically', async (t) => {
+  const { lockPath, logPath, command, options } = fixture(t);
+  writeOwner(lockPath, { pid: exitedPid() });
+  assert.equal(await runVerification({ ...options, commands: [command('must-not-run')] }), 75);
+  assert.equal(existsSync(logPath), false);
+  assert.equal(existsSync(path.join(lockPath, 'owner.json')), true);
+});
+
+// A run killed after starting a command but before recording its process group must not leave a
+// lock that says no command, or only an exited one, is running: a later run would reclaim it.
+test('command.pid holds no process group while a command is being started', async (t) => {
+  const { lockPath, command, options } = fixture(t);
+  // cross-spawn calls child_process.spawn through the module object.
+  const childProcess = createRequire(import.meta.url)('node:child_process');
+  const originalSpawn = childProcess.spawn;
+  const recorded = [];
+  childProcess.spawn = function (...args) {
+    recorded.push(readFileSync(path.join(lockPath, 'command.pid'), 'utf8'));
+    return originalSpawn.apply(this, args);
+  };
+  t.after(() => {
+    childProcess.spawn = originalSpawn;
+  });
+  assert.equal(await runVerification({ ...options, commands: [command('build'), command('lint')] }), 0);
+  assert.equal(recorded.length, 2);
+  for (const content of recorded) assert.doesNotMatch(content, /^\d*$/);
+  // The lock such a run leaves behind is kept.
+  writeOwner(lockPath, { pid: exitedPid() }, recorded[1]);
+  assert.equal(await runVerification({ ...options, commands: [command('must-not-run')] }), 75);
+});
+
+// Runs `onCall(name, target)` after each listed `node:fs` call, including those agent-verify.mjs
+// imports by name, and restores the real functions after the test.
+function interceptFs(t, names, onCall) {
+  const fs = createRequire(import.meta.url)('node:fs');
+  const original = Object.fromEntries(names.map((name) => [name, fs[name]]));
+  for (const name of names) {
+    fs[name] = function (target, ...rest) {
+      try {
+        return original[name].call(this, target, ...rest);
+      } finally {
+        onCall(name, String(target));
+      }
+    };
+  }
+  syncBuiltinESMExports();
+  t.after(() => {
+    Object.assign(fs, original);
+    syncBuiltinESMExports();
+  });
+}
+
+// Two runs that start after a force-killed run can both judge its lock abandoned. Here the other
+// run reclaims it and takes the slot right after this run's verdict: either it has only created
+// the lock directory so far, or it has written its details and is running.
+for (const [state, takeSlot] of [
+  ['only created', (lockPath) => mkdirSync(lockPath)],
+  ['written', (lockPath) => writeOwner(lockPath, { pid: process.pid, token: 'fresh-run' }, '')],
+]) {
+  test(`a stale verdict never moves or removes a lock another run has just taken (${state})`, async (t) => {
+    const { lockPath, logPath, command, options } = fixture(t);
+    writeOwner(lockPath, { pid: exitedPid() }, String(exitedPid()));
+    const freshLockState = () =>
+      readdirSync(lockPath)
+        .sort()
+        .map((name) => [name, readFileSync(path.join(lockPath, name), 'utf8')]);
+    let taken = false;
+    let swapping = false;
+    let expected;
+    const touched = [];
+    interceptFs(t, ['readFileSync', 'renameSync', 'rmSync', 'rmdirSync', 'unlinkSync'], (name, target) => {
+      if (swapping) return;
+      if (taken && name !== 'readFileSync' && (target === lockPath || target.startsWith(`${lockPath}${path.sep}`))) touched.push(`${name} ${target}`);
+      // The verdict's last read is the killed run's command.pid.
+      if (!taken && name === 'readFileSync' && target === path.join(lockPath, 'command.pid')) {
+        taken = swapping = true;
+        rmSync(lockPath, { recursive: true });
+        takeSlot(lockPath);
+        expected = freshLockState();
+        swapping = false;
+      }
+    });
+
+    assert.equal(await runVerification({ ...options, commands: [command('must-not-run')] }), 75);
+    assert.equal(taken, true);
+    assert.deepEqual(touched, []);
+    assert.deepEqual(freshLockState(), expected);
+    assert.equal(existsSync(logPath), false);
+  });
+}
+
+test('an abandoned lock that another run is reclaiming is left to that run', async (t) => {
+  const { lockPath, logPath, command, options } = fixture(t);
+  writeOwner(lockPath, { pid: exitedPid() }, String(exitedPid()));
+  mkdirSync(`${lockPath}.reclaim`);
+  assert.equal(await runVerification({ ...options, commands: [command('must-not-run')] }), 75);
+  assert.equal(readFileSync(path.join(lockPath, 'owner.json'), 'utf8').includes('killed-run'), true);
+  assert.equal(existsSync(`${lockPath}.reclaim`), true);
+  assert.equal(existsSync(logPath), false);
+});
+
+test('a reclaim mutex left behind by a killed run is broken once it is 10s old', async (t) => {
+  const { lockPath, logPath, command, options, output } = fixture(t);
+  writeOwner(lockPath, { pid: exitedPid() }, String(exitedPid()));
+  const mutex = `${lockPath}.reclaim`;
+  mkdirSync(mutex);
+  const created = new Date(Date.now() - 60_000);
+  utimesSync(mutex, created, created);
+  assert.equal(await runVerification({ ...options, commands: [command('build')] }), 0);
+  assert.match(output.join('\n'), /Reclaimed an abandoned verification lock/);
+  assert.equal(readFileSync(logPath, 'utf8'), 'build:start\nbuild:end\n');
+  assert.equal(existsSync(mutex), false);
+  assert.equal(existsSync(lockPath), false);
+});
+
 test('a replaced lock is preserved and reported as a failure', async (t) => {
   const { root, lockPath, logPath, command, options, output } = fixture(t);
   const gate = path.join(root, 'release-command');
@@ -144,15 +294,24 @@ test('a replaced lock is preserved and reported as a failure', async (t) => {
   assert.equal(readFileSync(ownerPath, 'utf8'), replacement);
 });
 
-test('termination forwards to the active command, stops later checks, and releases the lock', async (t) => {
-  const { root, lockPath, logPath, command } = fixture(t);
-  const run = launchVerification({ cwd: root, lockPath, commands: [command('build', 0, path.join(root, 'never-created')), command('must-not-run')] });
-  t.after(() => run.child.kill('SIGTERM'));
-  await waitForFile(logPath);
-  run.child.kill('SIGTERM');
-  const result = await run.completed;
-  assert.equal(result.code, 143);
-  assert.match(result.output, /signal SIGTERM/);
-  assert.equal(readFileSync(logPath, 'utf8'), 'build:start\n');
-  assert.equal(existsSync(lockPath), false);
-});
+for (const [signal, code] of [
+  ['SIGTERM', 143],
+  ['SIGHUP', 129],
+]) {
+  test(`${signal} forwards to the active command, stops later checks, and releases the lock`, async (t) => {
+    const { root, lockPath, logPath, command } = fixture(t);
+    const gate = path.join(root, 'release-command');
+    const run = launchVerification({ cwd: root, lockPath, commands: [command('build', 0, gate), command('must-not-run')] });
+    t.after(() => run.child.kill('SIGKILL'));
+    await waitForFile(logPath);
+    run.child.kill(signal);
+    await once(run.child, 'exit');
+    // Let a command the run failed to stop finish, so the output pipes it inherited close.
+    writeFileSync(gate, 'continue');
+    const result = await run.completed;
+    assert.equal(result.code, code);
+    assert.match(result.output, new RegExp(`signal ${signal}`));
+    assert.equal(readFileSync(logPath, 'utf8'), 'build:start\n');
+    assert.equal(existsSync(lockPath), false);
+  });
+}

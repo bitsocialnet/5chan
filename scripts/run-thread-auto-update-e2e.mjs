@@ -43,8 +43,11 @@ let devServerProcess = null;
 let devServerShutdownRequested = false;
 const interruption = new AbortController();
 
+// `killed` only records that a signal was sent, so liveness comes from the exit fields.
+const isDevServerRunning = () => devServerProcess !== null && devServerProcess.exitCode === null && devServerProcess.signalCode === null;
+
 const cleanupDevServer = async () => {
-  if (!devServerProcess || devServerProcess.exitCode !== null || devServerProcess.killed) {
+  if (!isDevServerRunning()) {
     return;
   }
 
@@ -58,7 +61,7 @@ const cleanupDevServer = async () => {
     delay(5_000).then(() => false),
   ]);
 
-  if (!exited && devServerProcess && devServerProcess.exitCode === null && !devServerProcess.killed) {
+  if (!exited && isDevServerRunning()) {
     devServerProcess.kill('SIGKILL');
   }
 };
