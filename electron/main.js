@@ -34,13 +34,20 @@ if (process.platform === 'linux') {
 }
 
 let startIpfsError;
-startIpfs.onError = (error) => {
+let startIpfsErrorShown = false;
+// Before the app is ready the dialog is not a GUI box on Linux (it goes to stderr), so an early error
+// waits for the window's ready-to-show.
+const showStartIpfsError = () => {
   // only show error once or it spams the user
-  const alreadyShownIpfsError = !!startIpfsError;
-  startIpfsError = error;
-  if (!alreadyShownIpfsError && error.message) {
-    dialog.showErrorBox('IPFS warning', error.message);
+  if (startIpfsErrorShown || !startIpfsError?.message || !app.isReady()) {
+    return;
   }
+  startIpfsErrorShown = true;
+  dialog.showErrorBox('IPFS warning', startIpfsError.message);
+};
+startIpfs.onError = (error) => {
+  startIpfsError = error;
+  showStartIpfsError();
 };
 
 // Send the local PKC RPC auth key to the isolated renderer bridge.
@@ -113,8 +120,12 @@ contextMenu({
   showSearchWithGoogle: false,
 });
 
+// Module-level so the application menu, set up once, acts on the window that is open now.
+// On macOS the window can be closed and re-created from the dock while the app keeps running.
+let mainWindow = null;
+
 const createMainWindow = () => {
-  let mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 1000,
     height: 600,
     show: false,
@@ -184,9 +195,7 @@ const createMainWindow = () => {
       mainWindow.openDevTools();
     }
 
-    if (startIpfsError) {
-      dialog.showErrorBox('IPFS warning', startIpfsError.message);
-    }
+    showStartIpfsError();
   });
 
   mainWindow.on('closed', () => {
@@ -315,7 +324,10 @@ const createMainWindow = () => {
       });
     }
   }
+};
 
+// Runs once per app launch: on macOS every window re-creation would otherwise insert another set of items.
+const setupApplicationMenu = () => {
   const appMenuBack = new MenuItem({
     label: '←',
     enabled: mainWindow?.webContents?.canGoBack(),
@@ -378,6 +390,7 @@ app.whenReady().then(() => {
   }
 
   createMainWindow();
+  setupApplicationMenu();
 
   app.on('activate', () => {
     if (!BrowserWindow.getAllWindows().length) {

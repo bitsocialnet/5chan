@@ -152,11 +152,24 @@ const findExtractedAppBundle = async (directoryPath) => {
   return null;
 };
 
+// The installer helper replaces the app after this process quits, so if it cannot write next to the app (a read-only
+// or translocated macOS location, /Applications without admin rights, an AppImage in a system folder) the user is
+// left with no app open. Check while the app can still report the error.
+const assertInstallLocationWritable = async (appPath) => {
+  const installDirectory = path.dirname(appPath);
+  try {
+    await fs.promises.access(installDirectory, fs.constants.W_OK);
+  } catch {
+    throw new Error(`Cannot install the update because ${installDirectory} is not writable. Move 5chan to a folder you can write to, then try again.`);
+  }
+};
+
 const scheduleMacAppBundleInstall = async (zipPath) => {
   const currentAppBundlePath = findMacAppBundlePath();
   if (!currentAppBundlePath) {
     throw new Error('Could not resolve the current macOS app bundle');
   }
+  await assertInstallLocationWritable(currentAppBundlePath);
 
   const stagingRoot = path.join(app.getPath('temp'), '5chan-updates', `staged-mac-${Date.now()}`);
   await fs.promises.mkdir(stagingRoot, { recursive: true });
@@ -175,6 +188,30 @@ set -eu
 TARGET_APP="$1"
 SOURCE_APP="$2"
 CURRENT_PID="$3"
+STAGED_TARGET="\${TARGET_APP}.new"
+PREVIOUS_TARGET="\${TARGET_APP}.old"
+# How far the install got: waiting, moved-aside (the current app is at PREVIOUS_TARGET) or opened.
+STATE=waiting
+
+# The app has quit by now: if any step below fails, put the current app back and reopen it.
+reopen_current_app() {
+  if [ "$STATE" = opened ]; then
+    return
+  fi
+  rm -rf "$STAGED_TARGET" || true
+  if [ "$STATE" = moved-aside ]; then
+    # Move a replacement that did not open out of the way before restoring the current app.
+    if [ -e "$TARGET_APP" ]; then
+      mv "$TARGET_APP" "$STAGED_TARGET" || true
+    fi
+    if [ ! -e "$TARGET_APP" ]; then
+      mv "$PREVIOUS_TARGET" "$TARGET_APP" || true
+    fi
+    rm -rf "$STAGED_TARGET" || true
+  fi
+  /usr/bin/open -n "$TARGET_APP" || true
+}
+trap reopen_current_app EXIT
 
 for _ in $(seq 1 120); do
   if ! kill -0 "$CURRENT_PID" 2>/dev/null; then
@@ -183,20 +220,15 @@ for _ in $(seq 1 120); do
   sleep 1
 done
 
-STAGED_TARGET="${TARGET_APP}.new"
-PREVIOUS_TARGET="${TARGET_APP}.old"
 rm -rf "$STAGED_TARGET" "$PREVIOUS_TARGET"
 /usr/bin/ditto "$SOURCE_APP" "$STAGED_TARGET"
 if [ -e "$TARGET_APP" ]; then
   mv "$TARGET_APP" "$PREVIOUS_TARGET"
+  STATE=moved-aside
 fi
-if ! mv "$STAGED_TARGET" "$TARGET_APP"; then
-  if [ -e "$PREVIOUS_TARGET" ]; then
-    mv "$PREVIOUS_TARGET" "$TARGET_APP"
-  fi
-  exit 1
-fi
+mv "$STAGED_TARGET" "$TARGET_APP"
 /usr/bin/open -n "$TARGET_APP"
+STATE=opened
 rm -rf "$PREVIOUS_TARGET" "$(dirname "$SOURCE_APP")"
 `;
   await fs.promises.writeFile(installerScriptPath, script, 'utf8');
@@ -220,6 +252,7 @@ const scheduleLinuxAppImageInstall = async (installerPath) => {
   if (!currentAppImagePath) {
     throw new Error('Could not resolve the current AppImage path');
   }
+  await assertInstallLocationWritable(currentAppImagePath);
 
   await fs.promises.chmod(installerPath, 0o755);
 
@@ -229,6 +262,15 @@ set -eu
 TARGET_APPIMAGE="$1"
 DOWNLOADED_APPIMAGE="$2"
 CURRENT_PID="$3"
+LAUNCHED=0
+
+# The app has quit by now: if replacing it fails, start the current AppImage again.
+relaunch_current_app() {
+  if [ "$LAUNCHED" = 0 ] && [ -e "$TARGET_APPIMAGE" ]; then
+    "$TARGET_APPIMAGE" >/dev/null 2>&1 &
+  fi
+}
+trap relaunch_current_app EXIT
 
 for _ in $(seq 1 120); do
   if ! kill -0 "$CURRENT_PID" 2>/dev/null; then
@@ -240,6 +282,7 @@ done
 mv "$DOWNLOADED_APPIMAGE" "$TARGET_APPIMAGE"
 chmod 755 "$TARGET_APPIMAGE"
 "$TARGET_APPIMAGE" >/dev/null 2>&1 &
+LAUNCHED=1
 rm -f "$0"
 `;
   await fs.promises.writeFile(installerScriptPath, script, 'utf8');
