@@ -449,8 +449,13 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
   if (refreshHold && !refreshHold.isReleased && !refreshHold.hasSeenEmptyFeed && feed.length === 0) {
     refreshHold.hasSeenEmptyFeed = true;
   }
+  // Held threads also leave once the refreshed board record shows that the board has none left.
   const canReleaseRefreshHoldToEmptyBoard =
-    refreshHold?.startedFeedLength === 0 && isSingleCommunityBoard && isLoadedCommunityState && isRawBoardThreadStateEmpty && isFeedSucceeded;
+    (refreshHold?.startedFeedLength === 0 || Boolean(refreshHold?.heldFeed && refreshHold.hasSettledResetCall)) &&
+    isSingleCommunityBoard &&
+    isLoadedCommunityState &&
+    isRawBoardThreadStateEmpty &&
+    isFeedSucceeded;
   const refreshHoldHasSeenEmptyFeed = Boolean(refreshHold?.hasSeenEmptyFeed || (refreshHold && feed.length === 0));
   // A reset lists every board as still loading until the feed is calculated again (hasMore keeps its
   // pre-reset value), so no board left to load after the reset means the refreshed feed is really empty.
