@@ -6,6 +6,7 @@ import type { Criteria } from '@bitsocial/pubsub-voting';
 import { nextDirectoryVoteRecord, useDirectoryVote, type DirectoryVoteState } from '../use-directory-vote';
 import type { VoteTallyState } from '../use-vote-tally';
 import type { DirectoryBoardRequirement } from '../../lib/directory-board-requirements';
+import useDirectoryVotesStore from '../../stores/use-directory-votes-store';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
@@ -76,6 +77,41 @@ describe('nextDirectoryVoteRecord', () => {
     const previous = { ...base, topic: 'old-topic', community: board, blockNumber: 1800 };
 
     expect(nextDirectoryVoteRecord(previous, { ...base, community: undefined, blockNumber: 1800 }, criteria)).toBeUndefined();
+  });
+});
+
+describe('useDirectoryVote voteForAddress', () => {
+  const voteTally = { state: 'joining', criteria: { ...criteria, bucketChainId: 84532 } } as VoteTallyState;
+  const key = `0xvoter:${criteria.contestId}`;
+
+  it('flags the new vote for re-signing when another tab re-signed the old one in the same bucket meanwhile', async () => {
+    const oldVote = { ...base, address: '0xvoter', community: board, blockNumber: 1800 };
+    const reSignedInOtherTab = { ...oldVote, blockNumber: 2 * 1800, refreshedAt: 1_000 };
+    useDirectoryVotesStore.setState({ votes: { [key]: oldVote } });
+    testState.account = { pkc: {} };
+    testState.resolveDirectoryBoard = async () => ({ status: 'resolved', target: other });
+    testState.publishDirectoryVote.mockReset();
+    testState.publishDirectoryVote.mockImplementationOnce(async () => {
+      // The other tab saved its refresh, but this tab has not received the storage event yet.
+      localStorage.setItem('directory-votes', JSON.stringify({ state: { votes: { [key]: reSignedInOtherTab } }, version: 0 }));
+      return { status: 'published', topic: 'topic-a', blockNumber: 2 * 1800 + 3 };
+    });
+    let state: DirectoryVoteState | undefined;
+    const Harness = () => {
+      state = useDirectoryVote(voteTally);
+      return null;
+    };
+    const root = createRoot(document.createElement('div'));
+    await act(async () => root.render(createElement(Harness)));
+
+    let outcome: unknown;
+    await act(async () => {
+      outcome = await state!.voteForAddress('other.bso');
+    });
+    act(() => root.unmount());
+
+    expect(outcome).toEqual({ status: 'voted' });
+    expect(useDirectoryVotesStore.getState().votes[key]).toEqual({ ...base, address: '0xvoter', community: other, blockNumber: 2 * 1800 + 3, resignNextBucket: true });
   });
 });
 

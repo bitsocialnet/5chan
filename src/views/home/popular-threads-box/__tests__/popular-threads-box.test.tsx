@@ -286,4 +286,28 @@ describe('PopularThreadsBox', () => {
     expect(container.textContent).toContain('Downloading boards');
     expect(vi.mocked(useFeedStateString)).toHaveBeenCalledWith(['music-posting.eth', 'tech-posting.eth', 'tv-posting.eth']);
   });
+
+  it('still loads boards after a reload when the worksafe-only and nsfw-only options were both saved as on', async () => {
+    // Two tabs can each save one of the old per-option flags, leaving both on.
+    localStorage.setItem('showWorksafeContentOnly', 'true');
+    localStorage.setItem('showNsfwContentOnly', 'true');
+    vi.resetModules();
+    // A second copy of the media utils would open its thumbnail cache twice.
+    vi.doMock('../../../../lib/utils/media-utils', () => ({ getCommentCoverMediaInfo: () => undefined }));
+    try {
+      const { MemoryRouter: FreshMemoryRouter } = await import('react-router-dom');
+      const { default: FreshPopularThreadsBox } = await import('../popular-threads-box');
+
+      await act(async () => {
+        root.render(
+          createElement(FreshMemoryRouter, {}, createElement(FreshPopularThreadsBox, { directories, directoryAddresses: directories.map((entry) => entry.address) })),
+        );
+      });
+
+      expect(testState.requestedCommunityIdentifiers[0]).toEqual(['music-posting.eth', 'tech-posting.eth', 'tv-posting.eth']);
+    } finally {
+      vi.doUnmock('../../../../lib/utils/media-utils');
+      localStorage.clear();
+    }
+  });
 });
