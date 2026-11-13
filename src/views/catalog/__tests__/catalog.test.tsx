@@ -511,9 +511,9 @@ describe('Catalog', () => {
     localStorage.clear();
   });
 
-  it('refreshes a catalog opened again by a link, keeping its threads until the new list arrives, but not on back', async () => {
-    const getRows = () => Array.from(container.querySelectorAll('[data-testid="catalog-row"]')).map((element) => element.textContent);
-    testState.feed = [{ cid: 'old-post', title: 'old', communityAddress: 'music-posting.eth' }];
+  const getRows = () => Array.from(container.querySelectorAll('[data-testid="catalog-row"]')).map((element) => element.textContent);
+  const clickTestId = (testId: string) => act(async () => container.querySelector<HTMLButtonElement>(`[data-testid="${testId}"]`)?.click());
+  const renderCachedCatalogWithLinks = async () => {
     const CachedCatalogHarness = () => {
       const { pathname } = useLocation();
       const navigate = useNavigate();
@@ -541,13 +541,9 @@ describe('Catalog', () => {
       );
     });
     await flushEffects();
-    expect(getRows()).toEqual(['row:old-post']);
-
-    const click = (testId: string) => act(async () => container.querySelector<HTMLButtonElement>(`[data-testid="${testId}"]`)?.click());
-    await click('open-thread');
-    await click('back');
-    expect(testState.resetMock).not.toHaveBeenCalled();
-
+  };
+  // Like the hooks library, the reset empties the feed at once and settles before the feed store refills the list.
+  const mockPendingReset = () => {
     let resolveReset: (() => void) | undefined;
     testState.resetMock.mockImplementation(() => {
       testState.feed = [];
@@ -555,25 +551,64 @@ describe('Catalog', () => {
         resolveReset = resolve;
       });
     });
-    await click('open-thread');
-    await click('catalog-link');
+    return () => act(async () => resolveReset?.());
+  };
+  const runPendingTimers = () =>
+    act(async () => {
+      vi.runOnlyPendingTimers();
+    });
+
+  it('refreshes a catalog opened again by a link, keeping its threads until the new list arrives, but not on back', async () => {
+    testState.feed = [{ cid: 'old-post', title: 'old', communityAddress: 'music-posting.eth' }];
+    await renderCachedCatalogWithLinks();
+    expect(getRows()).toEqual(['row:old-post']);
+
+    await clickTestId('open-thread');
+    await clickTestId('back');
+    expect(testState.resetMock).not.toHaveBeenCalled();
+
+    const settleReset = mockPendingReset();
+    await clickTestId('open-thread');
+    await clickTestId('catalog-link');
     expect(testState.resetMock).toHaveBeenCalledOnce();
     expect(getRows()).toEqual(['row:old-post']);
 
-    // the reset settles before the feed store refills the list
     vi.useFakeTimers();
     try {
-      await act(async () => resolveReset?.());
+      await settleReset();
       expect(getRows()).toEqual(['row:old-post']);
 
       testState.feed = [
         { cid: 'new-post', title: 'new', communityAddress: 'music-posting.eth' },
         { cid: 'old-post', title: 'old', communityAddress: 'music-posting.eth' },
       ];
-      await act(async () => {
-        vi.runOnlyPendingTimers();
-      });
+      await runPendingTimers();
       expect(getRows()).toEqual(['row:new-post,old-post']);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('keeps the threads of a link refresh while pages still load and drops them once the refreshed catalog is empty', async () => {
+    testState.feed = [{ cid: 'old-post', title: 'old', communityAddress: 'music-posting.eth' }];
+    await renderCachedCatalogWithLinks();
+
+    const settleReset = mockPendingReset();
+    await clickTestId('open-thread');
+    await clickTestId('catalog-link');
+
+    vi.useFakeTimers();
+    try {
+      testState.hasMore = true;
+      await settleReset();
+      await runPendingTimers();
+      expect(getRows()).toEqual(['row:old-post']);
+
+      // nothing left to load: the next render shows the empty catalog
+      testState.hasMore = false;
+      await clickTestId('open-thread');
+      await clickTestId('back');
+      expect(getRows()).toEqual([]);
     } finally {
       vi.useRealTimers();
     }

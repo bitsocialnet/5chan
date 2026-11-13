@@ -311,8 +311,8 @@ export interface CatalogProps {
   isVisible?: boolean;
 }
 
-// How long a catalog opened again by a link keeps its earlier threads after the refresh settles, if the new list is still empty.
-const HELD_FEED_RELEASE_DELAY_MS = 2000;
+// A feed reset settles before the feed store has recalculated the list, so an empty list is not trusted until this long after.
+const HELD_FEED_SETTLE_DELAY_MS = 2000;
 
 const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, timeFilterNameFromCache, isVisible = true }: CatalogProps) => {
   const { t } = useTranslation();
@@ -445,20 +445,23 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
     return reset();
   }, [reset]);
   // A catalog opened again by a link keeps its earlier threads on screen until the refreshed list arrives.
-  const [heldFeed, setHeldFeed] = useState<Comment[]>();
+  const [heldFeed, setHeldFeed] = useState<{ threads: Comment[]; isRefreshSettled: boolean }>();
   const liveFeedRef = useRef(liveFeed);
   liveFeedRef.current = liveFeed;
   const refreshFeedOnArrival = useCallback(() => {
-    const held = liveFeedRef.current;
+    const held = { threads: liveFeedRef.current, isRefreshSettled: false };
     setHeldFeed(held);
-    // The reset settles before the feed store has refilled the list, so the threads are held a little longer.
-    const release = () => setTimeout(() => setHeldFeed((current) => (current === held ? undefined : current)), HELD_FEED_RELEASE_DELAY_MS);
-    refreshFeed().then(release, release);
+    const settle = () => setTimeout(() => setHeldFeed((current) => (current === held ? { ...held, isRefreshSettled: true } : current)), HELD_FEED_SETTLE_DELAY_MS);
+    refreshFeed().then(settle, settle);
   }, [refreshFeed]);
   // A locally sorted multiboard catalog shows nothing until every board has loaded again, so it is left to its Refresh button.
   useRefreshFeedOnLinkArrival({ isVisible, hasLoadedThreads: liveFeed.length > 0 && !isMultiboardLocalSort, refresh: refreshFeedOnArrival });
+  // Released once the refreshed list has threads, or has none and nothing left to load; a list still loading its pages keeps the earlier threads.
+  if (heldFeed?.isRefreshSettled && (liveFeed.length > 0 || !hasMore)) {
+    setHeldFeed(undefined);
+  }
   const isHoldingFeed = Boolean(heldFeed) && liveFeed.length === 0;
-  const feed = isHoldingFeed && heldFeed ? heldFeed : liveFeed;
+  const feed = isHoldingFeed && heldFeed ? heldFeed.threads : liveFeed;
   const {
     hiddenCatalogThreads,
     hiddenThreadCandidates,

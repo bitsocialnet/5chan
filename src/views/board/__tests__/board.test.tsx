@@ -756,9 +756,9 @@ describe('Board', () => {
     expect(window.scrollTo).toHaveBeenCalledTimes(2);
   });
 
-  it('refreshes a board opened again by a link, keeping its threads until the new list arrives, but not on back', async () => {
-    const getShownPosts = () => Array.from(container.querySelectorAll('[data-testid="post"]')).map((element) => element.textContent);
-    testState.feed = [{ cid: 'old-post', communityAddress: 'music-posting.eth' }];
+  const getShownPosts = () => Array.from(container.querySelectorAll('[data-testid="post"]')).map((element) => element.textContent);
+  const clickTestId = (testId: string) => act(async () => container.querySelector<HTMLButtonElement>(`[data-testid="${testId}"]`)?.click());
+  const renderCachedBoardWithLinks = async () => {
     const CachedBoardHarness = () => {
       const { pathname } = useLocation();
       const navigate = useNavigate();
@@ -785,13 +785,9 @@ describe('Board', () => {
         ),
       );
     });
-    expect(getShownPosts()).toEqual(['old-post']);
-
-    const click = (testId: string) => act(async () => container.querySelector<HTMLButtonElement>(`[data-testid="${testId}"]`)?.click());
-    await click('open-thread');
-    await click('back');
-    expect(testState.resetMock).not.toHaveBeenCalled();
-
+  };
+  // Like the hooks library, the reset empties the feed at once and settles later.
+  const mockPendingReset = () => {
     let resolveReset: (() => void) | undefined;
     testState.resetMock.mockImplementation(() => {
       testState.feed = [];
@@ -799,8 +795,21 @@ describe('Board', () => {
         resolveReset = resolve;
       });
     });
-    await click('open-thread');
-    await click('board-link');
+    return () => act(async () => resolveReset?.());
+  };
+
+  it('refreshes a board opened again by a link, keeping its threads until the new list arrives, but not on back', async () => {
+    testState.feed = [{ cid: 'old-post', communityAddress: 'music-posting.eth' }];
+    await renderCachedBoardWithLinks();
+    expect(getShownPosts()).toEqual(['old-post']);
+
+    await clickTestId('open-thread');
+    await clickTestId('back');
+    expect(testState.resetMock).not.toHaveBeenCalled();
+
+    const settleReset = mockPendingReset();
+    await clickTestId('open-thread');
+    await clickTestId('board-link');
     expect(testState.resetMock).toHaveBeenCalledOnce();
     expect(getShownPosts()).toEqual(['old-post']);
 
@@ -808,8 +817,23 @@ describe('Board', () => {
       { cid: 'new-post', communityAddress: 'music-posting.eth' },
       { cid: 'old-post', communityAddress: 'music-posting.eth' },
     ];
-    await act(async () => resolveReset?.());
+    await settleReset();
     expect(getShownPosts()).toEqual(['new-post', 'old-post']);
+  });
+
+  it('drops the threads kept through a link refresh once the refreshed board has none left', async () => {
+    testState.feed = [{ cid: 'old-post', communityAddress: 'music-posting.eth' }];
+    testState.feedState = 'succeeded';
+    await renderCachedBoardWithLinks();
+
+    const settleReset = mockPendingReset();
+    await clickTestId('open-thread');
+    await clickTestId('board-link');
+    expect(getShownPosts()).toEqual(['old-post']);
+
+    markRawBoardThreadsFullyLoaded([], { hasCommunityUpdate: true });
+    await settleReset();
+    expect(getShownPosts()).toEqual([]);
   });
 
   it('renders the current page feed, inserts recent account comments, and wires footer actions', async () => {
