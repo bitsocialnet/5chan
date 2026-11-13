@@ -1675,8 +1675,9 @@ describe('ReplyModal', () => {
     await rerenderReplyModal('/mu/thread/post-1');
 
     expect(textarea?.value).toBe('Existing line\n>>77\nQuoted line\n');
+    // The textarea keeps the trailing newline for typing; the published comment is trimmed.
     expect(testState.setPublishReplyOptionsMock).toHaveBeenCalledWith({
-      content: 'Existing line\n>>77\nQuoted line\n',
+      content: 'Existing line\n>>77\nQuoted line',
     });
 
     await rerenderReplyModal('/mu/thread/post-1');
