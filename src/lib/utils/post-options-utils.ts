@@ -167,6 +167,12 @@ export const appendSageMarker = (content: string, options: string): string => {
 /** 4chan never shows sage, so the marker line is hidden on boards whose bump order reads it. */
 export const stripSageMarker = (content: string): string => content.replace(SAGE_MARKER_PATTERN, '');
 
+/**
+ * Drops the whitespace around a comment as PHP's `trim()` does on 4chan: ASCII only. A no-break or
+ * ideographic space is kept, since Shift-JIS art indents its first line with them.
+ */
+export const trimCommentText = (content: string): string => content.replace(/^[ \t\n\r\0\v]+|[ \t\n\r\0\v]+$/g, '');
+
 const getDiceMarker = ({ count, sides, modifierText }: DiceSpec): string => `[dice=${count}d${sides}${modifierText.replaceAll(' ', '')}]`;
 
 const getDiceOption = (value: string, directoryCode: string | undefined): DiceSpec | null => {
@@ -192,11 +198,13 @@ export const getContentWithPostOptions = (content: string, options: string, dire
   const hasFortune = isFortuneDirectoryCode(directoryCode) && parsePostOptions(options).includes('fortune');
   const diceOption = getDiceOption(options, directoryCode);
   // 4chan trims a comment on submit, so blank lines typed before or after the text are not published.
-  const baseContent = stripMarkersUntilStable(content, {
-    dice: isDiceDirectoryCode(directoryCode),
-    fortune: isFortuneDirectoryCode(directoryCode),
-    storedOnly: false,
-  }).trim();
+  const baseContent = trimCommentText(
+    stripMarkersUntilStable(content, {
+      dice: isDiceDirectoryCode(directoryCode),
+      fortune: isFortuneDirectoryCode(directoryCode),
+      storedOnly: false,
+    }),
+  );
   const contentWithDice = diceOption ? `${getDiceMarker(diceOption)}${baseContent}` : baseContent;
   return hasFortune ? `${contentWithDice}${FORTUNE_MARKER}` : contentWithDice;
 };

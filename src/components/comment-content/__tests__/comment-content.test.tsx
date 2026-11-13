@@ -340,6 +340,9 @@ describe('CommentContent', () => {
     await renderContent({ cid: 'post-1', communityAddress: 'music-posting.eth', content: '\n\n  some text\n\nmore\n\n\n\n \n', postCid: 'post-1' });
     expect(queryMarkdownText()).toEqual(['some text\n\nmore']);
 
+    await renderContent({ cid: 'post-2', communityAddress: 'music-posting.eth', content: '\u3000\u3000∧＿∧\n\u3000（´∀｀）\n\n', postCid: 'post-2' });
+    expect(queryMarkdownText()).toEqual(['\u3000\u3000∧＿∧\n\u3000（´∀｀）']);
+
     testState.boardRecord = {
       pageSorts: { posts: { active: { name: '@pkcprotocol/active-page-sort', publicOptions: { noBumpKeywords: 'sage' } } } },
       posts: { pages: { active: { comments: [{ cid: 'post-1' }], nextCid: 'next' } }, pageCids: { active: 'first' } },

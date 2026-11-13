@@ -25,7 +25,7 @@ import capitalize from 'lodash/capitalize';
 import { getCommentCommunityAddress, withResolvedCommentCommunityAddress } from '../../lib/utils/comment-utils';
 import { formatErrorMessageForDisplay } from '../../lib/utils/error-utils';
 import { hasModQueueAccessRole } from '../../lib/utils/mod-access';
-import { getPostOptionResults, isSageSupportedByBoard, stripSageMarker } from '../../lib/utils/post-options-utils';
+import { getPostOptionResults, isSageSupportedByBoard, stripSageMarker, trimCommentText } from '../../lib/utils/post-options-utils';
 import { getDirectoryCodeForIdentifier, getRouteBoardIdentifier } from '../../lib/code-tags';
 import BoardCheckStatus from './board-check-status';
 
@@ -128,7 +128,7 @@ const CommentContent = ({
   );
   // Nothing enforces a trim on what peers publish, so blank lines around a comment are dropped here as
   // 4chan drops them on submit. Trimmed after the markers, which sit at either end of the text.
-  const visibleContent = postOptionResults.content?.trim();
+  const visibleContent = postOptionResults.content && trimCommentText(postOptionResults.content);
   const { diceText, fortune } = postOptionResults;
   const authorAddress = resolvedPost?.author?.address;
   const authorRole = getRoleByAddress(roles, authorAddress);

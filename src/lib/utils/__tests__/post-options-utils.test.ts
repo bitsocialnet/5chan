@@ -112,6 +112,8 @@ describe('post-options-utils', () => {
     expect(getContentWithPostOptions('body\n\n\n', 'fortune', 'b')).toBe('body[fortune]');
     expect(getContentWithPostOptions('\n\nbody\n', 'dice+1d6', 'tg')).toBe('[dice=1d6]body');
     expect(getContentWithPostOptions(' \n\n', '', 'g')).toBe('');
+    // Only ASCII whitespace goes, as with PHP trim(): Shift-JIS art keeps its first-line indent.
+    expect(getContentWithPostOptions('\n\u3000\u3000∧＿∧\n\u3000（\u00a0´∀｀）\u3000\n\n', '', 'jp')).toBe('\u3000\u3000∧＿∧\n\u3000（\u00a0´∀｀）\u3000');
     expect(appendSageMarker(getContentWithPostOptions('body\n\n\n', 'sage', 'g'), 'sage')).toBe('body\nsage');
   });
 
