@@ -9,6 +9,7 @@ import useSpamBlockerPrecheck from '../../hooks/use-spam-blocker-precheck';
 import type { PostingAnalyticsAttempt } from '../../lib/posting-analytics';
 import { uploadGalleryAttachments } from '../../lib/media-hosting/attached-media';
 import type { AttachedMedia } from '../../lib/media-hosting/types';
+import { accountsStore } from '../../lib/bitsocial-internals/stores';
 import { getNonokoPendingRouteState, getShownPendingUploadId, isPendingUploadPostPath } from '../../lib/utils/pending-post-route-state';
 import usePendingPostNavigationStore from '../../stores/use-pending-post-navigation-store';
 import usePendingUploadPostStore, { isPendingUploadPost, type PendingUploadPost } from '../../stores/use-pending-upload-post-store';
@@ -34,8 +35,20 @@ const Publisher = ({ pendingUploadPost }: { pendingUploadPost: PendingUploadPost
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { pathname, state: locationState } = useLocation();
-  const { id, attachment, authorRole, boardChallenges, boardPath, draftKey, galleryAttachments, nonokoRedirectPath, publishOptions, tripcodeSecret, analyticsAttempt } =
-    pendingUploadPost;
+  const {
+    id,
+    accountId,
+    attachment,
+    authorRole,
+    boardChallenges,
+    boardPath,
+    draftKey,
+    galleryAttachments,
+    nonokoRedirectPath,
+    publishOptions,
+    tripcodeSecret,
+    analyticsAttempt,
+  } = pendingUploadPost;
   const { uploadAttachment } = useFileUpload();
   const runSpamBlockerPrecheck = useSpamBlockerPrecheck({ communityAddress: publishOptions.communityAddress });
   // Its own publish options store: the post form's shared one would hand this post's title, link and pass
@@ -157,6 +170,14 @@ const Publisher = ({ pendingUploadPost }: { pendingUploadPost: PendingUploadPost
     startedRef.current = true;
 
     let failureEvent: Parameters<PostingAnalyticsAttempt['finish']>[0] = 'post_precheck_failed';
+    // The pre-check pass, name and tripcode were made for the account that submitted the post, while the publish
+    // goes out from the active one, so a switch during the check or the upload sends the post back to its form.
+    const returnToFormIfAccountSwitched = () => {
+      if (accountId === undefined || accountsStore.getState().activeAccountId === accountId) return false;
+      analyticsAttempt?.finish('post_cancelled');
+      returnToForm(t('account_switched_before_publish'));
+      return true;
+    };
     const runSteps = async () => {
       const precheck = await runSpamBlockerPrecheck({
         authorRole,
@@ -175,7 +196,7 @@ const Publisher = ({ pendingUploadPost }: { pendingUploadPost: PendingUploadPost
         returnToForm(precheck.message);
         return;
       }
-      if (!isPendingUploadPost(id)) return;
+      if (!isPendingUploadPost(id) || returnToFormIfAccountSwitched()) return;
 
       const { setPendingUploadPhase } = usePendingUploadPostStore.getState();
       failureEvent = 'post_upload_failed';
@@ -200,6 +221,7 @@ const Publisher = ({ pendingUploadPost }: { pendingUploadPost: PendingUploadPost
       if (usePostFormDraftsStore.getState().forms[draftKey]?.draft.attachment === attachment) {
         usePostFormDraftsStore.getState().updateDraft(draftKey, { attachment: undefined, galleryAttachments: undefined, link: uploaded.url, gallery });
       }
+      if (returnToFormIfAccountSwitched()) return;
 
       const options = {
         ...publishOptions,

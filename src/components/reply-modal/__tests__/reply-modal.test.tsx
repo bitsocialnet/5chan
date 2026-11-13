@@ -49,6 +49,7 @@ const testState = vi.hoisted(() => ({
   replyDraft: undefined as { attachment?: unknown; content: string; flag?: string; link: string; options: string; spoiler: boolean } | undefined,
   updateDraftMock: vi.fn(),
   publishReplyMock: vi.fn(),
+  publishReplyHookOptions: undefined as { cid: string; storeKey?: string } | undefined,
   publishReplyError: null as string | null,
   publishReplyStateMessage: null as string | null,
   quoteInsertNumber: undefined as number | undefined,
@@ -242,7 +243,8 @@ vi.mock('../../../hooks/use-publish-reply', async () => {
   const React = await vi.importActual<typeof import('react')>('react');
 
   return {
-    default: function usePublishReplyMock() {
+    default: function usePublishReplyMock(options: { cid: string; storeKey?: string }) {
+      testState.publishReplyHookOptions = options;
       const [, forceUpdate] = React.useReducer((value: number) => value + 1, 0);
 
       return {
@@ -422,6 +424,7 @@ describe('ReplyModal', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     testState.account = { author: { address: 'alice.eth', displayName: 'Alice' } };
+    testState.publishReplyHookOptions = undefined;
     testState.closeModalMock.mockReset();
     testState.directoryByAddress = {
       'music-posting.eth': {
@@ -718,6 +721,7 @@ describe('ReplyModal', () => {
           challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
         },
         flairs: [{ type: 'country', code: 'auto', text: 'flag:country:auto' }],
+        spoiler: false,
       },
       expect.objectContaining({ finish: expect.any(Function) }),
     );
@@ -748,6 +752,7 @@ describe('ReplyModal', () => {
           challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
         },
         flairs: [{ type: 'country', code: 'auto', text: 'flag:country:auto' }],
+        spoiler: false,
       },
       expect.objectContaining({ finish: expect.any(Function) }),
     );
@@ -772,6 +777,7 @@ describe('ReplyModal', () => {
           challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
         },
         flairs: [{ type: 'country', code: 'auto', text: 'flag:country:auto' }],
+        spoiler: false,
       },
       expect.objectContaining({ finish: expect.any(Function) }),
     );
@@ -796,6 +802,7 @@ describe('ReplyModal', () => {
         content: 'reply body',
         displayName: 'Alice',
         flairs: [{ type: 'pol', code: 'AC', text: 'flag:pol:AC' }],
+        spoiler: false,
       },
       expect.objectContaining({ finish: expect.any(Function) }),
     );
@@ -1155,6 +1162,7 @@ describe('ReplyModal', () => {
         displayName: 'Alice',
         flairs: undefined,
         link: thumbnailLink,
+        spoiler: false,
       },
       expect.objectContaining({ finish: expect.any(Function) }),
     );
@@ -1330,6 +1338,7 @@ describe('ReplyModal', () => {
         displayName: 'Alice',
         flairs: undefined,
         link: thumbnailLink,
+        spoiler: false,
       },
       expect.objectContaining({ finish: expect.any(Function) }),
     );
@@ -1373,6 +1382,7 @@ describe('ReplyModal', () => {
         content: 'reply body[fortune]',
         displayName: 'Alice',
         flairs: undefined,
+        spoiler: false,
       },
       expect.objectContaining({ finish: expect.any(Function) }),
     );
@@ -1466,6 +1476,7 @@ describe('ReplyModal', () => {
         content: 'silly reply[fortune]',
         displayName: 'Alice',
         flairs: undefined,
+        spoiler: false,
       },
       expect.objectContaining({ finish: expect.any(Function) }),
     );
@@ -1657,6 +1668,37 @@ describe('ReplyModal', () => {
     expect(testState.resetPublishReplyOptionsMock).toHaveBeenCalledTimes(1);
     expect(testState.closeModalMock).toHaveBeenCalledTimes(1);
     expect(testState.navigateMock).toHaveBeenCalledWith('/mu', { state: { nonokoReply: true } });
+  });
+
+  // usePublishReply lays the options given to publishReply over the form's publish store entry, which can still
+  // hold an earlier reply's link and spoiler or have been reset.
+  it('publishes its own empty link and unticked spoiler, not the ones its publish store entry holds', async () => {
+    const storedEntry = { link: 'https://example.com/earlier-reply.png', spoiler: true };
+
+    await renderReplyModal('/mu/thread/post-1');
+    await clickButtonByText('post');
+
+    expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
+    expect({ ...storedEntry, ...testState.publishReplyMock.mock.calls[0][0] }).toMatchObject({ link: undefined, spoiler: false });
+  });
+
+  it("fills its own publish options entry, apart from the thread's inline form keyed by the thread's cid", async () => {
+    await renderReplyModal('/mu/thread/post-1');
+
+    expect(testState.publishReplyHookOptions?.cid).toBe('parent-cid');
+    expect(testState.publishReplyHookOptions?.storeKey).toEqual(expect.any(String));
+    expect(testState.publishReplyHookOptions?.storeKey).not.toBe('parent-cid');
+  });
+
+  it('publishes its own link and spoiler after its publish store entry was reset', async () => {
+    testState.openEmpty = true;
+    testState.replyDraft = { content: 'reply with a link', link: 'https://example.com/modal.png', options: '', spoiler: true };
+
+    await renderReplyModal('/mu/thread/post-1');
+    await clickButtonByText('post');
+
+    expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
+    expect(testState.publishReplyMock.mock.calls[0][0]).toMatchObject({ link: 'https://example.com/modal.png', spoiler: true });
   });
 
   it('inserts quote requests only once and keeps the textarea content stable across rerenders', async () => {

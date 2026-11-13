@@ -17,7 +17,7 @@ const testState = vi.hoisted(() => ({
   account: {
     author: { address: 'alice.eth', displayName: 'Alice' },
     subscriptions: ['music-posting.eth'],
-  } as { author?: { address?: string; displayName?: string }; subscriptions?: string[] },
+  } as { author?: { address?: string; displayName?: string }; id?: string; subscriptions?: string[] },
   accountComment: undefined as { communityAddress?: string } | undefined,
   bestAvailableYouTubeThumbnailMock: undefined as undefined | ((link: string) => Promise<string | undefined>),
   accountCommunityAddresses: ['mod.eth'] as string[],
@@ -1865,6 +1865,7 @@ describe('PostForm', () => {
     testState.resolvedCommunityAddress = 'music-posting.eth';
     testState.communities['music-posting.eth'] = { address: 'music-posting.eth', challenges };
     testState.chooseFileMock.mockResolvedValue(attachment);
+    testState.account = { ...testState.account, id: 'account-1' };
 
     await renderPostForm('/mu');
     await clickByText(container, 'start_new_thread');
@@ -1885,6 +1886,8 @@ describe('PostForm', () => {
     expect(testState.publishPostMock).not.toHaveBeenCalled();
     const pendingUploadPost = usePendingUploadPostStore.getState().pendingUploadPosts[0];
     expect(pendingUploadPost).toMatchObject({
+      // The publisher sends the post back to its form if another account is active by the time it publishes.
+      accountId: 'account-1',
       attachment,
       boardChallenges: challenges,
       boardPath: 'mu',
@@ -2882,6 +2885,33 @@ describe('PostForm', () => {
     expect(container.querySelector('table')).toBeNull();
   });
 
+  // usePublishReply lays the options given to publishReply over the form's publish store entry, which can still
+  // hold an earlier reply's link and spoiler or have been reset.
+  it("publishes the inline reply's own link and spoiler, not the ones its publish store entry holds or lost", async () => {
+    testState.comments = { 'thread-cid': { postCid: 'thread-cid' } };
+    testState.resolvedCommunityAddress = 'music-posting.eth';
+    const storedEntry = { link: 'https://example.com/earlier-reply.png', spoiler: true };
+
+    await renderPostForm('/mu/thread/thread-cid');
+    await clickByText(container, 'post_a_reply');
+    const table = container.querySelector('table') as HTMLTableElement;
+    await dispatchInput(table.querySelector('textarea') as HTMLTextAreaElement, 'Reply body');
+    await clickByText(table, 'post');
+
+    expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
+    expect({ ...storedEntry, ...testState.publishReplyMock.mock.calls[0][0] }).toMatchObject({ link: undefined, spoiler: false });
+
+    // A reset entry holds neither, so what this form shows must still be sent.
+    await dispatchInput(table.querySelector<HTMLInputElement>('input[aria-label="link"]') as HTMLInputElement, 'https://example.com/inline.png');
+    await act(async () => {
+      table.querySelector<HTMLInputElement>('input[type="checkbox"]')?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+    await clickByText(table, 'post');
+
+    expect(testState.publishReplyMock).toHaveBeenCalledTimes(2);
+    expect(testState.publishReplyMock.mock.calls[1][0]).toMatchObject({ link: 'https://example.com/inline.png', spoiler: true });
+  });
+
   it('publishes replies from the open reply form', async () => {
     testState.comments = {
       'thread-cid': {
@@ -3092,6 +3122,7 @@ describe('PostForm', () => {
         displayName: 'Alice',
         flairs: undefined,
         link: publishLink,
+        spoiler: false,
       },
       expect.objectContaining({ finish: expect.any(Function) }),
     );

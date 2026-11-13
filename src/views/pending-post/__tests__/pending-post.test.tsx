@@ -542,6 +542,20 @@ describe('PendingPost', () => {
     expect(testState.navigateMock).not.toHaveBeenCalled();
   });
 
+  it("does not follow the published comment that took a mid-retry row's index to its thread", async () => {
+    // Deleting the failed row moves every later account comment down one index.
+    testState.accountCommentIndex = '0';
+    testState.accountComments = [{ index: 0 }];
+    testState.directories = [{ address: 'music-posting.eth', title: '/mu/ - Music' }];
+    testState.getBoardPathMock.mockReturnValue('mu');
+    testState.post = { cid: 'unrelated-thread-cid', communityAddress: 'music-posting.eth', index: 0 };
+    testState.retryingAccountCommentIndex = 0;
+
+    await renderPendingPost();
+
+    expect(testState.navigateMock).not.toHaveBeenCalled();
+  });
+
   it('redirects missing sparse pending account comment indices to not found', async () => {
     testState.accountCommentIndex = '0';
     testState.accountComments = [{ index: 1 }];

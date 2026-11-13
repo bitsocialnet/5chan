@@ -147,10 +147,15 @@ const PendingAccountPost = () => {
   }, [abandonedBoardPath, hasActiveChallenge, isRetryingThisPendingPost, isValidAccountCommentIndex, navigate]);
 
   useEffect(() => {
+    // Deleting a retried row moves later account comments down, so until the retry ends this index can hold
+    // another, already published comment.
+    if (isRetryingThisPendingPost) {
+      return;
+    }
     if (post?.cid && postBoardPath) {
       navigate(`/${postBoardPath}/thread/${post.cid}`, { replace: true });
     }
-  }, [post?.cid, postBoardPath, navigate]);
+  }, [isRetryingThisPendingPost, post?.cid, postBoardPath, navigate]);
 
   useEffect(() => {
     if (isRetryingThisPendingPost || hasAddressablePost || !isValidAccountCommentIndex) {

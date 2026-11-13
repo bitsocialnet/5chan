@@ -605,5 +605,6 @@
   "show_filter_image_md5_in_post_menu": "Mostrar «Filtrar MD5 de imagen» en los menús de las publicaciones",
   "tripcode_sign_failed": "No se pudo firmar tu tripcode para este tablón. Espera a que cargue el tablón y vuelve a intentarlo, o publica sin tripcode.",
   "tripcode_retry_mismatch": "Para reintentar esta publicación, vuelve a escribir su tripcode en el campo de nombre o elimina la publicación.",
-  "directory_vote_lapse_notice": "Tu voto sigue contando mientras sigas visitando este directorio o el tablón al que votaste, y puede caducar tan solo dos semanas después de tu última visita."
+  "directory_vote_lapse_notice": "Tu voto sigue contando mientras sigas visitando este directorio o el tablón al que votaste, y puede caducar tan solo dos semanas después de tu última visita.",
+  "account_switched_before_publish": "Cambiaste de cuenta antes de que se publicara esta publicación, así que no se envió. Publícala de nuevo desde la cuenta que quieras usar."
 }

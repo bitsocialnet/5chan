@@ -295,6 +295,53 @@ describe('usePublishReply', () => {
     expect(JSON.stringify(testState.lastPublishOptions)).not.toContain('hunter2');
   });
 
+  // On a thread page the inline reply form and the reply modal can reply to the same post at once.
+  it('publishes its own options when another form replying to the same post is edited while the tripcode is signed', async () => {
+    let inlineForm: ReturnType<typeof usePublishReply> | undefined;
+    let replyModal: ReturnType<typeof usePublishReply> | undefined;
+    const InlineForm = () => {
+      inlineForm = usePublishReply({ cid: 'parent-cid', communityAddress: 'music.eth' });
+      return null;
+    };
+    const ReplyModal = () => {
+      replyModal = usePublishReply({ cid: 'parent-cid', communityAddress: 'music.eth', storeKey: 'parent-cid:reply-modal' });
+      return null;
+    };
+    act(() => {
+      root.render(createElement(React.Fragment, null, createElement(InlineForm), createElement(ReplyModal)));
+    });
+    let finishSigning: () => void = () => {};
+    const signing = new Promise<void>((resolve) => {
+      finishSigning = resolve;
+    });
+    testState.signTripcodeMock.mockImplementation(async ({ readOptions, writeOptions }: { readOptions: () => any; writeOptions: (options: any) => void }) => {
+      await signing;
+      writeOptions({ ...readOptions(), displayName: 'Anon#tc1:proof', timestamp: 1_800_000_000 });
+      return true;
+    });
+    let publishedOptions: Record<string, any> | undefined;
+    testState.publishCommentMock.mockImplementation(() => {
+      publishedOptions = testState.lastPublishOptions;
+    });
+
+    await act(async () => {
+      replyModal?.publishReply({ content: 'Modal reply', displayName: 'Anon', link: undefined, spoiler: false } as never, undefined, { secure: 'hunter2' });
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    await act(async () => {
+      inlineForm?.setPublishReplyOptions({ content: 'Inline draft', link: 'https://example.com/inline.png', spoiler: true } as never);
+    });
+    await act(async () => {
+      finishSigning();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(testState.publishCommentMock).toHaveBeenCalledTimes(1);
+    expect(publishedOptions).toMatchObject({ author: { displayName: 'Anon#tc1:proof' }, content: 'Modal reply', link: undefined, spoiler: false });
+    expect(usePublishReplyStore.getState().publishCommentOptions['parent-cid']).toMatchObject({ content: 'Inline draft', spoiler: true });
+  });
+
   it('signs a tripcode reply again before its republish after a wrong challenge answer', async () => {
     // A proof-shaped name: a secure tripcode's 43-character key and 86-character signature.
     const getProofName = (signature: string) => `Anon#tc1:s${'A'.repeat(43)}${signature.repeat(86)}`;

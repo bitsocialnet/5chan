@@ -605,5 +605,6 @@
   "show_filter_image_md5_in_post_menu": "Ipakita ang \"I-filter ang MD5 ng larawan\" sa mga menu ng post",
   "tripcode_sign_failed": "Hindi ma-sign ang iyong tripcode para sa board na ito. Hintaying mag-load ang board at subukan ulit, o mag-post nang walang tripcode.",
   "tripcode_retry_mismatch": "Para subukan ulit ang post na ito, i-type ulit ang tripcode nito sa name field, o burahin ang post.",
-  "directory_vote_lapse_notice": "Bilang pa rin ang boto mo habang patuloy mong binibisita ang directory na ito o ang board na binotohan mo, at puwede itong mag-expire kahit dalawang linggo pa lang mula sa huli mong pagbisita."
+  "directory_vote_lapse_notice": "Bilang pa rin ang boto mo habang patuloy mong binibisita ang directory na ito o ang board na binotohan mo, at puwede itong mag-expire kahit dalawang linggo pa lang mula sa huli mong pagbisita.",
+  "account_switched_before_publish": "Nagpalit ka ng account bago na-publish ang post na ito, kaya hindi ito naipadala. I-post itong muli mula sa account na gusto mong gamitin."
 }

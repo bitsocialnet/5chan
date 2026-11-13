@@ -1072,6 +1072,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
             timestamp: Math.floor(Date.now() / 1000),
           };
           const { id: pendingUploadId } = usePendingUploadPostStore.getState().startPendingUploadPost({
+            accountId: account?.id,
             attachment,
             analyticsAttempt: attempt,
             ...(galleryAttachments.length > 0 ? { galleryAttachments } : {}),
@@ -1216,7 +1217,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
       let handedOff = false;
       let outcome: Parameters<PostingAnalyticsAttempt['finish']>[0] = 'post_validation_failed';
       try {
-        const appliedThumbnailConversion = await applyPendingConversion();
+        await applyPendingConversion();
 
         const currentUrl = urlRef.current?.value.trim() || '';
         const { displayName: currentDisplayName, tripcodeSecret } = readNameField(nameRef.current?.value);
@@ -1313,13 +1314,12 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
             displayName: currentDisplayName,
             // The empty and length checks above ignore the sage marker, like 4chan ignores the options field.
             content: appendSageMarker(publishContent, currentOptions),
-            ...(uploadedFiles
-              ? { link: uploadedFiles.link }
-              : getPublishLinkOptions(currentUrl, appliedThumbnailConversion || (hasRestoredDraftRef.current && Boolean(currentUrl)))),
+            // Explicit even when absent, like the gallery: the publish store may still hold an earlier reply's link or spoiler.
+            link: uploadedFiles ? uploadedFiles.link : getPublishLinkOptions(currentUrl, true).link,
             // Explicit even when absent: the publish store may still hold an earlier reply's gallery.
             gallery: uploadedFiles ? uploadedFiles.gallery : getDraftGallery(currentUrl),
             ...flagPublishOptions,
-            ...(hasRestoredDraftRef.current && draft.spoiler ? { spoiler: true } : {}),
+            spoiler: Boolean(draft.spoiler),
             ...(challengeRequest ? { challengeRequest } : {}),
           },
           attempt,
