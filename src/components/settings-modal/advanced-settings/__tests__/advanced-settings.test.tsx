@@ -205,6 +205,8 @@ describe('AdvancedSettings', () => {
   });
 
   it('shows pure p2p browser mode checked by default', async () => {
+    delete testState.account.pkcOptions.pkcRpcClientsOptions;
+
     await renderSettings(false);
 
     expect(container.textContent).not.toContain('advanced_ipfs_gateways');
@@ -341,6 +343,27 @@ describe('AdvancedSettings', () => {
     );
     expect(localStorage.getItem('5chan:pure-p2p-browser-enabled')).toBe('false');
     expect(reloadMock).toHaveBeenCalledOnce();
+  });
+
+  it('keeps a saved full node RPC when other settings are saved with the pure p2p preference unset', async () => {
+    await renderSettings(false);
+
+    const ethRpcInput = container.querySelector<HTMLTextAreaElement>('textarea[aria-label="advanced_ethereum_rpc_urls_aria"]') as HTMLTextAreaElement;
+    await dispatchInput(ethRpcInput, 'https://eth.new.example');
+    await clickButton('save_advanced_settings');
+
+    expect(testState.setAccountMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        chainProviders: { eth: { chainId: 1, urls: ['https://eth.new.example'] } },
+        pkcOptions: expect.objectContaining({
+          libp2pJsClientsOptions: undefined,
+          pkcRpcClientsOptions: ['ws://old.example/key'],
+        }),
+      }),
+    );
+    expect(localStorage.getItem('5chan:pure-p2p-browser-enabled')).toBe('false');
+    // The account runs on its full node RPC, so the pure P2P checkbox must not claim otherwise.
+    expect(container.querySelector<HTMLInputElement>('input[type="checkbox"]')?.checked).toBe(false);
   });
 
   it('preserves custom browser gateway providers while pure p2p is unavailable', async () => {

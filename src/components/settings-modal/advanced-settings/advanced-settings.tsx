@@ -286,7 +286,10 @@ const AdvancedSettings = () => {
   const account = useAccount() as AccountShape | undefined;
   const protocolOptions = getProtocolOptions(account);
   const canConfigurePureP2PBrowser = canConfigureBrowserPureP2P();
-  const activeBrowserPureP2PEnabled = canConfigurePureP2PBrowser && isBrowserPureP2PEnabled(account);
+  // An account with a saved full node RPC is in gateway mode whatever the global pure P2P preference says,
+  // like one whose RPC was just typed; reading the preference here would make saving drop the RPC.
+  const hasSavedNodeRpc = Boolean(getNodeRpcClientsOptions(protocolOptions)?.length);
+  const activeBrowserPureP2PEnabled = canConfigurePureP2PBrowser && !hasSavedNodeRpc && isBrowserPureP2PEnabled(account);
   const [browserPureP2PSelection, setBrowserPureP2PSelection] = useState<boolean | undefined>(undefined);
   const browserPureP2PEnabled = browserPureP2PSelection ?? activeBrowserPureP2PEnabled;
   const shouldShowGatewayModeSettings = !canConfigurePureP2PBrowser || !activeBrowserPureP2PEnabled;

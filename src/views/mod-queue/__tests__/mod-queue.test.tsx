@@ -51,6 +51,9 @@ const testState = vi.hoisted(() => ({
   hasMore: false,
   isMobile: false,
   loadMoreMock: vi.fn(),
+  moderationOptions: {} as Record<'approve' | 'reject', Record<string, any> | undefined>,
+  moderationPublishState: 'initializing',
+  moderationPublishStateListeners: new Set<() => void>(),
   publishCommentMock: vi.fn(),
   publishCommentModerationActionMock: vi.fn(),
   publishCommentModerationMock: vi.fn(),
@@ -119,10 +122,15 @@ vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
     reset: testState.resetMock,
     state: testState.hasMore ? 'fetching-ipns' : 'succeeded',
   }),
-  usePublishCommentModeration: () => ({
-    publishCommentModeration: testState.publishCommentModerationMock,
-    state: 'initializing',
-  }),
+  usePublishCommentModeration: (options?: Record<string, any>) => {
+    testState.moderationOptions[options?.commentModeration?.approved === true ? 'approve' : 'reject'] = options;
+    // Like the real hook, a publishing state change re-renders the component that uses it.
+    const state = React.useSyncExternalStore(subscribeToModerationPublishState, () => testState.moderationPublishState);
+    return {
+      publishCommentModeration: testState.publishCommentModerationMock,
+      state,
+    };
+  },
 }));
 
 vi.mock('@bitsocial/bitsocial-react-hooks/dist/stores/accounts/index.js', () => ({
@@ -318,6 +326,20 @@ vi.mock('../../../components/post', () => ({
     ),
 }));
 
+const subscribeToModerationPublishState = (listener: () => void) => {
+  testState.moderationPublishStateListeners.add(listener);
+  return () => {
+    testState.moderationPublishStateListeners.delete(listener);
+  };
+};
+
+const setModerationPublishState = async (state: string) => {
+  await act(async () => {
+    testState.moderationPublishState = state;
+    testState.moderationPublishStateListeners.forEach((listener) => listener());
+  });
+};
+
 let container: HTMLDivElement;
 let root: Root;
 
@@ -381,7 +403,12 @@ describe('ModQueueView', () => {
     testState.createAccountMock.mockResolvedValue(undefined);
     testState.deleteAccountMock.mockResolvedValue(undefined);
     testState.publishCommentMock.mockResolvedValue({ index: 12 });
-    testState.publishCommentModerationActionMock.mockResolvedValue(undefined);
+    // Transfer moderations only count once verified, so the default mock accepts each one.
+    testState.publishCommentModerationActionMock.mockImplementation(
+      async (options: { onChallengeVerification?: (verification: unknown, moderation: unknown) => Promise<void> }) => {
+        await options.onChallengeVerification?.({ challengeSuccess: true }, {});
+      },
+    );
     testState.queuedCommentHistory = [];
     testState.springStartMock.mockReset();
     testState.useSpringMock.mockReset();
@@ -395,6 +422,8 @@ describe('ModQueueView', () => {
       },
     ]);
     testState.viewMode = 'compact';
+    testState.moderationOptions = { approve: undefined, reject: undefined };
+    testState.moderationPublishState = 'initializing';
 
     container = document.createElement('div');
     document.body.appendChild(container);
@@ -1053,7 +1082,8 @@ describe('ModQueueView', () => {
     testState.feed = [remainingComment];
     await renderModQueue();
 
-    expect(document.body.querySelectorAll('[role="dialog"][aria-labelledby="post-transfer-title"]')).toHaveLength(0);
+    // The modal is not tied to the hidden row, so it stays open and keeps the lock while it publishes.
+    expect(document.body.querySelectorAll('[role="dialog"][aria-labelledby="post-transfer-title"]')).toHaveLength(1);
     expect(Array.from(container.querySelectorAll<HTMLButtonElement>('button')).filter((button) => button.textContent === 'Trash')).toHaveLength(0);
 
     await act(async () => {
@@ -1061,7 +1091,76 @@ describe('ModQueueView', () => {
       await Promise.resolve();
     });
 
+    expect(dialog?.textContent).toContain('modQueue.transferSuccess');
+    const closeButton = Array.from(dialog?.querySelectorAll<HTMLButtonElement>('button') ?? []).find((button) => button.textContent === 'close');
+    await act(async () => {
+      closeButton?.click();
+    });
+
     expect(Array.from(container.querySelectorAll<HTMLButtonElement>('button')).filter((button) => button.textContent === 'Trash')).toHaveLength(1);
+  });
+
+  it('keeps a publishing transfer when its row unmounts and mounts again', async () => {
+    const activeComment = {
+      cid: 'wrong-board-post',
+      communityAddress: 'music-posting.eth',
+      content: 'belongs on trash',
+      number: 8,
+      pendingApproval: true,
+      timestamp: 90_000,
+    };
+    const remainingComment = {
+      cid: 'other-post',
+      communityAddress: 'music-posting.eth',
+      content: 'stays in the queue',
+      number: 9,
+      pendingApproval: true,
+      timestamp: 91_000,
+    };
+    testState.feed = [activeComment, remainingComment];
+
+    await renderModQueue();
+
+    const transferButton = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.textContent === 'Trash');
+    await act(async () => {
+      transferButton?.click();
+    });
+    const submitButton = Array.from(
+      document.body.querySelector('[role="dialog"][aria-labelledby="post-transfer-title"]')?.querySelectorAll<HTMLButtonElement>('button') ?? [],
+    ).find((button) => button.type === 'submit');
+    await act(async () => {
+      submitButton?.click();
+      await Promise.resolve();
+    });
+    const [payload] = testState.publishCommentMock.mock.calls[0];
+
+    // The row unmounts (scrolled out of a virtualized list, view switch, or a feed refresh) and comes back.
+    testState.feed = [remainingComment];
+    await renderModQueue();
+    testState.feed = [activeComment, remainingComment];
+    await renderModQueue();
+
+    const dialogs = document.body.querySelectorAll<HTMLElement>('[role="dialog"][aria-labelledby="post-transfer-title"]');
+    expect(dialogs).toHaveLength(1);
+    const remountedSubmitButton = Array.from(dialogs[0]?.querySelectorAll<HTMLButtonElement>('button') ?? []).find((button) => button.type === 'submit');
+    await act(async () => {
+      remountedSubmitButton?.click();
+      await Promise.resolve();
+    });
+    expect(testState.createAccountMock).toHaveBeenCalledTimes(1);
+    expect(remountedSubmitButton?.disabled).toBe(true);
+    // The remounted row still shows the transfer publishing; the other row keeps approve/reject but no Trash.
+    expect(container.querySelector('[data-testid="loading-ellipsis"]')?.textContent).toBe('publishing');
+    expect(Array.from(container.querySelectorAll<HTMLButtonElement>('button')).filter((button) => button.textContent === 'approve')).toHaveLength(1);
+    expect(Array.from(container.querySelectorAll<HTMLButtonElement>('button')).some((button) => button.textContent === 'Trash')).toBe(false);
+
+    await act(async () => {
+      await payload.onChallengeVerification({ challengeSuccess: true, commentUpdate: { cid: 'transferred-post', number: 12 } }, { cid: 'transferred-post' });
+      await Promise.resolve();
+    });
+
+    expect(dialogs[0]?.textContent).toContain('modQueue.transferSuccess');
+    expect(container.textContent).toContain('rejected');
   });
 
   it('does not show transfer for queued replies', async () => {
@@ -1359,5 +1458,85 @@ describe('ModQueueView', () => {
     // 350-char cap + a single ellipsis character (shorter than the feed's 1000).
     expect(previewContent.length).toBe(351);
     expect(previewContent.endsWith('…')).toBe(true);
+  });
+
+  it('shows approve and reject again next to the error after a rejected approval', async () => {
+    testState.feed = [
+      {
+        cid: 'pending-post',
+        communityAddress: 'music-posting.eth',
+        content: 'waiting for a mod',
+        number: 5,
+        pendingApproval: true,
+        timestamp: 90_000,
+      },
+    ];
+    const confirmSpy = vi.spyOn(window, 'confirm').mockImplementation(() => true);
+    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
+    const getButtons = (label: string) => Array.from(container.querySelectorAll<HTMLButtonElement>('button')).filter((button) => button.textContent === label);
+
+    await renderModQueue();
+    await act(async () => {
+      getButtons('approve')[0]?.click();
+      await Promise.resolve();
+    });
+    expect(testState.publishCommentModerationMock).toHaveBeenCalledTimes(1);
+
+    // A wrong challenge answer is terminal: hooks stops at 'failed' and does not retry on its own.
+    testState.moderationPublishState = 'failed';
+    await act(async () => {
+      await testState.moderationOptions.approve?.onChallengeVerification({ challengeSuccess: false, challengeErrors: { 0: 'wrong answer' } }, {});
+    });
+    await renderModQueue();
+
+    expect(getButtons('approve')).toHaveLength(1);
+    expect(getButtons('reject')).toHaveLength(1);
+    expect(container.querySelector('[data-testid="error-display"]')?.textContent).toContain('wrong answer');
+
+    await act(async () => {
+      getButtons('approve')[0]?.click();
+      await Promise.resolve();
+    });
+
+    expect(testState.publishCommentModerationMock).toHaveBeenCalledTimes(2);
+    expect(container.querySelector('[data-testid="loading-ellipsis"]')?.textContent).toBe('publishing');
+    expect(container.querySelector('[data-testid="error-display"]')).toBeNull();
+    confirmSpy.mockRestore();
+    alertSpy.mockRestore();
+  });
+
+  it('shows approve and reject again when the approval challenge answer fails to publish', async () => {
+    testState.feed = [
+      {
+        cid: 'pending-post',
+        communityAddress: 'music-posting.eth',
+        content: 'waiting for a mod',
+        number: 5,
+        pendingApproval: true,
+        timestamp: 90_000,
+      },
+    ];
+    const confirmSpy = vi.spyOn(window, 'confirm').mockImplementation(() => true);
+    const getButtons = (label: string) => Array.from(container.querySelectorAll<HTMLButtonElement>('button')).filter((button) => button.textContent === label);
+
+    await renderModQueue();
+    await act(async () => {
+      getButtons('approve')[0]?.click();
+      await Promise.resolve();
+    });
+    await setModerationPublishState('waiting-challenge-answers');
+    await act(async () => {
+      await testState.moderationOptions.approve?.onChallenge({ challenges: [] }, {});
+    });
+    expect(container.querySelector('[data-testid="loading-ellipsis"]')?.textContent).toBe('publishing');
+
+    // A challenge answer that fails to publish only moves the publishing state to 'failed'; no error or verification follows.
+    await setModerationPublishState('failed');
+
+    expect(container.querySelector('[data-testid="loading-ellipsis"]')).toBeNull();
+    expect(getButtons('approve')).toHaveLength(1);
+    expect(getButtons('reject')).toHaveLength(1);
+    expect(container.textContent).toContain('failed');
+    confirmSpy.mockRestore();
   });
 });

@@ -57,6 +57,8 @@ const testState = vi.hoisted(() => ({
   directoryEntryByAddress: {} as Record<string, { address: string; directoryCode?: string; features?: Record<string, unknown>; title?: string } | undefined>,
   hasMoreReplies: false,
   freshReplyInputs: [] as TestComment[][],
+  moderationOptions: {} as Record<'approve' | 'reject', Record<string, any> | undefined>,
+  publishCommentModerationMock: vi.fn(),
   openReplyModalMock: vi.fn(),
   pseudonymityMode: 'none',
   replyComments: [] as Array<TestComment | undefined>,
@@ -109,11 +111,14 @@ vi.mock('@bitsocial/bitsocial-react-hooks', async () => {
     useAccount: () => ({ id: 'viewer-account', author: { address: '0xviewer' } }),
     useAccountComment: (options?: { commentCid?: string }) => (options?.commentCid ? testState.accountCommentsByCid[options.commentCid] : undefined),
     useEditedComment: () => ({ editedComment: undefined }),
-    usePublishCommentModeration: () => ({
-      error: undefined,
-      publishCommentModeration: vi.fn(),
-      state: 'initializing',
-    }),
+    usePublishCommentModeration: (options?: Record<string, any>) => {
+      testState.moderationOptions[options?.commentModeration?.approved === true ? 'approve' : 'reject'] = options;
+      return {
+        error: undefined,
+        publishCommentModeration: testState.publishCommentModerationMock,
+        state: 'initializing',
+      };
+    },
     useReplies: ({ comment, sortType }: { comment?: TestComment; sortType?: string }) => {
       testState.replyComments.push(comment);
       return {
@@ -212,11 +217,11 @@ vi.mock('../../lib/utils/time-utils', () => ({
 }));
 
 vi.mock('../../lib/utils/pending-approval-moderation', () => ({
-  approvePendingCommentModeration: {},
+  approvePendingCommentModeration: { approved: true },
   isPendingApprovalAwaiting: (comment?: TestComment) =>
     comment?.pendingApproval === true && comment?.approved !== true && comment?.approved !== false && !comment?.removed,
   isPendingApprovalRejected: () => false,
-  rejectPendingCommentModeration: {},
+  rejectPendingCommentModeration: { approved: false },
 }));
 
 vi.mock('../../lib/utils/url-utils', () => ({
@@ -526,6 +531,7 @@ describe('post community address compatibility', () => {
     testState.virtuosoProps = [];
     testState.virtuosoSnapshot = { ranges: [0], scrollTop: 0 };
     testState.restoredVirtuosoStates = [];
+    testState.moderationOptions = { approve: undefined, reject: undefined };
 
     container = document.createElement('div');
     document.body.appendChild(container);
@@ -1032,5 +1038,74 @@ describe('post community address compatibility', () => {
 
     await renderWithRoute(createElement(PostMobile, { post: pendingPost, showReplies: false }), '/mod/queue');
     expect(container.textContent).toContain('moments ago');
+  });
+
+  it('keeps approve and reject next to a failed mod queue moderation on desktop and mobile', async () => {
+    const pendingPost = { ...makeLegacyThread(), pendingApproval: true };
+    const getButtons = (label: string) => Array.from(container.querySelectorAll<HTMLButtonElement>('button')).filter((button) => button.textContent === label);
+
+    for (const PostComponent of [PostDesktop, PostMobile]) {
+      const onApprove = vi.fn();
+      const onReject = vi.fn();
+      await renderWithRoute(
+        createElement(PostComponent, {
+          isModQueue: true,
+          modQueueError: 'not a moderator',
+          modQueueStatus: 'failed',
+          onApprove,
+          onReject,
+          post: pendingPost,
+          showReplies: false,
+        }),
+        '/mod/queue',
+      );
+
+      expect(getButtons('approve')).toHaveLength(1);
+      expect(getButtons('reject')).toHaveLength(1);
+      expect(container.textContent).toContain('failed: not a moderator');
+
+      await act(async () => {
+        getButtons('approve')[0]?.click();
+      });
+      expect(onApprove).toHaveBeenCalledTimes(1);
+    }
+  });
+
+  it('lets a moderator retry a failed pending approval from the post page on desktop and mobile', async () => {
+    const pendingPost = { ...makeLegacyThread(), pendingApproval: true };
+    const roles = { '0xviewer': { role: 'moderator' } } as unknown as Comment['roles'];
+    const getButtons = (label: string) => Array.from(container.querySelectorAll<HTMLButtonElement>('button')).filter((button) => button.textContent === label);
+    const confirmSpy = vi.spyOn(window, 'confirm').mockImplementation(() => true);
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+
+    for (const PostComponent of [PostDesktop, PostMobile]) {
+      testState.publishCommentModerationMock.mockClear();
+      await renderWithRoute(createElement(PostComponent, { post: pendingPost, roles, showReplies: false }), '/mu/thread/post-1');
+
+      await act(async () => {
+        getButtons('approve')[0]?.click();
+        await Promise.resolve();
+      });
+      expect(testState.publishCommentModerationMock).toHaveBeenCalledTimes(1);
+      expect(container.querySelector('[data-testid="loading-ellipsis"]')?.textContent).toBe('publishing');
+
+      await act(async () => {
+        testState.moderationOptions.approve?.onError(new Error('not a moderator'));
+      });
+
+      expect(getButtons('approve')).toHaveLength(1);
+      expect(getButtons('reject')).toHaveLength(1);
+      expect(container.textContent).toContain('failed: not a moderator');
+
+      await act(async () => {
+        getButtons('approve')[0]?.click();
+        await Promise.resolve();
+      });
+      expect(testState.publishCommentModerationMock).toHaveBeenCalledTimes(2);
+      expect(container.querySelector('[data-testid="loading-ellipsis"]')?.textContent).toBe('publishing');
+    }
+
+    confirmSpy.mockRestore();
+    consoleErrorSpy.mockRestore();
   });
 });
