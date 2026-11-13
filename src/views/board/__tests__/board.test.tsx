@@ -8,6 +8,7 @@ import communitiesPagesStore from '@bitsocial/bitsocial-react-hooks/dist/stores/
 import Board, { type BoardProps } from '../board';
 import { TRASH_BOARD_ADDRESS, TRASH_BOARD_TITLE } from '../../../lib/special-boards';
 import { clearStableLastVisitTimeFilterName, LAST_VISIT_STORAGE_KEY } from '../../../lib/utils/time-filter-utils';
+import { clearExpandedTimeFilters } from '../../../hooks/use-expanded-time-filter';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
@@ -73,6 +74,7 @@ const testState = vi.hoisted(() => ({
   accountComments: [] as Array<TestComment | undefined>,
   accountCommentsCalls: [] as Array<{ commentIndices?: number[]; communityAddress?: string; newerThan?: number; sortType?: 'new' | 'old' } | undefined>,
   accountCommunityAddresses: [] as string[],
+  communityKeysWithMore: ['music-posting.eth'] as string[],
   directories: [{ address: 'music-posting.eth', title: '/mu/ - Music' }] as Array<{ address: string; publicKey?: string; title?: string; directoryCode?: string }>,
   directoryByAddress: {
     'music-posting.eth': {
@@ -217,6 +219,7 @@ vi.mock('@bitsocial/bitsocial-react-hooks', async () => {
       return {
         feed: getScopedFeed(options),
         hasMore: testState.hasMore,
+        communityKeysWithMore: testState.communityKeysWithMore,
         state: testState.feedState ?? (testState.hasMore ? 'fetching-ipns' : 'succeeded'),
         expandTimeWindow: testState.expandTimeWindowMock,
         loadMore: testState.loadMoreMock,
@@ -447,6 +450,7 @@ describe('Board', () => {
     testState.accountComments = [];
     testState.accountCommentsCalls = [];
     testState.accountCommunityAddresses = [];
+    testState.communityKeysWithMore = ['music-posting.eth'];
     testState.directories = [{ address: 'music-posting.eth', title: '/mu/ - Music' }];
     testState.directoryByAddress = {
       'music-posting.eth': {
@@ -511,6 +515,7 @@ describe('Board', () => {
     communitiesPagesStore.setState({ communitiesPages: {}, comments: {} });
     communitiesStore.setState({ communities: {}, syncStatuses: {} });
     clearStableLastVisitTimeFilterName();
+    clearExpandedTimeFilters();
     localStorage.clear();
   });
 
@@ -1069,6 +1074,91 @@ describe('Board', () => {
     await flushEffects();
 
     expect(Array.from(container.querySelectorAll('[data-testid="post"]')).map((element) => element.textContent)).toEqual(['fresh-post']);
+    expect(container.querySelector('[data-testid="loading-ellipsis"]')).toBeNull();
+  });
+
+  it('shows no threads again after refreshing an empty multiboard feed once the feed is recalculated', async () => {
+    testState.feedStateString = undefined;
+    testState.communityKeysWithMore = [];
+
+    await renderBoard({
+      boardProps: { viewType: 'all' },
+      initialEntry: '/all',
+      routePath: '/all/*',
+    });
+
+    expect(container.textContent).toContain('no_threads');
+
+    // resetFeed drops the feed's per-board progress, so every board reads as loading until the next calculation.
+    testState.resetMock.mockReset();
+    testState.resetMock.mockImplementation(() => {
+      testState.communityKeysWithMore = ['music-posting.eth'];
+      return Promise.resolve();
+    });
+
+    await act(async () => {
+      const refreshButton = Array.from(container.querySelectorAll('button')).find((button) => button.textContent === 'refresh');
+      refreshButton?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+    });
+    await flushEffects();
+
+    expect(testState.resetMock).toHaveBeenCalledOnce();
+    expect(container.textContent).not.toContain('no_threads');
+    expect(container.querySelector('[data-testid="loading-ellipsis"]')?.textContent).toBe('loading_feed');
+
+    testState.communityKeysWithMore = [];
+    await renderBoard({
+      boardProps: { viewType: 'all' },
+      initialEntry: '/all',
+      routePath: '/all/*',
+    });
+
+    expect(container.textContent).toContain('no_threads');
+    expect(container.querySelector('[data-testid="loading-ellipsis"]')).toBeNull();
+  });
+
+  it('releases the refresh hold when a board that had threads is empty after the refresh', async () => {
+    testState.feedStateString = undefined;
+    testState.feed = [{ cid: 'older-post', communityAddress: 'music-posting.eth' }];
+    testState.communityKeysWithMore = [];
+
+    await renderBoard({ initialEntry: '/mu', routePath: '/:boardIdentifier/*' });
+
+    expect(Array.from(container.querySelectorAll('[data-testid="post"]')).map((element) => element.textContent)).toEqual(['older-post']);
+
+    testState.resetMock.mockReset();
+    testState.resetMock.mockImplementation(() => {
+      testState.feed = [];
+      testState.communityKeysWithMore = ['music-posting.eth'];
+      return Promise.resolve();
+    });
+
+    await act(async () => {
+      const refreshButton = Array.from(container.querySelectorAll('button')).find((button) => button.textContent === 'refresh');
+      refreshButton?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+    });
+    await flushEffects();
+
+    expect(container.querySelector('[data-testid="loading-ellipsis"]')?.textContent).toBe('loading_feed');
+
+    testState.communityKeysWithMore = [];
+    testState.community = {
+      error: undefined,
+      posts: {
+        pageCids: {},
+        pages: {},
+      },
+      shortAddress: 'music-posting.eth',
+      state: 'succeeded',
+      title: '/mu/ - Music',
+      updatedAt: 1781773422,
+    };
+    await renderBoard({ initialEntry: '/mu', routePath: '/:boardIdentifier/*' });
+
+    expect(container.querySelector('[data-testid="post"]')).toBeNull();
+    expect(container.textContent).toContain('no_threads');
     expect(container.querySelector('[data-testid="loading-ellipsis"]')).toBeNull();
   });
 

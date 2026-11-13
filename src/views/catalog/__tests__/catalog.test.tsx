@@ -8,6 +8,7 @@ import Catalog, { type CatalogProps } from '../catalog';
 import { communitiesStore } from '../../../lib/bitsocial-internals/stores';
 import { getCatalogRenderFeed } from '../catalog-render-feed';
 import { clearStableLastVisitTimeFilterName, LAST_VISIT_STORAGE_KEY } from '../../../lib/utils/time-filter-utils';
+import { clearExpandedTimeFilters } from '../../../hooks/use-expanded-time-filter';
 import useHiddenCatalogThreadsStore from '../../../stores/use-hidden-catalog-threads-store';
 import usePinnedCatalogThreadsStore from '../../../stores/use-pinned-catalog-threads-store';
 import useImageFiltersStore from '../../../stores/use-image-filters-store';
@@ -89,6 +90,8 @@ const testState = vi.hoisted(() => ({
     paginationFeedPostsPerPage: 6,
   },
   respectPostsPerPageForNewerThan: new Set<number>(),
+  // Like the feeds store, keep the first filter of a feed whose options did not change.
+  retainedFeedFilters: undefined as Map<string, FeedFilter> | undefined,
   resetMock: vi.fn(),
   resolvedCommunityAddress: 'music-posting.eth' as string | undefined,
   searchText: '',
@@ -191,7 +194,15 @@ vi.mock('@bitsocial/bitsocial-react-hooks', async () => {
       testState.accountCommentsCalls.push(options);
       return { accountComments: getScopedAccountComments(options) };
     },
-    useFeed: (options: { communities?: unknown[]; filter?: FeedFilter; newerThan?: number; postsPerPage?: number; sortType?: string }) => {
+    useFeed: (feedOptions: { communities?: unknown[]; filter?: FeedFilter; newerThan?: number; postsPerPage?: number; sortType?: string }) => {
+      let options = feedOptions;
+      if (testState.retainedFeedFilters && feedOptions.filter?.key) {
+        const feedKey = `${feedOptions.filter.key}|${feedOptions.newerThan}|${feedOptions.communities?.length}`;
+        if (!testState.retainedFeedFilters.has(feedKey)) {
+          testState.retainedFeedFilters.set(feedKey, feedOptions.filter);
+        }
+        options = { ...feedOptions, filter: testState.retainedFeedFilters.get(feedKey) };
+      }
       testState.feedOptionsCalls.push({
         communitiesLength: options.communities?.length,
         filterKey: options.filter?.key,
@@ -473,6 +484,7 @@ describe('Catalog', () => {
       paginationFeedPostsPerPage: 6,
     };
     testState.respectPostsPerPageForNewerThan = new Set();
+    testState.retainedFeedFilters = undefined;
     testState.resolvedCommunityAddress = 'music-posting.eth';
     testState.searchText = '';
     testState.showOPComment = true;
@@ -508,6 +520,7 @@ describe('Catalog', () => {
     useHiddenCatalogThreadsStore.setState({ hiddenCommentsByCid: {}, scopeHiddenThreadsCounts: {}, shownScopeKey: null });
     communitiesStore.setState({ syncStatuses: {} });
     clearStableLastVisitTimeFilterName();
+    clearExpandedTimeFilters();
     localStorage.clear();
   });
 
@@ -595,14 +608,68 @@ describe('Catalog', () => {
     expect(document.title).toBe('/mu/ - catalog - 5chan');
     expect(testState.setCurrentCommunityAddressMock).toHaveBeenCalledWith('music-posting.eth');
     expect(Array.from(container.querySelectorAll('[data-testid="catalog-row"]')).map((element) => element.textContent)).toEqual(['row:top-post,boring-post']);
-    expect(testState.incrementFilterCountMock).toHaveBeenCalledWith(0, 'hidden-post', 'music-posting.eth');
-    expect(testState.incrementFilterCountMock).toHaveBeenCalledWith(1, 'top-post', 'music-posting.eth');
+    expect(testState.incrementFilterCountMock).toHaveBeenCalledWith(
+      expect.objectContaining({ text: 'spoiler', hide: true, top: false }),
+      'hidden-post',
+      'music-posting.eth',
+    );
+    expect(testState.incrementFilterCountMock).toHaveBeenCalledWith(expect.objectContaining({ text: 'cats', hide: false, top: true }), 'top-post', 'music-posting.eth');
 
     act(() => root.unmount());
 
     expect(testState.setCurrentCommunityAddressMock).toHaveBeenLastCalledWith(null);
 
     root = createRoot(container);
+  });
+
+  it('reports a match on each of two filters with the same text, hide and top by its position among them', async () => {
+    testState.feed = [{ cid: 'top-post', title: 'cats forever', content: 'hello world', communityAddress: 'music-posting.eth' }];
+    testState.filterItems = [
+      { color: 'red', count: 0, enabled: true, filteredCids: new Set(), hide: false, text: 'cats', top: true },
+      { color: 'blue', count: 0, enabled: true, filteredCids: new Set(), hide: false, text: 'cats', top: true },
+    ];
+
+    await renderCatalog({ initialEntry: '/mu/catalog', routePath: '/:boardIdentifier/catalog' });
+
+    expect(testState.incrementFilterCountMock).toHaveBeenCalledWith({ text: 'cats', hide: false, top: true, occurrence: 0 }, 'top-post', 'music-posting.eth');
+    expect(testState.incrementFilterCountMock).toHaveBeenCalledWith({ text: 'cats', hide: false, top: true, occurrence: 1 }, 'top-post', 'music-posting.eth');
+  });
+
+  it('counts filter matches against the edited filter list when the feed keeps its original filter', async () => {
+    testState.retainedFeedFilters = new Map();
+    testState.feed = [{ cid: 'hidden-post', title: 'cats and spoilers', content: 'spoiler content', communityAddress: 'music-posting.eth' }];
+    testState.filterItems = [
+      { count: 0, enabled: false, filteredCids: new Set(), hide: true, text: 'old', top: false },
+      { count: 0, enabled: true, filteredCids: new Set(), hide: true, text: 'spoiler', top: false },
+    ];
+
+    await renderCatalog({ initialEntry: '/mu/catalog', routePath: '/:boardIdentifier/catalog' });
+
+    expect(testState.incrementFilterCountMock).toHaveBeenCalled();
+
+    // Deleting the disabled filter keeps the feed's filter key, so the feed keeps the filter built for the old list.
+    testState.incrementFilterCountMock.mockClear();
+    testState.filterItems = [{ count: 0, enabled: true, filteredCids: new Set(), hide: true, text: 'spoiler', top: false }];
+
+    await renderCatalog({ initialEntry: '/mu/catalog', routePath: '/:boardIdentifier/catalog' });
+
+    expect(testState.incrementFilterCountMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({ text: 'spoiler', hide: true, top: false }),
+      'hidden-post',
+      'music-posting.eth',
+    );
+  });
+
+  it('shows multiboard filter match counts under the scope they are counted in', async () => {
+    testState.resolvedCommunityAddress = undefined;
+    testState.feed = [{ cid: 'hidden-post', title: 'cats and spoilers', content: 'spoiler content', communityAddress: 'music-posting.eth' }];
+    testState.filterItems = [{ count: 0, enabled: true, filteredCids: new Set(), hide: true, text: 'spoiler', top: false }];
+
+    await renderCatalog({ catalogProps: { viewType: 'all' }, initialEntry: '/all/catalog', routePath: '/all/*' });
+
+    const countedScope = testState.incrementFilterCountMock.mock.lastCall?.[2];
+    expect(countedScope).toEqual(expect.any(String));
+    expect(testState.setCurrentCommunityAddressMock).toHaveBeenLastCalledWith(countedScope);
   });
 
   it('places pinned threads after the sticky threads in pin order, keeping archived and unloaded ones and dropping purged ones', async () => {

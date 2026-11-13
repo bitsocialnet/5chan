@@ -22,6 +22,8 @@ const loadStore = async () => {
   return module.default;
 };
 
+const SPAM_FILTER = { text: 'spam', hide: true, top: false };
+
 const createFilterItem = (text: string, overrides: Record<string, unknown> = {}) => ({
   text,
   enabled: true,
@@ -117,7 +119,7 @@ describe('useCatalogFiltersStore', () => {
 
     useCatalogFiltersStore.getState().setFilterItems([createFilterItem('spam')] as never);
     useCatalogFiltersStore.getState().setCurrentCommunityAddress('music.eth');
-    useCatalogFiltersStore.getState().incrementFilterCount(0, 'cid-1', 'music.eth');
+    useCatalogFiltersStore.getState().incrementFilterCount(SPAM_FILTER, 'cid-1', 'music.eth');
     useCatalogFiltersStore.getState().setMatchedFilter('cid-1', 'red');
 
     useCatalogFiltersStore
@@ -141,13 +143,97 @@ describe('useCatalogFiltersStore', () => {
     expect(matchedFilters.size).toBe(0);
   });
 
+  it('counts a match on the filter with its text after the filter list was reordered', async () => {
+    const useCatalogFiltersStore = await loadStore();
+
+    useCatalogFiltersStore.getState().setFilterItems([createFilterItem('old', { enabled: false }), createFilterItem('spam')] as never);
+    useCatalogFiltersStore.getState().setCurrentCommunityAddress('music.eth');
+    useCatalogFiltersStore.getState().saveAndApplyFilters([createFilterItem('spam'), createFilterItem('old', { enabled: false })] as never);
+    useCatalogFiltersStore.getState().incrementFilterCount(SPAM_FILTER, 'cid-1', 'music.eth');
+
+    const { filterItems, filteredCount } = useCatalogFiltersStore.getState();
+    expect(filterItems[0].text).toBe('spam');
+    expect(filterItems[0].communityCounts.get('music.eth')).toBe(1);
+    expect(filterItems[1].communityCounts.get('music.eth')).toBe(0);
+    expect(filteredCount).toBe(1);
+  });
+
+  it('counts a hide filter match on the hide filter when a top filter has the same text', async () => {
+    const useCatalogFiltersStore = await loadStore();
+
+    useCatalogFiltersStore.getState().setFilterItems([createFilterItem('cats', { hide: false, top: true }), createFilterItem('cats')] as never);
+    useCatalogFiltersStore.getState().setCurrentCommunityAddress('music.eth');
+    // The content filter reports a match for every enabled filter the thread matches, in list order.
+    useCatalogFiltersStore.getState().incrementFilterCount({ text: 'cats', hide: false, top: true }, 'cid-1', 'music.eth');
+    useCatalogFiltersStore.getState().incrementFilterCount({ text: 'cats', hide: true, top: false }, 'cid-1', 'music.eth');
+
+    const { filterItems, filteredCount } = useCatalogFiltersStore.getState();
+    expect(filterItems[0].communityCounts.get('music.eth')).toBe(1);
+    expect(filterItems[1].communityCounts.get('music.eth')).toBe(1);
+    expect(filteredCount).toBe(1);
+  });
+
+  it('counts a match on each of two filters with the same text, hide and top', async () => {
+    const useCatalogFiltersStore = await loadStore();
+
+    useCatalogFiltersStore
+      .getState()
+      .setFilterItems([createFilterItem('cats', { hide: false, top: true, color: 'red' }), createFilterItem('cats', { hide: false, top: true, color: 'blue' })] as never);
+    useCatalogFiltersStore.getState().setCurrentCommunityAddress('music.eth');
+    useCatalogFiltersStore.getState().incrementFilterCount({ text: 'cats', hide: false, top: true, occurrence: 0 }, 'cid-1', 'music.eth');
+    useCatalogFiltersStore.getState().incrementFilterCount({ text: 'cats', hide: false, top: true, occurrence: 1 }, 'cid-1', 'music.eth');
+
+    const { filterItems } = useCatalogFiltersStore.getState();
+    expect(filterItems[0].communityCounts.get('music.eth')).toBe(1);
+    expect(filterItems[1].communityCounts.get('music.eth')).toBe(1);
+  });
+
+  it('keeps separate counts for a hide filter saved next to a top filter with the same text', async () => {
+    const useCatalogFiltersStore = await loadStore();
+
+    useCatalogFiltersStore.getState().setFilterItems([createFilterItem('cats')] as never);
+    useCatalogFiltersStore.getState().setCurrentCommunityAddress('music.eth');
+    // Same sequence as the filters modal's save
+    useCatalogFiltersStore.getState().saveAndApplyFilters([createFilterItem('cats', { hide: false, top: true }), createFilterItem('cats')] as never);
+    useCatalogFiltersStore.getState().resetCountsForCurrentCommunity();
+    useCatalogFiltersStore.getState().incrementFilterCount({ text: 'cats', hide: false, top: true }, 'cid-1', 'music.eth');
+    useCatalogFiltersStore.getState().incrementFilterCount({ text: 'cats', hide: true, top: false }, 'cid-1', 'music.eth');
+
+    const { filterItems, filteredCount } = useCatalogFiltersStore.getState();
+    expect(filterItems[0].communityCounts.get('music.eth')).toBe(1);
+    expect(filterItems[1].communityCounts.get('music.eth')).toBe(1);
+    expect(filteredCount).toBe(1);
+  });
+
+  it('keeps separate counts for two identical filters after the filter list is saved again', async () => {
+    const useCatalogFiltersStore = await loadStore();
+    const catsTop = { text: 'cats', hide: false, top: true };
+
+    useCatalogFiltersStore.getState().setFilterItems([createFilterItem('cats', { ...catsTop }), createFilterItem('cats', { ...catsTop })] as never);
+    useCatalogFiltersStore.getState().setCurrentCommunityAddress('music.eth');
+    useCatalogFiltersStore.getState().incrementFilterCount({ ...catsTop, occurrence: 1 }, 'cid-0', 'tech.eth');
+    useCatalogFiltersStore
+      .getState()
+      .saveAndApplyFilters([createFilterItem('cats', { ...catsTop, color: 'red' }), createFilterItem('cats', { ...catsTop, color: 'blue' })] as never);
+    useCatalogFiltersStore.getState().resetCountsForCurrentCommunity();
+    useCatalogFiltersStore.getState().incrementFilterCount({ ...catsTop, occurrence: 0 }, 'cid-1', 'music.eth');
+    useCatalogFiltersStore.getState().incrementFilterCount({ ...catsTop, occurrence: 1 }, 'cid-1', 'music.eth');
+
+    const { filterItems } = useCatalogFiltersStore.getState();
+    expect(filterItems[0].communityCounts.get('music.eth')).toBe(1);
+    expect(filterItems[1].communityCounts.get('music.eth')).toBe(1);
+    // Each saved row kept the counts of its own row
+    expect(filterItems[0].communityCounts.get('tech.eth')).toBeUndefined();
+    expect(filterItems[1].communityCounts.get('tech.eth')).toBe(1);
+  });
+
   it('switches current boards, recalculates counts, and resets only the active board counters', async () => {
     const useCatalogFiltersStore = await loadStore();
 
     useCatalogFiltersStore.getState().setFilterItems([createFilterItem('spam')] as never);
     useCatalogFiltersStore.getState().setCurrentCommunityAddress('music.eth');
-    useCatalogFiltersStore.getState().incrementFilterCount(0, 'cid-1', 'music.eth');
-    useCatalogFiltersStore.getState().incrementFilterCount(0, 'cid-2', 'tech.eth');
+    useCatalogFiltersStore.getState().incrementFilterCount(SPAM_FILTER, 'cid-1', 'music.eth');
+    useCatalogFiltersStore.getState().incrementFilterCount(SPAM_FILTER, 'cid-2', 'tech.eth');
 
     expect(useCatalogFiltersStore.getState().getFilteredCountForCurrentCommunity()).toBe(1);
 

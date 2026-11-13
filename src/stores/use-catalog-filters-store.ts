@@ -15,6 +15,9 @@ interface FilterItem {
   color?: string;
 }
 
+/** Names the filter a match was counted for: its text, hide and top, plus its position among enabled filters that share them. */
+export type FilterMatch = Pick<FilterItem, 'text' | 'hide' | 'top'> & { occurrence?: number };
+
 interface CatalogFiltersStore {
   filterText: string;
   setFilterText: (value: string) => void;
@@ -26,7 +29,7 @@ interface CatalogFiltersStore {
   initializeFilter: () => void;
   filteredCount: number;
   filteredCids: Set<string>;
-  incrementFilterCount: (filterIndex: number, cid: string, communityAddress: string) => void;
+  incrementFilterCount: (filter: FilterMatch, cid: string, communityAddress: string) => void;
   recalcFilteredCount: () => void;
   currentCommunityAddress: string | null;
   setCurrentCommunityAddress: (address: string | null) => void;
@@ -177,10 +180,14 @@ const useCatalogFiltersStore = create(
         const nonEmptyItems = items.filter((item) => item.text.trim() !== '').map((item) => normalizeFilterItem(item));
 
         // Compare new filter items with existing ones to detect pattern changes
-        const existingItems = get().filterItems;
+        // Each saved filter keeps the counts of at most one existing filter with the same text, hide and top,
+        // so filters that share text never share count sets.
+        const unmatchedExistingItems = [...get().filterItems];
         const updatedItems = nonEmptyItems.map((newItem) => {
-          // Try to find matching existing item by index or text
-          const existingItem = existingItems.find((item) => item.text === newItem.text);
+          const existingIndex = unmatchedExistingItems.findIndex(
+            (item) => item.text === newItem.text && Boolean(item.hide) === Boolean(newItem.hide) && Boolean(item.top) === Boolean(newItem.top),
+          );
+          const existingItem = existingIndex === -1 ? undefined : unmatchedExistingItems.splice(existingIndex, 1)[0];
 
           // If we found a matching item, keep its counts
           if (existingItem) {
@@ -218,41 +225,54 @@ const useCatalogFiltersStore = create(
       filter: createCatalogFilter(get),
       updateFilter: () => undefined,
       initializeFilter: () => undefined,
-      incrementFilterCount: (filterIndex: number, cid: string, communityAddress: string) => {
+      incrementFilterCount: (filter: FilterMatch, cid: string, communityAddress: string) => {
         set((state) => {
+          // A feed can keep the filter built for an older filter list, so a match names its filter by text, hide and top
+          // (the identity in the feed's filter key) and its position among enabled filters that share them, not by index.
+          const occurrence = filter.occurrence ?? 0;
+          let sameFilterCount = 0;
+          const filterIndex = state.filterItems.findIndex(
+            (item) =>
+              item.enabled &&
+              item.text === filter.text &&
+              Boolean(item.hide) === Boolean(filter.hide) &&
+              Boolean(item.top) === Boolean(filter.top) &&
+              sameFilterCount++ === occurrence,
+          );
+          // The matched filter was disabled or removed since the feed's filter was built.
+          if (filterIndex === -1) return state;
+
           const newFilterItems = [...state.filterItems];
-          if (newFilterItems[filterIndex]) {
-            const item = newFilterItems[filterIndex];
+          const item = newFilterItems[filterIndex];
 
-            // Ensure communityFilteredCids is a Map
-            const communityFilteredCids = new Map(item.communityFilteredCids);
-            if (!communityFilteredCids.has(communityAddress)) {
-              communityFilteredCids.set(communityAddress, new Set());
-            }
-            const cidSet = communityFilteredCids.get(communityAddress)!;
+          // Ensure communityFilteredCids is a Map
+          const communityFilteredCids = new Map(item.communityFilteredCids);
+          if (!communityFilteredCids.has(communityAddress)) {
+            communityFilteredCids.set(communityAddress, new Set());
+          }
+          const cidSet = communityFilteredCids.get(communityAddress)!;
 
-            // Only increment the count if this CID hasn't been counted for this community yet
-            if (!cidSet.has(cid)) {
-              const newItemFilteredCids = new Set(item.filteredCids);
-              newItemFilteredCids.add(cid);
+          // Only increment the count if this CID hasn't been counted for this community yet
+          if (!cidSet.has(cid)) {
+            const newItemFilteredCids = new Set(item.filteredCids);
+            newItemFilteredCids.add(cid);
 
-              cidSet.add(cid);
-              communityFilteredCids.set(communityAddress, cidSet);
+            cidSet.add(cid);
+            communityFilteredCids.set(communityAddress, cidSet);
 
-              const communityCounts = new Map(item.communityCounts);
-              const currentCount = communityCounts.get(communityAddress) || 0;
-              communityCounts.set(communityAddress, currentCount + 1);
+            const communityCounts = new Map(item.communityCounts);
+            const currentCount = communityCounts.get(communityAddress) || 0;
+            communityCounts.set(communityAddress, currentCount + 1);
 
-              newFilterItems[filterIndex] = {
-                ...item,
-                count: item.count + 1,
-                filteredCids: newItemFilteredCids,
-                communityCounts,
-                communityFilteredCids,
-              };
+            newFilterItems[filterIndex] = {
+              ...item,
+              count: item.count + 1,
+              filteredCids: newItemFilteredCids,
+              communityCounts,
+              communityFilteredCids,
+            };
 
-              return { filterItems: newFilterItems };
-            }
+            return { filterItems: newFilterItems };
           }
           return state;
         });
