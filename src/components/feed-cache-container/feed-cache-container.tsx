@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import useFeedCacheStore, { CachedFeed, getFeedCacheAfterAccess } from '../../stores/use-feed-cache-store';
 import { getFeedCacheKey, getFeedType, isFeedRoute } from '../../lib/utils/route-utils';
 import { TIME_FILTER_QUERY_PARAM } from '../../lib/utils/time-filter-utils';
+import { getBoardCategoryFromSearch } from '../../lib/utils/board-category-utils';
 import { restoreSuspendedMediaPlayback, suspendMediaPlayback } from '../../lib/utils/media-playback-utils';
 import { FeedCacheContext } from '../../hooks/use-feed-cache-context';
 import styles from './feed-cache-container.module.css';
@@ -15,6 +16,7 @@ interface CachedFeedViewProps {
   viewType: CachedFeedViewType;
   boardIdentifier?: string;
   timeFilterNameFromCache?: string;
+  categorySlugFromCache?: string;
   isVisible: boolean;
 }
 
@@ -22,6 +24,7 @@ interface FeedContextFromKey {
   viewType: CachedFeedViewType;
   boardIdentifier?: string;
   timeFilterName?: string;
+  categorySlug?: string;
 }
 
 const parseFeedKey = (key: string): FeedContextFromKey => {
@@ -31,7 +34,7 @@ const parseFeedKey = (key: string): FeedContextFromKey => {
 
   const filteredSegments = segments.filter((s) => s !== 'catalog');
   if (filteredSegments[0] === 'all') {
-    return { viewType: 'all', timeFilterName };
+    return { viewType: 'all', timeFilterName, categorySlug: getBoardCategoryFromSearch(search)?.slug };
   }
   if (filteredSegments[0] === 'subs') {
     return { viewType: 'subs', timeFilterName };
@@ -77,6 +80,7 @@ const CachedFeedWrapper = ({ feed, isVisible, boardView: BoardView, catalogView:
             viewType={context.viewType}
             boardIdentifier={context.boardIdentifier}
             timeFilterNameFromCache={context.timeFilterName}
+            categorySlugFromCache={context.categorySlug}
             isVisible={isVisible}
           />
         ) : (
@@ -85,6 +89,7 @@ const CachedFeedWrapper = ({ feed, isVisible, boardView: BoardView, catalogView:
             viewType={context.viewType}
             boardIdentifier={context.boardIdentifier}
             timeFilterNameFromCache={context.timeFilterName}
+            categorySlugFromCache={context.categorySlug}
             isVisible={isVisible}
           />
         )}

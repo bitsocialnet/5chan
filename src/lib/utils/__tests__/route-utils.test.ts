@@ -257,6 +257,9 @@ describe('feed cache helpers', () => {
     expect(getFeedCacheKey('/all')).toBe('/all?t=24h');
     expect(getFeedCacheKey('/all/catalog', '?t=last')).toBe('/all/catalog?t=24h');
     expect(getFeedCacheKey('/all/catalog', '?t=1w&q=cats')).toBe('/all/catalog?t=1w');
+    expect(getFeedCacheKey('/all', '?c=video-games&t=1w')).toBe('/all?c=video-games&t=1w');
+    expect(getFeedCacheKey('/all/catalog', '?c=unknown&t=1w')).toBe('/all/catalog?t=1w');
+    expect(getFeedCacheKey('/subs', '?c=video-games&t=1w')).toBe('/subs?t=1w');
     expect(getFeedCacheKey('/biz/archive')).toBeNull();
   });
 

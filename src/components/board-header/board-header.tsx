@@ -1,13 +1,14 @@
 import { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useLocation, useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAccountComment, useCommunity } from '@bitsocial/bitsocial-react-hooks';
 import { accountsStore as useAccountsStore } from '../../lib/bitsocial-internals/stores';
 import getShortAddress from '../../lib/get-short-address';
 import { useCommunityIdentifier } from '../../hooks/use-community-identifiers';
 import { useStableCommunity } from '../../hooks/use-stable-community';
 import { isAllView, isSubscriptionsView, isModView } from '../../lib/utils/view-utils';
-import { isArchiveRoute, isDirectoryListRoute, isDirectoryRoute, isSearchDirectoryRoute, isSearchRoute } from '../../lib/utils/route-utils';
+import { getDirectoryCode, isArchiveRoute, isDirectoryListRoute, isDirectoryRoute, isSearchDirectoryRoute, isSearchRoute } from '../../lib/utils/route-utils';
+import { type BoardCategory, filterByBoardCategory, getBoardCategoryFromSearch } from '../../lib/utils/board-category-utils';
 import { getSpecialBoardByAddress } from '../../lib/special-boards';
 import { takeStaticShellBanner } from '../../lib/static-shell-banner';
 import { getSearchPostStatus, MAX_SEARCH_QUERY_LENGTH, type SearchPostStatus } from '../../lib/search-navigation';
@@ -72,6 +73,30 @@ const SearchProviderSubtitle = ({ query, postStatus }: { query: string; postStat
   return <span>{`${t('results_provided_by')} ${provider.name}`}</span>;
 };
 
+// A category multiboard's subtitle: its boards as the bracketed link row a boards bar uses, so each is one click away.
+const BoardCategorySubtitle = ({ category }: { category: BoardCategory }) => {
+  const directories = useDirectories();
+  const boards = filterByBoardCategory(directories, category, getDirectoryCode);
+
+  return (
+    <span className={styles.boardCategoryList}>
+      [
+      {boards.map((board, index) => {
+        const code = getDirectoryCode(board);
+        return (
+          <span key={board.address}>
+            {index > 0 && ' / '}
+            <Link to={`/${code}`} title={board.title}>
+              {code}
+            </Link>
+          </span>
+        );
+      })}
+      ]
+    </span>
+  );
+};
+
 // No props, so parent rerenders never change its output.
 const BoardHeader = memo(() => {
   const { t } = useTranslation();
@@ -116,8 +141,12 @@ const BoardHeader = memo(() => {
   });
   const subscriptionsSubtitle = t('subscriptions_subtitle', { count: subscriptionsCount });
 
+  const boardCategory = isInAllView ? getBoardCategoryFromSearch(location.search) : undefined;
+
   const title = isInAllView
-    ? '/all/ - All 5chan Directories'
+    ? boardCategory
+      ? `/all/ - ${boardCategory.name}`
+      : '/all/ - All 5chan Directories'
     : isInSubscriptionsView
       ? '/subs/ - Subscriptions'
       : isInModView
@@ -127,7 +156,9 @@ const BoardHeader = memo(() => {
           : isInSearchView
             ? getSearchTitle(searchQuery, searchSummary)
             : defaultCommunity?.title || specialBoard?.title || stableCommunity?.title;
-  const subtitle = isInAllView ? (
+  const subtitle = boardCategory ? (
+    <BoardCategorySubtitle category={boardCategory} />
+  ) : isInAllView ? (
     t('all_subtitle')
   ) : isInSubscriptionsView ? (
     subscriptionsSubtitle

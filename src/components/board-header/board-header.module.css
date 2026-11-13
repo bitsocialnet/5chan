@@ -24,6 +24,23 @@
   color: var(--board-address-text-color);
 }
 
+/* A category multiboard lists its boards the way the boards bar does. */
+.boardCategoryList {
+  font-size: var(--boardsbar-font-size);
+  color: var(--boardsbar-separator-color);
+}
+
+.boardCategoryList a {
+  padding: 0 1px;
+  color: var(--boardsbar-desktop-link-text-color);
+  text-decoration: var(--boardsbar-desktop-link-text-decoration);
+}
+
+.boardCategoryList a:hover {
+  color: var(--boardsbar-desktop-link-text-color-hover);
+  text-decoration: var(--boardsbar-desktop-link-text-decoration-hover);
+}
+
 .clickableSubtitle {
   appearance: none;
   background: transparent;

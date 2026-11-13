@@ -46,7 +46,8 @@ import { hasModQueueAccessRole } from '../../lib/utils/mod-access';
 import { getPageDraftKey } from '../../lib/utils/location-draft-utils';
 import { getCommentCommunityAddress } from '../../lib/utils/comment-utils';
 import { getNonokoPendingRouteState, getPendingPostRoutePost, NONOKO_REPLY_ROUTE_STATE, PENDING_UPLOAD_POST_PATH } from '../../lib/utils/pending-post-route-state';
-import { getBoardPath, isDirectoryRoute } from '../../lib/utils/route-utils';
+import { getBoardPath, getDirectoryCode, isDirectoryRoute } from '../../lib/utils/route-utils';
+import { filterByBoardCategory, getBoardCategoryFromSearch } from '../../lib/utils/board-category-utils';
 import { isAllView, isCatalogView, isModQueueView, isModView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import { getCommentFlagOptionsForDirectory, getCommentFlagPublishOptionsForDirectory, type CommentFlagSelectOption } from '../../lib/comment-flag-selection';
 import { FLASH_TAG_OPTIONS, getFlashTagPublishOptionsForDirectoryCode, isFlashDirectoryCode, type FlashTagOption } from '../../lib/flash-tags';
@@ -1503,7 +1504,8 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
               isInAllView={isInAllView}
               isInSubscriptionsView={isInSubscriptionsView}
               isInModView={isInModView}
-              directories={directories}
+              // In a category multiboard the board picker offers that category's boards only.
+              directories={filterByBoardCategory(directories, isInAllView ? getBoardCategoryFromSearch(location.search) : undefined, getDirectoryCode)}
               accountCommunityAddresses={accountCommunityAddresses}
               subscriptions={subscriptions}
               communityAddress={effectiveBoardAddress}

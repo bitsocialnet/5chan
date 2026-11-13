@@ -13,6 +13,7 @@ import { useAccountCommunityAddresses } from '../../hooks/use-account-community-
 import { useDirectories, useDirectoryByAddress } from '../../hooks/use-directories';
 import { useCommunityIdentifier, useCommunityIdentifiers } from '../../hooks/use-community-identifiers';
 import { useFilteredDirectoryAddresses } from '../../hooks/use-filtered-directory-addresses';
+import { getBoardCategory } from '../../lib/utils/board-category-utils';
 import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
 import { useFeedStateString } from '../../hooks/use-state-string';
 import { useHasCommunityLoadFailed } from '../../stores/use-community-load-failures-store';
@@ -204,10 +205,11 @@ export interface BoardProps {
   viewType?: 'all' | 'subs' | 'mod' | 'board';
   boardIdentifier?: string;
   timeFilterNameFromCache?: string;
+  categorySlugFromCache?: string;
   isVisible?: boolean;
 }
 
-const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, timeFilterNameFromCache, isVisible = true }: BoardProps) => {
+const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, timeFilterNameFromCache, categorySlugFromCache, isVisible = true }: BoardProps) => {
   const { t } = useTranslation();
   const routerLocation = useLocation();
   const params = useParams();
@@ -221,7 +223,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
   const directories = useDirectories();
   const communityAddress = useResolvedCommunityAddress(boardIdentifierProp);
 
-  const filteredDirectoryAddresses = useFilteredDirectoryAddresses();
+  const filteredDirectoryAddresses = useFilteredDirectoryAddresses(categorySlugFromCache);
 
   const account = useAccount();
   const subscriptions = account?.subscriptions;
@@ -787,7 +789,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
 
     let boardTitle: string;
     if (isInAllView) {
-      boardTitle = t('all');
+      boardTitle = getBoardCategory(categorySlugFromCache)?.name ?? t('all');
     } else if (isInSubscriptionsView) {
       boardTitle = t('subscriptions');
     } else if (isInModView) {
@@ -798,7 +800,20 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
       boardTitle = title ? title : shortAddress || communityAddress || '';
     }
     document.title = boardTitle + ' - 5chan';
-  }, [title, shortAddress, communityAddress, isVisible, params.boardIdentifier, boardIdentifierProp, directories, isInAllView, isInSubscriptionsView, isInModView, t]);
+  }, [
+    title,
+    shortAddress,
+    communityAddress,
+    isVisible,
+    params.boardIdentifier,
+    boardIdentifierProp,
+    directories,
+    isInAllView,
+    isInSubscriptionsView,
+    isInModView,
+    categorySlugFromCache,
+    t,
+  ]);
 
   const shouldShowErrorToUser = communityError?.message && feed.length === 0;
   const shouldShowUnverifiedAddressWarning =

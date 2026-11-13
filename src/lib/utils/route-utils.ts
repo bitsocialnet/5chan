@@ -4,6 +4,7 @@ import type { DirectoryCommunity } from './directory-list-utils';
 import { getSpecialBoardByAddress, getSpecialBoardByCode } from '../special-boards';
 import { isFlashDirectory, isFlashDirectoryCode } from '../flash-tags';
 import { getEffectiveTimeFilterName, getSearchWithTimeFilter } from './time-filter-utils';
+import { getBoardCategoryFromSearch, getSearchWithBoardCategory } from './board-category-utils';
 
 /**
  * Extract directory short code from title (e.g., "/biz/ - Business & Finance" -> "biz")
@@ -365,7 +366,9 @@ export const getFeedCacheKey = (pathname: string, search = ''): string | null =>
     const strippedFeedPath = stripPageFromFeedPath(normalizedPath);
     if (isMultiboardFeedPath(strippedFeedPath)) {
       const timeFilterName = getEffectiveTimeFilterName(search);
-      return `${strippedFeedPath}${getSearchWithTimeFilter('', timeFilterName)}`;
+      // Each /all category is its own feed, so it gets its own cached view.
+      const categorySlug = strippedFeedPath.startsWith('/all') ? getBoardCategoryFromSearch(search)?.slug : undefined;
+      return `${strippedFeedPath}${getSearchWithTimeFilter(getSearchWithBoardCategory('', categorySlug), timeFilterName)}`;
     }
     return strippedFeedPath;
   }

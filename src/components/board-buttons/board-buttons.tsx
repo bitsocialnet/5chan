@@ -8,6 +8,7 @@ import { useDirectories, useDirectoryByAddress } from '../../hooks/use-directori
 import { useAccountCommunityAddresses } from '../../hooks/use-account-community-addresses';
 import { useFilteredDirectoryAddresses } from '../../hooks/use-filtered-directory-addresses';
 import { getBoardPath, isDirectoryRoute } from '../../lib/utils/route-utils';
+import { BOARD_CATEGORIES, getBoardCategoryFromSearch, getSearchWithBoardCategory } from '../../lib/utils/board-category-utils';
 import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
 import { useBoardHasArchive } from '../../hooks/use-board-has-archive';
 import { useBoardSortType } from '../../hooks/use-board-sort-type';
@@ -252,7 +253,7 @@ const HiddenCatalogThreadsToggle = ({
 }: BoardButtonsProps & { isMobilePlacement?: boolean }) => {
   const account = useAccount();
   const accountCommunityAddresses = useAccountCommunityAddresses();
-  const filteredDirectoryAddresses = useFilteredDirectoryAddresses();
+  const filteredDirectoryAddresses = useFilteredDirectoryAddresses(getBoardCategoryFromSearch(useLocation().search)?.slug);
   const sortType = useSortingStore((state) => state.sortType);
   const toggleShownScopeKey = useHiddenCatalogThreadsStore((state) => state.toggleShownScopeKey);
   let communityAddresses: string[];
@@ -580,7 +581,10 @@ const TimeFilter = ({ isInAllView, isInCatalogView, isInSubscriptionsView, isInM
 
 const AllFeedFilter = () => {
   const { t } = useTranslation();
+  const location = useLocation();
+  const navigate = useNavigate();
   const { filter, setFilter } = useAllFeedFilterStore();
+  const categorySlug = getBoardCategoryFromSearch(location.search)?.slug ?? '';
 
   return (
     <>
@@ -589,6 +593,19 @@ const AllFeedFilter = () => {
         <option value='all'>{t('all_boards')}</option>
         <option value='nsfw'>{t('nsfw_boards_only')}</option>
         <option value='sfw'>{t('worksafe_boards_only')}</option>
+      </select>{' '}
+      <select
+        aria-label='Board category'
+        value={categorySlug}
+        onChange={(e) => navigate({ pathname: location.pathname, search: getSearchWithBoardCategory(location.search, e.target.value || undefined) })}
+      >
+        <option value=''>All Categories</option>
+        {BOARD_CATEGORIES.map((category) => (
+          <option key={category.slug} value={category.slug}>
+            {category.name}
+            {category.nsfw ? ' (NSFW)' : ''}
+          </option>
+        ))}
       </select>
     </>
   );

@@ -431,19 +431,21 @@ describe('BoardButtons', () => {
     expect(findButtonLink('return')?.getAttribute('href')).toBe('/all?t=24h');
 
     const selects = Array.from(container.querySelectorAll<HTMLSelectElement>('select'));
-    expect(selects).toHaveLength(5);
+    expect(selects).toHaveLength(6);
 
     await changeSelect(selects[0]!, 'replyCount');
     await changeSelect(selects[1]!, 'Large');
     await changeSelect(selects[2]!, 'On');
     await changeSelect(selects[3]!, 'nsfw');
-    await changeSelect(selects[4]!, '1w');
+    await changeSelect(selects[4]!, 'video-games');
+    await changeSelect(selects[5]!, '1w');
     await clickButton('refresh');
 
     expect(testState.setSortTypeMock).toHaveBeenCalledWith('replyCount');
     expect(testState.setImageSizeMock).toHaveBeenCalledWith('Large');
     expect(testState.setShowOPCommentMock).toHaveBeenCalledWith(true);
     expect(testState.setFilterMock).toHaveBeenCalledWith('nsfw');
+    expect(testState.navigateMock).toHaveBeenCalledWith({ pathname: '/all/catalog', search: '?t=24h&c=video-games' });
     expect(testState.navigateMock).toHaveBeenCalledWith({ pathname: '/all/catalog', search: '?t=1w' });
     expect(testState.resetMock).toHaveBeenCalledTimes(1);
   });

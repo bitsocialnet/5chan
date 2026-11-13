@@ -4,6 +4,7 @@ import { useAccountCommunityAddresses } from '../../../hooks/use-account-communi
 import usePrefetchIntent from '../../../hooks/use-prefetch-intent';
 import { useDirectoriesState, DirectoryCommunity } from '../../../hooks/use-directories';
 import { getBoardNameFromDirectoryTitle, getBoardPath } from '../../../lib/utils/route-utils';
+import { getSearchWithBoardCategory } from '../../../lib/utils/board-category-utils';
 import useDisclaimerModalStore from '../../../stores/use-disclaimer-modal-store';
 import useDirectoryModalStore from '../../../stores/use-directory-modal-store';
 import useBoardsFilterStore from '../../../stores/use-boards-filter-store';
@@ -94,6 +95,9 @@ const BoardsList = ({ multisub }: { multisub: DirectoryCommunity[] }) => {
     return `/${boardPath}${useCatalogLinks ? '/catalog' : ''}`;
   };
 
+  // Each category heading opens its boards as one multiboard.
+  const getCategoryLink = (slug: string) => ({ pathname: useCatalogLinks ? '/all/catalog' : '/all', search: getSearchWithBoardCategory('', slug) });
+
   // Handler for placeholder board links
   const handlePlaceholderClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
@@ -144,7 +148,9 @@ const BoardsList = ({ multisub }: { multisub: DirectoryCommunity[] }) => {
             {/* Japanese Culture */}
             {showJapaneseCulture && (
               <>
-                <h3>Japanese Culture</h3>
+                <h3>
+                  <Link to={getCategoryLink('japanese-culture')}>Japanese Culture</Link>
+                </h3>
                 <ul>
                   {(showAll || showWorksafeOnly) && (
                     <>
@@ -213,7 +219,9 @@ const BoardsList = ({ multisub }: { multisub: DirectoryCommunity[] }) => {
             {/* Video Games */}
             {showVideoGames && (
               <>
-                <h3>Video Games</h3>
+                <h3>
+                  <Link to={getCategoryLink('video-games')}>Video Games</Link>
+                </h3>
                 <ul>
                   <BoardLink
                     key={boardAddressesByName['Video Games'] ?? 'Video Games'}
@@ -272,7 +280,9 @@ const BoardsList = ({ multisub }: { multisub: DirectoryCommunity[] }) => {
         {/* Column 2: Interests */}
         {showInterests && (
           <div className={styles.boardsColumn}>
-            <h3>Interests</h3>
+            <h3>
+              <Link to={getCategoryLink('interests')}>Interests</Link>
+            </h3>
             <ul>
               <BoardLink
                 key={boardAddressesByName['Comics & Cartoons'] ?? 'Comics & Cartoons'}
@@ -351,7 +361,9 @@ const BoardsList = ({ multisub }: { multisub: DirectoryCommunity[] }) => {
         {/* Column 3: Creative */}
         {showCreative && (
           <div className={styles.boardsColumn}>
-            <h3>Creative</h3>
+            <h3>
+              <Link to={getCategoryLink('creative')}>Creative</Link>
+            </h3>
             <ul>
               {(showAll || showNsfwOnly) && (
                 <BoardLink key={boardAddressesByName['Oekaki'] ?? 'Oekaki'} boardName='Oekaki' address={boardAddressesByName['Oekaki'] ?? null} {...boardLinkProps} />
@@ -447,7 +459,9 @@ const BoardsList = ({ multisub }: { multisub: DirectoryCommunity[] }) => {
             {/* Other */}
             {showOther && (
               <>
-                <h3>Other</h3>
+                <h3>
+                  <Link to={getCategoryLink('other')}>Other</Link>
+                </h3>
                 <ul>
                   <BoardLink
                     key={boardAddressesByName['Business & Finance'] ?? 'Business & Finance'}
@@ -502,7 +516,9 @@ const BoardsList = ({ multisub }: { multisub: DirectoryCommunity[] }) => {
             {/* Misc. (NSFW) */}
             {showMisc && (
               <>
-                <h3>Misc.</h3>
+                <h3>
+                  <Link to={getCategoryLink('misc')}>Misc.</Link>
+                </h3>
                 <NSFWBadge />
                 <ul>
                   <BoardLink key={boardAddressesByName['Random'] ?? 'Random'} boardName='Random' address={boardAddressesByName['Random'] ?? null} {...boardLinkProps} />
@@ -545,7 +561,9 @@ const BoardsList = ({ multisub }: { multisub: DirectoryCommunity[] }) => {
         {/* Column 5: Adult (NSFW) */}
         {showAdult && (
           <div className={styles.boardsColumn}>
-            <h3>Adult</h3>
+            <h3>
+              <Link to={getCategoryLink('adult')}>Adult</Link>
+            </h3>
             <NSFWBadge />
             <ul>
               <BoardLink

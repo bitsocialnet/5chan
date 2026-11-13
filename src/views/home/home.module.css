@@ -331,6 +331,11 @@
   text-decoration: underline;
 }
 
+/* A category heading links to its multiboard and keeps the heading's own color. */
+.boardsColumn h3:not(.nsfwBadge) a {
+  color: inherit;
+}
+
 .nsfwBadge {
   display: inline;
   color: #e00;
