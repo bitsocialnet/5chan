@@ -21,6 +21,7 @@ import { useSuggestionFeedLoader } from '../../hooks/use-suggestion-feed-loader'
 import useTimeFilter from '../../hooks/use-time-filter';
 import useMultiboardCatalogSnapshot from '../../hooks/use-multiboard-catalog-snapshot';
 import useIsMobile from '../../hooks/use-is-mobile';
+import useRefreshFeedOnLinkArrival from '../../hooks/use-refresh-feed-on-link-arrival';
 import useContentWidth from '../../hooks/use-content-width';
 import useCatalogStyleStore from '../../stores/use-catalog-style-store';
 import { useHasCommunityLoadFailed } from '../../stores/use-community-load-failures-store';
@@ -310,6 +311,9 @@ export interface CatalogProps {
   isVisible?: boolean;
 }
 
+// How long a catalog opened again by a link keeps its earlier threads after the refresh settles, if the new list is still empty.
+const HELD_FEED_RELEASE_DELAY_MS = 2000;
+
 const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, timeFilterNameFromCache, isVisible = true }: CatalogProps) => {
   const { t } = useTranslation();
   const routerLocation = useLocation();
@@ -433,13 +437,28 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
     excludeArchivedFilter,
   ]);
 
-  const { feed, hasMore, loadMore, reset, expandTimeWindow, communityKeysWithMore } = useFeed(feedOptions);
+  const { feed: liveFeed, hasMore, loadMore, reset, expandTimeWindow, communityKeysWithMore } = useFeed(feedOptions);
   // a refresh takes the sorted multiboard catalog again
   const [refreshCount, setRefreshCount] = useState(0);
   const refreshFeed = useCallback(() => {
     setRefreshCount((count) => count + 1);
     return reset();
   }, [reset]);
+  // A catalog opened again by a link keeps its earlier threads on screen until the refreshed list arrives.
+  const [heldFeed, setHeldFeed] = useState<Comment[]>();
+  const liveFeedRef = useRef(liveFeed);
+  liveFeedRef.current = liveFeed;
+  const refreshFeedOnArrival = useCallback(() => {
+    const held = liveFeedRef.current;
+    setHeldFeed(held);
+    // The reset settles before the feed store has refilled the list, so the threads are held a little longer.
+    const release = () => setTimeout(() => setHeldFeed((current) => (current === held ? undefined : current)), HELD_FEED_RELEASE_DELAY_MS);
+    refreshFeed().then(release, release);
+  }, [refreshFeed]);
+  // A locally sorted multiboard catalog shows nothing until every board has loaded again, so it is left to its Refresh button.
+  useRefreshFeedOnLinkArrival({ isVisible, hasLoadedThreads: liveFeed.length > 0 && !isMultiboardLocalSort, refresh: refreshFeedOnArrival });
+  const isHoldingFeed = Boolean(heldFeed) && liveFeed.length === 0;
+  const feed = isHoldingFeed && heldFeed ? heldFeed : liveFeed;
   const {
     hiddenCatalogThreads,
     hiddenThreadCandidates,
@@ -1011,7 +1030,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
                 itemContent={renderCatalogRow}
                 useWindowScroll={true}
                 components={footerComponents}
-                endReached={!showHiddenThreads && !isSortSnapshotShown && effectiveInfiniteScroll && footerHasMore ? loadMore : undefined}
+                endReached={!showHiddenThreads && !isSortSnapshotShown && effectiveInfiniteScroll && footerHasMore && !isHoldingFeed ? loadMore : undefined}
                 ref={virtuosoRef}
                 restoreStateFrom={lastVirtuosoState}
                 initialScrollTop={lastVirtuosoState?.scrollTop}

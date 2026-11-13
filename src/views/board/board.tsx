@@ -23,6 +23,7 @@ import { useBoardFeedPageSize } from '../../hooks/use-board-feed-page-size';
 import useExpandedTimeFilter from '../../hooks/use-expanded-time-filter';
 import useIsMobile from '../../hooks/use-is-mobile';
 import { useNowSeconds } from '../../hooks/use-now-seconds';
+import useRefreshFeedOnLinkArrival from '../../hooks/use-refresh-feed-on-link-arrival';
 import { useSuggestionFeedLoader } from '../../hooks/use-suggestion-feed-loader';
 import useTimeFilter from '../../hooks/use-time-filter';
 import { getPageSlice } from '../../lib/utils/board-feed-pagination';
@@ -73,6 +74,8 @@ const mergeVisibleLocalAccountComments = (feed: Comment[], visibleLocalAccountCo
 };
 
 type RefreshHoldState = {
+  /** The threads to keep on screen while the refreshed list loads; a manual refresh shows the loading state instead. */
+  heldFeed?: Comment[];
   hasSettledResetCall: boolean;
   hasSeenEmptyFeed: boolean;
   isReleased: boolean;
@@ -377,28 +380,34 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
 
   const resetTriggeredRef = useRef(false);
   const refreshHoldRef = useRef<RefreshHoldState | null>(null);
-  const feedLengthRef = useRef(feed.length);
-  feedLengthRef.current = feed.length;
+  const feedRef = useRef(feed);
+  feedRef.current = feed;
   const [, bumpRefreshHoldVersion] = useState(0);
   const [isManualRefreshPending, startManualRefreshTransition] = useTransition();
-  const refreshBoardFeed = useCallback(() => {
-    const startedAt = Date.now();
-    refreshHoldRef.current = { hasSettledResetCall: false, hasSeenEmptyFeed: false, isReleased: false, startedFeedLength: feedLengthRef.current, startedAt };
-    bumpRefreshHoldVersion((version) => version + 1);
-    startManualRefreshTransition(async () => {
-      try {
-        await reset();
-      } catch (error) {
-        console.error('Failed to refresh board feed:', error);
-      } finally {
-        const currentRefreshHold = refreshHoldRef.current;
-        if (currentRefreshHold?.startedAt === startedAt && !currentRefreshHold.isReleased) {
-          currentRefreshHold.hasSettledResetCall = true;
-          bumpRefreshHoldVersion((version) => version + 1);
+  const startBoardRefresh = useCallback(
+    (heldFeed?: Comment[]) => {
+      const startedAt = Date.now();
+      refreshHoldRef.current = { heldFeed, hasSettledResetCall: false, hasSeenEmptyFeed: false, isReleased: false, startedFeedLength: feedRef.current.length, startedAt };
+      bumpRefreshHoldVersion((version) => version + 1);
+      startManualRefreshTransition(async () => {
+        try {
+          await reset();
+        } catch (error) {
+          console.error('Failed to refresh board feed:', error);
+        } finally {
+          const currentRefreshHold = refreshHoldRef.current;
+          if (currentRefreshHold?.startedAt === startedAt && !currentRefreshHold.isReleased) {
+            currentRefreshHold.hasSettledResetCall = true;
+            bumpRefreshHoldVersion((version) => version + 1);
+          }
         }
-      }
-    });
-  }, [reset, startManualRefreshTransition]);
+      });
+    },
+    [reset, startManualRefreshTransition],
+  );
+  const refreshBoardFeed = useCallback(() => startBoardRefresh(), [startBoardRefresh]);
+  const refreshBoardFeedOnArrival = useCallback(() => startBoardRefresh(feedRef.current), [startBoardRefresh]);
+  useRefreshFeedOnLinkArrival({ isVisible, hasLoadedThreads: feed.length > 0, refresh: refreshBoardFeedOnArrival });
 
   const setResetFunction = useFeedResetStore((state) => state.setResetFunction);
   useEffect(() => {
@@ -451,12 +460,16 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
   );
   if (refreshHold && canReleaseRefreshHold) {
     refreshHold.isReleased = true;
+    refreshHold.heldFeed = undefined;
   }
   const isRefreshHoldPending = Boolean(refreshHold && !refreshHold.isReleased);
   const isBoardRefreshPending = isManualRefreshPending || isRefreshHoldPending;
+  // A board opened again by a link keeps its earlier threads on screen until the refreshed list arrives.
+  const heldFeed = isRefreshHoldPending && feed.length === 0 ? refreshHold?.heldFeed : undefined;
+  const shownFeed = heldFeed ?? feed;
 
   // Show local posts without letting them become the whole board during feed hydration.
-  const feedCids = useMemo(() => new Set(feed.map((f) => f.cid)), [feed]);
+  const feedCids = useMemo(() => new Set(shownFeed.map((f) => f.cid)), [shownFeed]);
   const nonokoPendingAccountComment = useMemo(() => {
     const comment = nonokoPendingAccountComments.find(Boolean);
     if (!comment) return undefined;
@@ -494,20 +507,20 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
     return [nonokoPendingAccountComment, ...filteredComments.filter((comment) => comment.cid !== nonokoPendingAccountComment.cid)];
   }, [nonokoPendingAccountComment, filteredComments]);
 
-  const canShowRecentLocalAccountComments = !isSingleCommunityBoard || feed.length > 0 || isRawBoardThreadStateFullyLoaded;
+  const canShowRecentLocalAccountComments = !isSingleCommunityBoard || shownFeed.length > 0 || isRawBoardThreadStateFullyLoaded;
   const feedWithLocalAccountComments = useMemo(() => {
-    if (isBoardRefreshPending) {
+    if (isBoardRefreshPending && !heldFeed) {
       return feed;
     }
 
     const visibleLocalAccountComments = canShowRecentLocalAccountComments ? localAccountComments : nonokoPendingAccountComment ? localAccountComments.slice(0, 1) : [];
 
     if (visibleLocalAccountComments.length === 0) {
-      return feed;
+      return shownFeed;
     }
 
-    return mergeVisibleLocalAccountComments(feed, visibleLocalAccountComments);
-  }, [canShowRecentLocalAccountComments, feed, isBoardRefreshPending, localAccountComments, nonokoPendingAccountComment]);
+    return mergeVisibleLocalAccountComments(shownFeed, visibleLocalAccountComments);
+  }, [canShowRecentLocalAccountComments, feed, heldFeed, isBoardRefreshPending, localAccountComments, nonokoPendingAccountComment, shownFeed]);
   const combinedFeed = feedWithLocalAccountComments;
 
   const cappedFeed = useMemo(
@@ -845,7 +858,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
             itemContent={boardItemContent}
             useWindowScroll={true}
             components={footerComponents}
-            endReached={effectiveHasMore ? loadMore : undefined}
+            endReached={effectiveHasMore && !heldFeed ? loadMore : undefined}
             ref={virtuosoRef}
             restoreStateFrom={lastVirtuosoState}
             initialScrollTop={lastVirtuosoState?.scrollTop}
