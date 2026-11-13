@@ -2,6 +2,7 @@ import * as React from 'react';
 import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { communitiesStore } from '../../lib/bitsocial-internals/stores';
 import { __resetDirectoryVoteVisitsForTests, getDirectoryVoteVisits } from '../../lib/directory-vote-visits';
 import useDirectoryVotesStore from '../../stores/use-directory-votes-store';
 import { useDirectoryVoteVisits } from '../use-directory-vote-visits';
@@ -9,7 +10,8 @@ import { useDirectoryVoteVisits } from '../use-directory-vote-visits';
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (callback: () => void) => void }).act as (callback: () => void) => void;
 
-vi.mock('../use-directories', () => ({
+vi.mock('../use-directories', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../use-directories')>()),
   useDirectories: () => [{ address: 'incumbent.bso', directoryCode: 'a', title: '/a/ - Anime & Manga' }],
 }));
 
@@ -30,6 +32,7 @@ describe('useDirectoryVoteVisits', () => {
     vi.spyOn(Date, 'now').mockImplementation(() => now);
     Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'visible' });
     useDirectoryVotesStore.setState({ votes: {} });
+    communitiesStore.setState({ communities: {} });
     __resetDirectoryVoteVisitsForTests();
     root = createRoot(document.createElement('div'));
   });
@@ -61,6 +64,20 @@ describe('useDirectoryVoteVisits', () => {
   it('records a visit to the board voted for, outside its directory route', () => {
     useDirectoryVotesStore.getState().setVote(vote);
     mount('challenger.bso');
+
+    expect(getDirectoryVoteVisits()).toEqual({ a: 1_000 });
+  });
+
+  it('records a visit to a board voted for by public key alone, browsed by name, once its record loads', () => {
+    useDirectoryVotesStore.getState().setVote({ ...vote, community: { publicKey: '12D3KooWUnlisted' } });
+    mount('unlisted.bso');
+    expect(getDirectoryVoteVisits()).toEqual({});
+
+    act(() =>
+      communitiesStore.setState({
+        communities: { 'unlisted.bso': { address: 'unlisted.bso', name: 'unlisted.bso', publicKey: '12D3KooWUnlisted' } },
+      }),
+    );
 
     expect(getDirectoryVoteVisits()).toEqual({ a: 1_000 });
   });

@@ -16,6 +16,11 @@ describe('getVisitedDirectoryCodes', () => {
     expect(getVisitedDirectoryCodes('12D3KooWOther', undefined, [voteInA, voteInB])).toEqual(['b']);
   });
 
+  it("visits the directory of a vote cast by public key alone when the board is browsed by name, once its record's key is known", () => {
+    expect(getVisitedDirectoryCodes('other.bso', undefined, [voteInA, voteInB])).toEqual([]);
+    expect(getVisitedDirectoryCodes('other.bso', undefined, [voteInA, voteInB], '12D3KooWOther')).toEqual(['b']);
+  });
+
   it('visits nothing for a board unrelated to any vote, or a withdrawal still settling', () => {
     expect(getVisitedDirectoryCodes('elsewhere.bso', 'c', [voteInA, voteInB])).toEqual([]);
     expect(getVisitedDirectoryCodes('challenger.bso', undefined, [{ contestId: voteInA.contestId }])).toEqual([]);
