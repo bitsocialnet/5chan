@@ -2,7 +2,7 @@ import * as React from 'react';
 import useFramesStore from '../../../stores/use-frames-store';
 import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
+import { MemoryRouter, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import Catalog, { type CatalogProps } from '../catalog';
 import { communitiesStore } from '../../../lib/bitsocial-internals/stores';
@@ -509,6 +509,74 @@ describe('Catalog', () => {
     communitiesStore.setState({ syncStatuses: {} });
     clearStableLastVisitTimeFilterName();
     localStorage.clear();
+  });
+
+  it('refreshes a catalog opened again by a link, keeping its threads until the new list arrives, but not on back', async () => {
+    const getRows = () => Array.from(container.querySelectorAll('[data-testid="catalog-row"]')).map((element) => element.textContent);
+    testState.feed = [{ cid: 'old-post', title: 'old', communityAddress: 'music-posting.eth' }];
+    const CachedCatalogHarness = () => {
+      const { pathname } = useLocation();
+      const navigate = useNavigate();
+      const isVisible = !pathname.includes('/thread/');
+      return createElement(
+        React.Fragment,
+        {},
+        createElement('button', { 'data-testid': 'open-thread', onClick: () => navigate('/mu/thread/old-post') }, 'thread'),
+        createElement('button', { 'data-testid': 'back', onClick: () => navigate(-1) }, 'back'),
+        createElement('button', { 'data-testid': 'catalog-link', onClick: () => navigate('/mu/catalog') }, 'catalog'),
+        createElement(React.Activity, {
+          mode: isVisible ? 'visible' : 'hidden',
+          // oxlint-disable-next-line react/no-children-prop -- ActivityProps types children as required, so createElement only accepts it inside the props object
+          children: createElement(Catalog, { boardIdentifier: 'mu', feedCacheKey: '/mu/catalog', isVisible, viewType: 'board' }),
+        }),
+      );
+    };
+    await act(async () => {
+      root.render(
+        createElement(
+          MemoryRouter,
+          { initialEntries: ['/mu/catalog'] },
+          createElement(Routes, {}, createElement(Route, { path: '/:boardIdentifier/*', element: createElement(CachedCatalogHarness) })),
+        ),
+      );
+    });
+    await flushEffects();
+    expect(getRows()).toEqual(['row:old-post']);
+
+    const click = (testId: string) => act(async () => container.querySelector<HTMLButtonElement>(`[data-testid="${testId}"]`)?.click());
+    await click('open-thread');
+    await click('back');
+    expect(testState.resetMock).not.toHaveBeenCalled();
+
+    let resolveReset: (() => void) | undefined;
+    testState.resetMock.mockImplementation(() => {
+      testState.feed = [];
+      return new Promise<void>((resolve) => {
+        resolveReset = resolve;
+      });
+    });
+    await click('open-thread');
+    await click('catalog-link');
+    expect(testState.resetMock).toHaveBeenCalledOnce();
+    expect(getRows()).toEqual(['row:old-post']);
+
+    // the reset settles before the feed store refills the list
+    vi.useFakeTimers();
+    try {
+      await act(async () => resolveReset?.());
+      expect(getRows()).toEqual(['row:old-post']);
+
+      testState.feed = [
+        { cid: 'new-post', title: 'new', communityAddress: 'music-posting.eth' },
+        { cid: 'old-post', title: 'old', communityAddress: 'music-posting.eth' },
+      ];
+      await act(async () => {
+        vi.runOnlyPendingTimers();
+      });
+      expect(getRows()).toEqual(['row:new-post,old-post']);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('applies catalog filters and promotes top matches', async () => {
