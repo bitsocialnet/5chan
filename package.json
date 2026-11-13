@@ -9,7 +9,7 @@
   "private": true,
   "dependencies": {
     "@bitsocial/bso-resolver": "0.0.10",
-    "@pkcprotocol/pkc-js": "0.0.132",
+    "@pkcprotocol/pkc-js": "0.0.144",
     "electron-context-menu": "5.1.0",
     "electron-is-dev": "3.0.1",
     "env-paths": "4.0.0",
@@ -115,7 +115,7 @@
   "devDependencies": {
     "@babel/core": "7.29.7",
     "@bbob/parser": "4.4.1",
-    "@bitsocial/bitsocial-react-hooks": "0.2.2",
+    "@bitsocial/bitsocial-react-hooks": "0.2.3",
     "@bitsocial/pubsub-voting": "0.7.8",
     "@capacitor/android": "8.5.3",
     "@capacitor/app": "8.1.2",
@@ -220,7 +220,7 @@
   },
   "resolutions": {
     "follow-redirects": "1.16.1",
-    "@pkcprotocol/pkc-js": "0.0.132",
+    "@pkcprotocol/pkc-js": "0.0.144",
     "probe-image-size": "7.4.0",
     "multiformats@npm:^14.0.0": "14.0.5",
     "viem": "2.57.10",

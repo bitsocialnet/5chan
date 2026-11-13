@@ -756,6 +756,62 @@ describe('Board', () => {
     expect(window.scrollTo).toHaveBeenCalledTimes(2);
   });
 
+  it('refreshes a board opened again by a link, keeping its threads until the new list arrives, but not on back', async () => {
+    const getShownPosts = () => Array.from(container.querySelectorAll('[data-testid="post"]')).map((element) => element.textContent);
+    testState.feed = [{ cid: 'old-post', communityAddress: 'music-posting.eth' }];
+    const CachedBoardHarness = () => {
+      const { pathname } = useLocation();
+      const navigate = useNavigate();
+      const isVisible = !pathname.includes('/thread/');
+      return createElement(
+        React.Fragment,
+        {},
+        createElement('button', { 'data-testid': 'open-thread', onClick: () => navigate('/mu/thread/old-post') }, 'thread'),
+        createElement('button', { 'data-testid': 'back', onClick: () => navigate(-1) }, 'back'),
+        createElement('button', { 'data-testid': 'board-link', onClick: () => navigate('/mu') }, 'board'),
+        createElement(React.Activity, {
+          mode: isVisible ? 'visible' : 'hidden',
+          // oxlint-disable-next-line react/no-children-prop -- ActivityProps types children as required, so createElement only accepts it inside the props object
+          children: createElement(Board, { boardIdentifier: 'mu', feedCacheKey: '/mu', isVisible, viewType: 'board' }),
+        }),
+      );
+    };
+    await act(async () => {
+      root.render(
+        createElement(
+          MemoryRouter,
+          { initialEntries: ['/mu'] },
+          createElement(Routes, {}, createElement(Route, { path: '/:boardIdentifier/*', element: createElement(CachedBoardHarness) })),
+        ),
+      );
+    });
+    expect(getShownPosts()).toEqual(['old-post']);
+
+    const click = (testId: string) => act(async () => container.querySelector<HTMLButtonElement>(`[data-testid="${testId}"]`)?.click());
+    await click('open-thread');
+    await click('back');
+    expect(testState.resetMock).not.toHaveBeenCalled();
+
+    let resolveReset: (() => void) | undefined;
+    testState.resetMock.mockImplementation(() => {
+      testState.feed = [];
+      return new Promise<void>((resolve) => {
+        resolveReset = resolve;
+      });
+    });
+    await click('open-thread');
+    await click('board-link');
+    expect(testState.resetMock).toHaveBeenCalledOnce();
+    expect(getShownPosts()).toEqual(['old-post']);
+
+    testState.feed = [
+      { cid: 'new-post', communityAddress: 'music-posting.eth' },
+      { cid: 'old-post', communityAddress: 'music-posting.eth' },
+    ];
+    await act(async () => resolveReset?.());
+    expect(getShownPosts()).toEqual(['new-post', 'old-post']);
+  });
+
   it('renders the current page feed, inserts recent account comments, and wires footer actions', async () => {
     const currentTimestamp = Math.floor(Date.now() / 1000);
     testState.feed = [
