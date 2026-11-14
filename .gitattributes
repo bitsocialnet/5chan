@@ -6,4 +6,3 @@ public/ruffle/sandbox-frame.js text eol=lf
 /.agents/** text=auto eol=lf
 /.claude/** text=auto eol=lf
 /.codex/** text=auto eol=lf
-/.cursor/** text=auto eol=lf
