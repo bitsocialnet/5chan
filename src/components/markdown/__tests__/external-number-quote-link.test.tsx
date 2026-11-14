@@ -365,8 +365,9 @@ describe('ExternalNumberQuoteLink', () => {
     });
     expect(container.querySelector('a')).toBeNull();
     await act(async () => {
+      const popped = new Promise<void>((resolve) => window.addEventListener('popstate', () => resolve(), { once: true }));
       navigateInApp?.(-1);
-      await new Promise((resolve) => setTimeout(resolve, 0));
+      await popped;
     });
     expect(getRenderedPathname()).toBe('/biz/thread/current');
     await settle(() => resolution.resolve(createTarget(77)));
