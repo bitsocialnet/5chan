@@ -193,10 +193,10 @@ If uncertain, ask the developer before adding an entry.
 - **Date:** 2026-04-08
 - **Updated:** 2026-07-10
 - **Observed by:** contributor + Codex
-- **Context:** Reviewing repo-managed agent configs under `.codex/agents`, `.cursor/agents`, and `.claude/agents`
+- **Context:** Reviewing repo-managed agent configs under `.codex/agents` and `.claude/agents`
 - **What was surprising:** Model names remain harness-specific, while Codex custom-agent `model` and `model_reasoning_effort` settings are optional and inherit from the parent when omitted; Codex does not document a `latest` alias for these files.
 - **Impact:** Hard-coded Codex model or reasoning-effort settings can become stale or unsupported and prevent subagents from following the contributor's current parent configuration.
-- **Mitigation:** Keep `.cursor` agents on Cursor-supported models, never use `composer-2` in `.claude`, and omit `model` and `model_reasoning_effort` from committed custom-agent TOMLs under `.codex/**/agents/*.toml`; `yarn ai-workflow:check` rejects pins so Codex agents keep inheriting parent settings.
+- **Mitigation:** Omit `model` and `model_reasoning_effort` from committed custom-agent TOMLs under `.codex/**/agents/*.toml` so Codex agents inherit parent settings. `yarn ai-workflow:check` rejects model pins.
 - **Status:** confirmed
 
 ### codesign parses "5chan.app" as process ID 5
