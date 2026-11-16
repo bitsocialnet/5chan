@@ -61,6 +61,40 @@ describe('getSpamBlockerPrecheckPlan', () => {
     expect(getSpamBlockerPrecheckPlan([defaultBoard[2]], reply)).toBeUndefined();
   });
 
+  it.each(['', '?blockTor=true'])('defers private whitelist and .bso exemptions to the board (%s)', (suffix) => {
+    const challenges = [
+      { type: 'text/plain', description: 'Match publication properties against regex patterns.', exclude: [{ challenges: [1] }, { challenges: [2] }] },
+      { type: 'text/plain', description: 'Whitelist author addresses.', exclude: [{ challenges: [0] }, { challenges: [2] }] },
+      { ...spamBlocker(), challenge: `${spamBlocker().challenge}${suffix}`, exclude: [{ challenges: [0] }, { challenges: [1] }, modRoles] },
+    ];
+    expect(getSpamBlockerPrecheckPlan(challenges, post)).toBeUndefined();
+    expect(getSpamBlockerPrecheckPlan(challenges, reply)).toBeUndefined();
+  });
+
+  it('does not run a shared precheck when one applicable instance has a challenge-dependent exemption', () => {
+    expect(getSpamBlockerPrecheckPlan([{ type: 'text/plain' }, spamBlocker(), { ...spamBlocker(), exclude: [{ challenges: [0] }] }], post)).toBeUndefined();
+  });
+
+  it('keeps prechecks when a challenge-dependent exemption cannot apply to this publication', () => {
+    const challenges = [{ type: 'text/plain' }, { ...spamBlocker(), exclude: [{ challenges: [0], publicationType: { reply: true } }] }];
+    expect(getSpamBlockerPrecheckPlan(challenges, post)?.getChallengeAnswers('pass')).toEqual(['', 'pass']);
+    expect(getSpamBlockerPrecheckPlan(challenges, reply)).toBeUndefined();
+  });
+
+  it('keeps prechecks when a known role makes the dependent exemption impossible', () => {
+    const challenges = [{ type: 'text/plain' }, { ...spamBlocker(), exclude: [{ challenges: [0], roles: ['owner'] }] }];
+    expect(getSpamBlockerPrecheckPlan(challenges, { ...post, authorRole: 'moderator' })).toBeDefined();
+    expect(getSpamBlockerPrecheckPlan(challenges, { ...post, authorRole: 'owner' })).toBeUndefined();
+    expect(getSpamBlockerPrecheckPlan(challenges, post)).toBeUndefined();
+  });
+
+  it.each([[], [-1], [2], ['0'], null])('ignores empty or invalid challenge dependencies: %j', (challenges) => {
+    expect(getSpamBlockerPrecheckPlan([{ type: 'text/plain' }, { ...spamBlocker(), exclude: [{ challenges }] }], post)?.getChallengeAnswers('pass')).toEqual([
+      '',
+      'pass',
+    ]);
+  });
+
   describe('authors with the karma a board exempts', () => {
     const nowSeconds = 1_800_000_000;
     const weekAgo = nowSeconds - 604800;
