@@ -1,3 +1,4 @@
+import type { ForgeUploadAuthorizer } from '../../lib/forge-upload-authorization';
 import { type ReactNode, type Ref, useCallback, useEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { Trans, useTranslation } from 'react-i18next';
@@ -930,14 +931,16 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
   const uploadAttachedFiles = async (
     attachment: AttachedMedia,
     galleryAttachments: AttachedMedia[],
+    authorizeForgeUpload?: ForgeUploadAuthorizer,
   ): Promise<{ link: string; gallery: CommentGalleryItem[] | undefined } | null> => {
     // The form stays locked from the first file to the last, so nothing chosen between two uploads is lost.
     setIsUploadingFiles(true);
     try {
-      const uploaded = await uploadAttachment(attachment);
+      const upload = (media: AttachedMedia) => uploadAttachment(media, undefined, authorizeForgeUpload);
+      const uploaded = await upload(attachment);
       // A form closed during the upload must not publish, nor leave its options in the shared publish store.
       if (!uploaded || !isFormMountedRef.current) return null;
-      const galleryItems = await uploadGalleryAttachments(galleryAttachments, uploadAttachment, () => isFormMountedRef.current);
+      const galleryItems = await uploadGalleryAttachments(galleryAttachments, upload, () => isFormMountedRef.current);
       if (!galleryItems || !isFormMountedRef.current) return null;
       const gallery = galleryItems.length > 0 ? galleryItems : undefined;
       updateDraft({ attachment: undefined, galleryAttachments: undefined, gallery });
@@ -1279,6 +1282,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
 
         // The board's spam blocker checks the reply before its file is uploaded, so a rejected author never uploads.
         let challengeRequest: { challengeAnswers: string[] } | undefined;
+        let authorizeForgeUpload: ForgeUploadAuthorizer | undefined;
         if (attachment) {
           outcome = 'post_precheck_failed';
           const precheck = await runSpamBlockerPrecheck({
@@ -1298,10 +1302,11 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
             return;
           }
           if (precheck.status === 'passed') challengeRequest = { challengeAnswers: precheck.challengeAnswers };
+          if (precheck.status === 'passed' || precheck.status === 'exempt') authorizeForgeUpload = precheck.authorizeForgeUpload;
         }
 
         outcome = 'post_upload_failed';
-        const uploadedFiles = attachment ? await uploadAttachedFiles(attachment, galleryAttachments) : undefined;
+        const uploadedFiles = attachment ? await uploadAttachedFiles(attachment, galleryAttachments, authorizeForgeUpload) : undefined;
         if (uploadedFiles === null) {
           if (!isFormMountedRef.current) handedOff = true;
           return;

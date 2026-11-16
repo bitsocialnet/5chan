@@ -200,7 +200,12 @@ const Publisher = ({ pendingUploadPost }: { pendingUploadPost: PendingUploadPost
 
       const { setPendingUploadPhase } = usePendingUploadPostStore.getState();
       failureEvent = 'post_upload_failed';
-      const upload = (media: AttachedMedia) => uploadAttachment(media, (phase) => setPendingUploadPhase(id, phase));
+      const upload = (media: AttachedMedia) =>
+        uploadAttachment(
+          media,
+          (phase) => setPendingUploadPhase(id, phase),
+          precheck.status === 'passed' || precheck.status === 'exempt' ? precheck.authorizeForgeUpload : undefined,
+        );
       const uploaded = await upload(attachment);
       if (!uploaded) {
         analyticsAttempt?.finish('post_upload_failed');

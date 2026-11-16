@@ -169,11 +169,12 @@ describe('PendingUploadPostPublisher', () => {
   });
 
   it('checks the post with the spam blocker, then uploads its file, then publishes it with the link and the pass', async () => {
+    const authorizeForgeUpload = vi.fn(async () => 'file-proof');
     const phases: string[] = [];
     const unsubscribe = usePendingUploadPostStore.subscribe((state) => state.pendingUploadPosts[0] && phases.push(state.pendingUploadPosts[0].phase));
     testState.precheckMock.mockImplementation(async () => {
       expect(testState.uploadAttachmentMock).not.toHaveBeenCalled();
-      return { status: 'passed', challengeAnswers: ['precheck-pass', 'precheck-pass'] };
+      return { status: 'passed', authorizeForgeUpload, challengeAnswers: ['precheck-pass', 'precheck-pass'] };
     });
     testState.uploadAttachmentMock.mockImplementation(async (_media, onPhaseChange) => {
       onPhaseChange?.('uploading');
@@ -189,7 +190,7 @@ describe('PendingUploadPostPublisher', () => {
       challenges,
       publication: { content: 'thread body', displayName: 'anon', flairs: undefined, spoiler: undefined, title: 'subject' },
     });
-    expect(testState.uploadAttachmentMock).toHaveBeenCalledWith(attachment, expect.any(Function));
+    expect(testState.uploadAttachmentMock).toHaveBeenCalledWith(attachment, expect.any(Function), authorizeForgeUpload);
     expect(phases).toEqual(['spam_check', 'uploading', 'checking']);
     expect(testState.publishPostMock).toHaveBeenCalledWith({
       ...publishOptions,

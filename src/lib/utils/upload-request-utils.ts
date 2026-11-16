@@ -9,6 +9,7 @@ interface UploadResponse {
 
 interface PostFormDataOptions {
   signal?: AbortSignal;
+  headers?: Record<string, string>;
   /** Called once the whole request body has been sent, while the server is still working on it. */
   onBodySent?: () => void;
 }
@@ -19,7 +20,7 @@ interface PostFormDataOptions {
  * first (the spec requires one; Chrome skips it), so a cross-origin endpoint must answer OPTIONS.
  * Rejects with a TypeError on a network failure and an AbortError when aborted, like fetch.
  */
-export function postFormData(url: string, body: FormData, { signal, onBodySent }: PostFormDataOptions = {}): Promise<UploadResponse> {
+export function postFormData(url: string, body: FormData, { signal, onBodySent, headers }: PostFormDataOptions = {}): Promise<UploadResponse> {
   return new Promise((resolve, reject) => {
     const abortError = () => new DOMException('The operation was aborted.', 'AbortError');
     if (signal?.aborted) {
@@ -53,6 +54,7 @@ export function postFormData(url: string, body: FormData, { signal, onBodySent }
     signal?.addEventListener('abort', abort, { once: true });
 
     xhr.open('POST', url);
+    for (const [name, value] of Object.entries(headers ?? {})) xhr.setRequestHeader(name, value);
     xhr.send(body);
   });
 }

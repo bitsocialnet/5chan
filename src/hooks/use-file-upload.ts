@@ -1,3 +1,4 @@
+import type { ForgeUploadAuthorizer } from '../lib/forge-upload-authorization';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import FileUploader from '../plugins/file-uploader';
@@ -163,14 +164,19 @@ interface UploadedAttachment extends UploadedFileResult {
  * allows by CORS, and to the other providers through the native plugin, trying them in order.
  * When all fail, their attempts are merged into one error.
  */
-async function uploadOnAndroid(media: AttachedMedia, order: ProviderId[], onPhaseChange: (phase: UploadPhase) => void): Promise<UploadedAttachment> {
+async function uploadOnAndroid(
+  media: AttachedMedia,
+  order: ProviderId[],
+  onPhaseChange: (phase: UploadPhase) => void,
+  authorizeForgeUpload?: ForgeUploadAuthorizer,
+): Promise<UploadedAttachment> {
   const batches = splitAndroidProviderOrder(order);
   const attempts: ProviderAttempt[] = [];
   for (const batch of batches) {
     onPhaseChange('uploading');
     try {
       if (batch[0] === 'forge') {
-        const uploaded = await orchestrateUpload(await getAttachedFile(media), batch, onPhaseChange);
+        const uploaded = await orchestrateUpload(await getAttachedFile(media), batch, onPhaseChange, ...(authorizeForgeUpload ? [authorizeForgeUpload] : []));
         return { url: uploaded.url, fileName: media.name, awaitingReview: uploaded.awaitingReview === true };
       }
       return { ...(await uploadViaAndroidPlugin(media, batch)), awaitingReview: false };
@@ -275,7 +281,7 @@ export function useFileUpload() {
    * `onPhaseChange` also hears each phase, for a caller that shows the upload somewhere else.
    */
   const uploadAttachment = useCallback(
-    async (media: AttachedMedia, onPhaseChange?: (phase: UploadPhase) => void): Promise<UploadedFileResult | null> => {
+    async (media: AttachedMedia, onPhaseChange?: (phase: UploadPhase) => void, authorizeForgeUpload?: ForgeUploadAuthorizer): Promise<UploadedFileResult | null> => {
       const alreadyUploaded = uploadedMedia.get(media);
       if (alreadyUploaded) return alreadyUploaded;
       const setPhase = (phase: UploadPhase) => {
@@ -288,9 +294,9 @@ export function useFileUpload() {
         let uploaded: UploadedAttachment;
 
         if (media.kind === 'picked' || runtime === 'android') {
-          uploaded = await uploadOnAndroid(media, order, setPhase);
+          uploaded = await uploadOnAndroid(media, order, setPhase, authorizeForgeUpload);
         } else {
-          const result = await orchestrateUpload(media.file, order, setPhase);
+          const result = await orchestrateUpload(media.file, order, setPhase, ...(authorizeForgeUpload ? [authorizeForgeUpload] : []));
           uploaded = { url: result.url, fileName: media.name, awaitingReview: result.awaitingReview === true };
         }
 

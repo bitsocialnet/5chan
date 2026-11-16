@@ -1,3 +1,4 @@
+import type { ForgeUploadAuthorizer } from '../../lib/forge-upload-authorization';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -323,6 +324,7 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
         // Upload only after every check passed, and after the board's spam blocker checked the reply, so a
         // rejected reply never leaves a file on the host.
         let challengeRequest: { challengeAnswers: string[] } | undefined;
+        let authorizeForgeUpload: ForgeUploadAuthorizer | undefined;
         if (attachment) {
           outcome = 'post_precheck_failed';
           const precheck = await runSpamBlockerPrecheck({
@@ -342,9 +344,10 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
             return;
           }
           if (precheck.status === 'passed') challengeRequest = { challengeAnswers: precheck.challengeAnswers };
+          if (precheck.status === 'passed' || precheck.status === 'exempt') authorizeForgeUpload = precheck.authorizeForgeUpload;
         }
         outcome = 'post_upload_failed';
-        const uploadedFiles = attachment ? await uploadAttachedFiles(attachment, galleryAttachments) : undefined;
+        const uploadedFiles = attachment ? await uploadAttachedFiles(attachment, galleryAttachments, authorizeForgeUpload) : undefined;
         if (uploadedFiles === null) {
           if (!isReplyFormActiveRef.current) handedOff = true;
           return;
@@ -730,14 +733,16 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
   const uploadAttachedFiles = async (
     media: AttachedMedia,
     galleryMedia: AttachedMedia[],
+    authorizeForgeUpload?: ForgeUploadAuthorizer,
   ): Promise<{ link: string; gallery: CommentGalleryItem[] | undefined } | null> => {
     // The modal stays locked from the first file to the last, so nothing chosen between two uploads is lost.
     setIsUploadingFiles(true);
     try {
-      const uploaded = await uploadAttachment(media);
+      const upload = (attachment: AttachedMedia) => uploadAttachment(attachment, undefined, authorizeForgeUpload);
+      const uploaded = await upload(media);
       // A modal closed during the upload must not publish, nor leave its link in the shared publish store.
       if (!uploaded || !isReplyFormActiveRef.current) return null;
-      const galleryItems = await uploadGalleryAttachments(galleryMedia, uploadAttachment, () => isReplyFormActiveRef.current);
+      const galleryItems = await uploadGalleryAttachments(galleryMedia, upload, () => isReplyFormActiveRef.current);
       if (!galleryItems || !isReplyFormActiveRef.current) return null;
       const gallery = galleryItems.length > 0 ? galleryItems : undefined;
       updateDraft({ attachment: undefined, galleryAttachments: undefined, gallery });
