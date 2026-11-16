@@ -21,6 +21,12 @@ describe('getVisitedDirectoryCodes', () => {
     expect(getVisitedDirectoryCodes('other.bso', undefined, [voteInA, voteInB], '12D3KooWOther')).toEqual(['b']);
   });
 
+  it('does not match a stored vote missing its key while the board record has not loaded', () => {
+    const keylessVote = { contestId: voteInB.contestId, community: { name: 'named.bso' } } as typeof voteInA;
+
+    expect(getVisitedDirectoryCodes('elsewhere.bso', undefined, [keylessVote])).toEqual([]);
+  });
+
   it('visits nothing for a board unrelated to any vote, or a withdrawal still settling', () => {
     expect(getVisitedDirectoryCodes('elsewhere.bso', 'c', [voteInA, voteInB])).toEqual([]);
     expect(getVisitedDirectoryCodes('challenger.bso', undefined, [{ contestId: voteInA.contestId }])).toEqual([]);

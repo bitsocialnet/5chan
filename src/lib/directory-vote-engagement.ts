@@ -8,7 +8,8 @@ interface DirectoryVoteRecord {
 }
 
 const isVotedBoard = (community: DirectoryVoteRecord['community'], boardIdentifier: string, boardPublicKey: string | undefined): boolean =>
-  !!community && (community.publicKey === boardIdentifier || community.publicKey === boardPublicKey || areSameBoardAddress(community.name, boardIdentifier));
+  !!community &&
+  (community.publicKey === boardIdentifier || (!!boardPublicKey && community.publicKey === boardPublicKey) || areSameBoardAddress(community.name, boardIdentifier));
 
 /**
  * The directories, among those the user votes in, that a board route visits: the route's own

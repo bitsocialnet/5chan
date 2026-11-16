@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { getVisitedDirectoryCodes } from '../lib/directory-vote-engagement';
 import { recordDirectoryVoteVisits } from '../lib/directory-vote-visits';
 import { getDirectoryCodeForBoardAddress } from '../lib/utils/directory-list-lookup-utils';
@@ -24,15 +24,22 @@ export const useDirectoryVoteVisits = (boardIdentifier: string | undefined): voi
     const routeDirectoryCode = isDirectoryRoute(boardIdentifier, directories) ? boardIdentifier : getDirectoryCodeForBoardAddress(boardIdentifier);
     return getVisitedDirectoryCodes(boardIdentifier, routeDirectoryCode, Object.values(votes), boardPublicKey).join(' ');
   }, [boardIdentifier, boardPublicKey, directories, votes]);
+  const arrival = useRef<{ boardIdentifier?: string; codes: string[] }>({ codes: [] });
 
   useEffect(() => {
-    if (!visitedCodes) return;
-    const codes = visitedCodes.split(' ');
+    const codes = visitedCodes ? visitedCodes.split(' ') : [];
+    // Arriving on a route visits its directories once. A code that starts matching while the user
+    // stays, as the board's record loads or a vote is cast, records only itself, so a vote refreshed
+    // since the arrival is not counted as visited again.
+    const previous = arrival.current;
+    const newCodes = previous.boardIdentifier === boardIdentifier ? codes.filter((code) => !previous.codes.includes(code)) : codes;
+    arrival.current = { boardIdentifier, codes };
+    if (codes.length === 0) return;
     const recordWhenVisible = () => {
       if (document.visibilityState === 'visible') recordDirectoryVoteVisits(codes);
     };
-    recordDirectoryVoteVisits(codes);
+    recordDirectoryVoteVisits(newCodes);
     document.addEventListener('visibilitychange', recordWhenVisible);
     return () => document.removeEventListener('visibilitychange', recordWhenVisible);
-  }, [visitedCodes]);
+  }, [boardIdentifier, visitedCodes]);
 };

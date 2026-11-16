@@ -82,6 +82,27 @@ describe('useDirectoryVoteVisits', () => {
     expect(getDirectoryVoteVisits()).toEqual({ a: 1_000 });
   });
 
+  it("records only the newly matched directory when the board's key loads after a refresh of the route's vote", () => {
+    const publicKey = '12D3KooWBusiness';
+    const routeVote = { ...vote, contestId: '5chan-dir-biz-vote-test-1', topic: 'topic-biz' };
+    useDirectoryVotesStore.getState().setVote(routeVote);
+    useDirectoryVotesStore.getState().setVote({ ...vote, community: { publicKey } });
+    mount('business-and-finance.bso');
+    expect(getDirectoryVoteVisits()).toEqual({ biz: 1_000 });
+
+    now = 2_000;
+    act(() => useDirectoryVotesStore.getState().setVote({ ...routeVote, blockNumber: 362 * 1800, refreshedAt: 2_000 }));
+    now = 3_000;
+    act(() => communitiesStore.setState({ communities: { [publicKey]: { address: 'business-and-finance.bso', publicKey } } }));
+
+    expect(getDirectoryVoteVisits()).toEqual({ biz: 1_000, a: 3_000 });
+
+    now = 4_000;
+    act(() => document.dispatchEvent(new Event('visibilitychange')));
+
+    expect(getDirectoryVoteVisits()).toEqual({ biz: 4_000, a: 4_000 });
+  });
+
   it('records nothing in a directory the user does not vote in', () => {
     mount('a');
 

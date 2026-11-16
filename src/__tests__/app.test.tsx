@@ -74,7 +74,8 @@ vi.mock('../hooks/use-account-community-addresses', () => ({
   useAccountCommunityAddresses: () => testState.accountCommunityAddresses,
 }));
 
-vi.mock('../hooks/use-directories', () => ({
+vi.mock('../hooks/use-directories', async (importOriginal) => ({
+  normalizeBoardAddress: (await importOriginal<typeof import('../hooks/use-directories')>()).normalizeBoardAddress,
   useDirectories: () => testState.directories,
   findDirectoryByAddress: (directories: Array<{ address: string; title?: string; directoryCode?: string }>, address: string) =>
     directories.find((entry) => entry.address === address || entry.directoryCode === address || entry.title === address),
