@@ -132,7 +132,7 @@ const meetsExcludeCondition = (key: string, value: unknown, { authorHistory, aut
 /**
  * Whether the board certainly skips this challenge for the post. Like pkc-js, an exclude item applies when
  * all its conditions match. Conditions this client cannot check, such as karma scores or other challenges'
- * results, never count as matching, so the post is pre-checked whenever the board might check it.
+ * results, never count as proven exemptions. Challenge-result dependencies are deferred separately below.
  */
 const isExcludedForPost = (challenge: unknown, context: PrecheckPublicationContext) => {
   const excludes = isRecord(challenge) && Array.isArray(challenge.exclude) ? challenge.exclude : [];
@@ -141,6 +141,18 @@ const isExcludedForPost = (challenge: unknown, context: PrecheckPublicationConte
     const conditions = Object.entries(exclude).filter(([, value]) => value !== undefined && !(Array.isArray(value) && value.length === 0));
     if (conditions.length === 0) return false;
     return conditions.every(([key, value]) => meetsExcludeCondition(key, value, context));
+  });
+};
+
+/** The board must run the other challenge before a whitelist/name-based exemption can be decided. */
+const hasChallengeDependentExemption = (challenge: unknown, context: PrecheckPublicationContext, challengeCount: number) => {
+  const excludes = isRecord(challenge) && Array.isArray(challenge.exclude) ? challenge.exclude : [];
+  return excludes.some((exclude) => {
+    if (!isRecord(exclude) || !Array.isArray(exclude.challenges) || exclude.challenges.length === 0) return false;
+    if (!exclude.challenges.every((index) => Number.isInteger(index) && index >= 0 && index < challengeCount)) return false;
+    // Exclude conditions are conjunctive. An exemption only for replies cannot exempt a post.
+    if (exclude.publicationType !== undefined && !meetsExcludeCondition('publicationType', exclude.publicationType, context)) return false;
+    return true;
   });
 };
 
@@ -162,6 +174,9 @@ export const getSpamBlockerPrecheckPlan = (challenges: unknown, context: Prechec
   const isSkipped = (index: number) => isExcludedForPost(challenges[index], context);
   const passIndexes = challenges.flatMap((challenge, index) => (getPrecheckServerUrl(challenge) === serverUrl && !isSkipped(index) ? [index] : []));
   if (passIndexes.length === 0) return undefined;
+  // Private whitelist membership and verified names cannot be established here. Let the board
+  // check the publication instead of rejecting an author it would exempt; this grants no pass.
+  if (passIndexes.some((index) => hasChallengeDependentExemption(challenges[index], context, challenges.length))) return undefined;
 
   const lastPassIndex = passIndexes[passIndexes.length - 1];
   const freeSlots: number[] = [];

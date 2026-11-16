@@ -89,6 +89,23 @@ describe('useSpamBlockerPrecheck', () => {
     expect(useChallengesStore.getState().challenges).toHaveLength(0);
   });
 
+  it.each(['author.bso', '12D3KooW-unverified-author'])('defers challenge-based exemptions for %s without contacting the spam blocker', async (address) => {
+    testState.account!.author!.address = address;
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+    const challenges = [
+      { type: 'text/plain', description: 'Match publication properties against regex patterns.' },
+      { type: 'text/plain', description: 'Whitelist author addresses.' },
+      { ...CHALLENGES[0], challenge: `${SERVER_URL}/precheck?blockTor=true`, exclude: [{ challenges: [0] }, { challenges: [1] }] },
+    ];
+    // Observe the result without waiting forever on the buggy modal path.
+    let result: SpamBlockerPrecheckResult | undefined;
+    void start(challenges).then((value) => (result = value));
+    await vi.waitFor(() => expect(result).toEqual({ status: 'skipped' }));
+    expect(useChallengesStore.getState().challenges).toHaveLength(0);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it('shows the pre-check in the challenge modal and returns the pass once the spam blocker completes it', async () => {
     const fetchMock = vi.fn(async () => new Response(JSON.stringify({ completed: true, status: 'completed' })));
     vi.stubGlobal('fetch', fetchMock);
