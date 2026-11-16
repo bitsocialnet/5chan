@@ -14,7 +14,13 @@ describe('Forge upload authorization', () => {
     const fetchMock = vi.fn(async (_url: string, request: RequestInit) => {
       const payload = cborg.decode(new Uint8Array(request.body as ArrayBuffer));
       const { signature, ...signed } = payload;
-      expect(signed).toMatchObject({ authorAddress: 'key-address', authorName: 'alice.bso', communityAddress: 'board.bso', precheckSessionId: 'precheck-pass' });
+      expect(signed).toMatchObject({
+        authorAddress: 'key-address',
+        authorName: 'alice.bso',
+        communityAddress: 'board.bso',
+        precheckSessionId: 'precheck-pass',
+        parentCid: 'parent-cid',
+      });
       expect(signed.upload).toEqual({ sha256: '039058c6f2c0cb492c533b0a4d14ef77cc0f78abccced5287d84a1a2011cfb81', byteLength: 3, mimeType: 'image/png' });
       expect(ed25519.verify(signature.signature, cborg.encode(signed), signature.publicKey)).toBe(true);
       return new Response(JSON.stringify({ token: 'single-use-proof' }));
@@ -27,6 +33,7 @@ describe('Forge upload authorization', () => {
       authorName: 'alice.bso',
       privateKey: btoa(String.fromCharCode(...key)),
       precheckSessionId: 'precheck-pass',
+      parentCid: 'parent-cid',
     });
     const header = JSON.parse(atob((await authorize(file)).replace(/-/g, '+').replace(/_/g, '/')));
     expect(header.token).toBe('single-use-proof');

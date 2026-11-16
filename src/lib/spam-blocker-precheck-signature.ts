@@ -57,6 +57,7 @@ export const createSignedUploadAuthorizationPayload = ({
   authorAddress: string;
   authorName?: string;
   precheckSessionId?: string;
+  parentCid?: string;
   upload: { sha256: string; byteLength: number; mimeType: string };
 }): Uint8Array<ArrayBuffer> => {
   const propsToSign = withoutUndefined({ ...properties, nonce: createUuid(), timestamp: Math.floor(Date.now() / 1000) });

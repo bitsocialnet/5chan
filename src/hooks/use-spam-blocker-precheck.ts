@@ -40,12 +40,18 @@ const useSpamBlockerPrecheck = ({ communityAddress }: { communityAddress: string
 
   return useCallback(
     async ({ authorRole, challenges, otherAnswers, publication }: RunSpamBlockerPrecheckOptions): Promise<SpamBlockerPrecheckResult> => {
+      const advertisesPrecheck =
+        Array.isArray(challenges) &&
+        challenges.some(
+          (challenge: { type?: unknown; challenge?: unknown } | null) =>
+            challenge?.type === 'url/iframe' && typeof challenge.challenge === 'string' && /\/precheck(?:\?|$)/.test(challenge.challenge),
+        );
+      if (!advertisesPrecheck) return { status: 'skipped' };
       const privateKey = account?.signer?.privateKey;
       const accountAddress = account?.author?.address;
       const authorAddress = account?.signer?.address ?? accountAddress;
       // Older app releases stored a verified name in author.address; the server resolves it against the signer.
       const authorName = account?.author?.name ?? (typeof accountAddress === 'string' && accountAddress.endsWith('.bso') ? accountAddress : undefined);
-      if (!communityAddress || typeof privateKey !== 'string' || typeof authorAddress !== 'string') return { status: 'stopped', message: t('spam_check_not_finished') };
       // Loaded on the first post with a file, so none of this is in the board's startup bundle.
       let precheck: typeof import('../lib/spam-blocker-precheck');
       try {
@@ -60,6 +66,7 @@ const useSpamBlockerPrecheck = ({ communityAddress }: { communityAddress: string
       const authorHistory = getLocalAuthorHistory({ accountComments, isReply, nowSeconds });
       const plan = getSpamBlockerPrecheckPlan(challenges, { authorHistory, authorRole, isReply, nowSeconds, otherAnswers });
       if (!plan) return { status: 'skipped' };
+      if (!communityAddress || typeof privateKey !== 'string' || typeof authorAddress !== 'string') return { status: 'stopped', message: t('spam_check_not_finished') };
 
       const { displayName, ...draft } = publication;
       let sessionId: string;
@@ -84,7 +91,7 @@ const useSpamBlockerPrecheck = ({ communityAddress }: { communityAddress: string
       if (plan.verifyExemptions) {
         try {
           const { createForgeUploadAuthorizer } = await import('../lib/forge-upload-authorization');
-          const authorizerOptions = { serverUrl: plan.serverUrl, communityAddress, privateKey, authorAddress, authorName };
+          const authorizerOptions = { serverUrl: plan.serverUrl, communityAddress, privateKey, authorAddress, authorName, parentCid: draft.parentCid };
           const exempt = await precheck.fetchPrecheckExemption({ serverUrl: plan.serverUrl, payload });
           if (exempt) return { status: 'exempt', authorizeForgeUpload: createForgeUploadAuthorizer(authorizerOptions) };
           authorizeForgeUpload = createForgeUploadAuthorizer({ ...authorizerOptions, precheckSessionId: sessionId });

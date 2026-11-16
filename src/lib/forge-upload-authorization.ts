@@ -10,6 +10,7 @@ export const createForgeUploadAuthorizer =
     authorName,
     privateKey,
     precheckSessionId,
+    parentCid,
   }: {
     serverUrl: string;
     communityAddress: string;
@@ -17,6 +18,7 @@ export const createForgeUploadAuthorizer =
     authorName?: string;
     privateKey: string;
     precheckSessionId?: string;
+    parentCid?: string;
   }): ForgeUploadAuthorizer =>
   async (file) => {
     const { createSignedUploadAuthorizationPayload } = await import('./spam-blocker-precheck-signature');
@@ -26,7 +28,7 @@ export const createForgeUploadAuthorizer =
       byteLength: file.size,
       mimeType: file.type || 'application/octet-stream',
     };
-    const body = createSignedUploadAuthorizationPayload({ privateKey, communityAddress, authorAddress, authorName, precheckSessionId, upload });
+    const body = createSignedUploadAuthorizationPayload({ privateKey, communityAddress, authorAddress, authorName, precheckSessionId, parentCid, upload });
     const { ok, body: result } = await postSignedSpamBlockerRequest({ url: `${serverUrl}/upload/authorize`, body });
     if (!ok || !result || typeof result !== 'object' || !('token' in result) || typeof result.token !== 'string') {
       const message =

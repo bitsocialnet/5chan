@@ -133,6 +133,14 @@ describe('useSpamBlockerPrecheck', () => {
     expect(result).toEqual({ status: 'passed', challengeAnswers: [sessionId, sessionId] });
   });
 
+  it('does not require account identity on boards without a precheck', async () => {
+    testState.account = undefined;
+    await act(async () => {
+      root.render(createElement(Harness));
+    });
+    expect(await start([{ type: 'text/plain', challenge: 'Question' }])).toEqual({ status: 'skipped' });
+  });
+
   it('verifies named exemptions before showing a challenge or authorizing an upload', async () => {
     testState.account!.author!.name = 'alice.bso';
     const policy = { version: 1, rules: [{ challengeIndex: 0, type: 'verified-author-name-suffix', suffix: '.bso' }] };
@@ -183,7 +191,7 @@ describe('useSpamBlockerPrecheck', () => {
       vi.fn(async () => new Response('', { status: 503 })),
     );
     const result = await start(challenges);
-    expect(result.status).toBe('stopped');
+    expect(result).toEqual({ status: 'stopped', message: 'Could not verify posting exemptions (503). Try again.' });
     expect(useChallengesStore.getState().challenges).toHaveLength(0);
   });
 

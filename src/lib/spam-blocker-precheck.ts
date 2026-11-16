@@ -286,7 +286,7 @@ export const postSignedSpamBlockerRequest = async ({
       referrerPolicy: 'no-referrer',
       signal: controller.signal,
     });
-    return { ok: response.ok, status: response.status, body: await response.json() };
+    return { ok: response.ok, status: response.status, body: await response.json().catch(() => undefined) };
   } finally {
     clearTimeout(timeout);
   }
