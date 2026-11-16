@@ -2313,6 +2313,7 @@ describe('PostForm', () => {
   });
 
   it('runs the spam blocker check before uploading a reply file, then publishes the reply with the pass', async () => {
+    const authorizeForgeUpload = vi.fn(async () => 'file-proof');
     const file = new File(['png'], 'reply.png', { type: 'image/png' });
     const attachment = { kind: 'file', file, name: 'reply.png', mimeType: 'image/png' };
     const challenges = [{ type: 'url/iframe', challenge: 'https://spamblocker.example/api/v1/precheck' }];
@@ -2323,7 +2324,7 @@ describe('PostForm', () => {
     testState.chooseFileMock.mockResolvedValue(attachment);
     testState.precheckMock.mockImplementation(async () => {
       expect(testState.uploadAttachmentMock).not.toHaveBeenCalled();
-      return { status: 'passed', challengeAnswers: ['precheck-pass'] };
+      return { status: 'passed', authorizeForgeUpload, challengeAnswers: ['precheck-pass'] };
     });
     testState.uploadAttachmentMock.mockResolvedValue({ url: 'https://forgeimg.net/abc/reply.png', fileName: 'reply.png' });
 
@@ -2339,7 +2340,7 @@ describe('PostForm', () => {
       challenges,
       publication: expect.objectContaining({ content: 'checked reply', parentCid: 'thread-cid' }),
     });
-    expect(testState.uploadAttachmentMock).toHaveBeenCalledWith(attachment);
+    expect(testState.uploadAttachmentMock).toHaveBeenCalledWith(attachment, undefined, authorizeForgeUpload);
     expect(testState.publishReplyMock).toHaveBeenCalledWith(
       expect.objectContaining({ link: 'https://forgeimg.net/abc/reply.png', challengeRequest: { challengeAnswers: ['precheck-pass'] } }),
       expect.objectContaining({ finish: expect.any(Function) }),
@@ -2966,7 +2967,7 @@ describe('PostForm', () => {
 
     await clickByText(table, 'post');
 
-    expect(testState.uploadAttachmentMock).toHaveBeenCalledWith(attachment);
+    expect(testState.uploadAttachmentMock).toHaveBeenCalledWith(attachment, undefined, undefined);
     expect(testState.publishReplyMock).toHaveBeenCalledWith(
       expect.objectContaining({ link: 'https://forgeimg.net/abc/reply.png' }),
       expect.objectContaining({ finish: expect.any(Function) }),

@@ -1869,7 +1869,7 @@ describe('ReplyModal', () => {
       await dispatchInput(container.querySelector('textarea') as HTMLTextAreaElement, 'uploaded reply');
       await clickButtonByText('post');
 
-      expect(testState.uploadAttachmentMock).toHaveBeenCalledWith(pngAttachment);
+      expect(testState.uploadAttachmentMock).toHaveBeenCalledWith(pngAttachment, undefined, undefined);
       expect(testState.publishReplyMock).toHaveBeenCalledWith(
         expect.objectContaining({ link: 'https://forgeimg.net/abc/uploaded.png' }),
         expect.objectContaining({ finish: expect.any(Function) }),
@@ -1878,10 +1878,11 @@ describe('ReplyModal', () => {
     });
 
     it('runs the spam blocker check before uploading, then publishes the reply with the pass', async () => {
+      const authorizeForgeUpload = vi.fn(async () => 'file-proof');
       testState.chooseFileMock.mockResolvedValue(pngAttachment);
       testState.precheckMock.mockImplementation(async () => {
         expect(testState.uploadAttachmentMock).not.toHaveBeenCalled();
-        return { status: 'passed', challengeAnswers: ['precheck-pass'] };
+        return { status: 'passed', authorizeForgeUpload, challengeAnswers: ['precheck-pass'] };
       });
       testState.uploadAttachmentMock.mockResolvedValue({ url: 'https://forgeimg.net/abc/uploaded.png', fileName: 'chosen.png' });
       await renderReplyModal('/all/thread/post-1');
@@ -1891,7 +1892,7 @@ describe('ReplyModal', () => {
       await clickButtonByText('post');
 
       expect(testState.precheckMock).toHaveBeenCalledWith(expect.objectContaining({ publication: expect.objectContaining({ content: 'checked reply' }) }));
-      expect(testState.uploadAttachmentMock).toHaveBeenCalledWith(pngAttachment);
+      expect(testState.uploadAttachmentMock).toHaveBeenCalledWith(pngAttachment, undefined, authorizeForgeUpload);
       expect(testState.publishReplyMock).toHaveBeenCalledWith(
         expect.objectContaining({ link: 'https://forgeimg.net/abc/uploaded.png', challengeRequest: { challengeAnswers: ['precheck-pass'] } }),
         expect.objectContaining({ finish: expect.any(Function) }),
@@ -1972,7 +1973,7 @@ describe('ReplyModal', () => {
 
       await clickButtonByText('post');
       expect(testState.uploadAttachmentMock).toHaveBeenCalledTimes(1);
-      expect(testState.uploadAttachmentMock).toHaveBeenCalledWith(gifAttachment);
+      expect(testState.uploadAttachmentMock).toHaveBeenCalledWith(gifAttachment, undefined, undefined);
     });
 
     const dropFile = async (file: File) => {
@@ -1997,7 +1998,7 @@ describe('ReplyModal', () => {
       await dispatchInput(container.querySelector('textarea') as HTMLTextAreaElement, 'dropped reply');
       await clickButtonByText('post');
 
-      expect(testState.uploadAttachmentMock).toHaveBeenCalledWith(pngAttachment);
+      expect(testState.uploadAttachmentMock).toHaveBeenCalledWith(pngAttachment, undefined, undefined);
       expect(testState.publishReplyMock).toHaveBeenCalledWith(
         expect.objectContaining({ link: 'https://forgeimg.net/abc/dropped.png' }),
         expect.objectContaining({ finish: expect.any(Function) }),
