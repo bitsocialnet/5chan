@@ -1,3 +1,4 @@
+import type { ForgeUploadAuthorizer } from '../forge-upload-authorization';
 import type { ProviderAttempt, ProviderId, UploadAttemptStage, UploadedMedia, UploadPhase } from './types';
 import { stripMediaMetadata } from '../media-metadata/strip-media-metadata';
 import { uploadToCatbox } from '../utils/catbox-utils';
@@ -66,8 +67,17 @@ async function fileToByteArray(file: File): Promise<number[]> {
  * Uploads a file via a single provider. Forge and catbox use their web APIs;
  * imgur/imgbb use Electron automation when available.
  */
-async function uploadViaProvider(provider: ProviderId, file: File, onPhaseChange?: (phase: UploadPhase) => void): Promise<UploadedMedia> {
-  if (provider === 'forge') return uploadToForge(await stripMediaMetadata(file), { onChecking: () => onPhaseChange?.('checking') });
+async function uploadViaProvider(
+  provider: ProviderId,
+  file: File,
+  onPhaseChange?: (phase: UploadPhase) => void,
+  authorizeForgeUpload?: ForgeUploadAuthorizer,
+): Promise<UploadedMedia> {
+  if (provider === 'forge')
+    return uploadToForge(await stripMediaMetadata(file), {
+      onChecking: () => onPhaseChange?.('checking'),
+      ...(authorizeForgeUpload ? { authorizeUpload: authorizeForgeUpload } : {}),
+    });
   if (provider === 'catbox') return { url: await uploadToCatbox(await stripMediaMetadata(file)) };
   if (provider === 'imgur' || provider === 'imgbb') {
     const fn = typeof window !== 'undefined' && window.electronApi?.automateUploadMedia;
@@ -110,14 +120,19 @@ interface PluginRejectionMeta {
  * Throws with attempts if all fail. `onPhaseChange` hears 'uploading' as each provider
  * starts and 'checking' once a provider that reports it has received the file.
  */
-export async function orchestrateUpload(file: File, providerOrder: ProviderId[], onPhaseChange?: (phase: UploadPhase) => void): Promise<UploadedMedia> {
+export async function orchestrateUpload(
+  file: File,
+  providerOrder: ProviderId[],
+  onPhaseChange?: (phase: UploadPhase) => void,
+  authorizeForgeUpload?: ForgeUploadAuthorizer,
+): Promise<UploadedMedia> {
   const attempts: ProviderAttempt[] = [];
 
   for (const provider of providerOrder) {
     const start = Date.now();
     onPhaseChange?.('uploading');
     try {
-      return await uploadViaProvider(provider, file, onPhaseChange);
+      return await uploadViaProvider(provider, file, onPhaseChange, authorizeForgeUpload);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       const elapsedMs = Date.now() - start;

@@ -50,6 +50,30 @@ describe('uploadToForge', () => {
     await expect(uploadToForge(new File(['x'], 'photo.png', { type: 'image/png' }), { getToken })).resolves.toEqual({ url });
   });
 
+  it('never sends file bytes when upload authorization fails', async () => {
+    const authorizeUpload = vi.fn(async () => {
+      throw new Error('Tor exemption required');
+    });
+    await expect(uploadToForge(new File(['x'], 'photo.png'), { getToken, authorizeUpload })).rejects.toThrow('Tor exemption required');
+    expect(postFormData).not.toHaveBeenCalled();
+  });
+
+  it('sends the verified authorization in the upload header', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => jsonResponse(200, { url: `${FORGE_IMAGES_MEDIA_ORIGIN}/hash/photo.png`, status: 'live' })),
+    );
+    const file = new File(['x'], 'photo.png');
+    const authorizeUpload = vi.fn(async () => 'verified-file-proof');
+    await uploadToForge(file, { getToken, authorizeUpload });
+    expect(authorizeUpload).toHaveBeenCalledWith(file);
+    expect(postFormData).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.any(FormData),
+      expect.objectContaining({ headers: { 'X-Bitsocial-Upload-Authorization': 'verified-file-proof' } }),
+    );
+  });
+
   it('returns another pending file at once, flagged as awaiting review, without probing it', async () => {
     const url = `${FORGE_IMAGES_MEDIA_ORIGIN}/abc/track.mp3`;
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse(200, { url, status: 'pending', mime: 'audio/mpeg' }));

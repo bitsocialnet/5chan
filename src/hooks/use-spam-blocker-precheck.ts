@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAccount, useAccountComments } from '@bitsocial/bitsocial-react-hooks';
+import type { ForgeUploadAuthorizer } from '../lib/forge-upload-authorization';
 import type { PrecheckPublication } from '../lib/spam-blocker-precheck';
 import useChallengesStore from '../stores/use-challenges-store';
 
@@ -8,7 +9,8 @@ export type SpamBlockerPrecheckResult =
   /** The board does not check this post with a spam blocker that takes a pass; publish as before. */
   | { status: 'skipped' }
   /** `challengeAnswers` for the post: the pass, plus the other answers it was given. */
-  | { status: 'passed'; challengeAnswers: string[] }
+  | { status: 'passed'; challengeAnswers: string[]; authorizeForgeUpload?: ForgeUploadAuthorizer }
+  | { status: 'exempt'; authorizeForgeUpload: ForgeUploadAuthorizer }
   /** Rejected, or closed before it finished: nothing should be uploaded. No message when the author closed it. */
   | { status: 'stopped'; message?: string };
 
@@ -39,15 +41,18 @@ const useSpamBlockerPrecheck = ({ communityAddress }: { communityAddress: string
   return useCallback(
     async ({ authorRole, challenges, otherAnswers, publication }: RunSpamBlockerPrecheckOptions): Promise<SpamBlockerPrecheckResult> => {
       const privateKey = account?.signer?.privateKey;
-      const authorAddress = account?.author?.address;
-      if (!communityAddress || typeof privateKey !== 'string' || typeof authorAddress !== 'string') return { status: 'skipped' };
+      const accountAddress = account?.author?.address;
+      const authorAddress = account?.signer?.address ?? accountAddress;
+      // Older app releases stored a verified name in author.address; the server resolves it against the signer.
+      const authorName = account?.author?.name ?? (typeof accountAddress === 'string' && accountAddress.endsWith('.bso') ? accountAddress : undefined);
+      if (!communityAddress || typeof privateKey !== 'string' || typeof authorAddress !== 'string') return { status: 'stopped', message: t('spam_check_not_finished') };
       // Loaded on the first post with a file, so none of this is in the board's startup bundle.
       let precheck: typeof import('../lib/spam-blocker-precheck');
       try {
         precheck = await import('../lib/spam-blocker-precheck');
       } catch (error) {
         console.warn('Could not load the spam blocker pre-check', error);
-        return { status: 'skipped' };
+        return { status: 'stopped', message: t('spam_check_not_finished') };
       }
       const { createPrecheckSessionId, fetchPrecheckStatus, getLocalAuthorHistory, getPrecheckIframeUrl, getSpamBlockerPrecheckPlan } = precheck;
       const isReply = Boolean(publication.parentCid);
@@ -65,14 +70,27 @@ const useSpamBlockerPrecheck = ({ communityAddress }: { communityAddress: string
         payload = createSignedPrecheckPayload({
           communityAddress,
           privateKey,
-          publication: { ...draft, author: { address: authorAddress, displayName }, timestamp: nowSeconds },
+          publication: { ...draft, author: { address: authorAddress, name: authorName, displayName }, timestamp: nowSeconds },
           sessionId,
           timestamp: nowSeconds,
         });
       } catch (error) {
-        // Without a pre-check the board still checks the post after the upload, as it did before.
+        // Do not upload when a required identity check could not be signed.
         console.warn('Could not sign the spam blocker pre-check', error);
-        return { status: 'skipped' };
+        return { status: 'stopped', message: t('spam_check_not_finished') };
+      }
+
+      let authorizeForgeUpload: ForgeUploadAuthorizer | undefined;
+      if (plan.verifyExemptions) {
+        try {
+          const { createForgeUploadAuthorizer } = await import('../lib/forge-upload-authorization');
+          const authorizerOptions = { serverUrl: plan.serverUrl, communityAddress, privateKey, authorAddress, authorName };
+          const exempt = await precheck.fetchPrecheckExemption({ serverUrl: plan.serverUrl, payload });
+          if (exempt) return { status: 'exempt', authorizeForgeUpload: createForgeUploadAuthorizer(authorizerOptions) };
+          authorizeForgeUpload = createForgeUploadAuthorizer({ ...authorizerOptions, precheckSessionId: sessionId });
+        } catch (error) {
+          return { status: 'stopped', message: error instanceof Error ? error.message : t('spam_check_not_finished') };
+        }
       }
 
       const answered = await new Promise<boolean>((resolve) => {
@@ -90,11 +108,12 @@ const useSpamBlockerPrecheck = ({ communityAddress }: { communityAddress: string
       try {
         outcome = await fetchPrecheckStatus({ serverUrl: plan.serverUrl, sessionId });
       } catch (error) {
-        // The pre-check only saves an upload; when its outcome cannot be read, the board still checks the post.
+        // An unavailable result is not upload authorization.
         console.warn('Could not read the spam blocker pre-check outcome', error);
-        return { status: 'skipped' };
+        return { status: 'stopped', message: t('spam_check_not_finished') };
       }
-      if (outcome.status === 'completed') return { status: 'passed', challengeAnswers: plan.getChallengeAnswers(sessionId) };
+      if (outcome.status === 'completed')
+        return { status: 'passed', challengeAnswers: plan.getChallengeAnswers(sessionId), ...(authorizeForgeUpload ? { authorizeForgeUpload } : {}) };
       if (outcome.message) return { status: 'stopped', message: outcome.message };
       // `pending` when the author confirmed the modal before the check finished; say why nothing was posted.
       return { status: 'stopped', message: outcome.status === 'pending' ? t('spam_check_not_finished') : t('failed') };

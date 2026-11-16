@@ -1,5 +1,6 @@
 import { ed25519 } from '@noble/curves/ed25519.js';
 import * as cborg from 'cborg';
+import { createUuid } from './spam-blocker-precheck';
 import type { PrecheckPublication } from './spam-blocker-precheck';
 
 // Loaded only when a pre-check runs, so the signing code stays out of the board's startup bundle.
@@ -45,4 +46,26 @@ export const createSignedPrecheckPayload = ({
   const publicKey = ed25519.getPublicKey(privateKeyBytes);
   const payload = { ...propsToSign, signature: { signature, publicKey, type: 'ed25519', signedPropertyNames: Object.keys(propsToSign) } };
   return bytesToBase64Url(cborg.encode(payload));
+};
+
+export const createSignedUploadAuthorizationPayload = ({
+  privateKey,
+  ...properties
+}: {
+  privateKey: string;
+  communityAddress: string;
+  authorAddress: string;
+  authorName?: string;
+  precheckSessionId?: string;
+  upload: { sha256: string; byteLength: number; mimeType: string };
+}): Uint8Array<ArrayBuffer> => {
+  const propsToSign = withoutUndefined({ ...properties, nonce: createUuid(), timestamp: Math.floor(Date.now() / 1000) });
+  const key = base64ToBytes(privateKey);
+  const signature = {
+    type: 'ed25519',
+    publicKey: ed25519.getPublicKey(key),
+    signature: ed25519.sign(Uint8Array.from(cborg.encode(propsToSign)), key),
+    signedPropertyNames: Object.keys(propsToSign),
+  };
+  return Uint8Array.from(cborg.encode({ ...propsToSign, signature }));
 };

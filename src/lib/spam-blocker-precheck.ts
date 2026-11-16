@@ -11,6 +11,7 @@ const PRECHECK_PATH_SUFFIX = '/precheck';
 export interface SpamBlockerPrecheckPlan {
   /** The spam blocker server's API base, e.g. `https://spamblocker.bitsocial.net/api/v1`. */
   serverUrl: string;
+  verifyExemptions?: boolean;
   /** The post's `challengeAnswers`: the pass at each spam blocker that checks it, its other answers in free slots. */
   getChallengeAnswers: (pass: string) => string[];
 }
@@ -41,7 +42,7 @@ export interface PrecheckPublicationContext {
 }
 
 export interface PrecheckPublication {
-  author: { address: string; displayName?: string };
+  author: { address: string; name?: string; displayName?: string };
   content?: string;
   flairs?: unknown[];
   parentCid?: string;
@@ -68,11 +69,25 @@ const getPrecheckServerUrl = (challenge: unknown): string | undefined => {
   if (url.hash || !url.pathname.endsWith(PRECHECK_PATH_SUFFIX)) return undefined;
   // Policy metadata belongs to the public marker; the server independently verifies the board's policy.
   const policyParameters = [...url.searchParams];
-  if (policyParameters.length > 1 || policyParameters.some(([name, value]) => name !== 'blockTor' || (value !== 'true' && value !== 'false'))) return undefined;
+  if (policyParameters.some(([name, value]) => (name !== 'blockTor' && name !== 'precheckExemptions') || (name === 'blockTor' && value !== 'true' && value !== 'false')))
+    return undefined;
+  if (url.searchParams.getAll('blockTor').length > 1 || url.searchParams.getAll('precheckExemptions').length > 1) return undefined;
+  if (url.searchParams.has('precheckExemptions') && !hasVerifiedExemptionCapability(challenge)) return undefined;
   return `${url.origin}${url.pathname.slice(0, -PRECHECK_PATH_SUFFIX.length)}`;
 };
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null;
+
+/** A versioned capability; the server validates the signed policy and the author's identity. */
+const hasVerifiedExemptionCapability = (challenge: unknown): boolean => {
+  if (!isRecord(challenge) || typeof challenge.challenge !== 'string') return false;
+  try {
+    const policy: unknown = JSON.parse(new URL(challenge.challenge).searchParams.get('precheckExemptions') ?? 'null');
+    return isRecord(policy) && policy.version === 1 && Array.isArray(policy.rules) && policy.rules.length > 0;
+  } catch {
+    return false;
+  }
+};
 
 const RATE_LIMIT_WINDOW_SECONDS = 60 * 60;
 
@@ -172,12 +187,13 @@ export const getSpamBlockerPrecheckPlan = (challenges: unknown, context: Prechec
   const serverUrl = challenges.map(getPrecheckServerUrl).find(Boolean);
   if (!serverUrl) return undefined;
 
-  const isSkipped = (index: number) => isExcludedForPost(challenges[index], context);
+  const isSkipped = (index: number) => !hasVerifiedExemptionCapability(challenges[index]) && isExcludedForPost(challenges[index], context);
   const passIndexes = challenges.flatMap((challenge, index) => (getPrecheckServerUrl(challenge) === serverUrl && !isSkipped(index) ? [index] : []));
   if (passIndexes.length === 0) return undefined;
   // Private whitelist membership and verified names cannot be established here. Let the board
   // check the publication instead of rejecting an author it would exempt; this grants no pass.
-  if (passIndexes.some((index) => hasChallengeDependentExemption(challenges[index], context, challenges.length))) return undefined;
+  if (passIndexes.some((index) => !hasVerifiedExemptionCapability(challenges[index]) && hasChallengeDependentExemption(challenges[index], context, challenges.length)))
+    return undefined;
 
   const lastPassIndex = passIndexes[passIndexes.length - 1];
   const freeSlots: number[] = [];
@@ -194,6 +210,7 @@ export const getSpamBlockerPrecheckPlan = (challenges: unknown, context: Prechec
 
   return {
     serverUrl,
+    ...(passIndexes.some((index) => hasVerifiedExemptionCapability(challenges[index])) ? { verifyExemptions: true } : {}),
     getChallengeAnswers: (pass) => {
       const answers = Array<string>(Math.max(lastPassIndex + 1, ...freeSlots.slice(0, otherAnswers.length).map((index) => index + 1))).fill('');
       for (const index of passIndexes) answers[index] = pass;
@@ -206,7 +223,7 @@ export const getSpamBlockerPrecheckPlan = (challenges: unknown, context: Prechec
 };
 
 /** A random v4 UUID; `crypto.randomUUID` is missing from Safari before 15.4. */
-const createUuid = () => {
+export const createUuid = () => {
   const bytes = crypto.getRandomValues(new Uint8Array(16));
   bytes[6] = (bytes[6] & 0x0f) | 0x40;
   bytes[8] = (bytes[8] & 0x3f) | 0x80;
@@ -238,4 +255,39 @@ export const fetchPrecheckStatus = async ({
   if (status !== 'pending' && status !== 'completed' && status !== 'failed') throw new Error('Spam blocker returned no status for this check');
   const message = typeof body.outcome?.message === 'string' && body.outcome.message.trim() ? body.outcome.message.trim() : undefined;
   return { status, message };
+};
+
+/** The signed draft proves identity without granting a publish pass or sending media. */
+export const fetchPrecheckExemption = async ({ serverUrl, payload }: { serverUrl: string; payload: string }): Promise<boolean> => {
+  const bytes = Uint8Array.from(atob(payload.replace(/-/g, '+').replace(/_/g, '/')), (character) => character.charCodeAt(0));
+  const { ok, status, body } = await postSignedSpamBlockerRequest({ url: `${serverUrl}/precheck/exemption`, body: bytes });
+  if (!ok) throw new Error(`Could not verify posting exemptions (${status}). Try again.`);
+  if (!isRecord(body) || typeof body.exempt !== 'boolean') throw new Error('The exemption check returned an invalid response.');
+  return body.exempt;
+};
+
+/** AbortController works in the older WebViews supported by the upload flow. */
+export const postSignedSpamBlockerRequest = async ({
+  url,
+  body,
+}: {
+  url: string;
+  body: Uint8Array<ArrayBuffer>;
+}): Promise<{ ok: boolean; status: number; body: unknown }> => {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 30_000);
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'content-type': 'application/cbor' },
+      body,
+      credentials: 'omit',
+      cache: 'no-store',
+      referrerPolicy: 'no-referrer',
+      signal: controller.signal,
+    });
+    return { ok: response.ok, status: response.status, body: await response.json() };
+  } finally {
+    clearTimeout(timeout);
+  }
 };

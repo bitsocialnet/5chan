@@ -1,3 +1,4 @@
+import type { ForgeUploadAuthorizer } from '../forge-upload-authorization';
 import { FORGE_IMAGES_API_ORIGIN, FORGE_IMAGES_MEDIA_ORIGIN, FORGE_IMAGES_TURNSTILE_SITEKEY } from '../forge-images-config';
 import type { UploadAttemptStage, UploadedMedia } from '../media-hosting/types';
 import { getTurnstileToken } from './turnstile-utils';
@@ -30,6 +31,7 @@ export class ForgeUploadError extends Error {
 }
 
 interface ForgeUploadOptions {
+  authorizeUpload?: ForgeUploadAuthorizer;
   /** Returns a fresh single-use Turnstile token. Defaults to the Turnstile widget for this runtime. */
   getToken?: () => Promise<string>;
   timeoutMs?: number;
@@ -202,6 +204,7 @@ export async function uploadToForge(file: File, options: ForgeUploadOptions = {}
     pendingVideoServeWaitMs = PENDING_VIDEO_SERVE_WAIT_MS,
     pendingSwfServeWaitMs = PENDING_SWF_SERVE_WAIT_MS,
     onChecking,
+    authorizeUpload,
   } = options;
 
   let token: string;
@@ -211,10 +214,16 @@ export async function uploadToForge(file: File, options: ForgeUploadOptions = {}
     throw new ForgeUploadError(`Turnstile check failed: ${getErrorMessage(error)}`, 'blocked');
   }
 
+  let authorization: string | undefined;
+  try {
+    authorization = await authorizeUpload?.(file);
+  } catch (error) {
+    throw new ForgeUploadError(getErrorMessage(error), 'blocked');
+  }
+
   const formData = new FormData();
   // Text fields go before the file part so the API can reject a bad token
-  // without reading the whole body. No custom headers; the API answers the
-  // preflight that reporting the sent body can trigger.
+  // without reading the whole body. The authorization header is verified before parsing multipart.
   formData.append('turnstile', token);
   formData.append('file', file);
 
@@ -224,7 +233,11 @@ export async function uploadToForge(file: File, options: ForgeUploadOptions = {}
 
   let body: ForgeUploadResponse | null;
   try {
-    const response = await postFormData(`${FORGE_IMAGES_API_ORIGIN}/api/upload`, formData, { signal: controller.signal, onBodySent: onChecking });
+    const response = await postFormData(`${FORGE_IMAGES_API_ORIGIN}/api/upload`, formData, {
+      signal: controller.signal,
+      onBodySent: onChecking,
+      ...(authorization ? { headers: { 'X-Bitsocial-Upload-Authorization': authorization } } : {}),
+    });
     if (!response.ok) {
       const errorBody: unknown = await response.json().catch(() => null);
       const detail = getApiErrorMessage(errorBody) ?? `Upload failed: ${response.status} ${response.statusText}`.trim();

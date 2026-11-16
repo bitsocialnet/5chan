@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
+import * as cborg from 'cborg';
 import { ed25519 } from '@noble/curves/ed25519.js';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import useChallengesStore from '../../stores/use-challenges-store';
@@ -10,7 +11,7 @@ import useSpamBlockerPrecheck, { type SpamBlockerPrecheckResult } from '../use-s
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
 
 const testState = vi.hoisted(() => ({
-  account: undefined as { author?: { address?: string }; signer?: { privateKey?: string } } | undefined,
+  account: undefined as { author?: { address?: string; name?: string }; signer?: { privateKey?: string; address?: string } } | undefined,
   accountComments: [] as Array<{ cid?: string; parentCid?: string; timestamp?: number }>,
   accountCommentsLookups: [] as unknown[],
 }));
@@ -132,6 +133,60 @@ describe('useSpamBlockerPrecheck', () => {
     expect(result).toEqual({ status: 'passed', challengeAnswers: [sessionId, sessionId] });
   });
 
+  it('verifies named exemptions before showing a challenge or authorizing an upload', async () => {
+    testState.account!.author!.name = 'alice.bso';
+    const policy = { version: 1, rules: [{ challengeIndex: 0, type: 'verified-author-name-suffix', suffix: '.bso' }] };
+    const challenges = [
+      { type: 'text/plain' },
+      {
+        type: 'url/iframe',
+        challenge: `${SERVER_URL}/precheck?blockTor=true&precheckExemptions=${encodeURIComponent(JSON.stringify(policy))}`,
+        exclude: [{ challenges: [0] }],
+      },
+    ];
+    const fetchMock = vi.fn(async () => new Response(JSON.stringify({ exempt: true })));
+    vi.stubGlobal('fetch', fetchMock);
+    const result = await start(challenges);
+    expect(result.status).toBe('exempt');
+    expect(result.status === 'exempt' && result.authorizeForgeUpload).toBeTypeOf('function');
+    expect(fetchMock).toHaveBeenCalledWith(`${SERVER_URL}/precheck/exemption`, expect.objectContaining({ method: 'POST' }));
+    expect(useChallengesStore.getState().challenges).toHaveLength(0);
+    expect('challengeAnswers' in result).toBe(false);
+  });
+
+  it('sends legacy .bso account names separately from their signer address', async () => {
+    testState.account!.author = { address: 'legacy.bso' };
+    testState.account!.signer!.address = 'signer-address';
+    const policy = { version: 1, rules: [{ challengeIndex: 0, type: 'verified-author-name-suffix', suffix: '.bso' }] };
+    const challenges = [
+      { type: 'text/plain' },
+      { type: 'url/iframe', challenge: `${SERVER_URL}/precheck?precheckExemptions=${encodeURIComponent(JSON.stringify(policy))}`, exclude: [{ challenges: [0] }] },
+    ];
+    const fetchMock = vi.fn(async (_url: string, request: RequestInit) => {
+      const payload = cborg.decode(new Uint8Array(request.body as ArrayBuffer));
+      expect(payload.publication.author).toMatchObject({ address: 'signer-address', name: 'legacy.bso' });
+      return new Response(JSON.stringify({ exempt: true }));
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    expect((await start(challenges)).status).toBe('exempt');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('stops uploads if exemption verification is unavailable', async () => {
+    const policy = { version: 1, rules: [{ challengeIndex: 0, type: 'verified-author-name-suffix', suffix: '.bso' }] };
+    const challenges = [
+      { type: 'text/plain' },
+      { type: 'url/iframe', challenge: `${SERVER_URL}/precheck?precheckExemptions=${encodeURIComponent(JSON.stringify(policy))}`, exclude: [{ challenges: [0] }] },
+    ];
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response('', { status: 503 })),
+    );
+    const result = await start(challenges);
+    expect(result.status).toBe('stopped');
+    expect(useChallengesStore.getState().challenges).toHaveLength(0);
+  });
+
   it('stops with the rejection when the spam blocker failed the pre-check', async () => {
     vi.stubGlobal(
       'fetch',
@@ -147,7 +202,7 @@ describe('useSpamBlockerPrecheck', () => {
     await expect(resultPromise).resolves.toEqual({ status: 'stopped', message: 'You are blocked from posting' });
   });
 
-  it('falls back to the board checking the post when the outcome cannot be read', async () => {
+  it('stops uploads when the outcome cannot be read', async () => {
     vi.stubGlobal(
       'fetch',
       vi.fn(async () => Promise.reject(new TypeError('Failed to fetch'))),
@@ -159,7 +214,7 @@ describe('useSpamBlockerPrecheck', () => {
       getModalEntry()?.[1].publishChallengeAnswers({ challengeAnswers: [''] });
     });
 
-    await expect(resultPromise).resolves.toEqual({ status: 'skipped' });
+    await expect(resultPromise).resolves.toEqual({ status: 'stopped', message: 'spam_check_not_finished' });
   });
 
   it("keeps the post's other answers next to the pass", async () => {

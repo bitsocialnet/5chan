@@ -267,3 +267,14 @@ describe('fetchPrecheckStatus', () => {
     await expect(fetchPrecheckStatus({ serverUrl: 'https://spamblocker.example/api/v1', sessionId: 'precheck-1' })).rejects.toThrow('no status');
   });
 });
+
+describe('verified exemption precheck capability', () => {
+  it('checks dependent exemptions on the server before uploading, including moderators', () => {
+    const policy = { version: 1, rules: [{ challengeIndex: 0, type: 'verified-author-name-suffix', suffix: '.bso' }] };
+    const marker = `https://spamblocker.bitsocial.net/api/v1/precheck?blockTor=true&precheckExemptions=${encodeURIComponent(JSON.stringify(policy))}`;
+    const challenges = [{ type: 'text/plain' }, { type: 'url/iframe', challenge: marker, exclude: [{ challenges: [0] }, { roles: ['moderator'] }] }];
+    const plan = getSpamBlockerPrecheckPlan(challenges, { isReply: false, authorRole: 'moderator' });
+    expect(plan?.verifyExemptions).toBe(true);
+    expect(plan?.getChallengeAnswers('pass')).toEqual(['', 'pass']);
+  });
+});

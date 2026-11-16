@@ -13,6 +13,10 @@ class FakeXhr {
   method = '';
   url = '';
   sentBody: unknown;
+  headers: Record<string, string> = {};
+  setRequestHeader(name: string, value: string) {
+    this.headers[name] = value;
+  }
   abortCalls = 0;
   uploadListenerAtOpen = false;
 
@@ -63,6 +67,13 @@ describe('postFormData', () => {
 
     expect(response).toMatchObject({ ok: true, status: 200, statusText: 'OK' });
     await expect(response.json()).resolves.toEqual({ status: 'live' });
+  });
+
+  it('sets authorization headers before sending the body', async () => {
+    const pending = postFormData('https://api.example/upload', new FormData(), { headers: { 'X-Bitsocial-Upload-Authorization': 'proof' } });
+    expect(lastXhr().headers).toEqual({ 'X-Bitsocial-Upload-Authorization': 'proof' });
+    lastXhr().respond(200, 'OK', '{}');
+    await pending;
   });
 
   it('resolves a non-2xx answer as not ok, and its json() rejects on a non-JSON body', async () => {
