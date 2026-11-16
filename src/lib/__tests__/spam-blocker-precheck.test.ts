@@ -107,6 +107,27 @@ describe('getSpamBlockerPrecheckPlan', () => {
     expect(plan?.getChallengeAnswers('pass')).toEqual(['pass']);
   });
 
+  it.each(['true', 'false'])('recognizes a public Tor policy of %s without putting it into API URLs', (blockTor) => {
+    const marker = { ...spamBlocker(), challenge: `${spamBlocker().challenge}?blockTor=${blockTor}` };
+    const plan = getSpamBlockerPrecheckPlan([marker], post);
+    expect(plan?.serverUrl).toBe('https://spamblocker.bitsocial.net/api/v1');
+    expect(plan?.getChallengeAnswers('pass')).toEqual(['pass']);
+  });
+
+  it('shares one pass across challenges on the same server with different Tor policies', () => {
+    const challenges = ['true', 'false'].map((blockTor) => ({ ...spamBlocker(), challenge: `${spamBlocker().challenge}?blockTor=${blockTor}` }));
+    const plan = getSpamBlockerPrecheckPlan([...challenges, spamBlocker()], post);
+    expect(plan?.serverUrl).toBe('https://spamblocker.bitsocial.net/api/v1');
+    expect(plan?.getChallengeAnswers('pass')).toEqual(['pass', 'pass', 'pass']);
+  });
+
+  it.each(['?blockTor=yes', '?blockTor=', '?blockTor=true&blockTor=false', '?blockTor=true&unknown=value', '?unknown=value', '#blockTor=true'])(
+    'ignores malformed or unsupported policy markers: %s',
+    (suffix) => {
+      expect(getSpamBlockerPrecheckPlan([{ ...spamBlocker(), challenge: `${spamBlocker().challenge}${suffix}` }], post)).toBeUndefined();
+    },
+  );
+
   it('ignores spam blockers that publish no pre-check URL and insecure or malformed URLs', () => {
     expect(getSpamBlockerPrecheckPlan([{ type: 'url/iframe' }], post)).toBeUndefined();
     expect(getSpamBlockerPrecheckPlan([{ type: 'url/iframe', challenge: 'http://spamblocker.example/api/v1/precheck' }], post)).toBeUndefined();
