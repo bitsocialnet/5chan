@@ -81,6 +81,13 @@ describe('getSpamBlockerPrecheckPlan', () => {
     expect(getSpamBlockerPrecheckPlan(challenges, reply)).toBeUndefined();
   });
 
+  it('keeps prechecks when a known role makes the dependent exemption impossible', () => {
+    const challenges = [{ type: 'text/plain' }, { ...spamBlocker(), exclude: [{ challenges: [0], roles: ['owner'] }] }];
+    expect(getSpamBlockerPrecheckPlan(challenges, { ...post, authorRole: 'moderator' })).toBeDefined();
+    expect(getSpamBlockerPrecheckPlan(challenges, { ...post, authorRole: 'owner' })).toBeUndefined();
+    expect(getSpamBlockerPrecheckPlan(challenges, post)).toBeUndefined();
+  });
+
   it.each([[], [-1], [2], ['0'], null])('ignores empty or invalid challenge dependencies: %j', (challenges) => {
     expect(getSpamBlockerPrecheckPlan([{ type: 'text/plain' }, { ...spamBlocker(), exclude: [{ challenges }] }], post)?.getChallengeAnswers('pass')).toEqual([
       '',

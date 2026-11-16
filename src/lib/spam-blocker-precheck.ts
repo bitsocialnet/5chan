@@ -152,6 +152,7 @@ const hasChallengeDependentExemption = (challenge: unknown, context: PrecheckPub
     if (!exclude.challenges.every((index) => Number.isInteger(index) && index >= 0 && index < challengeCount)) return false;
     // Exclude conditions are conjunctive. An exemption only for replies cannot exempt a post.
     if (exclude.publicationType !== undefined && !meetsExcludeCondition('publicationType', exclude.publicationType, context)) return false;
+    if (Array.isArray(exclude.roles) && exclude.roles.length > 0 && context.authorRole !== undefined && !exclude.roles.includes(context.authorRole)) return false;
     return true;
   });
 };
