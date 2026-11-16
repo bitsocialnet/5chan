@@ -65,7 +65,10 @@ const getPrecheckServerUrl = (challenge: unknown): string | undefined => {
     return undefined;
   }
   if (url.protocol !== 'https:' && !(url.protocol === 'http:' && isLocalhost(url.hostname))) return undefined;
-  if (url.search || url.hash || !url.pathname.endsWith(PRECHECK_PATH_SUFFIX)) return undefined;
+  if (url.hash || !url.pathname.endsWith(PRECHECK_PATH_SUFFIX)) return undefined;
+  // Policy metadata belongs to the public marker; the server independently verifies the board's policy.
+  const policyParameters = [...url.searchParams];
+  if (policyParameters.length > 1 || policyParameters.some(([name, value]) => name !== 'blockTor' || (value !== 'true' && value !== 'false'))) return undefined;
   return `${url.origin}${url.pathname.slice(0, -PRECHECK_PATH_SUFFIX.length)}`;
 };
 
