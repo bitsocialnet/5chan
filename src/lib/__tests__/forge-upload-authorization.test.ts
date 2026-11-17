@@ -2,6 +2,7 @@ import { webcrypto } from 'node:crypto';
 import { ed25519 } from '@noble/curves/ed25519.js';
 import * as cborg from 'cborg';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { SpamBlockerAuthorizationError } from '../spam-blocker-errors';
 import { createForgeUploadAuthorizer } from '../forge-upload-authorization';
 
 afterEach(() => vi.unstubAllGlobals());
@@ -21,7 +22,26 @@ describe('Forge upload authorization', () => {
       privateKey: btoa(String.fromCharCode(...ed25519.utils.randomSecretKey())),
     });
     const file = { size: 1, type: 'image/png', arrayBuffer: async () => new Uint8Array([1]).buffer } as File;
-    await expect(authorize(file)).rejects.toThrow(message);
+    await expect(authorize(file)).rejects.toMatchObject({ name: 'SpamBlockerAuthorizationError', message });
+  });
+
+  it.each(['unavailable', 'network'])('makes %s authorization failures terminal rather than trying another upload host', async (failure) => {
+    vi.stubGlobal('crypto', webcrypto);
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => {
+        if (failure === 'network') throw new TypeError('Failed to fetch');
+        return new Response('unavailable', { status: 503 });
+      }),
+    );
+    const authorize = createForgeUploadAuthorizer({
+      serverUrl: 'https://spamblocker.test/api/v1',
+      communityAddress: 'board.bso',
+      authorAddress: 'key-address',
+      privateKey: btoa(String.fromCharCode(...ed25519.utils.randomSecretKey())),
+    });
+    const file = { size: 1, type: 'image/png', arrayBuffer: async () => new Uint8Array([1]).buffer } as File;
+    await expect(authorize(file)).rejects.toBeInstanceOf(SpamBlockerAuthorizationError);
   });
 
   it('signs the exact file hash, author, community and pass, without requiring randomUUID', async () => {

@@ -1,3 +1,5 @@
+import { webcrypto } from 'node:crypto';
+import { SpamBlockerRateLimitError } from '../../lib/spam-blocker-errors';
 import * as React from 'react';
 import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -207,6 +209,70 @@ describe('useSpamBlockerPrecheck', () => {
     expect(result.status === 'exempt' && result.authorizeForgeUpload).toBeTypeOf('function');
     expect(useChallengesStore.getState().challenges).toHaveLength(0);
     expect('challengeAnswers' in result).toBe(false);
+  });
+
+  it('shows the known exemption-check retry time and stays stopped when the notice closes', async () => {
+    const retryAt = Math.floor(Date.now() / 1000) + 60;
+    const policy = { version: 1, rules: [{ challengeIndex: 0, type: 'verified-author-name-suffix', suffix: '.bso' }] };
+    const challenges = [
+      { type: 'text/plain' },
+      { type: 'url/iframe', challenge: `${SERVER_URL}/precheck?blockVpn=true&precheckExemptions=${encodeURIComponent(JSON.stringify(policy))}` },
+    ];
+    const fetchMock = vi.fn(async () => new Response(JSON.stringify({ message: 'Too many checks', retryAt }), { status: 429 }));
+    vi.stubGlobal('fetch', fetchMock);
+    const resultPromise = start(challenges);
+    await waitForModal();
+    expect(getModalEntry()?.[0].challenges[0].challenge).toBe(`${SERVER_URL}/iframe/rate-limit?retryAt=${retryAt}`);
+    await act(async () => {
+      getModalEntry()?.[1].publishChallengeAnswers({ challengeAnswers: [''] });
+    });
+    await expect(resultPromise).resolves.toEqual({ status: 'stopped' });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps a rate limit without a known expiry as a static error, without inventing a countdown', async () => {
+    const policy = { version: 1, rules: [{ challengeIndex: 0, type: 'verified-author-name-suffix', suffix: '.bso' }] };
+    const challenges = [
+      { type: 'text/plain' },
+      { type: 'url/iframe', challenge: `${SERVER_URL}/precheck?precheckExemptions=${encodeURIComponent(JSON.stringify(policy))}` },
+    ];
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response(JSON.stringify({ message: 'Too many checks. Try again later.' }), { status: 429 })),
+    );
+    await expect(start(challenges)).resolves.toEqual({ status: 'stopped', message: 'Too many checks. Try again later.' });
+    expect(useChallengesStore.getState().challenges).toHaveLength(0);
+  });
+
+  it('shows the upload-authorization countdown without minting proof or automatically retrying on close', async () => {
+    vi.stubGlobal('crypto', webcrypto);
+    const retryAt = Math.floor(Date.now() / 1000) + 60;
+    const policy = { version: 1, rules: [{ challengeIndex: 0, type: 'verified-author-name-suffix', suffix: '.bso' }] };
+    const challenges = [
+      { type: 'text/plain' },
+      { type: 'url/iframe', challenge: `${SERVER_URL}/precheck?precheckExemptions=${encodeURIComponent(JSON.stringify(policy))}` },
+    ];
+    const fetchMock = vi.fn(
+      async (url: string) =>
+        new Response(JSON.stringify(url.endsWith('/exemption') ? { exempt: true } : { message: 'Too many uploads', retryAt }), {
+          status: url.endsWith('/exemption') ? 200 : 429,
+        }),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    const result = await start(challenges);
+    expect(result.status).toBe('exempt');
+    if (result.status !== 'exempt') throw new Error('Expected verified exemption');
+    const file = { size: 1, type: 'image/png', arrayBuffer: async () => new Uint8Array([1]).buffer } as File;
+    const authorization = result.authorizeForgeUpload(file).catch((error: unknown) => error);
+    await waitForModal();
+    expect(getModalEntry()?.[0].challenges[0].challenge).toBe(`${SERVER_URL}/iframe/rate-limit?retryAt=${retryAt}`);
+    await act(async () => {
+      getModalEntry()?.[1].publishChallengeAnswers({ challengeAnswers: [''] });
+    });
+    const error = await authorization;
+    expect(error).toBeInstanceOf(SpamBlockerRateLimitError);
+    expect((error as SpamBlockerRateLimitError).noticeShown).toBe(true);
+    expect(fetchMock.mock.calls.map(([url]) => url)).toEqual([`${SERVER_URL}/precheck/exemption`, `${SERVER_URL}/upload/authorize`]);
   });
 
   it('sends legacy .bso account names separately from their signer address', async () => {

@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAccount, useAccountComments } from '@bitsocial/bitsocial-react-hooks';
+import { SpamBlockerRateLimitError } from '../lib/spam-blocker-errors';
 import type { ForgeUploadAuthorizer } from '../lib/forge-upload-authorization';
 import type { PrecheckPublication } from '../lib/spam-blocker-precheck';
 import useChallengesStore from '../stores/use-challenges-store';
@@ -87,15 +88,40 @@ const useSpamBlockerPrecheck = ({ communityAddress }: { communityAddress: string
         return { status: 'stopped', message: t('spam_check_not_finished') };
       }
 
+      // This notice is informational: closing it never supplies a pass or retries an upload.
+      const showRateLimitNotice = async (error: unknown) => {
+        if (!(error instanceof SpamBlockerRateLimitError) || error.retryAt === undefined) return false;
+        await new Promise<void>((resolve) => {
+          addChallenge(
+            [
+              { challenges: [{ type: 'url/iframe', challenge: `${plan.serverUrl}/iframe/rate-limit?retryAt=${error.retryAt}` }] },
+              { ...draft, author: { displayName }, communityAddress, publishChallengeAnswers: () => resolve() },
+            ],
+            resolve,
+          );
+        });
+        error.noticeShown = true;
+        return true;
+      };
+
       let authorizeForgeUpload: ForgeUploadAuthorizer | undefined;
       if (plan.verifyExemptions) {
         try {
           const { createForgeUploadAuthorizer } = await import('../lib/forge-upload-authorization');
           const authorizerOptions = { serverUrl: plan.serverUrl, communityAddress, privateKey, authorAddress, authorName, parentCid: draft.parentCid };
           const exempt = await precheck.fetchPrecheckExemption({ serverUrl: plan.serverUrl, payload });
-          if (exempt) return { status: 'exempt', authorizeForgeUpload: createForgeUploadAuthorizer(authorizerOptions) };
-          authorizeForgeUpload = createForgeUploadAuthorizer({ ...authorizerOptions, precheckSessionId: sessionId });
+          const authorize = createForgeUploadAuthorizer({ ...authorizerOptions, ...(exempt ? {} : { precheckSessionId: sessionId }) });
+          authorizeForgeUpload = async (file) => {
+            try {
+              return await authorize(file);
+            } catch (error) {
+              await showRateLimitNotice(error);
+              throw error;
+            }
+          };
+          if (exempt) return { status: 'exempt', authorizeForgeUpload };
         } catch (error) {
+          if (await showRateLimitNotice(error)) return { status: 'stopped' };
           return { status: 'stopped', message: error instanceof Error ? error.message : t('spam_check_not_finished') };
         }
       }

@@ -1,3 +1,4 @@
+import { SpamBlockerAuthorizationError, SpamBlockerRateLimitError } from '../lib/spam-blocker-errors';
 import type { ForgeUploadAuthorizer } from '../lib/forge-upload-authorization';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -181,6 +182,7 @@ async function uploadOnAndroid(
       }
       return { ...(await uploadViaAndroidPlugin(media, batch)), awaitingReview: false };
     } catch (error) {
+      if (error instanceof SpamBlockerAuthorizationError) throw error;
       // A lone batch keeps its own error, as uploads did before forge joined the Android order.
       if (batches.length === 1) throw error;
       attempts.push(...getFailedAttempts(error, batch));
@@ -227,6 +229,7 @@ export function useFileUpload() {
 
   const handleUploadError = useCallback(
     (error: unknown) => {
+      if (error instanceof SpamBlockerRateLimitError && error.noticeShown) return;
       const errorMessage = error instanceof Error ? error.message : String(error);
 
       // A failed upload leaves pasting a link as the only way to attach the file, so reveal the field.

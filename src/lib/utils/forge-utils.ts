@@ -1,3 +1,4 @@
+import { SpamBlockerAuthorizationError } from '../spam-blocker-errors';
 import type { ForgeUploadAuthorizer } from '../forge-upload-authorization';
 import { FORGE_IMAGES_API_ORIGIN, FORGE_IMAGES_MEDIA_ORIGIN, FORGE_IMAGES_TURNSTILE_SITEKEY } from '../forge-images-config';
 import type { UploadAttemptStage, UploadedMedia } from '../media-hosting/types';
@@ -218,7 +219,8 @@ export async function uploadToForge(file: File, options: ForgeUploadOptions = {}
   try {
     authorization = await authorizeUpload?.(file);
   } catch (error) {
-    throw new ForgeUploadError(getErrorMessage(error), 'blocked');
+    if (error instanceof SpamBlockerAuthorizationError) throw error;
+    throw new SpamBlockerAuthorizationError(getErrorMessage(error));
   }
 
   const formData = new FormData();
@@ -241,13 +243,17 @@ export async function uploadToForge(file: File, options: ForgeUploadOptions = {}
     if (!response.ok) {
       const errorBody: unknown = await response.json().catch(() => null);
       const detail = getApiErrorMessage(errorBody) ?? `Upload failed: ${response.status} ${response.statusText}`.trim();
+      const code = (errorBody as { error?: { code?: unknown } } | null)?.error?.code;
+      if (typeof code === 'string' && ['tor_blocked', 'connection_blocked', 'invalid_upload_authorization', 'upload_authorization_unavailable'].includes(code)) {
+        throw new SpamBlockerAuthorizationError(detail);
+      }
       // 403 is turnstile_failed or banned: an abuse-control block, not a bad file.
       throw new ForgeUploadError(detail, response.status === 403 ? 'blocked' : 'provider_error');
     }
     body = (await response.json().catch(() => null)) as ForgeUploadResponse | null;
     if (controller.signal.aborted) throw timeoutError();
   } catch (error) {
-    if (error instanceof ForgeUploadError) throw error;
+    if (error instanceof ForgeUploadError || error instanceof SpamBlockerAuthorizationError) throw error;
     if (controller.signal.aborted) throw timeoutError();
     throw new ForgeUploadError(`Network error: ${getErrorMessage(error)}`, 'unknown');
   } finally {

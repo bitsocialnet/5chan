@@ -1,3 +1,4 @@
+import { SpamBlockerAuthorizationError } from '../spam-blocker-errors';
 import type { ForgeUploadAuthorizer } from '../forge-upload-authorization';
 import type { ProviderAttempt, ProviderId, UploadAttemptStage, UploadedMedia, UploadPhase } from './types';
 import { stripMediaMetadata } from '../media-metadata/strip-media-metadata';
@@ -134,6 +135,7 @@ export async function orchestrateUpload(
     try {
       return await uploadViaProvider(provider, file, onPhaseChange, authorizeForgeUpload);
     } catch (err) {
+      if (err instanceof SpamBlockerAuthorizationError) throw err;
       const msg = err instanceof Error ? err.message : String(err);
       const elapsedMs = Date.now() - start;
       const meta = err && typeof err === 'object' && 'stage' in err ? (err as PluginRejectionMeta) : null;

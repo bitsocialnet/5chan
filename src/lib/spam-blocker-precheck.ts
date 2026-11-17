@@ -1,3 +1,4 @@
+import { SpamBlockerRateLimitError } from './spam-blocker-errors';
 import type { Comment } from '@bitsocial/bitsocial-react-hooks';
 
 /**
@@ -287,7 +288,18 @@ export const postSignedSpamBlockerRequest = async ({
       referrerPolicy: 'no-referrer',
       signal: controller.signal,
     });
-    return { ok: response.ok, status: response.status, body: await response.json().catch(() => undefined) };
+    const result: unknown = await response.json().catch(() => undefined);
+    if (response.status === 429) {
+      const now = Date.now() / 1000;
+      const header = response.headers.get('Retry-After');
+      const headerRetryAt = header && /^\d+$/.test(header.trim()) ? now + Number(header) : header ? Date.parse(header) / 1000 : undefined;
+      const candidate = isRecord(result) && typeof result.retryAt === 'number' ? result.retryAt : headerRetryAt;
+      const retryAt = typeof candidate === 'number' && Number.isFinite(candidate) && candidate > now && candidate <= now + 86400 ? Math.ceil(candidate) : undefined;
+      const message =
+        isRecord(result) && typeof result.message === 'string' && result.message.trim() ? result.message : 'Posting is temporarily rate-limited. Try again later.';
+      throw new SpamBlockerRateLimitError(message, retryAt);
+    }
+    return { ok: response.ok, status: response.status, body: result };
   } finally {
     clearTimeout(timeout);
   }
