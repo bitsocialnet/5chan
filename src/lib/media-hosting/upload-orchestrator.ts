@@ -3,7 +3,6 @@ import type { ForgeUploadAuthorizer } from '../forge-upload-authorization';
 import type { ProviderAttempt, ProviderId, UploadAttemptStage, UploadedMedia, UploadPhase } from './types';
 import { stripMediaMetadata } from '../media-metadata/strip-media-metadata';
 import { uploadToCatbox } from '../utils/catbox-utils';
-import { uploadToForge } from '../utils/forge-utils';
 
 /** Attempt metadata inferred or parsed from plugin rejection. Used when plugins throw plain errors. */
 function parseAttemptMetadata(errorMessage: string): {
@@ -74,11 +73,15 @@ async function uploadViaProvider(
   onPhaseChange?: (phase: UploadPhase) => void,
   authorizeForgeUpload?: ForgeUploadAuthorizer,
 ): Promise<UploadedMedia> {
-  if (provider === 'forge')
+  if (provider === 'forge') {
+    const { uploadToForge } = await import('../utils/forge-utils').catch(() => {
+      throw new SpamBlockerAuthorizationError('Could not load upload checks. Try again.');
+    });
     return uploadToForge(await stripMediaMetadata(file), {
       onChecking: () => onPhaseChange?.('checking'),
       ...(authorizeForgeUpload ? { authorizeUpload: authorizeForgeUpload } : {}),
     });
+  }
   if (provider === 'catbox') return { url: await uploadToCatbox(await stripMediaMetadata(file)) };
   if (provider === 'imgur' || provider === 'imgbb') {
     const fn = typeof window !== 'undefined' && window.electronApi?.automateUploadMedia;
