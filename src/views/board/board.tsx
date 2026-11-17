@@ -24,6 +24,7 @@ import { useBoardFeedPageSize } from '../../hooks/use-board-feed-page-size';
 import useExpandedTimeFilter from '../../hooks/use-expanded-time-filter';
 import useIsMobile from '../../hooks/use-is-mobile';
 import { useNowSeconds } from '../../hooks/use-now-seconds';
+import useLatestFeedPosts from '../../hooks/use-latest-feed-posts';
 import useRefreshFeedOnLinkArrival from '../../hooks/use-refresh-feed-on-link-arrival';
 import { useSuggestionFeedLoader } from '../../hooks/use-suggestion-feed-loader';
 import useTimeFilter from '../../hooks/use-time-filter';
@@ -281,7 +282,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
     [communities, boardSortType, effectiveInfiniteScroll, infiniteFeedPostsPerPage, paginationFeedPostsPerPage, excludeArchivedFilter, multiboardTimeFilterSeconds],
   );
 
-  const { feed, hasMore, loadMore, reset, expandTimeWindow, communityKeysWithMore, state: feedState } = useFeed(feedOptions);
+  const { feed, updatedFeed, hasMore, loadMore, reset, expandTimeWindow, communityKeysWithMore, state: feedState } = useFeed(feedOptions);
   const { currentTimeFilterName, currentTimeFilterSeconds, expandSuggestionTimeWindow } = useExpandedTimeFilter({
     feedOptions,
     timeFilterName,
@@ -841,7 +842,8 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
     typeof communityIdentifier.publicKey === 'string' &&
     communityIdentifier.publicKey.length > 0 &&
     communityData?.nameResolved === false;
-  const displayFeed = effectiveInfiniteScroll ? combinedFeed : currentPageFeed;
+  // Applied last, so new replies update a thread's counts and previews without changing the list.
+  const displayFeed = useLatestFeedPosts(effectiveInfiniteScroll ? combinedFeed : currentPageFeed, updatedFeed);
   const canShowEmptyFlashTable = isLoadedCommunityState && isFeedSucceeded && isRawBoardThreadStateEmpty;
   const shouldShowFlashTableLoading = shouldUseFlashTable && displayFeed.length === 0 && !canShowEmptyFlashTable && communityState !== 'failed' && feedState !== 'failed';
 

@@ -22,6 +22,7 @@ import { useSuggestionFeedLoader } from '../../hooks/use-suggestion-feed-loader'
 import useTimeFilter from '../../hooks/use-time-filter';
 import useMultiboardCatalogSnapshot from '../../hooks/use-multiboard-catalog-snapshot';
 import useIsMobile from '../../hooks/use-is-mobile';
+import useLatestFeedPosts from '../../hooks/use-latest-feed-posts';
 import useRefreshFeedOnLinkArrival from '../../hooks/use-refresh-feed-on-link-arrival';
 import useContentWidth from '../../hooks/use-content-width';
 import useCatalogStyleStore from '../../stores/use-catalog-style-store';
@@ -451,7 +452,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
     excludeArchivedFilter,
   ]);
 
-  const { feed: liveFeed, hasMore, loadMore, reset, expandTimeWindow, communityKeysWithMore } = useFeed(feedOptions);
+  const { feed: liveFeed, updatedFeed, hasMore, loadMore, reset, expandTimeWindow, communityKeysWithMore } = useFeed(feedOptions);
   // a refresh takes the sorted multiboard catalog again
   const [refreshCount, setRefreshCount] = useState(0);
   const refreshFeed = useCallback(() => {
@@ -844,7 +845,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
     !showModEmptyState;
 
   // Process the feed to move "top" posts to the top (applied after display sort)
-  const processedFeed = useMemo(() => {
+  const orderedFeed = useMemo(() => {
     if (!sortedFeed || sortedFeed.length === 0) return sortedFeed;
 
     const enabledTopFilters = filterItems.filter((item) => item.enabled && item.text.trim() !== '' && item.top);
@@ -875,6 +876,8 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
     // Return top posts followed by regular posts
     return [...topPosts, ...regularPosts];
   }, [sortedFeed, filterItems]);
+  // Applied last, so new replies update a thread's counts without moving it in a list sorted by them.
+  const processedFeed = useLatestFeedPosts(orderedFeed, updatedFeed);
 
   const processedFeedMode = showHiddenThreads ? 'hidden' : 'visible';
   const deferredProcessedFeed = useDeferredValue(processedFeed);
