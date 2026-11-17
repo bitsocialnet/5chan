@@ -1,8 +1,8 @@
+import { SpamBlockerAuthorizationError } from '../spam-blocker-errors';
 import type { ForgeUploadAuthorizer } from '../forge-upload-authorization';
 import type { ProviderAttempt, ProviderId, UploadAttemptStage, UploadedMedia, UploadPhase } from './types';
 import { stripMediaMetadata } from '../media-metadata/strip-media-metadata';
 import { uploadToCatbox } from '../utils/catbox-utils';
-import { uploadToForge } from '../utils/forge-utils';
 
 /** Attempt metadata inferred or parsed from plugin rejection. Used when plugins throw plain errors. */
 function parseAttemptMetadata(errorMessage: string): {
@@ -73,11 +73,16 @@ async function uploadViaProvider(
   onPhaseChange?: (phase: UploadPhase) => void,
   authorizeForgeUpload?: ForgeUploadAuthorizer,
 ): Promise<UploadedMedia> {
-  if (provider === 'forge')
+  if (provider === 'forge') {
+    const { uploadToForge } = await import('../utils/forge-utils').catch((error: unknown) => {
+      if (authorizeForgeUpload) throw new SpamBlockerAuthorizationError('Could not load upload checks. Try again.');
+      throw error;
+    });
     return uploadToForge(await stripMediaMetadata(file), {
       onChecking: () => onPhaseChange?.('checking'),
       ...(authorizeForgeUpload ? { authorizeUpload: authorizeForgeUpload } : {}),
     });
+  }
   if (provider === 'catbox') return { url: await uploadToCatbox(await stripMediaMetadata(file)) };
   if (provider === 'imgur' || provider === 'imgbb') {
     const fn = typeof window !== 'undefined' && window.electronApi?.automateUploadMedia;
@@ -134,6 +139,7 @@ export async function orchestrateUpload(
     try {
       return await uploadViaProvider(provider, file, onPhaseChange, authorizeForgeUpload);
     } catch (err) {
+      if (err instanceof SpamBlockerAuthorizationError) throw err;
       const msg = err instanceof Error ? err.message : String(err);
       const elapsedMs = Date.now() - start;
       const meta = err && typeof err === 'object' && 'stage' in err ? (err as PluginRejectionMeta) : null;

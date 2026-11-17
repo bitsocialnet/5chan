@@ -1,4 +1,5 @@
-import type { Comment } from '@bitsocial/bitsocial-react-hooks';
+import { SpamBlockerRateLimitError } from './spam-blocker-errors';
+import type { Challenge, Comment } from '@bitsocial/bitsocial-react-hooks';
 
 /**
  * A board running a Bitsocial Spam Blocker that accepts pre-check passes publishes `<serverUrl>/precheck`
@@ -7,6 +8,7 @@ import type { Comment } from '@bitsocial/bitsocial-react-hooks';
  * showing its iframe. The pass only works for a post with the same author on the same board.
  */
 const PRECHECK_PATH_SUFFIX = '/precheck';
+const CONNECTION_POLICY_FLAGS = ['blockTor', 'blockVpn', 'blockProxy', 'blockDatacenter'];
 
 export interface SpamBlockerPrecheckPlan {
   /** The spam blocker server's API base, e.g. `https://spamblocker.bitsocial.net/api/v1`. */
@@ -69,9 +71,9 @@ const getPrecheckServerUrl = (challenge: unknown): string | undefined => {
   if (url.hash || !url.pathname.endsWith(PRECHECK_PATH_SUFFIX)) return undefined;
   // Policy metadata belongs to the public marker; the server independently verifies the board's policy.
   const policyParameters = [...url.searchParams];
-  if (policyParameters.some(([name, value]) => (name !== 'blockTor' && name !== 'precheckExemptions') || (name === 'blockTor' && value !== 'true' && value !== 'false')))
+  if (policyParameters.some(([name, value]) => name !== 'precheckExemptions' && (!CONNECTION_POLICY_FLAGS.includes(name) || (value !== 'true' && value !== 'false'))))
     return undefined;
-  if (url.searchParams.getAll('blockTor').length > 1 || url.searchParams.getAll('precheckExemptions').length > 1) return undefined;
+  if ([...CONNECTION_POLICY_FLAGS, 'precheckExemptions'].some((name) => url.searchParams.getAll(name).length > 1)) return undefined;
   if (url.searchParams.has('precheckExemptions') && !hasVerifiedExemptionCapability(challenge)) return undefined;
   return `${url.origin}${url.pathname.slice(0, -PRECHECK_PATH_SUFFIX.length)}`;
 };
@@ -236,6 +238,32 @@ export const createPrecheckSessionId = () => `precheck-${createUuid()}`;
 export const getPrecheckIframeUrl = ({ payload, serverUrl, sessionId }: { payload: string; serverUrl: string; sessionId: string }) =>
   `${serverUrl}/iframe/${encodeURIComponent(sessionId)}/precheck#payload=${payload}`;
 
+/** An informational countdown: closing it never grants a pass or retries the request. */
+export const showSpamBlockerRateLimitNotice = async ({
+  error,
+  serverUrl,
+  publication,
+  addChallenge,
+}: {
+  error: unknown;
+  serverUrl: string;
+  publication: Record<string, unknown>;
+  addChallenge: (challenge: Challenge, onAbandon?: () => void) => void;
+}): Promise<boolean> => {
+  if (!(error instanceof SpamBlockerRateLimitError) || error.retryAt === undefined) return false;
+  await new Promise<void>((resolve) => {
+    addChallenge(
+      [
+        { challenges: [{ type: 'url/iframe', challenge: `${serverUrl}/iframe/rate-limit?retryAt=${error.retryAt}` }] },
+        { ...publication, publishChallengeAnswers: () => resolve() },
+      ],
+      resolve,
+    );
+  });
+  error.noticeShown = true;
+  return true;
+};
+
 /** Reads the pre-check's outcome once its iframe has answered, which it also does after showing a rejection. */
 export const fetchPrecheckStatus = async ({
   serverUrl,
@@ -286,7 +314,18 @@ export const postSignedSpamBlockerRequest = async ({
       referrerPolicy: 'no-referrer',
       signal: controller.signal,
     });
-    return { ok: response.ok, status: response.status, body: await response.json().catch(() => undefined) };
+    const result: unknown = await response.json().catch(() => undefined);
+    if (response.status === 429) {
+      const now = Date.now() / 1000;
+      const header = response.headers.get('Retry-After');
+      const headerRetryAt = header && /^\d+$/.test(header.trim()) ? now + Number(header) : header ? Date.parse(header) / 1000 : undefined;
+      const candidate = isRecord(result) && typeof result.retryAt === 'number' ? result.retryAt : headerRetryAt;
+      const retryAt = typeof candidate === 'number' && Number.isFinite(candidate) && candidate > now && candidate <= now + 86400 ? Math.ceil(candidate) : undefined;
+      const message =
+        isRecord(result) && typeof result.message === 'string' && result.message.trim() ? result.message : 'Posting is temporarily rate-limited. Try again later.';
+      throw new SpamBlockerRateLimitError(message, retryAt);
+    }
+    return { ok: response.ok, status: response.status, body: result };
   } finally {
     clearTimeout(timeout);
   }

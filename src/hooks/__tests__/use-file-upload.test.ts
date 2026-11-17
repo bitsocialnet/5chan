@@ -6,6 +6,7 @@ import { Capacitor } from '@capacitor/core';
 import FileUploader from '../../plugins/file-uploader';
 import { ensureProviderAvailability } from '../../lib/media-hosting/provider-availability';
 import { orchestrateUpload } from '../../lib/media-hosting/upload-orchestrator';
+import { SpamBlockerAuthorizationError, SpamBlockerRateLimitError } from '../../lib/spam-blocker-errors';
 import { useFileUpload } from '../use-file-upload';
 import type { AttachedMedia, UploadPhase } from '../../lib/media-hosting/types';
 
@@ -412,6 +413,23 @@ describe('useFileUpload', () => {
       expect((await upload(hook, getPickedMedia()))?.url).toBe(url);
       expect(FileUploader.uploadPickedMedia).toHaveBeenCalledWith({ id: 'picked-1', providerOrder: [provider] });
     });
+
+    it.each(['connection_blocked', 'tor_blocked', 'invalid_upload_authorization', 'upload_authorization_unavailable', 'rate limit'])(
+      'does not fall back to the Android plugin after %s',
+      async (reason) => {
+        androidOrderRef.value = ['forge', 'catbox'];
+        vi.mocked(Capacitor.getPlatform).mockReturnValue('android');
+        const error = reason === 'rate limit' ? new SpamBlockerRateLimitError(reason, Math.floor(Date.now() / 1000) + 60) : new SpamBlockerAuthorizationError(reason);
+        if (error instanceof SpamBlockerRateLimitError) error.noticeShown = true;
+        vi.mocked(orchestrateUpload).mockRejectedValue(error);
+        const hook = mountHook();
+        expect(await upload(hook, fileMedia(new File(['x'], 'x.png', { type: 'image/png' })))).toBeNull();
+        expect(FileUploader.uploadPickedMedia).not.toHaveBeenCalled();
+        expect(FileUploader.uploadGeneratedMedia).not.toHaveBeenCalled();
+        if (reason === 'rate limit') expect(window.alert).not.toHaveBeenCalled();
+        else expect(window.alert).toHaveBeenCalledWith(`upload_failed: ${reason}`);
+      },
+    );
 
     it('uploads a generated Android file through the base64 path', async () => {
       uploadModeRef.value = 'preferred';

@@ -7,9 +7,13 @@ import {
   getLocalAuthorHistory,
   getPrecheckIframeUrl,
   getSpamBlockerPrecheckPlan,
+  postSignedSpamBlockerRequest,
   type LocalAuthorHistory,
 } from '../spam-blocker-precheck';
+import { SpamBlockerRateLimitError } from '../spam-blocker-errors';
 import { createSignedPrecheckPayload } from '../spam-blocker-precheck-signature';
+
+const connectionPolicyFlags = ['blockTor', 'blockVpn', 'blockProxy', 'blockDatacenter'];
 
 const spamBlocker = (serverUrl = 'https://spamblocker.bitsocial.net/api/v1') => ({ type: 'url/iframe', challenge: `${serverUrl}/precheck` });
 
@@ -141,12 +145,31 @@ describe('getSpamBlockerPrecheckPlan', () => {
     expect(plan?.getChallengeAnswers('pass')).toEqual(['pass']);
   });
 
-  it.each(['true', 'false'])('recognizes a public Tor policy of %s without putting it into API URLs', (blockTor) => {
-    const marker = { ...spamBlocker(), challenge: `${spamBlocker().challenge}?blockTor=${blockTor}` };
-    const plan = getSpamBlockerPrecheckPlan([marker], post);
+  it.each(connectionPolicyFlags.flatMap((flag) => ['true', 'false'].map((value) => [flag, value])))(
+    'recognizes %s=%s without putting policy into API URLs',
+    (flag, value) => {
+      const marker = { ...spamBlocker(), challenge: `${spamBlocker().challenge}?${flag}=${value}` };
+      const plan = getSpamBlockerPrecheckPlan([marker], post);
+      expect(plan?.serverUrl).toBe('https://spamblocker.bitsocial.net/api/v1');
+      expect(plan?.getChallengeAnswers('pass')).toEqual(['pass']);
+    },
+  );
+
+  it('recognizes a combined connection policy and verifies exemptions before uploads', () => {
+    const policy = { version: 1, rules: [{ challengeIndex: 0, type: 'verified-author-name-suffix', suffix: '.bso' }] };
+    const query = new URLSearchParams(connectionPolicyFlags.map((flag) => [flag, 'true']));
+    query.set('precheckExemptions', JSON.stringify(policy));
+    const marker = { ...spamBlocker(), challenge: `${spamBlocker().challenge}?${query}`, exclude: [{ challenges: [0] }, { roles: ['moderator'] }] };
+    const plan = getSpamBlockerPrecheckPlan([{ type: 'text/plain' }, marker], { ...post, authorRole: 'moderator' });
     expect(plan?.serverUrl).toBe('https://spamblocker.bitsocial.net/api/v1');
-    expect(plan?.getChallengeAnswers('pass')).toEqual(['pass']);
+    expect(plan?.verifyExemptions).toBe(true);
+    expect(plan?.getChallengeAnswers('pass')).toEqual(['', 'pass']);
   });
+
+  it.each(connectionPolicyFlags.flatMap((flag) => [`?${flag}=yes`, `?${flag}=`, `?${flag}=true&${flag}=false`]))(
+    'rejects malformed connection policy values and duplicates: %s',
+    (suffix) => expect(getSpamBlockerPrecheckPlan([{ ...spamBlocker(), challenge: `${spamBlocker().challenge}${suffix}` }], post)).toBeUndefined(),
+  );
 
   it('shares one pass across challenges on the same server with different Tor policies', () => {
     const challenges = ['true', 'false'].map((blockTor) => ({ ...spamBlocker(), challenge: `${spamBlocker().challenge}?blockTor=${blockTor}` }));
@@ -276,5 +299,37 @@ describe('verified exemption precheck capability', () => {
     const plan = getSpamBlockerPrecheckPlan(challenges, { isReply: false, authorRole: 'moderator' });
     expect(plan?.verifyExemptions).toBe(true);
     expect(plan?.getChallengeAnswers('pass')).toEqual(['', 'pass']);
+  });
+});
+
+describe('temporary signed request limits', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it.each(['json', 'seconds', 'date'])('reads a known retry time from %s', async (format) => {
+    const retryAt = Math.floor(Date.now() / 1000) + 60;
+    const headers = format === 'seconds' ? { 'Retry-After': '60' } : format === 'date' ? { 'Retry-After': new Date(retryAt * 1000).toUTCString() } : undefined;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response(JSON.stringify({ message: 'Too many checks', ...(format === 'json' ? { retryAt } : {}) }), { status: 429, headers })),
+    );
+    const error = await postSignedSpamBlockerRequest({ url: 'https://spamblocker.test/api/v1/precheck/exemption', body: new Uint8Array([1]) }).catch(
+      (error: unknown) => error,
+    );
+    expect(error).toBeInstanceOf(SpamBlockerRateLimitError);
+    expect((error as SpamBlockerRateLimitError).message).toBe('Too many checks');
+    expect(Math.abs((error as SpamBlockerRateLimitError).retryAt! - retryAt)).toBeLessThanOrEqual(1);
+  });
+
+  it.each([undefined, 'invalid', '-10', '99999999'])('does not invent a countdown for an unknown or invalid Retry-After: %s', async (header) => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response('{}', { status: 429, ...(header ? { headers: { 'Retry-After': header } } : {}) })),
+    );
+    const error = await postSignedSpamBlockerRequest({ url: 'https://spamblocker.test/api/v1/precheck/exemption', body: new Uint8Array([1]) }).catch(
+      (error: unknown) => error,
+    );
+    expect(error).toBeInstanceOf(SpamBlockerRateLimitError);
+    expect((error as SpamBlockerRateLimitError).retryAt).toBeUndefined();
+    expect((error as SpamBlockerRateLimitError).message).toBe('Posting is temporarily rate-limited. Try again later.');
   });
 });

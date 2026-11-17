@@ -87,15 +87,23 @@ const useSpamBlockerPrecheck = ({ communityAddress }: { communityAddress: string
         return { status: 'stopped', message: t('spam_check_not_finished') };
       }
 
+      const showRateLimitNotice = (error: unknown) =>
+        precheck.showSpamBlockerRateLimitNotice({ error, serverUrl: plan.serverUrl, addChallenge, publication: { ...draft, author: { displayName }, communityAddress } });
+
       let authorizeForgeUpload: ForgeUploadAuthorizer | undefined;
       if (plan.verifyExemptions) {
         try {
           const { createForgeUploadAuthorizer } = await import('../lib/forge-upload-authorization');
           const authorizerOptions = { serverUrl: plan.serverUrl, communityAddress, privateKey, authorAddress, authorName, parentCid: draft.parentCid };
           const exempt = await precheck.fetchPrecheckExemption({ serverUrl: plan.serverUrl, payload });
-          if (exempt) return { status: 'exempt', authorizeForgeUpload: createForgeUploadAuthorizer(authorizerOptions) };
-          authorizeForgeUpload = createForgeUploadAuthorizer({ ...authorizerOptions, precheckSessionId: sessionId });
+          authorizeForgeUpload = createForgeUploadAuthorizer({
+            ...authorizerOptions,
+            ...(exempt ? {} : { precheckSessionId: sessionId }),
+            onRateLimit: showRateLimitNotice,
+          });
+          if (exempt) return { status: 'exempt', authorizeForgeUpload };
         } catch (error) {
+          if (await showRateLimitNotice(error)) return { status: 'stopped' };
           return { status: 'stopped', message: error instanceof Error ? error.message : t('spam_check_not_finished') };
         }
       }

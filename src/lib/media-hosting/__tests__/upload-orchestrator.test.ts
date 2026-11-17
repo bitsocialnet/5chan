@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { SpamBlockerAuthorizationError, SpamBlockerRateLimitError } from '../../spam-blocker-errors';
 import { orchestrateUpload } from '../upload-orchestrator';
 import { uploadToCatbox } from '../../utils/catbox-utils';
 import { ForgeUploadError, uploadToForge } from '../../utils/forge-utils';
@@ -69,6 +70,17 @@ describe('orchestrateUpload', () => {
 
     expect(onPhaseChange.mock.calls.map(([phase]) => phase)).toEqual(['uploading', 'checking', 'uploading']);
   });
+
+  it.each(['connection_blocked', 'tor_blocked', 'invalid_upload_authorization', 'upload_authorization_unavailable', 'rate limit'])(
+    'never falls back after %s',
+    async (reason) => {
+      const error = reason === 'rate limit' ? new SpamBlockerRateLimitError(reason, Math.floor(Date.now() / 1000) + 60) : new SpamBlockerAuthorizationError(reason);
+      vi.mocked(uploadToForge).mockRejectedValue(error);
+      vi.mocked(uploadToCatbox).mockResolvedValue('https://files.catbox.moe/should-not-upload.png');
+      await expect(orchestrateUpload(new File(['a'], 'a.png', { type: 'image/png' }), ['forge', 'catbox'])).rejects.toBe(error);
+      expect(uploadToCatbox).not.toHaveBeenCalled();
+    },
+  );
 
   it('passes through a forge upload that is awaiting review', async () => {
     vi.mocked(uploadToForge).mockResolvedValue({ url: 'https://forgeimg.net/abc/game.swf', awaitingReview: true });

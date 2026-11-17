@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { FORGE_IMAGES_API_ORIGIN, FORGE_IMAGES_MEDIA_ORIGIN, FORGE_IMAGES_TURNSTILE_SITEKEY } from '../../forge-images-config';
+import { SpamBlockerAuthorizationError, SpamBlockerRateLimitError } from '../../spam-blocker-errors';
 import { ForgeUploadError, uploadToForge } from '../forge-utils';
 import { postFormData } from '../upload-request-utils';
 import type { UploadedMedia } from '../../media-hosting/types';
@@ -50,13 +51,39 @@ describe('uploadToForge', () => {
     await expect(uploadToForge(new File(['x'], 'photo.png', { type: 'image/png' }), { getToken })).resolves.toEqual({ url });
   });
 
-  it('never sends file bytes when upload authorization fails', async () => {
+  it.each(['Tor', 'VPN', 'proxy', 'datacenter'])('never sends file bytes when %s upload authorization fails', async (category) => {
+    const message = `This community restricts posting through ${category} connections.`;
     const authorizeUpload = vi.fn(async () => {
-      throw new Error('Tor exemption required');
+      throw new Error(message);
     });
-    await expect(uploadToForge(new File(['x'], 'photo.png'), { getToken, authorizeUpload })).rejects.toThrow('Tor exemption required');
+    await expect(uploadToForge(new File(['x'], 'photo.png'), { getToken, authorizeUpload })).rejects.toThrow(message);
     expect(postFormData).not.toHaveBeenCalled();
   });
+
+  it('preserves a shown authorization rate-limit notice without uploading or losing its terminal type', async () => {
+    const error = new SpamBlockerRateLimitError('Too many uploads', Math.floor(Date.now() / 1000) + 60);
+    error.noticeShown = true;
+    await expect(
+      uploadToForge(new File(['x'], 'photo.png'), {
+        getToken,
+        authorizeUpload: async () => {
+          throw error;
+        },
+      }),
+    ).rejects.toBe(error);
+    expect(postFormData).not.toHaveBeenCalled();
+  });
+
+  it.each(['tor_blocked', 'connection_blocked', 'invalid_upload_authorization', 'upload_authorization_unavailable'])(
+    'makes a Forge %s verdict terminal so another upload host cannot bypass it',
+    async (code) => {
+      const message = `Server rejected upload: ${code}`;
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue(apiError(code === 'upload_authorization_unavailable' ? 503 : 403, code, message)));
+      const error = await uploadToForge(new File(['x'], 'photo.png'), { getToken }).catch((error: unknown) => error);
+      expect(error).toBeInstanceOf(SpamBlockerAuthorizationError);
+      expect((error as Error).message).toBe(message);
+    },
+  );
 
   it('sends the verified authorization in the upload header', async () => {
     vi.stubGlobal(
