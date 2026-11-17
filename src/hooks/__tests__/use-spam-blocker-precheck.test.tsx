@@ -162,6 +162,53 @@ describe('useSpamBlockerPrecheck', () => {
     expect('challengeAnswers' in result).toBe(false);
   });
 
+  it.each(['Tor', 'Vpn', 'Proxy', 'Datacenter'])('keeps a non-exempt %s account stopped with the server category message', async (category) => {
+    const policy = { version: 1, rules: [{ challengeIndex: 0, type: 'verified-author-name-suffix', suffix: '.bso' }] };
+    const challenges = [
+      { type: 'text/plain' },
+      {
+        type: 'url/iframe',
+        challenge: `${SERVER_URL}/precheck?block${category}=true&precheckExemptions=${encodeURIComponent(JSON.stringify(policy))}`,
+        exclude: [{ challenges: [0] }],
+      },
+    ];
+    const message = `This community restricts posting through ${category.toLowerCase()} connections.`;
+    const fetchMock = vi.fn(
+      async (url: string) => new Response(JSON.stringify(url.endsWith('/exemption') ? { exempt: false } : { status: 'failed', outcome: { message } })),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    const resultPromise = start(challenges);
+    await waitForModal();
+    expect(fetchMock).toHaveBeenCalledWith(`${SERVER_URL}/precheck/exemption`, expect.anything());
+    await act(async () => {
+      getModalEntry()?.[1].publishChallengeAnswers({ challengeAnswers: [''] });
+    });
+    await expect(resultPromise).resolves.toEqual({ status: 'stopped', message });
+    expect(fetchMock.mock.calls.every(([url]) => !url.includes('/upload/'))).toBe(true);
+  });
+
+  it.each(['moderator', 'whitelist', '.bso'])('requires server verification for a %s exemption under the combined connection policy', async (exemption) => {
+    testState.account!.author = { address: 'signer-address', ...(exemption === '.bso' ? { name: 'alice.bso' } : {}) };
+    testState.account!.signer!.address = 'signer-address';
+    const policy = { version: 1, rules: [{ challengeIndex: 0, type: 'verified-author-name-suffix', suffix: '.bso' }] };
+    const challenges = [
+      { type: 'text/plain' },
+      {
+        type: 'url/iframe',
+        challenge: `${SERVER_URL}/precheck?blockTor=true&blockVpn=true&blockProxy=true&blockDatacenter=true&precheckExemptions=${encodeURIComponent(JSON.stringify(policy))}`,
+        exclude: [{ challenges: [0] }, { roles: ['moderator'] }],
+      },
+    ];
+    const fetchMock = vi.fn(async () => new Response(JSON.stringify({ exempt: true })));
+    vi.stubGlobal('fetch', fetchMock);
+    const result = await runPrecheck({ challenges, authorRole: exemption === 'moderator' ? 'moderator' : undefined, publication: { content: 'checked post' } });
+    expect(fetchMock).toHaveBeenCalledWith(`${SERVER_URL}/precheck/exemption`, expect.objectContaining({ method: 'POST' }));
+    expect(result.status).toBe('exempt');
+    expect(result.status === 'exempt' && result.authorizeForgeUpload).toBeTypeOf('function');
+    expect(useChallengesStore.getState().challenges).toHaveLength(0);
+    expect('challengeAnswers' in result).toBe(false);
+  });
+
   it('sends legacy .bso account names separately from their signer address', async () => {
     testState.account!.author = { address: 'legacy.bso' };
     testState.account!.signer!.address = 'signer-address';

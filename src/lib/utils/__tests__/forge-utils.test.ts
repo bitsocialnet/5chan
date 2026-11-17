@@ -50,11 +50,12 @@ describe('uploadToForge', () => {
     await expect(uploadToForge(new File(['x'], 'photo.png', { type: 'image/png' }), { getToken })).resolves.toEqual({ url });
   });
 
-  it('never sends file bytes when upload authorization fails', async () => {
+  it.each(['Tor', 'VPN', 'proxy', 'datacenter'])('never sends file bytes when %s upload authorization fails', async (category) => {
+    const message = `This community restricts posting through ${category} connections.`;
     const authorizeUpload = vi.fn(async () => {
-      throw new Error('Tor exemption required');
+      throw new Error(message);
     });
-    await expect(uploadToForge(new File(['x'], 'photo.png'), { getToken, authorizeUpload })).rejects.toThrow('Tor exemption required');
+    await expect(uploadToForge(new File(['x'], 'photo.png'), { getToken, authorizeUpload })).rejects.toThrow(message);
     expect(postFormData).not.toHaveBeenCalled();
   });
 

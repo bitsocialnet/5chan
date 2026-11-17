@@ -7,6 +7,7 @@ import type { Comment } from '@bitsocial/bitsocial-react-hooks';
  * showing its iframe. The pass only works for a post with the same author on the same board.
  */
 const PRECHECK_PATH_SUFFIX = '/precheck';
+const CONNECTION_POLICY_FLAGS = ['blockTor', 'blockVpn', 'blockProxy', 'blockDatacenter'];
 
 export interface SpamBlockerPrecheckPlan {
   /** The spam blocker server's API base, e.g. `https://spamblocker.bitsocial.net/api/v1`. */
@@ -69,9 +70,9 @@ const getPrecheckServerUrl = (challenge: unknown): string | undefined => {
   if (url.hash || !url.pathname.endsWith(PRECHECK_PATH_SUFFIX)) return undefined;
   // Policy metadata belongs to the public marker; the server independently verifies the board's policy.
   const policyParameters = [...url.searchParams];
-  if (policyParameters.some(([name, value]) => (name !== 'blockTor' && name !== 'precheckExemptions') || (name === 'blockTor' && value !== 'true' && value !== 'false')))
+  if (policyParameters.some(([name, value]) => name !== 'precheckExemptions' && (!CONNECTION_POLICY_FLAGS.includes(name) || (value !== 'true' && value !== 'false'))))
     return undefined;
-  if (url.searchParams.getAll('blockTor').length > 1 || url.searchParams.getAll('precheckExemptions').length > 1) return undefined;
+  if ([...CONNECTION_POLICY_FLAGS, 'precheckExemptions'].some((name) => url.searchParams.getAll(name).length > 1)) return undefined;
   if (url.searchParams.has('precheckExemptions') && !hasVerifiedExemptionCapability(challenge)) return undefined;
   return `${url.origin}${url.pathname.slice(0, -PRECHECK_PATH_SUFFIX.length)}`;
 };

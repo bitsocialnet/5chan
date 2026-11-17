@@ -11,6 +11,8 @@ import {
 } from '../spam-blocker-precheck';
 import { createSignedPrecheckPayload } from '../spam-blocker-precheck-signature';
 
+const connectionPolicyFlags = ['blockTor', 'blockVpn', 'blockProxy', 'blockDatacenter'];
+
 const spamBlocker = (serverUrl = 'https://spamblocker.bitsocial.net/api/v1') => ({ type: 'url/iframe', challenge: `${serverUrl}/precheck` });
 
 const fromBase64Url = (value: string) => Uint8Array.from(atob(value.replace(/-/g, '+').replace(/_/g, '/')), (character) => character.charCodeAt(0));
@@ -141,12 +143,31 @@ describe('getSpamBlockerPrecheckPlan', () => {
     expect(plan?.getChallengeAnswers('pass')).toEqual(['pass']);
   });
 
-  it.each(['true', 'false'])('recognizes a public Tor policy of %s without putting it into API URLs', (blockTor) => {
-    const marker = { ...spamBlocker(), challenge: `${spamBlocker().challenge}?blockTor=${blockTor}` };
-    const plan = getSpamBlockerPrecheckPlan([marker], post);
+  it.each(connectionPolicyFlags.flatMap((flag) => ['true', 'false'].map((value) => [flag, value])))(
+    'recognizes %s=%s without putting policy into API URLs',
+    (flag, value) => {
+      const marker = { ...spamBlocker(), challenge: `${spamBlocker().challenge}?${flag}=${value}` };
+      const plan = getSpamBlockerPrecheckPlan([marker], post);
+      expect(plan?.serverUrl).toBe('https://spamblocker.bitsocial.net/api/v1');
+      expect(plan?.getChallengeAnswers('pass')).toEqual(['pass']);
+    },
+  );
+
+  it('recognizes a combined connection policy and verifies exemptions before uploads', () => {
+    const policy = { version: 1, rules: [{ challengeIndex: 0, type: 'verified-author-name-suffix', suffix: '.bso' }] };
+    const query = new URLSearchParams(connectionPolicyFlags.map((flag) => [flag, 'true']));
+    query.set('precheckExemptions', JSON.stringify(policy));
+    const marker = { ...spamBlocker(), challenge: `${spamBlocker().challenge}?${query}`, exclude: [{ challenges: [0] }, { roles: ['moderator'] }] };
+    const plan = getSpamBlockerPrecheckPlan([{ type: 'text/plain' }, marker], { ...post, authorRole: 'moderator' });
     expect(plan?.serverUrl).toBe('https://spamblocker.bitsocial.net/api/v1');
-    expect(plan?.getChallengeAnswers('pass')).toEqual(['pass']);
+    expect(plan?.verifyExemptions).toBe(true);
+    expect(plan?.getChallengeAnswers('pass')).toEqual(['', 'pass']);
   });
+
+  it.each(connectionPolicyFlags.flatMap((flag) => [`?${flag}=yes`, `?${flag}=`, `?${flag}=true&${flag}=false`]))(
+    'rejects malformed connection policy values and duplicates: %s',
+    (suffix) => expect(getSpamBlockerPrecheckPlan([{ ...spamBlocker(), challenge: `${spamBlocker().challenge}${suffix}` }], post)).toBeUndefined(),
+  );
 
   it('shares one pass across challenges on the same server with different Tor policies', () => {
     const challenges = ['true', 'false'].map((blockTor) => ({ ...spamBlocker(), challenge: `${spamBlocker().challenge}?blockTor=${blockTor}` }));
