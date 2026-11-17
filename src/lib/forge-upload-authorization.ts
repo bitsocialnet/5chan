@@ -1,4 +1,4 @@
-import { SpamBlockerAuthorizationError } from './spam-blocker-errors';
+import { SpamBlockerAuthorizationError, SpamBlockerRateLimitError } from './spam-blocker-errors';
 import { postSignedSpamBlockerRequest } from './spam-blocker-precheck';
 /** Called with the exact metadata-stripped bytes that Forge will receive. */
 export type ForgeUploadAuthorizer = (file: File) => Promise<string>;
@@ -12,6 +12,7 @@ export const createForgeUploadAuthorizer =
     privateKey,
     precheckSessionId,
     parentCid,
+    onRateLimit,
   }: {
     serverUrl: string;
     communityAddress: string;
@@ -20,6 +21,7 @@ export const createForgeUploadAuthorizer =
     privateKey: string;
     precheckSessionId?: string;
     parentCid?: string;
+    onRateLimit?: (error: SpamBlockerRateLimitError) => Promise<unknown>;
   }): ForgeUploadAuthorizer =>
   async (file) => {
     try {
@@ -44,6 +46,7 @@ export const createForgeUploadAuthorizer =
         .replace(/\//g, '_')
         .replace(/=+$/, '');
     } catch (error) {
+      if (error instanceof SpamBlockerRateLimitError) await onRateLimit?.(error);
       if (error instanceof SpamBlockerAuthorizationError) throw error;
       throw new SpamBlockerAuthorizationError(error instanceof Error ? error.message : 'Could not authorize the upload. Try again.');
     }

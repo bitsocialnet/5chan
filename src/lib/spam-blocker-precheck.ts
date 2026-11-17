@@ -1,5 +1,5 @@
 import { SpamBlockerRateLimitError } from './spam-blocker-errors';
-import type { Comment } from '@bitsocial/bitsocial-react-hooks';
+import type { Challenge, Comment } from '@bitsocial/bitsocial-react-hooks';
 
 /**
  * A board running a Bitsocial Spam Blocker that accepts pre-check passes publishes `<serverUrl>/precheck`
@@ -237,6 +237,32 @@ export const createPrecheckSessionId = () => `precheck-${createUuid()}`;
 
 export const getPrecheckIframeUrl = ({ payload, serverUrl, sessionId }: { payload: string; serverUrl: string; sessionId: string }) =>
   `${serverUrl}/iframe/${encodeURIComponent(sessionId)}/precheck#payload=${payload}`;
+
+/** An informational countdown: closing it never grants a pass or retries the request. */
+export const showSpamBlockerRateLimitNotice = async ({
+  error,
+  serverUrl,
+  publication,
+  addChallenge,
+}: {
+  error: unknown;
+  serverUrl: string;
+  publication: Record<string, unknown>;
+  addChallenge: (challenge: Challenge, onAbandon?: () => void) => void;
+}): Promise<boolean> => {
+  if (!(error instanceof SpamBlockerRateLimitError) || error.retryAt === undefined) return false;
+  await new Promise<void>((resolve) => {
+    addChallenge(
+      [
+        { challenges: [{ type: 'url/iframe', challenge: `${serverUrl}/iframe/rate-limit?retryAt=${error.retryAt}` }] },
+        { ...publication, publishChallengeAnswers: () => resolve() },
+      ],
+      resolve,
+    );
+  });
+  error.noticeShown = true;
+  return true;
+};
 
 /** Reads the pre-check's outcome once its iframe has answered, which it also does after showing a rejection. */
 export const fetchPrecheckStatus = async ({
