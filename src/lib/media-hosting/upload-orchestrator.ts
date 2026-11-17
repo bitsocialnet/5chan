@@ -74,8 +74,9 @@ async function uploadViaProvider(
   authorizeForgeUpload?: ForgeUploadAuthorizer,
 ): Promise<UploadedMedia> {
   if (provider === 'forge') {
-    const { uploadToForge } = await import('../utils/forge-utils').catch(() => {
-      throw new SpamBlockerAuthorizationError('Could not load upload checks. Try again.');
+    const { uploadToForge } = await import('../utils/forge-utils').catch((error: unknown) => {
+      if (authorizeForgeUpload) throw new SpamBlockerAuthorizationError('Could not load upload checks. Try again.');
+      throw error;
     });
     return uploadToForge(await stripMediaMetadata(file), {
       onChecking: () => onPhaseChange?.('checking'),
