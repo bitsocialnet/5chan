@@ -41,6 +41,7 @@ type TestComment = {
   state?: string;
   timestamp?: number;
   title?: string;
+  updatedAt?: number;
   upvoteCount?: number;
 };
 
@@ -83,6 +84,7 @@ const testState = vi.hoisted(() => ({
     },
   } as Record<string, { address: string; directoryCode?: string; features?: Record<string, unknown>; title?: string }>,
   feed: [] as TestComment[],
+  updatedFeed: undefined as TestComment[] | undefined,
   feedOptionsCalls: [] as Array<{ communities?: unknown[]; communitiesLength?: number; newerThan?: number; postsPerPage?: number; sortType?: string }>,
   feedState: undefined as string | undefined,
   feedStateString: 'syncing' as string | undefined,
@@ -218,6 +220,7 @@ vi.mock('@bitsocial/bitsocial-react-hooks', async () => {
       });
       return {
         feed: getScopedFeed(options),
+        updatedFeed: testState.updatedFeed,
         hasMore: testState.hasMore,
         communityKeysWithMore: testState.communityKeysWithMore,
         state: testState.feedState ?? (testState.hasMore ? 'fetching-ipns' : 'succeeded'),
@@ -363,6 +366,7 @@ vi.mock('../../../components/post', () => ({
       {
         'data-author-address': post?.author?.address || '',
         'data-content': post?.content || '',
+        'data-reply-count': post?.replyCount ?? 0,
         'data-testid': 'post',
       },
       post?.cid || post?.content || 'missing-post',
@@ -459,6 +463,7 @@ describe('Board', () => {
       },
     };
     testState.feed = [];
+    testState.updatedFeed = undefined;
     testState.feedOptionsCalls = [];
     testState.feedState = undefined;
     testState.feedStateString = 'syncing';
@@ -541,6 +546,23 @@ describe('Board', () => {
         publicKey: '12D3KooWR7nTdKZqZ1twGWMfVsXYDGp1XAKUrnYznKP651jFrizE',
       },
     ]);
+  });
+
+  it('shows the latest reply counts of loaded threads', async () => {
+    const getReplyCounts = () => Array.from(container.querySelectorAll('[data-testid="post"]')).map((element) => element.getAttribute('data-reply-count'));
+    const boardOptions = { boardProps: { boardIdentifier: 'mu', viewType: 'board' as const }, initialEntry: '/mu', routePath: '/:boardIdentifier/*' };
+    testState.feed = [
+      { cid: 'busy-post', communityAddress: 'music-posting.eth', replyCount: 5, updatedAt: 100 },
+      { cid: 'quiet-post', communityAddress: 'music-posting.eth', replyCount: 0, updatedAt: 100 },
+    ];
+    testState.updatedFeed = testState.feed;
+    await renderBoard(boardOptions);
+    expect(getReplyCounts()).toEqual(['5', '0']);
+
+    // the board publishes new replies: useFeed keeps `feed` as first loaded and updates `updatedFeed`
+    testState.updatedFeed = [testState.feed[0], { ...testState.feed[1], replyCount: 9, updatedAt: 200 }];
+    await renderBoard(boardOptions);
+    expect(getReplyCounts()).toEqual(['5', '9']);
   });
 
   it('requests the active sort on a board that only preloads its hot page', async () => {

@@ -40,6 +40,7 @@ type TestComment = {
   state?: string;
   replyCount?: number;
   timestamp?: number;
+  updatedAt?: number;
 };
 
 type FilterItem = {
@@ -75,6 +76,7 @@ const testState = vi.hoisted(() => ({
     title?: string;
   }>,
   feed: [] as TestComment[],
+  updatedFeed: undefined as TestComment[] | undefined,
   feedOptionsCalls: [] as Array<{ communitiesLength?: number; filterKey?: string; newerThan?: number; postsPerPage?: number; sortType?: string }>,
   filterItems: [] as FilterItem[],
   filteredDirectoryAddresses: ['music-posting.eth'] as string[],
@@ -212,6 +214,7 @@ vi.mock('@bitsocial/bitsocial-react-hooks', async () => {
       });
       return {
         feed: getScopedFeed(options),
+        updatedFeed: testState.updatedFeed,
         hasMore: testState.hasMore,
         communityKeysWithMore: testState.communityKeysWithMore,
         expandTimeWindow: testState.expandTimeWindowMock,
@@ -350,7 +353,12 @@ vi.mock('../../../components/catalog-row', () => ({
   default: ({ estimatedHeight, row, showHiddenPosts }: { estimatedHeight?: number; row: TestComment[]; showHiddenPosts?: boolean }) =>
     createElement(
       'div',
-      { 'data-pretext-height': estimatedHeight, 'data-show-hidden': showHiddenPosts ? 'true' : 'false', 'data-testid': 'catalog-row' },
+      {
+        'data-pretext-height': estimatedHeight,
+        'data-reply-counts': row.map((comment) => comment.replyCount ?? 0).join(','),
+        'data-show-hidden': showHiddenPosts ? 'true' : 'false',
+        'data-testid': 'catalog-row',
+      },
       `row:${row.map((comment) => comment.cid).join(',')}`,
       ...row.map((comment) =>
         createElement('button', {
@@ -472,6 +480,7 @@ describe('Catalog', () => {
       },
     };
     testState.feed = [];
+    testState.updatedFeed = undefined;
     testState.feedOptionsCalls = [];
     testState.filterItems = [];
     testState.filteredDirectoryAddresses = ['music-posting.eth'];
@@ -590,6 +599,27 @@ describe('Catalog', () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+
+  it('shows the latest reply counts of loaded threads without moving them', async () => {
+    const getRow = () => container.querySelector('[data-testid="catalog-row"]');
+    testState.sortType = 'replyCount';
+    testState.feed = [
+      { cid: 'busy-post', title: 'busy', communityAddress: 'music-posting.eth', replyCount: 5, updatedAt: 100 },
+      { cid: 'quiet-post', title: 'quiet', communityAddress: 'music-posting.eth', replyCount: 0, updatedAt: 100 },
+    ];
+    testState.updatedFeed = testState.feed;
+    await renderCatalog({ initialEntry: '/mu/catalog', routePath: '/:boardIdentifier/catalog' });
+    await flushEffects();
+    expect(getRow()?.textContent).toContain('row:busy-post,quiet-post');
+    expect(getRow()?.getAttribute('data-reply-counts')).toBe('5,0');
+
+    // the board publishes new replies: useFeed keeps `feed` as first loaded and updates `updatedFeed`
+    testState.updatedFeed = [testState.feed[0], { ...testState.feed[1], replyCount: 9, updatedAt: 200 }];
+    await renderCatalog({ initialEntry: '/mu/catalog', routePath: '/:boardIdentifier/catalog' });
+    await flushEffects();
+    expect(getRow()?.textContent).toContain('row:busy-post,quiet-post');
+    expect(getRow()?.getAttribute('data-reply-counts')).toBe('5,9');
   });
 
   it('applies catalog filters and promotes top matches', async () => {
