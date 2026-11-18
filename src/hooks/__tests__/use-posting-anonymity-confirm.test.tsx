@@ -8,7 +8,6 @@ const act = (React as { act?: (cb: () => void) => void }).act as (cb: () => void
 
 const testState = vi.hoisted(() => ({
   community: undefined as { updatedAt?: number; features?: { pseudonymityMode?: string }; roles?: Record<string, { role?: string }> } | undefined,
-  directory: undefined as { features?: { pseudonymityMode?: string } } | undefined,
   account: { author: { address: '12D3KooWAuthor' }, signer: { address: '12D3KooWAuthor' } } as {
     author?: { address?: string };
     signer?: { address?: string };
@@ -18,19 +17,15 @@ const testState = vi.hoisted(() => ({
 
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 vi.mock('@bitsocial/bitsocial-react-hooks', () => ({ useAccount: () => testState.account }));
-vi.mock('../use-directories', () => ({ useDirectoryByAddress: () => testState.directory }));
 vi.mock('../use-stable-community', () => ({ getCurrentCommunity: () => testState.community }));
 
 describe('getBoardAnonymity', () => {
   it.each([
-    [{ isBoardLoaded: true, livePseudonymityMode: 'per-post', directoryPseudonymityMode: undefined }, 'anonymous'],
-    [{ isBoardLoaded: true, livePseudonymityMode: 'per-reply', directoryPseudonymityMode: undefined }, 'anonymous'],
-    [{ isBoardLoaded: true, livePseudonymityMode: undefined, directoryPseudonymityMode: undefined }, 'not-anonymous'],
-    [{ isBoardLoaded: true, livePseudonymityMode: 'none', directoryPseudonymityMode: undefined }, 'not-anonymous'],
-    // A directory entry written while the board still anonymized must not outvote the board's settings.
-    [{ isBoardLoaded: true, livePseudonymityMode: undefined, directoryPseudonymityMode: 'per-reply' }, 'not-anonymous'],
-    [{ isBoardLoaded: false, livePseudonymityMode: undefined, directoryPseudonymityMode: 'per-reply' }, 'anonymous'],
-    [{ isBoardLoaded: false, livePseudonymityMode: undefined, directoryPseudonymityMode: undefined }, 'unknown'],
+    [{ isBoardLoaded: true, livePseudonymityMode: 'per-post' }, 'anonymous'],
+    [{ isBoardLoaded: true, livePseudonymityMode: 'per-reply' }, 'anonymous'],
+    [{ isBoardLoaded: true, livePseudonymityMode: undefined }, 'not-anonymous'],
+    [{ isBoardLoaded: true, livePseudonymityMode: 'none' }, 'not-anonymous'],
+    [{ isBoardLoaded: false, livePseudonymityMode: undefined }, 'unknown'],
   ] as const)('%o is %s', (input, expected) => {
     expect(getBoardAnonymity(input)).toBe(expected);
   });
@@ -68,7 +63,6 @@ describe('usePostingAnonymityConfirm', () => {
 
   beforeEach(() => {
     testState.community = undefined;
-    testState.directory = undefined;
     testState.account = { author: { address: '12D3KooWAuthor' }, signer: { address: '12D3KooWAuthor' } };
     confirmSpy = vi.spyOn(window, 'confirm').mockImplementation(() => false);
     container = document.createElement('div');
@@ -99,19 +93,12 @@ describe('usePostingAnonymityConfirm', () => {
     expect(confirmPostingAnonymity()).toBe(true);
   });
 
-  it('says it cannot tell yet while an unlisted board is still loading', () => {
+  it('says it cannot tell yet while the board is still loading, even a board listed in a directory', () => {
+    // A directory entry can predate the board turning anonymity off, so it never stands in for the settings.
     render();
 
     expect(confirmPostingAnonymity()).toBe(false);
     expect(confirmSpy).toHaveBeenCalledWith('post_anonymity_unknown_confirm');
-  });
-
-  it('trusts the directory entry while a listed board is still loading', () => {
-    testState.directory = { features: { pseudonymityMode: 'per-post' } };
-    render();
-
-    expect(confirmPostingAnonymity()).toBe(true);
-    expect(confirmSpy).not.toHaveBeenCalled();
   });
 
   it("asks the board's staff on a board that anonymizes everyone else", () => {
@@ -122,8 +109,7 @@ describe('usePostingAnonymityConfirm', () => {
     expect(confirmSpy).toHaveBeenCalledWith('post_as_board_staff_confirm');
   });
 
-  it('asks staff on a listed board whose record has not loaded, from the role saved with the device data', () => {
-    testState.directory = { features: { pseudonymityMode: 'per-reply' } };
+  it('names staff as the reason while the board has not loaded, from the role saved with the device data', () => {
     // Saved under the board's .eth alias, which is the same board as board.bso.
     testState.account = { ...testState.account, communities: { 'board.eth': { role: { role: 'owner' } } } };
     render();
@@ -143,12 +129,11 @@ describe('usePostingAnonymityConfirm', () => {
 
   it('decides from the board as it is when called, not when the form rendered', () => {
     // A submit awaits its media checks before asking; the board can finish loading in the meantime.
-    testState.directory = { features: { pseudonymityMode: 'per-reply' } };
     render();
-    testState.community = { updatedAt: 1, features: {} };
+    testState.community = { updatedAt: 1, features: { pseudonymityMode: 'per-reply' } };
 
-    expect(confirmPostingAnonymity()).toBe(false);
-    expect(confirmSpy).toHaveBeenCalledWith('post_not_anonymous_confirm');
+    expect(confirmPostingAnonymity()).toBe(true);
+    expect(confirmSpy).not.toHaveBeenCalled();
   });
 
   it('leaves a form with no board chosen to its own validation', () => {

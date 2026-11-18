@@ -2,7 +2,6 @@ import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAccount } from '@bitsocial/bitsocial-react-hooks';
 import { getEquivalentCommunityAddressGroupKey } from '../lib/bitsocial-internals/utils';
-import { useDirectoryByAddress } from './use-directories';
 import { getCurrentCommunity } from './use-stable-community';
 
 export type BoardAnonymity = 'anonymous' | 'not-anonymous' | 'unknown';
@@ -21,22 +20,13 @@ type RecordedBoardRoles = Record<string, { role?: { role?: string } } | undefine
 const PSEUDONYMITY_EXEMPT_ROLES = new Set(['owner', 'admin', 'moderator']);
 
 /**
- * Whether a board replaces a poster's key with an alias before publishing the post. The board's own
- * settings decide once they have loaded, so a directory entry written while the board still anonymized
- * cannot hide that it stopped; until then the entry is the only evidence.
+ * Whether a board replaces a poster's key with an alias before publishing the post. Only the board's own
+ * settings count: a directory entry can predate the board turning anonymity off, so until the settings
+ * have loaded the answer is unknown.
  */
-export const getBoardAnonymity = ({
-  isBoardLoaded,
-  livePseudonymityMode,
-  directoryPseudonymityMode,
-}: {
-  isBoardLoaded: boolean;
-  livePseudonymityMode: string | undefined;
-  directoryPseudonymityMode: string | undefined;
-}): BoardAnonymity => {
-  const isMode = (mode: string | undefined) => Boolean(mode) && mode !== 'none';
-  if (isBoardLoaded) return isMode(livePseudonymityMode) ? 'anonymous' : 'not-anonymous';
-  return isMode(directoryPseudonymityMode) ? 'anonymous' : 'unknown';
+export const getBoardAnonymity = ({ isBoardLoaded, livePseudonymityMode }: { isBoardLoaded: boolean; livePseudonymityMode: string | undefined }): BoardAnonymity => {
+  if (!isBoardLoaded) return 'unknown';
+  return livePseudonymityMode && livePseudonymityMode !== 'none' ? 'anonymous' : 'not-anonymous';
 };
 
 // Boards key roles by a signer address or by a name the author posts under, so both are checked.
@@ -63,7 +53,6 @@ const usePostingAnonymityConfirm = (communityAddress: string | undefined) => {
   const authorAddress: string | undefined = account?.author?.address;
   const signerAddress: string | undefined = account?.signer?.address;
   const recordedRoles: RecordedBoardRoles | undefined = account?.communities;
-  const directoryPseudonymityMode = useDirectoryByAddress(communityAddress)?.features?.pseudonymityMode;
 
   return useCallback(() => {
     // No board chosen yet: the form's own validation reports that.
@@ -72,14 +61,14 @@ const usePostingAnonymityConfirm = (communityAddress: string | undefined) => {
     // asking, and the board's settings or roles can load in the meantime.
     const community = getCurrentCommunity(communityAddress) as CommunitySnapshot | undefined;
     const isBoardLoaded = typeof community?.updatedAt === 'number';
-    // Until the board's record loads, its roles are unknown and its directory entry would let staff through,
-    // so the role this device saved the last time it loaded the board stands in.
+    // Until the board's record loads its roles are unknown, so the role this device saved the last time it
+    // loaded the board stands in, and staff are told the real reason they are asked.
     const isStaff = isPseudonymityExempt(community?.roles, [authorAddress, signerAddress]) || (!isBoardLoaded && hasRecordedExemptRole(recordedRoles, communityAddress));
     if (isStaff) return window.confirm(t('post_as_board_staff_confirm'));
-    const anonymity = getBoardAnonymity({ isBoardLoaded, livePseudonymityMode: community?.features?.pseudonymityMode, directoryPseudonymityMode });
+    const anonymity = getBoardAnonymity({ isBoardLoaded, livePseudonymityMode: community?.features?.pseudonymityMode });
     if (anonymity === 'anonymous') return true;
     return window.confirm(t(anonymity === 'unknown' ? 'post_anonymity_unknown_confirm' : 'post_not_anonymous_confirm'));
-  }, [authorAddress, communityAddress, directoryPseudonymityMode, recordedRoles, signerAddress, t]);
+  }, [authorAddress, communityAddress, recordedRoles, signerAddress, t]);
 };
 
 export default usePostingAnonymityConfirm;
