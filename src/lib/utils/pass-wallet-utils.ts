@@ -7,7 +7,7 @@ export interface PassWallet {
 }
 
 interface PassAccount {
-  author?: { wallets?: Record<string, { address?: string } | undefined> };
+  author?: { wallets?: Record<string, { address?: unknown } | undefined> };
 }
 
 /**
@@ -24,7 +24,8 @@ export const getPassWalletMessage = (authorAddress: string, timestamp: number): 
  */
 export const getPassLoginWalletAddress = (account: unknown): string | undefined => {
   const walletAddress = (account as PassAccount | undefined)?.author?.wallets?.eth?.address;
-  if (!walletAddress) return undefined;
+  // Raw data edits and imported backups are saved unchecked, so the address may not be a string.
+  if (typeof walletAddress !== 'string' || !walletAddress) return undefined;
   const builtInAddress = getAccountVoteSigner(account)?.address;
   return builtInAddress && builtInAddress.toLowerCase() === walletAddress.toLowerCase() ? undefined : walletAddress;
 };

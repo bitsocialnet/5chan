@@ -56,26 +56,11 @@ describe('imported account metadata', () => {
     expect(result.account.subscriptions).toEqual(['business.eth', 'technology.bso', 'music.bso']);
   });
 
-  it("replaces a backup's user name with its key, since 5chan names boards only", () => {
-    const result = JSON.parse(
-      processImportedAccount(
-        JSON.stringify({ account: { author: { address: 'anon.bso', displayName: 'Anon' }, signer: { address: '12D3KooWKey' } } }),
-        false,
-        browserWindow,
-      ),
-    );
+  it("keeps a backup's name and its wallets, since board roles and wallet signatures are bound to that name", () => {
+    const author = { address: 'mod.bso', displayName: 'Anon', wallets: { eth: { address: '0xabc', timestamp: 1, signature: { signature: '0xsig', type: 'eip191' } } } };
+    const result = JSON.parse(processImportedAccount(JSON.stringify({ account: { author, signer: { address: '12D3KooWKey' } } }), false, browserWindow));
 
-    expect(result.account.author).toEqual({ address: '12D3KooWKey', displayName: 'Anon' });
-  });
-
-  it('keeps the author address of a backup that already posts under its key or has no key address to fall back to', () => {
-    const keyed = JSON.parse(
-      processImportedAccount(JSON.stringify({ account: { author: { address: '12D3KooWKey' }, signer: { address: '12D3KooWKey' } } }), false, browserWindow),
-    );
-    const withoutSigner = JSON.parse(processImportedAccount(JSON.stringify({ account: { author: { address: 'anon.bso' } } }), false, browserWindow));
-
-    expect(keyed.account.author.address).toBe('12D3KooWKey');
-    expect(withoutSigner.account.author.address).toBe('anon.bso');
+    expect(result.account.author).toEqual(author);
   });
 });
 

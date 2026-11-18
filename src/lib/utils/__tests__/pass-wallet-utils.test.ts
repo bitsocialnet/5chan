@@ -29,6 +29,12 @@ describe('getPassLoginWalletAddress', () => {
     expect(getPassLoginWalletAddress(undefined)).toBeUndefined();
     expect(getPassLoginWalletAddress({ author: {} })).toBeUndefined();
   });
+
+  it('treats a non-string address from hand-edited data as no login instead of throwing', () => {
+    const account = { signer: { privateKey: PRIVATE_KEY_ONE_BASE64 }, author: { wallets: { eth: { address: 42 } } } };
+
+    expect(getPassLoginWalletAddress(account)).toBeUndefined();
+  });
 });
 
 describe('isEthWalletAddress', () => {

@@ -22,8 +22,7 @@ interface PkcOptions {
 
 interface ImportedAccount {
   account?: {
-    author?: { address?: string; [key: string]: unknown };
-    signer?: { address?: string };
+    author?: { address?: string };
     chainProviders?: PkcOptions['chainProviders'];
     communities?: Record<string, unknown>;
     name?: string;
@@ -174,20 +173,6 @@ export const processImportedAccount = (accountJson: string, isElectron: boolean,
 
   if (!importedAccount.account || typeof importedAccount.account !== 'object' || Array.isArray(importedAccount.account)) {
     throw new Error('Backup is missing its data.');
-  }
-  // 5chan gives names to boards only. A backup made by another Bitsocial app can post under a user name,
-  // which 5chan would keep sending to boards with no setting to show or change it, so the imported copy
-  // goes back to posting under its key. Without the key's address there is nothing to fall back to.
-  const importedAuthor = importedAccount.account.author;
-  const importedSignerAddress = importedAccount.account.signer?.address;
-  if (
-    importedAuthor &&
-    typeof importedAuthor.address === 'string' &&
-    importedAuthor.address.includes('.') &&
-    typeof importedSignerAddress === 'string' &&
-    importedSignerAddress
-  ) {
-    importedAuthor.address = importedSignerAddress;
   }
   if (importedAccount.account.communities) {
     const subscriptions = Array.isArray(importedAccount.account.subscriptions) ? importedAccount.account.subscriptions : [];

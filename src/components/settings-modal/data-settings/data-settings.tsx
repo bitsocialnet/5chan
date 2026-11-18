@@ -56,12 +56,17 @@ const DataSettingsEditor = ({
   const isElectron = isElectronRuntime(window);
   const [hasCopiedIdentifier, setHasCopiedIdentifier] = useState(false);
 
-  const deleteLocalData = () => {
+  const deleteLocalData = async () => {
     const accountName = account?.name;
     if (!accountName) return;
     if (!window.confirm(t('delete_local_data_confirm'))) return;
     if (!window.confirm(t('double_confirm'))) return;
-    deleteAccount(accountName);
+    // If the data survives, so does its tripcode password.
+    const deleted = await withErrorHandling(async () => {
+      await deleteAccount(accountName);
+      return true;
+    }, reportError);
+    if (!deleted) return;
     // The tripcode password is kept apart from the rest of the local data, so it goes with it here, with
     // the keys derived from it this session.
     const tripcodeInput = account?.id ? useTripcodeStore.getState().inputs[account.id] : undefined;
@@ -123,8 +128,9 @@ const DataSettingsEditor = ({
     reader.readAsText(file);
   };
 
-  // The key the boards know this device by: what a board owner whitelists or gives a moderator role.
-  const identifier = account?.signer?.address ?? account?.author?.address;
+  // The address this device posts under, which is what a board owner whitelists or gives a moderator role.
+  // It is the key's address unless a name was carried over from an older device or another app's backup.
+  const identifier = account?.author?.address ?? account?.signer?.address;
   const handleCopyIdentifier = async () => {
     if (!identifier) return;
     const copied = await withErrorHandling(async () => {

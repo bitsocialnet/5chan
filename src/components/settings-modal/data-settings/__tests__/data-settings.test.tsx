@@ -255,8 +255,14 @@ describe('DataSettings', () => {
     expect(hookMocks.setActiveAccount).toHaveBeenCalledWith('Imported');
   });
 
-  it("copies the key's identifier, which is what a board owner whitelists", async () => {
+  it('copies the address this device posts under, which is what a board owner whitelists', async () => {
     clipboardMocks.copyToClipboard.mockResolvedValue(undefined);
+    hookMocks.useAccount.mockReturnValue({
+      id: 'test-id',
+      name: 'Account 1',
+      author: { address: 'mod.bso', shortAddress: 'mod.bso' },
+      signer: { address: '12D3KooWSigner' },
+    });
 
     render();
 
@@ -266,8 +272,22 @@ describe('DataSettings', () => {
       await Promise.resolve();
     });
 
-    expect(clipboardMocks.copyToClipboard).toHaveBeenCalledWith('12D3KooWSigner');
+    expect(clipboardMocks.copyToClipboard).toHaveBeenCalledWith('mod.bso');
     expect(getButtonByText('copied')).toBeTruthy();
+  });
+
+  it("falls back to the key's address when the data has no author address", async () => {
+    clipboardMocks.copyToClipboard.mockResolvedValue(undefined);
+    hookMocks.useAccount.mockReturnValue({ id: 'test-id', name: 'Account 1', signer: { address: '12D3KooWSigner' } });
+
+    render();
+
+    await act(async () => {
+      getButtonByText('copy_bitsocial_identifier').click();
+      await Promise.resolve();
+    });
+
+    expect(clipboardMocks.copyToClipboard).toHaveBeenCalledWith('12D3KooWSigner');
   });
 
   it('deletes the local data only after both confirmations succeed', async () => {
@@ -296,6 +316,24 @@ describe('DataSettings', () => {
 
     expect(useTripcodeStore.getState().inputs['test-id']).toBeUndefined();
     await vi.waitFor(() => expect(tripcodeCryptoMocks.forgetTripcodeKeys).toHaveBeenCalledWith('#hunter2##swordfish'));
+  });
+
+  it('keeps the tripcode and reports the error when the local data could not be deleted', async () => {
+    useTripcodeStore.getState().setTripcodeInput('test-id', '#hunter2##swordfish');
+    hookMocks.deleteAccount.mockRejectedValueOnce(new Error('database is locked'));
+    confirmSpy.mockReturnValueOnce(true).mockReturnValueOnce(true);
+
+    render();
+
+    await act(async () => {
+      getButtonByText('delete_local_data').click();
+    });
+    await flushMicrotasks();
+
+    expect(alertSpy).toHaveBeenCalledWith('database is locked');
+    expect(useTripcodeStore.getState().inputs['test-id']).toBe('#hunter2##swordfish');
+    expect(tripcodeCryptoMocks.forgetTripcodeKeys).not.toHaveBeenCalled();
+    useTripcodeStore.getState().setTripcodeInput('test-id', undefined);
   });
 
   it('does not delete the local data when the first confirmation is rejected', async () => {
