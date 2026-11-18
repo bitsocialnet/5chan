@@ -606,5 +606,7 @@
   "tripcode_sign_failed": "无法为此版块签署你的 tripcode。请等待版块加载完成后重试，或不使用 tripcode 发帖。",
   "tripcode_retry_mismatch": "要重试此帖子，请在名称栏中重新输入它的 tripcode，或删除该帖子。",
   "directory_vote_lapse_notice": "只要你继续访问此目录或你投票支持的板块，你的投票就会一直有效；最早可能在你最后一次访问两周后失效。",
-  "account_switched_before_publish": "你在这条帖子发布前切换了账户，因此它没有被发送。请用你想使用的账户重新发帖。"
+  "account_switched_before_publish": "你在这条帖子发布前切换了账户，因此它没有被发送。请用你想使用的账户重新发帖。",
+  "post_not_anonymous_confirm": "此板块不会对发帖者进行匿名化。你的 Bitsocial 标识符将随此帖子一同公开，并会把它与你在其他同类板块上的帖子关联起来。仍要发帖吗？",
+  "post_anonymity_unknown_confirm": "此板块的设置尚未加载，因此 5chan 无法判断它是否会对发帖者进行匿名化。你的 Bitsocial 标识符可能会随此帖子一同公开。仍要发帖吗？"
 }

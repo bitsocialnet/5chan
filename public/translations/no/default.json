@@ -606,5 +606,7 @@
   "tripcode_sign_failed": "Kunne ikke signere tripkoden din for dette boardet. Vent til boardet er lastet inn og prøv igjen, eller post uten tripkode.",
   "tripcode_retry_mismatch": "For å prøve dette innlegget på nytt, skriv tripkoden igjen i navnefeltet, eller slett innlegget.",
   "directory_vote_lapse_notice": "Stemmen din teller så lenge du fortsetter å besøke denne katalogen eller brettet du stemte på, og kan utløpe allerede to uker etter ditt siste besøk.",
-  "account_switched_before_publish": "Du byttet konto før dette innlegget ble publisert, så det ble ikke sendt. Send det på nytt fra kontoen du vil bruke."
+  "account_switched_before_publish": "Du byttet konto før dette innlegget ble publisert, så det ble ikke sendt. Send det på nytt fra kontoen du vil bruke.",
+  "post_not_anonymous_confirm": "Denne tavlen anonymiserer ikke dem som poster. Bitsocial-identifikatoren din blir publisert sammen med dette innlegget og knytter det til innleggene dine på andre tavler som denne. Poste likevel?",
+  "post_anonymity_unknown_confirm": "Innstillingene for denne tavlen er ikke lastet inn ennå, så 5chan kan ikke vite om den anonymiserer dem som poster. Bitsocial-identifikatoren din kan bli publisert sammen med dette innlegget. Poste likevel?"
 }

@@ -626,5 +626,7 @@
   "tripcode_sign_failed": "Could not sign your tripcode for this board. Wait for the board to load and try again, or post without a tripcode.",
   "tripcode_retry_mismatch": "To retry this post, type its tripcode in the name field again, or delete the post.",
   "directory_vote_lapse_notice": "Your vote stays counted while you keep visiting this directory or the board you voted for, and can expire as soon as two weeks after your last visit.",
-  "account_switched_before_publish": "You switched accounts before this post was published, so it was not sent. Post it again from the account you want to use."
+  "account_switched_before_publish": "You switched accounts before this post was published, so it was not sent. Post it again from the account you want to use.",
+  "post_not_anonymous_confirm": "This board does not anonymize posters. Your Bitsocial identifier will be published with this post and will link it to your posts on other boards like this one. Post anyway?",
+  "post_anonymity_unknown_confirm": "This board's settings have not loaded yet, so 5chan cannot tell whether it anonymizes posters. Your Bitsocial identifier may be published with this post. Post anyway?"
 }

@@ -606,5 +606,7 @@
   "tripcode_sign_failed": "Je tripcode kon niet worden ondertekend voor dit board. Wacht tot het board is geladen en probeer het opnieuw, of post zonder tripcode.",
   "tripcode_retry_mismatch": "Typ de tripcode van deze post opnieuw in het naamveld om het opnieuw te proberen, of verwijder de post.",
   "directory_vote_lapse_notice": "Je stem blijft meetellen zolang je deze directory of het board waarop je stemde blijft bezoeken, en kan al twee weken na je laatste bezoek verlopen.",
-  "account_switched_before_publish": "Je bent van account gewisseld voordat deze post werd gepubliceerd, dus hij is niet verzonden. Plaats hem opnieuw vanaf het account dat je wilt gebruiken."
+  "account_switched_before_publish": "Je bent van account gewisseld voordat deze post werd gepubliceerd, dus hij is niet verzonden. Plaats hem opnieuw vanaf het account dat je wilt gebruiken.",
+  "post_not_anonymous_confirm": "Dit board anonimiseert posters niet. Je Bitsocial-identificator wordt samen met dit bericht gepubliceerd en koppelt het aan je berichten op andere boards zoals dit. Toch posten?",
+  "post_anonymity_unknown_confirm": "De instellingen van dit board zijn nog niet geladen, dus 5chan kan niet bepalen of het posters anonimiseert. Je Bitsocial-identificator wordt mogelijk samen met dit bericht gepubliceerd. Toch posten?"
 }

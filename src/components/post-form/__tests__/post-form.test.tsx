@@ -40,6 +40,7 @@ const testState = vi.hoisted(() => ({
   analyticsMock: vi.fn(),
   chooseFileMock: vi.fn(),
   chooseFilesMock: vi.fn(),
+  confirmPostingAnonymityMock: vi.fn(() => true),
   uploadAttachmentMock: vi.fn(),
   precheckMock: vi.fn(),
   precheckHookOptions: undefined as { communityAddress?: string } | undefined,
@@ -339,6 +340,11 @@ vi.mock('../../../hooks/use-publish-reply', async () => {
     },
   };
 });
+
+// The form only asks this hook whether to go on; what it decides is covered by the hook's own tests.
+vi.mock('../../../hooks/use-posting-anonymity-confirm', () => ({
+  default: () => testState.confirmPostingAnonymityMock,
+}));
 
 vi.mock('../../../hooks/use-spam-blocker-precheck', () => ({
   default: (options: { communityAddress?: string }) => {
@@ -652,6 +658,8 @@ describe('PostForm', () => {
     testState.chooseFilesMock.mockReset();
     testState.chooseFilesMock.mockResolvedValue([]);
     testState.uploadAttachmentMock.mockReset();
+    testState.confirmPostingAnonymityMock.mockReset();
+    testState.confirmPostingAnonymityMock.mockReturnValue(true);
     testState.precheckMock.mockReset();
     testState.precheckMock.mockResolvedValue({ status: 'skipped' });
     usePendingUploadPostStore.setState({ pendingUploadPosts: [] });
@@ -790,6 +798,11 @@ describe('PostForm', () => {
     if (spoilerToggle) {
       await dispatchChange(spoilerToggle, true);
     }
+
+    // Declining the warning for a board that does not anonymize its posters keeps the thread unsent.
+    testState.confirmPostingAnonymityMock.mockReturnValueOnce(false);
+    await clickByText(table as HTMLTableElement, 'post');
+    expect(testState.publishPostMock).not.toHaveBeenCalled();
 
     (globalThis.alert as ReturnType<typeof vi.fn>).mockClear();
     await clickByText(table as HTMLTableElement, 'post');

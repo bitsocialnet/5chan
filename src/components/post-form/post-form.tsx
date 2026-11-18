@@ -70,6 +70,7 @@ import usePublishReply from '../../hooks/use-publish-reply';
 import useTripcodeNameField from '../../hooks/use-tripcode-name-field';
 import { useFileUpload } from '../../hooks/use-file-upload';
 import useSpamBlockerPrecheck from '../../hooks/use-spam-blocker-precheck';
+import usePostingAnonymityConfirm from '../../hooks/use-posting-anonymity-confirm';
 import { useShowLinkField } from '../../hooks/use-show-link-field';
 import { getFileAttachment, getFileDropHandlers, getFilePasteHandler, uploadGalleryAttachments, type FilePasteEvent } from '../../lib/media-hosting/attached-media';
 import type { AttachedMedia, UploadPhase } from '../../lib/media-hosting/types';
@@ -784,6 +785,8 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
     onPendingPost: navigateToPendingPost,
   });
   const effectiveBoardAddress = communityAddress || draft.communityAddress || publishPostOptions.communityAddress;
+  // A thread started from a multiboard view goes to the board picked in the form; a reply's board is the page's.
+  const confirmPostingAnonymity = usePostingAnonymityConfirm(effectiveBoardAddress);
 
   const textRef = useRef<HTMLTextAreaElement>(null);
   const nameRef = useRef<HTMLInputElement>(null);
@@ -1025,6 +1028,11 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
 
         if ((isInAllView || isInSubscriptionsView || isInModView) && !draft.communityAddress) {
           setFormError(`${t('error')}: ${t('no_board_selected_warning')}`);
+          return;
+        }
+
+        if (!confirmPostingAnonymity()) {
+          attempt?.finish('post_cancelled');
           return;
         }
 
@@ -1275,6 +1283,11 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
 
         if (publishContent.trim().length > 2000) {
           setFormError(`${t('error')}: ${t('field_too_long')}`);
+          return;
+        }
+
+        if (!confirmPostingAnonymity()) {
+          outcome = 'post_cancelled';
           return;
         }
 

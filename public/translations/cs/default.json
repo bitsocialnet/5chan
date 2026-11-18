@@ -606,5 +606,7 @@
   "tripcode_sign_failed": "Tripcode se pro tuto nástěnku nepodařilo podepsat. Počkej, až se nástěnka načte, a zkus to znovu, nebo pošli příspěvek bez tripcode.",
   "tripcode_retry_mismatch": "Pro nový pokus o odeslání tohoto příspěvku znovu zadej jeho tripcode do pole jména, nebo příspěvek smaž.",
   "directory_vote_lapse_notice": "Váš hlas se počítá, dokud budete navštěvovat tento adresář nebo desku, pro kterou jste hlasovali, a může vypršet už dva týdny po vaší poslední návštěvě.",
-  "account_switched_before_publish": "Účet byl přepnut ještě před zveřejněním tohoto příspěvku, takže nebyl odeslán. Odešli ho znovu z účtu, který chceš použít."
+  "account_switched_before_publish": "Účet byl přepnut ještě před zveřejněním tohoto příspěvku, takže nebyl odeslán. Odešli ho znovu z účtu, který chceš použít.",
+  "post_not_anonymous_confirm": "Tato deska přispěvatele neanonymizuje. Váš identifikátor Bitsocial bude zveřejněn s tímto příspěvkem a propojí jej s vašimi příspěvky na dalších takových deskách. Přesto odeslat?",
+  "post_anonymity_unknown_confirm": "Nastavení této desky se ještě nenačetlo, takže 5chan nedokáže zjistit, zda přispěvatele anonymizuje. Váš identifikátor Bitsocial může být zveřejněn s tímto příspěvkem. Přesto odeslat?"
 }

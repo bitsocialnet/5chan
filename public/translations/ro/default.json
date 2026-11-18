@@ -606,5 +606,7 @@
   "tripcode_sign_failed": "Nu s-a putut semna tripcode-ul tău pentru acest board. Așteaptă să se încarce boardul și încearcă din nou, sau postează fără tripcode.",
   "tripcode_retry_mismatch": "Ca să reîncerci această postare, scrie din nou tripcode-ul ei în câmpul de nume sau șterge postarea.",
   "directory_vote_lapse_notice": "Votul tău contează cât timp continui să vizitezi acest director sau board-ul pentru care ai votat și poate expira chiar și la doar două săptămâni după ultima ta vizită.",
-  "account_switched_before_publish": "Ai schimbat contul înainte ca această postare să fie publicată, așa că nu a fost trimisă. Public-o din nou din contul pe care vrei să îl folosești."
+  "account_switched_before_publish": "Ai schimbat contul înainte ca această postare să fie publicată, așa că nu a fost trimisă. Public-o din nou din contul pe care vrei să îl folosești.",
+  "post_not_anonymous_confirm": "Acest tablou nu anonimizează autorii postărilor. Identificatorul tău Bitsocial va fi publicat împreună cu această postare și o va lega de postările tale de pe alte tablouri ca acesta. Postezi oricum?",
+  "post_anonymity_unknown_confirm": "Setările acestui tablou nu s-au încărcat încă, așa că 5chan nu poate ști dacă anonimizează autorii postărilor. Identificatorul tău Bitsocial ar putea fi publicat împreună cu această postare. Postezi oricum?"
 }

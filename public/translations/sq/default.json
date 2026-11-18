@@ -606,5 +606,7 @@
   "tripcode_sign_failed": "Tripcode-i yt nuk mund të nënshkruhej për këtë bord. Prit që bordi të ngarkohet dhe provo përsëri, ose posto pa tripcode.",
   "tripcode_retry_mismatch": "Për ta provuar sërish këtë postim, shkruaj përsëri tripcode-in e tij në fushën e emrit, ose fshije postimin.",
   "directory_vote_lapse_notice": "Vota jote vazhdon të numërohet për sa kohë vazhdon të vizitosh këtë directory ose bordin për të cilin votove, dhe mund të skadojë qysh dy javë pas vizitës sate të fundit.",
-  "account_switched_before_publish": "Ndërrove llogarinë para se ky postim të publikohej, prandaj nuk u dërgua. Postoje sërish nga llogaria që dëshiron të përdorësh."
+  "account_switched_before_publish": "Ndërrove llogarinë para se ky postim të publikohej, prandaj nuk u dërgua. Postoje sërish nga llogaria që dëshiron të përdorësh.",
+  "post_not_anonymous_confirm": "Ky bord nuk i anonimizon postuesit. Identifikuesi juaj Bitsocial do të publikohet bashkë me këtë postim dhe do ta lidhë atë me postimet tuaja në borde të tjera si ky. Të postohet gjithsesi?",
+  "post_anonymity_unknown_confirm": "Parametrat e këtij bordi nuk janë ngarkuar ende, ndaj 5chan nuk mund ta dijë nëse ai i anonimizon postuesit. Identifikuesi juaj Bitsocial mund të publikohet bashkë me këtë postim. Të postohet gjithsesi?"
 }

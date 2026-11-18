@@ -606,5 +606,7 @@
   "tripcode_sign_failed": "Tripcode'un bu pano için imzalanamadı. Panonun yüklenmesini bekleyip tekrar dene ya da tripcode olmadan gönder.",
   "tripcode_retry_mismatch": "Bu gönderiyi yeniden denemek için tripcode'unu ad alanına tekrar yaz ya da gönderiyi sil.",
   "directory_vote_lapse_notice": "Bu directory'yi veya oy verdiğiniz panoyu ziyaret etmeye devam ettiğiniz sürece oyunuz sayılır ve son ziyaretinizden en erken iki hafta sonra sona erebilir.",
-  "account_switched_before_publish": "Bu gönderi yayımlanmadan önce hesap değiştirdin, bu yüzden gönderilmedi. Kullanmak istediğin hesaptan yeniden gönder."
+  "account_switched_before_publish": "Bu gönderi yayımlanmadan önce hesap değiştirdin, bu yüzden gönderilmedi. Kullanmak istediğin hesaptan yeniden gönder.",
+  "post_not_anonymous_confirm": "Bu pano gönderenleri anonimleştirmiyor. Bitsocial tanımlayıcınız bu gönderiyle birlikte yayımlanacak ve onu bunun gibi diğer panolardaki gönderilerinizle ilişkilendirecek. Yine de gönderilsin mi?",
+  "post_anonymity_unknown_confirm": "Bu panonun ayarları henüz yüklenmedi, bu yüzden 5chan panonun gönderenleri anonimleştirip anonimleştirmediğini bilemiyor. Bitsocial tanımlayıcınız bu gönderiyle birlikte yayımlanabilir. Yine de gönderilsin mi?"
 }

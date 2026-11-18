@@ -606,5 +606,7 @@
   "tripcode_sign_failed": "Không thể ký tripcode của bạn cho board này. Hãy đợi board tải xong rồi thử lại, hoặc đăng bài không dùng tripcode.",
   "tripcode_retry_mismatch": "Để thử lại bài này, hãy nhập lại tripcode của nó vào ô tên, hoặc xóa bài.",
   "directory_vote_lapse_notice": "Phiếu của bạn vẫn được tính khi bạn còn tiếp tục truy cập thư mục này hoặc bảng bạn đã bầu, và có thể hết hạn chỉ sau hai tuần kể từ lần truy cập cuối cùng của bạn.",
-  "account_switched_before_publish": "Bạn đã chuyển tài khoản trước khi bài này được đăng, nên bài chưa được gửi. Hãy đăng lại từ tài khoản bạn muốn dùng."
+  "account_switched_before_publish": "Bạn đã chuyển tài khoản trước khi bài này được đăng, nên bài chưa được gửi. Hãy đăng lại từ tài khoản bạn muốn dùng.",
+  "post_not_anonymous_confirm": "Bảng này không ẩn danh người đăng. Mã định danh Bitsocial của bạn sẽ được công khai cùng bài này và sẽ liên kết bài này với các bài của bạn trên những bảng khác giống như bảng này. Vẫn đăng?",
+  "post_anonymity_unknown_confirm": "Cài đặt của bảng này chưa tải xong, nên 5chan không thể biết bảng có ẩn danh người đăng hay không. Mã định danh Bitsocial của bạn có thể sẽ được công khai cùng bài này. Vẫn đăng?"
 }

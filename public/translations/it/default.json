@@ -606,5 +606,7 @@
   "tripcode_sign_failed": "Impossibile firmare il tuo tripcode per questa board. Attendi che la board si carichi e riprova, oppure pubblica senza tripcode.",
   "tripcode_retry_mismatch": "Per riprovare questo post, scrivi di nuovo il suo tripcode nel campo del nome, oppure elimina il post.",
   "directory_vote_lapse_notice": "Il tuo voto resta valido finché continui a visitare questa directory o la board che hai votato, e può scadere già due settimane dopo la tua ultima visita.",
-  "account_switched_before_publish": "Hai cambiato account prima che questo post venisse pubblicato, quindi non è stato inviato. Pubblicalo di nuovo dall'account che vuoi usare."
+  "account_switched_before_publish": "Hai cambiato account prima che questo post venisse pubblicato, quindi non è stato inviato. Pubblicalo di nuovo dall'account che vuoi usare.",
+  "post_not_anonymous_confirm": "Questa board non anonimizza gli autori. Il tuo identificatore Bitsocial verrà pubblicato con questo post e lo collegherà ai tuoi post su altre board come questa. Pubblicare comunque?",
+  "post_anonymity_unknown_confirm": "Le impostazioni di questa board non sono ancora state caricate, quindi 5chan non può sapere se anonimizza gli autori. Il tuo identificatore Bitsocial potrebbe essere pubblicato con questo post. Pubblicare comunque?"
 }
