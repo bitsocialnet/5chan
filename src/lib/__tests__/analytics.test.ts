@@ -49,6 +49,8 @@ describe('analytics privacy', () => {
     ['/search/catalog?query=secret', '/search/catalog'],
     ['/search/directory', '/search/directory'],
     ['/settings/raw-data', '/settings'],
+    ['/pass/auth', '/pass/auth'],
+    ['/pass/other', '/not-found'],
     ['/private-board.bso/board-settings', '/settings'],
     ['/g/thread/private-cid/settings?section=private', '/settings'],
     ['/g/mod/queue', '/mod/queue'],
