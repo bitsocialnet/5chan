@@ -45,6 +45,7 @@ import useIsMobile from '../../hooks/use-is-mobile';
 import useModalStackZIndex from '../../hooks/use-modal-stack-z-index';
 import { useFileUpload } from '../../hooks/use-file-upload';
 import useSpamBlockerPrecheck from '../../hooks/use-spam-blocker-precheck';
+import usePostingAnonymityConfirm from '../../hooks/use-posting-anonymity-confirm';
 import { useShowLinkField } from '../../hooks/use-show-link-field';
 import { getFileAttachment, getFileDropHandlers, getFilePasteHandler, uploadGalleryAttachments } from '../../lib/media-hosting/attached-media';
 import type { AttachedMedia } from '../../lib/media-hosting/types';
@@ -161,6 +162,7 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
       // The thread's inline reply form keeps its own entry under the thread's cid, which can be this parentCid.
       storeKey: `${parentCid}:reply-modal`,
     });
+  const confirmPostingAnonymity = usePostingAnonymityConfirm(communityAddress);
   const account = useAccount();
   const { nameFieldValue, saveNameField, readNameField } = useTripcodeNameField(account);
   const accountAddress = account?.author?.address;
@@ -315,6 +317,11 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
 
         if (publishContent.trim().length > 2000) {
           setError(t('error') + ': ' + t('field_too_long'));
+          return;
+        }
+
+        if (!confirmPostingAnonymity()) {
+          outcome = 'post_cancelled';
           return;
         }
 

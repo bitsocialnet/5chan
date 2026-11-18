@@ -1313,7 +1313,7 @@ describe('Catalog', () => {
     expect(container.textContent).toContain('not_mod_of_any_board');
     expect(container.textContent).toContain('go_to_settings_to_import_mod_account');
     expect(container.querySelector('output')?.className).toContain('modEmptyState');
-    expect(container.querySelector('a')?.getAttribute('href')).toBe('/mod/settings?section=account-settings');
+    expect(container.querySelector('a')?.getAttribute('href')).toBe('/mod/settings?section=advanced-settings');
     expect(container.querySelectorAll('[data-testid="catalog-row"]')).toHaveLength(0);
   });
 

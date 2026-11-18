@@ -46,8 +46,8 @@ Use a [Playwright trace](../../playwright-cli/references/tracing.md) to correlat
 The configured `perf:check` scenarios run three samples at 4x CPU by default. `perf:record` defaults to one sample at normal CPU; pass explicit `--cpu` and `--samples` for a comparable before/after study. Use `--target`, `--scenario`, `--url`, and `--output` to select the flow, reuse an instrumented server, or choose artifact storage. Output includes JSON and native Chrome performance traces. The runner waits for observable scenario readiness and a bounded quiet period for the targeted components before each phase; this does not imply global quiescence. It resets the collector, records all commits during the action, and checks the phase against its budgets.
 
 ```bash
-corepack yarn perf:check --scenario crypto-address-draft
-corepack yarn perf:record --scenario crypto-address-draft --cpu 4 --samples 3
+corepack yarn perf:check --scenario interface-checkbox
+corepack yarn perf:record --scenario interface-checkbox --cpu 4 --samples 3
 corepack yarn doctor:check --base HEAD
 ```
 
@@ -63,7 +63,7 @@ Normal production builds exclude both the collector and Profiler wrapper. For op
 
 ### Covered scenarios and budgets
 
-5chan covers unsaved crypto-address typing/clearing, an interface checkbox toggle, and the existing populated catalog benchmark. Settings scenarios use `/#/subs/settings` with a fresh, empty subscription list and wait for its empty-state message, isolating live all-feed footer updates; the separate catalog scenario supplies populated-content coverage. The catalog fixture exercises real CatalogRow/virtualizer components with seeded content and intercepted fixture media; it is not evidence of live peer transport latency. The typing scenarios require exactly five committed local updates for five keystrokes and one for clearing. The catalog bounds runaway commits and requires populated output; its detailed instance counts stay in the report.
+5chan covers an interface checkbox toggle, reply-draft typing, and the existing populated catalog benchmark. The settings scenario uses `/#/subs/settings` with a fresh, empty subscription list and waits for its empty-state message, isolating live all-feed footer updates; the separate catalog scenario supplies populated-content coverage. The catalog fixture exercises real CatalogRow/virtualizer components with seeded content and intercepted fixture media; it is not evidence of live peer transport latency. The catalog bounds runaway commits and requires populated output; its detailed instance counts stay in the report.
 
 `scripts/react-perf/config.mjs` owns the budgets. Exact component-update limits reflect each tested state change; timing caps are generous smoke limits rather than calibrated performance targets. Diagnose any failing sample from its trace and component/commit data before changing a limit. Establish tighter latency/render budgets from repeated baselines with fixed content and throttling.
 

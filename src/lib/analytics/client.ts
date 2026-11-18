@@ -34,6 +34,7 @@ export const getAnalyticsPath = (pathname: string): string => {
   const lastPart = parts[parts.length - 1];
   if (lastPart === 'settings' || lastPart === 'board-settings') return '/settings';
   if (parts[0] === 'pending') return '/pending';
+  if (parts[0] === 'pass' && parts[1] === 'auth' && parts.length === 2) return '/pass/auth';
   if (publicPages.has(parts[0])) return parts.length === 1 ? `/${parts[0]}` : '/not-found';
   if (parts[0] === 'search') {
     if (parts.length === 1) return '/search';

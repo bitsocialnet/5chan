@@ -1,12 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  getDefaultElectronConfig,
-  getDefaultWebConfig,
-  getImportedAccountActiveName,
-  processImportedAccount,
-  readImportedAccountAddresses,
-  rememberImportedAccountAddress,
-} from './account-import-utils';
+import { getDefaultElectronConfig, getDefaultWebConfig, getImportedAccountActiveName, processImportedAccount } from './account-import-utils';
 import { shouldUpgradeBrowserPureP2PAccount } from '../p2p-runtime';
 
 const browserWindow = {} as Window;
@@ -35,8 +28,8 @@ describe('imported account activation name', () => {
 
 describe('imported account metadata', () => {
   it('rejects invalid backup shapes before calling hooks', () => {
-    expect(() => processImportedAccount('null', false, browserWindow)).toThrow('Account backup must be a JSON object.');
-    expect(() => processImportedAccount('{}', false, browserWindow)).toThrow('Account backup is missing account data.');
+    expect(() => processImportedAccount('null', false, browserWindow)).toThrow('Backup must be a JSON object.');
+    expect(() => processImportedAccount('{}', false, browserWindow)).toThrow('Backup is missing its data.');
   });
 
   it('preserves legacy, short-address, and custom account names', () => {
@@ -63,18 +56,11 @@ describe('imported account metadata', () => {
     expect(result.account.subscriptions).toEqual(['business.eth', 'technology.bso', 'music.bso']);
   });
 
-  it('tracks every imported address while maintaining the legacy latest-address key', () => {
-    const values = new Map<string, string>();
-    const storage = {
-      getItem: (key: string) => values.get(key) ?? null,
-      setItem: (key: string, value: string) => values.set(key, value),
-    };
+  it("keeps a backup's name and its wallets, since board roles and wallet signatures are bound to that name", () => {
+    const author = { address: 'mod.bso', displayName: 'Anon', wallets: { eth: { address: '0xabc', timestamp: 1, signature: { signature: '0xsig', type: 'eip191' } } } };
+    const result = JSON.parse(processImportedAccount(JSON.stringify({ account: { author, signer: { address: '12D3KooWKey' } } }), false, browserWindow));
 
-    rememberImportedAccountAddress('address-1', storage);
-    rememberImportedAccountAddress('address-2', storage);
-
-    expect(readImportedAccountAddresses(storage)).toEqual(['address-1', 'address-2']);
-    expect(storage.getItem('importedAccountAddress')).toBe('address-2');
+    expect(result.account.author).toEqual(author);
   });
 });
 

@@ -17,13 +17,6 @@ const prepare = async ({ page }) => {
 
 // Count limits model the state changes in each action. Timing limits are deliberately generous
 // smoke limits at 4x CPU, not latency targets; calibrate only against repeatable recorded evidence.
-const inputBudget = (updates) => ({
-  components: { CryptoAddressSettingContent: { minUpdates: updates, maxUpdates: updates } },
-  maxCommits: 30,
-  maxRenderMs: 1000,
-  maxActionMs: 5000,
-});
-
 export default {
   targets: [
     {
@@ -38,43 +31,6 @@ export default {
         populatedReplies,
         replyDraft,
         searchPostStatus,
-        {
-          name: 'crypto-address-draft',
-          path: '/#/subs/settings',
-          prepare,
-          async run({ page, measure }) {
-            await page.locator('dialog[open]').waitFor();
-            // Fresh accounts have no subscriptions: avoid live all-board lifecycle
-            // updates behind the modal while exercising the same real controls.
-            await page.getByText('You have not subscribed to any board yet.', { exact: true }).waitFor();
-            const input = page.getByRole('textbox', { name: 'Crypto address', exact: true });
-            if (!(await input.isVisible())) await page.locator('#account-settings > button').click();
-            await input.waitFor();
-            // The account selector is populated after local account initialization.
-            await page.waitForFunction(() => {
-              const accountSection = document.querySelector('#account-settings')?.nextElementSibling;
-              return Boolean(accountSection?.querySelector('select option')?.value);
-            });
-            await input.fill('');
-            await settle(page);
-            await measure(
-              'type-five-characters',
-              async () => {
-                await input.pressSequentially('Alice');
-                assert.equal(await input.inputValue(), 'Alice');
-              },
-              inputBudget(5),
-            );
-            await measure(
-              'clear-draft',
-              async () => {
-                await input.fill('');
-                assert.equal(await input.inputValue(), '');
-              },
-              inputBudget(1),
-            );
-          },
-        },
         {
           name: 'interface-checkbox',
           path: '/#/subs/settings',

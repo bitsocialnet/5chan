@@ -10,9 +10,7 @@ import useSettingsUpgradeReviewStore from '../../stores/use-settings-upgrade-rev
 import { getSettingsSectionPath } from '../../lib/utils/route-utils';
 import { MD5_FILTER_SECTION_ID } from '../../lib/utils/image-filter-utils';
 
-const loadAccountSettings = createSectionLoader(() => import('./account-settings/account-settings'));
-const loadCryptoAddressSetting = createSectionLoader(() => import('./crypto-address-setting/crypto-address-setting'));
-const loadCryptoWalletsSetting = createSectionLoader(() => import('./crypto-wallets-setting/crypto-wallets-setting'));
+const loadDataSettings = createSectionLoader(() => import('./data-settings/data-settings'));
 const loadInterfaceSettings = createSectionLoader(() => import('./interface-settings/interface-settings'));
 const loadMediaHostingSettings = createSectionLoader(() => import('./media-hosting-settings/media-hosting-settings'));
 const loadStatsProvidersSettings = createSectionLoader(() => import('./stats-providers-settings/stats-providers-settings'));
@@ -25,26 +23,24 @@ const alwaysVisibleSectionLoaders = [
   loadInterfaceSettings,
   loadMediaHostingSettings,
   loadStatsProvidersSettings,
-  loadAccountSettings,
-  loadCryptoAddressSetting,
-  loadCryptoWalletsSetting,
   loadSubscriptionsSetting,
   loadTrustedBoardLinksSetting,
   loadAdvancedSettings,
+  loadDataSettings,
 ];
 
 const allSectionIds = [
   'interface-settings',
   'media-hosting-settings',
   'stats-providers-settings',
-  'account-settings',
   'subscriptions-settings',
   'board-link-permissions-settings',
   'advanced-settings',
 ];
 
 const hashToSection = (hash: string, sectionIds = allSectionIds): string | null => {
-  if (hash === 'crypto-address-settings' || hash === 'crypto-wallet-settings') return 'account-settings';
+  // Links from before the account section moved into advanced settings.
+  if (hash === 'account-settings' || hash === 'crypto-address-settings' || hash === 'crypto-wallet-settings') return 'advanced-settings';
   if (hash === MD5_FILTER_SECTION_ID) return 'interface-settings';
   if (sectionIds.includes(hash)) return hash;
   return null;
@@ -114,7 +110,6 @@ const SettingsModal = () => {
   const showInterfaceSettings = visibleExpandedSections.has('interface-settings');
   const showMediaHostingSettings = visibleExpandedSections.has('media-hosting-settings');
   const showStatsProvidersSettings = visibleExpandedSections.has('stats-providers-settings');
-  const showAccountSettings = visibleExpandedSections.has('account-settings');
   const showSubscriptionsSettings = visibleExpandedSections.has('subscriptions-settings');
   const showBoardLinkPermissionsSettings = visibleExpandedSections.has('board-link-permissions-settings');
   const showAdvancedSettings = visibleExpandedSections.has('advanced-settings');
@@ -221,27 +216,6 @@ const SettingsModal = () => {
             <LazySection load={loadStatsProvidersSettings} />
           </Suspense>
         )}
-        <div id='account-settings' className={`${styles.setting} ${styles.category}`}>
-          <button type='button' className={styles.categoryButton} onClick={() => handleCategoryClick('account-settings')}>
-            <span className={showAccountSettings ? styles.hideButton : styles.showButton} />
-            {t('bitsocial_account')}
-          </button>
-        </div>
-        {showAccountSettings && (
-          <>
-            <Suspense fallback={null}>
-              <LazySection load={loadAccountSettings} />
-            </Suspense>
-            <div className={styles.subSectionHeader}>{t('crypto_address')}</div>
-            <Suspense fallback={null}>
-              <LazySection load={loadCryptoAddressSetting} />
-            </Suspense>
-            <div className={styles.subSectionHeader}>{t('crypto_wallets')}</div>
-            <Suspense fallback={null}>
-              <LazySection load={loadCryptoWalletsSetting} />
-            </Suspense>
-          </>
-        )}
         <div id='subscriptions-settings' className={`${styles.setting} ${styles.category}`}>
           <button type='button' className={styles.categoryButton} onClick={() => handleCategoryClick('subscriptions-settings')}>
             <span className={showSubscriptionsSettings ? styles.hideButton : styles.showButton} />
@@ -271,9 +245,15 @@ const SettingsModal = () => {
           </button>
         </div>
         {showAdvancedSettings && (
-          <Suspense fallback={null}>
-            <LazySection load={loadAdvancedSettings} />
-          </Suspense>
+          <>
+            <Suspense fallback={null}>
+              <LazySection load={loadAdvancedSettings} />
+            </Suspense>
+            <div className={styles.subSectionHeader}>{t('local_data')}</div>
+            <Suspense fallback={null}>
+              <LazySection load={loadDataSettings} />
+            </Suspense>
+          </>
         )}
         {showsP2PStatsSection && (
           <>

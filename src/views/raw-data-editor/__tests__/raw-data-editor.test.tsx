@@ -106,7 +106,7 @@ vi.mock('ace-builds/src-noconflict/worker-json?url', () => ({ default: '/worker-
 
 let root: Root;
 let container: HTMLDivElement;
-let AccountDataEditor: React.ComponentType;
+let RawDataEditor: React.ComponentType;
 
 const queryEditor = () => container.querySelector<HTMLTextAreaElement>('[data-testid="ace-editor"]') ?? container.querySelector<HTMLTextAreaElement>('textarea');
 
@@ -157,16 +157,16 @@ const changeEditorValue = async (value: string) => {
 
 const renderEditor = () => {
   act(() => {
-    root.render(createElement(AccountDataEditor));
+    root.render(createElement(RawDataEditor));
   });
 };
 
-describe('AccountDataEditor', () => {
+describe('RawDataEditor', () => {
   beforeEach(async () => {
     vi.resetModules();
     vi.clearAllMocks();
     delete (globalThis as typeof globalThis & { ace?: unknown }).ace;
-    AccountDataEditor = (await import('../account-data-editor')).default;
+    RawDataEditor = (await import('../raw-data-editor')).default;
     testState.account = { id: 'test-id', name: 'Account 1', author: { address: '0x123', shortAddress: '0x1...3' } };
     testState.aceImportGate = Promise.resolve();
     testState.alertMock.mockReset();
@@ -202,7 +202,7 @@ describe('AccountDataEditor', () => {
 
     await clickButton('go_back');
 
-    expect(testState.navigateMock).toHaveBeenCalledWith('/subs/settings?section=account-settings');
+    expect(testState.navigateMock).toHaveBeenCalledWith('/subs/settings?section=advanced-settings');
   });
 
   it('loads the editor after continue and respects custom return routes', async () => {
@@ -267,7 +267,7 @@ describe('AccountDataEditor', () => {
 
     expect(testState.buildSavePayloadMock).toHaveBeenCalledWith({ account: { name: 'changed' } }, 'test-id');
     expect(testState.setAccountMock).toHaveBeenCalledWith({ id: 'test-id', name: 'changed' });
-    expect(testState.navigateMock).toHaveBeenCalledWith('/subs/settings?section=account-settings');
+    expect(testState.navigateMock).toHaveBeenCalledWith('/subs/settings?section=advanced-settings');
   });
 
   it('surfaces save errors from setAccount', async () => {

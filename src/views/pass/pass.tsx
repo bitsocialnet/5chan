@@ -55,6 +55,9 @@ const Pass = () => {
                 vip: <Link to='/vip' />,
               }}
             />
+            <div className={styles.login}>
+              <Trans i18nKey='pass_login_prompt' components={{ 1: <Link to='/pass/auth' /> }} />
+            </div>
           </div>
         </div>
         <div className={styles.columns}>

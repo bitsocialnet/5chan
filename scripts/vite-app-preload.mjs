@@ -20,7 +20,7 @@ export const ROUTE_PRELOAD_DATA_ID = 'fivechan-route-preload';
 export const ROUTE_PRELOAD_SCRIPT = `(function () {
   try {
     var path = location.hash.replace(/^#/, '').split(/[?#]/)[0].replace(/\\/+$/, '') || '/';
-    if (path === '/' || /^\\/(faq|pass|rules|blotter|settings\\/account-data|not-allowed|not-found)$/.test(path) || /^\\/rules\\//.test(path) || /\\/board-settings$/.test(path)) return;
+    if (path === '/' || /^\\/(faq|pass|pass\\/auth|rules|blotter|settings\\/raw-data|not-allowed|not-found)$/.test(path) || /^\\/rules\\//.test(path) || /\\/board-settings$/.test(path)) return;
     var files = JSON.parse(document.getElementById('${ROUTE_PRELOAD_DATA_ID}').textContent);
     for (var index = 0; index < files.length; index += 1) {
       var link = document.createElement('link');

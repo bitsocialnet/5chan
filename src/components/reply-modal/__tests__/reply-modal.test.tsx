@@ -33,6 +33,7 @@ const testState = vi.hoisted(() => ({
   >,
   chooseFileMock: vi.fn(),
   chooseFilesMock: vi.fn(),
+  confirmPostingAnonymityMock: vi.fn(() => true),
   uploadAttachmentMock: vi.fn(),
   precheckMock: vi.fn(),
   isMobile: false,
@@ -271,6 +272,11 @@ vi.mock('../../../hooks/use-is-mobile', () => ({
   default: () => testState.isMobile,
 }));
 
+// The form only asks this hook whether to go on; what it decides is covered by the hook's own tests.
+vi.mock('../../../hooks/use-posting-anonymity-confirm', () => ({
+  default: () => testState.confirmPostingAnonymityMock,
+}));
+
 vi.mock('../../../hooks/use-spam-blocker-precheck', () => ({
   default: () => testState.precheckMock,
 }));
@@ -478,6 +484,8 @@ describe('ReplyModal', () => {
     testState.chooseFilesMock.mockReset();
     testState.chooseFilesMock.mockResolvedValue([]);
     testState.uploadAttachmentMock.mockReset();
+    testState.confirmPostingAnonymityMock.mockReset();
+    testState.confirmPostingAnonymityMock.mockReturnValue(true);
     testState.precheckMock.mockReset();
     testState.precheckMock.mockResolvedValue({ status: 'skipped' });
     testState.isMobile = false;
@@ -2128,6 +2136,19 @@ describe('ReplyModal', () => {
 
       expect(container.querySelector('fieldset')?.disabled).toBe(true);
       expect(container.querySelector('textarea')?.matches(':disabled')).toBe(true);
+    });
+
+    it('neither uploads nor publishes when the poster declines to post on a board that does not anonymize', async () => {
+      testState.confirmPostingAnonymityMock.mockReturnValue(false);
+      testState.chooseFileMock.mockResolvedValue(pngAttachment);
+      await renderReplyModal('/all/thread/post-1');
+      await chooseFile();
+      await clickButtonByText('post');
+
+      expect(testState.confirmPostingAnonymityMock).toHaveBeenCalledTimes(1);
+      expect(testState.uploadAttachmentMock).not.toHaveBeenCalled();
+      expect(testState.publishReplyMock).not.toHaveBeenCalled();
+      expect(testState.replyDraft?.attachment).toBe(pngAttachment);
     });
 
     it('keeps the attachment and does not publish when its upload fails', async () => {

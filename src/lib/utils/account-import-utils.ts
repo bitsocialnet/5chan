@@ -33,34 +33,6 @@ interface ImportedAccount {
   [key: string]: unknown;
 }
 
-const IMPORTED_ACCOUNT_ADDRESSES_STORAGE_KEY = 'importedAccountAddresses';
-const IMPORTED_ACCOUNT_ADDRESS_LEGACY_STORAGE_KEY = 'importedAccountAddress';
-
-export const readImportedAccountAddresses = (storage: Pick<Storage, 'getItem'> = localStorage): string[] => {
-  try {
-    const storedAddresses = storage.getItem(IMPORTED_ACCOUNT_ADDRESSES_STORAGE_KEY);
-    const parsedAddresses: unknown = storedAddresses ? JSON.parse(storedAddresses) : null;
-    const normalizedAddresses = Array.isArray(parsedAddresses)
-      ? parsedAddresses.filter((address): address is string => typeof address === 'string' && address.length > 0)
-      : [];
-    const legacyAddress = storage.getItem(IMPORTED_ACCOUNT_ADDRESS_LEGACY_STORAGE_KEY);
-    return [...new Set(legacyAddress ? [...normalizedAddresses, legacyAddress] : normalizedAddresses)];
-  } catch (error) {
-    console.warn('Failed to read imported account addresses from localStorage:', error);
-    return [];
-  }
-};
-
-export const rememberImportedAccountAddress = (address: string, storage: Pick<Storage, 'getItem' | 'setItem'> = localStorage) => {
-  try {
-    const importedAddresses = readImportedAccountAddresses(storage);
-    storage.setItem(IMPORTED_ACCOUNT_ADDRESSES_STORAGE_KEY, JSON.stringify([...new Set([...importedAddresses, address])]));
-    storage.setItem(IMPORTED_ACCOUNT_ADDRESS_LEGACY_STORAGE_KEY, address);
-  } catch (error) {
-    console.warn('Failed to save imported account address to localStorage:', error);
-  }
-};
-
 export const getImportedAccountActiveName = (importedAccountName: string | undefined, accounts: Array<{ name?: string }>): string | undefined => {
   if (!importedAccountName) {
     return undefined;
@@ -192,15 +164,15 @@ export const processImportedAccount = (accountJson: string, isElectron: boolean,
   try {
     const parsedAccount: unknown = JSON.parse(accountJson);
     if (!parsedAccount || typeof parsedAccount !== 'object' || Array.isArray(parsedAccount)) {
-      throw new Error('Account backup must be a JSON object.');
+      throw new Error('Backup must be a JSON object.');
     }
     importedAccount = parsedAccount as ImportedAccount;
   } catch (error) {
-    throw new Error(`Failed to parse account data: ${error instanceof Error ? error.message : 'Unknown parsing error'}`);
+    throw new Error(`Failed to parse backup: ${error instanceof Error ? error.message : 'Unknown parsing error'}`);
   }
 
   if (!importedAccount.account || typeof importedAccount.account !== 'object' || Array.isArray(importedAccount.account)) {
-    throw new Error('Account backup is missing account data.');
+    throw new Error('Backup is missing its data.');
   }
   if (importedAccount.account.communities) {
     const subscriptions = Array.isArray(importedAccount.account.subscriptions) ? importedAccount.account.subscriptions : [];

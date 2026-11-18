@@ -110,8 +110,9 @@ const FAQ_SECTIONS: FAQSection[] = [
         question: 'How do I post anonymously?',
         answer: (
           <>
-            Leave the <code>[Name]</code> field blank. The post will display as Anonymous. 5chan still signs posts with your local account key, so anonymity means "not
-            using a display name", not "no cryptographic identity exists".
+            Leave the <code>[Name]</code> field blank. The post will display as Anonymous. 5chan has no user accounts, but it signs each post with a key kept on your
+            device. Boards listed in the 5chan directories replace that key with a per-thread or per-reply ID before the post is published. A board never does this for
+            its own owner, admins or moderators, whose posts keep the key. 5chan asks you first before posting anywhere your key would be published.
           </>
         ),
       },
@@ -120,9 +121,8 @@ const FAQ_SECTIONS: FAQSection[] = [
         question: 'Can I register a username?',
         answer: (
           <>
-            There is no central username registry. 5chan creates a local account for you, and you can edit your display name in the post form or settings. For a stronger
-            identity, you can use a readable crypto address such as <code>myname.bso</code> after configuring the matching Bitsocial record. Display names by themselves
-            are not proof of identity.
+            No. There are no user accounts and no username registry, and <code>.bso</code> names are for boards only. You can type any name in the post form, and a{' '}
+            <HashLink to='#tripcodes'>tripcode</HashLink> if you want to prove that several posts are yours. Display names by themselves are not proof of identity.
           </>
         ),
       },
@@ -227,8 +227,8 @@ const FAQ_SECTIONS: FAQSection[] = [
         question: 'How do I delete or edit my own post?',
         answer: (
           <>
-            Use the post menu or edit controls when they are available. Author deletion and editing depend on your local account, the board's pseudonymity mode, and
-            whether the app can prove that your account authored the post. Deleting publishes an edit to the board; it is not a global erase button for every copy that
+            Use the post menu or edit controls when they are available. Author deletion and editing depend on the key kept on your device, the board's pseudonymity mode,
+            and whether the app can prove that this device authored the post. Deleting publishes an edit to the board; it is not a global erase button for every copy that
             may already exist elsewhere.
           </>
         ),
@@ -437,8 +437,8 @@ const FAQ_SECTIONS: FAQSection[] = [
         question: 'How do subscriptions work?',
         answer: (
           <>
-            Subscribe to a board to keep it in your top bar and in <Link to='/subs'>/subs/</Link>. Subscriptions are stored in your local account data, so back up your
-            account if you want to move them to another device.
+            Subscribe to a board to keep it in your top bar and in <Link to='/subs'>/subs/</Link>. Subscriptions are stored on your device, so use Download Backup in the
+            advanced settings if you want to move them to another device.
           </>
         ),
       },
@@ -447,10 +447,10 @@ const FAQ_SECTIONS: FAQSection[] = [
         question: 'Why are my (You)s missing on another device?',
         answer: (
           <>
-            5chan adds <code>(You)</code> to quotes of your posts by checking the post history stored in your local account data. Posts made on another device or browser
-            are not in that history, and most boards replace your address with a per-thread or per-reply ID, so 5chan cannot recognize them as yours. On the device you
-            posted from, use Download Backup in the account settings, then use Import Account Backup here and select the imported account. The import is a separate copy,
-            so posts made from this device under your previous account keep their <code>(You)</code> only while that account is selected.
+            5chan adds <code>(You)</code> to quotes of your posts by checking the post history stored on your device. Posts made on another device or browser are not in
+            that history, and most boards replace your address with a per-thread or per-reply ID, so 5chan cannot recognize them as yours. On the device you posted from,
+            use Download Backup in the advanced settings, then use Import Backup here. The import is a separate copy, so posts made from this device before the import
+            keep their <code>(You)</code> only while the earlier copy is selected in the advanced settings.
           </>
         ),
       },
@@ -699,7 +699,7 @@ const FAQ_SECTIONS: FAQSection[] = [
         question: 'What personal information is collected?',
         answer: (
           <>
-            5chan does not require a central account signup. Your app stores account data, settings, subscriptions, and caches locally. Network peers, gateways, challenge
+            5chan has no accounts and no signup. Your app stores its posting key, settings, subscriptions, and caches locally. Network peers, gateways, challenge
             providers, and external media hosts may still see normal network metadata. Public crypto addresses, on-chain pass activity, and linked media URLs should be
             treated as public.
           </>

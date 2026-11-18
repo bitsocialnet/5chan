@@ -1,0 +1,111 @@
+.content {
+  box-sizing: border-box;
+  width: min(480px, 100%);
+  margin: 0 auto;
+  padding: 0 5px 2em;
+  text-align: center;
+}
+
+.title {
+  margin: 0.5em 0;
+  font-size: 131%;
+  font-weight: 700;
+}
+
+.table {
+  margin: 0 auto;
+  border-spacing: 2px;
+  text-align: left;
+}
+
+.table th {
+  padding: 2px 5px;
+  border: 1px solid var(--homepage-box-border-color);
+  background: var(--homepage-box-bar-background-color);
+  color: var(--homepage-box-bar-text-color);
+  font-size: 10pt;
+  font-weight: 700;
+  text-align: left;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 0;
+}
+
+.table input,
+.table textarea {
+  box-sizing: border-box;
+  width: 300px;
+  max-width: 100%;
+  margin: 0;
+  padding: 2px;
+  border: 1px solid #aaa;
+  font-family: monospace;
+  font-size: 12px;
+}
+
+.table textarea {
+  display: block;
+  resize: vertical;
+  word-break: break-all;
+}
+
+.fieldTip {
+  padding: 2px 0;
+  font-size: 0.85em;
+}
+
+.fieldTip button,
+.loggedIn button,
+.submitCell button {
+  cursor: pointer;
+}
+
+.submitCell {
+  text-align: center;
+}
+
+.submitCell button {
+  margin-top: 5px;
+}
+
+.loggedIn p {
+  margin: 1em 0;
+  overflow-wrap: anywhere;
+}
+
+.error {
+  margin: 1em 0;
+  color: red;
+  font-weight: 700;
+}
+
+.separator {
+  margin: 1.5em 0 1em;
+  border: 0;
+  border-top: 1px solid var(--homepage-box-border-color);
+}
+
+.note {
+  margin: 0.5em 0;
+  font-size: 93%;
+  line-height: 1.5em;
+}
+
+@media (max-width: 480px) {
+  .table,
+  .table tbody,
+  .table tr,
+  .table th,
+  .table td {
+    display: block;
+  }
+
+  .table input,
+  .table textarea {
+    width: 100%;
+    font-size: 16px;
+  }
+}

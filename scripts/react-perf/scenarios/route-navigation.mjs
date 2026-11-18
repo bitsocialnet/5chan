@@ -25,7 +25,7 @@ const routes = [
   ['pending-empty', '/pending/0', 'PendingPost'],
   ['not-allowed', '/not-allowed', 'NotAllowed'],
   ['not-found', '/not-found', 'NotFound'],
-  ['account-editor-warning', '/settings/account-data', 'AccountDataEditor'],
+  ['account-editor-warning', '/settings/raw-data', 'RawDataEditor'],
 ];
 
 // Keep traced sweeps bounded; each group starts in a fresh browser context.

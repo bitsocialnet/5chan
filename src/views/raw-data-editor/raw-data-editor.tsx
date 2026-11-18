@@ -4,13 +4,13 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { setAccount, useAccount } from '@bitsocial/bitsocial-react-hooks';
 import { buildEditableAccountJson, safeParseAccountJson, buildSavePayload } from '../../lib/utils/account-editor-utils';
 import JsonEditor from '../../components/json-editor';
-import styles from './account-data-editor.module.css';
+import styles from './raw-data-editor.module.css';
 
-const DEFAULT_RETURN_TO = '/subs/settings?section=account-settings';
+const DEFAULT_RETURN_TO = '/subs/settings?section=advanced-settings';
 
 type EditorState = { phase: 'warning' | 'editor'; text: string };
 
-const AccountDataEditor = () => {
+const RawDataEditor = () => {
   const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
@@ -45,7 +45,7 @@ const AccountDataEditor = () => {
       <div className={styles.container}>
         <div className={styles.warningGate}>
           <div className={styles.warningTitle}>{t('private_key_warning_title')}</div>
-          <div className={styles.warningDescription}>{t('private_key_warning_description')}</div>
+          <div className={styles.warningDescription}>{t('raw_data_warning_description')}</div>
           <div className={styles.warningButtons}>
             <button type='button' onClick={handleGoBack}>
               {t('go_back')}
@@ -61,7 +61,7 @@ const AccountDataEditor = () => {
 
   return (
     <div className={styles.container}>
-      <JsonEditor value={text} onChange={(nextText) => setEditorState((current) => ({ ...current, text: nextText }))} ariaLabel={t('account_data')} />
+      <JsonEditor value={text} onChange={(nextText) => setEditorState((current) => ({ ...current, text: nextText }))} ariaLabel={t('raw_data')} />
       <div className={styles.controls}>
         <button type='button' onClick={handleSave}>
           {t('save_changes')}
@@ -77,4 +77,4 @@ const AccountDataEditor = () => {
   );
 };
 
-export default AccountDataEditor;
+export default RawDataEditor;

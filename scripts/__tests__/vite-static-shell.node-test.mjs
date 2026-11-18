@@ -147,7 +147,7 @@ const load = ({ hash = '', storage = {}, globals = {}, width = 1280, date = NON_
 test('applies the theme React applies on its first commit', () => {
   assert.equal(load().bodyClass, 'yotsuba');
   assert.equal(load({ hash: '#/rules' }).bodyClass, 'yotsuba');
-  for (const hash of ['#/faq', '#/faq/', '#/directory/settings', '#/not-found', '#/subs/unknown', '#/search/unknown'])
+  for (const hash of ['#/faq', '#/faq/', '#/pass/auth', '#/directory/settings', '#/not-found', '#/subs/unknown', '#/search/unknown'])
     assert.equal(load({ hash }).bodyClass, 'yotsuba', hash);
   // Other paths under a static page's name are board routes to React Router.
   for (const hash of ['#/faq/2', '#/pass/settings', '#/pending', '#/settings']) assert.equal(load({ hash }).bodyClass, 'yotsuba-b', hash);
