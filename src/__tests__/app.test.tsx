@@ -599,6 +599,13 @@ describe('App', () => {
     expect(container.querySelector('[data-testid="rules-view"]')).toBeNull();
   });
 
+  it("sends the raw data editor's former path to the editor instead of the board routes", async () => {
+    await renderApp('/settings/account-data');
+
+    expect(latestLocation).toBe('/settings/raw-data');
+    expect(container.querySelector('[data-testid="raw-data-editor-view"]')).toBeTruthy();
+  });
+
   it('canonicalizes board address routes to directory codes while preserving query strings', async () => {
     await renderApp('/music-posting.eth/thread/comment-1?focus=1');
 

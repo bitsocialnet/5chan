@@ -288,6 +288,8 @@ const appRoutes = (
         </ImportErrorBoundary>
       }
     />
+    {/* The raw data editor's former path; without this, a saved link would fall through to the board routes. */}
+    <Route path='/settings/account-data' element={<Navigate to='/settings/raw-data' replace />} />
     <Route
       path='/:boardIdentifier/board-settings'
       element={
