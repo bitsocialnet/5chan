@@ -9,7 +9,11 @@ const act = (React as { act?: (cb: () => void) => void }).act as (cb: () => void
 const testState = vi.hoisted(() => ({
   community: undefined as { updatedAt?: number; features?: { pseudonymityMode?: string }; roles?: Record<string, { role?: string }> } | undefined,
   directory: undefined as { features?: { pseudonymityMode?: string } } | undefined,
-  account: { author: { address: '12D3KooWAuthor' }, signer: { address: '12D3KooWAuthor' } } as { author?: { address?: string }; signer?: { address?: string } },
+  account: { author: { address: '12D3KooWAuthor' }, signer: { address: '12D3KooWAuthor' } } as {
+    author?: { address?: string };
+    signer?: { address?: string };
+    communities?: Record<string, { role?: { role?: string } }>;
+  },
 }));
 
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
@@ -65,6 +69,7 @@ describe('usePostingAnonymityConfirm', () => {
   beforeEach(() => {
     testState.community = undefined;
     testState.directory = undefined;
+    testState.account = { author: { address: '12D3KooWAuthor' }, signer: { address: '12D3KooWAuthor' } };
     confirmSpy = vi.spyOn(window, 'confirm').mockImplementation(() => false);
     container = document.createElement('div');
     root = createRoot(container);
@@ -115,6 +120,25 @@ describe('usePostingAnonymityConfirm', () => {
 
     expect(confirmPostingAnonymity()).toBe(false);
     expect(confirmSpy).toHaveBeenCalledWith('post_as_board_staff_confirm');
+  });
+
+  it('asks staff on a listed board whose record has not loaded, from the role saved with the device data', () => {
+    testState.directory = { features: { pseudonymityMode: 'per-reply' } };
+    // Saved under the board's .eth alias, which is the same board as board.bso.
+    testState.account = { ...testState.account, communities: { 'board.eth': { role: { role: 'owner' } } } };
+    render();
+
+    expect(confirmPostingAnonymity()).toBe(false);
+    expect(confirmSpy).toHaveBeenCalledWith('post_as_board_staff_confirm');
+  });
+
+  it("trusts the loaded board's roles over a saved role it has since removed", () => {
+    testState.community = { updatedAt: 1, features: { pseudonymityMode: 'per-reply' }, roles: {} };
+    testState.account = { ...testState.account, communities: { 'board.bso': { role: { role: 'moderator' } } } };
+    render();
+
+    expect(confirmPostingAnonymity()).toBe(true);
+    expect(confirmSpy).not.toHaveBeenCalled();
   });
 
   it('decides from the board as it is when called, not when the form rendered', () => {
