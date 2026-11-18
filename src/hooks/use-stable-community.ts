@@ -81,6 +81,9 @@ const isCommunityEqual = (prev: any, next: any): boolean => {
   );
 };
 
+// For an event handler that must see a community as it is when the handler runs, not as it was rendered.
+export const getCurrentCommunity = (communityAddress: string | undefined) => getCommunityByAddress(useCommunitiesStore.getState().communities, communityAddress);
+
 export const useStableCommunity = (communityAddress: string | undefined) => {
   const community = useCommunitiesStore((state) => {
     return getCommunityByAddress(state.communities, communityAddress) as Community | undefined;

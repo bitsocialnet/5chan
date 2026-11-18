@@ -111,8 +111,8 @@ const FAQ_SECTIONS: FAQSection[] = [
         answer: (
           <>
             Leave the <code>[Name]</code> field blank. The post will display as Anonymous. 5chan has no user accounts, but it signs each post with a key kept on your
-            device. Boards listed in the 5chan directories replace that key with a per-thread or per-reply ID before the post is published, and 5chan asks you first
-            before posting to a board that does not.
+            device. Boards listed in the 5chan directories replace that key with a per-thread or per-reply ID before the post is published. A board never does this for
+            its own owner, admins or moderators, whose posts keep the key. 5chan asks you first before posting anywhere your key would be published.
           </>
         ),
       },
