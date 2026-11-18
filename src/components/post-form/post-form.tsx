@@ -1031,11 +1031,6 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
           return;
         }
 
-        if (!confirmPostingAnonymity()) {
-          attempt?.finish('post_cancelled');
-          return;
-        }
-
         const flagPublishOptions = getCommentFlagPublishOptionsForDirectory(directoryEntry, flagRef.current?.value);
         const flashTagPublishOptions = getFlashTagPublishOptionsForDirectoryCode(postOptionsDirectoryCode, flashTagRef.current?.value);
         const flairs = mergeFlairs(flagPublishOptions.flairs, flashTagPublishOptions.flairs);
@@ -1060,6 +1055,13 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
             }),
           );
           hideForm();
+          return;
+        }
+
+        // Asked only for a post that is about to be sent: one already uploading was confirmed when it was
+        // sent, and cancelling here could not stop it.
+        if (!confirmPostingAnonymity()) {
+          attempt?.finish('post_cancelled');
           return;
         }
 

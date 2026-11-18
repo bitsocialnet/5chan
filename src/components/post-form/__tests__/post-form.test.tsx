@@ -2139,10 +2139,14 @@ describe('PostForm', () => {
     await clickByText(table, 'post');
     const [pendingUploadPost] = usePendingUploadPostStore.getState().pendingUploadPosts;
 
+    expect(testState.confirmPostingAnonymityMock).toHaveBeenCalledTimes(1);
+
     // The author goes back to the board while it uploads and posts the same draft again.
     await clickByText(container, 'start_new_thread');
     await clickByText(container.querySelector('table') as HTMLTableElement, 'post');
 
+    // Already confirmed when it was sent; asking again would offer a cancel that cannot stop the upload.
+    expect(testState.confirmPostingAnonymityMock).toHaveBeenCalledTimes(1);
     expect(usePendingUploadPostStore.getState().pendingUploadPosts).toEqual([pendingUploadPost]);
     expect(testState.analyticsMock).not.toHaveBeenCalled();
     expect(testState.navigateMock).toHaveBeenLastCalledWith('/pending/upload', {
