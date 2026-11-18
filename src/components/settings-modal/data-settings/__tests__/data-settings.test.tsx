@@ -4,11 +4,10 @@ import { createRoot, Root } from 'react-dom/client';
 import { MemoryRouter, useLocation } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import useTripcodeStore from '../../../../stores/use-tripcode-store';
-import AccountSettings from '../account-settings';
+import DataSettings from '../data-settings';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
-const IMPORTED_ACCOUNT_ADDRESSES_STORAGE_KEY = 'importedAccountAddresses';
 const LEGACY_DEFAULT_HTTP_ROUTERS = ['https://routing.lol', 'https://peers.pleb.bot', 'https://peers.plebpubsub.xyz', 'https://peers.forumindex.com'];
 
 const hookMocks = vi.hoisted(() => ({
@@ -21,6 +20,9 @@ const hookMocks = vi.hoisted(() => ({
 }));
 
 const tripcodeCryptoMocks = vi.hoisted(() => ({ forgetTripcodeKeys: vi.fn() }));
+const clipboardMocks = vi.hoisted(() => ({ copyToClipboard: vi.fn() }));
+
+vi.mock('../../../../lib/utils/clipboard-utils', () => ({ copyToClipboard: clipboardMocks.copyToClipboard }));
 
 vi.mock('../../../../lib/tripcode-crypto', () => ({ forgetTripcodeKeys: tripcodeCryptoMocks.forgetTripcodeKeys }));
 
@@ -86,7 +88,7 @@ const flushMicrotasks = async () => {
 const render = (initialEntry = '/subs/settings') => {
   act(() => {
     root.render(
-      createElement(MemoryRouter, { initialEntries: [initialEntry] }, createElement(React.Fragment, {}, createElement(AccountSettings), createElement(LocationProbe))),
+      createElement(MemoryRouter, { initialEntries: [initialEntry] }, createElement(React.Fragment, {}, createElement(DataSettings), createElement(LocationProbe))),
     );
   });
 };
@@ -109,7 +111,7 @@ const selectImportFile = (file: File) => {
   input.dispatchEvent(new Event('change'));
 };
 
-describe('AccountSettings', () => {
+describe('DataSettings', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
@@ -121,6 +123,7 @@ describe('AccountSettings', () => {
       id: 'test-id',
       name: 'Account 1',
       author: { address: '0x123', shortAddress: '0x1...3' },
+      signer: { address: '12D3KooWSigner' },
       subscriptions: ['business.eth'],
     });
     hookMocks.useAccounts.mockReturnValue({
@@ -193,17 +196,19 @@ describe('AccountSettings', () => {
     vi.unstubAllGlobals();
   });
 
-  it('renders the expected account actions without inline editor controls', () => {
+  it('renders the backup actions without inline editor controls or the word account', () => {
     render();
     expect(container.querySelector('textarea')).toBeNull();
 
     const buttonTexts = getButtons().map((button) => button.textContent ?? '');
     expect(buttonTexts.some((text) => text.includes('save_changes'))).toBe(false);
     expect(buttonTexts.some((text) => text.includes('reset_changes'))).toBe(false);
-    expect(buttonTexts.some((text) => text.includes('edit'))).toBe(true);
+    expect(buttonTexts.some((text) => text.includes('edit_raw_data'))).toBe(true);
+    expect(buttonTexts.some((text) => text.includes('copy_bitsocial_identifier'))).toBe(true);
     expect(buttonTexts.some((text) => text.includes('download_backup'))).toBe(true);
-    expect(buttonTexts.some((text) => text.includes('import_account_backup'))).toBe(true);
-    expect(buttonTexts.some((text) => text.includes('delete_account'))).toBe(true);
+    expect(buttonTexts.some((text) => text.includes('import_backup'))).toBe(true);
+    expect(buttonTexts.some((text) => text.includes('delete_local_data'))).toBe(true);
+    expect(container.textContent?.toLowerCase()).not.toContain('account');
   });
 
   it('disables importing until the hooks account store is ready', () => {
@@ -211,78 +216,102 @@ describe('AccountSettings', () => {
 
     render();
 
-    expect(getButtonByText('import_account_backup').disabled).toBe(true);
+    expect(getButtonByText('import_backup').disabled).toBe(true);
   });
 
-  it('shows generated-account copy for app-created accounts', () => {
+  it('says the data is stored only on this device', () => {
     render();
 
-    const infoText = container.querySelector('select')?.parentElement?.querySelector('div')?.textContent ?? '';
-    expect(infoText).toContain('account_auto_generated');
-    expect(infoText).toContain('stored_locally');
+    expect(container.textContent).toContain('local_data_info');
   });
 
-  it('shows only the stored-locally copy for imported accounts', () => {
-    localStorage.setItem(IMPORTED_ACCOUNT_ADDRESSES_STORAGE_KEY, JSON.stringify(['0x123']));
+  it('shows no picker while the device holds a single copy of its data', () => {
+    render();
+
+    expect(container.querySelector('select')).toBeNull();
+    expect(container.textContent).not.toContain('several_backups_tip');
+  });
+
+  it('lets a device with an imported backup choose which copy is active', async () => {
+    hookMocks.useAccounts.mockReturnValue({
+      accounts: [
+        { id: 'test-id', name: 'Account 1', author: { shortAddress: '0x1...3' } },
+        { id: 'imported-id', name: 'Imported', author: { shortAddress: '0x9...9' } },
+      ],
+      state: 'succeeded',
+    });
 
     render();
 
-    const infoText = container.querySelector('select')?.parentElement?.querySelector('div')?.textContent ?? '';
-    expect(infoText).toContain('stored_locally');
-    expect(infoText).not.toContain('account_auto_generated');
+    const select = container.querySelector('select') as HTMLSelectElement;
+    expect(Array.from(select.options).map((option) => option.textContent)).toEqual(['0x1...3', '0x9...9']);
+    expect(container.textContent).toContain('several_backups_tip');
+
+    await act(async () => {
+      select.value = 'Imported';
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+
+    expect(hookMocks.setActiveAccount).toHaveBeenCalledWith('Imported');
   });
 
-  it('treats the legacy imported account storage key as imported state', () => {
-    localStorage.setItem('importedAccountAddress', '0x123');
+  it("copies the key's identifier, which is what a board owner whitelists", async () => {
+    clipboardMocks.copyToClipboard.mockResolvedValue(undefined);
 
     render();
 
-    const infoText = container.querySelector('select')?.parentElement?.querySelector('div')?.textContent ?? '';
-    expect(infoText).toContain('stored_locally');
-    expect(infoText).not.toContain('account_auto_generated');
+    expect(container.textContent).toContain('bitsocial_identifier_tip');
+    await act(async () => {
+      getButtonByText('copy_bitsocial_identifier').click();
+      await Promise.resolve();
+    });
+
+    expect(clipboardMocks.copyToClipboard).toHaveBeenCalledWith('12D3KooWSigner');
+    expect(getButtonByText('copied')).toBeTruthy();
   });
 
-  it('deletes the account only after both confirmations succeed', async () => {
+  it('deletes the local data only after both confirmations succeed', async () => {
     confirmSpy.mockReturnValueOnce(true).mockReturnValueOnce(true);
 
     render();
 
     await act(async () => {
-      getButtonByText('delete_account').click();
+      getButtonByText('delete_local_data').click();
     });
 
     expect(hookMocks.deleteAccount).toHaveBeenCalledWith('Account 1');
     expect(confirmSpy).toHaveBeenCalledTimes(2);
+    expect(confirmSpy).toHaveBeenNthCalledWith(1, 'delete_local_data_confirm');
   });
 
-  it("removes a deleted account's tripcode and the keys derived from it", async () => {
+  it("removes the deleted data's tripcode and the keys derived from it", async () => {
     useTripcodeStore.getState().setTripcodeInput('test-id', '#hunter2##swordfish');
     confirmSpy.mockReturnValueOnce(true).mockReturnValueOnce(true);
 
     render();
 
     await act(async () => {
-      getButtonByText('delete_account').click();
+      getButtonByText('delete_local_data').click();
     });
 
     expect(useTripcodeStore.getState().inputs['test-id']).toBeUndefined();
     await vi.waitFor(() => expect(tripcodeCryptoMocks.forgetTripcodeKeys).toHaveBeenCalledWith('#hunter2##swordfish'));
   });
 
-  it('does not delete the account when the first confirmation is rejected', async () => {
+  it('does not delete the local data when the first confirmation is rejected', async () => {
     confirmSpy.mockReturnValueOnce(false);
 
     render();
 
     await act(async () => {
-      getButtonByText('delete_account').click();
+      getButtonByText('delete_local_data').click();
     });
 
     expect(hookMocks.deleteAccount).not.toHaveBeenCalled();
     expect(confirmSpy).toHaveBeenCalledTimes(1);
   });
 
-  it('exports a formatted account backup download', async () => {
+  it('exports a formatted backup download', async () => {
     hookMocks.exportAccount.mockResolvedValue(JSON.stringify({ account: { name: 'Account 1' } }));
 
     render();
@@ -295,7 +324,7 @@ describe('AccountSettings', () => {
     expect(hookMocks.exportAccount).toHaveBeenCalledOnce();
     expect(createObjectUrlSpy).toHaveBeenCalledOnce();
     expect(anchorClickSpy).toHaveBeenCalledOnce();
-    expect(createdAnchor?.download).toBe('Account_1.json');
+    expect(createdAnchor?.download).toBe('5chan-backup.json');
     expect(revokeObjectUrlSpy).toHaveBeenCalledWith('blob:test-account');
   });
 
@@ -309,7 +338,7 @@ describe('AccountSettings', () => {
       await Promise.resolve();
     });
 
-    expect(alertSpy).toHaveBeenCalledWith('Failed to parse account');
+    expect(alertSpy).toHaveBeenCalledWith('Failed to parse backup');
     expect(createObjectUrlSpy).not.toHaveBeenCalled();
   });
 
@@ -331,7 +360,7 @@ describe('AccountSettings', () => {
     render();
 
     await act(async () => {
-      getButtonByText('import_account_backup').click();
+      getButtonByText('import_backup').click();
     });
 
     expect(createdInput).not.toBeNull();
@@ -357,7 +386,7 @@ describe('AccountSettings', () => {
       render();
 
       await act(async () => {
-        getButtonByText('import_account_backup').click();
+        getButtonByText('import_backup').click();
       });
 
       window.dispatchEvent(new Event('focus'));
@@ -381,7 +410,7 @@ describe('AccountSettings', () => {
     render();
 
     await act(async () => {
-      getButtonByText('import_account_backup').click();
+      getButtonByText('import_backup').click();
     });
 
     const file = new File(['{}'], 'account.json', { type: 'application/json' });
@@ -389,11 +418,11 @@ describe('AccountSettings', () => {
       selectImportFile(file);
     });
 
-    expect(alertSpy).toHaveBeenCalledWith(expect.stringContaining('Failed to parse account data:'));
+    expect(alertSpy).toHaveBeenCalledWith(expect.stringContaining('Failed to parse backup:'));
     expect(hookMocks.importAccount).not.toHaveBeenCalled();
   });
 
-  it('imports an account backup, merges owned boards into subscriptions, and redirects back to account settings', async () => {
+  it('imports a backup, merges owned boards into subscriptions, and redirects back to advanced settings', async () => {
     fileReaderState.result = JSON.stringify({
       account: {
         name: 'Imported',
@@ -411,7 +440,7 @@ describe('AccountSettings', () => {
     render();
 
     await act(async () => {
-      getButtonByText('import_account_backup').click();
+      getButtonByText('import_backup').click();
     });
 
     // WebKit can garbage-collect a detached input while its picker is open, dropping the selection (#516).
@@ -430,11 +459,9 @@ describe('AccountSettings', () => {
     const importedPayload = JSON.parse(hookMocks.importAccount.mock.calls[0][0]);
     expect(importedPayload.account.subscriptions).toEqual(['business.eth', 'music-posting.bso']);
     expect(importedPayload.account.pkcOptions.httpRoutersOptions).toEqual(LEGACY_DEFAULT_HTTP_ROUTERS);
-    expect(localStorage.getItem(IMPORTED_ACCOUNT_ADDRESSES_STORAGE_KEY)).toBe(JSON.stringify(['0x999']));
-    expect(localStorage.getItem('importedAccountAddress')).toBe('0x999');
     expect(hookMocks.setActiveAccount).toHaveBeenCalledWith('Imported');
-    expect(alertSpy).toHaveBeenCalledWith('Imported Imported');
-    expect(getLocationText()).toBe('/subs/settings?section=account-settings');
+    expect(alertSpy).toHaveBeenCalledWith('backup_imported');
+    expect(getLocationText()).toBe('/subs/settings?section=advanced-settings');
     expect(reloadMock).not.toHaveBeenCalled();
     expect(importedPayload.account.pkcOptions).toEqual(
       expect.objectContaining({
@@ -444,7 +471,7 @@ describe('AccountSettings', () => {
     );
   });
 
-  it('preserves explicit HTTP routers when importing an account backup', async () => {
+  it('preserves explicit HTTP routers when importing a backup', async () => {
     fileReaderState.result = JSON.stringify({
       account: {
         name: 'Imported',
@@ -461,7 +488,7 @@ describe('AccountSettings', () => {
     render();
 
     await act(async () => {
-      getButtonByText('import_account_backup').click();
+      getButtonByText('import_backup').click();
     });
 
     const file = new File(['{}'], 'account.json', { type: 'application/json' });
@@ -481,7 +508,7 @@ describe('AccountSettings', () => {
     expect(importedPayload.account.pkcOptions).not.toHaveProperty('ipfsGatewayUrls');
   });
 
-  it('preserves an explicit empty HTTP routers list when importing an account backup', async () => {
+  it('preserves an explicit empty HTTP routers list when importing a backup', async () => {
     fileReaderState.result = JSON.stringify({
       account: {
         name: 'Imported',
@@ -498,7 +525,7 @@ describe('AccountSettings', () => {
     render();
 
     await act(async () => {
-      getButtonByText('import_account_backup').click();
+      getButtonByText('import_backup').click();
     });
 
     const file = new File(['{}'], 'account.json', { type: 'application/json' });
@@ -518,7 +545,7 @@ describe('AccountSettings', () => {
     expect(importedPayload.account.pkcOptions).not.toHaveProperty('ipfsGatewayUrls');
   });
 
-  it('activates the next available account name when imported suffixes already exist', async () => {
+  it('activates the imported copy when its stored name is already taken', async () => {
     hookMocks.useAccounts.mockReturnValue({
       accounts: [
         { id: 'test-id', name: 'Account 1', author: { shortAddress: '0x1...3' } },
@@ -540,7 +567,7 @@ describe('AccountSettings', () => {
     render();
 
     await act(async () => {
-      getButtonByText('import_account_backup').click();
+      getButtonByText('import_backup').click();
     });
 
     const file = new File(['{}'], 'account.json', { type: 'application/json' });
@@ -552,7 +579,7 @@ describe('AccountSettings', () => {
 
     expect(hookMocks.importAccount).toHaveBeenCalledOnce();
     expect(hookMocks.setActiveAccount).toHaveBeenCalledWith('Imported 3');
-    expect(alertSpy).toHaveBeenCalledWith('Imported Imported 3');
+    expect(alertSpy).toHaveBeenCalledWith('backup_imported');
   });
 
   it('surfaces import errors without navigating or reloading', async () => {
@@ -567,7 +594,7 @@ describe('AccountSettings', () => {
     render();
 
     await act(async () => {
-      getButtonByText('import_account_backup').click();
+      getButtonByText('import_backup').click();
     });
 
     const file = new File(['{}'], 'account.json', { type: 'application/json' });

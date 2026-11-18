@@ -30,7 +30,7 @@ import ImportErrorBoundary, { ImportError } from './components/import-error-boun
 import Prefetcher from './components/prefetcher';
 import { ModEmptyState } from './components/mod-empty-state';
 
-const AccountDataEditor = lazyImport(() => import('./views/account-data-editor'));
+const RawDataEditor = lazyImport(() => import('./views/raw-data-editor'));
 const BoardSettings = lazyImport(() => import('./views/board-settings'));
 const ChallengeModal = lazyImport(() => import('./components/challenge-modal'));
 const ImageFilterNotice = lazyImport(() => import('./components/image-filter-notice'));
@@ -52,6 +52,7 @@ const secondaryViewLoaders = {
   faq: () => import('./views/faq'),
   modQueue: () => import('./views/mod-queue'),
   pass: () => import('./views/pass'),
+  passAuth: () => import('./views/pass-auth'),
   rules: () => import('./views/rules'),
   search: () => import('./views/search'),
   searchDirectory: () => import('./views/search-directory'),
@@ -74,6 +75,7 @@ const Directory = lazyView(secondaryViewLoaders.directory);
 const Faq = lazyView(secondaryViewLoaders.faq);
 const ModQueueView = lazyView(secondaryViewLoaders.modQueue);
 const Pass = lazyView(secondaryViewLoaders.pass);
+const PassAuth = lazyView(secondaryViewLoaders.passAuth);
 const Rules = lazyView(secondaryViewLoaders.rules);
 const Search = lazyView(secondaryViewLoaders.search);
 const SearchDirectory = lazyView(secondaryViewLoaders.searchDirectory);
@@ -272,15 +274,16 @@ const appRoutes = (
     <Route path='/' element={<Home />} />
     <Route path='/faq' element={<Faq />} />
     <Route path='/pass' element={<Pass />} />
+    <Route path='/pass/auth' element={<PassAuth />} />
     <Route path='/rules' element={<Rules />} />
     <Route path='/rules/*' element={<Navigate to='/not-found' replace />} />
     <Route path='/blotter' element={<Blotter />} />
     <Route
-      path='/settings/account-data'
+      path='/settings/raw-data'
       element={
         <ImportErrorBoundary>
           <Suspense fallback={null}>
-            <AccountDataEditor />
+            <RawDataEditor />
           </Suspense>
         </ImportErrorBoundary>
       }

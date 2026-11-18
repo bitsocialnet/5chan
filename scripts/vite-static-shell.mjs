@@ -99,7 +99,7 @@ const THEME_SCRIPT = `(function () {
       if (!multiboard) {
         // Only these exact paths are static pages; React Router matches any other path, like
         // /faq/2, as /:boardIdentifier/:pageNumber. Other /subs/ and /search/ paths redirect.
-        var staticPage = ['/faq', '/pass', '/blotter', '/settings/account-data', '/directory', '/directory/settings', '/not-allowed', '/not-found'].indexOf(path.replace(/\\/+$/, '')) !== -1;
+        var staticPage = ['/faq', '/pass', '/pass/auth', '/blotter', '/settings/raw-data', '/directory', '/directory/settings', '/not-allowed', '/not-found'].indexOf(path.replace(/\\/+$/, '')) !== -1;
         if (segment === 'pending' && segments[2]) {
           var routeState = history.state && history.state.usr;
           community = routeState && routeState.pendingPost && routeState.pendingPost.communityAddress;

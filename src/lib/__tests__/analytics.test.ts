@@ -48,7 +48,7 @@ describe('analytics privacy', () => {
     ['/search?query=private+words', '/search'],
     ['/search/catalog?query=secret', '/search/catalog'],
     ['/search/directory', '/search/directory'],
-    ['/settings/account-data', '/settings'],
+    ['/settings/raw-data', '/settings'],
     ['/private-board.bso/board-settings', '/settings'],
     ['/g/thread/private-cid/settings?section=private', '/settings'],
     ['/g/mod/queue', '/mod/queue'],

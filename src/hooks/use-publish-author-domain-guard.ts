@@ -5,14 +5,16 @@ type PublishAuthorDomainBlockReason = 'resolving' | 'unresolved' | 'mismatch';
 
 const isDomainAddress = (address: unknown): address is string => typeof address === 'string' && address.includes('.');
 
+// Only a device set up before 5chan dropped user names, or restored from another app's backup, still
+// posts under a name. Nothing in 5chan's settings mentions it, so the messages say where to remove it.
 export const getPublishAuthorDomainErrorMessage = (reason: PublishAuthorDomainBlockReason) => {
   if (reason === 'mismatch') {
-    return 'Your Bitsocial Account address belongs to another account.';
+    return 'This device posts under a name that now belongs to another key. Remove it in Settings > Advanced > Edit raw data.';
   }
   if (reason === 'resolving') {
-    return 'Your Bitsocial Account address is still being verified. Try again in a moment.';
+    return 'The name this device posts under is still being verified. Try again in a moment.';
   }
-  return 'Your Bitsocial Account address is not resolved yet.';
+  return 'The name this device posts under could not be verified. Try again, or remove it in Settings > Advanced > Edit raw data.';
 };
 
 const usePublishAuthorDomainGuard = () => {

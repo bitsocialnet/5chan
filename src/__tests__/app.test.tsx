@@ -252,6 +252,10 @@ vi.mock('../views/pass/pass', () => ({
   default: makeNamedComponent('pass-view'),
 }));
 
+vi.mock('../views/pass-auth/pass-auth', () => ({
+  default: makeNamedComponent('pass-auth-view'),
+}));
+
 vi.mock('../views/pending-post/pending-post', () => ({
   default: makeNamedComponent('pending-post-view'),
 }));
@@ -268,8 +272,8 @@ vi.mock('../views/rules/rules', () => ({
   default: makeNamedComponent('rules-view'),
 }));
 
-vi.mock('../views/account-data-editor', () => ({
-  default: makeNamedComponent('account-data-editor-view'),
+vi.mock('../views/raw-data-editor', () => ({
+  default: makeNamedComponent('raw-data-editor-view'),
 }));
 
 vi.mock('../views/archive/archive', () => ({
@@ -655,7 +659,7 @@ describe('App', () => {
     expect(container.textContent).toContain('not_mod_of_any_board');
     expect(container.textContent).toContain('go_to_settings_to_import_mod_account');
     expect(container.querySelector('output')?.className).toContain('modEmptyState');
-    expect(container.querySelector('output a')?.getAttribute('href')).toBe('/mod/settings?section=account-settings');
+    expect(container.querySelector('output a')?.getAttribute('href')).toBe('/mod/settings?section=advanced-settings');
     expect(container.querySelector('[data-testid="not-allowed-view"]')).toBeNull();
   });
 
@@ -819,7 +823,7 @@ describe('App', () => {
       '/faq/2',
       '/directory',
     ];
-    const otherPaths = ['/', '/faq', '/pass', '/rules', '/rules/mu', '/blotter', '/settings/account-data', '/mu/board-settings', '/not-allowed', '/not-found'];
+    const otherPaths = ['/', '/faq', '/pass', '/pass/auth', '/rules', '/rules/mu', '/blotter', '/settings/raw-data', '/mu/board-settings', '/not-allowed', '/not-found'];
     for (const pathname of boardPaths) {
       expect([pathname, rendersBoardRoutes(pathname), preloads(pathname)]).toEqual([pathname, true, true]);
     }

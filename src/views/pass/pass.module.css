@@ -60,6 +60,10 @@
   text-decoration: underline;
 }
 
+.login {
+  margin-top: 0.5em;
+}
+
 .columns::after {
   clear: both;
   content: '';

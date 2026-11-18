@@ -6,7 +6,7 @@ type ParamsType = {
   commentCid?: string;
 };
 
-const STATIC_APP_ROUTES = new Set(['/faq', '/pass', '/rules', '/blotter', '/settings/account-data', '/not-allowed']);
+const STATIC_APP_ROUTES = new Set(['/faq', '/pass', '/pass/auth', '/rules', '/blotter', '/settings/raw-data', '/not-allowed']);
 
 const isStaticAppRoute = (pathname: string): boolean => STATIC_APP_ROUTES.has(pathname);
 

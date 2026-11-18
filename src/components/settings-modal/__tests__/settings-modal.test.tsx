@@ -32,16 +32,8 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
-vi.mock('../account-settings/account-settings', () => ({
-  default: () => <div data-testid='account-settings'>account-settings</div>,
-}));
-
-vi.mock('../crypto-address-setting/crypto-address-setting', () => ({
-  default: () => <div data-testid='crypto-address-setting'>crypto-address-setting</div>,
-}));
-
-vi.mock('../crypto-wallets-setting/crypto-wallets-setting', () => ({
-  default: () => <div data-testid='crypto-wallets-setting'>crypto-wallets-setting</div>,
+vi.mock('../data-settings/data-settings', () => ({
+  default: () => <div data-testid='data-settings'>data-settings</div>,
 }));
 
 vi.mock('../interface-settings/interface-settings', () => ({
@@ -132,12 +124,21 @@ describe('SettingsModal', () => {
     container.remove();
   });
 
-  it('opens the account section for crypto subsection hashes', async () => {
-    await render('/all/settings#crypto-wallet-settings');
+  it.each(['/all/settings#crypto-wallet-settings', '/all/settings#account-settings', '/all/settings?section=account-settings'])(
+    'opens advanced settings, which now holds the backup tools, for the old account link %s',
+    async (path) => {
+      await render(path);
 
-    expect(container.querySelector('[data-testid="account-settings"]')).not.toBeNull();
-    expect(container.querySelector('[data-testid="crypto-address-setting"]')).not.toBeNull();
-    expect(container.querySelector('[data-testid="crypto-wallets-setting"]')).not.toBeNull();
+      expect(container.querySelector('[data-testid="advanced-settings-panel"]')).not.toBeNull();
+      expect(container.querySelector('[data-testid="data-settings"]')).not.toBeNull();
+    },
+  );
+
+  it('has no account section', async () => {
+    await render('/all/settings');
+
+    expect(container.querySelector('#account-settings')).toBeNull();
+    expect(container.textContent).not.toContain('bitsocial_account');
   });
 
   it('opens the interface section for the image hash filter link', async () => {
@@ -147,9 +148,9 @@ describe('SettingsModal', () => {
   });
 
   it('updates the section query when sections open and close', async () => {
-    await render('/all/settings?section=account-settings');
+    await render('/all/settings?section=advanced-settings');
 
-    expect(getLocationText()).toBe('/all/settings?section=account-settings');
+    expect(getLocationText()).toBe('/all/settings?section=advanced-settings');
 
     await act(async () => {
       getSectionToggleByText('interface').click();
@@ -157,21 +158,22 @@ describe('SettingsModal', () => {
 
     expect(getLocationText()).toBe('/all/settings?section=interface-settings');
     expect(container.querySelector('[data-testid="interface-settings-panel"]')).not.toBeNull();
-    expect(container.querySelector('[data-testid="account-settings"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="advanced-settings-panel"]')).not.toBeNull();
 
     await act(async () => {
       getSectionToggleByText('interface').click();
     });
 
-    expect(getLocationText()).toBe('/all/settings?section=account-settings');
+    expect(getLocationText()).toBe('/all/settings?section=advanced-settings');
     expect(container.querySelector('[data-testid="interface-settings-panel"]')).toBeNull();
 
     await act(async () => {
-      getSectionToggleByText('bitsocial_account').click();
+      getSectionToggleByText('advanced_settings').click();
     });
 
     expect(getLocationText()).toBe('/all/settings');
-    expect(container.querySelector('[data-testid="account-settings"]')).toBeNull();
+    expect(container.querySelector('[data-testid="advanced-settings-panel"]')).toBeNull();
+    expect(container.querySelector('[data-testid="data-settings"]')).toBeNull();
   });
 
   it('preserves pending route state while using and closing settings', async () => {
@@ -221,7 +223,7 @@ describe('SettingsModal', () => {
     expect(container.querySelector('[data-testid="interface-settings-panel"]')).not.toBeNull();
     expect(container.querySelector('[data-testid="media-hosting-settings-panel"]')).not.toBeNull();
     expect(container.querySelector('[data-testid="stats-providers-settings-panel"]')).not.toBeNull();
-    expect(container.querySelector('[data-testid="account-settings"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="data-settings"]')).not.toBeNull();
     expect(container.querySelector('[data-testid="subscriptions-settings-panel"]')).not.toBeNull();
     expect(container.querySelector('[data-testid="trusted-board-links-settings-panel"]')).not.toBeNull();
     expect(container.querySelector('[data-testid="advanced-settings-panel"]')).not.toBeNull();
@@ -239,7 +241,7 @@ describe('SettingsModal', () => {
     expect(container.querySelector('[data-testid="interface-settings-panel"]')).toBeNull();
     expect(container.querySelector('[data-testid="media-hosting-settings-panel"]')).toBeNull();
     expect(container.querySelector('[data-testid="stats-providers-settings-panel"]')).toBeNull();
-    expect(container.querySelector('[data-testid="account-settings"]')).toBeNull();
+    expect(container.querySelector('[data-testid="data-settings"]')).toBeNull();
     expect(container.querySelector('[data-testid="subscriptions-settings-panel"]')).toBeNull();
     expect(container.querySelector('[data-testid="trusted-board-links-settings-panel"]')).toBeNull();
     expect(container.querySelector('[data-testid="advanced-settings-panel"]')).toBeNull();

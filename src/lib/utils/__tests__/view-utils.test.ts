@@ -25,9 +25,10 @@ describe('view-utils', () => {
     expect(isPendingPostView('/pending/42/settings', { accountCommentIndex: '42' })).toBe(true);
     expect(isNotFoundView('/faq', {})).toBe(false);
     expect(isNotFoundView('/pass', {})).toBe(false);
+    expect(isNotFoundView('/pass/auth', {})).toBe(false);
     expect(isNotFoundView('/rules', {})).toBe(false);
     expect(isNotFoundView('/blotter', {})).toBe(false);
-    expect(isNotFoundView('/settings/account-data', {})).toBe(false);
+    expect(isNotFoundView('/settings/raw-data', {})).toBe(false);
     expect(isNotFoundView('/not-allowed', {})).toBe(false);
     expect(isNotFoundView('/not-found', {})).toBe(true);
     expect(isSearchView('/search/directory/settings')).toBe(true);
@@ -80,7 +81,7 @@ describe('view-utils', () => {
     expect(isNotFoundView('/music.eth/archive/settings/', { boardIdentifier: 'music.eth' })).toBe(false);
   });
 
-  it.each(['/faq/', '/pass/', '/rules/', '/blotter/', '/settings/account-data/', '/not-allowed/', '/subs/', '/subs/catalog/settings/'])(
+  it.each(['/faq/', '/pass/', '/pass/auth/', '/rules/', '/blotter/', '/settings/raw-data/', '/not-allowed/', '/subs/', '/subs/catalog/settings/'])(
     'normalizes the valid trailing-slash route %s',
     (pathname) => {
       expect(isNotFoundView(pathname, {})).toBe(false);
