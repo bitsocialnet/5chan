@@ -179,6 +179,7 @@
     "lint-staged": "17.6.0",
     "lodash": "4.18.1",
     "mathjax-full": "3.2.2",
+    "modern-web-guidance": "1.0.0",
     "node-fetch": "3.3.2",
     "oxc-parser": "0.152.0",
     "oxfmt": "0.74.0",
