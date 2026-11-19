@@ -1,11 +1,10 @@
 import type { ForgeUploadAuthorizer } from '../../lib/forge-upload-authorization';
-import type { ChallengeAnswersByIndex } from '../../lib/utils/challenge-utils';
 import { type ReactNode, type Ref, useCallback, useEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { Trans, useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { Comment, CommentGalleryItem, useAccount, useAccountComment, useEditedComment } from '@bitsocial/bitsocial-react-hooks';
+import { type ChallengeAnswersByIndex, Comment, CommentGalleryItem, useAccount, useAccountComment, useEditedComment } from '@bitsocial/bitsocial-react-hooks';
 import getShortAddress from '../../lib/get-short-address';
 import { communitiesPagesStore as useCommunitiesPagesStore } from '../../lib/bitsocial-internals/stores';
 import { getDisplayMediaInfoType, getLinkMediaInfo, getTwimgMediaFilePublishUrl } from '../../lib/utils/media-utils';

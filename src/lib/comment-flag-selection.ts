@@ -1,5 +1,5 @@
 import { getBoardFlagDefinition, getBoardFlagDefinitions, type BoardFlagKind } from './board-flags';
-import type { ChallengeAnswersByIndex } from './utils/challenge-utils';
+import type { ChallengeAnswersByIndex } from '@bitsocial/bitsocial-react-hooks';
 import type { DirectoryCommunity } from './utils/directory-list-utils';
 
 const GEOGRAPHIC_LOCATION_FLAG_VALUE = 'country:auto';

@@ -1,6 +1,5 @@
 import { SpamBlockerRateLimitError } from './spam-blocker-errors';
-import type { Challenge, Comment } from '@bitsocial/bitsocial-react-hooks';
-import type { ChallengeAnswersByIndex } from './utils/challenge-utils';
+import type { Challenge, ChallengeAnswersByIndex, Comment } from '@bitsocial/bitsocial-react-hooks';
 
 /**
  * A board running a Bitsocial Spam Blocker that accepts pre-check passes publishes `<serverUrl>/precheck`

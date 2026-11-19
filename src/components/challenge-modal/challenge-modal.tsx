@@ -1,14 +1,7 @@
 import { useRef, useState, useEffect, useLayoutEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Challenge as ChallengeType, useAccount, useComment } from '@bitsocial/bitsocial-react-hooks';
-import {
-  type ChallengeAnswersByIndex,
-  getChallengeEntries,
-  getPublicationPreview,
-  getPublicationType,
-  getVotePreview,
-  publishPublicationChallengeAnswers,
-} from '../../lib/utils/challenge-utils';
+import { Challenge as ChallengeType, type ChallengeAnswersByIndex, useAccount, useComment } from '@bitsocial/bitsocial-react-hooks';
+import { getChallengeEntries, getPublicationPreview, getPublicationType, getVotePreview, publishPublicationChallengeAnswers } from '../../lib/utils/challenge-utils';
 import { isSageSupportedByBoard, stripSageMarker } from '../../lib/utils/post-options-utils';
 import { stripPostOptionMarkers } from '../../lib/utils/post-option-markers';
 import { stripTripcodeProof } from '../../lib/utils/tripcode-utils';

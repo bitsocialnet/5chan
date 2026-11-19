@@ -1,4 +1,4 @@
-import type { ChallengeVerification, Comment } from '@bitsocial/bitsocial-react-hooks';
+import type { ChallengeAnswersByIndex, ChallengeVerification, Comment, PublishChallengeAnswersInput } from '@bitsocial/bitsocial-react-hooks';
 import { getFallbackDirectoriesData } from './directories';
 import { getCommentCommunityAddress } from './comment-utils';
 import { getBoardPath } from './route-utils';
@@ -12,14 +12,6 @@ const resolveBoardIdentifier = (communityAddress: unknown): string => {
   const boardPath = getBoardPath(communityAddress, getFallbackDirectoriesData().communities);
   return boardPath === communityAddress ? communityAddress : `/${boardPath}/`;
 };
-
-/**
- * Challenge answers keyed by challenge index: the challenge's position in `community.challenges`, as a
- * decimal string, e.g. `{ "0": "4", "3": "" }`. pkc-js takes pre-answers and challenge answers in this form.
- */
-export type ChallengeAnswersByIndex = Record<string, string>;
-
-type ChallengeAnswersInput = ChallengeAnswersByIndex | { challengeAnswers: ChallengeAnswersByIndex };
 
 /**
  * The challenges a CHALLENGE message asks for, in challenge index order. pkc-js sends them as a record keyed
@@ -40,7 +32,7 @@ export type ChallengePublication = Partial<Omit<Comment, 'publishChallengeAnswer
   content?: string;
   link?: string;
   parentCid?: string;
-  publishChallengeAnswers?: (challengeAnswers: ChallengeAnswersInput) => Promise<void> | void;
+  publishChallengeAnswers?: (challengeAnswers: PublishChallengeAnswersInput) => Promise<void> | void;
   shortCommunityAddress?: string;
   title?: string;
   vote?: number;

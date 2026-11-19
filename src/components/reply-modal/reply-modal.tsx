@@ -1,10 +1,9 @@
 import type { ForgeUploadAuthorizer } from '../../lib/forge-upload-authorization';
-import type { ChallengeAnswersByIndex } from '../../lib/utils/challenge-utils';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
-import { type CommentGalleryItem, useAccount } from '@bitsocial/bitsocial-react-hooks';
+import { type ChallengeAnswersByIndex, type CommentGalleryItem, useAccount } from '@bitsocial/bitsocial-react-hooks';
 import { getExpiringMediaLinkAlert, getPublishFileDisplayName, getPublishLinkOptions } from '../../lib/utils/media-link-validation-utils';
 import { getTwimgMediaFilePublishUrl } from '../../lib/utils/media-utils';
 import {

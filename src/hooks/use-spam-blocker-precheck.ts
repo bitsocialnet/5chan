@@ -1,9 +1,8 @@
 import { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useAccount, useAccountComments } from '@bitsocial/bitsocial-react-hooks';
+import { type ChallengeAnswersByIndex, useAccount, useAccountComments } from '@bitsocial/bitsocial-react-hooks';
 import type { ForgeUploadAuthorizer } from '../lib/forge-upload-authorization';
 import type { PrecheckPublication } from '../lib/spam-blocker-precheck';
-import type { ChallengeAnswersByIndex } from '../lib/utils/challenge-utils';
 import useChallengesStore from '../stores/use-challenges-store';
 
 export type SpamBlockerPrecheckResult =
