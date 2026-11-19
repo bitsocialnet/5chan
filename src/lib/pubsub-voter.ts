@@ -2,9 +2,19 @@ import { PubsubVoter, type ChainClient, type ChainClientFactory, type NameResolv
 import { createPublicClient, fallback, http } from 'viem';
 import { baseSepolia, mainnet } from 'viem/chains';
 
-export const BASE_SEPOLIA_VOTING_RPC_URLS = ['https://base-sepolia.drpc.org', 'https://sepolia.base.org', 'https://sepolia-preconf.base.org'] as const;
-// Each endpoint must serve state a full vote-expiry window behind head (30 days); publicnode and
-// cloudflare refuse those historical calls without a key, so they are deliberately absent.
+// Each voting endpoint must serve state a full vote-expiry window behind head (30 days) and allow
+// browser CORS, because joining a contest re-verifies every live ballot at its bucket block.
+// fallback() tries them in order, so the most reliable archive endpoint goes first.
+// Base Sepolia's 200 ms blocks make that 12.96M blocks. Checked 2026-11-09: drpc, publicnode and
+// pocket.network prune or route to pruned nodes before that, nodies.app fails the CORS preflight,
+// and sepolia-preconf.base.org answers every request with 401, so they are deliberately absent.
+export const BASE_SEPOLIA_VOTING_RPC_URLS = [
+  'https://sepolia.base.org',
+  'https://base-sepolia.rpc.sentio.xyz',
+  'https://base-sepolia.gateway.tenderly.co',
+  'https://84532.rpc.thirdweb.com',
+] as const;
+// On Ethereum, publicnode and cloudflare refuse those historical calls without a key.
 export const ETHEREUM_VOTING_RPC_URLS = [
   'https://eth.drpc.org',
   'https://mainnet.gateway.tenderly.co',
