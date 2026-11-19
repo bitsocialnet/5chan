@@ -48,16 +48,10 @@ describe('getSpamBlockerPrecheckPlan', () => {
     },
   ];
 
-  it('puts the pass at the spam blocker that checks the post, past challenges that ignore answers', () => {
-    expect(getSpamBlockerPrecheckPlan(defaultBoard, post)?.getChallengeAnswers('pass')).toEqual(['', '', 'pass']);
-    expect(getSpamBlockerPrecheckPlan(defaultBoard, reply)?.getChallengeAnswers('pass')).toEqual(['', '', '', 'pass']);
+  it('keys the pass by the challenge index of the spam blocker that checks the post, and pre-answers nothing else', () => {
+    expect(getSpamBlockerPrecheckPlan(defaultBoard, post)?.getChallengeAnswers('pass')).toEqual({ 2: 'pass' });
+    expect(getSpamBlockerPrecheckPlan(defaultBoard, reply)?.getChallengeAnswers('pass')).toEqual({ 3: 'pass' });
     expect(getSpamBlockerPrecheckPlan(defaultBoard, post)?.serverUrl).toBe('https://spamblocker.bitsocial.net/api/v1');
-  });
-
-  it("keeps the post's country flag answer in a slot no challenge reads", () => {
-    const flag = 'bitsocial-flags:5chan:flag:country:auto';
-    expect(getSpamBlockerPrecheckPlan(defaultBoard, { ...post, otherAnswers: [flag] })?.getChallengeAnswers('pass')).toEqual([flag, '', 'pass']);
-    expect(getSpamBlockerPrecheckPlan([spamBlocker()], { ...post, otherAnswers: [flag] })?.getChallengeAnswers('pass')).toEqual(['pass', flag]);
   });
 
   it("does not pre-check a post the board's spam blocker skips", () => {
@@ -81,7 +75,7 @@ describe('getSpamBlockerPrecheckPlan', () => {
 
   it('keeps prechecks when a challenge-dependent exemption cannot apply to this publication', () => {
     const challenges = [{ type: 'text/plain' }, { ...spamBlocker(), exclude: [{ challenges: [0], publicationType: { reply: true } }] }];
-    expect(getSpamBlockerPrecheckPlan(challenges, post)?.getChallengeAnswers('pass')).toEqual(['', 'pass']);
+    expect(getSpamBlockerPrecheckPlan(challenges, post)?.getChallengeAnswers('pass')).toEqual({ 1: 'pass' });
     expect(getSpamBlockerPrecheckPlan(challenges, reply)).toBeUndefined();
   });
 
@@ -93,10 +87,9 @@ describe('getSpamBlockerPrecheckPlan', () => {
   });
 
   it.each([[], [-1], [2], ['0'], null])('ignores empty or invalid challenge dependencies: %j', (challenges) => {
-    expect(getSpamBlockerPrecheckPlan([{ type: 'text/plain' }, { ...spamBlocker(), exclude: [{ challenges }] }], post)?.getChallengeAnswers('pass')).toEqual([
-      '',
-      'pass',
-    ]);
+    expect(getSpamBlockerPrecheckPlan([{ type: 'text/plain' }, { ...spamBlocker(), exclude: [{ challenges }] }], post)?.getChallengeAnswers('pass')).toEqual({
+      1: 'pass',
+    });
   });
 
   describe('authors with the karma a board exempts', () => {
@@ -114,35 +107,31 @@ describe('getSpamBlockerPrecheckPlan', () => {
 
     it('pre-checks an author short of any condition, or over the rate limit', () => {
       const plan = (authorHistory: LocalAuthorHistory) => getSpamBlockerPrecheckPlan(defaultBoard, { ...post, authorHistory, nowSeconds })?.getChallengeAnswers('pass');
-      expect(plan({ ...established, postCount: 9 })).toEqual(['', '', 'pass']);
-      expect(plan({ ...established, firstCommentTimestamp: weekAgo + 1 })).toEqual(['', '', 'pass']);
-      expect(plan({ ...established, firstCommentTimestamp: undefined })).toEqual(['', '', 'pass']);
-      expect(plan({ ...established, lastHourCount: 3 })).toEqual(['', '', 'pass']);
+      expect(plan({ ...established, postCount: 9 })).toEqual({ 2: 'pass' });
+      expect(plan({ ...established, firstCommentTimestamp: weekAgo + 1 })).toEqual({ 2: 'pass' });
+      expect(plan({ ...established, firstCommentTimestamp: undefined })).toEqual({ 2: 'pass' });
+      expect(plan({ ...established, lastHourCount: 3 })).toEqual({ 2: 'pass' });
     });
 
     it('pre-checks when an exclude depends on something only the board knows', () => {
       const scoreExcluded = [{ ...spamBlocker(), exclude: [{ postScore: 10 }] }];
-      expect(getSpamBlockerPrecheckPlan(scoreExcluded, { ...post, authorHistory: established, nowSeconds })?.getChallengeAnswers('pass')).toEqual(['pass']);
-      expect(getSpamBlockerPrecheckPlan([{ ...spamBlocker(), exclude: [{ postCount: 10 }] }], post)?.getChallengeAnswers('pass')).toEqual(['pass']);
+      expect(getSpamBlockerPrecheckPlan(scoreExcluded, { ...post, authorHistory: established, nowSeconds })?.getChallengeAnswers('pass')).toEqual({ 0: 'pass' });
+      expect(getSpamBlockerPrecheckPlan([{ ...spamBlocker(), exclude: [{ postCount: 10 }] }], post)?.getChallengeAnswers('pass')).toEqual({ 0: 'pass' });
     });
   });
 
-  it('is not used when a challenge that reads its own answer would get the pass or another answer', () => {
+  it('pre-checks a board with a question challenge ahead of the spam blocker, leaving the question for the board to ask', () => {
     const question = { type: 'text/plain', challenge: 'What is 2+2?' };
-    expect(getSpamBlockerPrecheckPlan([question, spamBlocker()], post)).toBeUndefined();
-    expect(getSpamBlockerPrecheckPlan([spamBlocker(), question], { ...post, otherAnswers: ['flag'] })).toBeUndefined();
-    expect(getSpamBlockerPrecheckPlan([spamBlocker(), question], post)?.getChallengeAnswers('pass')).toEqual(['pass']);
-    expect(getSpamBlockerPrecheckPlan([{ ...question, exclude: [{ publicationType: { post: true } }] }, spamBlocker()], post)?.getChallengeAnswers('pass')).toEqual([
-      '',
-      'pass',
-    ]);
+    expect(getSpamBlockerPrecheckPlan([question, spamBlocker()], post)?.getChallengeAnswers('pass')).toEqual({ 1: 'pass' });
+    expect(getSpamBlockerPrecheckPlan([question, question, spamBlocker()], reply)?.getChallengeAnswers('pass')).toEqual({ 2: 'pass' });
+    expect(getSpamBlockerPrecheckPlan([spamBlocker(), question], post)?.getChallengeAnswers('pass')).toEqual({ 0: 'pass' });
   });
 
   it('pre-checks with the first spam blocker when the board runs two on different servers', () => {
     const plan = getSpamBlockerPrecheckPlan([spamBlocker('https://other.example/api/v1'), spamBlocker()], post);
     expect(plan?.serverUrl).toBe('https://other.example/api/v1');
     // The second one, on another server, does not take this pass and checks the post itself after the upload.
-    expect(plan?.getChallengeAnswers('pass')).toEqual(['pass']);
+    expect(plan?.getChallengeAnswers('pass')).toEqual({ 0: 'pass' });
   });
 
   it.each(connectionPolicyFlags.flatMap((flag) => ['true', 'false'].map((value) => [flag, value])))(
@@ -151,7 +140,7 @@ describe('getSpamBlockerPrecheckPlan', () => {
       const marker = { ...spamBlocker(), challenge: `${spamBlocker().challenge}?${flag}=${value}` };
       const plan = getSpamBlockerPrecheckPlan([marker], post);
       expect(plan?.serverUrl).toBe('https://spamblocker.bitsocial.net/api/v1');
-      expect(plan?.getChallengeAnswers('pass')).toEqual(['pass']);
+      expect(plan?.getChallengeAnswers('pass')).toEqual({ 0: 'pass' });
     },
   );
 
@@ -163,7 +152,7 @@ describe('getSpamBlockerPrecheckPlan', () => {
     const plan = getSpamBlockerPrecheckPlan([{ type: 'text/plain' }, marker], { ...post, authorRole: 'moderator' });
     expect(plan?.serverUrl).toBe('https://spamblocker.bitsocial.net/api/v1');
     expect(plan?.verifyExemptions).toBe(true);
-    expect(plan?.getChallengeAnswers('pass')).toEqual(['', 'pass']);
+    expect(plan?.getChallengeAnswers('pass')).toEqual({ 1: 'pass' });
   });
 
   it.each(connectionPolicyFlags.flatMap((flag) => [`?${flag}=yes`, `?${flag}=`, `?${flag}=true&${flag}=false`]))(
@@ -175,7 +164,7 @@ describe('getSpamBlockerPrecheckPlan', () => {
     const challenges = ['true', 'false'].map((blockTor) => ({ ...spamBlocker(), challenge: `${spamBlocker().challenge}?blockTor=${blockTor}` }));
     const plan = getSpamBlockerPrecheckPlan([...challenges, spamBlocker()], post);
     expect(plan?.serverUrl).toBe('https://spamblocker.bitsocial.net/api/v1');
-    expect(plan?.getChallengeAnswers('pass')).toEqual(['pass', 'pass', 'pass']);
+    expect(plan?.getChallengeAnswers('pass')).toEqual({ 0: 'pass', 1: 'pass', 2: 'pass' });
   });
 
   it.each(['?blockTor=yes', '?blockTor=', '?blockTor=true&blockTor=false', '?blockTor=true&unknown=value', '?unknown=value', '#blockTor=true'])(
@@ -298,7 +287,7 @@ describe('verified exemption precheck capability', () => {
     const challenges = [{ type: 'text/plain' }, { type: 'url/iframe', challenge: marker, exclude: [{ challenges: [0] }, { roles: ['moderator'] }] }];
     const plan = getSpamBlockerPrecheckPlan(challenges, { isReply: false, authorRole: 'moderator' });
     expect(plan?.verifyExemptions).toBe(true);
-    expect(plan?.getChallengeAnswers('pass')).toEqual(['', 'pass']);
+    expect(plan?.getChallengeAnswers('pass')).toEqual({ 1: 'pass' });
   });
 });
 

@@ -476,7 +476,7 @@ describe('usePublishReply', () => {
       latestValue.setPublishReplyOptions({
         content: 'Flag reply',
         challengeRequest: {
-          challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
+          challengeAnswers: { 0: 'bitsocial-flags:5chan:flag:country:auto' },
         },
         flairs: [{ text: 'flag:country:auto', type: 'country', code: 'auto' }],
       } as never);

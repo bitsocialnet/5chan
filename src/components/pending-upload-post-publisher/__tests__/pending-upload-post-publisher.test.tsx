@@ -123,7 +123,7 @@ describe('PendingUploadPostPublisher', () => {
     testState.locationState = undefined;
     testState.publishPostOptionsByBoard = {};
     testState.precheckMock.mockReset();
-    testState.precheckMock.mockResolvedValue({ status: 'passed', challengeAnswers: ['precheck-pass'] });
+    testState.precheckMock.mockResolvedValue({ status: 'passed', challengeAnswers: { 0: 'precheck-pass' } });
     testState.publishPostMock.mockReset();
     // Like the real publish, the pending comment exists by the time publishPost resolves.
     testState.publishPostMock.mockImplementation(async () => testState.publishPostOptions?.onPendingPost?.(7, publishedPost));
@@ -174,7 +174,7 @@ describe('PendingUploadPostPublisher', () => {
     const unsubscribe = usePendingUploadPostStore.subscribe((state) => state.pendingUploadPosts[0] && phases.push(state.pendingUploadPosts[0].phase));
     testState.precheckMock.mockImplementation(async () => {
       expect(testState.uploadAttachmentMock).not.toHaveBeenCalled();
-      return { status: 'passed', authorizeForgeUpload, challengeAnswers: ['precheck-pass', 'precheck-pass'] };
+      return { status: 'passed', authorizeForgeUpload, challengeAnswers: { 0: 'precheck-pass', 1: 'precheck-pass' } };
     });
     testState.uploadAttachmentMock.mockImplementation(async (_media, onPhaseChange) => {
       onPhaseChange?.('uploading');
@@ -195,7 +195,7 @@ describe('PendingUploadPostPublisher', () => {
     expect(testState.publishPostMock).toHaveBeenCalledWith({
       ...publishOptions,
       link: 'https://forgeimg.net/abc/chosen.png',
-      challengeRequest: { challengeAnswers: ['precheck-pass', 'precheck-pass'] },
+      challengeRequest: { challengeAnswers: { 0: 'precheck-pass', 1: 'precheck-pass' } },
     });
     // Posting again from the form publishes the uploaded link instead of uploading the file again.
     expect(usePostFormDraftsStore.getState().forms['/mu']?.draft).toMatchObject({ attachment: undefined, link: 'https://forgeimg.net/abc/chosen.png' });
@@ -428,17 +428,26 @@ describe('PendingUploadPostPublisher', () => {
     expect(usePendingUploadPostStore.getState().pendingUploadPosts).toEqual([]);
   });
 
-  it("keeps the post's country flag answer in the answers that carry the pass", async () => {
-    const flagChallengeRequest = { challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'] };
-    testState.precheckMock.mockResolvedValue({ status: 'passed', challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto', '', 'precheck-pass'] });
+  it("publishes the pass next to the post's country flag answer, each under its own challenge's index", async () => {
+    const flagChallengeRequest = { challengeAnswers: { 0: 'bitsocial-flags:5chan:flag:country:auto' } };
+    testState.precheckMock.mockResolvedValue({ status: 'passed', challengeAnswers: { 2: 'precheck-pass' } });
     testState.uploadAttachmentMock.mockResolvedValue({ url: 'https://forgeimg.net/abc/chosen.png', fileName: 'chosen.png' });
 
     await submitPost({ publishOptions: { ...publishOptions, challengeRequest: flagChallengeRequest } });
 
-    expect(testState.precheckMock).toHaveBeenCalledWith(expect.objectContaining({ otherAnswers: flagChallengeRequest.challengeAnswers }));
     expect(testState.publishPostMock).toHaveBeenCalledWith(
-      expect.objectContaining({ challengeRequest: { challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto', '', 'precheck-pass'] } }),
+      expect.objectContaining({ challengeRequest: { challengeAnswers: { 0: 'bitsocial-flags:5chan:flag:country:auto', 2: 'precheck-pass' } } }),
     );
+  });
+
+  it("publishes the post's flag answer alone when its board takes no pre-check pass", async () => {
+    const flagChallengeRequest = { challengeAnswers: { 0: 'bitsocial-flags:5chan:flag:country:auto' } };
+    testState.precheckMock.mockResolvedValue({ status: 'skipped' });
+    testState.uploadAttachmentMock.mockResolvedValue({ url: 'https://forgeimg.net/abc/chosen.png', fileName: 'chosen.png' });
+
+    await submitPost({ publishOptions: { ...publishOptions, challengeRequest: flagChallengeRequest } });
+
+    expect(testState.publishPostMock).toHaveBeenCalledWith(expect.objectContaining({ challengeRequest: flagChallengeRequest }));
   });
 
   it('returns to the form with the reason when the publish fails before the post has an account comment', async () => {
@@ -480,7 +489,7 @@ describe('PendingUploadPostPublisher', () => {
   it('returns to the form without uploading when the author switches accounts during the spam blocker check', async () => {
     testState.precheckMock.mockImplementation(async () => {
       testState.activeAccountId = 'account-2';
-      return { status: 'passed', challengeAnswers: ['precheck-pass'] };
+      return { status: 'passed', challengeAnswers: { 0: 'precheck-pass' } };
     });
 
     await submitPost();

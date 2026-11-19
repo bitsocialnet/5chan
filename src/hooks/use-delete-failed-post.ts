@@ -72,6 +72,12 @@ export const getFailedPostRetryPublishOptions = (post?: FailedPost): PublishComm
     retryOptions.author = author;
   }
 
+  // A post that failed before pkc-js keyed pre-answers by challenge index keeps them as an array, which pkc-js
+  // now rejects. Retried without them, the board asks those challenges again and reads the flag from `flairs`.
+  if (Array.isArray(retryOptions.challengeRequest?.challengeAnswers)) {
+    delete retryOptions.challengeRequest;
+  }
+
   const communityAddress = retryOptions.communityAddress ?? getCommentCommunityAddress(post);
   if (!communityAddress) {
     return undefined;

@@ -7,6 +7,14 @@ import {
   hasCommentFlagsForDirectory,
 } from '../comment-flag-selection';
 
+// A board's `community.challenges` as pkc-js publishes them, with the flags challenge at index 2.
+const flagsChallenge = { type: 'url/iframe', description: 'Add verified flag assertions to Bitsocial comments.' };
+const boardChallenges = [
+  { type: 'text/plain', challenge: 'What is 2+2?' },
+  { type: 'url/iframe', challenge: 'https://spamblocker.bitsocial.net/api/v1/precheck' },
+  flagsChallenge,
+];
+
 describe('comment-flag-selection', () => {
   it('does not expose options for boards without flags', () => {
     expect(getCommentFlagOptionsForDirectory({ features: {}, title: '/mu/ - Music' })).toEqual([]);
@@ -41,14 +49,18 @@ describe('comment-flag-selection', () => {
     ).toEqual([]);
 
     expect(
-      getCommentFlagPublishOptionsForDirectory({
-        directoryCode,
-        features: { hasFlags: true },
-        title,
-      }),
+      getCommentFlagPublishOptionsForDirectory(
+        {
+          directoryCode,
+          features: { hasFlags: true },
+          title,
+        },
+        undefined,
+        boardChallenges,
+      ),
     ).toEqual({
       challengeRequest: {
-        challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
+        challengeAnswers: { 2: 'bitsocial-flags:5chan:flag:country:auto' },
       },
       flairs: [{ type: 'country', code: 'auto', text: 'flag:country:auto' }],
     });
@@ -126,17 +138,32 @@ describe('comment-flag-selection', () => {
     expect(getCommentFlagRequestFromSelection('none')).toBeUndefined();
   });
 
-  it('publishes geographic flags as challenge-backed comment flairs', () => {
-    expect(getCommentFlagPublishOptionsFromSelection('country:auto')).toEqual({
+  it("pre-answers a geographic flag under the flags challenge's index only", () => {
+    expect(getCommentFlagPublishOptionsFromSelection('country:auto', boardChallenges)).toEqual({
       challengeRequest: {
-        challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
+        challengeAnswers: { 2: 'bitsocial-flags:5chan:flag:country:auto' },
       },
+      flairs: [{ type: 'country', code: 'auto', text: 'flag:country:auto' }],
+    });
+    expect(getCommentFlagPublishOptionsFromSelection('country:auto', [flagsChallenge])?.challengeRequest).toEqual({
+      challengeAnswers: { 0: 'bitsocial-flags:5chan:flag:country:auto' },
+    });
+  });
+
+  it.each([
+    ['the board challenges are not loaded', undefined],
+    ['the board runs no flags challenge', boardChallenges.slice(0, 2)],
+    ['an iframe challenge only shares the type', [{ type: 'url/iframe', description: 'Another iframe challenge.' }]],
+    ['a challenge only shares the description', [{ ...flagsChallenge, type: 'text/plain' }]],
+  ])('publishes a geographic flag as flairs alone when %s', (_case, challenges) => {
+    expect(getCommentFlagPublishOptionsFromSelection('country:auto', challenges)).toEqual({
+      challengeRequest: undefined,
       flairs: [{ type: 'country', code: 'auto', text: 'flag:country:auto' }],
     });
   });
 
   it('publishes board-choice flags as regular comment flairs without a challenge request', () => {
-    expect(getCommentFlagPublishOptionsFromSelection('pony:AJ')).toEqual({
+    expect(getCommentFlagPublishOptionsFromSelection('pony:AJ', boardChallenges)).toEqual({
       challengeRequest: undefined,
       flairs: [{ type: 'pony', code: 'AJ', text: 'flag:pony:AJ' }],
     });

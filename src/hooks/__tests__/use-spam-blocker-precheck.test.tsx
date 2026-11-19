@@ -61,7 +61,7 @@ const waitForModal = () => vi.waitFor(() => expect(useChallengesStore.getState()
 /** The challenge entry the pre-check put in the modal store: [challenge message, publication]. */
 const getModalEntry = () => {
   const entry = useChallengesStore.getState().challenges[0]?.challenge as unknown as
-    | [{ challenges: Array<{ type: string; challenge: string }> }, { content?: string; publishChallengeAnswers: (answers: unknown) => void }]
+    | [{ challenges: Record<string, { type: string; challenge: string }> }, { content?: string; publishChallengeAnswers: (answers: unknown) => void }]
     | undefined;
   return entry;
 };
@@ -118,6 +118,8 @@ describe('useSpamBlockerPrecheck', () => {
     await waitForModal();
 
     const entry = getModalEntry();
+    // Shaped like a pkc-js CHALLENGE, which the modal reads: challenges keyed by challenge index.
+    expect(Array.isArray(entry?.[0].challenges)).toBe(false);
     const iframeChallenge = entry?.[0].challenges[0];
     expect(iframeChallenge?.type).toBe('url/iframe');
     const sessionId = iframeChallenge?.challenge.match(/\/iframe\/(precheck-[^/]+)\/precheck#payload=./)?.[1];
@@ -127,12 +129,12 @@ describe('useSpamBlockerPrecheck', () => {
     expect(fetchMock).not.toHaveBeenCalled();
 
     await act(async () => {
-      entry?.[1].publishChallengeAnswers({ challengeAnswers: [''] });
+      entry?.[1].publishChallengeAnswers({ challengeAnswers: { 0: '' } });
     });
     await flush();
 
     expect(fetchMock).toHaveBeenCalledWith(`${SERVER_URL}/challenge/status/${sessionId}`, expect.anything());
-    expect(result).toEqual({ status: 'passed', challengeAnswers: [sessionId, sessionId] });
+    expect(result).toEqual({ status: 'passed', challengeAnswers: { 0: sessionId, 1: sessionId } });
   });
 
   it('does not require account identity on boards without a precheck', async () => {
@@ -183,7 +185,7 @@ describe('useSpamBlockerPrecheck', () => {
     await waitForModal();
     expect(fetchMock).toHaveBeenCalledWith(`${SERVER_URL}/precheck/exemption`, expect.anything());
     await act(async () => {
-      getModalEntry()?.[1].publishChallengeAnswers({ challengeAnswers: [''] });
+      getModalEntry()?.[1].publishChallengeAnswers({ challengeAnswers: { 0: '' } });
     });
     await expect(resultPromise).resolves.toEqual({ status: 'stopped', message });
     expect(fetchMock.mock.calls.every(([url]) => !url.includes('/upload/'))).toBe(true);
@@ -224,7 +226,7 @@ describe('useSpamBlockerPrecheck', () => {
     await waitForModal();
     expect(getModalEntry()?.[0].challenges[0].challenge).toBe(`${SERVER_URL}/iframe/rate-limit?retryAt=${retryAt}`);
     await act(async () => {
-      getModalEntry()?.[1].publishChallengeAnswers({ challengeAnswers: [''] });
+      getModalEntry()?.[1].publishChallengeAnswers({ challengeAnswers: { 0: '' } });
     });
     await expect(resultPromise).resolves.toEqual({ status: 'stopped' });
     expect(fetchMock).toHaveBeenCalledTimes(1);
@@ -267,7 +269,7 @@ describe('useSpamBlockerPrecheck', () => {
     await waitForModal();
     expect(getModalEntry()?.[0].challenges[0].challenge).toBe(`${SERVER_URL}/iframe/rate-limit?retryAt=${retryAt}`);
     await act(async () => {
-      getModalEntry()?.[1].publishChallengeAnswers({ challengeAnswers: [''] });
+      getModalEntry()?.[1].publishChallengeAnswers({ challengeAnswers: { 0: '' } });
     });
     const error = await authorization;
     expect(error).toBeInstanceOf(SpamBlockerRateLimitError);
@@ -317,7 +319,7 @@ describe('useSpamBlockerPrecheck', () => {
     const resultPromise = start();
     await waitForModal();
     await act(async () => {
-      getModalEntry()?.[1].publishChallengeAnswers({ challengeAnswers: [''] });
+      getModalEntry()?.[1].publishChallengeAnswers({ challengeAnswers: { 0: '' } });
     });
 
     await expect(resultPromise).resolves.toEqual({ status: 'stopped', message: 'You are blocked from posting' });
@@ -332,31 +334,32 @@ describe('useSpamBlockerPrecheck', () => {
     const resultPromise = start();
     await waitForModal();
     await act(async () => {
-      getModalEntry()?.[1].publishChallengeAnswers({ challengeAnswers: [''] });
+      getModalEntry()?.[1].publishChallengeAnswers({ challengeAnswers: { 0: '' } });
     });
 
     await expect(resultPromise).resolves.toEqual({ status: 'stopped', message: 'spam_check_not_finished' });
   });
 
-  it("keeps the post's other answers next to the pass", async () => {
+  it('pre-checks past a question challenge and pre-answers only the spam blocker, under its challenge index', async () => {
     vi.stubGlobal(
       'fetch',
       vi.fn(async () => new Response(JSON.stringify({ status: 'completed' }))),
     );
 
     const resultPromise = runPrecheck({
-      challenges: [CHALLENGES[0]],
-      otherAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
-      publication: { content: 'flagged post' },
+      challenges: [{ type: 'text/plain', challenge: 'What is 2+2?' }, CHALLENGES[0]],
+      publication: { content: 'post on a board that asks a question' },
     });
     await waitForModal();
     await act(async () => {
-      getModalEntry()?.[1].publishChallengeAnswers({ challengeAnswers: [''] });
+      getModalEntry()?.[1].publishChallengeAnswers({ challengeAnswers: { 0: '' } });
     });
 
     const result = await resultPromise;
-    expect(result.status === 'passed' && result.challengeAnswers[1]).toBe('bitsocial-flags:5chan:flag:country:auto');
-    expect(result.status === 'passed' && result.challengeAnswers[0]).toMatch(/^precheck-/);
+    expect(result.status).toBe('passed');
+    if (result.status !== 'passed') return;
+    expect(Object.keys(result.challengeAnswers)).toEqual(['1']);
+    expect(result.challengeAnswers[1]).toMatch(/^precheck-/);
   });
 
   it('skips a moderator whom the board excludes from its spam blocker', async () => {
@@ -374,7 +377,7 @@ describe('useSpamBlockerPrecheck', () => {
     const resultPromise = start();
     await waitForModal();
     await act(async () => {
-      getModalEntry()?.[1].publishChallengeAnswers({ challengeAnswers: [''] });
+      getModalEntry()?.[1].publishChallengeAnswers({ challengeAnswers: { 0: '' } });
     });
 
     await expect(resultPromise).resolves.toEqual({ status: 'stopped', message: 'spam_check_not_finished' });

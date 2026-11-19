@@ -13,7 +13,20 @@ const resolveBoardIdentifier = (communityAddress: unknown): string => {
   return boardPath === communityAddress ? communityAddress : `/${boardPath}/`;
 };
 
-type ChallengeAnswersInput = string[] | { challengeAnswers?: string[] };
+/**
+ * Challenge answers keyed by challenge index: the challenge's position in `community.challenges`, as a
+ * decimal string, e.g. `{ "0": "4", "3": "" }`. pkc-js takes pre-answers and challenge answers in this form.
+ */
+export type ChallengeAnswersByIndex = Record<string, string>;
+
+type ChallengeAnswersInput = ChallengeAnswersByIndex | { challengeAnswers: ChallengeAnswersByIndex };
+
+/**
+ * The challenges a CHALLENGE message asks for, in challenge index order. pkc-js sends them as a record keyed
+ * by challenge index holding only the challenges still pending, so the keys can skip indexes.
+ */
+export const getChallengeEntries = <T>(challenges: Record<string, T> | undefined): Array<[challengeIndex: string, challenge: T]> =>
+  challenges && typeof challenges === 'object' ? Object.entries(challenges).sort(([a], [b]) => Number(a) - Number(b)) : [];
 
 // Optional integration contract with @bitsocial/ai-moderation-challenge. Providers that do not
 // return this exact failure continue through 5chan's generic challenge-error handling.
@@ -27,13 +40,13 @@ export type ChallengePublication = Partial<Omit<Comment, 'publishChallengeAnswer
   content?: string;
   link?: string;
   parentCid?: string;
-  publishChallengeAnswers?: (challengeAnswers?: ChallengeAnswersInput) => Promise<void> | void;
+  publishChallengeAnswers?: (challengeAnswers: ChallengeAnswersInput) => Promise<void> | void;
   shortCommunityAddress?: string;
   title?: string;
   vote?: number;
 };
 
-export const publishPublicationChallengeAnswers = async (publication: ChallengePublication | undefined, challengeAnswers: string[]) => {
+export const publishPublicationChallengeAnswers = async (publication: ChallengePublication | undefined, challengeAnswers: ChallengeAnswersByIndex) => {
   const publishChallengeAnswers = publication?.publishChallengeAnswers;
   if (typeof publishChallengeAnswers !== 'function') return;
   await publishChallengeAnswers.call(publication, { challengeAnswers });

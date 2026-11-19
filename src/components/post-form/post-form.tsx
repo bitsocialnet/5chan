@@ -1,4 +1,5 @@
 import type { ForgeUploadAuthorizer } from '../../lib/forge-upload-authorization';
+import type { ChallengeAnswersByIndex } from '../../lib/utils/challenge-utils';
 import { type ReactNode, type Ref, useCallback, useEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { Trans, useTranslation } from 'react-i18next';
@@ -1031,7 +1032,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
           return;
         }
 
-        const flagPublishOptions = getCommentFlagPublishOptionsForDirectory(directoryEntry, flagRef.current?.value);
+        const flagPublishOptions = getCommentFlagPublishOptionsForDirectory(directoryEntry, flagRef.current?.value, communityChallenges);
         const flashTagPublishOptions = getFlashTagPublishOptionsForDirectoryCode(postOptionsDirectoryCode, flashTagRef.current?.value);
         const flairs = mergeFlairs(flagPublishOptions.flairs, flashTagPublishOptions.flairs);
         const publishOptions = {
@@ -1293,17 +1294,16 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
           return;
         }
 
-        const flagPublishOptions = getCommentFlagPublishOptionsForDirectory(directoryEntry, flagRef.current?.value);
+        const flagPublishOptions = getCommentFlagPublishOptionsForDirectory(directoryEntry, flagRef.current?.value, communityChallenges);
 
         // The board's spam blocker checks the reply before its file is uploaded, so a rejected author never uploads.
-        let challengeRequest: { challengeAnswers: string[] } | undefined;
+        let challengeRequest: { challengeAnswers: ChallengeAnswersByIndex } | undefined;
         let authorizeForgeUpload: ForgeUploadAuthorizer | undefined;
         if (attachment) {
           outcome = 'post_precheck_failed';
           const precheck = await runSpamBlockerPrecheck({
             authorRole: accountRole,
             challenges: communityChallenges,
-            otherAnswers: flagPublishOptions.challengeRequest?.challengeAnswers,
             publication: { content: publishContent, displayName: currentDisplayName, parentCid: cid || undefined, postCid },
           });
           if (!isFormMountedRef.current) {
@@ -1316,7 +1316,9 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
             if (precheck.message) setFormError(`${t('error')}: ${precheck.message}`);
             return;
           }
-          if (precheck.status === 'passed') challengeRequest = { challengeAnswers: precheck.challengeAnswers };
+          // Each pre-answer is keyed by its own challenge's index, so the pass joins the flag's answer.
+          if (precheck.status === 'passed')
+            challengeRequest = { challengeAnswers: { ...flagPublishOptions.challengeRequest?.challengeAnswers, ...precheck.challengeAnswers } };
           if (precheck.status === 'passed' || precheck.status === 'exempt') authorizeForgeUpload = precheck.authorizeForgeUpload;
         }
 

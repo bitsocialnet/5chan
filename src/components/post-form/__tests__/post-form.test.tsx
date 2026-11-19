@@ -483,6 +483,12 @@ vi.mock('lodash/debounce', () => ({
 let container: HTMLDivElement;
 let root: Root;
 
+// A flag board's challenges: the spam blocker at index 0, the flags challenge at index 1.
+const FLAG_BOARD_CHALLENGES = [
+  { type: 'url/iframe', challenge: 'https://spamblocker.example/api/v1/precheck' },
+  { type: 'url/iframe', description: 'Add verified flag assertions to Bitsocial comments.' },
+];
+
 const flushEffects = async (count = 4) => {
   for (let i = 0; i < count; i += 1) {
     await act(async () => {
@@ -1389,6 +1395,7 @@ describe('PostForm', () => {
 
   it('shows a 4chan-style flag field on flag boards and publishes the default geographic request', async () => {
     testState.resolvedCommunityAddress = 'politically-incorrect.bso';
+    testState.communities['politically-incorrect.bso'] = { address: 'politically-incorrect.bso', challenges: FLAG_BOARD_CHALLENGES };
 
     await renderPostForm('/pol');
     await clickByText(container, 'start_new_thread');
@@ -1413,7 +1420,7 @@ describe('PostForm', () => {
         content: 'flagged post',
         displayName: 'Alice',
         challengeRequest: {
-          challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
+          challengeAnswers: { 1: 'bitsocial-flags:5chan:flag:country:auto' },
         },
         flairs: [{ type: 'country', code: 'auto', text: 'flag:country:auto' }],
       },
@@ -1423,6 +1430,7 @@ describe('PostForm', () => {
 
   it('shows the /pol/ flag field when a non-primary directory candidate is hosting /pol/', async () => {
     testState.resolvedCommunityAddress = 'nothing-is-beyond-our-reach.bso';
+    testState.communities['nothing-is-beyond-our-reach.bso'] = { address: 'nothing-is-beyond-our-reach.bso', challenges: FLAG_BOARD_CHALLENGES };
     testState.directoryListsByCode.pol = {
       directoryCode: 'pol',
       features: { hasFlags: true },
@@ -1448,7 +1456,7 @@ describe('PostForm', () => {
         content: 'candidate board flag post',
         displayName: 'Alice',
         challengeRequest: {
-          challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
+          challengeAnswers: { 1: 'bitsocial-flags:5chan:flag:country:auto' },
         },
         flairs: [{ type: 'country', code: 'auto', text: 'flag:country:auto' }],
       },
@@ -1458,6 +1466,7 @@ describe('PostForm', () => {
 
   it('publishes geographic location on /sp/ without showing a flag field', async () => {
     testState.resolvedCommunityAddress = 'sports-posting.bso';
+    testState.communities['sports-posting.bso'] = { address: 'sports-posting.bso', challenges: FLAG_BOARD_CHALLENGES };
 
     await renderPostForm('/sp');
     await clickByText(container, 'start_new_thread');
@@ -1476,7 +1485,7 @@ describe('PostForm', () => {
         content: 'sports post',
         displayName: 'Alice',
         challengeRequest: {
-          challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
+          challengeAnswers: { 1: 'bitsocial-flags:5chan:flag:country:auto' },
         },
         flairs: [{ type: 'country', code: 'auto', text: 'flag:country:auto' }],
       },
@@ -2341,7 +2350,7 @@ describe('PostForm', () => {
     testState.chooseFileMock.mockResolvedValue(attachment);
     testState.precheckMock.mockImplementation(async () => {
       expect(testState.uploadAttachmentMock).not.toHaveBeenCalled();
-      return { status: 'passed', authorizeForgeUpload, challengeAnswers: ['precheck-pass'] };
+      return { status: 'passed', authorizeForgeUpload, challengeAnswers: { 0: 'precheck-pass' } };
     });
     testState.uploadAttachmentMock.mockResolvedValue({ url: 'https://forgeimg.net/abc/reply.png', fileName: 'reply.png' });
 
@@ -2359,7 +2368,7 @@ describe('PostForm', () => {
     });
     expect(testState.uploadAttachmentMock).toHaveBeenCalledWith(attachment, undefined, authorizeForgeUpload);
     expect(testState.publishReplyMock).toHaveBeenCalledWith(
-      expect.objectContaining({ link: 'https://forgeimg.net/abc/reply.png', challengeRequest: { challengeAnswers: ['precheck-pass'] } }),
+      expect.objectContaining({ link: 'https://forgeimg.net/abc/reply.png', challengeRequest: { challengeAnswers: { 0: 'precheck-pass' } } }),
       expect.objectContaining({ finish: expect.any(Function) }),
     );
   });

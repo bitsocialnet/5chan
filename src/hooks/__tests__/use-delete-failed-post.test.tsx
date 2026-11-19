@@ -129,6 +129,17 @@ describe('useDeleteFailedPost', () => {
     });
   });
 
+  it('keeps pre-answers keyed by challenge index for a retry', () => {
+    const challengeRequest = { challengeAnswers: { 2: 'bitsocial-flags:5chan:flag:country:auto' } };
+    expect(getFailedPostRetryPublishOptions({ ...failedPost, challengeRequest })?.challengeRequest).toEqual(challengeRequest);
+  });
+
+  it('drops the positional pre-answers of a post that failed before they were keyed by challenge index', () => {
+    const retryOptions = getFailedPostRetryPublishOptions({ ...failedPost, challengeRequest: { challengeAnswers: ['', 'precheck-session'] } });
+    expect(retryOptions).toBeDefined();
+    expect(retryOptions).not.toHaveProperty('challengeRequest');
+  });
+
   it('deletes the failed row and republishes with the stored publish payload', async () => {
     expect(testState.lastPublishOptions).toMatchObject({
       author: {

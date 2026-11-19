@@ -1,5 +1,6 @@
 import { SpamBlockerRateLimitError } from './spam-blocker-errors';
 import type { Challenge, Comment } from '@bitsocial/bitsocial-react-hooks';
+import type { ChallengeAnswersByIndex } from './utils/challenge-utils';
 
 /**
  * A board running a Bitsocial Spam Blocker that accepts pre-check passes publishes `<serverUrl>/precheck`
@@ -14,8 +15,8 @@ export interface SpamBlockerPrecheckPlan {
   /** The spam blocker server's API base, e.g. `https://spamblocker.bitsocial.net/api/v1`. */
   serverUrl: string;
   verifyExemptions?: boolean;
-  /** The post's `challengeAnswers`: the pass at each spam blocker that checks it, its other answers in free slots. */
-  getChallengeAnswers: (pass: string) => string[];
+  /** The post's pre-answers: the pass under the challenge index of each spam blocker that checks it. */
+  getChallengeAnswers: (pass: string) => ChallengeAnswersByIndex;
 }
 
 /**
@@ -37,8 +38,6 @@ export interface PrecheckPublicationContext {
   /** The author's role on the board; boards often exclude moderators from their challenges. */
   authorRole?: string;
   authorHistory?: LocalAuthorHistory;
-  /** Answers the post carries anyway, such as a country flag the flags challenge finds in any slot. */
-  otherAnswers?: string[];
   /** Seconds since the epoch, for an exclude that needs the author's first comment to be old enough. */
   nowSeconds?: number;
 }
@@ -174,15 +173,10 @@ const hasChallengeDependentExemption = (challenge: unknown, context: PrecheckPub
   });
 };
 
-/** A challenge that publishes its own question (pkc-js `question`) reads its slot as the author's answer. */
-const readsItsAnswer = (challenge: unknown) => isRecord(challenge) && typeof challenge.challenge === 'string' && challenge.challenge.trim() !== '';
-
 /**
- * Plans where the pass goes in `challengeAnswers`: at the index of each spam blocker that checks this post.
- * Every slot before the last one is filled too, which is harmless for challenges that ignore pre-supplied
- * answers (fail, whitelists, flags) but not for one that reads its slot as an answer, so such a board is not
- * pre-checked. The post's other answers go in slots no challenge reads. Without a plan the post is published
- * as before and the board checks it after the upload.
+ * Plans where the pass goes in `challengeAnswers`: under the challenge index of each spam blocker that checks
+ * this post, and nowhere else, so no other challenge reads it. Without a plan the post is published as before
+ * and the board checks it after the upload.
  */
 export const getSpamBlockerPrecheckPlan = (challenges: unknown, context: PrecheckPublicationContext): SpamBlockerPrecheckPlan | undefined => {
   if (!Array.isArray(challenges)) return undefined;
@@ -197,30 +191,10 @@ export const getSpamBlockerPrecheckPlan = (challenges: unknown, context: Prechec
   if (passIndexes.some((index) => !hasVerifiedExemptionCapability(challenges[index]) && hasChallengeDependentExemption(challenges[index], context, challenges.length)))
     return undefined;
 
-  const lastPassIndex = passIndexes[passIndexes.length - 1];
-  const freeSlots: number[] = [];
-  for (let index = 0; index <= lastPassIndex; index++) {
-    if (passIndexes.includes(index)) continue;
-    if (readsItsAnswer(challenges[index]) && !isSkipped(index)) return undefined;
-    freeSlots.push(index);
-  }
-  const otherAnswers = context.otherAnswers ?? [];
-  for (let index = lastPassIndex + 1; freeSlots.length < otherAnswers.length; index++) {
-    if (index < challenges.length && readsItsAnswer(challenges[index]) && !isSkipped(index)) return undefined;
-    freeSlots.push(index);
-  }
-
   return {
     serverUrl,
     ...(passIndexes.some((index) => hasVerifiedExemptionCapability(challenges[index])) ? { verifyExemptions: true } : {}),
-    getChallengeAnswers: (pass) => {
-      const answers = Array<string>(Math.max(lastPassIndex + 1, ...freeSlots.slice(0, otherAnswers.length).map((index) => index + 1))).fill('');
-      for (const index of passIndexes) answers[index] = pass;
-      otherAnswers.forEach((answer, position) => {
-        answers[freeSlots[position]] = answer;
-      });
-      return answers;
-    },
+    getChallengeAnswers: (pass) => Object.fromEntries(passIndexes.map((index) => [String(index), pass])),
   };
 };
 
@@ -254,7 +228,7 @@ export const showSpamBlockerRateLimitNotice = async ({
   await new Promise<void>((resolve) => {
     addChallenge(
       [
-        { challenges: [{ type: 'url/iframe', challenge: `${serverUrl}/iframe/rate-limit?retryAt=${error.retryAt}` }] },
+        { challenges: { 0: { type: 'url/iframe', challenge: `${serverUrl}/iframe/rate-limit?retryAt=${error.retryAt}` } } },
         { ...publication, publishChallengeAnswers: () => resolve() },
       ],
       resolve,

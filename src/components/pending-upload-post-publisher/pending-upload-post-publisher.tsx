@@ -182,7 +182,6 @@ const Publisher = ({ pendingUploadPost }: { pendingUploadPost: PendingUploadPost
       const precheck = await runSpamBlockerPrecheck({
         authorRole,
         challenges: boardChallenges,
-        otherAnswers: publishOptions.challengeRequest?.challengeAnswers,
         publication: {
           content: publishOptions.content,
           displayName: publishOptions.displayName,
@@ -232,8 +231,10 @@ const Publisher = ({ pendingUploadPost }: { pendingUploadPost: PendingUploadPost
         ...publishOptions,
         link: uploaded.url,
         gallery,
-        // The pre-check's answers keep the post's other answers, such as its country flag.
-        ...(precheck.status === 'passed' ? { challengeRequest: { challengeAnswers: precheck.challengeAnswers } } : {}),
+        // The pass joins the post's other pre-answers, such as its country flag, each keyed by its own challenge's index.
+        ...(precheck.status === 'passed'
+          ? { challengeRequest: { challengeAnswers: { ...publishOptions.challengeRequest?.challengeAnswers, ...precheck.challengeAnswers } } }
+          : {}),
       };
       failureEvent = 'post_publish_failed';
       if (tripcodeSecret) await publishPost(options, analyticsAttempt, tripcodeSecret);
