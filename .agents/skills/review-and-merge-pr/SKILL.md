@@ -1,6 +1,6 @@
 ---
 name: review-and-merge-pr
-description: Review an existing pull request's feedback and readiness, apply requested fixes, or complete an authorized merge.
+description: Review a PR, monitor or babysit its checks and reviews, apply requested fixes, or complete an authorized merge.
 ---
 
 # Review and Merge a PR
@@ -9,7 +9,8 @@ Identify the requested PR, current head, target branch, and task scope. Use `gh`
 
 | Requested outcome | Work to perform |
 |---|---|
-| Review or readiness assessment | Read the diff, checks, and feedback; return findings locally without edits or external comments |
+| Review or readiness assessment | Assess the current head once and return findings locally, including any pending checks or reviews. |
+| Watch, monitor, or babysit | Recheck pending CI and reviews until the requested condition is met or progress requires intervention. Reassess a changed head. Report blockers or readiness locally. Fixes, publication, and merge require authorization. |
 | Fix review findings | Apply supported fixes within the requested scope, preserving unrelated work; commit/push only when included in the authorization |
 | Merge | Resolve relevant findings and complete the authorized merge once readiness is established; honor any explicit no-push or other limit |
 
