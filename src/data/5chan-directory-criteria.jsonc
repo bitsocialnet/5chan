@@ -8,7 +8,7 @@
         },
         "maxVotesPerAddress": 1,
         "bucketChainId": 84532,
-        "blocksPerBucket": 1800,
+        "blocksPerBucket": 18000,
         "voteExpiryBuckets": 720,
         "gate": {
             "rule": {
