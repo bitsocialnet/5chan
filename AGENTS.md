@@ -37,6 +37,7 @@ For an unexpected repo-specific issue, tell the contributor and continue indepen
 | Translation keys/values | Use the `translate` skill; one process applies locale changes at a time |
 | `package.json` changed | Run `corepack yarn install` to synchronize `yarn.lock` |
 | Dependencies, moved files, or imports changed | `yarn boundaries` (part of `yarn lint`) must pass; see module boundaries in [src/AGENTS.md](src/AGENTS.md). Run advisory `yarn knip`; resolve relevant new findings |
+| Choosing a native control, focus behavior, browser API, or browser-sensitive layout | Consult [Modern Web Guidance](.agents/skills/modern-web-guidance/SKILL.md) for the relevant feature |
 | AI workflow files changed | Edit shared sources, run `yarn ai-workflow:sync`, then `yarn ai-workflow:check` and `yarn ai-workflow:test` |
 | Public English docs or AI context changed | Run `yarn llms:generate` and include resulting `public/llms*.txt` changes |
 | Version or changelog changed | Run `yarn blotter:check`; follow the `release` skill's user-facing wording rules |

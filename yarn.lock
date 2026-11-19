@@ -82,6 +82,7 @@ __metadata:
     lint-staged: "npm:17.6.0"
     lodash: "npm:4.18.1"
     mathjax-full: "npm:3.2.2"
+    modern-web-guidance: "npm:1.0.0"
     node-fetch: "npm:3.3.2"
     oxc-parser: "npm:0.152.0"
     oxfmt: "npm:0.74.0"
@@ -16337,6 +16338,15 @@ __metadata:
   bin:
     mkdirp: bin/cmd.js
   checksum: 10c0/e2e2be789218807b58abced04e7b49851d9e46e88a2f9539242cc8a92c9b5c3a0b9bab360bd3014e02a140fc4fbc58e31176c408b493f8a2a6f4986bd7527b01
+  languageName: node
+  linkType: hard
+
+"modern-web-guidance@npm:1.0.0":
+  version: 1.0.0
+  resolution: "modern-web-guidance@npm:1.0.0"
+  bin:
+    modern-web-guidance: skills/modern-web-guidance/modern-web.mjs
+  checksum: 10c0/227875ba43c9ef9390c5bdc4d98c309930e1a7848b10b3558bf810b650d2a94fb3d0239627f8fe6ed1e921a1e81be417e629883e2d717bb1a641cb60617b3a38
   languageName: node
   linkType: hard
 
