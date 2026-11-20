@@ -29,6 +29,7 @@ const testState = vi.hoisted(() => ({
   community: {
     error: undefined as Error | undefined,
     features: undefined as { noArchive?: boolean } | undefined,
+    firstLoadFailed: undefined as boolean | undefined,
     title: '/mu/ - Music',
   },
 }));
@@ -146,6 +147,7 @@ describe('Archive', () => {
     testState.community = {
       error: undefined,
       features: undefined,
+      firstLoadFailed: undefined,
       title: '/mu/ - Music',
     };
     testState.loadMoreMock = vi.fn();
@@ -249,6 +251,19 @@ describe('Archive', () => {
     await renderArchiveRoute({ root, element: createElement(Archive), initialEntry: '/mu/archive', routePath: '/:boardIdentifier/archive' });
 
     expect(container.querySelector('[data-testid="loading-ellipsis"]')?.textContent).toBe('loading_archive');
+    expect(container.textContent).not.toContain('failed');
+  });
+
+  it('shows failed beside the loading status while an unreachable board retries', async () => {
+    testState.hasMore = true;
+    // pkc-js retries an unreachable board forever, so the feed stays loading while firstLoadFailed is set
+    testState.community = { ...testState.community, firstLoadFailed: true };
+
+    await renderArchiveRoute({ root, element: createElement(Archive), initialEntry: '/mu/archive', routePath: '/:boardIdentifier/archive' });
+
+    expect(container.querySelector('[data-testid="loading-ellipsis"]')?.textContent).toBe('loading_archive');
+    expect(container.textContent).toContain('failed');
+    expect(container.textContent).toContain('board_may_be_offline');
   });
 
   it('shows the board load failure instead of loading the archive when the board failed to load', async () => {

@@ -219,7 +219,7 @@ const ArchiveListing = ({ boardIdentifier, communityAddress }: { boardIdentifier
 
   const { feed, hasMore, loadMore, state: feedState } = useFeed(feedOptions);
   const community = useCommunity(communityIdentifier ? { community: communityIdentifier } : undefined);
-  const { error: communityError } = community || {};
+  const { error: communityError, firstLoadFailed: hasCommunityLoadFailed } = community || {};
   const archiveWindowInDays = useMemo(() => getArchiveWindowInDays(feed), [feed]);
   const { hasLoadFailed, hasMoreToLoad, isLoading, isEmpty } = getArchiveLoadState(feed.length, hasMore, feedState);
   const summaryText = isEmpty
@@ -242,6 +242,12 @@ const ArchiveListing = ({ boardIdentifier, communityAddress }: { boardIdentifier
         <hr className={styles.desktopDivider} />
         <ArchiveDesktopTopControls communityAddress={communityAddress} />
         <hr className={styles.divider} />
+        {/* an unreachable board is retried for good, so its failed first load shows beside the loading status */}
+        {hasCommunityLoadFailed && (
+          <div className={styles.archiveSummary}>
+            <CommunityLoadFailed communityIdentifier={communityIdentifier} showOfflineHint />
+          </div>
+        )}
         <h4 className={styles.archiveSummary}>
           <LoadingEllipsis string={t('loading_archive')} />
         </h4>
