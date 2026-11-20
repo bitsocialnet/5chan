@@ -4,6 +4,7 @@ import { useFeed, useCommunity } from '@bitsocial/bitsocial-react-hooks';
 import { useTranslation } from 'react-i18next';
 import { shouldShowSnow } from '../../stores/use-special-theme-store';
 import { BottomButton, BracketedCatalogButton, CatalogButton, ReturnButton, TopButton } from '../../components/board-buttons';
+import CommunityLoadFailed from '../../components/community-load-failed';
 import ErrorDisplay from '../../components/error-display';
 import { PageFooterDesktop, PageFooterMobile, ThreadFooterStyleRow } from '../../components/footer';
 import LoadingEllipsis from '../../components/loading-ellipsis';
@@ -89,6 +90,13 @@ const normalizeTimestamp = (timestamp: BoardFeedComment['timestamp']) => {
   }
 
   return timestamp > 1_000_000_000_000 ? Math.floor(timestamp / 1000) : Math.floor(timestamp);
+};
+
+// A board that failed to load non-retriably (useFeed().state is 'failed') has no threads left to load.
+const getArchiveLoadState = (threadCount: number, hasMore: boolean, feedState: string | undefined) => {
+  const hasLoadFailed = feedState === 'failed';
+  const hasMoreToLoad = hasMore && !hasLoadFailed;
+  return { hasLoadFailed, hasMoreToLoad, isLoading: threadCount === 0 && hasMoreToLoad, isEmpty: threadCount === 0 && !hasMoreToLoad };
 };
 
 const getArchiveWindowInDays = (comments: BoardFeedComment[]) => {
@@ -209,12 +217,11 @@ const ArchiveListing = ({ boardIdentifier, communityAddress }: { boardIdentifier
     [communities, boardSortType, archiveFilter],
   );
 
-  const { feed, hasMore, loadMore } = useFeed(feedOptions);
+  const { feed, hasMore, loadMore, state: feedState } = useFeed(feedOptions);
   const community = useCommunity(communityIdentifier ? { community: communityIdentifier } : undefined);
-  const { error: communityError } = community || {};
+  const { error: communityError, firstLoadFailed: hasCommunityLoadFailed } = community || {};
   const archiveWindowInDays = useMemo(() => getArchiveWindowInDays(feed), [feed]);
-  const isLoading = feed.length === 0 && hasMore;
-  const isEmpty = feed.length === 0 && !hasMore;
+  const { hasLoadFailed, hasMoreToLoad, isLoading, isEmpty } = getArchiveLoadState(feed.length, hasMore, feedState);
   const summaryText = isEmpty
     ? t('no_archived_threads')
     : archiveWindowInDays === null
@@ -235,6 +242,12 @@ const ArchiveListing = ({ boardIdentifier, communityAddress }: { boardIdentifier
         <hr className={styles.desktopDivider} />
         <ArchiveDesktopTopControls communityAddress={communityAddress} />
         <hr className={styles.divider} />
+        {/* an unreachable board is retried for good, so its failed first load shows beside the loading status */}
+        {hasCommunityLoadFailed && (
+          <div className={styles.archiveSummary}>
+            <CommunityLoadFailed communityIdentifier={communityIdentifier} showOfflineHint />
+          </div>
+        )}
         <h4 className={styles.archiveSummary}>
           <LoadingEllipsis string={t('loading_archive')} />
         </h4>
@@ -252,7 +265,13 @@ const ArchiveListing = ({ boardIdentifier, communityAddress }: { boardIdentifier
       <hr className={styles.desktopDivider} />
       <ArchiveDesktopTopControls communityAddress={communityAddress} />
       <hr className={styles.divider} />
-      <h4 className={styles.archiveSummary}>{summaryText}</h4>
+      {hasLoadFailed ? (
+        <div className={styles.archiveSummary}>
+          <CommunityLoadFailed communityIdentifier={communityIdentifier} />
+        </div>
+      ) : (
+        <h4 className={styles.archiveSummary}>{summaryText}</h4>
+      )}
 
       {communityError && (
         <div className={styles.error}>
@@ -308,7 +327,7 @@ const ArchiveListing = ({ boardIdentifier, communityAddress }: { boardIdentifier
         </table>
       )}
 
-      <ArchiveFooter hasMore={hasMore} onLoadMore={loadMore} />
+      <ArchiveFooter hasMore={hasMoreToLoad} onLoadMore={loadMore} />
 
       <PageFooterDesktop firstRow={<ArchiveDesktopFooterControls communityAddress={communityAddress} />} styleRow={<ThreadFooterStyleRow />} />
       <PageFooterMobile>

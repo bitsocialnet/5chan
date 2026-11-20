@@ -20,6 +20,7 @@ type FlashBoardComment = Comment & {
 interface FlashBoardTableProps {
   boardBasePath: string;
   isLoading?: boolean;
+  /** The board has no record and loading it failed; while `isLoading` it is still being retried. */
   hasLoadFailed?: boolean;
   communityIdentifier?: CommunityIdentifier;
   posts: FlashBoardComment[];
@@ -91,11 +92,11 @@ const FlashBoardTable = ({ boardBasePath, isLoading = false, hasLoadFailed = fal
           </tr>
         </thead>
         <tbody>
-          {posts.length === 0 && isLoading ? (
+          {posts.length === 0 && (isLoading || hasLoadFailed) ? (
             <tr className={styles.row}>
               <td colSpan={CELL_COUNT} className={styles.emptyCell}>
-                {hasLoadFailed && <CommunityLoadFailed communityIdentifier={communityIdentifier} showOfflineHint />}
-                <LoadingEllipsis string={t('downloading_board')} />
+                {hasLoadFailed && <CommunityLoadFailed communityIdentifier={communityIdentifier} showOfflineHint={isLoading} />}
+                {isLoading && <LoadingEllipsis string={t('downloading_board')} />}
               </td>
             </tr>
           ) : posts.length === 0 ? (

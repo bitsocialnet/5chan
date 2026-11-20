@@ -183,7 +183,8 @@ const useHiddenCatalogThreads = ({ candidateComments = [], communityAddresses, s
     () => ({
       hiddenCatalogThreads,
       hiddenThreadCandidates,
-      isLoadingHiddenCatalogThreads: blockedCidList.length > 0 && state !== 'succeeded',
+      // useComments is 'failed' once nothing is loading and a hidden comment could not load, so that stops the loading too
+      isLoadingHiddenCatalogThreads: blockedCidList.length > 0 && state !== 'succeeded' && state !== 'failed',
       scopeKey,
     }),
     [blockedCidList.length, hiddenCatalogThreads, hiddenThreadCandidates, scopeKey, state],

@@ -14,6 +14,7 @@ const SPORTS_PUBLIC_KEY = '12D3KooWGJA6zN3Q63FtSgwNhtfA26Skdzdxz5X7A9PFfE4FBMGE'
 const testState = vi.hoisted(() => ({
   account: { blockedCids: {} as Record<string, boolean> },
   commentsByCid: {} as Record<string, Comment>,
+  commentsState: 'succeeded',
   directories: [
     { address: 'music-posting.eth', directoryCode: 'mu', title: '/mu/ - Music' },
     { address: 'sports-posting.bso', directoryCode: 'sp', publicKey: '12D3KooWGJA6zN3Q63FtSgwNhtfA26Skdzdxz5X7A9PFfE4FBMGE', title: '/sp/ - Sports' },
@@ -24,7 +25,7 @@ vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
   useAccount: () => testState.account,
   useComments: ({ commentCids = [] }: { commentCids?: string[] } = {}) => ({
     comments: commentCids.map((cid) => testState.commentsByCid[cid]),
-    state: 'succeeded',
+    state: testState.commentsState,
   }),
 }));
 
@@ -45,10 +46,11 @@ const Result = ({
   communityAddresses: string[];
   sortType?: CatalogSortType;
 }) => {
-  const { hiddenCatalogThreads, scopeKey } = useHiddenCatalogThreads({ candidateComments, communityAddresses, sortType });
+  const { hiddenCatalogThreads, isLoadingHiddenCatalogThreads, scopeKey } = useHiddenCatalogThreads({ candidateComments, communityAddresses, sortType });
   return (
     <div>
       <span data-testid='hidden-cids'>{hiddenCatalogThreads.map((thread) => thread.cid).join(',')}</span>
+      <span data-testid='loading'>{String(isLoadingHiddenCatalogThreads)}</span>
       <span data-testid='scope-key'>{scopeKey}</span>
     </div>
   );
@@ -61,6 +63,7 @@ describe('useHiddenCatalogThreads', () => {
   beforeEach(() => {
     testState.account = { blockedCids: {} };
     testState.commentsByCid = {};
+    testState.commentsState = 'succeeded';
     container = document.createElement('div');
     document.body.appendChild(container);
     root = createRoot(container);
@@ -180,5 +183,23 @@ describe('useHiddenCatalogThreads', () => {
     expect(await renderOrder('active')).toBe('last-replied,newest,busiest-oldest');
     expect(await renderOrder('new')).toBe('newest,last-replied,busiest-oldest');
     expect(await renderOrder('replyCount')).toBe('busiest-oldest,last-replied,newest');
+  });
+
+  it('stops loading once a hidden comment failed to load and nothing else is loading', async () => {
+    testState.account = { blockedCids: { 'hidden-mu-thread': true, 'unreachable-thread': true } };
+    testState.commentsByCid = {
+      'hidden-mu-thread': { cid: 'hidden-mu-thread', communityAddress: 'music-posting.eth', postCid: 'hidden-mu-thread', timestamp: 100 } as Comment,
+    };
+    const renderState = async (commentsState: string) => {
+      testState.commentsState = commentsState;
+      await act(async () => {
+        root.render(createElement(Result, { communityAddresses: ['music-posting.eth'] }));
+      });
+      return container.querySelector('[data-testid="loading"]')?.textContent;
+    };
+
+    expect(await renderState('fetching-ipfs')).toBe('true');
+    expect(await renderState('failed')).toBe('false');
+    expect(container.querySelector('[data-testid="hidden-cids"]')?.textContent).toBe('hidden-mu-thread');
   });
 });

@@ -21,6 +21,7 @@ const testState = vi.hoisted(() => ({
   directories: [{ address: 'music-posting.eth', title: '/mu/ - Music' }],
   feed: [] as TestComment[],
   hasMore: false,
+  feedState: undefined as string | undefined,
   isMobile: false,
   loadMoreMock: vi.fn(),
   feedOptions: undefined as { sortType?: string } | undefined,
@@ -28,6 +29,7 @@ const testState = vi.hoisted(() => ({
   community: {
     error: undefined as Error | undefined,
     features: undefined as { noArchive?: boolean } | undefined,
+    firstLoadFailed: undefined as boolean | undefined,
     title: '/mu/ - Music',
   },
 }));
@@ -60,6 +62,7 @@ vi.mock('@bitsocial/bitsocial-react-hooks', async () => {
       return {
         feed: options.filter?.filter ? testState.feed.filter((comment) => options.filter?.filter?.(comment)) : testState.feed,
         hasMore: testState.hasMore,
+        state: testState.feedState ?? (testState.hasMore ? 'fetching-ipns' : 'succeeded'),
         loadMore: testState.loadMoreMock,
         reset: vi.fn(),
       };
@@ -139,10 +142,12 @@ describe('Archive', () => {
     vi.restoreAllMocks();
     testState.feed = [];
     testState.hasMore = false;
+    testState.feedState = undefined;
     testState.isMobile = false;
     testState.community = {
       error: undefined,
       features: undefined,
+      firstLoadFailed: undefined,
       title: '/mu/ - Music',
     };
     testState.loadMoreMock = vi.fn();
@@ -246,6 +251,33 @@ describe('Archive', () => {
     await renderArchiveRoute({ root, element: createElement(Archive), initialEntry: '/mu/archive', routePath: '/:boardIdentifier/archive' });
 
     expect(container.querySelector('[data-testid="loading-ellipsis"]')?.textContent).toBe('loading_archive');
+    expect(container.textContent).not.toContain('failed');
+  });
+
+  it('shows failed beside the loading status while an unreachable board retries', async () => {
+    testState.hasMore = true;
+    // pkc-js retries an unreachable board forever, so the feed stays loading while firstLoadFailed is set
+    testState.community = { ...testState.community, firstLoadFailed: true };
+
+    await renderArchiveRoute({ root, element: createElement(Archive), initialEntry: '/mu/archive', routePath: '/:boardIdentifier/archive' });
+
+    expect(container.querySelector('[data-testid="loading-ellipsis"]')?.textContent).toBe('loading_archive');
+    expect(container.textContent).toContain('failed');
+    expect(container.textContent).toContain('board_may_be_offline');
+  });
+
+  it('shows the board load failure instead of loading the archive when the board failed to load', async () => {
+    testState.hasMore = true;
+    testState.feedState = 'failed';
+    testState.community = { ...testState.community, error: new Error('board failed') };
+
+    await renderArchiveRoute({ root, element: createElement(Archive), initialEntry: '/mu/archive', routePath: '/:boardIdentifier/archive' });
+
+    expect(container.querySelector('[data-testid="loading-ellipsis"]')).toBeNull();
+    expect(container.textContent).toContain('failed');
+    expect(container.textContent).not.toContain('no_archived_threads');
+    expect(container.textContent).not.toContain('load_more');
+    expect(container.querySelector('[data-testid="error-display"]')?.textContent).toBe('board failed');
   });
 
   it('truncates long excerpts to the row budget and keeps the full text in the tooltip', async () => {

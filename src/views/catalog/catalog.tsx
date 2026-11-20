@@ -26,7 +26,6 @@ import useLatestFeedPosts from '../../hooks/use-latest-feed-posts';
 import useRefreshFeedOnLinkArrival from '../../hooks/use-refresh-feed-on-link-arrival';
 import useContentWidth from '../../hooks/use-content-width';
 import useCatalogStyleStore from '../../stores/use-catalog-style-store';
-import { useHasCommunityLoadFailed } from '../../stores/use-community-load-failures-store';
 import useFeedResetStore from '../../stores/use-feed-reset-store';
 import useHiddenCatalogThreadsStore from '../../stores/use-hidden-catalog-threads-store';
 import useSortingStore from '../../stores/use-sorting-store';
@@ -174,8 +173,11 @@ interface CatalogLoadingProps {
   communityAddresses: string[];
   hasMore: boolean;
   combinedFeedLength: number;
-  communityIdentifier: CommunityIdentifier | undefined;
-  state: string | undefined;
+  /** The board, or every board of a multi-board catalog, whose details Failed copies. */
+  failedCommunityIdentifier: CommunityIdentifier | CommunityIdentifier[] | undefined;
+  /** The board, or every board of a multi-board catalog, failed to load non-retriably, so nothing is loading. */
+  hasLoadFailed: boolean;
+  /** `useCommunity().firstLoadFailed`: the board has no record and a load of it failed, retried or not. */
   hasCommunityLoadFailed: boolean;
   subscriptionsLength: number;
   error: Error | undefined;
@@ -188,8 +190,8 @@ const CatalogLoading = ({
   communityAddresses,
   hasMore,
   combinedFeedLength,
-  communityIdentifier,
-  state,
+  failedCommunityIdentifier,
+  hasLoadFailed,
   hasCommunityLoadFailed,
   subscriptionsLength,
   error,
@@ -203,8 +205,8 @@ const CatalogLoading = ({
 
   return (
     <div className={styles.stateString}>
-      {state === 'failed' ? (
-        <CommunityLoadFailed communityIdentifier={communityIdentifier} />
+      {hasLoadFailed ? (
+        <CommunityLoadFailed communityIdentifier={failedCommunityIdentifier} />
       ) : subscriptionsLength === 0 ? (
         <span className='red'>{t('not_subscribed_to_any_board')}</span>
       ) : !hasMore && combinedFeedLength === 0 ? (
@@ -213,7 +215,7 @@ const CatalogLoading = ({
         )
       ) : (
         <>
-          {hasCommunityLoadFailed && <CommunityLoadFailed communityIdentifier={communityIdentifier} showOfflineHint />}
+          {hasCommunityLoadFailed && <CommunityLoadFailed communityIdentifier={failedCommunityIdentifier} showOfflineHint />}
           {hasMore && <LoadingEllipsis string={loadingStateString} />}
         </>
       )}
@@ -452,7 +454,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
     excludeArchivedFilter,
   ]);
 
-  const { feed: liveFeed, updatedFeed, hasMore, loadMore, reset, expandTimeWindow, communityKeysWithMore } = useFeed(feedOptions);
+  const { feed: liveFeed, updatedFeed, hasMore, loadMore, reset, expandTimeWindow, communityKeysWithMore, state: feedState } = useFeed(feedOptions);
   // a refresh takes the sorted multiboard catalog again
   const [refreshCount, setRefreshCount] = useState(0);
   const refreshFeed = useCallback(() => {
@@ -471,8 +473,9 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   }, [refreshFeed]);
   // A locally sorted multiboard catalog shows nothing until every board has loaded again, so it is left to its Refresh button.
   useRefreshFeedOnLinkArrival({ isVisible, hasLoadedThreads: liveFeed.length > 0 && !isMultiboardLocalSort, refresh: refreshFeedOnArrival });
-  // Released once the refreshed list has threads, or has none and nothing left to load; a list still loading its pages keeps the earlier threads.
-  if (heldFeed?.isRefreshSettled && (liveFeed.length > 0 || !hasMore)) {
+  // Released once the refreshed list has threads, has none and nothing left to load, or failed to load (useFeed keeps
+  // hasMore then); a list still loading its pages keeps the earlier threads.
+  if (heldFeed?.isRefreshSettled && (liveFeed.length > 0 || !hasMore || feedState === 'failed')) {
     setHeldFeed(undefined);
   }
   const isHoldingFeed = Boolean(heldFeed) && liveFeed.length === 0;
@@ -708,12 +711,14 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   }, [refreshFeed, setResetFunction, isVisible]);
 
   const community = useCommunity(communityIdentifier ? { community: communityIdentifier } : undefined);
-  const { error, shortAddress, state, title } = community || {};
-  const hasCommunityLoadFailed = useHasCommunityLoadFailed(communityIdentifier);
+  const { error, shortAddress, state, title, firstLoadFailed: hasCommunityLoadFailed = false } = community || {};
+  // A board without a record whose load failed non-retriably, or an empty feed none of whose boards
+  // could load that way: nothing is loading, so the failure replaces the loading status.
+  const hasLoadFailed = state === 'failed' || feedState === 'failed';
   // Pinned threads can load from cache before the board does. They join once the board has threads
   // or finished loading empty, so a loading or failed board still shows its status instead of them.
   const shownPinnedCatalogThreads =
-    !sortSnapshot.isLoading && (feed.length > 0 || (!hasMore && state !== 'failed' && !hasCommunityLoadFailed)) ? pinnedCatalogThreads : NO_PINNED_THREADS;
+    !sortSnapshot.isLoading && (feed.length > 0 || (!hasMore && !hasLoadFailed && !hasCommunityLoadFailed)) ? pinnedCatalogThreads : NO_PINNED_THREADS;
   const sortedFeed = useMemo(
     () => placePinnedCatalogThreads(isSortSnapshotShown ? sortSnapshot.threads : sortCatalogFeedForDisplay(catalogBaseFeed, sortType), shownPinnedCatalogThreads),
     [catalogBaseFeed, isSortSnapshotShown, shownPinnedCatalogThreads, sortSnapshot.threads, sortType],
@@ -836,14 +841,14 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
       footerNotLoadedBoardAddresses,
     ],
   );
-  const isFeedLoaded = feed.length > 0 || hiddenThreadsCount > 0 || hasShownPinnedThreads || state === 'failed';
+  const isFeedLoaded = feed.length > 0 || hiddenThreadsCount > 0 || hasShownPinnedThreads || hasLoadFailed;
   const hasActiveSearch = searchText.trim().length > 0;
   const showModEmptyState = isInModView && accountCommunityAddresses.length === 0;
   const showSearchNothingFound =
     hasActiveSearch &&
     !footerHasMore &&
     footerCombinedFeedLength === 0 &&
-    state !== 'failed' &&
+    !hasLoadFailed &&
     !(isInSubscriptionsView && (subscriptions?.length || 0) === 0) &&
     !showModEmptyState;
 
@@ -1122,8 +1127,8 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
                 communityAddresses={communityAddresses}
                 hasMore={footerHasMore}
                 combinedFeedLength={footerCombinedFeedLength}
-                communityIdentifier={communityIdentifier}
-                state={state}
+                failedCommunityIdentifier={isMultiboard ? communities : communityIdentifier}
+                hasLoadFailed={hasLoadFailed}
                 hasCommunityLoadFailed={hasCommunityLoadFailed}
                 subscriptionsLength={isInSubscriptionsView ? subscriptions?.length || 0 : 1}
                 error={error}

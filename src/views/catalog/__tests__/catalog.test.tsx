@@ -81,6 +81,7 @@ const testState = vi.hoisted(() => ({
   filterItems: [] as FilterItem[],
   filteredDirectoryAddresses: ['music-posting.eth'] as string[],
   hasMore: false,
+  feedState: undefined as string | undefined,
   communityKeysWithMore: [] as string[],
   imageSize: 'Small' as 'Large' | 'Small',
   incrementFilterCountMock: vi.fn(),
@@ -106,6 +107,7 @@ const testState = vi.hoisted(() => ({
   windowWidth: 900,
   community: {
     error: undefined as Error | undefined,
+    firstLoadFailed: undefined as boolean | undefined,
     shortAddress: 'music-posting.eth',
     state: 'ready',
     title: '/mu/ - Music',
@@ -217,6 +219,7 @@ vi.mock('@bitsocial/bitsocial-react-hooks', async () => {
         updatedFeed: testState.updatedFeed,
         hasMore: testState.hasMore,
         communityKeysWithMore: testState.communityKeysWithMore,
+        state: testState.feedState ?? (testState.hasMore ? 'fetching-ipns' : 'succeeded'),
         expandTimeWindow: testState.expandTimeWindowMock,
         loadMore: testState.loadMoreMock,
         reset: testState.resetMock,
@@ -504,10 +507,12 @@ describe('Catalog', () => {
     testState.windowWidth = 900;
     testState.community = {
       error: undefined,
+      firstLoadFailed: undefined,
       shortAddress: 'music-posting.eth',
       state: 'ready',
       title: '/mu/ - Music',
     };
+    testState.feedState = undefined;
     testState.incrementFilterCountMock.mockReset();
     testState.loadMoreMock.mockReset();
     testState.resetMock.mockReset();
@@ -652,6 +657,31 @@ describe('Catalog', () => {
       await clickTestId('open-thread');
       await clickTestId('back');
       expect(getRows()).toEqual([]);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('drops the threads of a link refresh once the refreshed catalog failed to load', async () => {
+    testState.feed = [{ cid: 'old-post', title: 'old', communityAddress: 'music-posting.eth' }];
+    await renderCachedCatalogWithLinks();
+
+    const settleReset = mockPendingReset();
+    await clickTestId('open-thread');
+    await clickTestId('catalog-link');
+
+    vi.useFakeTimers();
+    try {
+      // useFeed keeps hasMore while every board of the feed failed to load, so only its failed state ends the wait
+      testState.hasMore = true;
+      testState.feedState = 'failed';
+      await settleReset();
+      await runPendingTimers();
+      await clickTestId('open-thread');
+      await clickTestId('back');
+      expect(getRows()).toEqual([]);
+      expect(container.textContent).toContain('failed');
+      expect(container.querySelector('[data-testid="loading-ellipsis"]')).toBeNull();
     } finally {
       vi.useRealTimers();
     }
@@ -1304,23 +1334,33 @@ describe('Catalog', () => {
     expect(testState.virtuosoInitialScrollTops.at(-1)).toBe(24);
   });
 
-  it('keeps showing failed while an unreachable board starts another load attempt', async () => {
+  it('shows failed beside the retry status while an unreachable board retries', async () => {
     testState.directories = [{ address: 'music-posting.eth', directoryCode: 'mu', publicKey: '12D3KooWUnreachableBoard', title: '/mu/ - Music' }];
     testState.hasMore = true;
-    testState.community = { error: undefined, shortAddress: 'music-posting.eth', state: 'fetching-ipns', title: '/mu/ - Music' };
+    testState.community = { error: undefined, firstLoadFailed: undefined, shortAddress: 'music-posting.eth', state: 'fetching-ipns', title: '/mu/ - Music' };
 
     await renderCatalog({ initialEntry: '/mu/catalog', routePath: '/:boardIdentifier/catalog' });
     expect(container.textContent).not.toContain('failed');
 
-    await act(async () => {
-      communitiesStore.setState({ syncStatuses: { '12D3KooWUnreachableBoard': { syncState: 'retrying' } } });
-    });
-    await act(async () => {
-      communitiesStore.setState({ syncStatuses: { '12D3KooWUnreachableBoard': { syncState: 'loading' } } });
-    });
+    // pkc-js retries an unreachable board forever, so its state stays loading while firstLoadFailed is set
+    testState.community = { ...testState.community, firstLoadFailed: true };
+    await renderCatalog({ initialEntry: '/mu/catalog', routePath: '/:boardIdentifier/catalog' });
 
     expect(container.textContent).toContain('failed');
+    expect(container.textContent).toContain('board_may_be_offline');
     expect(container.querySelector('[data-testid="loading-ellipsis"]')?.textContent).toBe('loading_feed');
+  });
+
+  it('shows failed without a loading status when every board of an empty multi-board catalog failed to load', async () => {
+    testState.filteredDirectoryAddresses = ['music-posting.eth', 'sports-posting.bso'];
+    testState.feedState = 'failed';
+    testState.hasMore = true;
+
+    await renderCatalog({ catalogProps: { viewType: 'all' }, initialEntry: '/all/catalog', routePath: '/all/*' });
+
+    expect(container.textContent).toContain('failed');
+    expect(container.textContent).not.toContain('board_may_be_offline');
+    expect(container.querySelector('[data-testid="loading-ellipsis"]')).toBeNull();
   });
 
   it('shows the empty subscriptions state when there are no subscribed boards to browse', async () => {

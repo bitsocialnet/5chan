@@ -1263,6 +1263,28 @@ describe('Post', () => {
     expect(container.querySelector('[data-testid="thread-footer-first-row"]')).toBeNull();
   });
 
+  it('shows only the load error, not an empty post, when a thread that could not be created failed to load', async () => {
+    // pkc.createComment threw, so the comment never got a CID
+    testState.commentsByCid = { 'not-a-cid': { error: new Error('invalid comment cid'), state: 'failed' } };
+
+    await renderPostPage('/mu/thread/not-a-cid');
+
+    expect(container.querySelector('[data-testid="post-desktop"]')).toBeNull();
+    expect(Array.from(container.querySelectorAll('[data-testid="error-display"]')).map((node) => node.textContent)).toEqual(['invalid comment cid']);
+  });
+
+  it('shows the load error instead of an empty post when a thread failed to load', async () => {
+    // its CommentIpfs failed non-retriably, e.g. an invalid signature
+    testState.commentsByCid = {
+      'failed-cid': { cid: 'failed-cid', communityAddress: 'music-posting.eth', error: new Error('invalid signature'), state: 'failed' },
+    };
+
+    await renderPostPage('/mu/thread/failed-cid');
+
+    expect(container.querySelector('[data-testid="post-desktop"]')).toBeNull();
+    expect(Array.from(container.querySelectorAll('[data-testid="error-display"]')).map((node) => node.textContent)).toEqual(['invalid signature']);
+  });
+
   it('keeps thread comments frozen even with Auto checked, so only updates change the thread', async () => {
     testState.commentsByCid = {
       'reply-cid': {
