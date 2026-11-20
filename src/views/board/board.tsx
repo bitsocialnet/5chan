@@ -16,7 +16,6 @@ import { useFilteredDirectoryAddresses } from '../../hooks/use-filtered-director
 import { getBoardCategory } from '../../lib/utils/board-category-utils';
 import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
 import { useFeedStateString } from '../../hooks/use-state-string';
-import { useHasCommunityLoadFailed } from '../../stores/use-community-load-failures-store';
 import useFeedResetStore from '../../stores/use-feed-reset-store';
 import useFeedViewSettingsStore from '../../stores/use-feed-view-settings-store';
 import usePostNumberStore from '../../stores/use-post-number-store';
@@ -102,7 +101,9 @@ interface BoardFooterProps {
   moreThreadsSuggestionSearch: string;
   onExpandTimeWindow?: (suggestion: TimeFilterSuggestion) => void | Promise<void>;
   communityIdentifier: CommunityIdentifier | undefined;
+  communityIdentifiers: CommunityIdentifier[];
   communityState: string | undefined;
+  /** `useCommunity().firstLoadFailed`: the board has no record and a load of it failed, retried or not. */
   hasCommunityLoadFailed: boolean;
   subscriptionsLength: number;
   accountCommunityAddressesLength: number;
@@ -130,6 +131,7 @@ const BoardFooter = ({
   moreThreadsSuggestionSearch,
   onExpandTimeWindow,
   communityIdentifier,
+  communityIdentifiers,
   communityState,
   hasCommunityLoadFailed,
   subscriptionsLength,
@@ -143,10 +145,12 @@ const BoardFooter = ({
     ? t('loading_feed')
     : feedStateString || (combinedFeedLength === 0 ? t('downloading_board') : t('looking_for_more_posts'));
   const isFeedSucceeded = feedState === 'succeeded';
-  const isFeedFailed = feedState === 'failed';
+  // A board without a record whose load failed non-retriably, or an empty feed none of whose boards
+  // could load that way: nothing is loading, so the failure replaces the loading status.
+  const hasLoadFailed = communityState === 'failed' || feedState === 'failed';
   const canShowNoThreads =
     !isManualRefreshPending && !isAutoExpandingTimeFilter && (isSingleCommunityBoard ? isKnownEmptySingleCommunityBoard : isFeedSucceeded && !hasMore);
-  const isEmptyFeedLoading = combinedFeedLength === 0 && !canShowNoThreads && (isSingleCommunityBoard ? communityState !== 'failed' : !isFeedFailed);
+  const isEmptyFeedLoading = combinedFeedLength === 0 && !canShowNoThreads && !hasLoadFailed;
   const showFooterLoading = showLoadingEllipsis && (hasMore || isEmptyFeedLoading);
 
   let footerContent;
@@ -187,8 +191,8 @@ const BoardFooter = ({
       {footerContent}
       {!isSingleCommunityBoard && <BoardsMissingSortNotice communityAddresses={communityAddresses} />}
       <div>
-        {communityState === 'failed' ? (
-          <CommunityLoadFailed communityIdentifier={communityIdentifier} />
+        {hasLoadFailed ? (
+          <CommunityLoadFailed communityIdentifier={isSingleCommunityBoard ? communityIdentifier : communityIdentifiers} />
         ) : isInSubscriptionsView && subscriptionsLength === 0 ? (
           <output className={styles.searchNothingFound}>{t('not_subscribed_to_any_board')}</output>
         ) : isInModView && accountCommunityAddressesLength === 0 ? (
@@ -425,7 +429,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
   const shortAddress = useCommunityField(communityAddress, (community) => community?.shortAddress);
   // useCommunityField only reads from store, doesn't trigger fetching
   const communityData = useCommunity(communityIdentifier ? { community: communityIdentifier } : undefined);
-  const { error: communityError, state: communityState } = communityData || {};
+  const { error: communityError, state: communityState, firstLoadFailed: hasCommunityLoadFailed = false } = communityData || {};
   const communitiesPages = useCommunitiesPagesStore((state) => (isMultiboardView ? EMPTY_COMMUNITIES_PAGES : state.communitiesPages));
   const rawBoardThreadState = useMemo(
     () =>
@@ -443,7 +447,6 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
   const isRawBoardThreadStateEmpty = isRawBoardThreadStateFullyLoaded && (rawBoardThreadState?.rootThreadCids.size ?? 0) === 0;
   const isSingleCommunityBoard = !isInAllView && !isInSubscriptionsView && !isInModView;
   const isLoadedCommunityState = communityState === 'succeeded' || communityState === 'ready';
-  const hasCommunityLoadFailed = useHasCommunityLoadFailed(communityIdentifier);
   const isFeedSucceeded = feedState === 'succeeded';
   const refreshHold = refreshHoldRef.current;
   if (refreshHold && !refreshHold.isReleased && !refreshHold.hasSeenEmptyFeed && feed.length === 0) {
@@ -655,6 +658,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
               moreThreadsSuggestionSearch={routerLocation.search}
               onExpandTimeWindow={expandSuggestionTimeWindow}
               communityIdentifier={communityIdentifier}
+              communityIdentifiers={communities}
               communityState={communityState}
               hasCommunityLoadFailed={hasCommunityLoadFailed}
               subscriptionsLength={subscriptions?.length || 0}
@@ -742,6 +746,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
       moreThreadsSuggestionPathname,
       expandSuggestionTimeWindow,
       communityIdentifier,
+      communities,
       communityState,
       hasCommunityLoadFailed,
       feedState,

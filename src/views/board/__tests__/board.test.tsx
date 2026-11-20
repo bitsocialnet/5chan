@@ -59,6 +59,7 @@ type TestAccount = {
 
 type TestCommunity = {
   error?: Error;
+  firstLoadFailed?: boolean;
   nameResolved?: boolean;
   updatedAt?: number;
   posts?: {
@@ -1409,21 +1410,43 @@ describe('Board', () => {
       },
     };
     testState.resolvedCommunityAddress = 'flash-posting.bso';
-    testState.community = { error: undefined, shortAddress: 'flash-posting.bso', state: 'fetching-ipns', title: '/f/ - Flash' };
+    // pkc-js retries an unreachable board forever, so its state stays loading while firstLoadFailed is set
+    testState.community = { error: undefined, firstLoadFailed: true, shortAddress: 'flash-posting.bso', state: 'fetching-ipns', title: '/f/ - Flash' };
     testState.communitySnapshot = { shortAddress: 'flash-posting.bso', title: '/f/ - Flash' };
     testState.hasMore = true;
 
     await renderBoard({ initialEntry: '/f', routePath: '/:boardIdentifier/*' });
-    await act(async () => {
-      communitiesStore.setState({ syncStatuses: { '12D3KooWUnreachableFlash': { syncState: 'retrying' } } });
-    });
-    await act(async () => {
-      communitiesStore.setState({ syncStatuses: { '12D3KooWUnreachableFlash': { syncState: 'loading' } } });
-    });
 
     const table = container.querySelector('#flash-list');
     expect(table?.textContent).toContain('failed');
+    expect(table?.textContent).toContain('board_may_be_offline');
     expect(table?.querySelector('[data-testid="loading-ellipsis"]')?.textContent).toBe('downloading_board');
+  });
+
+  it('shows failed instead of no posts in the flash table when a board failed to load', async () => {
+    testState.directories = [{ address: 'flash-posting.bso', directoryCode: 'f', publicKey: '12D3KooWFailedFlash', title: '/f/ - Flash' }];
+    testState.directoryByAddress = {
+      'flash-posting.bso': {
+        address: 'flash-posting.bso',
+        directoryCode: 'f',
+        features: { postsPerPage: 50 },
+        title: '/f/ - Flash',
+      },
+    };
+    testState.resolvedCommunityAddress = 'flash-posting.bso';
+    testState.community = { error: new Error('flash board failed'), firstLoadFailed: true, shortAddress: 'flash-posting.bso', state: 'failed', title: '/f/ - Flash' };
+    testState.communitySnapshot = { shortAddress: 'flash-posting.bso', title: '/f/ - Flash' };
+    testState.feedState = 'failed';
+    testState.hasMore = true;
+
+    await renderBoard({ initialEntry: '/f', routePath: '/:boardIdentifier/*' });
+
+    const table = container.querySelector('#flash-list');
+    expect(table?.textContent).toContain('failed');
+    expect(table?.textContent).not.toContain('no posts');
+    expect(table?.textContent).not.toContain('board_may_be_offline');
+    expect(container.querySelector('[data-testid="loading-ellipsis"]')).toBeNull();
+    expect(container.querySelector('[data-testid="error-display"]')?.textContent).toBe('flash board failed');
   });
 
   it('renders an empty flash table when a loaded board reports explicit empty page cids', async () => {
@@ -1658,7 +1681,7 @@ describe('Board', () => {
     );
   });
 
-  it('keeps showing failed while an unreachable board starts another load attempt', async () => {
+  it('shows failed beside the retry status while an unreachable board retries', async () => {
     testState.directories = [{ address: 'music-posting.eth', publicKey: '12D3KooWUnreachableBoard', title: '/mu/ - Music' }];
     testState.hasMore = true;
     testState.feedStateString = 'Downloading board from peers';
@@ -1672,16 +1695,31 @@ describe('Board', () => {
     await renderBoard({ initialEntry: '/mu', routePath: '/:boardIdentifier/*' });
     expect(container.textContent).not.toContain('failed');
 
-    // pkc-js retries forever and the hooks drop retriable errors, so only the sync state records the failed attempt
-    await act(async () => {
-      communitiesStore.setState({ syncStatuses: { '12D3KooWUnreachableBoard': { syncState: 'retrying' } } });
-    });
-    await act(async () => {
-      communitiesStore.setState({ syncStatuses: { '12D3KooWUnreachableBoard': { syncState: 'loading' } } });
+    // pkc-js retries an unreachable board forever, so its state stays loading while firstLoadFailed is set
+    testState.community = { ...testState.community, firstLoadFailed: true };
+    await renderBoard({ initialEntry: '/mu', routePath: '/:boardIdentifier/*' });
+
+    expect(container.textContent).toContain('failed');
+    expect(container.textContent).toContain('board_may_be_offline');
+    expect(container.querySelector('[data-testid="loading-ellipsis"]')?.textContent).toBe('Downloading board from peers');
+  });
+
+  it('shows failed without a loading status when every board of an empty multi-board feed failed to load', async () => {
+    testState.filteredDirectoryAddresses = ['music-posting.eth', 'sports-posting.bso'];
+    testState.feedState = 'failed';
+    testState.feedStateString = 'Downloading 2 boards';
+    testState.hasMore = true;
+
+    await renderBoard({
+      boardProps: { viewType: 'all' },
+      initialEntry: '/all',
+      routePath: '/all/*',
     });
 
     expect(container.textContent).toContain('failed');
-    expect(container.querySelector('[data-testid="loading-ellipsis"]')?.textContent).toBe('Downloading board from peers');
+    expect(container.textContent).not.toContain('no_threads');
+    expect(container.textContent).not.toContain('board_may_be_offline');
+    expect(container.querySelector('[data-testid="loading-ellipsis"]')).toBeNull();
   });
 
   it('does not show no threads while an empty all feed is still loading', async () => {
@@ -1890,6 +1928,7 @@ describe('Board', () => {
 
     expect(container.querySelector('[data-testid="error-display"]')?.textContent).toBe('board failed');
     expect(container.textContent).toContain('failed');
+    expect(container.querySelector('[data-testid="loading-ellipsis"]')).toBeNull();
   });
 
   it('does not show no threads while a board is still loading', async () => {
