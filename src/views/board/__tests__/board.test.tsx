@@ -1447,6 +1447,8 @@ describe('Board', () => {
     expect(table?.textContent).not.toContain('board_may_be_offline');
     expect(container.querySelector('[data-testid="loading-ellipsis"]')).toBeNull();
     expect(container.querySelector('[data-testid="error-display"]')?.textContent).toBe('flash board failed');
+    // the flash table carries the board's status, so the board footer is not rendered below it
+    expect(Array.from(container.querySelectorAll('button')).filter((button) => button.textContent === 'failed')).toHaveLength(1);
   });
 
   it('renders an empty flash table when a loaded board reports explicit empty page cids', async () => {
