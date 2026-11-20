@@ -15,6 +15,7 @@ interface TestCommunity {
   state?: string;
   syncState?: CommunitySyncState;
   hasCachedData?: boolean;
+  firstLoadFailed?: boolean;
   updatedAt?: number;
   lastSuccessfulFetchAt?: number;
   lastRetriableError?: Error;
@@ -364,6 +365,25 @@ describe('useIsCommunityOffline', () => {
       offlineIconClass: 'redOfflineIcon',
       offlineTitle: 'community_offline_info',
     });
+  });
+
+  it('keeps a board offline through the next load attempt after its first load failed', async () => {
+    const offline = {
+      isOffline: true,
+      isOnlineStatusLoading: false,
+      offlineIconClass: 'redOfflineIcon',
+      offlineTitle: 'community_offline_info',
+    };
+
+    // useCommunity().state stays failed after a non-retriable failure while the board is tried again
+    await renderHook({ address: 'music.eth', state: 'failed', syncState: 'loading', hasCachedData: false, firstLoadFailed: true });
+    expect(latestValue).toEqual(offline);
+
+    // pkc-js retries an unreachable board forever, so only firstLoadFailed says its first load failed
+    await renderHook({ address: 'music.eth', state: 'fetching-ipns', syncState: 'retrying', hasCachedData: false, firstLoadFailed: true });
+    expect(latestValue).toEqual(offline);
+    await renderHook({ address: 'music.eth', state: 'fetching-ipns', syncState: 'loading', hasCachedData: false, firstLoadFailed: true });
+    expect(latestValue).toEqual(offline);
   });
 
   it('tracks strict-community objects with a canonical address hint instead of the undefined key', async () => {

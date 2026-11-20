@@ -7,14 +7,15 @@ import useCommunitiesLoadingStartTimestamps from '../stores/use-communities-load
 import { getCommunityFreshnessNowSeconds, isCommunitySyncLoading, isCommunitySyncTerminal, isCommunityUpdateStale } from '../lib/utils/community-freshness-utils';
 import { useNowSeconds } from './use-now-seconds';
 
-type CommunityWithSyncLifecycle = Community & Partial<Pick<UseCommunityResult, 'syncState' | 'hasCachedData' | 'lastSuccessfulFetchAt' | 'lastRetriableError'>>;
+type CommunityWithSyncLifecycle = Community &
+  Partial<Pick<UseCommunityResult, 'syncState' | 'hasCachedData' | 'firstLoadFailed' | 'lastSuccessfulFetchAt' | 'lastRetriableError'>>;
 
 const getCommunityOfflineKey = (community?: CommunityWithSyncLifecycle, communityAddressHint?: string) =>
   communityAddressHint || community?.address || community?.name || community?.publicKey;
 
 const useIsCommunityOffline = (community?: CommunityWithSyncLifecycle | undefined, communityAddressHint?: string) => {
   const { t } = useTranslation();
-  const { state, syncState, hasCachedData, updatedAt, lastSuccessfulFetchAt, lastRetriableError } = community || {};
+  const { state, syncState, hasCachedData, firstLoadFailed, updatedAt, lastSuccessfulFetchAt, lastRetriableError } = community || {};
   const communityKey = getCommunityOfflineKey(community, communityAddressHint);
   const nowSeconds = useNowSeconds(!!communityKey);
   // Subscribe to this community's entry only. The directory view renders one of these per board,
@@ -45,7 +46,9 @@ const useIsCommunityOffline = (community?: CommunityWithSyncLifecycle | undefine
   const isStale = isCommunityUpdateStale(updatedAt, getCommunityFreshnessNowSeconds({ syncState, lastSuccessfulFetchAt, lastRetriableError }, nowSeconds));
   const hasUsableCachedData = (hasCachedData ?? typeof updatedAt === 'number') && updatedAt !== undefined;
   const isOnline = hasUsableCachedData && !isStale;
-  const hasFailed = syncState === 'failed' || (!syncState && state === 'failed');
+  // A board without a record stays failed through its next load attempts: `state` after a
+  // non-retriable failure, `firstLoadFailed` also while pkc-js keeps retrying an unreachable board.
+  const hasFailed = syncState === 'failed' || state === 'failed' || Boolean(firstLoadFailed);
   const isSyncLoading = isCommunitySyncLoading(syncState);
   const hasTerminalSyncState = isCommunitySyncTerminal(syncState);
   const isFallbackLoading = offlineState.initialLoad && nowSeconds - loadingStartTimestamp < 30;
