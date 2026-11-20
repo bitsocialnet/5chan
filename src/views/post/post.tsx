@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import capitalize from 'lodash/capitalize';
 import { type Comment, type CommunityIdentifier, useAccountComment, useComment, useCommunity, useReplies, resolveReplySortType } from '@bitsocial/bitsocial-react-hooks';
 import { communitiesPagesStore as useCommunitiesPagesStore } from '../../lib/bitsocial-internals/stores';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
@@ -282,7 +283,10 @@ const PostPage = () => {
     unreadCount,
   ]);
 
-  const shouldShowCommentError = comment?.error?.message && !comment?.cid;
+  // The thread's post failed to load and none of it can show: an empty post would only read as a
+  // failed publication, so the page shows why it failed instead.
+  const hasThreadLoadFailed = !isPostReady && post?.state === 'failed';
+  const shouldShowCommentError = comment?.error?.message && !comment?.cid && !hasThreadLoadFailed;
   const shouldShowPostError = post?.error && post?.replyCount > 0 && post?.replies?.length === 0;
   const shouldShowCommunityError = communityError?.message && !post?.cid;
 
@@ -370,7 +374,11 @@ const PostPage = () => {
           <ErrorDisplay error={error} />
         </div>
       )}
-      <Post post={displayPost} showAllReplies={true} targetReplyCid={targetReplyCid} replyPaginationOverride={isPostReady ? replyPaginationOverride : undefined} />
+      {hasThreadLoadFailed ? (
+        <div className={styles.error}>{error ? <ErrorDisplay error={error} showImmediately={true} /> : capitalize(t('failed'))}</div>
+      ) : (
+        <Post post={displayPost} showAllReplies={true} targetReplyCid={targetReplyCid} replyPaginationOverride={isPostReady ? replyPaginationOverride : undefined} />
+      )}
       {shouldShowCommunityError && (
         <div className={styles.error}>
           <ErrorDisplay error={communityError} />
