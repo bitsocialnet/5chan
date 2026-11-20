@@ -1,6 +1,13 @@
 {
   "entries": [
     {
+      "id": "release-0.11.0",
+      "kind": "release",
+      "timestamp": 1795176000,
+      "message": "v0.11.0: Category multiboards, 5chan Pass login, board-specific spoiler images",
+      "version": "0.11.0"
+    },
+    {
       "id": "release-0.10.4",
       "kind": "release",
       "timestamp": 1794139200,

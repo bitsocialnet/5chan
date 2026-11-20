@@ -104,7 +104,7 @@ const downloads = [macSection, winSection, linuxSection, androidSection, htmlSec
 
 // One-liner summary of what changed in this release. Update before each release.
 const oneLinerDescription =
-  "This version adds tripcodes, multi-file posts on boards that allow galleries, attaching pasted images and files, and 24 new banners, makes fortune and dice results impossible to fake, shows newly created boards in the boards bar, lets directory votes lapse once their voter stops visiting, loads faster and stops updating boards that are off screen, keeps private page addresses out of 5chan.app analytics, and patches the desktop app's browser engine.";
+  "This version switches to the updated Bitsocial anti-spam challenge format, so desktop and Android users must update to keep posting on boards that have upgraded, and it adds category multiboards under /all, a 5chan Pass login page, a warning before posting on boards that do not hide your identity, and board-specific spoiler thumbnails, shows retry countdowns when posting fails, and fixes directory voting, reply counts and desktop app startup.";
 
 const releaseBody = `${oneLinerDescription}
 

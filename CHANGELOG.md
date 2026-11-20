@@ -1,3 +1,39 @@
+# [0.11.0](https://github.com/bitsocialnet/5chan/compare/v0.10.4...v0.11.0) (2026-11-20)
+
+
+### Bug Fixes
+
+* **app-shell:** offer a reload when startup code fails to download, and keep seasonal theme choices to their event ([#1307](https://github.com/bitsocialnet/5chan/issues/1307)) ([4e04608](https://github.com/bitsocialnet/5chan/commit/4e0460801be55089f8d94429de38693b385083e8))
+* **boards:** drop deprecated p/ prefix from community addresses ([8c60caa](https://github.com/bitsocialnet/5chan/commit/8c60caab0127ee3419ba8bd145ee833231d7cb20))
+* **boards:** refresh a board or catalog opened again by a link ([#1314](https://github.com/bitsocialnet/5chan/issues/1314)) ([52c5b7e](https://github.com/bitsocialnet/5chan/commit/52c5b7e63433f125a916424bfb0d03df2649d5c1))
+* **boards:** release threads kept through a link refresh on a conclusive result ([#1327](https://github.com/bitsocialnet/5chan/issues/1327)) ([88cf382](https://github.com/bitsocialnet/5chan/commit/88cf3824d3d7a50f9b2c4910899f4af1bcc12f3f))
+* **challenges:** key challenge answers by challenge index for pkc-js 0.0.152 ([#1330](https://github.com/bitsocialnet/5chan/issues/1330)) ([e376458](https://github.com/bitsocialnet/5chan/commit/e3764587bfc2a850c1144fd408e6436eaf7f2671))
+* **comments:** trim blank lines around comments ([#1315](https://github.com/bitsocialnet/5chan/issues/1315)) ([e5406d0](https://github.com/bitsocialnet/5chan/commit/e5406d08ac068f005872684250c4077ff5b9b9c3))
+* **directories:** stop stale directory lists, cross-tab vote overwrites and an empty popular threads box ([#1301](https://github.com/bitsocialnet/5chan/issues/1301)) ([31657ab](https://github.com/bitsocialnet/5chan/commit/31657ab2edc0c345327c92b6d5ba434e942b9fd1))
+* **directory voting:** use Base Sepolia RPCs that serve the full vote-expiry window ([#1326](https://github.com/bitsocialnet/5chan/issues/1326)) ([0fa7163](https://github.com/bitsocialnet/5chan/commit/0fa7163370376f98768cc8eb379d550ddf6b0f52))
+* **directory-votes:** count visits to a board voted for by key when browsed by name ([#1292](https://github.com/bitsocialnet/5chan/issues/1292)) ([a53a2fe](https://github.com/bitsocialnet/5chan/commit/a53a2fe75857162c736af89e1e51cabd0a36124c))
+* **directory-votes:** use one-hour vote buckets on Base Sepolia's 200 ms blocks ([#1295](https://github.com/bitsocialnet/5chan/issues/1295)) ([95a4d20](https://github.com/bitsocialnet/5chan/commit/95a4d20da316a60206ad383e68ac3724cac97e39))
+* **electron:** handle IPFS start, macOS window reopen and in-app update failures ([#1305](https://github.com/bitsocialnet/5chan/issues/1305)) ([4728998](https://github.com/bitsocialnet/5chan/commit/47289984a6640f9fa21f1f2ac1a7c173f3cc86c1))
+* **feeds:** keep board and catalog feed state in sync after refresh, search close, filter edits and time-window expansion ([#1297](https://github.com/bitsocialnet/5chan/issues/1297)) ([1edb470](https://github.com/bitsocialnet/5chan/commit/1edb470eecc9d9561328ef05ddb218fb6ce33a52))
+* **feeds:** show the latest reply counts of loaded threads on boards and catalogs ([#1322](https://github.com/bitsocialnet/5chan/issues/1322)) ([6c90d95](https://github.com/bitsocialnet/5chan/commit/6c90d958bad8fe2bdd01f54d83bdc9038a1a0399))
+* **moderation:** wait for accepted moderation in the mod queue and keep a saved RPC in settings ([#1311](https://github.com/bitsocialnet/5chan/issues/1311)) ([78c3e2f](https://github.com/bitsocialnet/5chan/commit/78c3e2f1171f908e5e541394145e58af383cdafc))
+* **posting:** enforce connection checks and show retry countdowns ([#1323](https://github.com/bitsocialnet/5chan/issues/1323)) ([1fafde2](https://github.com/bitsocialnet/5chan/commit/1fafde24e8c768ffaea0327464cbe7c4142e4b59))
+* **posting:** preserve whitelist and name exemptions before uploads ([#1318](https://github.com/bitsocialnet/5chan/issues/1318)) ([4fdb184](https://github.com/bitsocialnet/5chan/commit/4fdb1846d4d85c6d29f25b84a3c71d1229372dcf))
+* **posting:** publish replies, retries and uploads with their own options and account ([#1303](https://github.com/bitsocialnet/5chan/issues/1303)) ([4741fd3](https://github.com/bitsocialnet/5chan/commit/4741fd3fd5eb63955881d223d635fceea48aaf32))
+* **posting:** recognize Tor policy in precheck markers ([#1317](https://github.com/bitsocialnet/5chan/issues/1317)) ([edcb3cd](https://github.com/bitsocialnet/5chan/commit/edcb3cd679223d0970d3d491e998ae4611e7aad0))
+* **posting:** verify exemptions before authorizing media uploads ([#1319](https://github.com/bitsocialnet/5chan/issues/1319)) ([94a2361](https://github.com/bitsocialnet/5chan/commit/94a23618b63663aead192185d6ce237f9227127a))
+* **replies:** hide removed replies from everyone but their author ([#1294](https://github.com/bitsocialnet/5chan/issues/1294)) ([8d3c78c](https://github.com/bitsocialnet/5chan/commit/8d3c78c148d9227aeb19d5d2e20c0bcccfc30929))
+* **scripts:** clean up browsers, servers and locks when dev scripts are interrupted or overlap ([#1313](https://github.com/bitsocialnet/5chan/issues/1313)) ([b4d8c7d](https://github.com/bitsocialnet/5chan/commit/b4d8c7d6c4335f82293976595fd65c18d0e54a72))
+* **thread view:** drop stale quote clicks, load cid-only quote previews, restore embeds and Update caches ([#1299](https://github.com/bitsocialnet/5chan/issues/1299)) ([1433911](https://github.com/bitsocialnet/5chan/commit/14339113e539a5648b70a8eedf072a63593a69c2))
+* **translations:** stop ban expiry tooltip reading as a date range ([2f6ff83](https://github.com/bitsocialnet/5chan/commit/2f6ff8311cf39fe25300641020fd5f291b135af0))
+
+
+### Features
+
+* **multiboards:** add category multiboards under /all ([74520a2](https://github.com/bitsocialnet/5chan/commit/74520a28d9634da9f1f671dac558eacce1516a0e))
+* **settings:** remove the account UI, add a 5chan Pass login and a non-anonymous posting warning ([#1325](https://github.com/bitsocialnet/5chan/issues/1325)) ([8e92e16](https://github.com/bitsocialnet/5chan/commit/8e92e1673f743d53a812eb07f456c76cc8b5808e))
+* **spoilers:** add board-specific thumbnails ([#1293](https://github.com/bitsocialnet/5chan/issues/1293)) ([a34ab65](https://github.com/bitsocialnet/5chan/commit/a34ab65c137a0e1568b8972e09d60c39d25a9aa3))
+
 ## [0.10.4](https://github.com/bitsocialnet/5chan/compare/v0.10.3...v0.10.4) (2026-11-08)
 
 
