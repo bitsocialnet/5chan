@@ -473,8 +473,9 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   }, [refreshFeed]);
   // A locally sorted multiboard catalog shows nothing until every board has loaded again, so it is left to its Refresh button.
   useRefreshFeedOnLinkArrival({ isVisible, hasLoadedThreads: liveFeed.length > 0 && !isMultiboardLocalSort, refresh: refreshFeedOnArrival });
-  // Released once the refreshed list has threads, or has none and nothing left to load; a list still loading its pages keeps the earlier threads.
-  if (heldFeed?.isRefreshSettled && (liveFeed.length > 0 || !hasMore)) {
+  // Released once the refreshed list has threads, has none and nothing left to load, or failed to load (useFeed keeps
+  // hasMore then); a list still loading its pages keeps the earlier threads.
+  if (heldFeed?.isRefreshSettled && (liveFeed.length > 0 || !hasMore || feedState === 'failed')) {
     setHeldFeed(undefined);
   }
   const isHoldingFeed = Boolean(heldFeed) && liveFeed.length === 0;

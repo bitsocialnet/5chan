@@ -662,6 +662,31 @@ describe('Catalog', () => {
     }
   });
 
+  it('drops the threads of a link refresh once the refreshed catalog failed to load', async () => {
+    testState.feed = [{ cid: 'old-post', title: 'old', communityAddress: 'music-posting.eth' }];
+    await renderCachedCatalogWithLinks();
+
+    const settleReset = mockPendingReset();
+    await clickTestId('open-thread');
+    await clickTestId('catalog-link');
+
+    vi.useFakeTimers();
+    try {
+      // useFeed keeps hasMore while every board of the feed failed to load, so only its failed state ends the wait
+      testState.hasMore = true;
+      testState.feedState = 'failed';
+      await settleReset();
+      await runPendingTimers();
+      await clickTestId('open-thread');
+      await clickTestId('back');
+      expect(getRows()).toEqual([]);
+      expect(container.textContent).toContain('failed');
+      expect(container.querySelector('[data-testid="loading-ellipsis"]')).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('applies catalog filters and promotes top matches', async () => {
     testState.feed = [
       { cid: 'boring-post', title: 'plain talk', content: 'nothing special', communityAddress: 'music-posting.eth' },

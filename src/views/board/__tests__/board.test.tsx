@@ -864,6 +864,23 @@ describe('Board', () => {
     expect(getShownPosts()).toEqual([]);
   });
 
+  it('drops the threads kept through a link refresh once the refreshed feed failed to load', async () => {
+    testState.feed = [{ cid: 'old-post', communityAddress: 'music-posting.eth' }];
+    testState.hasMore = true;
+    await renderCachedBoardWithLinks();
+
+    const settleReset = mockPendingReset();
+    await clickTestId('open-thread');
+    await clickTestId('board-link');
+    expect(getShownPosts()).toEqual(['old-post']);
+
+    // useFeed keeps hasMore while every board of the feed failed to load, so only its failed state ends the wait
+    testState.feedState = 'failed';
+    await settleReset();
+    expect(getShownPosts()).toEqual([]);
+    expect(container.textContent).toContain('failed');
+  });
+
   it('renders the current page feed, inserts recent account comments, and wires footer actions', async () => {
     const currentTimestamp = Math.floor(Date.now() / 1000);
     testState.feed = [
