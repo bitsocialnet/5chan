@@ -44,7 +44,7 @@ describe('publish stores', () => {
       communityAddress: 'music-posting.eth',
       title: 'Hello',
       challengeRequest: {
-        challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
+        challengeAnswers: { 0: 'bitsocial-flags:5chan:flag:country:auto' },
       },
       flairs: [{ text: 'flag:country:auto', type: 'country', code: 'auto' }],
     };
@@ -58,7 +58,7 @@ describe('publish stores', () => {
     expect(state.publishCommentOptions.communityAddress).toBe('music-posting.eth');
     expect(state.publishCommentOptions.title).toBe('Hello');
     expect(state.publishCommentOptions.challengeRequest).toEqual({
-      challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
+      challengeAnswers: { 0: 'bitsocial-flags:5chan:flag:country:auto' },
     });
     expect(state.publishCommentOptions.flairs).toEqual([{ text: 'flag:country:auto', type: 'country', code: 'auto' }]);
 
@@ -115,7 +115,7 @@ describe('publish stores', () => {
       spoiler: false,
       communityAddress: 'music-posting.eth',
       challengeRequest: {
-        challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
+        challengeAnswers: { 0: 'bitsocial-flags:5chan:flag:country:auto' },
       },
       flairs: [{ text: 'flag:country:auto', type: 'country', code: 'auto' }],
     };
@@ -129,7 +129,7 @@ describe('publish stores', () => {
     expect(state.publishCommentOptions['parent-1']?.parentCid).toBe('parent-1');
     expect(state.publishCommentOptions['parent-1']?.postCid).toBe('parent-1');
     expect(state.publishCommentOptions['parent-1']?.challengeRequest).toEqual({
-      challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
+      challengeAnswers: { 0: 'bitsocial-flags:5chan:flag:country:auto' },
     });
     expect(state.publishCommentOptions['parent-1']?.flairs).toEqual([{ text: 'flag:country:auto', type: 'country', code: 'auto' }]);
 

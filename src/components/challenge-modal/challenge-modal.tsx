@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect, useLayoutEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Challenge as ChallengeType, useAccount, useComment } from '@bitsocial/bitsocial-react-hooks';
-import { getPublicationPreview, getPublicationType, getVotePreview, publishPublicationChallengeAnswers } from '../../lib/utils/challenge-utils';
+import { Challenge as ChallengeType, type ChallengeAnswersByIndex, useAccount, useComment } from '@bitsocial/bitsocial-react-hooks';
+import { getChallengeEntries, getPublicationPreview, getPublicationType, getVotePreview, publishPublicationChallengeAnswers } from '../../lib/utils/challenge-utils';
 import { isSageSupportedByBoard, stripSageMarker } from '../../lib/utils/post-options-utils';
 import { stripPostOptionMarkers } from '../../lib/utils/post-option-markers';
 import { stripTripcodeProof } from '../../lib/utils/tripcode-utils';
@@ -28,6 +28,16 @@ interface ChallengeProps {
   closeModal: () => void;
   abandonModal: () => void;
 }
+
+/** One entry of a CHALLENGE message's `challenges`. */
+type PendingChallenge = { challenge?: string; type?: string };
+
+/**
+ * One answer per pending challenge, under its challenge index; the board fails a challenge left out with
+ * "No answer.". `answers` holds them by position in `challengeEntries`.
+ */
+const getAnswersByIndex = (challengeEntries: Array<[challengeIndex: string, challenge: PendingChallenge]>, answers: string[]): ChallengeAnswersByIndex =>
+  Object.fromEntries(challengeEntries.map(([challengeIndex], position) => [challengeIndex, answers[position] ?? '']));
 
 const getDisplayCommunityAddress = (shortCommunityAddress?: string, communityAddress?: string) =>
   shortCommunityAddress || (communityAddress ? getShortAddress(communityAddress) : '') || communityAddress || '';
@@ -326,7 +336,8 @@ const IframeChallenge = ({
 const Challenge = ({ challenge, closeModal, abandonModal }: ChallengeProps) => {
   const { t } = useTranslation();
 
-  const challenges = challenge?.[0]?.challenges;
+  // Shown one at a time in challenge index order; `currentPosition` and `answers` count positions in this list.
+  const challengeEntries = getChallengeEntries<PendingChallenge>(challenge?.[0]?.challenges);
   const publication = challenge?.[1];
   const publicationTarget = challenge?.[2];
 
@@ -349,7 +360,7 @@ const Challenge = ({ challenge, closeModal, abandonModal }: ChallengeProps) => {
   const parentAddress = useParentAddress(parentCid);
   const community = shortCommunityAddress || communityAddress;
 
-  const [currentChallengeIndex, setCurrentChallengeIndex] = useState(0);
+  const [currentPosition, setCurrentPosition] = useState(0);
   const [answers, setAnswers] = useState<string[]>([]);
   const [readyIframeChallengeKey, setReadyIframeChallengeKey] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -368,8 +379,8 @@ const Challenge = ({ challenge, closeModal, abandonModal }: ChallengeProps) => {
   // center by itself after the user had dragged it elsewhere.
   const positionRef = useRef(initialPosition);
 
-  const currentChallenge = challenges?.[currentChallengeIndex];
-  const iframeChallengeKey = `${currentChallengeIndex}:${currentChallenge?.challenge ?? ''}`;
+  const currentChallenge = challengeEntries[currentPosition]?.[1];
+  const iframeChallengeKey = `${currentPosition}:${currentChallenge?.challenge ?? ''}`;
   const isTextChallenge = currentChallenge?.type === 'text/plain';
   const isImageChallenge = currentChallenge?.type === 'image/png';
   const isIframeChallenge = currentChallenge?.type === 'url/iframe';
@@ -404,14 +415,14 @@ const Challenge = ({ challenge, closeModal, abandonModal }: ChallengeProps) => {
   const onAnswersChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setAnswers((prevAnswers) => {
       const updatedAnswers = [...prevAnswers];
-      updatedAnswers[currentChallengeIndex] = e.target.value;
+      updatedAnswers[currentPosition] = e.target.value;
       return updatedAnswers;
     });
   };
 
   const onSubmit = () => {
     if (!publication) return;
-    void publishPublicationChallengeAnswers(publication, answers).catch(logPublishChallengeAnswersError);
+    void publishPublicationChallengeAnswers(publication, getAnswersByIndex(challengeEntries, answers)).catch(logPublishChallengeAnswersError);
     setAnswers([]);
     closeModal();
   };
@@ -422,22 +433,22 @@ const Challenge = ({ challenge, closeModal, abandonModal }: ChallengeProps) => {
       const resolvedAnswers = challengeAnswers.length ? challengeAnswers : [''];
       const updatedAnswers = [...answers];
       resolvedAnswers.forEach((answer, index) => {
-        updatedAnswers[currentChallengeIndex + index] = answer;
+        updatedAnswers[currentPosition + index] = answer;
       });
 
-      const nextChallengeIndex = currentChallengeIndex + resolvedAnswers.length;
-      if (challenges?.[nextChallengeIndex]) {
+      const nextPosition = currentPosition + resolvedAnswers.length;
+      if (challengeEntries[nextPosition]) {
         setAnswers(updatedAnswers);
-        setCurrentChallengeIndex(nextChallengeIndex);
+        setCurrentPosition(nextPosition);
         setReadyIframeChallengeKey('');
         return;
       }
 
-      void publishPublicationChallengeAnswers(publication, updatedAnswers).catch(logPublishChallengeAnswersError);
+      void publishPublicationChallengeAnswers(publication, getAnswersByIndex(challengeEntries, updatedAnswers)).catch(logPublishChallengeAnswersError);
       setAnswers([]);
       closeModal();
     },
-    [answers, challenges, closeModal, currentChallengeIndex, publication],
+    [answers, challengeEntries, closeModal, currentPosition, publication],
   );
 
   const onIframeDone = useCallback(() => {
@@ -459,9 +470,9 @@ const Challenge = ({ challenge, closeModal, abandonModal }: ChallengeProps) => {
 
   const onEnterKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key !== 'Enter') return;
-    if (!isValidAnswer(currentChallengeIndex)) return;
-    if (challenges?.[currentChallengeIndex + 1]) {
-      setCurrentChallengeIndex((prev) => prev + 1);
+    if (!isValidAnswer(currentPosition)) return;
+    if (challengeEntries[currentPosition + 1]) {
+      setCurrentPosition((prev) => prev + 1);
     } else {
       onSubmit();
     }
@@ -484,7 +495,7 @@ const Challenge = ({ challenge, closeModal, abandonModal }: ChallengeProps) => {
   }, [currentChallenge]);
   const readableUrl = getChallengeUrl();
 
-  if (!challenges?.length || !publication || !currentChallenge) {
+  if (!challengeEntries.length || !publication || !currentChallenge) {
     return null;
   }
 
@@ -558,7 +569,7 @@ const Challenge = ({ challenge, closeModal, abandonModal }: ChallengeProps) => {
       <div className={styles.publication}>
         {isIframeChallenge ? (
           <IframeChallenge
-            key={currentChallengeIndex}
+            key={currentPosition}
             challenge={currentChallenge?.challenge ?? ''}
             confirmMessage={iframeConfirmMessage}
             onDone={onIframeDone}
@@ -583,7 +594,7 @@ const Challenge = ({ challenge, closeModal, abandonModal }: ChallengeProps) => {
                 placeholder='TYPE THE ANSWER HERE AND PRESS ENTER'
                 onKeyDown={onEnterKey}
                 onChange={onAnswersChange}
-                value={answers[currentChallengeIndex] || ''}
+                value={answers[currentPosition] || ''}
               />
               <div className={styles.challengeMediaWrapper}>
                 {isTextChallenge && <TextChallenge challenge={currentChallenge?.challenge ?? ''} />}
@@ -591,23 +602,23 @@ const Challenge = ({ challenge, closeModal, abandonModal }: ChallengeProps) => {
               </div>
             </div>
             <div className={styles.challengeFooter}>
-              <div className={styles.counter}>{t('challenge_counter', { index: currentChallengeIndex + 1, total: challenges?.length })}</div>
+              <div className={styles.counter}>{t('challenge_counter', { index: currentPosition + 1, total: challengeEntries.length })}</div>
               <span className={styles.buttons}>
-                {!challenges?.[currentChallengeIndex + 1] && (
-                  <button type='button' onClick={onSubmit} disabled={!isValidAnswer(currentChallengeIndex)}>
+                {!challengeEntries[currentPosition + 1] && (
+                  <button type='button' onClick={onSubmit} disabled={!isValidAnswer(currentPosition)}>
                     {t('submit')}
                   </button>
                 )}
                 <button type='button' onClick={abandonModal}>
                   Cancel
                 </button>
-                {challenges?.length > 1 && (
-                  <button type='button' disabled={!challenges?.[currentChallengeIndex - 1]} onClick={() => setCurrentChallengeIndex((prev) => prev - 1)}>
+                {challengeEntries.length > 1 && (
+                  <button type='button' disabled={!challengeEntries[currentPosition - 1]} onClick={() => setCurrentPosition((prev) => prev - 1)}>
                     {t('previous')}
                   </button>
                 )}
-                {challenges?.[currentChallengeIndex + 1] && (
-                  <button type='button' onClick={() => setCurrentChallengeIndex((prev) => prev + 1)}>
+                {challengeEntries[currentPosition + 1] && (
+                  <button type='button' onClick={() => setCurrentPosition((prev) => prev + 1)}>
                     {t('next')}
                   </button>
                 )}

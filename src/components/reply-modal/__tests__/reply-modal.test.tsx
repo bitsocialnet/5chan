@@ -70,7 +70,7 @@ const testState = vi.hoisted(() => ({
     'music-posting.eth': {
       address: 'music-posting.eth',
     },
-  } as Record<string, { address: string; features?: Record<string, unknown> }>,
+  } as Record<string, { address: string; challenges?: unknown[]; features?: Record<string, unknown> }>,
   fetchMock: vi.fn(),
   showLinkField: false,
   showUploadControls: true,
@@ -356,6 +356,12 @@ vi.mock('@use-gesture/react', () => ({
     return () => ({});
   },
 }));
+
+// A flag board's challenges: the spam blocker at index 0, the flags challenge at index 1.
+const FLAG_BOARD_CHALLENGES = [
+  { type: 'url/iframe', challenge: 'https://spamblocker.example/api/v1/precheck' },
+  { type: 'url/iframe', description: 'Add verified flag assertions to Bitsocial comments.' },
+];
 
 let container: HTMLDivElement;
 let root: Root;
@@ -705,6 +711,7 @@ describe('ReplyModal', () => {
   });
 
   it('shows a flag selector on flag boards and publishes the default geographic request', async () => {
+    testState.communities['politically-incorrect.bso'] = { address: 'politically-incorrect.bso', challenges: FLAG_BOARD_CHALLENGES };
     await renderReplyModal('/pol/thread/post-1', 'politically-incorrect.bso');
 
     const flagSelect = container.querySelector<HTMLSelectElement>('select[aria-label="flag"]');
@@ -726,7 +733,7 @@ describe('ReplyModal', () => {
         content: '>>42\nselected text',
         displayName: 'Alice',
         challengeRequest: {
-          challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
+          challengeAnswers: { 1: 'bitsocial-flags:5chan:flag:country:auto' },
         },
         flairs: [{ type: 'country', code: 'auto', text: 'flag:country:auto' }],
         spoiler: false,
@@ -743,6 +750,7 @@ describe('ReplyModal', () => {
       boards: [{ address: 'politically-incorrect.bso' }, { address: 'nothing-is-beyond-our-reach.bso' }],
     };
 
+    testState.communities['nothing-is-beyond-our-reach.bso'] = { address: 'nothing-is-beyond-our-reach.bso', challenges: FLAG_BOARD_CHALLENGES };
     await renderReplyModal('/pol/thread/post-1', 'nothing-is-beyond-our-reach.bso');
 
     const flagSelect = container.querySelector<HTMLSelectElement>('select[aria-label="flag"]');
@@ -757,7 +765,7 @@ describe('ReplyModal', () => {
         content: '>>42\nselected text',
         displayName: 'Alice',
         challengeRequest: {
-          challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
+          challengeAnswers: { 1: 'bitsocial-flags:5chan:flag:country:auto' },
         },
         flairs: [{ type: 'country', code: 'auto', text: 'flag:country:auto' }],
         spoiler: false,
@@ -771,6 +779,7 @@ describe('ReplyModal', () => {
     { boardPath: '/int/thread/post-1', communityAddress: 'international-sfw.bso' },
     { boardPath: '/sp/thread/post-1', communityAddress: 'sports-posting.bso' },
   ])('publishes geographic location on country-only boards without showing a flag selector', async ({ boardPath, communityAddress }) => {
+    testState.communities[communityAddress] = { address: communityAddress, challenges: FLAG_BOARD_CHALLENGES };
     await renderReplyModal(boardPath, communityAddress);
 
     expect(container.querySelector<HTMLSelectElement>('select[aria-label="flag"]')).toBeNull();
@@ -782,7 +791,7 @@ describe('ReplyModal', () => {
         content: '>>42\nselected text',
         displayName: 'Alice',
         challengeRequest: {
-          challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
+          challengeAnswers: { 1: 'bitsocial-flags:5chan:flag:country:auto' },
         },
         flairs: [{ type: 'country', code: 'auto', text: 'flag:country:auto' }],
         spoiler: false,
@@ -1890,7 +1899,7 @@ describe('ReplyModal', () => {
       testState.chooseFileMock.mockResolvedValue(pngAttachment);
       testState.precheckMock.mockImplementation(async () => {
         expect(testState.uploadAttachmentMock).not.toHaveBeenCalled();
-        return { status: 'passed', authorizeForgeUpload, challengeAnswers: ['precheck-pass'] };
+        return { status: 'passed', authorizeForgeUpload, challengeAnswers: { 0: 'precheck-pass' } };
       });
       testState.uploadAttachmentMock.mockResolvedValue({ url: 'https://forgeimg.net/abc/uploaded.png', fileName: 'chosen.png' });
       await renderReplyModal('/all/thread/post-1');
@@ -1902,15 +1911,16 @@ describe('ReplyModal', () => {
       expect(testState.precheckMock).toHaveBeenCalledWith(expect.objectContaining({ publication: expect.objectContaining({ content: 'checked reply' }) }));
       expect(testState.uploadAttachmentMock).toHaveBeenCalledWith(pngAttachment, undefined, authorizeForgeUpload);
       expect(testState.publishReplyMock).toHaveBeenCalledWith(
-        expect.objectContaining({ link: 'https://forgeimg.net/abc/uploaded.png', challengeRequest: { challengeAnswers: ['precheck-pass'] } }),
+        expect.objectContaining({ link: 'https://forgeimg.net/abc/uploaded.png', challengeRequest: { challengeAnswers: { 0: 'precheck-pass' } } }),
         expect.objectContaining({ finish: expect.any(Function) }),
       );
     });
 
-    it('passes the flag answer to the spam blocker check and publishes the answers it returns on flag boards', async () => {
+    it("publishes the pass and the flag's answer together, each under its own challenge's index, on flag boards", async () => {
       const flagAnswer = 'bitsocial-flags:5chan:flag:country:auto';
+      testState.communities['politically-incorrect.bso'] = { address: 'politically-incorrect.bso', challenges: FLAG_BOARD_CHALLENGES };
       testState.chooseFileMock.mockResolvedValue(pngAttachment);
-      testState.precheckMock.mockResolvedValue({ status: 'passed', challengeAnswers: [flagAnswer, 'precheck-pass'] });
+      testState.precheckMock.mockResolvedValue({ status: 'passed', challengeAnswers: { 0: 'precheck-pass' } });
       testState.uploadAttachmentMock.mockResolvedValue({ url: 'https://forgeimg.net/abc/uploaded.png', fileName: 'chosen.png' });
       await renderReplyModal('/pol/thread/post-1', 'politically-incorrect.bso');
       await clickButtonByText('choose_file');
@@ -1918,10 +1928,10 @@ describe('ReplyModal', () => {
 
       await clickButtonByText('post');
 
-      expect(testState.precheckMock).toHaveBeenCalledWith(expect.objectContaining({ otherAnswers: [flagAnswer] }));
+      expect(testState.precheckMock).toHaveBeenCalledWith(expect.objectContaining({ challenges: FLAG_BOARD_CHALLENGES }));
       expect(testState.publishReplyMock).toHaveBeenCalledWith(
         expect.objectContaining({
-          challengeRequest: { challengeAnswers: [flagAnswer, 'precheck-pass'] },
+          challengeRequest: { challengeAnswers: { 0: 'precheck-pass', 1: flagAnswer } },
           flairs: [{ type: 'country', code: 'auto', text: 'flag:country:auto' }],
         }),
         expect.objectContaining({ finish: expect.any(Function) }),

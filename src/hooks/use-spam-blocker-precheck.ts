@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useAccount, useAccountComments } from '@bitsocial/bitsocial-react-hooks';
+import { type ChallengeAnswersByIndex, useAccount, useAccountComments } from '@bitsocial/bitsocial-react-hooks';
 import type { ForgeUploadAuthorizer } from '../lib/forge-upload-authorization';
 import type { PrecheckPublication } from '../lib/spam-blocker-precheck';
 import useChallengesStore from '../stores/use-challenges-store';
@@ -8,8 +8,8 @@ import useChallengesStore from '../stores/use-challenges-store';
 export type SpamBlockerPrecheckResult =
   /** The board does not check this post with a spam blocker that takes a pass; publish as before. */
   | { status: 'skipped' }
-  /** `challengeAnswers` for the post: the pass, plus the other answers it was given. */
-  | { status: 'passed'; challengeAnswers: string[]; authorizeForgeUpload?: ForgeUploadAuthorizer }
+  /** Pre-answers for the post: the pass under the challenge index of each spam blocker that redeems it. */
+  | { status: 'passed'; challengeAnswers: ChallengeAnswersByIndex; authorizeForgeUpload?: ForgeUploadAuthorizer }
   | { status: 'exempt'; authorizeForgeUpload: ForgeUploadAuthorizer }
   /** Rejected, or closed before it finished: nothing should be uploaded. No message when the author closed it. */
   | { status: 'stopped'; message?: string };
@@ -18,8 +18,6 @@ interface RunSpamBlockerPrecheckOptions {
   /** The author's role on the board; boards often exclude moderators from their spam blocker. */
   authorRole?: string;
   challenges: unknown;
-  /** Answers the post carries anyway (a country flag); they stay in the answers that hold the pass. */
-  otherAnswers?: string[];
   publication: Omit<PrecheckPublication, 'author' | 'timestamp'> & { displayName?: string };
 }
 
@@ -39,7 +37,7 @@ const useSpamBlockerPrecheck = ({ communityAddress }: { communityAddress: string
   const { accountComments } = useAccountComments(accountCommentsLookup);
 
   return useCallback(
-    async ({ authorRole, challenges, otherAnswers, publication }: RunSpamBlockerPrecheckOptions): Promise<SpamBlockerPrecheckResult> => {
+    async ({ authorRole, challenges, publication }: RunSpamBlockerPrecheckOptions): Promise<SpamBlockerPrecheckResult> => {
       const advertisesPrecheck =
         Array.isArray(challenges) &&
         challenges.some(
@@ -64,7 +62,7 @@ const useSpamBlockerPrecheck = ({ communityAddress }: { communityAddress: string
       const isReply = Boolean(publication.parentCid);
       const nowSeconds = Math.floor(Date.now() / 1000);
       const authorHistory = getLocalAuthorHistory({ accountComments, isReply, nowSeconds });
-      const plan = getSpamBlockerPrecheckPlan(challenges, { authorHistory, authorRole, isReply, nowSeconds, otherAnswers });
+      const plan = getSpamBlockerPrecheckPlan(challenges, { authorHistory, authorRole, isReply, nowSeconds });
       if (!plan) return { status: 'skipped' };
       if (!communityAddress || typeof privateKey !== 'string' || typeof authorAddress !== 'string') return { status: 'stopped', message: t('spam_check_not_finished') };
 
@@ -111,7 +109,7 @@ const useSpamBlockerPrecheck = ({ communityAddress }: { communityAddress: string
       const answered = await new Promise<boolean>((resolve) => {
         addChallenge(
           [
-            { challenges: [{ type: 'url/iframe', challenge: getPrecheckIframeUrl({ payload, serverUrl: plan.serverUrl, sessionId }) }] },
+            { challenges: { 0: { type: 'url/iframe', challenge: getPrecheckIframeUrl({ payload, serverUrl: plan.serverUrl, sessionId }) } } },
             { ...draft, author: { displayName }, communityAddress, publishChallengeAnswers: () => resolve(true) },
           ],
           () => resolve(false),

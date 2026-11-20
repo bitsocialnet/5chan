@@ -121,8 +121,15 @@ const createPublication = (): Record<string, any> => ({
   title: 'Subject',
 });
 
+// A CHALLENGE message's `challenges`, as pkc-js sends it: the pending challenges keyed by challenge index.
+// A list is keyed from "0"; pass a record to choose the keys.
+const toChallengesRecord = (challenge: any): Record<string, any> => {
+  if (Array.isArray(challenge)) return Object.fromEntries(challenge.map((entry, index) => [String(index), entry]));
+  return 'type' in challenge ? { 0: challenge } : challenge;
+};
+
 const createStoredChallenge = (challenge: any, publication = createPublication(), publicationTarget?: Record<string, unknown>) => ({
-  challenge: [{ challenges: Array.isArray(challenge) ? challenge : [challenge] }, publication, publicationTarget],
+  challenge: [{ challenges: toChallengesRecord(challenge) }, publication, publicationTarget],
   id: nextStoredChallengeId++,
 });
 
@@ -239,7 +246,7 @@ describe('ChallengeModal', () => {
       input?.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'Enter' }));
     });
 
-    expect(publication.publishChallengeAnswers).toHaveBeenCalledWith({ challengeAnswers: ['4'] });
+    expect(publication.publishChallengeAnswers).toHaveBeenCalledWith({ challengeAnswers: { 0: '4' } });
     expect(testState.removeChallengeMock).toHaveBeenCalledOnce();
   });
 
@@ -326,7 +333,7 @@ describe('ChallengeModal', () => {
     await dispatchInput(container.querySelector<HTMLInputElement>('input[placeholder*="TYPE THE ANSWER HERE"]') as HTMLInputElement, 'step two');
     await clickButton('submit');
 
-    expect(publication.publishChallengeAnswers).toHaveBeenCalledWith({ challengeAnswers: ['step one', 'step two'] });
+    expect(publication.publishChallengeAnswers).toHaveBeenCalledWith({ challengeAnswers: { 0: 'step one', 1: 'step two' } });
     expect(testState.removeChallengeMock).toHaveBeenCalledOnce();
   });
 
@@ -385,7 +392,7 @@ describe('ChallengeModal', () => {
     expect(doneButton?.getAttribute('aria-label')).toBe('Finish challenge');
 
     await clickButton('Finish Challenge');
-    expect(publication.publishChallengeAnswers).toHaveBeenCalledWith({ challengeAnswers: [''] });
+    expect(publication.publishChallengeAnswers).toHaveBeenCalledWith({ challengeAnswers: { 0: '' } });
     expect(testState.removeChallengeMock).toHaveBeenCalledOnce();
   });
 
@@ -497,7 +504,7 @@ describe('ChallengeModal', () => {
       );
     });
 
-    expect(publication.publishChallengeAnswers).toHaveBeenCalledWith({ challengeAnswers: [''] });
+    expect(publication.publishChallengeAnswers).toHaveBeenCalledWith({ challengeAnswers: { 0: '' } });
     expect(testState.removeChallengeMock).toHaveBeenCalledOnce();
   });
 
@@ -633,7 +640,99 @@ describe('ChallengeModal', () => {
       );
     });
 
-    expect(publication.publishChallengeAnswers).toHaveBeenCalledWith({ challengeAnswers: ['', ''] });
+    expect(publication.publishChallengeAnswers).toHaveBeenCalledWith({ challengeAnswers: { 0: '', 1: '' } });
+    expect(testState.removeChallengeMock).toHaveBeenCalledOnce();
+  });
+
+  it('asks the pending challenges of a sparse CHALLENGE in index order and answers each under its challenge index', async () => {
+    const publication = createPublication();
+    // The board pre-answered challenge 0, so the CHALLENGE only holds challenges 1 and 2, keyed out of order.
+    testState.challenges = [
+      createStoredChallenge(
+        {
+          2: { challenge: 'second question', type: 'text/plain' },
+          1: { challenge: 'first question', type: 'text/plain' },
+        },
+        publication,
+      ),
+    ];
+
+    await renderModal();
+    expect(container.textContent).toContain('1/2');
+    expect(container.textContent).toContain('first question');
+
+    const input = container.querySelector<HTMLInputElement>('input[placeholder*="TYPE THE ANSWER HERE"]');
+    await dispatchInput(input as HTMLInputElement, 'one');
+    await act(async () => {
+      input?.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'Enter' }));
+    });
+
+    expect(container.textContent).toContain('2/2');
+    expect(container.textContent).toContain('second question');
+    await dispatchInput(container.querySelector<HTMLInputElement>('input[placeholder*="TYPE THE ANSWER HERE"]') as HTMLInputElement, 'two');
+    await clickButton('submit');
+
+    expect(publication.publishChallengeAnswers).toHaveBeenCalledOnce();
+    expect(publication.publishChallengeAnswers).toHaveBeenCalledWith({ challengeAnswers: { 1: 'one', 2: 'two' } });
+    expect(testState.removeChallengeMock).toHaveBeenCalledOnce();
+  });
+
+  it('puts an iframe answer under its challenge index and answers a later text challenge under its own', async () => {
+    const publication = createPublication();
+    testState.challenges = [
+      createStoredChallenge(
+        {
+          1: { challenge: 'https://spamblocker.bitsocial.net/api/v1/iframe/session-123', type: 'url/iframe' },
+          3: { challenge: '2 + 2', type: 'text/plain' },
+        },
+        publication,
+      ),
+    ];
+
+    await renderModal();
+    await clickButton('Open challenge');
+    await act(async () => {
+      window.dispatchEvent(
+        new MessageEvent('message', {
+          data: { type: 'challengeAnswer', challengeAnswers: [''], sessionId: 'session-123' },
+          origin: 'https://spamblocker.bitsocial.net',
+        }),
+      );
+    });
+
+    expect(publication.publishChallengeAnswers).not.toHaveBeenCalled();
+    expect(container.textContent).toContain('2/2');
+    const input = container.querySelector<HTMLInputElement>('input[placeholder*="TYPE THE ANSWER HERE"]');
+    await dispatchInput(input as HTMLInputElement, '4');
+    await clickButton('submit');
+
+    expect(publication.publishChallengeAnswers).toHaveBeenCalledWith({ challengeAnswers: { 1: '', 3: '4' } });
+  });
+
+  it('fills the following challenges in order when an iframe returns several answers', async () => {
+    const publication = createPublication();
+    testState.challenges = [
+      createStoredChallenge(
+        {
+          1: { challenge: 'https://spamblocker.bitsocial.net/api/v1/iframe/session-123', type: 'url/iframe' },
+          4: { challenge: 'https://flags.5chan.app/iframe/session-flag', type: 'url/iframe' },
+        },
+        publication,
+      ),
+    ];
+
+    await renderModal();
+    await clickButton('Open challenge');
+    await act(async () => {
+      window.dispatchEvent(
+        new MessageEvent('message', {
+          data: { type: 'challengeAnswer', challengeAnswers: ['first', 'second'], sessionId: 'session-123' },
+          origin: 'https://spamblocker.bitsocial.net',
+        }),
+      );
+    });
+
+    expect(publication.publishChallengeAnswers).toHaveBeenCalledWith({ challengeAnswers: { 1: 'first', 4: 'second' } });
     expect(testState.removeChallengeMock).toHaveBeenCalledOnce();
   });
 

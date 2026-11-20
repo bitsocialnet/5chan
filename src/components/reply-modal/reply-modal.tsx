@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
-import { type CommentGalleryItem, useAccount } from '@bitsocial/bitsocial-react-hooks';
+import { type ChallengeAnswersByIndex, type CommentGalleryItem, useAccount } from '@bitsocial/bitsocial-react-hooks';
 import { getExpiringMediaLinkAlert, getPublishFileDisplayName, getPublishLinkOptions } from '../../lib/utils/media-link-validation-utils';
 import { getTwimgMediaFilePublishUrl } from '../../lib/utils/media-utils';
 import {
@@ -325,19 +325,18 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
           return;
         }
 
-        const flagPublishOptions = getCommentFlagPublishOptionsForDirectory(directoryEntry, flagRef.current?.value);
+        const flagPublishOptions = getCommentFlagPublishOptionsForDirectory(directoryEntry, flagRef.current?.value, communityChallenges);
 
         setError(null);
         // Upload only after every check passed, and after the board's spam blocker checked the reply, so a
         // rejected reply never leaves a file on the host.
-        let challengeRequest: { challengeAnswers: string[] } | undefined;
+        let challengeRequest: { challengeAnswers: ChallengeAnswersByIndex } | undefined;
         let authorizeForgeUpload: ForgeUploadAuthorizer | undefined;
         if (attachment) {
           outcome = 'post_precheck_failed';
           const precheck = await runSpamBlockerPrecheck({
             authorRole: accountRole,
             challenges: communityChallenges,
-            otherAnswers: flagPublishOptions.challengeRequest?.challengeAnswers,
             publication: { content: publishContent, displayName: currentDisplayName, parentCid, postCid },
           });
           if (!isReplyFormActiveRef.current) {
@@ -350,7 +349,9 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
             if (precheck.message) setError(`${t('error')}: ${precheck.message}`);
             return;
           }
-          if (precheck.status === 'passed') challengeRequest = { challengeAnswers: precheck.challengeAnswers };
+          // Each pre-answer is keyed by its own challenge's index, so the pass joins the flag's answer.
+          if (precheck.status === 'passed')
+            challengeRequest = { challengeAnswers: { ...flagPublishOptions.challengeRequest?.challengeAnswers, ...precheck.challengeAnswers } };
           if (precheck.status === 'passed' || precheck.status === 'exempt') authorizeForgeUpload = precheck.authorizeForgeUpload;
         }
         outcome = 'post_upload_failed';

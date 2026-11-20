@@ -1,9 +1,13 @@
 import { getBoardFlagDefinition, getBoardFlagDefinitions, type BoardFlagKind } from './board-flags';
+import type { ChallengeAnswersByIndex } from '@bitsocial/bitsocial-react-hooks';
 import type { DirectoryCommunity } from './utils/directory-list-utils';
 
 const GEOGRAPHIC_LOCATION_FLAG_VALUE = 'country:auto';
 const NO_FLAG_VALUE = 'none';
 const FLAG_CHALLENGE_ANSWER_PREFIX = 'bitsocial-flags:5chan:';
+// How @bitsocial/flags-challenge describes itself in `community.challenges`, which exposes no challenge name.
+const FLAGS_CHALLENGE_TYPE = 'url/iframe';
+const FLAGS_CHALLENGE_DESCRIPTION = 'Add verified flag assertions to Bitsocial comments.';
 
 export interface CommentFlagSelectOption {
   value: string;
@@ -17,7 +21,7 @@ export interface CommentFlagRequest {
 }
 
 interface CommentFlagChallengeRequest {
-  challengeAnswers: string[];
+  challengeAnswers: ChallengeAnswersByIndex;
 }
 
 export interface CommentFlagPublishOptions {
@@ -76,7 +80,12 @@ export const getCommentFlagOptionsForDirectory = (directory: CommentFlagDirector
   return [GEOGRAPHIC_LOCATION_OPTION];
 };
 
-export const getCommentFlagPublishOptionsForDirectory = (directory: CommentFlagDirectory | undefined, selectedValue?: string): CommentFlagPublishOptions => {
+/** `challenges` is the board's `community.challenges`, where a country flag's pre-answer finds the flags challenge. */
+export const getCommentFlagPublishOptionsForDirectory = (
+  directory: CommentFlagDirectory | undefined,
+  selectedValue?: string,
+  challenges?: unknown,
+): CommentFlagPublishOptions => {
   if (!hasCommentFlagsForDirectory(directory)) {
     return {
       challengeRequest: undefined,
@@ -86,7 +95,7 @@ export const getCommentFlagPublishOptionsForDirectory = (directory: CommentFlagD
 
   const directoryCode = getDirectoryCode(directory);
   if (directoryCode && AUTO_GEOGRAPHIC_FLAG_DIRECTORY_CODES.has(directoryCode)) {
-    return getCommentFlagPublishOptionsFromSelection(GEOGRAPHIC_LOCATION_FLAG_VALUE);
+    return getCommentFlagPublishOptionsFromSelection(GEOGRAPHIC_LOCATION_FLAG_VALUE, challenges);
   }
 
   const flagOptions = getCommentFlagOptionsForDirectory(directory);
@@ -97,7 +106,7 @@ export const getCommentFlagPublishOptionsForDirectory = (directory: CommentFlagD
     };
   }
 
-  return getCommentFlagPublishOptionsFromSelection(selectedValue ?? flagOptions[0]?.value);
+  return getCommentFlagPublishOptionsFromSelection(selectedValue ?? flagOptions[0]?.value, challenges);
 };
 
 export const getCommentFlagRequestFromSelection = (value: string | undefined): CommentFlagRequest | undefined => {
@@ -129,16 +138,28 @@ export const getCommentFlagRequestFromSelection = (value: string | undefined): C
     : undefined;
 };
 
-export const getCommentFlagPublishOptionsFromSelection = (value: string | undefined): CommentFlagPublishOptions => {
+/** The challenge index of each flags challenge in the board's `community.challenges`. */
+const getFlagsChallengeIndexes = (challenges: unknown): number[] =>
+  Array.isArray(challenges)
+    ? challenges.flatMap((challenge, index) => (challenge?.type === FLAGS_CHALLENGE_TYPE && challenge?.description === FLAGS_CHALLENGE_DESCRIPTION ? [index] : []))
+    : [];
+
+/**
+ * A country flag is also pre-answered to the flags challenge, which reads its own answer first. The answer goes
+ * only under that challenge's index; without one on the board the challenge still reads the flag from `flairs`.
+ */
+const getCountryFlagChallengeRequest = (flag: CommentFlagRequest, challenges: unknown): CommentFlagChallengeRequest | undefined => {
+  const flagsChallengeIndexes = getFlagsChallengeIndexes(challenges);
+  if (flag.type !== 'country' || flagsChallengeIndexes.length === 0) return undefined;
+  const answer = `${FLAG_CHALLENGE_ANSWER_PREFIX}${flag.text}`;
+  return { challengeAnswers: Object.fromEntries(flagsChallengeIndexes.map((index) => [String(index), answer])) };
+};
+
+export const getCommentFlagPublishOptionsFromSelection = (value: string | undefined, challenges?: unknown): CommentFlagPublishOptions => {
   const flag = getCommentFlagRequestFromSelection(value);
   return flag
     ? {
-        challengeRequest:
-          flag.type === 'country'
-            ? {
-                challengeAnswers: [`${FLAG_CHALLENGE_ANSWER_PREFIX}${flag.text}`],
-              }
-            : undefined,
+        challengeRequest: getCountryFlagChallengeRequest(flag, challenges),
         flairs: [flag],
       }
     : {
