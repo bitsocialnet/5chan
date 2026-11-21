@@ -2,6 +2,7 @@ import { ChallengeVerification, Comment, CommentGalleryItem, PublishCommentOptio
 import { create } from 'zustand';
 import { alertChallengeVerificationFailed } from '../lib/utils/challenge-utils';
 import { getCommentCommunityAddress } from '../lib/utils/comment-utils';
+import { onFinalPublishError } from '../lib/utils/publish-error-utils';
 import { normalizePublishURL } from '../lib/utils/url-utils';
 
 type SubmitState = {
@@ -63,10 +64,10 @@ export const createPublishPostStore = () =>
           onChallengeVerification: (challengeVerification: ChallengeVerification, comment: Comment) => {
             alertChallengeVerificationFailed(challengeVerification, comment);
           },
-          onError: (error: Error) => {
+          onError: onFinalPublishError((error: Error) => {
             console.error(error);
             alert(error.message);
-          },
+          }),
         };
 
         if (Object.keys(updatedAuthor).length > 0) {

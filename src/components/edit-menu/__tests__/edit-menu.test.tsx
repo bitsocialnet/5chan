@@ -605,6 +605,57 @@ describe('EditMenu', () => {
     expect(getCheckbox('archived')?.checked).toBe(true);
   });
 
+  it('alerts a failed edit or moderation only for a final error, not for one pkc-js recovers from', async () => {
+    testState.privileges = {
+      isAccountCommentAuthor: true,
+      isAccountMod: true,
+      isCommentAuthorMod: false,
+    };
+    const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    await renderMenu(basePost);
+
+    const recoverableError = new Error('could not decrypt the challenge');
+    act(() => {
+      testState.authorOptions?.onError(recoverableError, { commentCid: 'comment-1' }, { final: false });
+      testState.modOptions?.onError(recoverableError, { commentCid: 'comment-1' }, { final: false });
+    });
+    expect(alertSpy).not.toHaveBeenCalled();
+    expect(consoleWarnSpy).toHaveBeenCalledWith(expect.any(String), recoverableError);
+
+    act(() => {
+      testState.authorOptions?.onError(new Error('the board never answered'), { commentCid: 'comment-1' }, { final: true });
+      testState.modOptions?.onError(new Error('the board never answered'), { commentCid: 'comment-1' }, { final: true });
+    });
+    expect(alertSpy.mock.calls).toEqual([['Comment edit failed. the board never answered'], ['Comment moderation failed. the board never answered']]);
+    consoleWarnSpy.mockRestore();
+  });
+
+  it('alerts an edit or moderation whose challenge answers failed to publish', async () => {
+    testState.privileges = {
+      isAccountCommentAuthor: true,
+      isAccountMod: true,
+      isCommentAuthorMod: false,
+    };
+    const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    await renderMenu(basePost);
+    const answerError = new Error('could not publish the challenge answer');
+
+    await act(async () => {
+      await testState.authorOptions?.onChallenge({ challenges: [] }, { commentCid: 'comment-1' });
+    });
+    act(() => (testState.addChallengeMock.mock.calls.at(-1)?.[2] as ((error: unknown) => void) | undefined)?.(answerError));
+    await act(async () => {
+      await testState.modOptions?.onChallenge({ challenges: [] }, { commentCid: 'comment-1' });
+    });
+    act(() => (testState.addChallengeMock.mock.calls.at(-1)?.[2] as ((error: unknown) => void) | undefined)?.(answerError));
+
+    expect(alertSpy.mock.calls).toEqual([
+      ['Comment edit failed. could not publish the challenge answer'],
+      ['Comment moderation failed. could not publish the challenge answer'],
+    ]);
+    consoleWarnSpy.mockRestore();
+  });
+
   it('does not publish author-side edits for author moderators when deletion did not change', async () => {
     testState.privileges = {
       isAccountCommentAuthor: true,

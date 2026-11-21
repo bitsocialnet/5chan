@@ -4,6 +4,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import PostMenuMobile from '../post-menu-mobile';
+import useChallengesStore from '../../../../stores/use-challenges-store';
 import useImageFiltersStore from '../../../../stores/use-image-filters-store';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -12,6 +13,7 @@ const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise
 const testState = vi.hoisted(() => ({
   copyShareLinkMock: vi.fn().mockResolvedValue(undefined),
   copyToClipboardMock: vi.fn().mockResolvedValue(undefined),
+  deleteOptions: undefined as Record<string, any> | undefined,
   hidden: false,
   hideMock: vi.fn(),
   mediaInfo: undefined as { thumbnail?: string; type?: string; url?: string } | undefined,
@@ -32,7 +34,10 @@ vi.mock('react-i18next', () => ({
 
 vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
   useAccount: () => ({ author: { address: '0xmod' }, signer: { address: '0xauthor' } }),
-  usePublishCommentEdit: () => ({ publishCommentEdit: vi.fn().mockResolvedValue(undefined) }),
+  usePublishCommentEdit: (options: Record<string, any>) => {
+    testState.deleteOptions = options;
+    return { publishCommentEdit: vi.fn().mockResolvedValue(undefined) };
+  },
 }));
 
 vi.mock('@bitsocial/bitsocial-react-hooks/dist/lib/localforage-lru/index.js', () => ({
@@ -158,6 +163,7 @@ const openMenu = async () => {
 describe('PostMenuMobile', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    testState.deleteOptions = undefined;
     testState.hidden = false;
     testState.mediaInfo = undefined;
     testState.pseudonymityMode = undefined;
@@ -206,6 +212,51 @@ describe('PostMenuMobile', () => {
       hideThread?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
     expect(testState.hideMock).toHaveBeenCalled();
+  });
+
+  it('alerts a failed delete only for a final error, not for one pkc-js recovers from', async () => {
+    testState.privileges = {
+      isAccountCommentAuthor: true,
+      isAccountMod: false,
+    };
+    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
+    const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    await renderMenu('/mu');
+    await openMenu();
+    expect(testState.deleteOptions?.deleted).toBe(true);
+
+    const recoverableError = new Error('could not decrypt the challenge');
+    act(() => testState.deleteOptions?.onError(recoverableError, { commentCid: 'cid-1' }, { final: false }));
+    expect(alertSpy).not.toHaveBeenCalled();
+    expect(consoleWarnSpy).toHaveBeenCalledWith(expect.any(String), recoverableError);
+
+    act(() => testState.deleteOptions?.onError(new Error('the board never answered'), { commentCid: 'cid-1' }, { final: true }));
+    expect(alertSpy).toHaveBeenCalledWith('Comment edit failed. the board never answered');
+    alertSpy.mockRestore();
+    consoleWarnSpy.mockRestore();
+  });
+
+  it('alerts a delete whose challenge answers failed to publish', async () => {
+    testState.privileges = {
+      isAccountCommentAuthor: true,
+      isAccountMod: false,
+    };
+    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
+    const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    useChallengesStore.setState({ challenges: [] });
+    await renderMenu('/mu');
+    await openMenu();
+
+    await act(async () => {
+      await testState.deleteOptions?.onChallenge({ challenges: [] }, { commentCid: 'cid-1' });
+    });
+    const { onAnswersFailed } = useChallengesStore.getState().challenges[0];
+    act(() => useChallengesStore.getState().removeChallenge());
+    act(() => onAnswersFailed?.(new Error('could not publish the challenge answer')));
+
+    expect(alertSpy).toHaveBeenCalledWith('Comment edit failed. could not publish the challenge answer');
+    alertSpy.mockRestore();
+    consoleWarnSpy.mockRestore();
   });
 
   it('does not show edit controls on pseudonymous boards when user is not a mod', async () => {

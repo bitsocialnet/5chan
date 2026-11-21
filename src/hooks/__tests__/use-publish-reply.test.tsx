@@ -415,6 +415,52 @@ describe('usePublishReply', () => {
     expect(testState.signTripcodeMock).toHaveBeenCalledTimes(2);
   });
 
+  it('ends the publish only on a final error, not on one pkc-js recovers from', async () => {
+    const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const alertMock = vi.fn();
+    vi.stubGlobal('alert', alertMock);
+    const proofName = `Anon#tc1:s${'A'.repeat(43)}${'B'.repeat(86)}`;
+    testState.signTripcodeMock.mockImplementation(async ({ readOptions, writeOptions }: { readOptions: () => any; writeOptions: (options: any) => void }) => {
+      writeOptions({ ...readOptions(), displayName: proofName, timestamp: 1_800_000_001 });
+      return true;
+    });
+    const attempt = startPostingAnalytics({ kind: 'reply' });
+    await act(async () => {
+      latestValue.publishReply({ content: 'Trip reply', displayName: 'Anon' } as never, attempt, { secure: 'hunter2' });
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    const callbacks = testState.lastPublishOptions as Record<string, any>;
+    const published = {
+      communityAddress: 'music.eth',
+      parentCid: 'parent-cid',
+      postCid: 'parent-cid',
+      content: 'Trip reply',
+      author: { displayName: proofName },
+      timestamp: 1_800_000_060,
+    };
+
+    const recoverableError = new Error('could not decrypt the challenge');
+    await act(async () => {
+      callbacks.onError(recoverableError, { cid: undefined }, { final: false });
+    });
+    expect(testState.analyticsMock).not.toHaveBeenCalled();
+    expect(alertMock).not.toHaveBeenCalled();
+    expect(consoleWarnSpy).toHaveBeenCalledWith(expect.any(String), recoverableError);
+    await expect(callbacks.onBeforeRepublish(published)).resolves.not.toBe(published);
+
+    const finalError = new Error('the board never answered');
+    await act(async () => {
+      callbacks.onError(finalError, { cid: undefined }, { final: true });
+    });
+    expect(testState.analyticsMock.mock.calls).toEqual([['post_publish_failed', { kind: 'reply' }]]);
+    expect(alertMock).toHaveBeenCalledWith(finalError.message);
+    await expect(callbacks.onBeforeRepublish(published)).resolves.toBe(published);
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
   it('leaves the republish of a reply without a tripcode to the hooks', async () => {
     await act(async () => {
       latestValue.publishReply({ content: 'Plain reply', displayName: 'Anon' } as never);

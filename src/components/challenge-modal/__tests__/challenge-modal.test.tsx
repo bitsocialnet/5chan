@@ -16,7 +16,7 @@ const testState = vi.hoisted(() => ({
       address: '0xabc123',
     },
   } as Record<string, any>,
-  challenges: [] as Array<{ challenge: any; id: number }>,
+  challenges: [] as Array<{ challenge: any; id: number; onAnswersFailed?: (error: unknown) => void }>,
   commentsByCid: {} as Record<string, { author?: { shortAddress?: string } }>,
   isMobile: false,
   publicationPreview: 'preview body',
@@ -248,6 +248,28 @@ describe('ChallengeModal', () => {
 
     expect(publication.publishChallengeAnswers).toHaveBeenCalledWith({ challengeAnswers: { 0: '4' } });
     expect(testState.removeChallengeMock).toHaveBeenCalledOnce();
+  });
+
+  it("tells the challenge's publisher when its answers could not be published", async () => {
+    const publication = createPublication();
+    const answerError = new Error('could not publish the challenge answer');
+    publication.publishChallengeAnswers.mockRejectedValue(answerError);
+    const onAnswersFailed = vi.fn();
+    testState.challenges = [{ ...createStoredChallenge({ challenge: '2 + 2', type: 'text/plain' }, publication), onAnswersFailed }];
+
+    await renderModal();
+    const input = container.querySelector<HTMLInputElement>('input[placeholder*="TYPE THE ANSWER HERE"]');
+    await dispatchInput(input as HTMLInputElement, '4');
+    await act(async () => {
+      input?.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'Enter' }));
+    });
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(testState.removeChallengeMock).toHaveBeenCalledOnce();
+    expect(onAnswersFailed).toHaveBeenCalledWith(answerError);
+    expect(consoleErrorSpy).toHaveBeenCalledWith(expect.any(String), answerError);
   });
 
   it('centers the mobile modal from the viewport instead of its static position', async () => {

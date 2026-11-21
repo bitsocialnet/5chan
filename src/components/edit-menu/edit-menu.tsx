@@ -12,6 +12,7 @@ import {
 import styles from './edit-menu.module.css';
 import { alertChallengeVerificationFailed } from '../../lib/utils/challenge-utils';
 import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
+import { alertPublishFailure, onFinalPublishError } from '../../lib/utils/publish-error-utils';
 import useChallengesStore from '../../stores/use-challenges-store';
 import capitalize from 'lodash/capitalize';
 import useIsMobile from '../../hooks/use-is-mobile';
@@ -26,6 +27,9 @@ import ImportErrorBoundary from '../import-error-boundary';
 // Moving a post opens a draggable modal built on react-spring and use-gesture, which nothing on a
 // board's first render uses, so it downloads when a moderator opens it.
 const PostTransferModal = lazyImport(() => import('../post-transfer-modal'));
+
+const alertFailedEdit = alertPublishFailure('Comment edit failed.');
+const alertFailedModeration = alertPublishFailure('Comment moderation failed.');
 
 const daysToTimestampInSeconds = (days: number) => {
   const now = new Date();
@@ -104,7 +108,11 @@ const EditMenu = ({ post }: { post: Comment }) => {
   useEffect(() => {
     latestPostRef.current = resolvedPost;
   }, [resolvedPost]);
-  const onChallenge = useCallback((...args: any) => useChallengesStore.getState().addChallenge([...args, latestPostRef.current]), []);
+  const onEditChallenge = useCallback((...args: any) => useChallengesStore.getState().addChallenge([...args, latestPostRef.current], undefined, alertFailedEdit), []);
+  const onModerationChallenge = useCallback(
+    (...args: any) => useChallengesStore.getState().addChallenge([...args, latestPostRef.current], undefined, alertFailedModeration),
+    [],
+  );
 
   const defaultPublishEditOptions = useMemo(() => {
     return {
@@ -126,12 +134,9 @@ const EditMenu = ({ post }: { post: Comment }) => {
             author: modBanExpiresAt ? { banExpiresAt: modBanExpiresAt } : undefined,
           }
         : undefined,
-      onChallenge,
+      onChallenge: onEditChallenge,
       onChallengeVerification: alertChallengeVerificationFailed,
-      onError: (error: Error) => {
-        console.warn(error);
-        alert('Comment edit failed. ' + error.message);
-      },
+      onError: onFinalPublishError(alertFailedEdit),
     };
   }, [
     isAccountMod,
@@ -150,7 +155,7 @@ const EditMenu = ({ post }: { post: Comment }) => {
     spoiler,
     communityAddress,
     modBanExpiresAt,
-    onChallenge,
+    onEditChallenge,
   ]);
 
   const [publishCommentEditOptions, setPublishCommentEditOptions] = useState<PublishCommentEditOptions>(defaultPublishEditOptions);
@@ -161,12 +166,9 @@ const EditMenu = ({ post }: { post: Comment }) => {
       communityAddress,
       content: canEditOwnModPost ? publishCommentEditOptions.content : undefined,
       deleted: publishCommentEditOptions.deleted,
-      onChallenge,
+      onChallenge: onEditChallenge,
       onChallengeVerification: alertChallengeVerificationFailed,
-      onError: (error: Error) => {
-        console.warn(error);
-        alert('Comment edit failed. ' + error.message);
-      },
+      onError: onFinalPublishError(alertFailedEdit),
     };
 
     if (!isAccountCommentAuthor) {
@@ -188,7 +190,7 @@ const EditMenu = ({ post }: { post: Comment }) => {
     account?.author,
     author?.address,
     authorDisplayName,
-    onChallenge,
+    onEditChallenge,
   ]);
 
   const modEditOptions = useMemo<PublishCommentModerationOptions>(
@@ -206,14 +208,11 @@ const EditMenu = ({ post }: { post: Comment }) => {
         author: publishCommentEditOptions.commentModeration?.author,
       },
       author: account?.author,
-      onChallenge,
+      onChallenge: onModerationChallenge,
       onChallengeVerification: alertChallengeVerificationFailed,
-      onError: (error: Error) => {
-        console.warn(error);
-        alert('Comment moderation failed. ' + error.message);
-      },
+      onError: onFinalPublishError(alertFailedModeration),
     }),
-    [publishCommentEditOptions, cid, communityAddress, account?.author, parentCid, onChallenge],
+    [publishCommentEditOptions, cid, communityAddress, account?.author, parentCid, onModerationChallenge],
   );
 
   const { publishCommentEdit: publishAuthorEdit } = usePublishCommentEdit(authorEditOptions);

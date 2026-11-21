@@ -1530,13 +1530,18 @@ describe('ModQueueView', () => {
     });
     expect(container.querySelector('[data-testid="loading-ellipsis"]')?.textContent).toBe('publishing');
 
-    // A challenge answer that fails to publish only moves the publishing state to 'failed'; no error or verification follows.
-    await setModerationPublishState('failed');
+    // A challenge answer that fails to publish reaches no publish callback, and the hooks state stays
+    // 'publishing-challenge-answer': only publishChallengeAnswers() rejects, which the challenge modal reports.
+    await setModerationPublishState('publishing-challenge-answer');
+    const onAnswersFailed = testState.addChallengeMock.mock.calls.at(-1)?.[2] as (error: unknown) => void;
+    await act(async () => {
+      onAnswersFailed(new Error('could not publish the challenge answer'));
+    });
 
     expect(container.querySelector('[data-testid="loading-ellipsis"]')).toBeNull();
     expect(getButtons('approve')).toHaveLength(1);
     expect(getButtons('reject')).toHaveLength(1);
-    expect(container.textContent).toContain('failed');
+    expect(container.querySelector('[data-testid="error-display"]')?.textContent).toBe('could not publish the challenge answer');
     confirmSpy.mockRestore();
   });
 });

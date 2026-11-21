@@ -6,6 +6,7 @@ import { alertChallengeVerificationFailed } from '../lib/utils/challenge-utils';
 import useChallengesStore from '../stores/use-challenges-store';
 import useFailedPostRetryStore from '../stores/use-failed-post-retry-store';
 import { getCommentCommunityAddress } from '../lib/utils/comment-utils';
+import { onFinalPublishError } from '../lib/utils/publish-error-utils';
 import { hasSameTripcodeKeys, hasTripcodeProof, parseTripcodeInput, parseTripcodeProof, stripTripcodeProof } from '../lib/utils/tripcode-utils';
 import useTripcodeStore from '../stores/use-tripcode-store';
 import useSignTripcode from './use-sign-tripcode';
@@ -142,12 +143,12 @@ const useDeleteFailedPost = (post?: FailedPost, deleteRedirectPath?: string) => 
               if (challengeVerification.challengeSuccess === true) forgetTripcode();
               alertChallengeVerificationFailed(challengeVerification, comment);
             },
-            onError: (error: Error) => {
+            onError: onFinalPublishError((error: Error) => {
               console.error('Failed to retry failed post:', error);
               forgetTripcode();
               endRetry();
               alert(`Failed to retry post: ${error.message}`);
-            },
+            }),
           }
         : undefined,
     [abandonCurrentPublish, addChallenge, endRetry, forgetTripcode, onBeforeRepublish, retryPublishOptions],

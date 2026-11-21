@@ -7,6 +7,7 @@ import { EditableBoardSettings, getBoardSettingsEdit, getEditableBoardKeys, getE
 import { isCommunitySyncTerminal } from '../../lib/utils/community-freshness-utils';
 import { canEditBoardSettings } from '../../lib/utils/mod-access';
 import { getChallengeVerificationErrorMessages } from '../../lib/utils/challenge-utils';
+import { onFinalPublishError } from '../../lib/utils/publish-error-utils';
 import { getBoardPath } from '../../lib/utils/route-utils';
 import useChallengesStore from '../../stores/use-challenges-store';
 import { useDirectories } from '../../hooks/use-directories';
@@ -65,8 +66,20 @@ const BoardSettings = ({ boardIdentifier, communityAddress }: { boardIdentifier:
 
   const [saveStatus, setSaveStatus] = useState<SaveStatus>({ type: 'idle' });
 
-  // Closing the challenge without answering ends this save attempt, so the form becomes editable again.
-  const onChallenge = useCallback(async (...args: unknown[]) => useChallengesStore.getState().addChallenge(args, () => setSaveStatus({ type: 'idle' })), []);
+  const showSaveFailed = useCallback(
+    (error: unknown) =>
+      setSaveStatus({
+        type: 'error',
+        message: t('board_settings_save_failed', { error: error instanceof Error ? error.message : String(error), interpolation: { escapeValue: false } }),
+      }),
+    [t],
+  );
+  // Closing the challenge without answering ends this save attempt, so the form becomes editable again. Answers that
+  // could not be published reach no onError (pkc-js keeps waiting for answers), so they fail the save from here.
+  const onChallenge = useCallback(
+    async (...args: unknown[]) => useChallengesStore.getState().addChallenge(args, () => setSaveStatus({ type: 'idle' }), showSaveFailed),
+    [showSaveFailed],
+  );
   const onChallengeVerification = useCallback(
     async (challengeVerification: ChallengeVerification) => {
       if (challengeVerification?.challengeSuccess) {
@@ -80,10 +93,7 @@ const BoardSettings = ({ boardIdentifier, communityAddress }: { boardIdentifier:
     },
     [t],
   );
-  const onError = useCallback(
-    (error: Error) => setSaveStatus({ type: 'error', message: t('board_settings_save_failed', { error: error.message, interpolation: { escapeValue: false } }) }),
-    [t],
-  );
+  const onError = useMemo(() => onFinalPublishError(showSaveFailed), [showSaveFailed]);
 
   const { publishCommunityEdit } = usePublishCommunityEdit({
     communityAddress,

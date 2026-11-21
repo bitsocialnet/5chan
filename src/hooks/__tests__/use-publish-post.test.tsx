@@ -208,6 +208,48 @@ describe('usePublishPost', () => {
     vi.restoreAllMocks();
   });
 
+  it('ends the publish only on a final error, not on one pkc-js recovers from', async () => {
+    const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const alertMock = vi.fn();
+    vi.stubGlobal('alert', alertMock);
+    const proofName = `Anon#tc1:n${'A'.repeat(43)}${'B'.repeat(86)}`;
+    testState.signTripcodeMock.mockImplementation(async ({ readOptions, writeOptions }: { readOptions: () => any; writeOptions: (options: any) => void }) => {
+      writeOptions({ ...readOptions(), displayName: proofName, timestamp: 1_800_000_001 });
+      return true;
+    });
+    const attempt = startPostingAnalytics({ kind: 'thread' });
+    await act(async () => {
+      latestValue.publishPost({ content: 'trip thread', displayName: 'Anon' } as never, attempt, { normal: 'hunter2' });
+    });
+    const callbacks = testState.lastPublishOptions as Record<string, any>;
+    const published = { communityAddress: 'music.eth', content: 'trip thread', author: { displayName: proofName }, timestamp: 1_800_000_060 };
+    const publication = { cid: undefined };
+
+    // e.g. a challenge pkc-js could not decrypt: the post keeps publishing and can still be accepted.
+    const recoverableError = new Error('could not decrypt the challenge');
+    await act(async () => {
+      callbacks.onError(recoverableError, publication, { final: false });
+    });
+    expect(testState.analyticsMock).not.toHaveBeenCalled();
+    expect(testState.publishErrorNavigationMock).not.toHaveBeenCalled();
+    expect(alertMock).not.toHaveBeenCalled();
+    expect(consoleWarnSpy).toHaveBeenCalledWith(expect.any(String), recoverableError);
+    // The password is still kept, so a republish is signed again.
+    await expect(callbacks.onBeforeRepublish(published)).resolves.not.toBe(published);
+
+    const finalError = new Error('the board never answered');
+    await act(async () => {
+      callbacks.onError(finalError, publication, { final: true });
+    });
+    expect(testState.analyticsMock.mock.calls).toEqual([['post_publish_failed', { kind: 'thread' }]]);
+    expect(testState.publishErrorNavigationMock).toHaveBeenCalledWith(finalError);
+    expect(alertMock).toHaveBeenCalledWith(finalError.message);
+    await expect(callbacks.onBeforeRepublish(published)).resolves.toBe(published);
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
   it('leaves the republish of a post without a tripcode to the hooks', async () => {
     await act(async () => {
       latestValue.publishPost({ content: 'plain thread', displayName: 'Anon' } as never);
@@ -347,12 +389,13 @@ describe('usePublishPost', () => {
     usePublishPostStore.setState({ publishCommentOptions: { onError: existingOnError } });
     renderHook();
 
+    const publication = { cid: undefined };
     await act(async () => {
-      testState.lastPublishOptions?.onError?.(error);
+      testState.lastPublishOptions?.onError?.(error, publication, { final: true });
     });
 
     expect(testState.publishErrorNavigationMock).toHaveBeenCalledWith(error);
-    expect(existingOnError).toHaveBeenCalledWith(error);
+    expect(existingOnError).toHaveBeenCalledWith(error, publication, { final: true });
     expect(testState.publishErrorNavigationMock.mock.invocationCallOrder[0]).toBeLessThan(existingOnError.mock.invocationCallOrder[0]);
   });
 
