@@ -16,3 +16,13 @@ export const onFinalPublishError =
     console.warn('Publish error pkc-js recovers from, still publishing:', error);
     return undefined;
   };
+
+/**
+ * Alerts a failed edit, moderation or delete. It serves both a final `onError` and challenge answers that could not be
+ * published, which reach no `onError`: pkc-js keeps the publication waiting for answers, and only the challenge modal sees
+ * publishChallengeAnswers() reject.
+ */
+export const alertPublishFailure = (failure: string) => (error: unknown) => {
+  console.warn(error);
+  alert(`${failure} ${error instanceof Error ? error.message : String(error)}`);
+};

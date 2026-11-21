@@ -630,6 +630,32 @@ describe('EditMenu', () => {
     consoleWarnSpy.mockRestore();
   });
 
+  it('alerts an edit or moderation whose challenge answers failed to publish', async () => {
+    testState.privileges = {
+      isAccountCommentAuthor: true,
+      isAccountMod: true,
+      isCommentAuthorMod: false,
+    };
+    const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    await renderMenu(basePost);
+    const answerError = new Error('could not publish the challenge answer');
+
+    await act(async () => {
+      await testState.authorOptions?.onChallenge({ challenges: [] }, { commentCid: 'comment-1' });
+    });
+    act(() => (testState.addChallengeMock.mock.calls.at(-1)?.[2] as ((error: unknown) => void) | undefined)?.(answerError));
+    await act(async () => {
+      await testState.modOptions?.onChallenge({ challenges: [] }, { commentCid: 'comment-1' });
+    });
+    act(() => (testState.addChallengeMock.mock.calls.at(-1)?.[2] as ((error: unknown) => void) | undefined)?.(answerError));
+
+    expect(alertSpy.mock.calls).toEqual([
+      ['Comment edit failed. could not publish the challenge answer'],
+      ['Comment moderation failed. could not publish the challenge answer'],
+    ]);
+    consoleWarnSpy.mockRestore();
+  });
+
   it('does not publish author-side edits for author moderators when deletion did not change', async () => {
     testState.privileges = {
       isAccountCommentAuthor: true,
