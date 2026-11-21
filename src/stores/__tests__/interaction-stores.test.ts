@@ -1,3 +1,4 @@
+import { EventEmitter } from 'events';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import useChallengesStore from '../use-challenges-store';
 import useCreateBoardModalStore from '../use-create-board-modal-store';
@@ -108,6 +109,90 @@ describe('interaction stores', () => {
     useChallengesStore.getState().addChallenge({ type: 'again' } as never);
     useChallengesStore.getState().removeChallenge();
     expect(useChallengesStore.getState().challenges).toEqual([]);
+  });
+
+  describe('challenges whose publication ended', () => {
+    // A pkc-js publication: "publishing" for its whole challenge exchange, then "stopped" once a verdict, a failure or
+    // stop() ends it, with a statechange event.
+    const createPublication = (state = 'publishing') => Object.assign(new EventEmitter(), { state, publishingState: 'waiting-challenge-answers' });
+    const endPublication = (publication: ReturnType<typeof createPublication>, state = 'stopped') => {
+      publication.state = state;
+      publication.emit('statechange', state);
+    };
+    const addChallengeFor = (publication: unknown, onAbandon?: () => void) =>
+      useChallengesStore.getState().addChallenge([{ type: 'CHALLENGE', challenges: { 0: { type: 'text/plain', challenge: '2+2' } } }, publication] as never, onAbandon);
+    const queuedPublications = () => useChallengesStore.getState().challenges.map(({ challenge }) => (challenge as unknown as unknown[])[1]);
+
+    it('drops the challenge, without abandoning the publish, once its publication stops', () => {
+      const publication = createPublication();
+      const onAbandon = vi.fn();
+      addChallengeFor(publication, onAbandon);
+      expect(queuedPublications()).toEqual([publication]);
+
+      endPublication(publication);
+
+      expect(useChallengesStore.getState().challenges).toEqual([]);
+      expect(onAbandon).not.toHaveBeenCalled();
+      expect(publication.listenerCount('statechange')).toBe(0);
+    });
+
+    it('keeps the challenge through an error pkc-js recovers from', () => {
+      const publication = createPublication();
+      addChallengeFor(publication);
+
+      // An error pkc-js recovers from leaves the publication publishing, at most with a 'failed' publishing state.
+      publication.on('error', () => undefined);
+      publication.publishingState = 'failed';
+      publication.emit('error', new Error('could not decrypt a copy of the challenge'));
+      publication.emit('publishingstatechange', 'failed');
+      publication.emit('statechange', 'publishing');
+
+      expect(queuedPublications()).toEqual([publication]);
+    });
+
+    it('drops only the queued challenges whose publication ended', () => {
+      const first = createPublication();
+      const second = createPublication();
+      const third = createPublication();
+      addChallengeFor(first);
+      addChallengeFor(second);
+      addChallengeFor(third);
+
+      endPublication(second);
+      expect(queuedPublications()).toEqual([first, third]);
+
+      // The modal shows the first challenge; once its publication ends, the next one takes its place.
+      endPublication(first, 'updating');
+      expect(queuedPublications()).toEqual([third]);
+
+      useChallengesStore.getState().removeChallenge();
+      expect(useChallengesStore.getState().challenges).toEqual([]);
+      expect([first, second, third].map((publication) => publication.listenerCount('statechange'))).toEqual([0, 0, 0]);
+    });
+
+    it('stops following a publication once its challenge is answered or abandoned', async () => {
+      const answered = createPublication();
+      const abandoned = createPublication();
+      addChallengeFor(answered);
+      addChallengeFor(abandoned, vi.fn());
+
+      useChallengesStore.getState().removeChallenge();
+      await useChallengesStore.getState().abandonCurrentChallenge();
+
+      expect(answered.listenerCount('statechange')).toBe(0);
+      expect(abandoned.listenerCount('statechange')).toBe(0);
+    });
+
+    it('does not ask a challenge whose publication already ended', () => {
+      addChallengeFor(createPublication('stopped'));
+      expect(useChallengesStore.getState().challenges).toEqual([]);
+    });
+
+    it('queues a challenge whose publication has no state events, like the spam blocker pre-check', () => {
+      const precheck = { communityAddress: 'music-posting.eth', publishChallengeAnswers: vi.fn() };
+      addChallengeFor(precheck);
+      expect(queuedPublications()).toEqual([precheck]);
+    });
   });
 
   it('shows the disclaimer modal until accepted, then navigates directly on later opens', () => {
