@@ -272,6 +272,27 @@ describe('BoardSettings', () => {
     consoleWarnSpy.mockRestore();
   });
 
+  it('reports a failed save and makes the form editable again when the challenge answers fail to publish', async () => {
+    testState.respondWithChallenge = true;
+    const { default: useChallengesStore } = await import('../../../stores/use-challenges-store');
+    await render();
+
+    await setEditorValue(JSON.stringify({ title: 'New title' }));
+    await clickButton('save_changes');
+    expect(container.textContent).toContain('board_settings_saving');
+    const { onAnswersFailed } = useChallengesStore.getState().challenges[0];
+    act(() => useChallengesStore.getState().removeChallenge());
+
+    await act(async () => {
+      onAnswersFailed?.(new Error('could not publish the challenge answer'));
+    });
+
+    expect(container.textContent).not.toContain('board_settings_saving');
+    expect(container.textContent).toContain('board_settings_save_failed:could not publish the challenge answer');
+    const saveButton = Array.from(container.querySelectorAll('button')).find((button) => button.textContent === 'save_changes');
+    expect(saveButton?.disabled).toBe(false);
+  });
+
   it('makes the form editable again when the user closes the challenge', async () => {
     testState.respondWithChallenge = true;
     const { default: useChallengesStore } = await import('../../../stores/use-challenges-store');
