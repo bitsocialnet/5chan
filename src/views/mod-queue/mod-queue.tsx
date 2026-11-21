@@ -812,10 +812,7 @@ const ModQueueBoardSummary = memo(({ feed, directories, accountCommunityAddresse
         )}
       </button>
       {boardGroups.map((group) => {
-        const displayText =
-          group.isDirectory || group.filterKey.endsWith('.eth') || group.filterKey.endsWith('.sol')
-            ? group.filterKey
-            : getShortAddress(group.filterKey) || group.filterKey;
+        const displayText = group.isDirectory || group.filterKey.endsWith('.eth') ? group.filterKey : getShortAddress(group.filterKey) || group.filterKey;
         const isSelected =
           selectedBoardFilter === group.filterKey ||
           group.addresses.some((address) => selectedBoardFilterAddresses?.some((selectedAddress) => areSameBoardAddress(address, selectedAddress)));

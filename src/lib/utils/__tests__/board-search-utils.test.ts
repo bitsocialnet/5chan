@@ -93,17 +93,6 @@ describe('searchBoards', () => {
     expect(searchBoards(sources, '/biz/ - Business & Finance')[0]).toMatchObject({ address: 'business-and-finance.bso' });
   });
 
-  it('keeps a .sol name apart from the same name under .bso', () => {
-    const results = searchBoards({ directories: [{ address: 'music.bso', directoryCode: 'mu', title: '/mu/ - Music' }] }, 'music.sol');
-
-    // No list carries music.sol, so it is offered as typed; music.bso is only the name it resembles.
-    expect(results.map((board) => [board.address, board.exact, board.unlisted])).toEqual([
-      ['music.sol', true, true],
-      ['music.bso', false, undefined],
-    ]);
-    expect(mergeBoardSources({ subscriptions: ['music.sol', 'music.bso'] })).toHaveLength(2);
-  });
-
   it('lets a curated nsfw verdict beat the indexer, and takes the indexer where nothing local declares one', () => {
     const merged = mergeBoardSources({
       directories: [

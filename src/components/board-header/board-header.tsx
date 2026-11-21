@@ -182,12 +182,7 @@ const BoardHeader = memo(() => {
         </div>
       )}
       <div className={styles.boardTitle}>
-        {title ||
-          (shortAddress
-            ? shortAddress.endsWith('.eth') || shortAddress.endsWith('.sol')
-              ? shortAddress.slice(0, -4)
-              : shortAddress
-            : communityAddress && getShortAddress(communityAddress))}
+        {title || (shortAddress ? (shortAddress.endsWith('.eth') ? shortAddress.slice(0, -4) : shortAddress) : communityAddress && getShortAddress(communityAddress))}
         {!isInAllView && !isInSubscriptionsView && !isInModView && !isInSearchView && !isInDirectoryListView && <OfflineIndicator communityAddress={communityAddress} />}
       </div>
       <div className={styles.boardSubtitle}>

@@ -237,7 +237,7 @@ const BoardsBarDesktop = memo(({ persistent, autoHide }: { persistent: boolean; 
   // Render a subscription link
   const renderSubscription = (address: string, index: number, total: number) => {
     const boardPath = getBoardPath(address, directories);
-    const displayText = address.endsWith('.eth') || address.endsWith('.sol') ? address : getShortAddress(address);
+    const displayText = address.endsWith('.eth') ? address : getShortAddress(address);
 
     return (
       <span key={address}>

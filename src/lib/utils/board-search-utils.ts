@@ -42,15 +42,14 @@ type MergedBoard = Omit<BoardSearchResult, 'exact' | 'nsfw' | 'unlisted'> & {
   nsfw?: boolean;
 };
 
-const ADDRESS_SUFFIX = /\.(?:bso|eth|sol)$/i;
+const ADDRESS_SUFFIX = /\.(?:bso|eth)$/i;
 /** Board public keys are base58btc peer ids. */
 const BOARD_PUBLIC_KEY = /^12D3Koo[1-9A-HJ-NP-Za-km-z]{40,}$/;
 const DIRECTORY_TITLE = /^\/[^/]+\/\s*-\s*(.+)$/;
 
 /**
  * Case-insensitive dedupe key that treats a board's .bso and .eth aliases as one board, the way
- * `normalizeBoardAddress` does everywhere else. A .sol name is a different board from the same
- * name under .bso, so it keeps its suffix.
+ * `normalizeBoardAddress` does everywhere else.
  */
 const getAddressKey = (address: string): string => normalizeBoardAddress(address.trim().toLowerCase());
 
@@ -201,7 +200,7 @@ const getMatchRank = (board: MergedBoard, query: { address: string; code: string
   return RANK_DESCRIPTION;
 };
 
-/** A raw address (name.bso, name.eth, name.sol or a peer id), which can be opened even when no list knows it. */
+/** A raw address (name.bso, name.eth or a peer id), which can be opened even when no list knows it. */
 const isBoardAddressQuery = (value: string): boolean => isBoardAddressShape(value) && (ADDRESS_SUFFIX.test(value) || BOARD_PUBLIC_KEY.test(value));
 
 /** The board matches for a query, ranked, with the exact code or address pinned first. */

@@ -106,7 +106,7 @@ const PostInfoAndMedia = ({
     boardPath && communityAddress
       ? boardPath !== communityAddress
         ? boardPath
-        : communityAddress.endsWith('.eth') || communityAddress.endsWith('.sol')
+        : communityAddress.endsWith('.eth')
           ? communityAddress
           : getShortAddress(communityAddress)
       : undefined;

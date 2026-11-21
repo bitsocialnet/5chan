@@ -664,7 +664,7 @@ const PostMedia = ({
   const displayBoardPath =
     boardPath && communityAddress && boardPath !== communityAddress
       ? boardPath
-      : communityAddress && (communityAddress.endsWith('.eth') || communityAddress.endsWith('.sol'))
+      : communityAddress && communityAddress.endsWith('.eth')
         ? communityAddress
         : communityAddress
           ? getShortAddress(communityAddress)
@@ -932,7 +932,7 @@ const PostDesktop = ({
     boardPath && communityAddress
       ? boardPath !== communityAddress
         ? boardPath
-        : communityAddress.endsWith('.eth') || communityAddress.endsWith('.sol')
+        : communityAddress.endsWith('.eth')
           ? communityAddress
           : getShortAddress(communityAddress)
       : undefined;
