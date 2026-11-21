@@ -368,6 +368,11 @@ const PostTransferModal = ({ comment, onClose, onTransferStateChange, onTransfer
         console.error('Transfer temporary account cleanup failed:', error);
       }
     };
+    const failTransfer = async (error: unknown) => {
+      await cleanupTemporaryAccount({ deletePendingComment: true });
+      onTransferStateChange?.('failed');
+      dispatchModalState({ type: 'publishFailed', error });
+    };
     finalizedTransferRef.current = false;
     onTransferStateChange?.('publishing');
     dispatchModalState({ type: 'publishStarted' });
@@ -385,11 +390,12 @@ const PostTransferModal = ({ comment, onClose, onTransferStateChange, onTransfer
             pendingIndex = index;
           },
           onChallenge: async (...args: any[]) => {
-            useChallengesStore.getState().addChallenge([...args, comment], async () => {
-              await cleanupTemporaryAccount({ deletePendingComment: true });
-              onTransferStateChange?.('failed');
-              dispatchModalState({ type: 'publishFailed', error: new Error('Transfer challenge was abandoned.') });
-            });
+            useChallengesStore.getState().addChallenge(
+              [...args, comment],
+              () => failTransfer(new Error('Transfer challenge was abandoned.')),
+              // Answers that could not be published reach no onError: pkc-js keeps waiting for answers that will not come.
+              (error) => void failTransfer(error),
+            );
           },
           onChallengeVerification: async (challengeVerification: ChallengeVerification, challengeComment: Comment) => {
             try {
@@ -456,18 +462,14 @@ const PostTransferModal = ({ comment, onClose, onTransferStateChange, onTransfer
           },
           onError: onFinalPublishError(async (error: Error & { details?: unknown }) => {
             console.error('Transfer failed:', error, error.details);
-            await cleanupTemporaryAccount({ deletePendingComment: true });
-            onTransferStateChange?.('failed');
-            dispatchModalState({ type: 'publishFailed', error });
+            await failTransfer(error);
           }),
         },
         temporaryAccountName,
       );
     } catch (error) {
       console.error('Transfer failed:', error);
-      await cleanupTemporaryAccount({ deletePendingComment: true });
-      onTransferStateChange?.('failed');
-      dispatchModalState({ type: 'publishFailed', error });
+      await failTransfer(error);
     }
   };
 

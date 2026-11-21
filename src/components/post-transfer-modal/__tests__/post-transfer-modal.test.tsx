@@ -285,6 +285,39 @@ describe('PostTransferModal', () => {
     consoleWarnSpy.mockRestore();
   });
 
+  it('cleans up and unlocks when the /trash/ copy challenge answers fail to publish', async () => {
+    const onTransferStateChange = vi.fn();
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    await renderTransferModal(baseComment, { onTransferStateChange });
+
+    const form = document.body.querySelector<HTMLFormElement>('form');
+    await act(async () => {
+      form!.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+      await Promise.resolve();
+    });
+    const [publishOptions] = testState.publishCommentMock.mock.calls[0] as [Record<string, unknown>, string];
+    (publishOptions._onPendingCommentIndex as (index: number) => void)(12);
+    await act(async () => {
+      await (publishOptions.onChallenge as (...args: unknown[]) => Promise<void>)({ challenges: [] }, { cid: undefined });
+    });
+    // No onError follows answers that could not be published: pkc-js keeps waiting for answers, and only the
+    // challenge modal sees publishChallengeAnswers() reject.
+    const onAnswersFailed = testState.addChallengeMock.mock.calls.at(-1)?.[2] as ((error: unknown) => void) | undefined;
+    await act(async () => {
+      onAnswersFailed?.(new Error('could not publish the challenge answer'));
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(testState.deleteCommentMock).toHaveBeenCalledWith(12, expect.stringMatching(/^5chan-transfer-comment-/));
+    expect(testState.deleteAccountMock).toHaveBeenCalledWith(expect.stringMatching(/^5chan-transfer-comment-/));
+    expect(onTransferStateChange).toHaveBeenLastCalledWith('failed');
+    expect(document.body.textContent).toContain('could not publish the challenge answer');
+    const closeButton = Array.from(document.body.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.textContent === 'close');
+    expect(closeButton?.disabled).toBe(false);
+    consoleErrorSpy.mockRestore();
+  });
+
   it('keeps waiting for the source removal through an error pkc-js recovers from', async () => {
     const onTransferStateChange = vi.fn();
     const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
