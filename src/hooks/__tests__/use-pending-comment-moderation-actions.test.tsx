@@ -241,23 +241,53 @@ describe('usePendingCommentModerationActions', () => {
     await act(async () => {
       await testState.approve.options?.onChallenge({ challenges: [] }, { cid: 'moderation' });
     });
-    // The challenge modal closes without abandoning when the answers are submitted. If they fail to
-    // publish, only the hooks publishing state moves to 'failed': no onError or verification follows.
+    // The challenge modal closes without abandoning when the answers are submitted. If they fail to publish,
+    // publishChallengeAnswers() rejects and no onError or verification follows: pkc-js keeps the publication
+    // waiting for answers, and the hooks state stays 'publishing-challenge-answer'.
+    const { onAnswersFailed } = useChallengesStore.getState().challenges[0];
     act(() => useChallengesStore.getState().removeChallenge());
-    testState.approve.state = 'failed';
+    testState.approve.state = 'publishing-challenge-answer';
+    const answerError = new Error('could not publish the challenge answer');
+    act(() => onAnswersFailed?.(answerError));
     renderHook();
 
     expect(latestValue.isPublishing).toBe(false);
     expect(latestValue.status).toBe('failed');
+    expect(latestValue.errorMessage).toBe(formatErrorForDisplay(answerError));
     expect(onApproveSuccess).not.toHaveBeenCalled();
 
-    // The retry is publishing even though the hooks state still says 'failed' until its own challenge arrives.
     await act(async () => {
       await latestValue.handleApprove();
     });
     expect(testState.approve.publish).toHaveBeenCalledTimes(2);
     expect(latestValue.isPublishing).toBe(true);
     expect(latestValue.status).toBeNull();
+  });
+
+  it('keeps the attempt publishing through an error pkc-js recovers from and fails it on a final one', async () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    await act(async () => {
+      await latestValue.handleApprove();
+    });
+
+    await act(async () => {
+      testState.approve.options?.onError(new Error('could not decrypt the challenge'), { cid: 'moderation' }, { final: false });
+    });
+    renderHook();
+    expect(latestValue.isPublishing).toBe(true);
+    expect(latestValue.status).toBeNull();
+
+    const finalError = new Error('the board never answered');
+    await act(async () => {
+      testState.approve.options?.onError(finalError, { cid: 'moderation' }, { final: true });
+    });
+    renderHook();
+    expect(latestValue.isPublishing).toBe(false);
+    expect(latestValue.status).toBe('failed');
+    expect(latestValue.error).toBe(finalError);
+    consoleErrorSpy.mockRestore();
+    consoleWarnSpy.mockRestore();
   });
 
   it('withholds the community address from the publishers when disabled', () => {

@@ -1,7 +1,14 @@
 import { useRef, useState, useEffect, useLayoutEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Challenge as ChallengeType, type ChallengeAnswersByIndex, useAccount, useComment } from '@bitsocial/bitsocial-react-hooks';
-import { getChallengeEntries, getPublicationPreview, getPublicationType, getVotePreview, publishPublicationChallengeAnswers } from '../../lib/utils/challenge-utils';
+import {
+  type ChallengePublication,
+  getChallengeEntries,
+  getPublicationPreview,
+  getPublicationType,
+  getVotePreview,
+  publishPublicationChallengeAnswers,
+} from '../../lib/utils/challenge-utils';
 import { isSageSupportedByBoard, stripSageMarker } from '../../lib/utils/post-options-utils';
 import { stripPostOptionMarkers } from '../../lib/utils/post-option-markers';
 import { stripTripcodeProof } from '../../lib/utils/tripcode-utils';
@@ -27,6 +34,7 @@ interface ChallengeProps {
   challenge: ChallengeType;
   closeModal: () => void;
   abandonModal: () => void;
+  onAnswersFailed?: (error: unknown) => void;
 }
 
 /** One entry of a CHALLENGE message's `challenges`. */
@@ -56,8 +64,17 @@ const ImageChallenge = ({ challenge }: { challenge: string }) =>
     <div className={styles.challengeMedia}>Invalid image challenge</div>
   );
 
-const logPublishChallengeAnswersError = (error: unknown) => {
-  console.error('Failed to publish challenge answers:', error);
+// Answers that could not be published reach no publish callback (pkc-js keeps the publication waiting for answers),
+// so the publisher that queued the challenge hears it from here.
+const publishAnswers = (
+  publication: ChallengePublication | undefined,
+  challengeAnswers: ChallengeAnswersByIndex,
+  onAnswersFailed: ((error: unknown) => void) | undefined,
+) => {
+  void publishPublicationChallengeAnswers(publication, challengeAnswers).catch((error: unknown) => {
+    console.error('Failed to publish challenge answers:', error);
+    onAnswersFailed?.(error);
+  });
 };
 
 const isLocalIframeHostname = (hostname: string) => hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]' || hostname.endsWith('.localhost');
@@ -333,7 +350,7 @@ const IframeChallenge = ({
   );
 };
 
-const Challenge = ({ challenge, closeModal, abandonModal }: ChallengeProps) => {
+const Challenge = ({ challenge, closeModal, abandonModal, onAnswersFailed }: ChallengeProps) => {
   const { t } = useTranslation();
 
   // Shown one at a time in challenge index order; `currentPosition` and `answers` count positions in this list.
@@ -422,7 +439,7 @@ const Challenge = ({ challenge, closeModal, abandonModal }: ChallengeProps) => {
 
   const onSubmit = () => {
     if (!publication) return;
-    void publishPublicationChallengeAnswers(publication, getAnswersByIndex(challengeEntries, answers)).catch(logPublishChallengeAnswersError);
+    publishAnswers(publication, getAnswersByIndex(challengeEntries, answers), onAnswersFailed);
     setAnswers([]);
     closeModal();
   };
@@ -444,11 +461,11 @@ const Challenge = ({ challenge, closeModal, abandonModal }: ChallengeProps) => {
         return;
       }
 
-      void publishPublicationChallengeAnswers(publication, getAnswersByIndex(challengeEntries, updatedAnswers)).catch(logPublishChallengeAnswersError);
+      publishAnswers(publication, getAnswersByIndex(challengeEntries, updatedAnswers), onAnswersFailed);
       setAnswers([]);
       closeModal();
     },
-    [answers, challengeEntries, closeModal, currentPosition, publication],
+    [answers, challengeEntries, closeModal, currentPosition, onAnswersFailed, publication],
   );
 
   const onIframeDone = useCallback(() => {
@@ -642,7 +659,9 @@ const ChallengeModal = () => {
   const challenge = current?.challenge;
   const challengeId = current?.id ?? 0;
 
-  return isOpen && challenge ? <Challenge key={challengeId} challenge={challenge} closeModal={closeModal} abandonModal={abandonModal} /> : null;
+  return isOpen && challenge ? (
+    <Challenge key={challengeId} challenge={challenge} closeModal={closeModal} abandonModal={abandonModal} onAnswersFailed={current?.onAnswersFailed} />
+  ) : null;
 };
 
 export default ChallengeModal;

@@ -3,11 +3,21 @@ import { Challenge } from '@bitsocial/bitsocial-react-hooks';
 
 let nextChallengeId = 0;
 
-type QueuedChallenge = { challenge: Challenge; id: number; onAbandon?: () => Promise<void> | void; stopFollowingPublication?: () => void };
+type QueuedChallenge = {
+  challenge: Challenge;
+  id: number;
+  onAbandon?: () => Promise<void> | void;
+  /**
+   * Called when the answers could not be published. No publish callback reports it: pkc-js keeps the publication
+   * waiting for answers and the hooks state stays 'publishing-challenge-answer'; only publishChallengeAnswers() rejects.
+   */
+  onAnswersFailed?: (error: unknown) => void;
+  stopFollowingPublication?: () => void;
+};
 
 interface State {
   challenges: QueuedChallenge[];
-  addChallenge: (challenge: Challenge, onAbandon?: () => Promise<void> | void) => void;
+  addChallenge: (challenge: Challenge, onAbandon?: () => Promise<void> | void, onAnswersFailed?: (error: unknown) => void) => void;
   removeChallenge: () => void;
   abandonCurrentChallenge: () => Promise<void>;
 }
@@ -41,7 +51,7 @@ const useChallengesStore = create<State>((set, get) => {
 
   return {
     challenges: [],
-    addChallenge: (challenge: Challenge, onAbandon?: () => Promise<void> | void) => {
+    addChallenge: (challenge: Challenge, onAbandon?: () => Promise<void> | void, onAnswersFailed?: (error: unknown) => void) => {
       const publication = getChallengePublication(challenge);
       if (publication && hasExchangeEnded(publication)) return;
 
@@ -56,7 +66,7 @@ const useChallengesStore = create<State>((set, get) => {
         stopFollowingPublication = () => publication.removeListener('statechange', onStateChange);
       }
       set((state) => ({
-        challenges: [...state.challenges, { challenge, id, onAbandon, stopFollowingPublication }],
+        challenges: [...state.challenges, { challenge, id, onAbandon, onAnswersFailed, stopFollowingPublication }],
       }));
     },
     removeChallenge: () => {
