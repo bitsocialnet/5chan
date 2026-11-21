@@ -7,6 +7,7 @@ import { EditableBoardSettings, getBoardSettingsEdit, getEditableBoardKeys, getE
 import { isCommunitySyncTerminal } from '../../lib/utils/community-freshness-utils';
 import { canEditBoardSettings } from '../../lib/utils/mod-access';
 import { getChallengeVerificationErrorMessages } from '../../lib/utils/challenge-utils';
+import { onFinalPublishError } from '../../lib/utils/publish-error-utils';
 import { getBoardPath } from '../../lib/utils/route-utils';
 import useChallengesStore from '../../stores/use-challenges-store';
 import { useDirectories } from '../../hooks/use-directories';
@@ -80,8 +81,11 @@ const BoardSettings = ({ boardIdentifier, communityAddress }: { boardIdentifier:
     },
     [t],
   );
-  const onError = useCallback(
-    (error: Error) => setSaveStatus({ type: 'error', message: t('board_settings_save_failed', { error: error.message, interpolation: { escapeValue: false } }) }),
+  const onError = useMemo(
+    () =>
+      onFinalPublishError((error: Error) =>
+        setSaveStatus({ type: 'error', message: t('board_settings_save_failed', { error: error.message, interpolation: { escapeValue: false } }) }),
+      ),
     [t],
   );
 

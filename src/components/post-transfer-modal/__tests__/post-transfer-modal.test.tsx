@@ -121,7 +121,7 @@ type ModerationOptions = {
   commentCid?: string;
   onChallenge: (...args: unknown[]) => Promise<void>;
   onChallengeVerification: (verification: unknown, moderation: unknown) => Promise<void>;
-  onError: (error: Error) => void;
+  onError: (error: Error, publication?: unknown, info?: { final: boolean }) => void;
   onPublishingStateChange?: (publishingState: string) => void;
 };
 
@@ -249,6 +249,57 @@ describe('PostTransferModal', () => {
     expect(closeButton?.disabled).toBe(false);
     expect(submitButton?.disabled).toBe(false);
     alertSpy.mockRestore();
+  });
+
+  it('keeps the temporary account through an error pkc-js recovers from and cleans it up on a final one', async () => {
+    const onTransferStateChange = vi.fn();
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    await renderTransferModal(baseComment, { onTransferStateChange });
+
+    const form = document.body.querySelector<HTMLFormElement>('form');
+    await act(async () => {
+      form!.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+      await Promise.resolve();
+    });
+    const [publishOptions] = testState.publishCommentMock.mock.calls[0] as [Record<string, unknown>, string];
+    (publishOptions._onPendingCommentIndex as (index: number) => void)(12);
+    const onError = publishOptions.onError as (error: Error, publication?: unknown, info?: { final: boolean }) => Promise<void>;
+
+    await act(async () => {
+      await onError(new Error('could not decrypt the challenge'), { cid: undefined }, { final: false });
+    });
+    expect(testState.deleteCommentMock).not.toHaveBeenCalled();
+    expect(testState.deleteAccountMock).not.toHaveBeenCalled();
+    expect(onTransferStateChange).not.toHaveBeenCalledWith('failed');
+    expect(document.body.textContent).not.toContain('could not decrypt the challenge');
+
+    await act(async () => {
+      await onError(new Error('the board never answered'), { cid: undefined }, { final: true });
+    });
+    expect(testState.deleteCommentMock).toHaveBeenCalledWith(12, expect.stringMatching(/^5chan-transfer-comment-/));
+    expect(testState.deleteAccountMock).toHaveBeenCalledWith(expect.stringMatching(/^5chan-transfer-comment-/));
+    expect(onTransferStateChange).toHaveBeenLastCalledWith('failed');
+    expect(document.body.textContent).toContain('the board never answered');
+    consoleErrorSpy.mockRestore();
+    consoleWarnSpy.mockRestore();
+  });
+
+  it('keeps waiting for the source removal through an error pkc-js recovers from', async () => {
+    const onTransferStateChange = vi.fn();
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    await renderTransferModal(baseComment, { onTransferStateChange });
+
+    await submitAndAcceptTrashCopy();
+    await settleModeration(1, (options) => options.onError(new Error('could not decrypt the challenge'), { cid: undefined }, { final: false }));
+    expect(onTransferStateChange).not.toHaveBeenCalledWith('finalizationFailed');
+
+    await settleModeration(1, (options) => options.onError(new Error('the board never answered'), { cid: undefined }, { final: true }));
+    expect(onTransferStateChange).toHaveBeenLastCalledWith('finalizationFailed');
+    expect(document.body.textContent).toContain('the board never answered');
+    consoleErrorSpy.mockRestore();
+    consoleWarnSpy.mockRestore();
   });
 
   it('reports success only after the source removal is verified', async () => {

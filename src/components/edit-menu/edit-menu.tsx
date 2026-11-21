@@ -12,6 +12,7 @@ import {
 import styles from './edit-menu.module.css';
 import { alertChallengeVerificationFailed } from '../../lib/utils/challenge-utils';
 import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
+import { onFinalPublishError } from '../../lib/utils/publish-error-utils';
 import useChallengesStore from '../../stores/use-challenges-store';
 import capitalize from 'lodash/capitalize';
 import useIsMobile from '../../hooks/use-is-mobile';
@@ -128,10 +129,10 @@ const EditMenu = ({ post }: { post: Comment }) => {
         : undefined,
       onChallenge,
       onChallengeVerification: alertChallengeVerificationFailed,
-      onError: (error: Error) => {
+      onError: onFinalPublishError((error: Error) => {
         console.warn(error);
         alert('Comment edit failed. ' + error.message);
-      },
+      }),
     };
   }, [
     isAccountMod,
@@ -163,10 +164,10 @@ const EditMenu = ({ post }: { post: Comment }) => {
       deleted: publishCommentEditOptions.deleted,
       onChallenge,
       onChallengeVerification: alertChallengeVerificationFailed,
-      onError: (error: Error) => {
+      onError: onFinalPublishError((error: Error) => {
         console.warn(error);
         alert('Comment edit failed. ' + error.message);
-      },
+      }),
     };
 
     if (!isAccountCommentAuthor) {
@@ -208,10 +209,10 @@ const EditMenu = ({ post }: { post: Comment }) => {
       author: account?.author,
       onChallenge,
       onChallengeVerification: alertChallengeVerificationFailed,
-      onError: (error: Error) => {
+      onError: onFinalPublishError((error: Error) => {
         console.warn(error);
         alert('Comment moderation failed. ' + error.message);
-      },
+      }),
     }),
     [publishCommentEditOptions, cid, communityAddress, account?.author, parentCid, onChallenge],
   );

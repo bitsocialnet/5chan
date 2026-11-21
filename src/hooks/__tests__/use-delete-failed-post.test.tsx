@@ -238,6 +238,29 @@ describe('useDeleteFailedPost', () => {
     vi.restoreAllMocks();
   });
 
+  it('ends the retry only on a final error, not on one pkc-js recovers from', async () => {
+    const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    signRetryAs(getProofName('A', 'C'));
+    const published = { communityAddress: 'music.eth', content: 'retry me', author: { address: '0x123', displayName: getProofName('A', 'C') }, timestamp: 1_800_000_060 };
+    await retryTripcodePost('#hunter2');
+    const callbacks = testState.lastPublishOptions as Record<string, any>;
+    useFailedPostRetryStore.setState({ retryingAccountCommentIndex: failedPost.index });
+
+    const recoverableError = new Error('could not decrypt the challenge');
+    act(() => callbacks.onError(recoverableError, { cid: undefined }, { final: false }));
+    expect(testState.alertMock).not.toHaveBeenCalled();
+    expect(useFailedPostRetryStore.getState().retryingAccountCommentIndex).toBe(failedPost.index);
+    expect(consoleWarnSpy).toHaveBeenCalledWith(expect.any(String), recoverableError);
+    await expect(callbacks.onBeforeRepublish(published)).resolves.not.toBe(published);
+
+    act(() => callbacks.onError(new Error('the board never answered'), { cid: undefined }, { final: true }));
+    expect(testState.alertMock).toHaveBeenCalledWith('Failed to retry post: the board never answered');
+    expect(useFailedPostRetryStore.getState().retryingAccountCommentIndex).toBeNull();
+    await expect(callbacks.onBeforeRepublish(published)).resolves.toBe(published);
+    vi.restoreAllMocks();
+  });
+
   it("does not retry a tripcode post once the name field no longer holds the post's tripcode", async () => {
     // The field was cleared: the post would be republished without the trip it showed.
     await retryTripcodePost(undefined);

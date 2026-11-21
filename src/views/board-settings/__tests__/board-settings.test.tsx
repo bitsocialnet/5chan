@@ -9,6 +9,7 @@ const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise
 type PublishOptions = Record<string, unknown> & {
   onChallenge?: (challenge: Record<string, unknown>, publication: Record<string, unknown>) => Promise<void>;
   onChallengeVerification?: (challengeVerification: Record<string, unknown>) => Promise<void>;
+  onError?: (error: Error, publication?: Record<string, unknown>, info?: { final: boolean }) => void;
 };
 
 const testState = vi.hoisted(() => ({
@@ -246,6 +247,29 @@ describe('BoardSettings', () => {
 
     expect(container.textContent).toContain('board_settings_remote_removal');
     expect(testState.publishCommunityEditMock).not.toHaveBeenCalled();
+  });
+
+  it('keeps saving through an error pkc-js recovers from and reports only a final one as a failed save', async () => {
+    testState.respondWithChallenge = true;
+    const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    await render();
+
+    await setEditorValue(JSON.stringify({ title: 'New title' }));
+    await clickButton('save_changes');
+    const options = testState.publishCommunityEditMock.mock.calls[0][0] as PublishOptions;
+
+    await act(async () => {
+      options.onError?.(new Error('could not decrypt the challenge'), { communityEdit: {} }, { final: false });
+    });
+    expect(container.textContent).toContain('board_settings_saving');
+    expect(container.textContent).not.toContain('board_settings_save_failed');
+
+    await act(async () => {
+      options.onError?.(new Error('the board never answered'), { communityEdit: {} }, { final: true });
+    });
+    expect(container.textContent).not.toContain('board_settings_saving');
+    expect(container.textContent).toContain('board_settings_save_failed:the board never answered');
+    consoleWarnSpy.mockRestore();
   });
 
   it('makes the form editable again when the user closes the challenge', async () => {

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ChallengeVerification, Comment, useAccount, usePublishComment } from '@bitsocial/bitsocial-react-hooks';
+import { ChallengeVerification, Comment, type PublishErrorInfo, useAccount, usePublishComment } from '@bitsocial/bitsocial-react-hooks';
 import { useShallow } from 'zustand/react/shallow';
 import { useDirectories } from './use-directories';
 import usePublishReplyStore from '../stores/use-publish-reply-store';
@@ -13,6 +13,7 @@ import usePublishAuthorDomainGuard, { getPublishAuthorDomainErrorMessage } from 
 import usePendingPublishRequest from './use-pending-publish-request';
 import useSignTripcode from './use-sign-tripcode';
 import useTripcodeRepublish from './use-tripcode-republish';
+import { onFinalPublishError } from '../lib/utils/publish-error-utils';
 import { hasTripcodeProof, type TripcodeSecret } from '../lib/utils/tripcode-utils';
 import type { PostingAnalyticsAttempt } from '../lib/posting-analytics';
 
@@ -168,11 +169,11 @@ const usePublishReply = ({ cid, communityAddress, postCid, storeKey: storeKeyOpt
       ...mergedPublishOptions,
       // Only a reply with a proof is rebuilt before its republish; any other keeps the hooks' own republish.
       ...(hasTripcodeProof(mergedPublishOptions?.author?.displayName) ? { onBeforeRepublish } : {}),
-      onError: (error: Error) => {
+      onError: onFinalPublishError((error: Error, publication?: Comment, info?: PublishErrorInfo) => {
         analyticsAttempt?.finish('post_publish_failed');
         forgetTripcode();
-        mergedPublishOptions?.onError?.(error);
-      },
+        mergedPublishOptions?.onError?.(error, publication, info);
+      }),
       onChallengeVerification: async (challengeVerification: ChallengeVerification, comment: Comment) => {
         analyticsAttempt?.verify(challengeVerification);
         if (challengeVerification.challengeSuccess === true) forgetTripcode();

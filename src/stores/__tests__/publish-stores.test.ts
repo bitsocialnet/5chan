@@ -16,12 +16,14 @@ vi.mock('../../lib/utils/challenge-utils', () => ({
 
 describe('publish stores', () => {
   let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+  let consoleWarnSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
     testState.alertChallengeVerificationFailedMock.mockReset();
     testState.alertMock.mockReset();
     vi.stubGlobal('alert', testState.alertMock);
     consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
 
     usePublishPostStore.getState().resetPublishPostStore();
     usePublishReplyStore.getState().resetPublishReplyStore('parent-1');
@@ -29,6 +31,7 @@ describe('publish stores', () => {
 
   afterEach(() => {
     consoleErrorSpy.mockRestore();
+    consoleWarnSpy.mockRestore();
     vi.unstubAllGlobals();
     usePublishPostStore.getState().resetPublishPostStore();
     usePublishReplyStore.getState().resetPublishReplyStore('parent-1');
@@ -65,7 +68,10 @@ describe('publish stores', () => {
     state.publishCommentOptions.onChallengeVerification?.({} as never, comment);
     expect(testState.alertChallengeVerificationFailedMock).toHaveBeenCalledWith({}, comment);
 
-    state.publishCommentOptions.onError?.(new Error('publish failed'));
+    // An error pkc-js recovers from leaves the post publishing, so it is not alerted.
+    state.publishCommentOptions.onError?.(new Error('could not decrypt the challenge'), comment, { final: false });
+    expect(testState.alertMock).not.toHaveBeenCalled();
+    state.publishCommentOptions.onError?.(new Error('publish failed'), comment, { final: true });
     expect(consoleErrorSpy).toHaveBeenCalled();
     expect(testState.alertMock).toHaveBeenCalledWith('publish failed');
 
@@ -136,7 +142,9 @@ describe('publish stores', () => {
     state.publishCommentOptions['parent-1']?.onChallengeVerification?.({ token: 'challenge' } as never, comment);
     expect(testState.alertChallengeVerificationFailedMock).toHaveBeenCalledWith({ token: 'challenge' }, comment);
 
-    state.publishCommentOptions['parent-1']?.onError?.(new Error('reply failed'));
+    state.publishCommentOptions['parent-1']?.onError?.(new Error('could not decrypt the challenge'), comment, { final: false });
+    expect(testState.alertMock).not.toHaveBeenCalled();
+    state.publishCommentOptions['parent-1']?.onError?.(new Error('reply failed'), comment, { final: true });
     expect(consoleErrorSpy).toHaveBeenCalled();
     expect(testState.alertMock).toHaveBeenCalledWith('reply failed');
 

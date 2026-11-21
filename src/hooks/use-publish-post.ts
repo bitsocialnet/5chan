@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ChallengeVerification, Comment, usePublishComment } from '@bitsocial/bitsocial-react-hooks';
+import { ChallengeVerification, Comment, type PublishErrorInfo, usePublishComment } from '@bitsocial/bitsocial-react-hooks';
 import { useShallow } from 'zustand/react/shallow';
 import usePublishPostStore, { type PublishPostStore } from '../stores/use-publish-post-store';
 import useChallengesStore from '../stores/use-challenges-store';
@@ -8,6 +8,7 @@ import usePendingPublishRequest from './use-pending-publish-request';
 import useSignTripcode from './use-sign-tripcode';
 import useTripcodeRepublish from './use-tripcode-republish';
 import { getDuplicateMediaChallengeError } from '../lib/utils/challenge-utils';
+import { onFinalPublishError } from '../lib/utils/publish-error-utils';
 import { hasTripcodeProof, type TripcodeSecret } from '../lib/utils/tripcode-utils';
 import type { PostingAnalyticsAttempt } from '../lib/posting-analytics';
 
@@ -111,12 +112,12 @@ const usePublishPost = ({
       // Only a post with a proof is rebuilt before its republish; any other keeps the hooks' own republish.
       ...(hasTripcodeProof(publishCommentOptions.author?.displayName) ? { onBeforeRepublish } : {}),
       onPendingComment: onPendingPost,
-      onError: (error: Error) => {
+      onError: onFinalPublishError((error: Error, publication?: Comment, info?: PublishErrorInfo) => {
         analyticsAttempt?.finish('post_publish_failed');
         forgetTripcode();
         onPublishError?.(error);
-        publishCommentOptions.onError?.(error);
-      },
+        publishCommentOptions.onError?.(error, publication, info);
+      }),
       onChallengeVerification: async (challengeVerification: ChallengeVerification, comment: Comment) => {
         analyticsAttempt?.verify(challengeVerification);
         const duplicateMediaError = getDuplicateMediaChallengeError(challengeVerification);

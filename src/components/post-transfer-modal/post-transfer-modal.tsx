@@ -10,6 +10,7 @@ import ErrorDisplay from '../error-display';
 import { useDirectories } from '../../hooks/use-directories';
 import useChallengesStore from '../../stores/use-challenges-store';
 import { alertChallengeVerificationFailed } from '../../lib/utils/challenge-utils';
+import { onFinalPublishError } from '../../lib/utils/publish-error-utils';
 import { areSameBoardAddress } from '../../lib/utils/route-utils';
 import { getCommentCommunityAddress } from '../../lib/utils/comment-utils';
 import capitalize from 'lodash/capitalize';
@@ -302,9 +303,9 @@ const PostTransferModal = ({ comment, onClose, onTransferStateChange, onTransfer
     onChallengeVerification: async (challengeVerification: ChallengeVerification, moderation: Comment) => {
       alertChallengeVerificationFailed(challengeVerification, moderation);
     },
-    onError: (error: Error & { details?: unknown }) => {
+    onError: onFinalPublishError((error: Error & { details?: unknown }) => {
       console.error(message, error, error.details);
-    },
+    }),
   });
 
   // publishCommentModeration resolves once the moderation is queued, before the community answers,
@@ -337,10 +338,10 @@ const PostTransferModal = ({ comment, onClose, onTransferStateChange, onTransfer
           alertChallengeVerificationFailed(challengeVerification, moderation);
           settle(challengeVerification?.challengeSuccess === true ? undefined : new Error(challengeVerification?.reason || `${label} challenge verification failed.`));
         },
-        onError: (error: Error & { details?: unknown }) => {
+        onError: onFinalPublishError((error: Error & { details?: unknown }) => {
           console.error(`${label} failed:`, error, error.details);
           settle(error ?? new Error(`${label} failed.`));
-        },
+        }),
       }).catch((error: unknown) => settle(error ?? new Error(`${label} failed.`)));
     });
 
@@ -453,12 +454,12 @@ const PostTransferModal = ({ comment, onClose, onTransferStateChange, onTransfer
               dispatchModalState({ type: 'publishFinalizationFailed', error });
             }
           },
-          onError: async (error: Error & { details?: unknown }) => {
+          onError: onFinalPublishError(async (error: Error & { details?: unknown }) => {
             console.error('Transfer failed:', error, error.details);
             await cleanupTemporaryAccount({ deletePendingComment: true });
             onTransferStateChange?.('failed');
             dispatchModalState({ type: 'publishFailed', error });
-          },
+          }),
         },
         temporaryAccountName,
       );

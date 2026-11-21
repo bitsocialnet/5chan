@@ -20,6 +20,7 @@ import { useLocation, useParams } from 'react-router-dom';
 import { PostMenuProps } from '../../../lib/utils/post-menu-props';
 import { getCommentCommunityAddress, withResolvedCommentCommunityAddress } from '../../../lib/utils/comment-utils';
 import { alertChallengeVerificationFailed, type ChallengePublication } from '../../../lib/utils/challenge-utils';
+import { onFinalPublishError } from '../../../lib/utils/publish-error-utils';
 import useChallengesStore from '../../../stores/use-challenges-store';
 import useImageFiltersStore from '../../../stores/use-image-filters-store';
 
@@ -220,10 +221,10 @@ const DeletePostButton = ({ post, onClose }: DeletePostButtonProps) => {
       onChallengeVerification: async (challengeVerification: ChallengeVerification, publication: ChallengePublication | undefined) => {
         alertChallengeVerificationFailed(challengeVerification, publication);
       },
-      onError: (error: Error) => {
+      onError: onFinalPublishError((error: Error) => {
         console.warn(error);
         alert('Comment edit failed. ' + error.message);
-      },
+      }),
     }),
     [cid, communityAddress, isAccountCommentAuthor, signer, signerMatchesAuthor, resolvedPost?.author?.displayName, account?.author, onChallenge],
   );
