@@ -90,8 +90,11 @@ export const trackPageView = (pathname: string): void => {
   initialize();
   const path = getAnalyticsPath(pathname);
   pageview({ path, route: getAnalyticsRoute(path) });
-  const visit = recordVisit();
-  if (visit) track(visit.name, visit.data);
+  void recordVisit()
+    .then((visit) => {
+      if (visit) track(visit.name, visit.data);
+    })
+    .catch(() => {});
 };
 
 export const trackPostingEvent = (event: PostingAnalyticsEvent, context: { kind: 'thread' | 'reply' }): void => {

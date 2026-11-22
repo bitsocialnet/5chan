@@ -65,20 +65,15 @@ const getCampaignLabel = (campaign: URLSearchParams): string => [campaign.get('u
 const readVisits = (raw: string | null): VisitRecord | undefined => {
   try {
     const value = JSON.parse(raw ?? 'null');
-    if (Number.isInteger(value?.first) && typeof value.campaign === 'string' && Array.isArray(value.sent)) return value;
+    const validSent = Array.isArray(value?.sent) && value.sent.every((range: unknown) => RETURN_RANGES.some(([, label]) => label === range));
+    if (Number.isInteger(value?.first) && typeof value.campaign === 'string' && validSent) return value;
   } catch {
-    // A damaged record starts a new one.
+    // A damaged record falls through and starts a new one.
   }
   return undefined;
 };
 
-let checkedDay: number | undefined;
-// Only the first-visit day, its campaign and the ranges already reported stay in this browser; no ID is
-// stored or sent. Returns the event this page view should send, if any.
-export const recordVisit = (now = Date.now()): VisitEvent | undefined => {
-  const today = Math.floor((now - new Date(now).getTimezoneOffset() * 60_000) / DAY_MS);
-  if (checkedDay === today) return undefined;
-  checkedDay = today;
+const nextVisit = (today: number): VisitEvent | undefined => {
   try {
     const record = readVisits(localStorage.getItem(VISITS_KEY));
     if (!record) {
@@ -95,4 +90,19 @@ export const recordVisit = (now = Date.now()): VisitEvent | undefined => {
     // Without storage a visit cannot be told apart from a first one, so nothing is sent.
     return undefined;
   }
+};
+
+let checkedDay: number | undefined;
+// Only the first-visit day, its campaign and the ranges already reported stay in this browser; no ID is
+// stored or sent. Resolves to the event this page view should send, if any.
+export const recordVisit = (now = Date.now()): Promise<VisitEvent | undefined> => {
+  const today = Math.floor((now - new Date(now).getTimezoneOffset() * 60_000) / DAY_MS);
+  if (checkedDay === today) return Promise.resolve(undefined);
+  checkedDay = today;
+  // localStorage has no locking, so tabs restored together would each read the same record and send the
+  // same event. A Web Lock makes each tab see the previous tab's update.
+  if (typeof navigator !== 'undefined' && 'locks' in navigator) {
+    return navigator.locks.request(VISITS_KEY, () => nextVisit(today)).catch(() => undefined);
+  }
+  return Promise.resolve(nextVisit(today));
 };

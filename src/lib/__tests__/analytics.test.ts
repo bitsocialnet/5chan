@@ -215,39 +215,53 @@ describe('return visits', () => {
     setLocation('https://5chan.app/#/pol/?utm_source=4chan&utm_campaign=pol-nov');
     const { recordVisit } = await import('../analytics/campaign');
     const campaign = '4chan/pol-nov';
-    expect(recordVisit(day(0))).toEqual({ name: 'first_visit', data: { campaign } });
-    expect(recordVisit(day(0))).toBeUndefined();
-    expect(recordVisit(day(1))).toEqual({ name: 'return_visit', data: { campaign, days: '1' } });
-    expect(recordVisit(day(3))).toEqual({ name: 'return_visit', data: { campaign, days: '2-7' } });
-    expect(recordVisit(day(6))).toBeUndefined();
-    expect(recordVisit(day(9))).toEqual({ name: 'return_visit', data: { campaign, days: '8-14' } });
-    expect(recordVisit(day(45))).toEqual({ name: 'return_visit', data: { campaign, days: '31-60' } });
-    expect(recordVisit(day(100))).toEqual({ name: 'return_visit', data: { campaign, days: '61+' } });
-    expect(recordVisit(day(200))).toBeUndefined();
+    expect(await recordVisit(day(0))).toEqual({ name: 'first_visit', data: { campaign } });
+    expect(await recordVisit(day(0))).toBeUndefined();
+    expect(await recordVisit(day(1))).toEqual({ name: 'return_visit', data: { campaign, days: '1' } });
+    expect(await recordVisit(day(3))).toEqual({ name: 'return_visit', data: { campaign, days: '2-7' } });
+    expect(await recordVisit(day(6))).toBeUndefined();
+    expect(await recordVisit(day(9))).toEqual({ name: 'return_visit', data: { campaign, days: '8-14' } });
+    expect(await recordVisit(day(45))).toEqual({ name: 'return_visit', data: { campaign, days: '31-60' } });
+    expect(await recordVisit(day(100))).toEqual({ name: 'return_visit', data: { campaign, days: '61+' } });
+    expect(await recordVisit(day(200))).toBeUndefined();
     expect(JSON.parse(localStorage.getItem('5chan-analytics-visits') ?? '')).toEqual({ first: expect.any(Number), campaign, sent: ['1', '2-7', '8-14', '31-60', '61+'] });
   });
 
   it('keeps the first campaign when an organic visitor later opens an ad link', async () => {
     const organic = await import('../analytics/campaign');
-    expect(organic.recordVisit(day(0))).toEqual({ name: 'first_visit', data: { campaign: 'none' } });
+    expect(await organic.recordVisit(day(0))).toEqual({ name: 'first_visit', data: { campaign: 'none' } });
 
     vi.resetModules();
     // vitest.setup.ts backs both storages with one map, so clear only the tab's campaign.
     sessionStorage.removeItem('5chan-analytics-campaign');
     setLocation('https://5chan.app/#/pol/?utm_source=4chan&utm_campaign=pol-nov');
     const fromAd = await import('../analytics/campaign');
-    expect(fromAd.recordVisit(day(2))).toEqual({ name: 'return_visit', data: { campaign: 'none', days: '2-7' } });
+    expect(await fromAd.recordVisit(day(2))).toEqual({ name: 'return_visit', data: { campaign: 'none', days: '2-7' } });
   });
 
   it('starts over from a damaged record and sends nothing when storage is unavailable', async () => {
     localStorage.setItem('5chan-analytics-visits', '{broken');
     const { recordVisit } = await import('../analytics/campaign');
-    expect(recordVisit(day(0))).toEqual({ name: 'first_visit', data: { campaign: 'none' } });
+    expect(await recordVisit(day(0))).toEqual({ name: 'first_visit', data: { campaign: 'none' } });
 
     vi.spyOn(localStorage, 'getItem').mockImplementation(() => {
       throw new Error('blocked');
     });
-    expect(recordVisit(day(1))).toBeUndefined();
+    expect(await recordVisit(day(1))).toBeUndefined();
+  });
+
+  it('starts over from a record with an unknown return range', async () => {
+    localStorage.setItem('5chan-analytics-visits', JSON.stringify({ first: 0, campaign: '4chan/pol', sent: [7] }));
+    const { recordVisit } = await import('../analytics/campaign');
+    expect(await recordVisit(day(0))).toEqual({ name: 'first_visit', data: { campaign: 'none' } });
+  });
+
+  it('reads and updates the record inside a Web Lock so tabs opened together send one event', async () => {
+    const request = vi.fn((_name: string, callback: () => unknown) => Promise.resolve(callback()));
+    vi.stubGlobal('navigator', { locks: { request } });
+    const { recordVisit } = await import('../analytics/campaign');
+    expect(await recordVisit(day(0))).toEqual({ name: 'first_visit', data: { campaign: 'none' } });
+    expect(request).toHaveBeenCalledExactlyOnceWith('5chan-analytics-visits', expect.any(Function));
   });
 
   it('sends the visit event after the page view, once per day', async () => {
@@ -255,6 +269,7 @@ describe('return visits', () => {
     trackPageView('/pol');
     trackPageView('/pol/thread/private-cid');
     await settle();
+    await vi.waitFor(() => expect(sdk.track).toHaveBeenCalled());
     expect(sdk.pageview).toHaveBeenCalledTimes(2);
     expect(sdk.track).toHaveBeenCalledExactlyOnceWith('first_visit', { campaign: 'none' });
     expect(sdk.pageview.mock.invocationCallOrder[0]).toBeLessThan(sdk.track.mock.invocationCallOrder[0]);
