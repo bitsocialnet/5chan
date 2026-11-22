@@ -2,6 +2,7 @@ import { inject, pageview, track, type BeforeSendEvent } from '@vercel/analytics
 import { SPECIAL_BOARDS } from '../special-boards';
 import { normalizeBoardAddress } from '../utils/directory-list-lookup-utils';
 import { vendoredDirectoryLists } from '../utils/vendored-directory-lists';
+import { getSessionCampaign, recordVisit } from './campaign';
 import { isAnalyticsEnabled, type PostingAnalyticsEvent } from './shared';
 
 // Only codes from the bundled public directory may leave the client. Custom board
@@ -66,9 +67,12 @@ export const getAnalyticsRoute = (path: string): string => {
 export const sanitizeAnalyticsEvent = (event: BeforeSendEvent): BeforeSendEvent | null => {
   if (!isAnalyticsEnabled()) return null;
   try {
-    // Custom events are failed post attempts; their page would name the board the visitor posted to.
+    // Custom events carry no page: a failed post's page would name the board the visitor posted to.
     const path = event.type === 'event' ? '/' : getAnalyticsPath(new URL(event.url).pathname);
-    return { ...event, url: new URL(path, window.location.origin).href };
+    const url = new URL(path, window.location.origin);
+    // Only the slugged utm_* tags of the link that opened this tab are kept, for campaign reports.
+    url.search = getSessionCampaign().toString();
+    return { ...event, url: url.href };
   } catch {
     return null;
   }
@@ -86,6 +90,8 @@ export const trackPageView = (pathname: string): void => {
   initialize();
   const path = getAnalyticsPath(pathname);
   pageview({ path, route: getAnalyticsRoute(path) });
+  const visit = recordVisit();
+  if (visit) track(visit.name, visit.data);
 };
 
 export const trackPostingEvent = (event: PostingAnalyticsEvent, context: { kind: 'thread' | 'reply' }): void => {

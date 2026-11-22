@@ -12,6 +12,8 @@ beforeEach(() => {
   vi.stubEnv('PROD', true);
   vi.stubEnv('VITE_APP_DISTRIBUTION', '');
   setLocation('https://5chan.app/#/');
+  localStorage.clear();
+  sessionStorage.clear();
 });
 
 afterEach(() => {
@@ -175,5 +177,86 @@ describe('analytics initialization', () => {
     expect(() => trackPostingEvent('post_publish_failed', { kind: 'reply' })).not.toThrow();
     await settle();
     expect(sdk.inject).toHaveBeenCalledOnce();
+  });
+});
+
+describe('campaign attribution', () => {
+  it('keeps only slugged utm tags from a path link that index.html moved into the hash route', async () => {
+    setLocation('https://5chan.app/?token=private#/pol/?utm_source=4chan&utm_medium=Banner%20Ad&utm_campaign=pol-nov&ref=secret&utm_term=%3Cscript%3E');
+    const { sanitizeAnalyticsEvent } = await import('../analytics/client');
+    expect(sanitizeAnalyticsEvent({ type: 'pageview', url: 'https://5chan.app/pol/thread/private-cid?s=secret' })).toEqual({
+      type: 'pageview',
+      url: 'https://5chan.app/pol/thread?utm_source=4chan&utm_medium=banner-ad&utm_campaign=pol-nov&utm_term=script',
+    });
+    expect(sanitizeAnalyticsEvent({ type: 'event', url: 'https://5chan.app/pol/thread/private-cid' })).toEqual({
+      type: 'event',
+      url: 'https://5chan.app/?utm_source=4chan&utm_medium=banner-ad&utm_campaign=pol-nov&utm_term=script',
+    });
+  });
+
+  it('reads tags placed before the hash and keeps them for the tab after the landing route is gone', async () => {
+    setLocation('https://5chan.app/?utm_source=4chan&utm_campaign=pol#/pol');
+    const first = await import('../analytics/client');
+    expect(first.sanitizeAnalyticsEvent({ type: 'pageview', url: 'https://5chan.app/pol' })?.url).toBe('https://5chan.app/pol?utm_source=4chan&utm_campaign=pol');
+
+    vi.resetModules();
+    setLocation('https://5chan.app/#/pol/thread/private-cid');
+    const reloaded = await import('../analytics/client');
+    expect(reloaded.sanitizeAnalyticsEvent({ type: 'pageview', url: 'https://5chan.app/pol/thread/private-cid' })?.url).toBe(
+      'https://5chan.app/pol/thread?utm_source=4chan&utm_campaign=pol',
+    );
+  });
+});
+
+describe('return visits', () => {
+  const day = (offset: number) => new Date(2026, 10, 25 + offset, 12).getTime();
+
+  it('reports a first visit with its campaign, then each return range once', async () => {
+    setLocation('https://5chan.app/#/pol/?utm_source=4chan&utm_campaign=pol-nov');
+    const { recordVisit } = await import('../analytics/campaign');
+    const campaign = '4chan/pol-nov';
+    expect(recordVisit(day(0))).toEqual({ name: 'first_visit', data: { campaign } });
+    expect(recordVisit(day(0))).toBeUndefined();
+    expect(recordVisit(day(1))).toEqual({ name: 'return_visit', data: { campaign, days: '1' } });
+    expect(recordVisit(day(3))).toEqual({ name: 'return_visit', data: { campaign, days: '2-7' } });
+    expect(recordVisit(day(6))).toBeUndefined();
+    expect(recordVisit(day(9))).toEqual({ name: 'return_visit', data: { campaign, days: '8-14' } });
+    expect(recordVisit(day(45))).toEqual({ name: 'return_visit', data: { campaign, days: '31-60' } });
+    expect(recordVisit(day(100))).toEqual({ name: 'return_visit', data: { campaign, days: '61+' } });
+    expect(recordVisit(day(200))).toBeUndefined();
+    expect(JSON.parse(localStorage.getItem('5chan-analytics-visits') ?? '')).toEqual({ first: expect.any(Number), campaign, sent: ['1', '2-7', '8-14', '31-60', '61+'] });
+  });
+
+  it('keeps the first campaign when an organic visitor later opens an ad link', async () => {
+    const organic = await import('../analytics/campaign');
+    expect(organic.recordVisit(day(0))).toEqual({ name: 'first_visit', data: { campaign: 'none' } });
+
+    vi.resetModules();
+    // vitest.setup.ts backs both storages with one map, so clear only the tab's campaign.
+    sessionStorage.removeItem('5chan-analytics-campaign');
+    setLocation('https://5chan.app/#/pol/?utm_source=4chan&utm_campaign=pol-nov');
+    const fromAd = await import('../analytics/campaign');
+    expect(fromAd.recordVisit(day(2))).toEqual({ name: 'return_visit', data: { campaign: 'none', days: '2-7' } });
+  });
+
+  it('starts over from a damaged record and sends nothing when storage is unavailable', async () => {
+    localStorage.setItem('5chan-analytics-visits', '{broken');
+    const { recordVisit } = await import('../analytics/campaign');
+    expect(recordVisit(day(0))).toEqual({ name: 'first_visit', data: { campaign: 'none' } });
+
+    vi.spyOn(localStorage, 'getItem').mockImplementation(() => {
+      throw new Error('blocked');
+    });
+    expect(recordVisit(day(1))).toBeUndefined();
+  });
+
+  it('sends the visit event after the page view, once per day', async () => {
+    const { trackPageView } = await import('../analytics');
+    trackPageView('/pol');
+    trackPageView('/pol/thread/private-cid');
+    await settle();
+    expect(sdk.pageview).toHaveBeenCalledTimes(2);
+    expect(sdk.track).toHaveBeenCalledExactlyOnceWith('first_visit', { campaign: 'none' });
+    expect(sdk.pageview.mock.invocationCallOrder[0]).toBeLessThan(sdk.track.mock.invocationCallOrder[0]);
   });
 });

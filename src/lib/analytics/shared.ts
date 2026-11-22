@@ -6,6 +6,9 @@ export const isAnalyticsEnabled = (): boolean =>
   window.location.protocol === 'https:' &&
   (window.location.hostname === '5chan.app' || window.location.hostname === 'www.5chan.app');
 
+// Read at startup, before the router can leave the landing route and its campaign tags.
+export const landingUrl = typeof window === 'undefined' ? '' : window.location.href;
+
 // Failure outcomes only: see startPostingAnalytics for why submits and successes are never sent.
 export type PostingAnalyticsEvent =
   | 'post_validation_failed'
