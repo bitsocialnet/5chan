@@ -257,11 +257,27 @@ describe('return visits', () => {
   });
 
   it('reads and updates the record inside a Web Lock so tabs opened together send one event', async () => {
-    const request = vi.fn((_name: string, callback: () => unknown) => Promise.resolve(callback()));
+    // Each lock is granted only when the test calls its grant, like a lock another tab still holds.
+    const grants: (() => void)[] = [];
+    const request = vi.fn((_name: string, callback: () => unknown) => new Promise((resolve) => grants.push(() => resolve(callback()))));
     vi.stubGlobal('navigator', { locks: { request } });
-    const { recordVisit } = await import('../analytics/campaign');
-    expect(await recordVisit(day(0))).toEqual({ name: 'first_visit', data: { campaign: 'none' } });
-    expect(request).toHaveBeenCalledExactlyOnceWith('5chan-analytics-visits', expect.any(Function));
+    setLocation('https://5chan.app/#/pol/?utm_source=4chan&utm_campaign=pol-nov');
+    const firstTab = await import('../analytics/campaign');
+    vi.resetModules();
+    setLocation('https://5chan.app/#/b/?utm_source=4chan&utm_campaign=b-nov');
+    const secondTab = await import('../analytics/campaign');
+    const getItem = vi.spyOn(localStorage, 'getItem');
+
+    const first = firstTab.recordVisit(day(0));
+    const second = secondTab.recordVisit(day(0));
+    expect(request.mock.calls.map(([name]) => name)).toEqual(['5chan-analytics-visits', '5chan-analytics-visits']);
+    expect(getItem).not.toHaveBeenCalledWith('5chan-analytics-visits');
+
+    grants[0]();
+    expect(await first).toEqual({ name: 'first_visit', data: { campaign: '4chan/pol-nov' } });
+    grants[1]();
+    expect(await second).toBeUndefined();
+    expect(JSON.parse(localStorage.getItem('5chan-analytics-visits') ?? '')).toMatchObject({ campaign: '4chan/pol-nov', sent: [] });
   });
 
   it('sends the visit event after the page view, once per day', async () => {
