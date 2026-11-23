@@ -34,6 +34,10 @@ export const hasAuthoritativeCommentPayload = (comment?: unknown): boolean => {
   );
 };
 
+// The viewer's own replies join reply lists before they are published, with no cid yet; their
+// account comment index identifies them until then.
+export const getReplyListKey = (reply: Comment): string => reply.cid ?? `account-comment-${reply.index}`;
+
 // Protocol comments already carry canonical communityAddress fields, including replies.
 // Keep this compatibility entry point without walking every nested reply on each render.
 export const withResolvedCommentCommunityAddress = <T>(comment: T): T => comment;

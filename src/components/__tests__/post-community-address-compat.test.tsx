@@ -885,6 +885,37 @@ describe('post community address compatibility', () => {
     }
   });
 
+  it.each([
+    ['desktop thread', PostDesktop, true, '/mu/thread/post-1'],
+    ['mobile thread', PostMobile, true, '/mu/thread/post-1'],
+    ['desktop board preview', PostDesktop, false, '/mu'],
+    ['mobile board preview', PostMobile, false, '/mu'],
+  ] as const)("keys the viewer's unpublished replies in the %s reply list", async (_list, PostComponent, showAllReplies, route) => {
+    const post = makeLegacyThread();
+    const publishedReply = post.replies?.pages?.new?.comments?.[0];
+    if (!publishedReply) {
+      throw new Error('missing fixture reply');
+    }
+    const accountReply = { ...publishedReply, cid: undefined, number: undefined, content: 'Pending', timestamp: 1_710_000_100 };
+    post.replies = {
+      pages: {
+        new: { comments: [publishedReply, { ...accountReply, index: 0, state: 'publishing' }, { ...accountReply, index: 1, state: 'failed', timestamp: 1_710_000_200 }] },
+      },
+    };
+    post.replyCount = 3;
+
+    await renderWithRoute(createElement(PostComponent, { post, showAllReplies }), route);
+
+    // React logs its missing-key warning once per test file, so an earlier render here can swallow it.
+    // Read the keys React reconciled the reply rows with instead.
+    const replyRowKeys = Array.from(container.querySelectorAll('.replyDesktop, .replyMobile'), (reply) => {
+      const row = reply.parentElement as (HTMLElement & Record<string, { key?: string | null } | undefined>) | null;
+      const fiberProperty = row ? Object.keys(row).find((property) => property.startsWith('__reactFiber$')) : undefined;
+      return fiberProperty ? row?.[fiberProperty]?.key : undefined;
+    });
+    expect(replyRowKeys).toEqual(['reply-1', 'account-comment-0', 'account-comment-1']);
+  });
+
   it('forwards Pretext-backed reply estimates into Virtuoso for desktop and mobile thread views', async () => {
     testState.hasMoreReplies = true;
 

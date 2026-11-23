@@ -86,7 +86,7 @@ import { getThreadTopNavigationState, scrollThreadContainerToTop } from '../../l
 import useDeleteFailedPost from '../../hooks/use-delete-failed-post';
 import usePrefetchIntent from '../../hooks/use-prefetch-intent';
 import { getThreadPostCountsByAuthor } from '../../lib/utils/author-post-counts';
-import { withResolvedCommentCommunityAddress } from '../../lib/utils/comment-utils';
+import { getReplyListKey, withResolvedCommentCommunityAddress } from '../../lib/utils/comment-utils';
 import { getCommentUserID, preservePublishedUserID } from '../../lib/utils/comment-user-id-utils';
 import { getFeedPostHeightEstimate, getReplyHeightEstimates, reportReplyHeightAuditSample } from '../../lib/utils/pretext-height-estimates';
 import { getAuthorBadge } from '../../lib/utils/author-display-utils';
@@ -1394,7 +1394,7 @@ const PostDesktop = ({
             showReplies &&
             !hasMore &&
             visibleReplies.map((reply) => (
-              <div key={reply.cid} className={`${styles.replyContainer} ${unreadMarkerCid && reply.cid === unreadMarkerCid ? styles.newPostsMarker : ''}`}>
+              <div key={getReplyListKey(reply)} className={`${styles.replyContainer} ${unreadMarkerCid && reply.cid === unreadMarkerCid ? styles.newPostsMarker : ''}`}>
                 <Reply
                   reply={reply}
                   roles={roles}
@@ -1413,7 +1413,7 @@ const PostDesktop = ({
             freshRepliesForRender &&
             showReplies &&
             filteredReplies.map((reply, index) => (
-              <div key={reply.cid} className={styles.replyContainer} {...getPreviewReplyDebugProps(index)}>
+              <div key={getReplyListKey(reply)} className={styles.replyContainer} {...getPreviewReplyDebugProps(index)}>
                 <Reply
                   disableDeferredLayout={feedVirtualizationModeOverride === 'item-size'}
                   reply={reply}
