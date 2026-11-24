@@ -480,7 +480,6 @@
   "directory_vote_needs_test_pass": "Il tuo voto non è stato inviato: l'indirizzo di voto di questo dispositivo <address>{{address}}</address> non possiede un 5chan Pass. Per ora il voto è su testnet, quindi puoi ottenere un Pass di test gratuito per questo indirizzo dal <faucetLink>faucet</faucetLink>.",
   "directory_vote_board_not_found": "Nessuna board trovata a {{address}}. Inserisci un indirizzo .bso o la chiave pubblica di una board.",
   "directory_vote_failed": "Impossibile inviare il tuo voto: {{error}}",
-  "user_banned_from_board": "L'utente è stato bannato da {{board}}",
   "thread_update_updating": "Aggiornamento...",
   "thread_update_no_new_posts": "Nessun nuovo post",
   "thread_update_new_post": "1 nuovo post",
@@ -613,5 +612,6 @@
   "pass_login_prompt": "Hai già un 5chan Pass? <1>Accedi</1>.",
   "local_data": "Dati locali",
   "post_as_board_staff_confirm": "Sei proprietario, amministratore o moderatore di questa board, e le board non anonimizzano mai il proprio staff. Il tuo identificatore Bitsocial e, se hai effettuato l'accesso, il tuo wallet 5chan Pass verranno pubblicati con questo post. Pubblicare comunque?",
+  "user_banned_for_this_post": "L'utente è stato bannato per questo post",
   "add_to_multiboard": "Aggiungi a multiboard"
 }

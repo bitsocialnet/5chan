@@ -480,7 +480,6 @@
   "directory_vote_needs_test_pass": "Ääntäsi ei lähetetty: tämän laitteen äänestysosoitteessa <address>{{address}}</address> ei ole 5chan Passia. Äänestys on toistaiseksi testnetissä, joten voit hakea tälle osoitteelle ilmaisen testi-Passin <faucetLink>faucetista</faucetLink>.",
   "directory_vote_board_not_found": "Osoitteesta {{address}} ei löytynyt lautaa. Syötä .bso-osoite tai laudan julkinen avain.",
   "directory_vote_failed": "Ääntäsi ei voitu lähettää: {{error}}",
-  "user_banned_from_board": "Käyttäjä sai porttikiellon laudalle {{board}}",
   "thread_update_updating": "Päivitetään...",
   "thread_update_no_new_posts": "Ei uusia viestejä",
   "thread_update_new_post": "1 uusi viesti",
@@ -613,5 +612,6 @@
   "pass_login_prompt": "Onko sinulla jo 5chan Pass? <1>Kirjaudu sisään</1>.",
   "local_data": "Paikalliset tiedot",
   "post_as_board_staff_confirm": "Olet tämän laudan omistaja, järjestelmänvalvoja tai moderaattori, eivätkä laudat koskaan anonymisoi ylläpitoaan. Bitsocial-tunnisteesi ja, jos olet kirjautunut sisään, 5chan Pass -lompakkosi julkaistaan tämän viestin mukana. Lähetetäänkö silti?",
+  "user_banned_for_this_post": "Käyttäjä sai porttikiellon tämän viestin vuoksi",
   "add_to_multiboard": "Lisää monilautalistaukseen"
 }

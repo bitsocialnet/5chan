@@ -480,7 +480,6 @@
   "directory_vote_needs_test_pass": "Oyunuz gönderilmedi: bu cihazın oylama adresi <address>{{address}}</address> bir 5chan Pass tutmuyor. Oylama şimdilik testnet üzerinde, bu yüzden bu adres için <faucetLink>faucet</faucetLink> üzerinden ücretsiz bir test Pass alabilirsiniz.",
   "directory_vote_board_not_found": "{{address}} adresinde pano bulunamadı. Bir .bso adresi veya bir panonun açık anahtarını girin.",
   "directory_vote_failed": "Oyunuz gönderilemedi: {{error}}",
-  "user_banned_from_board": "Kullanıcı {{board}} panosundan yasaklandı",
   "thread_update_updating": "Güncelleniyor...",
   "thread_update_no_new_posts": "Yeni gönderi yok",
   "thread_update_new_post": "1 yeni gönderi",
@@ -613,5 +612,6 @@
   "pass_login_prompt": "Zaten 5chan Pass'iniz var mı? <1>Giriş yapın</1>.",
   "local_data": "Yerel veriler",
   "post_as_board_staff_confirm": "Bu panonun sahibi, yöneticisi veya moderatörüsünüz ve panolar kendi yetkililerini asla anonimleştirmez. Bitsocial tanımlayıcınız ve giriş yaptıysanız 5chan Pass cüzdanınız bu gönderiyle birlikte yayımlanacak. Yine de gönderilsin mi?",
+  "user_banned_for_this_post": "Kullanıcı bu gönderi için yasaklandı",
   "add_to_multiboard": "Çoklu panoya ekle"
 }

@@ -480,7 +480,6 @@
   "directory_vote_needs_test_pass": "ไม่ได้ส่งโหวตของคุณ: ที่อยู่สำหรับโหวตของอุปกรณ์นี้ <address>{{address}}</address> ไม่มี 5chan Pass ขณะนี้การโหวตยังอยู่บน testnet คุณจึงรับ Pass ทดสอบฟรีสำหรับที่อยู่นี้ได้จาก <faucetLink>faucet</faucetLink>",
   "directory_vote_board_not_found": "ไม่พบบอร์ดที่ {{address}} ป้อนที่อยู่ .bso หรือคีย์สาธารณะของบอร์ด",
   "directory_vote_failed": "ส่งโหวตของคุณไม่สำเร็จ: {{error}}",
-  "user_banned_from_board": "ผู้ใช้ถูกแบนจาก {{board}}",
   "thread_update_updating": "กำลังอัปเดต...",
   "thread_update_no_new_posts": "ไม่มีโพสต์ใหม่",
   "thread_update_new_post": "1 โพสต์ใหม่",
@@ -613,5 +612,6 @@
   "pass_login_prompt": "มี 5chan Pass อยู่แล้วใช่ไหม? <1>เข้าสู่ระบบ</1>",
   "local_data": "ข้อมูลในเครื่อง",
   "post_as_board_staff_confirm": "คุณเป็นเจ้าของ ผู้ดูแลระบบ หรือผู้ดูแลของบอร์ดนี้ และบอร์ดจะไม่ทำให้ทีมงานของบอร์ดเป็นนิรนามเลย ตัวระบุ Bitsocial ของคุณ รวมถึงกระเป๋าเงิน 5chan Pass ของคุณหากคุณเข้าสู่ระบบไว้ จะถูกเผยแพร่พร้อมกับโพสต์นี้ โพสต์ต่อไปหรือไม่?",
+  "user_banned_for_this_post": "ผู้ใช้ถูกแบนเนื่องจากโพสต์นี้",
   "add_to_multiboard": "เพิ่มในมัลติบอร์ด"
 }

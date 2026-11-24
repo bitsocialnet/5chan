@@ -480,7 +480,6 @@
   "directory_vote_needs_test_pass": "Ваш голос не надіслано: на адресі для голосування цього пристрою <address>{{address}}</address> немає 5chan Pass. Поки що голосування працює в testnet, тож ви можете безкоштовно отримати тестовий Pass для цієї адреси через <faucetLink>кран</faucetLink>.",
   "directory_vote_board_not_found": "За адресою {{address}} дошку не знайдено. Введіть адресу .bso або публічний ключ дошки.",
   "directory_vote_failed": "Не вдалося надіслати ваш голос: {{error}}",
-  "user_banned_from_board": "Користувача було заблоковано на {{board}}",
   "thread_update_updating": "Оновлення...",
   "thread_update_no_new_posts": "Немає нових дописів",
   "thread_update_new_post": "1 новий допис",
@@ -613,5 +612,6 @@
   "pass_login_prompt": "Уже маєте 5chan Pass? <1>Увійти</1>.",
   "local_data": "Локальні дані",
   "post_as_board_staff_confirm": "Ви власник, адміністратор або модератор цієї дошки, а дошки ніколи не анонімізують свою команду. Ваш ідентифікатор Bitsocial, а також ваш гаманець 5chan Pass, якщо ви увійшли, буде опубліковано разом із цим дописом. Усе одно опублікувати?",
+  "user_banned_for_this_post": "Користувач був заблокований за цей пост",
   "add_to_multiboard": "Додати до мультиборду"
 }

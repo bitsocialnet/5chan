@@ -480,7 +480,6 @@
   "directory_vote_needs_test_pass": "你的投票未发送：此设备的投票地址 <address>{{address}}</address> 未持有 5chan Pass。投票目前在 testnet 上进行，你可以从<faucetLink>水龙头</faucetLink>为此地址免费领取一个测试 Pass。",
   "directory_vote_board_not_found": "在 {{address}} 未找到板块。请输入 .bso 地址或板块的公钥。",
   "directory_vote_failed": "无法发送你的投票：{{error}}",
-  "user_banned_from_board": "用户已被{{board}}封禁",
   "thread_update_updating": "正在更新...",
   "thread_update_no_new_posts": "没有新帖子",
   "thread_update_new_post": "1 篇新帖子",
@@ -613,5 +612,6 @@
   "pass_login_prompt": "已有 5chan Pass？<1>登录</1>。",
   "local_data": "本地数据",
   "post_as_board_staff_confirm": "你是此板块的所有者、管理员或版主，而板块从不对其管理人员进行匿名化。你的 Bitsocial 标识符（如果你已登录，还包括你的 5chan Pass 钱包）将随此帖子一同公开。仍要发帖吗？",
+  "user_banned_for_this_post": "用户因此帖被封禁",
   "add_to_multiboard": "添加到多板视图"
 }

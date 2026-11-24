@@ -480,7 +480,6 @@
   "directory_vote_needs_test_pass": "رأی شما ارسال نشد: آدرس رأی‌دهی این دستگاه <address>{{address}}</address> هیچ 5chan Pass ندارد. رأی‌گیری فعلاً روی testnet است، بنابراین می‌توانید یک Pass آزمایشی رایگان برای این آدرس از <faucetLink>فاست</faucetLink> دریافت کنید.",
   "directory_vote_board_not_found": "هیچ تابلویی در {{address}} پیدا نشد. یک آدرس .bso یا کلید عمومی یک تابلو را وارد کنید.",
   "directory_vote_failed": "ارسال رأی شما ناموفق بود: {{error}}",
-  "user_banned_from_board": "کاربر از {{board}} مسدود شد",
   "thread_update_updating": "در حال به‌روزرسانی...",
   "thread_update_no_new_posts": "پست جدیدی وجود ندارد",
   "thread_update_new_post": "1 پست جدید",
@@ -613,5 +612,6 @@
   "pass_login_prompt": "از قبل 5chan Pass دارید؟ <1>وارد شوید</1>.",
   "local_data": "داده‌های محلی",
   "post_as_board_staff_confirm": "شما مالک، مدیرکل یا مدیر این تابلو هستید و تابلوها هرگز کادر مدیریت خود را ناشناس نمی‌کنند. شناسهٔ Bitsocial شما، و اگر وارد شده باشید کیف پول 5chan Pass شما، همراه با این پست منتشر می‌شوند. با این حال پست ارسال شود؟",
+  "user_banned_for_this_post": "این کاربر برای این پست مسدود شد",
   "add_to_multiboard": "افزودن به تابلوی چندگانه"
 }

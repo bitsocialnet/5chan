@@ -480,7 +480,6 @@
   "directory_vote_needs_test_pass": "لم يُرسَل تصويتك: عنوان التصويت الخاص بهذا الجهاز <address>{{address}}</address> لا يملك 5chan Pass. التصويت يعمل على testnet حاليًا، لذا يمكنك الحصول على Pass تجريبي مجاني لهذا العنوان من <faucetLink>الصنبور</faucetLink>.",
   "directory_vote_board_not_found": "لم يُعثر على أي لوحة في {{address}}. أدخل عنوان .bso أو المفتاح العام للوحة.",
   "directory_vote_failed": "تعذّر إرسال تصويتك: {{error}}",
-  "user_banned_from_board": "تم حظر المستخدم من {{board}}",
   "thread_update_updating": "جارٍ التحديث...",
   "thread_update_no_new_posts": "لا توجد منشورات جديدة",
   "thread_update_new_post": "1 منشور جديد",
@@ -613,5 +612,6 @@
   "pass_login_prompt": "لديك 5chan Pass بالفعل؟ <1>سجّل الدخول</1>.",
   "local_data": "البيانات المحلية",
   "post_as_board_staff_confirm": "أنت مالك أو مسؤول أو مشرف في هذه اللوحة، واللوحات لا تُخفي أبدًا هوية طاقم إدارتها. سيُنشر معرف Bitsocial الخاص بك، ومحفظة 5chan Pass الخاصة بك إذا كنت قد سجّلت الدخول، مع هذا المنشور. هل تريد النشر على أي حال؟",
+  "user_banned_for_this_post": "تم حظر المستخدم لهذا المنشور",
   "add_to_multiboard": "أضف إلى لوحة متعددة"
 }

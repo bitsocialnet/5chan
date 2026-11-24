@@ -480,7 +480,6 @@
   "directory_vote_needs_test_pass": "Vota juaj nuk u dërgua: adresa e votimit e kësaj pajisjeje <address>{{address}}</address> nuk ka 5chan Pass. Votimi për momentin është në testnet, ndaj mund të merrni falas një Pass testimi për këtë adresë nga <faucetLink>faucet</faucetLink>.",
   "directory_vote_board_not_found": "Nuk u gjet asnjë bord në {{address}}. Shkruaj një adresë .bso ose çelësin publik të një bordi.",
   "directory_vote_failed": "Vota jote nuk mund të dërgohej: {{error}}",
-  "user_banned_from_board": "Përdoruesi u ndalua nga {{board}}",
   "thread_update_updating": "Duke përditësuar...",
   "thread_update_no_new_posts": "Asnjë postim i ri",
   "thread_update_new_post": "1 postim i ri",
@@ -613,5 +612,6 @@
   "pass_login_prompt": "Keni tashmë 5chan Pass? <1>Hyni</1>.",
   "local_data": "Të dhëna lokale",
   "post_as_board_staff_confirm": "Jeni pronar, administrator ose moderator i këtij bordi, dhe bordet nuk e anonimizojnë kurrë stafin e tyre. Identifikuesi juaj Bitsocial dhe, nëse keni hyrë, wallet-i juaj i 5chan Pass do të publikohen bashkë me këtë postim. Të postohet gjithsesi?",
+  "user_banned_for_this_post": "Përdoruesi u ndalua për këtë postim",
   "add_to_multiboard": "Shto në multiboard"
 }

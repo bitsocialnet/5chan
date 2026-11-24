@@ -480,7 +480,6 @@
   "directory_vote_needs_test_pass": "Din röst skickades inte: den här enhetens röstadress <address>{{address}}</address> har inget 5chan Pass. Röstningen körs på testnet tills vidare, så du kan hämta ett gratis test-Pass för den här adressen från <faucetLink>faucet</faucetLink>.",
   "directory_vote_board_not_found": "Inget board hittades på {{address}}. Ange en .bso-adress eller ett boards publika nyckel.",
   "directory_vote_failed": "Din röst kunde inte skickas: {{error}}",
-  "user_banned_from_board": "Användaren blev bannad från {{board}}",
   "thread_update_updating": "Uppdaterar...",
   "thread_update_no_new_posts": "Inga nya inlägg",
   "thread_update_new_post": "1 nytt inlägg",
@@ -613,5 +612,6 @@
   "pass_login_prompt": "Har du redan ett 5chan Pass? <1>Logga in</1>.",
   "local_data": "Lokala data",
   "post_as_board_staff_confirm": "Du är ägare, administratör eller moderator för den här tavlan, och tavlor anonymiserar aldrig sin egen personal. Din Bitsocial-identifierare, och din 5chan Pass-plånbok om du har loggat in, publiceras tillsammans med det här inlägget. Posta ändå?",
+  "user_banned_for_this_post": "Användaren blev blockerad för detta inlägg",
   "add_to_multiboard": "Lägg till i multiboard"
 }

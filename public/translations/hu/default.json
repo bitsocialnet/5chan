@@ -480,7 +480,6 @@
   "directory_vote_needs_test_pass": "A szavazatodat nem küldtük el: az eszköz <address>{{address}}</address> szavazási címén nincs 5chan Pass. A szavazás egyelőre testneten zajlik, így erre a címre ingyenes teszt Passt kérhetsz a <faucetLink>faucetből</faucetLink>.",
   "directory_vote_board_not_found": "Nem található tábla a(z) {{address}} címen. Adj meg egy .bso címet vagy egy tábla nyilvános kulcsát.",
   "directory_vote_failed": "A szavazatodat nem sikerült elküldeni: {{error}}",
-  "user_banned_from_board": "A felhasználót kitiltották innen: {{board}}",
   "thread_update_updating": "Frissítés...",
   "thread_update_no_new_posts": "Nincs új bejegyzés",
   "thread_update_new_post": "1 új bejegyzés",
@@ -613,5 +612,6 @@
   "pass_login_prompt": "Már van 5chan Passod? <1>Jelentkezz be</1>.",
   "local_data": "Helyi adatok",
   "post_as_board_staff_confirm": "Ennek a táblának a tulajdonosa, rendszergazdája vagy moderátora vagy, a táblák pedig soha nem anonimizálják a saját személyzetüket. A Bitsocial-azonosítód és, ha bejelentkeztél, a 5chan Pass-pénztárcád ezzel a poszttal együtt nyilvánosságra kerül. Mégis elküldöd?",
+  "user_banned_for_this_post": "A felhasználót letiltották ennek a posztnak a kapcsán",
   "add_to_multiboard": "Hozzáadás többtáblás nézethez"
 }

@@ -480,7 +480,6 @@
   "directory_vote_needs_test_pass": "तुमचे मत पाठवले गेले नाही: या डिव्हाइसच्या मतदान पत्त्यावर <address>{{address}}</address> 5chan Pass नाही. सध्या मतदान testnet वर चालू आहे, त्यामुळे तुम्ही <faucetLink>फॉसेट</faucetLink> वरून या पत्त्यासाठी मोफत टेस्ट Pass मिळवू शकता.",
   "directory_vote_board_not_found": "{{address}} येथे कोणताही बोर्ड सापडला नाही. .bso पत्ता किंवा बोर्डची सार्वजनिक की प्रविष्ट करा.",
   "directory_vote_failed": "तुमचे मत पाठवता आले नाही: {{error}}",
-  "user_banned_from_board": "वापरकर्त्याला {{board}} वरून प्रतिबंधित केले गेले",
   "thread_update_updating": "अपडेट होत आहे...",
   "thread_update_no_new_posts": "कोणतीही नवीन पोस्ट नाही",
   "thread_update_new_post": "1 नवीन पोस्ट",
@@ -613,5 +612,6 @@
   "pass_login_prompt": "आधीपासून 5chan Pass आहे? <1>लॉग इन करा</1>.",
   "local_data": "स्थानिक डेटा",
   "post_as_board_staff_confirm": "तुम्ही या बोर्डचे मालक, प्रशासक किंवा मॉडरेटर आहात, आणि बोर्ड या भूमिकांमधील लोकांना कधीही अनामिक करत नाहीत. तुमचा Bitsocial आयडेंटिफायर, आणि तुम्ही लॉग इन केले असल्यास तुमचे 5chan Pass वॉलेट, या पोस्टसोबत प्रकाशित होतील. तरीही पोस्ट करायची?",
+  "user_banned_for_this_post": "या पोस्टसाठी वापरकर्ता ब्लॉक केला गेला होता",
   "add_to_multiboard": "मल्टीबोर्डमध्ये अॅड करा"
 }

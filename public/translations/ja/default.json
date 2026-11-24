@@ -480,7 +480,6 @@
   "directory_vote_needs_test_pass": "投票は送信されませんでした。このデバイスの投票用アドレス <address>{{address}}</address> は 5chan Pass を保有していません。現在、投票は testnet で行われているため、<faucetLink>フォーセット</faucetLink>からこのアドレス用の無料テスト Pass を入手できます。",
   "directory_vote_board_not_found": "{{address}} に板が見つかりません。.bso アドレスまたは板の公開鍵を入力してください。",
   "directory_vote_failed": "投票を送信できませんでした: {{error}}",
-  "user_banned_from_board": "ユーザーは{{board}}からBANされました",
   "thread_update_updating": "更新中...",
   "thread_update_no_new_posts": "新しい投稿はありません",
   "thread_update_new_post": "1件の新しい投稿",
@@ -613,5 +612,6 @@
   "pass_login_prompt": "すでに 5chan Pass をお持ちですか？<1>ログイン</1>。",
   "local_data": "ローカルデータ",
   "post_as_board_staff_confirm": "あなたはこのボードの所有者、管理者、またはモデレーターであり、ボードがスタッフを匿名化することはありません。あなたのBitsocial識別子と、ログインしている場合は5chan Pass のウォレットが、この投稿とともに公開されます。それでも投稿しますか？",
+  "user_banned_for_this_post": "この投稿によりユーザーはBANされました",
   "add_to_multiboard": "マルチボードに追加"
 }

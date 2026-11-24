@@ -480,7 +480,6 @@
   "directory_vote_needs_test_pass": "Suara Anda tidak terkirim: alamat pemungutan suara perangkat ini <address>{{address}}</address> tidak memiliki 5chan Pass. Pemungutan suara saat ini masih di testnet, jadi Anda bisa mendapatkan Pass uji coba gratis untuk alamat ini dari <faucetLink>faucet</faucetLink>.",
   "directory_vote_board_not_found": "Tidak ada papan di {{address}}. Masukkan alamat .bso atau kunci publik sebuah papan.",
   "directory_vote_failed": "Suara Anda tidak dapat dikirim: {{error}}",
-  "user_banned_from_board": "Pengguna diblokir dari {{board}}",
   "thread_update_updating": "Memperbarui...",
   "thread_update_no_new_posts": "Tidak ada pos baru",
   "thread_update_new_post": "1 pos baru",
@@ -613,5 +612,6 @@
   "pass_login_prompt": "Sudah punya 5chan Pass? <1>Masuk</1>.",
   "local_data": "Data lokal",
   "post_as_board_staff_confirm": "Anda adalah pemilik, administrator, atau moderator papan ini, dan papan tidak pernah menganonimkan stafnya. Pengenal Bitsocial Anda, beserta dompet 5chan Pass Anda jika Anda sudah masuk, akan dipublikasikan bersama postingan ini. Tetap posting?",
+  "user_banned_for_this_post": "Pengguna diblokir untuk pos ini",
   "add_to_multiboard": "Tambahkan ke papan ganda"
 }

@@ -480,7 +480,6 @@
   "directory_vote_needs_test_pass": "Din stemme blev ikke sendt: denne enheds stemmeadresse <address>{{address}}</address> har ikke et 5chan Pass. Afstemningen kører på testnet indtil videre, så du kan få et gratis test-Pass til denne adresse fra <faucetLink>faucet</faucetLink>.",
   "directory_vote_board_not_found": "Intet board fundet på {{address}}. Indtast en .bso-adresse eller et boards offentlige nøgle.",
   "directory_vote_failed": "Din stemme kunne ikke sendes: {{error}}",
-  "user_banned_from_board": "Brugeren blev udelukket fra {{board}}",
   "thread_update_updating": "Opdaterer...",
   "thread_update_no_new_posts": "Ingen nye indlæg",
   "thread_update_new_post": "1 nyt indlæg",
@@ -613,5 +612,6 @@
   "pass_login_prompt": "Har du allerede et 5chan Pass? <1>Log ind</1>.",
   "local_data": "Lokale data",
   "post_as_board_staff_confirm": "Du er ejer, administrator eller moderator for dette board, og boards anonymiserer aldrig deres team. Din Bitsocial-identifikator og, hvis du er logget ind, din 5chan Pass-wallet bliver offentliggjort sammen med dette opslag. Vil du poste alligevel?",
+  "user_banned_for_this_post": "Brugeren blev blokeret for dette indlæg",
   "add_to_multiboard": "Føj til multiboard"
 }

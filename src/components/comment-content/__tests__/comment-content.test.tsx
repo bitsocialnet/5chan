@@ -15,6 +15,7 @@ void boardStatusI18n.init({ lng: 'en', resources: { en: { translation: englishTr
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
 
 type TestComment = {
+  authorBanExpiresAt?: number;
   author?: {
     address?: string;
     community?: {
@@ -112,9 +113,6 @@ vi.mock('react-i18next', async () => {
         }
         if (key === 'ban_expires_at') {
           return `ban:${options?.address}:${options?.timestamp}`;
-        }
-        if (key === 'user_banned_from_board') {
-          return `banned-from:${options?.board}`;
         }
         return key;
       },
@@ -578,21 +576,39 @@ describe('CommentContent', () => {
     expect(queryMarkdownText()[0]).toHaveLength(1105);
   });
 
-  it('shows the ban indicator from the canonical author community data', async () => {
+  it('labels the post the author was banned for', async () => {
     await renderContent({
       author: {
         community: {
           banExpiresAt: 1700000000,
         },
       },
+      authorBanExpiresAt: 1700000000,
       cid: 'post-1',
       communityAddress: 'music-posting.eth',
       content: 'body',
       postCid: 'post-1',
     });
 
-    expect(container.textContent).toContain('(banned-from:short:music-posting.eth)');
+    expect(container.textContent).toContain('(user_banned_for_this_post)');
     expect(container.querySelector('[data-testid="tooltip"]')?.getAttribute('title')).toContain('ban:short:music-posting.eth:2024-01-01 12:00:00');
+  });
+
+  it("does not label the banned author's other posts", async () => {
+    await renderContent({
+      author: {
+        community: {
+          banExpiresAt: 1700000000,
+        },
+      },
+      cid: 'post-2',
+      communityAddress: 'music-posting.eth',
+      content: 'body',
+      postCid: 'post-2',
+    });
+
+    expect(container.textContent).not.toContain('user_banned_for_this_post');
+    expect(container.querySelector('[data-testid="tooltip"]')).toBeNull();
   });
 
   it('renders moderation and deletion states with the expected messaging', async () => {
@@ -629,11 +645,7 @@ describe('CommentContent', () => {
 
   it('renders pending approval, ban details, and loading or failed states', async () => {
     await renderContent({
-      author: {
-        community: {
-          banExpiresAt: 1_704_067_200,
-        },
-      },
+      authorBanExpiresAt: 1_704_067_200,
       cid: 'post-1',
       content: 'queued body',
       pendingApproval: true,

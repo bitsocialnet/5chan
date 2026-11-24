@@ -480,7 +480,6 @@
   "directory_vote_needs_test_pass": "Twój głos nie został wysłany: adres do głosowania tego urządzenia <address>{{address}}</address> nie posiada 5chan Pass. Głosowanie działa na razie w sieci testnet, więc możesz pobrać darmowy testowy Pass dla tego adresu z <faucetLink>faucetu</faucetLink>.",
   "directory_vote_board_not_found": "Nie znaleziono tablicy pod adresem {{address}}. Wpisz adres .bso lub klucz publiczny tablicy.",
   "directory_vote_failed": "Nie udało się wysłać głosu: {{error}}",
-  "user_banned_from_board": "Użytkownik został zablokowany na {{board}}",
   "thread_update_updating": "Aktualizowanie...",
   "thread_update_no_new_posts": "Brak nowych postów",
   "thread_update_new_post": "1 nowy post",
@@ -613,5 +612,6 @@
   "pass_login_prompt": "Masz już 5chan Pass? <1>Zaloguj się</1>.",
   "local_data": "Dane lokalne",
   "post_as_board_staff_confirm": "Jesteś właścicielem, administratorem lub moderatorem tej tablicy, a tablice nigdy nie anonimizują osób pełniących te role. Twój identyfikator Bitsocial oraz, jeśli jesteś zalogowany, Twój portfel 5chan Pass zostaną opublikowane razem z tym postem. Opublikować mimo to?",
+  "user_banned_for_this_post": "Użytkownik został zablokowany za ten post",
   "add_to_multiboard": "Dodaj do multiboardu"
 }

@@ -480,7 +480,6 @@
   "directory_vote_needs_test_pass": "Váš hlas nebyl odeslán: hlasovací adresa tohoto zařízení <address>{{address}}</address> nevlastní 5chan Pass. Hlasování zatím probíhá na síti testnet, takže si pro tuto adresu můžete zdarma získat testovací Pass z <faucetLink>faucetu</faucetLink>.",
   "directory_vote_board_not_found": "Na adrese {{address}} nebyla nalezena žádná deska. Zadejte adresu .bso nebo veřejný klíč desky.",
   "directory_vote_failed": "Váš hlas se nepodařilo odeslat: {{error}}",
-  "user_banned_from_board": "Uživatel byl zablokován na {{board}}",
   "thread_update_updating": "Aktualizace...",
   "thread_update_no_new_posts": "Žádné nové příspěvky",
   "thread_update_new_post": "1 nový příspěvek",
@@ -613,5 +612,6 @@
   "pass_login_prompt": "Už máte 5chan Pass? <1>Přihlaste se</1>.",
   "local_data": "Místní data",
   "post_as_board_staff_confirm": "Jste vlastníkem, administrátorem nebo moderátorem této desky a desky svůj tým nikdy neanonymizují. Váš identifikátor Bitsocial, a pokud jste přihlášeni, i vaše peněženka 5chan Pass budou zveřejněny s tímto příspěvkem. Přesto odeslat?",
+  "user_banned_for_this_post": "Uživatel byl zablokován za tento příspěvek",
   "add_to_multiboard": "Přidat do multidesky"
 }
