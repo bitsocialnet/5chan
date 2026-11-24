@@ -44,7 +44,9 @@ const MultiboardsSetting = () => {
           ))}
         </ul>
       ) : (
-        <div className={styles.notSubscribed}>No saved multiboards. Make one with Add Custom… in the category menu on /all, or with [Add to Multiboard] on a board.</div>
+        <div className={styles.notSubscribed}>
+          No saved multiboards. Make one with Add Custom… in the category menu on <Link to='/all'>/all/</Link>, or with [Add to Multiboard] on a board.
+        </div>
       )}
       {error && <div className={`red ${styles.notSubscribed}`}>{error}</div>}
     </div>

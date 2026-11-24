@@ -47,6 +47,8 @@ describe('MultiboardsSetting', () => {
   it('says how to make a multiboard when none is saved', () => {
     render();
     expect(container.textContent).toContain('No saved multiboards.');
+    expect(container.querySelector('a')?.textContent).toBe('/all/');
+    expect(container.querySelector('a')?.getAttribute('href')).toBe('/all');
   });
 
   it('links each saved multiboard and deletes one after confirming', () => {
