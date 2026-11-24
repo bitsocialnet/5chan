@@ -612,5 +612,10 @@
   "pass_login_prompt": "¿Ya tienes un 5chan Pass? <1>Inicia sesión</1>.",
   "local_data": "Datos locales",
   "post_as_board_staff_confirm": "Eres propietario, administrador o moderador de este tablero, y los tableros nunca anonimizan a su equipo. Tu identificador de Bitsocial y, si iniciaste sesión, tu billetera de 5chan Pass se publicarán con esta publicación. ¿Publicar de todos modos?",
-  "user_banned_for_this_post": "El usuario fue baneado por esta publicación"
+  "user_banned_for_this_post": "El usuario fue baneado por esta publicación",
+  "add_to_multiboard": "Añadir a multiboard",
+  "multiboard_not_saved": "Este multiboard no está guardado en esta cuenta.",
+  "delete_multiboard_confirm": "¿Eliminar el multiboard «{{name}}»?",
+  "multiboard_delete_failed": "No se pudo eliminar el multiboard: {{error}}",
+  "no_saved_multiboards": "No hay multiboards guardados. Crea uno con Add Custom… en el menú de categorías de <1>/all/</1>, o con [Añadir a multiboard] en un tablón."
 }

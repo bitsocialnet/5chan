@@ -1,3 +1,4 @@
+import { directoryModules } from '../../data/5chan-directory-modules';
 import { normalizeDirectoryDefaultsData, normalizeDirectoryList, sortDirectoryLists, type DirectoryList } from './directory-list-utils';
 
 /**
@@ -10,7 +11,7 @@ import { normalizeDirectoryDefaultsData, normalizeDirectoryList, sortDirectoryLi
  * GitHub fetch path. This module assembles the same merged shape the app consumes so the
  * directory list and rules keep working when GitHub is unreachable.
  */
-const rawModules = import.meta.glob<{ default: unknown }>('../../data/5chan-directories/*.json', { eager: true });
+const rawModules = directoryModules;
 
 // Matched against the file's basename (not the full path) so the leading "5chan-directories/" folder
 // segment cannot be greedily captured as part of the directory code.

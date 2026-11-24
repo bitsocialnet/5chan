@@ -54,6 +54,7 @@ export { default as PendingPostView } from './views/pending-post';
 export { default as PostView } from './views/post';
 
 const BoardsBarEditModal = lazyImport(() => import('./components/boards-bar-edit-modal'));
+const MultiboardModal = lazyImport(() => import('./components/multiboard-modal'));
 const CreateBoardModal = lazyImport(() => import('./components/create-board-modal'));
 
 const getPostFormRouteKeyPath = (pathname: string) => pathname.replace(/\/settings$/, '').replace(/\/$/, '');
@@ -168,6 +169,11 @@ export const BoardLayout = () => {
       <ImportErrorBoundary floating>
         <Suspense fallback={null}>
           <BoardsBarEditModal />
+        </Suspense>
+      </ImportErrorBoundary>
+      <ImportErrorBoundary floating>
+        <Suspense fallback={null}>
+          <MultiboardModal />
         </Suspense>
       </ImportErrorBoundary>
       <TripcodeVerifierImportError />

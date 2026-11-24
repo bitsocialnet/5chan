@@ -1,0 +1,79 @@
+.content {
+  padding: 0 3px;
+}
+
+.hint {
+  margin: 0 0 6px;
+}
+
+.nameRow {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0 0 6px;
+}
+
+.nameRow label {
+  font-weight: bold;
+}
+
+.nameInput {
+  flex: 1;
+  min-width: 0;
+}
+
+.list {
+  list-style: none;
+  margin: 0 0 6px;
+  padding: 0;
+}
+
+.list li {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.list input,
+.list label {
+  cursor: pointer;
+}
+
+.error {
+  margin: 0 0 6px;
+}
+
+.group {
+  margin: 0 0 6px;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.group legend {
+  padding: 0;
+  margin-bottom: 2px;
+  font-weight: bold;
+}
+
+.nsfw {
+  font-weight: normal;
+}
+
+.board {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-right: 10px;
+  white-space: nowrap;
+}
+
+.board input,
+.board label {
+  cursor: pointer;
+}
+
+.footer {
+  text-align: center;
+  padding-bottom: 5px;
+}

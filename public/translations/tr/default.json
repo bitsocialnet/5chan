@@ -612,5 +612,10 @@
   "pass_login_prompt": "Zaten 5chan Pass'iniz var mı? <1>Giriş yapın</1>.",
   "local_data": "Yerel veriler",
   "post_as_board_staff_confirm": "Bu panonun sahibi, yöneticisi veya moderatörüsünüz ve panolar kendi yetkililerini asla anonimleştirmez. Bitsocial tanımlayıcınız ve giriş yaptıysanız 5chan Pass cüzdanınız bu gönderiyle birlikte yayımlanacak. Yine de gönderilsin mi?",
-  "user_banned_for_this_post": "Kullanıcı bu gönderi için yasaklandı"
+  "user_banned_for_this_post": "Kullanıcı bu gönderi için yasaklandı",
+  "add_to_multiboard": "Çoklu panoya ekle",
+  "multiboard_not_saved": "Bu çoklu pano bu hesapta kayıtlı değil.",
+  "delete_multiboard_confirm": "\"{{name}}\" çoklu panosu silinsin mi?",
+  "multiboard_delete_failed": "Çoklu pano silinemedi: {{error}}",
+  "no_saved_multiboards": "Kayıtlı çoklu pano yok. <1>/all/</1> sayfasındaki kategori menüsünden Add Custom… ile ya da bir panodaki [Çoklu panoya ekle] ile bir tane oluşturun."
 }

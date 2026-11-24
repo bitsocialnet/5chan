@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import BoardHeader from '../board-header';
 import { TRASH_BOARD_ADDRESS, TRASH_BOARD_TITLE } from '../../../lib/special-boards';
 import useSearchSummaryStore from '../../../stores/use-search-summary-store';
+import useMultiboardModalStore from '../../../stores/use-multiboard-modal-store';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
@@ -28,6 +29,7 @@ const testState = vi.hoisted(() => ({
     title: '/mu/ - Music',
   } as { address?: string; shortAddress?: string; title?: string } | undefined,
   subscriptionsCount: 2,
+  multiboards: [] as Array<{ id: string; name: string; boards: string[] }>,
   communities: {
     'music-posting.eth': { address: 'music-posting.eth' },
   } as Record<string, unknown>,
@@ -60,11 +62,12 @@ vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
 }));
 
 vi.mock('@bitsocial/bitsocial-react-hooks/dist/stores/accounts', () => ({
-  default: (selector: (state: { activeAccountId?: string; accounts: Record<string, { subscriptions?: string[] }> }) => unknown) =>
+  default: (selector: (state: { activeAccountId?: string; accounts: Record<string, { subscriptions?: string[]; multiboards?: unknown }> }) => unknown) =>
     selector({
       accounts: {
         active: {
           subscriptions: Array.from({ length: testState.subscriptionsCount }, () => 'sub'),
+          multiboards: testState.multiboards,
         },
       },
       activeAccountId: 'active',
@@ -176,6 +179,7 @@ describe('BoardHeader', () => {
       title: '/mu/ - Music',
     };
     testState.subscriptionsCount = 2;
+    testState.multiboards = [];
     testState.communities = {
       'music-posting.eth': { address: 'music-posting.eth' },
     };
@@ -204,6 +208,58 @@ describe('BoardHeader', () => {
     expect(container.querySelector('img')?.getAttribute('src')).toBe('banner-a.png');
     expect(container.textContent).not.toContain('subscriptions_subtitle');
     expect(container.textContent).toContain('all_subtitle');
+  });
+
+  it('titles a custom board list and reopens the picker on its boards from its board row', async () => {
+    useMultiboardModalStore.setState({ modal: null });
+
+    await renderHeader('/all?c=mu,nope,music-posting.bso');
+
+    expect(container.textContent).toContain('/all/ - /mu/+/nope/+music-posting.bso');
+    const links = Array.from(container.querySelectorAll('[class*="boardCategoryList"] a')).map((link) => [link.textContent, link.getAttribute('href')]);
+    expect(links).toEqual([
+      ['mu', '/mu'],
+      ['music-posting.bso', '/music-posting.bso'],
+    ]);
+    const editButton = Array.from(container.querySelectorAll('button')).find((button) => button.textContent === 'Edit');
+
+    await act(async () => {
+      editButton?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    expect(useMultiboardModalStore.getState().modal).toEqual({ kind: 'editor', boards: ['mu', 'nope', 'music-posting.bso'] });
+    useMultiboardModalStore.setState({ modal: null });
+  });
+
+  it('titles a saved multiboard from the account and edits it', async () => {
+    testState.multiboards = [{ id: 'tech', name: 'Tech', boards: ['mu'] }];
+    useMultiboardModalStore.setState({ modal: null });
+
+    try {
+      await renderHeader('/all?c=@tech');
+      expect(container.textContent).toContain('/all/ - Tech');
+      const editButton = Array.from(container.querySelectorAll('button')).find((button) => button.textContent === 'Edit');
+      await act(async () => {
+        editButton?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      });
+      expect(useMultiboardModalStore.getState().modal).toEqual({ kind: 'editor', multiboardId: 'tech' });
+    } finally {
+      useMultiboardModalStore.setState({ modal: null });
+    }
+  });
+
+  it('says when the account does not have the saved multiboard a link names', async () => {
+    await renderHeader('/all?c=@gone');
+
+    expect(container.textContent).toContain('/all/ - @gone');
+    expect(container.textContent).toContain('multiboard_not_saved');
+    expect(Array.from(container.querySelectorAll('button')).some((button) => button.textContent === 'Edit')).toBe(false);
+  });
+
+  it('does not offer the picker on a named category', async () => {
+    await renderHeader('/all?c=creative');
+
+    expect(Array.from(container.querySelectorAll('button')).some((button) => button.textContent === 'Edit')).toBe(false);
   });
 
   it('titles the archive search with its query and provider, without board status chrome', async () => {

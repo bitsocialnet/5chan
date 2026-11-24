@@ -612,5 +612,10 @@
   "pass_login_prompt": "Đã có 5chan Pass? <1>Đăng nhập</1>.",
   "local_data": "Dữ liệu cục bộ",
   "post_as_board_staff_confirm": "Bạn là chủ sở hữu, quản trị viên hoặc người điều hành của bảng này, và các bảng không bao giờ ẩn danh đội ngũ quản lý của mình. Mã định danh Bitsocial của bạn, và cả ví 5chan Pass của bạn nếu bạn đã đăng nhập, sẽ được công khai cùng bài này. Vẫn đăng?",
-  "user_banned_for_this_post": "Người dùng đã bị cấm vì bài đăng này"
+  "user_banned_for_this_post": "Người dùng đã bị cấm vì bài đăng này",
+  "add_to_multiboard": "Thêm vào đa bảng",
+  "multiboard_not_saved": "Đa bảng này không được lưu trong tài khoản này.",
+  "delete_multiboard_confirm": "Xóa đa bảng \"{{name}}\"?",
+  "multiboard_delete_failed": "Không thể xóa đa bảng: {{error}}",
+  "no_saved_multiboards": "Chưa có đa bảng nào được lưu. Tạo một đa bảng bằng Add Custom… trong menu danh mục ở <1>/all/</1>, hoặc bằng [Thêm vào đa bảng] trên một bảng."
 }

@@ -14,6 +14,7 @@ const testState = vi.hoisted(() => ({
   showDisclaimerModal: vi.fn(),
   openDirectoryModal: vi.fn(),
   framesAvailable: true,
+  multiboards: [] as Array<{ id: string; name: string; boards: string[] }>,
 }));
 
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
@@ -22,6 +23,7 @@ vi.mock('../../../../hooks/use-account-community-addresses', () => ({
   useAccountCommunityAddresses: () => testState.accountCommunityAddresses,
 }));
 vi.mock('../../../../hooks/use-directories', () => ({ useDirectoriesState: () => ({ error: null }) }));
+vi.mock('../../../../hooks/use-saved-multiboards', () => ({ useSavedMultiboards: () => testState.multiboards }));
 vi.mock('../../../../stores/use-disclaimer-modal-store', () => ({
   DISCLAIMER_ACCEPTED_KEY: '5chan-disclaimer-accepted',
   default: (selector: (state: { showDisclaimerModal: typeof testState.showDisclaimerModal }) => unknown) => selector(testState),
@@ -73,6 +75,7 @@ describe('homepage board catalog links', () => {
     useFramesStore.setState({ useFrames: false });
     testState.framesAvailable = true;
     testState.accountCommunityAddresses = ['moderated.bso'];
+    testState.multiboards = [];
     container = document.createElement('div');
     document.body.appendChild(container);
     root = createRoot(container);
@@ -144,5 +147,14 @@ describe('homepage board catalog links', () => {
     renderBoards();
 
     expect(container.textContent).not.toContain('boards_you_moderate_nav');
+  });
+  it('lists the saved multiboards under the multiboards heading', () => {
+    testState.multiboards = [{ id: 'tech', name: 'Tech', boards: ['g'] }];
+    renderBoards();
+
+    expect(getLink('Tech').getAttribute('href')).toBe('/all?c=@tech');
+
+    act(() => useBoardsFilterStore.setState({ useCatalogLinks: true }));
+    expect(getLink('Tech').getAttribute('href')).toBe('/all/catalog?c=@tech');
   });
 });

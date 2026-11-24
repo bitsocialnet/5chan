@@ -612,5 +612,10 @@
   "pass_login_prompt": "Sudah punya 5chan Pass? <1>Masuk</1>.",
   "local_data": "Data lokal",
   "post_as_board_staff_confirm": "Anda adalah pemilik, administrator, atau moderator papan ini, dan papan tidak pernah menganonimkan stafnya. Pengenal Bitsocial Anda, beserta dompet 5chan Pass Anda jika Anda sudah masuk, akan dipublikasikan bersama postingan ini. Tetap posting?",
-  "user_banned_for_this_post": "Pengguna diblokir untuk pos ini"
+  "user_banned_for_this_post": "Pengguna diblokir untuk pos ini",
+  "add_to_multiboard": "Tambahkan ke papan ganda",
+  "multiboard_not_saved": "Papan ganda ini tidak disimpan di akun ini.",
+  "delete_multiboard_confirm": "Hapus papan ganda \"{{name}}\"?",
+  "multiboard_delete_failed": "Tidak dapat menghapus papan ganda: {{error}}",
+  "no_saved_multiboards": "Tidak ada papan ganda tersimpan. Buat satu dengan Add Custom… di menu kategori di <1>/all/</1>, atau dengan [Tambahkan ke papan ganda] di sebuah papan."
 }

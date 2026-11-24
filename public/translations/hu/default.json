@@ -612,5 +612,10 @@
   "pass_login_prompt": "Már van 5chan Passod? <1>Jelentkezz be</1>.",
   "local_data": "Helyi adatok",
   "post_as_board_staff_confirm": "Ennek a táblának a tulajdonosa, rendszergazdája vagy moderátora vagy, a táblák pedig soha nem anonimizálják a saját személyzetüket. A Bitsocial-azonosítód és, ha bejelentkeztél, a 5chan Pass-pénztárcád ezzel a poszttal együtt nyilvánosságra kerül. Mégis elküldöd?",
-  "user_banned_for_this_post": "A felhasználót letiltották ennek a posztnak a kapcsán"
+  "user_banned_for_this_post": "A felhasználót letiltották ennek a posztnak a kapcsán",
+  "add_to_multiboard": "Hozzáadás többtáblás nézethez",
+  "multiboard_not_saved": "Ez a többtáblás nézet nincs mentve ebben a fiókban.",
+  "delete_multiboard_confirm": "Törlöd a(z) „{{name}}” többtáblás nézetet?",
+  "multiboard_delete_failed": "A többtáblás nézetet nem sikerült törölni: {{error}}",
+  "no_saved_multiboards": "Nincs mentett többtáblás nézet. Hozz létre egyet az Add Custom… lehetőséggel a(z) <1>/all/</1> kategóriamenüjében, vagy a [Hozzáadás többtáblás nézethez] gombbal egy táblán."
 }

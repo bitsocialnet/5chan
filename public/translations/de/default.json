@@ -612,5 +612,10 @@
   "pass_login_prompt": "Du hast bereits einen 5chan Pass? <1>Anmelden</1>.",
   "local_data": "Lokale Daten",
   "post_as_board_staff_confirm": "Du bist Eigentümer, Administrator oder Moderator dieses Boards, und Boards anonymisieren ihr Team nie. Deine Bitsocial-Kennung und, falls du angemeldet bist, deine 5chan Pass-Wallet werden mit diesem Post veröffentlicht. Trotzdem posten?",
-  "user_banned_for_this_post": "Benutzer wurde für diesen Beitrag gesperrt"
+  "user_banned_for_this_post": "Benutzer wurde für diesen Beitrag gesperrt",
+  "add_to_multiboard": "Zu Multiboard hinzufügen",
+  "multiboard_not_saved": "Dieses Multiboard ist in diesem Konto nicht gespeichert.",
+  "delete_multiboard_confirm": "Das Multiboard „{{name}}“ löschen?",
+  "multiboard_delete_failed": "Das Multiboard konnte nicht gelöscht werden: {{error}}",
+  "no_saved_multiboards": "Keine gespeicherten Multiboards. Erstelle eines mit Add Custom… im Kategoriemenü auf <1>/all/</1> oder mit [Zu Multiboard hinzufügen] auf einem Board."
 }

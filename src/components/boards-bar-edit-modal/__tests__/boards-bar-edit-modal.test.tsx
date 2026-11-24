@@ -61,14 +61,14 @@ describe('BoardsBarEditModal', () => {
   it('keeps the modal open when typing spaces in the directory input', async () => {
     await renderModal();
 
-    const input = container.querySelector<HTMLInputElement>('input[aria-label="Directory codes"]');
+    const input = document.querySelector<HTMLInputElement>('input[aria-label="Directory codes"]');
     expect(input).toBeTruthy();
 
     await act(async () => {
       input?.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
     });
 
-    expect(container.querySelector('dialog')).toBeTruthy();
+    expect(document.querySelector('dialog')).toBeTruthy();
     expect(useBoardsBarEditModalStore.getState().showModal).toBe(true);
   });
 
@@ -76,12 +76,12 @@ describe('BoardsBarEditModal', () => {
     const saveInput = async (value: string) => {
       useBoardsBarEditModalStore.setState({ showModal: true });
       await renderModal();
-      const input = container.querySelector<HTMLInputElement>('input[aria-label="Directory codes"]');
+      const input = document.querySelector<HTMLInputElement>('input[aria-label="Directory codes"]');
       await act(async () => {
         Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set?.call(input, value);
         input?.dispatchEvent(new Event('input', { bubbles: true }));
       });
-      const saveButton = Array.from(container.querySelectorAll('button')).find((button) => button.textContent === 'Save');
+      const saveButton = Array.from(document.querySelectorAll('button')).find((button) => button.textContent === 'Save');
       await act(async () => {
         saveButton?.click();
       });
@@ -105,12 +105,12 @@ describe('BoardsBarEditModal', () => {
     const saveInput = async (value: string) => {
       useBoardsBarEditModalStore.setState({ showModal: true });
       await renderModal();
-      const input = container.querySelector<HTMLInputElement>('input[aria-label="Directory codes"]');
+      const input = document.querySelector<HTMLInputElement>('input[aria-label="Directory codes"]');
       await act(async () => {
         Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set?.call(input, value);
         input?.dispatchEvent(new Event('input', { bubbles: true }));
       });
-      const saveButton = Array.from(container.querySelectorAll('button')).find((button) => button.textContent === 'Save');
+      const saveButton = Array.from(document.querySelectorAll('button')).find((button) => button.textContent === 'Save');
       await act(async () => {
         saveButton?.click();
       });
@@ -124,7 +124,7 @@ describe('BoardsBarEditModal', () => {
   it('still closes when the backdrop itself handles keyboard activation', async () => {
     await renderModal();
 
-    const backdrop = container.querySelector<HTMLElement>('button[aria-label="Close board list modal"]');
+    const backdrop = document.querySelector<HTMLElement>('button[aria-label="Close board list modal"]');
     expect(backdrop).toBeTruthy();
 
     await act(async () => {

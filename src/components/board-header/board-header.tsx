@@ -1,4 +1,5 @@
 import { memo, useState } from 'react';
+import capitalize from 'lodash/capitalize';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAccountComment, useCommunity } from '@bitsocial/bitsocial-react-hooks';
@@ -8,15 +9,17 @@ import { useCommunityIdentifier } from '../../hooks/use-community-identifiers';
 import { useStableCommunity } from '../../hooks/use-stable-community';
 import { isAllView, isSubscriptionsView, isModView } from '../../lib/utils/view-utils';
 import { getDirectoryCode, isArchiveRoute, isDirectoryListRoute, isDirectoryRoute, isSearchDirectoryRoute, isSearchRoute } from '../../lib/utils/route-utils';
-import { type BoardCategory, filterByBoardCategory, getBoardCategoryFromSearch } from '../../lib/utils/board-category-utils';
+import { type BoardCategory, filterByBoardCategory, getBoardCategoryBoards, getBoardListEntryLabel } from '../../lib/utils/board-category-utils';
 import { getSpecialBoardByAddress } from '../../lib/special-boards';
 import { takeStaticShellBanner } from '../../lib/static-shell-banner';
 import { getSearchPostStatus, MAX_SEARCH_QUERY_LENGTH, type SearchPostStatus } from '../../lib/search-navigation';
 import { getSearchProvider } from '../../lib/search-providers';
 import useSearchProviderStore from '../../stores/use-search-provider-store';
 import useSearchSummaryStore from '../../stores/use-search-summary-store';
+import useMultiboardModalStore from '../../stores/use-multiboard-modal-store';
 import styles from './board-header.module.css';
 import { useDirectories } from '../../hooks/use-directories';
+import { useBoardCategoryFromSearch } from '../../hooks/use-saved-multiboards';
 import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
 import { normalizeAccountCommentIndex } from '../../lib/utils/account-comment-index-utils';
 import { getCommentCommunityAddress } from '../../lib/utils/comment-utils';
@@ -74,25 +77,47 @@ const SearchProviderSubtitle = ({ query, postStatus }: { query: string; postStat
 };
 
 // A category multiboard's subtitle: its boards as the bracketed link row a boards bar uses, so each is one click away.
+// A board listed by code links by code, so it follows the directory's winner; one listed by address stays on that
+// board. A board list or saved multiboard adds [Edit], which opens the picker on its boards.
 const BoardCategorySubtitle = ({ category }: { category: BoardCategory }) => {
+  const { t } = useTranslation();
   const directories = useDirectories();
-  const boards = filterByBoardCategory(directories, category, getDirectoryCode);
+  const openMultiboardEditor = useMultiboardModalStore((state) => state.openMultiboardEditor);
+  if (category.pending) return null;
+  if (category.missing) return <span>{t('multiboard_not_saved')}</span>;
+
+  const codeBoards = filterByBoardCategory(directories, category, getDirectoryCode);
+  const listedAddresses = new Set(codeBoards.map((board) => board.address));
+  const links = [
+    ...codeBoards.map((board) => ({ key: board.address, to: `/${getDirectoryCode(board)}`, label: getDirectoryCode(board), title: board.title })),
+    ...(category.addresses ?? [])
+      .filter((address) => !listedAddresses.has(address))
+      .map((address) => ({ key: address, to: `/${address}`, label: getBoardListEntryLabel(address), title: address })),
+  ];
+  const edit = () => (category.savedId ? openMultiboardEditor({ multiboardId: category.savedId }) : openMultiboardEditor({ boards: getBoardCategoryBoards(category) }));
 
   return (
     <span className={styles.boardCategoryList}>
       [
-      {boards.map((board, index) => {
-        const code = getDirectoryCode(board);
-        return (
-          <span key={board.address}>
-            {index > 0 && ' / '}
-            <Link to={`/${code}`} title={board.title}>
-              {code}
-            </Link>
-          </span>
-        );
-      })}
+      {links.map((link, index) => (
+        <span key={link.key}>
+          {index > 0 && ' / '}
+          <Link to={link.to} title={link.title}>
+            {link.label}
+          </Link>
+        </span>
+      ))}
       ]
+      {(category.custom || category.savedId) && (
+        <>
+          {' '}
+          [
+          <button type='button' onClick={edit}>
+            {capitalize(t('edit'))}
+          </button>
+          ]
+        </>
+      )}
     </span>
   );
 };
@@ -141,7 +166,8 @@ const BoardHeader = memo(() => {
   });
   const subscriptionsSubtitle = t('subscriptions_subtitle', { count: subscriptionsCount });
 
-  const boardCategory = isInAllView ? getBoardCategoryFromSearch(location.search) : undefined;
+  const allViewCategory = useBoardCategoryFromSearch(location.search);
+  const boardCategory = isInAllView ? allViewCategory : undefined;
 
   const title = isInAllView
     ? boardCategory

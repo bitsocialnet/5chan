@@ -27,6 +27,7 @@ vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
 }));
 
 vi.mock('react-i18next', () => ({
+  Trans: ({ i18nKey }: { i18nKey: string }) => i18nKey,
   useTranslation: () => ({
     t: (key: string) => key,
   }),
