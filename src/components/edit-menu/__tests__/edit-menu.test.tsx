@@ -484,7 +484,52 @@ describe('EditMenu', () => {
     expect(hasButton('trash')).toBe(false);
   });
 
-  it('lets moderators clear an existing canonical author ban', async () => {
+  it('pre-fills a running ban from this post and does not republish it unchanged', async () => {
+    testState.privileges = {
+      isAccountCommentAuthor: false,
+      isAccountMod: true,
+      isCommentAuthorMod: false,
+    };
+
+    await renderMenu({
+      ...basePost,
+      authorBanExpiresAt: Math.floor(new Date('2026-03-12T00:00:00Z').getTime() / 1000),
+    });
+    await openMenu();
+
+    const banCheckbox = getCheckbox('banUser');
+    expect(banCheckbox?.checked).toBe(true);
+    expect(container.querySelector<HTMLInputElement>('[data-testid="ban-duration-input"]')?.value).toBe('4');
+
+    await click(getCheckbox('removed'));
+    await clickButton('save');
+
+    expect(testState.publishCommentModerationMock).toHaveBeenCalledOnce();
+    expect(testState.modOptions?.commentModeration?.removed).toBe(true);
+    expect(testState.modOptions?.commentModeration).not.toHaveProperty('author');
+  });
+
+  it('republishes a ban from this post only when the moderator changes its length', async () => {
+    testState.privileges = {
+      isAccountCommentAuthor: false,
+      isAccountMod: true,
+      isCommentAuthorMod: false,
+    };
+
+    await renderMenu({
+      ...basePost,
+      authorBanExpiresAt: Math.floor(new Date('2026-03-12T00:00:00Z').getTime() / 1000),
+    });
+    await openMenu();
+    await dispatchInput(container.querySelector<HTMLInputElement>('[data-testid="ban-duration-input"]') as HTMLInputElement, '7');
+    await clickButton('save');
+
+    expect(testState.modOptions?.commentModeration?.author).toEqual({
+      banExpiresAt: Math.floor(new Date('2026-03-15T00:00:00Z').getTime() / 1000),
+    });
+  });
+
+  it('does not pre-fill or send the author-wide ban when moderating another post by a banned author', async () => {
     testState.privileges = {
       isAccountCommentAuthor: false,
       isAccountMod: true,
@@ -502,15 +547,29 @@ describe('EditMenu', () => {
     });
     await openMenu();
 
-    const banCheckbox = getCheckbox('banUser');
-    expect(banCheckbox?.checked).toBe(true);
-    expect(container.querySelector<HTMLInputElement>('[data-testid="ban-duration-input"]')?.value).toBe('4');
+    expect(getCheckbox('banUser')?.checked).toBe(false);
 
-    await click(banCheckbox);
+    await click(getCheckbox('removed'));
     await clickButton('save');
 
     expect(testState.publishCommentModerationMock).toHaveBeenCalledOnce();
-    expect(testState.modOptions?.commentModeration?.author).toBeUndefined();
+    expect(testState.modOptions?.commentModeration).not.toHaveProperty('author');
+  });
+
+  it('leaves the ban unchecked when the ban from this post already ended', async () => {
+    testState.privileges = {
+      isAccountCommentAuthor: false,
+      isAccountMod: true,
+      isCommentAuthorMod: false,
+    };
+
+    await renderMenu({
+      ...basePost,
+      authorBanExpiresAt: Math.floor(new Date('2026-03-01T00:00:00Z').getTime() / 1000),
+    });
+    await openMenu();
+
+    expect(getCheckbox('banUser')?.checked).toBe(false);
   });
 
   it('lets moderators edit their own post content from the mod menu', async () => {

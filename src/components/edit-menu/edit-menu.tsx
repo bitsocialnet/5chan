@@ -84,7 +84,11 @@ const EditMenu = ({ post }: { post: Comment }) => {
   const communityAddress = getCommentCommunityAddress(resolvedPost);
   const archived = isCommentArchived(resolvedPost);
   const authorDisplayName = resolvedPost?.author?.displayName;
-  const modBanExpiresAt = resolvedPost?.author?.community?.banExpiresAt ?? resolvedPost?.commentModeration?.author?.banExpiresAt;
+  // A moderation carrying author.banExpiresAt labels the comment it is published on, so the ban is pre-filled from
+  // this comment's own ban (the account's pending moderation, then the published authorBanExpiresAt), never from the
+  // author-wide author.community.banExpiresAt, and only while it is still running.
+  const thisPostBanExpiresAt = resolvedPost?.commentModeration?.author?.banExpiresAt ?? resolvedPost?.authorBanExpiresAt;
+  const modBanExpiresAt = typeof thisPostBanExpiresAt === 'number' && thisPostBanExpiresAt > Math.floor(Date.now() / 1000) ? thisPostBanExpiresAt : undefined;
   const purged = resolvedPost?.commentModeration?.purged ?? false;
   const [uiState, dispatchUiState] = useReducer(editMenuUiReducer, initialEditMenuUiState);
   const { isEditMenuOpen, isContentEditorOpen, isTransferOpen } = uiState;
@@ -193,6 +197,10 @@ const EditMenu = ({ post }: { post: Comment }) => {
     onEditChallenge,
   ]);
 
+  const banExpiresAtToPublish = publishCommentEditOptions.commentModeration?.author?.banExpiresAt;
+  // Sent only when the mod set or changed the ban, so removing or locking an already banned post does not republish it
+  const shouldPublishBan = banExpiresAtToPublish !== undefined && banExpiresAtToPublish !== modBanExpiresAt;
+
   const modEditOptions = useMemo<PublishCommentModerationOptions>(
     () => ({
       commentCid: cid,
@@ -205,14 +213,15 @@ const EditMenu = ({ post }: { post: Comment }) => {
         purged: publishCommentEditOptions.commentModeration?.purged,
         reason: publishCommentEditOptions.commentModeration?.reason,
         spoiler: publishCommentEditOptions.commentModeration?.spoiler,
-        author: publishCommentEditOptions.commentModeration?.author,
+        // bitsocial-react-hooks reads an author key, even undefined, as a change to the ban, so it is left out entirely
+        ...(shouldPublishBan && { author: { banExpiresAt: banExpiresAtToPublish } }),
       },
       author: account?.author,
       onChallenge: onModerationChallenge,
       onChallengeVerification: alertChallengeVerificationFailed,
       onError: onFinalPublishError(alertFailedModeration),
     }),
-    [publishCommentEditOptions, cid, communityAddress, account?.author, parentCid, onModerationChallenge],
+    [publishCommentEditOptions, cid, communityAddress, account?.author, parentCid, onModerationChallenge, shouldPublishBan, banExpiresAtToPublish],
   );
 
   const { publishCommentEdit: publishAuthorEdit } = usePublishCommentEdit(authorEditOptions);
