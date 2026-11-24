@@ -8,6 +8,7 @@ import { execFileSync } from 'child_process';
 import { VitePWA } from 'vite-plugin-pwa';
 import { APP_PRELOAD_ATTRIBUTE, dynamicEntryPreloadPlugin } from './scripts/vite-app-preload.mjs';
 import { staticShellPlugin } from './scripts/vite-static-shell.mjs';
+import { DIRECTORY_DATA_CHUNK_NAME, DIRECTORY_DATA_MODULE_PATTERN } from './scripts/load-perf/directory-data.mjs';
 import { statsProviderPrefetchPlugin } from './scripts/vite-stats-provider-prefetch.mjs';
 import { translationPrefetchPlugin } from './scripts/vite-translation-prefetch.mjs';
 import { checkBanners } from './scripts/banners.mjs';
@@ -552,6 +553,8 @@ export default defineConfig({
             { name: 'virtuoso', test: /[\\/]node_modules[\\/](react-virtuoso)[\\/]/ },
             { name: 'mathjax', test: /[\\/]node_modules[\\/](mathjax-full|mj-context-menu)[\\/]/ },
             { name: 'floating-ui', test: /[\\/]node_modules[\\/](@floating-ui)[\\/]/ },
+            // The directory data synced from bitsocialnet/lists, so perf:startup-bytes measures it apart from the code.
+            { name: DIRECTORY_DATA_CHUNK_NAME, test: DIRECTORY_DATA_MODULE_PATTERN },
           ],
         },
       },
