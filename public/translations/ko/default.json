@@ -612,5 +612,6 @@
   "pass_auth_no_pass": "5chan Pass가 없으신가요? 자세히 알아보려면 <1>여기를 클릭하세요</1>.",
   "pass_login_prompt": "이미 5chan Pass가 있으신가요? <1>로그인</1>.",
   "local_data": "로컬 데이터",
-  "post_as_board_staff_confirm": "이 게시판의 소유자, 관리자 또는 모더레이터이시며, 게시판은 운영진을 절대 익명화하지 않습니다. Bitsocial 식별자와, 로그인한 경우 5chan Pass 지갑이 이 게시물과 함께 공개됩니다. 그래도 게시하시겠습니까?"
+  "post_as_board_staff_confirm": "이 게시판의 소유자, 관리자 또는 모더레이터이시며, 게시판은 운영진을 절대 익명화하지 않습니다. Bitsocial 식별자와, 로그인한 경우 5chan Pass 지갑이 이 게시물과 함께 공개됩니다. 그래도 게시하시겠습니까?",
+  "add_to_multiboard": "멀티보드에 추가"
 }

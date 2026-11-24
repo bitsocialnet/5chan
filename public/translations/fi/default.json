@@ -612,5 +612,6 @@
   "pass_auth_no_pass": "Eikö sinulla ole 5chan Passia? <1>Napsauta tästä</1>, niin saat lisätietoja.",
   "pass_login_prompt": "Onko sinulla jo 5chan Pass? <1>Kirjaudu sisään</1>.",
   "local_data": "Paikalliset tiedot",
-  "post_as_board_staff_confirm": "Olet tämän laudan omistaja, järjestelmänvalvoja tai moderaattori, eivätkä laudat koskaan anonymisoi ylläpitoaan. Bitsocial-tunnisteesi ja, jos olet kirjautunut sisään, 5chan Pass -lompakkosi julkaistaan tämän viestin mukana. Lähetetäänkö silti?"
+  "post_as_board_staff_confirm": "Olet tämän laudan omistaja, järjestelmänvalvoja tai moderaattori, eivätkä laudat koskaan anonymisoi ylläpitoaan. Bitsocial-tunnisteesi ja, jos olet kirjautunut sisään, 5chan Pass -lompakkosi julkaistaan tämän viestin mukana. Lähetetäänkö silti?",
+  "add_to_multiboard": "Lisää monilautalistaukseen"
 }

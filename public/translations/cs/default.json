@@ -612,5 +612,6 @@
   "pass_auth_no_pass": "Nemáte 5chan Pass? <1>Klikněte zde</1> a dozvíte se více.",
   "pass_login_prompt": "Už máte 5chan Pass? <1>Přihlaste se</1>.",
   "local_data": "Místní data",
-  "post_as_board_staff_confirm": "Jste vlastníkem, administrátorem nebo moderátorem této desky a desky svůj tým nikdy neanonymizují. Váš identifikátor Bitsocial, a pokud jste přihlášeni, i vaše peněženka 5chan Pass budou zveřejněny s tímto příspěvkem. Přesto odeslat?"
+  "post_as_board_staff_confirm": "Jste vlastníkem, administrátorem nebo moderátorem této desky a desky svůj tým nikdy neanonymizují. Váš identifikátor Bitsocial, a pokud jste přihlášeni, i vaše peněženka 5chan Pass budou zveřejněny s tímto příspěvkem. Přesto odeslat?",
+  "add_to_multiboard": "Přidat do multidesky"
 }

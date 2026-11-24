@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DesktopBoardButtons, BracketedCatalogButton, MobileBoardButtons } from '../board-buttons';
 import useThreadLiveUpdatesStore from '../../../stores/use-thread-live-updates-store';
 import useHiddenCatalogThreadsStore from '../../../stores/use-hidden-catalog-threads-store';
-import useCustomMultiboardModalStore from '../../../stores/use-custom-multiboard-modal-store';
+import useMultiboardModalStore from '../../../stores/use-multiboard-modal-store';
 import { clearStableLastVisitTimeFilterName, LAST_VISIT_STORAGE_KEY } from '../../../lib/utils/time-filter-utils';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -24,6 +24,7 @@ type DirectoryEntry = {
 const testState = vi.hoisted(() => ({
   account: { blockedCids: {} as Record<string, boolean>, subscriptions: [] as string[] },
   accountAuthorAddress: 'account-address',
+  multiboards: [] as Array<{ id: string; name: string; boards: string[] }>,
   communitiesByAddress: {} as Record<string, { roles?: Record<string, { role: string }>; settings?: Record<string, unknown> }>,
   accountCommunityAddresses: [] as string[],
   accountComment: undefined as { communityAddress?: string } | undefined,
@@ -132,7 +133,8 @@ vi.mock('../../../hooks/use-directories', () => ({
 }));
 
 vi.mock('../../../hooks/use-active-account-field', () => ({
-  useActiveAccountField: <T,>(selector: (account: { author: { address: string } }) => T) => selector({ author: { address: testState.accountAuthorAddress } }),
+  useActiveAccountField: <T,>(selector: (account: { author: { address: string }; multiboards: typeof testState.multiboards }) => T) =>
+    selector({ author: { address: testState.accountAuthorAddress }, multiboards: testState.multiboards }),
 }));
 
 vi.mock('../../../hooks/use-stable-community', () => ({
@@ -290,6 +292,7 @@ describe('BoardButtons', () => {
     testState.accountComment = undefined;
     testState.alertThresholdUnit = 'minutes';
     testState.alertThresholdValue = 5;
+    testState.multiboards = [];
     testState.boardHasArchive = true;
     testState.commentsByCid = {};
     testState.directories = [
@@ -452,7 +455,7 @@ describe('BoardButtons', () => {
   });
 
   it('opens the board picker from the category select without leaving the current feed', async () => {
-    useCustomMultiboardModalStore.setState({ showModal: false });
+    useMultiboardModalStore.setState({ modal: null });
 
     await renderWithRoute(createElement(DesktopBoardButtons), '/all/catalog?c=g,sci');
 
@@ -461,9 +464,36 @@ describe('BoardButtons', () => {
 
     await changeSelect(categorySelect, '__custom__');
 
-    expect(useCustomMultiboardModalStore.getState().showModal).toBe(true);
+    expect(useMultiboardModalStore.getState().modal).toEqual({ kind: 'editor' });
     expect(testState.navigateMock).not.toHaveBeenCalled();
-    useCustomMultiboardModalStore.setState({ showModal: false });
+    useMultiboardModalStore.setState({ modal: null });
+  });
+
+  it('lists the saved multiboards in the category select', async () => {
+    testState.multiboards = [{ id: 'tech', name: 'Tech', boards: ['g'] }];
+
+    await renderWithRoute(createElement(DesktopBoardButtons), '/all?c=@tech');
+
+    const categorySelect = container.querySelector<HTMLSelectElement>('select[aria-label="Board category"]')!;
+    expect(categorySelect.value).toBe('@tech');
+    expect(categorySelect.querySelector('optgroup')?.getAttribute('label')).toBe('multiboards');
+
+    await changeSelect(categorySelect, 'creative');
+    expect(testState.navigateMock).toHaveBeenCalledWith({ pathname: '/all', search: '?c=creative' });
+  });
+
+  it('adds a directory board to a multiboard by its code, and another board by its address', async () => {
+    useMultiboardModalStore.setState({ modal: null });
+
+    await renderWithRoute(createElement(DesktopBoardButtons), '/mu');
+    await clickButton('add_to_multiboard');
+    expect(useMultiboardModalStore.getState().modal).toEqual({ kind: 'add', board: 'mu', boardLabel: '/mu/' });
+
+    testState.directories = [];
+    await renderWithRoute(createElement(DesktopBoardButtons), '/music-posting.eth');
+    await clickButton('add_to_multiboard');
+    expect(useMultiboardModalStore.getState().modal).toEqual({ kind: 'add', board: 'music-posting.eth', boardLabel: 'music-posting.eth' });
+    useMultiboardModalStore.setState({ modal: null });
   });
 
   it('renders the desktop hidden-thread catalog control immediately after refresh', async () => {

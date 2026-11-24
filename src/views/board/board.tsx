@@ -13,7 +13,7 @@ import { useAccountCommunityAddresses } from '../../hooks/use-account-community-
 import { useDirectories, useDirectoryByAddress } from '../../hooks/use-directories';
 import { useCommunityIdentifier, useCommunityIdentifiers } from '../../hooks/use-community-identifiers';
 import { useFilteredDirectoryAddresses } from '../../hooks/use-filtered-directory-addresses';
-import { getBoardCategory } from '../../lib/utils/board-category-utils';
+import { useBoardCategory } from '../../hooks/use-saved-multiboards';
 import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
 import { useFeedStateString } from '../../hooks/use-state-string';
 import useFeedResetStore from '../../stores/use-feed-reset-store';
@@ -232,6 +232,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
   const communityAddress = useResolvedCommunityAddress(boardIdentifierProp);
 
   const filteredDirectoryAddresses = useFilteredDirectoryAddresses(categorySlugFromCache);
+  const categoryName = useBoardCategory(categorySlugFromCache)?.name;
 
   const account = useAccount();
   const subscriptions = account?.subscriptions;
@@ -818,7 +819,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
 
     let boardTitle: string;
     if (isInAllView) {
-      boardTitle = getBoardCategory(categorySlugFromCache)?.name ?? t('all');
+      boardTitle = categoryName ?? t('all');
     } else if (isInSubscriptionsView) {
       boardTitle = t('subscriptions');
     } else if (isInModView) {
@@ -840,7 +841,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
     isInAllView,
     isInSubscriptionsView,
     isInModView,
-    categorySlugFromCache,
+    categoryName,
     t,
   ]);
 

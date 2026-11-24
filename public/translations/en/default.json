@@ -632,5 +632,6 @@
   "pass_auth_no_pass": "Don't have a 5chan Pass? <1>Click here</1> to learn more.",
   "pass_login_prompt": "Already have a 5chan Pass? <1>Login</1>.",
   "local_data": "Local data",
-  "post_as_board_staff_confirm": "You are an owner, admin or moderator of this board, and boards never anonymize their staff. Your Bitsocial identifier, and your 5chan Pass wallet if you logged in, will be published with this post. Post anyway?"
+  "post_as_board_staff_confirm": "You are an owner, admin or moderator of this board, and boards never anonymize their staff. Your Bitsocial identifier, and your 5chan Pass wallet if you logged in, will be published with this post. Post anyway?",
+  "add_to_multiboard": "Add to Multiboard"
 }

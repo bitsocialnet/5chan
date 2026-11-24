@@ -612,5 +612,6 @@
   "pass_auth_no_pass": "Har du inget 5chan Pass? <1>Klicka här</1> för att läsa mer.",
   "pass_login_prompt": "Har du redan ett 5chan Pass? <1>Logga in</1>.",
   "local_data": "Lokala data",
-  "post_as_board_staff_confirm": "Du är ägare, administratör eller moderator för den här tavlan, och tavlor anonymiserar aldrig sin egen personal. Din Bitsocial-identifierare, och din 5chan Pass-plånbok om du har loggat in, publiceras tillsammans med det här inlägget. Posta ändå?"
+  "post_as_board_staff_confirm": "Du är ägare, administratör eller moderator för den här tavlan, och tavlor anonymiserar aldrig sin egen personal. Din Bitsocial-identifierare, och din 5chan Pass-plånbok om du har loggat in, publiceras tillsammans med det här inlägget. Posta ändå?",
+  "add_to_multiboard": "Lägg till i multiboard"
 }

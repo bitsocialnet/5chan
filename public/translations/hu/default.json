@@ -612,5 +612,6 @@
   "pass_auth_no_pass": "Nincs 5chan Passod? <1>Kattints ide</1>, ha többet szeretnél megtudni.",
   "pass_login_prompt": "Már van 5chan Passod? <1>Jelentkezz be</1>.",
   "local_data": "Helyi adatok",
-  "post_as_board_staff_confirm": "Ennek a táblának a tulajdonosa, rendszergazdája vagy moderátora vagy, a táblák pedig soha nem anonimizálják a saját személyzetüket. A Bitsocial-azonosítód és, ha bejelentkeztél, a 5chan Pass-pénztárcád ezzel a poszttal együtt nyilvánosságra kerül. Mégis elküldöd?"
+  "post_as_board_staff_confirm": "Ennek a táblának a tulajdonosa, rendszergazdája vagy moderátora vagy, a táblák pedig soha nem anonimizálják a saját személyzetüket. A Bitsocial-azonosítód és, ha bejelentkeztél, a 5chan Pass-pénztárcád ezzel a poszttal együtt nyilvánosságra kerül. Mégis elküldöd?",
+  "add_to_multiboard": "Hozzáadás többtáblás nézethez"
 }

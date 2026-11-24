@@ -612,5 +612,6 @@
   "pass_auth_no_pass": "Non hai un 5chan Pass? <1>Clicca qui</1> per saperne di più.",
   "pass_login_prompt": "Hai già un 5chan Pass? <1>Accedi</1>.",
   "local_data": "Dati locali",
-  "post_as_board_staff_confirm": "Sei proprietario, amministratore o moderatore di questa board, e le board non anonimizzano mai il proprio staff. Il tuo identificatore Bitsocial e, se hai effettuato l'accesso, il tuo wallet 5chan Pass verranno pubblicati con questo post. Pubblicare comunque?"
+  "post_as_board_staff_confirm": "Sei proprietario, amministratore o moderatore di questa board, e le board non anonimizzano mai il proprio staff. Il tuo identificatore Bitsocial e, se hai effettuato l'accesso, il tuo wallet 5chan Pass verranno pubblicati con questo post. Pubblicare comunque?",
+  "add_to_multiboard": "Aggiungi a multiboard"
 }

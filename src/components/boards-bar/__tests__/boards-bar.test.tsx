@@ -24,6 +24,7 @@ const testState = vi.hoisted(() => ({
   resolvedCommunityAddress: 'music-posting.eth' as string | undefined,
   showSubscriptionsInBoardsBar: true,
   subscriptions: ['custom.eth'] as string[],
+  multiboards: [] as Array<{ id: string; name: string; boards: string[] }>,
   visibleDirectories: new Set<string>(['mu']),
 }));
 
@@ -58,12 +59,13 @@ vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
 }));
 
 vi.mock('@bitsocial/bitsocial-react-hooks/dist/stores/accounts', () => ({
-  default: (selector: (state: { activeAccountId: string; accounts: Record<string, { subscriptions: string[] }> }) => unknown) =>
+  default: (selector: (state: { activeAccountId: string; accounts: Record<string, { subscriptions: string[]; multiboards: unknown }> }) => unknown) =>
     selector({
       activeAccountId: 'account-1',
       accounts: {
         'account-1': {
           subscriptions: testState.subscriptions,
+          multiboards: testState.multiboards,
         },
       },
     }),
@@ -182,6 +184,7 @@ describe('BoardsBar', () => {
       { address: 'tech-posting.eth', title: '/g/ - Technology' },
     ];
     testState.navigateMock.mockReset();
+    testState.multiboards = [];
     testState.openBoardsBarEditModalMock.mockReset();
     testState.openCreateBoardModalMock.mockReset();
     testState.openDirectoryModalMock.mockReset();
@@ -239,6 +242,18 @@ describe('BoardsBar', () => {
     });
 
     expect(testState.openDirectoryModalMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('lists saved multiboards as a group after all, subs and mod', async () => {
+    testState.multiboards = [
+      { id: 'tech', name: 'Tech', boards: ['g'] },
+      { id: 'art', name: 'Art', boards: ['ic'] },
+    ];
+    await renderBoardsBar('/mu/catalog');
+
+    const tech = Array.from(container.querySelectorAll('a')).find((link) => link.textContent === 'Tech');
+    expect(tech?.getAttribute('href')).toBe('/all/catalog?c=@tech');
+    expect(container.textContent).toContain('[Tech / Art]');
   });
 
   it('makes only the persistable instance fixed when the persistent setting is on', async () => {
@@ -438,6 +453,21 @@ describe('BoardsBar', () => {
     expect(getLinkHref('mod')).toBe('/mod/catalog');
     expect(getLinkHref('mu')).toBe('/mu/catalog');
     expect(getLinkHref('custom.eth')).toBe('/custom.eth/catalog');
+  });
+
+  it('opens a saved multiboard from the mobile board select', async () => {
+    testState.multiboards = [{ id: 'tech', name: 'Tech', boards: ['g'] }];
+    await renderBoardsBar('/mu/catalog');
+
+    const select = container.querySelector('select')!;
+    expect(Array.from(select.options).some((option) => option.value === '@tech' && option.textContent === '/all/ - Tech')).toBe(true);
+
+    await act(async () => {
+      select.value = '@tech';
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+
+    expect(testState.navigateMock).toHaveBeenCalledWith({ pathname: '/all/catalog', search: '?c=@tech' });
   });
 
   it('keeps catalog navigation on mobile board changes and hides the navbar on downward scroll', async () => {

@@ -16,6 +16,7 @@ const loadMediaHostingSettings = createSectionLoader(() => import('./media-hosti
 const loadStatsProvidersSettings = createSectionLoader(() => import('./stats-providers-settings/stats-providers-settings'));
 const loadAdvancedSettings = createSectionLoader(() => import('./advanced-settings/advanced-settings'));
 const loadSubscriptionsSetting = createSectionLoader(() => import('./subscriptions-setting/subscriptions-setting'));
+const loadMultiboardsSetting = createSectionLoader(() => import('./multiboards-setting/multiboards-setting'));
 const loadTrustedBoardLinksSetting = createSectionLoader(() => import('./trusted-board-links-setting/trusted-board-links-setting'));
 const loadP2PStatsSettings = createSectionLoader(() => import('./p2p-stats-settings/p2p-stats-settings'));
 
@@ -24,6 +25,7 @@ const alwaysVisibleSectionLoaders = [
   loadMediaHostingSettings,
   loadStatsProvidersSettings,
   loadSubscriptionsSetting,
+  loadMultiboardsSetting,
   loadTrustedBoardLinksSetting,
   loadAdvancedSettings,
   loadDataSettings,
@@ -34,6 +36,7 @@ const allSectionIds = [
   'media-hosting-settings',
   'stats-providers-settings',
   'subscriptions-settings',
+  'multiboards-settings',
   'board-link-permissions-settings',
   'advanced-settings',
 ];
@@ -111,6 +114,7 @@ const SettingsModal = () => {
   const showMediaHostingSettings = visibleExpandedSections.has('media-hosting-settings');
   const showStatsProvidersSettings = visibleExpandedSections.has('stats-providers-settings');
   const showSubscriptionsSettings = visibleExpandedSections.has('subscriptions-settings');
+  const showMultiboardsSettings = visibleExpandedSections.has('multiboards-settings');
   const showBoardLinkPermissionsSettings = visibleExpandedSections.has('board-link-permissions-settings');
   const showAdvancedSettings = visibleExpandedSections.has('advanced-settings');
   const showP2PStatsSettings = visibleExpandedSections.has(P2P_STATS_SECTION_ID);
@@ -225,6 +229,17 @@ const SettingsModal = () => {
         {showSubscriptionsSettings && (
           <Suspense fallback={null}>
             <LazySection load={loadSubscriptionsSetting} />
+          </Suspense>
+        )}
+        <div id='multiboards-settings' className={`${styles.setting} ${styles.category}`}>
+          <button type='button' className={styles.categoryButton} onClick={() => handleCategoryClick('multiboards-settings')}>
+            <span className={showMultiboardsSettings ? styles.hideButton : styles.showButton} />
+            {t('multiboards')}
+          </button>
+        </div>
+        {showMultiboardsSettings && (
+          <Suspense fallback={null}>
+            <LazySection load={loadMultiboardsSetting} />
           </Suspense>
         )}
         <div id='board-link-permissions-settings' className={`${styles.setting} ${styles.category}`}>

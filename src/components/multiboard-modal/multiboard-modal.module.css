@@ -99,6 +99,56 @@
   margin: 0 0 6px;
 }
 
+.nameRow {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0 0 6px;
+}
+
+.nameRow label {
+  font-weight: bold;
+}
+
+/* The boards bar's Custom Board List field. */
+.nameInput {
+  flex: 1;
+  min-width: 0;
+  padding: 2px 4px 3px;
+  font-size: 13.3333px;
+  box-sizing: border-box;
+  outline: none;
+  font-family: Arial, sans-serif;
+  border: var(--post-form-field-input-border, revert);
+  background-color: var(--post-form-field-input-background-color, revert);
+  color: var(--post-form-field-input-color);
+}
+
+.nameInput:focus {
+  border: var(--post-form-field-input-focus-border, revert);
+}
+
+.list {
+  list-style: none;
+  margin: 0 0 6px;
+  padding: 0;
+}
+
+.list li {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.list input,
+.list label {
+  cursor: pointer;
+}
+
+.error {
+  margin: 0 0 6px;
+}
+
 .group {
   margin: 0 0 6px;
   padding: 0;

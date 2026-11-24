@@ -612,5 +612,6 @@
   "pass_auth_no_pass": "Nu ai un 5chan Pass? <1>Click aici</1> pentru a afla mai multe.",
   "pass_login_prompt": "Ai deja un 5chan Pass? <1>Autentifică-te</1>.",
   "local_data": "Date locale",
-  "post_as_board_staff_confirm": "Ești proprietar, administrator sau moderator al acestui tablou, iar tablourile nu își anonimizează niciodată echipa. Identificatorul tău Bitsocial și, dacă te-ai autentificat, portofelul tău 5chan Pass vor fi publicate împreună cu această postare. Postezi oricum?"
+  "post_as_board_staff_confirm": "Ești proprietar, administrator sau moderator al acestui tablou, iar tablourile nu își anonimizează niciodată echipa. Identificatorul tău Bitsocial și, dacă te-ai autentificat, portofelul tău 5chan Pass vor fi publicate împreună cu această postare. Postezi oricum?",
+  "add_to_multiboard": "Adaugă la multiboard"
 }

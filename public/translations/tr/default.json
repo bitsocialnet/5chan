@@ -612,5 +612,6 @@
   "pass_auth_no_pass": "5chan Pass'iniz yok mu? Daha fazla bilgi için <1>buraya tıklayın</1>.",
   "pass_login_prompt": "Zaten 5chan Pass'iniz var mı? <1>Giriş yapın</1>.",
   "local_data": "Yerel veriler",
-  "post_as_board_staff_confirm": "Bu panonun sahibi, yöneticisi veya moderatörüsünüz ve panolar kendi yetkililerini asla anonimleştirmez. Bitsocial tanımlayıcınız ve giriş yaptıysanız 5chan Pass cüzdanınız bu gönderiyle birlikte yayımlanacak. Yine de gönderilsin mi?"
+  "post_as_board_staff_confirm": "Bu panonun sahibi, yöneticisi veya moderatörüsünüz ve panolar kendi yetkililerini asla anonimleştirmez. Bitsocial tanımlayıcınız ve giriş yaptıysanız 5chan Pass cüzdanınız bu gönderiyle birlikte yayımlanacak. Yine de gönderilsin mi?",
+  "add_to_multiboard": "Çoklu panoya ekle"
 }

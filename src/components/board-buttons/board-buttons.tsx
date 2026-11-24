@@ -8,7 +8,14 @@ import { useDirectories, useDirectoryByAddress } from '../../hooks/use-directori
 import { useAccountCommunityAddresses } from '../../hooks/use-account-community-addresses';
 import { useFilteredDirectoryAddresses } from '../../hooks/use-filtered-directory-addresses';
 import { getBoardPath, isDirectoryRoute } from '../../lib/utils/route-utils';
-import { BOARD_CATEGORIES, getBoardCategoryFromSearch, getSearchWithBoardCategory } from '../../lib/utils/board-category-utils';
+import {
+  BOARD_CATEGORIES,
+  getBoardCategoryFromSearch,
+  getBoardListEntryLabel,
+  getSavedMultiboardSlug,
+  getSearchWithBoardCategory,
+} from '../../lib/utils/board-category-utils';
+import { useBoardCategoryFromSearch, useSavedMultiboards } from '../../hooks/use-saved-multiboards';
 import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
 import { useBoardHasArchive } from '../../hooks/use-board-has-archive';
 import { useBoardSortType } from '../../hooks/use-board-sort-type';
@@ -26,7 +33,7 @@ import useFeedResetStore from '../../stores/use-feed-reset-store';
 import useHiddenCatalogThreadsStore from '../../stores/use-hidden-catalog-threads-store';
 import useSortingStore from '../../stores/use-sorting-store';
 import useAllFeedFilterStore from '../../stores/use-all-feed-filter-store';
-import useCustomMultiboardModalStore from '../../stores/use-custom-multiboard-modal-store';
+import useMultiboardModalStore from '../../stores/use-multiboard-modal-store';
 import useModQueueStore from '../../stores/use-mod-queue-store';
 import useFeedViewSettingsStore from '../../stores/use-feed-view-settings-store';
 import useThreadLiveUpdatesStore, { type ThreadUpdaterStatus } from '../../stores/use-thread-live-updates-store';
@@ -155,6 +162,24 @@ const SubscribeButton = ({ address }: BoardButtonsProps) => {
   return (
     <button type='button' className='button' onClick={subscribed ? unsubscribe : subscribe}>
       {subscribed ? t('unsubscribe') : t('subscribe')}
+    </button>
+  );
+};
+
+// Saves the board in a multiboard: by its code on a directory board's route, so the multiboard follows the
+// directory's winner, else by its address.
+const AddToMultiboardButton = ({ address }: BoardButtonsProps) => {
+  const { t } = useTranslation();
+  const params = useParams();
+  const directories = useDirectories();
+  const openAddToMultiboard = useMultiboardModalStore((state) => state.openAddToMultiboard);
+  const boardIdentifier = params.boardIdentifier;
+  const board = boardIdentifier && isDirectoryRoute(boardIdentifier, directories) ? boardIdentifier : address;
+  if (!board) return null;
+
+  return (
+    <button type='button' className='button' onClick={() => openAddToMultiboard(board, getBoardListEntryLabel(board))}>
+      {t('add_to_multiboard')}
     </button>
   );
 };
@@ -580,7 +605,7 @@ const TimeFilter = ({ isInAllView, isInCatalogView, isInSubscriptionsView, isInM
   );
 };
 
-// The category select's entry for a picked list of boards. Never a category slug, and not a valid board code list.
+// The category select's entry that opens the board picker. Never a category slug or a valid board list.
 const CUSTOM_CATEGORY_OPTION = '__custom__';
 
 const AllFeedFilter = () => {
@@ -588,8 +613,10 @@ const AllFeedFilter = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { filter, setFilter } = useAllFeedFilterStore();
-  const openCustomMultiboardModal = useCustomMultiboardModalStore((state) => state.openCustomMultiboardModal);
-  const category = getBoardCategoryFromSearch(location.search);
+  const openMultiboardEditor = useMultiboardModalStore((state) => state.openMultiboardEditor);
+  const savedMultiboards = useSavedMultiboards();
+  const category = useBoardCategoryFromSearch(location.search);
+  // An unsaved board list shows as Custom…; [Edit] under the title reopens its picker.
   const categoryValue = category?.custom ? CUSTOM_CATEGORY_OPTION : (category?.slug ?? '');
 
   return (
@@ -606,7 +633,7 @@ const AllFeedFilter = () => {
         onChange={(e) => {
           // The select stays on the current category until the picker navigates.
           if (e.target.value === CUSTOM_CATEGORY_OPTION) {
-            openCustomMultiboardModal();
+            openMultiboardEditor();
             return;
           }
           navigate({ pathname: location.pathname, search: getSearchWithBoardCategory(location.search, e.target.value || undefined) });
@@ -619,6 +646,16 @@ const AllFeedFilter = () => {
             {boardCategory.nsfw ? ' (NSFW)' : ''}
           </option>
         ))}
+        {category?.savedId && !savedMultiboards.some((multiboard) => multiboard.id === category.savedId) && <option value={category.slug}>{category.name}</option>}
+        {savedMultiboards.length > 0 && (
+          <optgroup label={t('multiboards')}>
+            {savedMultiboards.map((multiboard) => (
+              <option key={multiboard.id} value={getSavedMultiboardSlug(multiboard.id)}>
+                {multiboard.name}
+              </option>
+            ))}
+          </optgroup>
+        )}
         <option value={CUSTOM_CATEGORY_OPTION}>Custom…</option>
       </select>
     </>
@@ -740,6 +777,7 @@ export const MobileBoardButtons = () => {
           <div className={styles.secondRow}>
             {showDirectoryButton && <DirectoryButton />}
             {!(isInAllView || isInSubscriptionsView || isInModView) && <SubscribeButton address={communityAddress} />}
+            {!(isInAllView || isInSubscriptionsView || isInModView) && <AddToMultiboardButton address={communityAddress} />}
             {!(isInAllView || isInSubscriptionsView) && <ModQueueButton boardIdentifier={boardIdentifier} isMobile={true} />}
             {!isMultiboard && <BoardSettingsButton address={communityAddress} isMobile={true} />}
           </div>
@@ -985,7 +1023,7 @@ export const DesktopBoardButtons = () => {
               {showDirectoryButton && !(isInAllView || isInSubscriptionsView || isInModView) && ' '}
               {!(isInAllView || isInSubscriptionsView || isInModView) && (
                 <>
-                  [<SubscribeButton address={communityAddress} />]
+                  [<SubscribeButton address={communityAddress} />] [<AddToMultiboardButton address={communityAddress} />]
                 </>
               )}{' '}
               {isInCatalogView && (

@@ -612,5 +612,6 @@
   "pass_auth_no_pass": "Heb je geen 5chan Pass? <1>Klik hier</1> voor meer informatie.",
   "pass_login_prompt": "Heb je al een 5chan Pass? <1>Log in</1>.",
   "local_data": "Lokale gegevens",
-  "post_as_board_staff_confirm": "Je bent eigenaar, beheerder of moderator van dit board, en boards anonimiseren hun staf nooit. Je Bitsocial-identificator en, als je bent ingelogd, je 5chan Pass-wallet worden samen met dit bericht gepubliceerd. Toch posten?"
+  "post_as_board_staff_confirm": "Je bent eigenaar, beheerder of moderator van dit board, en boards anonimiseren hun staf nooit. Je Bitsocial-identificator en, als je bent ingelogd, je 5chan Pass-wallet worden samen met dit bericht gepubliceerd. Toch posten?",
+  "add_to_multiboard": "Toevoegen aan multiboard"
 }

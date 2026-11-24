@@ -612,5 +612,6 @@
   "pass_auth_no_pass": "还没有 5chan Pass？<1>点击这里</1>了解更多。",
   "pass_login_prompt": "已有 5chan Pass？<1>登录</1>。",
   "local_data": "本地数据",
-  "post_as_board_staff_confirm": "你是此板块的所有者、管理员或版主，而板块从不对其管理人员进行匿名化。你的 Bitsocial 标识符（如果你已登录，还包括你的 5chan Pass 钱包）将随此帖子一同公开。仍要发帖吗？"
+  "post_as_board_staff_confirm": "你是此板块的所有者、管理员或版主，而板块从不对其管理人员进行匿名化。你的 Bitsocial 标识符（如果你已登录，还包括你的 5chan Pass 钱包）将随此帖子一同公开。仍要发帖吗？",
+  "add_to_multiboard": "添加到多板视图"
 }

@@ -20,6 +20,8 @@ import useBoardsBarVisibilityStore from '../../stores/use-boards-bar-visibility-
 import useDirectoryModalStore from '../../stores/use-directory-modal-store';
 import usePersistentBoardsBarStore from '../../stores/use-persistent-boards-bar-store';
 import { createBoardCodeVisibility, getBoardCodeGroups } from '../../lib/utils/board-code-groups';
+import { getSavedMultiboardSlug, getSearchWithBoardCategory } from '../../lib/utils/board-category-utils';
+import { useBoardCategoryFromSearch, useSavedMultiboards } from '../../hooks/use-saved-multiboards';
 import styles from './boards-bar.module.css';
 import capitalize from 'lodash/capitalize';
 import debounce from 'lodash/debounce';
@@ -157,6 +159,7 @@ const BoardsBarDesktop = memo(({ persistent, autoHide }: { persistent: boolean; 
   const directories = useDirectories();
 
   const boardCodeGroups = useMemo(() => getBoardCodeGroups(directories), [directories]);
+  const savedMultiboards = useSavedMultiboards();
 
   const subscriptions = useAccountsStore(
     (state) => {
@@ -258,6 +261,18 @@ const BoardsBarDesktop = memo(({ persistent, autoHide }: { persistent: boolean; 
           </>
         )}
         ]{' '}
+        {savedMultiboards.length > 0 && (
+          <>
+            [
+            {savedMultiboards.map((multiboard, index) => (
+              <span key={multiboard.id}>
+                <Link to={{ pathname: `/all${catalogSuffix}`, search: getSearchWithBoardCategory('', getSavedMultiboardSlug(multiboard.id)) }}>{multiboard.name}</Link>
+                {index !== savedMultiboards.length - 1 && ' / '}
+              </span>
+            ))}
+            ]{' '}
+          </>
+        )}
         {boardCodeGroups.groups.map((group) => {
           const visibleCodes = showAllTemporarily ? group : group.filter(isBoardCodeVisible);
           if (visibleCodes.length === 0) return null;
@@ -347,6 +362,13 @@ interface BoardsBarMobileProps {
   autoHide: boolean;
 }
 
+// In /all, the board select shows the saved multiboard being read, when the account has it.
+const getAllSelectValue = (categorySlug: string | undefined, savedSlugs: Set<string>) => (categorySlug && savedSlugs.has(categorySlug) ? categorySlug : 'all');
+
+// A saved multiboard is /all narrowed by its ?c=@id slug; every other value is a path.
+const getBoardSelectTarget = (value: string, savedSlugs: Set<string>, catalogSuffix: string) =>
+  savedSlugs.has(value) ? { pathname: `/all${catalogSuffix}`, search: getSearchWithBoardCategory('', value) } : `/${value}${catalogSuffix}`;
+
 const BoardsBarMobile = memo(({ communityAddress, pinnedOnDesktop, autoHide }: BoardsBarMobileProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -364,7 +386,10 @@ const BoardsBarMobile = memo(({ communityAddress, pinnedOnDesktop, autoHide }: B
   const isInModView = isModView(location.pathname);
   const isInSearchView = isSearchView(location.pathname);
   const boardPath = useBoardPath(communityAddress);
-  const selectValue = isInAllView ? 'all' : isInSubscriptionsView ? 'subs' : isInModView ? 'mod' : isInSearchView ? 'search' : boardPath || communityAddress;
+  const savedMultiboards = useSavedMultiboards();
+  const savedSlugs = useMemo(() => new Set(savedMultiboards.map((multiboard) => getSavedMultiboardSlug(multiboard.id))), [savedMultiboards]);
+  const allValue = getAllSelectValue(useBoardCategoryFromSearch(location.search)?.slug, savedSlugs);
+  const selectValue = isInAllView ? allValue : isInSubscriptionsView ? 'subs' : isInModView ? 'mod' : isInSearchView ? 'search' : boardPath || communityAddress;
 
   const accountCommunityAddresses = useAccountCommunityAddresses();
 
@@ -383,6 +408,7 @@ const BoardsBarMobile = memo(({ communityAddress, pinnedOnDesktop, autoHide }: B
       { value: 'subs', label: subsTitle },
       { value: 'search', label: searchTitle },
       ...(accountCommunityAddresses.length > 0 ? [{ value: 'mod', label: modTitle }] : []),
+      ...savedMultiboards.map((multiboard) => ({ value: getSavedMultiboardSlug(multiboard.id), label: `/all/ - ${multiboard.name}` })),
     ];
 
     const directoryOptions = directoryBoards.map((board) => {
@@ -391,16 +417,10 @@ const BoardsBarMobile = memo(({ communityAddress, pinnedOnDesktop, autoHide }: B
     });
 
     return [...multiboards, ...directoryOptions].sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: 'base' }));
-  }, [accountCommunityAddresses.length, directoryBoards, t]);
+  }, [accountCommunityAddresses.length, directoryBoards, savedMultiboards, t]);
 
   const boardSelect = (
-    <select
-      value={selectValue}
-      onChange={(e) => {
-        const value = e.target.value;
-        navigate(`/${value}${isInCatalogView ? '/catalog' : ''}`);
-      }}
-    >
+    <select value={selectValue} onChange={(e) => navigate(getBoardSelectTarget(e.target.value, savedSlugs, isInCatalogView ? '/catalog' : ''))}>
       {!currentIsDirectoryBoard && communityAddress && <option value={communityAddress}>{displayCommunityAddress}</option>}
       {sortedBoardOptions.map((opt) => (
         <option key={opt.value} value={opt.value}>

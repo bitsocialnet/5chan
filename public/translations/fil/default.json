@@ -612,5 +612,6 @@
   "pass_auth_no_pass": "Wala ka pang 5chan Pass? <1>I-click dito</1> para matuto pa.",
   "pass_login_prompt": "May 5chan Pass ka na? <1>Mag-log in</1>.",
   "local_data": "Lokal na data",
-  "post_as_board_staff_confirm": "Isa kang may-ari, administrator o moderator ng board na ito, at hindi kailanman ina-anonymize ng mga board ang kanilang staff. Mapa-publish ang iyong Bitsocial identifier, at ang iyong 5chan Pass wallet kung naka-log in ka, kasama ng post na ito. I-post pa rin?"
+  "post_as_board_staff_confirm": "Isa kang may-ari, administrator o moderator ng board na ito, at hindi kailanman ina-anonymize ng mga board ang kanilang staff. Mapa-publish ang iyong Bitsocial identifier, at ang iyong 5chan Pass wallet kung naka-log in ka, kasama ng post na ito. I-post pa rin?",
+  "add_to_multiboard": "Idagdag sa multiboard"
 }
