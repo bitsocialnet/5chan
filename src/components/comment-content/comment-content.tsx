@@ -136,12 +136,10 @@ const CommentContent = ({
   const shouldRenderBbcode = isPrivilegedAuthor;
   const shouldWaitForRoleSensitiveBbcode = roles === undefined && Boolean(authorAddress && communityAddress) && containsRoleSensitiveBbcode(visibleContent);
   const purged = resolvedPost?.commentModeration?.purged;
-  // author.community.banExpiresAt is aggregated from every ban against the author, so it is set on all of
-  // their comments and cannot tell which post caused the ban. Bans are per board, so the label names the board.
-  // TODO: when https://github.com/pkcprotocol/pkc-js/issues/363 adds a per-comment ban field, show
-  // "User was banned by [board] for this post" on the banned comment only.
-  const banExpiresAt = resolvedPost?.author?.community?.banExpiresAt;
-  const banned = !!banExpiresAt;
+  // authorBanExpiresAt is set only on the comment a mod banned the author from, and stays after the ban ends, as
+  // 4chan keeps the label. author.community.banExpiresAt is the author-wide ban on every comment, so it can't label a post.
+  const banExpiresAt = resolvedPost?.authorBanExpiresAt;
+  const banned = typeof banExpiresAt === 'number' && banExpiresAt > 0;
   const boardShortAddress = communityAddress && getShortAddress(communityAddress);
 
   const [showFullComment, setShowFullComment] = useState(false);
@@ -354,7 +352,7 @@ const CommentContent = ({
               interpolation: { escapeValue: false },
             })}${reason ? `. ${capitalize(t('reason'))}: "${reason}"` : ''}`}
           >
-            {`(${t('user_banned_from_board', { board: boardShortAddress, interpolation: { escapeValue: false } })})`}
+            {`(${t('user_banned_for_this_post')})`}
           </Tooltip>
         </span>
       )}

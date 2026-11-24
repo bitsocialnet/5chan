@@ -480,7 +480,6 @@
   "directory_vote_needs_test_pass": "Deine Stimme wurde nicht gesendet: Die Abstimmungsadresse dieses Geräts <address>{{address}}</address> besitzt keinen 5chan Pass. Die Abstimmung läuft vorerst im Testnet, daher kannst du dir für diese Adresse einen kostenlosen Test-Pass vom <faucetLink>Faucet</faucetLink> holen.",
   "directory_vote_board_not_found": "Unter {{address}} wurde kein Board gefunden. Gib eine .bso-Adresse oder den öffentlichen Schlüssel eines Boards ein.",
   "directory_vote_failed": "Deine Stimme konnte nicht gesendet werden: {{error}}",
-  "user_banned_from_board": "Benutzer wurde auf {{board}} gesperrt",
   "thread_update_updating": "Wird aktualisiert...",
   "thread_update_no_new_posts": "Keine neuen Beiträge",
   "thread_update_new_post": "1 neuer Beitrag",
@@ -612,5 +611,6 @@
   "pass_auth_no_pass": "Du hast keinen 5chan Pass? <1>Klicke hier</1>, um mehr zu erfahren.",
   "pass_login_prompt": "Du hast bereits einen 5chan Pass? <1>Anmelden</1>.",
   "local_data": "Lokale Daten",
-  "post_as_board_staff_confirm": "Du bist Eigentümer, Administrator oder Moderator dieses Boards, und Boards anonymisieren ihr Team nie. Deine Bitsocial-Kennung und, falls du angemeldet bist, deine 5chan Pass-Wallet werden mit diesem Post veröffentlicht. Trotzdem posten?"
+  "post_as_board_staff_confirm": "Du bist Eigentümer, Administrator oder Moderator dieses Boards, und Boards anonymisieren ihr Team nie. Deine Bitsocial-Kennung und, falls du angemeldet bist, deine 5chan Pass-Wallet werden mit diesem Post veröffentlicht. Trotzdem posten?",
+  "user_banned_for_this_post": "Benutzer wurde für diesen Beitrag gesperrt"
 }

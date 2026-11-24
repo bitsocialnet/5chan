@@ -480,7 +480,6 @@
   "directory_vote_needs_test_pass": "Je stem is niet verzonden: het stemadres van dit apparaat <address>{{address}}</address> heeft geen 5chan Pass. Stemmen gebeurt voorlopig op testnet, dus je kunt voor dit adres een gratis test-Pass halen bij de <faucetLink>faucet</faucetLink>.",
   "directory_vote_board_not_found": "Geen board gevonden op {{address}}. Voer een .bso-adres of de publieke sleutel van een board in.",
   "directory_vote_failed": "Je stem kon niet worden verzonden: {{error}}",
-  "user_banned_from_board": "Gebruiker is verbannen van {{board}}",
   "thread_update_updating": "Bijwerken...",
   "thread_update_no_new_posts": "Geen nieuwe berichten",
   "thread_update_new_post": "1 nieuw bericht",
@@ -612,5 +611,6 @@
   "pass_auth_no_pass": "Heb je geen 5chan Pass? <1>Klik hier</1> voor meer informatie.",
   "pass_login_prompt": "Heb je al een 5chan Pass? <1>Log in</1>.",
   "local_data": "Lokale gegevens",
-  "post_as_board_staff_confirm": "Je bent eigenaar, beheerder of moderator van dit board, en boards anonimiseren hun staf nooit. Je Bitsocial-identificator en, als je bent ingelogd, je 5chan Pass-wallet worden samen met dit bericht gepubliceerd. Toch posten?"
+  "post_as_board_staff_confirm": "Je bent eigenaar, beheerder of moderator van dit board, en boards anonimiseren hun staf nooit. Je Bitsocial-identificator en, als je bent ingelogd, je 5chan Pass-wallet worden samen met dit bericht gepubliceerd. Toch posten?",
+  "user_banned_for_this_post": "Gebruiker is verbannen voor deze post"
 }

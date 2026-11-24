@@ -499,7 +499,6 @@
   "directory_vote_board_not_found": "No board found at {{address}}. Enter a .bso address or a board's public key.",
   "directory_vote_failed": "Your vote couldn't be sent: {{error}}",
   "directory_test_votes": "Test Votes",
-  "user_banned_from_board": "User was banned from {{board}}",
   "thread_update_updating": "Updating...",
   "thread_update_no_new_posts": "No new posts",
   "thread_update_new_post": "1 new post",
@@ -632,5 +631,6 @@
   "pass_auth_no_pass": "Don't have a 5chan Pass? <1>Click here</1> to learn more.",
   "pass_login_prompt": "Already have a 5chan Pass? <1>Login</1>.",
   "local_data": "Local data",
-  "post_as_board_staff_confirm": "You are an owner, admin or moderator of this board, and boards never anonymize their staff. Your Bitsocial identifier, and your 5chan Pass wallet if you logged in, will be published with this post. Post anyway?"
+  "post_as_board_staff_confirm": "You are an owner, admin or moderator of this board, and boards never anonymize their staff. Your Bitsocial identifier, and your 5chan Pass wallet if you logged in, will be published with this post. Post anyway?",
+  "user_banned_for_this_post": "User was banned for this post"
 }

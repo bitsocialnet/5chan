@@ -480,7 +480,6 @@
   "directory_vote_needs_test_pass": "Seu voto não foi enviado: o endereço de votação deste dispositivo <address>{{address}}</address> não possui um 5chan Pass. Por enquanto a votação está na testnet, então você pode obter um Pass de teste gratuito para este endereço no <faucetLink>faucet</faucetLink>.",
   "directory_vote_board_not_found": "Nenhum board encontrado em {{address}}. Digite um endereço .bso ou a chave pública de um board.",
   "directory_vote_failed": "Não foi possível enviar seu voto: {{error}}",
-  "user_banned_from_board": "O usuário foi banido de {{board}}",
   "thread_update_updating": "Atualizando...",
   "thread_update_no_new_posts": "Nenhum post novo",
   "thread_update_new_post": "1 novo post",
@@ -612,5 +611,6 @@
   "pass_auth_no_pass": "Não tem um 5chan Pass? <1>Clique aqui</1> para saber mais.",
   "pass_login_prompt": "Já tem um 5chan Pass? <1>Entrar</1>.",
   "local_data": "Dados locais",
-  "post_as_board_staff_confirm": "Você é proprietário, administrador ou moderador deste quadro, e os quadros nunca anonimizam sua equipe. Seu identificador Bitsocial e, se você estiver conectado, sua carteira do 5chan Pass serão publicados com este post. Postar mesmo assim?"
+  "post_as_board_staff_confirm": "Você é proprietário, administrador ou moderador deste quadro, e os quadros nunca anonimizam sua equipe. Seu identificador Bitsocial e, se você estiver conectado, sua carteira do 5chan Pass serão publicados com este post. Postar mesmo assim?",
+  "user_banned_for_this_post": "O usuário foi banido por este post"
 }
