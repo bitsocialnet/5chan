@@ -191,6 +191,8 @@ const useDeleteFailedPost = (post?: FailedPost, deleteRedirectPath?: string) => 
     }
 
     const accountCommentIndex = post?.index;
+    // Only a new thread has a pending page. A retried reply shows in its thread like any reply just published.
+    const hasPendingPage = !post?.parentCid;
 
     setIsRetryingFailedPost(true);
     retryPendingIndexRef.current = undefined;
@@ -207,7 +209,7 @@ const useDeleteFailedPost = (post?: FailedPost, deleteRedirectPath?: string) => 
       // retry. The republished comment is stored once publishComment resolves; navigating before clearing the flag
       // keeps PendingPost from seeing the old index with no flag and no post, which it would leave for the board.
       const retryPendingIndex = retryPendingIndexRef.current;
-      if (typeof retryPendingIndex === 'number') {
+      if (hasPendingPage && typeof retryPendingIndex === 'number') {
         navigate(`/pending/${retryPendingIndex}`, { replace: true });
       }
       endRetry();

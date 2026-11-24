@@ -73,12 +73,14 @@ const failedPost = {
   title: 'Hello',
 };
 
-const HookHarness = ({ deleteRedirectPath, post }: { deleteRedirectPath?: string; post: typeof failedPost }) => {
+const { depth: _depth, parentCid: _parentCid, postCid: _postCid, ...failedThread } = failedPost;
+
+const HookHarness = ({ deleteRedirectPath, post }: { deleteRedirectPath?: string; post: Partial<typeof failedPost> }) => {
   latestValue = useDeleteFailedPost(post, deleteRedirectPath);
   return null;
 };
 
-const renderHook = (post = failedPost, deleteRedirectPath?: string) => {
+const renderHook = (post: Partial<typeof failedPost> = failedPost, deleteRedirectPath?: string) => {
   act(() => {
     root.render(createElement(HookHarness, { deleteRedirectPath, post }));
   });
@@ -280,7 +282,8 @@ describe('useDeleteFailedPost', () => {
     expect(latestValue.isRetryingFailedPost).toBe(false);
   });
 
-  it('redirects retry publishes to the new pending row', async () => {
+  it('redirects a retried thread to its new pending row', async () => {
+    renderHook(failedThread);
     testState.publishCommentMock.mockImplementationOnce(async () => {
       testState.lastPublishOptions?.onPendingComment?.(12, { index: 12 });
     });
@@ -292,7 +295,22 @@ describe('useDeleteFailedPost', () => {
     expect(testState.navigateMock).toHaveBeenCalledWith('/pending/12', { replace: true });
   });
 
+  it('keeps a retried reply in its thread instead of opening a pending page', async () => {
+    testState.publishCommentMock.mockImplementationOnce(async () => {
+      testState.lastPublishOptions?.onPendingComment?.(12, { index: 12 });
+    });
+
+    await act(async () => {
+      await latestValue.onRetryFailedPost();
+    });
+
+    expect(testState.publishCommentMock).toHaveBeenCalledTimes(1);
+    expect(testState.navigateMock).not.toHaveBeenCalled();
+    expect(useFailedPostRetryStore.getState().retryingAccountCommentIndex).toBeNull();
+  });
+
   it('flags the failed row as mid-retry while republishing and clears it after the redirect', async () => {
+    renderHook(failedThread);
     let flaggedIndexDuringPublish: number | null = null;
     testState.publishCommentMock.mockImplementationOnce(async () => {
       flaggedIndexDuringPublish = useFailedPostRetryStore.getState().retryingAccountCommentIndex;
@@ -322,6 +340,7 @@ describe('useDeleteFailedPost', () => {
   });
 
   it('redirects to the republished row and ends the retry after the post that started it unmounted', async () => {
+    renderHook(failedThread);
     let finishDelete: () => void = () => {};
     testState.deleteCommentMock.mockImplementationOnce(() => new Promise<undefined>((resolve) => (finishDelete = () => resolve(undefined))));
     // Like the hooks' publish, the pending comment is reported, and stored, before publishComment resolves.
