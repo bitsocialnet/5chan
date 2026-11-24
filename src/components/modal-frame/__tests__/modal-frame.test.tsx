@@ -33,7 +33,9 @@ const pressKey = (target: Element, key: string, shiftKey = false) =>
 
 describe('ModalFrame', () => {
   beforeEach(() => {
+    // The app's root, which the frame makes inert while it is open.
     container = document.createElement('div');
+    container.id = 'root';
     document.body.appendChild(container);
     root = createRoot(container);
     act(() => root.render(<Harness />));
@@ -45,29 +47,33 @@ describe('ModalFrame', () => {
   });
 
   const open = () => {
-    const opener = Array.from(container.querySelectorAll('button')).find((button) => button.textContent === 'Open')!;
+    const opener = Array.from(document.querySelectorAll('button')).find((button) => button.textContent === 'Open')!;
     opener.focus();
     act(() => opener.click());
     return opener;
   };
 
-  it('takes focus on open and gives it back to the opener on close', () => {
+  it('renders outside the app root, makes the root inert while open, and gives focus back on close', () => {
     const opener = open();
-    expect(document.activeElement).toBe(container.querySelector('dialog'));
+    const dialog = document.querySelector('dialog')!;
+    expect(document.activeElement).toBe(dialog);
+    expect(container.contains(dialog)).toBe(false);
+    expect(container.hasAttribute('inert')).toBe(true);
 
-    pressKey(container.querySelector('dialog')!, 'Escape');
+    pressKey(dialog, 'Escape');
 
-    expect(container.querySelector('dialog')).toBeNull();
+    expect(document.querySelector('dialog')).toBeNull();
+    expect(container.hasAttribute('inert')).toBe(false);
     expect(document.activeElement).toBe(opener);
   });
 
   it('keeps Tab inside the dialog, and leaves the backdrop out of the tab order', () => {
     open();
-    const dialog = container.querySelector('dialog')!;
-    const closeIcon = container.querySelector<HTMLButtonElement>('button[aria-label="Close"]')!;
+    const dialog = document.querySelector('dialog')!;
+    const closeIcon = document.querySelector<HTMLButtonElement>('button[aria-label="Close"]')!;
     const last = Array.from(dialog.querySelectorAll('button')).find((button) => button.textContent === 'Last')!;
 
-    expect(container.querySelector('button[aria-label="Close frame"]')?.getAttribute('tabindex')).toBe('-1');
+    expect(document.querySelector('button[aria-label="Close frame"]')?.getAttribute('tabindex')).toBe('-1');
 
     pressKey(dialog, 'Tab', true);
     expect(document.activeElement).toBe(last);

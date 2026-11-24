@@ -73,19 +73,19 @@ const renderModal = async (initialEntry: string) => {
   });
 };
 
-const getLocation = () => container.querySelector('[data-testid="location"]')?.textContent;
+const getLocation = () => document.querySelector('[data-testid="location"]')?.textContent;
 const getCheckbox = (label: string) => {
-  const labelElement = Array.from(container.querySelectorAll('label')).find((candidate) => candidate.textContent === label);
-  return container.querySelector<HTMLInputElement>(`[id="${labelElement?.htmlFor}"]`)!;
+  const labelElement = Array.from(document.querySelectorAll('label')).find((candidate) => candidate.textContent === label);
+  return document.querySelector<HTMLInputElement>(`[id="${labelElement?.htmlFor}"]`)!;
 };
-const getButton = (text: string) => Array.from(container.querySelectorAll('button')).find((button) => button.textContent === text)!;
+const getButton = (text: string) => Array.from(document.querySelectorAll('button')).find((button) => button.textContent === text)!;
 const click = async (element: Element | null | undefined) => {
   await act(async () => {
     element?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
   });
 };
 const typeName = async (value: string) => {
-  const input = container.querySelector<HTMLInputElement>('#multiboard-name')!;
+  const input = document.querySelector<HTMLInputElement>('#multiboard-name')!;
   await act(async () => {
     Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set?.call(input, value);
     input.dispatchEvent(new Event('input', { bubbles: true }));
@@ -112,8 +112,8 @@ describe('MultiboardModal', () => {
   it('lists directory boards under the home page headings, then later boards, then subscriptions outside the directories', async () => {
     await renderModal('/all');
 
-    expect(container.querySelector('h2')?.textContent).toBe('New Multiboard');
-    expect(Array.from(container.querySelectorAll('legend')).map((legend) => legend.textContent)).toEqual(['Interests', 'Misc. (NSFW)', 'More Boards', 'Other Boards']);
+    expect(document.querySelector('h2')?.textContent).toBe('New Multiboard');
+    expect(Array.from(document.querySelectorAll('legend')).map((legend) => legend.textContent)).toEqual(['Interests', 'Misc. (NSFW)', 'More Boards', 'Other Boards']);
     expect(getCheckbox('Zines')).toBeTruthy();
     // Subscribed to by address: tech.bso is /g/ and stays under its heading.
     expect(getCheckbox('music-posting.bso')).toBeTruthy();
@@ -151,10 +151,10 @@ describe('MultiboardModal', () => {
     useMultiboardModalStore.setState({ modal: { kind: 'editor', multiboardId: 'tech' } });
     await renderModal('/all?c=@tech');
 
-    expect(container.querySelector('h2')?.textContent).toBe('Edit Multiboard');
-    expect(container.querySelector<HTMLInputElement>('#multiboard-name')?.value).toBe('Tech');
+    expect(document.querySelector('h2')?.textContent).toBe('Edit Multiboard');
+    expect(document.querySelector<HTMLInputElement>('#multiboard-name')?.value).toBe('Tech');
     expect(getCheckbox('music-posting.bso').checked).toBe(true);
-    expect(container.textContent).not.toContain('Show');
+    expect(document.body.textContent).not.toContain('Show');
 
     await click(getCheckbox('Science & Math'));
     await click(getButton('Save'));
@@ -192,7 +192,7 @@ describe('MultiboardModal', () => {
     useMultiboardModalStore.setState({ modal: { kind: 'add', board: 'g', boardLabel: '/g/', aliases: ['tech.bso'] } });
     await renderModal('/g');
 
-    expect(container.querySelector('h2')?.textContent).toBe('Add /g/ to a Multiboard');
+    expect(document.querySelector('h2')?.textContent).toBe('Add /g/ to a Multiboard');
     expect(getCheckbox('Tech').checked).toBe(true);
     expect(getCheckbox('Art').checked).toBe(false);
 
@@ -200,7 +200,7 @@ describe('MultiboardModal', () => {
     expect(testState.setMultiboardHasBoard).toHaveBeenCalledWith('art', 'g', true, ['tech.bso']);
 
     await click(getButton('New Multiboard…'));
-    expect(container.querySelector('h2')?.textContent).toBe('New Multiboard');
+    expect(document.querySelector('h2')?.textContent).toBe('New Multiboard');
     expect(getCheckbox('Technology').checked).toBe(true);
     expect(getCheckbox('Science & Math').checked).toBe(false);
   });
@@ -231,7 +231,7 @@ describe('MultiboardModal', () => {
     await typeName('Tech');
     await click(getButton('Save'));
     await act(async () => {
-      container.querySelector('dialog')?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      document.querySelector('dialog')?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     });
     const otherModal = { kind: 'editor' as const, boards: ['sci'] };
     useMultiboardModalStore.setState({ modal: otherModal });
@@ -245,10 +245,10 @@ describe('MultiboardModal', () => {
     await renderModal('/all?c=g,b');
 
     expect(getCheckbox('Random').checked).toBe(true);
-    expect(document.activeElement).toBe(container.querySelector('dialog'));
+    expect(document.activeElement).toBe(document.querySelector('dialog'));
 
     await act(async () => {
-      container.querySelector('dialog')?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      document.querySelector('dialog')?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     });
 
     expect(useMultiboardModalStore.getState().modal).toBeNull();
