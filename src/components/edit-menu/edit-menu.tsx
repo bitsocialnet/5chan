@@ -197,9 +197,19 @@ const EditMenu = ({ post }: { post: Comment }) => {
     onEditChallenge,
   ]);
 
-  const banExpiresAtToPublish = publishCommentEditOptions.commentModeration?.author?.banExpiresAt;
-  // Sent only when the mod set or changed the ban, so removing or locking an already banned post does not republish it
-  const shouldPublishBan = banExpiresAtToPublish !== undefined && banExpiresAtToPublish !== modBanExpiresAt;
+  // The ban the menu opened with, so a ban that runs out or another mod changes while the menu is open is not resent
+  const [openedBanExpiresAt, setOpenedBanExpiresAt] = useState(modBanExpiresAt);
+  const draftBanExpiresAt = publishCommentEditOptions.commentModeration?.author?.banExpiresAt;
+  // A ban is sent only when the mod sets, changes or lifts it in this menu, so removing or locking a banned post does
+  // not republish it. Lifting publishes the current time, as pkc-js unbans: the ban ends and the post keeps its label.
+  const banExpiresAtToPublish =
+    draftBanExpiresAt !== undefined
+      ? draftBanExpiresAt !== openedBanExpiresAt
+        ? draftBanExpiresAt
+        : undefined
+      : openedBanExpiresAt !== undefined
+        ? Math.floor(Date.now() / 1000)
+        : undefined;
 
   const modEditOptions = useMemo<PublishCommentModerationOptions>(
     () => ({
@@ -214,14 +224,14 @@ const EditMenu = ({ post }: { post: Comment }) => {
         reason: publishCommentEditOptions.commentModeration?.reason,
         spoiler: publishCommentEditOptions.commentModeration?.spoiler,
         // bitsocial-react-hooks reads an author key, even undefined, as a change to the ban, so it is left out entirely
-        ...(shouldPublishBan && { author: { banExpiresAt: banExpiresAtToPublish } }),
+        ...(banExpiresAtToPublish !== undefined && { author: { banExpiresAt: banExpiresAtToPublish } }),
       },
       author: account?.author,
       onChallenge: onModerationChallenge,
       onChallengeVerification: alertChallengeVerificationFailed,
       onError: onFinalPublishError(alertFailedModeration),
     }),
-    [publishCommentEditOptions, cid, communityAddress, account?.author, parentCid, onModerationChallenge, shouldPublishBan, banExpiresAtToPublish],
+    [publishCommentEditOptions, cid, communityAddress, account?.author, parentCid, onModerationChallenge, banExpiresAtToPublish],
   );
 
   const { publishCommentEdit: publishAuthorEdit } = usePublishCommentEdit(authorEditOptions);
@@ -233,6 +243,7 @@ const EditMenu = ({ post }: { post: Comment }) => {
 
   const resetMenuState = () => {
     setPublishCommentEditOptions(defaultPublishEditOptions);
+    setOpenedBanExpiresAt(defaultPublishEditOptions.commentModeration?.author?.banExpiresAt);
     setBanDuration(
       defaultPublishEditOptions.commentModeration?.author?.banExpiresAt ? timestampToDays(defaultPublishEditOptions.commentModeration.author.banExpiresAt) : 1,
     );
