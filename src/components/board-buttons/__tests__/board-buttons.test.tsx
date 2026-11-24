@@ -476,7 +476,8 @@ describe('BoardButtons', () => {
 
     const categorySelect = container.querySelector<HTMLSelectElement>('select[aria-label="Board category"]')!;
     expect(categorySelect.value).toBe('@tech');
-    expect(categorySelect.querySelector('optgroup')?.getAttribute('label')).toBe('multiboards');
+    expect(categorySelect.querySelector('optgroup')?.getAttribute('label')).toBe('Custom Multiboards');
+    expect(categorySelect.options[categorySelect.options.length - 1]?.textContent).toBe('Add Custom…');
 
     await changeSelect(categorySelect, 'creative');
     expect(testState.navigateMock).toHaveBeenCalledWith({ pathname: '/all', search: '?c=creative' });

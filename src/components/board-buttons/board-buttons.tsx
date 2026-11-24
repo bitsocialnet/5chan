@@ -616,7 +616,7 @@ const AllFeedFilter = () => {
   const openMultiboardEditor = useMultiboardModalStore((state) => state.openMultiboardEditor);
   const savedMultiboards = useSavedMultiboards();
   const category = useBoardCategoryFromSearch(location.search);
-  // An unsaved board list shows as Custom…; [Edit] under the title reopens its picker.
+  // An unsaved board list shows as Add Custom…; [Edit] under the title reopens its picker.
   const categoryValue = category?.custom ? CUSTOM_CATEGORY_OPTION : (category?.slug ?? '');
 
   return (
@@ -648,7 +648,7 @@ const AllFeedFilter = () => {
         ))}
         {category?.savedId && !savedMultiboards.some((multiboard) => multiboard.id === category.savedId) && <option value={category.slug}>{category.name}</option>}
         {savedMultiboards.length > 0 && (
-          <optgroup label={t('multiboards')}>
+          <optgroup label='Custom Multiboards'>
             {savedMultiboards.map((multiboard) => (
               <option key={multiboard.id} value={getSavedMultiboardSlug(multiboard.id)}>
                 {multiboard.name}
@@ -656,7 +656,7 @@ const AllFeedFilter = () => {
             ))}
           </optgroup>
         )}
-        <option value={CUSTOM_CATEGORY_OPTION}>Custom…</option>
+        <option value={CUSTOM_CATEGORY_OPTION}>Add Custom…</option>
       </select>
     </>
   );
