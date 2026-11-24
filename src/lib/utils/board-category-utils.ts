@@ -1,13 +1,21 @@
+import { toReadableSearchString } from './search-string-utils';
+
 // A board category is one heading of the home page's board list. /all?c=<slug> narrows the /all
-// multiboard to that category's directory boards.
+// multiboard to that category's directory boards. /all?c=g,sci,diy narrows it to a list of boards the
+// viewer picked, so any set of boards is one bookmark.
 export interface BoardCategory {
   slug: string;
   name: string;
   nsfw?: boolean;
   directoryCodes: string[];
+  /** Read from a list of board codes in the URL rather than one of BOARD_CATEGORIES. */
+  custom?: boolean;
 }
 
 export const BOARD_CATEGORY_QUERY_PARAM = 'c';
+
+const CUSTOM_BOARD_LIST_SEPARATOR = ',';
+const BOARD_CODE_PATTERN = /^[a-z0-9]+$/;
 
 // Order and membership follow the home page's board list.
 export const BOARD_CATEGORIES: BoardCategory[] = [
@@ -28,8 +36,29 @@ export const BOARD_CATEGORIES: BoardCategory[] = [
   { slug: 'adult', name: 'Adult', nsfw: true, directoryCodes: ['s', 'hc', 'hm', 'h', 'e', 'u', 'd', 'y', 't', 'hr', 'gif', 'aco', 'r'] },
 ];
 
+/** Board codes from a list like "g,sci,/diy/": lowercased, slashes stripped, invalid entries and repeats dropped, order kept. */
+export const parseBoardCodeList = (value: string): string[] => [
+  ...new Set(
+    value
+      .split(CUSTOM_BOARD_LIST_SEPARATOR)
+      .map((code) =>
+        code
+          .trim()
+          .replace(/^\/+|\/+$/g, '')
+          .toLowerCase(),
+      )
+      .filter((code) => BOARD_CODE_PATTERN.test(code)),
+  ),
+];
+
+/** The multiboard for a picked list of board codes; its slug is the canonical ?c= value. */
+export const getCustomBoardCategory = (codes: string[]): BoardCategory | undefined =>
+  codes.length > 0 ? { slug: codes.join(CUSTOM_BOARD_LIST_SEPARATOR), name: codes.map((code) => `/${code}/`).join('+'), directoryCodes: codes, custom: true } : undefined;
+
+// Codes are checked against the loaded directories where boards are listed, not here: boards published to
+// bitsocialnet/lists after a release still work, and a code with no directory simply contributes no boards.
 export const getBoardCategory = (slug: string | null | undefined): BoardCategory | undefined =>
-  slug ? BOARD_CATEGORIES.find((category) => category.slug === slug) : undefined;
+  slug ? (BOARD_CATEGORIES.find((category) => category.slug === slug) ?? getCustomBoardCategory(parseBoardCodeList(slug))) : undefined;
 
 export const getBoardCategoryFromSearch = (search: string): BoardCategory | undefined => getBoardCategory(new URLSearchParams(search).get(BOARD_CATEGORY_QUERY_PARAM));
 
@@ -41,7 +70,7 @@ export const getSearchWithBoardCategory = (search: string, slug: string | undefi
   } else {
     params.delete(BOARD_CATEGORY_QUERY_PARAM);
   }
-  const nextSearch = params.toString();
+  const nextSearch = toReadableSearchString(params);
   return nextSearch ? `?${nextSearch}` : '';
 };
 

@@ -26,6 +26,7 @@ import useFeedResetStore from '../../stores/use-feed-reset-store';
 import useHiddenCatalogThreadsStore from '../../stores/use-hidden-catalog-threads-store';
 import useSortingStore from '../../stores/use-sorting-store';
 import useAllFeedFilterStore from '../../stores/use-all-feed-filter-store';
+import useCustomMultiboardModalStore from '../../stores/use-custom-multiboard-modal-store';
 import useModQueueStore from '../../stores/use-mod-queue-store';
 import useFeedViewSettingsStore from '../../stores/use-feed-view-settings-store';
 import useThreadLiveUpdatesStore, { type ThreadUpdaterStatus } from '../../stores/use-thread-live-updates-store';
@@ -579,12 +580,17 @@ const TimeFilter = ({ isInAllView, isInCatalogView, isInSubscriptionsView, isInM
   );
 };
 
+// The category select's entry for a picked list of boards. Never a category slug, and not a valid board code list.
+const CUSTOM_CATEGORY_OPTION = '__custom__';
+
 const AllFeedFilter = () => {
   const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
   const { filter, setFilter } = useAllFeedFilterStore();
-  const categorySlug = getBoardCategoryFromSearch(location.search)?.slug ?? '';
+  const openCustomMultiboardModal = useCustomMultiboardModalStore((state) => state.openCustomMultiboardModal);
+  const category = getBoardCategoryFromSearch(location.search);
+  const categoryValue = category?.custom ? CUSTOM_CATEGORY_OPTION : (category?.slug ?? '');
 
   return (
     <>
@@ -596,16 +602,24 @@ const AllFeedFilter = () => {
       </select>{' '}
       <select
         aria-label='Board category'
-        value={categorySlug}
-        onChange={(e) => navigate({ pathname: location.pathname, search: getSearchWithBoardCategory(location.search, e.target.value || undefined) })}
+        value={categoryValue}
+        onChange={(e) => {
+          // The select stays on the current category until the picker navigates.
+          if (e.target.value === CUSTOM_CATEGORY_OPTION) {
+            openCustomMultiboardModal();
+            return;
+          }
+          navigate({ pathname: location.pathname, search: getSearchWithBoardCategory(location.search, e.target.value || undefined) });
+        }}
       >
         <option value=''>All Categories</option>
-        {BOARD_CATEGORIES.map((category) => (
-          <option key={category.slug} value={category.slug}>
-            {category.name}
-            {category.nsfw ? ' (NSFW)' : ''}
+        {BOARD_CATEGORIES.map((boardCategory) => (
+          <option key={boardCategory.slug} value={boardCategory.slug}>
+            {boardCategory.name}
+            {boardCategory.nsfw ? ' (NSFW)' : ''}
           </option>
         ))}
+        <option value={CUSTOM_CATEGORY_OPTION}>Custom…</option>
       </select>
     </>
   );

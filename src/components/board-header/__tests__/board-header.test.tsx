@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import BoardHeader from '../board-header';
 import { TRASH_BOARD_ADDRESS, TRASH_BOARD_TITLE } from '../../../lib/special-boards';
 import useSearchSummaryStore from '../../../stores/use-search-summary-store';
+import useCustomMultiboardModalStore from '../../../stores/use-custom-multiboard-modal-store';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
@@ -204,6 +205,29 @@ describe('BoardHeader', () => {
     expect(container.querySelector('img')?.getAttribute('src')).toBe('banner-a.png');
     expect(container.textContent).not.toContain('subscriptions_subtitle');
     expect(container.textContent).toContain('all_subtitle');
+  });
+
+  it('titles a custom board list and reopens the picker from its board row', async () => {
+    useCustomMultiboardModalStore.setState({ showModal: false });
+
+    await renderHeader('/all?c=mu,nope');
+
+    expect(container.textContent).toContain('/all/ - /mu/+/nope/');
+    expect(container.querySelector('[class*="boardCategoryList"] a')?.getAttribute('href')).toBe('/mu');
+    const editButton = Array.from(container.querySelectorAll('button')).find((button) => button.textContent === 'Edit');
+
+    await act(async () => {
+      editButton?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    expect(useCustomMultiboardModalStore.getState().showModal).toBe(true);
+    useCustomMultiboardModalStore.setState({ showModal: false });
+  });
+
+  it('does not offer the picker on a named category', async () => {
+    await renderHeader('/all?c=creative');
+
+    expect(Array.from(container.querySelectorAll('button')).some((button) => button.textContent === 'Edit')).toBe(false);
   });
 
   it('titles the archive search with its query and provider, without board status chrome', async () => {

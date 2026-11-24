@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DesktopBoardButtons, BracketedCatalogButton, MobileBoardButtons } from '../board-buttons';
 import useThreadLiveUpdatesStore from '../../../stores/use-thread-live-updates-store';
 import useHiddenCatalogThreadsStore from '../../../stores/use-hidden-catalog-threads-store';
+import useCustomMultiboardModalStore from '../../../stores/use-custom-multiboard-modal-store';
 import { clearStableLastVisitTimeFilterName, LAST_VISIT_STORAGE_KEY } from '../../../lib/utils/time-filter-utils';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -448,6 +449,21 @@ describe('BoardButtons', () => {
     expect(testState.navigateMock).toHaveBeenCalledWith({ pathname: '/all/catalog', search: '?t=24h&c=video-games' });
     expect(testState.navigateMock).toHaveBeenCalledWith({ pathname: '/all/catalog', search: '?t=1w' });
     expect(testState.resetMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('opens the board picker from the category select without leaving the current feed', async () => {
+    useCustomMultiboardModalStore.setState({ showModal: false });
+
+    await renderWithRoute(createElement(DesktopBoardButtons), '/all/catalog?c=g,sci');
+
+    const categorySelect = container.querySelector<HTMLSelectElement>('select[aria-label="Board category"]')!;
+    expect(categorySelect.value).toBe('__custom__');
+
+    await changeSelect(categorySelect, '__custom__');
+
+    expect(useCustomMultiboardModalStore.getState().showModal).toBe(true);
+    expect(testState.navigateMock).not.toHaveBeenCalled();
+    useCustomMultiboardModalStore.setState({ showModal: false });
   });
 
   it('renders the desktop hidden-thread catalog control immediately after refresh', async () => {

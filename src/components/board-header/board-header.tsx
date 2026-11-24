@@ -1,4 +1,5 @@
 import { memo, useState } from 'react';
+import capitalize from 'lodash/capitalize';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAccountComment, useCommunity } from '@bitsocial/bitsocial-react-hooks';
@@ -15,6 +16,7 @@ import { getSearchPostStatus, MAX_SEARCH_QUERY_LENGTH, type SearchPostStatus } f
 import { getSearchProvider } from '../../lib/search-providers';
 import useSearchProviderStore from '../../stores/use-search-provider-store';
 import useSearchSummaryStore from '../../stores/use-search-summary-store';
+import useCustomMultiboardModalStore from '../../stores/use-custom-multiboard-modal-store';
 import styles from './board-header.module.css';
 import { useDirectories } from '../../hooks/use-directories';
 import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
@@ -74,8 +76,11 @@ const SearchProviderSubtitle = ({ query, postStatus }: { query: string; postStat
 };
 
 // A category multiboard's subtitle: its boards as the bracketed link row a boards bar uses, so each is one click away.
+// A custom board list adds [Edit], which reopens the picker on its boards.
 const BoardCategorySubtitle = ({ category }: { category: BoardCategory }) => {
+  const { t } = useTranslation();
   const directories = useDirectories();
+  const openCustomMultiboardModal = useCustomMultiboardModalStore((state) => state.openCustomMultiboardModal);
   const boards = filterByBoardCategory(directories, category, getDirectoryCode);
 
   return (
@@ -93,6 +98,16 @@ const BoardCategorySubtitle = ({ category }: { category: BoardCategory }) => {
         );
       })}
       ]
+      {category.custom && (
+        <>
+          {' '}
+          [
+          <button type='button' className={styles.boardCategoryEdit} onClick={openCustomMultiboardModal}>
+            {capitalize(t('edit'))}
+          </button>
+          ]
+        </>
+      )}
     </span>
   );
 };

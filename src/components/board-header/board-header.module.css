@@ -41,6 +41,23 @@
   text-decoration: var(--boardsbar-desktop-link-text-decoration-hover);
 }
 
+.boardCategoryEdit {
+  all: unset;
+  padding: 0 1px;
+  cursor: pointer;
+  color: var(--boardsbar-desktop-link-text-color);
+  text-decoration: var(--boardsbar-desktop-link-text-decoration);
+}
+
+.boardCategoryEdit:hover {
+  color: var(--boardsbar-desktop-link-text-color-hover);
+  text-decoration: var(--boardsbar-desktop-link-text-decoration-hover);
+}
+
+.boardCategoryEdit:focus-visible {
+  outline: auto;
+}
+
 .clickableSubtitle {
   appearance: none;
   background: transparent;
