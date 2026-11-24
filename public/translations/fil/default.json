@@ -480,7 +480,6 @@
   "directory_vote_needs_test_pass": "Hindi naipadala ang boto mo: walang 5chan Pass ang voting address ng device na ito na <address>{{address}}</address>. Nasa testnet muna ang pagboto, kaya puwede kang kumuha ng libreng test Pass para sa address na ito mula sa <faucetLink>faucet</faucetLink>.",
   "directory_vote_board_not_found": "Walang board na nahanap sa {{address}}. Maglagay ng .bso address o public key ng isang board.",
   "directory_vote_failed": "Hindi maipadala ang boto mo: {{error}}",
-  "user_banned_from_board": "Na-ban ang user sa {{board}}",
   "thread_update_updating": "Nag-a-update...",
   "thread_update_no_new_posts": "Walang bagong post",
   "thread_update_new_post": "1 bagong post",
@@ -612,5 +611,6 @@
   "pass_auth_no_pass": "Wala ka pang 5chan Pass? <1>I-click dito</1> para matuto pa.",
   "pass_login_prompt": "May 5chan Pass ka na? <1>Mag-log in</1>.",
   "local_data": "Lokal na data",
-  "post_as_board_staff_confirm": "Isa kang may-ari, administrator o moderator ng board na ito, at hindi kailanman ina-anonymize ng mga board ang kanilang staff. Mapa-publish ang iyong Bitsocial identifier, at ang iyong 5chan Pass wallet kung naka-log in ka, kasama ng post na ito. I-post pa rin?"
+  "post_as_board_staff_confirm": "Isa kang may-ari, administrator o moderator ng board na ito, at hindi kailanman ina-anonymize ng mga board ang kanilang staff. Mapa-publish ang iyong Bitsocial identifier, at ang iyong 5chan Pass wallet kung naka-log in ka, kasama ng post na ito. I-post pa rin?",
+  "user_banned_for_this_post": "Na-ban ang user dahil sa post na ito"
 }

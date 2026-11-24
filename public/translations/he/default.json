@@ -480,7 +480,6 @@
   "directory_vote_needs_test_pass": "ההצבעה שלך לא נשלחה: כתובת ההצבעה של המכשיר הזה <address>{{address}}</address> לא מחזיקה 5chan Pass. ההצבעה פועלת כרגע על testnet, כך שאפשר לקבל Pass בדיקה בחינם לכתובת הזו מה-<faucetLink>faucet</faucetLink>.",
   "directory_vote_board_not_found": "לא נמצא לוח בכתובת {{address}}. הזינו כתובת .bso או מפתח ציבורי של לוח.",
   "directory_vote_failed": "לא ניתן היה לשלוח את ההצבעה שלך: {{error}}",
-  "user_banned_from_board": "המשתמש נחסם מ-{{board}}",
   "thread_update_updating": "מעדכן...",
   "thread_update_no_new_posts": "אין פוסטים חדשים",
   "thread_update_new_post": "1 פוסט חדש",
@@ -612,5 +611,6 @@
   "pass_auth_no_pass": "אין לך 5chan Pass? <1>לחץ כאן</1> למידע נוסף.",
   "pass_login_prompt": "כבר יש לך 5chan Pass? <1>התחבר</1>.",
   "local_data": "נתונים מקומיים",
-  "post_as_board_staff_confirm": "אתה בעלים, מנהל מערכת או מנהל של הלוח הזה, ולוחות לעולם אינם הופכים את אנשי הצוות שלהם לאנונימיים. מזהה ה-Bitsocial שלך, וגם ארנק ה-5chan Pass שלך אם התחברת, יפורסמו עם הפוסט הזה. לפרסם בכל זאת?"
+  "post_as_board_staff_confirm": "אתה בעלים, מנהל מערכת או מנהל של הלוח הזה, ולוחות לעולם אינם הופכים את אנשי הצוות שלהם לאנונימיים. מזהה ה-Bitsocial שלך, וגם ארנק ה-5chan Pass שלך אם התחברת, יפורסמו עם הפוסט הזה. לפרסם בכל זאת?",
+  "user_banned_for_this_post": "המשתמש נחסם עבור הפוסט הזה"
 }

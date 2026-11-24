@@ -480,7 +480,6 @@
   "directory_vote_needs_test_pass": "आपका वोट नहीं भेजा गया: इस डिवाइस के वोटिंग पते <address>{{address}}</address> में 5chan Pass नहीं है। वोटिंग अभी testnet पर है, इसलिए आप <faucetLink>फ़ॉसेट</faucetLink> से इस पते के लिए मुफ़्त टेस्ट Pass पा सकते हैं।",
   "directory_vote_board_not_found": "{{address}} पर कोई बोर्ड नहीं मिला। कोई .bso पता या किसी बोर्ड की सार्वजनिक कुंजी दर्ज करें।",
   "directory_vote_failed": "आपका वोट भेजा नहीं जा सका: {{error}}",
-  "user_banned_from_board": "उपयोगकर्ता को {{board}} से प्रतिबंधित कर दिया गया था",
   "thread_update_updating": "अपडेट हो रहा है...",
   "thread_update_no_new_posts": "कोई नई पोस्ट नहीं",
   "thread_update_new_post": "1 नई पोस्ट",
@@ -612,5 +611,6 @@
   "pass_auth_no_pass": "5chan Pass नहीं है? अधिक जानने के लिए <1>यहां क्लिक करें</1>।",
   "pass_login_prompt": "पहले से 5chan Pass है? <1>लॉग इन करें</1>।",
   "local_data": "स्थानीय डेटा",
-  "post_as_board_staff_confirm": "आप इस बोर्ड के मालिक, प्रशासक या मॉडरेटर हैं, और बोर्ड अपने स्टाफ़ को कभी गुमनाम नहीं करते। आपका Bitsocial पहचानकर्ता, और यदि आपने लॉग इन किया है तो आपका 5chan Pass वॉलेट, इस पोस्ट के साथ प्रकाशित होंगे। फिर भी पोस्ट करें?"
+  "post_as_board_staff_confirm": "आप इस बोर्ड के मालिक, प्रशासक या मॉडरेटर हैं, और बोर्ड अपने स्टाफ़ को कभी गुमनाम नहीं करते। आपका Bitsocial पहचानकर्ता, और यदि आपने लॉग इन किया है तो आपका 5chan Pass वॉलेट, इस पोस्ट के साथ प्रकाशित होंगे। फिर भी पोस्ट करें?",
+  "user_banned_for_this_post": "इस पोस्ट के लिए उपयोगकर्ता पर प्रतिबंध लगा दिया गया था"
 }

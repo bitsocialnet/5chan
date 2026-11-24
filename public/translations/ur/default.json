@@ -480,7 +480,6 @@
   "directory_vote_needs_test_pass": "آپ کا ووٹ نہیں بھیجا گیا: اس ڈیوائس کے ووٹنگ پتے <address>{{address}}</address> میں کوئی 5chan Pass نہیں ہے۔ ووٹنگ فی الحال testnet پر ہے، اس لیے آپ اس پتے کے لیے <faucetLink>فاسیٹ</faucetLink> سے مفت ٹیسٹ Pass حاصل کر سکتے ہیں۔",
   "directory_vote_board_not_found": "{{address}} پر کوئی بورڈ نہیں ملا۔ کوئی .bso پتہ یا کسی بورڈ کی پبلک کی درج کریں۔",
   "directory_vote_failed": "آپ کا ووٹ نہیں بھیجا جا سکا: {{error}}",
-  "user_banned_from_board": "صارف پر {{board}} سے پابندی لگا دی گئی",
   "thread_update_updating": "اپ ڈیٹ ہو رہا ہے...",
   "thread_update_no_new_posts": "کوئی نئی پوسٹ نہیں",
   "thread_update_new_post": "1 نئی پوسٹ",
@@ -612,5 +611,6 @@
   "pass_auth_no_pass": "5chan Pass نہیں ہے؟ مزید جاننے کے لیے <1>یہاں کلک کریں</1>۔",
   "pass_login_prompt": "پہلے سے 5chan Pass ہے؟ <1>لاگ ان کریں</1>۔",
   "local_data": "مقامی ڈیٹا",
-  "post_as_board_staff_confirm": "آپ اس بورڈ کے مالک، منتظم یا ماڈریٹر ہیں، اور بورڈز اپنے عملے کو کبھی گمنام نہیں بناتے۔ آپ کا Bitsocial شناخت کنندہ، اور اگر آپ نے لاگ ان کیا ہے تو آپ کا 5chan Pass والیٹ، اس پوسٹ کے ساتھ شائع ہوں گے۔ پھر بھی پوسٹ کریں؟"
+  "post_as_board_staff_confirm": "آپ اس بورڈ کے مالک، منتظم یا ماڈریٹر ہیں، اور بورڈز اپنے عملے کو کبھی گمنام نہیں بناتے۔ آپ کا Bitsocial شناخت کنندہ، اور اگر آپ نے لاگ ان کیا ہے تو آپ کا 5chan Pass والیٹ، اس پوسٹ کے ساتھ شائع ہوں گے۔ پھر بھی پوسٹ کریں؟",
+  "user_banned_for_this_post": "اس پوسٹ کے لئے صارف کو پابندی عائد کردی گئی تھی"
 }
