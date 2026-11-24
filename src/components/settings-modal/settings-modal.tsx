@@ -16,7 +16,7 @@ const loadMediaHostingSettings = createSectionLoader(() => import('./media-hosti
 const loadStatsProvidersSettings = createSectionLoader(() => import('./stats-providers-settings/stats-providers-settings'));
 const loadAdvancedSettings = createSectionLoader(() => import('./advanced-settings/advanced-settings'));
 const loadSubscriptionsSetting = createSectionLoader(() => import('./subscriptions-setting/subscriptions-setting'));
-const loadMultiboardsSetting = createSectionLoader(() => import('./multiboards-setting/multiboards-setting'));
+const loadMultiboardsSetting = createSectionLoader(() => import('./subscriptions-setting/multiboards-setting'));
 const loadTrustedBoardLinksSetting = createSectionLoader(() => import('./trusted-board-links-setting/trusted-board-links-setting'));
 const loadP2PStatsSettings = createSectionLoader(() => import('./p2p-stats-settings/p2p-stats-settings'));
 

@@ -30,31 +30,25 @@
   color: var(--boardsbar-separator-color);
 }
 
-.boardCategoryList a {
-  padding: 0 1px;
-  color: var(--boardsbar-desktop-link-text-color);
-  text-decoration: var(--boardsbar-desktop-link-text-decoration);
-}
-
-.boardCategoryList a:hover {
-  color: var(--boardsbar-desktop-link-text-color-hover);
-  text-decoration: var(--boardsbar-desktop-link-text-decoration-hover);
-}
-
-.boardCategoryEdit {
+.boardCategoryList button {
   all: unset;
-  padding: 0 1px;
   cursor: pointer;
+}
+
+.boardCategoryList a,
+.boardCategoryList button {
+  padding: 0 1px;
   color: var(--boardsbar-desktop-link-text-color);
   text-decoration: var(--boardsbar-desktop-link-text-decoration);
 }
 
-.boardCategoryEdit:hover {
+.boardCategoryList a:hover,
+.boardCategoryList button:hover {
   color: var(--boardsbar-desktop-link-text-color-hover);
   text-decoration: var(--boardsbar-desktop-link-text-decoration-hover);
 }
 
-.boardCategoryEdit:focus-visible {
+.boardCategoryList button:focus-visible {
   outline: auto;
 }
 
@@ -112,15 +106,15 @@
   .content {
     margin-top: 40px;
   }
- }
+}
 
- @media (min-width: 640px) {
+@media (min-width: 640px) {
   .bannerCnt {
     padding: 5px 0 2px 0;
   }
- }
+}
 
- .garland {
+.garland {
   border-image-slice: 50 0 50 0;
   border-image-width: 40px 0px 0px 0px;
   border-image-outset: 0px 0px 0px 0px;
@@ -128,7 +122,7 @@
   border-image-source: url('/assets/garland.png');
   border-style: solid;
   padding-top: 50px;
- }
+}
 
 /* 4chan's Halloween stylesheet dims the banner. */
 @media (min-width: 640px) {

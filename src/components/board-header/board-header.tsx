@@ -106,7 +106,7 @@ const BoardCategorySubtitle = ({ category }: { category: BoardCategory }) => {
         <>
           {' '}
           [
-          <button type='button' className={styles.boardCategoryEdit} onClick={edit}>
+          <button type='button' onClick={edit}>
             {capitalize(t('edit'))}
           </button>
           ]

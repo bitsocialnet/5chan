@@ -4,7 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { useSavedMultiboards } from '../../../hooks/use-saved-multiboards';
 import { getSavedMultiboardSlug, getSearchWithBoardCategory, type SavedMultiboard } from '../../../lib/utils/board-category-utils';
 import { deleteMultiboard } from '../../../lib/utils/saved-multiboards';
-import styles from './multiboards-setting.module.css';
+// The subscriptions section's list layout, so the two sections share one stylesheet.
+import styles from './subscriptions-setting.module.css';
 
 const MultiboardRow = ({ multiboard, onError }: { multiboard: SavedMultiboard; onError: (message: string) => void }) => {
   const { t } = useTranslation();
@@ -14,10 +15,10 @@ const MultiboardRow = ({ multiboard, onError }: { multiboard: SavedMultiboard; o
   };
 
   return (
-    <li className={styles.multiboard}>
+    <li className={styles.subscription}>
       <Link to={{ pathname: '/all', search: getSearchWithBoardCategory('', getSavedMultiboardSlug(multiboard.id)) }}>{multiboard.name}</Link> ({multiboard.boards.length}{' '}
       {multiboard.boards.length === 1 ? 'board' : 'boards'})
-      <span className={styles.action}>
+      <span className={styles.subscriptionButton}>
         [
         <button type='button' className={styles.button} onClick={remove}>
           {t('delete')}
@@ -37,15 +38,15 @@ const MultiboardsSetting = () => {
   return (
     <div className={styles.setting}>
       {savedMultiboards.length > 0 ? (
-        <ul className={styles.multiboards}>
+        <ul className={styles.subscriptions}>
           {savedMultiboards.map((multiboard) => (
             <MultiboardRow key={multiboard.id} multiboard={multiboard} onError={setError} />
           ))}
         </ul>
       ) : (
-        <div className={styles.empty}>No saved multiboards. Make one with Custom… in the category menu on /all, or with [Add to Multiboard] on a board.</div>
+        <div className={styles.notSubscribed}>No saved multiboards. Make one with Add Custom… in the category menu on /all, or with [Add to Multiboard] on a board.</div>
       )}
-      {error && <div className={`red ${styles.empty}`}>{error}</div>}
+      {error && <div className={`red ${styles.notSubscribed}`}>{error}</div>}
     </div>
   );
 };

@@ -17,6 +17,7 @@ import { getBoardNameFromDirectoryTitle, getDirectoryCode } from '../../lib/util
 import { createMultiboard, deleteMultiboard, MAX_MULTIBOARD_NAME_LENGTH, setMultiboardHasBoard, updateMultiboard } from '../../lib/utils/saved-multiboards';
 import { isAllView } from '../../lib/utils/view-utils';
 import useMultiboardModalStore, { type MultiboardModal as MultiboardModalState } from '../../stores/use-multiboard-modal-store';
+import ModalFrame, { ModalFrameInput } from '../modal-frame';
 import styles from './multiboard-modal.module.css';
 
 interface PickerBoard {
@@ -149,7 +150,7 @@ const MultiboardEditor = ({ multiboardId, boards, onClose }: { multiboardId?: st
       </p>
       <div className={styles.nameRow}>
         <label htmlFor='multiboard-name'>Name</label>
-        <input
+        <ModalFrameInput
           id='multiboard-name'
           type='text'
           className={styles.nameInput}
@@ -245,10 +246,6 @@ const getModalTitle = (modal: MultiboardModalState) => {
   return modal.multiboardId ? 'Edit Multiboard' : 'New Multiboard';
 };
 
-// The opener (a select, [Edit] or [Add to Multiboard]) sits behind the dialog, so take focus on open: keyboard
-// users land in the dialog and Escape reaches its handler. Module-level so it runs once per mounted dialog.
-const focusOnOpen = (dialog: HTMLDialogElement | null) => dialog?.focus();
-
 const MultiboardModal = () => {
   const modal = useMultiboardModalStore((state) => state.modal);
   const closeMultiboardModal = useMultiboardModalStore((state) => state.closeMultiboardModal);
@@ -257,37 +254,20 @@ const MultiboardModal = () => {
     return null;
   }
 
-  // A new key per view, so switching from the add list to a new multiboard starts the editor afresh.
+  // A new key per view, so switching from the add list to a new multiboard starts the editor afresh and the
+  // dialog takes focus again.
   const modalKey = modal.kind === 'add' ? `add-${modal.board}` : `editor-${modal.multiboardId ?? ''}-${modal.boards?.join(',') ?? ''}`;
 
   return (
-    <div className={styles.backdrop}>
-      <button type='button' className={styles.backdropButton} aria-label='Close multiboard modal' onClick={closeMultiboardModal} />
-      <dialog
-        key={modalKey}
-        open
-        ref={focusOnOpen}
-        tabIndex={-1}
-        className={styles.dialog}
-        aria-modal='true'
-        aria-labelledby='multiboard-modal-title'
-        onKeyDown={(event) => {
-          if (event.key === 'Escape') closeMultiboardModal();
-        }}
-      >
-        <div className={styles.hd}>
-          <h2 id='multiboard-modal-title'>{getModalTitle(modal)}</h2>
-          <button type='button' className={styles.closeButton} onClick={closeMultiboardModal} title='Close' aria-label='Close' />
-        </div>
-        <div className={styles.bd}>
-          {modal.kind === 'add' ? (
-            <AddToMultiboard board={modal.board} boardLabel={modal.boardLabel} onClose={closeMultiboardModal} />
-          ) : (
-            <MultiboardEditor multiboardId={modal.multiboardId} boards={modal.boards} onClose={closeMultiboardModal} />
-          )}
-        </div>
-      </dialog>
-    </div>
+    <ModalFrame key={modalKey} title={getModalTitle(modal)} titleId='multiboard-modal-title' closeLabel='Close multiboard modal' onClose={closeMultiboardModal}>
+      <div className={styles.content}>
+        {modal.kind === 'add' ? (
+          <AddToMultiboard board={modal.board} boardLabel={modal.boardLabel} onClose={closeMultiboardModal} />
+        ) : (
+          <MultiboardEditor multiboardId={modal.multiboardId} boards={modal.boards} onClose={closeMultiboardModal} />
+        )}
+      </div>
+    </ModalFrame>
   );
 };
 
