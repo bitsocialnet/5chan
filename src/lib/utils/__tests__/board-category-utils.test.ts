@@ -57,7 +57,9 @@ describe('board-category-utils', () => {
       addresses: ['music-posting.bso'],
       savedId: 'tech',
     });
-    expect(getBoardCategory('@gone', saved)).toEqual({ slug: '@gone', name: 'Unknown Multiboard', directoryCodes: [], addresses: [], savedId: 'gone', missing: true });
+    expect(getBoardCategory('@gone', saved)).toEqual({ slug: '@gone', name: '@gone', directoryCodes: [], addresses: [], savedId: 'gone', missing: true });
+    // Before the account's multiboards are known, the link is pending rather than missing.
+    expect(getBoardCategory('@tech')).toEqual({ slug: '@tech', name: '@tech', directoryCodes: [], addresses: [], savedId: 'tech', pending: true });
     expect(getBoardCategory('@')).toBeUndefined();
   });
 
@@ -74,6 +76,13 @@ describe('board-category-utils', () => {
       { address: 'music-posting.bso', title: 'music-posting.bso' },
     ]);
     expect(getBoardCategoryCommunities(directories, undefined)).toBe(directories);
+    // A board named by code and again by its public key is read once.
+    expect(
+      getBoardCategoryCommunities(
+        [{ address: 'tech.bso', publicKey: '12D3KooWtechpublickeyexample', title: '/g/ - Technology' }],
+        getBoardCategory('g,12D3KooWtechpublickeyexample'),
+      ),
+    ).toEqual([{ address: 'tech.bso', publicKey: '12D3KooWtechpublickeyexample', title: '/g/ - Technology' }]);
   });
 
   it('sets and removes the category while keeping other parameters', () => {

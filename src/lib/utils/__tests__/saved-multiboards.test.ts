@@ -3,6 +3,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const testState = vi.hoisted(() => ({
   account: { id: 'account-1', name: 'Account 1', multiboards: undefined as unknown },
   setAccountCalls: [] as Array<Record<string, unknown>>,
+  otherAccounts: {} as Record<string, unknown>,
+  activeAccountId: undefined as string | undefined,
 }));
 
 vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
@@ -15,7 +17,12 @@ vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
 }));
 
 vi.mock('../../bitsocial-internals/stores', () => ({
-  accountsStore: { getState: () => ({ accounts: { [testState.account.id]: testState.account }, activeAccountId: testState.account.id }) },
+  accountsStore: {
+    getState: () => ({
+      accounts: { [testState.account.id]: testState.account, ...testState.otherAccounts },
+      activeAccountId: testState.activeAccountId ?? testState.account.id,
+    }),
+  },
 }));
 
 import { getSavedMultiboards } from '../board-category-utils';
@@ -25,6 +32,8 @@ describe('saved multiboards', () => {
   beforeEach(() => {
     testState.account = { id: 'account-1', name: 'Account 1', multiboards: undefined };
     testState.setAccountCalls = [];
+    testState.otherAccounts = {};
+    testState.activeAccountId = undefined;
   });
 
   it('skips malformed entries in the account', () => {
@@ -53,6 +62,29 @@ describe('saved multiboards', () => {
     await Promise.all([setMultiboardHasBoard('tech', 'sci', true), setMultiboardHasBoard('tech', 'diy', true), setMultiboardHasBoard('tech', 'g', false)]);
 
     expect(testState.account.multiboards).toEqual([{ id: 'tech', name: 'Tech', boards: ['sci', 'diy'] }]);
+  });
+
+  it('treats a board held by its other identifier as already there, and removes it by either', async () => {
+    testState.account.multiboards = [{ id: 'tech', name: 'Tech', boards: ['music-posting.bso'] }];
+
+    await setMultiboardHasBoard('tech', 'mu', true, ['music-posting.bso']);
+    expect(testState.account.multiboards).toEqual([{ id: 'tech', name: 'Tech', boards: ['music-posting.bso'] }]);
+
+    await setMultiboardHasBoard('tech', 'mu', false, ['music-posting.bso']);
+    expect(testState.account.multiboards).toEqual([{ id: 'tech', name: 'Tech', boards: [] }]);
+  });
+
+  it('writes a queued change to the account that was active when it was asked for', async () => {
+    testState.account.multiboards = [{ id: 'tech', name: 'Tech', boards: ['g'] }];
+    const first = setMultiboardHasBoard('tech', 'sci', true);
+    const second = setMultiboardHasBoard('tech', 'diy', true);
+    // Another account becomes active while the first write is still going.
+    testState.otherAccounts = { 'account-2': { id: 'account-2', name: 'Account 2', multiboards: [{ id: 'tech', name: 'Other', boards: [] }] } };
+    testState.activeAccountId = 'account-2';
+    await Promise.all([first, second]);
+
+    expect(testState.setAccountCalls.map((account) => account.id)).toEqual(['account-1', 'account-1']);
+    expect(testState.account.multiboards).toEqual([{ id: 'tech', name: 'Tech', boards: ['g', 'sci', 'diy'] }]);
   });
 
   it('renames, changes boards and deletes', async () => {

@@ -363,7 +363,24 @@ interface BoardsBarMobileProps {
 }
 
 // In /all, the board select shows the saved multiboard being read, when the account has it.
-const getAllSelectValue = (categorySlug: string | undefined, savedSlugs: Set<string>) => (categorySlug && savedSlugs.has(categorySlug) ? categorySlug : 'all');
+// The board select's multiboard parts: the saved multiboards as options, and in /all narrowed to a category,
+// board list or multiboard, that as the value, with an option of its own unless it is a saved one, so choosing
+// All 5chan Directories leaves it.
+const useMultiboardSelect = (isInAllView: boolean, search: string) => {
+  const savedMultiboards = useSavedMultiboards();
+  const category = useBoardCategoryFromSearch(search);
+  return useMemo(() => {
+    const savedOptions = savedMultiboards.map((multiboard) => ({ value: getSavedMultiboardSlug(multiboard.id), label: `/all/ - ${multiboard.name}` }));
+    const savedSlugs = new Set(savedOptions.map((option) => option.value));
+    const shownCategory = isInAllView ? category : undefined;
+    return {
+      savedOptions,
+      savedSlugs,
+      allValue: shownCategory?.slug ?? 'all',
+      categoryOptions: shownCategory && !savedSlugs.has(shownCategory.slug) ? [{ value: shownCategory.slug, label: `/all/ - ${shownCategory.name}` }] : [],
+    };
+  }, [savedMultiboards, category, isInAllView]);
+};
 
 // A saved multiboard is /all narrowed by its ?c=@id slug; every other value is a path.
 const getBoardSelectTarget = (value: string, savedSlugs: Set<string>, catalogSuffix: string) =>
@@ -386,10 +403,16 @@ const BoardsBarMobile = memo(({ communityAddress, pinnedOnDesktop, autoHide }: B
   const isInModView = isModView(location.pathname);
   const isInSearchView = isSearchView(location.pathname);
   const boardPath = useBoardPath(communityAddress);
-  const savedMultiboards = useSavedMultiboards();
-  const savedSlugs = useMemo(() => new Set(savedMultiboards.map((multiboard) => getSavedMultiboardSlug(multiboard.id))), [savedMultiboards]);
-  const allValue = getAllSelectValue(useBoardCategoryFromSearch(location.search)?.slug, savedSlugs);
-  const selectValue = isInAllView ? allValue : isInSubscriptionsView ? 'subs' : isInModView ? 'mod' : isInSearchView ? 'search' : boardPath || communityAddress;
+  const multiboardSelect = useMultiboardSelect(isInAllView, location.search);
+  const selectValue = isInAllView
+    ? multiboardSelect.allValue
+    : isInSubscriptionsView
+      ? 'subs'
+      : isInModView
+        ? 'mod'
+        : isInSearchView
+          ? 'search'
+          : boardPath || communityAddress;
 
   const accountCommunityAddresses = useAccountCommunityAddresses();
 
@@ -408,7 +431,7 @@ const BoardsBarMobile = memo(({ communityAddress, pinnedOnDesktop, autoHide }: B
       { value: 'subs', label: subsTitle },
       { value: 'search', label: searchTitle },
       ...(accountCommunityAddresses.length > 0 ? [{ value: 'mod', label: modTitle }] : []),
-      ...savedMultiboards.map((multiboard) => ({ value: getSavedMultiboardSlug(multiboard.id), label: `/all/ - ${multiboard.name}` })),
+      ...multiboardSelect.savedOptions,
     ];
 
     const directoryOptions = directoryBoards.map((board) => {
@@ -417,11 +440,16 @@ const BoardsBarMobile = memo(({ communityAddress, pinnedOnDesktop, autoHide }: B
     });
 
     return [...multiboards, ...directoryOptions].sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: 'base' }));
-  }, [accountCommunityAddresses.length, directoryBoards, savedMultiboards, t]);
+  }, [accountCommunityAddresses.length, directoryBoards, multiboardSelect.savedOptions, t]);
 
   const boardSelect = (
-    <select value={selectValue} onChange={(e) => navigate(getBoardSelectTarget(e.target.value, savedSlugs, isInCatalogView ? '/catalog' : ''))}>
+    <select value={selectValue} onChange={(e) => navigate(getBoardSelectTarget(e.target.value, multiboardSelect.savedSlugs, isInCatalogView ? '/catalog' : ''))}>
       {!currentIsDirectoryBoard && communityAddress && <option value={communityAddress}>{displayCommunityAddress}</option>}
+      {multiboardSelect.categoryOptions.map((option) => (
+        <option key={option.value} value={option.value}>
+          {option.label}
+        </option>
+      ))}
       {sortedBoardOptions.map((opt) => (
         <option key={opt.value} value={opt.value}>
           {opt.label}

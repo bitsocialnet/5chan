@@ -47,17 +47,20 @@ const toCodeBoards = (directories: DirectoryCommunity[]): PickerBoard[] => {
 };
 
 // The home page headings, then directories published to bitsocialnet/lists after those headings were written,
-// then boards outside the directories: the multiboard's own and the account's subscriptions.
-const getPickerGroups = (directories: DirectoryCommunity[], addresses: string[]): PickerGroup[] => {
+// then boards by address: every address in the starting list, even one a directory board has (saved by address,
+// it stays on that board instead of following the directory), and subscriptions outside the directories.
+const getPickerGroups = (directories: DirectoryCommunity[], listAddresses: string[], subscriptions: string[]): PickerGroup[] => {
   const categorizedCodes = new Set(BOARD_CATEGORIES.flatMap((category) => category.directoryCodes));
   const uncategorized = directories.filter((directory) => {
     const code = getDirectoryCode(directory);
     return code !== null && !categorizedCodes.has(code);
   });
   const directoryAddresses = new Set(directories.map((directory) => directory.address));
-  const otherBoards = addresses
-    .filter((address) => !directoryAddresses.has(address))
-    .map((address) => ({ value: address, name: getBoardListEntryLabel(address), title: address }));
+  const otherBoards = [...new Set([...listAddresses, ...subscriptions.filter((address) => !directoryAddresses.has(address))])].map((address) => ({
+    value: address,
+    name: getBoardListEntryLabel(address),
+    title: address,
+  }));
   return [
     ...BOARD_CATEGORIES.map((category) => ({
       name: category.name,
@@ -85,9 +88,12 @@ const MultiboardEditor = ({ multiboardId, boards, onClose }: { multiboardId?: st
   const [name, setName] = useState(() => editing?.name ?? '');
   const [status, setStatus] = useState<{ saving: boolean; error?: string }>({ saving: false });
   const groups = useMemo(
-    () => getPickerGroups(directories, [...new Set([...parseBoardList(initialBoards.join(',')).addresses, ...subscriptions])]),
+    () => getPickerGroups(directories, parseBoardList(initialBoards.join(',')).addresses, subscriptions),
     [directories, initialBoards, subscriptions],
   );
+  // A save that finishes after this editor was closed (or another opened) must not navigate or close that one.
+  const openedModal = useMultiboardModalStore((state) => state.modal);
+  const isStillOpen = () => useMultiboardModalStore.getState().modal === openedModal;
 
   // Listing order, not click order, so the same boards always make the same link. Boards in the starting list
   // that are not listed (a typo, or a category's boards that have no directory yet) are dropped here.
@@ -124,10 +130,11 @@ const MultiboardEditor = ({ multiboardId, boards, onClose }: { multiboardId?: st
       let id = editing?.id;
       if (id) await updateMultiboard(id, { name: trimmedName, boards: pickedBoards });
       else id = await createMultiboard(trimmedName, pickedBoards);
+      if (!isStillOpen()) return;
       showInAll(getSavedMultiboardSlug(id));
       onClose();
     } catch (error) {
-      setStatus({ saving: false, error: `Could not save the multiboard: ${getErrorMessage(error)}` });
+      if (isStillOpen()) setStatus({ saving: false, error: `Could not save the multiboard: ${getErrorMessage(error)}` });
     }
   };
 
@@ -136,10 +143,11 @@ const MultiboardEditor = ({ multiboardId, boards, onClose }: { multiboardId?: st
     setStatus({ saving: true });
     try {
       await deleteMultiboard(editing.id);
+      if (!isStillOpen()) return;
       if (currentCategory?.savedId === editing.id) showInAll(undefined);
       onClose();
     } catch (error) {
-      setStatus({ saving: false, error: `Could not delete the multiboard: ${getErrorMessage(error)}` });
+      if (isStillOpen()) setStatus({ saving: false, error: `Could not delete the multiboard: ${getErrorMessage(error)}` });
     }
   };
 
@@ -202,14 +210,14 @@ const MultiboardEditor = ({ multiboardId, boards, onClose }: { multiboardId?: st
   );
 };
 
-const AddToMultiboard = ({ board, boardLabel, onClose }: { board: string; boardLabel: string; onClose: () => void }) => {
+const AddToMultiboard = ({ board, boardLabel, aliases, onClose }: { board: string; boardLabel: string; aliases: string[]; onClose: () => void }) => {
   const savedMultiboards = useSavedMultiboards();
   const openMultiboardEditor = useMultiboardModalStore((state) => state.openMultiboardEditor);
   const [error, setError] = useState<string>();
 
   const toggle = (id: string, hasBoard: boolean) => {
     setError(undefined);
-    setMultiboardHasBoard(id, board, hasBoard).catch((reason: unknown) => setError(`Could not change the multiboard: ${getErrorMessage(reason)}`));
+    setMultiboardHasBoard(id, board, hasBoard, aliases).catch((reason: unknown) => setError(`Could not change the multiboard: ${getErrorMessage(reason)}`));
   };
 
   return (
@@ -221,7 +229,12 @@ const AddToMultiboard = ({ board, boardLabel, onClose }: { board: string; boardL
             const id = `multiboard-add-${multiboard.id}`;
             return (
               <li key={multiboard.id}>
-                <input type='checkbox' id={id} checked={multiboard.boards.includes(board)} onChange={(event) => toggle(multiboard.id, event.target.checked)} />
+                <input
+                  type='checkbox'
+                  id={id}
+                  checked={[board, ...aliases].some((entry) => multiboard.boards.includes(entry))}
+                  onChange={(event) => toggle(multiboard.id, event.target.checked)}
+                />
                 <label htmlFor={id}>{multiboard.name}</label>
               </li>
             );
@@ -262,7 +275,7 @@ const MultiboardModal = () => {
     <ModalFrame key={modalKey} title={getModalTitle(modal)} titleId='multiboard-modal-title' closeLabel='Close multiboard modal' onClose={closeMultiboardModal}>
       <div className={styles.content}>
         {modal.kind === 'add' ? (
-          <AddToMultiboard board={modal.board} boardLabel={modal.boardLabel} onClose={closeMultiboardModal} />
+          <AddToMultiboard board={modal.board} boardLabel={modal.boardLabel} aliases={modal.aliases} onClose={closeMultiboardModal} />
         ) : (
           <MultiboardEditor multiboardId={modal.multiboardId} boards={modal.boards} onClose={closeMultiboardModal} />
         )}

@@ -18,6 +18,8 @@ export interface BoardCategory {
   savedId?: string;
   /** A saved multiboard's link that this account has no multiboard for (another account or device, or deleted). */
   missing?: boolean;
+  /** A saved multiboard's link read before the account's multiboards have loaded. */
+  pending?: boolean;
 }
 
 /** A multiboard saved in the account (account.multiboards). Each board is a directory code or a board address. */
@@ -113,15 +115,17 @@ export const getBoardCategoryBoards = (category: BoardCategory): string[] => [..
 
 // Codes are checked against the loaded directories where boards are listed, not here: boards published to
 // bitsocialnet/lists after a release still work, and a code with no directory simply contributes no boards.
-// A saved multiboard resolves against the account's saved multiboards; without them (another device, or
-// once deleted) its slug still names a category, with no boards, so feed keys and selects stay stable.
+// A saved multiboard resolves against the account's saved multiboards. Until they are known (`undefined`) or
+// when the account has none by that id, its slug still names a category, titled by the slug and with no
+// boards, so feed keys and selects stay stable: pending while loading, missing once loaded.
 export const getBoardCategory = (slug: string | null | undefined, savedMultiboards?: readonly SavedMultiboard[]): BoardCategory | undefined => {
   if (!slug) return undefined;
   if (slug.startsWith(SAVED_MULTIBOARD_PREFIX)) {
     const id = slug.slice(SAVED_MULTIBOARD_PREFIX.length);
     if (!id) return undefined;
     const multiboard = savedMultiboards?.find((saved) => saved.id === id);
-    return multiboard ? getSavedMultiboardCategory(multiboard) : { slug, name: 'Unknown Multiboard', directoryCodes: [], addresses: [], savedId: id, missing: true };
+    if (multiboard) return getSavedMultiboardCategory(multiboard);
+    return { slug, name: slug, directoryCodes: [], addresses: [], savedId: id, ...(savedMultiboards ? { missing: true } : { pending: true }) };
   }
   return BOARD_CATEGORIES.find((category) => category.slug === slug) ?? getCustomBoardCategory(parseBoardList(slug));
 };

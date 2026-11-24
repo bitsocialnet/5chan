@@ -9,8 +9,7 @@ import { useCommunityIdentifier } from '../../hooks/use-community-identifiers';
 import { useStableCommunity } from '../../hooks/use-stable-community';
 import { isAllView, isSubscriptionsView, isModView } from '../../lib/utils/view-utils';
 import { getDirectoryCode, isArchiveRoute, isDirectoryListRoute, isDirectoryRoute, isSearchDirectoryRoute, isSearchRoute } from '../../lib/utils/route-utils';
-import { type BoardCategory, getBoardCategoryBoards, getBoardListEntryLabel } from '../../lib/utils/board-category-utils';
-import { getBoardCategoryCommunities } from '../../lib/utils/board-category-communities';
+import { type BoardCategory, filterByBoardCategory, getBoardCategoryBoards, getBoardListEntryLabel } from '../../lib/utils/board-category-utils';
 import { getSpecialBoardByAddress } from '../../lib/special-boards';
 import { takeStaticShellBanner } from '../../lib/static-shell-banner';
 import { getSearchPostStatus, MAX_SEARCH_QUERY_LENGTH, type SearchPostStatus } from '../../lib/search-navigation';
@@ -78,29 +77,36 @@ const SearchProviderSubtitle = ({ query, postStatus }: { query: string; postStat
 };
 
 // A category multiboard's subtitle: its boards as the bracketed link row a boards bar uses, so each is one click away.
-// A board list or saved multiboard adds [Edit], which opens the picker on its boards.
+// A board listed by code links by code, so it follows the directory's winner; one listed by address stays on that
+// board. A board list or saved multiboard adds [Edit], which opens the picker on its boards.
 const BoardCategorySubtitle = ({ category }: { category: BoardCategory }) => {
   const { t } = useTranslation();
   const directories = useDirectories();
   const openMultiboardEditor = useMultiboardModalStore((state) => state.openMultiboardEditor);
-  const boards = getBoardCategoryCommunities(directories, category);
-  if (category.missing) return <span>This multiboard is not saved in this account.</span>;
+  if (category.pending) return null;
+  if (category.missing) return <span>{t('multiboard_not_saved')}</span>;
+
+  const codeBoards = filterByBoardCategory(directories, category, getDirectoryCode);
+  const listedAddresses = new Set(codeBoards.map((board) => board.address));
+  const links = [
+    ...codeBoards.map((board) => ({ key: board.address, to: `/${getDirectoryCode(board)}`, label: getDirectoryCode(board), title: board.title })),
+    ...(category.addresses ?? [])
+      .filter((address) => !listedAddresses.has(address))
+      .map((address) => ({ key: address, to: `/${address}`, label: getBoardListEntryLabel(address), title: address })),
+  ];
   const edit = () => (category.savedId ? openMultiboardEditor({ multiboardId: category.savedId }) : openMultiboardEditor({ boards: getBoardCategoryBoards(category) }));
 
   return (
     <span className={styles.boardCategoryList}>
       [
-      {boards.map((board, index) => {
-        const code = getDirectoryCode(board);
-        return (
-          <span key={board.address}>
-            {index > 0 && ' / '}
-            <Link to={`/${code ?? board.address}`} title={board.title}>
-              {code ?? getBoardListEntryLabel(board.address)}
-            </Link>
-          </span>
-        );
-      })}
+      {links.map((link, index) => (
+        <span key={link.key}>
+          {index > 0 && ' / '}
+          <Link to={link.to} title={link.title}>
+            {link.label}
+          </Link>
+        </span>
+      ))}
       ]
       {(category.custom || category.savedId) && (
         <>

@@ -488,12 +488,13 @@ describe('BoardButtons', () => {
 
     await renderWithRoute(createElement(DesktopBoardButtons), '/mu');
     await clickButton('add_to_multiboard');
-    expect(useMultiboardModalStore.getState().modal).toEqual({ kind: 'add', board: 'mu', boardLabel: '/mu/' });
+    // Opened by code; a multiboard may hold the same board by its address instead.
+    expect(useMultiboardModalStore.getState().modal).toEqual({ kind: 'add', board: 'mu', boardLabel: '/mu/', aliases: ['music-posting.eth'] });
 
     testState.directories = [];
     await renderWithRoute(createElement(DesktopBoardButtons), '/music-posting.eth');
     await clickButton('add_to_multiboard');
-    expect(useMultiboardModalStore.getState().modal).toEqual({ kind: 'add', board: 'music-posting.eth', boardLabel: 'music-posting.eth' });
+    expect(useMultiboardModalStore.getState().modal).toEqual({ kind: 'add', board: 'music-posting.eth', boardLabel: 'music-posting.eth', aliases: [] });
     useMultiboardModalStore.setState({ modal: null });
   });
 

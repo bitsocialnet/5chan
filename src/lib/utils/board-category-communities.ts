@@ -10,12 +10,17 @@ import { getDirectoryCode } from './route-utils';
 export const getBoardCategoryCommunities = (directories: DirectoryCommunity[], category: BoardCategory | undefined): DirectoryCommunity[] => {
   if (!category) return directories;
   const directoryBoards = filterByBoardCategory(directories, category, getDirectoryCode);
-  const listedAddresses = new Set(directoryBoards.map((board) => board.address));
-  const addressedBoards = (category.addresses ?? [])
-    .filter((address) => !listedAddresses.has(address))
-    .map(
-      (address) =>
-        directories.find((directory) => directory.address === address || directory.name === address || directory.publicKey === address) ?? { address, title: address },
-    );
+  // An address may name a board listed by code too (its address, name or public key), so resolve, then keep each board once.
+  const seenAddresses = new Set(directoryBoards.map((board) => board.address));
+  const addressedBoards: DirectoryCommunity[] = [];
+  for (const address of category.addresses ?? []) {
+    const board = directories.find((directory) => directory.address === address || directory.name === address || directory.publicKey === address) ?? {
+      address,
+      title: address,
+    };
+    if (seenAddresses.has(board.address)) continue;
+    seenAddresses.add(board.address);
+    addressedBoards.push(board);
+  }
   return [...directoryBoards, ...addressedBoards];
 };

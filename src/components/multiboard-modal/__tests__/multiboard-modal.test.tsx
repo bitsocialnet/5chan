@@ -189,7 +189,7 @@ describe('MultiboardModal', () => {
       { id: 'tech', name: 'Tech', boards: ['g'] },
       { id: 'art', name: 'Art', boards: ['ic'] },
     ];
-    useMultiboardModalStore.setState({ modal: { kind: 'add', board: 'g', boardLabel: '/g/' } });
+    useMultiboardModalStore.setState({ modal: { kind: 'add', board: 'g', boardLabel: '/g/', aliases: ['tech.bso'] } });
     await renderModal('/g');
 
     expect(container.querySelector('h2')?.textContent).toBe('Add /g/ to a Multiboard');
@@ -197,12 +197,48 @@ describe('MultiboardModal', () => {
     expect(getCheckbox('Art').checked).toBe(false);
 
     await click(getCheckbox('Art'));
-    expect(testState.setMultiboardHasBoard).toHaveBeenCalledWith('art', 'g', true);
+    expect(testState.setMultiboardHasBoard).toHaveBeenCalledWith('art', 'g', true, ['tech.bso']);
 
     await click(getButton('New Multiboard…'));
     expect(container.querySelector('h2')?.textContent).toBe('New Multiboard');
     expect(getCheckbox('Technology').checked).toBe(true);
     expect(getCheckbox('Science & Math').checked).toBe(false);
+  });
+
+  it('keeps a directory board saved by its address on that address, and counts it in the add list', async () => {
+    testState.account.multiboards = [{ id: 'tech', name: 'Tech', boards: ['sci', 'tech.bso'] }];
+    useMultiboardModalStore.setState({ modal: { kind: 'editor', multiboardId: 'tech' } });
+    await renderModal('/all?c=@tech');
+
+    // tech.bso is /g/'s address: it stays an entry of its own instead of being dropped or turned into /g/.
+    expect(getCheckbox('tech.bso').checked).toBe(true);
+    expect(getCheckbox('Technology').checked).toBe(false);
+    await click(getButton('Save'));
+    expect(testState.updateMultiboard).toHaveBeenCalledWith('tech', { name: 'Tech', boards: ['sci', 'tech.bso'] });
+
+    useMultiboardModalStore.setState({ modal: { kind: 'add', board: 'g', boardLabel: '/g/', aliases: ['tech.bso'] } });
+    await act(async () => undefined);
+    expect(getCheckbox('Tech').checked).toBe(true);
+    await click(getCheckbox('Tech'));
+    expect(testState.setMultiboardHasBoard).toHaveBeenCalledWith('tech', 'g', false, ['tech.bso']);
+  });
+
+  it('leaves another modal alone when a save finishes after its own modal closed', async () => {
+    let finishSave: (id: string) => void = () => undefined;
+    testState.createMultiboard.mockImplementationOnce(() => new Promise<string>((resolve) => (finishSave = resolve)));
+    await renderModal('/all?c=g');
+
+    await typeName('Tech');
+    await click(getButton('Save'));
+    await act(async () => {
+      container.querySelector('dialog')?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    });
+    const otherModal = { kind: 'editor' as const, boards: ['sci'] };
+    useMultiboardModalStore.setState({ modal: otherModal });
+    await act(async () => finishSave('tech'));
+
+    expect(useMultiboardModalStore.getState().modal).toBe(otherModal);
+    expect(getLocation()).toBe('/all?c=g');
   });
 
   it('takes focus on open and closes on Escape without navigating', async () => {

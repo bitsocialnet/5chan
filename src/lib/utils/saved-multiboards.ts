@@ -26,11 +26,13 @@ const createMultiboardId = (name: string, takenIds: Set<string>): string => {
 // been written: two quick toggles in the add-to list would otherwise overwrite each other.
 let pendingUpdate: Promise<unknown> = Promise.resolve();
 
+// A change applies to the account that was active when it was asked for, even if another account is active
+// by the time the earlier changes are written.
 const updateSavedMultiboards = <T>(update: (multiboards: SavedMultiboard[]) => { multiboards: SavedMultiboard[]; result: T }): Promise<T> => {
+  const { activeAccountId } = accountsStore.getState();
   const run = async () => {
-    const { accounts, activeAccountId } = accountsStore.getState();
-    const account: Account | undefined = activeAccountId ? accounts?.[activeAccountId] : undefined;
-    if (!account) throw new Error('No active account to save the multiboard in.');
+    const account: Account | undefined = activeAccountId ? accountsStore.getState().accounts?.[activeAccountId] : undefined;
+    if (!account) throw new Error('No account to save the multiboard in.');
     const { multiboards, result } = update(getSavedMultiboards(account.multiboards));
     await setAccount({ ...account, multiboards });
     return result;
@@ -56,12 +58,14 @@ export const updateMultiboard = (id: string, changes: Partial<Pick<SavedMultiboa
 export const deleteMultiboard = (id: string): Promise<void> =>
   updateSavedMultiboards((multiboards) => ({ multiboards: multiboards.filter((multiboard) => multiboard.id !== id), result: undefined }));
 
-/** Adds a board to a saved multiboard, or removes it. */
-export const setMultiboardHasBoard = (id: string, board: string, hasBoard: boolean): Promise<void> =>
+/** Adds a board to a saved multiboard, or removes it with its `aliases` (its address when it is listed by code, or its code). */
+export const setMultiboardHasBoard = (id: string, board: string, hasBoard: boolean, aliases: string[] = []): Promise<void> =>
   updateSavedMultiboards((multiboards) => ({
     multiboards: multiboards.map((multiboard) => {
       if (multiboard.id !== id) return multiboard;
-      const boards = multiboard.boards.filter((entry) => entry !== board);
+      const identifiers = new Set([board, ...aliases]);
+      if (hasBoard && multiboard.boards.some((entry) => identifiers.has(entry))) return multiboard;
+      const boards = multiboard.boards.filter((entry) => !identifiers.has(entry));
       return { ...multiboard, boards: hasBoard ? [...boards, board] : boards };
     }),
     result: undefined,

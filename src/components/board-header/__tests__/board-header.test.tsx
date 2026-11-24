@@ -251,8 +251,8 @@ describe('BoardHeader', () => {
   it('says when the account does not have the saved multiboard a link names', async () => {
     await renderHeader('/all?c=@gone');
 
-    expect(container.textContent).toContain('/all/ - Unknown Multiboard');
-    expect(container.textContent).toContain('This multiboard is not saved in this account.');
+    expect(container.textContent).toContain('/all/ - @gone');
+    expect(container.textContent).toContain('multiboard_not_saved');
     expect(Array.from(container.querySelectorAll('button')).some((button) => button.textContent === 'Edit')).toBe(false);
   });
 

@@ -470,6 +470,20 @@ describe('BoardsBar', () => {
     expect(testState.navigateMock).toHaveBeenCalledWith({ pathname: '/all/catalog', search: '?c=@tech' });
   });
 
+  it('shows the open category or unsaved multiboard in the mobile board select, so All 5chan Directories leaves it', async () => {
+    await renderBoardsBar('/all?c=@gone');
+
+    const select = container.querySelector('select')!;
+    expect(select.value).toBe('@gone');
+    expect(Array.from(select.options).find((option) => option.value === '@gone')?.textContent).toBe('/all/ - @gone');
+
+    await act(async () => {
+      select.value = 'all';
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    expect(testState.navigateMock).toHaveBeenCalledWith('/all');
+  });
+
   it('keeps catalog navigation on mobile board changes and hides the navbar on downward scroll', async () => {
     await renderBoardsBar('/mu/catalog');
 

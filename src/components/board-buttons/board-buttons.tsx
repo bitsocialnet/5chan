@@ -4,10 +4,10 @@ import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useAccount, useAccountComment, useComment, useSubscribe } from '@bitsocial/bitsocial-react-hooks';
 import { isAllView, isCatalogView, isModView, isModQueueView, isPendingPostView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import { usePostPageNumber } from '../../hooks/use-post-page-number';
-import { useDirectories, useDirectoryByAddress } from '../../hooks/use-directories';
+import { useDirectories, useDirectoryByAddress, type DirectoryCommunity } from '../../hooks/use-directories';
 import { useAccountCommunityAddresses } from '../../hooks/use-account-community-addresses';
 import { useFilteredDirectoryAddresses } from '../../hooks/use-filtered-directory-addresses';
-import { getBoardPath, isDirectoryRoute } from '../../lib/utils/route-utils';
+import { getBoardPath, getDirectoryCode, isDirectoryRoute } from '../../lib/utils/route-utils';
 import {
   BOARD_CATEGORIES,
   getBoardCategoryFromSearch,
@@ -155,6 +155,11 @@ export const ArchiveButton = ({ address, isInAllView, isInSubscriptionsView, isI
   );
 };
 
+const getDirectoryCodeOfAddress = (address: string | undefined, directories: DirectoryCommunity[]) => {
+  const directory = address ? directories.find((entry) => entry.address === address) : undefined;
+  return directory ? (getDirectoryCode(directory) ?? undefined) : undefined;
+};
+
 const SubscribeButton = ({ address }: BoardButtonsProps) => {
   const { t } = useTranslation();
   const { subscribed, subscribe, unsubscribe } = useSubscribe({ communityAddress: address });
@@ -167,18 +172,20 @@ const SubscribeButton = ({ address }: BoardButtonsProps) => {
 };
 
 // Saves the board in a multiboard: by its code on a directory board's route, so the multiboard follows the
-// directory's winner, else by its address.
+// directory's winner, else by its address. A multiboard holding the board by its other identifier counts too.
 const AddToMultiboardButton = ({ address }: BoardButtonsProps) => {
   const { t } = useTranslation();
   const params = useParams();
   const directories = useDirectories();
   const openAddToMultiboard = useMultiboardModalStore((state) => state.openAddToMultiboard);
   const boardIdentifier = params.boardIdentifier;
-  const board = boardIdentifier && isDirectoryRoute(boardIdentifier, directories) ? boardIdentifier : address;
+  const code = boardIdentifier && isDirectoryRoute(boardIdentifier, directories) ? boardIdentifier : undefined;
+  const board = code ?? address;
   if (!board) return null;
+  const aliases = [code ? address : getDirectoryCodeOfAddress(address, directories)].filter((alias): alias is string => !!alias && alias !== board);
 
   return (
-    <button type='button' className='button' onClick={() => openAddToMultiboard(board, getBoardListEntryLabel(board))}>
+    <button type='button' className='button' onClick={() => openAddToMultiboard(board, getBoardListEntryLabel(board), aliases)}>
       {t('add_to_multiboard')}
     </button>
   );

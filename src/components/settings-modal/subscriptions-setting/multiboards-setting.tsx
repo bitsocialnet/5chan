@@ -1,23 +1,24 @@
 import { memo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 import { useSavedMultiboards } from '../../../hooks/use-saved-multiboards';
-import { getSavedMultiboardSlug, getSearchWithBoardCategory, type SavedMultiboard } from '../../../lib/utils/board-category-utils';
+import { getBoardListEntryLabel, getSavedMultiboardSlug, getSearchWithBoardCategory, type SavedMultiboard } from '../../../lib/utils/board-category-utils';
 import { deleteMultiboard } from '../../../lib/utils/saved-multiboards';
 // The subscriptions section's list layout, so the two sections share one stylesheet.
 import styles from './subscriptions-setting.module.css';
 
-const MultiboardRow = ({ multiboard, onError }: { multiboard: SavedMultiboard; onError: (message: string) => void }) => {
+const MultiboardRow = ({ multiboard, onError }: { multiboard: SavedMultiboard; onError: (message: string | undefined) => void }) => {
   const { t } = useTranslation();
   const remove = () => {
-    if (!window.confirm(`Delete the multiboard "${multiboard.name}"?`)) return;
-    deleteMultiboard(multiboard.id).catch((error: unknown) => onError(`Could not delete the multiboard: ${error instanceof Error ? error.message : String(error)}`));
+    if (!window.confirm(t('delete_multiboard_confirm', { name: multiboard.name }))) return;
+    onError(undefined);
+    deleteMultiboard(multiboard.id).catch((error: unknown) => onError(t('multiboard_delete_failed', { error: error instanceof Error ? error.message : String(error) })));
   };
 
   return (
     <li className={styles.subscription}>
-      <Link to={{ pathname: '/all', search: getSearchWithBoardCategory('', getSavedMultiboardSlug(multiboard.id)) }}>{multiboard.name}</Link> ({multiboard.boards.length}{' '}
-      {multiboard.boards.length === 1 ? 'board' : 'boards'})
+      <Link to={{ pathname: '/all', search: getSearchWithBoardCategory('', getSavedMultiboardSlug(multiboard.id)) }}>{multiboard.name}</Link> [
+      {multiboard.boards.map((board) => getBoardListEntryLabel(board).replace(/^\/|\/$/g, '')).join(' / ')}]
       <span className={styles.subscriptionButton}>
         [
         <button type='button' className={styles.button} onClick={remove}>
@@ -45,7 +46,7 @@ const MultiboardsSetting = () => {
         </ul>
       ) : (
         <div className={styles.notSubscribed}>
-          No saved multiboards. Make one with Add Custom… in the category menu on <Link to='/all'>/all/</Link>, or with [Add to Multiboard] on a board.
+          <Trans i18nKey='no_saved_multiboards' components={{ 1: <Link to='/all' /> }} />
         </div>
       )}
       {error && <div className={`red ${styles.notSubscribed}`}>{error}</div>}

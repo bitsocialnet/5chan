@@ -613,5 +613,9 @@
   "local_data": "ローカルデータ",
   "post_as_board_staff_confirm": "あなたはこのボードの所有者、管理者、またはモデレーターであり、ボードがスタッフを匿名化することはありません。あなたのBitsocial識別子と、ログインしている場合は5chan Pass のウォレットが、この投稿とともに公開されます。それでも投稿しますか？",
   "user_banned_for_this_post": "この投稿によりユーザーはBANされました",
-  "add_to_multiboard": "マルチボードに追加"
+  "add_to_multiboard": "マルチボードに追加",
+  "multiboard_not_saved": "このマルチボードはこのアカウントに保存されていません。",
+  "delete_multiboard_confirm": "マルチボード「{{name}}」を削除しますか？",
+  "multiboard_delete_failed": "マルチボードを削除できませんでした: {{error}}",
+  "no_saved_multiboards": "保存されたマルチボードはありません。<1>/all/</1> のカテゴリメニューの Add Custom… か、板の [マルチボードに追加] で作成できます。"
 }
