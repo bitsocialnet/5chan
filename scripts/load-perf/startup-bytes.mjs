@@ -7,8 +7,9 @@
 // output varies with the zlib version; gzip is reported for context.
 //
 // The board directory data the build syncs from bitsocialnet/lists is measured and limited apart from
-// the app's code: it reaches a first visit as its own chunk (see directory-data.mjs) and as each
-// board's values in the static shell's data block in index.html. The code ceilings gate the rest, so
+// the app's code: it reaches a first visit as its own chunk (see directory-data.mjs), as each board's
+// values in the static shell's data block, and as the NSFW boards' codes and addresses in the theme
+// script's data block, both in index.html. The code ceilings gate the rest, so
 // a code change is judged only on what it adds, and the board list growing never fails one: an
 // oversized directory data only warns, unless --check-directory-data is passed.
 import { readdir, readFile, writeFile } from 'node:fs/promises';
@@ -16,7 +17,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { gzipSync } from 'node:zlib';
 import { ROUTE_PRELOAD_DATA_ID } from '../vite-app-preload.mjs';
-import { SHELL_DATA_ID, toScriptJson } from '../vite-static-shell.mjs';
+import { SHELL_DATA_ID, THEME_DATA_ID, toScriptJson } from '../vite-static-shell.mjs';
 import { DIRECTORY_DATA_CHUNK_NAME } from './directory-data.mjs';
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
@@ -59,9 +60,15 @@ if (!assetFiles.some((fileName) => directoryDataChunkPattern.test(fileName))) {
 }
 // Each board's values in the static shell's data block (its title, winner line and the like), as
 // index.html writes them. The frame templates they fill are app code.
-const shellDataJson = html.match(new RegExp(`<script type="application/json" id="${SHELL_DATA_ID}">([\\s\\S]*?)</script>`))?.[1];
-const boardValuesBytes = shellDataJson ? Buffer.byteLength(toScriptJson(JSON.parse(shellDataJson).boards?.codes ?? {})) : 0;
-if (!shellDataJson) console.warn(`No static shell data block (#${SHELL_DATA_ID}) in index.html; no board values counted.`);
+const readDataBlock = (id) => {
+  const json = html.match(new RegExp(`<script type="application/json" id="${id}">([\\s\\S]*?)</script>`))?.[1];
+  if (!json) console.warn(`No #${id} data block in index.html; none of it counted as directory data.`);
+  return json ? JSON.parse(json) : undefined;
+};
+const boardValuesBytes = Buffer.byteLength(toScriptJson(readDataBlock(SHELL_DATA_ID)?.boards?.codes ?? {}));
+// The theme script's NSFW list names every NSFW directory's code and candidate addresses (plus a few special boards).
+const nsfwBoardsBytes = Buffer.byteLength(toScriptJson(readDataBlock(THEME_DATA_ID)?.nsfw ?? []));
+const indexDataBytes = boardValuesBytes + nsfwBoardsBytes;
 
 const totals = {};
 const codeTotals = {};
@@ -74,7 +81,7 @@ for (const [name, files] of [
   totals[name] = sizes.reduce((sum, { raw }) => sum + raw, 0);
   const gzip = sizes.reduce((sum, size) => sum + size.gzip, 0);
   const chunkBytes = sizes.filter(({ href }) => directoryDataChunkPattern.test(href)).reduce((sum, { raw }) => sum + raw, 0);
-  directoryData[name] = { chunkBytes, boardValuesBytes, total: chunkBytes + boardValuesBytes };
+  directoryData[name] = { chunkBytes, total: chunkBytes + indexDataBytes };
   codeTotals[name] = totals[name] - directoryData[name].total;
   console.log(
     `Startup assets of a first ${name} visit, ${path.relative(packageRoot, buildDir)}/index.html: index.html + ${files.length} files, ${kb(totals[name])} raw, ${kb(gzip)} gzip`,
@@ -82,7 +89,7 @@ for (const [name, files] of [
   for (const { href, raw, gzip: fileGzip } of sizes.sort((a, b) => b.raw - a.raw).slice(0, 8))
     console.log(`  ${kb(raw).padStart(10)} raw ${kb(fileGzip).padStart(10)} gzip  ${href}`);
   console.log(
-    `  of which ${directoryData[name].total} bytes are directory data (${chunkBytes} in the ${DIRECTORY_DATA_CHUNK_NAME} chunk, ${boardValuesBytes} of board values in index.html) and ${codeTotals[name]} are app code`,
+    `  of which ${directoryData[name].total} bytes are directory data (${chunkBytes} in the ${DIRECTORY_DATA_CHUNK_NAME} chunk, ${boardValuesBytes} of board values and ${nsfwBoardsBytes} of NSFW boards in index.html) and ${codeTotals[name]} are app code`,
   );
 }
 if (!routePreloads.length) console.warn('No board route preloads in index.html (scripts/vite-app-preload.mjs); both totals are the home page.');
@@ -142,7 +149,7 @@ if (update) {
     }
   }
   const growth = directoryDataBytes - budget[dataKey];
-  const dataSummary = `Directory data from bitsocialnet/lists: ${directoryDataBytes} bytes on a first visit (${directoryData.board.chunkBytes} in the ${DIRECTORY_DATA_CHUNK_NAME} chunk, ${boardValuesBytes} of board values in index.html), ${growth >= 0 ? '+' : ''}${growth} since its ${budget[dataKey]}-byte limit was set`;
+  const dataSummary = `Directory data from bitsocialnet/lists: ${directoryDataBytes} bytes on a first visit (${directoryData.board.chunkBytes} in the ${DIRECTORY_DATA_CHUNK_NAME} chunk, ${boardValuesBytes} of board values and ${nsfwBoardsBytes} of NSFW boards in index.html), ${growth >= 0 ? '+' : ''}${growth} since its ${budget[dataKey]}-byte limit was set`;
   if (growth > 0) {
     const consequence = checkDirectoryData
       ? 'Failing because --check-directory-data was passed.'

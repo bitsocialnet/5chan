@@ -25,7 +25,7 @@ export const STATIC_SHELL_ATTRIBUTE = 'data-static-shell';
 // The board header renders this in place of the banner, which the script picks when it inserts a
 // frame and hands to React through window.__FIVECHAN_SHELL_BANNER__ (src/lib/static-shell-banner.ts).
 export const BANNER_PLACEHOLDER = '__FIVECHAN_SHELL_BANNER__';
-const THEME_DATA_ID = 'fivechan-theme-data';
+export const THEME_DATA_ID = 'fivechan-theme-data';
 export const SHELL_DATA_ID = 'static-shell-data';
 const BOARD_WIDTHS = { desktop: 1024, mobile: 375 };
 
