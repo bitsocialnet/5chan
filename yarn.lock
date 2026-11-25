@@ -31,7 +31,7 @@ __metadata:
     "@floating-ui/react": "npm:0.27.20"
     "@noble/curves": "npm:2.0.1"
     "@noble/hashes": "npm:2.0.1"
-    "@pkcprotocol/pkc-js": "npm:0.0.154"
+    "@pkcprotocol/pkc-js": "npm:0.0.163"
     "@playwright/cli": "npm:0.1.22"
     "@react-spring/web": "npm:10.1.2"
     "@reforged/maker-appimage": "npm:5.3.1"
@@ -5906,6 +5906,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@noble/curves@npm:2.4.0":
+  version: 2.4.0
+  resolution: "@noble/curves@npm:2.4.0"
+  dependencies:
+    "@noble/hashes": "npm:2.4.0"
+  checksum: 10c0/b60b737f65cc4e128dd94fea467df1ed73c5c0c089ef1bdb61614a0897db1fa7151d7f95bb7205854a9030d3f80a879e00f3bb74990befde061184ae43dfaec6
+  languageName: node
+  linkType: hard
+
 "@noble/curves@npm:~1.9.0":
   version: 1.9.7
   resolution: "@noble/curves@npm:1.9.7"
@@ -5940,6 +5949,13 @@ __metadata:
   version: 2.2.0
   resolution: "@noble/hashes@npm:2.2.0"
   checksum: 10c0/cad8630c504d6b9271984f685cd0af9101b40988fc2dfbe17ccdf068a9941f95cc5c9957d89e9ca4b7ca94c15cb35f93510c5d53a09fbcc83ee503b93d0a1034
+  languageName: node
+  linkType: hard
+
+"@noble/hashes@npm:2.4.0":
+  version: 2.4.0
+  resolution: "@noble/hashes@npm:2.4.0"
+  checksum: 10c0/f5820a38c52886073a69722a030688ad188bbacb822d01554545371259961c2b916266c57c013c2ce5a0d78aec977142fc68fd2a79be4c97b0644fcee9bb35f6
   languageName: node
   linkType: hard
 
@@ -7303,9 +7319,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@pkcprotocol/pkc-js@npm:0.0.154":
-  version: 0.0.154
-  resolution: "@pkcprotocol/pkc-js@npm:0.0.154"
+"@pkcprotocol/pkc-js@npm:0.0.163":
+  version: 0.0.163
+  resolution: "@pkcprotocol/pkc-js@npm:0.0.163"
   dependencies:
     "@enhances/with-resolvers": "npm:0.0.5"
     "@helia/bitswap": "npm:4.0.20"
@@ -7325,7 +7341,8 @@ __metadata:
     "@libp2p/webtransport": "npm:6.0.44"
     "@multiformats/multiaddr": "npm:13.0.3"
     "@multiformats/murmur3": "npm:2.2.5"
-    "@noble/curves": "npm:2.2.0"
+    "@noble/curves": "npm:2.4.0"
+    "@noble/hashes": "npm:2.4.0"
     "@pkcprotocol/pkc-logger": "npm:0.1.0"
     "@types/better-sqlite3": "npm:7.6.13"
     assert: "npm:2.1.0"
@@ -7353,7 +7370,7 @@ __metadata:
     localforage: "npm:1.10.0"
     lodash.merge: "npm:4.6.2"
     lru-cache: "npm:10.1.0"
-    multiformats: "npm:14.0.5"
+    multiformats: "npm:14.0.7"
     node-forge: "npm:1.4.2"
     open-graph-scraper: "npm:6.11.0"
     p-limit: "npm:7.3.0"
@@ -7374,7 +7391,7 @@ __metadata:
     uuid: "npm:14.0.3"
     ws: "npm:8.22.0"
     zod: "npm:4.6.7"
-  checksum: 10c0/f4d12f5307c60faa5e4d6f77508e1af0be1eaace485ab6ccf4a5fcca9b8dfe9f3243d93f11cc471d1028714aac236857e62cac36d1dc715c0d509d5a9e451f6a
+  checksum: 10c0/1c7005129531b402dbcb6c3aad5613ac5b8868374d9560616d23fa97bd9e57c690c2633a87abc53be4366281664012c37ba5907c4f66f140ef246817a2c8d001
   languageName: node
   linkType: hard
 
@@ -16434,6 +16451,13 @@ __metadata:
   version: 14.0.5
   resolution: "multiformats@npm:14.0.5"
   checksum: 10c0/3e3de2da477e51434099636b1d107f1f431dab3441f485665c38e6b33d16db673919c55c2bafc2170295173d84ff78c3ff540e4a62682b20d6cdea8d2ed7fd2b
+  languageName: node
+  linkType: hard
+
+"multiformats@npm:14.0.7":
+  version: 14.0.7
+  resolution: "multiformats@npm:14.0.7"
+  checksum: 10c0/944f2ac1f0b4bfe8c2fccf70f4697222348c53461631ff919a3cb6758ef6032035dc0b9089359ecfe75a52921be428d444b7794115f2e4e2d976ffb7b4d64420
   languageName: node
   linkType: hard
 

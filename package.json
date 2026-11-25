@@ -9,7 +9,7 @@
   "private": true,
   "dependencies": {
     "@bitsocial/bso-resolver": "0.0.10",
-    "@pkcprotocol/pkc-js": "0.0.154",
+    "@pkcprotocol/pkc-js": "0.0.163",
     "electron-context-menu": "5.1.0",
     "electron-is-dev": "3.0.1",
     "env-paths": "4.0.0",
@@ -221,7 +221,7 @@
   },
   "resolutions": {
     "follow-redirects": "1.16.1",
-    "@pkcprotocol/pkc-js": "0.0.154",
+    "@pkcprotocol/pkc-js": "0.0.163",
     "probe-image-size": "7.4.0",
     "multiformats@npm:^14.0.0": "14.0.5",
     "viem": "2.57.10",
