@@ -617,5 +617,6 @@
   "multiboard_not_saved": "Dieses Multiboard ist in diesem Konto nicht gespeichert.",
   "delete_multiboard_confirm": "Das Multiboard „{{name}}“ löschen?",
   "multiboard_delete_failed": "Das Multiboard konnte nicht gelöscht werden: {{error}}",
-  "no_saved_multiboards": "Keine gespeicherten Multiboards. Erstelle eines mit Add Custom… im Kategoriemenü auf <1>/all/</1> oder mit [Zu Multiboard hinzufügen] auf einem Board."
+  "no_saved_multiboards": "Keine gespeicherten Multiboards. Erstelle eines mit Add Custom… im Kategoriemenü auf <1>/all/</1> oder mit [Zu Multiboard hinzufügen] auf einem Board.",
+  "pass_auth_message_placeholder": "Gib deine Wallet-Adresse ein, um die zu signierende Nachricht zu sehen."
 }

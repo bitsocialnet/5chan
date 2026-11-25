@@ -617,5 +617,6 @@
   "multiboard_not_saved": "הלוח המרובה הזה לא שמור בחשבון הזה.",
   "delete_multiboard_confirm": "למחוק את הלוח המרובה \"{{name}}\"?",
   "multiboard_delete_failed": "לא ניתן למחוק את הלוח המרובה: {{error}}",
-  "no_saved_multiboards": "אין לוחות מרובים שמורים. צרו אחד עם Add Custom… בתפריט הקטגוריות ב-<1>/all/</1>, או עם [הוסף ללוח מרובה] בלוח."
+  "no_saved_multiboards": "אין לוחות מרובים שמורים. צרו אחד עם Add Custom… בתפריט הקטגוריות ב-<1>/all/</1>, או עם [הוסף ללוח מרובה] בלוח.",
+  "pass_auth_message_placeholder": "הזן את כתובת הארנק שלך כדי לראות את ההודעה לחתימה."
 }

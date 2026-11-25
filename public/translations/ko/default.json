@@ -617,5 +617,6 @@
   "multiboard_not_saved": "이 멀티보드는 이 계정에 저장되어 있지 않습니다.",
   "delete_multiboard_confirm": "멀티보드 \"{{name}}\"을(를) 삭제할까요?",
   "multiboard_delete_failed": "멀티보드를 삭제할 수 없습니다: {{error}}",
-  "no_saved_multiboards": "저장된 멀티보드가 없습니다. <1>/all/</1>의 카테고리 메뉴에서 Add Custom…으로, 또는 게시판의 [멀티보드에 추가]로 만들 수 있습니다."
+  "no_saved_multiboards": "저장된 멀티보드가 없습니다. <1>/all/</1>의 카테고리 메뉴에서 Add Custom…으로, 또는 게시판의 [멀티보드에 추가]로 만들 수 있습니다.",
+  "pass_auth_message_placeholder": "서명할 메시지를 보려면 지갑 주소를 입력하세요."
 }

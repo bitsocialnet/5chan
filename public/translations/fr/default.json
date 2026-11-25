@@ -617,5 +617,6 @@
   "multiboard_not_saved": "Ce multiboard n'est pas enregistré dans ce compte.",
   "delete_multiboard_confirm": "Supprimer le multiboard « {{name}} » ?",
   "multiboard_delete_failed": "Impossible de supprimer le multiboard : {{error}}",
-  "no_saved_multiboards": "Aucun multiboard enregistré. Créez-en un avec Add Custom… dans le menu des catégories de <1>/all/</1>, ou avec [Ajouter à un multiboard] sur une board."
+  "no_saved_multiboards": "Aucun multiboard enregistré. Créez-en un avec Add Custom… dans le menu des catégories de <1>/all/</1>, ou avec [Ajouter à un multiboard] sur une board.",
+  "pass_auth_message_placeholder": "Saisissez l'adresse de votre portefeuille pour afficher le message à signer."
 }

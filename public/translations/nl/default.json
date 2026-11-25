@@ -617,5 +617,6 @@
   "multiboard_not_saved": "Dit multiboard is niet opgeslagen in dit account.",
   "delete_multiboard_confirm": "Het multiboard \"{{name}}\" verwijderen?",
   "multiboard_delete_failed": "Het multiboard kon niet worden verwijderd: {{error}}",
-  "no_saved_multiboards": "Geen opgeslagen multiboards. Maak er een met Add Custom… in het categoriemenu op <1>/all/</1>, of met [Toevoegen aan multiboard] op een board."
+  "no_saved_multiboards": "Geen opgeslagen multiboards. Maak er een met Add Custom… in het categoriemenu op <1>/all/</1>, of met [Toevoegen aan multiboard] op een board.",
+  "pass_auth_message_placeholder": "Voer je walletadres in om het te ondertekenen bericht te zien."
 }

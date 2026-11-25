@@ -617,5 +617,6 @@
   "multiboard_not_saved": "此多板视图未保存在此账户中。",
   "delete_multiboard_confirm": "删除多板视图“{{name}}”？",
   "multiboard_delete_failed": "无法删除多板视图：{{error}}",
-  "no_saved_multiboards": "没有已保存的多板视图。可在 <1>/all/</1> 的分类菜单中用 Add Custom… 创建，或在板块上用 [添加到多板视图] 创建。"
+  "no_saved_multiboards": "没有已保存的多板视图。可在 <1>/all/</1> 的分类菜单中用 Add Custom… 创建，或在板块上用 [添加到多板视图] 创建。",
+  "pass_auth_message_placeholder": "输入钱包地址以查看需要签名的消息。"
 }

@@ -56,7 +56,7 @@ describe('imported account metadata', () => {
     expect(result.account.subscriptions).toEqual(['business.eth', 'technology.bso', 'music.bso']);
   });
 
-  it("keeps a backup's name and its wallets, since board roles and wallet signatures are bound to that name", () => {
+  it("keeps a backup's name and its wallets, since board roles are bound to that name and wallet proofs to its key", () => {
     const author = { address: 'mod.bso', displayName: 'Anon', wallets: { eth: { address: '0xabc', timestamp: 1, signature: { signature: '0xsig', type: 'eip191' } } } };
     const result = JSON.parse(processImportedAccount(JSON.stringify({ account: { author, signer: { address: '12D3KooWKey' } } }), false, browserWindow));
 

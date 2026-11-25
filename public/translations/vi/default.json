@@ -617,5 +617,6 @@
   "multiboard_not_saved": "Đa bảng này không được lưu trong tài khoản này.",
   "delete_multiboard_confirm": "Xóa đa bảng \"{{name}}\"?",
   "multiboard_delete_failed": "Không thể xóa đa bảng: {{error}}",
-  "no_saved_multiboards": "Chưa có đa bảng nào được lưu. Tạo một đa bảng bằng Add Custom… trong menu danh mục ở <1>/all/</1>, hoặc bằng [Thêm vào đa bảng] trên một bảng."
+  "no_saved_multiboards": "Chưa có đa bảng nào được lưu. Tạo một đa bảng bằng Add Custom… trong menu danh mục ở <1>/all/</1>, hoặc bằng [Thêm vào đa bảng] trên một bảng.",
+  "pass_auth_message_placeholder": "Hãy nhập địa chỉ ví của bạn để xem tin nhắn cần ký."
 }

@@ -637,5 +637,6 @@
   "multiboard_not_saved": "This multiboard is not saved in this account.",
   "delete_multiboard_confirm": "Delete the multiboard \"{{name}}\"?",
   "multiboard_delete_failed": "Could not delete the multiboard: {{error}}",
-  "no_saved_multiboards": "No saved multiboards. Make one with Add Custom… in the category menu on <1>/all/</1>, or with [Add to Multiboard] on a board."
+  "no_saved_multiboards": "No saved multiboards. Make one with Add Custom… in the category menu on <1>/all/</1>, or with [Add to Multiboard] on a board.",
+  "pass_auth_message_placeholder": "Enter your wallet address to see the message to sign."
 }

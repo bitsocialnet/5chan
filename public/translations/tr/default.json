@@ -617,5 +617,6 @@
   "multiboard_not_saved": "Bu çoklu pano bu hesapta kayıtlı değil.",
   "delete_multiboard_confirm": "\"{{name}}\" çoklu panosu silinsin mi?",
   "multiboard_delete_failed": "Çoklu pano silinemedi: {{error}}",
-  "no_saved_multiboards": "Kayıtlı çoklu pano yok. <1>/all/</1> sayfasındaki kategori menüsünden Add Custom… ile ya da bir panodaki [Çoklu panoya ekle] ile bir tane oluşturun."
+  "no_saved_multiboards": "Kayıtlı çoklu pano yok. <1>/all/</1> sayfasındaki kategori menüsünden Add Custom… ile ya da bir panodaki [Çoklu panoya ekle] ile bir tane oluşturun.",
+  "pass_auth_message_placeholder": "İmzalanacak mesajı görmek için cüzdan adresinizi girin."
 }

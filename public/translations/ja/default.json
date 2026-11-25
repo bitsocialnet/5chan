@@ -617,5 +617,6 @@
   "multiboard_not_saved": "このマルチボードはこのアカウントに保存されていません。",
   "delete_multiboard_confirm": "マルチボード「{{name}}」を削除しますか？",
   "multiboard_delete_failed": "マルチボードを削除できませんでした: {{error}}",
-  "no_saved_multiboards": "保存されたマルチボードはありません。<1>/all/</1> のカテゴリメニューの Add Custom… か、板の [マルチボードに追加] で作成できます。"
+  "no_saved_multiboards": "保存されたマルチボードはありません。<1>/all/</1> のカテゴリメニューの Add Custom… か、板の [マルチボードに追加] で作成できます。",
+  "pass_auth_message_placeholder": "署名するメッセージを表示するには、ウォレットアドレスを入力してください。"
 }

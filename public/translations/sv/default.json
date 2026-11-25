@@ -617,5 +617,6 @@
   "multiboard_not_saved": "Den här multiboarden är inte sparad på det här kontot.",
   "delete_multiboard_confirm": "Ta bort multiboarden \"{{name}}\"?",
   "multiboard_delete_failed": "Det gick inte att ta bort multiboarden: {{error}}",
-  "no_saved_multiboards": "Inga sparade multiboards. Skapa en med Add Custom… i kategorimenyn på <1>/all/</1> eller med [Lägg till i multiboard] på en board."
+  "no_saved_multiboards": "Inga sparade multiboards. Skapa en med Add Custom… i kategorimenyn på <1>/all/</1> eller med [Lägg till i multiboard] på en board.",
+  "pass_auth_message_placeholder": "Ange din plånboksadress för att se meddelandet som ska signeras."
 }
