@@ -618,5 +618,6 @@
   "delete_multiboard_confirm": "マルチボード「{{name}}」を削除しますか？",
   "multiboard_delete_failed": "マルチボードを削除できませんでした: {{error}}",
   "no_saved_multiboards": "保存されたマルチボードはありません。<1>/all/</1> のカテゴリメニューの Add Custom… か、板の [マルチボードに追加] で作成できます。",
-  "pass_auth_message_placeholder": "署名するメッセージを表示するには、ウォレットアドレスを入力してください。"
+  "pass_auth_message_placeholder": "署名するメッセージを表示するには、ウォレットアドレスを入力してください。",
+  "download_backup_confirm": "バックアップには投稿用の鍵が含まれています。このファイルを持っている人は誰でもあなたとして投稿でき、あなたを匿名化するボードでも、どの投稿があなたのものかを知ることができます。ダウンロードしますか？"
 }

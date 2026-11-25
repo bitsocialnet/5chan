@@ -618,5 +618,6 @@
   "delete_multiboard_confirm": "Ștergi multiboard-ul „{{name}}”?",
   "multiboard_delete_failed": "Multiboard-ul nu a putut fi șters: {{error}}",
   "no_saved_multiboards": "Niciun multiboard salvat. Creează unul cu Add Custom… din meniul de categorii de pe <1>/all/</1> sau cu [Adaugă la multiboard] pe un board.",
-  "pass_auth_message_placeholder": "Introdu adresa portofelului tău pentru a vedea mesajul de semnat."
+  "pass_auth_message_placeholder": "Introdu adresa portofelului tău pentru a vedea mesajul de semnat.",
+  "download_backup_confirm": "Backupul conține cheia ta de postare. Oricine are fișierul poate posta în numele tău și poate afla care postări sunt ale tale, chiar și pe tablourile care te anonimizează. Îl descarci?"
 }

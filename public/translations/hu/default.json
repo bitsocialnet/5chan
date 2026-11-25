@@ -618,5 +618,6 @@
   "delete_multiboard_confirm": "Törlöd a(z) „{{name}}” többtáblás nézetet?",
   "multiboard_delete_failed": "A többtáblás nézetet nem sikerült törölni: {{error}}",
   "no_saved_multiboards": "Nincs mentett többtáblás nézet. Hozz létre egyet az Add Custom… lehetőséggel a(z) <1>/all/</1> kategóriamenüjében, vagy a [Hozzáadás többtáblás nézethez] gombbal egy táblán.",
-  "pass_auth_message_placeholder": "Add meg a pénztárcád címét, hogy megjelenjen az aláírandó üzenet."
+  "pass_auth_message_placeholder": "Add meg a pénztárcád címét, hogy megjelenjen az aláírandó üzenet.",
+  "download_backup_confirm": "A biztonsági mentés tartalmazza a posztolási kulcsodat. Bárki, akinél a fájl van, posztolhat a nevedben, és megtudhatja, mely posztok a tieid, még azokon a táblákon is, amelyek anonimizálnak. Letöltöd?"
 }

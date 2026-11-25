@@ -9,10 +9,10 @@ import useThreadLiveUpdatesStore from '../../stores/use-thread-live-updates-stor
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
 
-vi.mock('../../lib/bitsocial-internals/stores', () => ({
-  accountsStore: {
-    getState: () => ({ commentCidsToAccountsComments: { mine: {} } }),
-  },
+const isAccountCommentMock = vi.hoisted(() => vi.fn((comment: { cid?: string } | undefined) => comment?.cid === 'mine'));
+
+vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
+  isAccountComment: isAccountCommentMock,
 }));
 
 type HarnessProps = { enabled?: boolean; hasMore?: boolean; post: Comment; replies: Comment[] };
@@ -59,6 +59,13 @@ describe('useThreadNewReplies', () => {
     await render({ post, replies: [reply('a'), reply('b'), reply('c')] });
 
     expect(recordNewRepliesMock).not.toHaveBeenCalled();
+  });
+
+  it('checks the OP when the thread opens, so the hooks load their author tag check before the first update', async () => {
+    isAccountCommentMock.mockClear();
+    await render({ post, replies: [reply('a')] });
+
+    expect(isAccountCommentMock).toHaveBeenCalledWith(post);
   });
 
   it('reports replies that appear after an update, below the last reply read', async () => {

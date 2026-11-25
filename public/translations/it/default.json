@@ -618,5 +618,6 @@
   "delete_multiboard_confirm": "Eliminare il multiboard \"{{name}}\"?",
   "multiboard_delete_failed": "Impossibile eliminare il multiboard: {{error}}",
   "no_saved_multiboards": "Nessun multiboard salvato. Creane uno con Add Custom… nel menu delle categorie su <1>/all/</1>, oppure con [Aggiungi a multiboard] su una board.",
-  "pass_auth_message_placeholder": "Inserisci l'indirizzo del tuo wallet per vedere il messaggio da firmare."
+  "pass_auth_message_placeholder": "Inserisci l'indirizzo del tuo wallet per vedere il messaggio da firmare.",
+  "download_backup_confirm": "Il backup contiene la tua chiave di pubblicazione. Chiunque abbia il file può pubblicare a tuo nome e capire quali post sono tuoi, anche sulle board che ti anonimizzano. Scaricarlo?"
 }

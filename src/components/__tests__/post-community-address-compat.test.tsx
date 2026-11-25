@@ -108,6 +108,8 @@ vi.mock('@bitsocial/bitsocial-react-hooks', async () => {
   );
   return {
     resolveReplySortType,
+    isAccountComment: () => false,
+    useIsAccountComment: () => false,
     useAccount: () => ({ id: 'viewer-account', author: { address: '0xviewer' } }),
     useAccountComment: (options?: { commentCid?: string }) => (options?.commentCid ? testState.accountCommentsByCid[options.commentCid] : undefined),
     useEditedComment: () => ({ editedComment: undefined }),

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Comment, useAccount, useAccountComment } from '@bitsocial/bitsocial-react-hooks';
+import { Comment, useIsAccountComment } from '@bitsocial/bitsocial-react-hooks';
 import { useFloating, offset, shift, size, autoUpdate, Placement } from '@floating-ui/react';
 import { useDirectories } from '../../hooks/use-directories';
 import { getBoardPath } from '../../lib/utils/route-utils';
@@ -88,19 +88,9 @@ const scrollToReplyOnPage = (cid: string) => {
   return true;
 };
 
-const useIsOwnQuotelink = (quotelinkReply?: Comment) => {
-  const account = useAccount();
-  const ownQuotelink = useAccountComment({ commentCid: quotelinkReply?.cid });
-  const quotedAuthorAddress = quotelinkReply?.author?.address;
-  const accountAuthorAddress = account?.author?.address;
-
-  return Boolean(
-    (quotelinkReply?.cid && ownQuotelink?.cid === quotelinkReply.cid) || (quotedAuthorAddress && accountAuthorAddress && quotedAuthorAddress === accountAuthorAddress),
-  );
-};
-
-// Keep account updates local to the visible ownership label, including before hover.
-const OwnQuoteSuffix = ({ reply }: { reply?: Comment }) => (useIsOwnQuotelink(reply) ? ' (You)' : null);
+// Keep account updates local to the visible ownership label, including before hover. The hook also
+// recognizes posts made from another device holding this posting key.
+const OwnQuoteSuffix = ({ reply }: { reply?: Comment }) => (useIsAccountComment({ comment: reply }) ? ' (You)' : null);
 
 const DesktopQuotePreview = ({
   backlinkReply,

@@ -77,6 +77,8 @@ const DataSettingsEditor = ({
   };
 
   const handleDownloadBackup = async () => {
+    // Besides posting as the viewer, the key recognizes their posts on any board that tags aliased posts for their author.
+    if (!window.confirm(t('download_backup_confirm'))) return;
     const accountString = await withErrorHandling(() => exportAccount(), reportError);
     if (accountString === undefined) return;
     const accountObject = safeParseJSON<Record<string, unknown>>(accountString);

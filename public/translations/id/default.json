@@ -618,5 +618,6 @@
   "delete_multiboard_confirm": "Hapus papan ganda \"{{name}}\"?",
   "multiboard_delete_failed": "Tidak dapat menghapus papan ganda: {{error}}",
   "no_saved_multiboards": "Tidak ada papan ganda tersimpan. Buat satu dengan Add Custom… di menu kategori di <1>/all/</1>, atau dengan [Tambahkan ke papan ganda] di sebuah papan.",
-  "pass_auth_message_placeholder": "Masukkan alamat dompet Anda untuk melihat pesan yang harus ditandatangani."
+  "pass_auth_message_placeholder": "Masukkan alamat dompet Anda untuk melihat pesan yang harus ditandatangani.",
+  "download_backup_confirm": "Cadangan ini berisi kunci posting Anda. Siapa pun yang memiliki file ini dapat memposting sebagai Anda dan mengetahui postingan mana yang milik Anda, bahkan di papan yang menganonimkan Anda. Unduh?"
 }

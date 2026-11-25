@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import type { Comment } from '@bitsocial/bitsocial-react-hooks';
+import { isAccountComment, type Comment } from '@bitsocial/bitsocial-react-hooks';
 import useThreadLiveUpdatesStore from '../stores/use-thread-live-updates-store';
 import { findNewThreadReplies } from '../lib/utils/thread-updater-utils';
 
@@ -34,6 +34,9 @@ const useThreadNewReplies = ({ enabled, hasMore, post, replies }: UseThreadNewRe
     const seen = seenRepliesRef.current;
 
     if (!seen || seen.postCid !== postCid) {
+      // On a board that tags aliased posts, checking the OP starts loading the hooks' tag check, so the
+      // first update already recognizes the viewer's posts from other devices.
+      isAccountComment(post);
       // Wait for the first loaded replies so the initial load is not reported as new.
       if (replyCids.length === 0 && post.replyCount !== 0) return;
       seenRepliesRef.current = { postCid, cids: new Set(replyCids), lastCid, hadMore: hasMore };

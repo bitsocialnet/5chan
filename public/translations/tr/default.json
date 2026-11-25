@@ -618,5 +618,6 @@
   "delete_multiboard_confirm": "\"{{name}}\" çoklu panosu silinsin mi?",
   "multiboard_delete_failed": "Çoklu pano silinemedi: {{error}}",
   "no_saved_multiboards": "Kayıtlı çoklu pano yok. <1>/all/</1> sayfasındaki kategori menüsünden Add Custom… ile ya da bir panodaki [Çoklu panoya ekle] ile bir tane oluşturun.",
-  "pass_auth_message_placeholder": "İmzalanacak mesajı görmek için cüzdan adresinizi girin."
+  "pass_auth_message_placeholder": "İmzalanacak mesajı görmek için cüzdan adresinizi girin.",
+  "download_backup_confirm": "Yedek, gönderi anahtarınızı içerir. Dosyaya sahip olan herkes sizin adınıza gönderi paylaşabilir ve sizi anonimleştiren panolarda bile hangi gönderilerin size ait olduğunu anlayabilir. İndirilsin mi?"
 }

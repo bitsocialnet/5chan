@@ -618,5 +618,6 @@
   "delete_multiboard_confirm": "¿Eliminar el multiboard «{{name}}»?",
   "multiboard_delete_failed": "No se pudo eliminar el multiboard: {{error}}",
   "no_saved_multiboards": "No hay multiboards guardados. Crea uno con Add Custom… en el menú de categorías de <1>/all/</1>, o con [Añadir a multiboard] en un tablón.",
-  "pass_auth_message_placeholder": "Introduce la dirección de tu billetera para ver el mensaje que debes firmar."
+  "pass_auth_message_placeholder": "Introduce la dirección de tu billetera para ver el mensaje que debes firmar.",
+  "download_backup_confirm": "La copia de seguridad contiene tu clave de publicación. Cualquiera que tenga el archivo puede publicar como tú y saber qué publicaciones son tuyas, incluso en los tableros que te anonimizan. ¿Descargarla?"
 }

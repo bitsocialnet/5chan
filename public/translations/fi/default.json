@@ -618,5 +618,6 @@
   "delete_multiboard_confirm": "Poistetaanko monilautalistaus ”{{name}}”?",
   "multiboard_delete_failed": "Monilautalistausta ei voitu poistaa: {{error}}",
   "no_saved_multiboards": "Ei tallennettuja monilautalistauksia. Luo sellainen valinnalla Add Custom… sivun <1>/all/</1> luokkavalikossa tai painikkeella [Lisää monilautalistaukseen] laudalla.",
-  "pass_auth_message_placeholder": "Anna lompakkosi osoite nähdäksesi allekirjoitettavan viestin."
+  "pass_auth_message_placeholder": "Anna lompakkosi osoite nähdäksesi allekirjoitettavan viestin.",
+  "download_backup_confirm": "Varmuuskopio sisältää julkaisuavaimesi. Kuka tahansa, jolla on tiedosto, voi julkaista nimissäsi ja tunnistaa, mitkä viestit ovat sinun, myös laudoilla, jotka anonymisoivat sinut. Ladataanko se?"
 }

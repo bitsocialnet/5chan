@@ -618,5 +618,6 @@
   "delete_multiboard_confirm": "Das Multiboard „{{name}}“ löschen?",
   "multiboard_delete_failed": "Das Multiboard konnte nicht gelöscht werden: {{error}}",
   "no_saved_multiboards": "Keine gespeicherten Multiboards. Erstelle eines mit Add Custom… im Kategoriemenü auf <1>/all/</1> oder mit [Zu Multiboard hinzufügen] auf einem Board.",
-  "pass_auth_message_placeholder": "Gib deine Wallet-Adresse ein, um die zu signierende Nachricht zu sehen."
+  "pass_auth_message_placeholder": "Gib deine Wallet-Adresse ein, um die zu signierende Nachricht zu sehen.",
+  "download_backup_confirm": "Die Sicherung enthält Ihren Posting-Schlüssel. Wer die Datei hat, kann in Ihrem Namen posten und erkennen, welche Posts von Ihnen sind, auch auf Boards, die Sie anonymisieren. Herunterladen?"
 }
