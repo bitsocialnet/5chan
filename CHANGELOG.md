@@ -1,3 +1,26 @@
+# [0.12.0](https://github.com/bitsocialnet/5chan/compare/v0.11.0...v0.12.0) (2026-11-25)
+
+
+### Bug Fixes
+
+* **bans:** show "User was banned for this post" on the banned post only ([#1339](https://github.com/bitsocialnet/5chan/issues/1339)) ([8cd8066](https://github.com/bitsocialnet/5chan/commit/8cd80664343d5e39a76572612a5fe4381938abc0))
+* **boards:** show failed loads from bitsocial-react-hooks 0.3.1 ([#1332](https://github.com/bitsocialnet/5chan/issues/1332)) ([eb208cf](https://github.com/bitsocialnet/5chan/commit/eb208cffdea4240b5eb3a27800e0213d0120a326))
+* **challenges:** close a challenge once its publication's exchange ends ([#1334](https://github.com/bitsocialnet/5chan/issues/1334)) ([b55994c](https://github.com/bitsocialnet/5chan/commit/b55994c2f72d70911a2607658bc2c1fa9fbc5836))
+* **modal-frame:** give portalled modals the theme's color scheme ([beffac2](https://github.com/bitsocialnet/5chan/commit/beffac26bfe7d26e8d2f41e3e21aeb116ed57d9d))
+* **pass:** sign the 5chan Pass message as BSIP-22 defines it ([#1341](https://github.com/bitsocialnet/5chan/issues/1341)) ([0c53e12](https://github.com/bitsocialnet/5chan/commit/0c53e12e64c1b03a9367d9603deb9944e4c01c87))
+* **pending-post:** keep a retried reply in its thread instead of opening a pending page ([#1337](https://github.com/bitsocialnet/5chan/issues/1337)) ([25d1408](https://github.com/bitsocialnet/5chan/commit/25d1408bcc18fa5e7c11a6c634f25c3c2d463246))
+* **publishing:** keep a failed post failed after a reload ([#1338](https://github.com/bitsocialnet/5chan/issues/1338)) ([d55fcf3](https://github.com/bitsocialnet/5chan/commit/d55fcf3ee3d7e0d46074b03427fd376a2a096415))
+* **publishing:** stop treating publish errors pkc-js recovers from as final ([#1335](https://github.com/bitsocialnet/5chan/issues/1335)) ([3c38aa7](https://github.com/bitsocialnet/5chan/commit/3c38aa714da63267648ea90c1cc849cf4d28b09d))
+* **quotes:** recognize posts made from another device in (You) and replies-to-you alerts ([#1343](https://github.com/bitsocialnet/5chan/issues/1343)) ([2abe136](https://github.com/bitsocialnet/5chan/commit/2abe136fcc3fabb0ff8c9a2ed6bdb0d2e20088d0))
+* **replies:** give the viewer's unpublished replies a list key ([45aef02](https://github.com/bitsocialnet/5chan/commit/45aef025cfc76ed86db85dc0413c2fc564e07dac))
+* **trash:** share one /trash/ transfer between the mod queue and the post edit menu ([#1342](https://github.com/bitsocialnet/5chan/issues/1342)) ([2b2ba2e](https://github.com/bitsocialnet/5chan/commit/2b2ba2e00e24a4f5804a827ccfeb09a5e6384894)), closes [#1309](https://github.com/bitsocialnet/5chan/issues/1309) [#1310](https://github.com/bitsocialnet/5chan/issues/1310)
+
+
+### Features
+
+* **analytics:** attribute 5chan.app visits to ad campaigns and count return visits ([#1336](https://github.com/bitsocialnet/5chan/issues/1336)) ([ab8a227](https://github.com/bitsocialnet/5chan/commit/ab8a22735029bcb8fc251f80cd5eaa5b473d5558))
+* **multiboards:** custom and saved multiboards, and measure directory data apart from code ([#1340](https://github.com/bitsocialnet/5chan/issues/1340)) ([6ad5633](https://github.com/bitsocialnet/5chan/commit/6ad56333297b39d118eb55b7d6331b7088f68f06)), closes [#1339](https://github.com/bitsocialnet/5chan/issues/1339)
+
 # [0.11.0](https://github.com/bitsocialnet/5chan/compare/v0.10.4...v0.11.0) (2026-11-20)
 
 

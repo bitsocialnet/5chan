@@ -104,7 +104,7 @@ const downloads = [macSection, winSection, linuxSection, androidSection, htmlSec
 
 // One-liner summary of what changed in this release. Update before each release.
 const oneLinerDescription =
-  "This version switches to the updated Bitsocial anti-spam challenge format, so desktop and Android users must update to keep posting on boards that have upgraded, and it adds category multiboards under /all, a 5chan Pass login page, a warning before posting on boards that do not hide your identity, and board-specific spoiler thumbnails, shows retry countdowns when posting fails, and fixes directory voting, reply counts and desktop app startup.";
+  "This version lets you build multiboards from any boards and save them by name, signs 5chan Pass and post wallet proofs in the format boards will require after their next upgrade, so desktop and Android users should update to keep posting on upgraded boards and 5chan Pass users need to log in again, shows (You) and replies-to-you alerts for posts made from another device that uses your backup, warns that a downloaded backup can reveal which posts are yours, and keeps a failed post failed after a reload, a retried reply in its thread and the ban notice on the banned post only.";
 
 const releaseBody = `${oneLinerDescription}
 
