@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import type { Comment } from '@bitsocial/bitsocial-react-hooks';
-import { canMoveCommentToTrash, isTerminalTransferState } from '../lib/comment-transfer';
+import { canMoveCommentToTrash } from '../lib/comment-transfer';
+import { isTerminalTransferState } from '../lib/post-transfer-state';
 import usePostTransferStore from '../stores/use-post-transfer-store';
 
 // The /trash/ transfer state of one post, shared by every Trash button that can move it.

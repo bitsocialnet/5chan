@@ -29,11 +29,10 @@ import {
   getTransferredCommentCid,
   getTransferredCommentNumber,
   hasSelectedTransferFields,
-  isTerminalTransferState,
   type PostTransferField,
   type PostTransferFields,
-  type PostTransferState,
 } from '../../lib/comment-transfer';
+import { isTerminalTransferState, type PostTransferState } from '../../lib/post-transfer-state';
 
 type CreateAccountAction = (accountName?: string) => Promise<void>;
 type PublishCommentAction = (publishCommentOptions: Record<string, unknown>, accountName?: string) => Promise<{ index?: number } | undefined>;

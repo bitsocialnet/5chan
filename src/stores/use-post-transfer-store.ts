@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { Comment } from '@bitsocial/bitsocial-react-hooks';
-import { isTerminalTransferState, type PostTransferState } from '../lib/comment-transfer';
+import { isTerminalTransferState, type PostTransferState } from '../lib/post-transfer-state';
 
 // One /trash/ transfer at a time, app-wide. The mod queue's Trash and the post edit menu's Trash both open it here,
 // and its modal renders from the app layout, so it keeps showing how a transfer ends after the post it was opened
