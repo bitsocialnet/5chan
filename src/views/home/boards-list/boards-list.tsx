@@ -4,7 +4,8 @@ import { useAccountCommunityAddresses } from '../../../hooks/use-account-communi
 import usePrefetchIntent from '../../../hooks/use-prefetch-intent';
 import { useDirectoriesState, DirectoryCommunity } from '../../../hooks/use-directories';
 import { getBoardNameFromDirectoryTitle, getBoardPath } from '../../../lib/utils/route-utils';
-import { getSearchWithBoardCategory } from '../../../lib/utils/board-category-utils';
+import { getSavedMultiboardSlug, getSearchWithBoardCategory } from '../../../lib/utils/board-category-utils';
+import { useSavedMultiboards } from '../../../hooks/use-saved-multiboards';
 import useDisclaimerModalStore from '../../../stores/use-disclaimer-modal-store';
 import useDirectoryModalStore from '../../../stores/use-directory-modal-store';
 import useBoardsFilterStore from '../../../stores/use-boards-filter-store';
@@ -71,6 +72,18 @@ const ModeratedBoardsLink = ({ useCatalogLinks }: { useCatalogLinks: boolean }) 
       <Link to={useCatalogLinks ? '/mod/catalog' : '/mod'}>{t('boards_you_moderate_nav')}</Link>
     </li>
   );
+};
+
+// The multiboards the account saved, each opening /all narrowed to its boards.
+const SavedMultiboardLinks = ({ useCatalogLinks }: { useCatalogLinks: boolean }) => {
+  const savedMultiboards = useSavedMultiboards();
+  return savedMultiboards.map((multiboard) => (
+    <li key={multiboard.id}>
+      <Link to={{ pathname: useCatalogLinks ? '/all/catalog' : '/all', search: getSearchWithBoardCategory('', getSavedMultiboardSlug(multiboard.id)) }}>
+        {multiboard.name}
+      </Link>
+    </li>
+  ));
 };
 
 const BoardsList = ({ multisub }: { multisub: DirectoryCommunity[] }) => {
@@ -641,6 +654,7 @@ const BoardsList = ({ multisub }: { multisub: DirectoryCommunity[] }) => {
                 <Link to={useCatalogLinks ? '/subs/catalog' : '/subs'}>Subscriptions</Link>
               </li>
               <ModeratedBoardsLink useCatalogLinks={useCatalogLinks} />
+              <SavedMultiboardLinks useCatalogLinks={useCatalogLinks} />
             </ul>
           </div>
         )}

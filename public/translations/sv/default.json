@@ -613,5 +613,10 @@
   "local_data": "Lokala data",
   "post_as_board_staff_confirm": "Du är ägare, administratör eller moderator för den här tavlan, och tavlor anonymiserar aldrig sin egen personal. Din Bitsocial-identifierare, och din 5chan Pass-plånbok om du har loggat in, publiceras tillsammans med det här inlägget. Posta ändå?",
   "user_banned_for_this_post": "Användaren blev blockerad för detta inlägg",
+  "add_to_multiboard": "Lägg till i multiboard",
+  "multiboard_not_saved": "Den här multiboarden är inte sparad på det här kontot.",
+  "delete_multiboard_confirm": "Ta bort multiboarden \"{{name}}\"?",
+  "multiboard_delete_failed": "Det gick inte att ta bort multiboarden: {{error}}",
+  "no_saved_multiboards": "Inga sparade multiboards. Skapa en med Add Custom… i kategorimenyn på <1>/all/</1> eller med [Lägg till i multiboard] på en board.",
   "pass_auth_message_placeholder": "Ange din plånboksadress för att se meddelandet som ska signeras."
 }

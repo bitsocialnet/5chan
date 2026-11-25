@@ -613,5 +613,10 @@
   "local_data": "Lokale data",
   "post_as_board_staff_confirm": "Du er eier, administrator eller moderator for denne tavlen, og tavler anonymiserer aldri staben sin. Bitsocial-identifikatoren din, og 5chan Pass-lommeboken din hvis du er logget inn, blir publisert sammen med dette innlegget. Poste likevel?",
   "user_banned_for_this_post": "Brukeren ble utestengt for dette innlegget",
+  "add_to_multiboard": "Legg til i multiboard",
+  "multiboard_not_saved": "Dette multiboardet er ikke lagret på denne kontoen.",
+  "delete_multiboard_confirm": "Slette multiboardet «{{name}}»?",
+  "multiboard_delete_failed": "Kunne ikke slette multiboardet: {{error}}",
+  "no_saved_multiboards": "Ingen lagrede multiboards. Lag et med Add Custom… i kategorimenyen på <1>/all/</1>, eller med [Legg til i multiboard] på et board.",
   "pass_auth_message_placeholder": "Skriv inn lommebokadressen din for å se meldingen som skal signeres."
 }

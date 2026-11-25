@@ -47,8 +47,9 @@ import { hasModQueueAccessRole } from '../../lib/utils/mod-access';
 import { getPageDraftKey } from '../../lib/utils/location-draft-utils';
 import { getCommentCommunityAddress } from '../../lib/utils/comment-utils';
 import { getNonokoPendingRouteState, getPendingPostRoutePost, NONOKO_REPLY_ROUTE_STATE, PENDING_UPLOAD_POST_PATH } from '../../lib/utils/pending-post-route-state';
-import { getBoardPath, getDirectoryCode, isDirectoryRoute } from '../../lib/utils/route-utils';
-import { filterByBoardCategory, getBoardCategoryFromSearch } from '../../lib/utils/board-category-utils';
+import { getBoardPath, isDirectoryRoute } from '../../lib/utils/route-utils';
+import { getBoardCategoryCommunities } from '../../lib/utils/board-category-communities';
+import { useBoardCategoryFromSearch } from '../../hooks/use-saved-multiboards';
 import { isAllView, isCatalogView, isModQueueView, isModView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import { getCommentFlagOptionsForDirectory, getCommentFlagPublishOptionsForDirectory, type CommentFlagSelectOption } from '../../lib/comment-flag-selection';
 import { FLASH_TAG_OPTIONS, getFlashTagPublishOptionsForDirectoryCode, isFlashDirectoryCode, type FlashTagOption } from '../../lib/flash-tags';
@@ -802,6 +803,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, useParams());
   const subscriptions = account?.subscriptions || [];
   const directories = useDirectories();
+  const allViewCategory = useBoardCategoryFromSearch(location.search);
   const directoryEntry = useDirectoryEntry(effectiveBoardAddress, params?.boardIdentifier);
   const effectiveBoardPath = effectiveBoardAddress ? getBoardPath(effectiveBoardAddress, directories) : undefined;
   const pendingPostBoardPath = effectiveBoardPath;
@@ -1525,8 +1527,8 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
               isInAllView={isInAllView}
               isInSubscriptionsView={isInSubscriptionsView}
               isInModView={isInModView}
-              // In a category multiboard the board picker offers that category's boards only.
-              directories={filterByBoardCategory(directories, isInAllView ? getBoardCategoryFromSearch(location.search) : undefined, getDirectoryCode)}
+              // In a category or saved multiboard the board picker offers its boards only.
+              directories={getBoardCategoryCommunities(directories, isInAllView ? allViewCategory : undefined)}
               accountCommunityAddresses={accountCommunityAddresses}
               subscriptions={subscriptions}
               communityAddress={effectiveBoardAddress}

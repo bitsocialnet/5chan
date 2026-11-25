@@ -613,5 +613,10 @@
   "local_data": "Date locale",
   "post_as_board_staff_confirm": "Ești proprietar, administrator sau moderator al acestui tablou, iar tablourile nu își anonimizează niciodată echipa. Identificatorul tău Bitsocial și, dacă te-ai autentificat, portofelul tău 5chan Pass vor fi publicate împreună cu această postare. Postezi oricum?",
   "user_banned_for_this_post": "Utilizatorul a fost blocat pentru această postare",
+  "add_to_multiboard": "Adaugă la multiboard",
+  "multiboard_not_saved": "Acest multiboard nu este salvat în acest cont.",
+  "delete_multiboard_confirm": "Ștergi multiboard-ul „{{name}}”?",
+  "multiboard_delete_failed": "Multiboard-ul nu a putut fi șters: {{error}}",
+  "no_saved_multiboards": "Niciun multiboard salvat. Creează unul cu Add Custom… din meniul de categorii de pe <1>/all/</1> sau cu [Adaugă la multiboard] pe un board.",
   "pass_auth_message_placeholder": "Introdu adresa portofelului tău pentru a vedea mesajul de semnat."
 }

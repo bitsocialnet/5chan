@@ -613,5 +613,10 @@
   "local_data": "本地数据",
   "post_as_board_staff_confirm": "你是此板块的所有者、管理员或版主，而板块从不对其管理人员进行匿名化。你的 Bitsocial 标识符（如果你已登录，还包括你的 5chan Pass 钱包）将随此帖子一同公开。仍要发帖吗？",
   "user_banned_for_this_post": "用户因此帖被封禁",
+  "add_to_multiboard": "添加到多板视图",
+  "multiboard_not_saved": "此多板视图未保存在此账户中。",
+  "delete_multiboard_confirm": "删除多板视图“{{name}}”？",
+  "multiboard_delete_failed": "无法删除多板视图：{{error}}",
+  "no_saved_multiboards": "没有已保存的多板视图。可在 <1>/all/</1> 的分类菜单中用 Add Custom… 创建，或在板块上用 [添加到多板视图] 创建。",
   "pass_auth_message_placeholder": "输入钱包地址以查看需要签名的消息。"
 }

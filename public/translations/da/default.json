@@ -613,5 +613,10 @@
   "local_data": "Lokale data",
   "post_as_board_staff_confirm": "Du er ejer, administrator eller moderator for dette board, og boards anonymiserer aldrig deres team. Din Bitsocial-identifikator og, hvis du er logget ind, din 5chan Pass-wallet bliver offentliggjort sammen med dette opslag. Vil du poste alligevel?",
   "user_banned_for_this_post": "Brugeren blev blokeret for dette indlæg",
+  "add_to_multiboard": "Føj til multiboard",
+  "multiboard_not_saved": "Dette multiboard er ikke gemt på denne konto.",
+  "delete_multiboard_confirm": "Slet multiboardet \"{{name}}\"?",
+  "multiboard_delete_failed": "Multiboardet kunne ikke slettes: {{error}}",
+  "no_saved_multiboards": "Ingen gemte multiboards. Lav et med Add Custom… i kategorimenuen på <1>/all/</1> eller med [Føj til multiboard] på et board.",
   "pass_auth_message_placeholder": "Indtast din walletadresse for at se beskeden, der skal underskrives."
 }

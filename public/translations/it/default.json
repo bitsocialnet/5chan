@@ -613,5 +613,10 @@
   "local_data": "Dati locali",
   "post_as_board_staff_confirm": "Sei proprietario, amministratore o moderatore di questa board, e le board non anonimizzano mai il proprio staff. Il tuo identificatore Bitsocial e, se hai effettuato l'accesso, il tuo wallet 5chan Pass verranno pubblicati con questo post. Pubblicare comunque?",
   "user_banned_for_this_post": "L'utente è stato bannato per questo post",
+  "add_to_multiboard": "Aggiungi a multiboard",
+  "multiboard_not_saved": "Questo multiboard non è salvato in questo account.",
+  "delete_multiboard_confirm": "Eliminare il multiboard \"{{name}}\"?",
+  "multiboard_delete_failed": "Impossibile eliminare il multiboard: {{error}}",
+  "no_saved_multiboards": "Nessun multiboard salvato. Creane uno con Add Custom… nel menu delle categorie su <1>/all/</1>, oppure con [Aggiungi a multiboard] su una board.",
   "pass_auth_message_placeholder": "Inserisci l'indirizzo del tuo wallet per vedere il messaggio da firmare."
 }

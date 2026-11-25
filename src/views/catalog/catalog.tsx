@@ -9,7 +9,7 @@ import { useBoardFeedPageSize } from '../../hooks/use-board-feed-page-size';
 import { useBoardSortType } from '../../hooks/use-board-sort-type';
 import { useAccountCommunityAddresses } from '../../hooks/use-account-community-addresses';
 import { useFilteredDirectoryAddresses } from '../../hooks/use-filtered-directory-addresses';
-import { getBoardCategory } from '../../lib/utils/board-category-utils';
+import { useBoardCategory } from '../../hooks/use-saved-multiboards';
 import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
 import { useFeedStateString } from '../../hooks/use-state-string';
 import useExpandedTimeFilter from '../../hooks/use-expanded-time-filter';
@@ -353,6 +353,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   const subscriptions = account?.subscriptions;
   const accountCommunityAddresses = useAccountCommunityAddresses();
   const filteredDirectoryAddresses = useFilteredDirectoryAddresses(categorySlugFromCache);
+  const categoryName = useBoardCategory(categorySlugFromCache)?.name;
   const excludeArchivedFilter = useMemo(
     () => ({
       filter: (comment: Comment) => !isCommentArchived(comment),
@@ -1028,7 +1029,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
 
     let documentTitle: string;
     if (isInAllView) {
-      documentTitle = getBoardCategory(categorySlugFromCache)?.name ?? t('all');
+      documentTitle = categoryName ?? t('all');
     } else if (isInSubscriptionsView) {
       documentTitle = t('subscriptions');
     } else if (isDirectory) {
@@ -1037,19 +1038,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
       documentTitle = title ? title : shortAddress || communityAddress || '';
     }
     document.title = documentTitle + ` - ${t('catalog')} - 5chan`;
-  }, [
-    title,
-    shortAddress,
-    communityAddress,
-    isInAllView,
-    isInSubscriptionsView,
-    categorySlugFromCache,
-    t,
-    isVisible,
-    params.boardIdentifier,
-    boardIdentifierProp,
-    directories,
-  ]);
+  }, [title, shortAddress, communityAddress, isInAllView, isInSubscriptionsView, categoryName, t, isVisible, params.boardIdentifier, boardIdentifierProp, directories]);
 
   return (
     <div className={styles.content}>

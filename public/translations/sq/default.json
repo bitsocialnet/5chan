@@ -613,5 +613,10 @@
   "local_data": "Të dhëna lokale",
   "post_as_board_staff_confirm": "Jeni pronar, administrator ose moderator i këtij bordi, dhe bordet nuk e anonimizojnë kurrë stafin e tyre. Identifikuesi juaj Bitsocial dhe, nëse keni hyrë, wallet-i juaj i 5chan Pass do të publikohen bashkë me këtë postim. Të postohet gjithsesi?",
   "user_banned_for_this_post": "Përdoruesi u ndalua për këtë postim",
+  "add_to_multiboard": "Shto në multiboard",
+  "multiboard_not_saved": "Ky multiboard nuk është ruajtur në këtë llogari.",
+  "delete_multiboard_confirm": "Të fshihet multiboard-i \"{{name}}\"?",
+  "multiboard_delete_failed": "Multiboard-i nuk u fshi dot: {{error}}",
+  "no_saved_multiboards": "Nuk ka multiboard të ruajtur. Krijo një me Add Custom… në menynë e kategorive te <1>/all/</1>, ose me [Shto në multiboard] në një bord.",
   "pass_auth_message_placeholder": "Shkruani adresën e wallet-it tuaj për të parë mesazhin që duhet nënshkruar."
 }

@@ -613,5 +613,10 @@
   "local_data": "Lokale gegevens",
   "post_as_board_staff_confirm": "Je bent eigenaar, beheerder of moderator van dit board, en boards anonimiseren hun staf nooit. Je Bitsocial-identificator en, als je bent ingelogd, je 5chan Pass-wallet worden samen met dit bericht gepubliceerd. Toch posten?",
   "user_banned_for_this_post": "Gebruiker is verbannen voor deze post",
+  "add_to_multiboard": "Toevoegen aan multiboard",
+  "multiboard_not_saved": "Dit multiboard is niet opgeslagen in dit account.",
+  "delete_multiboard_confirm": "Het multiboard \"{{name}}\" verwijderen?",
+  "multiboard_delete_failed": "Het multiboard kon niet worden verwijderd: {{error}}",
+  "no_saved_multiboards": "Geen opgeslagen multiboards. Maak er een met Add Custom… in het categoriemenu op <1>/all/</1>, of met [Toevoegen aan multiboard] op een board.",
   "pass_auth_message_placeholder": "Voer je walletadres in om het te ondertekenen bericht te zien."
 }

@@ -613,5 +613,10 @@
   "local_data": "Paikalliset tiedot",
   "post_as_board_staff_confirm": "Olet tämän laudan omistaja, järjestelmänvalvoja tai moderaattori, eivätkä laudat koskaan anonymisoi ylläpitoaan. Bitsocial-tunnisteesi ja, jos olet kirjautunut sisään, 5chan Pass -lompakkosi julkaistaan tämän viestin mukana. Lähetetäänkö silti?",
   "user_banned_for_this_post": "Käyttäjä sai porttikiellon tämän viestin vuoksi",
+  "add_to_multiboard": "Lisää monilautalistaukseen",
+  "multiboard_not_saved": "Tätä monilautalistausta ei ole tallennettu tälle tilille.",
+  "delete_multiboard_confirm": "Poistetaanko monilautalistaus ”{{name}}”?",
+  "multiboard_delete_failed": "Monilautalistausta ei voitu poistaa: {{error}}",
+  "no_saved_multiboards": "Ei tallennettuja monilautalistauksia. Luo sellainen valinnalla Add Custom… sivun <1>/all/</1> luokkavalikossa tai painikkeella [Lisää monilautalistaukseen] laudalla.",
   "pass_auth_message_placeholder": "Anna lompakkosi osoite nähdäksesi allekirjoitettavan viestin."
 }

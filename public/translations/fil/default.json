@@ -613,5 +613,10 @@
   "local_data": "Lokal na data",
   "post_as_board_staff_confirm": "Isa kang may-ari, administrator o moderator ng board na ito, at hindi kailanman ina-anonymize ng mga board ang kanilang staff. Mapa-publish ang iyong Bitsocial identifier, at ang iyong 5chan Pass wallet kung naka-log in ka, kasama ng post na ito. I-post pa rin?",
   "user_banned_for_this_post": "Na-ban ang user dahil sa post na ito",
+  "add_to_multiboard": "Idagdag sa multiboard",
+  "multiboard_not_saved": "Hindi naka-save ang multiboard na ito sa account na ito.",
+  "delete_multiboard_confirm": "Burahin ang multiboard na \"{{name}}\"?",
+  "multiboard_delete_failed": "Hindi mabura ang multiboard: {{error}}",
+  "no_saved_multiboards": "Walang naka-save na multiboard. Gumawa ng isa gamit ang Add Custom… sa menu ng kategorya sa <1>/all/</1>, o gamit ang [Idagdag sa multiboard] sa isang board.",
   "pass_auth_message_placeholder": "Ilagay ang address ng iyong wallet para makita ang mensaheng lalagdaan."
 }

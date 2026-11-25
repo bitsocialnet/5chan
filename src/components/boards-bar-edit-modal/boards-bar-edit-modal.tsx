@@ -6,6 +6,7 @@ import useBoardsBarVisibilityStore from '../../stores/use-boards-bar-visibility-
 import { ALL_BOARDS_VISIBLE } from '../../constants/board-codes';
 import { useDirectories } from '../../hooks/use-directories';
 import { createBoardCodeVisibility, getBoardCodeGroups } from '../../lib/utils/board-code-groups';
+import ModalFrame, { ModalFrameInput } from '../modal-frame';
 import styles from './boards-bar-edit-modal.module.css';
 
 const directoriesToString = (dirs: Set<string>): string => Array.from(dirs).sort().join(' ');
@@ -65,7 +66,7 @@ const BoardsBarEditModalForm = ({
   return (
     <>
       <div className={styles.section}>
-        <input
+        <ModalFrameInput
           type='text'
           className={styles.directoryInput}
           placeholder='Example: jp tg mu'
@@ -125,38 +126,18 @@ const BoardsBarEditModal = () => {
   const formKey = `${directoriesToString(visibleDirectories)}-${showSubscriptionsInBoardsBar}`;
 
   return (
-    <div className={styles.backdrop}>
-      <button
-        type='button'
-        className={styles.backdropButton}
-        aria-label='Close board list modal'
-        onClick={closeBoardsBarEditModal}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            closeBoardsBarEditModal();
-          }
-        }}
+    <ModalFrame title='Custom Board List' titleId='boards-bar-edit-modal-title' closeLabel='Close board list modal' onClose={closeBoardsBarEditModal}>
+      <BoardsBarEditModalForm
+        key={formKey}
+        visibleDirectories={visibleDirectories}
+        showSubscriptionsInBoardsBar={showSubscriptionsInBoardsBar}
+        setDirectoryVisibility={setDirectoryVisibility}
+        setShowSubscriptionsInBoardsBar={setShowSubscriptionsInBoardsBar}
+        closeBoardsBarEditModal={closeBoardsBarEditModal}
+        subscriptions={subscriptions}
+        location={location}
       />
-      <dialog open className={styles.boardsbarEditDialog} aria-modal='true' aria-labelledby='boards-bar-edit-modal-title'>
-        <div className={styles.hd}>
-          <h2 id='boards-bar-edit-modal-title'>Custom Board List</h2>
-          <button type='button' className={styles.closeButton} onClick={closeBoardsBarEditModal} title='Close' aria-label='Close' />
-        </div>
-        <div className={styles.bd}>
-          <BoardsBarEditModalForm
-            key={formKey}
-            visibleDirectories={visibleDirectories}
-            showSubscriptionsInBoardsBar={showSubscriptionsInBoardsBar}
-            setDirectoryVisibility={setDirectoryVisibility}
-            setShowSubscriptionsInBoardsBar={setShowSubscriptionsInBoardsBar}
-            closeBoardsBarEditModal={closeBoardsBarEditModal}
-            subscriptions={subscriptions}
-            location={location}
-          />
-        </div>
-      </dialog>
-    </div>
+    </ModalFrame>
   );
 };
 

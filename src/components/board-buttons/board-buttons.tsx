@@ -4,11 +4,18 @@ import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useAccount, useAccountComment, useComment, useSubscribe } from '@bitsocial/bitsocial-react-hooks';
 import { isAllView, isCatalogView, isModView, isModQueueView, isPendingPostView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import { usePostPageNumber } from '../../hooks/use-post-page-number';
-import { useDirectories, useDirectoryByAddress } from '../../hooks/use-directories';
+import { useDirectories, useDirectoryByAddress, type DirectoryCommunity } from '../../hooks/use-directories';
 import { useAccountCommunityAddresses } from '../../hooks/use-account-community-addresses';
 import { useFilteredDirectoryAddresses } from '../../hooks/use-filtered-directory-addresses';
-import { getBoardPath, isDirectoryRoute } from '../../lib/utils/route-utils';
-import { BOARD_CATEGORIES, getBoardCategoryFromSearch, getSearchWithBoardCategory } from '../../lib/utils/board-category-utils';
+import { getBoardPath, getDirectoryCode, isDirectoryRoute } from '../../lib/utils/route-utils';
+import {
+  BOARD_CATEGORIES,
+  getBoardCategoryFromSearch,
+  getBoardListEntryLabel,
+  getSavedMultiboardSlug,
+  getSearchWithBoardCategory,
+} from '../../lib/utils/board-category-utils';
+import { useBoardCategoryFromSearch, useSavedMultiboards } from '../../hooks/use-saved-multiboards';
 import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
 import { useBoardHasArchive } from '../../hooks/use-board-has-archive';
 import { useBoardSortType } from '../../hooks/use-board-sort-type';
@@ -26,6 +33,7 @@ import useFeedResetStore from '../../stores/use-feed-reset-store';
 import useHiddenCatalogThreadsStore from '../../stores/use-hidden-catalog-threads-store';
 import useSortingStore from '../../stores/use-sorting-store';
 import useAllFeedFilterStore from '../../stores/use-all-feed-filter-store';
+import useMultiboardModalStore from '../../stores/use-multiboard-modal-store';
 import useModQueueStore from '../../stores/use-mod-queue-store';
 import useFeedViewSettingsStore from '../../stores/use-feed-view-settings-store';
 import useThreadLiveUpdatesStore, { type ThreadUpdaterStatus } from '../../stores/use-thread-live-updates-store';
@@ -147,6 +155,11 @@ export const ArchiveButton = ({ address, isInAllView, isInSubscriptionsView, isI
   );
 };
 
+const getDirectoryCodeOfAddress = (address: string | undefined, directories: DirectoryCommunity[]) => {
+  const directory = address ? directories.find((entry) => entry.address === address) : undefined;
+  return directory ? (getDirectoryCode(directory) ?? undefined) : undefined;
+};
+
 const SubscribeButton = ({ address }: BoardButtonsProps) => {
   const { t } = useTranslation();
   const { subscribed, subscribe, unsubscribe } = useSubscribe({ communityAddress: address });
@@ -154,6 +167,26 @@ const SubscribeButton = ({ address }: BoardButtonsProps) => {
   return (
     <button type='button' className='button' onClick={subscribed ? unsubscribe : subscribe}>
       {subscribed ? t('unsubscribe') : t('subscribe')}
+    </button>
+  );
+};
+
+// Saves the board in a multiboard: by its code on a directory board's route, so the multiboard follows the
+// directory's winner, else by its address. A multiboard holding the board by its other identifier counts too.
+const AddToMultiboardButton = ({ address }: BoardButtonsProps) => {
+  const { t } = useTranslation();
+  const params = useParams();
+  const directories = useDirectories();
+  const openAddToMultiboard = useMultiboardModalStore((state) => state.openAddToMultiboard);
+  const boardIdentifier = params.boardIdentifier;
+  const code = boardIdentifier && isDirectoryRoute(boardIdentifier, directories) ? boardIdentifier : undefined;
+  const board = code ?? address;
+  if (!board) return null;
+  const aliases = [code ? address : getDirectoryCodeOfAddress(address, directories)].filter((alias): alias is string => !!alias && alias !== board);
+
+  return (
+    <button type='button' className='button' onClick={() => openAddToMultiboard(board, getBoardListEntryLabel(board), aliases)}>
+      {t('add_to_multiboard')}
     </button>
   );
 };
@@ -579,12 +612,19 @@ const TimeFilter = ({ isInAllView, isInCatalogView, isInSubscriptionsView, isInM
   );
 };
 
+// The category select's entry that opens the board picker. Never a category slug or a valid board list.
+const CUSTOM_CATEGORY_OPTION = '__custom__';
+
 const AllFeedFilter = () => {
   const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
   const { filter, setFilter } = useAllFeedFilterStore();
-  const categorySlug = getBoardCategoryFromSearch(location.search)?.slug ?? '';
+  const openMultiboardEditor = useMultiboardModalStore((state) => state.openMultiboardEditor);
+  const savedMultiboards = useSavedMultiboards();
+  const category = useBoardCategoryFromSearch(location.search);
+  // An unsaved board list shows as Add Custom…; [Edit] under the title reopens its picker.
+  const categoryValue = category?.custom ? CUSTOM_CATEGORY_OPTION : (category?.slug ?? '');
 
   return (
     <>
@@ -596,16 +636,34 @@ const AllFeedFilter = () => {
       </select>{' '}
       <select
         aria-label='Board category'
-        value={categorySlug}
-        onChange={(e) => navigate({ pathname: location.pathname, search: getSearchWithBoardCategory(location.search, e.target.value || undefined) })}
+        value={categoryValue}
+        onChange={(e) => {
+          // The select stays on the current category until the picker navigates.
+          if (e.target.value === CUSTOM_CATEGORY_OPTION) {
+            openMultiboardEditor();
+            return;
+          }
+          navigate({ pathname: location.pathname, search: getSearchWithBoardCategory(location.search, e.target.value || undefined) });
+        }}
       >
         <option value=''>All Categories</option>
-        {BOARD_CATEGORIES.map((category) => (
-          <option key={category.slug} value={category.slug}>
-            {category.name}
-            {category.nsfw ? ' (NSFW)' : ''}
+        {BOARD_CATEGORIES.map((boardCategory) => (
+          <option key={boardCategory.slug} value={boardCategory.slug}>
+            {boardCategory.name}
+            {boardCategory.nsfw ? ' (NSFW)' : ''}
           </option>
         ))}
+        {category?.savedId && !savedMultiboards.some((multiboard) => multiboard.id === category.savedId) && <option value={category.slug}>{category.name}</option>}
+        {savedMultiboards.length > 0 && (
+          <optgroup label='Custom Multiboards'>
+            {savedMultiboards.map((multiboard) => (
+              <option key={multiboard.id} value={getSavedMultiboardSlug(multiboard.id)}>
+                {multiboard.name}
+              </option>
+            ))}
+          </optgroup>
+        )}
+        <option value={CUSTOM_CATEGORY_OPTION}>Add Custom…</option>
       </select>
     </>
   );
@@ -726,6 +784,7 @@ export const MobileBoardButtons = () => {
           <div className={styles.secondRow}>
             {showDirectoryButton && <DirectoryButton />}
             {!(isInAllView || isInSubscriptionsView || isInModView) && <SubscribeButton address={communityAddress} />}
+            {!(isInAllView || isInSubscriptionsView || isInModView) && <AddToMultiboardButton address={communityAddress} />}
             {!(isInAllView || isInSubscriptionsView) && <ModQueueButton boardIdentifier={boardIdentifier} isMobile={true} />}
             {!isMultiboard && <BoardSettingsButton address={communityAddress} isMobile={true} />}
           </div>
@@ -971,7 +1030,7 @@ export const DesktopBoardButtons = () => {
               {showDirectoryButton && !(isInAllView || isInSubscriptionsView || isInModView) && ' '}
               {!(isInAllView || isInSubscriptionsView || isInModView) && (
                 <>
-                  [<SubscribeButton address={communityAddress} />]
+                  [<SubscribeButton address={communityAddress} />] [<AddToMultiboardButton address={communityAddress} />]
                 </>
               )}{' '}
               {isInCatalogView && (

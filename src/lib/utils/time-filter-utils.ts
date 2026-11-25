@@ -1,3 +1,5 @@
+import { toReadableSearchString } from './search-string-utils';
+
 const DAY_IN_SECONDS = 24 * 60 * 60;
 const LAST_VISIT_STORAGE_KEY = '5chanLastVisitTimestamp';
 const LAST_VISIT_TIME_FILTER_VALUE = 'last';
@@ -199,7 +201,7 @@ export const getSearchWithTimeFilter = (
     params.delete(TIME_FILTER_QUERY_PARAM);
   }
 
-  const nextSearch = params.toString();
+  const nextSearch = toReadableSearchString(params);
   return nextSearch ? `?${nextSearch}` : '';
 };
 
