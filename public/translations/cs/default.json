@@ -612,5 +612,6 @@
   "pass_login_prompt": "Už máte 5chan Pass? <1>Přihlaste se</1>.",
   "local_data": "Místní data",
   "post_as_board_staff_confirm": "Jste vlastníkem, administrátorem nebo moderátorem této desky a desky svůj tým nikdy neanonymizují. Váš identifikátor Bitsocial, a pokud jste přihlášeni, i vaše peněženka 5chan Pass budou zveřejněny s tímto příspěvkem. Přesto odeslat?",
-  "user_banned_for_this_post": "Uživatel byl zablokován za tento příspěvek"
+  "user_banned_for_this_post": "Uživatel byl zablokován za tento příspěvek",
+  "pass_auth_message_placeholder": "Zadejte adresu své peněženky, aby se zobrazila zpráva k podpisu."
 }

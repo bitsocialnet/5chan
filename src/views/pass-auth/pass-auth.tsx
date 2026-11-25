@@ -21,7 +21,10 @@ const ERROR_KEYS: Record<LoginError, string> = {
 const PassAuth = () => {
   const { t } = useTranslation();
   const account = useAccount();
-  const authorAddress: string | undefined = account?.author?.address;
+  // The proof names the device's key address, which stays the same when author.address is a name.
+  const authorPublicKey: string | undefined = account?.signer?.address;
+  // A login signed before BSIP-22 never shows here: bitsocial-react-hooks replaces a wallet whose proof is not
+  // valid with the device's own wallet when the account loads, which logs the device out.
   const loggedInWalletAddress = getPassLoginWalletAddress(account);
 
   const [walletAddress, setWalletAddress] = useState('');
@@ -40,7 +43,7 @@ const PassAuth = () => {
     document.title = t('pass_auth_document_title');
   }, [t]);
 
-  const message = authorAddress ? getPassWalletMessage(authorAddress, timestamp) : '';
+  const message = getPassWalletMessage(authorPublicKey, walletAddress.trim(), timestamp);
 
   const handleCopyMessage = async () => {
     try {
@@ -55,7 +58,7 @@ const PassAuth = () => {
 
   const handleLogin = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!account || !authorAddress) return;
+    if (!account || !authorPublicKey) return;
     const address = walletAddress.trim();
     if (!isEthWalletAddress(address)) {
       setError('invalid_address');
@@ -65,7 +68,7 @@ const PassAuth = () => {
     setError(undefined);
     setIsSaving(true);
     try {
-      await validateEthWallet(wallet, authorAddress);
+      await validateEthWallet(wallet, authorPublicKey);
     } catch {
       setError('invalid_signature');
       setIsSaving(false);
@@ -83,13 +86,13 @@ const PassAuth = () => {
   };
 
   const handleLogout = async () => {
-    if (!account || !authorAddress) return;
+    if (!account) return;
     setError(undefined);
     setIsSaving(true);
     try {
       // Logging out puts back the wallet derived from the device's own key, which is what a device that
       // never logged in has.
-      const builtInWallet = account.signer?.privateKey ? await getEthWalletFromPkcPrivateKey(account.signer.privateKey, authorAddress) : undefined;
+      const builtInWallet = account.signer?.privateKey ? await getEthWalletFromPkcPrivateKey(account.signer.privateKey) : undefined;
       const { eth: _loggedInWallet, ...otherWallets } = account.author?.wallets ?? {};
       await setAccount({ ...account, author: { ...account.author, wallets: builtInWallet ? { ...otherWallets, eth: builtInWallet } : otherWallets } });
     } catch (saveError) {
@@ -138,12 +141,12 @@ const PassAuth = () => {
                   <label htmlFor='pass-auth-message'>{t('pass_auth_message')}</label>
                 </th>
                 <td>
-                  <textarea id='pass-auth-message' value={message} rows={4} readOnly />
+                  <textarea id='pass-auth-message' value={message} placeholder={t('pass_auth_message_placeholder')} rows={4} readOnly />
                   <div className={styles.fieldTip}>
                     <Trans
                       i18nKey='copy_message_etherscan'
                       components={{
-                        1: <button type='button' key='copy-message-button' onClick={handleCopyMessage} />,
+                        1: <button type='button' key='copy-message-button' onClick={handleCopyMessage} disabled={!message} />,
                         // eslint-disable-next-line
                         2: <a key='etherscan-link' href='https://etherscan.io/verifiedSignatures' target='_blank' rel='noopener noreferrer' />,
                       }}
@@ -173,7 +176,7 @@ const PassAuth = () => {
               </tr>
               <tr>
                 <td colSpan={2} className={styles.submitCell}>
-                  <button type='submit' disabled={isSaving || !authorAddress}>
+                  <button type='submit' disabled={isSaving || !authorPublicKey}>
                     {t('submit')}
                   </button>
                 </td>

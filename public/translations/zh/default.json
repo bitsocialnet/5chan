@@ -612,5 +612,6 @@
   "pass_login_prompt": "已有 5chan Pass？<1>登录</1>。",
   "local_data": "本地数据",
   "post_as_board_staff_confirm": "你是此板块的所有者、管理员或版主，而板块从不对其管理人员进行匿名化。你的 Bitsocial 标识符（如果你已登录，还包括你的 5chan Pass 钱包）将随此帖子一同公开。仍要发帖吗？",
-  "user_banned_for_this_post": "用户因此帖被封禁"
+  "user_banned_for_this_post": "用户因此帖被封禁",
+  "pass_auth_message_placeholder": "输入钱包地址以查看需要签名的消息。"
 }

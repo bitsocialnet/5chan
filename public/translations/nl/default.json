@@ -612,5 +612,6 @@
   "pass_login_prompt": "Heb je al een 5chan Pass? <1>Log in</1>.",
   "local_data": "Lokale gegevens",
   "post_as_board_staff_confirm": "Je bent eigenaar, beheerder of moderator van dit board, en boards anonimiseren hun staf nooit. Je Bitsocial-identificator en, als je bent ingelogd, je 5chan Pass-wallet worden samen met dit bericht gepubliceerd. Toch posten?",
-  "user_banned_for_this_post": "Gebruiker is verbannen voor deze post"
+  "user_banned_for_this_post": "Gebruiker is verbannen voor deze post",
+  "pass_auth_message_placeholder": "Voer je walletadres in om het te ondertekenen bericht te zien."
 }

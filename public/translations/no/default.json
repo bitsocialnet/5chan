@@ -612,5 +612,6 @@
   "pass_login_prompt": "Har du allerede et 5chan Pass? <1>Logg inn</1>.",
   "local_data": "Lokale data",
   "post_as_board_staff_confirm": "Du er eier, administrator eller moderator for denne tavlen, og tavler anonymiserer aldri staben sin. Bitsocial-identifikatoren din, og 5chan Pass-lommeboken din hvis du er logget inn, blir publisert sammen med dette innlegget. Poste likevel?",
-  "user_banned_for_this_post": "Brukeren ble utestengt for dette innlegget"
+  "user_banned_for_this_post": "Brukeren ble utestengt for dette innlegget",
+  "pass_auth_message_placeholder": "Skriv inn lommebokadressen din for å se meldingen som skal signeres."
 }

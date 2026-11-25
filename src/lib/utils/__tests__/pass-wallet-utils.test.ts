@@ -6,9 +6,23 @@ const PRIVATE_KEY_ONE_BASE64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE=';
 const PRIVATE_KEY_ONE_ADDRESS = '0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf';
 const EXTERNAL_ADDRESS = '0x00000000000000000000000000000000000000AA';
 
+// The BSIP-22 test vector (BSIPs assets/bsip-22/wallet-proof-vectors.json). Test keys only.
+const AUTHOR_KEY_ADDRESS = '12D3KooWK99VoVxNE7XzyBwXEzW7xhK7Gpv85r9F3V3fyKSUKPH5';
+const WALLET_ADDRESS = '0x5050A4F4b3f9338C3472dcC01A87C76A144b3c9c';
+const TIMESTAMP = 1790000000;
+const PROOF_MESSAGE = `{"domainSeparator":"bitsocial-author-wallet","authorPublicKey":"${AUTHOR_KEY_ADDRESS}","walletAddress":"${WALLET_ADDRESS.toLowerCase()}","timestamp":${TIMESTAMP}}`;
+
 describe('getPassWalletMessage', () => {
-  it('builds the exact string boards verify a wallet signature against', () => {
-    expect(getPassWalletMessage('12D3KooWKey', 1700000000)).toBe('{"domainSeparator":"pkc-author-wallet","authorAddress":"12D3KooWKey","timestamp":1700000000}');
+  it('builds the BSIP-22 string over the key address and the lowercase wallet address', () => {
+    expect(getPassWalletMessage(AUTHOR_KEY_ADDRESS, WALLET_ADDRESS, TIMESTAMP)).toBe(PROOF_MESSAGE);
+  });
+
+  it('is empty until there is a complete wallet address and a key address', () => {
+    expect(getPassWalletMessage(AUTHOR_KEY_ADDRESS, '', TIMESTAMP)).toBe('');
+    expect(getPassWalletMessage(AUTHOR_KEY_ADDRESS, '0x5050', TIMESTAMP)).toBe('');
+    expect(getPassWalletMessage(undefined, WALLET_ADDRESS, TIMESTAMP)).toBe('');
+    // a signer address from hand-edited raw data must not crash the page
+    expect(getPassWalletMessage('name.bso', WALLET_ADDRESS, TIMESTAMP)).toBe('');
   });
 });
 

@@ -612,5 +612,6 @@
   "pass_login_prompt": "이미 5chan Pass가 있으신가요? <1>로그인</1>.",
   "local_data": "로컬 데이터",
   "post_as_board_staff_confirm": "이 게시판의 소유자, 관리자 또는 모더레이터이시며, 게시판은 운영진을 절대 익명화하지 않습니다. Bitsocial 식별자와, 로그인한 경우 5chan Pass 지갑이 이 게시물과 함께 공개됩니다. 그래도 게시하시겠습니까?",
-  "user_banned_for_this_post": "이 게시물로 인해 사용자가 차단되었습니다"
+  "user_banned_for_this_post": "이 게시물로 인해 사용자가 차단되었습니다",
+  "pass_auth_message_placeholder": "서명할 메시지를 보려면 지갑 주소를 입력하세요."
 }

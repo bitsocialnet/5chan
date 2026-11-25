@@ -612,5 +612,6 @@
   "pass_login_prompt": "Já tem um 5chan Pass? <1>Entrar</1>.",
   "local_data": "Dados locais",
   "post_as_board_staff_confirm": "Você é proprietário, administrador ou moderador deste quadro, e os quadros nunca anonimizam sua equipe. Seu identificador Bitsocial e, se você estiver conectado, sua carteira do 5chan Pass serão publicados com este post. Postar mesmo assim?",
-  "user_banned_for_this_post": "O usuário foi banido por este post"
+  "user_banned_for_this_post": "O usuário foi banido por este post",
+  "pass_auth_message_placeholder": "Digite o endereço da sua carteira para ver a mensagem a ser assinada."
 }

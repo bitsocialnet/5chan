@@ -612,5 +612,6 @@
   "pass_login_prompt": "Ai deja un 5chan Pass? <1>Autentifică-te</1>.",
   "local_data": "Date locale",
   "post_as_board_staff_confirm": "Ești proprietar, administrator sau moderator al acestui tablou, iar tablourile nu își anonimizează niciodată echipa. Identificatorul tău Bitsocial și, dacă te-ai autentificat, portofelul tău 5chan Pass vor fi publicate împreună cu această postare. Postezi oricum?",
-  "user_banned_for_this_post": "Utilizatorul a fost blocat pentru această postare"
+  "user_banned_for_this_post": "Utilizatorul a fost blocat pentru această postare",
+  "pass_auth_message_placeholder": "Introdu adresa portofelului tău pentru a vedea mesajul de semnat."
 }

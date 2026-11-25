@@ -612,5 +612,6 @@
   "pass_login_prompt": "Vous avez déjà un 5chan Pass ? <1>Connectez-vous</1>.",
   "local_data": "Données locales",
   "post_as_board_staff_confirm": "Vous êtes propriétaire, administrateur ou modérateur de ce board, et les boards n'anonymisent jamais leur équipe. Votre identifiant Bitsocial, ainsi que votre portefeuille 5chan Pass si vous êtes connecté, seront publiés avec ce post. Publier quand même ?",
-  "user_banned_for_this_post": "L'utilisateur a été banni pour ce post"
+  "user_banned_for_this_post": "L'utilisateur a été banni pour ce post",
+  "pass_auth_message_placeholder": "Saisissez l'adresse de votre portefeuille pour afficher le message à signer."
 }

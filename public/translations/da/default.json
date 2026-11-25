@@ -612,5 +612,6 @@
   "pass_login_prompt": "Har du allerede et 5chan Pass? <1>Log ind</1>.",
   "local_data": "Lokale data",
   "post_as_board_staff_confirm": "Du er ejer, administrator eller moderator for dette board, og boards anonymiserer aldrig deres team. Din Bitsocial-identifikator og, hvis du er logget ind, din 5chan Pass-wallet bliver offentliggjort sammen med dette opslag. Vil du poste alligevel?",
-  "user_banned_for_this_post": "Brugeren blev blokeret for dette indlæg"
+  "user_banned_for_this_post": "Brugeren blev blokeret for dette indlæg",
+  "pass_auth_message_placeholder": "Indtast din walletadresse for at se beskeden, der skal underskrives."
 }

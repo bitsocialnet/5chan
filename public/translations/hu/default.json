@@ -612,5 +612,6 @@
   "pass_login_prompt": "Már van 5chan Passod? <1>Jelentkezz be</1>.",
   "local_data": "Helyi adatok",
   "post_as_board_staff_confirm": "Ennek a táblának a tulajdonosa, rendszergazdája vagy moderátora vagy, a táblák pedig soha nem anonimizálják a saját személyzetüket. A Bitsocial-azonosítód és, ha bejelentkeztél, a 5chan Pass-pénztárcád ezzel a poszttal együtt nyilvánosságra kerül. Mégis elküldöd?",
-  "user_banned_for_this_post": "A felhasználót letiltották ennek a posztnak a kapcsán"
+  "user_banned_for_this_post": "A felhasználót letiltották ennek a posztnak a kapcsán",
+  "pass_auth_message_placeholder": "Add meg a pénztárcád címét, hogy megjelenjen az aláírandó üzenet."
 }

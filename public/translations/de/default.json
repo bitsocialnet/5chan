@@ -612,5 +612,6 @@
   "pass_login_prompt": "Du hast bereits einen 5chan Pass? <1>Anmelden</1>.",
   "local_data": "Lokale Daten",
   "post_as_board_staff_confirm": "Du bist Eigentümer, Administrator oder Moderator dieses Boards, und Boards anonymisieren ihr Team nie. Deine Bitsocial-Kennung und, falls du angemeldet bist, deine 5chan Pass-Wallet werden mit diesem Post veröffentlicht. Trotzdem posten?",
-  "user_banned_for_this_post": "Benutzer wurde für diesen Beitrag gesperrt"
+  "user_banned_for_this_post": "Benutzer wurde für diesen Beitrag gesperrt",
+  "pass_auth_message_placeholder": "Gib deine Wallet-Adresse ein, um die zu signierende Nachricht zu sehen."
 }

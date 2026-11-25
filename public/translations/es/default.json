@@ -612,5 +612,6 @@
   "pass_login_prompt": "¿Ya tienes un 5chan Pass? <1>Inicia sesión</1>.",
   "local_data": "Datos locales",
   "post_as_board_staff_confirm": "Eres propietario, administrador o moderador de este tablero, y los tableros nunca anonimizan a su equipo. Tu identificador de Bitsocial y, si iniciaste sesión, tu billetera de 5chan Pass se publicarán con esta publicación. ¿Publicar de todos modos?",
-  "user_banned_for_this_post": "El usuario fue baneado por esta publicación"
+  "user_banned_for_this_post": "El usuario fue baneado por esta publicación",
+  "pass_auth_message_placeholder": "Introduce la dirección de tu billetera para ver el mensaje que debes firmar."
 }

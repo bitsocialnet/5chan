@@ -612,5 +612,6 @@
   "pass_login_prompt": "Masz już 5chan Pass? <1>Zaloguj się</1>.",
   "local_data": "Dane lokalne",
   "post_as_board_staff_confirm": "Jesteś właścicielem, administratorem lub moderatorem tej tablicy, a tablice nigdy nie anonimizują osób pełniących te role. Twój identyfikator Bitsocial oraz, jeśli jesteś zalogowany, Twój portfel 5chan Pass zostaną opublikowane razem z tym postem. Opublikować mimo to?",
-  "user_banned_for_this_post": "Użytkownik został zablokowany za ten post"
+  "user_banned_for_this_post": "Użytkownik został zablokowany za ten post",
+  "pass_auth_message_placeholder": "Wpisz adres swojego portfela, aby zobaczyć wiadomość do podpisania."
 }

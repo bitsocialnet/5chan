@@ -612,5 +612,6 @@
   "pass_login_prompt": "Sudah punya 5chan Pass? <1>Masuk</1>.",
   "local_data": "Data lokal",
   "post_as_board_staff_confirm": "Anda adalah pemilik, administrator, atau moderator papan ini, dan papan tidak pernah menganonimkan stafnya. Pengenal Bitsocial Anda, beserta dompet 5chan Pass Anda jika Anda sudah masuk, akan dipublikasikan bersama postingan ini. Tetap posting?",
-  "user_banned_for_this_post": "Pengguna diblokir untuk pos ini"
+  "user_banned_for_this_post": "Pengguna diblokir untuk pos ini",
+  "pass_auth_message_placeholder": "Masukkan alamat dompet Anda untuk melihat pesan yang harus ditandatangani."
 }

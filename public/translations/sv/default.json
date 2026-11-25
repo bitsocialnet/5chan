@@ -612,5 +612,6 @@
   "pass_login_prompt": "Har du redan ett 5chan Pass? <1>Logga in</1>.",
   "local_data": "Lokala data",
   "post_as_board_staff_confirm": "Du är ägare, administratör eller moderator för den här tavlan, och tavlor anonymiserar aldrig sin egen personal. Din Bitsocial-identifierare, och din 5chan Pass-plånbok om du har loggat in, publiceras tillsammans med det här inlägget. Posta ändå?",
-  "user_banned_for_this_post": "Användaren blev blockerad för detta inlägg"
+  "user_banned_for_this_post": "Användaren blev blockerad för detta inlägg",
+  "pass_auth_message_placeholder": "Ange din plånboksadress för att se meddelandet som ska signeras."
 }

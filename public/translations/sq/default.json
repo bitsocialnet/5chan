@@ -612,5 +612,6 @@
   "pass_login_prompt": "Keni tashmë 5chan Pass? <1>Hyni</1>.",
   "local_data": "Të dhëna lokale",
   "post_as_board_staff_confirm": "Jeni pronar, administrator ose moderator i këtij bordi, dhe bordet nuk e anonimizojnë kurrë stafin e tyre. Identifikuesi juaj Bitsocial dhe, nëse keni hyrë, wallet-i juaj i 5chan Pass do të publikohen bashkë me këtë postim. Të postohet gjithsesi?",
-  "user_banned_for_this_post": "Përdoruesi u ndalua për këtë postim"
+  "user_banned_for_this_post": "Përdoruesi u ndalua për këtë postim",
+  "pass_auth_message_placeholder": "Shkruani adresën e wallet-it tuaj për të parë mesazhin që duhet nënshkruar."
 }
