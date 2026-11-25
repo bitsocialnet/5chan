@@ -32,8 +32,8 @@ import {
   type PostTransferField,
   type PostTransferFields,
 } from '../../lib/comment-transfer';
+import { isTerminalTransferState, type PostTransferState } from '../../lib/post-transfer-state';
 
-export type PostTransferState = 'idle' | 'publishing' | 'succeeded' | 'failed' | 'finalizationFailed';
 type CreateAccountAction = (accountName?: string) => Promise<void>;
 type PublishCommentAction = (publishCommentOptions: Record<string, unknown>, accountName?: string) => Promise<{ index?: number } | undefined>;
 type DeleteCommentAction = (commentCidOrAccountCommentIndex: string | number, accountName?: string) => Promise<void>;
@@ -45,6 +45,10 @@ type InitialTransferModalPosition = { isStored: boolean; position: TransferModal
 const TRANSFER_MODAL_WIDTH_PX = 430;
 const TRANSFER_MODAL_VIEWPORT_GUTTER_PX = 20;
 const TRANSFER_MODAL_POSITION_SESSION_STORAGE_KEY = '5chan:transfer-modal-position';
+// pkc-js gives up on a challenge request after two minutes without an answer, but once a challenge answer is
+// published it waits for the verification indefinitely. The /trash/ copy and the source removal get the same two
+// minutes, so a transfer whose verification never comes ends instead of holding the app-wide transfer lock until a reload.
+const TRANSFER_VERIFICATION_TIMEOUT_MS = 2 * 60 * 1000;
 
 interface TransferModalState {
   selectedFields: PostTransferFields;
@@ -61,6 +65,8 @@ type TransferModalAction =
   | { type: 'publishFailed'; error: unknown };
 
 interface PostTransferModalProps {
+  // The account that opened the transfer. Its moderations are signed by it even if another account becomes active.
+  accountName: string | undefined;
   comment: Comment;
   onClose: () => void;
   onTransferStateChange?: (state: PostTransferState) => void;
@@ -74,8 +80,6 @@ const getInitialTransferModalState = (comment: Comment): TransferModalState => (
 
 const resetTransferResult = (state: TransferModalState): TransferModalState =>
   state.transferState === 'idle' ? state : { ...state, transferState: 'idle', transferError: undefined };
-
-const isTerminalTransferState = (state: PostTransferState): boolean => state === 'succeeded' || state === 'finalizationFailed';
 
 const transferModalReducer = (state: TransferModalState, action: TransferModalAction): TransferModalState => {
   if (action.type === 'field') {
@@ -177,7 +181,7 @@ const getInitialTransferModalPosition = (): InitialTransferModalPosition => {
   return storedPosition ? { isStored: true, position: storedPosition } : { isStored: false, position: centeredPosition };
 };
 
-const PostTransferModal = ({ comment, onClose, onTransferStateChange, onTransferSuccess }: PostTransferModalProps) => {
+const PostTransferModal = ({ accountName, comment, onClose, onTransferStateChange, onTransferSuccess }: PostTransferModalProps) => {
   const { t } = useTranslation();
   const nodeRef = useRef<HTMLDivElement>(null);
   const finalizedTransferRef = useRef(false);
@@ -212,6 +216,7 @@ const PostTransferModal = ({ comment, onClose, onTransferStateChange, onTransfer
     !isPublishingTransfer &&
     !isTransferComplete &&
     !isSourceTargetBoard &&
+    Boolean(accountName) &&
     Boolean(sourceCommunityAddress) &&
     Boolean(sourceCommentCid) &&
     typeof createAccount === 'function' &&
@@ -314,35 +319,46 @@ const PostTransferModal = ({ comment, onClose, onTransferStateChange, onTransfer
     new Promise<void>((resolve, reject) => {
       let isSettled = false;
       let hasChallenge = false;
+      let verificationTimeout: ReturnType<typeof setTimeout> | undefined;
       const settle = (error?: unknown) => {
         if (isSettled) return;
         isSettled = true;
+        clearTimeout(verificationTimeout);
         if (error === undefined) resolve();
         else reject(error);
       };
-      publishCommentModeration({
-        ...moderationOptions,
-        onChallenge: async (...args: any[]) => {
-          // bitsocial-react-hooks publishes again on its own after a failed verification with no reason or challenge
-          // errors. Answering that challenge would remove the original post after the transfer was reported as failed.
-          if (isSettled) return;
-          hasChallenge = true;
-          useChallengesStore.getState().addChallenge([...args, comment], () => settle(new Error(`${label} challenge was abandoned.`)));
+      publishCommentModeration(
+        {
+          ...moderationOptions,
+          onChallenge: async (...args: any[]) => {
+            // bitsocial-react-hooks publishes again on its own after a failed verification with no reason or challenge
+            // errors. Answering that challenge would remove the original post after the transfer was reported as failed.
+            if (isSettled) return;
+            hasChallenge = true;
+            useChallengesStore.getState().addChallenge([...args, comment], () => settle(new Error(`${label} challenge was abandoned.`)));
+          },
+          // A challenge answer that fails to publish reaches no other callback: pkc-js only moves the publishing
+          // state to 'failed'. Before a challenge, a 'failed' state is followed by onError with the actual error.
+          onPublishingStateChange: (publishingState: string) => {
+            if (hasChallenge && publishingState === 'failed') settle(new Error(`${label} failed.`));
+            if (publishingState === 'waiting-challenge-verification' && verificationTimeout === undefined && !isSettled) {
+              verificationTimeout = setTimeout(
+                () => settle(new Error(`${label} got no challenge verification within two minutes. The original post may still be removed later.`)),
+                TRANSFER_VERIFICATION_TIMEOUT_MS,
+              );
+            }
+          },
+          onChallengeVerification: async (challengeVerification: ChallengeVerification, moderation: Comment) => {
+            alertChallengeVerificationFailed(challengeVerification, moderation);
+            settle(challengeVerification?.challengeSuccess === true ? undefined : new Error(challengeVerification?.reason || `${label} challenge verification failed.`));
+          },
+          onError: onFinalPublishError((error: Error & { details?: unknown }) => {
+            console.error(`${label} failed:`, error, error.details);
+            settle(error ?? new Error(`${label} failed.`));
+          }),
         },
-        // A challenge answer that fails to publish reaches no other callback: pkc-js only moves the publishing
-        // state to 'failed'. Before a challenge, a 'failed' state is followed by onError with the actual error.
-        onPublishingStateChange: (publishingState: string) => {
-          if (hasChallenge && publishingState === 'failed') settle(new Error(`${label} failed.`));
-        },
-        onChallengeVerification: async (challengeVerification: ChallengeVerification, moderation: Comment) => {
-          alertChallengeVerificationFailed(challengeVerification, moderation);
-          settle(challengeVerification?.challengeSuccess === true ? undefined : new Error(challengeVerification?.reason || `${label} challenge verification failed.`));
-        },
-        onError: onFinalPublishError((error: Error & { details?: unknown }) => {
-          console.error(`${label} failed:`, error, error.details);
-          settle(error ?? new Error(`${label} failed.`));
-        }),
-      }).catch((error: unknown) => settle(error ?? new Error(`${label} failed.`)));
+        accountName,
+      ).catch((error: unknown) => settle(error ?? new Error(`${label} failed.`)));
     });
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -368,7 +384,10 @@ const PostTransferModal = ({ comment, onClose, onTransferStateChange, onTransfer
         console.error('Transfer temporary account cleanup failed:', error);
       }
     };
+    let copyVerificationTimeout: ReturnType<typeof setTimeout> | undefined;
+    let hasCopyVerificationTimedOut = false;
     const failTransfer = async (error: unknown) => {
+      clearTimeout(copyVerificationTimeout);
       await cleanupTemporaryAccount({ deletePendingComment: true });
       onTransferStateChange?.('failed');
       dispatchModalState({ type: 'publishFailed', error });
@@ -397,7 +416,20 @@ const PostTransferModal = ({ comment, onClose, onTransferStateChange, onTransfer
               (error) => void failTransfer(error),
             );
           },
+          onPublishingStateChange: (publishingState: string) => {
+            if (publishingState !== 'waiting-challenge-verification' || copyVerificationTimeout !== undefined) return;
+            copyVerificationTimeout = setTimeout(() => {
+              hasCopyVerificationTimedOut = true;
+              void failTransfer(
+                new Error('The /trash/ copy got no challenge verification within two minutes. It may still appear in /trash/, so check there before trying again.'),
+              );
+            }, TRANSFER_VERIFICATION_TIMEOUT_MS);
+          },
           onChallengeVerification: async (challengeVerification: ChallengeVerification, challengeComment: Comment) => {
+            clearTimeout(copyVerificationTimeout);
+            // The transfer was already reported as failed and its temporary account deleted. Finishing it now would
+            // remove the original post after the moderator was told the move failed.
+            if (hasCopyVerificationTimedOut) return;
             try {
               alertChallengeVerificationFailed(challengeVerification, challengeComment);
               if (challengeVerification?.challengeSuccess !== true) {
@@ -421,16 +453,19 @@ const PostTransferModal = ({ comment, onClose, onTransferStateChange, onTransfer
               // Queue the target marker first so a target moderation failure does not remove the original post.
               // Its verification is not awaited: any moderator of the source board can move a post, but only
               // /trash/ moderators can publish the marker, so a rejected marker must not block the source removal.
-              await publishCommentModeration({
-                commentCid: targetCommentCid,
-                ...targetPublishIdentity,
-                commentModeration: {
-                  flairs: getTargetTransferModerationFlairs(comment, selectedFields),
+              await publishCommentModeration(
+                {
+                  commentCid: targetCommentCid,
+                  ...targetPublishIdentity,
+                  commentModeration: {
+                    flairs: getTargetTransferModerationFlairs(comment, selectedFields),
+                  },
+                  ...getTransferModerationCallbacks('Transfer target moderation failed:'),
                 },
-                ...getTransferModerationCallbacks('Transfer target moderation failed:'),
-              });
-              // The moderations are signed by the active account. Delete the temporary account before waiting for the
-              // source removal, so a reload during that wait does not leave it in the account list.
+                accountName,
+              );
+              // The moderations are signed by the account that opened the transfer. Delete the temporary account before
+              // waiting for the source removal, so a reload during that wait does not leave it in the account list.
               await cleanupTemporaryAccount();
               await publishVerifiedTransferModeration(
                 {
@@ -536,7 +571,8 @@ const PostTransferModal = ({ comment, onClose, onTransferStateChange, onTransfer
           )}
           {transferState === 'succeeded' && targetComment && (
             <div className={styles.transferSuccess}>
-              {t('modQueue.transferSuccess')} <Link to={`/trash/thread/${targetComment.cid}`}>{`>>>/trash/${targetComment.number ?? targetComment.cid}`}</Link>
+              {t('modQueue.transferSuccess')}{' '}
+              <Link to={`/trash/thread/${targetComment.cid}`} onClick={onClose}>{`>>>/trash/${targetComment.number ?? targetComment.cid}`}</Link>
             </div>
           )}
         </div>
