@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { isAccountComment, type Comment } from '@bitsocial/bitsocial-react-hooks';
 import useThreadLiveUpdatesStore from '../stores/use-thread-live-updates-store';
 // The `use` name makes the React Compiler treat the store as a hook instead of memoizing the call away.
@@ -35,6 +35,8 @@ const useThreadNewReplies = ({ enabled, hasMore, post, replies }: UseThreadNewRe
   const unreadMarkerCid = useThreadLiveUpdatesStore((state) => (enabled ? state.unreadMarkerCid : undefined));
   const seenRepliesRef = useRef<SeenReplies>(undefined);
   const authorTagCheckLoaded = useAuthorTagCheckStore((state) => state.loaded);
+  // Counts expired waits for the tag check, to run the effect again when one expires.
+  const [expiredAuthorTagCheckWaits, setExpiredAuthorTagCheckWaits] = useState(0);
 
   useEffect(() => {
     const postCid = post?.cid;
@@ -56,9 +58,11 @@ const useThreadNewReplies = ({ enabled, hasMore, post, replies }: UseThreadNewRe
     const taggedComment = authorTagCheckLoaded ? undefined : [post, ...replies].find(hasAuthorTag);
     if (taggedComment) {
       seen.authorTagCheckWaitStartedAt ??= Date.now();
-      if (Date.now() - seen.authorTagCheckWaitStartedAt < AUTHOR_TAG_CHECK_WAIT_MS) {
+      const remainingWaitMs = seen.authorTagCheckWaitStartedAt + AUTHOR_TAG_CHECK_WAIT_MS - Date.now();
+      if (remainingWaitMs > 0) {
         isAccountComment(taggedComment);
-        return;
+        const timeout = setTimeout(() => setExpiredAuthorTagCheckWaits((count) => count + 1), remainingWaitMs);
+        return () => clearTimeout(timeout);
       }
     }
 
@@ -73,7 +77,7 @@ const useThreadNewReplies = ({ enabled, hasMore, post, replies }: UseThreadNewRe
 
     if (count === 0 || isPaginating || updatesStarted === 0) return;
     recordNewReplies({ count, lastReadReplyCid, quotesOwnPost });
-  }, [authorTagCheckLoaded, enabled, hasMore, post, replies]);
+  }, [authorTagCheckLoaded, enabled, expiredAuthorTagCheckWaits, hasMore, post, replies]);
 
   return unreadMarkerCid;
 };

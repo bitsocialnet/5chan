@@ -93,16 +93,22 @@ describe('useThreadNewReplies', () => {
   });
 
   it("stops waiting for the hooks' author tag check after 10 seconds", async () => {
-    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.useFakeTimers({ toFake: ['Date', 'setTimeout', 'clearTimeout'] });
     authorTagCheckStore.setState({ loaded: false });
     await render({ post, replies: [reply('a'), reply('b')] });
     startUpdate();
     await render({ post, replies: [reply('a'), reply('b'), tagged('mine-tagged', { number: 5 }), tagged('c', { content: '>>5' })] });
+    await act(async () => {
+      vi.advanceTimersByTime(9_999);
+    });
     expect(recordNewRepliesMock).not.toHaveBeenCalled();
 
-    // a check that never loads delays the updater; it then reads tagged replies as before
-    vi.advanceTimersByTime(10_000);
-    await render({ post, replies: [reply('a'), reply('b'), tagged('mine-tagged', { number: 5 }), tagged('c', { content: '>>5' })] });
+    // a check that never loads delays the updater, with no new render needed; it then reads tagged
+    // replies as before
+    await act(async () => {
+      vi.advanceTimersByTime(1);
+    });
+    expect(recordNewRepliesMock).toHaveBeenCalledTimes(1);
     expect(recordNewRepliesMock).toHaveBeenCalledWith({ count: 2, lastReadReplyCid: 'b', quotesOwnPost: false });
   });
 
