@@ -500,8 +500,10 @@ const FAQ_SECTIONS: FAQSection[] = [
         answer: (
           <>
             Only <code>5chan.app</code> does, using cookieless Vercel Web Analytics. It counts page views by board or page type, with thread IDs and unlisted board
-            addresses removed, and counts failed post attempts without noting the board. It never records successful posts or what you write. The desktop and Android apps
-            and the other mirrors send no analytics.
+            addresses removed, and counts failed post attempts without noting the board. If you arrived through a link with campaign tags such as <code>utm_source</code>,
+            your page views in that tab carry those tags. To count how many visitors come back, your browser stores the day of its first visit and the campaign it came
+            from, and reports a range such as 2-7 days later the first time it returns within each range; no ID is stored or sent. It never records successful posts or
+            what you write. The desktop and Android apps and the other mirrors send no analytics.
           </>
         ),
       },
