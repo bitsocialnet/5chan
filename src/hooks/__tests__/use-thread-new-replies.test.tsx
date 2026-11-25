@@ -61,11 +61,12 @@ describe('useThreadNewReplies', () => {
     expect(recordNewRepliesMock).not.toHaveBeenCalled();
   });
 
-  it('checks the OP when the thread opens, so the hooks load their author tag check before the first update', async () => {
+  it('checks every loaded post when the thread opens, so the hooks load their author tag check before the first update', async () => {
+    const replies = [reply('a'), reply('b')];
     isAccountCommentMock.mockClear();
-    await render({ post, replies: [reply('a')] });
+    await render({ post, replies });
 
-    expect(isAccountCommentMock).toHaveBeenCalledWith(post);
+    expect(isAccountCommentMock.mock.calls.map(([comment]) => comment)).toEqual([post, ...replies]);
   });
 
   it('reports replies that appear after an update, below the last reply read', async () => {

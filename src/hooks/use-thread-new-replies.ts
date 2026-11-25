@@ -34,11 +34,12 @@ const useThreadNewReplies = ({ enabled, hasMore, post, replies }: UseThreadNewRe
     const seen = seenRepliesRef.current;
 
     if (!seen || seen.postCid !== postCid) {
-      // On a board that tags aliased posts, checking the OP starts loading the hooks' tag check, so the
-      // first update already recognizes the viewer's posts from other devices.
-      isAccountComment(post);
       // Wait for the first loaded replies so the initial load is not reported as new.
       if (replyCids.length === 0 && post.replyCount !== 0) return;
+      // The hooks load their author tag check the first time a tagged post is checked. Checking every
+      // loaded post, not only the OP, which a moderator may have posted without an alias, starts that
+      // load before the first update whenever the thread has a tagged post.
+      for (const comment of [post, ...replies]) isAccountComment(comment);
       seenRepliesRef.current = { postCid, cids: new Set(replyCids), lastCid, hadMore: hasMore };
       return;
     }
