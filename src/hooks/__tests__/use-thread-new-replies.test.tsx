@@ -92,6 +92,28 @@ describe('useThreadNewReplies', () => {
     expect(recordNewRepliesMock).toHaveBeenCalledWith({ count: 1, lastReadReplyCid: 'b', quotesOwnPost: true });
   });
 
+  it("does not wait for the hooks' author tag check when every tagged post is already recognized", async () => {
+    authorTagCheckStore.setState({ loaded: false });
+    await render({ post, replies: [reply('a'), reply('b')] });
+    startUpdate();
+    // the viewer's tagged reply from this device's history, quoted by an untagged one
+    await render({ post, replies: [reply('a'), reply('b'), tagged('mine', { number: 5 }), reply('c', { content: '>>5' })] });
+
+    expect(recordNewRepliesMock).toHaveBeenCalledWith({ count: 1, lastReadReplyCid: 'b', quotesOwnPost: true });
+  });
+
+  it("checks a tagged post it does not recognize yet even after one from this device's history", async () => {
+    authorTagCheckStore.setState({ loaded: false });
+    await render({ post, replies: [reply('a'), reply('b')] });
+    startUpdate();
+    const replies = [reply('a'), reply('b'), tagged('mine', { number: 5 }), tagged('c', { content: '>>5' })];
+    isAccountCommentMock.mockClear();
+    await render({ post, replies });
+
+    expect(isAccountCommentMock).toHaveBeenCalledWith(replies[3]);
+    expect(recordNewRepliesMock).not.toHaveBeenCalled();
+  });
+
   it("stops waiting for the hooks' author tag check after 10 seconds", async () => {
     vi.useFakeTimers({ toFake: ['Date', 'setTimeout', 'clearTimeout'] });
     authorTagCheckStore.setState({ loaded: false });

@@ -53,14 +53,14 @@ const useThreadNewReplies = ({ enabled, hasMore, post, replies }: UseThreadNewRe
     }
 
     // Until the hooks' author tag check loads, isAccountComment reads the viewer's posts from other
-    // devices on a board that tags aliased posts as someone else's. Checking a tagged post starts the
-    // load, and the update waits until this effect runs again with the check loaded.
-    const taggedComment = authorTagCheckLoaded ? undefined : [post, ...replies].find(hasAuthorTag);
-    if (taggedComment) {
+    // devices on a board that tags aliased posts as someone else's. A tagged post it does not recognize
+    // yet, e.g. not from this device's history, starts that load when checked, and the update waits
+    // until this effect runs again with the check loaded.
+    const waitsForAuthorTagCheck = !authorTagCheckLoaded && [post, ...replies].some((comment) => hasAuthorTag(comment) && !isAccountComment(comment));
+    if (waitsForAuthorTagCheck) {
       seen.authorTagCheckWaitStartedAt ??= Date.now();
       const remainingWaitMs = seen.authorTagCheckWaitStartedAt + AUTHOR_TAG_CHECK_WAIT_MS - Date.now();
       if (remainingWaitMs > 0) {
-        isAccountComment(taggedComment);
         const timeout = setTimeout(() => setExpiredAuthorTagCheckWaits((count) => count + 1), remainingWaitMs);
         return () => clearTimeout(timeout);
       }
