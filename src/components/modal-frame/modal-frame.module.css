@@ -1,3 +1,5 @@
+/* The frame renders into document.body, outside .app, so it sets the theme's color scheme itself: without it the
+   dark :root scheme reaches native controls (checkboxes, buttons, inputs) under light themes. */
 .backdrop {
   position: fixed;
   top: 0;
@@ -6,6 +8,7 @@
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.25);
   z-index: 999;
+  color-scheme: var(--color-scheme, revert) !important;
 }
 
 .backdropButton {
