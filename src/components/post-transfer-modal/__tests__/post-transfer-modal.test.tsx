@@ -113,7 +113,7 @@ const baseComment = {
 const renderTransferModal = async (comment = baseComment, props: Partial<React.ComponentProps<typeof PostTransferModal>> = {}) => {
   await act(async () => {
     // The success message links to the new /trash/ thread, which needs a router.
-    root.render(createElement(MemoryRouter, {}, createElement(PostTransferModal, { comment, onClose: testState.onCloseMock, ...props })));
+    root.render(createElement(MemoryRouter, {}, createElement(PostTransferModal, { accountName: 'mod-account', comment, onClose: testState.onCloseMock, ...props })));
   });
 };
 
@@ -333,6 +333,56 @@ describe('PostTransferModal', () => {
     expect(document.body.textContent).toContain('the board never answered');
     consoleErrorSpy.mockRestore();
     consoleWarnSpy.mockRestore();
+  });
+
+  it('signs both moderations with the account that opened the transfer', async () => {
+    await renderTransferModal();
+
+    await submitAndAcceptTrashCopy();
+
+    expect(testState.publishCommentModerationMock.mock.calls.map((call) => call[1])).toEqual(['mod-account', 'mod-account']);
+  });
+
+  it('disables submission without the account that opened the transfer', async () => {
+    await renderTransferModal(baseComment, { accountName: undefined });
+
+    const submitButton = document.body.querySelector<HTMLButtonElement>('button[type="submit"]');
+    expect(submitButton?.disabled).toBe(true);
+  });
+
+  it('reports a finalization failure when the source removal gets no verification within two minutes of its challenge answer', async () => {
+    const onTransferSuccess = vi.fn();
+    const onTransferStateChange = vi.fn();
+    await renderTransferModal(baseComment, { onTransferStateChange, onTransferSuccess });
+
+    await submitAndAcceptTrashCopy();
+    vi.useFakeTimers();
+    try {
+      await settleModeration(1, (options) => options.onChallenge({ challenges: [] }, { cid: 'comment-1' }));
+      await settleModeration(1, (options) => options.onPublishingStateChange?.('waiting-challenge-verification'));
+      await act(async () => {
+        vi.advanceTimersByTime(2 * 60 * 1000 - 1);
+      });
+      expect(onTransferStateChange).not.toHaveBeenCalledWith('finalizationFailed');
+
+      await act(async () => {
+        vi.advanceTimersByTime(1);
+        await Promise.resolve();
+        await Promise.resolve();
+        await Promise.resolve();
+      });
+      expect(onTransferStateChange).toHaveBeenLastCalledWith('finalizationFailed');
+      expect(document.body.textContent).toContain('got no challenge verification within two minutes');
+      const closeButton = Array.from(document.body.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.textContent === 'close');
+      expect(closeButton?.disabled).toBe(false);
+
+      // A verification that arrives after the deadline does not report success.
+      await settleModeration(1, (options) => options.onChallengeVerification({ challengeSuccess: true }, { cid: 'comment-1' }));
+      expect(onTransferSuccess).not.toHaveBeenCalled();
+      expect(onTransferStateChange).toHaveBeenLastCalledWith('finalizationFailed');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('reports success only after the source removal is verified', async () => {

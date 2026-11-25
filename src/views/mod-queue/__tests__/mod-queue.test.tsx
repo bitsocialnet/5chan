@@ -429,7 +429,7 @@ describe('ModQueueView', () => {
     testState.viewMode = 'compact';
     testState.moderationOptions = { approve: undefined, reject: undefined };
     testState.moderationPublishState = 'initializing';
-    usePostTransferStore.setState({ activeTransferComment: null, transferStates: {} });
+    usePostTransferStore.setState({ activeTransferAccountId: null, activeTransferComment: null, transferStates: {} });
 
     container = document.createElement('div');
     document.body.appendChild(container);
@@ -1191,7 +1191,7 @@ describe('ModQueueView', () => {
     await renderModQueue();
     // The post edit menu's Trash opens the transfer in the same store as the mod queue's Trash.
     await act(async () => {
-      usePostTransferStore.getState().openTransfer(editMenuComment as any);
+      usePostTransferStore.getState().openTransfer(editMenuComment as any, 'account');
     });
 
     const dialogs = document.body.querySelectorAll<HTMLElement>('[role="dialog"][aria-labelledby="post-transfer-title"]');

@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import EditMenu from '../edit-menu';
 import PostTransferModalHost from '../../post-transfer-modal';
 import usePostTransferStore from '../../../stores/use-post-transfer-store';
+import { accountsStore } from '../../../lib/bitsocial-internals/stores';
 import { TRASH_BOARD_ADDRESS } from '../../../lib/special-boards';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -121,12 +122,27 @@ vi.mock('../../../hooks/use-board-has-archive', () => ({
   useBoardHasArchive: () => testState.boardHasArchive,
 }));
 
+vi.mock('../../../lib/bitsocial-internals/stores', async () => {
+  const { create } = await import('zustand');
+  return {
+    accountsStore: create(() => ({
+      accounts: {
+        'mod-account-id': { id: 'mod-account-id', name: 'Mod account' },
+        'other-account-id': { id: 'other-account-id', name: 'Other account' },
+      } as Record<string, { id: string; name: string }>,
+      activeAccountId: 'mod-account-id',
+    })),
+  };
+});
+
 vi.mock('../../post-transfer-modal/post-transfer-modal', () => {
   const MockPostTransferModal = ({
+    accountName,
     comment,
     onClose,
     onTransferStateChange,
   }: {
+    accountName?: string;
     comment: Record<string, unknown>;
     onClose: () => void;
     onTransferStateChange?: (state: string) => void;
@@ -138,6 +154,7 @@ vi.mock('../../post-transfer-modal/post-transfer-modal', () => {
     return createElement(
       'div',
       {
+        'data-account-name': accountName,
         'data-cid': comment.cid,
         'data-testid': 'post-transfer-modal',
       },
@@ -260,7 +277,8 @@ describe('EditMenu', () => {
     testState.publishCommentModerationMock.mockReset().mockResolvedValue(undefined);
     testState.transferModalMounts = 0;
     testState.transferModalProps = undefined;
-    usePostTransferStore.setState({ activeTransferComment: null, transferStates: {} });
+    usePostTransferStore.setState({ activeTransferAccountId: null, activeTransferComment: null, transferStates: {} });
+    (accountsStore as unknown as { setState: (state: Record<string, unknown>) => void }).setState({ activeAccountId: 'mod-account-id' });
     alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
     confirmSpy = vi.spyOn(window, 'confirm').mockImplementation(() => true);
     container = document.createElement('div');
@@ -484,6 +502,40 @@ describe('EditMenu', () => {
     await clickButton('trash');
 
     expect(container.querySelector('[data-testid="post-transfer-modal"]')?.getAttribute('data-cid')).toBe('comment-1');
+    expect(container.querySelector('[data-testid="post-transfer-modal"]')?.getAttribute('data-account-name')).toBe('Mod account');
+  });
+
+  it('hides a transfer that was not submitted while another account is active, and keeps a publishing one', async () => {
+    testState.privileges = {
+      isAccountCommentAuthor: false,
+      isAccountMod: true,
+      isCommentAuthorMod: false,
+    };
+    const switchAccount = async (activeAccountId: string) => {
+      await act(async () => {
+        (accountsStore as unknown as { setState: (state: Record<string, unknown>) => void }).setState({ activeAccountId });
+      });
+    };
+
+    await renderMenu(basePost);
+    await openMenu();
+    await clickButton('trash');
+    expect(getTransferModals()).toHaveLength(1);
+
+    // An account that did not open the transfer neither sees it nor is locked out of Trash by it.
+    await switchAccount('other-account-id');
+    expect(getTransferModals()).toHaveLength(0);
+    await openMenu();
+    expect(hasButton('trash')).toBe(true);
+
+    await switchAccount('mod-account-id');
+    expect(getTransferModals()).toHaveLength(1);
+
+    // A submitted transfer keeps showing how it ends, still signed by the account that opened it.
+    await setTransferState('publishing');
+    await switchAccount('other-account-id');
+    expect(getTransferModals()).toHaveLength(1);
+    expect(container.querySelector('[data-testid="post-transfer-modal"]')?.getAttribute('data-account-name')).toBe('Mod account');
   });
 
   it("keeps a live post's transfer modal open after its queued removal shows the post as removed, and after a rollback", async () => {
@@ -523,7 +575,7 @@ describe('EditMenu', () => {
     };
     // The mod queue's Trash opened another post's transfer.
     await act(async () => {
-      usePostTransferStore.getState().openTransfer({ cid: 'queued-post' } as any);
+      usePostTransferStore.getState().openTransfer({ cid: 'queued-post' } as any, 'mod-account-id');
     });
 
     await renderMenu(basePost);
@@ -537,7 +589,7 @@ describe('EditMenu', () => {
 
     // The mod queue's Trash moved this post and is still publishing it.
     await act(async () => {
-      usePostTransferStore.getState().openTransfer(basePost as any);
+      usePostTransferStore.getState().openTransfer(basePost as any, 'mod-account-id');
       usePostTransferStore.getState().setTransferState('comment-1', 'publishing');
     });
     expect(hasButton('trash')).toBe(false);
