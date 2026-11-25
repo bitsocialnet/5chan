@@ -12,3 +12,6 @@ export { default as communitiesPagesStore } from '@bitsocial/bitsocial-react-hoo
 export { default as feedsStore } from '@bitsocial/bitsocial-react-hooks/dist/stores/feeds/index.js';
 export { default as repliesStore, feedOptionsToFeedName } from '@bitsocial/bitsocial-react-hooks/dist/stores/replies/index.js';
 export { default as repliesPagesStore } from '@bitsocial/bitsocial-react-hooks/dist/stores/replies-pages/index.js';
+// Flips once the hooks' lazily loaded pseudonymity author tag check is ready; until then
+// isAccountComment reads a post recognized only by its author tag as someone else's.
+export { useAuthorTagCheckStore as authorTagCheckStore } from '@bitsocial/bitsocial-react-hooks/dist/lib/author-tag-check.js';

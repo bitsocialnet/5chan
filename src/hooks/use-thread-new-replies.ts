@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { isAccountComment, type Comment } from '@bitsocial/bitsocial-react-hooks';
 import useThreadLiveUpdatesStore from '../stores/use-thread-live-updates-store';
+// The `use` name makes the React Compiler treat the store as a hook instead of memoizing the call away.
+import { authorTagCheckStore as useAuthorTagCheckStore } from '../lib/bitsocial-internals/stores';
 import { findNewThreadReplies } from '../lib/utils/thread-updater-utils';
 
 interface SeenReplies {
@@ -8,7 +10,14 @@ interface SeenReplies {
   cids: Set<string>;
   lastCid: string | undefined;
   hadMore: boolean;
+  authorTagCheckWaitStartedAt?: number;
 }
+
+// How long an update waits for the hooks' author tag check, so a check that fails to load (e.g. its
+// chunk is gone after a deploy) delays the updater instead of stopping it.
+const AUTHOR_TAG_CHECK_WAIT_MS = 10_000;
+
+const hasAuthorTag = (comment: Comment | undefined) => typeof comment?.raw?.commentUpdate?.pseudonymityAuthorTag === 'string';
 
 interface UseThreadNewRepliesOptions {
   enabled: boolean;
@@ -25,6 +34,7 @@ interface UseThreadNewRepliesOptions {
 const useThreadNewReplies = ({ enabled, hasMore, post, replies }: UseThreadNewRepliesOptions) => {
   const unreadMarkerCid = useThreadLiveUpdatesStore((state) => (enabled ? state.unreadMarkerCid : undefined));
   const seenRepliesRef = useRef<SeenReplies>(undefined);
+  const authorTagCheckLoaded = useAuthorTagCheckStore((state) => state.loaded);
 
   useEffect(() => {
     const postCid = post?.cid;
@@ -36,12 +46,20 @@ const useThreadNewReplies = ({ enabled, hasMore, post, replies }: UseThreadNewRe
     if (!seen || seen.postCid !== postCid) {
       // Wait for the first loaded replies so the initial load is not reported as new.
       if (replyCids.length === 0 && post.replyCount !== 0) return;
-      // The hooks load their author tag check the first time a tagged post is checked. Checking every
-      // loaded post, not only the OP, which a moderator may have posted without an alias, starts that
-      // load before the first update whenever the thread has a tagged post.
-      for (const comment of [post, ...replies]) isAccountComment(comment);
       seenRepliesRef.current = { postCid, cids: new Set(replyCids), lastCid, hadMore: hasMore };
       return;
+    }
+
+    // Until the hooks' author tag check loads, isAccountComment reads the viewer's posts from other
+    // devices on a board that tags aliased posts as someone else's. Checking a tagged post starts the
+    // load, and the update waits until this effect runs again with the check loaded.
+    const taggedComment = authorTagCheckLoaded ? undefined : [post, ...replies].find(hasAuthorTag);
+    if (taggedComment) {
+      seen.authorTagCheckWaitStartedAt ??= Date.now();
+      if (Date.now() - seen.authorTagCheckWaitStartedAt < AUTHOR_TAG_CHECK_WAIT_MS) {
+        isAccountComment(taggedComment);
+        return;
+      }
     }
 
     const { isUpdating, recordNewReplies, updatesStarted } = useThreadLiveUpdatesStore.getState();
@@ -55,7 +73,7 @@ const useThreadNewReplies = ({ enabled, hasMore, post, replies }: UseThreadNewRe
 
     if (count === 0 || isPaginating || updatesStarted === 0) return;
     recordNewReplies({ count, lastReadReplyCid, quotesOwnPost });
-  }, [enabled, hasMore, post, replies]);
+  }, [authorTagCheckLoaded, enabled, hasMore, post, replies]);
 
   return unreadMarkerCid;
 };
