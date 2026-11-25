@@ -3,13 +3,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { findNewThreadReplies, getThreadDeadReason } from '../thread-updater-utils';
 
 const testState = vi.hoisted(() => ({
-  commentCidsToAccountsComments: {} as Record<string, unknown>,
+  ownCids: new Set<string>(),
 }));
 
-vi.mock('../../bitsocial-internals/stores', () => ({
-  accountsStore: {
-    getState: () => ({ commentCidsToAccountsComments: testState.commentCidsToAccountsComments }),
-  },
+// Stands in for the hooks' check: the cids in ownCids and the pending comments are the viewer's.
+vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
+  isAccountComment: (comment: Comment | undefined) => typeof comment?.index === 'number' || Boolean(comment?.cid && testState.ownCids.has(comment.cid)),
 }));
 
 const post = { cid: 'op', number: 1 } as Comment;
@@ -17,7 +16,7 @@ const reply = (cid: string, fields: Partial<Comment> = {}) => ({ cid, parentCid:
 
 describe('findNewThreadReplies', () => {
   beforeEach(() => {
-    testState.commentCidsToAccountsComments = {};
+    testState.ownCids = new Set();
   });
 
   it('counts only replies that were not seen yet', () => {
@@ -27,14 +26,14 @@ describe('findNewThreadReplies', () => {
   });
 
   it("skips the viewer's own replies, published or pending", () => {
-    testState.commentCidsToAccountsComments = { mine: { accountId: 'account', accountCommentIndex: 0 } };
+    testState.ownCids = new Set(['mine']);
     const replies = [reply('a'), reply('mine'), { index: 3, content: 'pending' } as Comment, reply('b')];
 
     expect(findNewThreadReplies({ post, replies, seenReplyCids: new Set(['a']) })).toEqual({ count: 1, quotesOwnPost: false });
   });
 
   it("flags new replies that quote or answer the viewer's posts", () => {
-    testState.commentCidsToAccountsComments = { mine: {} };
+    testState.ownCids = new Set(['mine']);
     const seenReplyCids = new Set(['mine']);
 
     expect(findNewThreadReplies({ post, replies: [reply('mine', { number: 7 }), reply('b', { content: '>>7 based' })], seenReplyCids }).quotesOwnPost).toBe(true);
@@ -43,7 +42,7 @@ describe('findNewThreadReplies', () => {
   });
 
   it("treats a quote of the viewer's own thread as a reply to them, but not every thread reply", () => {
-    testState.commentCidsToAccountsComments = { op: {} };
+    testState.ownCids = new Set(['op']);
 
     expect(findNewThreadReplies({ post, replies: [reply('b')], seenReplyCids: new Set() }).quotesOwnPost).toBe(false);
     expect(findNewThreadReplies({ post, replies: [reply('b', { content: '>>1' })], seenReplyCids: new Set() }).quotesOwnPost).toBe(true);

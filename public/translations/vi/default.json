@@ -618,5 +618,6 @@
   "delete_multiboard_confirm": "Xóa đa bảng \"{{name}}\"?",
   "multiboard_delete_failed": "Không thể xóa đa bảng: {{error}}",
   "no_saved_multiboards": "Chưa có đa bảng nào được lưu. Tạo một đa bảng bằng Add Custom… trong menu danh mục ở <1>/all/</1>, hoặc bằng [Thêm vào đa bảng] trên một bảng.",
-  "pass_auth_message_placeholder": "Hãy nhập địa chỉ ví của bạn để xem tin nhắn cần ký."
+  "pass_auth_message_placeholder": "Hãy nhập địa chỉ ví của bạn để xem tin nhắn cần ký.",
+  "download_backup_confirm": "Bản sao lưu chứa khóa đăng bài của bạn. Bất kỳ ai có tệp này đều có thể đăng bài dưới danh nghĩa của bạn và biết bài đăng nào là của bạn, kể cả trên các bảng ẩn danh hóa bạn. Tải xuống?"
 }

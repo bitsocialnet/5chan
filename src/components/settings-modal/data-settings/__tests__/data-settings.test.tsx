@@ -359,11 +359,26 @@ describe('DataSettings', () => {
       await Promise.resolve();
     });
 
+    expect(confirmSpy).toHaveBeenCalledWith('download_backup_confirm');
     expect(hookMocks.exportAccount).toHaveBeenCalledOnce();
     expect(createObjectUrlSpy).toHaveBeenCalledOnce();
     expect(anchorClickSpy).toHaveBeenCalledOnce();
     expect(createdAnchor?.download).toBe('5chan-backup.json');
     expect(revokeObjectUrlSpy).toHaveBeenCalledWith('blob:test-account');
+  });
+
+  it('does not export the backup when its warning is rejected', async () => {
+    confirmSpy.mockReturnValueOnce(false);
+
+    render();
+
+    await act(async () => {
+      getButtonByText('download_backup').click();
+      await Promise.resolve();
+    });
+
+    expect(hookMocks.exportAccount).not.toHaveBeenCalled();
+    expect(createObjectUrlSpy).not.toHaveBeenCalled();
   });
 
   it('alerts when export returns malformed JSON', async () => {

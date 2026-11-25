@@ -19,18 +19,12 @@ type TestComment = {
 };
 
 const testState = vi.hoisted(() => ({
-  account: {
-    id: 'account-1',
-    author: {
-      address: '0xme',
-    },
-  } as { id?: string; author?: { address?: string } },
-  accountCalls: 0,
+  // The comments the active account published, as the hooks' useIsAccountComment reports them.
+  account: { id: 'account-1', ownCids: [] as string[] },
   accountListeners: new Set<() => void>(),
   floatingCalls: 0,
   floatingPlacements: [] as Array<string | undefined>,
-  accountCommentByCid: {} as Record<string, { cid?: string }>,
-  accountCommentCalls: [] as Array<{ commentCid?: string } | undefined>,
+  isAccountCommentCalls: [] as Array<{ comment?: TestComment } | undefined>,
   directories: [{ address: 'music-posting.eth', title: '/mu/ - Music' }] as Array<{ address: string; title?: string }>,
   isMobile: false,
   locationPath: '/mu/thread/thread-cid',
@@ -56,9 +50,9 @@ vi.mock('react-router-dom', async () => {
 vi.mock('@bitsocial/bitsocial-react-hooks', async () => {
   const { useSyncExternalStore } = await vi.importActual<typeof import('react')>('react');
   return {
-    useAccount: () => {
-      testState.accountCalls++;
-      return useSyncExternalStore(
+    useIsAccountComment: (options?: { comment?: TestComment }) => {
+      testState.isAccountCommentCalls.push(options);
+      const account = useSyncExternalStore(
         (notify) => {
           testState.accountListeners.add(notify);
           return () => {
@@ -67,10 +61,7 @@ vi.mock('@bitsocial/bitsocial-react-hooks', async () => {
         },
         () => testState.account,
       );
-    },
-    useAccountComment: (options?: { commentCid?: string }) => {
-      testState.accountCommentCalls.push(options);
-      return (options?.commentCid && testState.accountCommentByCid[options.commentCid]) || {};
+      return Boolean(options?.comment?.cid && account.ownCids.includes(options.comment.cid));
     },
   };
 });
@@ -205,15 +196,8 @@ const appendThreadContainer = ({ cid, top = 240, parent = document.body }: { cid
 describe('ReplyQuotePreview', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    testState.account = {
-      id: 'account-1',
-      author: {
-        address: '0xme',
-      },
-    };
-    testState.accountCommentByCid = {};
-    testState.accountCommentCalls = [];
-    testState.accountCalls = 0;
+    testState.account = { id: 'account-1', ownCids: [] };
+    testState.isAccountCommentCalls = [];
     testState.floatingCalls = 0;
     testState.floatingPlacements = [];
     testState.accountListeners.clear();
@@ -255,17 +239,17 @@ describe('ReplyQuotePreview', () => {
     testState.isMobile = isMobile;
     await renderPreview({ isBacklinkReply: true, backlinkReply: { cid: 'reply-cid', number: 7, communityAddress: 'music-posting.eth' } });
     expect(container.textContent).toContain('>>7');
-    expect(testState.accountCalls).toBe(0);
-    expect(testState.accountCommentCalls).toEqual([]);
+    expect(testState.isAccountCommentCalls).toEqual([]);
   });
 
   it.each([false, true])('updates the ownership label without rendering its preview on account changes (mobile: %s)', async (isMobile) => {
     testState.isMobile = isMobile;
-    await renderPreview({ isQuotelinkReply: true, quotelinkReply: { cid: 'reply-cid', number: 7, author: { address: '0xme' }, communityAddress: 'music-posting.eth' } });
+    testState.account = { id: 'account-1', ownCids: ['reply-cid'] };
+    await renderPreview({ isQuotelinkReply: true, quotelinkReply: { cid: 'reply-cid', number: 7, communityAddress: 'music-posting.eth' } });
     expect(container.textContent).toContain('>>7 (You)');
     const initialFloatingCalls = testState.floatingCalls;
     await act(async () => {
-      testState.account = { id: 'account-2', author: { address: '0xother' } };
+      testState.account = { id: 'account-2', ownCids: [] };
       testState.accountListeners.forEach((notify) => notify());
     });
     expect(container.textContent).toContain('>>7');
@@ -571,45 +555,18 @@ describe('ReplyQuotePreview', () => {
     outOfView.remove();
   });
 
-  it('marks quotelinks as your own via the direct account comment lookup before author fallback', async () => {
-    testState.account = {
-      id: 'account-1',
-      author: {
-        address: '0xsomeone-else',
-      },
-    };
-    testState.accountCommentByCid = {
-      'reply-cid': {
-        cid: 'reply-cid',
-      },
-    };
+  it('asks the hooks whether the account published the quoted comment', async () => {
+    testState.account = { id: 'account-1', ownCids: ['reply-cid'] };
+    const quotelinkReply = { cid: 'reply-cid', number: 11, communityAddress: 'music-posting.eth' };
 
-    await renderPreview({
-      isQuotelinkReply: true,
-      quotelinkReply: {
-        author: {
-          address: '0xother',
-        },
-        cid: 'reply-cid',
-        number: 11,
-        communityAddress: 'music-posting.eth',
-      },
-    });
+    await renderPreview({ isQuotelinkReply: true, quotelinkReply });
 
     expect(container.textContent).toContain('>>11 (You)');
-    expect(testState.accountCommentCalls).toContainEqual({ commentCid: 'reply-cid' });
+    expect(testState.isAccountCommentCalls).toContainEqual({ comment: quotelinkReply });
   });
 
-  it('does not mark quotelinks as your own when the lookup misses and no author address matches', async () => {
-    testState.account = {
-      id: 'account-1',
-      author: { address: undefined } as { address?: string },
-    };
-    testState.accountCommentByCid = {
-      'reply-cid': {
-        cid: 'different-cid',
-      },
-    };
+  it('does not mark quotelinks the account did not publish as your own', async () => {
+    testState.account = { id: 'account-1', ownCids: ['different-cid'] };
 
     await renderPreview({
       isQuotelinkReply: true,
@@ -625,14 +582,12 @@ describe('ReplyQuotePreview', () => {
 
   it('renders unavailable desktop quotelinks without navigation and includes OP/You labels', async () => {
     testState.quoteAvailability = 'unavailable';
+    testState.account = { id: 'account-1', ownCids: ['reply-cid'] };
 
     await renderPreview({
       isOP: true,
       isQuotelinkReply: true,
       quotelinkReply: {
-        author: {
-          address: '0xme',
-        },
         cid: 'reply-cid',
         number: 10,
         communityAddress: 'music-posting.eth',

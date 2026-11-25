@@ -618,5 +618,6 @@
   "delete_multiboard_confirm": "删除多板视图“{{name}}”？",
   "multiboard_delete_failed": "无法删除多板视图：{{error}}",
   "no_saved_multiboards": "没有已保存的多板视图。可在 <1>/all/</1> 的分类菜单中用 Add Custom… 创建，或在板块上用 [添加到多板视图] 创建。",
-  "pass_auth_message_placeholder": "输入钱包地址以查看需要签名的消息。"
+  "pass_auth_message_placeholder": "输入钱包地址以查看需要签名的消息。",
+  "download_backup_confirm": "备份包含你的发帖密钥。任何拿到该文件的人都可以以你的身份发帖，并知道哪些帖子是你的，即使在会将你匿名化的板块上也是如此。要下载吗？"
 }

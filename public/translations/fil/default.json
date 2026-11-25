@@ -618,5 +618,6 @@
   "delete_multiboard_confirm": "Burahin ang multiboard na \"{{name}}\"?",
   "multiboard_delete_failed": "Hindi mabura ang multiboard: {{error}}",
   "no_saved_multiboards": "Walang naka-save na multiboard. Gumawa ng isa gamit ang Add Custom… sa menu ng kategorya sa <1>/all/</1>, o gamit ang [Idagdag sa multiboard] sa isang board.",
-  "pass_auth_message_placeholder": "Ilagay ang address ng iyong wallet para makita ang mensaheng lalagdaan."
+  "pass_auth_message_placeholder": "Ilagay ang address ng iyong wallet para makita ang mensaheng lalagdaan.",
+  "download_backup_confirm": "Naglalaman ang backup ng iyong susi sa pag-post. Sinumang may hawak ng file ay makakapag-post bilang ikaw at malalaman kung aling mga post ang sa iyo, kahit sa mga board na nag-a-anonymize sa iyo. I-download ito?"
 }

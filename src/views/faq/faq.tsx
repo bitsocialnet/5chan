@@ -447,10 +447,12 @@ const FAQ_SECTIONS: FAQSection[] = [
         question: 'Why are my (You)s missing on another device?',
         answer: (
           <>
-            5chan adds <code>(You)</code> to quotes of your posts by checking the post history stored on your device. Posts made on another device or browser are not in
-            that history, and most boards replace your address with a per-thread or per-reply ID, so 5chan cannot recognize them as yours. On the device you posted from,
-            use Download Backup in the advanced settings, then use Import Backup here. The import is a separate copy, so posts made from this device before the import
-            keep their <code>(You)</code> only while the earlier copy is selected in the advanced settings.
+            5chan adds <code>(You)</code> to quotes of your posts. It recognizes them by the posting key stored in your browser, and every device or browser creates its
+            own key, so it cannot recognize posts made from another one. To share one key, use Download Backup in the advanced settings on the device you posted from,
+            then use Import Backup here. Each device then recognizes posts made from the other, except on boards that replace your address with a per-thread or per-reply
+            ID and still run older board software. There, 5chan only knows the posts in this browser's history, so posts made from the other device after the backup are
+            not recognized until you import a newer one. The import is a separate copy, so posts made from this device before the import keep their <code>(You)</code>{' '}
+            only while the earlier copy is selected in the advanced settings.
           </>
         ),
       },

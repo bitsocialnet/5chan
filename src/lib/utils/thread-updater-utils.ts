@@ -1,5 +1,4 @@
-import type { Comment } from '@bitsocial/bitsocial-react-hooks';
-import { accountsStore } from '../bitsocial-internals/stores';
+import { isAccountComment, type Comment } from '@bitsocial/bitsocial-react-hooks';
 import { isCommentArchived } from './comment-moderation-utils';
 import { QUOTE_NUMBER_REGEX } from './url-utils';
 
@@ -10,12 +9,6 @@ export const getThreadDeadReason = (post: Comment | undefined): ThreadDeadReason
   if (isCommentArchived(post)) return 'archived';
   if (post.deleted || post.removed || post.purged || post.commentModeration?.purged) return 'deleted';
   return undefined;
-};
-
-const isAccountComment = (comment: Comment | undefined): boolean => {
-  if (typeof comment?.index === 'number') return true;
-  const cid = comment?.cid;
-  return typeof cid === 'string' && Boolean(accountsStore.getState().commentCidsToAccountsComments?.[cid]);
 };
 
 const getQuotedNumbers = (content: unknown): number[] =>

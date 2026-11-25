@@ -618,5 +618,6 @@
   "delete_multiboard_confirm": "Të fshihet multiboard-i \"{{name}}\"?",
   "multiboard_delete_failed": "Multiboard-i nuk u fshi dot: {{error}}",
   "no_saved_multiboards": "Nuk ka multiboard të ruajtur. Krijo një me Add Custom… në menynë e kategorive te <1>/all/</1>, ose me [Shto në multiboard] në një bord.",
-  "pass_auth_message_placeholder": "Shkruani adresën e wallet-it tuaj për të parë mesazhin që duhet nënshkruar."
+  "pass_auth_message_placeholder": "Shkruani adresën e wallet-it tuaj për të parë mesazhin që duhet nënshkruar.",
+  "download_backup_confirm": "Kopja rezervë përmban çelësin tuaj të postimit. Kushdo që ka skedarin mund të postojë si ju dhe të dallojë cilat postime janë tuajat, edhe në bordet që ju anonimizojnë. Ta shkarkoni?"
 }

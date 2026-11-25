@@ -5,15 +5,24 @@ import type { Comment } from '@bitsocial/bitsocial-react-hooks';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import useThreadNewReplies from '../use-thread-new-replies';
 import useThreadLiveUpdatesStore from '../../stores/use-thread-live-updates-store';
+import { authorTagCheckStore } from '../../lib/bitsocial-internals/stores';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
 
-vi.mock('../../lib/bitsocial-internals/stores', () => ({
-  accountsStore: {
-    getState: () => ({ commentCidsToAccountsComments: { mine: {} } }),
-  },
+// Like the hooks, a post recognized only by its author tag reads as someone else's until the tag check loads.
+const isAccountCommentMock = vi.hoisted(() =>
+  vi.fn((comment: { cid?: string } | undefined) => comment?.cid === 'mine' || (comment?.cid === 'mine-tagged' && authorTagCheckStore.getState().loaded)),
+);
+
+vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
+  isAccountComment: isAccountCommentMock,
 }));
+
+vi.mock('../../lib/bitsocial-internals/stores', async () => {
+  const { create } = await vi.importActual<typeof import('zustand')>('zustand');
+  return { authorTagCheckStore: create(() => ({ loaded: true })) };
+});
 
 type HarnessProps = { enabled?: boolean; hasMore?: boolean; post: Comment; replies: Comment[] };
 
@@ -36,6 +45,7 @@ const render = async (props: HarnessProps) => {
 const reply = (cid: string, fields: Partial<Comment> = {}) => ({ cid, parentCid: 'op', postCid: 'op', ...fields }) as Comment;
 const post = { cid: 'op', number: 1, replyCount: 2, updatedAt: 100 } as Comment;
 const startUpdate = () => useThreadLiveUpdatesStore.setState({ updatesStarted: 1 });
+const tagged = (cid: string, fields: Partial<Comment> = {}) => reply(cid, { raw: { commentUpdate: { cid, pseudonymityAuthorTag: 'tag' } }, ...fields });
 
 describe('useThreadNewReplies', () => {
   beforeEach(() => {
@@ -43,12 +53,14 @@ describe('useThreadNewReplies', () => {
     useThreadLiveUpdatesStore.getState().resetState();
     useThreadLiveUpdatesStore.setState({ recordNewReplies: recordNewRepliesMock });
     markerCid = undefined;
+    authorTagCheckStore.setState({ loaded: true });
     container = document.createElement('div');
     document.body.appendChild(container);
     root = createRoot(container);
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     act(() => root.unmount());
     container.remove();
     useThreadLiveUpdatesStore.getState().resetState();
@@ -59,6 +71,67 @@ describe('useThreadNewReplies', () => {
     await render({ post, replies: [reply('a'), reply('b'), reply('c')] });
 
     expect(recordNewRepliesMock).not.toHaveBeenCalled();
+  });
+
+  it("waits for the hooks' author tag check before reading tagged replies", async () => {
+    authorTagCheckStore.setState({ loaded: false });
+    await render({ post, replies: [reply('a'), reply('b')] });
+    startUpdate();
+    const replies = [reply('a'), reply('b'), tagged('mine-tagged', { number: 5 }), tagged('c', { content: '>>5' })];
+    isAccountCommentMock.mockClear();
+    await render({ post, replies });
+
+    // the tagged reply starts the load instead of being read as someone else's
+    expect(recordNewRepliesMock).not.toHaveBeenCalled();
+    expect(isAccountCommentMock).toHaveBeenCalledWith(replies[2]);
+
+    await act(async () => {
+      authorTagCheckStore.setState({ loaded: true });
+    });
+    expect(recordNewRepliesMock).toHaveBeenCalledTimes(1);
+    expect(recordNewRepliesMock).toHaveBeenCalledWith({ count: 1, lastReadReplyCid: 'b', quotesOwnPost: true });
+  });
+
+  it("does not wait for the hooks' author tag check when every tagged post is already recognized", async () => {
+    authorTagCheckStore.setState({ loaded: false });
+    await render({ post, replies: [reply('a'), reply('b')] });
+    startUpdate();
+    // the viewer's tagged reply from this device's history, quoted by an untagged one
+    await render({ post, replies: [reply('a'), reply('b'), tagged('mine', { number: 5 }), reply('c', { content: '>>5' })] });
+
+    expect(recordNewRepliesMock).toHaveBeenCalledWith({ count: 1, lastReadReplyCid: 'b', quotesOwnPost: true });
+  });
+
+  it("checks a tagged post it does not recognize yet even after one from this device's history", async () => {
+    authorTagCheckStore.setState({ loaded: false });
+    await render({ post, replies: [reply('a'), reply('b')] });
+    startUpdate();
+    const replies = [reply('a'), reply('b'), tagged('mine', { number: 5 }), tagged('c', { content: '>>5' })];
+    isAccountCommentMock.mockClear();
+    await render({ post, replies });
+
+    expect(isAccountCommentMock).toHaveBeenCalledWith(replies[3]);
+    expect(recordNewRepliesMock).not.toHaveBeenCalled();
+  });
+
+  it("stops waiting for the hooks' author tag check after 10 seconds", async () => {
+    vi.useFakeTimers({ toFake: ['Date', 'setTimeout', 'clearTimeout'] });
+    authorTagCheckStore.setState({ loaded: false });
+    await render({ post, replies: [reply('a'), reply('b')] });
+    startUpdate();
+    await render({ post, replies: [reply('a'), reply('b'), tagged('mine-tagged', { number: 5 }), tagged('c', { content: '>>5' })] });
+    await act(async () => {
+      vi.advanceTimersByTime(9_999);
+    });
+    expect(recordNewRepliesMock).not.toHaveBeenCalled();
+
+    // a check that never loads delays the updater, with no new render needed; it then reads tagged
+    // replies as before
+    await act(async () => {
+      vi.advanceTimersByTime(1);
+    });
+    expect(recordNewRepliesMock).toHaveBeenCalledTimes(1);
+    expect(recordNewRepliesMock).toHaveBeenCalledWith({ count: 2, lastReadReplyCid: 'b', quotesOwnPost: false });
   });
 
   it('reports replies that appear after an update, below the last reply read', async () => {

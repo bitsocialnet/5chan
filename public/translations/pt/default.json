@@ -618,5 +618,6 @@
   "delete_multiboard_confirm": "Eliminar o multiboard \"{{name}}\"?",
   "multiboard_delete_failed": "Não foi possível eliminar o multiboard: {{error}}",
   "no_saved_multiboards": "Não há multiboards guardados. Crie um com Add Custom… no menu de categorias em <1>/all/</1>, ou com [Adicionar a multiboard] num board.",
-  "pass_auth_message_placeholder": "Digite o endereço da sua carteira para ver a mensagem a ser assinada."
+  "pass_auth_message_placeholder": "Digite o endereço da sua carteira para ver a mensagem a ser assinada.",
+  "download_backup_confirm": "O backup contém sua chave de postagem. Qualquer pessoa com o arquivo pode postar como você e saber quais postagens são suas, mesmo nos quadros que anonimizam você. Baixar?"
 }

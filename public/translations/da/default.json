@@ -618,5 +618,6 @@
   "delete_multiboard_confirm": "Slet multiboardet \"{{name}}\"?",
   "multiboard_delete_failed": "Multiboardet kunne ikke slettes: {{error}}",
   "no_saved_multiboards": "Ingen gemte multiboards. Lav et med Add Custom… i kategorimenuen på <1>/all/</1> eller med [Føj til multiboard] på et board.",
-  "pass_auth_message_placeholder": "Indtast din walletadresse for at se beskeden, der skal underskrives."
+  "pass_auth_message_placeholder": "Indtast din walletadresse for at se beskeden, der skal underskrives.",
+  "download_backup_confirm": "Sikkerhedskopien indeholder din nøgle til at poste. Alle, der har filen, kan poste som dig og se, hvilke opslag der er dine, også på boards, der anonymiserer dig. Vil du downloade den?"
 }

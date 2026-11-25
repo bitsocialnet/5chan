@@ -618,5 +618,6 @@
   "delete_multiboard_confirm": "Smazat multidesku „{{name}}“?",
   "multiboard_delete_failed": "Multidesku se nepodařilo smazat: {{error}}",
   "no_saved_multiboards": "Žádné uložené multidesky. Vytvořte si ji přes Add Custom… v nabídce kategorií na <1>/all/</1> nebo přes [Přidat do multidesky] na desce.",
-  "pass_auth_message_placeholder": "Zadejte adresu své peněženky, aby se zobrazila zpráva k podpisu."
+  "pass_auth_message_placeholder": "Zadejte adresu své peněženky, aby se zobrazila zpráva k podpisu.",
+  "download_backup_confirm": "Záloha obsahuje váš klíč pro přispívání. Kdokoli, kdo má tento soubor, může přispívat vaším jménem a poznat, které příspěvky jsou vaše, i na deskách, které vás anonymizují. Stáhnout ji?"
 }
