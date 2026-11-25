@@ -3,6 +3,8 @@ import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import EditMenu from '../edit-menu';
+import PostTransferModalHost from '../../post-transfer-modal';
+import usePostTransferStore from '../../../stores/use-post-transfer-store';
 import { TRASH_BOARD_ADDRESS } from '../../../lib/special-boards';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -33,6 +35,8 @@ const testState = vi.hoisted(() => ({
   },
   publishAuthorEditMock: vi.fn().mockResolvedValue(undefined),
   publishCommentModerationMock: vi.fn().mockResolvedValue(undefined),
+  transferModalMounts: 0,
+  transferModalProps: undefined as { onTransferStateChange?: (state: string) => void } | undefined,
 }));
 
 vi.mock('react-i18next', () => ({
@@ -117,17 +121,31 @@ vi.mock('../../../hooks/use-board-has-archive', () => ({
   useBoardHasArchive: () => testState.boardHasArchive,
 }));
 
-vi.mock('../../post-transfer-modal/post-transfer-modal', () => ({
-  default: ({ comment, onClose }: { comment: Record<string, unknown>; onClose: () => void }) =>
-    createElement(
+vi.mock('../../post-transfer-modal/post-transfer-modal', () => {
+  const MockPostTransferModal = ({
+    comment,
+    onClose,
+    onTransferStateChange,
+  }: {
+    comment: Record<string, unknown>;
+    onClose: () => void;
+    onTransferStateChange?: (state: string) => void;
+  }) => {
+    React.useEffect(() => {
+      testState.transferModalMounts += 1;
+    }, []);
+    testState.transferModalProps = { onTransferStateChange };
+    return createElement(
       'div',
       {
         'data-cid': comment.cid,
         'data-testid': 'post-transfer-modal',
       },
       createElement('button', { onClick: onClose, type: 'button' }, 'close'),
-    ),
-}));
+    );
+  };
+  return { default: MockPostTransferModal };
+});
 
 vi.mock('../../../stores/use-challenges-store', () => {
   const hook = () => ({ challenges: [] });
@@ -165,9 +183,18 @@ const basePost = {
   },
 } as Record<string, any>;
 
+// The app layout renders the /trash/ transfer modal next to the page, outside the edit menu.
 const renderMenu = async (post = basePost) => {
   await act(async () => {
-    root.render(createElement(EditMenu, { post } as any));
+    root.render(createElement(React.Fragment, {}, createElement(EditMenu, { post } as any), createElement(PostTransferModalHost)));
+  });
+};
+
+const getTransferModals = () => container.querySelectorAll('[data-testid="post-transfer-modal"]');
+
+const setTransferState = async (state: string) => {
+  await act(async () => {
+    testState.transferModalProps?.onTransferStateChange?.(state);
   });
 };
 
@@ -231,6 +258,9 @@ describe('EditMenu', () => {
     };
     testState.publishAuthorEditMock.mockReset().mockResolvedValue(undefined);
     testState.publishCommentModerationMock.mockReset().mockResolvedValue(undefined);
+    testState.transferModalMounts = 0;
+    testState.transferModalProps = undefined;
+    usePostTransferStore.setState({ activeTransferComment: null, transferStates: {} });
     alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
     confirmSpy = vi.spyOn(window, 'confirm').mockImplementation(() => true);
     container = document.createElement('div');
@@ -452,12 +482,66 @@ describe('EditMenu', () => {
     await renderMenu(basePost);
     await openMenu();
     await clickButton('trash');
-    // The modal is a lazy import.
-    await act(async () => {
-      await vi.dynamicImportSettled();
-    });
 
     expect(container.querySelector('[data-testid="post-transfer-modal"]')?.getAttribute('data-cid')).toBe('comment-1');
+  });
+
+  it("keeps a live post's transfer modal open after its queued removal shows the post as removed, and after a rollback", async () => {
+    testState.privileges = {
+      isAccountCommentAuthor: false,
+      isAccountMod: true,
+      isCommentAuthorMod: false,
+    };
+
+    await renderMenu(basePost);
+    await openMenu();
+    await clickButton('trash');
+    await setTransferState('publishing');
+
+    // bitsocial-react-hooks applies the queued source moderation to the post as a pending removed: true edit.
+    await renderMenu({ ...basePost, commentModeration: { archived: false, removed: true } });
+    expect(getTransferModals()).toHaveLength(1);
+
+    // A failed removal rolls that edit back. The same modal stays, showing the failure, instead of a fresh idle one.
+    await renderMenu(basePost);
+    await setTransferState('finalizationFailed');
+    expect(getTransferModals()).toHaveLength(1);
+    expect(testState.transferModalMounts).toBe(1);
+
+    await clickButton('close');
+    expect(getTransferModals()).toHaveLength(0);
+    // A copy already exists in /trash/, so the post is not offered for another transfer.
+    await openMenu();
+    expect(hasButton('trash')).toBe(false);
+  });
+
+  it("shares one transfer lock with the mod queue's Trash", async () => {
+    testState.privileges = {
+      isAccountCommentAuthor: false,
+      isAccountMod: true,
+      isCommentAuthorMod: false,
+    };
+    // The mod queue's Trash opened another post's transfer.
+    await act(async () => {
+      usePostTransferStore.getState().openTransfer({ cid: 'queued-post' } as any);
+    });
+
+    await renderMenu(basePost);
+    await openMenu();
+    expect(hasButton('trash')).toBe(false);
+
+    await act(async () => {
+      usePostTransferStore.getState().closeTransfer();
+    });
+    expect(hasButton('trash')).toBe(true);
+
+    // The mod queue's Trash moved this post and is still publishing it.
+    await act(async () => {
+      usePostTransferStore.getState().openTransfer(basePost as any);
+      usePostTransferStore.getState().setTransferState('comment-1', 'publishing');
+    });
+    expect(hasButton('trash')).toBe(false);
+    expect(getTransferModals()).toHaveLength(1);
   });
 
   it.each([

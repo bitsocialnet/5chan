@@ -4,6 +4,8 @@ import { createRoot, type Root } from 'react-dom/client';
 import { Link, MemoryRouter, Route, Routes, useNavigate } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import ModQueueView from '../mod-queue';
+import PostTransferModalHost from '../../../components/post-transfer-modal';
+import usePostTransferStore from '../../../stores/use-post-transfer-store';
 import { TRASH_BOARD_ADDRESS, TRASH_BOARD_PUBLIC_KEY } from '../../../lib/special-boards';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -360,6 +362,8 @@ const renderModQueue = async () => {
         MemoryRouter,
         { initialEntries: ['/mod/queue'] },
         createElement(Routes, {}, createElement(Route, { path: '/mod/queue', element: createElement(ModQueueView) })),
+        // The app layout renders the transfer modal outside the routes.
+        createElement(PostTransferModalHost),
       ),
     );
   });
@@ -380,6 +384,7 @@ const renderModQueueWithOtherRoute = async () => {
             element: createElement('div', {}, createElement(Link, { to: '/mod/queue' }, 'queue'), createElement('span', {}, 'other route')),
           }),
         ),
+        createElement(PostTransferModalHost),
       ),
     );
   });
@@ -424,6 +429,7 @@ describe('ModQueueView', () => {
     testState.viewMode = 'compact';
     testState.moderationOptions = { approve: undefined, reject: undefined };
     testState.moderationPublishState = 'initializing';
+    usePostTransferStore.setState({ activeTransferComment: null, transferStates: {} });
 
     container = document.createElement('div');
     document.body.appendChild(container);
@@ -1161,6 +1167,62 @@ describe('ModQueueView', () => {
 
     expect(dialogs[0]?.textContent).toContain('modQueue.transferSuccess');
     expect(container.textContent).toContain('rejected');
+  });
+
+  it("joins a transfer opened from the post edit menu's Trash", async () => {
+    const editMenuComment = {
+      cid: 'wrong-board-post',
+      communityAddress: 'music-posting.eth',
+      content: 'belongs on trash',
+      number: 8,
+      pendingApproval: true,
+      timestamp: 90_000,
+    };
+    const otherComment = {
+      cid: 'other-post',
+      communityAddress: 'music-posting.eth',
+      content: 'stays in the queue',
+      number: 9,
+      pendingApproval: true,
+      timestamp: 91_000,
+    };
+    testState.feed = [editMenuComment, otherComment];
+
+    await renderModQueue();
+    // The post edit menu's Trash opens the transfer in the same store as the mod queue's Trash.
+    await act(async () => {
+      usePostTransferStore.getState().openTransfer(editMenuComment as any);
+    });
+
+    const dialogs = document.body.querySelectorAll<HTMLElement>('[role="dialog"][aria-labelledby="post-transfer-title"]');
+    expect(dialogs).toHaveLength(1);
+    // Only the open transfer's row keeps Trash, and it does not open a second modal.
+    const transferButtons = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).filter((button) => button.textContent === 'Trash');
+    expect(transferButtons).toHaveLength(1);
+    await act(async () => {
+      transferButtons[0]?.click();
+    });
+    expect(document.body.querySelectorAll('[role="dialog"][aria-labelledby="post-transfer-title"]')).toHaveLength(1);
+
+    const submitButton = Array.from(dialogs[0]?.querySelectorAll<HTMLButtonElement>('button') ?? []).find((button) => button.type === 'submit');
+    await act(async () => {
+      submitButton?.click();
+      await Promise.resolve();
+    });
+    const [payload] = testState.publishCommentMock.mock.calls[0];
+
+    expect(container.querySelector('[data-testid="loading-ellipsis"]')?.textContent).toBe('publishing');
+    expect(Array.from(container.querySelectorAll<HTMLButtonElement>('button')).some((button) => button.textContent === 'Trash')).toBe(false);
+
+    await act(async () => {
+      await payload.onChallengeVerification({ challengeSuccess: true, commentUpdate: { cid: 'transferred-post', number: 12 } }, { cid: 'transferred-post' });
+      await Promise.resolve();
+    });
+
+    expect(testState.createAccountMock).toHaveBeenCalledTimes(1);
+    expect(dialogs[0]?.textContent).toContain('modQueue.transferSuccess');
+    expect(container.textContent).toContain('rejected');
+    expect(testState.rememberCommentsInQueueMock).toHaveBeenCalledWith([expect.objectContaining({ approved: false, cid: 'wrong-board-post', pendingApproval: false })]);
   });
 
   it('does not show transfer for queued replies', async () => {

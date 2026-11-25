@@ -8,6 +8,7 @@ import { hasModQueueAccessRole } from './lib/utils/mod-access';
 import type { PostProps } from './lib/utils/post-props';
 import useImageFiltersStore from './stores/use-image-filters-store';
 import usePendingUploadPostStore from './stores/use-pending-upload-post-store';
+import usePostTransferStore from './stores/use-post-transfer-store';
 import useReplyModalStore from './stores/use-reply-modal-store';
 import { useAccountCommunityAddresses } from './hooks/use-account-community-addresses';
 import useTheme from './hooks/use-theme';
@@ -34,6 +35,9 @@ const RawDataEditor = lazyImport(() => import('./views/raw-data-editor'));
 const BoardSettings = lazyImport(() => import('./views/board-settings'));
 const ChallengeModal = lazyImport(() => import('./components/challenge-modal'));
 const ImageFilterNotice = lazyImport(() => import('./components/image-filter-notice'));
+// Moving a post to /trash/ opens a draggable modal built on react-spring and use-gesture, which nothing on a
+// board's first render uses, so it downloads when a moderator opens it.
+const PostTransferModalHost = lazyImport(() => import('./components/post-transfer-modal'));
 const loadPendingUploadPostPublisher = () => import('./components/pending-upload-post-publisher');
 const PendingUploadPostPublisher = lazyImport(loadPendingUploadPostPublisher);
 const DirectoryModal = lazyImport(() => import('./components/directory-modal'));
@@ -162,6 +166,8 @@ const GlobalLayout = () => {
   const hasImageFilterNotice = useImageFiltersStore((state) => state.quickFilterNotice !== null);
   // Loaded only for a new thread whose file is being checked and uploaded; it publishes the thread after the upload.
   const hasPendingUploadPost = usePendingUploadPostStore((state) => state.pendingUploadPosts.length > 0);
+  // The /trash/ transfer modal lives here, not with the Trash button that opened it, so it outlives that post or row.
+  const hasActivePostTransfer = usePostTransferStore((state) => state.activeTransferComment !== null);
 
   return (
     <>
@@ -193,6 +199,13 @@ const GlobalLayout = () => {
         <ImportErrorBoundary floating>
           <Suspense fallback={null}>
             <PendingUploadPostPublisher />
+          </Suspense>
+        </ImportErrorBoundary>
+      )}
+      {hasActivePostTransfer && (
+        <ImportErrorBoundary floating>
+          <Suspense fallback={null}>
+            <PostTransferModalHost />
           </Suspense>
         </ImportErrorBoundary>
       )}

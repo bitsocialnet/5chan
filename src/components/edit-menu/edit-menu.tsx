@@ -1,4 +1,4 @@
-import { Suspense, useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { autoUpdate, FloatingFocusManager, FloatingPortal, offset, shift, useDismiss, useFloating, useId, useInteractions, useRole } from '@floating-ui/react';
 import {
@@ -20,13 +20,7 @@ import useAuthorPrivileges from '../../hooks/use-author-privileges';
 import { useBoardPseudonymityMode } from '../../hooks/use-board-pseudonymity-mode';
 import { useBoardHasArchive } from '../../hooks/use-board-has-archive';
 import { getCommentCommunityAddress, withResolvedCommentCommunityAddress } from '../../lib/utils/comment-utils';
-import { canMoveCommentToTrash } from '../../lib/comment-transfer';
-import { lazyImport } from '../../lib/import-failures';
-import ImportErrorBoundary from '../import-error-boundary';
-
-// Moving a post opens a draggable modal built on react-spring and use-gesture, which nothing on a
-// board's first render uses, so it downloads when a moderator opens it.
-const PostTransferModal = lazyImport(() => import('../post-transfer-modal'));
+import usePostTransfer from '../../hooks/use-post-transfer';
 
 const alertFailedEdit = alertPublishFailure('Comment edit failed.');
 const alertFailedModeration = alertPublishFailure('Comment moderation failed.');
@@ -45,20 +39,13 @@ const timestampToDays = (timestamp: number) => {
 interface EditMenuUiState {
   isEditMenuOpen: boolean;
   isContentEditorOpen: boolean;
-  isTransferOpen: boolean;
 }
 
-type EditMenuUiAction =
-  | { type: 'set-edit-menu-open'; open: boolean }
-  | { type: 'toggle-content-editor' }
-  | { type: 'close-content-editor' }
-  | { type: 'open-transfer' }
-  | { type: 'close-transfer' };
+type EditMenuUiAction = { type: 'set-edit-menu-open'; open: boolean } | { type: 'toggle-content-editor' } | { type: 'close-content-editor' };
 
 const initialEditMenuUiState: EditMenuUiState = {
   isEditMenuOpen: false,
   isContentEditorOpen: false,
-  isTransferOpen: false,
 };
 
 const editMenuUiReducer = (state: EditMenuUiState, action: EditMenuUiAction): EditMenuUiState => {
@@ -69,10 +56,6 @@ const editMenuUiReducer = (state: EditMenuUiState, action: EditMenuUiAction): Ed
       return { ...state, isContentEditorOpen: !state.isContentEditorOpen };
     case 'close-content-editor':
       return { ...state, isContentEditorOpen: false };
-    case 'open-transfer':
-      return { ...state, isEditMenuOpen: false, isTransferOpen: true };
-    case 'close-transfer':
-      return { ...state, isTransferOpen: false };
   }
 };
 
@@ -91,7 +74,7 @@ const EditMenu = ({ post }: { post: Comment }) => {
   const modBanExpiresAt = typeof thisPostBanExpiresAt === 'number' && thisPostBanExpiresAt > Math.floor(Date.now() / 1000) ? thisPostBanExpiresAt : undefined;
   const purged = resolvedPost?.commentModeration?.purged ?? false;
   const [uiState, dispatchUiState] = useReducer(editMenuUiReducer, initialEditMenuUiState);
-  const { isEditMenuOpen, isContentEditorOpen, isTransferOpen } = uiState;
+  const { isEditMenuOpen, isContentEditorOpen } = uiState;
 
   const account = useAccount();
   const { isCommentAuthorMod, isAccountMod, isAccountCommentAuthor } = useAuthorPrivileges({
@@ -106,7 +89,10 @@ const EditMenu = ({ post }: { post: Comment }) => {
   const canAttemptAuthorDelete = isAccountCommentAuthor || allowsPseudonymousDelete;
   const canOpenEditMenu = isAccountMod || canAttemptAuthorDelete;
   const canEditOwnModPost = isAccountMod && isAccountCommentAuthor;
-  const canTransferPost = isAccountMod && canMoveCommentToTrash(resolvedPost);
+  // The transfer and its modal live in a shared store, so this Trash and the mod queue's share one lock, and the
+  // modal keeps showing the result after the post shows as removed.
+  const { openTransfer: openPostTransfer } = usePostTransfer(resolvedPost);
+  const canTransferPost = isAccountMod && openPostTransfer !== undefined;
   const signer = isAccountCommentAuthor ? account?.signer : undefined;
   const latestPostRef = useRef(resolvedPost);
   useEffect(() => {
@@ -356,7 +342,8 @@ const EditMenu = ({ post }: { post: Comment }) => {
   };
 
   const openTransfer = () => {
-    dispatchUiState({ type: 'open-transfer' });
+    dispatchUiState({ type: 'set-edit-menu-open', open: false });
+    openPostTransfer?.();
   };
 
   return (
@@ -595,13 +582,6 @@ const EditMenu = ({ post }: { post: Comment }) => {
             </div>
           </FloatingFocusManager>
         </FloatingPortal>
-      )}
-      {canTransferPost && isTransferOpen && (
-        <ImportErrorBoundary floating>
-          <Suspense fallback={null}>
-            <PostTransferModal comment={resolvedPost} onClose={() => dispatchUiState({ type: 'close-transfer' })} />
-          </Suspense>
-        </ImportErrorBoundary>
       )}
     </>
   );

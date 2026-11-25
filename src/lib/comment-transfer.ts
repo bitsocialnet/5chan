@@ -6,6 +6,7 @@ import { getCommentCommunityAddress } from './utils/comment-utils';
 import { normalizePublishURL } from './utils/url-utils';
 import { stripTripcodeProof } from './utils/tripcode-utils';
 
+export type PostTransferState = 'idle' | 'publishing' | 'succeeded' | 'failed' | 'finalizationFailed';
 export type PostTransferField = 'displayName' | 'title' | 'content' | 'link' | 'spoiler' | 'flairs';
 export type PostTransferFields = Record<PostTransferField, boolean>;
 
@@ -57,6 +58,9 @@ export const canTransferComment = (comment: Comment | undefined): boolean => {
     !isCommentArchived(comment)
   );
 };
+
+// A succeeded or finalization-failed transfer already left a copy in /trash/, so the post must not be moved again.
+export const isTerminalTransferState = (state: PostTransferState | undefined): boolean => state === 'succeeded' || state === 'finalizationFailed';
 
 export const canMoveCommentToTrash = (comment: Comment | undefined): boolean =>
   canTransferComment(comment) && getSpecialBoardByAddress(getCommentCommunityAddress(comment))?.directoryCode !== TRASH_BOARD_CODE;

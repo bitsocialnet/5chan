@@ -29,11 +29,12 @@ import {
   getTransferredCommentCid,
   getTransferredCommentNumber,
   hasSelectedTransferFields,
+  isTerminalTransferState,
   type PostTransferField,
   type PostTransferFields,
+  type PostTransferState,
 } from '../../lib/comment-transfer';
 
-export type PostTransferState = 'idle' | 'publishing' | 'succeeded' | 'failed' | 'finalizationFailed';
 type CreateAccountAction = (accountName?: string) => Promise<void>;
 type PublishCommentAction = (publishCommentOptions: Record<string, unknown>, accountName?: string) => Promise<{ index?: number } | undefined>;
 type DeleteCommentAction = (commentCidOrAccountCommentIndex: string | number, accountName?: string) => Promise<void>;
@@ -74,8 +75,6 @@ const getInitialTransferModalState = (comment: Comment): TransferModalState => (
 
 const resetTransferResult = (state: TransferModalState): TransferModalState =>
   state.transferState === 'idle' ? state : { ...state, transferState: 'idle', transferError: undefined };
-
-const isTerminalTransferState = (state: PostTransferState): boolean => state === 'succeeded' || state === 'finalizationFailed';
 
 const transferModalReducer = (state: TransferModalState, action: TransferModalAction): TransferModalState => {
   if (action.type === 'field') {
@@ -536,7 +535,8 @@ const PostTransferModal = ({ comment, onClose, onTransferStateChange, onTransfer
           )}
           {transferState === 'succeeded' && targetComment && (
             <div className={styles.transferSuccess}>
-              {t('modQueue.transferSuccess')} <Link to={`/trash/thread/${targetComment.cid}`}>{`>>>/trash/${targetComment.number ?? targetComment.cid}`}</Link>
+              {t('modQueue.transferSuccess')}{' '}
+              <Link to={`/trash/thread/${targetComment.cid}`} onClick={onClose}>{`>>>/trash/${targetComment.number ?? targetComment.cid}`}</Link>
             </div>
           )}
         </div>

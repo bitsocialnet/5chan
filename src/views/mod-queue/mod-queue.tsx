@@ -8,6 +8,7 @@ import { Virtuoso, type Components } from 'react-virtuoso';
 import styles from './mod-queue.module.css';
 import postStyles from '../../components/post-styles';
 import useModQueueStore from '../../stores/use-mod-queue-store';
+import usePostTransferStore from '../../stores/use-post-transfer-store';
 import LoadingEllipsis from '../../components/loading-ellipsis';
 import ErrorDisplay from '../../components/error-display';
 import { getCommunityAddress, getBoardPath, areSameBoardAddress } from '../../lib/utils/route-utils';
@@ -44,9 +45,8 @@ import capitalize from 'lodash/capitalize';
 import lowerCase from 'lodash/lowerCase';
 import { PageFooterDesktop, PageFooterMobile, StyleOnlyFooterFirstRow, footerStyles } from '../../components/footer';
 import { useModeratedCommunityAddressInputs, useModeratedCommunityAddressesForInputs } from '../../hooks/use-moderated-community-addresses';
-import PostTransferModal, { type PostTransferState } from '../../components/post-transfer-modal';
-import { canMoveCommentToTrash } from '../../lib/comment-transfer';
 import useSettledModQueueFeed from '../../hooks/use-settled-mod-queue-feed';
+import usePostTransfer from '../../hooks/use-post-transfer';
 
 /** Path for display: directory code, or full address if has TLD, or shortened for long IPNS keys (no dot) */
 const getBoardDisplayPath = (address: string, path: string): string => {
@@ -140,17 +140,10 @@ interface ModQueueRowProps {
   comment: Comment;
   isOdd?: boolean;
   showBoard?: boolean;
-  transferControls: ModQueueTransferControls;
   /** Board path for URLs (directory code or full address) */
   boardPath: string | undefined;
   /** Board path for display (shortened when long IPNS key with no TLD) */
   boardDisplayPath: string | undefined;
-}
-
-interface ModQueueTransferControls {
-  activeTransferCommentCid: string | null;
-  openTransfer: (comment: Comment) => void;
-  transferStates: Record<string, PostTransferState>;
 }
 
 interface ModQueueActionState {
@@ -274,78 +267,6 @@ const ModQueueExcerptPreviewLink = ({ comment, excerpt, postUrl, postUrlState }:
       {preview}
     </>
   );
-};
-
-const useModQueueTransfer = (comment: Comment, transferControls: ModQueueTransferControls) => {
-  const { activeTransferCommentCid, openTransfer, transferStates } = transferControls;
-  const transferCommentCid = comment.cid;
-  const transferState = (transferCommentCid && transferStates[transferCommentCid]) || 'idle';
-  const canTransfer = canMoveCommentToTrash(comment);
-  const isTransferOpen = Boolean(transferCommentCid && activeTransferCommentCid === transferCommentCid);
-  const isTransferPublishing = transferState === 'publishing';
-  const isTransferSucceeded = transferState === 'succeeded';
-  const isTransferTerminal = isTransferSucceeded || transferState === 'finalizationFailed';
-  const canOpenTransfer = canTransfer && !isTransferTerminal && !activeTransferCommentCid && Boolean(transferCommentCid);
-  const canShowTransfer = canTransfer && !isTransferTerminal && Boolean(transferCommentCid) && (!activeTransferCommentCid || isTransferOpen);
-  const handleTransfer = useCallback(() => {
-    if (canOpenTransfer) {
-      openTransfer(comment);
-    }
-  }, [canOpenTransfer, comment, openTransfer]);
-
-  return {
-    handleTransfer: canShowTransfer ? handleTransfer : undefined,
-    isTransferPublishing,
-    isTransferSucceeded,
-  };
-};
-
-// The transfer modal and every transfer's state live in the view rather than in the (virtualized) rows, so a row that
-// unmounts and mounts again mid-transfer still shows it publishing instead of offering a fresh, idle modal.
-const useModQueueTransfers = () => {
-  const [activeTransferComment, setActiveTransferComment] = useState<Comment | null>(null);
-  const [transferStates, setTransferStates] = useState<Record<string, PostTransferState>>({});
-  const rememberCommentsInQueue = useModQueueStore((state) => state.rememberCommentsInQueue);
-  const activeTransferCommentCid = activeTransferComment?.cid ?? null;
-  const isActiveTransferPublishing = activeTransferCommentCid !== null && transferStates[activeTransferCommentCid] === 'publishing';
-
-  const openTransfer = useCallback((comment: Comment) => {
-    setActiveTransferComment((currentComment) => currentComment ?? comment);
-  }, []);
-  const transferControls = useMemo(
-    () => ({
-      activeTransferCommentCid,
-      openTransfer,
-      transferStates,
-    }),
-    [activeTransferCommentCid, openTransfer, transferStates],
-  );
-  // A publishing transfer keeps its modal open so the moderator still sees how it ends.
-  const closeIdleTransfer = useCallback(() => {
-    if (!isActiveTransferPublishing) setActiveTransferComment(null);
-  }, [isActiveTransferPublishing]);
-  const handleTransferStateChange = (comment: Comment, transferState: PostTransferState) => {
-    const { cid } = comment;
-    if (cid) setTransferStates((currentStates) => ({ ...currentStates, [cid]: transferState }));
-  };
-  const handleTransferSuccess = (comment: Comment) => {
-    const rejectedSnapshot = getQueuedCommentSnapshot({ ...comment, approved: false, pendingApproval: false });
-    if (rejectedSnapshot) {
-      rememberCommentsInQueue([rejectedSnapshot]);
-    }
-  };
-
-  const transferModal = activeTransferComment?.cid ? (
-    <PostTransferModal
-      key={activeTransferComment.cid}
-      comment={activeTransferComment}
-      onClose={() => setActiveTransferComment(null)}
-      onTransferStateChange={(transferState) => handleTransferStateChange(activeTransferComment, transferState)}
-      onTransferSuccess={() => handleTransferSuccess(activeTransferComment)}
-    />
-  ) : null;
-
-  return { closeIdleTransfer, transferControls, transferModal };
 };
 
 const ModQueueActions = ({ status, error, errorMessage, isPublishing, handleApprove, handleReject, handleTransfer, handleRemove, variant }: ModQueueActionsProps) => {
@@ -508,7 +429,7 @@ const useModQueueActions = (comment: Comment): ModQueueActionState => {
   return { status, error, errorMessage, isPublishing, handleApprove, handleReject, handleRemove };
 };
 
-const ModQueueRow = memo(({ comment, isOdd = false, showBoard = false, transferControls, boardPath, boardDisplayPath }: ModQueueRowProps) => {
+const ModQueueRow = memo(({ comment, isOdd = false, showBoard = false, boardPath, boardDisplayPath }: ModQueueRowProps) => {
   const { t } = useTranslation();
   const getAlertThresholdSeconds = useModQueueStore((state) => state.getAlertThresholdSeconds);
   const isMobile = useIsMobile();
@@ -547,7 +468,7 @@ const ModQueueRow = memo(({ comment, isOdd = false, showBoard = false, transferC
   const postUrlState = getQueuedCommentRouteState(comment);
 
   const modQueueUrl = boardPath ? `/${boardPath}/mod/queue` : undefined;
-  const { handleTransfer, isTransferPublishing, isTransferSucceeded } = useModQueueTransfer(displayComment, transferControls);
+  const { openTransfer: handleTransfer, isTransferPublishing, isTransferSucceeded } = usePostTransfer(displayComment);
   const displayStatus = isTransferSucceeded ? 'rejected' : status;
   const displayIsPublishing = isPublishing || isTransferPublishing;
 
@@ -608,14 +529,13 @@ ModQueueRow.displayName = 'ModQueueRow';
 interface ModQueueCardProps {
   comment: Comment;
   showBoard?: boolean;
-  transferControls: ModQueueTransferControls;
   /** Board path for URLs (directory code or full address) */
   boardPath: string | undefined;
   /** Board path for display (shortened when long IPNS key with no TLD) */
   boardDisplayPath: string | undefined;
 }
 
-const ModQueueCard = memo(({ comment, showBoard = false, transferControls, boardPath, boardDisplayPath }: ModQueueCardProps) => {
+const ModQueueCard = memo(({ comment, showBoard = false, boardPath, boardDisplayPath }: ModQueueCardProps) => {
   const { t } = useTranslation();
   const getAlertThresholdSeconds = useModQueueStore((state) => state.getAlertThresholdSeconds);
   const currentTime = useCurrentTime();
@@ -650,7 +570,7 @@ const ModQueueCard = memo(({ comment, showBoard = false, transferControls, board
   const postUrlState = getQueuedCommentRouteState(comment);
 
   const modQueueUrl = boardPath ? `/${boardPath}/mod/queue` : undefined;
-  const { handleTransfer, isTransferPublishing, isTransferSucceeded } = useModQueueTransfer(displayComment, transferControls);
+  const { openTransfer: handleTransfer, isTransferPublishing, isTransferSucceeded } = usePostTransfer(displayComment);
   const displayStatus = isTransferSucceeded ? 'rejected' : status;
   const displayIsPublishing = isPublishing || isTransferPublishing;
 
@@ -696,11 +616,11 @@ const ModQueueCard = memo(({ comment, showBoard = false, transferControls, board
 });
 ModQueueCard.displayName = 'ModQueueCard';
 
-const ModQueueFeedPost = memo(({ comment, transferControls }: { comment: Comment; transferControls: ModQueueTransferControls }) => {
+const ModQueueFeedPost = memo(({ comment }: { comment: Comment }) => {
   const { editedComment } = useEditedComment({ comment });
   const displayComment = editedComment || comment;
   const { status, error, errorMessage, isPublishing, handleApprove, handleReject, handleRemove } = useModQueueActions(comment);
-  const { handleTransfer, isTransferPublishing, isTransferSucceeded } = useModQueueTransfer(displayComment, transferControls);
+  const { openTransfer: handleTransfer, isTransferPublishing, isTransferSucceeded } = usePostTransfer(displayComment);
   const displayStatus = isTransferSucceeded ? 'rejected' : status;
   const displayIsPublishing = isPublishing || isTransferPublishing;
 
@@ -861,7 +781,6 @@ interface ModQueueContentProps {
   selectedBoardFilter: string | null;
   setSelectedBoardFilter: (boardAddress: string | null) => void;
   showBoardColumn: boolean;
-  transferControls: ModQueueTransferControls;
   viewMode: 'compact' | 'feed';
   virtuosoFooterContext: ModQueueVirtuosoFooterContext | null;
 }
@@ -886,7 +805,6 @@ const ModQueueContent = memo(
     selectedBoardFilter,
     setSelectedBoardFilter,
     showBoardColumn,
-    transferControls,
     viewMode,
     virtuosoFooterContext,
   }: ModQueueContentProps) => {
@@ -946,7 +864,6 @@ const ModQueueContent = memo(
                         comment={comment}
                         isOdd={index % 2 === 0}
                         showBoard={showBoardColumn}
-                        transferControls={transferControls}
                         boardPath={path}
                         boardDisplayPath={path && commentCommunityAddress ? getBoardDisplayPath(commentCommunityAddress, path) : undefined}
                       />
@@ -989,7 +906,6 @@ const ModQueueContent = memo(
                         key={comment.cid}
                         comment={comment}
                         showBoard={showBoardColumn}
-                        transferControls={transferControls}
                         boardPath={path}
                         boardDisplayPath={path && commentCommunityAddress ? getBoardDisplayPath(commentCommunityAddress, path) : undefined}
                       />
@@ -1024,7 +940,7 @@ const ModQueueContent = memo(
               ) : (
                 <>
                   {filteredFeed.map((comment) => (
-                    <ModQueueFeedPost key={comment.cid} comment={comment} transferControls={transferControls} />
+                    <ModQueueFeedPost key={comment.cid} comment={comment} />
                   ))}
                   {communityError?.message && feedLength === 0 && (
                     <div className={styles.error}>
@@ -1047,7 +963,7 @@ ModQueueContent.displayName = 'ModQueueContent';
 const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProps) => {
   const params = useParams();
   const [selectedBoardFilter, setSelectedBoardFilter] = useState<string | null>(null);
-  const { closeIdleTransfer, transferControls, transferModal } = useModQueueTransfers();
+  const closeIdleTransfer = usePostTransferStore((state) => state.closeTransfer);
   const viewMode = useModQueueStore((state) => state.viewMode);
   const dismissedCommentCids = useModQueueStore((state) => state.dismissedCommentCids);
   const queuedCommentHistory = useModQueueStore((state) => state.queuedCommentHistory);
@@ -1150,13 +1066,12 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
           comment={comment}
           isOdd={index % 2 === 0}
           showBoard={showBoardColumn}
-          transferControls={transferControls}
           boardPath={path}
           boardDisplayPath={path && commentCommunityAddress ? getBoardDisplayPath(commentCommunityAddress, path) : undefined}
         />
       );
     },
-    [addressToPathMap, showBoardColumn, transferControls, directories],
+    [addressToPathMap, showBoardColumn, directories],
   );
   const compactCardItemContent = useCallback(
     (_index: number, comment: Comment) => {
@@ -1167,18 +1082,14 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
           key={comment.cid}
           comment={comment}
           showBoard={showBoardColumn}
-          transferControls={transferControls}
           boardPath={path}
           boardDisplayPath={path && commentCommunityAddress ? getBoardDisplayPath(commentCommunityAddress, path) : undefined}
         />
       );
     },
-    [addressToPathMap, showBoardColumn, transferControls, directories],
+    [addressToPathMap, showBoardColumn, directories],
   );
-  const feedPostItemContent = useCallback(
-    (_index: number, comment: Comment) => <ModQueueFeedPost key={comment.cid} comment={comment} transferControls={transferControls} />,
-    [transferControls],
-  );
+  const feedPostItemContent = useCallback((_index: number, comment: Comment) => <ModQueueFeedPost key={comment.cid} comment={comment} />, []);
 
   const setResetFunction = useFeedResetStore((state) => state.setResetFunction);
   useEffect(() => {
@@ -1224,11 +1135,9 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
         selectedBoardFilter={selectedBoardFilter}
         setSelectedBoardFilter={handleSetSelectedBoardFilter}
         showBoardColumn={showBoardColumn}
-        transferControls={transferControls}
         viewMode={viewMode}
         virtuosoFooterContext={visibleVirtuosoFooterContext}
       />
-      {transferModal}
     </>
   );
 };
