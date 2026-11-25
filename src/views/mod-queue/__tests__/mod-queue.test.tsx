@@ -654,6 +654,33 @@ describe('ModQueueView', () => {
     );
   });
 
+  it('keeps an open transfer when the board filter changes', async () => {
+    testState.accountCommunityAddresses = ['music-posting.eth', 'sports-posting.eth'];
+    testState.directories = [
+      { address: 'music-posting.eth', directoryCode: 'mu', title: '/mu/ - Music' },
+      { address: 'sports-posting.eth', directoryCode: 'sp', title: '/sp/ - Sports' },
+    ];
+    testState.feed = [
+      { cid: 'music-pending', communityAddress: 'music-posting.eth', content: 'music pending body', number: 3, pendingApproval: true, timestamp: 90_000 },
+      { cid: 'sports-pending', communityAddress: 'sports-posting.eth', content: 'sports pending body', number: 4, pendingApproval: true, timestamp: 90_000 },
+    ];
+
+    await renderModQueue();
+    // The transfer may have been opened anywhere, such as a thread's edit menu; the filter only narrows the queue.
+    await act(async () => {
+      usePostTransferStore.getState().openTransfer(testState.feed[1] as any, 'account');
+    });
+    expect(document.body.querySelectorAll('[role="dialog"][aria-labelledby="post-transfer-title"]')).toHaveLength(1);
+
+    const musicButton = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.textContent?.includes('mu'));
+    await act(async () => {
+      musicButton?.click();
+    });
+
+    expect(musicButton?.className).toContain('boardSummaryLinkSelected');
+    expect(document.body.querySelectorAll('[role="dialog"][aria-labelledby="post-transfer-title"]')).toHaveLength(1);
+  });
+
   it('opens a full floating post preview from a compact excerpt hover', async () => {
     testState.feed = [
       {

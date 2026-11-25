@@ -385,6 +385,53 @@ describe('PostTransferModal', () => {
     }
   });
 
+  it('fails and releases the transfer when the /trash/ copy gets no verification within two minutes of its challenge answer', async () => {
+    const onTransferSuccess = vi.fn();
+    const onTransferStateChange = vi.fn();
+    await renderTransferModal(baseComment, { onTransferStateChange, onTransferSuccess });
+
+    const form = document.body.querySelector<HTMLFormElement>('form');
+    await act(async () => {
+      form!.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+      await Promise.resolve();
+    });
+    const [publishOptions] = testState.publishCommentMock.mock.calls[0] as [Record<string, (...args: unknown[]) => unknown>, string];
+    vi.useFakeTimers();
+    try {
+      await act(async () => {
+        await publishOptions.onChallenge({ challenges: [] }, { cid: undefined });
+        publishOptions.onPublishingStateChange('waiting-challenge-verification');
+      });
+      await act(async () => {
+        vi.advanceTimersByTime(2 * 60 * 1000 - 1);
+      });
+      expect(onTransferStateChange).not.toHaveBeenCalledWith('failed');
+
+      await act(async () => {
+        vi.advanceTimersByTime(1);
+        await Promise.resolve();
+        await Promise.resolve();
+        await Promise.resolve();
+      });
+      expect(onTransferStateChange).toHaveBeenLastCalledWith('failed');
+      expect(testState.deleteAccountMock).toHaveBeenCalledWith(expect.stringMatching(/^5chan-transfer-comment-/));
+      expect(document.body.textContent).toContain('got no challenge verification within two minutes');
+      const closeButton = Array.from(document.body.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.textContent === 'close');
+      expect(closeButton?.disabled).toBe(false);
+
+      // A verification that arrives after the deadline must not go on to remove the original post.
+      await act(async () => {
+        await publishOptions.onChallengeVerification({ challengeSuccess: true, commentUpdate: { cid: 'trash-copy', number: 7 } }, { cid: 'trash-copy' });
+        await Promise.resolve();
+      });
+      expect(testState.publishCommentModerationMock).not.toHaveBeenCalled();
+      expect(onTransferSuccess).not.toHaveBeenCalled();
+      expect(onTransferStateChange).toHaveBeenLastCalledWith('failed');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('reports success only after the source removal is verified', async () => {
     const onTransferSuccess = vi.fn();
     const onTransferStateChange = vi.fn();

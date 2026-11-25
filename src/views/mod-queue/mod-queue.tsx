@@ -8,7 +8,6 @@ import { Virtuoso, type Components } from 'react-virtuoso';
 import styles from './mod-queue.module.css';
 import postStyles from '../../components/post-styles';
 import useModQueueStore from '../../stores/use-mod-queue-store';
-import usePostTransferStore from '../../stores/use-post-transfer-store';
 import LoadingEllipsis from '../../components/loading-ellipsis';
 import ErrorDisplay from '../../components/error-display';
 import { getCommunityAddress, getBoardPath, areSameBoardAddress } from '../../lib/utils/route-utils';
@@ -963,7 +962,6 @@ ModQueueContent.displayName = 'ModQueueContent';
 const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProps) => {
   const params = useParams();
   const [selectedBoardFilter, setSelectedBoardFilter] = useState<string | null>(null);
-  const closeIdleTransfer = usePostTransferStore((state) => state.closeTransfer);
   const viewMode = useModQueueStore((state) => state.viewMode);
   const dismissedCommentCids = useModQueueStore((state) => state.dismissedCommentCids);
   const queuedCommentHistory = useModQueueStore((state) => state.queuedCommentHistory);
@@ -1037,13 +1035,6 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
   const filteredFeed = useMemo(
     () => filterVisibleModQueueFeed(feedWithHistory, selectedBoardFilter, dismissedCommentCidSet, selectedBoardFilterAddresses),
     [feedWithHistory, selectedBoardFilter, dismissedCommentCidSet, selectedBoardFilterAddresses],
-  );
-  const handleSetSelectedBoardFilter = useCallback(
-    (boardFilter: string | null) => {
-      closeIdleTransfer();
-      setSelectedBoardFilter(boardFilter);
-    },
-    [closeIdleTransfer],
   );
   const hasVisibleComments = filteredFeed.length > 0;
 
@@ -1133,7 +1124,7 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
         loadMore={visibleLoadMore}
         resolvedAddress={resolvedAddress}
         selectedBoardFilter={selectedBoardFilter}
-        setSelectedBoardFilter={handleSetSelectedBoardFilter}
+        setSelectedBoardFilter={setSelectedBoardFilter}
         showBoardColumn={showBoardColumn}
         viewMode={viewMode}
         virtuosoFooterContext={visibleVirtuosoFooterContext}

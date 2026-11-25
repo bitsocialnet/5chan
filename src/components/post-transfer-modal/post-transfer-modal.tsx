@@ -46,9 +46,9 @@ const TRANSFER_MODAL_WIDTH_PX = 430;
 const TRANSFER_MODAL_VIEWPORT_GUTTER_PX = 20;
 const TRANSFER_MODAL_POSITION_SESSION_STORAGE_KEY = '5chan:transfer-modal-position';
 // pkc-js gives up on a challenge request after two minutes without an answer, but once a challenge answer is
-// published it waits for the verification indefinitely. The source removal gets the same two minutes, so a transfer
-// whose verification never comes ends instead of holding the app-wide transfer lock until a reload.
-const TRANSFER_SOURCE_VERIFICATION_TIMEOUT_MS = 2 * 60 * 1000;
+// published it waits for the verification indefinitely. The /trash/ copy and the source removal get the same two
+// minutes, so a transfer whose verification never comes ends instead of holding the app-wide transfer lock until a reload.
+const TRANSFER_VERIFICATION_TIMEOUT_MS = 2 * 60 * 1000;
 
 interface TransferModalState {
   selectedFields: PostTransferFields;
@@ -344,7 +344,7 @@ const PostTransferModal = ({ accountName, comment, onClose, onTransferStateChang
             if (publishingState === 'waiting-challenge-verification' && verificationTimeout === undefined && !isSettled) {
               verificationTimeout = setTimeout(
                 () => settle(new Error(`${label} got no challenge verification within two minutes. The original post may still be removed later.`)),
-                TRANSFER_SOURCE_VERIFICATION_TIMEOUT_MS,
+                TRANSFER_VERIFICATION_TIMEOUT_MS,
               );
             }
           },
@@ -384,7 +384,10 @@ const PostTransferModal = ({ accountName, comment, onClose, onTransferStateChang
         console.error('Transfer temporary account cleanup failed:', error);
       }
     };
+    let copyVerificationTimeout: ReturnType<typeof setTimeout> | undefined;
+    let hasCopyVerificationTimedOut = false;
     const failTransfer = async (error: unknown) => {
+      clearTimeout(copyVerificationTimeout);
       await cleanupTemporaryAccount({ deletePendingComment: true });
       onTransferStateChange?.('failed');
       dispatchModalState({ type: 'publishFailed', error });
@@ -413,7 +416,20 @@ const PostTransferModal = ({ accountName, comment, onClose, onTransferStateChang
               (error) => void failTransfer(error),
             );
           },
+          onPublishingStateChange: (publishingState: string) => {
+            if (publishingState !== 'waiting-challenge-verification' || copyVerificationTimeout !== undefined) return;
+            copyVerificationTimeout = setTimeout(() => {
+              hasCopyVerificationTimedOut = true;
+              void failTransfer(
+                new Error('The /trash/ copy got no challenge verification within two minutes. It may still appear in /trash/, so check there before trying again.'),
+              );
+            }, TRANSFER_VERIFICATION_TIMEOUT_MS);
+          },
           onChallengeVerification: async (challengeVerification: ChallengeVerification, challengeComment: Comment) => {
+            clearTimeout(copyVerificationTimeout);
+            // The transfer was already reported as failed and its temporary account deleted. Finishing it now would
+            // remove the original post after the moderator was told the move failed.
+            if (hasCopyVerificationTimedOut) return;
             try {
               alertChallengeVerificationFailed(challengeVerification, challengeComment);
               if (challengeVerification?.challengeSuccess !== true) {
