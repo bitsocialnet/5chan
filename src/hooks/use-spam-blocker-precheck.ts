@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { type ChallengeAnswersByIndex, useAccount, useAccountComments } from '@bitsocial/bitsocial-react-hooks';
 import type { ForgeUploadAuthorizer } from '../lib/forge-upload-authorization';
 import type { PrecheckPublication } from '../lib/spam-blocker-precheck';
+import { SpamBlockerUnreachableError } from '../lib/spam-blocker-errors';
 import useChallengesStore from '../stores/use-challenges-store';
 
 export type SpamBlockerPrecheckResult =
@@ -102,6 +103,7 @@ const useSpamBlockerPrecheck = ({ communityAddress }: { communityAddress: string
           if (exempt) return { status: 'exempt', authorizeForgeUpload };
         } catch (error) {
           if (await showRateLimitNotice(error)) return { status: 'stopped' };
+          if (error instanceof SpamBlockerUnreachableError) return { status: 'stopped', message: t('spam_blocker_unreachable_upload', { host: error.host }) };
           return { status: 'stopped', message: error instanceof Error ? error.message : t('spam_check_not_finished') };
         }
       }

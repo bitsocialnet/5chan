@@ -303,10 +303,28 @@ describe('useSpamBlockerPrecheck', () => {
     ];
     vi.stubGlobal(
       'fetch',
-      vi.fn(async () => new Response('', { status: 503 })),
+      vi.fn(async () => new Response(JSON.stringify({ code: 'unavailable', message: 'Unable to verify posting exemptions. Try again later.' }), { status: 503 })),
     );
     const result = await start(challenges);
     expect(result).toEqual({ status: 'stopped', message: 'Could not verify posting exemptions (503). Try again.' });
+    expect(useChallengesStore.getState().challenges).toHaveLength(0);
+  });
+
+  it.each([
+    ['cannot be reached', async () => Promise.reject(new TypeError('Failed to fetch'))],
+    ['answers with a page that is not its own', async () => new Response('<html>error code: 1033</html>', { status: 530 })],
+  ])('says the spam blocker is unreachable when it %s, before any upload', async (_name, implementation) => {
+    testState.account!.author!.name = 'alice.bso';
+    const policy = { version: 1, rules: [{ challengeIndex: 0, type: 'verified-author-name-suffix', suffix: '.bso' }] };
+    const challenges = [
+      { type: 'text/plain' },
+      { type: 'url/iframe', challenge: `${SERVER_URL}/precheck?precheckExemptions=${encodeURIComponent(JSON.stringify(policy))}`, exclude: [{ challenges: [0] }] },
+    ];
+    const fetchMock = vi.fn<(url: string) => Promise<Response>>(implementation);
+    vi.stubGlobal('fetch', fetchMock);
+    const result = await start(challenges);
+    expect(result).toEqual({ status: 'stopped', message: 'spam_blocker_unreachable_upload' });
+    expect(fetchMock.mock.calls.map(([url]) => url)).toEqual([`${SERVER_URL}/precheck/exemption`]);
     expect(useChallengesStore.getState().challenges).toHaveLength(0);
   });
 

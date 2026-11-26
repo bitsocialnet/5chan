@@ -619,5 +619,6 @@
   "multiboard_delete_failed": "Det gick inte att ta bort multiboarden: {{error}}",
   "no_saved_multiboards": "Inga sparade multiboards. Skapa en med Add Custom… i kategorimenyn på <1>/all/</1> eller med [Lägg till i multiboard] på en board.",
   "pass_auth_message_placeholder": "Ange din plånboksadress för att se meddelandet som ska signeras.",
-  "download_backup_confirm": "Säkerhetskopian innehåller din postningsnyckel. Alla som har filen kan posta som du och se vilka inlägg som är dina, även på tavlor som anonymiserar dig. Ladda ner den?"
+  "download_backup_confirm": "Säkerhetskopian innehåller din postningsnyckel. Alla som har filen kan posta som du och se vilka inlägg som är dina, även på tavlor som anonymiserar dig. Ladda ner den?",
+  "spam_blocker_unreachable_upload": "Bitsocial Spam Blocker ({{host}}) går inte att nå just nu, så filer kan inte laddas upp. Posta utan filen eller med en länk till en fil som ligger någon annanstans, eller försök igen senare."
 }

@@ -619,5 +619,6 @@
   "multiboard_delete_failed": "Multidesku se nepodařilo smazat: {{error}}",
   "no_saved_multiboards": "Žádné uložené multidesky. Vytvořte si ji přes Add Custom… v nabídce kategorií na <1>/all/</1> nebo přes [Přidat do multidesky] na desce.",
   "pass_auth_message_placeholder": "Zadejte adresu své peněženky, aby se zobrazila zpráva k podpisu.",
-  "download_backup_confirm": "Záloha obsahuje váš klíč pro přispívání. Kdokoli, kdo má tento soubor, může přispívat vaším jménem a poznat, které příspěvky jsou vaše, i na deskách, které vás anonymizují. Stáhnout ji?"
+  "download_backup_confirm": "Záloha obsahuje váš klíč pro přispívání. Kdokoli, kdo má tento soubor, může přispívat vaším jménem a poznat, které příspěvky jsou vaše, i na deskách, které vás anonymizují. Stáhnout ji?",
+  "spam_blocker_unreachable_upload": "Bitsocial Spam Blocker ({{host}}) je teď nedostupný, takže soubory nelze nahrát. Pošli příspěvek bez souboru nebo s odkazem na soubor uložený jinde, případně to zkus později."
 }

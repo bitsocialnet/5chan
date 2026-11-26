@@ -17,3 +17,17 @@ export class SpamBlockerRateLimitError extends SpamBlockerAuthorizationError {
     this.retryAt = retryAt;
   }
 }
+
+/**
+ * The spam blocker did not answer: the request failed, or something other than the server answered it (a dead
+ * tunnel's or proxy's error page). Uploads stay blocked, since every upload host depends on its checks.
+ */
+export class SpamBlockerUnreachableError extends SpamBlockerAuthorizationError {
+  readonly host: string;
+
+  constructor(host: string) {
+    super(`Bitsocial Spam Blocker (${host}) is unreachable right now, so files cannot be uploaded. Try again later.`);
+    this.name = 'SpamBlockerUnreachableError';
+    this.host = host;
+  }
+}

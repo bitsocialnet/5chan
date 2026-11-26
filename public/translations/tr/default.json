@@ -619,5 +619,6 @@
   "multiboard_delete_failed": "Çoklu pano silinemedi: {{error}}",
   "no_saved_multiboards": "Kayıtlı çoklu pano yok. <1>/all/</1> sayfasındaki kategori menüsünden Add Custom… ile ya da bir panodaki [Çoklu panoya ekle] ile bir tane oluşturun.",
   "pass_auth_message_placeholder": "İmzalanacak mesajı görmek için cüzdan adresinizi girin.",
-  "download_backup_confirm": "Yedek, gönderi anahtarınızı içerir. Dosyaya sahip olan herkes sizin adınıza gönderi paylaşabilir ve sizi anonimleştiren panolarda bile hangi gönderilerin size ait olduğunu anlayabilir. İndirilsin mi?"
+  "download_backup_confirm": "Yedek, gönderi anahtarınızı içerir. Dosyaya sahip olan herkes sizin adınıza gönderi paylaşabilir ve sizi anonimleştiren panolarda bile hangi gönderilerin size ait olduğunu anlayabilir. İndirilsin mi?",
+  "spam_blocker_unreachable_upload": "Bitsocial Spam Blocker'a ({{host}}) şu anda ulaşılamıyor, bu yüzden dosya yüklenemiyor. Dosya olmadan ya da başka bir yerde barındırılan bir dosyanın bağlantısıyla gönderi yap veya daha sonra tekrar dene."
 }
