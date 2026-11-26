@@ -10,7 +10,7 @@ import {
   postSignedSpamBlockerRequest,
   type LocalAuthorHistory,
 } from '../spam-blocker-precheck';
-import { SpamBlockerRateLimitError } from '../spam-blocker-errors';
+import { SpamBlockerRateLimitError, SpamBlockerUnreachableError } from '../spam-blocker-errors';
 import { createSignedPrecheckPayload } from '../spam-blocker-precheck-signature';
 
 const connectionPolicyFlags = ['blockTor', 'blockVpn', 'blockProxy', 'blockDatacenter'];
@@ -320,5 +320,31 @@ describe('temporary signed request limits', () => {
     expect(error).toBeInstanceOf(SpamBlockerRateLimitError);
     expect((error as SpamBlockerRateLimitError).retryAt).toBeUndefined();
     expect((error as SpamBlockerRateLimitError).message).toBe('Posting is temporarily rate-limited. Try again later.');
+  });
+});
+
+describe('unreachable spam blocker', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  const post = () =>
+    postSignedSpamBlockerRequest({ url: 'https://spamblocker.test/api/v1/precheck/exemption', body: new Uint8Array([1]) }).catch((error: unknown) => error);
+
+  // A dead tunnel's or proxy's error page carries no CORS header, so the browser rejects the request itself.
+  it.each([
+    ['the request fails', async () => Promise.reject(new TypeError('Failed to fetch'))],
+    ["the answer is not the spam blocker's JSON", async () => new Response('<html>error code: 1033</html>', { status: 530 })],
+  ])('names the server when %s', async (_name, implementation) => {
+    vi.stubGlobal('fetch', vi.fn(implementation));
+    const error = await post();
+    expect(error).toBeInstanceOf(SpamBlockerUnreachableError);
+    expect((error as SpamBlockerUnreachableError).host).toBe('spamblocker.test');
+  });
+
+  it("keeps the server's own refusal as its answer", async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response(JSON.stringify({ code: 'unavailable', message: 'Upload authorization is busy. Try again later.' }), { status: 503 })),
+    );
+    expect(await post()).toEqual({ ok: false, status: 503, body: { code: 'unavailable', message: 'Upload authorization is busy. Try again later.' } });
   });
 });

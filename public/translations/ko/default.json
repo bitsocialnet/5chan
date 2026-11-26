@@ -619,5 +619,6 @@
   "multiboard_delete_failed": "멀티보드를 삭제할 수 없습니다: {{error}}",
   "no_saved_multiboards": "저장된 멀티보드가 없습니다. <1>/all/</1>의 카테고리 메뉴에서 Add Custom…으로, 또는 게시판의 [멀티보드에 추가]로 만들 수 있습니다.",
   "pass_auth_message_placeholder": "서명할 메시지를 보려면 지갑 주소를 입력하세요.",
-  "download_backup_confirm": "백업에는 게시용 키가 들어 있습니다. 이 파일을 가진 사람은 누구나 당신으로 게시할 수 있고, 당신을 익명화하는 게시판에서도 어떤 게시물이 당신의 것인지 알 수 있습니다. 다운로드하시겠습니까?"
+  "download_backup_confirm": "백업에는 게시용 키가 들어 있습니다. 이 파일을 가진 사람은 누구나 당신으로 게시할 수 있고, 당신을 익명화하는 게시판에서도 어떤 게시물이 당신의 것인지 알 수 있습니다. 다운로드하시겠습니까?",
+  "spam_blocker_unreachable_upload": "지금 Bitsocial Spam Blocker({{host}})에 연결할 수 없어 파일을 업로드할 수 없습니다. 파일 없이 게시하거나 다른 곳에 호스팅된 파일의 링크를 붙여 게시하거나, 나중에 다시 시도하세요."
 }

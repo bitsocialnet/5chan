@@ -1,4 +1,4 @@
-import { SpamBlockerRateLimitError } from './spam-blocker-errors';
+import { SpamBlockerRateLimitError, SpamBlockerUnreachableError } from './spam-blocker-errors';
 import type { Challenge, ChallengeAnswersByIndex, Comment } from '@bitsocial/bitsocial-react-hooks';
 
 /**
@@ -278,15 +278,20 @@ export const postSignedSpamBlockerRequest = async ({
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 30_000);
   try {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'content-type': 'application/cbor' },
-      body,
-      credentials: 'omit',
-      cache: 'no-store',
-      referrerPolicy: 'no-referrer',
-      signal: controller.signal,
-    });
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        method: 'POST',
+        headers: { 'content-type': 'application/cbor' },
+        body,
+        credentials: 'omit',
+        cache: 'no-store',
+        referrerPolicy: 'no-referrer',
+        signal: controller.signal,
+      });
+    } catch {
+      throw new SpamBlockerUnreachableError(new URL(url).host);
+    }
     const result: unknown = await response.json().catch(() => undefined);
     if (response.status === 429) {
       const now = Date.now() / 1000;
@@ -298,6 +303,8 @@ export const postSignedSpamBlockerRequest = async ({
         isRecord(result) && typeof result.message === 'string' && result.message.trim() ? result.message : 'Posting is temporarily rate-limited. Try again later.';
       throw new SpamBlockerRateLimitError(message, retryAt);
     }
+    // The server answers these routes with JSON, including its own refusals.
+    if (result === undefined) throw new SpamBlockerUnreachableError(new URL(url).host);
     return { ok: response.ok, status: response.status, body: result };
   } finally {
     clearTimeout(timeout);

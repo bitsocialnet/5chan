@@ -619,5 +619,6 @@
   "multiboard_delete_failed": "No se pudo eliminar el multiboard: {{error}}",
   "no_saved_multiboards": "No hay multiboards guardados. Crea uno con Add Custom… en el menú de categorías de <1>/all/</1>, o con [Añadir a multiboard] en un tablón.",
   "pass_auth_message_placeholder": "Introduce la dirección de tu billetera para ver el mensaje que debes firmar.",
-  "download_backup_confirm": "La copia de seguridad contiene tu clave de publicación. Cualquiera que tenga el archivo puede publicar como tú y saber qué publicaciones son tuyas, incluso en los tableros que te anonimizan. ¿Descargarla?"
+  "download_backup_confirm": "La copia de seguridad contiene tu clave de publicación. Cualquiera que tenga el archivo puede publicar como tú y saber qué publicaciones son tuyas, incluso en los tableros que te anonimizan. ¿Descargarla?",
+  "spam_blocker_unreachable_upload": "No se puede acceder a Bitsocial Spam Blocker ({{host}}) en este momento, así que no se pueden subir archivos. Publica sin el archivo o con un enlace a un archivo alojado en otro sitio, o inténtalo de nuevo más tarde."
 }

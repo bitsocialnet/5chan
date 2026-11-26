@@ -619,5 +619,6 @@
   "multiboard_delete_failed": "Không thể xóa đa bảng: {{error}}",
   "no_saved_multiboards": "Chưa có đa bảng nào được lưu. Tạo một đa bảng bằng Add Custom… trong menu danh mục ở <1>/all/</1>, hoặc bằng [Thêm vào đa bảng] trên một bảng.",
   "pass_auth_message_placeholder": "Hãy nhập địa chỉ ví của bạn để xem tin nhắn cần ký.",
-  "download_backup_confirm": "Bản sao lưu chứa khóa đăng bài của bạn. Bất kỳ ai có tệp này đều có thể đăng bài dưới danh nghĩa của bạn và biết bài đăng nào là của bạn, kể cả trên các bảng ẩn danh hóa bạn. Tải xuống?"
+  "download_backup_confirm": "Bản sao lưu chứa khóa đăng bài của bạn. Bất kỳ ai có tệp này đều có thể đăng bài dưới danh nghĩa của bạn và biết bài đăng nào là của bạn, kể cả trên các bảng ẩn danh hóa bạn. Tải xuống?",
+  "spam_blocker_unreachable_upload": "Hiện không thể kết nối tới Bitsocial Spam Blocker ({{host}}), nên không thể tải tệp lên. Hãy đăng không kèm tệp hoặc kèm liên kết tới tệp được lưu ở nơi khác, hoặc thử lại sau."
 }

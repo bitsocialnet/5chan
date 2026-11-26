@@ -619,5 +619,6 @@
   "multiboard_delete_failed": "Kunne ikke slette multiboardet: {{error}}",
   "no_saved_multiboards": "Ingen lagrede multiboards. Lag et med Add Custom… i kategorimenyen på <1>/all/</1>, eller med [Legg til i multiboard] på et board.",
   "pass_auth_message_placeholder": "Skriv inn lommebokadressen din for å se meldingen som skal signeres.",
-  "download_backup_confirm": "Sikkerhetskopien inneholder postenøkkelen din. Alle som har filen kan poste som deg og se hvilke innlegg som er dine, også på tavler som anonymiserer deg. Laste den ned?"
+  "download_backup_confirm": "Sikkerhetskopien inneholder postenøkkelen din. Alle som har filen kan poste som deg og se hvilke innlegg som er dine, også på tavler som anonymiserer deg. Laste den ned?",
+  "spam_blocker_unreachable_upload": "Bitsocial Spam Blocker ({{host}}) kan ikke nås akkurat nå, så filer kan ikke lastes opp. Post uten filen eller med en lenke til en fil som ligger et annet sted, eller prøv igjen senere."
 }

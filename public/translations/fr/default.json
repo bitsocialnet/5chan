@@ -619,5 +619,6 @@
   "multiboard_delete_failed": "Impossible de supprimer le multiboard : {{error}}",
   "no_saved_multiboards": "Aucun multiboard enregistré. Créez-en un avec Add Custom… dans le menu des catégories de <1>/all/</1>, ou avec [Ajouter à un multiboard] sur une board.",
   "pass_auth_message_placeholder": "Saisissez l'adresse de votre portefeuille pour afficher le message à signer.",
-  "download_backup_confirm": "La sauvegarde contient votre clé de publication. Toute personne qui possède le fichier peut publier en votre nom et savoir quels posts sont les vôtres, même sur les boards qui vous anonymisent. La télécharger ?"
+  "download_backup_confirm": "La sauvegarde contient votre clé de publication. Toute personne qui possède le fichier peut publier en votre nom et savoir quels posts sont les vôtres, même sur les boards qui vous anonymisent. La télécharger ?",
+  "spam_blocker_unreachable_upload": "Bitsocial Spam Blocker ({{host}}) est injoignable pour le moment, les fichiers ne peuvent donc pas être envoyés. Publie sans le fichier ou avec un lien vers un fichier hébergé ailleurs, ou réessaie plus tard."
 }
